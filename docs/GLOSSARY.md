@@ -18,6 +18,9 @@ locale packs, never in code.
 | context | the SDK's per-consumer handle holding settings, providers and caches; no global state |
 | core | the language-native library every binding wraps |
 | dasha | a planetary period system; the SDK has a registry of systems, each a plug-in |
+| deliberate difference | a registry row that explains a known divergence between the SDK and a golden-vector source (a convention the SDK does not copy, or a defect the source has), so the harness reports it instead of failing (`05-testing/01-golden-vectors.md`) |
+| fixture | one golden-vector file: an input, a complete settings profile with its hash, provenance, and the recorded outputs of one source under one profile (`fixtures/README.md`) |
+| golden vector | a recorded output of another implementation or a text that the SDK must reproduce within the tolerance for the provider class, cited to its source (ADR-0022) |
 | drik | computation by observed astronomy (Swiss Ephemeris, Teimeris, JPL); opposed to Surya Siddhanta or other siddhantic models |
 | footedness | the odd or even classification of signs in groups of three from Aries, used for the duration count in rashi dashas; a distinct type from sign parity, which governs the sequence direction |
 | entity | a named astrological object with a stable key: graha, rashi, nakshatra, tithi, karana, yoga, vara, varga, dignity, and so on |

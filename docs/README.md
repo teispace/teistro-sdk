@@ -25,7 +25,7 @@ Three files are living documents and are updated in every working session:
 | [`02-architecture/`](02-architecture/00-overview.md) | the shape: layers, modules, ports, data model, API conventions, bindings, extensibility, performance and security architecture | draft, pending decisions |
 | [`03-design/`](03-design/README.md) | per-module detailed designs; five written in Phase 0 (exact arithmetic, dasha kernels, varga kernel, strength schemes, rules engine) | five drafted, the rest planned |
 | [`04-implementation/`](04-implementation/README.md) | repository layout, coding standards, build system | planned |
-| [`05-testing/`](05-testing/README.md) | the quality bar (accepted, binding) and the test and conformance plans | quality bar accepted; plans planned |
+| [`05-testing/`](05-testing/README.md) | the quality bar (accepted, binding), the golden-vector corpus and the test and conformance plans | quality bar accepted; golden vectors drafted (115 baseline fixtures in `fixtures/`); other plans planned |
 | [`06-cicd/`](06-cicd/README.md) | pipelines, release engineering, packaging per binding | planned |
 | [`07-roadmap/`](07-roadmap/00-roadmap.md) | phases, milestones, deliverables and exit criteria | drafted |
 | [`08-decisions/`](08-decisions/README.md) | ADRs | proposed |

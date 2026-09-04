@@ -38,6 +38,8 @@ jobs:
         run: cargo test --workspace
       - name: Documentation gates
         run: cargo xtask check-docs
+      - name: Golden-vector corpus (schema, manifest, settings hashes, forbidden terms)
+        run: cargo xtask check-fixtures
 
   dco:
     name: dco

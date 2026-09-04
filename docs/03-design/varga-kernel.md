@@ -113,7 +113,8 @@ profile's default, and the result carries it in provenance (ADR-0020).
 ## Tests and golden vectors
 
 Exhaustive generation per chart (invariant 4); golden vectors from spike
-1 for all 21 baseline charts on 50 charts; boundary fixtures at every
+1 for all 21 baseline charts on the 55 exported charts
+(`fixtures/baseline/`, section `vargas`); boundary fixtures at every
 part boundary for D7, D11, D27, D150 and every D30 span edge; PyJHora
 cross-checks for D81, D108, D144 and the named hora variants once sourced.
 

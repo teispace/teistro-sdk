@@ -33,6 +33,7 @@ selects it) and nothing else. Every repository task is Rust and runs as
    cargo clippy --workspace --all-targets -- -D warnings
    cargo test --workspace
    cargo xtask check-docs
+   cargo xtask check-fixtures
    cargo deny check        # cargo install cargo-deny, once
    ```
 

@@ -1,8 +1,10 @@
 # Testing
 
-Status: `planned`, 2026-09-04. The strategy is in
+Status: `planned`, 2026-09-04; the quality bar is accepted and the
+golden-vectors page is drafted. The strategy is in
 `01-research/platform/09-testing-quality.md`; this directory will hold the
-detailed plans and the generated reports.
+detailed plans and the generated reports. The corpus itself is in
+`fixtures/` (see [`../../fixtures/README.md`](../../fixtures/README.md)).
 
 ## The bar
 
@@ -14,7 +16,7 @@ module must pass to be done.
 
 | page | contents |
 |---|---|
-| `01-golden-vectors.md` | how vectors are exported from the baseline engine (a script in the baseline engine repository producing JSON per computation with settings and versions), from PyJHora, and hand-entered from JHora and PL printouts and classical texts; the fixture format with the settings hash asserted and a citation per expected value; the move of `fixtures/` into the separate CC0 conformance repository before Phase 1 exits (ADR-0022) |
+| [`01-golden-vectors.md`](01-golden-vectors.md) | **drafted**: the sources by rank, the spike 1 result (115 baseline fixtures over 55 charts, the searched boundary instants, the settings-profile variants, the tree-as-rows format, ten baseline conventions for the deliberate-difference registry), how the harness will consume the corpus, and the move of `fixtures/` into the separate CC0 conformance repository before Phase 1 exits (ADR-0022) |
 | `02-conformance-harness.md` | the runner, the central tolerance file keyed by field and provider class, deliberate-difference registry, the cross-architecture hash matrix, generated `CONFORMANCE.md` |
 | `03-property-tests.md` | invariants per module |
 | `04-cross-binding-parity.md` | canonical JSON emission per binding, the diff gate |
