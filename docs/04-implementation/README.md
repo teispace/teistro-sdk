@@ -60,6 +60,9 @@ teistro-sdk/
   fixtures/                    golden vectors with their README and the central tolerances.json:
                                baseline/ (manifest, charts/, variants/), pyjhora/, texts/, teimeris/ (moves to the
                                separate CC0 conformance repository, mounted here as a submodule, ADR-0022)
+  spikes/                      throw-away experiments with a README and a result page each, workspace
+                               members that are linted like the rest and never published
+                               (02-binding-toolchain/ decided ADR-0007 and is the model for idl/)
   oracles/                     dev-only crates (`publish = false`) wrapping licensed or copyleft
                                references for differential tests; never in a published graph
   docs/                        this documentation (source of the docs site's concept pages)
@@ -86,6 +89,10 @@ teistro-sdk/
 - Every public item documented with an example that compiles.
 - Comments explain why and name the measurement, the alternative rejected
   and the defect that motivated the code.
+- One source of truth per fact, and no repetition: a second copy of any
+  rule, table or template is a generator or a shared helper, never a paste;
+  the moment a second binding, emitter or test needs the same rule, the
+  rule moves to one place (maintainer mandate, 2026-09-05).
 - Named constants with citations for every astrological or astronomical
   table; no magic numbers.
 - One crate per module; features for optional pieces; no cyclic

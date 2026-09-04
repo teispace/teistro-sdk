@@ -1,0 +1,746 @@
+{
+  "abi_version": 1,
+  "prefix": "tsp_",
+  "source": "spikes/02-binding-toolchain/a-ffi/src/lib.rs",
+  "enums": [
+    {
+      "name": "TspStatus",
+      "repr": "i32",
+      "doc": "The status of every call. `0` is success; everything else names the\nfailure, with the same numbers in every binding.",
+      "values": [
+        {
+          "name": "Ok",
+          "value": 0,
+          "doc": "Success."
+        },
+        {
+          "name": "InvalidArgument",
+          "value": -1,
+          "doc": "A null pointer, a wrong `struct_size`, or an enum index outside its\nrange."
+        },
+        {
+          "name": "DepthOutOfRange",
+          "value": -2,
+          "doc": "`dasha_depth` outside `1..=5`."
+        },
+        {
+          "name": "JulianDayNotFinite",
+          "value": -3,
+          "doc": "The Julian Day is NaN or infinite."
+        },
+        {
+          "name": "Provider",
+          "value": -4,
+          "doc": "The provider failed; `tsp_context_last_provider_code` has its code."
+        },
+        {
+          "name": "PositionNotFinite",
+          "value": -5,
+          "doc": "The provider returned a non-finite longitude."
+        }
+      ]
+    },
+    {
+      "name": "TspAyanamsha",
+      "repr": "u8",
+      "doc": "The ayanamsha catalogue.",
+      "values": [
+        {
+          "name": "Lahiri",
+          "value": 0,
+          "doc": "Lahiri (Chitrapaksha), the default."
+        },
+        {
+          "name": "Raman",
+          "value": 1,
+          "doc": "B. V. Raman."
+        },
+        {
+          "name": "Krishnamurti",
+          "value": 2,
+          "doc": "K. S. Krishnamurti."
+        }
+      ]
+    },
+    {
+      "name": "TspNodeKind",
+      "repr": "u8",
+      "doc": "Which lunar node the provider is asked for.",
+      "values": [
+        {
+          "name": "Mean",
+          "value": 0,
+          "doc": "The mean node."
+        },
+        {
+          "name": "True",
+          "value": 1,
+          "doc": "The true node."
+        }
+      ]
+    },
+    {
+      "name": "TspBody",
+      "repr": "u8",
+      "doc": "The nine bodies, the index every position column uses.",
+      "values": [
+        {
+          "name": "Sun",
+          "value": 0,
+          "doc": "The Sun."
+        },
+        {
+          "name": "Moon",
+          "value": 1,
+          "doc": "The Moon."
+        },
+        {
+          "name": "Mars",
+          "value": 2,
+          "doc": "Mars."
+        },
+        {
+          "name": "Mercury",
+          "value": 3,
+          "doc": "Mercury."
+        },
+        {
+          "name": "Jupiter",
+          "value": 4,
+          "doc": "Jupiter."
+        },
+        {
+          "name": "Venus",
+          "value": 5,
+          "doc": "Venus."
+        },
+        {
+          "name": "Saturn",
+          "value": 6,
+          "doc": "Saturn."
+        },
+        {
+          "name": "Rahu",
+          "value": 7,
+          "doc": "The ascending node."
+        },
+        {
+          "name": "Ketu",
+          "value": 8,
+          "doc": "The descending node."
+        }
+      ]
+    }
+  ],
+  "structs": [
+    {
+      "name": "TspSettings",
+      "doc": "The settings of a context.",
+      "handshake": "struct_size",
+      "fields": [
+        {
+          "name": "struct_size",
+          "ty": {
+            "kind": "scalar",
+            "name": "u32"
+          },
+          "doc": "`sizeof(TspSettings)` as the caller compiled it; the library refuses\na size it does not know.",
+          "meta": {
+            "role": "struct_size"
+          }
+        },
+        {
+          "name": "ayanamsha",
+          "ty": {
+            "kind": "scalar",
+            "name": "u8"
+          },
+          "doc": "The ayanamsha: `0` Lahiri, `1` Raman, `2` Krishnamurti.",
+          "meta": {
+            "example": "0",
+            "enum": "TspAyanamsha"
+          }
+        },
+        {
+          "name": "node",
+          "ty": {
+            "kind": "scalar",
+            "name": "u8"
+          },
+          "doc": "The lunar node: `0` mean, `1` true.",
+          "meta": {
+            "example": "0",
+            "enum": "TspNodeKind"
+          }
+        },
+        {
+          "name": "dasha_depth",
+          "ty": {
+            "kind": "scalar",
+            "name": "u8"
+          },
+          "doc": "Dasha levels to build, `1` to `5`; the tree has `9^depth` leaves.",
+          "meta": {
+            "range": "[1,5]",
+            "example": "3"
+          }
+        },
+        {
+          "name": "reserved",
+          "ty": {
+            "kind": "scalar",
+            "name": "u8"
+          },
+          "doc": "Reserved, zero.",
+          "meta": {}
+        }
+      ]
+    },
+    {
+      "name": "TspPosition",
+      "doc": "A tropical position, the provider's answer.",
+      "fields": [
+        {
+          "name": "longitude_deg",
+          "ty": {
+            "kind": "scalar",
+            "name": "f64"
+          },
+          "doc": "Tropical ecliptic longitude in degrees; any real number.",
+          "meta": {
+            "unit": "deg",
+            "example": "280.46"
+          }
+        },
+        {
+          "name": "latitude_deg",
+          "ty": {
+            "kind": "scalar",
+            "name": "f64"
+          },
+          "doc": "Ecliptic latitude in degrees.",
+          "meta": {
+            "unit": "deg",
+            "range": "[-90,90]",
+            "example": "0.0"
+          }
+        },
+        {
+          "name": "speed_deg_per_day",
+          "ty": {
+            "kind": "scalar",
+            "name": "f64"
+          },
+          "doc": "Longitude speed in degrees per day; negative is retrograde.",
+          "meta": {
+            "unit": "deg/day",
+            "example": "0.9856"
+          }
+        }
+      ]
+    },
+    {
+      "name": "TspProviderVtable",
+      "doc": "A host-implemented ephemeris provider.",
+      "handshake": "struct_size",
+      "fields": [
+        {
+          "name": "struct_size",
+          "ty": {
+            "kind": "scalar",
+            "name": "u32"
+          },
+          "doc": "`sizeof(TspProviderVtable)` as the caller compiled it.",
+          "meta": {
+            "role": "struct_size"
+          }
+        },
+        {
+          "name": "position",
+          "ty": {
+            "kind": "callback",
+            "name": "TspPositionFn"
+          },
+          "doc": "The position callback; must not be null.",
+          "meta": {}
+        }
+      ]
+    },
+    {
+      "name": "TspBlob",
+      "doc": "A computed chart, owned by the library until `tsp_blob_free`.\n\nThe bytes follow the `TSPB` layout: a 32-byte header (magic\n`0x4250_5354`, version `1`, section count, total length), a table of\n`{id, offset, length, count}` entries, then the sections. Section `1`\nis the chart header (`jd_ut`, `ayanamsha_deg`, depth, counts), section\n`2` the nine positions as columns, section `3` the dasha rows as\ncolumns; each column section starts with a directory of column offsets\nrelative to the section start. Every multi-byte column is 8-aligned.",
+      "blob": "TSPB",
+      "fields": [
+        {
+          "name": "data",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "name": "u8"
+            },
+            "mutable": true
+          },
+          "doc": "The bytes; null when the blob is empty.",
+          "meta": {}
+        },
+        {
+          "name": "len",
+          "ty": {
+            "kind": "scalar",
+            "name": "usize"
+          },
+          "doc": "The number of bytes.",
+          "meta": {}
+        },
+        {
+          "name": "cap",
+          "ty": {
+            "kind": "scalar",
+            "name": "usize"
+          },
+          "doc": "The allocation's capacity, needed to free it.",
+          "meta": {}
+        }
+      ]
+    }
+  ],
+  "callbacks": [
+    {
+      "name": "TspPositionFn",
+      "doc": "The provider's one entry point: fill `out_position` for `body` at\n`jd_ut` and return `0`, or return a non-zero code of the provider's own.",
+      "params": [
+        {
+          "name": "user_data",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "void"
+            },
+            "mutable": true
+          },
+          "role": "user_data"
+        },
+        {
+          "name": "jd_ut",
+          "ty": {
+            "kind": "scalar",
+            "name": "f64"
+          },
+          "role": "value"
+        },
+        {
+          "name": "body",
+          "ty": {
+            "kind": "scalar",
+            "name": "u32"
+          },
+          "role": "value"
+        },
+        {
+          "name": "out_position",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TspPosition"
+            },
+            "mutable": true
+          },
+          "role": "struct_out"
+        }
+      ],
+      "returns": {
+        "kind": "scalar",
+        "name": "i32"
+      }
+    }
+  ],
+  "opaques": [
+    {
+      "name": "TspContext",
+      "doc": "An opaque context: settings plus a provider. Not thread-safe; one per\nthread, as the architecture requires."
+    }
+  ],
+  "functions": [
+    {
+      "name": "tsp_abi_version",
+      "doc": "The ABI version this library implements; a binding refuses to load a\nlibrary whose version it was not generated for.",
+      "params": [],
+      "returns": {
+        "kind": "scalar",
+        "name": "u32"
+      }
+    },
+    {
+      "name": "tsp_settings_default",
+      "doc": "Writes the default settings (Lahiri, the mean node, three levels) into\n`out_settings`, whose `struct_size` must already be set by the caller.\n\nReturns `InvalidArgument` for a null pointer or an unknown size.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a handle must come from this\nlibrary and must not be used after `tsp_context_free`.",
+      "params": [
+        {
+          "name": "out_settings",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TspSettings"
+            },
+            "mutable": true
+          },
+          "role": "struct_out"
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "TspStatus"
+      }
+    },
+    {
+      "name": "tsp_context_new",
+      "doc": "Creates a context. `provider` may be null, which selects the built-in\nanalytic test provider; otherwise its `position` must be non-null and\n`user_data` stays valid until `tsp_context_free`. On success\n`*out_context` owns the context.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a handle must come from this\nlibrary and must not be used after `tsp_context_free`.",
+      "params": [
+        {
+          "name": "settings",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TspSettings"
+            },
+            "mutable": false
+          },
+          "role": "struct_in"
+        },
+        {
+          "name": "provider",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TspProviderVtable"
+            },
+            "mutable": false
+          },
+          "role": "vtable_in"
+        },
+        {
+          "name": "user_data",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "void"
+            },
+            "mutable": true
+          },
+          "role": "user_data"
+        },
+        {
+          "name": "out_context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "pointer",
+              "to": {
+                "kind": "opaque",
+                "name": "TspContext"
+              },
+              "mutable": true
+            },
+            "mutable": true
+          },
+          "role": "handle_out"
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "TspStatus"
+      }
+    },
+    {
+      "name": "tsp_context_free",
+      "doc": "Frees a context created by `tsp_context_new`; null is ignored.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a handle must come from this\nlibrary and must not be used after `tsp_context_free`.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TspContext"
+            },
+            "mutable": true
+          },
+          "role": "handle"
+        }
+      ]
+    },
+    {
+      "name": "tsp_context_settings",
+      "doc": "Copies the context's settings into `out_settings` (its `struct_size`\nset by the caller).",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a handle must come from this\nlibrary and must not be used after `tsp_context_free`.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TspContext"
+            },
+            "mutable": false
+          },
+          "role": "handle"
+        },
+        {
+          "name": "out_settings",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TspSettings"
+            },
+            "mutable": true
+          },
+          "role": "struct_out"
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "TspStatus"
+      }
+    },
+    {
+      "name": "tsp_context_last_provider_code",
+      "doc": "The code the provider returned on the last `Provider` failure, `0` when\nthere was none.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a handle must come from this\nlibrary and must not be used after `tsp_context_free`.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TspContext"
+            },
+            "mutable": false
+          },
+          "role": "handle"
+        }
+      ],
+      "returns": {
+        "kind": "scalar",
+        "name": "i32"
+      }
+    },
+    {
+      "name": "tsp_chart_compute",
+      "doc": "The one batch call: computes the chart at `jd_ut` and hands back the\nresult blob in `out_blob`, which the caller frees with `tsp_blob_free`.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a handle must come from this\nlibrary and must not be used after `tsp_context_free`.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TspContext"
+            },
+            "mutable": false
+          },
+          "role": "handle"
+        },
+        {
+          "name": "jd_ut",
+          "ty": {
+            "kind": "scalar",
+            "name": "f64"
+          },
+          "role": "value"
+        },
+        {
+          "name": "out_blob",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TspBlob"
+            },
+            "mutable": true
+          },
+          "role": "blob_out"
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "TspStatus"
+      }
+    },
+    {
+      "name": "tsp_blob_free",
+      "doc": "Frees a blob returned by `tsp_chart_compute` and zeroes the descriptor;\nnull or an empty blob is ignored.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a handle must come from this\nlibrary and must not be used after `tsp_context_free`.",
+      "params": [
+        {
+          "name": "blob",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TspBlob"
+            },
+            "mutable": true
+          },
+          "role": "blob_in_out"
+        }
+      ]
+    },
+    {
+      "name": "tsp_chart_node_count",
+      "doc": "The number of tree nodes a chart of `depth` levels holds, so a caller\ncan size its own structures before decoding.",
+      "params": [
+        {
+          "name": "depth",
+          "ty": {
+            "kind": "scalar",
+            "name": "u8"
+          },
+          "role": "value"
+        }
+      ],
+      "returns": {
+        "kind": "scalar",
+        "name": "u32"
+      }
+    },
+    {
+      "name": "tsp_status_message",
+      "doc": "A static, NUL-terminated English message for a status.",
+      "params": [
+        {
+          "name": "status",
+          "ty": {
+            "kind": "enum",
+            "name": "TspStatus"
+          },
+          "role": "value"
+        }
+      ],
+      "returns": {
+        "kind": "pointer",
+        "to": {
+          "kind": "char"
+        },
+        "mutable": false
+      }
+    }
+  ],
+  "blob": {
+    "magic": 1112560468,
+    "version": 1,
+    "sections": [
+      {
+        "id": 1,
+        "name": "chart",
+        "kind": "fixed",
+        "fields": [
+          {
+            "name": "jd_ut",
+            "ty": "f64"
+          },
+          {
+            "name": "ayanamsha_deg",
+            "ty": "f64"
+          },
+          {
+            "name": "depth",
+            "ty": "u32"
+          },
+          {
+            "name": "position_count",
+            "ty": "u32"
+          },
+          {
+            "name": "node_count",
+            "ty": "u32"
+          },
+          {
+            "name": "reserved",
+            "ty": "u32"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "positions",
+        "kind": "columns",
+        "fields": [
+          {
+            "name": "body",
+            "ty": "u8"
+          },
+          {
+            "name": "longitude_nas",
+            "ty": "i64"
+          },
+          {
+            "name": "longitude_deg",
+            "ty": "f64"
+          },
+          {
+            "name": "latitude_deg",
+            "ty": "f64"
+          },
+          {
+            "name": "speed_deg_per_day",
+            "ty": "f64"
+          },
+          {
+            "name": "sign",
+            "ty": "u8"
+          },
+          {
+            "name": "nakshatra",
+            "ty": "u8"
+          },
+          {
+            "name": "pada",
+            "ty": "u8"
+          },
+          {
+            "name": "retrograde",
+            "ty": "u8"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "dasha",
+        "kind": "columns",
+        "fields": [
+          {
+            "name": "level",
+            "ty": "u8"
+          },
+          {
+            "name": "lord",
+            "ty": "u8"
+          },
+          {
+            "name": "parent",
+            "ty": "i32"
+          },
+          {
+            "name": "start_jd",
+            "ty": "f64"
+          },
+          {
+            "name": "end_jd",
+            "ty": "f64"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -33,3 +33,8 @@ build/
 
 # Scratch
 /tmp/
+
+# Spikes: built addons and Dart tool output; results are kept
+spikes/**/native/index.node
+spikes/**/.dart_tool/
+spikes/**/pubspec.lock

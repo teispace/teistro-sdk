@@ -13,7 +13,7 @@ to `accepted` when the maintainer confirms it in `QUESTIONS.md`.
 | [0004](adr-0004-binding-generation.md) | One API description, generated bindings, parity gate; generator chosen by the Phase 0 spike | accepted 2026-09-04 | Q2, Q3 |
 | [0005](adr-0005-modularity.md) | Module families as crates and packages; profiles; size gates; v1.0 is baseline parity | accepted 2026-09-04 | Q4 |
 | [0006](adr-0006-licence.md) | Apache-2.0 open core; packs and adapters under their own terms | accepted 2026-09-04 | Q5 |
-| 0007 | The binding generator (A or B), from the spike measurements | pending the spike | Q2 |
+| [0007](adr-0007-binding-toolchain.md) | The binding toolchain: option A, a designed C ABI, an extracted API description and generators of our own; Diplomat rejected on the spike's measurements (no host callbacks in its JavaScript and Dart backends, accessor-only trees, wasm-only JavaScript) | accepted on the spike, 2026-09-05 | Q2 |
 | [0008](adr-0008-builtin-ephemeris.md) | A built-in analytic ephemeris ships in v1 | accepted 2026-09-04; extended by 0021 | Q7 |
 | [0009](adr-0009-sdk-native-astronomy.md) | The SDK owns the astronomy layer above raw positions | accepted 2026-09-04 | Q8, Q15 |
 | [0010](adr-0010-teistro-intl.md) | Teistro Intl, one opinionated localisation standard | accepted 2026-09-04 | Q10 |

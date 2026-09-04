@@ -1,8 +1,12 @@
 # Binding architecture
 
-Status: `draft`, revised 2026-09-04 (ADR-0023 adds the type-safety
-section). Depends on Q2 (generation strategy) and Q3 (languages). Written for approach A (C ABI plus IDL plus generators); the
-Diplomat variant changes the mechanical layer's origin, not the shape.
+Status: `draft`, revised 2026-09-05 (ADR-0007 decides approach A by
+measurement; ADR-0023 adds the type-safety section). Depends on Q3
+(languages). Written for approach A (C ABI plus an extracted API
+description plus generators of our own); the spike that decided it,
+`spikes/02-binding-toolchain/`, is the model for the Phase 1 extractor,
+emitters, result blob and finaliser-backed handles, and this page absorbs
+its consequences in Phase 1.
 
 ## Three layers per binding
 

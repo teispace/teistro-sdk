@@ -9,7 +9,7 @@ and links its ADR. Status key: `open`, `decided`, `deferred`.
 | # | question | decision (2026-09-04) | record |
 |---|---|---|---|
 | Q1 | core language | Rust core, one audited `ffi` crate exposing a Teimeris-style C ABI | ADR-0001 |
-| Q2 | binding generation | one description, generated bindings, parity gate; the generator (A: C ABI plus IDL plus generators, or B: Diplomat) chosen by the Phase 0 spike with numbers | ADR-0004, ADR-0007 pending |
+| Q2 | binding generation | one description, generated bindings, parity gate; the generator chosen by the Phase 0 spike with numbers: option A (a designed C ABI, an extracted API description, our own generators in Rust), Diplomat rejected because its JavaScript and Dart backends cannot pass a host provider, marshal trees only through accessors, and serve Node only through wasm | ADR-0004, ADR-0007 |
 | Q3 | binding order | Node native, wasm, Dart/Flutter, Python, Rust, then Java; Swift and Kotlin on demand; C and C++ headers from Phase 1 | roadmap |
 | Q4 | v1 scope | v1.0 is baseline parity; Western and Hellenistic designed in Phase 0, shipped in v1.x | ADR-0005 |
 | Q5 | licence | Apache-2.0 open core; packs and adapters under their own terms | ADR-0006 |

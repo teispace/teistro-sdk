@@ -3,7 +3,15 @@
 # one toolchain and nothing else (ADR-0014).
 [workspace]
 resolver = "3"
-members = ["xtask"]
+members = [
+    "xtask",
+    # Spike 2 (spikes/README.md): built and linted like the rest, never published.
+    "spikes/02-binding-toolchain/slice",
+    "spikes/02-binding-toolchain/a-ffi",
+    "spikes/02-binding-toolchain/a-gen",
+    "spikes/02-binding-toolchain/a-node/native",
+    "spikes/02-binding-toolchain/b-bridge",
+]
 
 [workspace.package]
 edition = "2024"

@@ -1,0 +1,78 @@
+{
+  "dart": "3.13.2 (stable) (Tue Aug 25 01:01:12 2026 -0700) on \"macos_arm64\"",
+  "mode": "jit",
+  "option": "B",
+  "binding": "dart",
+  "rows": [
+    {
+      "name": "chart, depth 3 (819 nodes), built-in provider: compute (opaque handle)",
+      "median_us": 9.6375,
+      "p90_us": 10.555,
+      "iterations": 10000,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 3, Dart provider",
+      "median_us": null,
+      "p90_us": null,
+      "iterations": 0,
+      "note": "not expressible: the backend refuses traits and callbacks"
+    },
+    {
+      "name": "one provider callback into Dart",
+      "median_us": null,
+      "p90_us": null,
+      "iterations": 0,
+      "note": "not expressible: the backend refuses traits and callbacks"
+    },
+    {
+      "name": "positions as 9 objects (9 accessor calls)",
+      "median_us": 0.23418,
+      "p90_us": 0.25082,
+      "iterations": 10000,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 3 (819 accessor calls)",
+      "median_us": 22.22,
+      "p90_us": 23.58334,
+      "iterations": 10000,
+      "rounds": 3
+    },
+    {
+      "name": "one lazy row (one accessor call)",
+      "median_us": 0.015,
+      "p90_us": 0.01582,
+      "iterations": 100000,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 4 (7 380 nodes), built-in provider",
+      "median_us": 83.9625,
+      "p90_us": 89.68334,
+      "iterations": 1000,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 4 (7 380 accessor calls)",
+      "median_us": 208.70834,
+      "p90_us": 223.0325,
+      "iterations": 1000,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 5 (66 429 nodes), built-in provider",
+      "median_us": 936.92084,
+      "p90_us": 1045.97332,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 5 (66 429 accessor calls)",
+      "median_us": 7075.52416,
+      "p90_us": 7075.52416,
+      "iterations": 100,
+      "rounds": 3
+    }
+  ]
+}

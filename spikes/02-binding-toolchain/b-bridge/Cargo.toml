@@ -1,0 +1,39 @@
+[package]
+name = "teistro-spike-b-bridge"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+description = "Spike 2, option B: the Diplomat bridge over the slice, generated into JavaScript (wasm) and Dart by diplomat-tool"
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["rlib", "cdylib", "staticlib"]
+
+[dependencies]
+diplomat = "0.16"
+diplomat-runtime = "0.16"
+teistro-spike-slice = { path = "../slice" }
+
+# The bridge macro expands to the C ABI, unsafe included, so the workspace's
+# `forbid` is lowered to `deny` here; the rest of the table is kept.
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"

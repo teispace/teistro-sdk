@@ -1,0 +1,7 @@
+name: spike_bench
+description: "The one Dart timing harness of spike 2, shared by the option A and option B benchmarks."
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
