@@ -8,8 +8,20 @@ comes next, and what happened in each session.
 made, the spikes are next.
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
-the `fast-check` status, linear history.
-**Last updated:** 2026-09-04.
+the `fast-check` status, linear history. Changes land by branch, pull
+request (the `dco` and `fast-check` jobs), rebase merge.
+**Last updated:** 2026-09-04, end of the founding session.
+
+## How to resume
+
+1. Read this file, then `QUESTIONS.md` (every decision, one open question).
+2. The local checkout is the repository root; `cargo xtask check-docs`
+   must pass before any commit; commits are signed off (`git commit -s`)
+   with Conventional Commits subjects.
+3. The next task is spike 1 below. Its output goes to `fixtures/baseline/`
+   in this repository; the export script itself is written inside the
+   baseline engine's own repository, in that repository's language, and
+   is not committed there unless the maintainer asks.
 
 ## Done
 
@@ -21,11 +33,14 @@ the `fast-check` status, linear history.
   technology (Diplomat, UniFFI, ICU4X, MessageFormat 2, docs frameworks,
   WebAssembly, next-intl, slang, VSOP87 and ELP theories, Astronomy
   Engine, Swiss sidereal modes).
-- 2026-09-04: Documentation written and revised: 83 pages (vision,
+- 2026-09-04: Documentation written and revised: 86 pages (vision,
   research, architecture, roadmap, decisions, guidelines, living files).
-- 2026-09-04: Twenty-three questions put to the maintainer and all
-  decided; ADRs 0001 to 0006 and 0008 to 0013 accepted (0007, the binding
-  generator, waits for the spike).
+- 2026-09-04: Twenty-five questions put to the maintainer and all
+  decided; fifteen ADRs, fourteen accepted (0007, the binding generator,
+  waits for the spike).
+- 2026-09-04: The quality bar made binding (`05-testing/01-quality-bar.md`,
+  ADR-0015) and landed through pull request #1, which proved the `dco` and
+  `fast-check` path; `main` is at two commits.
 - 2026-09-04: Open-source scaffolding: Apache-2.0 licence, `NOTICE`,
   `DCO`, Contributor Covenant 2.1, security policy, governance,
   `CODEOWNERS`, issue and pull request templates, RFC process, the Rust
