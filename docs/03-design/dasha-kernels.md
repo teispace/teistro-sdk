@@ -236,8 +236,11 @@ foundation regardless of depth.
 ## Tests and golden vectors
 
 Unit tests per kernel over its parameter space; the whole-table
-invariants above; golden vectors for the eighteen baseline systems from
-spike 1 (every level, with the balance method and year length recorded);
+invariants above; golden vectors from spike 1 for Vimshottari (every
+level under both balance methods, with the year length, the balance and
+the nakshatra span recorded: `fixtures/baseline/`, section `dashas`) and
+from a second baseline export for the seventeen other systems before
+Phase 5 (`05-testing/01-golden-vectors.md`);
 property tests: any instant inside a period is found by `at`; `at(t, d)`
 agrees with walking `materialise(d, window)`; boundary generators at
 plus and minus one microarcsecond of every nakshatra boundary and one

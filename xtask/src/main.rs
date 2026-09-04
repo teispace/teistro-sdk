@@ -4,6 +4,7 @@
 //!
 //! - `check-docs`: the documentation gates.
 //! - `check-dco BASE HEAD`: every commit in `BASE..HEAD` carries a sign-off.
+//! - `check-fixtures`: the golden-vector corpus is well formed and listed.
 //!
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
@@ -27,6 +28,7 @@ use std::path::{Path, PathBuf};
 use std::process::{self, Command};
 
 use regex::Regex;
+use serde_json::Value;
 
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
@@ -36,13 +38,14 @@ fn main() {
             [_, base, head] => check_dco(base, head),
             _ => usage(),
         },
+        Some("check-fixtures") => check_fixtures(),
         _ => usage(),
     };
     process::exit(code);
 }
 
 fn usage() -> i32 {
-    eprintln!("usage: cargo xtask <check-docs | check-dco BASE HEAD>");
+    eprintln!("usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures>");
     2
 }
 
@@ -91,7 +94,7 @@ fn check_docs() -> i32 {
 /// must obey the naming rule.
 fn markdown_files(root: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
-    for dir in ["docs", "rfcs", ".github"] {
+    for dir in ["docs", "rfcs", ".github", "fixtures"] {
         collect_markdown(&root.join(dir), &mut files);
     }
     if let Ok(entries) = fs::read_dir(root) {
@@ -217,6 +220,189 @@ fn check_status_tracker(root: &Path) -> Vec<String> {
         return vec!["docs/STATUS.md has no 'Last updated:' line".to_string()];
     }
     Vec::new()
+}
+
+// ── check-fixtures ─────────────────────────────────────────────────────────
+
+const FIXTURE_SCHEMA: &str = "teistro-conformance/baseline-chart/1";
+const MANIFEST_SCHEMA: &str = "teistro-conformance/baseline-manifest/1";
+const TOLERANCES_SCHEMA: &str = "teistro-conformance/tolerances/1";
+const BODY_ORDER: [&str; 10] = [
+    "SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN", "RAHU", "KETU", "LAGNA",
+];
+
+/// The golden-vector corpus is only usable if every fixture parses, declares
+/// the schema it follows, carries the settings hash of the profile it claims,
+/// holds every section it lists, and is listed in the manifest with nothing
+/// unlisted beside it. A fixture is also text that reaches the public
+/// repository, so it passes the same forbidden-terms rule as the docs.
+fn check_fixtures() -> i32 {
+    let root = repo_root();
+    let base = root.join("fixtures/baseline");
+    let mut failures = Vec::new();
+    let manifest = match parse_json(&base.join("manifest.json")) {
+        Ok(value) => value,
+        Err(err) => {
+            println!("FAIL  {err}");
+            return 1;
+        }
+    };
+    if manifest["schema"].as_str() != Some(MANIFEST_SCHEMA) {
+        failures.push("manifest schema is not the expected one".to_string());
+    }
+    let engine_version = manifest["provenance"]["engine_version"]
+        .as_str()
+        .unwrap_or_default()
+        .to_string();
+    if engine_version.is_empty() {
+        failures.push("manifest has no provenance.engine_version".to_string());
+    }
+    let listed: Vec<&Value> = manifest["fixtures"]
+        .as_array()
+        .map_or_else(Vec::new, |a| a.iter().collect());
+    if listed.is_empty() {
+        failures.push("manifest lists no fixtures".to_string());
+    }
+    let mut listed_files = Vec::new();
+    for entry in &listed {
+        let file = entry["file"].as_str().unwrap_or_default();
+        let profile = entry["profile"].as_str().unwrap_or_default();
+        listed_files.push(file.to_string());
+        let profile_hash = manifest["profiles"][profile]["settings_hash"]["value"]
+            .as_str()
+            .unwrap_or_default();
+        let path = base.join(file);
+        if !path.is_file() {
+            failures.push(format!("manifest lists a missing file: {file}"));
+            continue;
+        }
+        failures.extend(check_fixture_file(
+            &path,
+            file,
+            entry,
+            profile_hash,
+            &engine_version,
+        ));
+    }
+    for dir in ["charts", "variants"] {
+        let Ok(entries) = fs::read_dir(base.join(dir)) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let name = format!("{dir}/{}", entry.file_name().to_string_lossy());
+            if entry.path().extension().is_some_and(|ext| ext == "json")
+                && !listed_files.contains(&name)
+            {
+                failures.push(format!("fixture not listed in the manifest: {name}"));
+            }
+        }
+    }
+    let forbidden = Regex::new(r"(?i)joishi|softup|@jyotisha|pramana").expect("valid regex");
+    if forbidden.is_match(&read(&base.join("manifest.json"))) {
+        failures.push("forbidden term in fixtures/baseline/manifest.json".to_string());
+    }
+    match parse_json(&root.join("fixtures/tolerances.json")) {
+        Ok(value) if value["schema"].as_str() == Some(TOLERANCES_SCHEMA) => {}
+        Ok(_) => failures.push("fixtures/tolerances.json has the wrong schema".to_string()),
+        Err(err) => failures.push(err),
+    }
+    for failure in &failures {
+        println!("FAIL  {failure}");
+    }
+    println!(
+        "checked {} fixtures: {} failure(s)",
+        listed.len(),
+        failures.len()
+    );
+    i32::from(!failures.is_empty())
+}
+
+/// The checks on one fixture file; every failure names the file.
+fn check_fixture_file(
+    path: &Path,
+    file: &str,
+    entry: &Value,
+    profile_hash: &str,
+    engine_version: &str,
+) -> Vec<String> {
+    let mut failures = Vec::new();
+    let text = read(path);
+    let forbidden = Regex::new(r"(?i)joishi|softup|@jyotisha|pramana").expect("valid regex");
+    if forbidden.is_match(&text) {
+        failures.push(format!("forbidden term in {file}"));
+    }
+    let fixture: Value = match serde_json::from_str(&text) {
+        Ok(value) => value,
+        Err(err) => {
+            failures.push(format!("{file} is not valid JSON: {err}"));
+            return failures;
+        }
+    };
+    if fixture["schema"].as_str() != Some(FIXTURE_SCHEMA) {
+        failures.push(format!("{file}: schema is not {FIXTURE_SCHEMA}"));
+    }
+    if fixture["id"] != entry["id"] {
+        failures.push(format!("{file}: id differs from the manifest"));
+    }
+    let hash = fixture["settings_hash"]["value"]
+        .as_str()
+        .unwrap_or_default();
+    let hex16 = hash.len() == 16 && hash.chars().all(|c| c.is_ascii_hexdigit());
+    if !hex16 {
+        failures.push(format!(
+            "{file}: settings_hash.value is not 16 hex characters"
+        ));
+    }
+    if hash != profile_hash || entry["settings_hash"].as_str() != Some(hash) {
+        failures.push(format!(
+            "{file}: settings hash disagrees with the manifest profile"
+        ));
+    }
+    if fixture["provenance"]["engine_version"].as_str() != Some(engine_version) {
+        failures.push(format!(
+            "{file}: provenance.engine_version differs from the manifest"
+        ));
+    }
+    let jd = fixture["input"]["resolved"]["jd_ut"]
+        .as_f64()
+        .unwrap_or(f64::NAN);
+    if !(jd.is_finite() && jd > 0.0) {
+        failures.push(format!(
+            "{file}: input.resolved.jd_ut is not a positive number"
+        ));
+    }
+    match fixture["sections"].as_array() {
+        Some(sections) if !sections.is_empty() => {
+            for section in sections {
+                let name = section.as_str().unwrap_or_default();
+                if !fixture[name].is_object() {
+                    failures.push(format!("{file}: listed section `{name}` is missing"));
+                }
+            }
+        }
+        _ => failures.push(format!("{file}: no sections listed")),
+    }
+    // The JSON map sorts its keys, so the check is on the set of bodies; the
+    // exporter writes them in canonical order and the harness reads by key.
+    if let Some(bodies) = fixture["positions"]["bodies"].as_object() {
+        let mut keys: Vec<&str> = bodies.keys().map(String::as_str).collect();
+        keys.sort_unstable();
+        let mut expected = BODY_ORDER.to_vec();
+        expected.sort_unstable();
+        if keys != expected {
+            failures.push(format!(
+                "{file}: positions.bodies are not exactly the ten bodies"
+            ));
+        }
+    }
+    failures
+}
+
+fn parse_json(path: &Path) -> Result<Value, String> {
+    let text =
+        fs::read_to_string(path).map_err(|err| format!("cannot read {}: {err}", path.display()))?;
+    serde_json::from_str(&text)
+        .map_err(|err| format!("{} is not valid JSON: {err}", path.display()))
 }
 
 // ── check-dco ──────────────────────────────────────────────────────────────

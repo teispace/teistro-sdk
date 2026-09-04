@@ -57,7 +57,8 @@ teistro-sdk/
   crates/cli/                  the consumer-facing `teistro` binary: intl (validate, build, gen,
                                extract, analyze, ...), provider conformance kit, pack tools
   fuzz/                        cargo-fuzz targets
-  fixtures/                    golden vectors: baseline/, pyjhora/, texts/, teimeris/ (moves to the
+  fixtures/                    golden vectors with their README and the central tolerances.json:
+                               baseline/ (manifest, charts/, variants/), pyjhora/, texts/, teimeris/ (moves to the
                                separate CC0 conformance repository, mounted here as a submodule, ADR-0022)
   oracles/                     dev-only crates (`publish = false`) wrapping licensed or copyleft
                                references for differential tests; never in a published graph

@@ -10,6 +10,7 @@ description = "Repository tasks for Teistro SDK: gates, generators, release step
 
 [dependencies]
 regex = "1"
+serde_json = "1"
 
 [lints]
 workspace = true
