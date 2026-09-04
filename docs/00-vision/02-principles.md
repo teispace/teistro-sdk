@@ -109,7 +109,15 @@ Every entry point has reference documentation generated from its
 description, every module has a design page, every guideline has a worked
 example, and every example in the docs is executed by the build.
 
-## 14. Extensible from outside
+## 14. Quality is gated, not aspired to
+
+Tests, benchmarks with checked-in baselines, allocation counts, peak-memory
+and leak checks in Rust and in every binding, size budgets and coverage
+floors are part of "done" for every module (`05-testing/01-quality-bar.md`,
+ADR-0015). An optimisation lands with the profile that motivated it and the
+measurement that proves it.
+
+## 15. Extensible from outside
 
 Languages, calendars, timezone data, ephemerides, dasha systems, house
 systems, rule packs, interpretation packs and custom vargas are all

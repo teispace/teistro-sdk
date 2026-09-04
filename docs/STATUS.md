@@ -49,7 +49,9 @@ Fumadocs. British spelling. Precision-first `f64`. Two-person team,
 public repository. Teimeris updated as needed. Names as recommended.
 Binding order Node native, wasm, Dart/Flutter, Python, Rust, Java. DCO and
 Conventional Commits. Eclipses and the full star catalogue in v1.x.
-Everything we author is Rust, tooling included (`cargo xtask`).
+Everything we author is Rust, tooling included (`cargo xtask`). The
+quality bar (tests, benchmarks, memory and leak checks, size and coverage
+gates) is part of "done" for every module (ADR-0015).
 
 ## Now
 
