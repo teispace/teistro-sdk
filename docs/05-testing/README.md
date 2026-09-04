@@ -4,6 +4,12 @@ Status: `planned`, 2026-09-04. The strategy is in
 `01-research/platform/09-testing-quality.md`; this directory will hold the
 detailed plans and the generated reports.
 
+## The bar
+
+[`01-quality-bar.md`](01-quality-bar.md) is binding (ADR-0015): the gates
+for correctness, robustness, performance, memory and code quality that a
+module must pass to be done.
+
 ## Planned contents
 
 | page | contents |

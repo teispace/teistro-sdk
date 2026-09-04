@@ -21,6 +21,7 @@ to `accepted` when the maintainer confirms it in `QUESTIONS.md`.
 | [0012](adr-0012-docs-site-fumadocs.md) | Documentation site on Fumadocs | accepted 2026-09-04 | Q11 |
 | [0013](adr-0013-override-policy-and-tiers.md) | Provider override policy default; built-in ephemeris tiers; eclipses and stars in v1.x | accepted 2026-09-04 | Q17, Q22, Q23 |
 | [0014](adr-0014-rust-only-tooling.md) | Everything we author is Rust, including the tooling (`cargo xtask`) | accepted 2026-09-04 | Q25 |
+| [0015](adr-0015-quality-bar.md) | The quality bar is gated: tests, benchmarks, memory and leak checks are part of done | accepted 2026-09-04 | maintainer instruction |
 
 ## Template
 
