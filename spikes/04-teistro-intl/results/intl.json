@@ -1,0 +1,119 @@
+{
+  "validation": {
+    "diagnostics": [],
+    "coverage": {
+      "en-Latn": {
+        "present": 62,
+        "total": 62,
+        "missing": []
+      },
+      "ne-Deva-NP": {
+        "present": 62,
+        "total": 62,
+        "missing": []
+      }
+    },
+    "messages": 13,
+    "entities": 49
+  },
+  "sizes": [
+    {
+      "locale": "en-Latn",
+      "namespace": "sdk.entity",
+      "source_bytes": 7080,
+      "pack_bytes": 4989,
+      "entries": 49
+    },
+    {
+      "locale": "en-Latn",
+      "namespace": "sdk.reason",
+      "source_bytes": 1464,
+      "pack_bytes": 1965,
+      "entries": 13
+    },
+    {
+      "locale": "ne-Deva-NP",
+      "namespace": "sdk.entity",
+      "source_bytes": 8281,
+      "pack_bytes": 6215,
+      "entries": 49
+    },
+    {
+      "locale": "ne-Deva-NP",
+      "namespace": "sdk.reason",
+      "source_bytes": 1944,
+      "pack_bytes": 2470,
+      "entries": 13
+    }
+  ],
+  "generated": [
+    {
+      "target": "ts",
+      "lines": 106,
+      "bytes": 6228
+    },
+    {
+      "target": "dart",
+      "lines": 242,
+      "bytes": 8253
+    }
+  ],
+  "bench": [
+    {
+      "name": "parse: a matcher with two declarations and five variants",
+      "median_us": 4.958,
+      "p90_us": 5.042,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "render: sdk.reason.appName (a literal)",
+      "median_us": 0.458,
+      "p90_us": 0.5,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "render: sdk.reason.grahaInBhava (ordinal select, entity)",
+      "median_us": 2.666,
+      "p90_us": 2.75,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "render: sdk.reason.grahaAt (:entity and :zodiac)",
+      "median_us": 2.166,
+      "p90_us": 2.2079999999999997,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "pack: build ne-Deva-NP sdk.entity (49 entities)",
+      "median_us": 7.832999999999999,
+      "p90_us": 8.125,
+      "iterations": 300,
+      "rounds": 3
+    },
+    {
+      "name": "pack: parse and verify ne-Deva-NP sdk.entity",
+      "median_us": 1.375,
+      "p90_us": 1.417,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "pack: look up graha.SUN (binary search, zero copy)",
+      "median_us": 0.458,
+      "p90_us": 0.5,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "engine: build from four packs",
+      "median_us": 64.709,
+      "p90_us": 68.167,
+      "iterations": 300,
+      "rounds": 3
+    }
+  ]
+}

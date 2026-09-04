@@ -1,0 +1,4 @@
+{
+  "typescript": { "typecheck": "ok", "wrongUsagesRejected": 6, "runtimeCalls": 6, "compiler": "typescript 5.9.3, node 26.8.1" },
+  "dart": { "analyze": "ok", "wrongUsagesRejected": 5, "runtimeCalls": 6, "compiler": "dart 3.13.2" }
+}

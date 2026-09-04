@@ -53,9 +53,17 @@ in the design pages they inform):
    `03-design/ephemeris-port-and-adapters.md`).
 4. Teistro Intl: `_meta.json` and two namespaces in `en-Latn` and
    `ne-Deva-NP`, the MF2 subset parser, `validate`, `build`, `gen --target
-   ts,dart`, a sliced pack's size.
+   ts,dart`, a sliced pack's size. **Done 2026-09-05**: the stable
+   `MessageFormat 2` grammar in full with the SDK's functions, ICU4X
+   plural rules, validation with twelve proven gates, `.tpack` packs
+   (a Nepali entity pack is 6.2 KB, verified in 1.4 µs), typed
+   accessors that reject wrong usages in TypeScript and Dart; renders
+   cost 0.5 to 2.7 µs (`spikes/04-teistro-intl/README.md`,
+   `03-design/intl-engine-and-packs.md`).
 
-Exit: ADRs accepted, spikes measured, repository live.
+Exit: ADRs accepted, spikes measured, repository live. **Met 2026-09-05**:
+the four spikes are done and their result pages written; Phase 1 begins
+with its design pages.
 
 ## Phase 1: Foundation
 

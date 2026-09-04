@@ -24,6 +24,7 @@ Rules:
 |---|---|---|
 | [`02-binding-toolchain/`](02-binding-toolchain/README.md) | which binding toolchain, A (C ABI plus API description plus our generators) or B (Diplomat), for the same slice in Node and Dart, with numbers | option A; ADR-0007, 2026-09-05 |
 | [`03-ephemeris-port/`](03-ephemeris-port/README.md) | does one port shape (positions required, overrides declared, one C vtable, frame completion, one conformance kit) carry Teimeris, the Swiss Ephemeris and a test provider at no cost and under the containment rules | yes; `docs/03-design/ephemeris-port-and-adapters.md`, 2026-09-05; Delta T becomes a table plus a model |
+| [`04-teistro-intl/`](04-teistro-intl/README.md) | does one localisation standard (JSON sources, `MessageFormat 2` with SDK functions, a base locale, validation, packs, typed accessors) hold up on real English and Nepali content, and what does each piece cost | yes; `docs/03-design/intl-engine-and-packs.md`, 2026-09-05; four conventions changed (stable syntax, no sidecar, entity gender selection, source text in packs) |
 
 Spike 1 (the golden-vector export) produced data, not code, and lives in
 `fixtures/` with its result page in `docs/05-testing/01-golden-vectors.md`.

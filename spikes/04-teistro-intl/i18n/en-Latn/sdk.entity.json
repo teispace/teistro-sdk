@@ -1,0 +1,346 @@
+{
+  "graha": {
+    "SUN": {
+      "short": "Su",
+      "name": "Sun",
+      "prose": "the Sun",
+      "iast": "Sūrya",
+      "glyph": "☉",
+      "gender": "m"
+    },
+    "MOON": {
+      "short": "Mo",
+      "name": "Moon",
+      "prose": "the Moon",
+      "iast": "Candra",
+      "glyph": "☽",
+      "gender": "f"
+    },
+    "MARS": {
+      "short": "Ma",
+      "name": "Mars",
+      "prose": "Mars",
+      "iast": "Maṅgala",
+      "glyph": "♂",
+      "gender": "m"
+    },
+    "MERCURY": {
+      "short": "Me",
+      "name": "Mercury",
+      "prose": "Mercury",
+      "iast": "Budha",
+      "glyph": "☿",
+      "gender": "n"
+    },
+    "JUPITER": {
+      "short": "Ju",
+      "name": "Jupiter",
+      "prose": "Jupiter",
+      "iast": "Guru",
+      "glyph": "♃",
+      "gender": "m"
+    },
+    "VENUS": {
+      "short": "Ve",
+      "name": "Venus",
+      "prose": "Venus",
+      "iast": "Śukra",
+      "glyph": "♀",
+      "gender": "f"
+    },
+    "SATURN": {
+      "short": "Sa",
+      "name": "Saturn",
+      "prose": "Saturn",
+      "iast": "Śani",
+      "glyph": "♄",
+      "gender": "n"
+    },
+    "RAHU": {
+      "short": "Ra",
+      "name": "Rahu",
+      "prose": "Rahu",
+      "iast": "Rāhu",
+      "glyph": "☊",
+      "gender": "m"
+    },
+    "KETU": {
+      "short": "Ke",
+      "name": "Ketu",
+      "prose": "Ketu",
+      "iast": "Ketu",
+      "glyph": "☋",
+      "gender": "n"
+    },
+    "LAGNA": {
+      "short": "As",
+      "name": "Ascendant",
+      "prose": "the Ascendant",
+      "iast": "Lagna",
+      "glyph": "Asc",
+      "gender": "n"
+    }
+  },
+  "rashi": {
+    "ARIES": {
+      "short": "Ar",
+      "name": "Aries",
+      "prose": "Aries",
+      "iast": "Meṣa",
+      "glyph": "♈",
+      "gender": "m"
+    },
+    "TAURUS": {
+      "short": "Ta",
+      "name": "Taurus",
+      "prose": "Taurus",
+      "iast": "Vṛṣabha",
+      "glyph": "♉",
+      "gender": "f"
+    },
+    "GEMINI": {
+      "short": "Ge",
+      "name": "Gemini",
+      "prose": "Gemini",
+      "iast": "Mithuna",
+      "glyph": "♊",
+      "gender": "m"
+    },
+    "CANCER": {
+      "short": "Cn",
+      "name": "Cancer",
+      "prose": "Cancer",
+      "iast": "Karka",
+      "glyph": "♋",
+      "gender": "f"
+    },
+    "LEO": {
+      "short": "Le",
+      "name": "Leo",
+      "prose": "Leo",
+      "iast": "Siṃha",
+      "glyph": "♌",
+      "gender": "m"
+    },
+    "VIRGO": {
+      "short": "Vi",
+      "name": "Virgo",
+      "prose": "Virgo",
+      "iast": "Kanyā",
+      "glyph": "♍",
+      "gender": "f"
+    },
+    "LIBRA": {
+      "short": "Li",
+      "name": "Libra",
+      "prose": "Libra",
+      "iast": "Tulā",
+      "glyph": "♎",
+      "gender": "m"
+    },
+    "SCORPIO": {
+      "short": "Sc",
+      "name": "Scorpio",
+      "prose": "Scorpio",
+      "iast": "Vṛścika",
+      "glyph": "♏",
+      "gender": "f"
+    },
+    "SAGITTARIUS": {
+      "short": "Sg",
+      "name": "Sagittarius",
+      "prose": "Sagittarius",
+      "iast": "Dhanu",
+      "glyph": "♐",
+      "gender": "m"
+    },
+    "CAPRICORN": {
+      "short": "Cp",
+      "name": "Capricorn",
+      "prose": "Capricorn",
+      "iast": "Makara",
+      "glyph": "♑",
+      "gender": "f"
+    },
+    "AQUARIUS": {
+      "short": "Aq",
+      "name": "Aquarius",
+      "prose": "Aquarius",
+      "iast": "Kumbha",
+      "glyph": "♒",
+      "gender": "m"
+    },
+    "PISCES": {
+      "short": "Pi",
+      "name": "Pisces",
+      "prose": "Pisces",
+      "iast": "Mīna",
+      "glyph": "♓",
+      "gender": "f"
+    }
+  },
+  "nakshatra": {
+    "ASHWINI": {
+      "short": "Ash",
+      "name": "Ashwini",
+      "prose": "Ashwini",
+      "iast": "Aśvinī"
+    },
+    "BHARANI": {
+      "short": "Bha",
+      "name": "Bharani",
+      "prose": "Bharani",
+      "iast": "Bharaṇī"
+    },
+    "KRITTIKA": {
+      "short": "Kri",
+      "name": "Krittika",
+      "prose": "Krittika",
+      "iast": "Kṛttikā"
+    },
+    "ROHINI": {
+      "short": "Roh",
+      "name": "Rohini",
+      "prose": "Rohini",
+      "iast": "Rohiṇī"
+    },
+    "MRIGASHIRA": {
+      "short": "Mri",
+      "name": "Mrigashira",
+      "prose": "Mrigashira",
+      "iast": "Mṛgaśirā"
+    },
+    "ARDRA": {
+      "short": "Ard",
+      "name": "Ardra",
+      "prose": "Ardra",
+      "iast": "Ārdrā"
+    },
+    "PUNARVASU": {
+      "short": "Pun",
+      "name": "Punarvasu",
+      "prose": "Punarvasu",
+      "iast": "Punarvasu"
+    },
+    "PUSHYA": {
+      "short": "Pus",
+      "name": "Pushya",
+      "prose": "Pushya",
+      "iast": "Puṣya"
+    },
+    "ASHLESHA": {
+      "short": "Asl",
+      "name": "Ashlesha",
+      "prose": "Ashlesha",
+      "iast": "Āśleṣā"
+    },
+    "MAGHA": {
+      "short": "Mag",
+      "name": "Magha",
+      "prose": "Magha",
+      "iast": "Maghā"
+    },
+    "PURVA_PHALGUNI": {
+      "short": "PPh",
+      "name": "Purva Phalguni",
+      "prose": "Purva Phalguni",
+      "iast": "Pūrvaphālgunī"
+    },
+    "UTTARA_PHALGUNI": {
+      "short": "UPh",
+      "name": "Uttara Phalguni",
+      "prose": "Uttara Phalguni",
+      "iast": "Uttaraphālgunī"
+    },
+    "HASTA": {
+      "short": "Has",
+      "name": "Hasta",
+      "prose": "Hasta",
+      "iast": "Hasta"
+    },
+    "CHITRA": {
+      "short": "Chi",
+      "name": "Chitra",
+      "prose": "Chitra",
+      "iast": "Citrā"
+    },
+    "SWATI": {
+      "short": "Swa",
+      "name": "Swati",
+      "prose": "Swati",
+      "iast": "Svātī"
+    },
+    "VISHAKHA": {
+      "short": "Vis",
+      "name": "Vishakha",
+      "prose": "Vishakha",
+      "iast": "Viśākhā"
+    },
+    "ANURADHA": {
+      "short": "Anu",
+      "name": "Anuradha",
+      "prose": "Anuradha",
+      "iast": "Anurādhā"
+    },
+    "JYESHTHA": {
+      "short": "Jye",
+      "name": "Jyeshtha",
+      "prose": "Jyeshtha",
+      "iast": "Jyeṣṭhā"
+    },
+    "MULA": {
+      "short": "Mul",
+      "name": "Mula",
+      "prose": "Mula",
+      "iast": "Mūla"
+    },
+    "PURVA_ASHADHA": {
+      "short": "PAs",
+      "name": "Purva Ashadha",
+      "prose": "Purva Ashadha",
+      "iast": "Pūrvāṣāḍhā"
+    },
+    "UTTARA_ASHADHA": {
+      "short": "UAs",
+      "name": "Uttara Ashadha",
+      "prose": "Uttara Ashadha",
+      "iast": "Uttarāṣāḍhā"
+    },
+    "SHRAVANA": {
+      "short": "Shr",
+      "name": "Shravana",
+      "prose": "Shravana",
+      "iast": "Śravaṇa"
+    },
+    "DHANISHTHA": {
+      "short": "Dha",
+      "name": "Dhanishtha",
+      "prose": "Dhanishtha",
+      "iast": "Dhaniṣṭhā"
+    },
+    "SHATABHISHA": {
+      "short": "Sha",
+      "name": "Shatabhisha",
+      "prose": "Shatabhisha",
+      "iast": "Śatabhiṣā"
+    },
+    "PURVA_BHADRAPADA": {
+      "short": "PBh",
+      "name": "Purva Bhadrapada",
+      "prose": "Purva Bhadrapada",
+      "iast": "Pūrvabhādrapadā"
+    },
+    "UTTARA_BHADRAPADA": {
+      "short": "UBh",
+      "name": "Uttara Bhadrapada",
+      "prose": "Uttara Bhadrapada",
+      "iast": "Uttarabhādrapadā"
+    },
+    "REVATI": {
+      "short": "Rev",
+      "name": "Revati",
+      "prose": "Revati",
+      "iast": "Revatī"
+    }
+  }
+}

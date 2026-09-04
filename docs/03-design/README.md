@@ -4,7 +4,8 @@ Status: `planned`, revised 2026-09-05. Per-module detailed designs are
 written in Phase 1 onward, one page per module. Five pages were written
 in Phase 0 because their content is retrofit-hostile (ADR-0016, ADR-0017):
 the kernels are falsified against the catalogue before any code exists;
-a sixth, the ephemeris port, was written from spike 3's measurements.
+a sixth, the ephemeris port, was written from spike 3's measurements and
+a seventh, Teistro Intl, from spike 4's.
 
 ## What a design page contains
 
@@ -30,6 +31,7 @@ a sixth, the ephemeris port, was written from spike 3's measurements.
 | [`strength-schemes.md`](strength-schemes.md) | bala schemes with group membership as data, 18 components |
 | [`rules-engine.md`](rules-engine.md) | the predicate algebra v2: references, table lookups, classifying outcomes, cancellation |
 | [`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md) | positions required and overrides declared, the frame and its bits, columns instants outermost, the C vtable, frame completion by policy, the adapter rules, the kit's thirteen checks and bounds, Delta T as a table plus a model (spike 3) |
+| [`intl-engine-and-packs.md`](intl-engine-and-packs.md) | the source conventions, the stable `MessageFormat 2` grammar and the SDK's functions with the types they imply, selection on entities and contexts, the validation gates, the `.tpack` container, the typed accessors for TypeScript and Dart (spike 4) |
 
 ## Planned pages (in roadmap order)
 
@@ -39,7 +41,6 @@ a sixth, the ephemeris port, was written from spike 3's measurements.
 | `settings-and-profiles.md` | 1 |
 | `time-and-timezone.md` | 1 |
 | `calendar-gregorian-julian.md`, `calendar-bikram-sambat.md`, `calendar-indian-lunisolar.md` | 1, 2 |
-| `intl-engine-and-packs.md` (Teistro Intl) | 1 |
 | `astro-timescales-and-frames.md`, `astro-ayanamsha-catalogue.md`, `astro-house-systems.md`, `astro-events-and-crossings.md` | 2 |
 | `ephemeris-builtin.md` (theories, tiers, ingestion tool) | 3 |
 | `chart-foundation.md`, `houses.md`, `state.md`, `aspect.md`, `points.md` (vargas: `varga-kernel.md`) | 4 |

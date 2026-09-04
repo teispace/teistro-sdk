@@ -1,7 +1,10 @@
 # Teistro Intl: the localisation standard
 
-Status: `draft`, revised 2026-09-04 after Q10 and again for the
-resolution report, the term-style axis and the derivation rules. One opinionated, centralised
+Status: `draft`, revised 2026-09-05 after spike 4, whose engine, sources,
+packs and generators settled the conventions in
+`03-design/intl-engine-and-packs.md` (the stable `MessageFormat 2`
+syntax, no parameter sidecar, entities selecting on their own gender,
+source text in packs, keys-only accessors). One opinionated, centralised
 system for every string the SDK renders and for consumer applications that
 want one i18n system end to end. Shaped by ICU4X's data model, Unicode
 MessageFormat 2.0, next-intl's typed messages and slang's generated
@@ -42,9 +45,9 @@ No computation crate depends on `intl`.
 | namespaces | one file per namespace; SDK namespaces are prefixed `sdk.` (`sdk.entity`, `sdk.state`, `sdk.rule`, `sdk.reason`, `sdk.ui`, `sdk.calendar`, `sdk.glyph`); consumers own everything else; namespace names are lowercase with dots for grouping |
 | keys | nested JSON objects; a full key is the namespace plus the dotted path; segments are `camelCase` identifiers (`[a-z][A-Za-z0-9]*`); entity keys inside `sdk.entity` mirror the catalogue keys (`graha.MARS`) |
 | values | MessageFormat 2.0 strings, or structured objects for entities (`{ "short": ..., "name": ..., "prose": ..., "gender": "m" }`) validated by the schema for that namespace |
-| parameters | declared inline by MF2 usage; types are inferred from the function used (`{$count :integer}`) or declared in an optional `_params` sidecar for the accessor generator |
-| plural and ordinal | `.match {$count :integer} one {{...}} * {{...}}` with CLDR categories; ordinal via `:integer select=ordinal` |
-| select and contexts | `.match {$gender :string} m {{...}} f {{...}} * {{...}}`; a context declared in `_meta.json` (`contexts.gender: [m, f, n]`) becomes a typed enum in the generated accessors |
+| parameters | declared inline by MF2 usage; the type follows from the function (`{$count :integer}`, `{$graha :entity kind=graha}`) or from a context (`:string` on a variable named like a context, or selected with its values); a bare `{$name}` is text; no sidecar |
+| plural and ordinal | `.input {$count :integer} .match $count one {{...}} * {{...}}` with CLDR categories and exact numeric keys (`1 2 3 4 *` for Nepali ordinals); ordinal via `:integer select=ordinal` |
+| select and contexts | `.input {$gender :string} .match $gender m {{...}} f {{...}} * {{...}}`; a context declared in `_meta.json` (`contexts.gender: [m, f, n]`) becomes a typed enum in the generated accessors; an entity selects on its own gender and key (`.input {$rashi :entity kind=rashi} .match $rashi f {{...}} * {{...}}`) |
 | rich text | MF2 markup `{#link href=$url}...{/link}`; renderers per binding; plain-text rendering strips markup |
 | linked messages | the `:msg` function (`{sdk.ui.appName :msg}`) resolves another message; an SDK extension to MF2, documented as such |
 | escaping | MF2 rules (`{{`, `}}` and `\{`) only; no other syntax |
@@ -72,12 +75,14 @@ registration API).
 ## Packs
 
 `teistro-intl build` compiles a locale directory into `.tpack` files: one
-per locale per namespace, or bundled. Format: magic, format version, pack
-manifest (locale, namespaces, key count, catalogue version validated
-against, content hash, licence, source hash), per namespace a sorted key
-table and a string arena with pre-parsed MF2 ASTs. Zero-copy load with CRC
-and bounds checks. Interpretation packs use the same container with
-citation fields and a licence.
+per locale per namespace, or bundled per locale. Format: magic, format
+version, pack manifest (locale, namespace, key count, content hash,
+licence, the locale's metadata), a sorted key table and a byte arena
+holding message source text (parsed once on load; spike 4 measured
+parsing at 5 µs a message and found pre-parsed trees buy nothing while
+source text keeps packs diffable and smaller) and entity records.
+Zero-copy load with CRC and bounds checks. Interpretation packs use the
+same container with citation fields and a licence.
 
 Providers: baked (compiled into a binding for its default locales), blob
 (bytes at runtime), filesystem (development), composite with the declared

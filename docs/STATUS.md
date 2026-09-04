@@ -4,16 +4,18 @@ The living tracker. Read this first in any session; update it before ending
 one. It answers four questions: what is done, what is being done now, what
 comes next, and what happened in each session.
 
-**Project phase:** Phase 0, Discovery and decisions; the decisions are
-made, the spikes are next.
+**Project phase:** Phase 0 exited on 2026-09-05 (decisions made, four
+spikes measured, repository live); Phase 1, Foundation, begins with its
+design pages.
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-05, end of the fifth session (spike 3 done:
-the ephemeris port built and measured on three providers; the design
-page `03-design/ephemeris-port-and-adapters.md` written from it; the
-spike's port, adapters and results under `spikes/03-ephemeris-port/`).
+**Last updated:** 2026-09-05, end of the sixth session (spike 4 done:
+Teistro Intl built and measured on English and Nepali content; the
+design page `03-design/intl-engine-and-packs.md` written from it; the
+engine, sources, harnesses and results under `spikes/04-teistro-intl/`;
+Phase 0's exit criteria met).
 
 ## How to resume
 
@@ -22,7 +24,7 @@ spike's port, adapters and results under `spikes/03-ephemeris-port/`).
    and `cargo deny check` must pass before any commit; commits are
    signed off (`git commit -s`) with Conventional Commits subjects; the
    clean-room policy (`CLEAN_ROOM.md`) is binding.
-3. The next task is spike 4 below. Spike 1 is done: its fixtures are in
+3. The next task is the Phase 1 design pages below. Spike 1 is done: its fixtures are in
    `fixtures/baseline/` (read `fixtures/README.md` before touching them;
    `cargo xtask check-fixtures` is their gate); the export script lives
    inside the baseline engine's own repository, in that repository's
@@ -33,7 +35,10 @@ spike's port, adapters and results under `spikes/03-ephemeris-port/`).
    done: `spikes/03-ephemeris-port/port` is the model for the Phase 1
    `ephemeris` module and its kit; the two adapters there are standalone
    crates outside the workspace (ADR-0019) and need the engines locally
-   (`TEIMERIS_LIB_DIR`, `SWEPH_SRC_DIR`; see the spike's README).
+   (`TEIMERIS_LIB_DIR`, `SWEPH_SRC_DIR`; see the spike's README). Spike 4
+   is done: `spikes/04-teistro-intl/intl` is the model for the Phase 1
+   `intl` crate and the `teistro-intl` CLI; its harnesses need Node with
+   `npm install` and Dart with `dart pub get` (see the spike's README).
 
 ## Done
 
@@ -124,6 +129,27 @@ spike's port, adapters and results under `spikes/03-ephemeris-port/`).
   a table plus a model. The design page
   `03-design/ephemeris-port-and-adapters.md` written; the architecture,
   roadmap, spikes index and testing pages updated.
+- 2026-09-05 (sixth session): spike 4 done. Teistro Intl built under
+  `spikes/04-teistro-intl/`: the stable `MessageFormat 2` grammar in
+  full (data model, parser with offsets and the data-model checks,
+  serialiser with a property-tested round trip), the `i18n/`
+  conventions (metadata, namespaces, keys, entity records, source
+  order), the engine with the SDK's functions (`:string`, `:integer`,
+  `:number`, `:dms`, `:zodiac`, `:entity`, `:list`, `:msg`), ICU4X plural
+  rules, numbering systems, fallback chains with provenance and a parse
+  cache, the validator with twelve proven gates, the `.tpack` container
+  (zero-copy, checksummed, hashed, carrying the locale metadata), typed
+  accessor generators for TypeScript and Dart over one model, the CLI
+  (`validate`, `build`, `gen`, `render`, `report`), 49 entities and 13
+  messages in `en-Latn` and `ne-Deva-NP`, and harnesses proving both
+  surfaces compile and reject wrong usages. Findings: the stable syntax
+  differs from the draft the architecture quoted; no parameter sidecar
+  is needed; entities select on their own gender; Nepali ordinals need
+  exact keys; packs keep source text and the Phase 1 container bundles a
+  locale's namespaces. The design page `03-design/intl-engine-and-packs.md`
+  written; the localisation architecture, design index, spikes index,
+  roadmap, adding-a-language guide and glossary updated. Phase 0's exit
+  criteria met.
 
 ## Decided (all on 2026-09-04 unless dated)
 
@@ -157,16 +183,15 @@ binding (ADR-0023).
 
 ## Now
 
-- Phase 0 spike 4, Teistro Intl: `_meta.json`, two namespaces in
-  `en-Latn` and `ne-Deva-NP`, the MF2 subset parser, `validate`, `build`,
-  `gen --target ts,dart`, a sliced pack's size. Its result goes into the
-  Teistro Intl design page (`03-design/intl-engine-and-packs.md`,
-  planned) and `02-architecture/03-localization-architecture.md`.
+- Phase 1 design pages in `03-design/`, in roadmap order: core types
+  and catalogue, settings and profiles, time and timezone, the calendars
+  (Gregorian and Julian, Bikram Sambat); the seven Phase 0 pages are the
+  model. The ephemeris port and Teistro Intl pages exist from spikes 3
+  and 4.
 
 ## Next
 
-1. Spike 4 as above (it is "Now"), the last Phase 0 spike; Phase 0
-   exits when its result page is written.
+1. The Phase 1 design pages above (they are "Now").
 2. ADR-0007's consequences into `02-architecture/07-binding-architecture.md`
    in Phase 1: the blob encoding as the designed wire format, finaliser-
    backed handles with explicit `dispose`, the `api:` metadata line as
@@ -176,9 +201,10 @@ binding (ADR-0023).
    corpus checks, Delta T as a table plus a model in
    `time-and-timezone.md`, and the Teimeris adapter as the Teimeris
    package's own crate.
-4. Phase 1 design pages in `03-design/`: core catalogue, settings and
-   profiles, time and calendar, Teistro Intl engine; the six Phase 0
-   pages are the model.
+4. Spike 4's consequences in Phase 1: the `intl` crate and the
+   `teistro-intl` CLI from the spike's crate, the locale bundle
+   container, the calendar-aware `:date` family, rich renderers per
+   binding, and `migrate baseline` into the entity namespace.
 5. Q24: conduct and security mailboxes on the Teispace domain.
 6. Before Phase 1 exits: create `teispace/teistro-conformance` (CC0-1.0)
    and move `fixtures/` into it as a submodule (ADR-0022); the
@@ -200,3 +226,4 @@ binding (ADR-0023).
 | 2026-09-04 (third session) | Spike 1 done: the export script written beside the baseline engine and run; 55 charts (48 chosen adversarially, 7 placed by search at classification boundaries in the topocentric frame), 115 fixtures under 13 settings profiles in `fixtures/baseline/`; the fixtures README with the schema and ten baseline conventions for the deliberate-difference registry; the provisional central tolerance file; `cargo xtask check-fixtures` in the fast check; `05-testing/01-golden-vectors.md` as the result page. Findings: the natal panchanga is topocentric while the daily one is geocentric; local mean time is rounded to the minute; Placidus above the polar circle is not flagged degenerate. Next: spike 2, the binding toolchain. |
 | 2026-09-05 (fourth session) | Spike 2 done and decided: option A (ADR-0007). The slice, a designed C ABI with a result blob, a Rust extractor and five emitters sharing one rules module, generated and hand-written Node and Dart layers, a Diplomat bridge with its JavaScript (wasm) and Dart outputs, one benchmark harness per language, and four result files under `spikes/02-binding-toolchain/`. Findings: Diplomat 0.16 refuses host callbacks in JavaScript and Dart; a C-ABI callback costs 0.5 µs into JavaScript and 0.1 µs into Dart; a depth-3 tree marshals in 6 µs as a blob against 179 µs as accessors; Diplomat's Dart output emitted the keyword `true` as an enum member. The maintainer's mandate (type safe, DRY, clean, no repetition) recorded. Next: spike 3, the ephemeris port. |
 | 2026-09-05 (fifth session) | Spike 3 done: the ephemeris port under `spikes/03-ephemeris-port/`, a port crate in the workspace (model, trait, C vtable, ERFA-ported obliquity and nutation, frame completion by policy, a thirteen-check kit, runner, timing helper, `.se1` scanner, the spike-2 test provider behind the port) and two standalone adapters outside it (Teimeris; the Swiss Ephemeris compiled from `SWEPH_SRC_DIR` under the containment rules, with the cross-thread stress test). Three providers pass the same kit; the engines agree to every printed digit; the port costs 0.2 % over Teimeris's own call and 1.8 % through the vtable. Findings: the SDK's Delta T fit is 5 s stale by 2025 (Phase 1 uses a table plus a model); Teimeris's grid is body-major and its ayanamsha call takes only the no-nutation switch; the mean ayanamsha is the override to expose. The design page written; `NOTICE` gains ERFA. Next: spike 4, Teistro Intl. |
+| 2026-09-05 (sixth session) | Spike 4 done: Teistro Intl under `spikes/04-teistro-intl/`, the stable `MessageFormat 2` grammar with the SDK's functions and ICU4X plurals, the `i18n/` conventions on 49 entities and 13 messages in English and Nepali, a validator with twelve proven gates, the `.tpack` container, typed accessors for TypeScript and Dart with harnesses that reject wrong usages, and the CLI. Measured: renders 0.5 to 2.7 µs, a 6 KB pack verified in 1.4 µs, a lookup in 0.46 µs. Findings: stable syntax over the draft, no parameter sidecar, entities select on their own gender, exact ordinal keys for Nepali, source text in packs with a locale bundle to come. The design page written; Phase 0 exited. Next: the Phase 1 design pages (core types and catalogue first). |
