@@ -36,7 +36,7 @@ everything that exists is in `docs/`, which is organised as a map. Start at
 | | |
 |---|---|
 | phase | 0, discovery and decisions |
-| decided | Rust core with a C ABI; generated bindings with a parity gate; v1.0 is parity with the baseline engine; Apache-2.0; built-in ephemeris; SDK-owned astronomy layer; Teistro Intl |
+| decided | Rust core with a C ABI and Rust-only tooling; generated bindings with a parity gate; v1.0 is parity with the baseline engine; Apache-2.0; built-in ephemeris; SDK-owned astronomy layer; Teistro Intl; a gated quality bar |
 | next | the Phase 0 spikes: golden-vector export, binding toolchain (C ABI plus IDL against Diplomat), ephemeris port, Teistro Intl |
 
 ## Licence
