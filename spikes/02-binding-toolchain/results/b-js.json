@@ -1,0 +1,78 @@
+{
+  "node": "v26.8.1",
+  "arch": "arm64",
+  "option": "B",
+  "binding": "js-wasm",
+  "rows": [
+    {
+      "name": "chart, depth 3 (819 nodes), built-in provider: compute (opaque handle)",
+      "median_us": 36.83300000000145,
+      "p90_us": 75.0409999999988,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 3, JavaScript provider",
+      "median_us": null,
+      "p90_us": null,
+      "iterations": 0,
+      "note": "not expressible: the backend refuses traits and callbacks"
+    },
+    {
+      "name": "one provider callback into JavaScript",
+      "median_us": null,
+      "p90_us": null,
+      "iterations": 0,
+      "note": "not expressible: the backend refuses traits and callbacks"
+    },
+    {
+      "name": "positions as 9 objects (9 accessor calls)",
+      "median_us": 2.7919999999994616,
+      "p90_us": 3.0000000000427463,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 3 (819 accessor calls)",
+      "median_us": 178.87499999983447,
+      "p90_us": 200.79200000009223,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "one lazy row (one accessor call)",
+      "median_us": 0.24999999959618435,
+      "p90_us": 0.2500000000509317,
+      "iterations": 20000,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 4 (7 380 nodes), built-in provider",
+      "median_us": 1885.707999999795,
+      "p90_us": 2414.70900000013,
+      "iterations": 500,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 4 (7 380 accessor calls)",
+      "median_us": 1689.0420000017912,
+      "p90_us": 1907.9170000004524,
+      "iterations": 500,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 5 (66 429 nodes), built-in provider",
+      "median_us": 51907.95799999978,
+      "p90_us": 78643.08399999936,
+      "iterations": 20,
+      "rounds": 1
+    },
+    {
+      "name": "eager tree, depth 5 (66 429 accessor calls)",
+      "median_us": 19775.08400000079,
+      "p90_us": 22812.042000001384,
+      "iterations": 10,
+      "rounds": 1
+    }
+  ]
+}

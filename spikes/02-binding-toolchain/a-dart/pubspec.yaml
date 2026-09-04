@@ -1,0 +1,14 @@
+name: teistro_spike_a_dart
+description: "Spike 2, option A: the Dart binding over the generated dart:ffi layer."
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  ffi: ^2.1.0
+
+dev_dependencies:
+  spike_bench:
+    path: ../harness/dart

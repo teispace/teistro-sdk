@@ -1,0 +1,96 @@
+{
+  "node": "v26.8.1",
+  "arch": "arm64",
+  "option": "A",
+  "binding": "node",
+  "blob_bytes": {
+    "depth3": 18576,
+    "depth4": 162912,
+    "depth5": 1461992
+  },
+  "rows": [
+    {
+      "name": "chart, depth 3 (819 nodes), native provider: compute + blob",
+      "median_us": 11.125000000006935,
+      "p90_us": 13.45799999999997,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 3, JavaScript provider: 9 callbacks + compute + blob",
+      "median_us": 15.37499999997749,
+      "p90_us": 18.95799999999781,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "one provider callback into JavaScript (derived)",
+      "median_us": 0.47222222221895055,
+      "p90_us": 0.6111111111108711,
+      "iterations": 2000
+    },
+    {
+      "name": "decode columns, depth 3 (zero-copy views)",
+      "median_us": 0.6659999999953925,
+      "p90_us": 0.7500000000106866,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "positions as 9 objects",
+      "median_us": 0.16700000000469117,
+      "p90_us": 0.2090000000123382,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 3 (819 objects)",
+      "median_us": 6.250000000022737,
+      "p90_us": 7.833000000005086,
+      "iterations": 2000,
+      "rounds": 3
+    },
+    {
+      "name": "one lazy row",
+      "median_us": 0.04199999995080361,
+      "p90_us": 0.04200000000764703,
+      "iterations": 20000,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 4 (7 380 nodes), native provider",
+      "median_us": 105.00000000001819,
+      "p90_us": 118.41699999996536,
+      "iterations": 500,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 4 (7 380 objects)",
+      "median_us": 61.16599999995742,
+      "p90_us": 125.91699999995853,
+      "iterations": 500,
+      "rounds": 3
+    },
+    {
+      "name": "chart, depth 5 (66 429 nodes), native provider",
+      "median_us": 946.1250000000518,
+      "p90_us": 1010.0000000001046,
+      "iterations": 100,
+      "rounds": 3
+    },
+    {
+      "name": "decode columns, depth 5",
+      "median_us": 0.6669999997939158,
+      "p90_us": 0.7080000000314612,
+      "iterations": 100,
+      "rounds": 3
+    },
+    {
+      "name": "eager tree, depth 5 (66 429 objects)",
+      "median_us": 664.9159999999483,
+      "p90_us": 3541.582999999946,
+      "iterations": 50,
+      "rounds": 3
+    }
+  ]
+}

@@ -37,6 +37,9 @@ unused-allowed-license = "allow"
 [bans]
 multiple-versions = "warn"
 wildcards = "deny"
+# Workspace path dependencies without a version are fine: every crate that
+# has one is `publish = false` (xtask, spikes).
+allow-wildcard-paths = true
 # Ephemeris engines under their own licences are adapters outside this
 # workspace (ADR-0006, ADR-0019); their wrapper crates never enter it.
 deny = [

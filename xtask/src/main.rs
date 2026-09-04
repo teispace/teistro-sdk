@@ -94,7 +94,7 @@ fn check_docs() -> i32 {
 /// must obey the naming rule.
 fn markdown_files(root: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
-    for dir in ["docs", "rfcs", ".github", "fixtures"] {
+    for dir in ["docs", "rfcs", ".github", "fixtures", "spikes"] {
         collect_markdown(&root.join(dir), &mut files);
     }
     if let Ok(entries) = fs::read_dir(root) {

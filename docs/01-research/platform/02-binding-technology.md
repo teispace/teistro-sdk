@@ -1,7 +1,11 @@
 # Binding technology
 
-Status: `research`, 2026-09-04. Feeds Q2 and Q3. Sources: Diplomat (the
-June 2026 design post and the repository), UniFFI's user guide, the
+Status: `research`, 2026-09-04; the spike this page asked for ran on
+2026-09-05 and decided option A (ADR-0007, `spikes/02-binding-toolchain/`):
+the lean below held, and two of its risks proved decisive (Diplomat's
+JavaScript and Dart backends take no callbacks, and trees marshal an order
+of magnitude slower through accessors). Feeds Q2 and Q3. Sources: Diplomat
+(the June 2026 design post and the repository), UniFFI's user guide, the
 flutter_rust_bridge, napi-rs, wasm-bindgen and PyO3 ecosystems, Teimeris's
 `tools/idl` toolchain and its Java FFM binding plan.
 
