@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "files": ["sdk.ts", "wrong.ts"]
+}

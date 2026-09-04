@@ -1,7 +1,8 @@
 # Adding a language
 
-Status: `draft`, revised 2026-09-04 for Teistro Intl; becomes a worked
-example when the CLI exists (Phase 1).
+Status: `draft`, revised 2026-09-05 after spike 4, whose CLI
+(`spikes/04-teistro-intl/`) is the model for `validate`, `build`, `gen`
+and `render`; becomes a worked example when the Phase 1 CLI exists.
 
 ## For a consumer (no SDK changes)
 

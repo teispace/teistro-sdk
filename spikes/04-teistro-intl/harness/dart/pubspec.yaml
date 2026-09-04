@@ -1,0 +1,5 @@
+name: teistro_spike_intl_harness
+description: Spike 4 harness for the generated Dart accessors.
+publish_to: none
+environment:
+  sdk: ^3.13.0

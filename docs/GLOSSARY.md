@@ -14,6 +14,11 @@ locale packs, never in code.
 | BS | Bikram Sambat, the official calendar of Nepal; table-driven for the officially published span |
 | binding | a generated language package that exposes the SDK's API idiomatically in that language |
 | capability | a declaration by a provider (ephemeris, calendar, timezone, locale data) of what it can compute; the SDK validates settings against it |
+| base locale | `en-Latn`, the locale whose sources define every key and parameter; every other locale is validated against it (Teistro Intl) |
+| namespace (intl) | one JSON file per locale, `sdk.entity`, `sdk.reason` and the like; keys are dotted paths inside it; consumers own every namespace not prefixed `sdk.` |
+| pack (`.tpack`) | a compiled namespace of one locale: a sorted key table over a byte arena with a checksum, a content hash and the locale's metadata; what a runtime loads |
+| context (intl) | a closed set of values a message may select on, declared in `_meta.json` (`gender: [m, f, n]`) and typed in the generated accessors |
+| typed accessor | generated per binding from the base locale: a function per message with typed parameters, keys only, text from packs |
 | content pack | a data bundle of interpretation text with citations, versioned and loadable at runtime; separate from locale packs |
 | context | the SDK's per-consumer handle holding settings, providers and caches; no global state |
 | core | the language-native library every binding wraps |

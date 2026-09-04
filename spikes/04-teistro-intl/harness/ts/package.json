@@ -1,0 +1,12 @@
+{
+  "name": "teistro-spike-intl-harness",
+  "version": "1.0.0",
+  "description": "Spike 4 harness for the generated TypeScript accessors",
+  "scripts": {},
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.3"
+  },
+  "private": "true"
+}

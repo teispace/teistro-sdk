@@ -1,0 +1,17 @@
+{
+  "appName": "Teistro",
+  "welcome": "Welcome to {sdk.reason.appName :msg}",
+  "grahaInBhava": ".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava one {{{$graha} in the {$bhava}st house}} two {{{$graha} in the {$bhava}nd house}} few {{{$graha} in the {$bhava}rd house}} * {{{$graha} in the {$bhava}th house}}",
+  "grahaInRashi": "{$graha :entity kind=graha} in {$rashi :entity kind=rashi}",
+  "grahaAt": "{$graha :entity kind=graha} at {$longitude :zodiac form=degree-in-sign}",
+  "exactLongitude": "{$longitude :dms precision=sec}",
+  "conjunction": ".input {$count :integer} .input {$graha :entity kind=graha form=prose} .match $count 0 {{No planet conjoins {$graha}}} one {{One planet conjoins {$graha}}} * {{{$count} planets conjoin {$graha}}}",
+  "rashiNature": ".input {$rashi :entity kind=rashi} .match $rashi m {{{$rashi} is a masculine sign}} f {{{$rashi} is a feminine sign}} * {{{$rashi} is a sign}}",
+  "greeting": ".input {$gender :string} .match $gender * {{Dear {$name}, your chart is ready.}}",
+  "lordship": "{#b}{$graha :entity kind=graha}{/b} rules house {$bhava :integer}",
+  "occupants": "{$grahas :list type=and} in {$rashi :entity kind=rashi}",
+  "strength": {
+    "score": "{$graha :entity kind=graha} scores {$score :number minimumFractionDigits=2} rupas",
+    "rank": ".input {$rank :integer select=ordinal} .match $rank one {{{$rank}st}} two {{{$rank}nd}} few {{{$rank}rd}} * {{{$rank}th}}"
+  }
+}
