@@ -1,9 +1,10 @@
 # Design
 
-Status: `planned`, revised 2026-09-04. Per-module detailed designs are
+Status: `planned`, revised 2026-09-05. Per-module detailed designs are
 written in Phase 1 onward, one page per module. Five pages were written
 in Phase 0 because their content is retrofit-hostile (ADR-0016, ADR-0017):
-the kernels are falsified against the catalogue before any code exists.
+the kernels are falsified against the catalogue before any code exists;
+a sixth, the ephemeris port, was written from spike 3's measurements.
 
 ## What a design page contains
 
@@ -28,6 +29,7 @@ the kernels are falsified against the catalogue before any code exists.
 | [`varga-kernel.md`](varga-kernel.md) | one table-driven evaluator for every divisional chart and variant |
 | [`strength-schemes.md`](strength-schemes.md) | bala schemes with group membership as data, 18 components |
 | [`rules-engine.md`](rules-engine.md) | the predicate algebra v2: references, table lookups, classifying outcomes, cancellation |
+| [`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md) | positions required and overrides declared, the frame and its bits, columns instants outermost, the C vtable, frame completion by policy, the adapter rules, the kit's thirteen checks and bounds, Delta T as a table plus a model (spike 3) |
 
 ## Planned pages (in roadmap order)
 
@@ -35,7 +37,6 @@ the kernels are falsified against the catalogue before any code exists.
 |---|---|
 | `core-types-and-catalogue.md` | 1 |
 | `settings-and-profiles.md` | 1 |
-| `ephemeris-port-and-adapters.md` | 1 |
 | `time-and-timezone.md` | 1 |
 | `calendar-gregorian-julian.md`, `calendar-bikram-sambat.md`, `calendar-indian-lunisolar.md` | 1, 2 |
 | `intl-engine-and-packs.md` (Teistro Intl) | 1 |

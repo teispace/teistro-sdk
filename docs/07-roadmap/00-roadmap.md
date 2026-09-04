@@ -44,7 +44,13 @@ in the design pages they inform):
    Teimeris vtable adapter and a `sweph` host adapter (under the
    containment rules of ADR-0019: serialised gateway, no silent fallback,
    explicit flags, hashed data), frame completion for one body, the
-   conformance kit prototype.
+   conformance kit prototype. **Done 2026-09-05**: one trait and one C
+   vtable carry the test provider, Teimeris and the Swiss Ephemeris
+   through the same completion and the same thirteen-check kit; the port
+   costs 0.2 % over the engine's own call, the vtable 1.8 %; the SDK's
+   Delta T fit was found 5 s stale by 2025, so Phase 1's Delta T is a
+   table plus a model (`spikes/03-ephemeris-port/README.md`,
+   `03-design/ephemeris-port-and-adapters.md`).
 4. Teistro Intl: `_meta.json` and two namespaces in `en-Latn` and
    `ne-Deva-NP`, the MF2 subset parser, `validate`, `build`, `gen --target
    ts,dart`, a sliced pack's size.

@@ -1,10 +1,16 @@
 # The ephemeris port
 
-Status: `draft`, revised 2026-09-04 after Q7, Q8 and Q15 were decided.
-The required surface is positions only; the SDK's `astro` layer computes
-everything above them; a provider may declare native overrides; the
-built-in ephemeris is one provider among others. Signatures are modelled on
-Teimeris's headers. Rust sketches are illustrative.
+Status: `draft`, revised 2026-09-05 after spike 3. The required surface
+is positions only; the SDK's `astro` layer computes everything above
+them; a provider may declare native overrides; the built-in ephemeris is
+one provider among others. Signatures are modelled on Teimeris's headers.
+Rust sketches are illustrative; the settled shapes, bit layouts, codes,
+adapter rules and kit bounds are in
+`03-design/ephemeris-port-and-adapters.md`, written from the spike's
+measurements (`spikes/03-ephemeris-port/README.md`): the port costs 0.2 %
+over Teimeris's own batch call and 1.8 % through the C vtable, frame
+completion 0.16 to 0.32 µs per cell, and both licensed engines pass the
+same thirteen checks with the same numbers.
 
 ## Capabilities
 
@@ -64,7 +70,11 @@ analytic provider produce charts that mean the same thing as a Swiss chart.
 
 Ayanamsha id or custom parameters, sidereal flag, observer, node type and
 correction flags travel with every request; providers with global state
-(Swiss) serialise inside the adapter and are documented as non-reentrant.
+(Swiss) serialise inside the adapter under one lock that covers the
+state-setting calls and the computation, and are documented as
+non-reentrant. The ayanamsha override means the mean ayanamsha, the
+value sidereal longitudes subtract; both engines also offer the value
+with the nutation in longitude, which the house circle needs.
 
 ## Two adapter shapes, one API
 
@@ -84,4 +94,7 @@ Instants, places and bodies with expected values and tolerance bands per
 tier; determinism; capability honesty (declared overrides must work and
 agree with `astro` within the published bound); a report. CI runs it
 against the Teimeris adapter, the built-in provider at every tier, and the
-test provider.
+test provider. The spike's kit has thirteen checks under one published
+set of bounds; a native Delta T is held to the SDK's fit only inside the
+fit's measured era (1900 to 2005), because the fit is 5 s high by 2025
+and Phase 1's Delta T is a table plus a model.
