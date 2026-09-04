@@ -11,6 +11,14 @@ members = [
     "spikes/02-binding-toolchain/a-gen",
     "spikes/02-binding-toolchain/a-node/native",
     "spikes/02-binding-toolchain/b-bridge",
+    "spikes/03-ephemeris-port/port",
+]
+# The licensed-engine adapters of spike 3 are outside the workspace on purpose
+# (ADR-0019): they depend on the port, never the reverse, and the workspace
+# builds with the test provider alone.
+exclude = [
+    "spikes/03-ephemeris-port/adapters/teimeris",
+    "spikes/03-ephemeris-port/adapters/sweph",
 ]
 
 [workspace.package]

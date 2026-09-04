@@ -1,0 +1,190 @@
+{
+  "provider": "test-provider",
+  "report": {
+    "identity": {
+      "name": "test-provider",
+      "version": "spike-2",
+      "data_version": "analytic",
+      "tier": null,
+      "data_hashes": []
+    },
+    "capabilities": {
+      "identity": {
+        "name": "test-provider",
+        "version": "spike-2",
+        "data_version": "analytic",
+        "tier": null,
+        "data_hashes": []
+      },
+      "jd_range": [
+        1721057.5,
+        2816787.5
+      ],
+      "bodies": [
+        "sun",
+        "moon",
+        "mars",
+        "mercury",
+        "jupiter",
+        "venus",
+        "saturn",
+        "mean_node"
+      ],
+      "native_frame": {
+        "center": "geocentric",
+        "equinox": "of_date",
+        "coordinates": "ecliptic",
+        "zodiac": "tropical",
+        "corrections": {
+          "light_time": true,
+          "aberration": true,
+          "deflection": true,
+          "nutation": true
+        }
+      },
+      "speeds": true,
+      "overrides": [],
+      "ayanamshas": [],
+      "deterministic": true
+    },
+    "bounds": {
+      "speed_deg_per_day": 0.002,
+      "continuity_deg": 5e-6,
+      "continuity_step_days": 0.0001,
+      "obliquity_arcsec": 0.01,
+      "delta_t_seconds": 5.0,
+      "completion_native_arcsec": 0.0001,
+      "completion_sdk_arcsec": 0.05
+    },
+    "checks": [
+      {
+        "name": "capabilities",
+        "passed": true,
+        "detail": "8 bodies, JD 1721057.5 to 2816787.5, overrides []",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "positions_finite_in_range",
+        "passed": true,
+        "detail": "40 cells",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "determinism",
+        "passed": true,
+        "detail": "identical bits on a repeated request",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "batch_equals_single",
+        "passed": true,
+        "detail": "40 cells identical",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "speed_consistency",
+        "passed": true,
+        "detail": "worst MOON at JD 2469807.25",
+        "measured": 0.0000315363524858725,
+        "bound": 0.002,
+        "unit": "deg/day"
+      },
+      {
+        "name": "continuity",
+        "passed": true,
+        "detail": "worst MOON at JD 2433282.75",
+        "measured": 3.848149009730642e-9,
+        "bound": 5e-6,
+        "unit": "deg"
+      },
+      {
+        "name": "out_of_range_reported",
+        "passed": true,
+        "detail": "reported per cell",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "unsupported_body_reported",
+        "passed": true,
+        "detail": "URANUS: refused: the provider does not support body URANUS",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "override_obliquity",
+        "passed": true,
+        "detail": "skipped: not declared",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "override_delta_t",
+        "passed": true,
+        "detail": "skipped: not declared",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "override_ayanamsha",
+        "passed": true,
+        "detail": "skipped: not declared",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "completion_native",
+        "passed": true,
+        "detail": "skipped: the provider cannot return equatorial coordinates",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      }
+    ],
+    "passed": true,
+    "elapsed_ms": 0.123375
+  },
+  "bench": [
+    {
+      "name": "positions grid 100 × 8 through the trait",
+      "median_us": 18.459,
+      "p90_us": 20.041999999999998,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "positions grid 100 × 8 through the C vtable",
+      "median_us": 31.374999999999996,
+      "p90_us": 38.083,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "positions grid 100 × 8 completed to equatorial, native obliquity",
+      "median_us": 301.91700000000003,
+      "p90_us": 323.375,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "positions grid 100 × 8 completed to equatorial, SDK obliquity",
+      "median_us": 298.83299999999997,
+      "p90_us": 323.25,
+      "iterations": 200,
+      "rounds": 3
+    }
+  ]
+}

@@ -1,0 +1,343 @@
+{
+  "provider": "teimeris",
+  "report": {
+    "identity": {
+      "name": "teimeris",
+      "version": "0.1.0",
+      "data_version": "seas_06.se1 seas_12.se1 seas_18.se1 seas_24.se1 semo_06.se1 semo_12.se1 semo_18.se1 semo_24.se1 sepl_06.se1 sepl_12.se1 sepl_18.se1 sepl_24.se1",
+      "tier": null,
+      "data_hashes": [
+        {
+          "file": "seas_06.se1",
+          "sha256": "49e1cb433aacd3c4f3b1863befb3e688222c08f3e0c0bed3a439c740efa51e7e",
+          "bytes": 223811
+        },
+        {
+          "file": "seas_12.se1",
+          "sha256": "3345555097e2080f4e2582026a6008ebbccfdca27600ba48019ca9c6e3e7a211",
+          "bytes": 223396
+        },
+        {
+          "file": "seas_18.se1",
+          "sha256": "a2cd8fc33807c78ca9a700c91c2e042258b12fc4796519e00781440b5ad8b2e2",
+          "bytes": 223004
+        },
+        {
+          "file": "seas_24.se1",
+          "sha256": "1b4160a4d289c3d2df55efcc016d407a1516c079b725b2bf2b073a70211aa391",
+          "bytes": 222674
+        },
+        {
+          "file": "semo_06.se1",
+          "sha256": "3ab86918312d125cbadc10e087237a7f30254a206925f769123027c367fd15ac",
+          "bytes": 1316056
+        },
+        {
+          "file": "semo_12.se1",
+          "sha256": "1c65fdbb854f350d3de36afc3e4ac126a53f360ae4f6dcb57beed7c690e7eb61",
+          "bytes": 1305932
+        },
+        {
+          "file": "semo_18.se1",
+          "sha256": "1ca07bd67c24374d77226180c20a4f9996cba013697894810518e7eb582ca4f7",
+          "bytes": 1304771
+        },
+        {
+          "file": "semo_24.se1",
+          "sha256": "62260992014e61d655c13733bb2d415ac23e8013d8ecf1d7714c237ea8f5b250",
+          "bytes": 1308128
+        },
+        {
+          "file": "sepl_06.se1",
+          "sha256": "5aff87ba1664410669b54366752343ca71a22cca1b3698c57edcc4631361675a",
+          "bytes": 482956
+        },
+        {
+          "file": "sepl_12.se1",
+          "sha256": "8dccace2557601a223d5f8a7cf64de4e6bbb8a82b9b130b95a54d49adfbe546d",
+          "bytes": 483743
+        },
+        {
+          "file": "sepl_18.se1",
+          "sha256": "ca1393ceab3a44fbc895887cf789c68819ae6a1cbc9b22225872dbe4ccd99a66",
+          "bytes": 484061
+        },
+        {
+          "file": "sepl_24.se1",
+          "sha256": "dea65ffc3ee39125eb1427ecfd578a208be2dd021f49fdfd4b8a130ccd5244f0",
+          "bytes": 483414
+        }
+      ]
+    },
+    "capabilities": {
+      "identity": {
+        "name": "teimeris",
+        "version": "0.1.0",
+        "data_version": "seas_06.se1 seas_12.se1 seas_18.se1 seas_24.se1 semo_06.se1 semo_12.se1 semo_18.se1 semo_24.se1 sepl_06.se1 sepl_12.se1 sepl_18.se1 sepl_24.se1",
+        "tier": null,
+        "data_hashes": [
+          {
+            "file": "seas_06.se1",
+            "sha256": "49e1cb433aacd3c4f3b1863befb3e688222c08f3e0c0bed3a439c740efa51e7e",
+            "bytes": 223811
+          },
+          {
+            "file": "seas_12.se1",
+            "sha256": "3345555097e2080f4e2582026a6008ebbccfdca27600ba48019ca9c6e3e7a211",
+            "bytes": 223396
+          },
+          {
+            "file": "seas_18.se1",
+            "sha256": "a2cd8fc33807c78ca9a700c91c2e042258b12fc4796519e00781440b5ad8b2e2",
+            "bytes": 223004
+          },
+          {
+            "file": "seas_24.se1",
+            "sha256": "1b4160a4d289c3d2df55efcc016d407a1516c079b725b2bf2b073a70211aa391",
+            "bytes": 222674
+          },
+          {
+            "file": "semo_06.se1",
+            "sha256": "3ab86918312d125cbadc10e087237a7f30254a206925f769123027c367fd15ac",
+            "bytes": 1316056
+          },
+          {
+            "file": "semo_12.se1",
+            "sha256": "1c65fdbb854f350d3de36afc3e4ac126a53f360ae4f6dcb57beed7c690e7eb61",
+            "bytes": 1305932
+          },
+          {
+            "file": "semo_18.se1",
+            "sha256": "1ca07bd67c24374d77226180c20a4f9996cba013697894810518e7eb582ca4f7",
+            "bytes": 1304771
+          },
+          {
+            "file": "semo_24.se1",
+            "sha256": "62260992014e61d655c13733bb2d415ac23e8013d8ecf1d7714c237ea8f5b250",
+            "bytes": 1308128
+          },
+          {
+            "file": "sepl_06.se1",
+            "sha256": "5aff87ba1664410669b54366752343ca71a22cca1b3698c57edcc4631361675a",
+            "bytes": 482956
+          },
+          {
+            "file": "sepl_12.se1",
+            "sha256": "8dccace2557601a223d5f8a7cf64de4e6bbb8a82b9b130b95a54d49adfbe546d",
+            "bytes": 483743
+          },
+          {
+            "file": "sepl_18.se1",
+            "sha256": "ca1393ceab3a44fbc895887cf789c68819ae6a1cbc9b22225872dbe4ccd99a66",
+            "bytes": 484061
+          },
+          {
+            "file": "sepl_24.se1",
+            "sha256": "dea65ffc3ee39125eb1427ecfd578a208be2dd021f49fdfd4b8a130ccd5244f0",
+            "bytes": 483414
+          }
+        ]
+      },
+      "jd_range": [
+        1940205.5,
+        2816786.5
+      ],
+      "bodies": [
+        "sun",
+        "moon",
+        "mercury",
+        "venus",
+        "mars",
+        "jupiter",
+        "saturn",
+        "uranus",
+        "neptune",
+        "pluto",
+        "mean_node",
+        "true_node",
+        "mean_apogee",
+        "osculating_apogee"
+      ],
+      "native_frame": {
+        "center": "geocentric",
+        "equinox": "of_date",
+        "coordinates": "ecliptic",
+        "zodiac": "tropical",
+        "corrections": {
+          "light_time": true,
+          "aberration": true,
+          "deflection": true,
+          "nutation": true
+        }
+      },
+      "speeds": true,
+      "overrides": [
+        "obliquity",
+        "delta_t",
+        "ayanamsha",
+        "topocentric"
+      ],
+      "ayanamshas": [
+        1,
+        3,
+        5,
+        27
+      ],
+      "deterministic": true
+    },
+    "bounds": {
+      "speed_deg_per_day": 0.002,
+      "continuity_deg": 5e-6,
+      "continuity_step_days": 0.0001,
+      "obliquity_arcsec": 0.01,
+      "delta_t_seconds": 5.0,
+      "completion_native_arcsec": 0.0001,
+      "completion_sdk_arcsec": 0.05
+    },
+    "checks": [
+      {
+        "name": "capabilities",
+        "passed": true,
+        "detail": "14 bodies, JD 1940205.5 to 2816786.5, overrides [obliquity, delta_t, ayanamsha, topocentric]",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "positions_finite_in_range",
+        "passed": true,
+        "detail": "70 cells",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "determinism",
+        "passed": true,
+        "detail": "identical bits on a repeated request",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "batch_equals_single",
+        "passed": true,
+        "detail": "70 cells identical",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "speed_consistency",
+        "passed": true,
+        "detail": "worst MOON at JD 2415020.5",
+        "measured": 0.00009390290641775323,
+        "bound": 0.002,
+        "unit": "deg/day"
+      },
+      {
+        "name": "continuity",
+        "passed": true,
+        "detail": "worst OSCULATING_APOGEE at JD 2469807.25",
+        "measured": 8.109931936225198e-9,
+        "bound": 5e-6,
+        "unit": "deg"
+      },
+      {
+        "name": "out_of_range_reported",
+        "passed": true,
+        "detail": "reported per cell",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "unsupported_body_reported",
+        "passed": true,
+        "detail": "skipped: every body is offered",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "override_obliquity",
+        "passed": true,
+        "detail": "native against IAU 2006 and 2000B",
+        "measured": 0.00039797889144210785,
+        "bound": 0.01,
+        "unit": "arcsec"
+      },
+      {
+        "name": "override_delta_t",
+        "passed": true,
+        "detail": "native against the Espenak and Meeus fit in its measured era (1900 to 2005); worst at JD 2415020.5",
+        "measured": 0.8346290140249406,
+        "bound": 5.0,
+        "unit": "s"
+      },
+      {
+        "name": "override_ayanamsha",
+        "passed": true,
+        "detail": "1: 23.8571, 3: 22.4108, 5: 23.7602",
+        "measured": null,
+        "bound": null,
+        "unit": null
+      },
+      {
+        "name": "completion_native",
+        "passed": true,
+        "detail": "steps positions:Native obliquity:Native rotate-equatorial-to-ecliptic:Sdk",
+        "measured": 2.0463630789890885e-10,
+        "bound": 0.0001,
+        "unit": "arcsec"
+      },
+      {
+        "name": "completion_sdk",
+        "passed": true,
+        "detail": "steps positions:Native delta-t:Sdk obliquity:Sdk rotate-equatorial-to-ecliptic:Sdk",
+        "measured": 0.00039156637019310456,
+        "bound": 0.05,
+        "unit": "arcsec"
+      }
+    ],
+    "passed": true,
+    "elapsed_ms": 1.382041
+  },
+  "bench": [
+    {
+      "name": "positions grid 100 × 10 through the Teimeris binding directly",
+      "median_us": 788.1659999999999,
+      "p90_us": 825.5,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "positions grid 100 × 10 through the trait",
+      "median_us": 789.708,
+      "p90_us": 820.208,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "positions grid 100 × 10 through the C vtable",
+      "median_us": 802.708,
+      "p90_us": 849.042,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "positions grid 100 × 10 completed to equatorial, native obliquity",
+      "median_us": 949.917,
+      "p90_us": 1016.4580000000001,
+      "iterations": 200,
+      "rounds": 3
+    },
+    {
+      "name": "positions grid 100 × 10 completed to equatorial, SDK obliquity",
+      "median_us": 1112.0,
+      "p90_us": 1177.3339999999998,
+      "iterations": 200,
+      "rounds": 3
+    }
+  ]
+}

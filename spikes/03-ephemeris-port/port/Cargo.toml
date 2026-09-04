@@ -1,0 +1,44 @@
+[package]
+name = "teistro-spike-port"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+description = "Spike 3: the ephemeris port (positions required, overrides optional), its C vtable, frame completion from ported IAU routines, and the provider conformance kit"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "teistro-spike-port-kit"
+path = "src/bin/kit.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.11"
+teistro-spike-slice = { path = "../../02-binding-toolchain/slice" }
+
+# The vtable module is the C boundary of the port and holds the crate's only
+# unsafe code, each block with a SAFETY comment; unsafe is deny rather than
+# forbid here and the rest of the workspace table is kept.
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"
