@@ -29,14 +29,14 @@ everything that exists is in `docs/`, which is organised as a map. Start at
 | what is decided and what is open | [`docs/08-decisions/`](docs/08-decisions/README.md), [`docs/QUESTIONS.md`](docs/QUESTIONS.md) |
 | where the work stands right now | [`docs/STATUS.md`](docs/STATUS.md) |
 | the plan | [`docs/07-roadmap/`](docs/07-roadmap/00-roadmap.md) |
-| how to contribute | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`GOVERNANCE.md`](GOVERNANCE.md) |
+| how to contribute | [`CONTRIBUTING.md`](CONTRIBUTING.md), [`GOVERNANCE.md`](GOVERNANCE.md), [`CLEAN_ROOM.md`](CLEAN_ROOM.md) |
 
 ## Status
 
 | | |
 |---|---|
 | phase | 0, discovery and decisions |
-| decided | Rust core with a C ABI and Rust-only tooling; generated bindings with a parity gate; v1.0 is parity with the baseline engine; Apache-2.0; built-in ephemeris; SDK-owned astronomy layer; Teistro Intl; a gated quality bar |
+| decided | Rust core with a C ABI and Rust-only tooling; generated, type-safe bindings with a parity gate; v1.0 is parity with the baseline engine; Apache-2.0 with a clean-room policy and a licence allow list; built-in ephemeris with a reference-accuracy path; SDK-owned astronomy layer; exact classification and dasha arithmetic; kernel-and-table designs for dashas, vargas, balas and rules; evidence ranks; a calculation version; a determinism contract with a CC0 conformance repository; Teistro Intl; a gated quality bar |
 | next | the Phase 0 spikes: golden-vector export, binding toolchain (C ABI plus IDL against Diplomat), ephemeris port, Teistro Intl |
 
 ## Licence

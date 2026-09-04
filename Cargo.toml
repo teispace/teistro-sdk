@@ -11,10 +11,27 @@ license = "Apache-2.0"
 repository = "https://github.com/teispace/teistro-sdk"
 rust-version = "1.85"
 
+# Lints are `warn` here and errors in CI (`-D warnings`), so a contributor's
+# editor shows them without a local build failing mid-edit. The second
+# group exists because a library that panics, prints or reads outside its
+# inputs takes its host down or computes differently per machine
+# (ADR-0019, ADR-0022); a tooling binary may allow them at crate level with
+# a comment saying why.
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
 
 [workspace.lints.clippy]
 all = "warn"
 pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"

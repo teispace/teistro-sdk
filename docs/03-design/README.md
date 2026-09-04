@@ -1,7 +1,9 @@
 # Design
 
-Status: `planned`, 2026-09-04. Per-module detailed designs are written in
-Phase 1 onward, one page per module, after the Phase 0 decisions.
+Status: `planned`, revised 2026-09-04. Per-module detailed designs are
+written in Phase 1 onward, one page per module. Five pages were written
+in Phase 0 because their content is retrofit-hostile (ADR-0016, ADR-0017):
+the kernels are falsified against the catalogue before any code exists.
 
 ## What a design page contains
 
@@ -17,6 +19,16 @@ Phase 1 onward, one page per module, after the Phase 0 decisions.
 9. Localisation: namespaces and keys it introduces.
 10. Open questions, linked to `QUESTIONS.md`.
 
+## Drafted in Phase 0
+
+| page | what it settles |
+|---|---|
+| [`exact-arithmetic.md`](exact-arithmetic.md) | nanoarcsecond angles, integer classification, rational periods (ADR-0016) |
+| [`dasha-kernels.md`](dasha-kernels.md) | the udu and rashi kernels, 56 systems as rows with confidence marks, the lazy cursor |
+| [`varga-kernel.md`](varga-kernel.md) | one table-driven evaluator for every divisional chart and variant |
+| [`strength-schemes.md`](strength-schemes.md) | bala schemes with group membership as data, 18 components |
+| [`rules-engine.md`](rules-engine.md) | the predicate algebra v2: references, table lookups, classifying outcomes, cancellation |
+
 ## Planned pages (in roadmap order)
 
 | page | phase |
@@ -29,11 +41,11 @@ Phase 1 onward, one page per module, after the Phase 0 decisions.
 | `intl-engine-and-packs.md` (Teistro Intl) | 1 |
 | `astro-timescales-and-frames.md`, `astro-ayanamsha-catalogue.md`, `astro-house-systems.md`, `astro-events-and-crossings.md` | 2 |
 | `ephemeris-builtin.md` (theories, tiers, ingestion tool) | 3 |
-| `chart-foundation.md`, `houses.md`, `vargas.md`, `state.md`, `aspect.md`, `points.md` | 4 |
+| `chart-foundation.md`, `houses.md`, `state.md`, `aspect.md`, `points.md` (vargas: `varga-kernel.md`) | 4 |
 | `panchanga-day.md` | 4 |
-| `strength-shadbala.md`, `strength-ashtakavarga.md`, `strength-bhava-vimshopaka.md` | 3 |
-| `dasha-registry.md` plus one page per seed kind | 3 |
-| `rules-engine.md`, `rules-yoga-dosha-packs.md` | 4 |
+| `strength-ashtakavarga.md`, `strength-bhava-vimshopaka.md` (Shadbala: see `strength-schemes.md`) | 5 |
+| `dasha-registry.md` (the registry and plug-in interface over `dasha-kernels.md`) | 5 |
+| `rules-yoga-dosha-packs.md` (the engine: `rules-engine.md`) | 6 |
 | `interpret-composers.md` | 4 |
 | `jaimini.md`, `kp.md`, `tajika.md`, `gochar.md`, `muhurta.md` | 5 |
 | `matching.md`, `prashna.md`, `rectification.md`, `longevity.md`, `remedies.md`, `numerology.md`, `lalkitab.md`, `pakshi.md`, `namakarana.md`, `rashifal.md`, `research.md` | 6 |

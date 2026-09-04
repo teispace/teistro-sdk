@@ -1,6 +1,8 @@
 # Roadmap
 
-Status: `draft`, revised 2026-09-04 after the day's decisions. Team: the
+Status: `draft`, revised 2026-09-04 after the day's decisions and again
+for ADR-0016 to ADR-0023 (exact arithmetic, kernels, containment, the
+reference ephemeris path, the conformance repository, type safety). Team: the
 maintainer and this assistant (Q14); the repository is public, so CI
 minutes are not a constraint. Phases are ordered by dependency and each
 has an exit criterion met by a gate, not a date. Durations are not
@@ -12,8 +14,12 @@ Deliverables: the research and architecture pages, decisions recorded as
 ADRs, the GitHub repository `teispace/teistro-sdk` with the Apache-2.0
 licence, the open-source scaffolding (`README`, `CONTRIBUTING`,
 `CODE_OF_CONDUCT`, `SECURITY`, `GOVERNANCE`, `CODEOWNERS`, issue and pull
-request templates, an `rfcs/` process), `docs/` as the first commit, and
-the fast-check CI skeleton.
+request templates, an `rfcs/` process), `docs/` as the first commit, the
+fast-check CI skeleton, the clean-room policy and dependency allow list
+(`CLEAN_ROOM.md`, `deny.toml`, ADR-0019), and the falsified kernel designs
+for dashas, vargas, balas and rules with the exact-arithmetic design
+(`03-design/`, ADR-0016, ADR-0017), because these are cheap before code
+exists and a rewrite after.
 
 Spikes, each with a written result page under `08-decisions/`:
 
@@ -26,8 +32,10 @@ Spikes, each with a written result page under `08-decisions/`:
    (Diplomat) into Node and Dart; measured for code volume, callback and
    marshalling cost, idiomatic quality. Result: ADR-0007.
 3. Ephemeris port: the port trait with positions-only requirement, the
-   Teimeris vtable adapter and a `sweph` host adapter, frame completion for
-   one body, the conformance kit prototype.
+   Teimeris vtable adapter and a `sweph` host adapter (under the
+   containment rules of ADR-0019: serialised gateway, no silent fallback,
+   explicit flags, hashed data), frame completion for one body, the
+   conformance kit prototype.
 4. Teistro Intl: `_meta.json` and two namespaces in `en-Latn` and
    `ne-Deva-NP`, the MF2 subset parser, `validate`, `build`, `gen --target
    ts,dart`, a sliced pack's size.
@@ -36,29 +44,45 @@ Exit: ADRs accepted, spikes measured, repository live.
 
 ## Phase 1: Foundation
 
-`core` (types, keys, catalogue, settings and profiles, result envelope,
-errors, registries), the ports, `time`, `calendar` (Gregorian, Julian,
-mixed, ISO week, Bikram Sambat, eras), `intl` engine and CLI with `en` and
-`ne` packs for the core namespaces and typed accessors for Node and Dart,
-the `ffi` crate with the ABI conventions, the API description and
-generators, Node and Dart bindings with the parity gate, the test provider
-and the Teimeris adapter, CI fast check and nightly, the docs site skeleton
-(Fumadocs) with the generated reference.
+`core` (validated newtypes, keys, catalogue, the canonical nanoarcsecond
+angle and exact classification, exact rationals, settings and profiles,
+the result envelope with the calculation version, errors, registries),
+the ports, `time`, `calendar` (Gregorian, Julian, mixed, ISO week, Bikram
+Sambat with the dual-source resolution, eras), `intl` engine and CLI with
+`en` and `ne` packs for the core namespaces and typed accessors for Node
+and Dart, the `ffi` crate with the ABI conventions, the API description
+carrying units, ranges and docs per member, the generators emitting typed
+surfaces and schemas, Node and Dart bindings with the parity gate covering
+types, the test provider and the Teimeris adapter with the containment
+build, the test-only infrastructure (counting allocator, compile-fail
+harness, determinism lints, instruction-count benchmarks), the
+cross-architecture hash matrix from the first crate, CI fast check and
+nightly, the conformance repository created and `fixtures/` moved into
+it as a submodule, the docs site skeleton (Fumadocs) with the generated
+reference.
 
 Exit: a Node app and a Flutter app compute Julian days, resolve a Nepali
 birth time to UTC with replay metadata, convert AD and BS with correct
 eras, and render the results in Nepali and English through typed
-accessors, byte-identical across both bindings; the provider conformance
-kit passes on the Teimeris adapter.
+accessors, byte-identical across both bindings and hash-identical across
+x86-64 and aarch64; the provider conformance kit passes on the Teimeris
+adapter; the classification property tests pass for every divisor; a
+swapped latitude and longitude does not compile in Rust or type-check in
+TypeScript.
 
 ## Phase 2: The astronomy layer
 
 `astro`: timescales and Delta T models, sidereal time, precession and
 nutation models, obliquity, frame bias, frame completion, topocentric
-correction, coordinate transforms and refraction, the ayanamsha catalogue
-(47 plus custom) with the anchor-star table, all house systems with polar
-behaviour, the rise/set/transit solver, crossings and stations search.
-Every row gated against Teimeris with its published agreement.
+correction, coordinate transforms and refraction, implemented as a faithful
+port of ERFA with a per-function provenance table and tests against the C
+library at 1e-15 (ADR-0021); the ayanamsha catalogue (47 plus custom) with
+the anchor-star table, all house systems with the polar policy, the shared
+boundary solver and the event-scan kernel, rise/set/transit, crossings and
+stations, planetary phenomena (elongation, magnitude, apparent diameter).
+Every row gated against Teimeris with its published agreement, climbed one
+reduction stage at a time with Teimeris's flags as the reference at each
+rung.
 
 Exit: the generated accuracy document shows every `astro` row within its
 target against Teimeris; the SDK computes houses for all systems and
@@ -67,7 +91,9 @@ sunrise for a Nepali place without any provider override.
 ## Phase 3: The built-in ephemeris (own phase, may run beside Phase 4)
 
 `tools/ephemgen`, VSOP87 planets, ELP/MPP02 Moon, fitted Pluto, nodes and
-apogees, analytic speeds, three tiers, size gates, packaging in every
+apogees, analytic speeds, three analytic tiers, the DE-refit `reference`
+tier if the fitter meets 0.005 arcsecond in about 1 MB (else v1.x, with
+the degradation ladder in ADR-0021), size gates, packaging in every
 binding, the conformance kit run against every tier, the accuracy
 document with worst-case error per body, century and tier, and the
 nakshatra and tithi boundary timing error published.
@@ -78,10 +104,13 @@ are within budget.
 
 ## Phase 4: Chart core and panchanga day
 
-`chart` foundation, `houses` with named Bhava-Chalit variants, `vargas`,
-`state`, `aspect`, `points`, the Indian lunisolar calendar, `panchanga`
-day with all limbs and timings, `serial` JSON, Python binding, the baseline engine
-golden vectors for all of it.
+`chart` foundation with the mixed-chart axis, `houses` with named
+Bhava-Chalit variants (a short falsification pass over the four methods
+first), `vargas` as the single table-driven evaluator with every
+baseline chart as a row, `state`, `aspect`, `points`, the Indian lunisolar
+calendar, `panchanga` day with all limbs and timings, `serial` JSON with
+the extended envelope, Python binding, the baseline engine golden vectors
+for all of it.
 
 Exit: the baseline engine's foundation and daily panchanga golden vectors reproduced
 within tolerance in three bindings on both providers (Teimeris and
@@ -90,18 +119,29 @@ bound).
 
 ## Phase 5: Strength and dashas
 
-`strength`, `dasha` registry with the 18 baseline systems and the plug-in
-interface, wasm binding.
+`strength` as scheme tables (varga kernel, then the aspect model, then
+the schemes; `parashari-baseline` first), the `dasha` kernels with the 18
+baseline systems as verified rows, the lazy cursor, the whole-table
+invariants, the year-length table per system (crux C6 closed first), the
+plug-in interface as a row schema, wasm binding and the wasm column of the
+determinism matrix.
 
-Exit: baseline golden vectors reproduced; PyJHora cross-checks recorded; a
-consumer-registered dasha system example passes.
+Exit: baseline golden vectors reproduced; `dasha_at` at depth five under
+20 microseconds with zero allocations; every row's invariants green;
+PyJHora cross-checks recorded; a consumer-registered dasha system (a row
+in a consumer pack) passes.
 
 ## Phase 6: Rules, interpretation and the text corpus
 
-`rules` engine and pack format; the yoga and dosha packs exported from
-the baseline engine (Q6 settled: Teispace owns it); `interpret` with narrative plans for
-the eight composers; `teistro-intl migrate baseline` bringing the four-language
-name tables and interpretation records into `i18n/`; Rust crates published.
+`rules` engine with the v2 algebra landed in order (reference subjects,
+`RuleResult` with traces, table lookups, cancellation and severity) before
+the yoga and dosha packs are exported from the baseline engine (Q6
+settled: Teispace owns it) and re-validated against the stricter schema;
+the seven detectors the baseline engine wrote as code become rules;
+`teistro rule-doc` renders every rule to prose; `interpret` with narrative
+plans for the eight composers; `teistro-intl migrate baseline` bringing
+the four-language name tables and interpretation records into `i18n/`;
+Rust crates published.
 
 Exit: 624 rules evaluate identically to the baseline engine on the regression set with
 positive and negative charts per rule; composed text matches the baseline engine byte
@@ -131,7 +171,10 @@ reproduce their intervals.
 binary blob; the baseline migration guide and compatibility shim; Java
 binding; the full verify matrix; the release pipeline with signing,
 provenance and SBOM; install checks per binding; the docs site complete
-with executed examples; `ACCURACY`, `CONFORMANCE` and `SIZES` generated.
+with executed examples; `ACCURACY`, `CONFORMANCE` and `SIZES` generated;
+the conformance repository public with about 500 fixtures and the SDK's
+own score; the accuracy sweep report against Teimeris, Horizons and
+CSPICE published.
 
 Exit: the parity checklist is green; the interleaved benchmark shows the
 SDK through Node not slower than the baseline engine on the full chart; every
@@ -146,9 +189,11 @@ no answer moved except the documented fixes; `packages/` is deleted.
 
 Western foundations and Hellenistic time lords (designed in Phase 0 and
 kept honest by the chart model), eclipses and the full star catalogue in
-`astro`, additional calendars (Nepal Sambat, Saka, regional solar, Hijri,
-Hebrew, Persian), additional dasha systems, festival rule packs, Swift and
-Kotlin bindings if needed.
+`astro`, `ephemeris-de` (the JPL DE file reader with range-request
+streaming) and the `reference` tier if it did not land in Phase 3
+(ADR-0021), additional calendars (Nepal Sambat, Saka, regional solar,
+Hijri, Hebrew, Persian), the remaining dasha rows as their citations
+close, festival rule packs, Swift and Kotlin bindings if needed.
 
 ## v2
 
@@ -159,7 +204,7 @@ asks for.
 
 | milestone | phase | gate that proves it |
 |---|---|---|
-| M0 decisions, repository, scaffolding | 0 | ADRs accepted; CI green on the docs |
+| M0 decisions, repository, scaffolding, kernel designs | 0 | ADRs accepted; CI green on the docs; `cargo deny` green |
 | M1 first parity computation in two bindings with typed intl | 1 | parity gate |
 | M2 astronomy layer conformant | 2 | accuracy document |
 | M3 built-in ephemeris at three tiers | 3 | conformance kit, size gates |

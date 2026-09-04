@@ -13,7 +13,8 @@ worked example once the code exists.
 | [`05-commit-and-branch-conventions.md`](05-commit-and-branch-conventions.md) | commits, branches, pull requests, attribution |
 | [`06-session-continuity.md`](06-session-continuity.md) | how work is tracked across sessions so nothing is lost |
 | [`07-open-source-governance.md`](07-open-source-governance.md) | roles, the RFC process, the governance files, releases |
+| [`08-adding-a-dasha-system.md`](08-adding-a-dasha-system.md) | how a dasha system is a cited row over a kernel |
 
-Planned: adding a dasha system, adding a rule pack, adding an ephemeris
-adapter, adding a binding, writing a design page, writing a golden-vector
-set.
+Planned: adding a rule pack, adding a varga or bala scheme, adding an
+ephemeris adapter, adding a binding, writing a design page, writing a
+golden-vector set.

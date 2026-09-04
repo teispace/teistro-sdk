@@ -1,0 +1,55 @@
+# Dependency policy (ADR-0019). `cargo deny check` runs in the fast check.
+#
+# The licence list is an allow list: a crate whose licence is not on it,
+# including every copyleft licence and MPL, fails the build in every crate
+# of this workspace. A needed crate under another permissive licence is
+# added by a pull request that names the licence and why, never by turning
+# the list into a deny list. Oracles under copyleft terms live in crates
+# marked `publish = false` in separate directories, or in recorded fixtures.
+
+[graph]
+all-features = true
+
+[output]
+feature-depth = 1
+
+[licenses]
+version = 2
+allow = [
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "MIT",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Zlib",
+  "0BSD",
+  "Unicode-3.0",
+  "Unicode-DFS-2016",
+  "CC0-1.0",
+  "Unlicense",
+]
+confidence-threshold = 0.93
+# The list names what is acceptable, not what is present; an allowance no
+# current crate uses is not a defect.
+unused-allowed-license = "allow"
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Ephemeris engines under their own licences are adapters outside this
+# workspace (ADR-0006, ADR-0019); their wrapper crates never enter it.
+deny = [
+  { crate = "swisseph" },
+  { crate = "swiss-eph" },
+  { crate = "libswe-sys" },
+]
+
+[advisories]
+version = 2
+yanked = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

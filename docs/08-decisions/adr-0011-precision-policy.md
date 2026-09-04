@@ -1,6 +1,6 @@
 # ADR-0011: Precision policy
 
-Status: accepted (maintainer, 2026-09-04)
+Status: accepted (maintainer, 2026-09-04); amended by ADR-0016, which adds the exact classification and period-arithmetic layers above the `f64` astronomy decided here
 Date: 2026-09-04
 Question: Q13
 

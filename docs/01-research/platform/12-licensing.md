@@ -31,6 +31,17 @@ obligation at all.
 | interpretation content packs | can be commercial and separately licensed even if the core is open |
 | trademarks | "Teistro" and "Teispace" as marks; third-party names (Swiss Ephemeris, Jagannatha Hora) only descriptively |
 
+## Dependency policy (decided as ADR-0019)
+
+An allow list in `deny.toml`: MIT, Apache-2.0 (with the LLVM exception),
+BSD-2 and BSD-3, ISC, Zlib, 0BSD, Unicode, CC0, Unlicense. Denied
+everywhere in the workspace, dev-dependencies included: GPL, LGPL, AGPL,
+SSPL and MPL. The MPL denial is what makes the SDK port ERFA from its
+BSD-3 C source rather than depend on the MPL-licensed Rust port, and what
+keeps ANISE an oracle. Oracles under other terms live in unpublished
+crates or recorded fixtures; the clean-room rules for reading copyleft
+implementations are in `CLEAN_ROOM.md`.
+
 ## Distribution model options
 
 | model | implication |

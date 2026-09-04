@@ -97,5 +97,9 @@ and Jaimini core; Solar Fire only Vimshottari.
 - Confirm the conditional-dasha applicability rules per BPHS 46.
 - Decide P1 ordering: Chara variants, Narayana over all vargas and Tithi
   dashas first because PL, JHora and PyJHora all have them.
+- The kernel design and every system as a row with its confidence mark:
+  `03-design/dasha-kernels.md`; open items (Shashtihayani, Narayana
+  antardashas, year length per system, seed references): the cruxes page
+  `19-verification-cruxes.md`.
 - Define the plug-in interface so a consumer can register a dasha system
   from outside the SDK (a seed kind, a sequence, lengths, ordering rules).

@@ -1,6 +1,7 @@
 # Teistro Intl: the localisation standard
 
-Status: `draft`, revised 2026-09-04 after Q10. One opinionated, centralised
+Status: `draft`, revised 2026-09-04 after Q10 and again for the
+resolution report, the term-style axis and the derivation rules. One opinionated, centralised
 system for every string the SDK renders and for consumer applications that
 want one i18n system end to end. Shaped by ICU4X's data model, Unicode
 MessageFormat 2.0, next-intl's typed messages and slang's generated
@@ -117,7 +118,26 @@ intl.report()                             // loaded packs, versions, coverage pe
 
 Locale resolution is explicit and deterministic; the SDK never reads the
 device or environment locale (an application does that and calls
-`setLocale`).
+`setLocale`). Every resolution reports which locale answered
+(`resolved_from`, `is_fallback`), so an application can mark untranslated
+content and the coverage report is derived from real lookups. The worst
+case renders the key itself, never a blank.
+
+## Axes that are not the language
+
+| axis | examples | why separate |
+|---|---|---|
+| script | Devanagari, IAST, ISO 15919, Tamil, Bengali | the same Sanskrit term is written in several scripts; `sa-Latn` is derived from `sa-Deva` by the data-driven transliteration with hand overrides where the mechanical result is wrong, and checked in |
+| numerals | Arabic, Devanagari, Tamil, Bengali, Gujarati, Odia, Tibetan | a Nepali reader may want either; one mapping at the formatting boundary |
+| term style | vernacular, Sanskrit in IAST, Sanskrit in Devanagari, both ("Guru (Jupiter)") | a professional report and a consumer app want different registers in the same language; a `termStyle` option on `:entity` and in `_meta.json` |
+| calendar preference and formats | AD, BS, Saka; 12- or 24-hour; DMS style | orthogonal to language |
+
+Rules: no machine-translated stubs (a plausible wrong astrological term is
+worse than a visible fallback; `extract` scaffolds with base text flagged
+`untranslated`); the variables a message may select on (subject gender,
+formality, plurality) are fixed in v1 because adding one later invalidates
+every translation of that message; regional variants (`hi-IN`) are
+allowed through BCP-47 and fall back to the base language, never required.
 
 ## Composers
 

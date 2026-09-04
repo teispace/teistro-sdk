@@ -31,3 +31,12 @@ Where a fact is stated from memory rather than from a cited source it is
 marked **verify** and listed in the page's closing checklist, so the design
 phase knows what to confirm against a classical text or a reference
 implementation before it becomes a golden vector.
+
+Evidence has rank (ADR-0018): primary texts and observational references,
+then the baseline engine and Teimeris, then third-party implementations.
+A disagreement between the last two is a question, not a correction, and
+lives in
+[`feature-universe/19-verification-cruxes.md`](feature-universe/19-verification-cruxes.md)
+until a text settles it. Audits read a reference's data files as well as
+its code: a constant table is a specification, a function is one reading
+of it, and a variant hidden behind a flag has no function name to find.
