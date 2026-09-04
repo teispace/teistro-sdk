@@ -1,0 +1,6 @@
+# Code owners are requested for review on every pull request touching
+# their paths. Areas gain owners as core contributors emerge.
+
+*                       @TheKAdhikari
+/docs/                  @TheKAdhikari
+/rfcs/                  @TheKAdhikari

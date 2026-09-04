@@ -1,0 +1,49 @@
+# The fast check: runs on every push to main and every pull request.
+# It is the gate for documentation and for format, lint and unit tests of
+# the Rust workspace. The full verify matrix runs nightly and on tags (see
+# docs/06-cicd/). CI on a public repository costs nothing, but the fast
+# check stays fast on purpose: a contributor should see red within minutes.
+#
+# Every task is `cargo xtask <task>` (ADR-0014): the tooling is Rust, so a
+# job needs the Rust toolchain and nothing else.
+name: fast-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  fast-check:
+    name: fast-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Lint
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Unit tests
+        run: cargo test --workspace
+      - name: Documentation gates
+        run: cargo xtask check-docs
+
+  dco:
+    name: dco
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Every commit in the pull request carries a Signed-off-by line
+        run: cargo xtask check-dco "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"

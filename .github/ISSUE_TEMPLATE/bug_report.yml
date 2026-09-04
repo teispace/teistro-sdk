@@ -1,0 +1,31 @@
+name: Bug report
+description: Something fails, panics, errors wrongly or behaves differently across bindings.
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: SDK version and binding
+      placeholder: "0.1.0, Node native (linux-x64)"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The smallest input that shows the problem, with the settings profile and the provider.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include the full error or the differing outputs.
+    validations:
+      required: true

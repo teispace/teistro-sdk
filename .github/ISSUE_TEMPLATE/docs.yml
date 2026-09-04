@@ -1,0 +1,17 @@
+name: Documentation
+description: A page is wrong, unclear, stale or missing.
+labels: ["documentation"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      placeholder: "docs/02-architecture/03-localization-architecture.md"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing
+    validations:
+      required: true

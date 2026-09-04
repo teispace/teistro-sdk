@@ -1,0 +1,42 @@
+name: Accuracy report
+description: A computed value disagrees with a classical text or another program.
+labels: ["accuracy"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: SDK version, binding, provider and tier
+      placeholder: "0.1.0, Python, built-in ephemeris (standard)"
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: Birth data or instant (UTC and civil), place with coordinates and altitude, and the full settings profile (ayanamsha, house system, node type, sunrise convention, siddhanta, and so on).
+    validations:
+      required: true
+  - type: textarea
+    id: sdk
+    attributes:
+      label: What the SDK returned
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and its source
+      description: A classical text with chapter and verse, or another program with its name, version, ephemeris and ayanamsha. Screenshots of the other program's settings help.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of disagreement
+      options:
+        - a definition or a school (which variant is meant)
+        - a numeric difference
+        - a timing difference (a boundary or an event instant)
+        - a text or translation
+    validations:
+      required: true

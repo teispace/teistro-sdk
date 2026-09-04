@@ -1,0 +1,23 @@
+name: Feature request
+description: A technique, calendar, language, binding or tool the SDK should have.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: Name the technique and the tradition; cite the source that defines it if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: Who needs it and what they do with it today.
+    validations:
+      required: true
+  - type: textarea
+    id: research
+    attributes:
+      label: Is it in the research?
+      description: Link the row in docs/01-research/feature-universe/ if it exists, or say that it is missing.

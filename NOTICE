@@ -1,0 +1,31 @@
+Teistro SDK
+Copyright 2026 Teispace
+
+This product includes software developed by Teispace and its contributors
+(https://github.com/teispace/teistro-sdk), licensed under the Apache License,
+Version 2.0. See LICENSE.
+
+Astrological rule corpora, interpretation texts, entity name tables and
+calendar tables derived from Teispace's earlier astrology engine are the property of Teispace
+and are included under the same licence unless a pack's manifest states
+otherwise.
+
+Third-party notices are added to this file as the components arrive, and
+each generated table names its source in its header:
+
+- VSOP87 planetary theory (Bretagnon and Francou, 1988), published by the
+  IMCCE; coefficient tables in the built-in ephemeris are generated from
+  the published series and cite them.
+- ELP/MPP02 lunar theory (Chapront and Francou, 2003), published by the
+  IMCCE; coefficient tables are generated from the published series.
+- JPL Development Ephemerides (NASA/JPL), United States government work in
+  the public domain; used to fit Pluto coefficients.
+- Unicode CLDR data, via ICU4X, under the Unicode License.
+- IANA Time Zone Database, public domain.
+- Hipparcos and Gaia star catalogue extracts, ESA, used for anchor stars
+  and nakshatra yogataras.
+
+"Swiss Ephemeris" is a trademark of Astrodienst AG and is used here only
+descriptively. Teistro SDK contains no Swiss Ephemeris code or data; the
+Swiss Ephemeris and Teimeris adapters are separate packages under their
+own licences.

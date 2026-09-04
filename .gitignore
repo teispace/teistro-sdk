@@ -1,0 +1,35 @@
+# Rust
+/target/
+**/target/
+Cargo.lock.bak
+
+# Node and the docs site
+node_modules/
+/site/.next/
+/site/out/
+dist/
+*.tgz
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Dart and Flutter
+.dart_tool/
+.packages
+build/
+
+# Built packs and generated artefacts that are not checked in
+*.tpack
+*.rpack
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Scratch
+/tmp/

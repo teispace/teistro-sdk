@@ -1,0 +1,6 @@
+# The toolchain every contributor and every CI job uses. "stable" tracks
+# the current stable release; it is pinned to an exact version at the first
+# release, when reproducible builds start to matter (docs/06-cicd/).
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]

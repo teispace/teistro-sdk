@@ -1,0 +1,5 @@
+# `cargo xtask <task>` runs the repository's own tasks (gates, generators,
+# release steps). They are a normal Rust binary in xtask/, so there is no
+# second language to install and the tasks can be tested like any crate.
+[alias]
+xtask = "run --quiet --package xtask --"
