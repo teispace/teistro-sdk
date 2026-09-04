@@ -1,6 +1,7 @@
 # Data model and identifiers
 
-Status: `draft`, 2026-09-04. Depends on Q13 (numeric policy).
+Status: `draft`, revised 2026-09-04 (ADR-0016 exact classification,
+ADR-0020 the envelope, ADR-0023 typed boundaries).
 
 ## Identifiers
 
@@ -35,13 +36,17 @@ superset of the baseline engine's):
 | house system policy overrides per module (KP forces Placidus) | |
 | sunrise convention | centre-no-refraction, upper-limb-refraction, custom altitude |
 | dasha balance | spatial, temporal |
-| dasha year length | 365.25, 360, sidereal, lunar |
+| dasha year length | per system from a named table: 365.25, savana 360, sidereal 365.2564, tropical 365.2422, lunar 354.367, nakshatra 324 (verify) |
 | dasha depth defaults | per system |
 | chara karaka scheme | 7, 8 |
 | ekadhipatya method | classical, zero, transfer |
 | Rahu and Ketu aspects | none, 5/7/9, 3/7/11 |
 | combustion orb table | named table |
 | lunar month system | amanta, purnimanta |
+| polar policy for house systems undefined at the latitude | error, fallback-whole-sign, fallback-porphyry, clamp |
+| day boundary for calendar dates | midnight, sunrise, sunset, noon (with the reference place) |
+| convention for unattested divisional charts (arbitrary D-N) | cyclic (parivritti) default, or a named scheme |
+| overflow for a seed outside a conditional dasha's cycle | wrap-to-start (flagged), reject |
 | calendar for civil dates | registered calendar id |
 | DST policy | gap and overlap choices |
 | precision and rounding contract | per output field family |
@@ -56,9 +61,14 @@ part of every result and every cache key.
 Result<T> {
   value: T,
   provenance: {
-    sdk_version, module_versions, profile_id, settings_hash,
-    provider: { name, version, data_version, precision, flags_used },
-    packs: [ {id, version} ],
+    sdk_version, module_versions, calculation_version, profile_id, settings_hash, input_hash,
+    provider: { name, version, data_version, data_hashes, tier, precision, flags_used },
+    packs: [ {id, version, hash} ],
+    time: { delta_t_model, leap_table_version, tzdb_version, time_basis_applied, time_uncertainty? },
+    calendar: { resolution: tabular | computed | divergent { tabular, computed, followed } }?,
+    deviation?: { model, from_drik },              // when a classical siddhanta answered
+    applied_conventions: [ {knob, value, reason} ], // arbitrary D-N, seed overflow, unattested requests
+    confidence: verified | unverified,
     fallbacks_used: [ ... ],
     warnings: [ {code, key, slots} ],
     content_hash
@@ -67,6 +77,10 @@ Result<T> {
 ```
 
 Warnings are keys with slots, rendered by `intl` when needed.
+`calculation_version` bumps on any change to numeric output for identical
+input (ADR-0020); the cache key is `(input_hash, settings_hash,
+calculation_version)`. Every field above is typed in every binding
+(ADR-0023).
 
 ## Chart model
 
@@ -86,19 +100,30 @@ Warnings are keys with slots, rendered by `intl` when needed.
 
 ## Numeric policy
 
-Decided as ADR-0011: `f64` throughout with the hygiene that delivers its
-full precision (split Julian days, one normalisation routine, compensated
-summation where measured necessary, convergence with caps, no fast-math),
-and an explicit rounding contract applied only at serialisation:
-longitudes to 1e-9 degrees, instants to the millisecond, scores to the
-stated decimals per field. No decimal arithmetic in the core. All
-comparisons through tolerance-aware helpers; tolerances are part of the
-results schema.
+Decided as ADR-0011 and amended by ADR-0016. Astronomy is `f64`
+throughout with the hygiene that delivers its full precision (split
+Julian days, one normalisation routine, compensated summation where
+measured necessary, convergence with caps, no fast-math). Every angle
+that becomes data is converted once, in `core::angle`, to a canonical
+`i64` nanoarcsecond value (`Nas`); every classification (sign, nakshatra,
+pada, varga part, KP sub, koota lookup) is exact integer arithmetic on
+that value with half-open lower-inclusive boundaries; dasha spans are
+exact rationals as fractions of the parent span, materialised to
+instants only at presentation. Serialisation carries the canonical
+integer (`lon_nas`) and the derived degrees; instants to the
+millisecond; scores to the stated decimals per field. No decimal
+arithmetic in the core. Comparisons between floating-point quantities go
+through tolerance-aware helpers; tolerances are part of the results
+schema. Design: `03-design/exact-arithmetic.md`.
 
 ## Errors
 
 A closed enum of statuses (`INVALID_ARG`, `OUT_OF_RANGE`, `CAPABILITY`,
-`PROVIDER`, `NOT_CONVERGED`, `UNSUPPORTED`, `PACK`, `LIMIT`, `INTERNAL`) with
-a detail code, a message in English naming the field and range, and
+`PROVIDER`, `NOT_CONVERGED`, `UNSUPPORTED`, `PACK`, `LIMIT`, `SCHEMA_VERSION`,
+`INTERNAL`) with a stable numeric code, a detail code (`UNSUPPORTED` carries
+`unsourced` for a registered variant without an implementation,
+ADR-0018), a message in English naming the field and range, and
 optionally a message key with slots for localisation. Messages are never
-produced on success.
+produced on success. Degenerate astronomical outcomes are not errors:
+they are typed states on the result (`undefined { reason }`), and the
+conventions the SDK had to choose are listed in `applied_conventions`.

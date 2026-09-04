@@ -10,7 +10,9 @@ and one tool for everything.
 ```
 teistro-sdk/
   LICENSE                      Apache-2.0
-  NOTICE                       third-party notices (VSOP87, ELP, CLDR, tzdb, Hipparcos)
+  NOTICE                       third-party notices (ERFA BSD-3 with its provenance table, VSOP87, ELP, CLDR, tzdb, Hipparcos)
+  CLEAN_ROOM.md                the clean-room policy: sources by rank, what may be taken (ADR-0019)
+  deny.toml                    the dependency allow list checked by `cargo deny` (ADR-0019)
   README.md  CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  GOVERNANCE.md
   CHANGELOG.md                 "Numbers" first
   CODEOWNERS
@@ -23,8 +25,9 @@ teistro-sdk/
   crates/
     core/
     port-ephemeris/ port-calendar/ port-timezone/ port-geo/ port-intl-data/ port-log/
-    astro/                     the astronomy layer
-    ephemeris-builtin/         VSOP87, ELP/MPP02, fitted Pluto; tiers as features
+    astro/                     the astronomy layer; its IAU routines are a port of ERFA (ADR-0021)
+    ephemeris-builtin/         VSOP87, ELP/MPP02, fitted Pluto; tiers as features, plus the DE-refit `reference` tier
+    ephemeris-de/              the JPL DE file reader provider (v1.x, ADR-0021)
     siddhanta/
     calendar/ time/
     chart/ houses/ vargas/ state/ aspect/ points/
@@ -54,7 +57,10 @@ teistro-sdk/
   crates/cli/                  the consumer-facing `teistro` binary: intl (validate, build, gen,
                                extract, analyze, ...), provider conformance kit, pack tools
   fuzz/                        cargo-fuzz targets
-  fixtures/                    golden vectors: baseline/, pyjhora/, texts/, teimeris/
+  fixtures/                    golden vectors: baseline/, pyjhora/, texts/, teimeris/ (moves to the
+                               separate CC0 conformance repository, mounted here as a submodule, ADR-0022)
+  oracles/                     dev-only crates (`publish = false`) wrapping licensed or copyleft
+                               references for differential tests; never in a published graph
   docs/                        this documentation (source of the docs site's concept pages)
   site/                        Fumadocs site; generated reference under site/content/reference
   examples/                    one full application per binding
@@ -64,9 +70,18 @@ teistro-sdk/
 
 - Rust 2024 edition, stable toolchain pinned; `clippy -D warnings`;
   `rustfmt`; `cargo doc` with `-D warnings` on public items.
-- `#![forbid(unsafe_code)]` in every crate except `ffi`.
-- No `panic!` in library paths; errors are values; iteration caps on
-  every search.
+- `#![forbid(unsafe_code)]` in every crate except `ffi` and the `mmap`
+  path of `ephemeris-de`, each with reviewed `SAFETY:` comments.
+- No `panic!`, `unwrap`, `expect`, `todo`, printing or slice indexing in
+  library crates (workspace lints; a tooling binary allows them with a
+  comment); errors are values; iteration caps on every search.
+- No `HashMap` in output-producing paths; no reads of the clock, the
+  environment or the locale in computation crates; no `f64` division in a
+  classification path (ADR-0016, ADR-0022; `cargo xtask check-lints`).
+- `core` and `astro` are `no_std + alloc` from the first commit; the
+  domain crates may require `std`.
+- No bare primitive in a public signature; validated newtypes with
+  unit-suffixed names at the C ABI (ADR-0023).
 - Every public item documented with an example that compiles.
 - Comments explain why and name the measurement, the alternative rejected
   and the defect that motivated the code.
@@ -79,8 +94,9 @@ teistro-sdk/
 
 ## Open-source process
 
-- Contributions under Apache-2.0 with DCO sign-off (Q18 to confirm DCO
-  over a CLA).
+- Contributions under Apache-2.0 with DCO sign-off (Q18: DCO, no CLA), under
+  the clean-room policy in `CLEAN_ROOM.md`; a pull request that adds a
+  dependency names its licence.
 - Significant changes (a new module, an API-shape change, a default
   change, a new binding) start as an RFC in `rfcs/` and end as an ADR.
 - Conventional Commits prefixes (`feat`, `fix`, `perf`, `docs`, `test`,

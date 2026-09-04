@@ -1,7 +1,7 @@
 # Architecture overview
 
-Status: `draft`, revised 2026-09-04. Q1 is decided (Rust core with a C
-ABI, ADR-0001); Q2 in principle (one description, generated bindings; the
+Status: `draft`, revised 2026-09-04 (rules 10 to 12 added for ADR-0016,
+ADR-0017 and ADR-0023). Q1 is decided (Rust core with a C ABI, ADR-0001); Q2 in principle (one description, generated bindings; the
 generator is chosen by the Phase 0 spike, ADR-0004); Q7 and Q8 add the
 astronomy layer and the built-in ephemeris (ADR-0008, ADR-0009); Q10 sets
 Teistro Intl as the localisation standard (ADR-0010).
@@ -77,6 +77,16 @@ Teistro Intl as the localisation standard (ADR-0010).
 8. **Extension points are registries in L0** populated at context creation.
 9. **One i18n standard** for the SDK's text and, if the consumer wishes,
    for the application's own text: Teistro Intl.
+10. **Kernel and table.** Dasha systems, vargas, house systems, bala
+    schemes and rules are rows of data over one kernel per family;
+    adding a system is adding a cited row (ADR-0017; designs in
+    `03-design/`).
+11. **Exact where exactness is meaningful.** Astronomy is `f64`; every
+    angle that becomes data is a canonical nanoarcsecond integer;
+    classification and dasha arithmetic are exact (ADR-0016).
+12. **Typed at every surface.** Newtypes in Rust, generated typed
+    equivalents with documentation in every binding, validation at the
+    boundary (ADR-0023).
 
 ## A request, end to end
 

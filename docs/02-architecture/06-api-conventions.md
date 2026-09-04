@@ -1,7 +1,8 @@
 # API conventions
 
-Status: `draft`, 2026-09-04. Depends on Q2. These are the Teimeris design
-rules extended for tree-shaped results and consumer-implemented ports.
+Status: `draft`, revised 2026-09-04 (ADR-0020 and ADR-0023). Depends on
+Q2. These are the Teimeris design rules extended for tree-shaped results,
+consumer-implemented ports and typed surfaces in every binding.
 
 ## At the C ABI
 
@@ -24,6 +25,50 @@ rules extended for tree-shaped results and consumer-implemented ports.
 10. Callbacks (ports) are vtable structs of function pointers with
     `user_data`, a `struct_size`, and a capability descriptor; the core
     never stores a callback beyond the context's lifetime.
+
+## Types at the boundary (ADR-0023)
+
+- No bare primitive in a public signature above the C ABI: latitudes,
+  longitudes, altitudes, angles, Julian days, sign and house indices,
+  divisions, depths and keys are newtypes validated at construction, and
+  every binding gets the equivalent generated type. At the C ABI a
+  primitive field names its unit and scale (`lon_deg`, `lon_nas`,
+  `jd_tt`, `offset_min`).
+- Sign indices are 0-based (Aries is 0) and house numbers are 1-based,
+  fixed per type and enforced at construction; no function takes a bare
+  integer for either.
+- Enums are `#[non_exhaustive]` in Rust; bindings expose closed unions
+  with an explicit `unknown` arm; members are only ever appended.
+- No function takes more than three positional parameters; beyond that,
+  a request struct or options object with named fields.
+- Every member of the description carries documentation, units, range,
+  nullability and an example, emitted as doc comments in every binding.
+
+## Requests declare what to compute
+
+A request names its sections (`Sections::PANCHANGA`, `Sections::FULL_NATAL`,
+or a custom set); nothing outside the requested sections is computed.
+Settings coherence is validated at the boundary with typed results
+(warnings for questionable combinations, errors for contradictory ones,
+each with a code and the fields involved).
+
+## Cursors and iterators
+
+Anything unbounded (a dasha tree, a transit calendar, an event scan, a
+batch) is an iterator in Rust and an opaque cursor handle across the C
+ABI with `next_batch(n)` and an explicit close; a materialised form
+takes an explicit depth and window. Hot interactive paths (a birth-time
+stepper) also have flat scalar accessors that avoid serialisation.
+
+## Undefined is a state, not an error
+
+"Placidus has no solution at this latitude", "the seed fell outside this
+conditional dasha's cycle" and "this variant is registered but
+unsourced" are typed states on the result (`undefined { reason }`,
+`applied_convention`, `UNSUPPORTED (unsourced)`), reported distinctly so
+a consumer applies its own policy. The polar policy is a settings knob
+(`error`, `fallback-whole-sign`, `fallback-porphyry`, `clamp`), never a
+silent fallback.
 
 ## Naming
 
@@ -58,6 +103,9 @@ rules extended for tree-shaped results and consumer-implemented ports.
 - Major: removals, reorders, default changes, rule semantics changes that
   move answers.
 - Every release's changelog leads with **Numbers**.
+- An API-compatible release can still move numbers; that is what the
+  `calculation_version` integer in every result is for (ADR-0020), and
+  consumers cache on `(input_hash, settings_hash, calculation_version)`.
 
 ## Deprecation
 

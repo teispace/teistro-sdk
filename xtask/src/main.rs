@@ -8,6 +8,19 @@
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
 
+// A tooling binary, not a library: it reports through stdout and stderr and
+// stops on an unreadable file, so the library lints against printing,
+// panicking and indexing (workspace `Cargo.toml`) are allowed here and in
+// no library crate.
+#![allow(
+    clippy::print_stdout,
+    clippy::print_stderr,
+    clippy::expect_used,
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::indexing_slicing
+)]
+
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -172,10 +185,12 @@ fn check_status_lines(root: &Path, files: &[PathBuf]) -> Vec<String> {
     failures
 }
 
-/// Internal product and company names stay out of this public repository;
-/// the predecessor engine is referred to as "the baseline engine".
+/// Internal product and company names, and the name of the retired
+/// planning corpus that preceded this repository, stay out of this public
+/// repository; the predecessor engine is referred to as "the baseline
+/// engine" and the corpus is not referred to at all.
 fn check_forbidden(root: &Path, files: &[PathBuf]) -> Vec<String> {
-    let patterns = [r"(?i)joishi", r"(?i)softup", r"@jyotisha"];
+    let patterns = [r"(?i)joishi", r"(?i)softup", r"@jyotisha", r"(?i)pramana"];
     let compiled: Vec<Regex> = patterns
         .iter()
         .map(|pattern| Regex::new(pattern).expect("valid regex"))

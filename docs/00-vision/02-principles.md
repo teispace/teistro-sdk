@@ -1,6 +1,7 @@
 # Design principles
 
-Status: `draft`, 2026-09-04. Each principle names the failure it prevents.
+Status: `draft`, revised 2026-09-04 (principles 16 to 18 added; 3, 10 and
+11 extended). Each principle names the failure it prevents.
 Most of those failures were observed in the baseline engine or in upstream astrology
 software; the source is cited where it is not obvious.
 
@@ -29,10 +30,12 @@ adding a language means touching engine code.
 ## 3. Settings are explicit, complete and snapshotted
 
 Every computation takes a settings object with no hidden defaults beyond a
-named profile, and every result records the settings, the provider identity
-and the SDK version it was produced under. A default never changes silently;
-changing one is a major version with the size of the difference in the
-changelog (Teimeris `COMPATIBILITY.md` rule).
+named profile, and every result records the settings, the provider identity,
+the SDK version and the calculation version it was produced under. A
+default never changes silently; changing one is a major version with the
+size of the difference in the changelog (Teimeris `COMPATIBILITY.md` rule).
+A numeric change of any kind, a bug fix included, bumps the calculation
+version, and consumers cache on it (ADR-0020).
 
 Prevents: a stored chart disagreeing with the engine that produced it, and
 the "which house system did this use" class of support tickets.
@@ -85,16 +88,23 @@ and it is adopted whole.
 ## 10. Deterministic and reproducible
 
 Same inputs, same settings, same provider, same version: byte-identical
-output, in every binding. Floating-point policy is fixed (no fast-math;
-contraction policy stated), iteration caps are fixed, and results carry the
-version triple. Cross-binding parity tests assert it.
+output, in every binding and on every architecture. Floating-point policy
+is fixed (no fast-math; contraction policy stated), classification is
+integer arithmetic on canonical nanoarcsecond angles and dasha spans are
+exact rationals (ADR-0016), iteration caps are fixed, no computation crate
+reads the clock, the environment or the locale, and results carry the
+version triple. Cross-binding and cross-architecture tests compare output
+hashes, never tolerances (ADR-0022).
 
 ## 11. Fail loud, never NaN
 
 Invalid input is an error with a message naming the field and the accepted
 range. Iterative searches that do not converge return a status, not a stale
 date. No output field is ever NaN; degenerate cases (polar sunrise, house
-systems undefined at a latitude) are reported states.
+systems undefined at a latitude) are reported states. A variant that is
+registered but unsourced is `UNSUPPORTED` with the reason, never a silent
+substitute; where the SDK had to choose a convention to terminate, the
+result says which (ADR-0018).
 
 ## 12. Secure by construction
 
@@ -123,3 +133,37 @@ Languages, calendars, timezone data, ephemerides, dasha systems, house
 systems, rule packs, interpretation packs and custom vargas are all
 registered through public extension points. A consumer never forks the SDK
 to add one, and the guidelines in `09-guidelines/` show how.
+
+## 16. Kernel and table
+
+Every family of variants (dasha systems, divisional charts, house
+systems, strength schemes, rules, panchanga limbs, event scans) is one
+kernel and a table of rows. A system that needs code keyed to its own
+identifier is a defect in the kernel. Before a kernel is built, every
+variant the catalogue names is written as a row and the schema is
+corrected where a variant refuses to fit (ADR-0017).
+
+Prevents: the reference codebases' condition, where a defect in a shared
+step is fixed once per system, or once per system minus one.
+
+## 17. Evidence has rank; absent is safe, silently defaulted is not
+
+Primary texts and observational references outrank the baseline engine
+and Teimeris, which outrank third-party implementations. Every table row
+carries a confidence mark and ships only when verified. An unsourced
+variant is a registered identifier with no implementation (ADR-0018).
+
+Prevents: a plausible number from the nearest available source, cached
+and trusted, that no text supports.
+
+## 18. Type safe in every binding
+
+No bare primitive in any public signature; every domain quantity is a
+validated newtype in Rust and a generated equivalent in every binding,
+with documentation, units and examples emitted so completion shows what
+a parameter means. Illegal states are unrepresentable; boundaries
+validate and internals trust (ADR-0023).
+
+Prevents: the swapped latitude and longitude, the degree passed as a
+radian, the house passed as a sign, each producing a plausible wrong
+chart with no error.

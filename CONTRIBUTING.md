@@ -33,6 +33,7 @@ selects it) and nothing else. Every repository task is Rust and runs as
    cargo clippy --workspace --all-targets -- -D warnings
    cargo test --workspace
    cargo xtask check-docs
+   cargo deny check        # cargo install cargo-deny, once
    ```
 
 4. Commit with a sign-off (below) and a Conventional Commits subject.
@@ -41,6 +42,16 @@ selects it) and nothing else. Every repository task is Rust and runs as
 
 The gate list grows with the code (`docs/05-testing/`); every gate is a
 `cargo xtask` task.
+
+## Provenance
+
+The clean-room policy in [`CLEAN_ROOM.md`](CLEAN_ROOM.md) is binding:
+no code or table copied from a copyleft implementation, every rule and
+table row cited to a primary text or the baseline engine, third-party
+values used only as cross-checks, dependencies from the allow list in
+`deny.toml` (a pull request that adds one names its licence). A
+disagreement with another implementation is recorded on the cruxes page,
+never written into a table as an answer.
 
 ## Sign-off (Developer Certificate of Origin)
 

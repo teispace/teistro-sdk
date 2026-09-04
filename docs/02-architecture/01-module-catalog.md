@@ -1,8 +1,10 @@
 # Module catalogue
 
-Status: `draft`, revised 2026-09-04 after Q7, Q8 and Q10: the `astro`
-layer, the built-in ephemeris and Teistro Intl are added; houses, points,
-panchanga and gochar depend on `astro`, not on provider capabilities.
+Status: `draft`, revised 2026-09-04 after Q7, Q8 and Q10 (the `astro`
+layer, the built-in ephemeris and Teistro Intl added) and after
+ADR-0016, ADR-0017 and ADR-0021 (exact arithmetic in `core`, kernels and
+tables for dasha, vargas, strength and rules, the ERFA-derived IAU
+routines in `astro`, `ephemeris-de` and the `reference` tier).
 Derived from the feature pages in `01-research/feature-universe/`. Each
 module is a crate in the Rust workspace and a package (or a feature of a
 family package) in every binding.
@@ -11,7 +13,7 @@ family package) in every binding.
 
 | module | contents | depends on | baseline source |
 |---|---|---|---|
-| `core` | keys and entity catalogue (grahas, rashis, nakshatras with padas, tithis, karanas, yogas, varas, vargas, dignities, states, ayanamshas, house systems, samvatsaras), angles, Julian day and timescales, settings and profiles, result envelope and provenance, errors, capabilities, registries, limits | none | `core` data, enums, types |
+| `core` | keys and entity catalogue (grahas, rashis, nakshatras with padas, tithis, karanas, yogas, varas, vargas, dignities, states, ayanamshas, house systems, samvatsaras), angles with the canonical nanoarcsecond type and exact classification (`core::angle`, ADR-0016), exact rationals, Julian day and timescales, settings and profiles, result envelope with the calculation version (ADR-0020), errors, capabilities, registries, limits | none | `core` data, enums, types |
 | `port-ephemeris` | the ephemeris port trait (positions required; overrides optional), request and response types, capability descriptor, provider conformance kit | `core` | `AstronomicalBackend` |
 | `port-calendar`, `port-timezone`, `port-geo`, `port-intl-data`, `port-log` | as before | `core` | |
 
@@ -19,8 +21,9 @@ family package) in every binding.
 
 | module | contents | depends on | tier | notes |
 |---|---|---|---|---|
-| `astro` | timescales and Delta T models, sidereal time, precession (11 models), nutation (5), obliquity, frame bias, frame completion (light-time, aberration, deflection, nutation), topocentric parallax, coordinate transforms and refraction, the ayanamsha catalogue (47 plus custom), house systems (all), rise/set/transit solver, crossings and stations search, equation of time, star table (anchors and yogataras), eclipses (v1.x) | `core`, `port-ephemeris` | P0 | see `01-research/platform/13-astronomy-layer.md`; conformance against Teimeris |
-| `ephemeris-builtin` | analytic ephemeris implementing the port: VSOP87 planets, ELP/MPP02 Moon, fitted Pluto, nodes and apogees, analytic speeds; tiers `compact`, `standard`, `full`; generated tables with citations | `core`, `port-ephemeris` | P0 (own phase) | see `14-builtin-ephemeris.md`; removable by tree-shaking |
+| `astro` | timescales and Delta T models, sidereal time, precession (11 models), nutation (5), obliquity, frame bias, frame completion (light-time, aberration, deflection, nutation), topocentric parallax, coordinate transforms and refraction, the ayanamsha catalogue (47 plus custom), house systems (all) with the polar policy, the shared boundary solver (one root finder with a per-use tolerance), the event-scan kernel (bracket then refine; step from the quantity's rate; scored searches excluded), rise/set/transit, crossings and stations, equation of time, star table (anchors and yogataras), eclipses (v1.x). The IAU routines are a faithful port of ERFA (BSD-3) with a provenance table (ADR-0021) | `core`, `port-ephemeris` | P0 | see `01-research/platform/13-astronomy-layer.md`; conformance against Teimeris and the C ERFA library |
+| `ephemeris-builtin` | analytic ephemeris implementing the port: VSOP87 planets, ELP/MPP02 Moon, fitted Pluto, nodes and apogees, analytic speeds; tiers `compact`, `standard`, `full`, and `reference` (a Chebyshev refit from DE440 over 1600 to 2400, per-body blobs, ADR-0021); generated tables with citations | `core`, `port-ephemeris` | P0 (own phase); `reference` Phase 3 or v1.x | see `14-builtin-ephemeris.md`; removable by tree-shaking |
+| `ephemeris-de` (v1.x) | a provider reading JPL DE files directly: DAF/SPK types 2 and 3, Clenshaw evaluation, centre chaining from segment metadata, record access suited to HTTP range requests; 0.001 arcsecond against Horizons | `core`, `port-ephemeris` | P1 | ADR-0021; fuzzed as a parser of untrusted files |
 | `siddhanta` | Surya Siddhanta positions with bija, as a provider | `core`, `port-ephemeris` | P0 | The baseline engine |
 
 ## L2 domain modules
@@ -31,13 +34,13 @@ family package) in every binding.
 | `time` | civil to instant resolution, DST policies, LMT, ghati-pala, sunrise-anchored day, planetary hours | `port-timezone`, `astro` | P0 | timezone resolver, ghati-pala, birth timing |
 | `chart` | birth data, foundation (positions in both frames with speeds, declinations, RA; cusps; frames), chart kinds | `astro`, `time` | P0 | `ChartFoundation` |
 | `houses` | placement policy, Bhava-Chalit variants (Sripati, Vehlow, Porphyry, KP), placements by span, whole sign, equal, degeneracy states | `chart`, `astro` | P0 | `HouseService` |
-| `vargas` | standard and extended vargas with named variants, custom D-N, mixed, vargottama, varga change search | `chart`, `astro` (crossings) | P0 | `VargaService` |
+| `vargas` | one table-driven evaluator (`03-design/varga-kernel.md`): standard and extended vargas and every named variant as rows, arbitrary D-N under a recorded convention, the mixed-chart axis, vargottama, varga change search | `chart`, `astro` (crossings) | P0 | `VargaService` |
 | `state` | dignities, relationships, combustion, retrogression, war, gandanta, avasthas, marana karaka sthana | `chart`, `vargas` | P0 | dignity, avastha services |
 | `aspect` | graha drishti, sphuta drishti, rashi drishti, conjunction logic, Tajika aspects, orb-based aspects (shared engine) | `chart` | P0 | aspect services |
 | `points` | special lagnas, upagrahas, Bhrigu bindu, yogi points, sphutas, bhagas, 64th navamsa and 22nd drekkana lords, sahamas and lots | `chart`, `time`, `astro` | P0 | upagraha, special lagna services |
-| `strength` | Shadbala, Ishta and Kashta, Bhava Bala, Ashtakavarga, Vimshopaka, Vaiseshikamsa, Tajika balas | `chart`, `houses`, `vargas`, `state`, `aspect` | P0 | strength services |
-| `dasha` | registry over four seed kinds; the 18 baseline systems; tree, timeline, active chain, balance methods, year lengths, depth control; plug-in interface | `chart`, `state` | P0 | dasha engines |
-| `rules` | rule engine, rule pack format and loader, yoga and dosha packs, strength and cancellation, timing relations, batch search | `chart`, `houses`, `vargas`, `state`, `aspect`, `strength`, `dasha` | P0 | yoga and dosha evaluator |
+| `strength` | bala schemes as tables with group membership as data (`03-design/strength-schemes.md`): Shadbala (18 components, scheme `parashari-baseline` first), Ishta and Kashta, Bhava Bala, Ashtakavarga, Vimshopaka, Vaiseshikamsa, Tajika balas | `chart`, `houses`, `vargas`, `state`, `aspect` | P0 | strength services |
+| `dasha` | the udu and rashi kernels, the Kalachakra kernel, the scale decorator and compositions (`03-design/dasha-kernels.md`); the 18 baseline systems as verified rows, the rest as rows with confidence marks; the lazy cursor (`dasha_at`, range iteration, search) and explicit materialisation; balance methods, year-length table, applicability through `rules`; plug-in interface as a row schema, a trait for the exceptions | `chart`, `state` | P0 | dasha engines |
+| `rules` | the predicate algebra v2 (`03-design/rules-engine.md`): reference subjects over every derived point, table lookups over cited tables, classifying and grading outcomes, first-class cancellation with a net status, traces; the pack format and loader; yoga and dosha packs; timing relations; batch search | `chart`, `houses`, `vargas`, `state`, `aspect`, `strength`, `dasha`, `points` | P0 | yoga and dosha evaluator |
 | `jaimini` | karakas, arudhas, argala, karakamsa, three pairs, Jaimini yogas | `chart`, `state`, `aspect`, `dasha` | P0 | Jaimini slice |
 | `kp` | sub-lord tables to five levels, significators, ruling planets, KP horary numbers, KP profile binding | `chart`, `houses` | P0 | KP module |
 | `tajika` | annual and monthly charts, Muntha, year lord, Tajika yogas, sahamas, Mudda and Patyayini | `chart`, `aspect`, `strength`, `dasha`, `astro` | P0 | Tajika service |
@@ -70,13 +73,16 @@ family package) in every binding.
 
 | profile | modules |
 |---|---|
-| `panchanga` | core, ports, astro, ephemeris-builtin (standard tier), calendar, time, panchanga, intl, serial |
+| `calendar` | core, calendar, intl (date namespaces) |
+| `panchanga` | core, ports, astro, ephemeris-builtin (standard tier, Sun and Moon), calendar, time, panchanga, intl, serial |
 | `kundali` | `panchanga` plus chart, houses, vargas, state, aspect, points, strength, dasha, rules, jaimini, interpret |
 | `baseline-parity` | everything P0 |
 | `full` | everything |
 
 A consumer registering Teimeris drops `ephemeris-builtin` from their
-build; the size report shows the difference.
+build; the size report shows the difference. Budgets per profile are in
+`09-performance-architecture.md`; dependency assertions (`panchanga` never
+depends on `chart`; `numerology` on nothing astronomical) are gated.
 
 ## Rules for adding a module
 
