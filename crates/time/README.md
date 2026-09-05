@@ -1,12 +1,16 @@
 # teistro-time
 
 The time layer of the Teistro SDK (`docs/03-design/time-and-timezone.md`):
-time scales and their conversions with Delta T as the IERS table then a
-model, the leap-second table, civil time in any calendar, zone
-resolution over the embedded tzdb with the metadata a stored chart
-replays under a newer database (offset, source, era, version, what the
-daylight-saving policy did), local mean time, the sunrise-anchored local
-day and ghati-pala as exact integer arithmetic.
+the civil side of time. The UTC conversions over the astronomy layer's
+Delta T (re-exported here: the IERS table then a model, with an
+uncertainty on every value), the leap-second table, civil time in any
+calendar, zone resolution over the embedded tzdb with the metadata a
+stored chart replays under a newer database (offset, source, era,
+version, what the daylight-saving policy did), local mean time, the
+sunrise-anchored local day under the profile's sunrise convention from
+any solar model (the Surya Siddhanta or modern astronomy through the
+ephemeris port), the `SUNRISE` fallback for a birth without a time, and
+ghati-pala as exact integer arithmetic.
 
 ```rust
 use teistro_calendar::CalendarDate;
@@ -22,7 +26,7 @@ let resolved = resolve(&civil, &ZoneSpec::iana("Asia/Kathmandu"), &Policy::defau
 assert_eq!(resolved.zone.offset.to_string(), "+05:45");
 ```
 
-Data: `data/delta-t.json` (the IERS EOP C01 series and Morrison and
-Stephenson's historical table) and `data/leap-seconds.json` (the IANA
-list), generated into `src/generated.rs` by `cargo xtask gen time` and
-held by `cargo xtask check-time`.
+Data: `data/leap-seconds.json` (the IANA list), generated into
+`src/generated.rs` by `cargo xtask gen time` and held by
+`cargo xtask check-time`; the Delta T data lives with the astronomy
+layer (`crates/astro/data/delta-t.json`).

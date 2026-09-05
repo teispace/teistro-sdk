@@ -1,0 +1,27 @@
+[package]
+name = "teistro-ephemeris-kit"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Teistro SDK provider conformance kit: the checks every ephemeris provider passes under one published set of bounds, the report, the timing rows and the runner the kit binaries share"
+readme = "README.md"
+keywords = ["ephemeris", "conformance", "astrology"]
+categories = ["science"]
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[[bin]]
+name = "teistro-ephemeris-kit"
+path = "src/bin/kit.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+teistro-astro = { path = "../astro" }
+teistro-core = { path = "../core" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+
+[lints]
+workspace = true

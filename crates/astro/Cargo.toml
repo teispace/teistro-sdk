@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Teistro SDK astronomy layer: the shared boundary solver; the IAU routines, frame completion, ayanamshas, houses and rise and set follow"
+description = "Teistro SDK astronomy layer: Delta T and the time scales, the IAU routines ported from ERFA, sidereal time, frame completion over the ephemeris port, the shared boundary solver and the rise and set solver"
 readme = "README.md"
 keywords = ["astronomy", "ephemeris", "astrology"]
 categories = ["science"]
@@ -13,10 +13,18 @@ categories = ["science"]
 publish = false
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
 teistro-core = { path = "../core" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
 
 [dev-dependencies]
+criterion = { version = "0.5", default-features = false }
 proptest = "1"
+serde_json = "1"
+
+[[bench]]
+name = "astro"
+harness = false
 
 [lints]
 workspace = true

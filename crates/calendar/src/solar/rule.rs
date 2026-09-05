@@ -207,6 +207,10 @@ mod tests {
         fn describe(&self) -> String {
             String::from("six to six")
         }
+
+        fn convention(&self) -> teistro_core::settings::SunriseConvention {
+            teistro_core::settings::Sunrise::CentreNoRefraction.into()
+        }
     }
 
     fn at(day: FixedDay, hours: f64) -> JulianDay<Utc> {
@@ -350,6 +354,9 @@ mod tests {
             }
             fn describe(&self) -> String {
                 String::from("polar")
+            }
+            fn convention(&self) -> teistro_core::settings::SunriseConvention {
+                teistro_core::settings::Sunrise::CentreNoRefraction.into()
             }
         }
         let day = FixedDay::new(738_000);

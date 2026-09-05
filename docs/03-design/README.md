@@ -7,8 +7,9 @@ ADR-0017): the kernels are falsified against the catalogue before any
 code exists; the ephemeris port and Teistro Intl pages came from spikes 3
 and 4; the five Phase 1 foundation pages (core types and the catalogue,
 settings and profiles, time and time zones, the arithmetic calendars,
-Bikram Sambat) were written at Phase 1's start, and the Surya Siddhanta
-page with its crate for the Bikram Sambat engine.
+Bikram Sambat) were written at Phase 1's start, the Surya Siddhanta page
+with its crate for the Bikram Sambat engine, and the events page with
+the rise and set solver when the port was promoted.
 
 ## What a design page contains
 
@@ -33,7 +34,8 @@ page with its crate for the Bikram Sambat engine.
 | [`varga-kernel.md`](varga-kernel.md) | one table-driven evaluator for every divisional chart and variant |
 | [`strength-schemes.md`](strength-schemes.md) | bala schemes with group membership as data, 18 components |
 | [`rules-engine.md`](rules-engine.md) | the predicate algebra v2: references, table lookups, classifying outcomes, cancellation |
-| [`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md) | positions required and overrides declared, the frame and its bits, columns instants outermost, the C vtable, frame completion by policy, the adapter rules, the kit's thirteen checks and bounds, Delta T as a table plus a model (spike 3) |
+| [`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md) | positions required and overrides declared (the obliquity, Delta T, the ayanamsha, rise and set), the frame and its bits, columns instants outermost, the C vtable, frame completion by policy, the adapter rules, the kit's fifteen checks and bounds with the measured values of both engines; built |
+| [`astro-events-and-crossings.md`](astro-events-and-crossings.md) | the boundary solver and the rise and set solver over ERFA-ported sidereal time and obliquity, the horizon conventions and the event altitude, polar days as reported absences, the measurements against Teimeris and the baseline's fixtures; crossings and stations planned |
 | [`intl-engine-and-packs.md`](intl-engine-and-packs.md) | the source conventions, the stable `MessageFormat 2` grammar and the SDK's functions with the types they imply, selection on entities and contexts, the validation gates, the `.tpack` container, the typed accessors for TypeScript and Dart (spike 4) |
 | [`core-types-and-catalogue.md`](core-types-and-catalogue.md) | forty kinds with their keys and ids, the catalogue sources and generator, the three rules for what an attribute is, the quantity newtypes, closed unions per binding, the envelope and the status codes, registries and limits |
 | [`settings-and-profiles.md`](settings-and-profiles.md) | the knob inventory as typed groups, profiles as patches over a cited root, resolution and coherence rules, the canonical form and hash, the five shipped profiles, per-request patches |
@@ -47,7 +49,7 @@ page with its crate for the Bikram Sambat engine.
 | page | phase |
 |---|---|
 | `calendar-indian-lunisolar.md` | 2 |
-| `astro-timescales-and-frames.md`, `astro-ayanamsha-catalogue.md`, `astro-house-systems.md`, `astro-events-and-crossings.md` | 2 |
+| `astro-timescales-and-frames.md`, `astro-ayanamsha-catalogue.md`, `astro-house-systems.md` (crossings and stations: the next revision of `astro-events-and-crossings.md`) | 2 |
 | `ephemeris-builtin.md` (theories, tiers, ingestion tool) | 3 |
 | `chart-foundation.md`, `houses.md`, `state.md`, `aspect.md`, `points.md` (vargas: `varga-kernel.md`) | 4 |
 | `panchanga-day.md` | 4 |

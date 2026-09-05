@@ -16,7 +16,8 @@ family package) in every binding.
 | module | contents | depends on | baseline source |
 |---|---|---|---|
 | `core` | keys and entity catalogue (grahas, rashis, nakshatras with padas, tithis, karanas, yogas, varas, vargas, dignities, states, ayanamshas, house systems, samvatsaras), angles with the canonical nanoarcsecond type and exact classification (`core::angle`, ADR-0016), exact rationals, Julian day and timescales, settings and profiles, result envelope with the calculation version (ADR-0020), errors, capabilities, registries, limits | none | `core` data, enums, types |
-| `port-ephemeris` | the ephemeris port trait (positions required; overrides optional), request and response types, capability descriptor, provider conformance kit | `core` | `AstronomicalBackend` |
+| `port-ephemeris` | the ephemeris port trait (positions required; the obliquity, Delta T, ayanamsha and rise-and-set overrides declared), the request over a grid, the columnar response with a status and a source per cell, frames packed to 32 bits, capabilities with content hashes, the horizon convention, the C vtable both ways, the `.se1` file scanner, the analytic test provider. Built 2026-09-05 (`03-design/ephemeris-port-and-adapters.md`) | `core` | `AstronomicalBackend` |
+| `ephemeris-kit` | the provider conformance kit: fifteen checks under one published set of bounds, the report, the timing rows and the runner the kit binaries share; run against the test provider in CI and against the adapters by hand. Built 2026-09-05 | `port-ephemeris`, `astro` | |
 | `port-timezone` | the zone database contract: version, zones, the offset at an instant with the abbreviation and the before-rules flag, the candidates of a civil time (one, a gap, an overlap), the offsets a zone applies today. Built 2026-09-05 | `core` | P0 | |
 | `port-calendar`, `port-geo`, `port-intl-data`, `port-log` | as before | `core` | |
 
@@ -29,17 +30,24 @@ family package) in every binding.
 | `ephemeris-de` (v1.x) | a provider reading JPL DE files directly: DAF/SPK types 2 and 3, Clenshaw evaluation, centre chaining from segment metadata, record access suited to HTTP range requests; 0.001 arcsecond against Horizons | `core`, `port-ephemeris` | P1 | ADR-0021; fuzzed as a parser of untrusted files |
 | `siddhanta` | the Surya Siddhanta as a computation: mean places in exact integer arithmetic, the sine table, the manda and sighra equations and the four steps, daily motion, precession, declination and the day's arc, with a bija overlay; later a provider behind the port (`03-design/siddhanta.md`) | `core` (later `port-ephemeris`) | P0 | the text (Burgess, 1860); the baseline engine for structure only |
 
-Built so far (2026-09-05): `astro` as a seed holding the shared boundary
-solver (`solve::next_crossing`, the kernel every ingress-shaped search
-uses); `siddhanta` as the model (the provider adapter follows the port's
-promotion).
+Built so far (2026-09-05): in `astro`, Delta T and the UT1 to TT
+conversions (moved here from `time`), the ERFA-ported IAU routines
+(`iau`: the Earth rotation angle, mean and apparent sidereal time, the
+1980 and 2006 obliquities, the 2000B nutation, the fundamental
+arguments, the equation of the equinoxes, the refraction constants), the
+obliquity record and the ecliptic and equatorial rotations (`sky`), frame
+completion over the port (`completion`), the shared boundary solver
+(`solve::next_crossing` and `first_zero`) and the rise and set solver
+(`rise_set`); `siddhanta` as the model (its provider adapter is still to
+come). The precession and nutation model families, the ayanamsha
+catalogue, house systems, crossings and stations are Phase 2.
 
 ## L2 domain modules
 
 | module | contents | depends on | tier | baseline source |
 |---|---|---|---|---|
-| `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat (the official table plus the SDK's computed extension, with the solar-calendar engine: a `SolarModel`, the sankranti finder, the month-start rules as rows, the measurement), Indian lunisolar (Amanta, Purnimanta, adhika, kshaya, solar months), eras and samvatsara; later Nepal Sambat, Saka, regional solar, Hijri, Hebrew, Persian, Chinese | `port-calendar`, `astro`, `siddhanta` | P0 | `BsCalendarService`, `CalendarService` |
-| `time` | civil to instant resolution with replay-safe metadata under the DST policies, local mean time, time scales with Delta T as the IERS table then a model, the leap-second table, the sunrise-anchored day from a solar model with the polar policies, ghati-pala; planetary hours later. Built 2026-09-05 (`03-design/time-and-timezone.md`); the embedded tzdb is `jiff`'s bundled data, never the host's | `port-timezone`, `calendar` (later `astro`) | P0 | timezone resolver, ghati-pala, birth timing |
+| `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat (the official table plus the SDK's computed extension, with the solar-calendar engine: a `SolarModel` as the Surya Siddhanta or the drik Sun through the port, the sankranti finder, the month-start rules as rows, the measurement), Indian lunisolar (Amanta, Purnimanta, adhika, kshaya, solar months), eras and samvatsara; later Nepal Sambat, Saka, regional solar, Hijri, Hebrew, Persian, Chinese | `port-calendar`, `astro`, `port-ephemeris`, `siddhanta` | P0 | `BsCalendarService`, `CalendarService` |
+| `time` | civil to instant resolution with replay-safe metadata under the DST policies and the `SUNRISE` fallback for a birth without a time, local mean time, the UTC conversions over `astro`'s Delta T, the leap-second table, the sunrise-anchored day from a solar model under its sunrise convention with the polar policies, ghati-pala; planetary hours later. Built 2026-09-05 (`03-design/time-and-timezone.md`); the embedded tzdb is `jiff`'s bundled data, never the host's | `port-timezone`, `calendar`, `astro` | P0 | timezone resolver, ghati-pala, birth timing |
 | `chart` | birth data, foundation (positions in both frames with speeds, declinations, RA; cusps; frames), chart kinds | `astro`, `time` | P0 | `ChartFoundation` |
 | `houses` | placement policy, Bhava-Chalit variants (Sripati, Vehlow, Porphyry, KP), placements by span, whole sign, equal, degeneracy states | `chart`, `astro` | P0 | `HouseService` |
 | `vargas` | one table-driven evaluator (`03-design/varga-kernel.md`): standard and extended vargas and every named variant as rows, arbitrary D-N under a recorded convention, the mixed-chart axis, vargottama, varga change search | `chart`, `astro` (crossings) | P0 | `VargaService` |

@@ -3,6 +3,7 @@
 
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place};
+use teistro_core::settings::{Sunrise, SunriseConvention};
 use teistro_core::time::LocalMeanTime;
 use teistro_siddhanta::SuryaSiddhanta;
 
@@ -35,6 +36,12 @@ impl SolarModel for SuryaSiddhanta {
     fn describe(&self) -> String {
         SuryaSiddhanta::describe(self)
     }
+
+    fn convention(&self) -> SunriseConvention {
+        // The text's sunrise: the centre of the disc on the geometric
+        // horizon, without refraction (III.42 to 43).
+        Sunrise::CentreNoRefraction.into()
+    }
 }
 
 #[cfg(test)]
@@ -52,6 +59,7 @@ mod tests {
         let text = SuryaSiddhanta::text();
         let model: &dyn SolarModel = &text;
         assert!(model.describe().starts_with("Surya Siddhanta"));
+        assert_eq!(model.convention(), Sunrise::CentreNoRefraction.into());
         let sun = model.sidereal_sun_deg(2_460_413.5).unwrap();
         assert!(sun < 1.0 || sun > 359.0, "{sun}");
         let kathmandu = Place::new(

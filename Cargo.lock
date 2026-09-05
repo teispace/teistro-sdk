@@ -1183,8 +1183,12 @@ checksum = "c3a6bfce3d99adfa72d24750a61f782f3036a81e7f86d8841ee1326deaebd171"
 name = "teistro-astro"
 version = "0.0.0"
 dependencies = [
+ "criterion",
  "proptest",
+ "serde",
+ "serde_json",
  "teistro-core",
+ "teistro-port-ephemeris",
 ]
 
 [[package]]
@@ -1197,6 +1201,7 @@ dependencies = [
  "serde_json",
  "teistro-astro",
  "teistro-core",
+ "teistro-port-ephemeris",
  "teistro-siddhanta",
  "teistro-time",
 ]
@@ -1211,6 +1216,27 @@ dependencies = [
  "serde_json",
  "sha2",
  "trybuild",
+]
+
+[[package]]
+name = "teistro-ephemeris-kit"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-core",
+ "teistro-port-ephemeris",
+]
+
+[[package]]
+name = "teistro-port-ephemeris"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "sha2",
+ "teistro-core",
 ]
 
 [[package]]
@@ -1281,17 +1307,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "teistro-spike-port",
-]
-
-[[package]]
-name = "teistro-spike-port"
-version = "0.0.0"
-dependencies = [
- "serde",
- "serde_json",
- "sha2",
- "teistro-spike-slice",
+ "teistro-ephemeris-kit",
 ]
 
 [[package]]
@@ -1308,6 +1324,7 @@ dependencies = [
  "proptest",
  "serde",
  "serde_json",
+ "teistro-astro",
  "teistro-calendar",
  "teistro-core",
  "teistro-port-timezone",

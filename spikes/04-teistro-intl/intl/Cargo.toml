@@ -24,7 +24,7 @@ icu_locale_core = "2"
 icu_plurals = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
-teistro-spike-port = { path = "../../03-ephemeris-port/port" }
+teistro-ephemeris-kit = { path = "../../../crates/ephemeris-kit" }
 
 [dev-dependencies]
 proptest = "1"

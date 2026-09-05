@@ -22,6 +22,40 @@ use core::ops::{Add, Sub};
 use crate::catalogue::{Nakshatra, Rashi};
 use crate::quantity::{Degrees, InvalidValue, NakshatraIndex, PadaIndex, SignIndex};
 
+/// Degrees into `[0, 360)`: the floating-point companion of [`Nas::new`]
+/// for values that stay floating (a provider's longitude, a solver's
+/// target) before they become canonical.
+///
+/// ```
+/// use teistro_core::angle::normalise_deg;
+///
+/// assert_eq!(normalise_deg(370.0), 10.0);
+/// assert_eq!(normalise_deg(-90.0), 270.0);
+/// assert_eq!(normalise_deg(360.0), 0.0);
+/// ```
+#[must_use]
+pub fn normalise_deg(deg: f64) -> f64 {
+    let wrapped = deg.rem_euclid(360.0);
+    if wrapped >= 360.0 { 0.0 } else { wrapped }
+}
+
+/// The smaller signed difference `a - b` of two angles in degrees, in
+/// `(-180, 180]`: the floating-point companion of
+/// [`Nas::signed_difference`].
+///
+/// ```
+/// use teistro_core::angle::difference_deg;
+///
+/// assert_eq!(difference_deg(10.0, 350.0), 20.0);
+/// assert_eq!(difference_deg(350.0, 10.0), -20.0);
+/// assert_eq!(difference_deg(180.0, 0.0), 180.0);
+/// ```
+#[must_use]
+pub fn difference_deg(a: f64, b: f64) -> f64 {
+    let d = (a - b).rem_euclid(360.0);
+    if d > 180.0 { d - 360.0 } else { d }
+}
+
 /// A canonical angle in nanoarcseconds, `0 ..< CIRCLE`. Exact, ordered,
 /// hashable; the value every classification reads.
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]

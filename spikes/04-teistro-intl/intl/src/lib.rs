@@ -14,7 +14,7 @@
 //! - [`validate`]: the gates a source tree passes before it is built;
 //! - [`pack`]: the `.tpack` container, zero-copy reads with a checksum;
 //! - [`generate`]: typed accessors for TypeScript and Dart;
-//! - [`bench`]: the timing helper shared with spike 3.
+//! - [`bench`]: the timing helper of the conformance kit (`crates/ephemeris-kit`), shared with spike 3.
 
 pub mod analysis;
 pub mod generate;
@@ -24,4 +24,4 @@ pub mod render;
 pub mod source;
 pub mod validate;
 
-pub use teistro_spike_port::bench;
+pub use teistro_ephemeris_kit::bench;

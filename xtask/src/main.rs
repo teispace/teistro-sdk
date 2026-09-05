@@ -10,8 +10,9 @@
 //! - `check-calendars`, `gen calendars` and `calendars bs-fit`: the Bikram
 //!   Sambat table equals what the official rows and the engine produce, and
 //!   the measurement that chose the engine's rule.
-//! - `check-time` and `gen time`: the time crate's tables equal their data
-//!   files (the IERS Delta T series, the historical table, the leap seconds).
+//! - `check-time` and `gen time`: the Delta T tables of `astro` and the
+//!   leap-second table of `time` equal their data files (the IERS series,
+//!   the historical table, the IANA list).
 //!
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
@@ -121,7 +122,9 @@ fn check_docs() -> i32 {
 /// must obey the naming rule.
 fn markdown_files(root: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
-    for dir in ["docs", "rfcs", ".github", "fixtures", "spikes"] {
+    for dir in [
+        "docs", "rfcs", ".github", "fixtures", "spikes", "adapters", "crates",
+    ] {
         collect_markdown(&root.join(dir), &mut files);
     }
     if let Ok(entries) = fs::read_dir(root) {
