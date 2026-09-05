@@ -6,21 +6,26 @@ use core::fmt;
 
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
-use teistro_core::quantity::{Degrees, JulianDay, Latitude, Ut1};
+use teistro_core::quantity::{Degrees, JulianDay, Latitude, Longitude, Ut1};
 
 use crate::equation::{
-    Epicycle, FourStep, four_step, manda_equation_deg, manda_motion_deg_per_day,
+    Epicycle, FourStep, four_step, latitude_deg, manda_equation_deg, manda_motion_deg_per_day,
+    sighra_motion_deg_per_day,
 };
+use crate::lagna::{ASU_PER_DAY, Lagna, RisingTimes};
 use crate::mean::{Ahargana, Cycle, Motion};
 use crate::params::{Parameters, Planet};
 use crate::trig::{Bhuja, RADIUS, Trig};
 
-/// A graha's place: the sidereal longitude in the text's own frame and
-/// the daily motion.
+/// A graha's place: the sidereal longitude in the text's own frame, the
+/// latitude, and the daily motion.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
 pub struct Position {
     /// The sidereal longitude, degrees in `[0, 360)`.
     pub longitude: Degrees,
+    /// The latitude, degrees, north positive (II.56 to 57); zero for the
+    /// Sun and the nodes.
+    pub latitude_deg: f64,
     /// The daily motion in degrees, negative when retrograde.
     pub speed_deg_per_day: f64,
 }
@@ -49,6 +54,11 @@ pub struct Trace {
     pub karna: Option<f64>,
     /// The true place, degrees in `[0, 360)`.
     pub longitude_deg: f64,
+    /// The node the latitude is reckoned from, degrees, for a body that
+    /// has one.
+    pub node_deg: Option<f64>,
+    /// The latitude, degrees, north positive.
+    pub latitude_deg: f64,
     /// The daily motion, degrees.
     pub speed_deg_per_day: f64,
 }
@@ -160,6 +170,21 @@ impl SuryaSiddhanta {
             self.params.motion(planet).degrees_per_day(&self.params),
             self.params.apsis(planet).degrees_per_day(&self.params),
         );
+        // The Moon's latitude (II.57): its distance from its node, over the
+        // radius; the Sun has none.
+        let (node_deg, latitude) = match (
+            self.params.node(planet),
+            self.params.extreme_latitude_arcmin(planet),
+        ) {
+            (Some(node), Some(extreme)) => {
+                let node_deg = at.mean_degrees(node, &self.params);
+                (
+                    Some(node_deg),
+                    latitude_deg(self.trig, longitude - node_deg, extreme, RADIUS),
+                )
+            }
+            _ => (None, 0.0),
+        };
         Trace {
             graha: graha_of(planet),
             ahargana: at,
@@ -171,6 +196,8 @@ impl SuryaSiddhanta {
             sighra_equation_deg: None,
             karna: None,
             longitude_deg: longitude,
+            node_deg,
+            latitude_deg: latitude,
             speed_deg_per_day: speed,
         }
     }
@@ -199,13 +226,51 @@ impl SuryaSiddhanta {
         )
     }
 
-    /// A star planet: the four steps, and the daily motion as the change
-    /// over the day centred on the instant (the text's rule for the
-    /// sighra motion, II.50 to 51, is not yet implemented).
+    /// A star planet: the four steps, the daily motion by the text's rule
+    /// (II.47 to 51: the motion corrected for the apsis at the third
+    /// step's anomaly, then the conjunction's equation of motion through
+    /// the last hypotenuse), and the latitude (II.56 to 57: the distance
+    /// from the node, which the conjunction's equation moves along with
+    /// the planet for Mars, Jupiter and Saturn, and which for Mercury and
+    /// Venus is the conjunction's distance from the node moved by the
+    /// apsis's equation the other way; over the last hypotenuse).
     fn star(&self, planet: Planet, at: Ahargana) -> Trace {
         let (steps, mean, apsis, conjunction) = self.star_steps(planet, at);
-        let before = self.star_steps(planet, at.plus(-0.5)).0.true_deg;
-        let after = self.star_steps(planet, at.plus(0.5)).0.true_deg;
+        let own_motion = self.params.motion(planet).degrees_per_day(&self.params);
+        let sun_motion = self
+            .params
+            .motion(Planet::Sun)
+            .degrees_per_day(&self.params);
+        // The motion of the mean place: the Sun's for an inferior planet,
+        // whose own revolutions are its conjunction's.
+        let (mean_motion, conjunction_motion) = if planet.is_inferior() {
+            (sun_motion, own_motion)
+        } else {
+            (own_motion, sun_motion)
+        };
+        let equated = manda_motion_deg_per_day(
+            self.trig,
+            self.params.manda_epicycle(planet),
+            steps.manda_anomaly_deg,
+            mean_motion,
+            self.params.apsis(planet).degrees_per_day(&self.params),
+        );
+        let speed = sighra_motion_deg_per_day(equated, conjunction_motion, steps.sighra.karna);
+        let node_deg = self
+            .params
+            .node(planet)
+            .map(|node| at.mean_degrees(node, &self.params));
+        let latitude = match (node_deg, self.params.extreme_latitude_arcmin(planet)) {
+            (Some(node), Some(extreme)) => {
+                let distance = if planet.is_inferior() {
+                    conjunction + steps.manda_equation_deg - node
+                } else {
+                    steps.manda_corrected_deg - node
+                };
+                latitude_deg(self.trig, distance, extreme, steps.sighra.karna)
+            }
+            _ => 0.0,
+        };
         Trace {
             graha: graha_of(planet),
             ahargana: at,
@@ -217,7 +282,9 @@ impl SuryaSiddhanta {
             sighra_equation_deg: Some(steps.sighra.equation_deg),
             karna: Some(steps.sighra.karna),
             longitude_deg: steps.true_deg,
-            speed_deg_per_day: signed_difference(after, before),
+            node_deg,
+            latitude_deg: latitude,
+            speed_deg_per_day: speed,
         }
     }
 
@@ -240,8 +307,53 @@ impl SuryaSiddhanta {
             sighra_equation_deg: None,
             karna: None,
             longitude_deg: longitude,
+            node_deg: Some(node),
+            latitude_deg: 0.0,
             speed_deg_per_day: self.params.moon_node.degrees_per_day(&self.params),
         }
+    }
+
+    /// The Moon's apogee (its apsis, the mandocca), for the port's mean
+    /// apogee.
+    fn moon_apogee(&self, at: Ahargana) -> Trace {
+        let apsis = self.apsis_deg(Planet::Moon, at);
+        Trace {
+            graha: Graha::Moon,
+            ahargana: at,
+            mean_deg: apsis,
+            apsis_deg: apsis,
+            conjunction_deg: None,
+            manda_equation_deg: 0.0,
+            manda_corrected_deg: apsis,
+            sighra_equation_deg: None,
+            karna: None,
+            longitude_deg: apsis,
+            node_deg: None,
+            latitude_deg: 0.0,
+            speed_deg_per_day: self.params.moon_apsis.degrees_per_day(&self.params),
+        }
+    }
+
+    /// The Moon's apogee at an instant: the apsis of I.34, which moves
+    /// direct.
+    #[must_use]
+    pub fn moon_apogee_position(&self, at: JulianDay<Ut1>) -> Position {
+        Position::from(self.moon_apogee_trace(at))
+    }
+
+    /// The Moon's apogee as a trace.
+    #[must_use]
+    pub fn moon_apogee_trace(&self, at: JulianDay<Ut1>) -> Trace {
+        self.moon_apogee(self.ahargana(at))
+    }
+
+    /// The node of a planet at a count, degrees: the Moon's from I.34, a
+    /// star planet's from I.43 to 44; `None` for the Sun.
+    #[must_use]
+    pub fn planet_node_deg(&self, planet: Planet, at: Ahargana) -> Option<f64> {
+        self.params
+            .node(planet)
+            .map(|node| at.mean_degrees(node, &self.params))
     }
 
     /// The tradition's figures for a graha at an instant.
@@ -440,6 +552,75 @@ impl SuryaSiddhanta {
 }
 
 impl SuryaSiddhanta {
+    /// The local mean midnight that begins the local mean day an instant
+    /// falls in, at a longitude.
+    #[must_use]
+    pub fn local_mean_midnight(at: JulianDay<Ut1>, longitude: Longitude) -> JulianDay<Ut1> {
+        let offset = longitude.get() / 360.0;
+        let local = at.get() + offset;
+        let midnight_local = (local - 0.5).floor() + 0.5;
+        JulianDay::try_new(midnight_local - offset).unwrap_or(at)
+    }
+
+    /// The times of rising of the signs at a latitude (III.42 to 45), or
+    /// `None` where the text's rule has no answer.
+    #[must_use]
+    pub fn rising_times(&self, latitude: Latitude) -> Option<RisingTimes> {
+        RisingTimes::at(self, latitude)
+    }
+
+    /// The horoscope point at an instant and a place (III.46 to 49): the
+    /// Sun's tropical longitude at the sunrise of the local mean day the
+    /// instant falls in, carried forward by the time since sunrise in
+    /// respirations through the signs' rising times at the latitude (or
+    /// back, before sunrise), and the point on the meridian from the
+    /// Sun's hour angle through the rising times at Lanka; both returned
+    /// with the text's precession taken off again.
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` at a latitude where the Sun does not rise or set on
+    /// the day, or where a sign never rises, naming the place.
+    pub fn lagna(
+        &self,
+        at: JulianDay<Ut1>,
+        latitude: Latitude,
+        longitude: Longitude,
+    ) -> Result<Lagna, Error> {
+        let midnight = SuryaSiddhanta::local_mean_midnight(at, longitude);
+        let unsupported = |what: &str| {
+            Error::unsupported(format!(
+                "the text's horoscope point needs {what} at {latitude} {longitude} on {midnight}"
+            ))
+            .with_field("place")
+        };
+        let arc = self
+            .day_arc(midnight, latitude)
+            .ok_or_else(|| unsupported("a sunrise"))?;
+        let rising = self
+            .rising_times(latitude)
+            .ok_or_else(|| unsupported("every sign to rise"))?;
+        let ayanamsha = self.ayanamsha_deg(arc.sunrise);
+        let sun_tropical =
+            (self.sun_longitude_deg(arc.sunrise.get()) + ayanamsha).rem_euclid(360.0);
+        let elapsed_asu = (at.get() - arc.sunrise.get()) * ASU_PER_DAY;
+        let tropical = rising.point_after(sun_tropical, elapsed_asu);
+        // The hour angle from local mean noon, the middle of the text's
+        // symmetric day, through the right ascensions.
+        let noon = midnight.get() + 0.5;
+        let hour_angle_asu = (at.get() - noon) * ASU_PER_DAY;
+        let meridian_tropical =
+            RisingTimes::lanka(&self.params).point_after(sun_tropical, hour_angle_asu);
+        Ok(Lagna {
+            sidereal_deg: (tropical - ayanamsha).rem_euclid(360.0),
+            tropical_deg: tropical,
+            meridian_sidereal_deg: (meridian_tropical - ayanamsha).rem_euclid(360.0),
+            sun_tropical_deg: sun_tropical,
+            elapsed_asu,
+            rising,
+        })
+    }
+
     /// Whether, on a day without a sunrise, the Sun is above the horizon
     /// throughout (a polar day) rather than below it (a polar night): the
     /// declination at local mean noon has the latitude's sign.
@@ -457,6 +638,7 @@ impl From<Trace> for Position {
     fn from(trace: Trace) -> Position {
         Position {
             longitude: Degrees::try_new(trace.longitude_deg).unwrap_or_default(),
+            latitude_deg: trace.latitude_deg,
             speed_deg_per_day: trace.speed_deg_per_day,
         }
     }
@@ -485,17 +667,12 @@ const fn graha_of(planet: Planet) -> Graha {
     }
 }
 
-/// `after - before` along the shorter arc, in `(-180, 180]`.
-fn signed_difference(after: f64, before: f64) -> f64 {
-    let d = (after - before).rem_euclid(360.0);
-    if d > 180.0 { d - 360.0 } else { d }
-}
-
 #[cfg(test)]
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use proptest::prelude::*;
+    use teistro_core::angle::difference_deg as signed_difference;
 
     use super::*;
 
@@ -689,6 +866,191 @@ mod tests {
         assert!(text.day_arc(jd_of(2024, 6, 21), tromso).is_none());
         assert!(text.sun_up_all_day(jd_of(2024, 6, 21), tromso));
         assert!(!text.sun_up_all_day(jd_of(2024, 12, 21), tromso));
+    }
+
+    /// Midnight of 1 January 1860 at Washington (77°3′ W), the instant
+    /// of every worked example in Burgess's notes: 25 nadis 28 vinadis
+    /// after midnight on the meridian of Ujjain.
+    fn burgess_instant() -> JulianDay<Ut1> {
+        jd(2_400_410.5 + (77.0 + 3.0 / 60.0) / 360.0)
+    }
+
+    #[test]
+    fn burgess_day_count_and_mean_sun_for_1860() {
+        // Burgess under I.48 to 53: the sum of days to the beginning of
+        // 1 January 1860 at midnight on the prime meridian is
+        // 714 404 108 572 from the creation, 1 811 945 from the Kali age;
+        // the mean Sun then is 8s 17°48′7″.
+        let text = SuryaSiddhanta::text();
+        let ujjain_midnight = jd(2_400_410.5 - (75.0 + 47.0 / 60.0) / 360.0);
+        let count = text.ahargana(ujjain_midnight);
+        assert_eq!(count.days, 1_811_945);
+        assert!(count.fraction.abs() < 1e-6, "{}", count.fraction);
+        assert_eq!(
+            u64::try_from(count.days).unwrap() + Parameters::TEXT.elapsed_days_at_kali,
+            714_404_108_572
+        );
+        let sun = text.mean_deg(Planet::Sun, count);
+        let expected = 240.0 + 17.0 + 48.0 / 60.0 + 7.0 / 3600.0;
+        assert!(
+            (sun - expected).abs() * 3600.0 < 2.0,
+            "{sun} against {expected}"
+        );
+        // Under III.9 to 12 for the Washington instant: a precession of
+        // 20°24′39″.
+        let ayanamsha = text.ayanamsha_deg(burgess_instant());
+        let expected = 20.0 + 24.0 / 60.0 + 39.0 / 3600.0;
+        assert!((ayanamsha - expected).abs() * 3600.0 < 5.0, "{ayanamsha}");
+    }
+
+    #[test]
+    fn burgess_daily_motions_for_1860() {
+        // Under II.47 to 49: the Moon's mean anomaly 10s 18°46′15″ (the
+        // apsis 327°50′24″ less the Moon 9°4′9″ of Burgess's table of mean
+        // places at Washington), the difference of sines 174, the equation
+        // 53′31″, the true motion 737′4″; the Sun's equation of motion
+        // +2′18″ and true motion 61′26″. Under II.50 to 51: Mars's equation for the apsis
+        // −3′41″, equated motion 27′45″, synodic motion 31′23″, hypotenuse
+        // 3984, equation for the conjunction +4′18″, true motion 32′3″.
+        let text = SuryaSiddhanta::text();
+        let at = burgess_instant();
+        let moon = text.trace(Graha::Moon, at).unwrap();
+        let anomaly = (moon.apsis_deg - moon.mean_deg).rem_euclid(360.0);
+        assert!(
+            (anomaly - (300.0 + 18.0 + 46.25 / 60.0)).abs() < 0.01,
+            "anomaly {anomaly}: mean {} apsis {} at count {:?}",
+            moon.mean_deg,
+            moon.apsis_deg,
+            moon.ahargana
+        );
+        // The mean places of Burgess's table, sidereal: the Moon
+        // 350°59′1″, its apsis 309°45′16″, its node 294°24′43″.
+        assert!((moon.mean_deg - (350.0 + 59.0 / 60.0 + 1.0 / 3600.0)).abs() * 3600.0 < 5.0);
+        assert!((moon.apsis_deg - (309.0 + 45.0 / 60.0 + 16.0 / 3600.0)).abs() * 3600.0 < 5.0);
+        assert!(
+            (moon.node_deg.unwrap() - (294.0 + 24.0 / 60.0 + 43.0 / 3600.0)).abs() * 3600.0 < 5.0
+        );
+        let expected_moon = (737.0 + 4.0 / 60.0) / 60.0;
+        assert!(
+            (moon.speed_deg_per_day - expected_moon).abs() * 3600.0 < 20.0,
+            "{} against {expected_moon}",
+            moon.speed_deg_per_day * 60.0
+        );
+        let sun = text.sun(at);
+        let expected_sun = (61.0 + 26.0 / 60.0) / 60.0;
+        assert!(
+            (sun.speed_deg_per_day - expected_sun).abs() * 3600.0 < 6.0,
+            "{}",
+            sun.speed_deg_per_day * 60.0
+        );
+        let mars = text.trace(Graha::Mars, at).unwrap();
+        assert!(
+            (mars.karna.unwrap() - 3984.0).abs() < 6.0,
+            "{:?}",
+            mars.karna
+        );
+        let expected_mars = (32.0 + 3.0 / 60.0) / 60.0;
+        assert!(
+            (mars.speed_deg_per_day - expected_mars).abs() * 3600.0 < 30.0,
+            "{} against {expected_mars}",
+            mars.speed_deg_per_day * 60.0
+        );
+        // Jupiter and Saturn were retrograde at that time ("as the last
+        // table shows").
+        assert!(text.trace(Graha::Jupiter, at).unwrap().speed_deg_per_day < 0.0);
+        assert!(text.trace(Graha::Saturn, at).unwrap().speed_deg_per_day < 0.0);
+    }
+
+    #[test]
+    fn burgess_latitudes_for_1860() {
+        // Under II.56 to 58: the Moon 53°14′ from its node, the sine 2754,
+        // the latitude 3°36′ north; Mercury 3s 24°14′ from its node, the
+        // sine 3134, the latitude 2°4′ north.
+        let text = SuryaSiddhanta::text();
+        let at = burgess_instant();
+        let moon = text.trace(Graha::Moon, at).unwrap();
+        let distance = (moon.longitude_deg - moon.node_deg.unwrap()).rem_euclid(360.0);
+        assert!((distance - (53.0 + 14.0 / 60.0)).abs() < 0.05, "{distance}");
+        assert!(
+            (moon.latitude_deg - 3.6).abs() < 0.02,
+            "{}",
+            moon.latitude_deg
+        );
+        let mercury = text.trace(Graha::Mercury, at).unwrap();
+        assert!(
+            (mercury.latitude_deg - (2.0 + 4.0 / 60.0)).abs() < 0.05,
+            "{}",
+            mercury.latitude_deg
+        );
+        // Every latitude stays within the extreme, and the Sun has none.
+        for graha in [
+            Graha::Moon,
+            Graha::Mars,
+            Graha::Mercury,
+            Graha::Jupiter,
+            Graha::Venus,
+            Graha::Saturn,
+        ] {
+            let trace = text.trace(graha, at).unwrap();
+            assert!(
+                trace.latitude_deg.abs() <= 4.6,
+                "{graha}: {}",
+                trace.latitude_deg
+            );
+            assert!(trace.node_deg.is_some());
+        }
+        assert!(text.sun(at).latitude_deg.abs() < f64::EPSILON);
+        assert!(text.trace(Graha::Rahu, at).unwrap().latitude_deg.abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn the_lagna_is_the_sun_at_sunrise_and_advances_through_the_day() {
+        let text = SuryaSiddhanta::text();
+        let kathmandu = (Latitude::literal(27.7172), Longitude::literal(85.324));
+        let midnight = SuryaSiddhanta::local_mean_midnight(jd_of(2024, 4, 13), kathmandu.1);
+        assert!((midnight.get() - (2_460_413.5 - 85.324 / 360.0)).abs() < 1e-9);
+        let arc = text.day_arc(midnight, kathmandu.0).unwrap();
+        // At sunrise the horoscope point is the Sun.
+        let at_sunrise = text.lagna(arc.sunrise, kathmandu.0, kathmandu.1).unwrap();
+        let sun = text.sun_longitude_deg(arc.sunrise.get());
+        assert!(
+            (at_sunrise.sidereal_deg - sun).abs() < 1e-6,
+            "{} {sun}",
+            at_sunrise.sidereal_deg
+        );
+        assert!(at_sunrise.elapsed_asu.abs() < 1e-6);
+        // Six hours later it is about a quadrant on; at noon the meridian
+        // point is the Sun; before sunrise it is behind the Sun.
+        let later = text
+            .lagna(
+                arc.sunrise.plus_days(0.25).unwrap(),
+                kathmandu.0,
+                kathmandu.1,
+            )
+            .unwrap();
+        let advance = (later.sidereal_deg - sun).rem_euclid(360.0);
+        assert!(advance > 75.0 && advance < 105.0, "{advance}");
+        let noon = midnight.plus_days(0.5).unwrap();
+        let at_noon = text.lagna(noon, kathmandu.0, kathmandu.1).unwrap();
+        let meridian_gap =
+            (at_noon.meridian_sidereal_deg - text.sun_longitude_deg(noon.get())).rem_euclid(360.0);
+        assert!(meridian_gap < 0.5 || meridian_gap > 359.5, "{meridian_gap}");
+        let before = text
+            .lagna(
+                arc.sunrise.plus_days(-1.0 / 24.0).unwrap(),
+                kathmandu.0,
+                kathmandu.1,
+            )
+            .unwrap();
+        assert!(before.elapsed_asu < 0.0);
+        let behind = (sun - before.sidereal_deg).rem_euclid(360.0);
+        assert!(behind > 5.0 && behind < 25.0, "{behind}");
+        assert_eq!(before.rising, text.rising_times(kathmandu.0).unwrap());
+        // Above the polar circle the text has no answer.
+        assert!(
+            text.lagna(jd_of(2024, 6, 21), Latitude::literal(70.0), kathmandu.1)
+                .is_err()
+        );
     }
 
     #[test]

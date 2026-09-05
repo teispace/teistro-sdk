@@ -1256,7 +1256,10 @@ dependencies = [
  "proptest",
  "serde",
  "serde_json",
+ "teistro-astro",
  "teistro-core",
+ "teistro-ephemeris-kit",
+ "teistro-port-ephemeris",
 ]
 
 [[package]]
@@ -1327,6 +1330,7 @@ dependencies = [
  "teistro-astro",
  "teistro-calendar",
  "teistro-core",
+ "teistro-port-ephemeris",
  "teistro-port-timezone",
  "teistro-siddhanta",
 ]

@@ -30,9 +30,10 @@ use std::sync::{Mutex, MutexGuard, PoisonError};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::Place;
 use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, CellStatus, Centre, Coordinates, EphemerisKind, EphemerisProvider,
-    Equinox, Frame, Identity, Obliquity, Overrides, PositionColumns, PositionRequest,
-    ProviderError, Source, TimeScale, Zodiac, sefile, validate,
+    Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, DistanceUnit,
+    EphemerisKind, EphemerisProvider, Equinox, Frame, Identity, Obliquity, Overrides,
+    PositionColumns, PositionRequest, ProviderError, Source, SpeedModel, TimeScale, Zodiac, sefile,
+    validate,
 };
 
 /// The environment variable naming the data directory.
@@ -345,7 +346,10 @@ impl SwephProvider {
                     .filter(|body| map_body(*body).is_some())
                     .collect(),
                 native_frame: Frame::CANONICAL,
+                astronomy: Astronomy::Modern,
                 speeds: true,
+                speed_model: SpeedModel::Derivative,
+                distance_unit: DistanceUnit::AstronomicalUnits,
                 overrides: Overrides::OBLIQUITY
                     .with(Overrides::DELTA_T)
                     .with(Overrides::AYANAMSHA)

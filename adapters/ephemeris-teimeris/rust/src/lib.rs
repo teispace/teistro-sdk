@@ -29,10 +29,10 @@ use teimeris::{
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, CellStatus, Centre, Coordinates, DiscPoint, EphemerisKind,
-    EphemerisProvider, Equinox, Frame, HorizonEventKind, HorizonRequest, Identity, Obliquity,
-    Overrides, PositionColumns, PositionRequest, ProviderError, Refraction, Source, TimeScale,
-    Zodiac, sefile, validate,
+    Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, DiscPoint, DistanceUnit,
+    EphemerisKind, EphemerisProvider, Equinox, Frame, HorizonEventKind, HorizonRequest, Identity,
+    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, Refraction, Source,
+    SpeedModel, TimeScale, Zodiac, sefile, validate,
 };
 
 /// The environment variable naming the data directory.
@@ -228,7 +228,10 @@ impl TeimerisProvider {
                 .filter(|body| map_body(*body).is_some())
                 .collect(),
             native_frame: Frame::CANONICAL,
+            astronomy: Astronomy::Modern,
             speeds: true,
+            speed_model: SpeedModel::Derivative,
+            distance_unit: DistanceUnit::AstronomicalUnits,
             overrides: Overrides::OBLIQUITY
                 .with(Overrides::DELTA_T)
                 .with(Overrides::AYANAMSHA)

@@ -18,7 +18,8 @@
 //!   port and never reads the host;
 //! - [`local_day`]: the sunrise-anchored day at a place from a solar
 //!   model, with the polar policies;
-//! - [`ghati`]: ghati-pala as exact integer arithmetic on microseconds.
+//! - [`ghati`]: ghati-pala as exact integer arithmetic on microseconds;
+//! - [`hora`]: the twenty-four planetary hours of a day and their lords.
 //!
 //! Instants are `f64` Julian days, which resolve to about fifty
 //! microseconds in the present era; the ghati-pala arithmetic is exact
@@ -44,6 +45,7 @@
 
 pub mod civil;
 pub mod ghati;
+pub mod hora;
 pub mod leap;
 pub mod local_day;
 pub mod scale;
@@ -55,6 +57,7 @@ mod generated;
 
 pub use civil::{CivilDateTime, CivilTime};
 pub use ghati::{GhatiPala, Reckoning, ghati_pala, instant_of};
+pub use hora::{Hora, hora_at, horas};
 pub use local_day::{DayState, LocalDay, PolarKind, local_day};
 pub use scale::{
     TimeBasis, TtConversion, tt_from_ut1, tt_from_utc, ut1_from_tt, ut1_from_utc, utc_from_tt,

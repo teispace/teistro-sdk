@@ -33,9 +33,9 @@ use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
     AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, LunarMonth, NakshatraScheme, Node, NodeAspects, NodeCoLordship,
-    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, SeedOverflow, Sunrise, Tier,
-    UnattestedDn, UnknownTime, YearLength, Zodiac,
+    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, NakshatraScheme, Node, NodeAspects,
+    NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, SeedOverflow, Sunrise,
+    Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 pub use profiles::{Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -199,6 +199,8 @@ group!(
         polar_day_policy: PolarDayPolicy,
         /// How ghatis are counted.
         ghati_reckoning: GhatiReckoning,
+        /// How the planetary hours are counted.
+        hora_reckoning: HoraReckoning,
     }
 );
 

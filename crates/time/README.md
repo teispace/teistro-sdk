@@ -9,8 +9,10 @@ stored chart replays under a newer database (offset, source, era,
 version, what the daylight-saving policy did), local mean time, the
 sunrise-anchored local day under the profile's sunrise convention from
 any solar model (the Surya Siddhanta or modern astronomy through the
-ephemeris port), the `SUNRISE` fallback for a birth without a time, and
-ghati-pala as exact integer arithmetic.
+ephemeris port), the `SUNRISE` fallback for a birth without a time,
+ghati-pala as exact integer arithmetic, the planetary hours under the
+proportional and the equal reckonings, and UT1 from a provider that
+declares DUT1.
 
 ```rust
 use teistro_calendar::CalendarDate;

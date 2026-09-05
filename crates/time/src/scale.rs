@@ -4,14 +4,17 @@
 //! are the astronomy layer's (`teistro_astro::scale`), re-exported here.
 //!
 //! - UTC and UT1 differ by DUT1, under 0.9 s by definition; the SDK
-//!   applies zero and says so. Before 1972 UTC had no whole-second
-//!   relation to TAI and is treated as UT1, stamped proleptic.
+//!   applies zero and says so, or the value a provider declaring the DUT1
+//!   override supplies from its bulletins (`ut1_from_utc_with`). Before
+//!   1972 UTC had no whole-second relation to TAI and is treated as UT1,
+//!   stamped proleptic.
 //! - TT from UTC after 1972 goes through the leap-second table exactly:
 //!   TT = UTC + (TAI − UTC) + 32.184 s.
 
 use teistro_core::envelope::TimeStamp;
-use teistro_core::error::Error;
+use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Tt, Ut1, Utc};
+use teistro_port_ephemeris::{EphemerisProvider, Overrides};
 
 use crate::delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
 use crate::leap;
@@ -61,6 +64,75 @@ pub fn ut1_from_utc(instant: JulianDay<Utc>) -> (JulianDay<Ut1>, TimeBasis) {
             dut1_applied_seconds: 0.0,
         },
     )
+}
+
+/// The bound DUT1 keeps inside by definition, seconds: a leap second is
+/// scheduled before UT1 and UTC drift further apart.
+pub const DUT1_BOUND_SECONDS: f64 = 0.9;
+
+/// DUT1 from a provider that declares the override, checked against the
+/// definition's bound; `None` when the provider does not declare it.
+fn provider_dut1(
+    provider: &dyn EphemerisProvider,
+    instant: JulianDay<Utc>,
+) -> Result<Option<f64>, Error> {
+    if !provider.capabilities().has(Overrides::DUT1) {
+        return Ok(None);
+    }
+    let dut1 = provider.dut1_seconds(instant.get())?;
+    if !dut1.is_finite() || dut1.abs() > DUT1_BOUND_SECONDS {
+        return Err(Error::new(
+            Status::Provider,
+            format!(
+                "the provider's DUT1 of {dut1} s at {instant} is outside the ±{DUT1_BOUND_SECONDS} s a leap second keeps it within"
+            ),
+        )
+        .with_field("dut1"));
+    }
+    Ok(Some(dut1))
+}
+
+/// UT1 from UTC with the DUT1 a provider supplies, when it declares the
+/// override, and zero otherwise; the basis says which.
+///
+/// # Errors
+///
+/// A declared override that fails, or a value outside the definition's
+/// bound.
+pub fn ut1_from_utc_with(
+    instant: JulianDay<Utc>,
+    provider: &dyn EphemerisProvider,
+) -> Result<(JulianDay<Ut1>, TimeBasis), Error> {
+    let dut1 = provider_dut1(provider, instant)?.unwrap_or(0.0);
+    Ok((
+        JulianDay::try_new(instant.get() + dut1 / SECONDS_PER_DAY)?,
+        TimeBasis {
+            proleptic_utc: leap::tai_minus_utc(instant).is_none(),
+            dut1_applied_seconds: dut1,
+        },
+    ))
+}
+
+/// UTC from UT1 with the DUT1 a provider supplies (read at the UT1
+/// instant, which is within a second of the UTC one), and zero otherwise.
+///
+/// # Errors
+///
+/// As [`ut1_from_utc_with`].
+pub fn utc_from_ut1_with(
+    instant: JulianDay<Ut1>,
+    provider: &dyn EphemerisProvider,
+) -> Result<(JulianDay<Utc>, TimeBasis), Error> {
+    let near: JulianDay<Utc> = instant.relabel();
+    let dut1 = provider_dut1(provider, near)?.unwrap_or(0.0);
+    let utc: JulianDay<Utc> = JulianDay::try_new(instant.get() - dut1 / SECONDS_PER_DAY)?;
+    Ok((
+        utc,
+        TimeBasis {
+            proleptic_utc: leap::tai_minus_utc(utc).is_none(),
+            dut1_applied_seconds: dut1,
+        },
+    ))
 }
 
 /// UTC from UT1 with DUT1 taken as zero.
@@ -167,6 +239,51 @@ mod tests {
         assert!((c.delta_t.seconds - 69.184).abs() < 1e-12);
         let (b, _) = utc_from_tt(c.tt, DeltaTModel::TableThenModel).unwrap();
         assert!((b.get() - just_after.get()).abs() < 1e-9);
+    }
+
+    /// A provider whose bulletins say DUT1 is a fixed value.
+    struct Bulletin(f64);
+
+    impl EphemerisProvider for Bulletin {
+        fn capabilities(&self) -> teistro_port_ephemeris::Capabilities {
+            teistro_port_ephemeris::Capabilities {
+                overrides: Overrides::DUT1,
+                ..teistro_port_ephemeris::TestProvider::new().capabilities()
+            }
+        }
+
+        fn positions(
+            &self,
+            request: &teistro_port_ephemeris::PositionRequest<'_>,
+        ) -> Result<teistro_port_ephemeris::PositionColumns, teistro_port_ephemeris::ProviderError>
+        {
+            teistro_port_ephemeris::TestProvider::new().positions(request)
+        }
+
+        fn dut1_seconds(&self, _jd_utc: f64) -> Result<f64, teistro_port_ephemeris::ProviderError> {
+            Ok(self.0)
+        }
+    }
+
+    #[test]
+    fn a_providers_dut1_is_applied_and_bounded() {
+        let utc = JulianDay::<Utc>::try_new(2_460_000.5).unwrap();
+        let (ut1, basis) = ut1_from_utc_with(utc, &Bulletin(-0.05)).unwrap();
+        // A Julian day resolves about fifty microseconds here.
+        assert!(((ut1.get() - utc.get()) * SECONDS_PER_DAY + 0.05).abs() < 1e-3);
+        assert!((basis.dut1_applied_seconds + 0.05).abs() < 1e-12);
+        let (back, again) = utc_from_ut1_with(ut1, &Bulletin(-0.05)).unwrap();
+        assert!((back.get() - utc.get()).abs() < 1e-9);
+        assert!((again.dut1_applied_seconds + 0.05).abs() < 1e-12);
+        // A provider without the override applies zero.
+        let none = teistro_port_ephemeris::TestProvider::new();
+        let (same, basis) = ut1_from_utc_with(utc, &none).unwrap();
+        assert!((same.get() - utc.get()).abs() < f64::EPSILON);
+        assert!(basis.dut1_applied_seconds.abs() < f64::EPSILON);
+        // A value the definition forbids is refused.
+        let error = ut1_from_utc_with(utc, &Bulletin(1.5)).unwrap_err();
+        assert_eq!(error.status, Status::Provider);
+        assert_eq!(error.field(), Some("dut1"));
     }
 
     #[test]

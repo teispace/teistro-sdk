@@ -145,6 +145,15 @@ pub struct Parameters {
     /// The libration's extent in degrees, three tenths of its argument's
     /// reduced arc: III.10 to 12.
     pub ayana_extent_deg: u32,
+    /// The extreme latitudes in minutes of arc, in the order Moon, Mars,
+    /// Mercury, Jupiter, Venus, Saturn: I.68 to 70 (an eightieth of the
+    /// circle's minutes for the Moon, and its ninths for the others; or,
+    /// as verse 70 states them, 27, 9, 12, 6, 12 and 12 times ten).
+    pub extreme_latitudes_arcmin: [u32; 6],
+    /// The times of rising of the first three signs at Lanka, in
+    /// respirations (a minute of arc of the equator each): III.44, which
+    /// III.42 to 43 derive from the sine table and the obliquity.
+    pub lanka_rising_asu: [u32; 3],
 }
 
 impl Parameters {
@@ -203,6 +212,8 @@ impl Parameters {
         obliquity_sine: 1397,
         ayana_revolutions_per_yuga: 600,
         ayana_extent_deg: 27,
+        extreme_latitudes_arcmin: [270, 90, 120, 60, 120, 120],
+        lanka_rising_asu: [1670, 1795, 1935],
     };
 
     /// The motion of a planet's own revolutions (the conjunction's for
@@ -229,6 +240,44 @@ impl Parameters {
             Planet::Venus => self.apsides[4],
             Planet::Saturn => self.apsides[5],
         }
+    }
+
+    /// The node of a planet other than the Sun: the Moon's from I.34, a
+    /// star planet's from I.43 to 44.
+    #[must_use]
+    #[allow(
+        clippy::indexing_slicing,
+        reason = "the star index is inside the five by construction"
+    )]
+    pub const fn node(&self, planet: Planet) -> Option<Motion> {
+        match planet {
+            Planet::Sun => None,
+            Planet::Moon => Some(self.moon_node),
+            star => match star.star_index() {
+                Some(index) => Some(self.nodes[index]),
+                None => None,
+            },
+        }
+    }
+
+    /// The extreme latitude of a planet other than the Sun, minutes of
+    /// arc (I.68 to 70).
+    #[must_use]
+    pub const fn extreme_latitude_arcmin(&self, planet: Planet) -> Option<u32> {
+        let index = match planet {
+            Planet::Sun => return None,
+            Planet::Moon => 0,
+            Planet::Mars => 1,
+            Planet::Mercury => 2,
+            Planet::Jupiter => 3,
+            Planet::Venus => 4,
+            Planet::Saturn => 5,
+        };
+        #[allow(
+            clippy::indexing_slicing,
+            reason = "an index inside the six by construction"
+        )]
+        Some(self.extreme_latitudes_arcmin[index])
     }
 
     /// The manda epicycle of a planet.
@@ -377,5 +426,26 @@ mod tests {
         assert_eq!(Parameters::TEXT.apsis(Planet::Saturn).revolutions, 39);
         assert_eq!(Parameters::TEXT.apsis(Planet::Moon).revolutions, 488_203);
         assert_eq!(Parameters::TEXT.manda_epicycle(Planet::Sun).odd_arcmin, 820);
+        assert_eq!(Parameters::TEXT.node(Planet::Sun), None);
+        assert_eq!(
+            Parameters::TEXT.node(Planet::Moon),
+            Some(Parameters::TEXT.moon_node)
+        );
+        assert_eq!(
+            Parameters::TEXT.node(Planet::Saturn).map(|n| n.revolutions),
+            Some(662)
+        );
+        assert_eq!(Parameters::TEXT.extreme_latitude_arcmin(Planet::Sun), None);
+        assert_eq!(
+            Parameters::TEXT.extreme_latitude_arcmin(Planet::Moon),
+            Some(270)
+        );
+        assert_eq!(
+            Parameters::TEXT.extreme_latitude_arcmin(Planet::Jupiter),
+            Some(60)
+        );
+        // I.68 to 69: an eightieth of the circle's minutes, and its ninths.
+        assert_eq!(21_600 / 80, 270);
+        assert_eq!([270 * 3 / 9, 270 * 4 / 9, 270 * 2 / 9], [90, 120, 60]);
     }
 }
