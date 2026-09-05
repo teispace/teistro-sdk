@@ -37,7 +37,7 @@ use teistro_port_ephemeris::{
     TimeScale,
 };
 
-use crate::completion::{Completion, CompletionError, Implementation};
+use crate::completion::{Completed, Completion, CompletionError, Implementation};
 use crate::solve::{Caps, SolveError, first_zero, refine};
 
 /// The tolerance a crossing is found to, days: a hundredth of a second,
@@ -67,6 +67,28 @@ pub trait Longitudes: Send + Sync {
     /// An instant or a body the source cannot answer for.
     fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error>;
 
+    /// Two bodies' longitudes and rates at one instant, in the order asked:
+    /// what a composite quantity (the tithi, an aspect) and a visibility
+    /// reading (the body and the Sun) need at every sample. A source that
+    /// can answer two bodies in one request does so here, sharing the
+    /// instant's obliquity, nutation and precession between them; the
+    /// default reads them one by one.
+    ///
+    /// # Errors
+    ///
+    /// An instant or a body the source cannot answer for.
+    fn longitude_and_speed_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: JulianDay<Ut1>,
+    ) -> Result<[(f64, f64); 2], Error> {
+        let [first, second] = bodies;
+        Ok([
+            self.longitude_and_speed(first, ut1)?,
+            self.longitude_and_speed(second, ut1)?,
+        ])
+    }
+
     /// The source's name for provenance stamps.
     fn describe(&self) -> String;
 }
@@ -74,6 +96,14 @@ pub trait Longitudes: Send + Sync {
 impl<S: Longitudes + ?Sized> Longitudes for &S {
     fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
         (**self).longitude_and_speed(body, ut1)
+    }
+
+    fn longitude_and_speed_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: JulianDay<Ut1>,
+    ) -> Result<[(f64, f64); 2], Error> {
+        (**self).longitude_and_speed_pair(bodies, ut1)
     }
 
     fn describe(&self) -> String {
@@ -120,24 +150,53 @@ impl<P: EphemerisProvider + ?Sized> FrameLongitudes<'_, P> {
     }
 }
 
+impl<P: EphemerisProvider + ?Sized> FrameLongitudes<'_, P> {
+    /// One request for the bodies at the instant, completed in the frame.
+    fn request(&self, bodies: &[Body], ut1: JulianDay<Ut1>) -> Result<Completed, Error> {
+        let jds = [ut1.get()];
+        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, bodies, self.frame);
+        request.observer = self.observer;
+        Ok(self.completion.positions(&request)?)
+    }
+}
+
+/// The longitude and rate in one completed cell, or the refusal it holds.
+fn reading(
+    done: &Completed,
+    index: usize,
+    body: Body,
+    ut1: JulianDay<Ut1>,
+) -> Result<(f64, f64), Error> {
+    let cell = done
+        .columns
+        .at(0, index)
+        .ok_or_else(|| Error::new(Status::Provider, format!("no cell for {}", body.key())))?;
+    if !cell.is_ok() {
+        return Err(Error::new(
+            Status::Provider,
+            format!("{} at JD {}: {:?}", body.key(), ut1.get(), cell.status),
+        ));
+    }
+    Ok((cell.lon, cell.lon_speed))
+}
+
 impl<P: EphemerisProvider + ?Sized> Longitudes for FrameLongitudes<'_, P> {
     fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
-        let jds = [ut1.get()];
-        let bodies = [body];
-        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, self.frame);
-        request.observer = self.observer;
-        let done = self.completion.positions(&request)?;
-        let cell = done
-            .columns
-            .at(0, 0)
-            .ok_or_else(|| Error::new(Status::Provider, format!("no cell for {}", body.key())))?;
-        if !cell.is_ok() {
-            return Err(Error::new(
-                Status::Provider,
-                format!("{} at JD {}: {:?}", body.key(), ut1.get(), cell.status),
-            ));
-        }
-        Ok((cell.lon, cell.lon_speed))
+        let done = self.request(&[body], ut1)?;
+        reading(&done, 0, body, ut1)
+    }
+
+    fn longitude_and_speed_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: JulianDay<Ut1>,
+    ) -> Result<[(f64, f64); 2], Error> {
+        let done = self.request(&bodies, ut1)?;
+        let [first, second] = bodies;
+        Ok([
+            reading(&done, 0, first, ut1)?,
+            reading(&done, 1, second, ut1)?,
+        ])
     }
 
     fn describe(&self) -> String {
@@ -182,8 +241,7 @@ fn evaluate<S: Longitudes + ?Sized>(
             b,
             second,
         } => {
-            let (x, _) = source.longitude_and_speed(first, ut1)?;
-            let (y, _) = source.longitude_and_speed(second, ut1)?;
+            let [(x, _), (y, _)] = source.longitude_and_speed_pair([first, second], ut1)?;
             normalise_deg(a * x + b * y)
         }
     })
@@ -735,6 +793,89 @@ mod tests {
                 .unwrap()
                 .is_empty()
         );
+    }
+
+    /// A source that counts which reading each search takes.
+    struct Counting<'a, P: EphemerisProvider + ?Sized> {
+        inner: &'a FrameLongitudes<'a, P>,
+        singles: std::sync::atomic::AtomicU32,
+        pairs: std::sync::atomic::AtomicU32,
+    }
+
+    impl<P: EphemerisProvider + ?Sized> Longitudes for Counting<'_, P> {
+        fn longitude_and_speed(
+            &self,
+            body: Body,
+            ut1: JulianDay<Ut1>,
+        ) -> Result<(f64, f64), Error> {
+            self.singles
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            self.inner.longitude_and_speed(body, ut1)
+        }
+
+        fn longitude_and_speed_pair(
+            &self,
+            bodies: [Body; 2],
+            ut1: JulianDay<Ut1>,
+        ) -> Result<[(f64, f64); 2], Error> {
+            self.pairs
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            self.inner.longitude_and_speed_pair(bodies, ut1)
+        }
+
+        fn describe(&self) -> String {
+            self.inner.describe()
+        }
+    }
+
+    #[test]
+    fn a_composite_reads_its_two_bodies_in_one_request() {
+        let provider = TestProvider::new();
+        let completion = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let longitudes = completion.longitudes(Frame::CANONICAL);
+        // The pair is the two single readings, bit for bit.
+        let [moon, sun] = longitudes
+            .longitude_and_speed_pair([Body::Moon, Body::Sun], J2000)
+            .unwrap();
+        assert_eq!(
+            moon,
+            longitudes.longitude_and_speed(Body::Moon, J2000).unwrap()
+        );
+        assert_eq!(
+            sun,
+            longitudes.longitude_and_speed(Body::Sun, J2000).unwrap()
+        );
+        // A body the provider does not carry is refused by name, in a pair too.
+        let refused = longitudes
+            .longitude_and_speed_pair([Body::Moon, Body::Pluto], J2000)
+            .unwrap_err();
+        assert!(refused.to_string().contains("PLUTO"), "{refused}");
+        // The tithi search reads pairs alone; an ingress search singles alone.
+        let counting = Counting {
+            inner: &longitudes,
+            singles: std::sync::atomic::AtomicU32::new(0),
+            pairs: std::sync::atomic::AtomicU32::new(0),
+        };
+        let month = J2000.plus_days(29.53).unwrap();
+        let tithis = Search::new(&counting, Quantity::ELONGATION, Lattice::TITHIS)
+            .between(J2000, month)
+            .unwrap();
+        assert_eq!(tithis.len(), 30);
+        let pairs = counting.pairs.load(std::sync::atomic::Ordering::Relaxed);
+        assert!(pairs > 0 && counting.singles.load(std::sync::atomic::Ordering::Relaxed) == 0);
+        let ingresses = Search::new(&counting, Quantity::Longitude(Body::Sun), Lattice::SIGNS)
+            .between(J2000, month)
+            .unwrap();
+        assert_eq!(ingresses.len(), 1);
+        assert_eq!(
+            counting.pairs.load(std::sync::atomic::Ordering::Relaxed),
+            pairs
+        );
+        assert!(counting.singles.load(std::sync::atomic::Ordering::Relaxed) > 0);
     }
 
     #[test]

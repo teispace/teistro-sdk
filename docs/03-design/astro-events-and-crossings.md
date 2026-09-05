@@ -68,7 +68,9 @@ pub fn solve::first_zero(f, from, to, step, upward, tolerance, Caps) -> Result<O
 pub fn solve::refine(f, lo, hi, tolerance, Caps) -> Result<Crossing, SolveError>                      // f(lo) < 0 <= f(hi)
 
 // crossings and stations (astro::events)
-pub trait Longitudes { fn longitude_and_speed(&self, Body, JulianDay<Ut1>) -> Result<(f64, f64), Error>; fn describe(&self) -> String; }
+pub trait Longitudes { fn longitude_and_speed(&self, Body, JulianDay<Ut1>) -> Result<(f64, f64), Error>;
+                       fn longitude_and_speed_pair(&self, [Body; 2], JulianDay<Ut1>) -> Result<[(f64, f64); 2], Error>;   // provided: the two singles; the completion answers one request
+                       fn describe(&self) -> String; }
 pub struct FrameLongitudes<'c, P> { completion, frame, observer: Option<Place> }                     // Completion::longitudes(frame).with_observer(place)
 pub enum Quantity { Longitude(Body), Speed(Body), Composite { a, first, b, second } }                 // ELONGATION, MOON_PLUS_SUN, separation(a, b)
 pub struct Lattice { origin_deg, step_deg }                                                          // SIGNS, NAKSHATRAS, TITHIS, KARANAS, YOGAS, single(target)
@@ -210,7 +212,11 @@ lattice test saw and a line met at a sample still brackets. The
 tolerance is 1e-7 days (under a hundredth of a second); the steps are
 capped at two million samples (five and a half thousand years at a
 day's step), beyond which the search is `NOT_CONVERGED` naming the cap.
-`next_within` is the first event of a window.
+`next_within` is the first event of a window. A composite quantity reads
+its two bodies through `longitude_and_speed_pair`, which the completion
+answers as one position request, so the instant's obliquity, nutation and
+precession are computed once for both; a source that cannot batch reads
+them one by one (the trait's provided method).
 
 **Stations** (`events::stations`). The speed's sign changes inside the
 window, found by `first_zero` at a step of a day in both directions
@@ -273,16 +279,22 @@ empty list, not an error.
 
 ## 7. Performance budget
 
-| operation | budget | measured (release, Apple Silicon) |
+| operation | budget | measured (release, Apple Silicon, one session on 2026-09-05) |
 |---|---:|---:|
-| the obliquity and nutation (IAU 2006, 2000B) | 2 µs | 0.79 µs |
-| local apparent sidereal time | 2 µs | 1.16 µs |
-| Delta T from the table | 50 ns | 7 ns |
-| a grid of 100 instants by 8 bodies completed to equatorial with the SDK's obliquity, over the test provider | 0.5 µs per cell | 311 µs, 0.36 µs per cell above the provider's own 18 µs |
-| a day (rise, set, midday) over the test provider | 50 µs | 26 µs, about ten readings of the sky |
+| the obliquity and nutation (IAU 2006, 2000B) | 2 µs | 1.13 µs |
+| local apparent sidereal time | 2 µs | 1.67 µs |
+| Delta T from the table | 50 ns | 8 ns |
+| a grid of 100 instants by 8 bodies completed to equatorial with the SDK's obliquity, over the test provider | 1 µs per cell | 422 µs, 0.53 µs per cell with the provider's own work |
+| a day (rise, set, midday) over the test provider | 50 µs | 37 µs, about ten readings of the sky |
 | the same over Teimeris | 100 µs | ten engine calls at a few microseconds each |
-| the Sun's twelve ingresses of a year over the test provider | 500 µs | 160 µs: 366 samples and at most nine evaluations an event |
-| the thirty tithis of a lunation over the test provider | 1 ms | 233 µs: 77 samples of two bodies and at most nine evaluations an event |
+| the Sun's twelve ingresses of a year over the test provider | 500 µs | 234 µs: 366 samples and at most nine evaluations an event |
+| the thirty tithis of a lunation over the test provider | 1 ms | 190 µs: 77 samples of two bodies in one request each and at most nine evaluations an event; 336 µs with the two bodies read separately, measured in the same run |
+
+Rows compare within a table: the machine's state moves every row by
+tens of per cent between sessions (the unchanged micro-routines read 40 %
+slower on this session's machine than in the sessions that measured the
+other pages' tables), so a change is shown by an A/B in one run, as the
+tithis row does.
 
 The budgets are held by `crates/astro/benches/astro.rs`
 (`cargo bench -p teistro-astro --bench astro`). The narrowing's cost is
@@ -358,9 +370,10 @@ the settings' keys.
 2. The Moon's rise and set: the semidiameter from the mean radius against
    the eclipse convention (k = 0.2725), a difference under an arcsecond;
    to be pinned when the panchanga day computes moonrise.
-3. One request for both bodies of a composite quantity, halving the
-   completion's overhead per sample. (The `CROSSINGS` override exists:
-   Teimeris's own search answers under `PREFER_NATIVE`, held to the kernel
-   by the kit's two crossings checks within 0.004 s; a native stations
-   search of its own is not needed, a station being a crossing of the
-   speed.)
+3. Closed: a composite quantity's two bodies are read in one request
+   (`Longitudes::longitude_and_speed_pair`); the tithi search over the
+   test provider fell from 233 µs to 183 µs. (The `CROSSINGS` override
+   exists: Teimeris's own search answers under `PREFER_NATIVE`, held to
+   the kernel by the kit's two crossings checks within 0.004 s; a native
+   stations search of its own is not needed, a station being a crossing
+   of the speed.)
