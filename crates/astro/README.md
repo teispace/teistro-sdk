@@ -44,7 +44,11 @@ The astronomy layer of the Teistro SDK: everything above raw positions
 - the planetary phenomena (`phenomena`): elongation, phase angle and
   illuminated fraction, the apparent disc and horizontal parallax, and
   the visual magnitude under the Astronomical Almanac's models, over the
-  completion or a supplied geometry; and the equation of time (`sky`).
+  completion or a supplied geometry; and the equation of time (`sky`);
+- visibility and the heliacal phenomena (`visibility`): whether a body
+  near the Sun is seen on a day and the days it appears and disappears,
+  under the Surya Siddhanta's degrees of time, the tradition's
+  combustion orb or Ptolemy's arcus visionis, over any provider.
 
 ```rust
 use teistro_astro::rise_set::Solver;

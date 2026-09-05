@@ -57,7 +57,12 @@ the IAU 2000B nutation (`gst06b`) instead of the IAU 2000 one (`gst00b`):
 the meridian, every house cusp and the equation of time move by under
 0.002″ (6e-7°) between 1950 and 2050 and by 0.01″ at 1850, and
 Teimeris's sidereal time inside its window is matched within 0.0012″.
-Nothing else computes yet.
+Visibility and the heliacal phenomena compute for the first time
+(`astro::visibility`): the state of a body near the Sun on a day and the
+days it appears and disappears, under the Surya Siddhanta's degrees of
+time, the tradition's combustion orb or Ptolemy's arcus visionis, each
+named in the call. The local mean midnight helper moved from the
+classical crate to `astro::sky` unchanged. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.

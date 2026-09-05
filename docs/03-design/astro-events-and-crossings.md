@@ -224,7 +224,11 @@ source reports.
 ## 5. The API
 
 `Solver::new(sky, body, place, horizon, delta_t)`, `Solver::event(kind,
-from, window_days)`, `Solver::day(midnight)`, `Solver::describe()`;
+from, window_days)`, `Solver::day(midnight)`, `Solver::altitude_deg(ut1)`
+(the geocentric altitude the solver reads, which the visibility criteria
+compare the Sun's depression against), `Solver::describe()`;
+`sky::local_mean_midnight(at, longitude)` names the local mean day an
+instant falls in, for the day, the panchanga and the visibility scan;
 `Completion` implements `ApparentPositions` so a provider's positions
 feed the solver through the port; `DrikSun` in `calendar::solar` wraps
 both for the calendars and the local day. The port's `horizon_event` is

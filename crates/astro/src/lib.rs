@@ -61,6 +61,7 @@ pub mod scale;
 pub mod sky;
 pub mod solve;
 pub mod stars;
+pub mod visibility;
 
 #[rustfmt::skip]
 mod generated;

@@ -174,6 +174,28 @@ fn event_benches(c: &mut Criterion, completion: &Completion<'_, TestProvider>) {
             b.iter(|| tithis.between(black_box(from), from.plus_days(29.53).expect("a month")));
         },
     );
+
+    {
+        use teistro_astro::visibility::{Criterion, Heliacal};
+        let kathmandu = Place::new(
+            Latitude::literal(27.7172),
+            Longitude::literal(85.324),
+            Altitude::literal(1400.0),
+        );
+        let day = JulianDay::literal(2_460_310.5 - 85.324 / 360.0);
+        for criterion in [Criterion::SURYA_SIDDHANTA, Criterion::PTOLEMY] {
+            let heliacal = Heliacal::new(
+                completion,
+                kathmandu,
+                criterion,
+                Horizon::CENTRE_NO_REFRACTION,
+                DeltaTModel::TableThenModel,
+            );
+            c.bench_function(&format!("visibility state {criterion}"), |b| {
+                b.iter(|| heliacal.state(Body::Mercury, black_box(day)));
+            });
+        }
+    }
 }
 
 criterion_group!(astro, benches);

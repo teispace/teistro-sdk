@@ -556,10 +556,7 @@ impl SuryaSiddhanta {
     /// falls in, at a longitude.
     #[must_use]
     pub fn local_mean_midnight(at: JulianDay<Ut1>, longitude: Longitude) -> JulianDay<Ut1> {
-        let offset = longitude.get() / 360.0;
-        let local = at.get() + offset;
-        let midnight_local = (local - 0.5).floor() + 0.5;
-        JulianDay::try_new(midnight_local - offset).unwrap_or(at)
+        teistro_astro::sky::local_mean_midnight(at, longitude)
     }
 
     /// The times of rising of the signs at a latitude (III.42 to 45), or

@@ -61,6 +61,29 @@ pub fn greenwich_sidereal_time_deg(ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> f6
     normalise_deg(iau::gst06b(uta, utb, tta, ttb) * RAD2DEG)
 }
 
+/// The local mean midnight that begins the local mean day an instant
+/// falls in, at a longitude: the instant whose local mean time (UT1 plus
+/// four minutes a degree of longitude) is 0h. The day the panchanga, the
+/// rise and set solver's `day` and the visibility scan all reckon by.
+///
+/// ```
+/// use teistro_astro::sky::local_mean_midnight;
+/// use teistro_core::quantity::{JulianDay, Longitude, Ut1};
+///
+/// // 2024-06-21 12:00 UT at Kathmandu (85.324° E): the local day began
+/// // at 2024-06-20 18:18:42 UT.
+/// let noon = JulianDay::<Ut1>::literal(2_460_483.0);
+/// let midnight = local_mean_midnight(noon, Longitude::literal(85.324));
+/// assert!((midnight.get() - (2_460_482.5 - 85.324 / 360.0)).abs() < 1e-9);
+/// ```
+#[must_use]
+pub fn local_mean_midnight(at: JulianDay<Ut1>, longitude: Longitude) -> JulianDay<Ut1> {
+    let offset = longitude.get() / 360.0;
+    let local = at.get() + offset;
+    let midnight_local = (local - 0.5).floor() + 0.5;
+    JulianDay::try_new(midnight_local - offset).unwrap_or(at)
+}
+
 /// Local apparent sidereal time at a longitude, degrees.
 ///
 /// ```

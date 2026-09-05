@@ -341,3 +341,11 @@ the locale packs carry the presentation forms.
    count for the same civil day (the worked example); the Bikram Sambat
    measurement shows the difference is immaterial to the calendar under
    the punya-kala rule.
+8. **Chapter IX's own arithmetic.** The heliacal risings and settings
+   compute over this provider through `astro::visibility` under the
+   text's thresholds (IX.6 to 8, X.1) and its measure in degrees of time,
+   but with exact horizon geometry in place of the text's rising-time
+   tables (III.42 to 50, which `lagna` has) and its correction of the
+   planet's place for latitude at the horizon (VII.8, not built); the
+   difference is the text's own approximation, to be measured when VII.8
+   is built.
