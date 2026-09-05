@@ -246,7 +246,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     }
 
     /// Decides who implements a step the provider may override.
-    fn choose(
+    pub(crate) fn choose(
         &self,
         declared: Overrides,
         step: &'static str,

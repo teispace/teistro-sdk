@@ -23,13 +23,14 @@ use crate::capabilities::{
     Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
 };
 use crate::columns::{CellStatus, PositionColumns, Source, tier_bits, tier_from_bits};
+use crate::crossing::{CrossingRequest, Direction, Event, Lattice, Quantity};
 use crate::error::ProviderError;
 use crate::frame::Frame;
 use crate::horizon::{DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Refraction};
 use crate::provider::{EphemerisProvider, PositionRequest};
 
 /// The ABI version of the vtable layout.
-pub const VTABLE_ABI_VERSION: u32 = 1;
+pub const VTABLE_ABI_VERSION: u32 = 2;
 
 /// A C observer: degrees and metres, validated into a [`Place`] on the
 /// way in.
@@ -156,6 +157,84 @@ pub struct HorizonRequestC {
     pub altitude_deg: f64,
 }
 
+/// A C crossings request.
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct CrossingRequestC {
+    /// `sizeof(CrossingRequestC)` as the caller compiled it.
+    pub struct_size: u32,
+    /// [`Frame::to_bits`].
+    pub frame_bits: u32,
+    /// [`Quantity::kind_id`]: 0 a longitude, 1 a speed, 2 a composite.
+    pub quantity_kind: u8,
+    /// Whether `observer` is set.
+    pub has_observer: u8,
+    /// Reserved, zero.
+    pub reserved: [u8; 2],
+    /// [`Body::id`] of the first body.
+    pub first_body: u16,
+    /// [`Body::id`] of the second body of a composite; else zero.
+    pub second_body: u16,
+    /// The first body's coefficient in a composite.
+    pub coefficient_a: f64,
+    /// The second body's coefficient in a composite.
+    pub coefficient_b: f64,
+    /// The lattice's first line, degrees.
+    pub origin_deg: f64,
+    /// The lattice's spacing, degrees; zero for a single target.
+    pub step_deg: f64,
+    /// The window's start, UT1.
+    pub from_jd_ut1: f64,
+    /// The window's end, UT1.
+    pub to_jd_ut1: f64,
+    /// How closely each instant is placed, days.
+    pub tolerance_days: f64,
+    /// The observer, read when `has_observer` is set.
+    pub observer: ObserverC,
+}
+
+/// A C crossing event.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CrossingEventC {
+    /// The instant, UT1.
+    pub jd_ut1: f64,
+    /// The boundary reached, degrees.
+    pub boundary_deg: f64,
+    /// [`Direction::id`].
+    pub direction: u8,
+    /// Reserved, zero.
+    pub reserved: [u8; 7],
+}
+
+impl CrossingEventC {
+    fn of(event: &Event) -> CrossingEventC {
+        CrossingEventC {
+            jd_ut1: event.instant.get(),
+            boundary_deg: event.boundary_deg,
+            direction: event.direction.id(),
+            reserved: [0; 7],
+        }
+    }
+
+    fn event(self) -> Result<Event, ProviderError> {
+        let direction = Direction::from_id(self.direction)
+            .ok_or_else(|| ProviderError::invalid(format!("direction {}", self.direction)))?;
+        if !self.boundary_deg.is_finite() {
+            return Err(ProviderError::invalid(
+                "a crossing's boundary is not finite",
+            ));
+        }
+        Ok(Event {
+            instant: JulianDay::try_new(self.jd_ut1)
+                .map_err(|error| ProviderError::invalid(error.to_string()))?,
+            boundary_deg: self.boundary_deg,
+            direction,
+            evaluations: 0,
+        })
+    }
+}
+
 /// A C data hash.
 #[repr(C)]
 #[derive(Debug)]
@@ -273,6 +352,19 @@ pub struct ProviderVtable {
             request: *const HorizonRequestC,
             out_jd_ut1: *mut f64,
             out_found: *mut u8,
+        ) -> i32,
+    >,
+    /// The crossings override: writes up to `capacity` events into the
+    /// caller's buffer and the number found into `out_count`, which may
+    /// exceed the capacity, in which case the caller calls again with a
+    /// larger buffer.
+    pub crossings: Option<
+        unsafe extern "C" fn(
+            user_data: *mut c_void,
+            request: *const CrossingRequestC,
+            out_events: *mut CrossingEventC,
+            capacity: u32,
+            out_count: *mut u32,
         ) -> i32,
     >,
 }
@@ -616,6 +708,62 @@ impl EphemerisProvider for VtableProvider {
             .map(Some)
             .map_err(|error| ProviderError::invalid(error.to_string()))
     }
+
+    fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
+        let Some(f) = self.vtable.crossings else {
+            return Err(ProviderError::unsupported("crossings"));
+        };
+        let (first, second) = request.quantity.bodies();
+        let (coefficient_a, coefficient_b) = match request.quantity {
+            Quantity::Composite { a, b, .. } => (a, b),
+            Quantity::Longitude(_) | Quantity::Speed(_) => (0.0, 0.0),
+        };
+        let raw = CrossingRequestC {
+            struct_size: size_of_u32::<CrossingRequestC>(),
+            frame_bits: request.frame.to_bits(),
+            quantity_kind: request.quantity.kind_id(),
+            has_observer: u8::from(request.observer.is_some()),
+            reserved: [0; 2],
+            first_body: first.id(),
+            second_body: second.map_or(0, Body::id),
+            coefficient_a,
+            coefficient_b,
+            origin_deg: request.lattice.origin_deg,
+            step_deg: request.lattice.step_deg,
+            from_jd_ut1: request.from.get(),
+            to_jd_ut1: request.to.get(),
+            tolerance_days: request.tolerance_days,
+            observer: request
+                .observer
+                .map_or_else(ObserverC::default, ObserverC::of),
+        };
+        // A buffer that grows to what the provider reports: two rounds at
+        // most for any window.
+        let mut capacity = 64u32;
+        loop {
+            let mut buffer = vec![CrossingEventC::default(); capacity as usize];
+            let mut count = 0u32;
+            // SAFETY: `raw` outlives the call; the buffer holds `capacity`
+            // writable events and `count` is a valid out.
+            check(
+                unsafe {
+                    f(
+                        self.user_data,
+                        &raw const raw,
+                        buffer.as_mut_ptr(),
+                        capacity,
+                        &raw mut count,
+                    )
+                },
+                "crossings",
+            )?;
+            if count <= capacity {
+                buffer.truncate(count as usize);
+                return buffer.into_iter().map(CrossingEventC::event).collect();
+            }
+            capacity = count;
+        }
+    }
 }
 
 // ── Presenting a Rust provider as a vtable ─────────────────────────────────
@@ -698,6 +846,7 @@ impl<P: EphemerisProvider> Exported<P> {
             ayanamsha: Some(ayanamsha_trampoline::<P>),
             dut1: Some(dut1_trampoline::<P>),
             horizon_event: Some(horizon_event_trampoline::<P>),
+            crossings: Some(crossings_trampoline::<P>),
         }
     }
 
@@ -1004,6 +1153,83 @@ unsafe extern "C" fn horizon_event_trampoline<P: EphemerisProvider>(
     }))
 }
 
+unsafe extern "C" fn crossings_trampoline<P: EphemerisProvider>(
+    user_data: *mut c_void,
+    request: *const CrossingRequestC,
+    out_events: *mut CrossingEventC,
+    capacity: u32,
+    out_count: *mut u32,
+) -> i32 {
+    if user_data.is_null()
+        || request.is_null()
+        || out_count.is_null()
+        || (out_events.is_null() && capacity > 0)
+    {
+        return invalid_call();
+    }
+    // SAFETY: `user_data` is the `Exported` box registered with this vtable;
+    // the caller promises a readable request.
+    let (this, raw) = unsafe { (&*user_data.cast::<Exported<P>>(), &*request) };
+    if raw.struct_size != size_of_u32::<CrossingRequestC>() {
+        return invalid_call();
+    }
+    let Some(first) = Body::from_id(raw.first_body) else {
+        return invalid_call();
+    };
+    let second = (raw.quantity_kind == 2).then(|| Body::from_id(raw.second_body));
+    let second = match second {
+        Some(None) => return invalid_call(),
+        Some(Some(body)) => Some(body),
+        None => None,
+    };
+    let Some(quantity) = Quantity::from_parts(
+        raw.quantity_kind,
+        first,
+        second,
+        raw.coefficient_a,
+        raw.coefficient_b,
+    ) else {
+        return invalid_call();
+    };
+    let (Ok(frame), Ok(from), Ok(to)) = (
+        Frame::try_from_bits(raw.frame_bits),
+        JulianDay::try_new(raw.from_jd_ut1),
+        JulianDay::try_new(raw.to_jd_ut1),
+    ) else {
+        return invalid_call();
+    };
+    let observer = if raw.has_observer == 0 {
+        None
+    } else {
+        match raw.observer.place() {
+            Ok(place) => Some(place),
+            Err(_) => return invalid_call(),
+        }
+    };
+    let request = CrossingRequest {
+        quantity,
+        lattice: Lattice {
+            origin_deg: raw.origin_deg,
+            step_deg: raw.step_deg,
+        },
+        from,
+        to,
+        tolerance_days: raw.tolerance_days,
+        frame,
+        observer,
+    };
+    status(this.provider.crossings(&request).map(|events| {
+        // SAFETY: the caller promises a writable count and a buffer of
+        // `capacity` events.
+        unsafe {
+            out_count.write(u32::try_from(events.len()).unwrap_or(u32::MAX));
+            for (index, event) in events.iter().take(capacity as usize).enumerate() {
+                out_events.add(index).write(CrossingEventC::of(event));
+            }
+        }
+    }))
+}
+
 /// An [`Exported`] provider seen through its vtable, tied to the box's
 /// lifetime so the pointers inside stay valid.
 pub struct ExportedVtable<'a> {
@@ -1053,6 +1279,10 @@ impl EphemerisProvider for ExportedVtable<'_> {
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
         self.provider.horizon_event(request)
     }
+
+    fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
+        self.provider.crossings(request)
+    }
 }
 
 #[cfg(test)]
@@ -1062,6 +1292,7 @@ mod tests {
     use teistro_core::quantity::{Altitude, Latitude, Longitude};
 
     use super::*;
+    use crate::frame::Zodiac;
     use crate::test_provider::TestProvider;
 
     #[test]
@@ -1110,6 +1341,19 @@ mod tests {
             bound.horizon_event(&horizon),
             Err(ProviderError::Unsupported { .. })
         ));
+        let crossings = CrossingRequest {
+            quantity: Quantity::Longitude(Body::Sun),
+            lattice: Lattice::SIGNS,
+            from: JulianDay::literal(2_460_000.5),
+            to: JulianDay::literal(2_460_030.5),
+            tolerance_days: 1e-7,
+            frame: Frame::CANONICAL,
+            observer: None,
+        };
+        assert!(matches!(
+            bound.crossings(&crossings),
+            Err(ProviderError::Unsupported { .. })
+        ));
         let through_box = exported.bound().unwrap();
         assert!(
             through_box
@@ -1118,6 +1362,93 @@ mod tests {
                 .bit_identical(&via_trait)
         );
         assert!(format!("{through_box:?}").contains("test-provider"));
+    }
+
+    /// The test provider with a crossings override that answers one event
+    /// a day, so a window longer than the first buffer makes the caller
+    /// come back for more.
+    struct DailyCrossings(TestProvider);
+
+    impl EphemerisProvider for DailyCrossings {
+        fn capabilities(&self) -> Capabilities {
+            let mut capabilities = self.0.capabilities();
+            capabilities.overrides = capabilities.overrides.with(Overrides::CROSSINGS);
+            capabilities
+        }
+
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
+            self.0.positions(request)
+        }
+
+        fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
+            if request.observer.is_some() {
+                return Err(ProviderError::unsupported("crossings: topocentric"));
+            }
+            let mut events = Vec::new();
+            let mut day = request.from.get().ceil();
+            let mut k = 0i64;
+            while day < request.to.get() {
+                events.push(Event {
+                    instant: JulianDay::literal(day),
+                    boundary_deg: request.lattice.line(k),
+                    direction: if k % 2 == 0 {
+                        Direction::Rising
+                    } else {
+                        Direction::Falling
+                    },
+                    evaluations: 0,
+                });
+                day += 1.0;
+                k += 1;
+            }
+            Ok(events)
+        }
+    }
+
+    #[test]
+    fn a_crossings_override_round_trips_through_its_vtable_whatever_the_count() {
+        let exported = Exported::new(DailyCrossings(TestProvider::new()));
+        // SAFETY: the box outlives the bound provider in this test.
+        let bound = unsafe {
+            VtableProvider::bind(Exported::<DailyCrossings>::vtable(), exported.user_data())
+        }
+        .unwrap();
+        assert!(bound.capabilities().has(Overrides::CROSSINGS));
+        for days in [10u32, 64, 200] {
+            let request = CrossingRequest {
+                quantity: Quantity::ELONGATION,
+                lattice: Lattice::TITHIS,
+                from: JulianDay::literal(2_460_000.5),
+                to: JulianDay::literal(2_460_000.5 + f64::from(days)),
+                tolerance_days: 1e-7,
+                frame: Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
+                observer: None,
+            };
+            let via_vtable = bound.crossings(&request).unwrap();
+            let direct = exported.provider().crossings(&request).unwrap();
+            assert_eq!(via_vtable, direct);
+            assert_eq!(via_vtable.len(), usize::try_from(days).unwrap());
+        }
+        let topocentric = CrossingRequest {
+            quantity: Quantity::Longitude(Body::Moon),
+            lattice: Lattice::NAKSHATRAS,
+            from: JulianDay::literal(2_460_000.5),
+            to: JulianDay::literal(2_460_001.5),
+            tolerance_days: 1e-7,
+            frame: Frame::CANONICAL,
+            observer: Some(Place::new(
+                Latitude::literal(27.7172),
+                Longitude::literal(85.324),
+                Altitude::literal(1400.0),
+            )),
+        };
+        assert!(matches!(
+            bound.crossings(&topocentric),
+            Err(ProviderError::Unsupported { .. })
+        ));
     }
 
     #[test]

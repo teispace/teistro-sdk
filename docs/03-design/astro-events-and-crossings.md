@@ -224,7 +224,15 @@ topocentric frame) is the source of longitudes; `Search::new(&source,
 quantity, lattice)` with `with_tolerance_days` and `with_step_days` to
 override the defaults, `between(from, to)` for every event of a window
 in time order and `next_within(from, window_days)` for the first;
-`stations(&source, body, from, to, tolerance_days)`. `Quantity::Longitude(body)`,
+`stations(&source, body, from, to, tolerance_days)`;
+`Completion::crossings(&request)` for the same search under the override
+policy, a provider that declares the `CROSSINGS` override answering with
+its own search under `PREFER_NATIVE` and `NATIVE_ONLY` and the kernel
+otherwise (a request the provider refuses, a topocentric frame, falls to
+the kernel under `PREFER_NATIVE`), the result saying which
+(`Crossings { events, implementation }`). The vocabulary (`Quantity`,
+`Lattice`, `Direction`, `Event`, `CrossingRequest`) is the port's
+(`teistro_port_ephemeris::crossing`), re-exported here. `Quantity::Longitude(body)`,
 `Quantity::ELONGATION`, `Quantity::MOON_PLUS_SUN`,
 `Quantity::separation(a, b)`, `Quantity::Speed(body)`; `Lattice::SIGNS`,
 `NAKSHATRAS`, `TITHIS`, `KARANAS`, `YOGAS`, `Lattice::single(target)`.
@@ -335,7 +343,9 @@ the settings' keys.
 2. The Moon's rise and set: the semidiameter from the mean radius against
    the eclipse convention (k = 0.2725), a difference under an arcsecond;
    to be pinned when the panchanga day computes moonrise.
-3. A `CROSSINGS` override in the port, so an engine's own search
-   (Teimeris's `crossings`) can answer under `PREFER_NATIVE` with a kit
-   check holding it to the SDK's kernel; and one request for both bodies
-   of a composite quantity, halving the completion's overhead per sample.
+3. One request for both bodies of a composite quantity, halving the
+   completion's overhead per sample. (The `CROSSINGS` override exists:
+   Teimeris's own search answers under `PREFER_NATIVE`, held to the kernel
+   by the kit's two crossings checks within 0.004 s; a native stations
+   search of its own is not needed, a station being a crossing of the
+   speed.)

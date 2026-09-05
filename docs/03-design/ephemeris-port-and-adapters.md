@@ -140,8 +140,10 @@ as -102. As the SDK's error, unsupported is `UNSUPPORTED`, out of range
 | `ayanamsha_deg(jd, scale, ayanamsha)` | override | the mean ayanamsha, the value sidereal longitudes subtract, without the nutation in longitude, for a catalogued ayanamsha | native, no-nutation switch only | native with `SEFLG_NONUT` | the SDK's catalogue (Phase 2) |
 | `horizon_event(request)` | override | the next rise, set, transit or antitransit of a body at a place inside a window, under a horizon convention, or `None` when it does not happen | native, through its event search; the convention mapped onto its options, a custom altitude refused unless a twilight | not declared | the SDK's solver (`astro-events-and-crossings.md`) |
 
+| `crossings(request)` | override | every crossing of a quantity (a body's longitude, its speed, or a composite angle of two bodies) over a lattice of boundaries inside a window, in the frame requested, in time order, with each boundary and direction | native, through its crossing search (the quantity and lattice mapped onto its options, the direction read from the quantity's rate at the instant); a topocentric or equatorial request refused, and the SDK's kernel answers | not declared | the SDK's kernel (`astro-events-and-crossings.md`), which `Completion::crossings` runs under the policy |
+
 The overrides not built yet (sidereal time, nodes and apsides, houses,
-crossings, stations, eclipses, stars) follow the same pattern: a bit in
+stations as a search of their own, eclipses, stars) follow the same pattern: a bit in
 the capabilities, a trait method with a default that answers
 `Unsupported`, a vtable slot that may be null, and a kit check that the
 declared override works and agrees with the SDK's own implementation
@@ -190,7 +192,7 @@ between the engines' nutation model and IAU 2000B.
 
 The port is one `#[repr(C)]` vtable: `struct_size`, `abi_version`, and
 function pointers for `capabilities`, `positions`, `obliquity`,
-`delta_t`, `ayanamsha` and `horizon_event`, the last four nullable. Requests, columns and
+`delta_t`, `ayanamsha`, `dut1`, `horizon_event` and `crossings`, the last six nullable (ABI version 2). Requests, columns and
 capabilities cross as `#[repr(C)]` structs with their own `struct_size`
 so either side can be older. Columns are caller-allocated: the SDK owns
 the vectors and hands pointers with a capacity; a provider writes into
@@ -252,7 +254,7 @@ and 2565 µs completed.
 
 ## 9. Tests and the conformance kit
 
-The kit (`crates/ephemeris-kit`) runs the same sixteen checks against
+The kit (`crates/ephemeris-kit`) runs the same eighteen checks against
 every provider under one published set of bounds (`Bounds::DEFAULT`),
 never per provider; measured on 2026-09-05 against the test provider,
 Teimeris 0.1.0 and the Swiss Ephemeris 2.10.03 over the same twelve
@@ -271,10 +273,12 @@ Teimeris 0.1.0 and the Swiss Ephemeris 2.10.03 over the same twelve
 | unsupported body refused by name | | refused | every body offered | every body offered | refused |
 | native obliquity against IAU 2006 and IAU 2000B (published, not gated, for a classical astronomy) | 0.01″ | not declared | 4.0e-4″ | 4.0e-4″ | 2065″: the text's 24° |
 | native Delta T against the IERS table, inside the table's span | 1 s | not declared | 0.33 s, at the table's last row | 0.33 s | not declared |
-| native ayanamsha against the published values (at J2000, or at Burgess's instant for the text's own) | 0.1° | not declared | 0.011° (Lahiri 23.8571, Raman 22.4108, Krishnamurti 23.7602) | the same | 7.4e-5° (20.4108° in 1860) |
+| native ayanamsha against the published values (at J2000; the Surya Siddhanta member at Burgess's 1860 instant against the text's own value for a classical astronomy and against the SDK's epoch construction for a modern one) | 0.1° | not declared | 0.011° (Lahiri 23.8571, Raman 22.4108, Krishnamurti 23.7602, Surya Siddhanta 18.9400) | the same | 7.4e-5° (20.4108° in 1860) |
 | native DUT1 within the 0.9 s bound | 0.9 s | not declared | not declared | not declared | not declared |
 | native rise and set of the Sun against the SDK's solver, the geometric convention, three sea-level places (published, not gated, for a classical astronomy) | 1 s | not declared | 0.13 s | not declared | 250 s: no equation of time (C37) |
 | the same under the almanac's convention (the upper limb with refraction; skipped when the provider refuses the convention) | 10 s | not declared | 7.3 s, at Reykjavík (C34) | not declared | refused: the text gives the centre on the geometric horizon |
+| native crossings of Mercury's longitude over the signs, 120 days from the first instant, against the SDK's kernel over the same provider | 1 s | not declared | 0.0034 s over 6 events | not declared | not declared |
+| native crossings of the elongation over the tithis, 30 days, against the kernel | 1 s | not declared | 0.0039 s over 30 events | not declared | not declared |
 | completion through the native obliquity against the provider's own ecliptic output | 1e-4″ | cannot return equatorial | 2.0e-10″ | 2.0e-10″ | cannot return equatorial |
 | completion through the SDK's obliquity and nutation | 0.05″ | | 3.9e-4″ | 3.9e-4″ | |
 

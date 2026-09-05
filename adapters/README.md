@@ -9,7 +9,7 @@ adapters' own source is Apache-2.0.
 
 | adapter | engine | needs | run |
 |---|---|---|---|
-| [`ephemeris-teimeris/rust`](ephemeris-teimeris/rust) | Teimeris, through its Rust binding; declares the obliquity, Delta T, ayanamsha, topocentric and rise-and-set overrides | `TEIMERIS_LIB_DIR` (the engine's release build), `TEIMERIS_DATA_DIR` (the `.se1` files; the Teimeris checkout's `data/` by default) | `cargo run --release --manifest-path adapters/ephemeris-teimeris/rust/Cargo.toml --bin teistro-ephemeris-teimeris-kit`; `--bin teistro-ephemeris-teimeris-bs-fit` for the Bikram Sambat measurement |
+| [`ephemeris-teimeris/rust`](ephemeris-teimeris/rust) | Teimeris, through its Rust binding; declares the obliquity, Delta T, ayanamsha, topocentric, rise-and-set, crossings and stations overrides | `TEIMERIS_LIB_DIR` (the engine's release build), `TEIMERIS_DATA_DIR` (the `.se1` files; the Teimeris checkout's `data/` by default) | `cargo run --release --manifest-path adapters/ephemeris-teimeris/rust/Cargo.toml --bin teistro-ephemeris-teimeris-kit`; `--bin teistro-ephemeris-teimeris-bs-fit` for the Bikram Sambat measurement |
 | [`ephemeris-sweph/rust`](ephemeris-sweph/rust) | the Swiss Ephemeris C library, compiled from sources named at build time; declares the obliquity, Delta T, ayanamsha and topocentric overrides | `SWEPH_SRC_DIR` (the library's sources), `SWEPH_DATA_DIR` | `cargo run --release --manifest-path adapters/ephemeris-sweph/rust/Cargo.toml` |
 
 Both read the same `.se1` file family and declare the same coverage and

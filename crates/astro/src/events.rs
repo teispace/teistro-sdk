@@ -31,9 +31,13 @@ use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+use teistro_core::settings::OverridePolicy;
+use teistro_port_ephemeris::{
+    Body, CrossingRequest, EphemerisProvider, Frame, Overrides, PositionRequest, ProviderError,
+    TimeScale,
+};
 
-use crate::completion::Completion;
+use crate::completion::{Completion, CompletionError, Implementation};
 use crate::solve::{Caps, SolveError, first_zero, refine};
 
 /// The tolerance a crossing is found to, days: a hundredth of a second,
@@ -145,101 +149,65 @@ impl<P: EphemerisProvider + ?Sized> Longitudes for FrameLongitudes<'_, P> {
     }
 }
 
-/// What is searched for a boundary.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
-#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Quantity {
-    /// A body's ecliptic longitude, degrees.
-    Longitude(Body),
-    /// A body's rate of longitude, degrees a day; a target of zero is a
-    /// station.
-    Speed(Body),
-    /// `a × longitude(first) + b × longitude(second)`, degrees, reduced to
-    /// a circle: the tithi and the karana (Moon less Sun), the yoga (Moon
-    /// plus Sun), an aspect (first less second at one angle).
-    Composite {
-        /// The first body's coefficient.
-        a: f64,
-        /// The first body.
-        first: Body,
-        /// The second body's coefficient.
-        b: f64,
-        /// The second body.
-        second: Body,
-    },
+pub use teistro_port_ephemeris::crossing::{Direction, Event, Lattice, Quantity};
+
+/// The greatest rate the quantity reaches, degrees a day: a body's own,
+/// or the coefficients' weighted sum of the two bodies' for a composite.
+#[must_use]
+pub fn quantity_rate_deg_per_day(quantity: Quantity) -> f64 {
+    match quantity {
+        Quantity::Longitude(body) | Quantity::Speed(body) => greatest_rate(body),
+        Quantity::Composite {
+            a,
+            first,
+            b,
+            second,
+        } => a.abs() * greatest_rate(first) + b.abs() * greatest_rate(second),
+    }
 }
 
-impl Quantity {
-    /// The Moon less the Sun: the tithi and karana lattices.
-    pub const ELONGATION: Quantity = Quantity::Composite {
-        a: 1.0,
-        first: Body::Moon,
-        b: -1.0,
-        second: Body::Sun,
-    };
-
-    /// The Moon plus the Sun: the nitya yoga lattice.
-    pub const MOON_PLUS_SUN: Quantity = Quantity::Composite {
-        a: 1.0,
-        first: Body::Moon,
-        b: 1.0,
-        second: Body::Sun,
-    };
-
-    /// The signed longitude of `first` ahead of `second`: an aspect.
-    #[must_use]
-    pub const fn separation(first: Body, second: Body) -> Quantity {
+/// The quantity at an instant from a source of longitudes: an angle reduced
+/// to `[0, 360)`, or a rate in degrees a day.
+fn evaluate<S: Longitudes + ?Sized>(
+    quantity: Quantity,
+    source: &S,
+    ut1: JulianDay<Ut1>,
+) -> Result<f64, Error> {
+    Ok(match quantity {
+        Quantity::Longitude(body) => source.longitude_and_speed(body, ut1)?.0,
+        Quantity::Speed(body) => source.longitude_and_speed(body, ut1)?.1,
         Quantity::Composite {
-            a: 1.0,
+            a,
             first,
-            b: -1.0,
+            b,
             second,
+        } => {
+            let (x, _) = source.longitude_and_speed(first, ut1)?;
+            let (y, _) = source.longitude_and_speed(second, ut1)?;
+            normalise_deg(a * x + b * y)
         }
-    }
+    })
+}
 
-    /// The fastest the quantity can move, degrees a day, from the bodies'
-    /// greatest geocentric rates: the step rule's bound.
-    #[must_use]
-    pub fn greatest_rate_deg_per_day(self) -> f64 {
-        match self {
-            Quantity::Longitude(body) | Quantity::Speed(body) => greatest_rate(body),
-            Quantity::Composite {
-                a,
-                first,
-                b,
-                second,
-                ..
-            } => a.abs() * greatest_rate(first) + b.abs() * greatest_rate(second),
-        }
+/// The spacing the kernel steps by: a single target is one line a circle
+/// apart from itself.
+fn spacing_deg(lattice: &Lattice) -> f64 {
+    if lattice.is_single() {
+        SINGLE_TARGET_SPACING_DEG
+    } else {
+        lattice.step_deg
     }
+}
 
-    fn evaluate<S: Longitudes + ?Sized>(
-        self,
-        source: &S,
-        ut1: JulianDay<Ut1>,
-    ) -> Result<f64, Error> {
-        Ok(match self {
-            Quantity::Longitude(body) => source.longitude_and_speed(body, ut1)?.0,
-            Quantity::Speed(body) => source.longitude_and_speed(body, ut1)?.1,
-            Quantity::Composite {
-                a,
-                first,
-                b,
-                second,
-                ..
-            } => {
-                let (lon_a, _) = source.longitude_and_speed(first, ut1)?;
-                let (lon_b, _) = source.longitude_and_speed(second, ut1)?;
-                normalise_deg(a * lon_a + b * lon_b)
-            }
-        })
-    }
-
-    /// Whether the quantity is an angle on a circle (wrapping at 360°) or a
-    /// plain number (a speed).
-    const fn wraps(self) -> bool {
-        !matches!(self, Quantity::Speed(_))
-    }
+/// The `k`th line of the lattice on the unwrapped curve.
+fn line_deg(lattice: &Lattice, k: i64) -> f64 {
+    // A line index is a small integer.
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "lattice indices are small integers"
+    )]
+    let k = k as f64;
+    lattice.origin_deg + k * spacing_deg(lattice)
 }
 
 /// The greatest geocentric rate of longitude a body reaches, degrees a
@@ -264,97 +232,6 @@ pub fn greatest_rate(body: Body) -> f64 {
     }
 }
 
-/// The boundaries searched: a single target, or every line of a lattice
-/// `origin + k × step`.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
-pub struct Lattice {
-    /// The first line, degrees.
-    pub origin_deg: f64,
-    /// The spacing, degrees; zero for the single target at the origin.
-    pub step_deg: f64,
-}
-
-impl Lattice {
-    /// The twelve signs.
-    pub const SIGNS: Lattice = Lattice {
-        origin_deg: 0.0,
-        step_deg: 30.0,
-    };
-    /// The twenty-seven nakshatras.
-    pub const NAKSHATRAS: Lattice = Lattice {
-        origin_deg: 0.0,
-        step_deg: 360.0 / 27.0,
-    };
-    /// The thirty tithis of the Moon less the Sun.
-    pub const TITHIS: Lattice = Lattice {
-        origin_deg: 0.0,
-        step_deg: 12.0,
-    };
-    /// The sixty karanas, half tithis.
-    pub const KARANAS: Lattice = Lattice {
-        origin_deg: 0.0,
-        step_deg: 6.0,
-    };
-    /// The twenty-seven yogas of the Moon plus the Sun.
-    pub const YOGAS: Lattice = Lattice {
-        origin_deg: 0.0,
-        step_deg: 360.0 / 27.0,
-    };
-
-    /// One target.
-    #[must_use]
-    pub const fn single(target_deg: f64) -> Lattice {
-        Lattice {
-            origin_deg: target_deg,
-            step_deg: 0.0,
-        }
-    }
-
-    /// The spacing the step rule reckons with.
-    fn spacing_deg(self) -> f64 {
-        if self.step_deg > 0.0 {
-            self.step_deg
-        } else {
-            SINGLE_TARGET_SPACING_DEG
-        }
-    }
-
-    /// The lattice line at index `k`.
-    fn line(self, k: i64) -> f64 {
-        // A lattice index is small; the product stays exact in f64.
-        #[allow(
-            clippy::cast_precision_loss,
-            reason = "a lattice index below a million"
-        )]
-        let k = k as f64;
-        self.origin_deg + k * self.spacing_deg()
-    }
-}
-
-/// Which way the quantity passed the boundary.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Direction {
-    /// Increasing through it: an ingress, a tithi beginning.
-    Rising,
-    /// Decreasing through it: a retrograde re-entry.
-    Falling,
-}
-
-/// A boundary crossed.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
-pub struct Event {
-    /// The instant, UT1.
-    pub instant: JulianDay<Ut1>,
-    /// The boundary reached, degrees in `[0, 360)` for an angle.
-    pub boundary_deg: f64,
-    /// Which way it was passed.
-    pub direction: Direction,
-    /// How many times the source was asked to place this event, beyond the
-    /// sampling that bracketed it.
-    pub evaluations: u32,
-}
-
 /// Which way a station turns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -376,6 +253,78 @@ pub struct Station {
     pub kind: StationKind,
     /// How many times the source was asked.
     pub evaluations: u32,
+}
+
+/// The events of a crossing search over the completion, with who found
+/// them.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Crossings {
+    /// The events, in time order.
+    pub events: Vec<Event>,
+    /// The provider's own search, or the SDK's kernel.
+    pub implementation: Implementation,
+}
+
+impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
+    /// Every crossing of a quantity over a lattice inside a window, by the
+    /// override policy: a provider that declares the crossings override
+    /// answers under `PREFER_NATIVE` and `NATIVE_ONLY`, the SDK's kernel
+    /// over the provider's positions otherwise; under `PREFER_NATIVE` a
+    /// request the provider refuses (a topocentric frame, say) falls to the
+    /// kernel.
+    ///
+    /// ```
+    /// use teistro_astro::events::Lattice;
+    /// use teistro_astro::{Completion, DeltaTModel};
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::{Body, CrossingRequest, Frame, Quantity, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let completion = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// let found = completion.crossings(&CrossingRequest {
+    ///     quantity: Quantity::Longitude(Body::Sun),
+    ///     lattice: Lattice::SIGNS,
+    ///     from: JulianDay::<Ut1>::J2000,
+    ///     to: JulianDay::<Ut1>::literal(2_451_545.0 + 365.25),
+    ///     tolerance_days: 1e-7,
+    ///     frame: Frame::CANONICAL,
+    ///     observer: None,
+    /// }).expect("the Sun's ingresses");
+    /// assert_eq!(found.events.len(), 12);
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// The policy's refusal (`NATIVE_ONLY` without the override), the
+    /// provider's error, or the kernel's (`INVALID_ARG` for a bad window).
+    pub fn crossings(&self, request: &CrossingRequest) -> Result<Crossings, Error> {
+        let implementation = self.choose(Overrides::CROSSINGS, "crossings")?;
+        if implementation == Implementation::Native {
+            match self.provider().crossings(request) {
+                Ok(events) => {
+                    return Ok(Crossings {
+                        events,
+                        implementation,
+                    });
+                }
+                Err(ProviderError::Unsupported { .. })
+                    if self.policy() == OverridePolicy::PreferNative => {}
+                Err(error) => return Err(CompletionError::from(error).into()),
+            }
+        }
+        let mut longitudes = self.longitudes(request.frame);
+        if let Some(place) = request.observer {
+            longitudes = longitudes.with_observer(place);
+        }
+        let events = Search::new(&longitudes, request.quantity, request.lattice)
+            .with_tolerance_days(request.tolerance_days)
+            .between(request.from, request.to)?;
+        Ok(Crossings {
+            events,
+            implementation: Implementation::Sdk,
+        })
+    }
 }
 
 /// A search for the crossings of a quantity over a lattice.
@@ -436,12 +385,20 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     #[must_use]
     pub fn step_days(&self) -> f64 {
         self.step_days.unwrap_or_else(|| {
-            let rate = self.quantity.greatest_rate_deg_per_day();
-            (self.lattice.spacing_deg() / rate * 0.5).min(STEP_CAP_DAYS)
+            let rate = quantity_rate_deg_per_day(self.quantity);
+            (spacing_deg(&self.lattice) / rate * 0.5).min(STEP_CAP_DAYS)
         })
     }
 
     fn check(&self) -> Result<(), Error> {
+        if !(self.lattice.origin_deg.is_finite() && self.lattice.step_deg.is_finite())
+            || self.lattice.step_deg < 0.0
+        {
+            return Err(Error::invalid_arg(
+                "a lattice needs a finite origin and a non-negative step",
+            )
+            .with_field("lattice"));
+        }
         for (name, value) in [
             ("tolerance_days", self.tolerance_days),
             ("step_days", self.step_days()),
@@ -452,14 +409,6 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                 ))
                 .with_field(name));
             }
-        }
-        if !(self.lattice.origin_deg.is_finite() && self.lattice.step_deg.is_finite())
-            || self.lattice.step_deg < 0.0
-        {
-            return Err(Error::invalid_arg(
-                "a lattice needs a finite origin and a non-negative step",
-            )
-            .with_field("lattice"));
         }
         Ok(())
     }
@@ -478,7 +427,7 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         let wraps = self.quantity.wraps();
         let mut events = Vec::new();
         let sample = |t: f64| -> Result<f64, Error> {
-            self.quantity.evaluate(self.source, JulianDay::literal(t))
+            evaluate(self.quantity, self.source, JulianDay::literal(t))
         };
         // The quantity unwrapped along the samples, so a lattice line is a
         // level on a continuous curve.
@@ -504,7 +453,7 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
             let unwrapped_hi = unwrapped_lo + delta;
             if delta != 0.0 {
                 for k in lines_between(&self.lattice, unwrapped_lo, unwrapped_hi) {
-                    let line = self.lattice.line(k);
+                    let line = line_deg(&self.lattice, k);
                     let rising = delta > 0.0;
                     // The signed distance to the line along the unwrapped
                     // curve, negative before it, so the bracket has the shape
@@ -513,7 +462,7 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                     // values the lattice test saw and a line met at a sample
                     // still brackets.
                     let gap = |t: f64| -> Result<f64, Error> {
-                        let value = self.quantity.evaluate(self.source, JulianDay::literal(t))?;
+                        let value = evaluate(self.quantity, self.source, JulianDay::literal(t))?;
                         let advance = if wraps {
                             difference_deg(value, raw_lo)
                         } else {
@@ -568,7 +517,7 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
 /// `b` (either order), the line at `b` included: the lines a monotone
 /// curve passes between two samples.
 fn lines_between(lattice: &Lattice, a: f64, b: f64) -> Vec<i64> {
-    let spacing = lattice.spacing_deg();
+    let spacing = spacing_deg(lattice);
     let (lo, hi, forward) = if b > a { (a, b, true) } else { (b, a, false) };
     let first = ((lo - lattice.origin_deg) / spacing).floor();
     let last = ((hi - lattice.origin_deg) / spacing).floor();
@@ -580,7 +529,7 @@ fn lines_between(lattice: &Lattice, a: f64, b: f64) -> Vec<i64> {
     let (first, last) = (first as i64, last as i64);
     let mut lines: Vec<i64> = Vec::new();
     for k in first..=last {
-        let line = lattice.line(k);
+        let line = line_deg(lattice, k);
         let inside = if forward {
             line > lo && line <= hi
         } else {
@@ -726,7 +675,7 @@ mod tests {
             Lattice::single(10.0),
         );
         assert_eq!(single.step_days(), STEP_CAP_DAYS);
-        assert!((Quantity::MOON_PLUS_SUN.greatest_rate_deg_per_day() - 16.53).abs() < 1e-9);
+        assert!((quantity_rate_deg_per_day(Quantity::MOON_PLUS_SUN) - 16.53).abs() < 1e-9);
     }
 
     #[test]
@@ -767,9 +716,7 @@ mod tests {
             .unwrap();
         assert!((29..=31).contains(&tithis.len()), "{}", tithis.len());
         for event in &tithis {
-            let elongation = Quantity::ELONGATION
-                .evaluate(&longitudes, event.instant)
-                .unwrap();
+            let elongation = evaluate(Quantity::ELONGATION, &longitudes, event.instant).unwrap();
             assert!(difference_deg(elongation, event.boundary_deg).abs() < 1e-6);
         }
         // The first one within a window is the first of the list.
