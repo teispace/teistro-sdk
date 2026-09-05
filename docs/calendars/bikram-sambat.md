@@ -45,30 +45,83 @@ existing makers to resubmit their planetary computations for review
 So the method is the Surya Siddhanta by the authority's own word, which
 is what the measurement below found; which edition, which bija and which
 punya-kala verse the committee applies are still to be read from its
-publications: **open in part**. What the measurement implies: the
-committee's Sun is the text's, reckoned in Nepal's civil clock, and its
-month begins on the day the sankranti's punya-kala falls by the
-Dharmasindhu's rule.
+publications: read on 2026-09-05 from its 2082 and 2083 panchangas
+(R2): the Sun is the text's without bija, the Moon the text's with a
+bija on its apsis, the star planets modern; **closed for the method,
+open for the verse**. What the measurement implies and the publications
+confirm: the committee's Sun is the text's, reckoned in Nepal's civil
+clock, and its month begins on the civil day of the sankranti, the
+Karka one by the sunrise and the Makara one by the sunset.
 
 ## R2: the authority's publications
 
-The committee publishes the national panchanga of each year and the
-Newar months as downloads (`npns.gov.np/pages/panchanga-of-the-year-2083-5/`
-for 2083 BS, announced on 2 Baisakh 2083, and the 2082 edition), and
-its notices of festival dates and sankranti observances; these are the
-documents to read the sankranti instants and month lengths from, and
-the 2082 and 2083 rows are computed in the SDK's table (the official
-span ends at 2095 with the baseline's copy, whose 2082 and 2083 rows
-are the committee's). Not yet obtained as data; the rows in the SDK are
-the baseline engine's copy of the government table (rank 2), verified
-there year by year against an independent almanac and against a dated
-event (2 Magh 1990 BS is 15 January 1934, the day of the great
-earthquake). **Open.**
+The committee publishes the national panchanga of each year (the
+Rashtriya Panchangam) and the Newar months as PDF files behind a
+script-rendered viewer (`npns.gov.np/pages/the-year-of-2082-bs-3/`,
+`npns.gov.np/pages/panchanga-of-the-year-2083-5/`; the files on the
+government's media host, named in the fixture). Both were obtained on
+2026-09-05 and read from their page images into
+`fixtures/official/npns-2082-2083.json` (the files carry no text layer):
+the twelve sankranti instants of each year to the minute in Nepal time,
+four rows of the "planets at sunrise" table, 22 days of printed sunrise
+and sunset, eight tithi ends. Measured against the SDK
+(`crates/calendar/tests/official.rs`, `crates/siddhanta/tests/official.rs`):
+
+- **The Sun is the text's, without bija.** At the two printed sunrises
+  the committee's Sun is 11s 29°59′39″ and 11s 29°44′27″; the text gives
+  11s 29°59′36″ and 11s 29°44′24″, three arcseconds behind both times,
+  where a modern Sun in the Lahiri frame is 5.5′ away.
+- **The 24 sankranti instants reproduce within 1.6 minutes** (the SDK's
+  engine over the text, Nepal's clock), most within a minute, which is
+  the committee's printing precision plus those three arcseconds.
+- **Every one of the 24 month starts follows the shipped rule**: gate 1
+  of the new month for a daytime or evening sankranti; the following
+  civil day for one printed under gate 30 or 31 at an hour past 24,
+  which happened seven times, at 01:46, 03:36, 04:17 and 04:19 for
+  ordinary signs and at 03:23 for Makara in 2083 (before sunrise, so the
+  civil day and not the following one), and a Makara at 21:10 in 2082
+  placed the following day. The month lengths of both years are the
+  official rows.
+- **The Moon is the text's with a bija on its apsis.** The printed Moon
+  differs from the plain text by +9.4′ and +0.6′ at the two sunrises and
+  the eight tithi ends drift against it by up to 20 minutes; with the
+  apsis making four revolutions fewer in an age (488 199 against the
+  text's 488 203, `Bija { moon_apsis: -4 }`) the two sunrises agree
+  within 0.3′ and the eight tithi ends within 0.5′, and no other pair of
+  bija on the Moon and its apsis, nor the swapped epicycle convention
+  (C27), fits as well. A measurement of the committee's practice, not a
+  citation: the knob stays refused as unsourced (C28) until the set is
+  named.
+- **The star planets and the node are not the text's.** They are modern
+  positions in the Lahiri frame: Saturn, Jupiter and the mean node
+  within 1′ to 11′ of Teimeris's Lahiri places on all four printed rows
+  (the node always 1′ ahead), Mars, Mercury and Venus within 7′ to 94′
+  (worst for Mercury in April 2025, just after its station), which is
+  the precision of a fitted modern method rather than of an ephemeris;
+  the text's places are 2° to 11° away (C38).
+- **Sunrise and sunset are modern too, under a convention of the
+  committee's own.** Over 22 printed days the SDK's almanac convention
+  (the upper limb with 34′ of refraction) rises 1.8 to 2.8 minutes early
+  and sets within 1.3 minutes; the text's arc drifts 7 minutes late over
+  the same days. The committee prints a velantara (the equation of time
+  from the text's Sun: its equation of the centre in time less the
+  difference between longitude and right ascension, +1:22 on 14 April
+  2026, reproduced within 4 seconds) but its arc is not the text's in
+  mean time either (C39).
+
+The rows in the SDK's table for these two years are the committee's, as
+the baseline's copy of the government table already had them; the table
+is verified year by year against an independent almanac and against a
+dated event (2 Magh 1990 BS is 15 January 1934, the day of the great
+earthquake). **Closed for 2082 and 2083; earlier years' publications are
+not online.**
 
 ## R3: three independent real-world sources
 
-Not yet cross-validated; the baseline engine's checker against a
-published almanac counts as one. **Open.**
+Two: the committee's own panchangas (R2) and the baseline engine's
+checker against a published almanac. A third, an independent printed
+almanac or the committee's earlier years, is still wanted. **Open in
+part.**
 
 ## R4: every day in range validated
 
@@ -172,17 +225,25 @@ in the shipped frame, Nepal's clock of the time):
 | 2066 | Meena (Chaitra 1) | 00:14 | | a day earlier |
 | 2073 | Kumbha (Falgun 1) | 00:00 | | a day earlier |
 
-The committee's sankranti fell on the other side of the boundary in each
+The maker's sankranti fell on the other side of the boundary in each
 case, so its instant differs from the SDK's by between one and twenty-five
 minutes there, earlier in spring and summer and later in autumn. Some
 1512 boundaries fall within 25 minutes of a boundary about fifty times
 in the span, and eleven of those flip: the size of the residual is what
 hand computation in ghatis and palas with the text's tables gives, and
 no uniform shift, clock or trigonometry reduces it (the shift scan and
-the clock rows above). What would close it is the committee's own tables
-of sankranti instants (R2). Each of the eleven is a `Divergent` date in
-the SDK: inside the official span the table wins and the date reports
-both labels (`CalendarResolution::Divergent { tabular, computed, model }`).
+the clock rows above). The committee's own instants for 2082 and 2083
+(R2) settle what the residual is: today's committee computes the same
+Sun as the SDK within 1.6 minutes and places all 24 of those months by
+the shipped rule, so the eleven are the decisions of the panchanga
+makers of 1920 to 2016 (the committee was constituted in 2020), each
+inside their computation's tolerance of the boundary, and not a
+different rule; the same instants tried under the text's arc in mean
+time (one boundary fewer) and under the almanac's drik arc (two more)
+confirm that no arc convention explains them. Each of the eleven is a
+`Divergent` date in the SDK: inside the official span the table wins
+and the date reports both labels
+(`CalendarResolution::Divergent { tabular, computed, model }`).
 
 ### Continuity and the computed span
 
@@ -251,10 +312,10 @@ sankrantis.
 
 ## Open items
 
-- R1 to R3: the committee's publications (its yearly panchanga is
-  published on `npns.gov.np`; the method is the Surya Siddhanta by its
-  own announcement); its tables of sankranti instants would settle the
-  eleven residual boundaries.
+- R3: a third independent source (an independent printed almanac, or
+  the committee's panchangas for earlier years, which are not online).
+- The verse the committee applies for the punya-kala, and the name of
+  the bija set behind its Moon (C28, C38).
 - C29: the Dharmasindhu's verse for the ayana sankrantis' punya-kala,
   cited by number.
 - C28: a cited bija set for the Surya Siddhanta, should the committee use

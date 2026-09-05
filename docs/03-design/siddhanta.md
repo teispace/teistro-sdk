@@ -307,7 +307,12 @@ the locale packs carry the presentation forms.
    Makaranda tables) apply corrections to the revolution counts that
    differ between them; none is cited here yet, so `Surya { bija: true }`
    is unsourced and refused, and a consumer supplies its own `Bija`
-   (cruxes register C28).
+   (cruxes register C28). Measured on 2026-09-05 from the national
+   panchanga committee's printed places for BS 2082 and 2083
+   (`fixtures/official/`): its Sun is the text's without bija within 3″,
+   its Moon the text's with `Bija { moon_apsis: -4 }` within 0.5′ at ten
+   printed points (`tests/official.rs`); its star planets are modern
+   positions, not the text's (C38).
 2. **The epicycle convention.** The text places the even-quadrant value
    at the anomaly's 0° and 180° and the odd-quadrant value at 90° and
    270° (II.34 to 38); the baseline engine had them swapped, which moves

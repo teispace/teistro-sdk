@@ -11,7 +11,16 @@ design pages.
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-05, end of the thirteenth session (the
+**Last updated:** 2026-09-05, end of the fourteenth session (the
+national panchanga committee's 2082 and 2083 panchangas obtained from
+`npns.gov.np` through the browser and read into
+`fixtures/official/npns-2082-2083.json`: the SDK's engine reproduces all
+24 sankranti instants within 1.6 minutes and every month start; the
+committee's Sun is the text's within 3″, its Moon the text's with four
+revolutions fewer on the apsis, its star planets modern positions in
+the Lahiri frame, its sunrise modern under a convention of its own; R2
+closed for the method, C30 explained, C38 and C39 opened); before that
+the thirteenth session (the
 `siddhanta` crate completed to the text with the sighra daily motion,
 the latitudes and the Lagna, each reproduced against Burgess's worked
 1860 computation, and presented behind the ephemeris port as a classical
@@ -340,12 +349,34 @@ provider's DUT1).
   the `hora_reckoning` knob, proportional by default: the fixtures
   reproduce the baseline's lord for every chart but the three its
   day-early or polar blocks decide) and `ut1_from_utc_with` over a
-  provider's DUT1, bounded at 0.9 s. R2 remains open: the committee's
-  site serves its yearly panchanga through scripts, not as documents a
-  fetch can read. Design pages revised: siddhanta (§3 to §5, §7, §8,
+  provider's DUT1, bounded at 0.9 s. R2 stayed open that session (the
+  committee's site serves its yearly panchanga through scripts) and was
+  closed the next through the browser. Design pages revised: siddhanta (§3 to §5, §7, §8,
   §10), time (DUT1, horas), the port (capabilities, completion, the
   kit's table with the text's column), settings, the module catalogue,
   the glossary, cruxes C36 and C37, fixtures convention thirteen.
+- 2026-09-05 (fourteenth session): the committee's publications read
+  as data. The 2082 and 2083 Rashtriya Panchangam PDFs (no text layer;
+  read from page images) gave 24 sankranti instants, four rows of
+  printed places at sunrise, 22 days of sunrise and sunset and eight
+  tithi ends (`fixtures/official/npns-2082-2083.json`, with provenance).
+  Against the SDK: every instant within 1.6 minutes and every month
+  start by the shipped rule (including a Makara at 03:23 kept on its
+  civil day); the Sun the text's within 3″ (a modern Sun is 5.5′ off);
+  the Moon the text's with `Bija { moon_apsis: -4 }` within 0.5′ at ten
+  printed points, no other Moon bija or the swapped epicycle convention
+  fitting as well; the star planets and node modern positions in the
+  Lahiri frame (Saturn, Jupiter and the node within 1′ to 11′ of
+  Teimeris, Mars, Mercury and Venus within 7′ to 94′; the text's places
+  2° to 11° away); sunrise and sunset modern, the committee's 1.8 to
+  2.8 minutes later than the almanac's upper-limb convention at rising;
+  the printed velantara is the text's equation of time (reproduced
+  within 4 seconds). The eleven residual boundaries (C30) are thereby
+  the earlier makers' decisions inside their tolerance, not a different
+  rule: the text's arc in mean time removes one, the drik arc adds two.
+  Tests: `crates/calendar/tests/official.rs`,
+  `crates/siddhanta/tests/official.rs`. Memo R1 to R3 revised, cruxes
+  C28 and C30 updated, C38 and C39 added, fixtures README `official/`.
 
 ## Decided (all on 2026-09-04 unless dated)
 
@@ -386,8 +417,8 @@ binding (ADR-0023).
   ayanamsha catalogue in `astro` (so `sdk-only` completes the zodiac
   without a provider override), the house systems, and the crossings
   and stations kernel over the boundary solver
-  (`astro-events-and-crossings.md`, next revision). The memo's R2 and
-  R3 stay open (the committee's yearly panchanga as data).
+  (`astro-events-and-crossings.md`, next revision). The memo's R3 stays
+  open (a third source; the committee's earlier years are not online).
 
 ## Next
 
@@ -433,5 +464,6 @@ binding (ADR-0023).
 | 2026-09-05 (eleventh session) | `crates/time` and `crates/port-timezone` built: scales and their stamps, Delta T as the IERS series (1956 to August 2026, fetched with provenance) then Espenak and Meeus with Morrison and Stephenson's uncertainties, the IANA leap seconds with folding and expiry, civil time, zone resolution over the embedded tzdb (2026c) with replay-safe metadata under the daylight-saving policies and an era decided without a clock, local mean time, the local day with the polar policies, ghati-pala exact on a tenth-of-a-millisecond grid; `gen time` and `check-time`. The 55 fixture charts reproduce the baseline's instant and metadata; five era labels differ by design (C33). Findings: the IERS carries UT1 only from 1956; Stephenson, Morrison and Hohenkerk's coefficients are not in hand (C32); an `f64` Julian day resolves fifty microseconds, so ghati-pala snaps to a hundred. Next: the port promotion with the drik solar model and the rise and set solver. |
 | 2026-09-05 (twelfth session) | Spike 3's port promoted into `crates/port-ephemeris` (with the rise and set override), `crates/astro` (Delta T moved in from `time`; the ERFA ports with a provenance table; sidereal time and the obliquity; frame completion; the rise and set solver) and `crates/ephemeris-kit` (fifteen checks); `DrikSun` for the calendars; the local day's convention and the `SUNRISE` fallback; the adapters under `adapters/` with a Teimeris rise and set override and a `bs-fit` binary. Measured: 0.13 s against Teimeris's geometric sunrise, 7.3 s refracted at 64°N (C34), 2.5 s against the fixtures below 60° (C35); modern positions 65 % of the official Bikram Sambat months against the text's 98.5 %; the committee names the Surya Siddhanta as its method. Next: the `siddhanta` verses and provider adapter, planetary hours, DUT1. |
 | 2026-09-05 (thirteenth session) | `crates/siddhanta` completed to the text (the sighra daily motion, the latitudes, the Lagna) against Burgess's 1860 worked computation, and presented behind the ephemeris port as a classical astronomy (`SiddhantaProvider`) that passes the kit; the port's `Astronomy`, `SpeedModel`, `DistanceUnit` and `DUT1` override; the kit's sixteenth check, its second-difference continuity and its informational rows for a classical provider (C36, C37); the completion's zodiac-then-rotation order; the planetary hours in `time` under `hora_reckoning` (proportional, as 52 of 55 fixtures decide and the other three cannot) and UT1 from a provider's DUT1. Next: Phase 2's astronomy pages, the ayanamsha catalogue, houses, crossings and stations. |
+| 2026-09-05 (fourteenth session) | The national panchanga committee's 2082 and 2083 panchangas fetched from `npns.gov.np` through the browser and read into `fixtures/official/npns-2082-2083.json` (24 sankranti instants, printed places, sunrise and sunset, tithi ends). The SDK's engine reproduces every instant within 1.6 minutes and every month start; the committee's Sun is the text's within 3″, its Moon the text's with four revolutions fewer on the apsis, its star planets modern positions in the Lahiri frame, its sunrise modern under its own convention. R2 closed for the method; C30 explained as the earlier makers' decisions; C38 and C39 opened. Next: Phase 2's astronomy pages. |
 | 2026-09-05 (tenth session) | The Bikram Sambat computation engine: `crates/siddhanta` (the text by verse, exact mean places, the sine table, both equations, the four steps, motion, precession, declination, the day's arc; 54 ns for the Sun, bit-identical), the `astro` seed (the boundary solver), the `time` seed (offset histories, Nepal's rows) with `core::time`, and in `crates/calendar` the `SolarModel`, the sankranti finder, the month-start rules as cited rows, the engine, the fit report and the table regenerated for 1700 to 2500 BS with a CI gate. Measured: the text's Sun at Kathmandu under Nepal's clock with the Dharmasindhu's punya-kala rule reproduces 1490 of 1512 official month lengths (98.5 %), 116 of 126 years exactly, every year total and every New Year, no drift; the eleven residual boundaries lie within 25 minutes of the rule's boundary. Findings: the baseline's seven-hour epoch shift and 0.705 cutoff nearly cancel to the civil day; the two ayana sankrantis are the whole difference; exact trigonometry changes one boundary; the tradition's day count changes none. Next: `crates/time` proper, then the port promotion with the drik model. |
 | 2026-09-05 (ninth session) | `crates/calendar` built: the fixed day, Gregorian, Julian, mixed (1582, 1752, 1918) and ISO week with every day of −9999 to 9999 round-tripped and agreed with the `calendrical_calculations` oracle; Bikram Sambat over the baseline's table (1856 to 2457, official span stamped `Tabular`, the rest `Computed`) anchored on 13 April 1913; the source memo opened with the generator's findings (Surya Siddhanta at Kathmandu, Nepal's offset history, a fitted 0.705 cutoff, 87 % of month splits, drift within a day). Maintainer's mandate: compute Bikram Sambat from first principles for any year so Nepal's panchanga can use the SDK. Next: the Bikram Sambat engine (siddhanta Sun, drik through the port, rule rows, fit harness), then `crates/time`. |

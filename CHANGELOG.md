@@ -70,3 +70,12 @@ yet.
   tropical coordinates. `crates/time` gained the planetary hours under
   the `hora_reckoning` knob (proportional by default, as the baseline's
   fixtures decide) and UT1 from a provider's DUT1.
+- `fixtures/official/npns-2082-2083.json`: the national panchanga
+  committee's published panchangas for BS 2082 and 2083 read into data
+  (24 sankranti instants, printed places, sunrise and sunset, tithi
+  ends), with tests that the SDK's engine reproduces every instant
+  within 1.6 minutes and every month start, that the committee's Sun is
+  the text's within 3″ and its Moon the text's with a bija of four
+  revolutions fewer on the apsis, and that its star planets are modern
+  positions (`docs/calendars/bikram-sambat.md`, R2; cruxes C38, C39). No
+  computed number moved.
