@@ -297,6 +297,18 @@ impl<'a> Solver<'a> {
         )
     }
 
+    /// The geocentric altitude of the body's centre above the horizon at
+    /// an instant, degrees, as the solver reads it: what a visibility
+    /// criterion compares the Sun's depression against.
+    ///
+    /// # Errors
+    ///
+    /// The source's refusal, or a Delta T model that cannot answer.
+    pub fn altitude_deg(&self, ut1: JulianDay<Ut1>) -> Result<f64, Error> {
+        let mut evaluations = 0;
+        Ok(self.sample(ut1.get(), &mut evaluations)?.altitude_deg)
+    }
+
     /// The sky at an instant: altitude, target, hour angle, declination.
     fn sample(&self, t: f64, evaluations: &mut u32) -> Result<Sample, Error> {
         let ut1 = JulianDay::<Ut1>::try_new(t)?;

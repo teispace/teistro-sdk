@@ -547,7 +547,11 @@ fn lines_between(lattice: &Lattice, a: f64, b: f64) -> Vec<i64> {
 
 /// A window must run forward; a reversed, empty or unordered one is refused
 /// by name.
-fn check_window(what: &str, from: JulianDay<Ut1>, to: JulianDay<Ut1>) -> Result<(), Error> {
+pub(crate) fn check_window(
+    what: &str,
+    from: JulianDay<Ut1>,
+    to: JulianDay<Ut1>,
+) -> Result<(), Error> {
     if to.get().partial_cmp(&from.get()) == Some(Ordering::Greater) {
         return Ok(());
     }

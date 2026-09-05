@@ -72,7 +72,7 @@ must be confirmed before they become golden vectors.
 |---|---|---|---|---|---|---|
 | dignities: exaltation and debilitation with degrees, mooltrikona ranges, own sign, friend, neutral, enemy | positions, relationship tables | mooltrikona ranges per text (Moon 4–20 Taurus BPHS 47); relationship: natural, temporary (2,3,4,10,11,12 from), compound (five-fold) | yes | all | P0 | `dignity` |
 | exaltation strength as a continuous measure (uchcha bala) | degrees from debilitation | | yes (Shadbala) | all | P0 | `strength` |
-| combustion (asta) | distance from Sun | orbs per planet with retrograde variants (Mercury 14/12, Venus 10/8, Mars 17, Jupiter 11, Saturn 15; Surya Siddhanta orbs differ) **verify**; Moon 12 | yes | all | P0 | `state` |
+| combustion (asta) | distance from Sun | orbs per planet with retrograde variants (Mercury 14/12, Venus 10/8, Mars 17, Jupiter 11, Saturn 15; Moon 12): verified 2026-09-05 as the Surya Siddhanta's own numbers (IX.6 to 8 and X.1, Burgess 1860), which the text defines as degrees of time in oblique ascension and the tradition reads as degrees of longitude (C44); both compute in `astro::visibility` | yes | all | P0 | `state` |
 | retrogression and stations | speed | direct, retrograde, stationary threshold | yes | all | P0 | `state` |
 | planetary war (graha yuddha) | two bodies within 1° | winner by declination, latitude, or brightness; Rahu, Ketu, Sun and Moon excluded | partial | JHora, PyJHora | P0 | `state` |
 | avasthas: Baladi (bala, kumara, yuva, vriddha, mrita by degree bands, reversed in even signs), Jagradadi (jagrat, svapna, sushupti), Deeptadi nine (deepta, svastha, mudita, shanta, deena, dukhita, vikala, khala, kopa), Lajjitadi six (lajjita, garvita, kshudita, trishita, mudita, kshobhita), Sayanadi twelve with sub-states (drishti, cheshta) | positions, dignity, aspects, nakshatra counts | Sayanadi formula variants **verify** | yes | JHora, PyJHora, the baseline engine has all five | P0 | `avastha` |
@@ -101,7 +101,9 @@ must be confirmed before they become golden vectors.
   BPHS and Jataka Parijata; JHora and the baseline engine may differ.
 - Confirm the arudha exception rules and the co-lord strength rules.
 - Enumerate every varga variant JHora offers and decide which are P0.
-- Confirm combustion orbs per text and record them as a settings-selectable
-  table with citations.
+- Combustion orbs confirmed against the Surya Siddhanta (IX.6 to 8,
+  X.1; `astro::visibility::Thresholds::SuryaSiddhanta`); the
+  settings-selectable table with other texts' values remains for the
+  chart layer.
 - Confirm the three Varnada methods and the Sayanadi sub-state formulas.
 - Decide the Rahu/Ketu aspect default per profile (the baseline engine: none).
