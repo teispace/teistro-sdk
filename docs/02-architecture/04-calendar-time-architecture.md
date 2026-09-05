@@ -1,7 +1,11 @@
 # Calendar and time architecture
 
-Status: `draft`, revised 2026-09-04 (the dual-source resolution and the
-day boundary added, ADR-0018 and ADR-0020). Depends on Q9.
+Status: `draft`, revised 2026-09-05: the design pages
+`03-design/time-and-timezone.md`, `03-design/calendar-gregorian-julian.md`
+and `03-design/calendar-bikram-sambat.md` settle the types, the
+algorithms and the tests; `Resolution` gains a `Defined` variant for
+calendars that are mathematical definitions, and Delta T follows spike 3
+(a table for the measured era, a model outside it). Depends on Q9.
 
 ## Time types (L0)
 

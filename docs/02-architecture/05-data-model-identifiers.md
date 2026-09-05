@@ -1,7 +1,10 @@
 # Data model and identifiers
 
-Status: `draft`, revised 2026-09-04 (ADR-0016 exact classification,
-ADR-0020 the envelope, ADR-0023 typed boundaries).
+Status: `draft`, revised 2026-09-05: the design pages
+`03-design/core-types-and-catalogue.md` (kinds, keys, ids, the catalogue,
+newtypes, the envelope and status codes) and
+`03-design/settings-and-profiles.md` (the knobs, profiles, coherence and
+the hash) settle what this page sketches (ADR-0016, ADR-0020, ADR-0023).
 
 ## Identifiers
 
