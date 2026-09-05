@@ -1,12 +1,15 @@
 # Bikram Sambat: the source memo
 
 Status: `draft`, opened 2026-09-05 with what the baseline engine's own
-generator established, and revised the same day with the SDK's own
-engine and its measurement against the official table. The research
-standard of `09-guidelines/04-adding-a-calendar.md` is met for R4 and R5;
-R1 to R3 (the committee's own publications and stated method) remain
-open, so the calendar ships as `Tabular` inside the published span and
-`Computed` outside it. The maintainer's mandate (2026-09-05): the SDK
+generator established, revised the same day with the SDK's own engine
+and its measurement against the official table, and again with the
+committee's stated method (the Surya Siddhanta, by its own announcement)
+and the classical-against-modern comparison from the SDK's own code.
+The research standard of `09-guidelines/04-adding-a-calendar.md` is met
+for R4 and R5 and in part for R1; R2 and R3 (the committee's own
+publications as data, three independent sources) remain open, so the
+calendar ships as `Tabular` inside the published span and `Computed`
+outside it. The maintainer's mandate (2026-09-05): the SDK
 must compute Bikram Sambat from first principles the way the Nepali
 panchanga does, for any year asked (1700 BS included), with the
 published spans as the authority inside their range, so that Nepal's
@@ -26,21 +29,41 @@ Falgun, Chaitra.
 
 ## R1: the authority
 
-The government's Panchanga Nirnayak Samiti (the calendar-determining
-committee) publishes the official month lengths; the SDK carries them
-for BS 1970 to 2095 (`crates/calendar/data/bikram-sambat.json`). The
-committee's own publications and its stated method are not yet in hand:
-**open**. What the measurement below implies about the method: the
-committee's Sun is the Surya Siddhanta's, reckoned in Nepal's civil
-clock, and its month begins on the day the sankranti's punya-kala falls
-by the Dharmasindhu's rule.
+The government's Nepal Panchanga Nirnayak Bikas Samiti (the calendar
+determination committee, constituted under its formation order of
+2077 BS, a body of the Ministry of Culture, Tourism and Civil Aviation;
+`npns.gov.np`, `nepalpanchanga.com`) publishes the official panchanga
+and approves every printed calendar; the SDK carries its month lengths
+for BS 1970 to 2095 (`crates/calendar/data/bikram-sambat.json`). Its
+stated method, found on 2026-09-05: announcing that it would publish
+the official panchanga itself from 2078 BS, the committee (its chair,
+Prof. Dr. Ramchandra Gautam, and its member-secretary) required new
+panchanga makers to "सूर्यसिद्धान्तअनुसार तीन वर्षको गणित गरी समितिमा पेश गर्न",
+to submit three years of computation by the Surya Siddhanta, and
+existing makers to resubmit their planetary computations for review
+(Nepal Television Online, 2020-08, `nepaltvonline.com/2020/08/5099/`).
+So the method is the Surya Siddhanta by the authority's own word, which
+is what the measurement below found; which edition, which bija and which
+punya-kala verse the committee applies are still to be read from its
+publications: **open in part**. What the measurement implies: the
+committee's Sun is the text's, reckoned in Nepal's civil clock, and its
+month begins on the day the sankranti's punya-kala falls by the
+Dharmasindhu's rule.
 
 ## R2: the authority's publications
 
-Not yet obtained; the rows in the SDK are the baseline engine's copy of
-the government table (rank 2), verified there year by year against an
-independent almanac and against a dated event (2 Magh 1990 BS is 15
-January 1934, the day of the great earthquake). **Open.**
+The committee publishes the national panchanga of each year and the
+Newar months as downloads (`npns.gov.np/pages/panchanga-of-the-year-2083-5/`
+for 2083 BS, announced on 2 Baisakh 2083, and the 2082 edition), and
+its notices of festival dates and sankranti observances; these are the
+documents to read the sankranti instants and month lengths from, and
+the 2082 and 2083 rows are computed in the SDK's table (the official
+span ends at 2095 with the baseline's copy, whose 2082 and 2083 rows
+are the committee's). Not yet obtained as data; the rows in the SDK are
+the baseline engine's copy of the government table (rank 2), verified
+there year by year against an independent almanac and against a dated
+event (2 Magh 1990 BS is 15 January 1934, the day of the great
+earthquake). **Open.**
 
 ## R3: three independent real-world sources
 
@@ -175,23 +198,42 @@ check-calendars` regenerates it in CI and fails on any difference. A
 year outside the table is computed on request by `bikram_sambat::Engine`
 from a model, a clock, a place and a rule, and stamped `Computed`.
 
-### What the baseline engine's generator had established
+### Classical against modern, from the SDK's own code
 
-Kept for the record: Surya Siddhanta longitudes reproduce the official
-table far better than modern (drik) ones (87.0 % of month splits against
-72.0 % with the best cutoff), so the official calendar is computed from
-the classical text; the clock history matters; a fitted cutoff at 0.705
-of the day, with the generator's epoch seven hours before the text's,
-was the best single rule, which the SDK's measurement explains: seven
-hours of epoch and 0.295 days of cutoff nearly cancel to the civil day,
-and the rest was the two ayana sankrantis.
+The same engine, clock, place and rules over modern positions (the drik
+Sun: Teimeris's apparent Sun through the ephemeris port with its Lahiri
+ayanamsha, the SDK's rise and set solver for the days' arcs under the
+classical sunrise convention; `adapters/ephemeris-teimeris/rust`,
+`teistro-ephemeris-teimeris-bs-fit`), measured on 2026-09-05:
+
+| frame | months | years exact | year totals | drift end (max) | 1 Baisakh offset max |
+|---|---:|---:|---:|---:|---:|
+| the text; punya-kala rule (shipped) | 1490/1512 (98.5 %) | 116/126 | 126/126 | 0 (0) | 0 |
+| drik, Lahiri; the civil day of the sankranti | 944/1512 (62.4 %) | 2/126 | 108/126 | 0 (1) | 1 |
+| drik, Lahiri; before sunset | 1092/1512 (72.2 %) | 23/126 | 72/126 | 0 (1) | 1 |
+| drik, Lahiri; before aparahna | 1001/1512 (66.2 %) | 9/126 | 61/126 | 1 (1) | 1 |
+| drik, Lahiri; sunrise to sunrise | 764/1512 (50.5 %) | 0/126 | 76/126 | 0 (−1) | −1 |
+| drik, Lahiri; punya-kala rule | 988/1512 (65.3 %) | 1/126 | 108/126 | 0 (1) | 1 |
+
+Modern positions reproduce at most 72.2 % of the official month lengths
+under any rule (the before-sunset rule, which the baseline engine's
+generator had also found best for them at 72.0 % with a fitted cutoff),
+and 65.3 % under the rule the classical text reproduces 98.5 % with:
+the official calendar is computed from the Surya Siddhanta, as the
+committee says (R1), and the SDK's classical model is the one that
+reproduces it. The baseline engine's generator had established the same
+ordering (87.0 % classical against 72.0 % modern with its cutoff); its
+epoch seven hours before the text's and its cutoff at 0.705 of the day
+nearly cancel to the civil day, and the rest was the two ayana
+sankrantis.
 
 ## The SDK's engine
 
 1. Sankranti instants from a `SolarModel` (`crates/calendar/src/solar`):
-   the Surya Siddhanta (`crates/siddhanta`) today, modern positions
-   through the ephemeris port with the profile's ayanamsha when the port
-   is promoted; found by the shared boundary solver (`crates/astro`).
+   the Surya Siddhanta (`crates/siddhanta`), or modern positions through
+   the ephemeris port with a catalogued ayanamsha and the profile's
+   sunrise convention (`DrikSun`); found by the shared boundary solver
+   (`crates/astro`).
 2. The month-start rule as named rows (`MonthStartRule`): `SANKRANTI_DAY`
    (Orissa), `FOLLOWING_DAY` (Bengal), `BEFORE_SUNSET` (Tamil),
    `BEFORE_APARAHNA` (Malabar), `SUNRISE_TO_SUNRISE`, `SHIFTED { days }`
@@ -209,13 +251,12 @@ and the rest was the two ayana sankrantis.
 
 ## Open items
 
-- R1 to R3: the committee's publications and stated method; its tables
-  of sankranti instants would settle the eleven residual boundaries.
+- R1 to R3: the committee's publications (its yearly panchanga is
+  published on `npns.gov.np`; the method is the Surya Siddhanta by its
+  own announcement); its tables of sankranti instants would settle the
+  eleven residual boundaries.
 - C29: the Dharmasindhu's verse for the ayana sankrantis' punya-kala,
   cited by number.
 - C28: a cited bija set for the Surya Siddhanta, should the committee use
   one (the measurement suggests it does not for the Sun).
-- Modern positions (drik) through the ephemeris port as a second
-  `SolarModel`, to publish its numbers beside these from the SDK's own
-  code rather than the baseline's.
 - The Buddha era and Nepal Sambat new-year rules for the era numbers.

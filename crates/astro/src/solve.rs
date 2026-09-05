@@ -24,6 +24,8 @@
 
 use core::fmt;
 
+use teistro_core::angle::difference_deg;
+
 /// How many steps a search may take before it is a defect.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Caps {
@@ -112,8 +114,105 @@ impl<E: fmt::Debug + fmt::Display> std::error::Error for SolveError<E> {}
 
 /// The signed gap from `target` to `angle`, in (-180, 180].
 fn gap(angle: f64, target: f64) -> f64 {
-    let d = (angle - target).rem_euclid(360.0);
-    if d > 180.0 { d - 360.0 } else { d }
+    difference_deg(angle, target)
+}
+
+/// Bisects a bracket in which `f` is negative at `lo` and non-negative at
+/// `hi` until it is narrower than the tolerance; `f` is assumed to change
+/// sign once inside it.
+fn bisect<E>(
+    mut f: impl FnMut(f64) -> Result<f64, SolveError<E>>,
+    mut lo: f64,
+    mut hi: f64,
+    tolerance: f64,
+    caps: Caps,
+) -> Result<(f64, f64), SolveError<E>> {
+    let mut refinements = 0u32;
+    while hi - lo > tolerance {
+        if refinements >= caps.refinements {
+            return Err(SolveError::NotConverged {
+                steps: refinements,
+                width: hi - lo,
+            });
+        }
+        refinements += 1;
+        let mid = lo + (hi - lo) * 0.5;
+        if mid <= lo || mid >= hi {
+            break; // `f64` cannot split the bracket further.
+        }
+        if f(mid)? < 0.0 {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    Ok((lo, hi))
+}
+
+/// The first zero of `f` inside `[from, to]`, found by stepping from
+/// `from` until the sign of `f` changes in the wanted direction (upward:
+/// negative to non-negative; downward: the reverse) and bisecting that
+/// step to the tolerance. `None` when no such change occurs inside the
+/// window: the search reports absence rather than guessing, which is what
+/// a polar day or a circumpolar body needs.
+///
+/// ```
+/// use teistro_astro::solve::{first_zero, Caps};
+///
+/// // A quantity that climbs through zero a third of the way in.
+/// let f = |t: f64| -> Result<f64, ()> { Ok(t - 1.0 / 3.0) };
+/// let zero = first_zero(f, 0.0, 1.0, 0.1, true, 1e-9, Caps::DEFAULT).expect("evaluated").expect("crossed");
+/// assert!((zero.instant - 1.0 / 3.0).abs() < 1e-8);
+/// ```
+///
+/// # Errors
+///
+/// A non-positive or non-finite step or tolerance, an evaluation error,
+/// or a bisection that does not converge.
+pub fn first_zero<E>(
+    mut f: impl FnMut(f64) -> Result<f64, E>,
+    from: f64,
+    to: f64,
+    step: f64,
+    upward: bool,
+    tolerance: f64,
+    caps: Caps,
+) -> Result<Option<Crossing>, SolveError<E>> {
+    for (name, value) in [("step", step), ("tolerance", tolerance)] {
+        if !(value.is_finite() && value > 0.0) {
+            return Err(SolveError::Argument { name, value });
+        }
+    }
+    let mut evaluations = 0u32;
+    // The signed quantity, negated for a downward crossing so the bracket
+    // is always negative at its start.
+    let mut evaluate = |t: f64| -> Result<f64, SolveError<E>> {
+        evaluations += 1;
+        f(t).map(|v| if upward { v } else { -v })
+            .map_err(SolveError::Evaluation)
+    };
+    let mut lo = from;
+    let mut g_lo = evaluate(lo)?;
+    let mut steps = 0u32;
+    while lo < to {
+        if steps >= caps.bracket_steps {
+            return Err(SolveError::NotBracketed { steps, last: lo });
+        }
+        steps += 1;
+        let hi = (lo + step).min(to);
+        let g_hi = evaluate(hi)?;
+        if g_lo < 0.0 && g_hi >= 0.0 {
+            let (a, b) = bisect(&mut evaluate, lo, hi, tolerance, caps)?;
+            return Ok(Some(Crossing {
+                instant: a + (b - a) * 0.5,
+                width: b - a,
+                evaluations,
+            }));
+        }
+        lo = hi;
+        g_lo = g_hi;
+    }
+    Ok(None)
 }
 
 /// The first instant at or after `from` at which `angle` (degrees, wrapping
@@ -184,25 +283,7 @@ pub fn next_crossing<E>(
     // Refine by bisection: the gap is negative at `lo` and non-negative at
     // `hi`, and monotone between them because the bracket spans less than
     // a circle of motion.
-    let mut refinements = 0u32;
-    while hi - lo > tolerance_days {
-        if refinements >= caps.refinements {
-            return Err(SolveError::NotConverged {
-                steps: refinements,
-                width: hi - lo,
-            });
-        }
-        refinements += 1;
-        let mid = lo + (hi - lo) * 0.5;
-        if mid <= lo || mid >= hi {
-            break; // `f64` cannot split the bracket further.
-        }
-        if evaluate(mid)? < 0.0 {
-            lo = mid;
-        } else {
-            hi = mid;
-        }
-    }
+    let (lo, hi) = bisect(&mut evaluate, lo, hi, tolerance_days, caps)?;
     Ok(Crossing {
         instant: lo + (hi - lo) * 0.5,
         width: hi - lo,

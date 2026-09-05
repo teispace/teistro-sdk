@@ -5,10 +5,11 @@
 //! reproduce the resolution after the zone database changes. This crate
 //! holds:
 //!
-//! - [`scale`]: the conversions between UT1, TT and UTC, explicit
-//!   functions that stamp what they applied;
-//! - [`delta_t`]: Delta T as the IERS table where measured and a cited
-//!   model either side, with an uncertainty on every value;
+//! - [`scale`]: the conversions between UTC, UT1 and TT, explicit
+//!   functions that stamp what they applied, over the astronomy layer's
+//!   Delta T ([`delta_t`], re-exported from `teistro_astro`: the IERS
+//!   table where measured and a cited model either side, with an
+//!   uncertainty on every value);
 //! - [`leap`]: the leap-second table and what it allows;
 //! - [`civil`]: a civil time and a civil date-time in any calendar;
 //! - [`zone`]: zone specifications, resolution under the daylight-saving
@@ -42,7 +43,6 @@
 //! ```
 
 pub mod civil;
-pub mod delta_t;
 pub mod ghati;
 pub mod leap;
 pub mod local_day;
@@ -54,16 +54,18 @@ pub mod zones;
 mod generated;
 
 pub use civil::{CivilDateTime, CivilTime};
-pub use delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
 pub use ghati::{GhatiPala, Reckoning, ghati_pala, instant_of};
 pub use local_day::{DayState, LocalDay, PolarKind, local_day};
 pub use scale::{
-    TimeBasis, TtConversion, tt_from_ut1, tt_from_utc, ut1_from_tt, ut1_from_utc, utc_from_ut1,
+    TimeBasis, TtConversion, tt_from_ut1, tt_from_utc, ut1_from_tt, ut1_from_utc, utc_from_tt,
+    utc_from_ut1,
 };
+pub use teistro_astro::delta_t::{self, DeltaT, DeltaTModel, DeltaTSource, delta_t};
 pub use teistro_core::time::{LocalClock, LocalMeanTime, UtcOffset};
 pub use teistro_port_timezone::{LocalCandidates, LocalSeconds, OffsetInfo, TimeZoneProvider};
 pub use zone::embedded::{EmbeddedTzdb, ZoneClock};
 pub use zone::{
-    Chosen, DstOutcome, Policy, Resolved, Warning, ZoneEra, ZoneResolution, ZoneSource, ZoneSpec,
-    civil_of, civil_of_with, resolve, resolve_with,
+    Chosen, DayContext, DstOutcome, Policy, Resolved, Warning, ZoneEra, ZoneResolution, ZoneSource,
+    ZoneSpec, civil_of, civil_of_with, resolve, resolve_at_place, resolve_at_place_with,
+    resolve_with,
 };

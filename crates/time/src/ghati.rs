@@ -229,6 +229,7 @@ mod tests {
             sunset: sunrise.plus_days(11.5 / 24.0).unwrap(),
             next_sunrise: sunrise.plus_days(1.0 - 20.0 / 86_400.0).unwrap(),
             state: DayState::Normal,
+            convention: teistro_core::settings::Sunrise::CentreNoRefraction.into(),
             model: String::from("test"),
         }
     }

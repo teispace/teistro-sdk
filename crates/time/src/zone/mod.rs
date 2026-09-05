@@ -8,16 +8,18 @@ pub mod embedded;
 
 use core::fmt;
 
+use teistro_calendar::solar::SolarModel;
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::{Detail, Error};
-use teistro_core::quantity::{JulianDay, Longitude, Utc};
-use teistro_core::settings::{DstGap, DstOverlap, Settings, UnknownTime};
+use teistro_core::quantity::{JulianDay, Longitude, Place, Utc};
+use teistro_core::settings::{DstGap, DstOverlap, PolarDayPolicy, Settings, UnknownTime};
 use teistro_core::time::{LocalClock, LocalMeanTime, UtcOffset};
 use teistro_port_timezone::{LocalCandidates, LocalSeconds, TimeZoneProvider};
 
 use crate::civil::{CivilDateTime, CivilTime, NANOS_PER_SECOND, SECONDS_PER_DAY};
 use crate::leap;
+use crate::local_day::local_day;
 
 /// How a zone is given.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -383,6 +385,123 @@ pub fn resolve_with(
     })
 }
 
+/// What the `SUNRISE` unknown-time fallback needs: a solar model, the
+/// place, and the policy for a day without a sunrise.
+#[derive(Clone, Copy)]
+pub struct DayContext<'a> {
+    /// The solar model the sunrise comes from.
+    pub model: &'a dyn SolarModel,
+    /// The place.
+    pub place: Place,
+    /// What a day without a sunrise is.
+    pub polar_day_policy: PolarDayPolicy,
+}
+
+impl fmt::Debug for DayContext<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DayContext")
+            .field("model", &self.model.describe())
+            .field("place", &self.place)
+            .field("polar_day_policy", &self.polar_day_policy)
+            .finish()
+    }
+}
+
+/// A zone as a clock, read through the provider: what the local day
+/// needs to place a civil midnight when the polar policy asks for one.
+struct ProviderClock<'a> {
+    provider: &'a dyn TimeZoneProvider,
+    zone: &'a ZoneSpec,
+}
+
+impl LocalClock for ProviderClock<'_> {
+    fn offset_at(&self, instant: JulianDay<Utc>) -> UtcOffset {
+        match self.zone {
+            ZoneSpec::Fixed { offset } => *offset,
+            ZoneSpec::LocalMean { longitude } => LocalMeanTime::new(*longitude).offset(),
+            // The zone was looked up before this clock was built, so the
+            // only refusal left is an instant beyond the database's range,
+            // where no offset exists and UTC stands in.
+            ZoneSpec::Iana { zone } => self
+                .provider
+                .offset_at(zone, instant)
+                .map_or(UtcOffset::UTC, |info| info.offset),
+        }
+    }
+
+    fn describe(&self) -> String {
+        format!("{} ({})", self.zone, self.provider.version())
+    }
+}
+
+/// Resolves a civil date-time whose time may be absent, supplying the
+/// place's sunrise under the `SUNRISE` unknown-time policy: the local day
+/// of the date at the place is computed from the model, its sunrise is
+/// the instant, and the civil time reported is that instant's in the
+/// zone, with `time_known` false and the fallback warning raised. With a
+/// time given, or another policy, this is [`resolve`].
+///
+/// # Errors
+///
+/// As [`resolve`], plus the model's refusal and a polar day under the
+/// `UNDEFINED` policy.
+pub fn resolve_at_place(
+    civil: &CivilDateTime,
+    zone: &ZoneSpec,
+    policy: &Policy,
+    provider: &dyn TimeZoneProvider,
+    day: DayContext<'_>,
+) -> Result<Resolved, Error> {
+    resolve_at_place_with(
+        calendar_of(civil.date.calendar)?,
+        civil,
+        zone,
+        policy,
+        provider,
+        day,
+    )
+}
+
+/// [`resolve_at_place`] through a given calendar.
+///
+/// # Errors
+///
+/// As [`resolve_at_place`].
+pub fn resolve_at_place_with(
+    calendar: &dyn CalendarSystem,
+    civil: &CivilDateTime,
+    zone: &ZoneSpec,
+    policy: &Policy,
+    provider: &dyn TimeZoneProvider,
+    day: DayContext<'_>,
+) -> Result<Resolved, Error> {
+    if civil.time.is_some() || policy.unknown_time != UnknownTime::Sunrise {
+        return resolve_with(calendar, civil, zone, policy, provider);
+    }
+    if let ZoneSpec::Iana { zone: name } = zone {
+        // An unknown zone is refused here, with the provider's suggestions,
+        // before the clock below is built over it.
+        provider.offset_at(name, JulianDay::J2000)?;
+    }
+    let clock = ProviderClock { provider, zone };
+    let local = local_day(
+        day.model,
+        calendar,
+        &clock,
+        &day.place,
+        &civil.date,
+        day.polar_day_policy,
+    )?;
+    let (at_sunrise, mut resolution) = civil_of_with(calendar, local.sunrise, zone, provider)?;
+    resolution.time_known = false;
+    resolution.warnings.push(Warning::TimeUnknownFallback);
+    Ok(Resolved {
+        instant: local.sunrise,
+        zone: resolution,
+        civil: at_sunrise,
+    })
+}
+
 /// The time of day a resolution uses: the one given, or the one the
 /// unknown-time policy supplies.
 fn time_of(
@@ -404,13 +523,11 @@ fn time_of(
                 "give a time, or choose NOON, MIDNIGHT or SUNRISE as the unknown-time policy",
             )),
         UnknownTime::Sunrise => Err(Error::invalid_arg(format!(
-            "{civil} has no time of day and the SUNRISE fallback needs the local day"
+            "{civil} has no time of day and the SUNRISE fallback needs the place and a solar model"
         ))
         .with_detail(Detail::TimeUnknown)
         .with_field("time")
-        .with_hint(
-            "compute the day with `local_day` and resolve its sunrise instant with `civil_of`",
-        )),
+        .with_hint("resolve through `resolve_at_place` with the place and the model")),
         other => Err(crate::ghati::unknown_knob(
             "time.unknown_time",
             &format!("{other:?}"),

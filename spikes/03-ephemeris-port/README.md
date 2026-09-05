@@ -14,65 +14,68 @@ model, not a fit.
 
 ## The slice
 
+Promoted on 2026-09-05 into the SDK, where the code now lives:
+
 ```text
-port/                 teistro-spike-port          the port: model, trait, C vtable, ERFA-ported IAU routines,
-                                                  frame completion with the override policy, the conformance
-                                                  kit, the timing helper, the `.se1` scanner, the kit runner,
-                                                  the spike-2 test provider behind the port, the kit binary
-adapters/teimeris/    teistro-spike-adapter-teimeris   outside the workspace: the port over Teimeris's Rust
-                                                  binding (one context behind a mutex, body-major grid transposed)
-adapters/sweph/       teistro-spike-adapter-sweph      outside the workspace: the port over the Swiss Ephemeris
-                                                  C library compiled from `SWEPH_SRC_DIR` (one process-wide
-                                                  lock, explicit flags, fallback refused, hashed data)
-results/              test-provider.json, teimeris.json, sweph.json: the kit reports and timings quoted below
+crates/port-ephemeris/    the port: model, trait, C vtable, the `.se1` scanner, the analytic test provider
+crates/astro/             the ERFA-ported IAU routines (`iau`), frame completion (`completion`), sidereal time and the
+                          obliquity (`sky`), and the rise and set solver (`rise_set`) the promotion added
+crates/ephemeris-kit/     the conformance kit, the timing helper and the kit runner, with the test-provider binary
+adapters/ephemeris-teimeris/rust/   outside the workspace: the port over Teimeris's Rust binding, with the rise
+                          and set override and the Bikram Sambat measurement binary
+adapters/ephemeris-sweph/rust/      outside the workspace: the port over the Swiss Ephemeris C library
+results/                  test-provider.json, teimeris.json, sweph.json: the spike's kit reports and timings
 ```
 
-The port (`port/src/`):
+What the spike built, as it stood when it answered its question (the
+promoted crates keep every shape and rename into the SDK's catalogue:
+`Centre`, the catalogue's `Ayanamsha` for the sidereal zodiac, `Place`
+for the observer, the settings' `OverridePolicy` and `Tier`):
 
-- `model.rs`: bodies, time scales, the observer, the frame (centre,
+- the model: bodies, time scales, the observer, the frame (centre,
   equinox, coordinates, zodiac, four corrections; packed to 32 bits for
   the C boundary), the request over a grid of instants and bodies, the
   columnar response (instants outermost, `instant × bodies + body`, one
   status and one source per cell), overrides as a bit set, capabilities
   with identity and content hashes, the obliquity record, the override
-  policy, and the error with its reserved codes.
-- `provider.rs`: the trait. `positions` is required; `obliquity`,
-  `delta_t_seconds` and `ayanamsha_deg` (the mean ayanamsha, the value
-  sidereal longitudes subtract) are overrides a provider declares.
-- `vtable.rs`: the same contract as a `#[repr(C)]` vtable with a
-  `struct_size` handshake and an ABI version. A Rust provider is exported
-  into a vtable and a vtable is bound back into a Rust provider; the
-  round trip is bit-identical (tested).
-- `astro/`: the IAU 2006 mean obliquity and the IAU 2000B nutation ported
-  from ERFA's `eraObl06` and `eraNut00b` (BSD-3, `NOTICE`, the provenance
-  table in the module), the Espenak and Meeus Delta T fit, and the
-  ecliptic and equatorial rotations.
-- `completion.rs`: the frame completion. A request the provider answers
-  natively passes through; otherwise the provider is asked for its native
-  frame and the SDK rotates coordinates through the obliquity (native or
-  SDK by policy) and shifts the zodiac through the native ayanamsha;
-  every step is stamped `Native`, `Sdk` or `PassThrough`.
-- `kit.rs`: the conformance kit, thirteen checks under one published set
-  of bounds (`Bounds::DEFAULT`), and its Markdown report.
-- `runner.rs`: what every kit binary does, once; `bench.rs`: one timing
-  helper; `sefile.rs`: the `.se1` family (coverage from the block names,
-  SHA-256 of every file, the star catalogue's presence) shared by both
-  adapters so they declare the same coverage and the same hashes.
+  policy, and the error with its reserved codes;
+- the trait: `positions` required; `obliquity`, `delta_t_seconds` and
+  `ayanamsha_deg` (the mean ayanamsha, the value sidereal longitudes
+  subtract) as overrides a provider declares;
+- the vtable: the same contract as a `#[repr(C)]` vtable with a
+  `struct_size` handshake and an ABI version; a Rust provider exported
+  into a vtable and a vtable bound back into a Rust provider, round trip
+  bit-identical (tested);
+- the IAU 2006 mean obliquity and the IAU 2000B nutation ported from
+  ERFA's `eraObl06` and `eraNut00b` (BSD-3, `NOTICE`, a provenance
+  table), the Espenak and Meeus Delta T fit, and the ecliptic and
+  equatorial rotations;
+- the frame completion: a request the provider answers natively passes
+  through; otherwise the provider is asked for its native frame and the
+  SDK rotates coordinates through the obliquity (native or SDK by policy)
+  and shifts the zodiac through the native ayanamsha; every step stamped
+  `Native`, `Sdk` or `PassThrough`;
+- the conformance kit: thirteen checks under one published set of
+  bounds, and its Markdown report; the kit runner; the timing helper; the
+  `.se1` family (coverage from the block names, SHA-256 of every file,
+  the star catalogue's presence) shared by both adapters.
 
 ## How to run
 
+The promoted binaries (the spike's own were removed with the promotion):
+
 ```sh
-cargo run --release -p teistro-spike-port --bin teistro-spike-port-kit
+cargo run --release -p teistro-ephemeris-kit
 TEIMERIS_LIB_DIR=../teimeris/build/release \
-  cargo run --release --manifest-path spikes/03-ephemeris-port/adapters/teimeris/Cargo.toml
+  cargo run --release --manifest-path adapters/ephemeris-teimeris/rust/Cargo.toml --bin teistro-ephemeris-teimeris-kit
 SWEPH_SRC_DIR=/path/to/swisseph/sources \
-  cargo run --release --manifest-path spikes/03-ephemeris-port/adapters/sweph/Cargo.toml
+  cargo run --release --manifest-path adapters/ephemeris-sweph/rust/Cargo.toml
 ```
 
 The adapters read the `.se1` files from `TEIMERIS_DATA_DIR` or
 `SWEPH_DATA_DIR`, defaulting to the Teimeris checkout beside this one.
 They are standalone crates: the SDK workspace excludes them
-(`Cargo.toml`), the dependency runs adapter to port and never back, and
+(`Cargo.toml`), the dependency runs adapter to SDK and never back, and
 the fast check builds the workspace with the test provider and no adapter
 present, which is the containment check ADR-0019 asks for. Their tests
 (`cargo test --manifest-path …`) include the Swiss stress test: eight
@@ -190,12 +193,16 @@ SDK rotating its own canonical output.
   job is the containment check; the adapters are run by hand before a
   release of the port.
 
-## What changes in Phase 1
+## What changed in Phase 1
 
 - The ephemeris port design page carries the model, the vtable, the
   statuses, the codes, the bit layouts and the kit's checks and bounds
-  from here, with the Delta T decision above.
-- The kit gains the corpus checks (positions against fixtures per tier)
-  and a `sdk-only` cross-provider byte-identity check.
-- The Teimeris adapter becomes the Teimeris package's own crate; the
-  Swiss adapter stays a separate package under its own terms.
+  from here, with the Delta T decision above; the port, the completion
+  and the kit were promoted on 2026-09-05 (see "The slice"), the rise
+  and set override was added to the trait, the vtable and the kit, and
+  Delta T became the IERS table then a model in `crates/astro`.
+- Still to come: the corpus checks (positions against fixtures per tier)
+  and a `sdk-only` cross-provider byte-identity check in the kit; the
+  Teimeris adapter as the Teimeris package's own crate (it lives under
+  `adapters/` here until then); the Swiss adapter stays a separate
+  package under its own terms.

@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Teistro SDK calendars: the fixed day, Gregorian, Julian, mixed and ISO week arithmetic, Bikram Sambat over its table, and the solar-calendar engine that computes it from the Surya Siddhanta"
+description = "Teistro SDK calendars: the fixed day, Gregorian, Julian, mixed and ISO week arithmetic, Bikram Sambat over its table, and the solar-calendar engine that computes it from the Surya Siddhanta or from modern astronomy through the ephemeris port"
 readme = "README.md"
 keywords = ["calendar", "bikram-sambat", "gregorian", "julian"]
 categories = ["date-and-time"]
@@ -16,6 +16,7 @@ publish = false
 serde = { version = "1", features = ["derive"] }
 teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-siddhanta = { path = "../siddhanta" }
 
 [dev-dependencies]

@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Teistro SDK time layer: time scales and Delta T, leap seconds, civil time, zone resolution with replay-safe metadata over the embedded tzdb, the local day and ghati-pala"
+description = "Teistro SDK time layer: the civil side of time (UTC and the leap-second table over the astronomy layer's Delta T), civil time, zone resolution with replay-safe metadata over the embedded tzdb, the local day and ghati-pala"
 readme = "README.md"
 keywords = ["time", "timezone", "delta-t", "astrology"]
 categories = ["date-and-time"]
@@ -18,6 +18,7 @@ publish = false
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
 jiff-tzdb = "0.1"
 serde = { version = "1", features = ["derive"] }
+teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-core = { path = "../core" }
 teistro-port-timezone = { path = "../port-timezone" }

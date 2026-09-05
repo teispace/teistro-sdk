@@ -6,26 +6,27 @@ resolver = "3"
 members = [
     "xtask",
     "crates/core",
+    "crates/port-ephemeris",
     "crates/astro",
     "crates/siddhanta",
     "crates/port-timezone",
     "crates/time",
     "crates/calendar",
+    "crates/ephemeris-kit",
     # Spike 2 (spikes/README.md): built and linted like the rest, never published.
     "spikes/02-binding-toolchain/slice",
     "spikes/02-binding-toolchain/a-ffi",
     "spikes/02-binding-toolchain/a-gen",
     "spikes/02-binding-toolchain/a-node/native",
     "spikes/02-binding-toolchain/b-bridge",
-    "spikes/03-ephemeris-port/port",
     "spikes/04-teistro-intl/intl",
 ]
-# The licensed-engine adapters of spike 3 are outside the workspace on purpose
+# The licensed-engine adapters are outside the workspace on purpose
 # (ADR-0019): they depend on the port, never the reverse, and the workspace
 # builds with the test provider alone.
 exclude = [
-    "spikes/03-ephemeris-port/adapters/teimeris",
-    "spikes/03-ephemeris-port/adapters/sweph",
+    "adapters/ephemeris-teimeris/rust",
+    "adapters/ephemeris-sweph/rust",
 ]
 
 [workspace.package]

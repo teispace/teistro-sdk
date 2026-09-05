@@ -6,17 +6,21 @@
 //! A solar calendar is a set of sankrantis (the Sun entering a sign)
 //! placed on civil days by a rule under a clock; everything above the
 //! model is arithmetic on instants, so the same engine serves any solar
-//! calendar and any model, classical or modern.
+//! calendar and any model: the Surya Siddhanta (`siddhanta`) or modern
+//! astronomy through the ephemeris port ([`DrikSun`]).
 
+pub mod drik;
 pub mod rule;
 pub mod sankranti;
 mod siddhanta;
 
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
+use teistro_core::settings::SunriseConvention;
 
 use crate::fixed::FixedDay;
 
+pub use drik::DrikSun;
 pub use rule::MonthStartRule;
 pub use sankranti::{MEAN_SOLAR_RATE_DEG_PER_DAY, Sankranti, TOLERANCE_DAYS, find_sankranti};
 
@@ -82,6 +86,11 @@ pub trait SolarModel: Send + Sync {
     /// The model's name for provenance stamps.
     fn describe(&self) -> String;
 
+    /// The sunrise convention the model reckons its arc by: the text's
+    /// centre on the geometric horizon for the classical model, the
+    /// profile's for the drik model.
+    fn convention(&self) -> SunriseConvention;
+
     /// Sunrise and sunset of a civil day at a place, or `None` where the
     /// Sun neither rises nor sets that day.
     ///
@@ -104,5 +113,9 @@ impl<M: SolarModel + ?Sized> SolarModel for &M {
 
     fn describe(&self) -> String {
         (**self).describe()
+    }
+
+    fn convention(&self) -> SunriseConvention {
+        (**self).convention()
     }
 }

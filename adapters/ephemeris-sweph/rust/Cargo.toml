@@ -1,0 +1,49 @@
+[package]
+name = "teistro-ephemeris-sweph"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+publish = false
+build = "build.rs"
+links = "swe"
+description = "The Swiss Ephemeris adapter of the Teistro SDK's ephemeris port, outside the SDK workspace (ADR-0019); compiles and links the Swiss Ephemeris C sources named by SWEPH_SRC_DIR under their own terms"
+
+# Standalone on purpose: the adapter depends on the SDK, never the
+# reverse, and the SDK workspace builds without it.
+[workspace]
+
+[[bin]]
+name = "teistro-ephemeris-sweph-kit"
+path = "src/bin/kit.rs"
+
+[dependencies]
+teistro-core = { path = "../../../crates/core" }
+teistro-ephemeris-kit = { path = "../../../crates/ephemeris-kit" }
+teistro-port-ephemeris = { path = "../../../crates/port-ephemeris" }
+
+[build-dependencies]
+cc = "1"
+
+# The same table as the SDK workspace; a standalone crate cannot inherit
+# it. `unsafe_code` is denied rather than forbidden: the C entry points
+# are called in a handful of places, each allowed by name with its
+# safety argument beside it.
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"

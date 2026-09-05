@@ -1,12 +1,45 @@
 # The ephemeris port and its adapters
 
 Status: `draft`, written 2026-09-05 from spike 3
-(`spikes/03-ephemeris-port/README.md`); revised in Phase 1 when the
-`ephemeris` module is built. Derives from
+(`spikes/03-ephemeris-port/README.md`); revised the same day when the
+port was promoted into `crates/port-ephemeris`, the completion and the
+IAU routines into `crates/astro`, the kit into `crates/ephemeris-kit`
+and the adapters under `adapters/`. Derives from
 `02-architecture/02-ephemeris-port.md`, ADR-0002, ADR-0009, ADR-0013,
-ADR-0019, ADR-0020, ADR-0021 and ADR-0022. Type and function names are
-the spike's; Phase 1 renames into the SDK's catalogue without changing
-the shapes.
+ADR-0019, ADR-0020, ADR-0021 and ADR-0022.
+
+What the built crates differ in from the page as first written, each
+with its reason:
+
+- Names follow the SDK's catalogue: `Centre` (British spelling, as the
+  settings knob), the sidereal zodiac names a catalogued `Ayanamsha`
+  (the engines' mode number is the catalogue's `swiss_mode` attribute,
+  so an adapter maps by attribute and the port never carries an engine's
+  numbering), the observer is a validated `Place`, the tier and the
+  override policy are the settings' own enumerations.
+- The rise and set override was added (`horizon_event` on the trait, a
+  vtable slot, two kit checks), with the horizon convention as port
+  vocabulary so an adapter maps it onto its engine's options
+  (`astro-events-and-crossings.md`).
+- The conformance kit lives in its own crate above `astro`, because its
+  checks compare a provider's overrides with the SDK's own routines,
+  which the port cannot depend on; the test provider lives in the port,
+  since it is the port's own zero-setup instance.
+- Delta T lives in `crates/astro` (the IERS table then Espenak and
+  Meeus, `time-and-timezone.md`), which the completion reads for the
+  SDK's obliquity; the spike's polynomial stand-in is gone.
+- The completion asks the provider for the requested frame first and
+  passes a native answer through; it rotates only when the provider
+  refuses, so an engine that returns equatorial coordinates itself is
+  never second-guessed. The kit and the runner measure the rotation
+  through a proxy that refuses every frame but its native one.
+- The port's C codes and the SDK's status codes are two numberings at
+  two boundaries: a `ProviderError` maps to `UNSUPPORTED`,
+  `OUT_OF_RANGE`, `INVALID_ARG` or `PROVIDER`, with the provider's own
+  code and message carried.
+- The vtable module is the one place outside the future `ffi` crate
+  that holds `unsafe` code, `deny` rather than `forbid` at the crate
+  with one SAFETY comment per block (`04-implementation/README.md`).
 
 ## 1. Purpose and scope
 
@@ -31,7 +64,8 @@ ADR-0013). The port needs no other port.
 
 ### The frame
 
-A frame is five facts, each a closed enumeration:
+A frame is five facts, each a closed enumeration
+(`teistro_port_ephemeris::Frame`, `Frame::key()` is the stamp):
 
 | field | values | canonical |
 |---|---|---|
@@ -46,7 +80,8 @@ tropical, which is what both licensed engines return by default and what
 every chart module consumes. A frame packs into 32 bits for the C
 boundary: centre in bits 0 to 1, equinox in bit 2, coordinates in bit 3,
 the four corrections in bits 4 to 7, the zodiac in bit 8 and the
-ayanamsha id in bits 16 to 23; the packing is total in both directions.
+ayanamsha's catalogue id in bits 16 to 31; packing is total, unpacking
+refuses a reserved bit or an id the catalogue does not have.
 
 ### The response
 
@@ -87,7 +122,9 @@ error variants and their C codes: unsupported (-1), out of range (-2),
 data missing (-3), refused (-4), invalid request (-5), and a provider's
 own code with its message. The provider's own codes are offset by the
 adapter so they never land in the reserved range; Teimeris's -2 arrives
-as -102.
+as -102. As the SDK's error, unsupported is `UNSUPPORTED`, out of range
+`OUT_OF_RANGE`, an invalid request `INVALID_ARG`, and the rest
+`PROVIDER` with the code and the message.
 
 ## 4. The operations
 
@@ -96,21 +133,23 @@ as -102.
 | `positions(request)` | yes | columns over the grid in the requested frame, or `Unsupported` for a frame the provider cannot produce natively | one batch call, body-major grid transposed by the adapter | one call per cell under the process lock | none; a provider is required |
 | `obliquity(jd, scale)` | override | mean and true obliquity, nutation in longitude and obliquity, degrees | native | `SE_ECL_NUT` | IAU 2006 and IAU 2000B, ported from ERFA |
 | `delta_t_seconds(jd_ut1)` | override | Delta T in seconds | native (the engine answers in seconds) | native (the library answers in days; the adapter converts) | a table plus a model (section 10) |
-| `ayanamsha_deg(jd, scale, id)` | override | the mean ayanamsha, the value sidereal longitudes subtract, without the nutation in longitude | native, no-nutation switch only | native with `SEFLG_NONUT` | the SDK's catalogue (Phase 2) |
+| `ayanamsha_deg(jd, scale, ayanamsha)` | override | the mean ayanamsha, the value sidereal longitudes subtract, without the nutation in longitude, for a catalogued ayanamsha | native, no-nutation switch only | native with `SEFLG_NONUT` | the SDK's catalogue (Phase 2) |
+| `horizon_event(request)` | override | the next rise, set, transit or antitransit of a body at a place inside a window, under a horizon convention, or `None` when it does not happen | native, through its event search; the convention mapped onto its options, a custom altitude refused unless a twilight | not declared | the SDK's solver (`astro-events-and-crossings.md`) |
 
-The overrides that the spike did not build (sidereal time, nodes and
-apsides, houses, events, crossings, stations, eclipses, stars) follow the
-same pattern: a bit in the capabilities, a trait method with a default
-that answers `Unsupported`, a vtable slot that may be null, and a kit
-check that the declared override works and agrees with the SDK's own
-implementation within the published bound.
+The overrides not built yet (sidereal time, nodes and apsides, houses,
+crossings, stations, eclipses, stars) follow the same pattern: a bit in
+the capabilities, a trait method with a default that answers
+`Unsupported`, a vtable slot that may be null, and a kit check that the
+declared override works and agrees with the SDK's own implementation
+within the published bound.
 
 ## 5. Frame completion
 
 The SDK asks the provider for the requested frame. If the provider
-answers, the result passes through and every step is stamped `Native`.
-If the provider refuses with `Unsupported`, the SDK asks for the
-provider's native frame and completes the difference:
+answers, the result passes through and the step is stamped `Native`
+(`PassThrough` when the request was the native frame itself). If the
+provider refuses with `Unsupported`, the SDK asks for the provider's
+native frame and completes the difference:
 
 - coordinates: rotation between the ecliptic and the equator through the
   true obliquity, from the provider under `prefer-native` and
@@ -125,16 +164,19 @@ provider's native frame and completes the difference:
   frame.
 
 Every completed result carries its step list, each step stamped with the
-implementation that did it, which is the provenance ADR-0020 requires.
-Measured: 0.16 µs per cell with a native obliquity, 0.32 µs with the
-SDK's, and the rotation reproduces the provider's own ecliptic output to
-2e-10″ through its obliquity and 4e-4″ through the SDK's.
+implementation that did it (`Completed::step_keys`), which is the
+provenance ADR-0020 requires. Measured after the promotion over
+Teimeris: 0.16 µs per cell with a native obliquity, 0.30 µs with the
+SDK's (one IAU 2000B evaluation and one Delta T lookup per instant), and
+the rotation reproduces the provider's own ecliptic output to 2.0e-10″
+through its obliquity and 3.9e-4″ through the SDK's, the difference
+between the engines' nutation model and IAU 2000B.
 
 ## 6. The C shape
 
 The port is one `#[repr(C)]` vtable: `struct_size`, `abi_version`, and
 function pointers for `capabilities`, `positions`, `obliquity`,
-`delta_t` and `ayanamsha`, the last three nullable. Requests, columns and
+`delta_t`, `ayanamsha` and `horizon_event`, the last four nullable. Requests, columns and
 capabilities cross as `#[repr(C)]` structs with their own `struct_size`
 so either side can be older. Columns are caller-allocated: the SDK owns
 the vectors and hands pointers with a capacity; a provider writes into
@@ -184,39 +226,53 @@ Budget: the port and the vtable together add no more than 5 % to the
 engine's own batch call on a 1000-cell grid; frame completion adds no
 more than 0.5 µs per cell. The benchmark is the kit runner's standard
 rows (the engine directly, the trait, the vtable, completion with native
-and SDK obliquity) on a grid of 100 instants at 36.525-day steps from
-J2000 over the ten classical bodies. Measured in the spike: 0.2 % and
-1.8 % over Teimeris's own call, within noise over the Swiss library.
+and SDK obliquity through the refusing proxy) on a grid of 100 instants
+at 36.525-day steps from J2000 over the ten classical bodies. Measured
+after the promotion (release, Apple Silicon, medians of the best of
+three rounds of 200 calls): Teimeris 797 µs directly, 824 µs through the
+trait and 809 µs through the vtable (3 % and 1.5 %, inside the
+run-to-run spread of about 4 %), 958 µs completed to equatorial with the
+native obliquity and 1102 µs with the SDK's; the Swiss library 2234 µs
+directly, 2248 µs and 2260 µs through the trait and the vtable, 2604 µs
+and 2565 µs completed.
 
 ## 9. Tests and the conformance kit
 
-The kit runs the same thirteen checks against every provider under one
-published set of bounds, never per provider:
+The kit (`crates/ephemeris-kit`) runs the same fifteen checks against
+every provider under one published set of bounds (`Bounds::DEFAULT`),
+never per provider; measured on 2026-09-05 against the test provider,
+Teimeris 0.1.0 and the Swiss Ephemeris 2.10.03 over the same twelve
+`.se1` files:
 
-| check | bound |
-|---|---:|
-| capabilities well formed | |
-| positions finite in range | |
-| determinism: identical bits on a repeated request | |
-| batch equals single calls, bit for bit | |
-| reported speed against a central difference | 2e-3 °/day |
-| continuity: longitude change over 1e-4 day against speed times the step | 5e-6 ° |
-| out of range reported per cell | |
-| unsupported body refused by name | |
-| native obliquity against IAU 2006 and IAU 2000B | 0.01″ |
-| native Delta T against the SDK's fit, 1900 to 2005 only | 5 s |
-| native ayanamsha at J2000 against the published values | 0.1° |
-| completion through the native obliquity against the provider's own ecliptic output | 1e-4″ |
-| completion through the SDK's obliquity and nutation | 0.05″ |
+| check | bound | test provider | Teimeris | Swiss Ephemeris |
+|---|---:|---:|---:|---:|
+| capabilities well formed | | 8 bodies, no overrides | 14 bodies, 5 overrides, 47 ayanamshas | 14 bodies, 4 overrides |
+| positions finite in range | | 40 cells | 70 cells | 70 cells |
+| determinism: identical bits on a repeated request | | identical | identical | identical |
+| batch equals single calls, bit for bit | | identical | identical | identical |
+| reported speed against a central difference | 2e-3 °/day | 3.2e-5 | 9.4e-5 | 9.4e-5 |
+| continuity: longitude change over 1e-4 day against speed times the step | 5e-6 ° | 3.8e-9 | 8.1e-9 | 8.1e-9 |
+| out of range reported per cell | | pass | pass | pass |
+| unsupported body refused by name | | refused | every body offered | every body offered |
+| native obliquity against IAU 2006 and IAU 2000B | 0.01″ | not declared | 4.0e-4″ | 4.0e-4″ |
+| native Delta T against the IERS table, inside the table's span | 1 s | not declared | 0.33 s, at the table's last row | 0.33 s |
+| native ayanamsha at J2000 against the published values | 0.1° | not declared | 0.011° (Lahiri 23.8571, Raman 22.4108, Krishnamurti 23.7602) | the same |
+| native rise and set of the Sun against the SDK's solver, the geometric convention, three sea-level places | 1 s | not declared | 0.13 s | not declared |
+| the same under the almanac's convention (the upper limb with refraction) | 10 s | not declared | 7.3 s, at Reykjavík (C34) | not declared |
+| completion through the native obliquity against the provider's own ecliptic output | 1e-4″ | cannot return equatorial | 2.0e-10″ | 2.0e-10″ |
+| completion through the SDK's obliquity and nutation | 0.05″ | | 3.9e-4″ | 3.9e-4″ |
 
-Phase 1 adds the corpus checks (positions against fixtures per tier,
-ADR-0022) and an `sdk-only` cross-provider byte-identity check. CI runs
-the kit against the test provider on every change and against the
-Teimeris adapter and the built-in provider at every tier when they exist
-in the workspace; the Swiss adapter is run by hand before a release of
-the port. Unit tests cover the bit packings, the ERFA ports against
-ERFA's own reference values, the vtable round trip and the `.se1` name
-decoding.
+The Delta T row is the engines' own table against the IERS series the
+SDK carries: they agree to a few hundredths of a second inside the
+engines' table and part by a third of a second at the series' last rows
+(2026), where the engines extrapolate. Still to come: the corpus checks
+(positions against fixtures per tier, ADR-0022) and an `sdk-only`
+cross-provider byte-identity check. CI runs the kit against the test
+provider on every change (`cargo test -p teistro-ephemeris-kit`) and
+will run it against the built-in provider at every tier when it exists;
+the adapters are run by hand with the engines present. Unit tests cover
+the bit packings, the ERFA ports against ERFA's own reference values,
+the vtable round trip and the `.se1` name decoding.
 
 ## 10. Delta T
 
@@ -224,12 +280,12 @@ The spike's finding: the Espenak and Meeus polynomial fit is built from
 measurements to 2005 and extrapolates after; by 2025-01-01 it is 5.5 s
 above the measured value both engines carry, and by 2100 two reasonable
 extrapolations differ by 110 s. Five seconds of Delta T move the Moon by
-2.7″. The SDK's Delta T is therefore a table of the published values to
-the present (the IERS and USNO series, updated with the data packs), a
-model for the future and the past (the long-term parabola with the
-lunar-acceleration correction), and the fit only as the last resort; the
-provider's native Delta T is an override under the same policy as the
-others, bounded by the kit inside the measured era only.
+2.7″. The SDK's Delta T is therefore the IERS table where measured (1956
+to the present, `crates/astro/data/delta-t.json`, updated with the data
+packs) with a cited model either side and an uncertainty on every value
+(`time-and-timezone.md`, §3.1); the provider's native Delta T is an
+override under the same policy as the others, bounded by the kit inside
+the table's span.
 
 ## 11. Localisation
 
@@ -242,5 +298,7 @@ catalogue's.
   requests, and how the Teimeris adapter maps onto that (Phase 1).
 - The `reference` tier's JPL kernel adapter and its completion chain
   (ADR-0021, Phase 3).
-- Which Delta T series the data packs carry and how they are updated
-  (Phase 1, with `time-and-timezone.md`).
+- The refraction convention of the rise and set override against the
+  SDK's (cruxes C34; `astro-events-and-crossings.md`).
+- The Teimeris adapter as the Teimeris package's own crate; until then
+  it lives under `adapters/ephemeris-teimeris/rust` here.

@@ -24,23 +24,30 @@ teistro-sdk/
   Cargo.toml                   workspace; rust-toolchain.toml
   crates/
     core/                      present: the catalogue, keys, quantities, angles, settings, the envelope, clock offsets
-    port-ephemeris/ port-calendar/ port-geo/ port-intl-data/ port-log/
+    port-ephemeris/            present: the ephemeris port (trait, frames, columns, capabilities, the horizon
+                               convention, the C vtable, the `.se1` scanner, the analytic test provider)
+    port-calendar/ port-geo/ port-intl-data/ port-log/
     port-timezone/             present: the zone database contract
-    astro/                     the astronomy layer; its IAU routines are a port of ERFA (ADR-0021); present as a seed (the boundary solver)
+    astro/                     present: Delta T and the UT1/TT scales (data/ holds the IERS series), the ERFA-ported
+                               IAU routines (ADR-0021), sidereal time and the obliquity, frame completion, the
+                               boundary solver, the rise and set solver; the model families, ayanamshas, houses,
+                               crossings and stations follow
+    ephemeris-kit/             present: the provider conformance kit, its report, timing rows and runner
     ephemeris-builtin/         VSOP87, ELP/MPP02, fitted Pluto; tiers as features, plus the DE-refit `reference` tier
     ephemeris-de/              the JPL DE file reader provider (v1.x, ADR-0021)
     siddhanta/                 present: the Surya Siddhanta model (docs/03-design/siddhanta.md)
     calendar/                  present: the arithmetic calendars, Bikram Sambat and the solar-calendar engine;
                                data/ holds the official rows, src/bikram_sambat/generated.rs the generated table
-    time/                      present: scales and Delta T, leap seconds, civil time, zone resolution over the
-                               embedded tzdb, the local day, ghati-pala; data/ holds the IERS and IANA files
+    time/                      present: the UTC conversions over astro's Delta T, leap seconds, civil time, zone
+                               resolution over the embedded tzdb with the SUNRISE fallback, the local day,
+                               ghati-pala; data/ holds the IANA leap-second list
     chart/ houses/ vargas/ state/ aspect/ points/
     strength/ dasha/ rules/ jaimini/ kp/ tajika/
     panchanga/ muhurta/ gochar/ prashna/ matching/ rectification/ longevity/
     remedies/ numerology/ lalkitab/ pakshi/ namakarana/ rashifal/ research/
     interpret/ intl/ serial/
-    ffi/                       the only unsafe crate; C ABI; cbindgen config
-    test-provider/             fixed-table ephemeris for tests
+    ffi/                       the C ABI; cbindgen config; unsafe with reviewed SAFETY comments
+                               (the analytic test provider lives in port-ephemeris::test_provider)
   catalogue/                   entity catalogue YAML (keys, ids, attributes, citations); present, with its README,
                                generated into crates/core by `cargo xtask gen catalogue` and gated by `check-catalogue`
   i18n/
@@ -53,9 +60,10 @@ teistro-sdk/
   bindings/
     c/ cpp/ node/ wasm/ python/ dart/ teistro_flutter/ rust/ java/
     shared/                    ergonomic code shared by node and wasm
-  adapters/
-    ephemeris-teimeris/<binding>/    published separately (Teimeris terms)
-    ephemeris-sweph/<binding>/       published separately (Swiss terms)
+  adapters/                    outside the workspace (ADR-0019), with their README
+    ephemeris-teimeris/rust/   present: the port over Teimeris's Rust binding, its kit binary and the Bikram
+                               Sambat measurement binary; published separately (Teimeris terms)
+    ephemeris-sweph/rust/      present: the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
                                check-fixtures, check-catalogue, check-calendars, check-time,
                                gen catalogue, gen calendars, gen time, calendars bs-fit; later verify, idl extract,
@@ -81,8 +89,10 @@ teistro-sdk/
 
 - Rust 2024 edition, stable toolchain pinned; `clippy -D warnings`;
   `rustfmt`; `cargo doc` with `-D warnings` on public items.
-- `#![forbid(unsafe_code)]` in every crate except `ffi` and the `mmap`
-  path of `ephemeris-de`, each with reviewed `SAFETY:` comments.
+- `#![forbid(unsafe_code)]` in every crate except `ffi`, the `vtable`
+  module of `port-ephemeris` (the port's C shape; `deny` at the crate,
+  allowed in that module alone) and the `mmap` path of `ephemeris-de`,
+  each with reviewed `SAFETY:` comments.
 - No `panic!`, `unwrap`, `expect`, `todo`, printing or slice indexing in
   library crates (workspace lints; a tooling binary allows them with a
   comment); errors are values; iteration caps on every search.

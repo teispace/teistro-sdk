@@ -1,10 +1,11 @@
 # Time and time zones
 
 Status: `draft`, written 2026-09-05 as a Phase 1 design page and revised
-the same day when `crates/time` and `crates/port-timezone` were built;
-revised again when `astro`'s rise and set solver lands (the local day
-then takes modern sunrise) and when the ephemeris port's DUT1 and native
-Delta T overrides are wired. Derives from
+the same day when `crates/time` and `crates/port-timezone` were built,
+and again when the ephemeris port was promoted: Delta T moved to
+`crates/astro`, the local day took the rise and set solver through the
+drik solar model and carries its sunrise convention, and the `SUNRISE`
+unknown-time fallback resolves. The port's DUT1 is still to be wired. Derives from
 `02-architecture/04-calendar-time-architecture.md`,
 `01-research/platform/05-calendars-timezones.md`,
 `01-research/platform/13-astronomy-layer.md` (time scales), ADR-0020
@@ -23,15 +24,20 @@ with its reason:
   the uncertainty; Stephenson, Morrison and Hohenkerk (2016) is
   registered and refused as unsourced until its spline coefficients are
   cited (cruxes register C32). The IERS series carries UT1 only from
-  1956, so the table begins there.
+  1956, so the table begins there. Delta T and the UT1 to TT
+  conversions live in `crates/astro` (`delta_t`, `scale`), where the
+  frame completion and the solvers need them; `teistro_time` re-exports
+  them, and the data file is `crates/astro/data/delta-t.json`.
 - A zone's era is decided against the offsets the zone applies in the
   database's own year, never against the offset in force when the
   software runs (no clock reads in a computation crate, ADR-0022); the
   baseline compared with the offset at export time, a deliberate
   difference (C33, `fixtures/README.md` convention eleven).
 - The local day takes any `SolarModel` from the calendar crate for its
-  arc (the Surya Siddhanta today, `astro`'s solver when it lands), so
-  the sunrise convention knob waits for `astro`.
+  arc: the Surya Siddhanta, or modern astronomy through the ephemeris
+  port (`DrikSun`, which reads the sunrise convention knob and runs
+  `astro`'s rise and set solver); every model states its convention and
+  the local day carries it.
 - Instants are `f64` Julian days, about fifty microseconds of resolution
   in the present era; ghati-pala snaps to a tenth of a millisecond and
   is exact on that grid.
@@ -121,9 +127,10 @@ reported, not silently applied: the baseline engine's model, kept.
 pub struct LocalDay {
     place: Place,
     date: CalendarDate,               // under the profile's day boundary
-    sunrise: JulianDay<Ut1>, sunset: JulianDay<Ut1>, next_sunrise: JulianDay<Ut1>,
-    convention: SunriseConvention,
+    sunrise: JulianDay<Utc>, sunset: JulianDay<Utc>, next_sunrise: JulianDay<Utc>,
     state: DayState,                  // Normal | Polar { kind: Day | Night, policy applied }
+    convention: SunriseConvention,    // what the model reckoned the arc by
+    model: String,                    // the model's stamp
 }
 pub struct GhatiPala { ghati: u8, pala: u8, vipala: u8 }   // 0 ghati 0 pala at sunrise
 pub enum Reckoning { Civil, Proportional }
@@ -151,19 +158,26 @@ and stamped `Manual`. Before a zone's first rule the provider returns
 tzdb's LMT stub and the era is `BeforeRules`; a resolution whose offset
 differs from the zone's current rules is stamped `Historical` with the
 baseline's warning. An absent time applies `unknown_time`: `REFUSE` is
-an error naming the fallbacks; `NOON`, `MIDNIGHT` and `SUNRISE` (which
-needs the place and the sunrise solver) supply it and set
-`time_known: false`, which every downstream result inherits.
+an error naming the fallbacks; `NOON` and `MIDNIGHT` supply it and set
+`time_known: false`, which every downstream result inherits; `SUNRISE`
+needs the place and a solar model, so `resolve_at_place` takes a
+`DayContext` (model, place, polar-day policy), computes the local day of
+the date at the place through a clock read from the zone provider, makes
+its sunrise the instant, and reports that instant's civil time with
+`time_known: false` and the fallback warning; the plain `resolve` refuses
+with a hint naming the way through.
 
 **Instant to civil.** UTC to a fixed day and a time of day through the
 calendar; the zone offset applied at the civil boundary; the day
 boundary knob decides which calendar date the instant belongs to
 (`SUNRISE` needs the local day; `SUNSET` and `NOON` likewise).
 
-**The local day.** Sunrise and next sunrise from `astro`'s rise and set
-solver under the convention (centre without refraction; upper or lower
-limb with refraction; a custom altitude), with the provider's native
-rise and set used under `PREFER_NATIVE` when declared. Above the polar
+**The local day.** Sunrise and next sunrise from the solar model: the
+Surya Siddhanta's arc, or `astro`'s rise and set solver under the
+convention (centre without refraction; upper or lower limb with
+refraction; a custom altitude) through `DrikSun`, with the provider's
+native rise and set as an override under `PREFER_NATIVE` when the
+context wires it (`astro-events-and-crossings.md`). Above the polar
 circles the solver reports no event; `polar_day_policy` then yields an
 `undefined` state (`UNDEFINED`), the nearest event of the right kind
 (`NEAREST_EVENT`, stamped as a convention), or civil midnight
@@ -182,8 +196,10 @@ sunrise-anchored instant to the microsecond.
 Rust, as built: `resolve(&CivilDateTime, &ZoneSpec, &Policy, &dyn
 TimeZoneProvider) -> Result<Resolved>` and `resolve_with(&dyn
 CalendarSystem, ..)`; `civil_of(instant, &ZoneSpec, provider)` and
-`civil_of_with(calendar, ..)`; `date_of(instant, &dyn LocalClock,
-calendar)`; `local_day(&dyn SolarModel, calendar, &dyn LocalClock, &Place,
+`civil_of_with(calendar, ..)`; `resolve_at_place(.., DayContext { model,
+place, polar_day_policy })` and `resolve_at_place_with(calendar, ..)` for
+the `SUNRISE` fallback; `date_of(instant, &dyn LocalClock, calendar)`;
+`local_day(&dyn SolarModel, calendar, &dyn LocalClock, &Place,
 &CalendarDate, PolarDayPolicy)`; `ghati_pala(&LocalDay, instant,
 Reckoning)` and `instant_of(&LocalDay, GhatiPala, Reckoning)`;
 `delta_t(jd_ut1, DeltaTModel)`, `tt_from_ut1`, `ut1_from_tt`,
@@ -267,5 +283,5 @@ vipala) and the zone-source labels.
    to match the baseline's behaviour; the maintainer confirms.
 4. Stephenson, Morrison and Hohenkerk (2016): the spline coefficients to
    cite (C32); until then the knob value is refused as unsourced.
-5. The `SUNRISE` unknown-time fallback resolves through `local_day` and
-   `civil_of` by hand until the context wires the two.
+5. Closed: the `SUNRISE` unknown-time fallback resolves through
+   `resolve_at_place` with a `DayContext` (model, place, polar policy).

@@ -1,8 +1,8 @@
-//! The time scales and their conversions: explicit functions, never
+//! The civil time scales and their conversions: explicit functions, never
 //! `From`, each returning what it applied so the envelope can stamp it
-//! (`docs/03-design/time-and-timezone.md`, §3.1).
+//! (`docs/03-design/time-and-timezone.md`, §3.1). TT from UT1 and back
+//! are the astronomy layer's (`teistro_astro::scale`), re-exported here.
 //!
-//! - TT from UT1 adds Delta T; UT1 from TT subtracts it, iterating once.
 //! - UTC and UT1 differ by DUT1, under 0.9 s by definition; the SDK
 //!   applies zero and says so. Before 1972 UTC had no whole-second
 //!   relation to TAI and is treated as UT1, stamped proleptic.
@@ -16,10 +16,10 @@ use teistro_core::quantity::{JulianDay, Tt, Ut1, Utc};
 use crate::delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
 use crate::leap;
 
+pub use teistro_astro::scale::{SECONDS_PER_DAY, tt_from_ut1, tt_of, ut1_from_tt};
+
 /// TT less TAI, seconds, by definition.
 pub const TT_MINUS_TAI_SECONDS: f64 = 32.184;
-/// Seconds in a day.
-pub const SECONDS_PER_DAY: f64 = 86_400.0;
 
 /// What a UTC conversion assumed.
 #[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -49,30 +49,6 @@ pub struct TtConversion {
     pub delta_t: DeltaT,
     /// What the UTC side assumed.
     pub basis: TimeBasis,
-}
-
-/// TT from UT1 by adding Delta T.
-#[must_use]
-pub fn tt_from_ut1(instant: JulianDay<Ut1>, delta_t: &DeltaT) -> JulianDay<Tt> {
-    JulianDay::try_new(instant.get() + delta_t.days()).unwrap_or(instant.relabel())
-}
-
-/// UT1 from TT by subtracting Delta T, evaluated at the UT1 instant it
-/// converges on (one refinement, which is exact to a microsecond because
-/// Delta T changes by under a second a year).
-///
-/// # Errors
-///
-/// A model that cannot answer (`delta_t`).
-pub fn ut1_from_tt(
-    instant: JulianDay<Tt>,
-    model: DeltaTModel,
-) -> Result<(JulianDay<Ut1>, DeltaT), Error> {
-    let first = delta_t(instant.relabel(), model)?;
-    let guess = JulianDay::<Ut1>::try_new(instant.get() - first.days())?;
-    let refined = delta_t(guess, model)?;
-    let ut1 = JulianDay::<Ut1>::try_new(instant.get() - refined.days())?;
-    Ok((ut1, refined))
 }
 
 /// UT1 from UTC with DUT1 taken as zero.
@@ -172,21 +148,6 @@ mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use super::*;
-
-    #[test]
-    fn tt_and_ut1_round_trip_through_delta_t() {
-        let ut1 = JulianDay::<Ut1>::try_new(2_451_544.5).unwrap();
-        let dt = delta_t(ut1, DeltaTModel::TableThenModel).unwrap();
-        let tt = tt_from_ut1(ut1, &dt);
-        assert!((tt.get() - ut1.get() - dt.days()).abs() < 1e-9);
-        let (back, applied) = ut1_from_tt(tt, DeltaTModel::TableThenModel).unwrap();
-        assert!(
-            (back.get() - ut1.get()).abs() < 1e-9,
-            "{}",
-            (back.get() - ut1.get()) * 86_400.0
-        );
-        assert!((applied.seconds - dt.seconds).abs() < 1e-6);
-    }
 
     #[test]
     fn utc_after_1972_goes_through_the_leap_table_exactly() {

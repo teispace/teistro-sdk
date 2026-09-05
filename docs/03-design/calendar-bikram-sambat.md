@@ -28,8 +28,9 @@ the tests and the source memo the calendar cannot ship without.
 ## 2. Inputs, settings and ports
 
 A BS date or a fixed day for the table; for the engine, a `SolarModel`
-(the Surya Siddhanta today; modern positions through the ephemeris port
-with the profile's ayanamsha once the port is promoted), a `LocalClock`
+(the Surya Siddhanta, or modern positions through the ephemeris port
+with a catalogued ayanamsha and the profile's sunrise convention:
+`DrikSun`), a `LocalClock`
 (Nepal's history from the time layer; never hard-coded in the calendar),
 a place (Kathmandu by convention for the national calendar, stamped) and
 a `MonthStartRule`. The settings knobs `civil_calendar`, `eras`,
@@ -108,9 +109,13 @@ lengths. `Engine::sankrantis` and `Engine::year_from` split the two
 halves so a measurement finds the instants once and tries every rule.
 
 **The rule.** Chosen by measurement: `cargo xtask calendars bs-fit` runs
-every model, clock and rule over the official span and publishes
-agreement, drift, the offset of every 1 Baisakh and the divergence set;
-`--detail` shows which sankranti decides how. The result (the memo, R5):
+every classical model, clock and rule over the official span and
+publishes agreement, drift, the offset of every 1 Baisakh and the
+divergence set; `--detail` shows which sankranti decides how; the
+Teimeris adapter's `bs-fit` binary runs the same engine over the drik
+Sun (the memo's classical-against-modern comparison, from the SDK's own
+code: 65.3 % of the official months under the punya-kala rule against
+the text's 98.5 %). The result (the memo, R5):
 ten sankrantis follow the civil day in Nepal's clock, Karka the
 sunrise-to-sunrise day and Makara the before-sunset rule, which is the
 Dharmasindhu's punya-kala convention, `MonthStartRule::Punyakala`. Under
@@ -196,8 +201,8 @@ the locale's numbering system, and the era names.
    (the memo's R1 to R3): they would settle the eleven residual
    boundaries, which lie within 25 minutes of the rule's boundary, and
    the exact Dharmasindhu verse the punya-kala rule follows (cruxes C29).
-2. The drik model through the ephemeris port as a second `SolarModel`,
-   so the memo's comparison of classical and modern positions comes from
-   the SDK's own code.
+2. Closed: `DrikSun` is the second `SolarModel`, and the memo's
+   comparison comes from the SDK's own code (the Teimeris adapter's
+   `bs-fit` binary).
 3. The Buddha era's new-year rule in Nepali usage.
 4. Nepal Sambat's tabular stopgap until the lunisolar calendar exists.

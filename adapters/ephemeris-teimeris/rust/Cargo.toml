@@ -1,0 +1,53 @@
+[package]
+name = "teistro-ephemeris-teimeris"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+publish = false
+description = "The Teimeris adapter of the Teistro SDK's ephemeris port, outside the SDK workspace (ADR-0019); links Teimeris under Teimeris's own terms"
+
+# Standalone on purpose: the adapter depends on the SDK, never the
+# reverse, and the SDK workspace builds without it.
+[workspace]
+
+[[bin]]
+name = "teistro-ephemeris-teimeris-kit"
+path = "src/bin/kit.rs"
+
+[[bin]]
+name = "teistro-ephemeris-teimeris-bs-fit"
+path = "src/bin/bs_fit.rs"
+
+[dependencies]
+teimeris = { path = "../../../../teimeris/bindings/rust/teimeris" }
+teistro-astro = { path = "../../../crates/astro" }
+teistro-calendar = { path = "../../../crates/calendar" }
+teistro-core = { path = "../../../crates/core" }
+teistro-ephemeris-kit = { path = "../../../crates/ephemeris-kit" }
+teistro-port-ephemeris = { path = "../../../crates/port-ephemeris" }
+teistro-siddhanta = { path = "../../../crates/siddhanta" }
+teistro-time = { path = "../../../crates/time" }
+
+[dev-dependencies]
+serde_json = "1"
+
+# The same table as the SDK workspace; a standalone crate cannot inherit it.
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"

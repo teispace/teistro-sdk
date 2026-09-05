@@ -8,7 +8,7 @@ use teistro_calendar::solar::{DayLight, SolarModel};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::settings::PolarDayPolicy;
+use teistro_core::settings::{PolarDayPolicy, SunriseConvention};
 use teistro_core::time::LocalClock;
 
 /// How far a nearest-event search looks, in days: past half a year the
@@ -55,6 +55,8 @@ pub struct LocalDay {
     pub next_sunrise: JulianDay<Utc>,
     /// Whether the day is normal or polar.
     pub state: DayState,
+    /// The sunrise convention the arc was reckoned by.
+    pub convention: SunriseConvention,
     /// The model that gave the arc, for provenance.
     pub model: String,
 }
@@ -206,6 +208,7 @@ pub fn local_day(
         sunset,
         next_sunrise,
         state,
+        convention: model.convention(),
         model: model.describe(),
     })
 }
@@ -306,6 +309,10 @@ mod tests {
         assert!((day.night_days() * 24.0 - 10.2).abs() < 0.1);
         assert!(day.contains(day.sunrise) && !day.contains(day.next_sunrise));
         assert!(day.model.starts_with("Surya Siddhanta"));
+        assert_eq!(
+            day.convention,
+            teistro_core::settings::Sunrise::CentreNoRefraction.into()
+        );
         assert!(day.to_string().contains("sunrise"));
     }
 
@@ -331,6 +338,10 @@ mod tests {
 
         fn describe(&self) -> String {
             String::from("polar test model")
+        }
+
+        fn convention(&self) -> SunriseConvention {
+            teistro_core::settings::Sunrise::CentreNoRefraction.into()
         }
     }
 

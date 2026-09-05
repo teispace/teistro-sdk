@@ -209,3 +209,17 @@ explained rather than a failure or a silent adoption.
     York fold); the SDK compares with the offsets the zone applies in the
     database's own year and reads no clock, so it calls those `current`
     (cruxes register C33).
+
+12. Sunrise and sunset. The baseline's library computed refraction from
+    its standard atmosphere; the SDK's standard refraction is the
+    almanac's 34 arcminutes with the semidiameter and the horizontal
+    parallax from the distance, so the SDK's sunrise under the same
+    convention differs from the fixtures' by up to 2.5 s below 60° of
+    latitude and 9.8 s at Fairbanks on the solstice (cruxes C34); the
+    band on `foundation.sunrise.*_jd` is set from that spread when the
+    harness lands. The day's arc in the SDK is the civil date's sunrise
+    and the sunset that follows it, as the baseline reckons for c043,
+    whose sunset falls after the next civil midnight. For c022, c025 and
+    c039 the baseline's `foundation.sunrise` block holds the previous
+    day's events and its `next_day` block the civil date's own (C35): a
+    comparison reads the latter there.

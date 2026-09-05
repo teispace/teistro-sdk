@@ -19,8 +19,13 @@ each generated table names its source in its header:
 - ELP/MPP02 lunar theory (Chapront and Francou, 2003), published by the
   IMCCE; coefficient tables are generated from the published series.
 - ERFA (Essential Routines for Fundamental Astronomy), NumFOCUS Foundation,
-  BSD-3-Clause; the IAU 2006 obliquity and IAU 2000B nutation routines are
-  ported to Rust with a provenance table naming each source function.
+  BSD-3-Clause, derived with permission from SOFA; ported to Rust in
+  `crates/astro/src/iau` with a provenance table naming each source
+  function: the IAU 1980 and 2006 mean obliquities, the IAU 2000B nutation,
+  the IAU 2000 precession-rate adjustments, the Earth rotation angle, the
+  IAU 2000 and 2006 mean sidereal times, the fundamental arguments of the
+  IERS Conventions 2003, the equation of the equinoxes with its
+  complementary terms, and the refraction constants.
 - JPL Development Ephemerides (NASA/JPL), United States government work in
   the public domain; used to fit Pluto coefficients.
 - Unicode CLDR data, via ICU4X, under the Unicode License.

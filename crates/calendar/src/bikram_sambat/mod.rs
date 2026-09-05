@@ -171,6 +171,16 @@ impl BikramSambat {
         self.table.divergences
     }
 
+    /// The official rows: each year of the published span with its
+    /// twelve month lengths, what a measurement compares an engine with.
+    #[must_use]
+    pub fn official_rows(&self) -> Vec<(i32, [u8; 12])> {
+        let (first, last) = self.table.official;
+        (first..=last)
+            .filter_map(|year| self.row(year).ok().map(|months| (year, *months)))
+            .collect()
+    }
+
     /// The fixed day of 1 Baisakh of a year in the table.
     #[must_use]
     pub fn year_start(&self, year: i32) -> Option<FixedDay> {
