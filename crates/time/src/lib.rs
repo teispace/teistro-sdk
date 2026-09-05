@@ -1,26 +1,69 @@
 //! The time layer of the Teistro SDK (`docs/03-design/time-and-timezone.md`).
 //!
-//! This seed holds what the calendars already need: [`OffsetHistory`], a
-//! zone's offsets as rows in force from an instant, answering as a
-//! [`LocalClock`]; and [`zones`], the shipped histories, each row cited to
-//! tzdb. Time scales and Delta T, zone resolution with its replay-safe
-//! metadata, the sunrise-anchored local day and ghati-pala follow.
+//! Every chart begins with "when": a civil date and time at a place,
+//! resolved to an instant on a named time scale with enough recorded to
+//! reproduce the resolution after the zone database changes. This crate
+//! holds:
+//!
+//! - [`scale`]: the conversions between UT1, TT and UTC, explicit
+//!   functions that stamp what they applied;
+//! - [`delta_t`]: Delta T as the IERS table where measured and a cited
+//!   model either side, with an uncertainty on every value;
+//! - [`leap`]: the leap-second table and what it allows;
+//! - [`civil`]: a civil time and a civil date-time in any calendar;
+//! - [`zone`]: zone specifications, resolution under the daylight-saving
+//!   policies, and the metadata a stored chart keeps ([`ZoneResolution`]);
+//!   the embedded database ([`EmbeddedTzdb`]) implements the time-zone
+//!   port and never reads the host;
+//! - [`local_day`]: the sunrise-anchored day at a place from a solar
+//!   model, with the polar policies;
+//! - [`ghati`]: ghati-pala as exact integer arithmetic on microseconds.
+//!
+//! Instants are `f64` Julian days, which resolve to about fifty
+//! microseconds in the present era; the ghati-pala arithmetic is exact
+//! on the microsecond count it derives from them.
 //!
 //! ```
-//! use teistro_core::quantity::{JulianDay, Utc};
-//! use teistro_core::time::LocalClock;
-//! use teistro_time::zones;
+//! use teistro_calendar::CalendarDate;
+//! use teistro_core::catalogue::Calendar;
+//! use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneEra, ZoneSpec, resolve};
 //!
-//! // Nepal moved from +05:30 to +05:45 at the start of 1986.
-//! let nepal = zones::nepal();
-//! let before = JulianDay::<Utc>::try_new(2_446_000.0).expect("finite");
-//! let after = JulianDay::<Utc>::try_new(2_447_000.0).expect("finite");
-//! assert_eq!(nepal.offset_at(before).to_string(), "+05:30");
-//! assert_eq!(nepal.offset_at(after).to_string(), "+05:45");
+//! // A birth in Kathmandu twenty minutes into 1986, after the clocks moved
+//! // from +05:30 to +05:45 at midnight.
+//! let civil = CivilDateTime::at(
+//!     CalendarDate::defined(Calendar::Gregorian, 1986, 1, 1),
+//!     CivilTime::new(0, 20, 0).expect("a real time"),
+//! );
+//! let resolved = resolve(&civil, &ZoneSpec::iana("Asia/Kathmandu"), &Policy::default(), EmbeddedTzdb::shared())
+//!     .expect("a zone the database knows");
+//! assert_eq!(resolved.zone.offset.to_string(), "+05:45");
+//! assert_eq!(resolved.zone.era, ZoneEra::Current);
+//! assert!((resolved.instant.get() - 2_446_431.274_305_6).abs() < 1e-6);
 //! ```
 
-pub mod history;
+pub mod civil;
+pub mod delta_t;
+pub mod ghati;
+pub mod leap;
+pub mod local_day;
+pub mod scale;
+pub mod zone;
 pub mod zones;
 
-pub use history::{OffsetHistory, OffsetRow};
+#[rustfmt::skip]
+mod generated;
+
+pub use civil::{CivilDateTime, CivilTime};
+pub use delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
+pub use ghati::{GhatiPala, Reckoning, ghati_pala, instant_of};
+pub use local_day::{DayState, LocalDay, PolarKind, local_day};
+pub use scale::{
+    TimeBasis, TtConversion, tt_from_ut1, tt_from_utc, ut1_from_tt, ut1_from_utc, utc_from_ut1,
+};
 pub use teistro_core::time::{LocalClock, LocalMeanTime, UtcOffset};
+pub use teistro_port_timezone::{LocalCandidates, LocalSeconds, OffsetInfo, TimeZoneProvider};
+pub use zone::embedded::{EmbeddedTzdb, ZoneClock};
+pub use zone::{
+    Chosen, DstOutcome, Policy, Resolved, Warning, ZoneEra, ZoneResolution, ZoneSource, ZoneSpec,
+    civil_of, civil_of_with, resolve, resolve_with,
+};

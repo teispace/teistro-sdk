@@ -44,6 +44,8 @@ jobs:
         run: cargo xtask check-catalogue
       - name: Calendar tables gate (the official rows and the engine reproduce the checked-in table)
         run: cargo xtask check-calendars
+      - name: Time tables gate (the IERS series and the leap-second list reproduce the checked-in tables)
+        run: cargo xtask check-time
 
   dco:
     name: dco

@@ -201,3 +201,11 @@ explained rather than a failure or a silent adoption.
    nutated ayanamsha to the sidereal value (the two agree to a
    milliarcsecond for the planets).
 10. The `outer` planets are geocentric even under a topocentric profile.
+11. A zone resolution's era is labelled by comparing the applied offset
+    with the offset in force when the export ran, a northern summer, so a
+    seasonal offset the zone still applies every year reads `historical`
+    (c018 Sydney and c019 Auckland in their summer time, c029 Berlin and
+    c035 New York in standard time, c037 the later occurrence of the New
+    York fold); the SDK compares with the offsets the zone applies in the
+    database's own year and reads no clock, so it calls those `current`
+    (cruxes register C33).

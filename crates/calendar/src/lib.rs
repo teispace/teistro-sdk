@@ -30,4 +30,4 @@ pub use gregorian::Gregorian;
 pub use iso_week::{IsoWeek, IsoWeekDate};
 pub use julian::Julian;
 pub use mixed::{Mixed, Transition};
-pub use solar::{MonthStartRule, SolarModel};
+pub use solar::{DayLight, MonthStartRule, SolarModel};

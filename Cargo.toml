@@ -8,6 +8,7 @@ members = [
     "crates/core",
     "crates/astro",
     "crates/siddhanta",
+    "crates/port-timezone",
     "crates/time",
     "crates/calendar",
     # Spike 2 (spikes/README.md): built and linted like the rest, never published.

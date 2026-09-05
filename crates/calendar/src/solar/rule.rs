@@ -186,6 +186,7 @@ mod tests {
     use teistro_core::time::UtcOffset;
 
     use super::*;
+    use crate::solar::DayLight;
 
     /// A model whose Sun rises at 06:00 and sets at 18:00 UTC of any day.
     struct SixToSix;
@@ -195,9 +196,9 @@ mod tests {
             Ok(0.0)
         }
 
-        fn day_arc(&self, day: FixedDay, _place: &Place) -> Result<Option<DayArc>, Error> {
+        fn day_light(&self, day: FixedDay, _place: &Place) -> Result<DayLight, Error> {
             let midnight = day.jd_at_midnight()?;
-            Ok(Some(DayArc {
+            Ok(DayLight::Arc(DayArc {
                 sunrise: midnight.plus_days(0.25)?,
                 sunset: midnight.plus_days(0.75)?,
             }))
@@ -344,8 +345,8 @@ mod tests {
             fn sidereal_sun_deg(&self, _jd_ut: f64) -> Result<f64, Error> {
                 Ok(0.0)
             }
-            fn day_arc(&self, _day: FixedDay, _place: &Place) -> Result<Option<DayArc>, Error> {
-                Ok(None)
+            fn day_light(&self, _day: FixedDay, _place: &Place) -> Result<DayLight, Error> {
+                Ok(DayLight::NeverUp)
             }
             fn describe(&self) -> String {
                 String::from("polar")

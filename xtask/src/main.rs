@@ -10,6 +10,8 @@
 //! - `check-calendars`, `gen calendars` and `calendars bs-fit`: the Bikram
 //!   Sambat table equals what the official rows and the engine produce, and
 //!   the measurement that chose the engine's rule.
+//! - `check-time` and `gen time`: the time crate's tables equal their data
+//!   files (the IERS Delta T series, the historical table, the leap seconds).
 //!
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
@@ -29,6 +31,8 @@
 
 mod calendars;
 mod catalogue;
+mod generated;
+mod time;
 
 use std::env;
 use std::fs;
@@ -49,6 +53,7 @@ fn main() {
         Some("check-fixtures") => check_fixtures(),
         Some("check-catalogue") => catalogue::check(&repo_root()),
         Some("check-calendars") => calendars::check(&repo_root()),
+        Some("check-time") => time::check_generated(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
             _ => usage(),
@@ -56,6 +61,7 @@ fn main() {
         Some("gen") => match args.get(1).map(String::as_str) {
             Some("catalogue") => catalogue::generate(&repo_root()),
             Some("calendars") => calendars::generate(&repo_root()),
+            Some("time") => time::generate(&repo_root()),
             _ => usage(),
         },
         _ => usage(),
@@ -65,7 +71,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | calendars bs-fit | gen catalogue | gen calendars>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | calendars bs-fit | gen catalogue | gen calendars | gen time>"
     );
     2
 }

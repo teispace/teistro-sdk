@@ -1,0 +1,23 @@
+[package]
+name = "teistro-port-timezone"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Teistro SDK time-zone port: what the SDK needs from a zone database and nothing else"
+readme = "README.md"
+keywords = ["timezone", "tzdb", "astrology"]
+categories = ["date-and-time"]
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+teistro-core = { path = "../core" }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

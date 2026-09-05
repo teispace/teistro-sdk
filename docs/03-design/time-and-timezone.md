@@ -1,18 +1,42 @@
 # Time and time zones
 
-Status: `draft`, written 2026-09-05 as a Phase 1 design page; the seed
-of `crates/time` (a zone's offset history as a local clock, Nepal's rows
-from tzdb) and `core::time` (`UtcOffset`, the `LocalClock` trait, local
-mean time) were built the same day for the Bikram Sambat engine; revised
-when the rest of `crates/time` is built. Derives from
+Status: `draft`, written 2026-09-05 as a Phase 1 design page and revised
+the same day when `crates/time` and `crates/port-timezone` were built;
+revised again when `astro`'s rise and set solver lands (the local day
+then takes modern sunrise) and when the ephemeris port's DUT1 and native
+Delta T overrides are wired. Derives from
 `02-architecture/04-calendar-time-architecture.md`,
 `01-research/platform/05-calendars-timezones.md`,
 `01-research/platform/13-astronomy-layer.md` (time scales), ADR-0020
 (what the envelope stamps about time), spike 3's Delta T finding
 (`spikes/03-ephemeris-port/README.md`) and spike 1's fixtures (zone
-resolution at Nepal's 1986 change, a birth in a DST gap, local mean
-time). The baseline engine's timezone resolver and its replay-safe
-metadata are the rank-2 reference for the resolution shapes.
+resolution at Nepal's 1986 change, the New York fold, local mean time),
+which the crate reproduces (`crates/time/tests/fixtures.rs`). The
+baseline engine's timezone resolver and its replay-safe metadata are the
+rank-2 reference for the resolution shapes.
+
+What the built crate differs in from the page as first written, each
+with its reason:
+
+- Delta T's model either side of the IERS table is Espenak and Meeus
+  (2006), with the standard errors of Morrison and Stephenson (2004) as
+  the uncertainty; Stephenson, Morrison and Hohenkerk (2016) is
+  registered and refused as unsourced until its spline coefficients are
+  cited (cruxes register C32). The IERS series carries UT1 only from
+  1956, so the table begins there.
+- A zone's era is decided against the offsets the zone applies in the
+  database's own year, never against the offset in force when the
+  software runs (no clock reads in a computation crate, ADR-0022); the
+  baseline compared with the offset at export time, a deliberate
+  difference (C33, `fixtures/README.md` convention eleven).
+- The local day takes any `SolarModel` from the calendar crate for its
+  arc (the Surya Siddhanta today, `astro`'s solver when it lands), so
+  the sunrise convention knob waits for `astro`.
+- Instants are `f64` Julian days, about fifty microseconds of resolution
+  in the present era; ghati-pala snaps to a tenth of a millisecond and
+  is exact on that grid.
+- A civil 23:59:60 is accepted only where the leap-second table has one
+  and folds onto the following midnight, stamped.
 
 ## 1. Purpose and scope
 
@@ -155,10 +179,20 @@ sunrise-anchored instant to the microsecond.
 
 ## 5. The API
 
-Rust: `time::resolve(&Request) -> Result<Envelope<Resolved>, Error>`,
-`time::civil(&Instant, &ZoneSpec, &DayBoundary)`, `time::local_day(&Place,
-&CalendarDate, &Settings)`, `time::ghati(&LocalDay, Instant, Reckoning)`
-and its inverse, `time::delta_t(jd_ut1, &Settings) -> DeltaT`. C ABI:
+Rust, as built: `resolve(&CivilDateTime, &ZoneSpec, &Policy, &dyn
+TimeZoneProvider) -> Result<Resolved>` and `resolve_with(&dyn
+CalendarSystem, ..)`; `civil_of(instant, &ZoneSpec, provider)` and
+`civil_of_with(calendar, ..)`; `date_of(instant, &dyn LocalClock,
+calendar)`; `local_day(&dyn SolarModel, calendar, &dyn LocalClock, &Place,
+&CalendarDate, PolarDayPolicy)`; `ghati_pala(&LocalDay, instant,
+Reckoning)` and `instant_of(&LocalDay, GhatiPala, Reckoning)`;
+`delta_t(jd_ut1, DeltaTModel)`, `tt_from_ut1`, `ut1_from_tt`,
+`ut1_from_utc`, `utc_from_ut1`, `tt_from_utc`, `utc_from_tt` and `stamp`
+for the envelope; `EmbeddedTzdb::shared()` as the default provider and
+`EmbeddedTzdb::clock(name)` for a zone as a `LocalClock`; `zones::nepal()`.
+The port (`crates/port-timezone`): `TimeZoneProvider` with `version`,
+`has_zone`, `zones`, `offset_at`, `candidates` and `current_offsets`.
+C ABI:
 `ts_time_resolve`, `ts_time_civil`, `ts_time_local_day`,
 `ts_time_ghati`, `ts_time_delta_t`, batch forms over arrays of civil
 times or instants with capacities. Bindings: `Resolved` and
@@ -180,18 +214,26 @@ union; `CivilDateTime` constructed only through validating builders;
 
 ## 7. Performance budget
 
-| operation | budget |
-|---|---:|
-| zone resolution through the embedded tzdb | 20 µs, one allocation for the version string |
-| Delta T from the table | 200 ns |
-| ghati-pala either direction | 100 ns, no allocation |
-| local day | the sunrise solver's budget in `astro` (two solves) |
+| operation | budget | measured (`cargo bench -p teistro-time`, Apple M-series, 2026-09-05) |
+|---|---:|---:|
+| zone resolution through the embedded tzdb | 20 µs, one allocation for the version string | 238 ns |
+| zone resolution, local mean time | 1 µs | 62 ns |
+| the civil time of an instant in a zone | 20 µs | 299 ns |
+| Delta T from the table | 200 ns | 6 ns |
+| Delta T from the model (1850) | 500 ns | 198 ns |
+| TT from UTC through the leap-second table | 100 ns | 4 ns |
+| ghati-pala either direction | 100 ns, no allocation | 10 to 23 ns |
+| local day | the sunrise solver's budget (two arcs) | 1.4 µs with the Surya Siddhanta's arc |
 
 ## 8. Tests
 
-- Spike 1's fixtures: the 55 charts' zone resolutions reproduce offset,
-  source and era, including both sides of Nepal's 1986 zone change, the
-  birth in the DST-style gap, and local mean time.
+- Spike 1's fixtures (`tests/fixtures.rs`): the 55 charts' civil times
+  resolve to the baseline's instant within a second (within a minute for
+  the local-mean-time charts the baseline rounds), with its offset,
+  source and era, including both sides of Nepal's 1986 change, the New
+  York and São Paulo folds under both choices, the stubs before a zone's
+  first rule, and local mean time; the one era the baseline labels by
+  its export-time offset is named as the deliberate difference.
 - Property: for every instant and zone in a corpus, `resolve(civil(instant))`
   returns the instant except inside a gap or an overlap, where the
   policy's documented outcome holds.
@@ -217,8 +259,13 @@ vipala) and the zone-source labels.
 ## 10. Open questions
 
 1. DUT1: a provider-supplied table is designed in (`Provider` stamp) but
-   not shipped in v1.
+   not shipped in v1; `ut1_from_utc` applies zero and says so.
 2. The ghati-pala rounding at the sunrise boundary is pinned by the
-   baseline's fixtures when the harness runs; floor is the working rule.
+   baseline's fixtures when the harness runs; floor on a tenth-of-a-
+   millisecond grid is the working rule.
 3. The `polar_day_policy` default for `nepali-default` is `NEAREST_EVENT`
    to match the baseline's behaviour; the maintainer confirms.
+4. Stephenson, Morrison and Hohenkerk (2016): the spline coefficients to
+   cite (C32); until then the knob value is refused as unsourced.
+5. The `SUNRISE` unknown-time fallback resolves through `local_day` and
+   `civil_of` by hand until the context wires the two.

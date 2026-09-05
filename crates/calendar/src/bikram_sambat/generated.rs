@@ -2,7 +2,7 @@
 //! official rows, verbatim) and the Bikram Sambat engine (every other row);
 //! never hand-edited: `cargo xtask check-calendars` regenerates and compares.
 //!
-//! Frame: Surya Siddhanta (the text, the sine table); Asia/Kathmandu (tzdb asia: LMT +05:41:16 to 1920, +05:30 to 1986, +05:45); 27.7172°N 85.324°E 1400 m; rule PUNYAKALA.
+//! Frame: Surya Siddhanta (the text, the sine table); Asia/Kathmandu (tzdb 2026c); 27.7172°N 85.324°E 1400 m; rule PUNYAKALA.
 //! Fit over the official span: 1490/1512 months (98.5 %), 116/126 years exact,
 //! drift 0 (max 0), 1 Baisakh offset at most 0 day(s), 22 divergent month(s).
 
@@ -29,7 +29,7 @@ pub(super) static TABLE: Table = Table {
     official: (OFFICIAL_FIRST_YEAR, OFFICIAL_LAST_YEAR),
     authority: "Panchanga Nirnayak Samiti, Government of Nepal (the calendar-determining committee)",
     edition: "official-1970-2095/1",
-    frame: "Surya Siddhanta (the text, the sine table); Asia/Kathmandu (tzdb asia: LMT +05:41:16 to 1920, +05:30 to 1986, +05:45); 27.7172°N 85.324°E 1400 m; rule PUNYAKALA",
+    frame: "Surya Siddhanta (the text, the sine table); Asia/Kathmandu (tzdb 2026c); 27.7172°N 85.324°E 1400 m; rule PUNYAKALA",
     divergences: &DIVERGENCES,
     model_rows: &MODEL_ROWS,
 };
