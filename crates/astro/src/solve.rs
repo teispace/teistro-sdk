@@ -6,11 +6,16 @@
 //! The kernel is bracket-then-refine: it jumps toward the target by the
 //! quantity's mean rate (the mean rate is a fine first guess when the true
 //! rate never strays far from it, which holds for the Sun and for the
-//! Moon's elongation), narrows a bracket in which the signed gap changes
-//! sign, and bisects it to the tolerance. Bisection halves a day-wide
-//! bracket to a microsecond in 37 steps and needs no derivative, so the
-//! same code serves a tabular classical model and a modern ephemeris. Every
-//! loop has a cap; an unmet cap is an error, never a spin.
+//! Moon's elongation), finds a bracket in which the signed gap changes
+//! sign, and narrows it to the tolerance by the ITP method (interpolate,
+//! truncate, project): a regula falsi estimate pulled toward the midpoint
+//! and confined to the interval a bisection would have reached, so a
+//! smooth curve converges superlinearly (a day-wide bracket to a tenth of
+//! a millisecond in six or seven steps) while no curve costs more than a
+//! bisection plus one step (a day to a microsecond in 38). It needs no
+//! derivative, so the same code serves a tabular classical model and a
+//! modern ephemeris. Every loop has a cap; an unmet cap is an error, never
+//! a spin.
 //!
 //! ```
 //! use teistro_astro::solve::{next_crossing, Caps};
@@ -31,14 +36,15 @@ use teistro_core::angle::difference_deg;
 pub struct Caps {
     /// Steps by the mean rate to bracket the crossing.
     pub bracket_steps: u32,
-    /// Bisections of the bracket.
+    /// Narrowing steps of the bracket.
     pub refinements: u32,
 }
 
 impl Caps {
     /// Sixty-four steps each way: a bracket from half a circle away takes
-    /// a handful of jumps, and sixty-four bisections of a day exceed `f64`'s
-    /// resolution, so a search that needs more is not converging.
+    /// a handful of jumps, and sixty-four halvings of a day exceed `f64`'s
+    /// resolution (the narrowing never needs more than a bisection and
+    /// one), so a search that needs more is not converging.
     pub const DEFAULT: Caps = Caps {
         bracket_steps: 64,
         refinements: 64,
@@ -83,7 +89,7 @@ pub enum SolveError<E> {
     },
     /// The bracket did not narrow to the tolerance within the cap.
     NotConverged {
-        /// The bisections done.
+        /// The steps done.
         steps: u32,
         /// The bracket width reached.
         width: f64,
@@ -104,7 +110,7 @@ impl<E: fmt::Display> fmt::Display for SolveError<E> {
                 )
             }
             SolveError::NotConverged { steps, width } => {
-                write!(f, "bracket still {width} wide after {steps} bisections")
+                write!(f, "bracket still {width} wide after {steps} steps")
             }
         }
     }
@@ -117,33 +123,114 @@ fn gap(angle: f64, target: f64) -> f64 {
     difference_deg(angle, target)
 }
 
-/// Bisects a bracket in which `f` is negative at `lo` and non-negative at
-/// `hi` until it is narrower than the tolerance; `f` is assumed to change
-/// sign once inside it.
-fn bisect<E>(
+/// A bracket: `f` is negative at `lo` and non-negative at `hi`.
+#[derive(Clone, Copy, Debug)]
+struct Bracket {
+    lo: f64,
+    f_lo: f64,
+    hi: f64,
+    f_hi: f64,
+}
+
+/// How far the interpolated estimate is pulled toward the midpoint: this
+/// fraction of the bracket's width, times the width's ratio to the first
+/// width (the method's `κ₁` with `κ₂ = 2`, made independent of the unit).
+const PULL: f64 = 0.1;
+
+/// The steps the narrowing may take beyond a bisection's count (`n₀`).
+const SLACK: i32 = 1;
+
+/// How many halvings take `width` down to the tolerance.
+fn halvings(width: f64, tolerance: f64) -> i32 {
+    let mut count = 0;
+    let mut remaining = width;
+    while remaining > tolerance {
+        remaining *= 0.5;
+        count += 1;
+    }
+    count
+}
+
+/// The crossing at the middle of a narrowed bracket.
+fn crossing((lo, hi): (f64, f64), evaluations: u32) -> Crossing {
+    Crossing {
+        instant: lo + (hi - lo) * 0.5,
+        width: hi - lo,
+        evaluations,
+    }
+}
+
+/// Narrows a bracket to the tolerance by the ITP method (Oliveira and
+/// Takahashi, "An enhancement of the bisection method average performance
+/// preserving minmax optimality", ACM Transactions on Mathematical
+/// Software 47, 2021): each step interpolates the secant's root, truncates
+/// it toward the midpoint by a pull that shrinks with the square of the
+/// width, and projects it into the interval a bisection would have reached
+/// by that step. A smooth curve converges superlinearly; no curve takes
+/// more than [`SLACK`] steps over a bisection's count. Returns the final
+/// `(lo, hi)`.
+fn narrow<E>(
     mut f: impl FnMut(f64) -> Result<f64, SolveError<E>>,
-    mut lo: f64,
-    mut hi: f64,
+    bracket: Bracket,
     tolerance: f64,
     caps: Caps,
 ) -> Result<(f64, f64), SolveError<E>> {
-    let mut refinements = 0u32;
+    let Bracket {
+        mut lo,
+        mut f_lo,
+        mut hi,
+        mut f_hi,
+    } = bracket;
+    let first_width = hi - lo;
+    // The steps a bisection would still have: the interval it would have
+    // reached by now is the tolerance grown back by this many halvings.
+    let mut budget = halvings(first_width, tolerance) + SLACK;
+    let mut steps = 0u32;
     while hi - lo > tolerance {
-        if refinements >= caps.refinements {
+        if steps >= caps.refinements {
             return Err(SolveError::NotConverged {
-                steps: refinements,
+                steps,
                 width: hi - lo,
             });
         }
-        refinements += 1;
-        let mid = lo + (hi - lo) * 0.5;
+        steps += 1;
+        let width = hi - lo;
+        let mid = lo + width * 0.5;
         if mid <= lo || mid >= hi {
             break; // `f64` cannot split the bracket further.
         }
-        if f(mid)? < 0.0 {
-            lo = mid;
+        // Interpolate: the secant's root, inside the bracket because the
+        // values differ in sign.
+        let secant = (f_hi * lo - f_lo * hi) / (f_hi - f_lo);
+        // Truncate: toward the midpoint, never past it.
+        let toward = if secant <= mid { 1.0 } else { -1.0 };
+        let pull = PULL * width * (width / first_width);
+        let truncated = if pull <= (mid - secant).abs() {
+            secant + toward * pull
         } else {
-            hi = mid;
+            mid
+        };
+        // Project: into the interval a bisection would have reached.
+        let radius = (tolerance * 0.5 * 2f64.powi(budget) - width * 0.5).max(0.0);
+        let projected = if (truncated - mid).abs() <= radius {
+            truncated
+        } else {
+            mid - toward * radius
+        };
+        // Floating point: an estimate that rounds onto an end of the bracket
+        // would step without narrowing, so every step lands at least a
+        // quarter of the tolerance inside (toward the middle, so the
+        // projection's guarantee stands).
+        let least = tolerance * 0.25;
+        let estimate = projected.max(lo + least).min(hi - least);
+        budget = budget.saturating_sub(1);
+        let value = f(estimate)?;
+        if value < 0.0 {
+            lo = estimate;
+            f_lo = value;
+        } else {
+            hi = estimate;
+            f_hi = value;
         }
     }
     Ok((lo, hi))
@@ -151,7 +238,7 @@ fn bisect<E>(
 
 /// The first zero of `f` inside `[from, to]`, found by stepping from
 /// `from` until the sign of `f` changes in the wanted direction (upward:
-/// negative to non-negative; downward: the reverse) and bisecting that
+/// negative to non-negative; downward: the reverse) and narrowing that
 /// step to the tolerance. `None` when no such change occurs inside the
 /// window: the search reports absence rather than guessing, which is what
 /// a polar day or a circumpolar body needs.
@@ -168,7 +255,7 @@ fn bisect<E>(
 /// # Errors
 ///
 /// A non-positive or non-finite step or tolerance, an evaluation error,
-/// or a bisection that does not converge.
+/// or a bracket that does not narrow within the cap.
 pub fn first_zero<E>(
     mut f: impl FnMut(f64) -> Result<f64, E>,
     from: f64,
@@ -202,17 +289,66 @@ pub fn first_zero<E>(
         let hi = (lo + step).min(to);
         let g_hi = evaluate(hi)?;
         if g_lo < 0.0 && g_hi >= 0.0 {
-            let (a, b) = bisect(&mut evaluate, lo, hi, tolerance, caps)?;
-            return Ok(Some(Crossing {
-                instant: a + (b - a) * 0.5,
-                width: b - a,
-                evaluations,
-            }));
+            let bracket = Bracket {
+                lo,
+                f_lo: g_lo,
+                hi,
+                f_hi: g_hi,
+            };
+            let narrowed = narrow(&mut evaluate, bracket, tolerance, caps)?;
+            return Ok(Some(crossing(narrowed, evaluations)));
         }
         lo = hi;
         g_lo = g_hi;
     }
     Ok(None)
+}
+
+/// Narrows a bracket to the tolerance by the shared method: `f` must be
+/// negative at `lo` and non-negative at `hi`. For a caller that has found
+/// its own bracket, so that every search in the SDK converges the same way.
+///
+/// ```
+/// use teistro_astro::solve::{refine, Caps};
+///
+/// // A sine through zero at 0.3 of a day, from a day-wide bracket to a
+/// // tenth of a millisecond in a handful of evaluations.
+/// let curve = |t: f64| -> Result<f64, ()> { Ok(((t - 0.3) * 1.5).sin()) };
+/// let crossing = refine(curve, 0.0, 1.0, 1e-9, Caps::DEFAULT).expect("bracketed");
+/// assert!((crossing.instant - 0.3).abs() < 1e-9);
+/// assert!(crossing.evaluations <= 9);
+/// ```
+///
+/// # Errors
+///
+/// A non-positive or non-finite tolerance, a bracket without the sign
+/// change, an evaluation error, or a bracket that does not narrow within
+/// the cap.
+pub fn refine<E>(
+    mut f: impl FnMut(f64) -> Result<f64, E>,
+    lo: f64,
+    hi: f64,
+    tolerance: f64,
+    caps: Caps,
+) -> Result<Crossing, SolveError<E>> {
+    if !(tolerance.is_finite() && tolerance > 0.0) {
+        return Err(SolveError::Argument {
+            name: "tolerance",
+            value: tolerance,
+        });
+    }
+    let mut evaluations = 0u32;
+    let mut evaluate = |t: f64| -> Result<f64, SolveError<E>> {
+        evaluations += 1;
+        f(t).map_err(SolveError::Evaluation)
+    };
+    let (f_lo, f_hi) = (evaluate(lo)?, evaluate(hi)?);
+    if !(f_lo < 0.0 && f_hi >= 0.0) {
+        return Err(SolveError::NotBracketed { steps: 0, last: lo });
+    }
+    let bracket = Bracket { lo, f_lo, hi, f_hi };
+    let narrowed = narrow(&mut evaluate, bracket, tolerance, caps)?;
+    Ok(crossing(narrowed, evaluations))
 }
 
 /// The first instant at or after `from` at which `angle` (degrees, wrapping
@@ -263,32 +399,32 @@ pub fn next_crossing<E>(
     // Bracket: jump by the mean rate while the gap is negative; once the
     // jump would be under a day, step a whole day so the bracket is never
     // narrower than the model's own noise.
-    let mut hi;
     let mut steps = 0u32;
-    loop {
+    let bracket = loop {
         if steps >= caps.bracket_steps {
             return Err(SolveError::NotBracketed { steps, last: lo });
         }
         steps += 1;
         let jump = (-g_lo / rate_deg_per_day).max(1.0);
-        hi = lo + jump;
+        let hi = lo + jump;
         let g_hi = evaluate(hi)?;
         if g_hi >= 0.0 {
-            break;
+            break Bracket {
+                lo,
+                f_lo: g_lo,
+                hi,
+                f_hi: g_hi,
+            };
         }
         lo = hi;
         g_lo = g_hi;
-    }
+    };
 
-    // Refine by bisection: the gap is negative at `lo` and non-negative at
-    // `hi`, and monotone between them because the bracket spans less than
-    // a circle of motion.
-    let (lo, hi) = bisect(&mut evaluate, lo, hi, tolerance_days, caps)?;
-    Ok(Crossing {
-        instant: lo + (hi - lo) * 0.5,
-        width: hi - lo,
-        evaluations,
-    })
+    // Narrow: the gap is negative at `lo` and non-negative at `hi`, and
+    // monotone between them because the bracket spans less than a circle
+    // of motion.
+    let narrowed = narrow(&mut evaluate, bracket, tolerance_days, caps)?;
+    Ok(crossing(narrowed, evaluations))
 }
 
 #[cfg(test)]
@@ -317,6 +453,35 @@ mod tests {
         let c = next_crossing(linear(1.0, 0.0), 180.0, 0.0, 1.0, 1e-6, Caps::DEFAULT).unwrap();
         assert!((c.instant - 180.0).abs() < 1e-5);
         assert!(c.evaluations < 40);
+    }
+
+    #[test]
+    fn a_smooth_curve_narrows_in_a_handful_of_steps() {
+        // A sine from a day-wide bracket to a tenth of a millisecond: two
+        // evaluations for the ends and a few steps, where a bisection would
+        // take thirty.
+        let curve = |t: f64| -> Result<f64, ()> { Ok(((t - 0.3) * 1.5).sin()) };
+        let c = refine(curve, 0.0, 1.0, 1e-9, Caps::DEFAULT).unwrap();
+        assert!((c.instant - 0.3).abs() < 1e-9, "{c:?}");
+        assert!(c.evaluations <= 9, "{}", c.evaluations);
+    }
+
+    #[test]
+    fn a_step_costs_no_more_than_a_bisection_and_one() {
+        // A discontinuity gives the interpolation nothing to work with:
+        // the projection keeps the cost at the bisection's thirty halvings
+        // plus the slack, after the two ends.
+        let step = |t: f64| -> Result<f64, ()> { Ok(if t < 0.7 { -1.0 } else { 1.0 }) };
+        let c = refine(step, 0.0, 1.0, 1e-9, Caps::DEFAULT).unwrap();
+        assert!((c.instant - 0.7).abs() <= 1e-9, "{c:?}");
+        assert_eq!(halvings(1.0, 1e-9), 30);
+        assert!(c.evaluations <= 2 + 30 + 1, "{}", c.evaluations);
+        // A bracket without the sign change is refused.
+        let flat = |_: f64| -> Result<f64, ()> { Ok(1.0) };
+        assert!(matches!(
+            refine(flat, 0.0, 1.0, 1e-9, Caps::DEFAULT),
+            Err(SolveError::NotBracketed { steps: 0, .. })
+        ));
     }
 
     #[test]

@@ -31,7 +31,11 @@ The astronomy layer of the Teistro SDK: everything above raw positions
   needs no provider override;
 - the twenty-two house systems (`houses`) as one construction with
   twenty-two choices of circles, the auxiliary points and the polar
-  policy, within 5e-6° of Teimeris at ten latitudes.
+  policy, within 5e-6° of Teimeris at ten latitudes;
+- crossings and stations (`events`): a body's longitude, a composite
+  angle of two bodies (the tithi, the yoga, an aspect) or a speed over a
+  lattice of boundaries or a single target, retrograde re-entries
+  included, and the stations, over any source of longitudes.
 
 ```rust
 use teistro_astro::rise_set::Solver;
@@ -50,6 +54,5 @@ assert!(day.arc().is_some());
 
 Design: `docs/03-design/ephemeris-port-and-adapters.md` (the port and
 the completion), `astro-events-and-crossings.md` (the solvers),
-`time-and-timezone.md` (Delta T). The precession and nutation models,
-the ayanamsha catalogue, house systems, crossings and stations follow in
-Phase 2.
+`time-and-timezone.md` (Delta T). The star table, cusp speeds and house
+positions follow in Phase 2.
