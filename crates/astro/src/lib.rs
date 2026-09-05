@@ -21,6 +21,9 @@
 //!   computed by the SDK from its published epoch and value carried by
 //!   precession, mean or with nutation, so a sidereal zodiac needs no
 //!   provider override;
+//! - [`houses`]: the twenty-two catalogued house systems from the meridian,
+//!   the latitude and the obliquity, with the auxiliary points and the
+//!   polar policy;
 //! - [`solve`]: the shared boundary solver, one root finder every event
 //!   search in the SDK goes through;
 //! - [`rise_set`]: the rise and set solver under a horizon convention,
@@ -38,6 +41,7 @@
 pub mod ayanamsha;
 pub mod completion;
 pub mod delta_t;
+pub mod houses;
 pub mod iau;
 pub mod precession;
 pub mod rise_set;

@@ -93,3 +93,13 @@ yet.
   definitions stated in TT agree within 1e-7″ and those in Universal
   Time within 2.1e-4″. The twelve star-anchored members are refused by
   name until the star table (`docs/03-design/astro-ayanamsha-catalogue.md`).
+- `crates/astro`: the twenty-two catalogued house systems (`houses`) as
+  one construction with the circles each system picks, the auxiliary
+  points (vertex, equatorial ascendant, the co-ascendants, the polar
+  ascendant), the sign-based systems in the zodiac in use, and the four
+  polar policies with the outcome reported. Measured within 5e-6° of
+  Teimeris over 25 194 cusps and angles at ten latitudes
+  (`fixtures/teimeris/houses.json`) and within 0.0002° of the baseline's
+  55 charts between 1800 and 2200 (0.0033° beyond, the engines' long-term
+  sidereal time). Houses compute for the first time
+  (`docs/03-design/astro-house-systems.md`).

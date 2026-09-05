@@ -28,7 +28,10 @@ The astronomy layer of the Teistro SDK: everything above raw positions
 - the ayanamsha catalogue (`ayanamsha`): every epoch-defined member
   computed from its published epoch and value carried by precession,
   mean or with nutation, within 1e-7″ of Teimeris, so a sidereal zodiac
-  needs no provider override.
+  needs no provider override;
+- the twenty-two house systems (`houses`) as one construction with
+  twenty-two choices of circles, the auxiliary points and the polar
+  policy, within 5e-6° of Teimeris at ten latitudes.
 
 ```rust
 use teistro_astro::rise_set::Solver;

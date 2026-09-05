@@ -51,7 +51,7 @@ every shipped profile. The v1 inventory:
 | houses | `placement_system` | `HouseSystemKey` | any registered system |
 | houses | `chalit_system` | `HouseSystemKey` | `SRIPATI`, `VEHLOW`, `PORPHYRY`, `KP` |
 | houses | `module_overrides` | map module to system | `kp: PLACIDUS` |
-| houses | `polar_policy` | enum | `ERROR`, `FALLBACK_WHOLE_SIGN`, `FALLBACK_PORPHYRY`, `CLAMP` |
+| houses | `polar_policy` | enum | `ERROR`, `FALLBACK_WHOLE_SIGN`, `FALLBACK_PORPHYRY`, `CLAMP`: what a system undefined inside the polar circle does (`astro-house-systems.md` §4) |
 | day | `sunrise` | enum | `CENTRE_NO_REFRACTION`, `UPPER_LIMB_REFRACTION`, `LOWER_LIMB_REFRACTION`, `CUSTOM { altitude_deg }` |
 | day | `day_boundary` | enum | `MIDNIGHT`, `SUNRISE`, `SUNSET`, `NOON` |
 | day | `polar_day_policy` | enum | `UNDEFINED`, `NEAREST_EVENT`, `CIVIL_MIDNIGHT` |

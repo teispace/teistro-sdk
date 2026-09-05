@@ -44,6 +44,7 @@ the rise and set solver when the port was promoted.
 | [`calendar-bikram-sambat.md`](calendar-bikram-sambat.md) | the official table and the computed extension from the SDK's own engine, the month-start rules as rows with the punya-kala rule chosen by measurement (98.5 % of the official month lengths, every New Year), tabular, computed and divergent resolution, the generated table and its gate, era numbers by new-year rules, the source memo |
 | [`siddhanta.md`](siddhanta.md) | the Surya Siddhanta as a computation: the text's numbers by verse, exact integer mean places, the sine table, the manda and sighra equations and the four steps, daily motion, precession, declination and the day's arc; the classical path bit-identical everywhere |
 | [`astro-timescales-and-frames.md`](astro-timescales-and-frames.md) | the branded time scales, precession as a catalogue of models (Vondrák 2011 the default, IAU 2006, IAU 1976, Newcomb) over the ERFA ports with the obliquity each is consistent with, nutation, the frame bias, the completion steps built and the ones designed (centre, corrections, equinox, topocentric) |
+| [`astro-house-systems.md`](astro-house-systems.md) | the twenty-two house systems as one construction with twenty-two choices of circles, the auxiliary points, the sign-based systems in a sidereal zodiac, the polar behaviour of each system and the four policies; within 5e-6° of Teimeris at ten latitudes and 0.0002° of the baseline's 55 charts; built |
 | [`astro-ayanamsha-catalogue.md`](astro-ayanamsha-catalogue.md) | the forty-seven ayanamshas as definitions (epoch and value, frame, or anchor) with their sources, the construction that carries a value to any date and the fitted-model correction, mean against nutated, custom definitions, the twelve anchored members refused until the star table; every epoch-defined member within 1e-7″ of Teimeris over 1044 rows; built |
 
 ## Planned pages (in roadmap order)
@@ -51,7 +52,7 @@ the rise and set solver when the port was promoted.
 | page | phase |
 |---|---|
 | `calendar-indian-lunisolar.md` | 2 |
-| `astro-house-systems.md`, `astro-star-table.md` (crossings and stations: the next revision of `astro-events-and-crossings.md`) | 2 |
+| `astro-star-table.md` (crossings and stations: the next revision of `astro-events-and-crossings.md`) | 2 |
 | `ephemeris-builtin.md` (theories, tiers, ingestion tool) | 3 |
 | `chart-foundation.md`, `houses.md`, `state.md`, `aspect.md`, `points.md` (vargas: `varga-kernel.md`) | 4 |
 | `panchanga-day.md` | 4 |
