@@ -1,0 +1,89 @@
+kind: state
+number: 22
+version: 1
+doc: "Conditions a body can be in."
+members:
+  - key: RETROGRADE
+    id: 0
+    doc: "Retrograde"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: STATIONARY
+    id: 1
+    doc: "Stationary"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: COMBUST
+    id: 2
+    doc: "Combust"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: PLANETARY_WAR
+    id: 3
+    doc: "Planetary War"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: GANDANTA
+    id: 4
+    doc: "Gandanta"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: SANDHI
+    id: 5
+    doc: "Sandhi"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: VARGOTTAMA
+    id: 6
+    doc: "Vargottama"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: PUSHKARA_NAVAMSA
+    id: 7
+    doc: "Pushkara Navamsa"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: PUSHKARA_BHAGA
+    id: 8
+    doc: "Pushkara Bhaga"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: MRITYU_BHAGA
+    id: 9
+    doc: "Mrityu Bhaga"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: MARANA_KARAKA_STHANA
+    id: 10
+    doc: "Marana Karaka Sthana"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: ECLIPSED
+    id: 11
+    doc: "Eclipsed"
+    sources:
+      - text: structural
+        ref: design
+    mark: V

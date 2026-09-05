@@ -1,0 +1,26 @@
+kind: rising
+number: 43
+version: 1
+doc: "How a sign rises: head first, back first, or both."
+members:
+  - key: SIRSHODAYA
+    id: 0
+    doc: "Sirshodaya"
+    sources:
+      - text: BPHS
+        ref: "4"
+    mark: T
+  - key: PRISHTODAYA
+    id: 1
+    doc: "Prishtodaya"
+    sources:
+      - text: BPHS
+        ref: "4"
+    mark: T
+  - key: UBHAYODAYA
+    id: 2
+    doc: "Ubhayodaya"
+    sources:
+      - text: BPHS
+        ref: "4"
+    mark: T

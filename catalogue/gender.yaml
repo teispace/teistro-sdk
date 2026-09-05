@@ -1,0 +1,26 @@
+kind: gender
+number: 38
+version: 1
+doc: "Grammatical and classical gender."
+members:
+  - key: MALE
+    id: 0
+    doc: "Male"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: FEMALE
+    id: 1
+    doc: "Female"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NEUTRAL
+    id: 2
+    doc: "Neutral"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

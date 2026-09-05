@@ -22,6 +22,8 @@
     clippy::indexing_slicing
 )]
 
+mod catalogue;
+
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -39,13 +41,20 @@ fn main() {
             _ => usage(),
         },
         Some("check-fixtures") => check_fixtures(),
+        Some("check-catalogue") => catalogue::check(&repo_root()),
+        Some("gen") => match args.get(1).map(String::as_str) {
+            Some("catalogue") => catalogue::generate(&repo_root()),
+            _ => usage(),
+        },
         _ => usage(),
     };
     process::exit(code);
 }
 
 fn usage() -> i32 {
-    eprintln!("usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures>");
+    eprintln!(
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | gen catalogue>"
+    );
     2
 }
 

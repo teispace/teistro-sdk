@@ -1,0 +1,60 @@
+kind: ritu
+number: 9
+version: 1
+doc: "The six seasons, two lunar months each."
+attributes: { masas: list<key:masa> }
+members:
+  - key: VASANTA
+    id: 0
+    doc: "Vasanta"
+    attributes:
+      masas: [CHAITRA, VAISHAKHA]
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: GRISHMA
+    id: 1
+    doc: "Grishma"
+    attributes:
+      masas: [JYESHTHA, ASHADHA]
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: VARSHA
+    id: 2
+    doc: "Varsha"
+    attributes:
+      masas: [SHRAVANA, BHADRAPADA]
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: SHARAD
+    id: 3
+    doc: "Sharad"
+    attributes:
+      masas: [ASHWINA, KARTIKA]
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: HEMANTA
+    id: 4
+    doc: "Hemanta"
+    attributes:
+      masas: [MARGASHIRSHA, PAUSHA]
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: SHISHIRA
+    id: 5
+    doc: "Shishira"
+    attributes:
+      masas: [MAGHA, PHALGUNA]
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T

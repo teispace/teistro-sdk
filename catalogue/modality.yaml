@@ -1,0 +1,26 @@
+kind: modality
+number: 34
+version: 1
+doc: "Movable, fixed and dual signs."
+members:
+  - key: CHARA
+    id: 0
+    doc: "Movable"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: STHIRA
+    id: 1
+    doc: "Fixed"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DWISWABHAVA
+    id: 2
+    doc: "Dual"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

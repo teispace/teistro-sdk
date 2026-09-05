@@ -1,0 +1,10 @@
+error[E0624]: associated function `new_unchecked` is private
+ --> tests/ui/private_unchecked.rs:5:26
+  |
+5 |     let _ = HouseNumber::new_unchecked(13);
+  |                          ^^^^^^^^^^^^^ private associated function
+  |
+ ::: src/quantity.rs
+  |
+  |             pub(crate) const fn new_unchecked(value: $inner) -> $name {
+  |             --------------------------------------------------------- private associated function defined here

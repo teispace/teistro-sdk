@@ -11,10 +11,11 @@ design pages.
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-05, end of the seventh session (the five Phase 1
-foundation design pages written: core types and the catalogue, settings
-and profiles, time and time zones, the arithmetic calendars, Bikram
-Sambat; Phase 1 implementation begins with `crates/core`).
+**Last updated:** 2026-09-05, end of the eighth session (`crates/core`
+built from its design page: the catalogue sources, generator and gate,
+keys and ids, quantities, the exact angle and rationals, the envelope
+and error, registries and limits, settings and profiles; Phase 1
+continues with `crates/time` and `crates/calendar`).
 
 ## How to resume
 
@@ -23,8 +24,9 @@ Sambat; Phase 1 implementation begins with `crates/core`).
    and `cargo deny check` must pass before any commit; commits are
    signed off (`git commit -s`) with Conventional Commits subjects; the
    clean-room policy (`CLEAN_ROOM.md`) is binding.
-3. The next task is `crates/core` (the first Phase 1 crate) from its
-   design page. Spike 1 is done: its fixtures are in
+3. The next task is `crates/time` and `crates/calendar` from their design
+   pages; `crates/core` exists and `cargo xtask check-catalogue` is a gate.
+   Spike 1 is done: its fixtures are in
    `fixtures/baseline/` (read `fixtures/README.md` before touching them;
    `cargo xtask check-fixtures` is their gate); the export script lives
    inside the baseline engine's own repository, in that repository's
@@ -168,6 +170,23 @@ Sambat; Phase 1 implementation begins with `crates/core`).
   chosen by measurement, the divergence set as a fixture, eras by
   new-year rules, the source memo). The calendar and data-model
   architecture pages and the design index updated.
+- 2026-09-05 (eighth session): `crates/core` built. `catalogue/`: 53
+  kinds, 629 members, attributes and citations in YAML (the baseline
+  engine's entity data at rank 2 plus the standard facts, each row
+  marked), with a README; `cargo xtask gen catalogue` generates one
+  enum per kind with stable ids, typed attribute tables, aliases, marks,
+  sources, serde forms and resolvers, plus `catalogue.json` and the
+  entity skeleton, and `check-catalogue` gates the output in CI. The
+  crate: keys and packed ids with suggestions for wrong keys, validated
+  quantities with compile-fail proofs (swapped place, wrong time scale,
+  bare number, private constructor), `Nas` with property-tested exact
+  classification, bounded `Ratio`, the status codes and a small `Error`,
+  the provenance envelope, registries for open kinds, limits, and the
+  settings module (twenty-six knob sets in thirteen groups, patches,
+  five shipped profiles over a cited root, coherence rules, canonical
+  JSON and hash). 29 unit tests, 9 doctests, 4 compile-fail tests, a
+  criterion benchmark; every budget met except the settings hash (15 µs
+  for a 2 KB document against 10 µs per KB, recorded).
 
 ## Decided (all on 2026-09-04 unless dated)
 
@@ -201,21 +220,19 @@ binding (ADR-0023).
 
 ## Now
 
-- Phase 1 implementation, first crate: `crates/core` from
-  `03-design/core-types-and-catalogue.md`: the catalogue sources
-  (`catalogue/*.yaml`, cited from the baseline engine's data at rank 2),
-  the generator (`cargo xtask gen catalogue`) and its gate, the kinds'
-  enums and attribute tables, the quantity newtypes with `trybuild`
-  tests, `Nas` and `Ratio` from `exact-arithmetic.md`, the envelope,
-  status codes, registries and limits; then `core::settings` from
-  `settings-and-profiles.md`.
+- Phase 1 implementation, second step: `crates/time` from
+  `03-design/time-and-timezone.md` (scales and conversions, Delta T as a
+  table then a model, zone resolution over an embedded tzdb with the
+  replay metadata, local mean time, ghati-pala) and `crates/calendar`
+  from `calendar-gregorian-julian.md` and `calendar-bikram-sambat.md`
+  (the fixed day, the four arithmetic calendars with exhaustive and
+  differential tests, the Bikram Sambat table and extension with the
+  source memo). The catalogue's `calendar` and `era` kinds are in place.
 
 ## Next
 
-1. `crates/core` as above (it is "Now"), then `crates/time` and
-   `crates/calendar` (Gregorian, Julian, mixed, ISO week, Bikram
-   Sambat with its source memo `docs/calendars/bikram-sambat.md`), then
-   the ports.
+1. `crates/time` and `crates/calendar` as above (they are "Now"), then
+   the ports (`port-ephemeris` from spike 3's port crate).
 2. ADR-0007's consequences into `02-architecture/07-binding-architecture.md`
    in Phase 1: the blob encoding as the designed wire format, finaliser-
    backed handles with explicit `dispose`, the `api:` metadata line as
@@ -252,3 +269,4 @@ binding (ADR-0023).
 | 2026-09-05 (fifth session) | Spike 3 done: the ephemeris port under `spikes/03-ephemeris-port/`, a port crate in the workspace (model, trait, C vtable, ERFA-ported obliquity and nutation, frame completion by policy, a thirteen-check kit, runner, timing helper, `.se1` scanner, the spike-2 test provider behind the port) and two standalone adapters outside it (Teimeris; the Swiss Ephemeris compiled from `SWEPH_SRC_DIR` under the containment rules, with the cross-thread stress test). Three providers pass the same kit; the engines agree to every printed digit; the port costs 0.2 % over Teimeris's own call and 1.8 % through the vtable. Findings: the SDK's Delta T fit is 5 s stale by 2025 (Phase 1 uses a table plus a model); Teimeris's grid is body-major and its ayanamsha call takes only the no-nutation switch; the mean ayanamsha is the override to expose. The design page written; `NOTICE` gains ERFA. Next: spike 4, Teistro Intl. |
 | 2026-09-05 (sixth session) | Spike 4 done: Teistro Intl under `spikes/04-teistro-intl/`, the stable `MessageFormat 2` grammar with the SDK's functions and ICU4X plurals, the `i18n/` conventions on 49 entities and 13 messages in English and Nepali, a validator with twelve proven gates, the `.tpack` container, typed accessors for TypeScript and Dart with harnesses that reject wrong usages, and the CLI. Measured: renders 0.5 to 2.7 µs, a 6 KB pack verified in 1.4 µs, a lookup in 0.46 µs. Findings: stable syntax over the draft, no parameter sidecar, entities select on their own gender, exact ordinal keys for Nepali, source text in packs with a locale bundle to come. The design page written; Phase 0 exited. Next: the Phase 1 design pages (core types and catalogue first). |
 | 2026-09-05 (seventh session) | The five Phase 1 foundation design pages written in `03-design/` (core types and the catalogue, settings and profiles, time and time zones, the arithmetic calendars, Bikram Sambat), each following the ten-section template with a data model, algorithms, an API, errors, a budget, tests, localisation and open questions; the architecture pages they settle and the design index updated. Decisions recorded: the lagna is a point, not a graha; school-dependent values are kernel rows, never catalogue attributes; only the resolved settings are hashed; Delta T is a table then a model; `Resolution` gains `Defined`; Bikram Sambat's month-start rule is chosen by measurement against the official table. Next: `crates/core`. |
+| 2026-09-05 (eighth session) | `crates/core` built from its design page: the catalogue as YAML sources (53 kinds, 629 members, cited and marked) with a generator and a CI gate; keys, ids and suggestions; validated quantities with compile-fail proofs; the exact angle with a property-tested partition of the circle; bounded rationals; status codes and a small error; the provenance envelope; registries and limits; settings with thirteen knob groups, patches, five shipped profiles over a cited root, coherence rules and a canonical hash. Benchmarked: key resolution 40 ns, classification 1.7 ns, profile resolution 1.9 µs, settings hash 15 µs. Next: `crates/time` and `crates/calendar`. |

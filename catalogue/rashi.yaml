@@ -1,0 +1,228 @@
+kind: rashi
+number: 2
+version: 1
+doc: "The twelve signs."
+attributes:
+  lord: key:graha
+  co_lord: option<key:graha>
+  element: key:tatwa
+  modality: key:modality
+  parity: key:parity
+  rising: key:rising
+members:
+  - key: ARIES
+    id: 0
+    doc: "Aries"
+    glyph: "♈"
+    attributes:
+      lord: MARS
+      co_lord: ~
+      element: AGNI
+      modality: CHARA
+      parity: ODD
+      rising: PRISHTODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: TAURUS
+    id: 1
+    doc: "Taurus"
+    glyph: "♉"
+    attributes:
+      lord: VENUS
+      co_lord: ~
+      element: PRITHVI
+      modality: STHIRA
+      parity: EVEN
+      rising: PRISHTODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: GEMINI
+    id: 2
+    doc: "Gemini"
+    glyph: "♊"
+    attributes:
+      lord: MERCURY
+      co_lord: ~
+      element: VAYU
+      modality: DWISWABHAVA
+      parity: ODD
+      rising: SIRSHODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: CANCER
+    id: 3
+    doc: "Cancer"
+    glyph: "♋"
+    attributes:
+      lord: MOON
+      co_lord: ~
+      element: JALA
+      modality: CHARA
+      parity: EVEN
+      rising: PRISHTODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: LEO
+    id: 4
+    doc: "Leo"
+    glyph: "♌"
+    attributes:
+      lord: SUN
+      co_lord: ~
+      element: AGNI
+      modality: STHIRA
+      parity: ODD
+      rising: SIRSHODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: VIRGO
+    id: 5
+    doc: "Virgo"
+    glyph: "♍"
+    attributes:
+      lord: MERCURY
+      co_lord: ~
+      element: PRITHVI
+      modality: DWISWABHAVA
+      parity: EVEN
+      rising: SIRSHODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: LIBRA
+    id: 6
+    doc: "Libra"
+    glyph: "♎"
+    attributes:
+      lord: VENUS
+      co_lord: ~
+      element: VAYU
+      modality: CHARA
+      parity: ODD
+      rising: SIRSHODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: SCORPIO
+    id: 7
+    doc: "Scorpio"
+    glyph: "♏"
+    attributes:
+      lord: MARS
+      co_lord: KETU
+      element: JALA
+      modality: STHIRA
+      parity: EVEN
+      rising: SIRSHODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: SAGITTARIUS
+    id: 8
+    doc: "Sagittarius"
+    glyph: "♐"
+    attributes:
+      lord: JUPITER
+      co_lord: ~
+      element: AGNI
+      modality: DWISWABHAVA
+      parity: ODD
+      rising: PRISHTODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: CAPRICORN
+    id: 9
+    doc: "Capricorn"
+    glyph: "♑"
+    attributes:
+      lord: SATURN
+      co_lord: ~
+      element: PRITHVI
+      modality: CHARA
+      parity: EVEN
+      rising: PRISHTODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: AQUARIUS
+    id: 10
+    doc: "Aquarius"
+    glyph: "♒"
+    attributes:
+      lord: SATURN
+      co_lord: RAHU
+      element: VAYU
+      modality: STHIRA
+      parity: ODD
+      rising: SIRSHODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]
+  - key: PISCES
+    id: 11
+    doc: "Pisces"
+    glyph: "♓"
+    attributes:
+      lord: JUPITER
+      co_lord: ~
+      element: JALA
+      modality: DWISWABHAVA
+      parity: EVEN
+      rising: UBHAYODAYA
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "4"
+    mark: V
+    unverified: [co_lord, rising]

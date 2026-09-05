@@ -40,6 +40,8 @@ jobs:
         run: cargo xtask check-docs
       - name: Golden-vector corpus (schema, manifest, settings hashes, forbidden terms)
         run: cargo xtask check-fixtures
+      - name: Catalogue gate
+        run: cargo xtask check-catalogue
 
   dco:
     name: dco

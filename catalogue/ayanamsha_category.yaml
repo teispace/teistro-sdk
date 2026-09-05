@@ -1,0 +1,54 @@
+kind: ayanamsha_category
+number: 49
+version: 1
+doc: "How an ayanamsha is defined or used."
+members:
+  - key: VEDIC_STANDARD
+    id: 0
+    doc: "Vedic Standard"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VEDIC_CLASSICAL
+    id: 1
+    doc: "Vedic Classical"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: STAR_ANCHORED
+    id: 2
+    doc: "Star Anchored"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: WESTERN_SIDEREAL
+    id: 3
+    doc: "Western Sidereal"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GALACTIC
+    id: 4
+    doc: "Galactic"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: HISTORICAL
+    id: 5
+    doc: "Historical"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: EPOCH
+    id: 6
+    doc: "Epoch"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

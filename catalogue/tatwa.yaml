@@ -1,0 +1,40 @@
+kind: tatwa
+number: 13
+version: 1
+doc: "The five elements."
+members:
+  - key: AGNI
+    id: 0
+    doc: "Fire"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PRITHVI
+    id: 1
+    doc: "Earth"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VAYU
+    id: 2
+    doc: "Air"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: JALA
+    id: 3
+    doc: "Water"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AKASHA
+    id: 4
+    doc: "Ether"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

@@ -1,0 +1,26 @@
+kind: nadi
+number: 16
+version: 1
+doc: "The three nadis of the nakshatras."
+members:
+  - key: AADI
+    id: 0
+    doc: "Aadi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MADHYA
+    id: 1
+    doc: "Madhya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ANTYA
+    id: 2
+    doc: "Antya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

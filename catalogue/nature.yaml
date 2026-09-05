@@ -1,0 +1,26 @@
+kind: nature
+number: 35
+version: 1
+doc: "The natural benefic or malefic character of a graha."
+members:
+  - key: BENEFIC
+    id: 0
+    doc: "Benefic"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MALEFIC
+    id: 1
+    doc: "Malefic"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NEUTRAL
+    id: 2
+    doc: "Neutral"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

@@ -1,0 +1,315 @@
+kind: graha
+number: 1
+version: 1
+doc: "The nine grahas of the Parashari tradition and the three outer planets."
+types:
+  GrahaDescriptors:
+    nature: key:nature
+    gender: key:gender
+    element: key:tatwa
+    guna: key:guna
+    varna: key:varna
+    direction: key:direction
+  SignDegree: { sign: key:rashi, degree: u8 }
+  SignSpan: { sign: key:rashi, from: u8, to: u8 }
+attributes:
+  body: key:body_class
+  descriptors: "option<GrahaDescriptors>"
+  exaltation: "option<SignDegree>"
+  debilitation: "option<SignDegree>"
+  moolatrikona: "option<SignSpan>"
+  own: list<key:rashi>
+  friends: list<key:graha>
+  neutrals: list<key:graha>
+  enemies: list<key:graha>
+members:
+  - key: SUN
+    id: 0
+    doc: "The Sun"
+    glyph: "☉"
+    attributes:
+      body: LUMINARY
+      descriptors:
+        nature: MALEFIC
+        gender: MALE
+        element: AGNI
+        guna: SATTVA
+        varna: KSHATRIYA
+        direction: EAST
+      exaltation: { sign: ARIES, degree: 10 }
+      debilitation: { sign: LIBRA, degree: 10 }
+      moolatrikona: { sign: LEO, from: 0, to: 20 }
+      own: [LEO]
+      friends: [MOON, MARS, JUPITER]
+      neutrals: [MERCURY]
+      enemies: [VENUS, SATURN, RAHU, KETU]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: V
+  - key: MOON
+    id: 1
+    doc: "The Moon"
+    glyph: "☽"
+    attributes:
+      body: LUMINARY
+      descriptors:
+        nature: BENEFIC
+        gender: FEMALE
+        element: JALA
+        guna: SATTVA
+        varna: VAISHYA
+        direction: NORTHWEST
+      exaltation: { sign: TAURUS, degree: 3 }
+      debilitation: { sign: SCORPIO, degree: 3 }
+      moolatrikona: { sign: TAURUS, from: 4, to: 20 }
+      own: [CANCER]
+      friends: [SUN, MERCURY]
+      neutrals: [MARS, JUPITER, VENUS, SATURN]
+      enemies: [RAHU, KETU]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: V
+  - key: MARS
+    id: 2
+    doc: "Mars"
+    glyph: "♂"
+    attributes:
+      body: PLANET
+      descriptors:
+        nature: MALEFIC
+        gender: MALE
+        element: AGNI
+        guna: TAMAS
+        varna: KSHATRIYA
+        direction: SOUTH
+      exaltation: { sign: CAPRICORN, degree: 28 }
+      debilitation: { sign: CANCER, degree: 28 }
+      moolatrikona: { sign: ARIES, from: 0, to: 12 }
+      own: [ARIES, SCORPIO]
+      friends: [SUN, MOON, JUPITER]
+      neutrals: [VENUS, SATURN, KETU]
+      enemies: [MERCURY, RAHU]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: V
+  - key: MERCURY
+    id: 3
+    doc: "Mercury"
+    glyph: "☿"
+    attributes:
+      body: PLANET
+      descriptors:
+        nature: NEUTRAL
+        gender: NEUTRAL
+        element: PRITHVI
+        guna: RAJAS
+        varna: VAISHYA
+        direction: NORTH
+      exaltation: { sign: VIRGO, degree: 15 }
+      debilitation: { sign: PISCES, degree: 15 }
+      moolatrikona: { sign: VIRGO, from: 16, to: 20 }
+      own: [GEMINI, VIRGO]
+      friends: [SUN, VENUS]
+      neutrals: [MARS, JUPITER, SATURN, RAHU, KETU]
+      enemies: [MOON]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: V
+  - key: JUPITER
+    id: 4
+    doc: "Jupiter"
+    glyph: "♃"
+    attributes:
+      body: PLANET
+      descriptors:
+        nature: BENEFIC
+        gender: MALE
+        element: AKASHA
+        guna: SATTVA
+        varna: BRAHMIN
+        direction: NORTHEAST
+      exaltation: { sign: CANCER, degree: 5 }
+      debilitation: { sign: CAPRICORN, degree: 5 }
+      moolatrikona: { sign: SAGITTARIUS, from: 0, to: 10 }
+      own: [SAGITTARIUS, PISCES]
+      friends: [SUN, MOON, MARS]
+      neutrals: [SATURN, KETU]
+      enemies: [MERCURY, VENUS, RAHU]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: V
+  - key: VENUS
+    id: 5
+    doc: "Venus"
+    glyph: "♀"
+    attributes:
+      body: PLANET
+      descriptors:
+        nature: BENEFIC
+        gender: FEMALE
+        element: JALA
+        guna: RAJAS
+        varna: BRAHMIN
+        direction: SOUTHEAST
+      exaltation: { sign: PISCES, degree: 27 }
+      debilitation: { sign: VIRGO, degree: 27 }
+      moolatrikona: { sign: LIBRA, from: 0, to: 15 }
+      own: [TAURUS, LIBRA]
+      friends: [MERCURY, SATURN, RAHU]
+      neutrals: [MARS, JUPITER, KETU]
+      enemies: [SUN, MOON]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: V
+  - key: SATURN
+    id: 6
+    doc: "Saturn"
+    glyph: "♄"
+    attributes:
+      body: PLANET
+      descriptors:
+        nature: MALEFIC
+        gender: NEUTRAL
+        element: VAYU
+        guna: TAMAS
+        varna: SHUDRA
+        direction: WEST
+      exaltation: { sign: LIBRA, degree: 20 }
+      debilitation: { sign: ARIES, degree: 20 }
+      moolatrikona: { sign: AQUARIUS, from: 0, to: 20 }
+      own: [CAPRICORN, AQUARIUS]
+      friends: [MERCURY, VENUS, RAHU]
+      neutrals: [JUPITER, KETU]
+      enemies: [SUN, MOON, MARS]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: V
+  - key: RAHU
+    id: 7
+    doc: "The ascending lunar node"
+    glyph: "☊"
+    attributes:
+      body: NODE
+      descriptors:
+        nature: MALEFIC
+        gender: MALE
+        element: VAYU
+        guna: TAMAS
+        varna: MLECCHA
+        direction: SOUTHWEST
+      exaltation: { sign: TAURUS, degree: 20 }
+      debilitation: { sign: SCORPIO, degree: 20 }
+      moolatrikona: { sign: TAURUS, from: 0, to: 0 }
+      own: []
+      friends: [VENUS, SATURN]
+      neutrals: [MERCURY, JUPITER]
+      enemies: [SUN, MOON, MARS, KETU]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: T
+    unverified: [exaltation, debilitation, moolatrikona, own, friends, neutrals, enemies]
+  - key: KETU
+    id: 8
+    doc: "The descending lunar node"
+    glyph: "☋"
+    attributes:
+      body: NODE
+      descriptors:
+        nature: MALEFIC
+        gender: NEUTRAL
+        element: AGNI
+        guna: TAMAS
+        varna: MLECCHA
+        direction: SOUTHWEST
+      exaltation: { sign: SCORPIO, degree: 20 }
+      debilitation: { sign: TAURUS, degree: 20 }
+      moolatrikona: { sign: SCORPIO, from: 0, to: 0 }
+      own: []
+      friends: [MARS, JUPITER]
+      neutrals: [MERCURY, SATURN]
+      enemies: [SUN, MOON, VENUS, RAHU]
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+    mark: T
+    unverified: [exaltation, debilitation, moolatrikona, own, friends, neutrals, enemies]
+  - key: URANUS
+    id: 9
+    doc: "Uranus"
+    glyph: "♅"
+    attributes:
+      body: OUTER
+      descriptors: ~
+      exaltation: ~
+      debilitation: ~
+      moolatrikona: ~
+      own: []
+      friends: []
+      neutrals: []
+      enemies: []
+    sources:
+      - text: structural
+        ref: "the outer planets carry no classical descriptors"
+    mark: S
+  - key: NEPTUNE
+    id: 10
+    doc: "Neptune"
+    glyph: "♆"
+    attributes:
+      body: OUTER
+      descriptors: ~
+      exaltation: ~
+      debilitation: ~
+      moolatrikona: ~
+      own: []
+      friends: []
+      neutrals: []
+      enemies: []
+    sources:
+      - text: structural
+        ref: "the outer planets carry no classical descriptors"
+    mark: S
+  - key: PLUTO
+    id: 11
+    doc: "Pluto"
+    glyph: "♇"
+    attributes:
+      body: OUTER
+      descriptors: ~
+      exaltation: ~
+      debilitation: ~
+      moolatrikona: ~
+      own: []
+      friends: []
+      neutrals: []
+      enemies: []
+    sources:
+      - text: structural
+        ref: "the outer planets carry no classical descriptors"
+    mark: S

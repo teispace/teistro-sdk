@@ -1,0 +1,19 @@
+kind: ayana
+number: 10
+version: 1
+doc: "The two halves of the solar year."
+members:
+  - key: UTTARAYANA
+    id: 0
+    doc: "Uttarayana"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DAKSHINAYANA
+    id: 1
+    doc: "Dakshinayana"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

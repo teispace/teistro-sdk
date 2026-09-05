@@ -1,0 +1,54 @@
+kind: muhurta_nature
+number: 33
+version: 1
+doc: "The seven muhurta natures of the nakshatras."
+members:
+  - key: DHRUVA
+    id: 0
+    doc: "Dhruva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: CHARA
+    id: 1
+    doc: "Chara"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: UGRA
+    id: 2
+    doc: "Ugra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KSHIPRA
+    id: 3
+    doc: "Kshipra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MRIDU
+    id: 4
+    doc: "Mridu"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MISHRA
+    id: 5
+    doc: "Mishra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: TIKSHNA
+    id: 6
+    doc: "Tikshna"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

@@ -1,0 +1,61 @@
+kind: chara_karaka
+number: 29
+version: 1
+doc: "The Jaimini significators, in rank order."
+members:
+  - key: ATMAKARAKA
+    id: 0
+    doc: "Atmakaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AMATYAKARAKA
+    id: 1
+    doc: "Amatyakaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BHRATRIKARAKA
+    id: 2
+    doc: "Bhratrikaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MATRIKARAKA
+    id: 3
+    doc: "Matrikaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PUTRAKARAKA
+    id: 4
+    doc: "Putrakaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GNATIKARAKA
+    id: 5
+    doc: "Gnatikaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DARAKARAKA
+    id: 6
+    doc: "Darakaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PITRIKARAKA
+    id: 7
+    doc: "Pitrikaraka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

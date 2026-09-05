@@ -1,0 +1,26 @@
+kind: gana
+number: 15
+version: 1
+doc: "The three ganas of the nakshatras."
+members:
+  - key: DEVA
+    id: 0
+    doc: "Deva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MANUSHYA
+    id: 1
+    doc: "Manushya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RAKSHASA
+    id: 2
+    doc: "Rakshasa"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

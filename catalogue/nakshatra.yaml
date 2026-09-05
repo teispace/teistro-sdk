@@ -1,0 +1,828 @@
+kind: nakshatra
+number: 3
+version: 1
+doc: "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member."
+types:
+  Pada: { akshara: str, devanagari: str }
+attributes:
+  vimshottari_lord: key:graha
+  deity: key:deity
+  gana: key:gana
+  nadi: key:nadi
+  yoni: key:yoni
+  yoni_sex: key:sex
+  varna: key:varna
+  element: key:tatwa
+  muhurta_nature: key:muhurta_nature
+  padas: "array<Pada,4>"
+members:
+  - key: ASHWINI
+    id: 0
+    doc: "Ashwini"
+    attributes:
+      vimshottari_lord: KETU
+      deity: ASHWINI_KUMARA
+      gana: DEVA
+      nadi: AADI
+      yoni: HORSE
+      yoni_sex: MALE
+      varna: VAISHYA
+      element: PRITHVI
+      muhurta_nature: KSHIPRA
+      padas:
+        - akshara: "Chu"
+          devanagari: "चु"
+        - akshara: "Che"
+          devanagari: "चे"
+        - akshara: "Cho"
+          devanagari: "चो"
+        - akshara: "La"
+          devanagari: "ला"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: BHARANI
+    id: 1
+    doc: "Bharani"
+    attributes:
+      vimshottari_lord: VENUS
+      deity: YAMA
+      gana: MANUSHYA
+      nadi: MADHYA
+      yoni: ELEPHANT
+      yoni_sex: MALE
+      varna: MLECCHA
+      element: PRITHVI
+      muhurta_nature: UGRA
+      padas:
+        - akshara: "Li"
+          devanagari: "ली"
+        - akshara: "Lu"
+          devanagari: "लू"
+        - akshara: "Le"
+          devanagari: "ले"
+        - akshara: "Lo"
+          devanagari: "लो"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: KRITTIKA
+    id: 2
+    doc: "Krittika"
+    attributes:
+      vimshottari_lord: SUN
+      deity: AGNI
+      gana: RAKSHASA
+      nadi: ANTYA
+      yoni: GOAT
+      yoni_sex: FEMALE
+      varna: BRAHMIN
+      element: PRITHVI
+      muhurta_nature: MISHRA
+      padas:
+        - akshara: A
+          devanagari: "अ"
+        - akshara: "Ee"
+          devanagari: "ई"
+        - akshara: U
+          devanagari: "उ"
+        - akshara: "Ea"
+          devanagari: "ए"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: ROHINI
+    id: 3
+    doc: "Rohini"
+    attributes:
+      vimshottari_lord: MOON
+      deity: BRAHMA
+      gana: MANUSHYA
+      nadi: ANTYA
+      yoni: SERPENT
+      yoni_sex: MALE
+      varna: SHUDRA
+      element: PRITHVI
+      muhurta_nature: DHRUVA
+      padas:
+        - akshara: O
+          devanagari: "ओ"
+        - akshara: "Va"
+          devanagari: "वा"
+        - akshara: "Vi"
+          devanagari: "वि"
+        - akshara: "Vu"
+          devanagari: "वु"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: MRIGASHIRA
+    id: 4
+    doc: "Mrigashira"
+    attributes:
+      vimshottari_lord: MARS
+      deity: SOMA
+      gana: DEVA
+      nadi: MADHYA
+      yoni: SERPENT
+      yoni_sex: FEMALE
+      varna: VAISHYA
+      element: PRITHVI
+      muhurta_nature: MRIDU
+      padas:
+        - akshara: "Ve"
+          devanagari: "वे"
+        - akshara: "Vo"
+          devanagari: "वो"
+        - akshara: "Ka"
+          devanagari: "का"
+        - akshara: "Ki"
+          devanagari: "की"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: ARDRA
+    id: 5
+    doc: "Ardra"
+    attributes:
+      vimshottari_lord: RAHU
+      deity: RUDRA
+      gana: MANUSHYA
+      nadi: AADI
+      yoni: DOG
+      yoni_sex: FEMALE
+      varna: MLECCHA
+      element: PRITHVI
+      muhurta_nature: TIKSHNA
+      padas:
+        - akshara: "Ku"
+          devanagari: "कु"
+        - akshara: "Gha"
+          devanagari: "घ"
+        - akshara: "Ng"
+          devanagari: "ङ"
+        - akshara: "Chha"
+          devanagari: "छ"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: PUNARVASU
+    id: 6
+    doc: "Punarvasu"
+    attributes:
+      vimshottari_lord: JUPITER
+      deity: ADITI
+      gana: DEVA
+      nadi: AADI
+      yoni: CAT
+      yoni_sex: FEMALE
+      varna: VAISHYA
+      element: PRITHVI
+      muhurta_nature: CHARA
+      padas:
+        - akshara: "Ke"
+          devanagari: "के"
+        - akshara: "Ko"
+          devanagari: "को"
+        - akshara: "Ha"
+          devanagari: "हा"
+        - akshara: "Hi"
+          devanagari: "ही"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: PUSHYA
+    id: 7
+    doc: "Pushya"
+    attributes:
+      vimshottari_lord: SATURN
+      deity: BRIHASPATI
+      gana: DEVA
+      nadi: MADHYA
+      yoni: GOAT
+      yoni_sex: MALE
+      varna: KSHATRIYA
+      element: PRITHVI
+      muhurta_nature: KSHIPRA
+      padas:
+        - akshara: "Hu"
+          devanagari: "हु"
+        - akshara: "He"
+          devanagari: "हे"
+        - akshara: "Ho"
+          devanagari: "हो"
+        - akshara: "Da"
+          devanagari: "डा"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: ASHLESHA
+    id: 8
+    doc: "Ashlesha"
+    attributes:
+      vimshottari_lord: MERCURY
+      deity: NAGA
+      gana: RAKSHASA
+      nadi: ANTYA
+      yoni: CAT
+      yoni_sex: MALE
+      varna: MLECCHA
+      element: PRITHVI
+      muhurta_nature: TIKSHNA
+      padas:
+        - akshara: "Di"
+          devanagari: "डी"
+        - akshara: "Du"
+          devanagari: "डू"
+        - akshara: "De"
+          devanagari: "डे"
+        - akshara: "Do"
+          devanagari: "डो"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: MAGHA
+    id: 9
+    doc: "Magha"
+    attributes:
+      vimshottari_lord: KETU
+      deity: PITRU
+      gana: RAKSHASA
+      nadi: ANTYA
+      yoni: RAT
+      yoni_sex: MALE
+      varna: SHUDRA
+      element: AGNI
+      muhurta_nature: UGRA
+      padas:
+        - akshara: "Ma"
+          devanagari: "मा"
+        - akshara: "Mi"
+          devanagari: "मी"
+        - akshara: "Mu"
+          devanagari: "मु"
+        - akshara: "Me"
+          devanagari: "मे"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: PURVA_PHALGUNI
+    id: 10
+    doc: "Purva Phalguni"
+    attributes:
+      vimshottari_lord: VENUS
+      deity: BHAGA
+      gana: MANUSHYA
+      nadi: MADHYA
+      yoni: RAT
+      yoni_sex: FEMALE
+      varna: BRAHMIN
+      element: AGNI
+      muhurta_nature: UGRA
+      padas:
+        - akshara: "Mo"
+          devanagari: "मो"
+        - akshara: "Ta"
+          devanagari: "टा"
+        - akshara: "Ti"
+          devanagari: "टी"
+        - akshara: "Tu"
+          devanagari: "टू"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: UTTARA_PHALGUNI
+    id: 11
+    doc: "Uttara Phalguni"
+    attributes:
+      vimshottari_lord: SUN
+      deity: ARYAMAN
+      gana: MANUSHYA
+      nadi: AADI
+      yoni: COW
+      yoni_sex: MALE
+      varna: KSHATRIYA
+      element: AGNI
+      muhurta_nature: DHRUVA
+      padas:
+        - akshara: "Te"
+          devanagari: "टे"
+        - akshara: "To"
+          devanagari: "टो"
+        - akshara: "Pa"
+          devanagari: "पा"
+        - akshara: "Pi"
+          devanagari: "पी"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: HASTA
+    id: 12
+    doc: "Hasta"
+    attributes:
+      vimshottari_lord: MOON
+      deity: SAVITR
+      gana: DEVA
+      nadi: AADI
+      yoni: BUFFALO
+      yoni_sex: FEMALE
+      varna: VAISHYA
+      element: AGNI
+      muhurta_nature: KSHIPRA
+      padas:
+        - akshara: "Pu"
+          devanagari: "पु"
+        - akshara: "Sha"
+          devanagari: "ष"
+        - akshara: "Na"
+          devanagari: "ण"
+        - akshara: "Tha"
+          devanagari: "ठ"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: CHITRA
+    id: 13
+    doc: "Chitra"
+    attributes:
+      vimshottari_lord: MARS
+      deity: VISHVAKARMA
+      gana: RAKSHASA
+      nadi: MADHYA
+      yoni: TIGER
+      yoni_sex: FEMALE
+      varna: KSHATRIYA
+      element: AGNI
+      muhurta_nature: MRIDU
+      padas:
+        - akshara: "Pe"
+          devanagari: "पे"
+        - akshara: "Po"
+          devanagari: "पो"
+        - akshara: "Ra"
+          devanagari: "रा"
+        - akshara: "Ri"
+          devanagari: "री"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: SWATI
+    id: 14
+    doc: "Swati"
+    attributes:
+      vimshottari_lord: RAHU
+      deity: VAYU
+      gana: DEVA
+      nadi: ANTYA
+      yoni: BUFFALO
+      yoni_sex: MALE
+      varna: MLECCHA
+      element: AGNI
+      muhurta_nature: CHARA
+      padas:
+        - akshara: "Ru"
+          devanagari: "रू"
+        - akshara: "Re"
+          devanagari: "रे"
+        - akshara: "Ro"
+          devanagari: "रो"
+        - akshara: "Ta"
+          devanagari: "ता"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: VISHAKHA
+    id: 15
+    doc: "Vishakha"
+    attributes:
+      vimshottari_lord: JUPITER
+      deity: INDRAGNI
+      gana: RAKSHASA
+      nadi: ANTYA
+      yoni: TIGER
+      yoni_sex: MALE
+      varna: MLECCHA
+      element: AGNI
+      muhurta_nature: MISHRA
+      padas:
+        - akshara: "Ti"
+          devanagari: "ती"
+        - akshara: "Tu"
+          devanagari: "तू"
+        - akshara: "Te"
+          devanagari: "ते"
+        - akshara: "To"
+          devanagari: "तो"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: ANURADHA
+    id: 16
+    doc: "Anuradha"
+    attributes:
+      vimshottari_lord: SATURN
+      deity: MITRA
+      gana: DEVA
+      nadi: MADHYA
+      yoni: DEER
+      yoni_sex: FEMALE
+      varna: SHUDRA
+      element: VAYU
+      muhurta_nature: MRIDU
+      padas:
+        - akshara: "Na"
+          devanagari: "ना"
+        - akshara: "Ni"
+          devanagari: "नी"
+        - akshara: "Nu"
+          devanagari: "नू"
+        - akshara: "Ne"
+          devanagari: "ने"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: JYESHTHA
+    id: 17
+    doc: "Jyeshtha"
+    attributes:
+      vimshottari_lord: MERCURY
+      deity: INDRA
+      gana: RAKSHASA
+      nadi: AADI
+      yoni: DEER
+      yoni_sex: MALE
+      varna: VAISHYA
+      element: VAYU
+      muhurta_nature: TIKSHNA
+      padas:
+        - akshara: "No"
+          devanagari: "नो"
+        - akshara: "Ya"
+          devanagari: "या"
+        - akshara: "Yi"
+          devanagari: "यी"
+        - akshara: "Yu"
+          devanagari: "यू"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: MULA
+    id: 18
+    doc: "Mula"
+    attributes:
+      vimshottari_lord: KETU
+      deity: NIRRITI
+      gana: RAKSHASA
+      nadi: AADI
+      yoni: DOG
+      yoni_sex: MALE
+      varna: KSHATRIYA
+      element: VAYU
+      muhurta_nature: TIKSHNA
+      padas:
+        - akshara: "Ye"
+          devanagari: "ये"
+        - akshara: "Yo"
+          devanagari: "यो"
+        - akshara: "Bha"
+          devanagari: "भा"
+        - akshara: "Bhi"
+          devanagari: "भी"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: PURVA_ASHADHA
+    id: 19
+    doc: "Purva Ashadha"
+    attributes:
+      vimshottari_lord: VENUS
+      deity: APAS
+      gana: MANUSHYA
+      nadi: MADHYA
+      yoni: MONKEY
+      yoni_sex: MALE
+      varna: BRAHMIN
+      element: VAYU
+      muhurta_nature: UGRA
+      padas:
+        - akshara: "Bhu"
+          devanagari: "भू"
+        - akshara: "Dha"
+          devanagari: "धा"
+        - akshara: "Pha"
+          devanagari: "फा"
+        - akshara: "Dha"
+          devanagari: "ढा"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: UTTARA_ASHADHA
+    id: 20
+    doc: "Uttara Ashadha"
+    attributes:
+      vimshottari_lord: SUN
+      deity: VISHVADEVA
+      gana: MANUSHYA
+      nadi: ANTYA
+      yoni: MONGOOSE
+      yoni_sex: MALE
+      varna: KSHATRIYA
+      element: VAYU
+      muhurta_nature: DHRUVA
+      padas:
+        - akshara: "Bhe"
+          devanagari: "भे"
+        - akshara: "Bho"
+          devanagari: "भो"
+        - akshara: "Ja"
+          devanagari: "जा"
+        - akshara: "Ji"
+          devanagari: "जी"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: SHRAVANA
+    id: 21
+    doc: "Shravana"
+    attributes:
+      vimshottari_lord: MOON
+      deity: VISHNU
+      gana: DEVA
+      nadi: ANTYA
+      yoni: MONKEY
+      yoni_sex: FEMALE
+      varna: MLECCHA
+      element: VAYU
+      muhurta_nature: CHARA
+      padas:
+        - akshara: "Khi"
+          devanagari: "खी"
+        - akshara: "Khu"
+          devanagari: "खू"
+        - akshara: "Khe"
+          devanagari: "खे"
+        - akshara: "Kho"
+          devanagari: "खो"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: DHANISHTHA
+    id: 22
+    doc: "Dhanishtha"
+    attributes:
+      vimshottari_lord: MARS
+      deity: VASU
+      gana: RAKSHASA
+      nadi: MADHYA
+      yoni: LION
+      yoni_sex: FEMALE
+      varna: SHUDRA
+      element: AKASHA
+      muhurta_nature: CHARA
+      padas:
+        - akshara: "Ga"
+          devanagari: "गा"
+        - akshara: "Gi"
+          devanagari: "गी"
+        - akshara: "Gu"
+          devanagari: "गु"
+        - akshara: "Ge"
+          devanagari: "गे"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: SHATABHISHA
+    id: 23
+    doc: "Shatabhisha"
+    attributes:
+      vimshottari_lord: RAHU
+      deity: VARUNA
+      gana: RAKSHASA
+      nadi: AADI
+      yoni: HORSE
+      yoni_sex: FEMALE
+      varna: MLECCHA
+      element: AKASHA
+      muhurta_nature: CHARA
+      padas:
+        - akshara: "Go"
+          devanagari: "गो"
+        - akshara: "Sa"
+          devanagari: "सा"
+        - akshara: "Si"
+          devanagari: "सी"
+        - akshara: "Su"
+          devanagari: "सू"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: PURVA_BHADRAPADA
+    id: 24
+    doc: "Purva Bhadrapada"
+    attributes:
+      vimshottari_lord: JUPITER
+      deity: AJA_EKAPADA
+      gana: MANUSHYA
+      nadi: AADI
+      yoni: LION
+      yoni_sex: MALE
+      varna: BRAHMIN
+      element: AKASHA
+      muhurta_nature: UGRA
+      padas:
+        - akshara: "Se"
+          devanagari: "से"
+        - akshara: "So"
+          devanagari: "सो"
+        - akshara: "Da"
+          devanagari: "दा"
+        - akshara: "Di"
+          devanagari: "दी"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: UTTARA_BHADRAPADA
+    id: 25
+    doc: "Uttara Bhadrapada"
+    attributes:
+      vimshottari_lord: SATURN
+      deity: AHIRBUDHNYA
+      gana: MANUSHYA
+      nadi: MADHYA
+      yoni: COW
+      yoni_sex: FEMALE
+      varna: KSHATRIYA
+      element: AKASHA
+      muhurta_nature: DHRUVA
+      padas:
+        - akshara: "Du"
+          devanagari: "दू"
+        - akshara: "Tha"
+          devanagari: "थ"
+        - akshara: "Jha"
+          devanagari: "झ"
+        - akshara: "Gya"
+          devanagari: "ञ"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V
+  - key: REVATI
+    id: 26
+    doc: "Revati"
+    attributes:
+      vimshottari_lord: MERCURY
+      deity: PUSHAN
+      gana: DEVA
+      nadi: ANTYA
+      yoni: ELEPHANT
+      yoni_sex: FEMALE
+      varna: SHUDRA
+      element: AKASHA
+      muhurta_nature: MRIDU
+      padas:
+        - akshara: "De"
+          devanagari: "दे"
+        - akshara: "Do"
+          devanagari: "दो"
+        - akshara: "Cha"
+          devanagari: "चा"
+        - akshara: "Chi"
+          devanagari: "ची"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "3"
+      - text: "Muhurta Chintamani"
+        ref: "4"
+    mark: V

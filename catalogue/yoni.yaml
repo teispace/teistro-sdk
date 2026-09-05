@@ -1,0 +1,160 @@
+kind: yoni
+number: 17
+version: 1
+doc: "The fourteen yoni animals of the nakshatras, each with its hostile pair."
+attributes: { hostile: key:yoni }
+members:
+  - key: HORSE
+    id: 0
+    doc: "Horse"
+    attributes: { hostile: BUFFALO }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: ELEPHANT
+    id: 1
+    doc: "Elephant"
+    attributes: { hostile: LION }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: GOAT
+    id: 2
+    doc: "Goat"
+    attributes: { hostile: MONKEY }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: SERPENT
+    id: 3
+    doc: "Serpent"
+    attributes: { hostile: MONGOOSE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: DOG
+    id: 4
+    doc: "Dog"
+    attributes: { hostile: DEER }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: CAT
+    id: 5
+    doc: "Cat"
+    attributes: { hostile: RAT }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: RAT
+    id: 6
+    doc: "Rat"
+    attributes: { hostile: CAT }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: COW
+    id: 7
+    doc: "Cow"
+    attributes: { hostile: TIGER }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: BUFFALO
+    id: 8
+    doc: "Buffalo"
+    attributes: { hostile: HORSE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: TIGER
+    id: 9
+    doc: "Tiger"
+    attributes: { hostile: COW }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: DEER
+    id: 10
+    doc: "Deer"
+    attributes: { hostile: DOG }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: MONKEY
+    id: 11
+    doc: "Monkey"
+    attributes: { hostile: GOAT }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: MONGOOSE
+    id: 12
+    doc: "Mongoose"
+    attributes: { hostile: SERPENT }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]
+  - key: LION
+    id: 13
+    doc: "Lion"
+    attributes: { hostile: ELEPHANT }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Muhurta Chintamani"
+        ref: "6"
+    mark: V
+    unverified: [hostile]

@@ -1,0 +1,68 @@
+kind: avastha_deeptadi
+number: 52
+version: 1
+doc: "The nine Deeptadi states."
+members:
+  - key: DEEPTA
+    id: 0
+    doc: "Deepta"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SWASTHA
+    id: 1
+    doc: "Swastha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MUDITA
+    id: 2
+    doc: "Mudita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHANTA
+    id: 3
+    doc: "Shanta"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DINA
+    id: 4
+    doc: "Dina"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DUKHI
+    id: 5
+    doc: "Dukhi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIKALA
+    id: 6
+    doc: "Vikala"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KHALA
+    id: 7
+    doc: "Khala"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KOPA
+    id: 8
+    doc: "Kopa"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

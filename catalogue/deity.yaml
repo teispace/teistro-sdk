@@ -1,0 +1,264 @@
+kind: deity
+number: 18
+version: 1
+doc: "The deities the nakshatras, tithis and karanas are assigned to."
+members:
+  - key: ASHWINI_KUMARA
+    id: 0
+    doc: "The Ashwini Kumaras, the divine physicians"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: YAMA
+    id: 1
+    doc: "Yama"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AGNI
+    id: 2
+    doc: "Agni"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BRAHMA
+    id: 3
+    doc: "Brahma"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SOMA
+    id: 4
+    doc: "Soma"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RUDRA
+    id: 5
+    doc: "Rudra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ADITI
+    id: 6
+    doc: "Aditi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BRIHASPATI
+    id: 7
+    doc: "Brihaspati"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NAGA
+    id: 8
+    doc: "Naga"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PITRU
+    id: 9
+    doc: "Pitru"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BHAGA
+    id: 10
+    doc: "Bhaga"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ARYAMAN
+    id: 11
+    doc: "Aryaman"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SAVITR
+    id: 12
+    doc: "Savitr, the Sun as impeller"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VISHVAKARMA
+    id: 13
+    doc: "Vishvakarma"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VAYU
+    id: 14
+    doc: "Vayu"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: INDRAGNI
+    id: 15
+    doc: "Indra and Agni together"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MITRA
+    id: 16
+    doc: "Mitra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: INDRA
+    id: 17
+    doc: "Indra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NIRRITI
+    id: 18
+    doc: "Nirriti"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: APAS
+    id: 19
+    doc: "Apas"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VISHVADEVA
+    id: 20
+    doc: "The Vishvadevas, all the gods"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VISHNU
+    id: 21
+    doc: "Vishnu"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VASU
+    id: 22
+    doc: "The eight Vasus"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VARUNA
+    id: 23
+    doc: "Varuna"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AJA_EKAPADA
+    id: 24
+    doc: "Aja Ekapada"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AHIRBUDHNYA
+    id: 25
+    doc: "Ahirbudhnya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PUSHAN
+    id: 26
+    doc: "Pushan"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIDHATA
+    id: 27
+    doc: "Vidhata"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KARTIKEYA
+    id: 28
+    doc: "Kartikeya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SURYA
+    id: 29
+    doc: "Surya, the Sun as deity"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHIVA
+    id: 30
+    doc: "Shiva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DURGA
+    id: 31
+    doc: "Durga"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KAMADEVA
+    id: 32
+    doc: "Kamadeva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: CHANDRA
+    id: 33
+    doc: "Chandra, the Moon as deity"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: TVASHTA
+    id: 34
+    doc: "Tvashta"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHANI
+    id: 35
+    doc: "Shani, Saturn as deity"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKRA
+    id: 36
+    doc: "Shukra, Venus as deity"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

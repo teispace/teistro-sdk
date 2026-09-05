@@ -1,0 +1,33 @@
+kind: auspiciousness
+number: 46
+version: 1
+doc: "The auspiciousness class of a nitya yoga."
+members:
+  - key: AUSPICIOUS
+    id: 0
+    doc: "Auspicious"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: INAUSPICIOUS
+    id: 1
+    doc: "Inauspicious"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MIXED
+    id: 2
+    doc: "Mixed"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: HIGHLY_INAUSPICIOUS
+    id: 3
+    doc: "Highly Inauspicious"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

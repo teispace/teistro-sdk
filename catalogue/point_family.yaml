@@ -1,0 +1,61 @@
+kind: point_family
+number: 55
+version: 1
+doc: "What kind of derived point."
+members:
+  - key: ANGLE
+    id: 0
+    doc: "Angle"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: SPECIAL_LAGNA
+    id: 1
+    doc: "Special Lagna"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: UPAGRAHA_SOLAR
+    id: 2
+    doc: "Upagraha Solar"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: UPAGRAHA_DAY
+    id: 3
+    doc: "Upagraha Day"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: ARUDHA
+    id: 4
+    doc: "Arudha"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: SPHUTA
+    id: 5
+    doc: "Sphuta"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: JAIMINI
+    id: 6
+    doc: "Jaimini"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: MIDPOINT
+    id: 7
+    doc: "Midpoint"
+    sources:
+      - text: structural
+        ref: design
+    mark: V

@@ -1,0 +1,19 @@
+kind: parity
+number: 42
+version: 1
+doc: "Odd and even signs."
+members:
+  - key: ODD
+    id: 0
+    doc: "Odd"
+    sources:
+      - text: BPHS
+        ref: "4"
+    mark: V
+  - key: EVEN
+    id: 1
+    doc: "Even"
+    sources:
+      - text: BPHS
+        ref: "4"
+    mark: V

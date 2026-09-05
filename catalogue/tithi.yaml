@@ -1,0 +1,247 @@
+kind: tithi
+number: 4
+version: 1
+doc: "The thirty tithis of the lunar month."
+attributes: { paksha: key:paksha, number: u8, deity: key:deity, class: key:tithi_class }
+members:
+  - key: SHUKLA_PRATIPADA
+    id: 0
+    doc: "Shukla Pratipada"
+    attributes: { paksha: SHUKLA, number: 1, deity: BRAHMA, class: NANDA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_DVITIYA
+    id: 1
+    doc: "Shukla Dvitiya"
+    attributes: { paksha: SHUKLA, number: 2, deity: VIDHATA, class: BHADRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_TRITIYA
+    id: 2
+    doc: "Shukla Tritiya"
+    attributes: { paksha: SHUKLA, number: 3, deity: VISHNU, class: JAYA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_CHATURTHI
+    id: 3
+    doc: "Shukla Chaturthi"
+    attributes: { paksha: SHUKLA, number: 4, deity: YAMA, class: RIKTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_PANCHAMI
+    id: 4
+    doc: "Shukla Panchami"
+    attributes: { paksha: SHUKLA, number: 5, deity: NAGA, class: PURNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_SHASHTHI
+    id: 5
+    doc: "Shukla Shashthi"
+    attributes: { paksha: SHUKLA, number: 6, deity: KARTIKEYA, class: NANDA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_SAPTAMI
+    id: 6
+    doc: "Shukla Saptami"
+    attributes: { paksha: SHUKLA, number: 7, deity: SURYA, class: BHADRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_ASHTAMI
+    id: 7
+    doc: "Shukla Ashtami"
+    attributes: { paksha: SHUKLA, number: 8, deity: SHIVA, class: JAYA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_NAVAMI
+    id: 8
+    doc: "Shukla Navami"
+    attributes: { paksha: SHUKLA, number: 9, deity: DURGA, class: RIKTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_DASHAMI
+    id: 9
+    doc: "Shukla Dashami"
+    attributes: { paksha: SHUKLA, number: 10, deity: YAMA, class: PURNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_EKADASHI
+    id: 10
+    doc: "Shukla Ekadashi"
+    attributes: { paksha: SHUKLA, number: 11, deity: VISHNU, class: NANDA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_DWADASHI
+    id: 11
+    doc: "Shukla Dwadashi"
+    attributes: { paksha: SHUKLA, number: 12, deity: VISHNU, class: BHADRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_TRAYODASHI
+    id: 12
+    doc: "Shukla Trayodashi"
+    attributes: { paksha: SHUKLA, number: 13, deity: KAMADEVA, class: JAYA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA_CHATURDASHI
+    id: 13
+    doc: "Shukla Chaturdashi"
+    attributes: { paksha: SHUKLA, number: 14, deity: SHIVA, class: RIKTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PURNIMA
+    id: 14
+    doc: "Purnima"
+    attributes: { paksha: SHUKLA, number: 15, deity: CHANDRA, class: PURNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_PRATIPADA
+    id: 15
+    doc: "Krishna Pratipada"
+    attributes: { paksha: KRISHNA, number: 1, deity: BRAHMA, class: NANDA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_DVITIYA
+    id: 16
+    doc: "Krishna Dvitiya"
+    attributes: { paksha: KRISHNA, number: 2, deity: VIDHATA, class: BHADRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_TRITIYA
+    id: 17
+    doc: "Krishna Tritiya"
+    attributes: { paksha: KRISHNA, number: 3, deity: VISHNU, class: JAYA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_CHATURTHI
+    id: 18
+    doc: "Krishna Chaturthi"
+    attributes: { paksha: KRISHNA, number: 4, deity: YAMA, class: RIKTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_PANCHAMI
+    id: 19
+    doc: "Krishna Panchami"
+    attributes: { paksha: KRISHNA, number: 5, deity: NAGA, class: PURNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_SHASHTHI
+    id: 20
+    doc: "Krishna Shashthi"
+    attributes: { paksha: KRISHNA, number: 6, deity: KARTIKEYA, class: NANDA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_SAPTAMI
+    id: 21
+    doc: "Krishna Saptami"
+    attributes: { paksha: KRISHNA, number: 7, deity: SURYA, class: BHADRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_ASHTAMI
+    id: 22
+    doc: "Krishna Ashtami"
+    attributes: { paksha: KRISHNA, number: 8, deity: SHIVA, class: JAYA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_NAVAMI
+    id: 23
+    doc: "Krishna Navami"
+    attributes: { paksha: KRISHNA, number: 9, deity: DURGA, class: RIKTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_DASHAMI
+    id: 24
+    doc: "Krishna Dashami"
+    attributes: { paksha: KRISHNA, number: 10, deity: YAMA, class: PURNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_EKADASHI
+    id: 25
+    doc: "Krishna Ekadashi"
+    attributes: { paksha: KRISHNA, number: 11, deity: VISHNU, class: NANDA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_DWADASHI
+    id: 26
+    doc: "Krishna Dwadashi"
+    attributes: { paksha: KRISHNA, number: 12, deity: VISHNU, class: BHADRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_TRAYODASHI
+    id: 27
+    doc: "Krishna Trayodashi"
+    attributes: { paksha: KRISHNA, number: 13, deity: KAMADEVA, class: JAYA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA_CHATURDASHI
+    id: 28
+    doc: "Krishna Chaturdashi"
+    attributes: { paksha: KRISHNA, number: 14, deity: SHIVA, class: RIKTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AMAVASYA
+    id: 29
+    doc: "Amavasya"
+    attributes: { paksha: KRISHNA, number: 15, deity: PITRU, class: PURNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [deity]

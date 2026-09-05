@@ -1,0 +1,47 @@
+kind: calendar
+number: 39
+version: 1
+doc: "The calendars the SDK ships."
+members:
+  - key: GREGORIAN
+    id: 0
+    doc: "Gregorian"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: JULIAN
+    id: 1
+    doc: "Julian"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: MIXED
+    id: 2
+    doc: "Mixed"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: ISO_WEEK
+    id: 3
+    doc: "Iso Week"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: BIKRAM_SAMBAT
+    id: 4
+    doc: "Bikram Sambat"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: INDIAN_LUNISOLAR
+    id: 5
+    doc: "Indian Lunisolar"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V

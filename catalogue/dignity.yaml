@@ -1,0 +1,82 @@
+kind: dignity
+number: 19
+version: 1
+doc: "The eleven levels of dignity."
+members:
+  - key: DEEP_EXALTED
+    id: 0
+    doc: "Deep Exalted"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: EXALTED
+    id: 1
+    doc: "Exalted"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MOOLTRIKONA
+    id: 2
+    doc: "Mooltrikona"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: OWN_SIGN
+    id: 3
+    doc: "Own Sign"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GREAT_FRIEND
+    id: 4
+    doc: "Great Friend"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: FRIEND
+    id: 5
+    doc: "Friend"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NEUTRAL
+    id: 6
+    doc: "Neutral"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ENEMY
+    id: 7
+    doc: "Enemy"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GREAT_ENEMY
+    id: 8
+    doc: "Great Enemy"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DEBILITATED
+    id: 9
+    doc: "Debilitated"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DEEP_DEBILITATED
+    id: 10
+    doc: "Deep Debilitated"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

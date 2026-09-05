@@ -1,0 +1,54 @@
+kind: era
+number: 40
+version: 1
+doc: "The era numbers a date may carry."
+members:
+  - key: VIKRAMA
+    id: 0
+    doc: "Vikrama"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: SHAKA
+    id: 1
+    doc: "Shaka"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: KALI
+    id: 2
+    doc: "Kali"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: NEPAL_SAMBAT
+    id: 3
+    doc: "Nepal Sambat"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: BUDDHA
+    id: 4
+    doc: "Buddha"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: KOLLAM
+    id: 5
+    doc: "Kollam"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V
+  - key: BENGALI
+    id: 6
+    doc: "Bengali"
+    sources:
+      - text: "calendar-time-architecture"
+        ref: "docs/02-architecture/04-calendar-time-architecture.md"
+    mark: V

@@ -1,0 +1,102 @@
+kind: masa
+number: 8
+version: 1
+doc: "The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name."
+attributes: { solar_sign: key:rashi, full_moon_nakshatra: key:nakshatra, ritu: key:ritu }
+members:
+  - key: CHAITRA
+    id: 0
+    doc: "Chaitra"
+    attributes: { solar_sign: PISCES, full_moon_nakshatra: CHITRA, ritu: VASANTA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: VAISHAKHA
+    id: 1
+    doc: "Vaishakha"
+    attributes: { solar_sign: ARIES, full_moon_nakshatra: VISHAKHA, ritu: VASANTA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: JYESHTHA
+    id: 2
+    doc: "Jyeshtha"
+    attributes: { solar_sign: TAURUS, full_moon_nakshatra: JYESHTHA, ritu: GRISHMA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: ASHADHA
+    id: 3
+    doc: "Ashadha"
+    attributes: { solar_sign: GEMINI, full_moon_nakshatra: PURVA_ASHADHA, ritu: GRISHMA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: SHRAVANA
+    id: 4
+    doc: "Shravana"
+    attributes: { solar_sign: CANCER, full_moon_nakshatra: SHRAVANA, ritu: VARSHA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: BHADRAPADA
+    id: 5
+    doc: "Bhadrapada"
+    attributes: { solar_sign: LEO, full_moon_nakshatra: PURVA_BHADRAPADA, ritu: VARSHA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: ASHWINA
+    id: 6
+    doc: "Ashwina"
+    attributes: { solar_sign: VIRGO, full_moon_nakshatra: ASHWINI, ritu: SHARAD }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: KARTIKA
+    id: 7
+    doc: "Kartika"
+    attributes: { solar_sign: LIBRA, full_moon_nakshatra: KRITTIKA, ritu: SHARAD }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: MARGASHIRSHA
+    id: 8
+    doc: "Margashirsha"
+    attributes: { solar_sign: SCORPIO, full_moon_nakshatra: MRIGASHIRA, ritu: HEMANTA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: PAUSHA
+    id: 9
+    doc: "Pausha"
+    attributes: { solar_sign: SAGITTARIUS, full_moon_nakshatra: PUSHYA, ritu: HEMANTA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: MAGHA
+    id: 10
+    doc: "Magha"
+    attributes: { solar_sign: CAPRICORN, full_moon_nakshatra: MAGHA, ritu: SHISHIRA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
+  - key: PHALGUNA
+    id: 11
+    doc: "Phalguna"
+    attributes: { solar_sign: AQUARIUS, full_moon_nakshatra: PURVA_PHALGUNI, ritu: SHISHIRA }
+    sources:
+      - text: "Surya Siddhanta"
+        ref: "14"
+    mark: T
