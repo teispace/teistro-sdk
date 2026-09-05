@@ -8,6 +8,7 @@ use teistro_core::quantity::{JulianDay, Place, Ut1};
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::PositionColumns;
+use crate::crossing::{CrossingRequest, Event};
 use crate::error::ProviderError;
 use crate::frame::{Centre, Frame};
 use crate::horizon::HorizonRequest;
@@ -175,6 +176,20 @@ pub trait EphemerisProvider: Send + Sync {
         let _ = request;
         Err(ProviderError::unsupported("rise_set"))
     }
+
+    /// Every crossing of a quantity over a lattice inside a window from the
+    /// provider's own search, in time order; an override
+    /// ([`Overrides::CROSSINGS`](crate::capabilities::Overrides::CROSSINGS)),
+    /// which the SDK's kernel stands in for otherwise.
+    ///
+    /// # Errors
+    ///
+    /// [`ProviderError::Unsupported`] unless declared, or for a frame the
+    /// provider cannot search in (a topocentric one, say).
+    fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
+        let _ = request;
+        Err(ProviderError::unsupported("crossings"))
+    }
 }
 
 impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
@@ -212,6 +227,10 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
         request: &HorizonRequest,
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
         (**self).horizon_event(request)
+    }
+
+    fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
+        (**self).crossings(request)
     }
 }
 

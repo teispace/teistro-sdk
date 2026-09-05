@@ -16,6 +16,7 @@ use std::fmt::Write;
 use std::time::Instant;
 
 use serde::Serialize;
+use teistro_astro::events::Search;
 use teistro_astro::rise_set::Solver;
 use teistro_astro::{Completion, DeltaTModel, delta_t, sky, tt_of};
 use teistro_core::angle::difference_deg;
@@ -23,9 +24,10 @@ use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
-    Astronomy, Body, Capabilities, CellStatus, Coordinates, EphemerisProvider, Frame, Horizon,
-    HorizonEventKind, HorizonRequest, Identity, Obliquity, Overrides, PositionColumns,
-    PositionRequest, ProviderError, SpeedModel, TimeScale,
+    Astronomy, Body, Capabilities, CellStatus, Coordinates, CrossingEvent, CrossingRequest,
+    EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Identity, Lattice,
+    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, Quantity, SpeedModel,
+    TimeScale,
 };
 
 use crate::bench::Row;
@@ -57,6 +59,10 @@ pub struct Bounds {
     /// almanac's 34 arcminutes, an engine's is its standard atmosphere, and
     /// the difference grows where the Sun rises at a grazing angle.
     pub rise_set_refracted_seconds: f64,
+    /// A native crossing search against the SDK's kernel over the same
+    /// provider, seconds: the same positions on both sides, so the
+    /// difference is the two searches' own convergence.
+    pub crossings_seconds: f64,
     /// Completion of a provider's equatorial output against its own ecliptic output, arcseconds, when the provider's obliquity is used.
     pub completion_native_arcsec: f64,
     /// The same with the SDK's obliquity and nutation, arcseconds.
@@ -75,6 +81,7 @@ impl Bounds {
         dut1_seconds: 0.9,
         rise_set_geometric_seconds: 1.0,
         rise_set_refracted_seconds: 10.0,
+        crossings_seconds: 1.0,
         completion_native_arcsec: 1e-4,
         completion_sdk_arcsec: 0.05,
     };
@@ -372,6 +379,26 @@ pub fn run<P: EphemerisProvider + ?Sized>(provider: &P, bounds: &Bounds) -> Repo
         "override_rise_set_refracted",
         Horizon::UPPER_LIMB_REFRACTION,
         bounds.rise_set_refracted_seconds,
+    ));
+    checks.push(check_crossings(
+        provider,
+        &capabilities,
+        &jds,
+        "override_crossings_longitude",
+        Quantity::Longitude(Body::Mercury),
+        Lattice::SIGNS,
+        120.0,
+        bounds.crossings_seconds,
+    ));
+    checks.push(check_crossings(
+        provider,
+        &capabilities,
+        &jds,
+        "override_crossings_composite",
+        Quantity::ELONGATION,
+        Lattice::TITHIS,
+        30.0,
+        bounds.crossings_seconds,
     ));
     checks.extend(check_completion(provider, &capabilities, &jds, bounds));
 
@@ -846,41 +873,62 @@ fn check_ayanamsha<P: EphemerisProvider + ?Sized>(
     capabilities: &Capabilities,
     bounds: &Bounds,
 ) -> Check {
+    const BURGESS_1860: f64 = 2_400_410.714;
     if !capabilities.has(Overrides::AYANAMSHA) {
         return Check::skipped("override_ayanamsha", "not declared");
     }
     // The published values (Lahiri at J2000.0 from the Indian Astronomical
     // Ephemeris; Raman and Krishnamurti at J2000.0 from their authors'
-    // tables; the Surya Siddhanta's own at Burgess's instant, midnight of
-    // 1 January 1860 at Washington, from his worked example under III.9 to
-    // 12), as capability honesty rather than accuracy.
+    // tables), as capability honesty rather than accuracy. The
+    // SURYASIDDHANTA member means two things: for a classical astronomy it
+    // is the text's own reckoning, 20°24′39″ at Burgess's instant (midnight
+    // of 1 January 1860 at Washington, his worked example under III.9 to
+    // 12); for a modern one it is the catalogued epoch definition (0° at
+    // the text's zero of 499 CE, carried by precession), which the SDK
+    // computes and which stands about 18.94° at the same instant.
+    let suryasiddhanta_expected = if capabilities.astronomy == Astronomy::Classical {
+        Some(20.0 + 24.0 / 60.0 + 39.0 / 3600.0)
+    } else {
+        teistro_astro::ayanamsha::mean_deg(
+            &Ayanamsha::Suryasiddhanta.into(),
+            JulianDay::literal(BURGESS_1860),
+            teistro_astro::precession::PrecessionModel::Vondrak2011,
+            DeltaTModel::TableThenModel,
+        )
+        .ok()
+    };
     let expected = [
         (
             Ayanamsha::Lahiri,
             teistro_astro::iau::DJ00,
-            23.85,
+            Some(23.85),
             "J2000.0",
         ),
-        (Ayanamsha::Raman, teistro_astro::iau::DJ00, 22.40, "J2000.0"),
+        (
+            Ayanamsha::Raman,
+            teistro_astro::iau::DJ00,
+            Some(22.40),
+            "J2000.0",
+        ),
         (
             Ayanamsha::Krishnamurti,
             teistro_astro::iau::DJ00,
-            23.76,
+            Some(23.76),
             "J2000.0",
         ),
         (
             Ayanamsha::Suryasiddhanta,
-            2_400_410.714,
-            20.0 + 24.0 / 60.0 + 39.0 / 3600.0,
+            BURGESS_1860,
+            suryasiddhanta_expected,
             "Burgess's 1860 instant",
         ),
     ];
     let mut worst = 0.0f64;
     let mut details = Vec::new();
     for (ayanamsha, jd, value, at) in expected {
-        if !capabilities.has_ayanamsha(ayanamsha) {
+        let (true, Some(value)) = (capabilities.has_ayanamsha(ayanamsha), value) else {
             continue;
-        }
+        };
         match provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha) {
             Ok(native) => {
                 worst = worst.max((native - value).abs());
@@ -912,6 +960,112 @@ fn check_ayanamsha<P: EphemerisProvider + ?Sized>(
 /// The native rise and set of the Sun against the SDK's solver over the
 /// same provider, under one horizon convention, at three places, on the
 /// kit's instants.
+/// A native crossing search against the SDK's kernel over the same
+/// provider: the same events, in order, at the same boundaries and
+/// directions, within the bound in seconds.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "a check is named, quantified and bounded by its caller, as the rise and set checks are"
+)]
+fn check_crossings<P: EphemerisProvider + ?Sized>(
+    provider: &P,
+    capabilities: &Capabilities,
+    jds: &[f64],
+    name: &'static str,
+    quantity: Quantity,
+    lattice: Lattice,
+    window_days: f64,
+    bound_seconds: f64,
+) -> Check {
+    if !capabilities.has(Overrides::CROSSINGS) {
+        return Check::skipped(name, "not declared");
+    }
+    let (first, second) = quantity.bodies();
+    if !capabilities.has_body(first) || second.is_some_and(|body| !capabilities.has_body(body)) {
+        return Check::skipped(name, format!("{quantity} is not offered"));
+    }
+    let Some(from) = jds
+        .first()
+        .and_then(|jd| JulianDay::<Ut1>::try_new(*jd).ok())
+    else {
+        return Check::skipped(name, "no instant to start from");
+    };
+    let Ok(to) = from.plus_days(window_days) else {
+        return Check::skipped(name, "the window runs off the calendar");
+    };
+    let request = CrossingRequest {
+        quantity,
+        lattice,
+        from,
+        to,
+        tolerance_days: 1e-7,
+        frame: Frame::CANONICAL,
+        observer: None,
+    };
+    let native = match provider.crossings(&request) {
+        Ok(events) => events,
+        Err(ProviderError::Unsupported { what }) => {
+            return Check::skipped(name, format!("the provider does not offer {what}"));
+        }
+        Err(error) => return Check::fail(name, format!("declared, but failed: {error}")),
+    };
+    let completion = Completion::new(
+        provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let sdk = match Search::new(&longitudes, quantity, lattice).between(from, to) {
+        Ok(events) => events,
+        Err(error) => return Check::fail(name, format!("the SDK's kernel failed: {error}")),
+    };
+    if native.len() != sdk.len() {
+        return Check::fail(
+            name,
+            format!(
+                "the provider found {} events of {quantity} over {window_days} days where the SDK's kernel found {}",
+                native.len(),
+                sdk.len()
+            ),
+        );
+    }
+    let mut worst = 0.0f64;
+    for (theirs, ours) in native.iter().zip(&sdk) {
+        if theirs.direction != ours.direction
+            || difference_deg(theirs.boundary_deg, ours.boundary_deg).abs() > 1e-6
+        {
+            return Check::fail(
+                name,
+                format!(
+                    "at JD {}: the provider crossed {}° {:?} where the SDK's kernel crossed {}° {:?}",
+                    theirs.instant.get(),
+                    theirs.boundary_deg,
+                    theirs.direction,
+                    ours.boundary_deg,
+                    ours.direction
+                ),
+            );
+        }
+        worst = worst.max((theirs.instant.get() - ours.instant.get()).abs() * 86_400.0);
+    }
+    if native.is_empty() {
+        return Check::pass(
+            name,
+            format!("no crossing of {quantity} in {window_days} days, on either side"),
+        );
+    }
+    Check::measured(
+        name,
+        worst,
+        bound_seconds,
+        "s",
+        format!(
+            "{} events of {quantity} over {window_days} days; worst {worst:.4} s apart",
+            native.len()
+        ),
+    )
+}
+
 fn check_rise_set<P: EphemerisProvider + ?Sized>(
     provider: &P,
     capabilities: &Capabilities,
@@ -1155,6 +1309,10 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Refusing<'_, P> {
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
         self.inner.horizon_event(request)
     }
+
+    fn crossings(&self, request: &CrossingRequest) -> Result<Vec<CrossingEvent>, ProviderError> {
+        self.inner.crossings(request)
+    }
 }
 
 #[cfg(test)]
@@ -1172,9 +1330,10 @@ mod tests {
         assert!(failed.is_empty(), "{}", report.markdown());
         assert!(!report.check("completion_native").unwrap().ran());
         assert!(!report.check("override_rise_set_geometric").unwrap().ran());
+        assert!(!report.check("override_crossings_longitude").unwrap().ran());
         assert!(!report.check("override_dut1").unwrap().ran());
         assert!(report.check("speed_consistency").unwrap().ran());
-        assert_eq!(report.checks.len(), 15);
+        assert_eq!(report.checks.len(), 17);
         assert!(report.markdown().contains("all passed"));
         let results = Results {
             provider: String::from("test-provider"),
@@ -1201,6 +1360,7 @@ mod tests {
                     .with(Overrides::DELTA_T)
                     .with(Overrides::AYANAMSHA)
                     .with(Overrides::RISE_SET)
+                    .with(Overrides::CROSSINGS)
                     .with(Overrides::DUT1),
                 ayanamshas: vec![Ayanamsha::Lahiri],
                 ..TestProvider::new().capabilities()
@@ -1259,6 +1419,19 @@ mod tests {
                 .map(|found| found.map(|e| e.instant))
                 .map_err(|e| ProviderError::invalid(e.to_string()))
         }
+
+        fn crossings(
+            &self,
+            request: &CrossingRequest,
+        ) -> Result<Vec<CrossingEvent>, ProviderError> {
+            let completion =
+                Completion::new(self, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+            let longitudes = completion.longitudes(request.frame);
+            Search::new(&longitudes, request.quantity, request.lattice)
+                .with_tolerance_days(request.tolerance_days)
+                .between(request.from, request.to)
+                .map_err(|e| ProviderError::invalid(e.to_string()))
+        }
     }
 
     #[test]
@@ -1272,6 +1445,8 @@ mod tests {
             "override_dut1",
             "override_rise_set_geometric",
             "override_rise_set_refracted",
+            "override_crossings_longitude",
+            "override_crossings_composite",
         ] {
             let check = report.check(name).unwrap();
             assert!(check.ran(), "{name}");

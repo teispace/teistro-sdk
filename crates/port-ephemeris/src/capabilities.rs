@@ -50,6 +50,8 @@ impl Overrides {
     /// Crossings.
     pub const CROSSINGS: Overrides = Overrides(1 << 7);
     /// Stations.
+    /// A station is a crossing of the speed, answered under `CROSSINGS`; a
+    /// provider whose station search is separate declares this too.
     pub const STATIONS: Overrides = Overrides(1 << 8);
     /// Eclipses.
     pub const ECLIPSES: Overrides = Overrides(1 << 9);

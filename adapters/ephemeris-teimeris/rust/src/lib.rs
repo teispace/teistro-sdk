@@ -23,16 +23,18 @@ use std::path::{Path, PathBuf};
 use std::sync::{Mutex, PoisonError};
 
 use teimeris::{
-    Body as TmBody, Columns, Context, ErrorKind, EventKind, EventOption, EventOptions, Flags,
-    Observer as TmObserver, Profile, TimeScale as TmScale,
+    Body as TmBody, Columns, Context, CrossingOptions, CrossingQuantity, ErrorKind, EventKind,
+    EventOption, EventOptions, Flags, Observer as TmObserver, Profile, TimeScale as TmScale,
 };
+use teistro_core::angle::normalise_deg;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{
-    Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, DiscPoint, DistanceUnit,
-    EphemerisKind, EphemerisProvider, Equinox, Frame, HorizonEventKind, HorizonRequest, Identity,
-    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, Refraction, Source,
-    SpeedModel, TimeScale, Zodiac, sefile, validate,
+    Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, CrossingEvent,
+    CrossingRequest, Direction, DiscPoint, DistanceUnit, EphemerisKind, EphemerisProvider, Equinox,
+    Frame, HorizonEventKind, HorizonRequest, Identity, Obliquity, Overrides, PositionColumns,
+    PositionRequest, ProviderError, Quantity, Refraction, Source, SpeedModel, TimeScale, Zodiac,
+    sefile, validate,
 };
 
 /// The environment variable naming the data directory.
@@ -236,6 +238,8 @@ impl TeimerisProvider {
                 .with(Overrides::DELTA_T)
                 .with(Overrides::AYANAMSHA)
                 .with(Overrides::TOPOCENTRIC)
+                .with(Overrides::CROSSINGS)
+                .with(Overrides::STATIONS)
                 .with(Overrides::RISE_SET),
             ayanamshas,
             deterministic: true,
@@ -426,6 +430,107 @@ impl EphemerisProvider for TeimerisProvider {
                 .map_err(|error| ProviderError::invalid(error.to_string())),
             None => Ok(None),
         }
+    }
+
+    fn crossings(&self, request: &CrossingRequest) -> Result<Vec<CrossingEvent>, ProviderError> {
+        if request.observer.is_some() || request.frame.centre != Centre::Geocentric {
+            return Err(ProviderError::unsupported(
+                "crossings from anywhere but the Earth's centre",
+            ));
+        }
+        if request.frame.coordinates != Coordinates::Ecliptic {
+            return Err(ProviderError::unsupported(
+                "crossings in equatorial coordinates",
+            ));
+        }
+        let (first, second) = request.quantity.bodies();
+        let Some(body) = map_body(first) else {
+            return Err(ProviderError::unsupported(first.key()));
+        };
+        let body_b = match second {
+            Some(second) => match map_body(second) {
+                Some(engine) => engine,
+                None => return Err(ProviderError::unsupported(second.key())),
+            },
+            None => TmBody(0),
+        };
+        let (quantity, coeff_a, coeff_b) = match request.quantity {
+            Quantity::Longitude(_) => (CrossingQuantity::LONGITUDE, 0.0, 0.0),
+            Quantity::Speed(_) => (CrossingQuantity::LONGITUDE_SPEED, 0.0, 0.0),
+            Quantity::Composite { a, b, .. } => (CrossingQuantity::RELATIVE_ANGLE, a, b),
+        };
+        let flags = map_flags(request.frame, true);
+        let options = CrossingOptions {
+            quantity,
+            target: request.lattice.origin_deg,
+            step: request.lattice.step_deg,
+            body_b,
+            coeff_a,
+            coeff_b,
+            scale: TmScale::UT1,
+            flags,
+            backward: false,
+            jd_end: request.to.get(),
+        };
+        let from = request.from.get();
+        self.with_context(|ctx| {
+            if let Zodiac::Sidereal { ayanamsha } = request.frame.zodiac {
+                ctx.set_ayanamsha(engine_mode(ayanamsha), 0.0, 0.0)
+                    .map_err(|error| map_error(&error, from))?;
+            }
+            let mut events = Vec::new();
+            for found in ctx.crossings(from, body, &options) {
+                let found = found.map_err(|error| map_error(&error, from))?;
+                let rate = quantity_rate(ctx, request.quantity, found.jd, flags)?;
+                let boundary_deg = if request.quantity.wraps() {
+                    normalise_deg(found.longitude)
+                } else {
+                    request.lattice.origin_deg
+                };
+                events.push(CrossingEvent {
+                    instant: JulianDay::try_new(found.jd)
+                        .map_err(|error| ProviderError::invalid(error.to_string()))?,
+                    boundary_deg,
+                    direction: if rate >= 0.0 {
+                        Direction::Rising
+                    } else {
+                        Direction::Falling
+                    },
+                    evaluations: 0,
+                });
+            }
+            Ok(events)
+        })
+    }
+}
+
+/// The rate of a quantity at a UT1 instant, degrees a day: the body's
+/// longitude speed, the composite's weighted speeds, or for a speed the
+/// change of the speed over a millidays either side.
+fn quantity_rate(
+    ctx: &Context,
+    quantity: Quantity,
+    jd_ut1: f64,
+    flags: Flags,
+) -> Result<f64, ProviderError> {
+    let speed = |body: Body, jd: f64| -> Result<f64, ProviderError> {
+        let engine = map_body(body).ok_or_else(|| ProviderError::unsupported(body.key()))?;
+        ctx.position_at(jd, engine, flags, TmScale::UT1, None)
+            .map(|position| position.lon_speed)
+            .map_err(|error| map_error(&error, jd))
+    };
+    match quantity {
+        Quantity::Longitude(body) => speed(body, jd_ut1),
+        Quantity::Speed(body) => {
+            const HALF_STEP: f64 = 1e-3;
+            Ok(speed(body, jd_ut1 + HALF_STEP)? - speed(body, jd_ut1 - HALF_STEP)?)
+        }
+        Quantity::Composite {
+            a,
+            first,
+            b,
+            second,
+        } => Ok(a * speed(first, jd_ut1)? + b * speed(second, jd_ut1)?),
     }
 }
 

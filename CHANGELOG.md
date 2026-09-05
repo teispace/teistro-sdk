@@ -45,8 +45,14 @@ itself (128 catalogued members) has places for the first time. The
 planetary phenomena compute for the first time: elongation, phase angle
 and illuminated fraction, apparent disc and horizontal parallax, and the
 visual magnitude under the Astronomical Almanac's models (Mallama and
-Hilton 2018 for the planets); so does the equation of time. Nothing else
-computes yet.
+Hilton 2018 for the planets); so does the equation of time. A provider
+may now answer a crossing search itself (the `CROSSINGS` override, with
+its vtable slot and two kit checks): under `PREFER_NATIVE` Teimeris's own
+search answers within 0.004 s of the SDK's kernel, so no instant moves
+beyond that. The kit's Surya Siddhanta ayanamsha expectation for a modern
+engine is now the catalogued epoch definition (18.94° at Burgess's 1860
+instant), the text's own value being the classical astronomy's alone.
+Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.

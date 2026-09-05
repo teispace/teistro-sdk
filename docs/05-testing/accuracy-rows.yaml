@@ -85,7 +85,7 @@ rows:
     target: "1 s against Teimeris"
     page: 03-design/astro-events-and-crossings.md
     evidence: "the kernel over the test provider and a synthetic looping planet; the solver's smooth-curve and step-function costs"
-    by_hand: "the Sun's twelve ingresses within 0.001 s, Mercury's fourteen within 0.004 s, a lunation's tithis within 0.004 s, Mercury's and Mars's stations within 0.3 s of Teimeris's own searches; the baseline's 280 geocentric panchanga transitions within 7.8 s, median 3.3 s, its own search (2026-09-05)"
+    by_hand: "the Sun's twelve ingresses within 0.001 s, Mercury's fourteen within 0.004 s, a lunation's tithis within 0.004 s, Mercury's and Mars's stations within 0.3 s of Teimeris's own searches; the kit's two crossings checks (Mercury's signs over 120 days, the tithis over 30) hold the engine's native search to the kernel within 0.0039 s; the baseline's 280 geocentric panchanga transitions within 7.8 s, median 3.3 s, its own search (2026-09-05)"
   - id: phenomena
     area: planetary phenomena
     target: exact to rounding over the same geometry
