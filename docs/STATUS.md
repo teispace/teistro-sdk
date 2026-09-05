@@ -11,11 +11,10 @@ design pages.
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-05, end of the sixth session (spike 4 done:
-Teistro Intl built and measured on English and Nepali content; the
-design page `03-design/intl-engine-and-packs.md` written from it; the
-engine, sources, harnesses and results under `spikes/04-teistro-intl/`;
-Phase 0's exit criteria met).
+**Last updated:** 2026-09-05, end of the seventh session (the five Phase 1
+foundation design pages written: core types and the catalogue, settings
+and profiles, time and time zones, the arithmetic calendars, Bikram
+Sambat; Phase 1 implementation begins with `crates/core`).
 
 ## How to resume
 
@@ -24,7 +23,8 @@ Phase 0's exit criteria met).
    and `cargo deny check` must pass before any commit; commits are
    signed off (`git commit -s`) with Conventional Commits subjects; the
    clean-room policy (`CLEAN_ROOM.md`) is binding.
-3. The next task is the Phase 1 design pages below. Spike 1 is done: its fixtures are in
+3. The next task is `crates/core` (the first Phase 1 crate) from its
+   design page. Spike 1 is done: its fixtures are in
    `fixtures/baseline/` (read `fixtures/README.md` before touching them;
    `cargo xtask check-fixtures` is their gate); the export script lives
    inside the baseline engine's own repository, in that repository's
@@ -150,6 +150,24 @@ Phase 0's exit criteria met).
   written; the localisation architecture, design index, spikes index,
   roadmap, adding-a-language guide and glossary updated. Phase 0's exit
   criteria met.
+- 2026-09-05 (seventh session): the five Phase 1 foundation design
+  pages written in `03-design/`: core types and the catalogue (forty
+  kinds, keys and ids with their C packing, the catalogue sources and
+  generator, the three rules separating facts from school choices and
+  presentation, the quantity newtypes, closed unions per binding, the
+  envelope and status codes, registries and limits); settings and
+  profiles (the typed knob inventory, profiles as patches over a cited
+  root, coherence rules, the canonical form and hash, five shipped
+  profiles including `conformance-baseline` for the fixtures); time
+  and time zones (scales, Delta T as a table then a model, zone
+  resolution with replay-safe metadata, local mean time, the local
+  day, ghati-pala as exact integer arithmetic); the arithmetic
+  calendars (the fixed day, Reingold and Dershowitz, the mixed
+  transition, ISO weeks, exhaustive and differential tests); Bikram
+  Sambat (table plus computed extension with the month-start rule
+  chosen by measurement, the divergence set as a fixture, eras by
+  new-year rules, the source memo). The calendar and data-model
+  architecture pages and the design index updated.
 
 ## Decided (all on 2026-09-04 unless dated)
 
@@ -183,15 +201,21 @@ binding (ADR-0023).
 
 ## Now
 
-- Phase 1 design pages in `03-design/`, in roadmap order: core types
-  and catalogue, settings and profiles, time and timezone, the calendars
-  (Gregorian and Julian, Bikram Sambat); the seven Phase 0 pages are the
-  model. The ephemeris port and Teistro Intl pages exist from spikes 3
-  and 4.
+- Phase 1 implementation, first crate: `crates/core` from
+  `03-design/core-types-and-catalogue.md`: the catalogue sources
+  (`catalogue/*.yaml`, cited from the baseline engine's data at rank 2),
+  the generator (`cargo xtask gen catalogue`) and its gate, the kinds'
+  enums and attribute tables, the quantity newtypes with `trybuild`
+  tests, `Nas` and `Ratio` from `exact-arithmetic.md`, the envelope,
+  status codes, registries and limits; then `core::settings` from
+  `settings-and-profiles.md`.
 
 ## Next
 
-1. The Phase 1 design pages above (they are "Now").
+1. `crates/core` as above (it is "Now"), then `crates/time` and
+   `crates/calendar` (Gregorian, Julian, mixed, ISO week, Bikram
+   Sambat with its source memo `docs/calendars/bikram-sambat.md`), then
+   the ports.
 2. ADR-0007's consequences into `02-architecture/07-binding-architecture.md`
    in Phase 1: the blob encoding as the designed wire format, finaliser-
    backed handles with explicit `dispose`, the `api:` metadata line as
@@ -227,3 +251,4 @@ binding (ADR-0023).
 | 2026-09-05 (fourth session) | Spike 2 done and decided: option A (ADR-0007). The slice, a designed C ABI with a result blob, a Rust extractor and five emitters sharing one rules module, generated and hand-written Node and Dart layers, a Diplomat bridge with its JavaScript (wasm) and Dart outputs, one benchmark harness per language, and four result files under `spikes/02-binding-toolchain/`. Findings: Diplomat 0.16 refuses host callbacks in JavaScript and Dart; a C-ABI callback costs 0.5 µs into JavaScript and 0.1 µs into Dart; a depth-3 tree marshals in 6 µs as a blob against 179 µs as accessors; Diplomat's Dart output emitted the keyword `true` as an enum member. The maintainer's mandate (type safe, DRY, clean, no repetition) recorded. Next: spike 3, the ephemeris port. |
 | 2026-09-05 (fifth session) | Spike 3 done: the ephemeris port under `spikes/03-ephemeris-port/`, a port crate in the workspace (model, trait, C vtable, ERFA-ported obliquity and nutation, frame completion by policy, a thirteen-check kit, runner, timing helper, `.se1` scanner, the spike-2 test provider behind the port) and two standalone adapters outside it (Teimeris; the Swiss Ephemeris compiled from `SWEPH_SRC_DIR` under the containment rules, with the cross-thread stress test). Three providers pass the same kit; the engines agree to every printed digit; the port costs 0.2 % over Teimeris's own call and 1.8 % through the vtable. Findings: the SDK's Delta T fit is 5 s stale by 2025 (Phase 1 uses a table plus a model); Teimeris's grid is body-major and its ayanamsha call takes only the no-nutation switch; the mean ayanamsha is the override to expose. The design page written; `NOTICE` gains ERFA. Next: spike 4, Teistro Intl. |
 | 2026-09-05 (sixth session) | Spike 4 done: Teistro Intl under `spikes/04-teistro-intl/`, the stable `MessageFormat 2` grammar with the SDK's functions and ICU4X plurals, the `i18n/` conventions on 49 entities and 13 messages in English and Nepali, a validator with twelve proven gates, the `.tpack` container, typed accessors for TypeScript and Dart with harnesses that reject wrong usages, and the CLI. Measured: renders 0.5 to 2.7 µs, a 6 KB pack verified in 1.4 µs, a lookup in 0.46 µs. Findings: stable syntax over the draft, no parameter sidecar, entities select on their own gender, exact ordinal keys for Nepali, source text in packs with a locale bundle to come. The design page written; Phase 0 exited. Next: the Phase 1 design pages (core types and catalogue first). |
+| 2026-09-05 (seventh session) | The five Phase 1 foundation design pages written in `03-design/` (core types and the catalogue, settings and profiles, time and time zones, the arithmetic calendars, Bikram Sambat), each following the ten-section template with a data model, algorithms, an API, errors, a budget, tests, localisation and open questions; the architecture pages they settle and the design index updated. Decisions recorded: the lagna is a point, not a graha; school-dependent values are kernel rows, never catalogue attributes; only the resolved settings are hashed; Delta T is a table then a model; `Resolution` gains `Defined`; Bikram Sambat's month-start rule is chosen by measurement against the official table. Next: `crates/core`. |
