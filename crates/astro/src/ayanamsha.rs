@@ -1,8 +1,9 @@
 //! The ayanamsha catalogue as a computation
 //! (`docs/03-design/astro-ayanamsha-catalogue.md`): every catalogued
 //! ayanamsha has a definition, most an epoch and the value there, carried
-//! to any date by precession; twelve are anchored to a star or the galactic
-//! centre and wait for the star table; four are frames rather than angles.
+//! to any date by precession; twelve are anchored to a star, the galactic
+//! centre or a galactic pole and read the star table's place of date; four
+//! are frames rather than angles.
 //! The value is mean (the offset a sidereal longitude subtracts) or true
 //! (with the nutation in longitude added), as the `ayanamsha_basis` knob
 //! chooses.
@@ -30,7 +31,7 @@
 //! ```
 
 use teistro_core::angle::normalise_deg;
-use teistro_core::catalogue::Ayanamsha;
+use teistro_core::catalogue::{Ayanamsha, Star};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 pub use teistro_core::settings::AyanamshaBasis as Basis;
@@ -38,9 +39,10 @@ use teistro_core::settings::AyanamshaChoice;
 
 use crate::delta_t::{DeltaTModel, delta_t};
 use crate::iau::vector::c2s;
-use crate::iau::{DJ00, DJY, RAD2DEG, nut00b};
+use crate::iau::{DEG2RAD, DJ00, DJY, RAD2DEG, nut00b};
 use crate::precession::{self, PrecessionModel};
 use crate::scale::tt_from_ut1;
+use crate::stars;
 
 /// The time scale a definition's epoch is stated in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -89,18 +91,36 @@ pub enum Definition {
     /// value is the precession since the epoch; positions referred to the
     /// ecliptic of the epoch are a completion step, not an angle.
     Frame(Epoch),
-    /// Anchored to where a body is: the star's or the galactic centre's
-    /// longitude of date less a fixed sidereal longitude. Needs the star
-    /// table and an ephemeris for the aberration.
+    /// Anchored to where an object is: the anchor's place of date read as
+    /// the definition says, less the sidereal longitude it is held at.
     Object {
-        /// The anchor as the star table names it.
-        anchor: &'static str,
-        /// The sidereal longitude the anchor is fixed at, degrees.
-        fixed_deg: f64,
+        /// The anchor in the star table.
+        anchor: Star,
+        /// The sidereal longitude the anchor is held at, degrees, as the
+        /// author wrote it: two terms where the author wrote two, since the
+        /// rounding of the sum is part of the convention.
+        held_deg: [f64; 2],
+        /// How the anchor's place is read.
+        reading: Reading,
     },
     /// A member the catalogue registers that this build has no definition
     /// for: refused as unsourced, never approximated.
     Unsourced,
+}
+
+/// How an anchored definition reads its anchor's place of date.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Reading {
+    /// The apparent longitude on the mean ecliptic of date: aberration and
+    /// deflection applied, no nutation, so the mean ayanamsha is the mean.
+    Longitude,
+    /// The apparent right ascension of date projected to the ecliptic along
+    /// the anchor's meridian (Wilhelm's galactic centre): a different point
+    /// from the anchor's longitude for an object off the ecliptic.
+    RightAscension,
+    /// The geometric longitude of date, without aberration or deflection: a
+    /// galactic pole is a construction of planes, not a light source.
+    GeometricLongitude,
 }
 
 const J1900: f64 = 2_415_020.0;
@@ -133,8 +153,12 @@ const fn frame(jd: f64, value_deg: f64) -> Definition {
     })
 }
 
-const fn object(anchor: &'static str, fixed_deg: f64) -> Definition {
-    Definition::Object { anchor, fixed_deg }
+const fn anchored(anchor: Star, held_deg: [f64; 2], reading: Reading) -> Definition {
+    Definition::Object {
+        anchor,
+        held_deg,
+        reading,
+    }
 }
 
 /// The definition of a catalogued ayanamsha: the published epochs and
@@ -161,7 +185,7 @@ pub const fn definition(id: Ayanamsha) -> Definition {
         Ayanamsha::Aldebaran15tau => ut(1_684_532.5, -4.441_385_98, Fitted::Current),
         Ayanamsha::Hipparchos => ut(1_674_484.0, -9.333_33, Fitted::Current),
         Ayanamsha::Sassanian => ut(1_927_135.874_779_3, 0.0, Fitted::Current),
-        Ayanamsha::Galcent0sag => object("Sgr A*", 240.0),
+        Ayanamsha::Galcent0sag => anchored(Star::SgrAStar, [240.0, 0.0], Reading::Longitude),
         Ayanamsha::J2000 => frame(DJ00, 0.0),
         Ayanamsha::J1900 => frame(J1900, 0.0),
         Ayanamsha::B1950 => frame(B1950, 0.0),
@@ -171,20 +195,46 @@ pub const fn definition(id: Ayanamsha) -> Definition {
         Ayanamsha::AryabhataMsun => ut(1_903_396.789_532_1, -0.237_632_38, Fitted::Current),
         Ayanamsha::SsRevati => ut(1_903_396.812_865_4, -0.791_670_46, Fitted::Current),
         Ayanamsha::SsCitra => ut(1_903_396.812_865_4, 2.110_704_44, Fitted::Current),
-        Ayanamsha::TrueChitra => object("Spica", 180.0),
-        Ayanamsha::TrueRevati => object("zeta Piscium", 359.833_333_333_3),
-        Ayanamsha::TruePushya => object("delta Cancri", 106.0),
-        Ayanamsha::GalcentRgilbrand => object("Sgr A*", 210.0 + 90.0 * 0.381_966_011_3),
-        Ayanamsha::GalequIau1958 => object("galactic pole (IAU 1958)", 150.0),
-        Ayanamsha::GalequTrue => object("galactic pole", 150.0),
-        Ayanamsha::GalequMula => object("galactic pole", 150.0 + 6.666_666_666_7),
+        Ayanamsha::TrueChitra => anchored(Star::Spica, [180.0, 0.0], Reading::Longitude),
+        Ayanamsha::TrueRevati => {
+            anchored(Star::Revati, [359.833_333_333_3, 0.0], Reading::Longitude)
+        }
+        Ayanamsha::TruePushya => anchored(Star::AsellusAustralis, [106.0, 0.0], Reading::Longitude),
+        Ayanamsha::GalcentRgilbrand => anchored(
+            Star::SgrAStar,
+            [210.0, 90.0 * 0.381_966_011_3],
+            Reading::Longitude,
+        ),
+        Ayanamsha::GalequIau1958 => anchored(
+            Star::GalacticPoleIau1958,
+            [150.0, 0.0],
+            Reading::GeometricLongitude,
+        ),
+        Ayanamsha::GalequTrue => anchored(
+            Star::GalacticPole,
+            [150.0, 0.0],
+            Reading::GeometricLongitude,
+        ),
+        Ayanamsha::GalequMula => anchored(
+            Star::GalacticPole,
+            [150.0, 6.666_666_666_7],
+            Reading::GeometricLongitude,
+        ),
         Ayanamsha::GalalignMardyks => frame(2_451_079.734_892, 30.0),
-        Ayanamsha::TrueMula => object("lambda Scorpii", 240.0),
-        Ayanamsha::GalcentMulaWilhelm => object("Sgr A*", 246.666_666_666_7),
+        Ayanamsha::TrueMula => anchored(Star::Shaula, [240.0, 0.0], Reading::Longitude),
+        Ayanamsha::GalcentMulaWilhelm => anchored(
+            Star::SgrAStar,
+            [246.666_666_666_7, 0.0],
+            Reading::RightAscension,
+        ),
         Ayanamsha::Aryabhata522 => ut(1_911_797.740_782_065, 0.0, Fitted::Current),
         Ayanamsha::BabylBritton => ut(1_721_057.5, -3.2, Fitted::Current),
-        Ayanamsha::TrueSheoran => object("delta Cancri", 103.492_642_216_25),
-        Ayanamsha::GalcentCochrane => object("Sgr A*", 270.0),
+        Ayanamsha::TrueSheoran => anchored(
+            Star::AsellusAustralis,
+            [103.492_642_216_25, 0.0],
+            Reading::Longitude,
+        ),
+        Ayanamsha::GalcentCochrane => anchored(Star::SgrAStar, [270.0, 0.0], Reading::Longitude),
         Ayanamsha::GalequFiorenza => ut(2_451_544.5, 25.0, Fitted::Current),
         Ayanamsha::ValensMoon => ut(1_775_845.5, -2.9422, Fitted::Current),
         Ayanamsha::Lahiri1940 => tt(J1900, 22.445_972_22, Fitted::Newcomb),
@@ -196,12 +246,12 @@ pub const fn definition(id: Ayanamsha) -> Definition {
     }
 }
 
-/// Whether the SDK computes a catalogued ayanamsha itself: the epoch and
-/// frame definitions yes, the object-anchored ones once the star table
-/// exists.
+/// Whether the SDK computes a catalogued ayanamsha itself: every defined
+/// member, epoch, frame or anchored; only a member without a definition in
+/// this build is not.
 #[must_use]
 pub const fn is_computable(id: Ayanamsha) -> bool {
-    matches!(definition(id), Definition::Epoch(_) | Definition::Frame(_))
+    !matches!(definition(id), Definition::Unsourced)
 }
 
 /// The epoch of an epoch or frame definition in TT, with Delta T applied
@@ -268,15 +318,41 @@ fn epoch_value_deg(
     Ok(normalise_deg(value))
 }
 
-fn unsupported_object(id: Ayanamsha, anchor: &str) -> Error {
-    Error::new(
-        Status::Unsupported,
-        format!(
-            "the {} ayanamsha is anchored to {anchor}, which needs the star table; choose an epoch-defined ayanamsha such as LAHIRI, or a provider that declares the AYANAMSHA override",
-            id.key()
-        ),
-    )
-    .with_field("frame.ayanamsha")
+/// The mean value of an anchored definition: the anchor's place on the
+/// mean equator and ecliptic of date under the precession model, read as
+/// the definition says, less the longitude it is held at, each term
+/// subtracted in turn.
+fn anchored_value_deg(
+    anchor: Star,
+    held_deg: [f64; 2],
+    reading: Reading,
+    at: JulianDay<Tt>,
+    model: PrecessionModel,
+) -> Result<f64, Error> {
+    let corrections = match reading {
+        Reading::GeometricLongitude => stars::Corrections::GEOMETRIC,
+        Reading::Longitude | Reading::RightAscension => stars::Corrections::MEAN,
+    };
+    let options = stars::Options {
+        precession: model,
+        corrections,
+    };
+    let place = stars::place_of(anchor, at, &options)?;
+    let read = match reading {
+        Reading::Longitude | Reading::GeometricLongitude => place.lon_deg,
+        Reading::RightAscension => {
+            meridian_longitude_deg(place.ra_deg, precession::mean_obliquity_rad(model, at))
+        }
+    };
+    let [first, second] = held_deg;
+    Ok(normalise_deg(read - first - second))
+}
+
+/// The ecliptic longitude of the point where a meridian of right ascension
+/// meets the ecliptic: the midheaven of that right ascension.
+fn meridian_longitude_deg(ra_deg: f64, obliquity_rad: f64) -> f64 {
+    let ra = ra_deg * DEG2RAD;
+    normalise_deg(ra.sin().atan2(ra.cos() * obliquity_rad.cos()) * RAD2DEG)
 }
 
 /// The mean ayanamsha at a TT instant, degrees: the offset a sidereal
@@ -284,9 +360,9 @@ fn unsupported_object(id: Ayanamsha, anchor: &str) -> Error {
 ///
 /// # Errors
 ///
-/// An object-anchored ayanamsha (`UNSUPPORTED`, naming the anchor), a
-/// custom definition that is not finite (`INVALID_ARG`), or an epoch the
-/// Delta T model cannot answer for.
+/// A member without a definition in this build (`UNSUPPORTED`), a custom
+/// definition that is not finite (`INVALID_ARG`), or an epoch the Delta T
+/// model cannot answer for.
 pub fn mean_deg(
     choice: &AyanamshaChoice,
     at: JulianDay<Tt>,
@@ -298,7 +374,11 @@ pub fn mean_deg(
             Definition::Epoch(epoch) | Definition::Frame(epoch) => {
                 epoch_value_deg(&epoch, at, model, delta_t_model)
             }
-            Definition::Object { anchor, .. } => Err(unsupported_object(*id, anchor)),
+            Definition::Object {
+                anchor,
+                held_deg,
+                reading,
+            } => anchored_value_deg(anchor, held_deg, reading, at, model),
             Definition::Unsourced => Err(Error::new(
                 Status::Unsupported,
                 format!(
@@ -371,6 +451,8 @@ pub fn speed_deg_per_day(
 #[cfg(test)]
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use teistro_core::angle::difference_deg;
 
     use super::*;
 
@@ -459,11 +541,66 @@ mod tests {
             mean_deg(&bad, J2000, MODEL, DELTA_T).unwrap_err().status,
             Status::InvalidArg
         );
-        let star = mean_deg(&Ayanamsha::TrueChitra.into(), J2000, MODEL, DELTA_T).unwrap_err();
-        assert_eq!(star.status, Status::Unsupported);
-        assert!(star.to_string().contains("Spica"), "{star}");
-        assert!(!is_computable(Ayanamsha::TrueChitra));
+        assert!(is_computable(Ayanamsha::TrueChitra));
         assert!(is_computable(Ayanamsha::Lahiri));
+    }
+
+    /// The anchored members at J2000.0: Spica stands 23°51′ into Libra,
+    /// the galactic centre 26°51′ into Sagittarius, and the right-ascension
+    /// reading of the centre is not its longitude reading.
+    #[test]
+    fn the_anchored_members_read_the_star_table() {
+        let value = |id: Ayanamsha| mean(id, J2000);
+        let apart = |a: Ayanamsha, b: Ayanamsha| difference_deg(value(a), value(b));
+        assert!(
+            (value(Ayanamsha::TrueChitra) - 23.85).abs() < 0.02,
+            "{}",
+            value(Ayanamsha::TrueChitra)
+        );
+        assert!(
+            (value(Ayanamsha::Galcent0sag) - 26.85).abs() < 0.03,
+            "{}",
+            value(Ayanamsha::Galcent0sag)
+        );
+        assert!((apart(Ayanamsha::GalcentCochrane, Ayanamsha::Galcent0sag) + 30.0).abs() < 1e-9);
+        let gil_brand = apart(Ayanamsha::GalcentRgilbrand, Ayanamsha::Galcent0sag);
+        assert!(
+            (gil_brand - (30.0 - 90.0 * 0.381_966_011_3)).abs() < 1e-9,
+            "{gil_brand}"
+        );
+        // The centre sits 5.6° south of the ecliptic near the solstitial
+        // colure, where a meridian leans little: the two readings differ by
+        // eight or nine arcminutes.
+        let wilhelm =
+            apart(Ayanamsha::GalcentMulaWilhelm, Ayanamsha::Galcent0sag) + 6.666_666_666_7;
+        assert!((0.1..0.2).contains(&wilhelm.abs()), "{wilhelm}");
+        assert!(apart(Ayanamsha::GalequTrue, Ayanamsha::GalequIau1958).abs() < 0.1);
+        assert!(
+            (apart(Ayanamsha::GalequMula, Ayanamsha::GalequTrue) + 6.666_666_666_7).abs() < 1e-9
+        );
+        // The Sheoran and Pushya definitions share their anchor.
+        assert!(
+            (apart(Ayanamsha::TrueSheoran, Ayanamsha::TruePushya) - (106.0 - 103.492_642_216_25))
+                .abs()
+                < 1e-9
+        );
+        // A geometric anchor's rate is the general precession; a star's mean
+        // value carries the star's annual aberration, ±20″ over the year, as
+        // the definitions' author computes it, so its rate swings by ±130″ a
+        // year around the precession.
+        let rate = |id: Ayanamsha| {
+            speed_deg_per_day(&id.into(), J2000, MODEL, DELTA_T).unwrap() * DJY * 3600.0
+        };
+        assert!(
+            (rate(Ayanamsha::GalequTrue) - 50.3).abs() < 0.5,
+            "{}",
+            rate(Ayanamsha::GalequTrue)
+        );
+        assert!(
+            (rate(Ayanamsha::TrueChitra) - 50.3).abs() < 135.0,
+            "{}",
+            rate(Ayanamsha::TrueChitra)
+        );
     }
 
     #[test]

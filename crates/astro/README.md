@@ -35,7 +35,12 @@ The astronomy layer of the Teistro SDK: everything above raw positions
 - crossings and stations (`events`): a body's longitude, a composite
   angle of two bodies (the tithi, the yoga, an aspect) or a speed over a
   lattice of boundaries or a single target, retrograde re-entries
-  included, and the stations, over any source of longitudes.
+  included, and the stations, over any source of longitudes;
+- the star table (`stars`): the catalogue's 125 stars, the galactic
+  centre and the galactic poles placed on the equator and ecliptic of
+  date from their ICRS astrometry (proper motion, parallax, deflection,
+  aberration over the SDK's own Earth ephemeris, the frame bias,
+  precession, nutation), which the twelve star-anchored ayanamshas read.
 
 ```rust
 use teistro_astro::rise_set::Solver;
@@ -54,5 +59,5 @@ assert!(day.arc().is_some());
 
 Design: `docs/03-design/ephemeris-port-and-adapters.md` (the port and
 the completion), `astro-events-and-crossings.md` (the solvers),
-`time-and-timezone.md` (Delta T). The star table, cusp speeds and house
-positions follow in Phase 2.
+`time-and-timezone.md` (Delta T), `astro-star-table.md` (the stars).
+Cusp speeds and house positions follow in Phase 2.

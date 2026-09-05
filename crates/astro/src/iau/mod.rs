@@ -39,11 +39,18 @@
 //! | [`ltp::ltpequ`] | `eraLtpequ` | the long-term equator pole (Vondrák 2011) |
 //! | [`ltp::ltp`] | `eraLtp` | the long-term precession matrix (Vondrák 2011) |
 //! | [`ltp::ltpb`] | `eraLtpb` | the long-term precession matrix with the frame bias |
+//! | [`epv00::epv00`] | `eraEpv00` | the Earth's heliocentric and barycentric position and velocity (a simplified VSOP2000), the tables in [`epv00`] |
+//! | [`apparent::pmpx`] | `eraPmpx` | proper motion and parallax |
+//! | [`apparent::ld`], [`apparent::ldsun`] | `eraLd`, `eraLdsun` | the light deflection by a body and by the Sun |
+//! | [`apparent::ab`] | `eraAb` | the stellar aberration |
+//! | [`apparent::numat`] | `eraNumat` | the nutation matrix |
 //! | [`ltp::ltpeps`] | none | the long-term general precession and obliquity series of Vondrák, Capitaine and Wallace (2011), equations 10 and Table 5, which ERFA does not carry; checked at J2000.0 against the IAU 2006 obliquity and over a millennium either side |
 //!
 //! Nothing here reads a clock or allocates; every function is a pure
 //! computation on its arguments.
 
+pub mod apparent;
+pub mod epv00;
 pub mod ltp;
 pub mod nut00b;
 pub mod p06;
@@ -62,6 +69,20 @@ pub const DJM00: f64 = 51_544.5;
 
 /// Days in a Julian year.
 pub const DJY: f64 = 365.25;
+/// Days in a Julian millennium (`ERFA_DJM`).
+pub const DJM: f64 = 365_250.0;
+/// Seconds in a day (`ERFA_DAYSEC`).
+pub const DAYSEC: f64 = 86_400.0;
+/// The astronomical unit, metres (`ERFA_DAU`, IAU 2012).
+pub const DAU: f64 = 149_597_870.7e3;
+/// The speed of light, metres a second (`ERFA_CMPS`).
+pub const CMPS: f64 = 299_792_458.0;
+/// The light time for one au, seconds (`ERFA_AULT`).
+pub const AULT: f64 = DAU / CMPS;
+/// The speed of light, au a day (`ERFA_DC`).
+pub const DC: f64 = DAYSEC / AULT;
+/// The Schwarzschild radius of the Sun, au (`ERFA_SRS`: 2 G M☉ / c²).
+pub const SRS: f64 = 1.974_125_743_36e-8;
 /// Arcseconds to radians (`ERFA_DAS2R`, 4.848136811095359935899141e-6,
 /// written to the double's own precision).
 pub const DAS2R: f64 = 4.848_136_811_095_36e-6;

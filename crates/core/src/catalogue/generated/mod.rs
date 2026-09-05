@@ -55,6 +55,8 @@ mod avastha_deeptadi;
 mod avastha_lajjitadi;
 mod avastha_sayanadi;
 mod point_family;
+mod star;
+mod star_class;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -110,6 +112,8 @@ pub use avastha_deeptadi::*;
 pub use avastha_lajjitadi::*;
 pub use avastha_sayanadi::*;
 pub use point_family::*;
+pub use star::*;
+pub use star_class::*;
 
 use crate::key::KeyId;
 
@@ -170,6 +174,8 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::AvasthaLajjitadi => AvasthaLajjitadi::from_key(key).map(AvasthaLajjitadi::key_id),
         Kind::AvasthaSayanadi => AvasthaSayanadi::from_key(key).map(AvasthaSayanadi::key_id),
         Kind::PointFamily => PointFamily::from_key(key).map(PointFamily::key_id),
+        Kind::Star => Star::from_key(key).map(Star::key_id),
+        Kind::StarClass => StarClass::from_key(key).map(StarClass::key_id),
         _ => None,
     }
 }
@@ -231,6 +237,8 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::AvasthaLajjitadi => AvasthaLajjitadi::from_id(id.id()).map(AvasthaLajjitadi::key),
         Kind::AvasthaSayanadi => AvasthaSayanadi::from_id(id.id()).map(AvasthaSayanadi::key),
         Kind::PointFamily => PointFamily::from_id(id.id()).map(PointFamily::key),
+        Kind::Star => Star::from_id(id.id()).map(Star::key),
+        Kind::StarClass => StarClass::from_id(id.id()).map(StarClass::key),
         _ => None,
     }
 }
