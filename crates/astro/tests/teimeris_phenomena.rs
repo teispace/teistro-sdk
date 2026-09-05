@@ -19,6 +19,8 @@
     reason = "tests fail by panicking, read a recorded table and print the measurement under --nocapture"
 )]
 
+mod common;
+
 use std::path::Path;
 
 use serde_json::Value;
@@ -80,6 +82,7 @@ fn the_arithmetic_reproduces_the_engines_phenomena_on_its_own_geometry() {
     assert_eq!(table["scale"], "TT");
     let mut compared = 0;
     let mut worst_magnitude = (0.0f64, String::new());
+    let mut worst_angle = 0.0f64;
     for row in table["rows"].as_array().unwrap() {
         let body = Body::from_key(row["body"].as_str().unwrap()).expect("a catalogued body");
         let tt = JulianDay::<Tt>::literal(row["jd_tt"].as_f64().unwrap());
@@ -97,6 +100,9 @@ fn the_arithmetic_reproduces_the_engines_phenomena_on_its_own_geometry() {
         }
         let phase_angle = ours.phase.map_or(0.0, |p| p.angle_deg);
         let fraction = ours.phase.map_or(0.0, |p| p.illuminated_fraction);
+        worst_angle = worst_angle
+            .max((phase_angle - row["phase_angle_deg"].as_f64().unwrap()).abs())
+            .max((ours.elongation_deg - row["elongation_deg"].as_f64().unwrap()).abs());
         assert!(
             (phase_angle - row["phase_angle_deg"].as_f64().unwrap()).abs() < ANGLE_BOUND_DEG,
             "{where_}: phase angle {phase_angle} against {}",
@@ -151,6 +157,22 @@ fn the_arithmetic_reproduces_the_engines_phenomena_on_its_own_geometry() {
         "{compared} rows compared; magnitudes worst {:.6} at {}",
         worst_magnitude.0, worst_magnitude.1
     );
+    common::record(
+        "phenomena",
+        "phase angles and elongations over the engine's geometry",
+        worst_angle,
+        "°",
+        ANGLE_BOUND_DEG,
+        compared,
+    );
+    common::record(
+        "phenomena",
+        "magnitudes",
+        worst_magnitude.0,
+        " mag",
+        MAGNITUDE_BOUND,
+        compared,
+    );
 }
 
 /// The Sun as the engine placed it, for the equation of time.
@@ -202,4 +224,12 @@ fn the_equation_of_time_reproduces_the_engines_from_the_same_sun() {
     }
     assert!(compared >= 16);
     println!("{compared} instants; equation of time worst {worst:.6} s through 2030");
+    common::record(
+        "equation_of_time",
+        "from the engine's Sun with the SDK's sidereal time, through 2030",
+        worst,
+        " s",
+        EQUATION_BOUND_SECONDS,
+        compared,
+    );
 }

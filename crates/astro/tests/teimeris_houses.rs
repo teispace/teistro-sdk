@@ -14,6 +14,8 @@
     reason = "tests fail by panicking, read a recorded table and print the measurement under --nocapture"
 )]
 
+mod common;
+
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -133,4 +135,12 @@ fn every_system_reproduces_the_engines_cusps_and_angles_at_ten_latitudes() {
     for (key, (apart, where_)) in &worst {
         assert!(*apart < BOUND_DEG, "{key}: {apart}° {where_}");
     }
+    common::record(
+        "houses",
+        "cusps and angles against Teimeris",
+        worst.values().map(|(apart, _)| *apart).fold(0.0, f64::max),
+        "°",
+        BOUND_DEG,
+        compared,
+    );
 }

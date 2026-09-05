@@ -30,6 +30,7 @@
     clippy::indexing_slicing
 )]
 
+mod accuracy;
 mod calendars;
 mod catalogue;
 mod generated;
@@ -55,6 +56,8 @@ fn main() {
         Some("check-catalogue") => catalogue::check(&repo_root()),
         Some("check-calendars") => calendars::check(&repo_root()),
         Some("check-time") => time::check_generated(&repo_root()),
+        Some("check-accuracy") => accuracy::check_generated(&repo_root()),
+        Some("accuracy") => accuracy::generate(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
             _ => usage(),
@@ -72,7 +75,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | calendars bs-fit | gen catalogue | gen calendars | gen time>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time>"
     );
     2
 }

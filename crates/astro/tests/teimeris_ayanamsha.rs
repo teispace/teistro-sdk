@@ -19,6 +19,8 @@
     reason = "tests fail by panicking, read a recorded table and print the measurement under --nocapture"
 )]
 
+mod common;
+
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -72,17 +74,31 @@ fn the_catalogue_reproduces_the_engines_mean_values() {
     assert_eq!(table["basis"], "MEAN");
     assert_eq!(table["scale"], "TT");
     let mut worst: BTreeMap<&str, (f64, f64)> = BTreeMap::new();
+    // The worst difference, the bound and the count by kind of definition,
+    // for the accuracy document.
+    let mut kinds: BTreeMap<&str, (f64, f64, usize)> = BTreeMap::new();
     let mut compared = 0;
     for row in table["rows"].as_array().unwrap() {
         let key = row["ayanamsha"].as_str().unwrap();
         let id = Ayanamsha::from_key(key).expect("a catalogued key");
         let jd = row["jd_tt"].as_f64().unwrap();
-        let bound = match definition(id) {
+        let (kind, bound) = match definition(id) {
             Definition::Epoch(epoch) | Definition::Frame(epoch) => match epoch.scale {
-                EpochScale::Tt => TT_EPOCH_BOUND_ARCSEC,
-                EpochScale::Ut => UT_EPOCH_BOUND_ARCSEC,
+                EpochScale::Tt => ("epoch-defined members stated in TT", TT_EPOCH_BOUND_ARCSEC),
+                EpochScale::Ut => (
+                    "epoch-defined members stated in Universal Time",
+                    UT_EPOCH_BOUND_ARCSEC,
+                ),
             },
-            Definition::Object { anchor, .. } => anchored_bound_arcsec(anchor, jd),
+            Definition::Object { anchor, .. } => (
+                match anchor {
+                    Star::Spica | Star::Shaula | Star::GalacticPole => {
+                        "anchored members, the same Hipparcos rows and pole"
+                    }
+                    _ => "anchored members, the two tables' astrometry apart",
+                },
+                anchored_bound_arcsec(anchor, jd),
+            ),
             Definition::Unsourced => continue,
         };
         let theirs = row["mean_deg"].as_f64().unwrap();
@@ -98,6 +114,10 @@ fn the_catalogue_reproduces_the_engines_mean_values() {
         if arcsec.abs() > entry.0.abs() {
             *entry = (arcsec, jd);
         }
+        let tally = kinds.entry(kind).or_insert((0.0, 0.0, 0));
+        tally.0 = tally.0.max(arcsec.abs());
+        tally.1 = tally.1.max(bound);
+        tally.2 += 1;
         assert!(
             arcsec.abs() <= bound,
             "{key} at JD {jd}: SDK {ours} against Teimeris {theirs}: {arcsec:+.6}\" (bound {bound}\")"
@@ -107,5 +127,8 @@ fn the_catalogue_reproduces_the_engines_mean_values() {
     assert!(compared >= 42 * 20, "{compared} rows compared");
     for (key, (arcsec, jd)) in &worst {
         println!("{key:<22} worst {arcsec:+.7}\" at JD {jd}");
+    }
+    for (kind, (value, bound, count)) in &kinds {
+        common::record("ayanamsha", kind, *value, "″", *bound, *count);
     }
 }
