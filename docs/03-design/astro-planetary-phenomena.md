@@ -211,15 +211,17 @@ seen on both sides of a change of side (the opposition) or on neither
 
 ## 7. Performance budget
 
-| operation | budget | measured (release, Apple Silicon) |
+| operation | budget | measured (release, Apple Silicon, one session on 2026-09-05) |
 |---|---:|---:|
-| the phenomena of a planet over the test provider | 20 µs | 0.72 µs (two position requests, the arithmetic under a tenth of that) |
-| the equation of time over the test provider | 10 µs | 2.96 µs (the sidereal time with its nutation, Delta T, one position) |
-| the visibility state of one day over the test provider | 100 µs | 52.5 µs by degrees of time, 73.0 µs by the arcus visionis (ten to twenty position reads: the Sun's rise and set, the body's rising or setting, two longitudes; the arcus visionis adds the Sun's antitransit and one altitude) |
+| the phenomena of a planet over the test provider | 20 µs | 0.89 µs (two position requests, the arithmetic under a tenth of that) |
+| the equation of time over the test provider | 10 µs | 3.71 µs (the sidereal time with its nutation, Delta T, one position) |
+| the visibility state of one day over the test provider | 100 µs | 51.0 µs by degrees of time, 72.0 µs by the arcus visionis (ten to twenty position reads: the Sun's rise and set, the body's rising or setting, the body and the Sun in one request; the arcus visionis adds the Sun's antitransit and one altitude) |
 
 The arithmetic is a few hundred nanoseconds; the cost is the two or
 three position requests through the completion, and for a heliacal scan
-the day-by-day readings, about fifteen a day.
+the day-by-day readings, about fifteen a day. Rows compare within a
+table: the machine's state moves every row by tens of per cent between
+sessions (`astro-events-and-crossings.md` §7).
 
 ## 8. Tests
 

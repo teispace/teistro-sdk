@@ -934,8 +934,8 @@ fn elongation(
     at: JulianDay<Ut1>,
     evaluations: &mut u32,
 ) -> Result<(f64, f64), Error> {
-    let (body_deg, speed) = longitudes.longitude_and_speed(body, at)?;
-    let (sun_deg, _) = longitudes.longitude_and_speed(Body::Sun, at)?;
+    let [(body_deg, speed), (sun_deg, _)] =
+        longitudes.longitude_and_speed_pair([body, Body::Sun], at)?;
     *evaluations += 2;
     Ok((difference_deg(body_deg, sun_deg), speed))
 }
