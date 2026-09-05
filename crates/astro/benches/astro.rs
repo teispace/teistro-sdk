@@ -15,8 +15,9 @@ use teistro_astro::events::{Lattice, Quantity, Search};
 use teistro_astro::houses::{self, Input};
 use teistro_astro::precession::{self, PrecessionModel};
 use teistro_astro::rise_set::Solver;
+use teistro_astro::stars;
 use teistro_astro::{Completion, DeltaTModel, delta_t, sky};
-use teistro_core::catalogue::{Ayanamsha, HouseSystem};
+use teistro_core::catalogue::{Ayanamsha, HouseSystem, Star};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Tt, Ut1};
 use teistro_core::settings::{OverridePolicy, PolarPolicy};
 use teistro_port_ephemeris::{
@@ -83,6 +84,22 @@ fn benches(c: &mut Criterion) {
             });
         },
     );
+    c.bench_function("stars: the Earth's barycentric state (epv00)", |b| {
+        b.iter(|| teistro_astro::iau::epv00::epv00(black_box(2_460_000.5), 0.0));
+    });
+    c.bench_function("stars: Spica's apparent place", |b| {
+        b.iter(|| stars::place_of(Star::Spica, black_box(tt), &stars::Options::APPARENT));
+    });
+    c.bench_function("ayanamsha: True Chitra, mean (anchored to Spica)", |b| {
+        b.iter(|| {
+            ayanamsha::mean_deg(
+                &Ayanamsha::TrueChitra.into(),
+                black_box(tt),
+                PrecessionModel::Vondrak2011,
+                DeltaTModel::TableThenModel,
+            )
+        });
+    });
     let provider = TestProvider::new();
     let completion = Completion::new(
         &provider,

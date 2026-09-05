@@ -1,0 +1,26 @@
+kind: star_class
+number: 57
+version: 1
+doc: "What kind of object a star-table member is."
+members:
+  - key: STAR
+    id: 0
+    doc: "A star"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: RADIO_SOURCE
+    id: 1
+    doc: "A compact radio source, such as the galactic centre"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: DIRECTION
+    id: 2
+    doc: "A fixed direction on the sky without a body, such as a galactic pole"
+    sources:
+      - text: structural
+        ref: design
+    mark: V

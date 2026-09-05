@@ -35,7 +35,14 @@ ITP method: every searched instant (a sunrise, a sankranti, a boundary)
 is still the middle of a bracket no wider than its tolerance, so an
 instant may differ from the previous release's by up to that tolerance
 (under a hundredth of a second for the sankranti and the sunrise), in
-about a quarter of the evaluations. Nothing else computes yet.
+about a quarter of the evaluations. The twelve star-anchored ayanamshas
+(True Chitra, True Revati, True Pushya, True Mula, Sheoran, the four
+Galactic Centre and the three Galactic Equator members) compute for the
+first time, over the star table's SIMBAD astrometry (Hipparcos, the new
+reduction, and Gaia DR3) and the SDK's own Earth ephemeris, so every
+provider gives the same sidereal longitudes under them; the star table
+itself (128 catalogued members) has places for the first time. Nothing
+else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.

@@ -701,11 +701,15 @@ mod tests {
                 .iter()
                 .any(|step| step.name == "ayanamsha" && step.implementation == Implementation::Sdk)
         );
-        // A star-anchored ayanamsha is refused by name until the star table.
+        // A star-anchored ayanamsha reads the star table: Spica held at 180°.
         let anchored =
             request.in_frame(Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::TrueChitra)));
-        let refused = completion.positions(&anchored).unwrap_err();
-        assert!(refused.to_string().contains("Spica"), "{refused}");
+        let chitra = completion.positions(&anchored).unwrap();
+        let chitra_shift = difference_deg(
+            tropical.columns.at(0, 0).unwrap().lon,
+            chitra.columns.at(0, 0).unwrap().lon,
+        );
+        assert!((chitra_shift - 24.2).abs() < 0.1, "{chitra_shift}");
         let native_only = self::completion(OverridePolicy::NativeOnly);
         let equatorial =
             request.in_frame(Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));

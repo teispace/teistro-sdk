@@ -22,7 +22,7 @@ use std::path::Path;
 
 use serde_json::Value;
 use teimeris::{Body as EngineBody, CrossingOptions, CrossingQuantity};
-use teistro_astro::events::{Direction, Lattice, Quantity, Search, stations};
+use teistro_astro::events::{Direction, Lattice, Longitudes, Quantity, Search, stations};
 use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::angle::difference_deg;
 use teistro_core::catalogue::Ayanamsha;
@@ -72,6 +72,54 @@ fn engine_crossings(
         found.sort_by(|a, b| a.0.total_cmp(&b.0));
         found
     })
+}
+
+/// Stations of Mercury and Mars over two years against the engine's
+/// speed-zero search.
+fn stations_against_the_engine(
+    provider: &TeimerisProvider,
+    longitudes: &impl Longitudes,
+    from: JulianDay<Ut1>,
+) {
+    let two_years = JulianDay::<Ut1>::literal(J2000 + 730.5);
+    for body in [Body::Mercury, Body::Mars] {
+        let ours = stations(longitudes, body, from, two_years, 1e-7).unwrap();
+        let theirs: Vec<(f64, f64)> = provider.with_context(|ctx| {
+            let options = CrossingOptions {
+                quantity: CrossingQuantity::LONGITUDE_SPEED,
+                target: 0.0,
+                jd_end: J2000 + 730.5,
+                ..CrossingOptions::default()
+            };
+            let mut found: Vec<(f64, f64)> = ctx
+                .crossings(J2000, engine_body(body), &options)
+                .map(|c| c.map(|c| (c.jd, c.longitude)))
+                .collect::<Result<_, _>>()
+                .unwrap();
+            found.sort_by(|a, b| a.0.total_cmp(&b.0));
+            found
+        });
+        println!(
+            "{body:?} stations: {} SDK, {} engine",
+            ours.len(),
+            theirs.len()
+        );
+        assert_eq!(ours.len(), theirs.len(), "{body:?}");
+        let mut worst = 0.0f64;
+        for (mine, (jd, lon)) in ours.iter().zip(&theirs) {
+            worst = worst.max((mine.instant.get() - jd).abs() / SECOND);
+            assert!(
+                difference_deg(mine.longitude_deg, *lon).abs() < 1e-4,
+                "{body:?}: {} against {lon}",
+                mine.longitude_deg
+            );
+        }
+        println!("  worst {worst:.1} s");
+        // A station is where a speed of arcseconds a day crosses zero: the
+        // instant is soft by construction, and the engines differ among
+        // themselves by minutes here.
+        assert!(worst < 600.0, "{body:?}: {worst} s");
+    }
 }
 
 #[test]
@@ -151,47 +199,7 @@ fn the_kernel_reproduces_the_engines_ingresses_tithis_and_stations() {
     println!("  worst {worst:.3} s");
     assert!(worst < 1.0, "{worst} s");
 
-    // Stations of Mercury and Mars over two years against the engine's
-    // speed-zero search.
-    let two_years = JulianDay::<Ut1>::literal(J2000 + 730.5);
-    for body in [Body::Mercury, Body::Mars] {
-        let ours = stations(&longitudes, body, from, two_years, 1e-7).unwrap();
-        let theirs: Vec<(f64, f64)> = provider.with_context(|ctx| {
-            let options = CrossingOptions {
-                quantity: CrossingQuantity::LONGITUDE_SPEED,
-                target: 0.0,
-                jd_end: J2000 + 730.5,
-                ..CrossingOptions::default()
-            };
-            let mut found: Vec<(f64, f64)> = ctx
-                .crossings(J2000, engine_body(body), &options)
-                .map(|c| c.map(|c| (c.jd, c.longitude)))
-                .collect::<Result<_, _>>()
-                .unwrap();
-            found.sort_by(|a, b| a.0.total_cmp(&b.0));
-            found
-        });
-        println!(
-            "{body:?} stations: {} SDK, {} engine",
-            ours.len(),
-            theirs.len()
-        );
-        assert_eq!(ours.len(), theirs.len(), "{body:?}");
-        let mut worst = 0.0f64;
-        for (mine, (jd, lon)) in ours.iter().zip(&theirs) {
-            worst = worst.max((mine.instant.get() - jd).abs() / SECOND);
-            assert!(
-                difference_deg(mine.longitude_deg, *lon).abs() < 1e-4,
-                "{body:?}: {} against {lon}",
-                mine.longitude_deg
-            );
-        }
-        println!("  worst {worst:.1} s");
-        // A station is where a speed of arcseconds a day crosses zero: the
-        // instant is soft by construction, and the engines differ among
-        // themselves by minutes here.
-        assert!(worst < 600.0, "{body:?}: {worst} s");
-    }
+    stations_against_the_engine(&provider, &longitudes, from);
 }
 
 /// The baseline's panchanga day: its transitions are geocentric although

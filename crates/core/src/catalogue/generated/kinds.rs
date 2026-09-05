@@ -116,9 +116,13 @@ pub enum Kind {
     AvasthaSayanadi = 54,
     /// What kind of derived point.
     PointFamily = 55,
+    /// The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`).
+    Star = 56,
+    /// What kind of object a star-table member is.
+    StarClass = 57,
 }
 
-const BY_NAME: [(&str, Kind); 54] = [
+const BY_NAME: [(&str, Kind); 56] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_deeptadi", Kind::AvasthaDeeptadi),
@@ -164,6 +168,8 @@ const BY_NAME: [(&str, Kind); 54] = [
     ("rule", Kind::Rule),
     ("samvatsara", Kind::Samvatsara),
     ("sex", Kind::Sex),
+    ("star", Kind::Star),
+    ("star_class", Kind::StarClass),
     ("state", Kind::State),
     ("tatwa", Kind::Tatwa),
     ("tithi", Kind::Tithi),
@@ -177,7 +183,7 @@ const BY_NAME: [(&str, Kind); 54] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 54] = [
+    pub const ALL: [Kind; 56] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -232,6 +238,8 @@ impl Kind {
         Kind::AvasthaLajjitadi,
         Kind::AvasthaSayanadi,
         Kind::PointFamily,
+        Kind::Star,
+        Kind::StarClass,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -292,6 +300,8 @@ impl Kind {
             Kind::AvasthaLajjitadi => "avastha_lajjitadi",
             Kind::AvasthaSayanadi => "avastha_sayanadi",
             Kind::PointFamily => "point_family",
+            Kind::Star => "star",
+            Kind::StarClass => "star_class",
         }
     }
 
@@ -359,6 +369,8 @@ impl Kind {
             Kind::AvasthaLajjitadi => 6,
             Kind::AvasthaSayanadi => 12,
             Kind::PointFamily => 8,
+            Kind::Star => 128,
+            Kind::StarClass => 3,
         }
     }
 
@@ -426,6 +438,8 @@ impl Kind {
             53 => Some(Kind::AvasthaLajjitadi),
             54 => Some(Kind::AvasthaSayanadi),
             55 => Some(Kind::PointFamily),
+            56 => Some(Kind::Star),
+            57 => Some(Kind::StarClass),
             _ => None,
         }
     }

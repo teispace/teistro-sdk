@@ -95,8 +95,11 @@ grahas for convenience, and the SDK does not, because a point has a
 formula and no ephemeris body. Kinds 41 to 55 are the small value sets
 the attributes use (body class, parity, rising type, sex, tithi class,
 auspiciousness, degeneracy, the ayanamsha category, the dasha family,
-the point family); everything enumerable is a kind so every value has a
-key a pack can name. Kinds 25 to 27, 31, 32 and 39 hold the
+the point family); kind 56 is the star table, `star` (128 members: the
+yogataras, the ayanamsha anchors, the bright fixed stars, the galactic
+centre and poles, each with its ICRS astrometry and its SIMBAD source;
+`astro-star-table.md`), and kind 57 its classes; everything enumerable
+is a kind so every value has a key a pack can name. Kinds 25 to 27, 31, 32 and 39 hold the
 identity of their members here and the definition rows in the crate
 that owns the kernel (ADR-0017); `core` never holds a kernel table.
 

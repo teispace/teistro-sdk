@@ -2,7 +2,9 @@
 
 Status: `draft`, written 2026-09-05 when `astro::ayanamsha` and
 `astro::precession` were built and the frame completion began to
-complete the sidereal zodiac from the SDK's own catalogue. Derives from
+complete the sidereal zodiac from the SDK's own catalogue; revised the
+same day when the star table (`astro-star-table.md`) brought the twelve
+anchored members into computation. Derives from
 `01-research/platform/13-astronomy-layer.md` (the ayanamsha and star
 table rows and their conformance targets), `03-design/core-types-and-catalogue.md`
 (the forty-seven catalogued members and their categories),
@@ -26,9 +28,9 @@ definition of each member (an epoch and the value there, a frame, or an
 anchor in the sky), the construction that carries a value to any date,
 the correction for the precession model a constant was fitted with,
 mean against nutated values, custom definitions, and the measurement
-against Teimeris. The twelve members anchored to a star or the galactic
-centre are defined here and refused until the star table exists
-(§10).
+against Teimeris. The twelve members anchored to a star, the galactic
+centre or a galactic pole read the star table's place of date
+(`astro-star-table.md`), so every member with a definition computes.
 
 ## 2. Inputs, settings and ports
 
@@ -49,7 +51,7 @@ otherwise (`ephemeris-port-and-adapters.md`, §5).
 pub enum Definition {
     Epoch(Epoch),                                   // a value at an epoch carried by precession
     Frame(Epoch),                                   // J2000, J1900, B1950, Mardyks: a frame, whose value is the precession since
-    Object { anchor: &'static str, fixed_deg: f64 },  // a star or the galactic centre held at a sidereal longitude
+    Object { anchor: Star, held_deg: [f64; 2], reading: Reading },  // a star table member held at a sidereal longitude; Reading::{Longitude, RightAscension, GeometricLongitude}
     Unsourced,                                      // a member this build has no definition for
 }
 pub struct Epoch { jd: f64, scale: EpochScale /* Tt | Ut */, value_deg: f64, fitted: Fitted /* Current | Iau1976 | Newcomb */ }
@@ -151,16 +153,23 @@ instead is an `Epoch` definition through the Rust API.
 **The rate** (`speed_deg_per_day`). A central difference of the mean
 value over a day: the general precession, about 50.29″ a year.
 
-**Anchored definitions.** The anchor's mean longitude of date (its
-apparent place without nutation, so the mean ayanamsha is the mean one)
-less its fixed sidereal longitude, the galactic pole by right ascension
-projected to the ecliptic; refused until the star table exists.
+**Anchored definitions.** The anchor's place on the mean equator and
+ecliptic of date from the star table (`stars::place_of` under the model
+in use), read as its apparent longitude (aberration and deflection
+applied, no nutation, so the mean value is the mean one and carries the
+star's annual aberration as the definitions' author computes it), as its
+right ascension projected to the ecliptic along the meridian (Wilhelm's
+galactic centre), or as its geometric longitude (the three galactic-pole
+members: a pole is a construction of planes); less the sidereal longitude
+it is held at, the two terms of the two-term definitions subtracted in
+turn (`astro-star-table.md`, §4).
 
 ## 5. The API
 
 Rust: `ayanamsha::definition(id) -> Definition`, `is_computable(id)`,
 `mean_deg(&choice, tt, model, delta_t)`, `value_deg(&choice, tt, basis,
-model, delta_t)`, `speed_deg_per_day(&choice, tt, model, delta_t)`;
+model, delta_t)`, `speed_deg_per_day(&choice, tt, model, delta_t)`, every one answering
+for the anchored members too;
 `precession::{PrecessionModel, matrix, to_date, to_j2000, between,
 mean_obliquity_rad, mean_obliquity_deg}`; the completion takes the model
 through `Completion::with_precession` and completes a
@@ -174,7 +183,6 @@ rate, and the definition table as data.
 
 | situation | outcome |
 |---|---|
-| a member anchored to a star or the galactic centre | `UNSUPPORTED`, naming the anchor and suggesting an epoch-defined member or a provider with the override, field `frame.ayanamsha` |
 | a member the catalogue registers without a definition here | `UNSUPPORTED (unsourced)`, field `frame.ayanamsha` |
 | a custom definition with a non-finite epoch, value or rate | `INVALID_ARG`, field `frame.ayanamsha` (the settings coherence rule `custom-ayanamsha-finite` catches it first) |
 | an epoch in Universal Time the Delta T model cannot answer for | the Delta T error |
@@ -214,10 +222,19 @@ completion computes it once per requested instant.
   the definitions stated in TT agree within 1e-7″ (the rounding of the
   same construction, bit-identical in most rows), and those stated in
   Universal Time within 2.1e-4″ (the SDK's Delta T against the engine's
-  at epochs in antiquity, worst at 499 CE); bounds 1e-5″ and 5e-4″.
+  at epochs in antiquity, worst at 499 CE); bounds 1e-5″ and 5e-4″. The
+  twelve anchored members over the same table: True Chitra and True Mula
+  (Hipparcos rows in both tables) and the true-pole members within
+  0.003″; the galactic-centre members 0.02″ apart at J2000.0 and 0.54″ at
+  700 CE (the engine's FK5 record and its cos δ on the proper motion,
+  cruxes C40); True Revati, True Pushya and Sheoran 0.002″ to 0.016″
+  apart at J2000.0 and 1.5″ at 700 CE (Gaia DR3 against Hipparcos,
+  C41); the IAU 1958 pole member up to 0.18″ (the two transforms of the
+  1958 definition, C42); bounds in `teimeris_ayanamsha.rs`, the numbers
+  in `astro-star-table.md`.
 - The completion: a sidereal request over the test provider, which
   declares no override, is completed by the catalogue with the step
-  stamped `SDK`; a star-anchored request is refused by name.
+  stamped `SDK`, for an epoch-defined member and for Spica's.
 
 ## 9. Localisation
 
@@ -225,11 +242,10 @@ None: the members are catalogue keys; their names are the locale packs'.
 
 ## 10. Open questions
 
-1. **The star table.** The twelve anchored members need the anchors'
-   ICRS positions and proper motions (Hipparcos and Gaia, open data), the
-   IAU 2000A or 2000B nutation and the aberration from the Earth's
-   velocity (ERFA's `epv00`, or the provider's Sun); Phase 2's star
-   table brings them, and their target is 0.001″ against Teimeris.
+1. **The star table** exists (`astro-star-table.md`); the anchored
+   members compute, and their agreement with Teimeris is the agreement of
+   the two tables' astrometry (C40 to C42), 0.003″ where the rows are the
+   same.
 2. **The frame members' projection.** Positions referred to the
    ecliptic of J2000, J1900, B1950 or Mardyks's epoch are a completion
    step (the `equinox` step of `astro-timescales-and-frames.md`); until

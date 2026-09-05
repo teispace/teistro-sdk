@@ -28,6 +28,10 @@
 //!   search in the SDK goes through;
 //! - [`rise_set`]: the rise and set solver under a horizon convention,
 //!   with polar days and nights as reported states;
+//! - [`stars`]: the star table's places of date from the catalogue's ICRS
+//!   astrometry: proper motion, parallax, deflection and aberration over
+//!   the SDK's own Earth ephemeris, then the frame bias, precession and
+//!   nutation; what the star-anchored ayanamshas read.
 //! - [`events`]: crossings of a longitude, a composite angle or a speed
 //!   over a lattice of boundaries, and stations, one kernel over the
 //!   boundary solver.
@@ -52,6 +56,7 @@ pub mod rise_set;
 pub mod scale;
 pub mod sky;
 pub mod solve;
+pub mod stars;
 
 #[rustfmt::skip]
 mod generated;

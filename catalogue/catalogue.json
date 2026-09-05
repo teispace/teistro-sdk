@@ -14316,6 +14316,4681 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "star",
+      "number": 56,
+      "version": 1,
+      "doc": "The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`).",
+      "types": {
+        "Astrometry": {
+          "ra_deg": "f64",
+          "dec_deg": "f64",
+          "pm_ra_mas_yr": "f64",
+          "pm_dec_mas_yr": "f64",
+          "parallax_mas": "f64",
+          "radial_velocity_km_s": "f64"
+        }
+      },
+      "attributes": {
+        "designation": "str",
+        "class": "key:star_class",
+        "hip": "option<i32>",
+        "magnitude": "option<f64>",
+        "astrometry": "Astrometry",
+        "yogatara_of": "option<key:nakshatra>"
+      },
+      "members": [
+        {
+          "key": "SHERATAN",
+          "id": 0,
+          "doc": "Sheratan, beta Arietis: the yogatara of Ashwini",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Arietis",
+            "class": "STAR",
+            "hip": 8903,
+            "magnitude": 2.65,
+            "astrometry": {
+              "ra_deg": 28.66004578884514,
+              "dec_deg": 20.808031471916408,
+              "pm_ra_mas_yr": 98.74,
+              "pm_dec_mas_yr": -110.41,
+              "parallax_mas": 55.6,
+              "radial_velocity_km_s": -3.1
+            },
+            "yogatara_of": "ASHWINI"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sheratan"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Ashwini: beta Arietis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BHARANI",
+          "id": 1,
+          "doc": "Bharani, 41 Arietis: the yogatara of Bharani",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "41 Arietis",
+            "class": "STAR",
+            "hip": 13209,
+            "magnitude": 3.594,
+            "astrometry": {
+              "ra_deg": 42.49597183583333,
+              "dec_deg": 27.26050722722222,
+              "pm_ra_mas_yr": 66.81,
+              "pm_dec_mas_yr": -116.52,
+              "parallax_mas": 19.69,
+              "radial_velocity_km_s": 9.06
+            },
+            "yogatara_of": "BHARANI"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2022yCat.1355....0G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Bharani"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Bharani: 41 Arietis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALCYONE",
+          "id": 2,
+          "doc": "Alcyone, eta Tauri: the yogatara of Krittika; the brightest of the Pleiades",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "eta Tauri",
+            "class": "STAR",
+            "hip": 17702,
+            "magnitude": 2.87,
+            "astrometry": {
+              "ra_deg": 56.871152303749994,
+              "dec_deg": 24.105135651944444,
+              "pm_ra_mas_yr": 19.34,
+              "pm_dec_mas_yr": -43.67,
+              "parallax_mas": 8.09,
+              "radial_velocity_km_s": 5.4
+            },
+            "yogatara_of": "KRITTIKA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alcyone"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Krittika: eta Tauri"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALDEBARAN",
+          "id": 3,
+          "doc": "Aldebaran, alpha Tauri: the yogatara of Rohini; a royal star",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Tauri",
+            "class": "STAR",
+            "hip": 21421,
+            "magnitude": 0.86,
+            "astrometry": {
+              "ra_deg": 68.9801627900154,
+              "dec_deg": 16.5093023507718,
+              "pm_ra_mas_yr": 63.45,
+              "pm_dec_mas_yr": -188.94,
+              "parallax_mas": 48.94,
+              "radial_velocity_km_s": 54.398
+            },
+            "yogatara_of": "ROHINI"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Aldebaran"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Rohini: alpha Tauri"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MEISSA",
+          "id": 4,
+          "doc": "Meissa, lambda Orionis: the yogatara of Mrigashira",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "lambda Orionis",
+            "class": "STAR",
+            "hip": 26207,
+            "magnitude": 3.66,
+            "astrometry": {
+              "ra_deg": 83.78449002103218,
+              "dec_deg": 9.934155874166667,
+              "pm_ra_mas_yr": -0.34,
+              "pm_dec_mas_yr": -2.94,
+              "parallax_mas": 2.97,
+              "radial_velocity_km_s": 30.1
+            },
+            "yogatara_of": "MRIGASHIRA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Meissa"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Mrigashira: lambda Orionis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BETELGEUSE",
+          "id": 5,
+          "doc": "Betelgeuse, alpha Orionis: the yogatara of Ardra",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Orionis",
+            "class": "STAR",
+            "hip": 27989,
+            "magnitude": 0.42,
+            "astrometry": {
+              "ra_deg": 88.79293899077537,
+              "dec_deg": 7.407063995272694,
+              "pm_ra_mas_yr": 27.54,
+              "pm_dec_mas_yr": 11.3,
+              "parallax_mas": 6.55,
+              "radial_velocity_km_s": 21.91
+            },
+            "yogatara_of": "ARDRA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2005A&A...430..165F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Betelgeuse"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Ardra: alpha Orionis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "POLLUX",
+          "id": 6,
+          "doc": "Pollux, beta Geminorum: the yogatara of Punarvasu",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Geminorum",
+            "class": "STAR",
+            "hip": 37826,
+            "magnitude": 1.14,
+            "astrometry": {
+              "ra_deg": 116.32895777437875,
+              "dec_deg": 28.02619889009357,
+              "pm_ra_mas_yr": -626.55,
+              "pm_dec_mas_yr": -45.8,
+              "parallax_mas": 96.54,
+              "radial_velocity_km_s": 3.391
+            },
+            "yogatara_of": "PUNARVASU"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Pollux"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Punarvasu: beta Geminorum"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ASELLUS_AUSTRALIS",
+          "id": 7,
+          "doc": "Asellus Australis, delta Cancri: the yogatara of Pushya; the anchor of the True Pushya and Sheoran ayanamshas",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Cancri",
+            "class": "STAR",
+            "hip": 42911,
+            "magnitude": 3.94,
+            "astrometry": {
+              "ra_deg": 131.17124658768913,
+              "dec_deg": 18.154308069054167,
+              "pm_ra_mas_yr": -18.435,
+              "pm_dec_mas_yr": -227.813,
+              "parallax_mas": 23.8271,
+              "radial_velocity_km_s": 17.14
+            },
+            "yogatara_of": "PUSHYA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2005A&A...430..165F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Asellus Australis"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Pushya: delta Cancri"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ASHLESHA",
+          "id": 8,
+          "doc": "Ashlesha, epsilon Hydrae: the yogatara of Ashlesha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Hydrae",
+            "class": "STAR",
+            "hip": 43109,
+            "magnitude": 3.38,
+            "astrometry": {
+              "ra_deg": 131.6938009684597,
+              "dec_deg": 6.4188015227537685,
+              "pm_ra_mas_yr": -228.11,
+              "pm_dec_mas_yr": -43.82,
+              "parallax_mas": 25.23,
+              "radial_velocity_km_s": 40.46
+            },
+            "yogatara_of": "ASHLESHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...615A..31D"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Ashlesha"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Ashlesha: epsilon Hydrae"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "REGULUS",
+          "id": 9,
+          "doc": "Regulus, alpha Leonis: the yogatara of Magha; a royal star",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Leonis",
+            "class": "STAR",
+            "hip": 49669,
+            "magnitude": 1.4,
+            "astrometry": {
+              "ra_deg": 152.09296243828146,
+              "dec_deg": 11.967208776100023,
+              "pm_ra_mas_yr": -248.73,
+              "pm_dec_mas_yr": 5.59,
+              "parallax_mas": 41.13,
+              "radial_velocity_km_s": 0.719522
+            },
+            "yogatara_of": "MAGHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2020AJ....160..120J"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Regulus"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Magha: alpha Leonis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ZOSMA",
+          "id": 10,
+          "doc": "Zosma, delta Leonis: the yogatara of Purva Phalguni",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Leonis",
+            "class": "STAR",
+            "hip": 54872,
+            "magnitude": 2.53,
+            "astrometry": {
+              "ra_deg": 168.52708926588556,
+              "dec_deg": 20.523718139047475,
+              "pm_ra_mas_yr": 143.42,
+              "pm_dec_mas_yr": -129.88,
+              "parallax_mas": 55.82,
+              "radial_velocity_km_s": -20.9
+            },
+            "yogatara_of": "PURVA_PHALGUNI"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Zosma"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Purva Phalguni: delta Leonis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DENEBOLA",
+          "id": 11,
+          "doc": "Denebola, beta Leonis: the yogatara of Uttara Phalguni",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Leonis",
+            "class": "STAR",
+            "hip": 57632,
+            "magnitude": 2.13,
+            "astrometry": {
+              "ra_deg": 177.26490975591017,
+              "dec_deg": 14.572058064829658,
+              "pm_ra_mas_yr": -497.68,
+              "pm_dec_mas_yr": -114.67,
+              "parallax_mas": 90.91,
+              "radial_velocity_km_s": -0.2
+            },
+            "yogatara_of": "UTTARA_PHALGUNI"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Denebola"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Uttara Phalguni: beta Leonis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALGORAB",
+          "id": 12,
+          "doc": "Algorab, delta Corvi: the yogatara of Hasta",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Corvi",
+            "class": "STAR",
+            "hip": 60965,
+            "magnitude": 2.94,
+            "astrometry": {
+              "ra_deg": 187.46606318416664,
+              "dec_deg": -16.515431261666667,
+              "pm_ra_mas_yr": -209.276,
+              "pm_dec_mas_yr": -139.184,
+              "parallax_mas": 38.06,
+              "radial_velocity_km_s": 13.9
+            },
+            "yogatara_of": "HASTA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Algorab"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Hasta: delta Corvi"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SPICA",
+          "id": 13,
+          "doc": "Spica, alpha Virginis: the yogatara of Chitra; the anchor of the True Chitra ayanamsha (Spica at 180°)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Virginis",
+            "class": "STAR",
+            "hip": 65474,
+            "magnitude": 0.97,
+            "astrometry": {
+              "ra_deg": 201.2982473615632,
+              "dec_deg": -11.161319485111932,
+              "pm_ra_mas_yr": -42.35,
+              "pm_dec_mas_yr": -30.67,
+              "parallax_mas": 13.06,
+              "radial_velocity_km_s": -3.31
+            },
+            "yogatara_of": "CHITRA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2023ApJS..266...11B"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Spica"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Chitra: alpha Virginis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ARCTURUS",
+          "id": 14,
+          "doc": "Arcturus, alpha Boötis: the yogatara of Swati",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Boötis",
+            "class": "STAR",
+            "hip": 69673,
+            "magnitude": -0.05,
+            "astrometry": {
+              "ra_deg": 213.915300294925,
+              "dec_deg": 19.1824091615312,
+              "pm_ra_mas_yr": -1093.39,
+              "pm_dec_mas_yr": -2000.06,
+              "parallax_mas": 88.83,
+              "radial_velocity_km_s": -5.229
+            },
+            "yogatara_of": "SWATI"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Arcturus"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Swati: alpha Boötis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ZUBENELGENUBI",
+          "id": 15,
+          "doc": "Zubenelgenubi, alpha² Librae: the yogatara of Vishakha; the Surya Siddhanta names iota Librae instead",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha² Librae",
+            "class": "STAR",
+            "hip": 72622,
+            "magnitude": 2.75,
+            "astrometry": {
+              "ra_deg": 222.7196378915803,
+              "dec_deg": -16.041776519834446,
+              "pm_ra_mas_yr": -105.68,
+              "pm_dec_mas_yr": -68.4,
+              "parallax_mas": 43.03,
+              "radial_velocity_km_s": -10.0
+            },
+            "yogatara_of": "VISHAKHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1953GCRV..C......0W"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Zubenelgenubi"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Vishakha: alpha² Librae"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DSCHUBBA",
+          "id": 16,
+          "doc": "Dschubba, delta Scorpii: the yogatara of Anuradha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Scorpii",
+            "class": "STAR",
+            "hip": 78401,
+            "magnitude": 2.32,
+            "astrometry": {
+              "ra_deg": 240.08335534565887,
+              "dec_deg": -22.621706426005783,
+              "pm_ra_mas_yr": -10.21,
+              "pm_dec_mas_yr": -35.41,
+              "parallax_mas": 6.64,
+              "radial_velocity_km_s": -6.0
+            },
+            "yogatara_of": "ANURADHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Dschubba"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Anuradha: delta Scorpii"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ANTARES",
+          "id": 17,
+          "doc": "Antares, alpha Scorpii: the yogatara of Jyeshtha; a royal star",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Scorpii",
+            "class": "STAR",
+            "hip": 80763,
+            "magnitude": 0.91,
+            "astrometry": {
+              "ra_deg": 247.3519154198264,
+              "dec_deg": -26.432002611950832,
+              "pm_ra_mas_yr": -12.11,
+              "pm_dec_mas_yr": -23.3,
+              "parallax_mas": 5.89,
+              "radial_velocity_km_s": -3.5
+            },
+            "yogatara_of": "JYESHTHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Antares"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Jyeshtha: alpha Scorpii"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SHAULA",
+          "id": 18,
+          "doc": "Shaula, lambda Scorpii: the yogatara of Mula; the anchor of the True Mula ayanamsha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "lambda Scorpii",
+            "class": "STAR",
+            "hip": 85927,
+            "magnitude": 1.63,
+            "astrometry": {
+              "ra_deg": 263.40216718438023,
+              "dec_deg": -37.10382355111976,
+              "pm_ra_mas_yr": -8.53,
+              "pm_dec_mas_yr": -30.8,
+              "parallax_mas": 5.71,
+              "radial_velocity_km_s": -3.0
+            },
+            "yogatara_of": "MULA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Shaula"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Mula: lambda Scorpii"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KAUS_MEDIA",
+          "id": 19,
+          "doc": "Kaus Media, delta Sagittarii: the yogatara of Purva Ashadha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Sagittarii",
+            "class": "STAR",
+            "hip": 89931,
+            "magnitude": 2.668,
+            "astrometry": {
+              "ra_deg": 275.24851205687213,
+              "dec_deg": -29.828102262591386,
+              "pm_ra_mas_yr": 33.212,
+              "pm_dec_mas_yr": -27.361,
+              "parallax_mas": 7.8468,
+              "radial_velocity_km_s": -20.4
+            },
+            "yogatara_of": "PURVA_ASHADHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Kaus Media"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Purva Ashadha: delta Sagittarii"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NUNKI",
+          "id": 20,
+          "doc": "Nunki, sigma Sagittarii: the yogatara of Uttara Ashadha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "sigma Sagittarii",
+            "class": "STAR",
+            "hip": 92855,
+            "magnitude": 2.067,
+            "astrometry": {
+              "ra_deg": 283.81636040649323,
+              "dec_deg": -26.29672411476388,
+              "pm_ra_mas_yr": 15.14,
+              "pm_dec_mas_yr": -53.43,
+              "parallax_mas": 14.32,
+              "radial_velocity_km_s": -11.2
+            },
+            "yogatara_of": "UTTARA_ASHADHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1979IAUS...30...57E"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Nunki"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Uttara Ashadha: sigma Sagittarii"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "VEGA",
+          "id": 21,
+          "doc": "Vega, alpha Lyrae: the yogatara of Abhijit, the twenty-eighth nakshatra of the span table",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Lyrae",
+            "class": "STAR",
+            "hip": 91262,
+            "magnitude": 0.03,
+            "astrometry": {
+              "ra_deg": 279.234734787025,
+              "dec_deg": 38.783688956244,
+              "pm_ra_mas_yr": 200.94,
+              "pm_dec_mas_yr": 286.23,
+              "parallax_mas": 130.23,
+              "radial_velocity_km_s": -13.5
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...420..183A"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Vega"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Abhijit: alpha Lyrae"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALTAIR",
+          "id": 22,
+          "doc": "Altair, alpha Aquilae: the yogatara of Shravana",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Aquilae",
+            "class": "STAR",
+            "hip": 97649,
+            "magnitude": 0.76,
+            "astrometry": {
+              "ra_deg": 297.69582729638694,
+              "dec_deg": 8.868321196436963,
+              "pm_ra_mas_yr": 536.23,
+              "pm_dec_mas_yr": 385.29,
+              "parallax_mas": 194.95,
+              "radial_velocity_km_s": -26.6
+            },
+            "yogatara_of": "SHRAVANA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Altair"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Shravana: alpha Aquilae"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ROTANEV",
+          "id": 23,
+          "doc": "Rotanev, beta Delphini: the yogatara of Dhanishtha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Delphini",
+            "class": "STAR",
+            "hip": 101769,
+            "magnitude": 3.63,
+            "astrometry": {
+              "ra_deg": 309.3872554152033,
+              "dec_deg": 14.5950887473128,
+              "pm_ra_mas_yr": 118.09,
+              "pm_dec_mas_yr": -48.06,
+              "parallax_mas": 32.33,
+              "radial_velocity_km_s": -32.57
+            },
+            "yogatara_of": "DHANISHTHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018yCat.1345....0G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Rotanev"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Dhanishtha: beta Delphini"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HYDOR",
+          "id": 24,
+          "doc": "Hydor, lambda Aquarii: the yogatara of Shatabhisha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "lambda Aquarii",
+            "class": "STAR",
+            "hip": 112961,
+            "magnitude": 3.79,
+            "astrometry": {
+              "ra_deg": 343.15364185224,
+              "dec_deg": -7.57959692371,
+              "pm_ra_mas_yr": 14.964,
+              "pm_dec_mas_yr": 32.742,
+              "parallax_mas": 8.936,
+              "radial_velocity_km_s": -10.46
+            },
+            "yogatara_of": "SHATABHISHA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2009A&A...498..627F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Hydor"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Shatabhisha: lambda Aquarii"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MARKAB",
+          "id": 25,
+          "doc": "Markab, alpha Pegasi: the yogatara of Purva Bhadrapada",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Pegasi",
+            "class": "STAR",
+            "hip": 113963,
+            "magnitude": 2.48,
+            "astrometry": {
+              "ra_deg": 346.19022269142596,
+              "dec_deg": 15.205267147927536,
+              "pm_ra_mas_yr": 60.4,
+              "pm_dec_mas_yr": -41.3,
+              "parallax_mas": 24.46,
+              "radial_velocity_km_s": -2.7
+            },
+            "yogatara_of": "PURVA_BHADRAPADA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Markab"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Purva Bhadrapada: alpha Pegasi"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALGENIB",
+          "id": 26,
+          "doc": "Algenib, gamma Pegasi: the yogatara of Uttara Bhadrapada",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Pegasi",
+            "class": "STAR",
+            "hip": 1067,
+            "magnitude": 2.84,
+            "astrometry": {
+              "ra_deg": 3.3089681209050004,
+              "dec_deg": 15.18359842959389,
+              "pm_ra_mas_yr": 0.492,
+              "pm_dec_mas_yr": -10.73,
+              "parallax_mas": 6.9474,
+              "radial_velocity_km_s": -0.66
+            },
+            "yogatara_of": "UTTARA_BHADRAPADA"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2023A&A...676A.129H"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Algenib"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Uttara Bhadrapada: gamma Pegasi"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "REVATI",
+          "id": 27,
+          "doc": "Revati, zeta Piscium A: the yogatara of Revati; the anchor of the True Revati ayanamsha (359°50′)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "zeta Piscium A",
+            "class": "STAR",
+            "hip": 5737,
+            "magnitude": 5.19,
+            "astrometry": {
+              "ra_deg": 18.43285834319,
+              "dec_deg": 7.575359937449999,
+              "pm_ra_mas_yr": 142.693,
+              "pm_dec_mas_yr": -53.051,
+              "parallax_mas": 24.4595,
+              "radial_velocity_km_s": 15.0
+            },
+            "yogatara_of": "REVATI"
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Revati"
+            },
+            {
+              "text": "Burgess, E. (1860), Translation of the Surya-Siddhanta, chapter VIII with the notes identifying the yogataras",
+              "ref": "Revati: zeta Piscium A"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALPHERATZ",
+          "id": 28,
+          "doc": "Alpheratz, alpha Andromedae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Andromedae",
+            "class": "STAR",
+            "hip": 677,
+            "magnitude": 2.06,
+            "astrometry": {
+              "ra_deg": 2.0969161856756404,
+              "dec_deg": 29.090431118059698,
+              "pm_ra_mas_yr": 137.46,
+              "pm_dec_mas_yr": -163.44,
+              "parallax_mas": 33.62,
+              "radial_velocity_km_s": -10.1
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alpheratz"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CAPH",
+          "id": 29,
+          "doc": "Caph, beta Cassiopeiae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Cassiopeiae",
+            "class": "STAR",
+            "hip": 746,
+            "magnitude": 2.27,
+            "astrometry": {
+              "ra_deg": 2.2945215777878776,
+              "dec_deg": 59.14978109800713,
+              "pm_ra_mas_yr": 523.5,
+              "pm_dec_mas_yr": -179.77,
+              "parallax_mas": 59.58,
+              "radial_velocity_km_s": 4.3
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Caph"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ANKAA",
+          "id": 30,
+          "doc": "Ankaa, alpha Phoenicis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Phoenicis",
+            "class": "STAR",
+            "hip": 2081,
+            "magnitude": 2.38,
+            "astrometry": {
+              "ra_deg": 6.5710475153919266,
+              "dec_deg": -42.305987194396046,
+              "pm_ra_mas_yr": 233.05,
+              "pm_dec_mas_yr": -356.3,
+              "parallax_mas": 38.5,
+              "radial_velocity_km_s": 74.6
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1979IAUS...30...57E"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Ankaa"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SCHEDAR",
+          "id": 31,
+          "doc": "Schedar, alpha Cassiopeiae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Cassiopeiae",
+            "class": "STAR",
+            "hip": 3179,
+            "magnitude": 2.23,
+            "astrometry": {
+              "ra_deg": 10.126846007691249,
+              "dec_deg": 56.537329217042775,
+              "pm_ra_mas_yr": 49.126,
+              "pm_dec_mas_yr": -31.595,
+              "parallax_mas": 14.091,
+              "radial_velocity_km_s": -4.204
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Schedar"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DIPHDA",
+          "id": 32,
+          "doc": "Diphda, beta Ceti",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Ceti",
+            "class": "STAR",
+            "hip": 3419,
+            "magnitude": 2.01,
+            "astrometry": {
+              "ra_deg": 10.897378736003901,
+              "dec_deg": -17.98660631592891,
+              "pm_ra_mas_yr": 232.55,
+              "pm_dec_mas_yr": 31.99,
+              "parallax_mas": 33.86,
+              "radial_velocity_km_s": 13.257
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Diphda"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MIRACH",
+          "id": 33,
+          "doc": "Mirach, beta Andromedae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Andromedae",
+            "class": "STAR",
+            "hip": 5447,
+            "magnitude": 2.05,
+            "astrometry": {
+              "ra_deg": 17.43301617293042,
+              "dec_deg": 35.62055765052624,
+              "pm_ra_mas_yr": 175.9,
+              "pm_dec_mas_yr": -112.2,
+              "parallax_mas": 16.52,
+              "radial_velocity_km_s": 0.608782
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2020AJ....160..120J"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Mirach"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ACHERNAR",
+          "id": 34,
+          "doc": "Achernar, alpha Eridani",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Eridani",
+            "class": "STAR",
+            "hip": 7588,
+            "magnitude": 0.46,
+            "astrometry": {
+              "ra_deg": 24.428522833333336,
+              "dec_deg": -57.236752805555554,
+              "pm_ra_mas_yr": 87.0,
+              "pm_dec_mas_yr": -38.24,
+              "parallax_mas": 23.39,
+              "radial_velocity_km_s": 8.47
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2023ApJS..266...11B"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Achernar"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALMACH",
+          "id": 35,
+          "doc": "Almach, gamma¹ Andromedae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma¹ Andromedae",
+            "class": "STAR",
+            "hip": 9640,
+            "magnitude": 2.1,
+            "astrometry": {
+              "ra_deg": 30.97480120653972,
+              "dec_deg": 42.32972842352701,
+              "pm_ra_mas_yr": 42.32,
+              "pm_dec_mas_yr": -49.3,
+              "parallax_mas": 8.3,
+              "radial_velocity_km_s": -11.5
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Almach"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HAMAL",
+          "id": 36,
+          "doc": "Hamal, alpha Arietis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Arietis",
+            "class": "STAR",
+            "hip": 9884,
+            "magnitude": 2.01,
+            "astrometry": {
+              "ra_deg": 31.79335709957655,
+              "dec_deg": 23.46241755020095,
+              "pm_ra_mas_yr": 188.55,
+              "pm_dec_mas_yr": -148.08,
+              "parallax_mas": 49.56,
+              "radial_velocity_km_s": -14.412
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Hamal"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "POLARIS",
+          "id": 37,
+          "doc": "Polaris, alpha Ursae Minoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Ursae Minoris",
+            "class": "STAR",
+            "hip": 11767,
+            "magnitude": 2.02,
+            "astrometry": {
+              "ra_deg": 37.954560670189856,
+              "dec_deg": 89.26410896994187,
+              "pm_ra_mas_yr": 44.48,
+              "pm_dec_mas_yr": -11.85,
+              "parallax_mas": 7.54,
+              "radial_velocity_km_s": -16.42
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Polaris"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MENKAR",
+          "id": 38,
+          "doc": "Menkar, alpha Ceti",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Ceti",
+            "class": "STAR",
+            "hip": 14135,
+            "magnitude": 2.53,
+            "astrometry": {
+              "ra_deg": 45.56988780332224,
+              "dec_deg": 4.089738771805157,
+              "pm_ra_mas_yr": -10.41,
+              "pm_dec_mas_yr": -76.85,
+              "parallax_mas": 13.09,
+              "radial_velocity_km_s": -25.47
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2023A&A...676A.129H"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Menkar"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALGOL",
+          "id": 39,
+          "doc": "Algol, beta Persei",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Persei",
+            "class": "STAR",
+            "hip": 14576,
+            "magnitude": 2.12,
+            "astrometry": {
+              "ra_deg": 47.04221855625,
+              "dec_deg": 40.95564667027778,
+              "pm_ra_mas_yr": 2.99,
+              "pm_dec_mas_yr": -1.66,
+              "parallax_mas": 36.27,
+              "radial_velocity_km_s": 4.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1953GCRV..C......0W"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Algol"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MIRFAK",
+          "id": 40,
+          "doc": "Mirfak, alpha Persei",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Persei",
+            "class": "STAR",
+            "hip": 15863,
+            "magnitude": 1.79,
+            "astrometry": {
+              "ra_deg": 51.08070871833333,
+              "dec_deg": 49.86117929305556,
+              "pm_ra_mas_yr": 23.75,
+              "pm_dec_mas_yr": -26.23,
+              "parallax_mas": 6.44,
+              "radial_velocity_km_s": -2.158
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Mirfak"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "AIN",
+          "id": 41,
+          "doc": "Ain, epsilon Tauri",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Tauri",
+            "class": "STAR",
+            "hip": 20889,
+            "magnitude": 3.53,
+            "astrometry": {
+              "ra_deg": 67.15416772966458,
+              "dec_deg": 19.18043420581389,
+              "pm_ra_mas_yr": 107.526,
+              "pm_dec_mas_yr": -36.2,
+              "parallax_mas": 22.3654,
+              "radial_velocity_km_s": 38.42
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Ain"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CHAMUKUY",
+          "id": 42,
+          "doc": "Chamukuy, theta² Tauri",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "theta² Tauri",
+            "class": "STAR",
+            "hip": 20894,
+            "magnitude": 3.41,
+            "astrometry": {
+              "ra_deg": 67.16559004644,
+              "dec_deg": 15.870874649550002,
+              "pm_ra_mas_yr": 106.148,
+              "pm_dec_mas_yr": -20.294,
+              "parallax_mas": 21.8125,
+              "radial_velocity_km_s": 38.9
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Chamukuy"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RIGEL",
+          "id": 43,
+          "doc": "Rigel, beta Orionis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Orionis",
+            "class": "STAR",
+            "hip": 24436,
+            "magnitude": 0.13,
+            "astrometry": {
+              "ra_deg": 78.63446706693006,
+              "dec_deg": -8.201638364722209,
+              "pm_ra_mas_yr": 1.31,
+              "pm_dec_mas_yr": 0.5,
+              "parallax_mas": 3.78,
+              "radial_velocity_km_s": 17.8
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Rigel"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CAPELLA",
+          "id": 44,
+          "doc": "Capella, alpha Aurigae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Aurigae",
+            "class": "STAR",
+            "hip": 24608,
+            "magnitude": 0.08,
+            "astrometry": {
+              "ra_deg": 79.17232794433404,
+              "dec_deg": 45.99799146983673,
+              "pm_ra_mas_yr": 75.25,
+              "pm_dec_mas_yr": -426.89,
+              "parallax_mas": 76.2,
+              "radial_velocity_km_s": 29.19
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004MNRAS.349.1069K"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Capella"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BELLATRIX",
+          "id": 45,
+          "doc": "Bellatrix, gamma Orionis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Orionis",
+            "class": "STAR",
+            "hip": 25336,
+            "magnitude": 1.64,
+            "astrometry": {
+              "ra_deg": 81.28276355652378,
+              "dec_deg": 6.3497032644440665,
+              "pm_ra_mas_yr": -8.11,
+              "pm_dec_mas_yr": -12.88,
+              "parallax_mas": 12.92,
+              "radial_velocity_km_s": 17.31
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2023ApJS..266...11B"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Bellatrix"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ELNATH",
+          "id": 46,
+          "doc": "Elnath, beta Tauri",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Tauri",
+            "class": "STAR",
+            "hip": 25428,
+            "magnitude": 1.65,
+            "astrometry": {
+              "ra_deg": 81.57297133176498,
+              "dec_deg": 28.607451724998228,
+              "pm_ra_mas_yr": 22.76,
+              "pm_dec_mas_yr": -173.58,
+              "parallax_mas": 24.36,
+              "radial_velocity_km_s": 9.2
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1979IAUS...30...57E"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Elnath"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NIHAL",
+          "id": 47,
+          "doc": "Nihal, beta Leporis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Leporis",
+            "class": "STAR",
+            "hip": 25606,
+            "magnitude": 2.84,
+            "astrometry": {
+              "ra_deg": 82.06134536679916,
+              "dec_deg": -20.759443885748333,
+              "pm_ra_mas_yr": -5.748,
+              "pm_dec_mas_yr": -83.65,
+              "parallax_mas": 20.8697,
+              "radial_velocity_km_s": -14.2
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Nihal"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MINTAKA",
+          "id": 48,
+          "doc": "Mintaka, delta Orionis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Orionis",
+            "class": "STAR",
+            "hip": 25930,
+            "magnitude": 2.41,
+            "astrometry": {
+              "ra_deg": 83.00166705557675,
+              "dec_deg": -0.29909510708333326,
+              "pm_ra_mas_yr": 0.64,
+              "pm_dec_mas_yr": -0.69,
+              "parallax_mas": 4.71,
+              "radial_velocity_km_s": 18.5
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Mintaka"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALNILAM",
+          "id": 49,
+          "doc": "Alnilam, epsilon Orionis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Orionis",
+            "class": "STAR",
+            "hip": 26311,
+            "magnitude": 1.69,
+            "astrometry": {
+              "ra_deg": 84.05338894077023,
+              "dec_deg": -1.2019191358333312,
+              "pm_ra_mas_yr": 1.44,
+              "pm_dec_mas_yr": -0.78,
+              "parallax_mas": 1.65,
+              "radial_velocity_km_s": 27.3
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alnilam"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALNITAK",
+          "id": 50,
+          "doc": "Alnitak, zeta Orionis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "zeta Orionis",
+            "class": "STAR",
+            "hip": 26727,
+            "magnitude": 1.77,
+            "astrometry": {
+              "ra_deg": 85.18969442793068,
+              "dec_deg": -1.9425735859722049,
+              "pm_ra_mas_yr": 3.19,
+              "pm_dec_mas_yr": 2.03,
+              "parallax_mas": 4.43,
+              "radial_velocity_km_s": 18.5
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2007AN....328..889K"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alnitak"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SAIPH",
+          "id": 51,
+          "doc": "Saiph, kappa Orionis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "kappa Orionis",
+            "class": "STAR",
+            "hip": 27366,
+            "magnitude": 2.06,
+            "astrometry": {
+              "ra_deg": 86.93912016833333,
+              "dec_deg": -9.66960491861111,
+              "pm_ra_mas_yr": 1.46,
+              "pm_dec_mas_yr": -1.28,
+              "parallax_mas": 5.04,
+              "radial_velocity_km_s": 20.5
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1979IAUS...30...57E"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Saiph"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MENKALINAN",
+          "id": 52,
+          "doc": "Menkalinan, beta Aurigae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Aurigae",
+            "class": "STAR",
+            "hip": 28360,
+            "magnitude": 1.9,
+            "astrometry": {
+              "ra_deg": 89.88217886833333,
+              "dec_deg": 44.94743257194444,
+              "pm_ra_mas_yr": -56.44,
+              "pm_dec_mas_yr": -0.95,
+              "parallax_mas": 40.21,
+              "radial_velocity_km_s": -15.75
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Menkalinan"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CANOPUS",
+          "id": 53,
+          "doc": "Canopus, alpha Carinae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Carinae",
+            "class": "STAR",
+            "hip": 30438,
+            "magnitude": -0.74,
+            "astrometry": {
+              "ra_deg": 95.98795782918306,
+              "dec_deg": -52.69566138386201,
+              "pm_ra_mas_yr": 19.93,
+              "pm_dec_mas_yr": 23.24,
+              "parallax_mas": 10.55,
+              "radial_velocity_km_s": 20.3
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Canopus"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALHENA",
+          "id": 54,
+          "doc": "Alhena, gamma Geminorum",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Geminorum",
+            "class": "STAR",
+            "hip": 31681,
+            "magnitude": 1.92,
+            "astrometry": {
+              "ra_deg": 99.42796042942895,
+              "dec_deg": 16.399280426663772,
+              "pm_ra_mas_yr": 13.81,
+              "pm_dec_mas_yr": -54.96,
+              "parallax_mas": 29.84,
+              "radial_velocity_km_s": -12.63
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alhena"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SIRIUS",
+          "id": 55,
+          "doc": "Sirius, alpha Canis Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Canis Majoris",
+            "class": "STAR",
+            "hip": 32349,
+            "magnitude": -1.46,
+            "astrometry": {
+              "ra_deg": 101.28715533333335,
+              "dec_deg": -16.71611586111111,
+              "pm_ra_mas_yr": -546.01,
+              "pm_dec_mas_yr": -1223.07,
+              "parallax_mas": 379.21,
+              "radial_velocity_km_s": -5.5
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sirius"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ADHARA",
+          "id": 56,
+          "doc": "Adhara, epsilon Canis Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Canis Majoris",
+            "class": "STAR",
+            "hip": 33579,
+            "magnitude": 1.5,
+            "astrometry": {
+              "ra_deg": 104.65645315148348,
+              "dec_deg": -28.972086157360806,
+              "pm_ra_mas_yr": 3.24,
+              "pm_dec_mas_yr": 1.33,
+              "parallax_mas": 8.05,
+              "radial_velocity_km_s": 27.3
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Adhara"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "WEZEN",
+          "id": 57,
+          "doc": "Wezen, delta Canis Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Canis Majoris",
+            "class": "STAR",
+            "hip": 34444,
+            "magnitude": 1.84,
+            "astrometry": {
+              "ra_deg": 107.09785021416667,
+              "dec_deg": -26.39319957888889,
+              "pm_ra_mas_yr": -3.12,
+              "pm_dec_mas_yr": 3.31,
+              "parallax_mas": 2.03,
+              "radial_velocity_km_s": 33.67
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2008A&A...485..303M"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Wezen"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALUDRA",
+          "id": 58,
+          "doc": "Aludra, eta Canis Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "eta Canis Majoris",
+            "class": "STAR",
+            "hip": 35904,
+            "magnitude": 2.45,
+            "astrometry": {
+              "ra_deg": 111.02375950100142,
+              "dec_deg": -29.303105508471724,
+              "pm_ra_mas_yr": -4.14,
+              "pm_dec_mas_yr": 5.81,
+              "parallax_mas": 1.64,
+              "radial_velocity_km_s": 41.1
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1979IAUS...30...57E"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Aludra"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CASTOR",
+          "id": 59,
+          "doc": "Castor, alpha Geminorum",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Geminorum",
+            "class": "STAR",
+            "hip": 36850,
+            "magnitude": 1.58,
+            "astrometry": {
+              "ra_deg": 113.64947163976585,
+              "dec_deg": 31.88828221646326,
+              "pm_ra_mas_yr": -191.45,
+              "pm_dec_mas_yr": -145.19,
+              "parallax_mas": 64.12,
+              "radial_velocity_km_s": -11.23
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2023ApJS..266...11B"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Castor"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "PROCYON",
+          "id": 60,
+          "doc": "Procyon, alpha Canis Minoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Canis Minoris",
+            "class": "STAR",
+            "hip": 37279,
+            "magnitude": 0.37,
+            "astrometry": {
+              "ra_deg": 114.82549790798149,
+              "dec_deg": 5.224987557059477,
+              "pm_ra_mas_yr": -714.59,
+              "pm_dec_mas_yr": -1036.8,
+              "parallax_mas": 284.56,
+              "radial_velocity_km_s": -4.50528
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2020AJ....160..120J"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Procyon"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NAOS",
+          "id": 61,
+          "doc": "Naos, zeta Puppis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "zeta Puppis",
+            "class": "STAR",
+            "hip": 39429,
+            "magnitude": 2.25,
+            "astrometry": {
+              "ra_deg": 120.89603140977576,
+              "dec_deg": -40.003147798268934,
+              "pm_ra_mas_yr": -29.71,
+              "pm_dec_mas_yr": 16.68,
+              "parallax_mas": 3.01,
+              "radial_velocity_km_s": -23.9
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Naos"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "TUREIS",
+          "id": 62,
+          "doc": "Tureis, rho Puppis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "rho Puppis",
+            "class": "STAR",
+            "hip": 39757,
+            "magnitude": 2.81,
+            "astrometry": {
+              "ra_deg": 121.88603676458334,
+              "dec_deg": -24.304324429444446,
+              "pm_ra_mas_yr": -82.886,
+              "pm_dec_mas_yr": 46.93,
+              "parallax_mas": 51.3999,
+              "radial_velocity_km_s": 45.8
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Tureis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "AVIOR",
+          "id": 63,
+          "doc": "Avior, epsilon Carinae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Carinae",
+            "class": "STAR",
+            "hip": 41037,
+            "magnitude": 1.86,
+            "astrometry": {
+              "ra_deg": 125.62848024272952,
+              "dec_deg": -59.509484191917416,
+              "pm_ra_mas_yr": -25.52,
+              "pm_dec_mas_yr": 22.06,
+              "parallax_mas": 5.39,
+              "radial_velocity_km_s": 11.6
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Avior"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALSEPHINA",
+          "id": 64,
+          "doc": "Alsephina, delta¹ Velorum",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta¹ Velorum",
+            "class": "STAR",
+            "hip": 42913,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 131.1759432625,
+              "dec_deg": -54.70882101944444,
+              "pm_ra_mas_yr": 28.8,
+              "pm_dec_mas_yr": -104.1,
+              "parallax_mas": 40.49,
+              "radial_velocity_km_s": 2.2
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2002A&A...384..180F (Fabricius et al. 2002); proper motion 2002A&A...384..180F; parallax 2007A&A...474..653V; radial velocity 2007AN....328..889K"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alsephina"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SUHAIL",
+          "id": 65,
+          "doc": "Suhail, lambda Velorum",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "lambda Velorum",
+            "class": "STAR",
+            "hip": 44816,
+            "magnitude": 2.21,
+            "astrometry": {
+              "ra_deg": 136.99899113791412,
+              "dec_deg": -43.432590908860746,
+              "pm_ra_mas_yr": -24.01,
+              "pm_dec_mas_yr": 13.52,
+              "parallax_mas": 5.99,
+              "radial_velocity_km_s": 17.6
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Suhail"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MIAPLACIDUS",
+          "id": 66,
+          "doc": "Miaplacidus, beta Carinae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Carinae",
+            "class": "STAR",
+            "hip": 45238,
+            "magnitude": 1.69,
+            "astrometry": {
+              "ra_deg": 138.29990608310192,
+              "dec_deg": -69.71720759721548,
+              "pm_ra_mas_yr": -156.47,
+              "pm_dec_mas_yr": 108.95,
+              "parallax_mas": 28.82,
+              "radial_velocity_km_s": -5.1
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Miaplacidus"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ASPIDISKE",
+          "id": 67,
+          "doc": "Aspidiske, iota Carinae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "iota Carinae",
+            "class": "STAR",
+            "hip": 45556,
+            "magnitude": 2.26,
+            "astrometry": {
+              "ra_deg": 139.27252857166667,
+              "dec_deg": -59.275232029166666,
+              "pm_ra_mas_yr": -18.86,
+              "pm_dec_mas_yr": 11.98,
+              "parallax_mas": 4.26,
+              "radial_velocity_km_s": 12.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Aspidiske"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALPHARD",
+          "id": 68,
+          "doc": "Alphard, alpha Hydrae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Hydrae",
+            "class": "STAR",
+            "hip": 46390,
+            "magnitude": 1.97,
+            "astrometry": {
+              "ra_deg": 141.89684459585948,
+              "dec_deg": -8.658599531745583,
+              "pm_ra_mas_yr": -15.23,
+              "pm_dec_mas_yr": 34.37,
+              "parallax_mas": 18.09,
+              "radial_velocity_km_s": -4.561
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alphard"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALGIEBA",
+          "id": 69,
+          "doc": "Algieba, gamma Leonis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Leonis",
+            "class": "STAR",
+            "hip": 50583,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 154.99312733272745,
+              "dec_deg": 19.84148521911754,
+              "pm_ra_mas_yr": 304.3,
+              "pm_dec_mas_yr": -154.28,
+              "parallax_mas": 25.07,
+              "radial_velocity_km_s": -36.24
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2005A&A...430..165F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Algieba"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MERAK",
+          "id": 70,
+          "doc": "Merak, beta Ursae Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Ursae Majoris",
+            "class": "STAR",
+            "hip": 53910,
+            "magnitude": 2.37,
+            "astrometry": {
+              "ra_deg": 165.46033229797294,
+              "dec_deg": 56.382433649496384,
+              "pm_ra_mas_yr": 79.959,
+              "pm_dec_mas_yr": 32.365,
+              "parallax_mas": 38.6031,
+              "radial_velocity_km_s": -13.1
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Merak"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DUBHE",
+          "id": 71,
+          "doc": "Dubhe, alpha Ursae Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Ursae Majoris",
+            "class": "STAR",
+            "hip": 54061,
+            "magnitude": 1.79,
+            "astrometry": {
+              "ra_deg": 165.9319646738126,
+              "dec_deg": 61.751034687818226,
+              "pm_ra_mas_yr": -134.11,
+              "pm_dec_mas_yr": -34.7,
+              "parallax_mas": 26.54,
+              "radial_velocity_km_s": -9.4
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Dubhe"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "PHECDA",
+          "id": 72,
+          "doc": "Phecda, gamma Ursae Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Ursae Majoris",
+            "class": "STAR",
+            "hip": 58001,
+            "magnitude": 2.44,
+            "astrometry": {
+              "ra_deg": 178.45769715249997,
+              "dec_deg": 53.69475972916666,
+              "pm_ra_mas_yr": 107.68,
+              "pm_dec_mas_yr": 11.01,
+              "parallax_mas": 39.21,
+              "radial_velocity_km_s": -11.9
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Phecda"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ZANIAH",
+          "id": 73,
+          "doc": "Zaniah, eta Virginis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "eta Virginis",
+            "class": "STAR",
+            "hip": 60129,
+            "magnitude": 3.9,
+            "astrometry": {
+              "ra_deg": 184.97642665915,
+              "dec_deg": -0.66679619811,
+              "pm_ra_mas_yr": -54.665,
+              "pm_dec_mas_yr": -17.642,
+              "parallax_mas": 13.1692,
+              "radial_velocity_km_s": 5.24
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Zaniah"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ACRUX",
+          "id": 74,
+          "doc": "Acrux, alpha Crucis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Crucis",
+            "class": "STAR",
+            "hip": 60718,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 186.64956340120452,
+              "dec_deg": -63.099092857925115,
+              "pm_ra_mas_yr": -35.83,
+              "pm_dec_mas_yr": -14.86,
+              "parallax_mas": 10.13,
+              "radial_velocity_km_s": 11.9
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Acrux"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GACRUX",
+          "id": 75,
+          "doc": "Gacrux, gamma Crucis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Crucis",
+            "class": "STAR",
+            "hip": 61084,
+            "magnitude": 1.64,
+            "astrometry": {
+              "ra_deg": 187.79149837560794,
+              "dec_deg": -57.11321345705891,
+              "pm_ra_mas_yr": 28.23,
+              "pm_dec_mas_yr": -265.08,
+              "parallax_mas": 36.83,
+              "radial_velocity_km_s": 21.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Gacrux"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MIMOSA",
+          "id": 76,
+          "doc": "Mimosa, beta Crucis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Crucis",
+            "class": "STAR",
+            "hip": 62434,
+            "magnitude": 1.25,
+            "astrometry": {
+              "ra_deg": 191.9302865619529,
+              "dec_deg": -59.68877199622606,
+              "pm_ra_mas_yr": -42.97,
+              "pm_dec_mas_yr": -16.18,
+              "parallax_mas": 11.71,
+              "radial_velocity_km_s": 10.3
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Mimosa"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALIOTH",
+          "id": 77,
+          "doc": "Alioth, epsilon Ursae Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Ursae Majoris",
+            "class": "STAR",
+            "hip": 62956,
+            "magnitude": 1.77,
+            "astrometry": {
+              "ra_deg": 193.5072899675,
+              "dec_deg": 55.95982295694445,
+              "pm_ra_mas_yr": 111.91,
+              "pm_dec_mas_yr": -8.24,
+              "parallax_mas": 39.51,
+              "radial_velocity_km_s": -12.7
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alioth"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "VINDEMIATRIX",
+          "id": 78,
+          "doc": "Vindemiatrix, epsilon Virginis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Virginis",
+            "class": "STAR",
+            "hip": 63608,
+            "magnitude": 2.79,
+            "astrometry": {
+              "ra_deg": 195.5441542302233,
+              "dec_deg": 10.959148721740554,
+              "pm_ra_mas_yr": -273.793,
+              "pm_dec_mas_yr": 19.804,
+              "parallax_mas": 30.211,
+              "radial_velocity_km_s": -14.29
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2015A&A...574A..50J"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Vindemiatrix"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MIZAR",
+          "id": 79,
+          "doc": "Mizar, zeta Ursae Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "zeta Ursae Majoris",
+            "class": "STAR",
+            "hip": 65378,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 200.98141866666666,
+              "dec_deg": 54.92535197222222,
+              "pm_ra_mas_yr": 119.01,
+              "pm_dec_mas_yr": -25.97,
+              "parallax_mas": 38.01,
+              "radial_velocity_km_s": -6.31
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Mizar"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HEZE",
+          "id": 80,
+          "doc": "Heze, zeta Virginis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "zeta Virginis",
+            "class": "STAR",
+            "hip": 66249,
+            "magnitude": 3.38,
+            "astrometry": {
+              "ra_deg": 203.67329732802997,
+              "dec_deg": -0.59581641612,
+              "pm_ra_mas_yr": -276.903,
+              "pm_dec_mas_yr": 44.621,
+              "parallax_mas": 43.7467,
+              "radial_velocity_km_s": -13.2
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 1953GCRV..C......0W"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Heze"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALKAID",
+          "id": 81,
+          "doc": "Alkaid, eta Ursae Majoris",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "eta Ursae Majoris",
+            "class": "STAR",
+            "hip": 67301,
+            "magnitude": 1.86,
+            "astrometry": {
+              "ra_deg": 206.88515734206297,
+              "dec_deg": 49.31326672942533,
+              "pm_ra_mas_yr": -121.17,
+              "pm_dec_mas_yr": -14.91,
+              "parallax_mas": 31.38,
+              "radial_velocity_km_s": -13.4
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alkaid"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HADAR",
+          "id": 82,
+          "doc": "Hadar, beta Centauri",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Centauri",
+            "class": "STAR",
+            "hip": 68702,
+            "magnitude": 0.58,
+            "astrometry": {
+              "ra_deg": 210.95585562281522,
+              "dec_deg": -60.373035161541594,
+              "pm_ra_mas_yr": -33.27,
+              "pm_dec_mas_yr": -23.16,
+              "parallax_mas": 8.32,
+              "radial_velocity_km_s": 2.52
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2023ApJS..266...11B"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Hadar"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "THUBAN",
+          "id": 83,
+          "doc": "Thuban, alpha Draconis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Draconis",
+            "class": "STAR",
+            "hip": 68756,
+            "magnitude": 3.68,
+            "astrometry": {
+              "ra_deg": 211.09732332021125,
+              "dec_deg": 64.3758696175675,
+              "pm_ra_mas_yr": -56.351,
+              "pm_dec_mas_yr": 12.329,
+              "parallax_mas": 12.5156,
+              "radial_velocity_km_s": -6.1
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2023MNRAS.519.5472M"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Thuban"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MENKENT",
+          "id": 84,
+          "doc": "Menkent, theta Centauri",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "theta Centauri",
+            "class": "STAR",
+            "hip": 68933,
+            "magnitude": 2.05,
+            "astrometry": {
+              "ra_deg": 211.670614682339,
+              "dec_deg": -36.369954742511496,
+              "pm_ra_mas_yr": -520.53,
+              "pm_dec_mas_yr": -518.06,
+              "parallax_mas": 55.45,
+              "radial_velocity_km_s": 1.3
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Menkent"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SYRMA",
+          "id": 85,
+          "doc": "Syrma, iota Virginis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "iota Virginis",
+            "class": "STAR",
+            "hip": 69701,
+            "magnitude": 4.08,
+            "astrometry": {
+              "ra_deg": 214.0036178170021,
+              "dec_deg": -6.000547078703056,
+              "pm_ra_mas_yr": -26.606,
+              "pm_dec_mas_yr": -414.866,
+              "parallax_mas": 45.4014,
+              "radial_velocity_km_s": 12.079
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Syrma"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SEGINUS",
+          "id": 86,
+          "doc": "Seginus, gamma Boötis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Boötis",
+            "class": "STAR",
+            "hip": 71075,
+            "magnitude": 3.02,
+            "astrometry": {
+              "ra_deg": 218.0194653313254,
+              "dec_deg": 38.3082480800211,
+              "pm_ra_mas_yr": -114.344,
+              "pm_dec_mas_yr": 151.788,
+              "parallax_mas": 37.9125,
+              "radial_velocity_km_s": -32.4
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Seginus"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RIGIL_KENTAURUS",
+          "id": 87,
+          "doc": "Rigil Kentaurus, alpha Centauri A",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Centauri A",
+            "class": "STAR",
+            "hip": 71683,
+            "magnitude": 0.01,
+            "astrometry": {
+              "ra_deg": 219.90205833170774,
+              "dec_deg": -60.83399268831004,
+              "pm_ra_mas_yr": -3679.25,
+              "pm_dec_mas_yr": 473.67,
+              "parallax_mas": 742.12,
+              "radial_velocity_km_s": -15.252
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 1997A&A...323L..49P; radial velocity 2021MNRAS.506..150B"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Rigil Kentaurus"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "IZAR",
+          "id": 88,
+          "doc": "Izar, epsilon Boötis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Boötis",
+            "class": "STAR",
+            "hip": 72105,
+            "magnitude": 2.45,
+            "astrometry": {
+              "ra_deg": 221.24673982578958,
+              "dec_deg": 27.074222319675556,
+              "pm_ra_mas_yr": -50.818,
+              "pm_dec_mas_yr": 21.024,
+              "parallax_mas": 13.8267,
+              "radial_velocity_km_s": -16.6
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 1979IAUS...30...57E"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Izar"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ZUBENESCHAMALI",
+          "id": 89,
+          "doc": "Zubeneschamali, beta Librae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Librae",
+            "class": "STAR",
+            "hip": 74785,
+            "magnitude": 2.62,
+            "astrometry": {
+              "ra_deg": 229.25172424914246,
+              "dec_deg": -9.382914410334685,
+              "pm_ra_mas_yr": -98.1,
+              "pm_dec_mas_yr": -19.65,
+              "parallax_mas": 17.62,
+              "radial_velocity_km_s": -35.6
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Zubeneschamali"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALPHECCA",
+          "id": 90,
+          "doc": "Alphecca, alpha Coronae Borealis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Coronae Borealis",
+            "class": "STAR",
+            "hip": 76267,
+            "magnitude": 2.24,
+            "astrometry": {
+              "ra_deg": 233.67195203403162,
+              "dec_deg": 26.714685000024716,
+              "pm_ra_mas_yr": 118.927,
+              "pm_dec_mas_yr": -87.711,
+              "parallax_mas": 42.2408,
+              "radial_velocity_km_s": 1.7
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 1953GCRV..C......0W"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alphecca"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "UNUKALHAI",
+          "id": 91,
+          "doc": "Unukalhai, alpha Serpentis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Serpentis",
+            "class": "STAR",
+            "hip": 77070,
+            "magnitude": 2.63,
+            "astrometry": {
+              "ra_deg": 236.0669754565879,
+              "dec_deg": 6.425630220244722,
+              "pm_ra_mas_yr": 133.922,
+              "pm_dec_mas_yr": 45.55,
+              "parallax_mas": 43.945,
+              "radial_velocity_km_s": 2.63
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2005A&A...430..165F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Unukalhai"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "FANG",
+          "id": 92,
+          "doc": "Fang, pi Scorpii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "pi Scorpii",
+            "class": "STAR",
+            "hip": 78265,
+            "magnitude": 2.91,
+            "astrometry": {
+              "ra_deg": 239.71297182416666,
+              "dec_deg": -26.114107945,
+              "pm_ra_mas_yr": -11.42,
+              "pm_dec_mas_yr": -26.83,
+              "parallax_mas": 5.57,
+              "radial_velocity_km_s": -7.4
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Fang"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "YED_PRIOR",
+          "id": 93,
+          "doc": "Yed Prior, delta Ophiuchi",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Ophiuchi",
+            "class": "STAR",
+            "hip": 79593,
+            "magnitude": 2.75,
+            "astrometry": {
+              "ra_deg": 243.58641259114916,
+              "dec_deg": -3.6943257851008338,
+              "pm_ra_mas_yr": -45.34,
+              "pm_dec_mas_yr": -144.433,
+              "parallax_mas": 20.4113,
+              "radial_velocity_km_s": -18.7841
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2020AJ....160..120J"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Yed Prior"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KORNEPHOROS",
+          "id": 94,
+          "doc": "Kornephoros, beta Herculis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Herculis",
+            "class": "STAR",
+            "hip": 80816,
+            "magnitude": 2.77,
+            "astrometry": {
+              "ra_deg": 247.5550013403688,
+              "dec_deg": 21.489610745563056,
+              "pm_ra_mas_yr": -98.822,
+              "pm_dec_mas_yr": -14.869,
+              "parallax_mas": 22.0023,
+              "radial_velocity_km_s": -25.91
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Kornephoros"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MARFIK",
+          "id": 95,
+          "doc": "Marfik, lambda Ophiuchi",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "lambda Ophiuchi",
+            "class": "STAR",
+            "hip": 80883,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 247.72842974605487,
+              "dec_deg": 1.9839224782032374,
+              "pm_ra_mas_yr": -30.98,
+              "pm_dec_mas_yr": -73.42,
+              "parallax_mas": 18.84,
+              "radial_velocity_km_s": -16.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2007AN....328..889K"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Marfik"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ATRIA",
+          "id": 96,
+          "doc": "Atria, alpha Trianguli Australis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Trianguli Australis",
+            "class": "STAR",
+            "hip": 82273,
+            "magnitude": 1.88,
+            "astrometry": {
+              "ra_deg": 252.1662295073803,
+              "dec_deg": -69.02771184691984,
+              "pm_ra_mas_yr": 17.99,
+              "pm_dec_mas_yr": -31.58,
+              "parallax_mas": 8.35,
+              "radial_velocity_km_s": -3.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Atria"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SABIK",
+          "id": 97,
+          "doc": "Sabik, eta Ophiuchi",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "eta Ophiuchi",
+            "class": "STAR",
+            "hip": 84012,
+            "magnitude": 2.42,
+            "astrometry": {
+              "ra_deg": 257.5945287106208,
+              "dec_deg": -15.724906641710527,
+              "pm_ra_mas_yr": 40.13,
+              "pm_dec_mas_yr": 99.17,
+              "parallax_mas": 36.91,
+              "radial_velocity_km_s": -2.4
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2007AN....328..889K"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sabik"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RASALGETHI",
+          "id": 98,
+          "doc": "Rasalgethi, alpha Herculis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Herculis",
+            "class": "STAR",
+            "hip": 84345,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 258.66190909203993,
+              "dec_deg": 14.39034061013818,
+              "pm_ra_mas_yr": -7.32,
+              "pm_dec_mas_yr": 36.07,
+              "parallax_mas": 9.07,
+              "radial_velocity_km_s": -32.09
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2005A&A...430..165F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Rasalgethi"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RASALHAGUE",
+          "id": 99,
+          "doc": "Rasalhague, alpha Ophiuchi",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Ophiuchi",
+            "class": "STAR",
+            "hip": 86032,
+            "magnitude": 2.07,
+            "astrometry": {
+              "ra_deg": 263.73362272030505,
+              "dec_deg": 12.560037391671425,
+              "pm_ra_mas_yr": 108.07,
+              "pm_dec_mas_yr": -221.57,
+              "parallax_mas": 67.13,
+              "radial_velocity_km_s": 11.7
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Rasalhague"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SARGAS",
+          "id": 100,
+          "doc": "Sargas, theta Scorpii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "theta Scorpii",
+            "class": "STAR",
+            "hip": 86228,
+            "magnitude": 1.85,
+            "astrometry": {
+              "ra_deg": 264.3297077207907,
+              "dec_deg": -42.99782799333082,
+              "pm_ra_mas_yr": 5.54,
+              "pm_dec_mas_yr": -3.12,
+              "parallax_mas": 10.86,
+              "radial_velocity_km_s": 5.18
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2023ApJS..266...11B"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sargas"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALNASL",
+          "id": 101,
+          "doc": "Alnasl, gamma² Sagittarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma² Sagittarii",
+            "class": "STAR",
+            "hip": 88635,
+            "magnitude": 2.99,
+            "astrometry": {
+              "ra_deg": 271.45203374499994,
+              "dec_deg": -30.424089849444446,
+              "pm_ra_mas_yr": -48.839,
+              "pm_dec_mas_yr": -204.86,
+              "parallax_mas": 32.2697,
+              "radial_velocity_km_s": 22.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alnasl"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KAUS_AUSTRALIS",
+          "id": 102,
+          "doc": "Kaus Australis, epsilon Sagittarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Sagittarii",
+            "class": "STAR",
+            "hip": 90185,
+            "magnitude": 1.81,
+            "astrometry": {
+              "ra_deg": 276.0429933505963,
+              "dec_deg": -34.38461648586744,
+              "pm_ra_mas_yr": -39.42,
+              "pm_dec_mas_yr": -124.2,
+              "parallax_mas": 22.76,
+              "radial_velocity_km_s": -15.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2007AN....328..889K"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Kaus Australis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KAUS_BOREALIS",
+          "id": 103,
+          "doc": "Kaus Borealis, lambda Sagittarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "lambda Sagittarii",
+            "class": "STAR",
+            "hip": 90496,
+            "magnitude": 2.81,
+            "astrometry": {
+              "ra_deg": 276.99266966041665,
+              "dec_deg": -25.421698496944444,
+              "pm_ra_mas_yr": -46.152,
+              "pm_dec_mas_yr": -185.067,
+              "parallax_mas": 42.9198,
+              "radial_velocity_km_s": -43.2
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Kaus Borealis"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SHELIAK",
+          "id": 104,
+          "doc": "Sheliak, beta Lyrae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Lyrae",
+            "class": "STAR",
+            "hip": 92420,
+            "magnitude": 3.42,
+            "astrometry": {
+              "ra_deg": 282.51997976764824,
+              "dec_deg": 33.36266676977778,
+              "pm_ra_mas_yr": 2.045,
+              "pm_dec_mas_yr": -3.685,
+              "parallax_mas": 3.5982,
+              "radial_velocity_km_s": 2.2
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sheliak"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ASCELLA",
+          "id": 105,
+          "doc": "Ascella, zeta Sagittarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "zeta Sagittarii",
+            "class": "STAR",
+            "hip": 93506,
+            "magnitude": 2.59,
+            "astrometry": {
+              "ra_deg": 285.6530426563352,
+              "dec_deg": -29.88006330096877,
+              "pm_ra_mas_yr": 10.79,
+              "pm_dec_mas_yr": 21.11,
+              "parallax_mas": 36.98,
+              "radial_velocity_km_s": 24.7
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Ascella"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALBALDAH",
+          "id": 106,
+          "doc": "Albaldah, pi Sagittarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "pi Sagittarii",
+            "class": "STAR",
+            "hip": 94141,
+            "magnitude": 2.88,
+            "astrometry": {
+              "ra_deg": 287.440970525,
+              "dec_deg": -21.023613981944443,
+              "pm_ra_mas_yr": -1.36,
+              "pm_dec_mas_yr": -36.45,
+              "parallax_mas": 6.4,
+              "radial_velocity_km_s": -9.8
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2007AN....328..889K"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Albaldah"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALBIREO",
+          "id": 107,
+          "doc": "Albireo, beta¹ Cygni",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta¹ Cygni",
+            "class": "STAR",
+            "hip": 95947,
+            "magnitude": 3.08,
+            "astrometry": {
+              "ra_deg": 292.68031501400833,
+              "dec_deg": 27.959673631221666,
+              "pm_ra_mas_yr": 4.915,
+              "pm_dec_mas_yr": -11.127,
+              "parallax_mas": 8.9816,
+              "radial_velocity_km_s": -24.7752
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2022ApJS..259...35A"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Albireo"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALSHAIN",
+          "id": 108,
+          "doc": "Alshain, beta Aquilae",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Aquilae",
+            "class": "STAR",
+            "hip": 98036,
+            "magnitude": 3.71,
+            "astrometry": {
+              "ra_deg": 298.8283035123829,
+              "dec_deg": 6.406764233985,
+              "pm_ra_mas_yr": 45.944,
+              "pm_dec_mas_yr": -480.965,
+              "parallax_mas": 73.5249,
+              "radial_velocity_km_s": -40.066
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alshain"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALGEDI",
+          "id": 109,
+          "doc": "Algedi, alpha² Capricorni",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha² Capricorni",
+            "class": "STAR",
+            "hip": 100064,
+            "magnitude": 3.58,
+            "astrometry": {
+              "ra_deg": 304.5135649821425,
+              "dec_deg": -12.544852120195275,
+              "pm_ra_mas_yr": 61.212,
+              "pm_dec_mas_yr": 2.412,
+              "parallax_mas": 29.914,
+              "radial_velocity_km_s": 0.7
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Algedi"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SADR",
+          "id": 110,
+          "doc": "Sadr, gamma Cygni",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Cygni",
+            "class": "STAR",
+            "hip": 100453,
+            "magnitude": 2.23,
+            "astrometry": {
+              "ra_deg": 305.55709098208337,
+              "dec_deg": 40.25667915638889,
+              "pm_ra_mas_yr": 2.39,
+              "pm_dec_mas_yr": -0.91,
+              "parallax_mas": 1.78,
+              "radial_velocity_km_s": -5.906
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sadr"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "PEACOCK",
+          "id": 111,
+          "doc": "Peacock, alpha Pavonis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Pavonis",
+            "class": "STAR",
+            "hip": 100751,
+            "magnitude": 1.918,
+            "astrometry": {
+              "ra_deg": 306.4119043651986,
+              "dec_deg": -56.73508972631689,
+              "pm_ra_mas_yr": 6.9,
+              "pm_dec_mas_yr": -86.02,
+              "parallax_mas": 18.24,
+              "radial_velocity_km_s": 2.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 1953GCRV..C......0W"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Peacock"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DENEB",
+          "id": 112,
+          "doc": "Deneb, alpha Cygni",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Cygni",
+            "class": "STAR",
+            "hip": 102098,
+            "magnitude": 1.25,
+            "astrometry": {
+              "ra_deg": 310.35797975307673,
+              "dec_deg": 45.280338806527574,
+              "pm_ra_mas_yr": 2.01,
+              "pm_dec_mas_yr": 1.85,
+              "parallax_mas": 2.31,
+              "radial_velocity_km_s": -4.9
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Deneb"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALJANAH",
+          "id": 113,
+          "doc": "Aljanah, epsilon Cygni",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Cygni",
+            "class": "STAR",
+            "hip": 102488,
+            "magnitude": 2.48,
+            "astrometry": {
+              "ra_deg": 311.55280115351087,
+              "dec_deg": 33.97032834364584,
+              "pm_ra_mas_yr": 365.954,
+              "pm_dec_mas_yr": 308.787,
+              "parallax_mas": 43.1769,
+              "radial_velocity_km_s": -12.599
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2018yCat.1345....0G (Gaia DR2 (Gaia Collaboration 2018)); proper motion 2018yCat.1345....0G; parallax 2018yCat.1345....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Aljanah"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KITALPHA",
+          "id": 114,
+          "doc": "Kitalpha, alpha Equulei",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Equulei",
+            "class": "STAR",
+            "hip": 104987,
+            "magnitude": 3.933,
+            "astrometry": {
+              "ra_deg": 318.95598819687746,
+              "dec_deg": 5.247891952405833,
+              "pm_ra_mas_yr": 49.747,
+              "pm_dec_mas_yr": -89.846,
+              "parallax_mas": 17.1985,
+              "radial_velocity_km_s": -16.26
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2004A&A...424..727P"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Kitalpha"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALDERAMIN",
+          "id": 115,
+          "doc": "Alderamin, alpha Cephei",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Cephei",
+            "class": "STAR",
+            "hip": 105199,
+            "magnitude": 2.46,
+            "astrometry": {
+              "ra_deg": 319.6448846972256,
+              "dec_deg": 62.5855744637194,
+              "pm_ra_mas_yr": 150.55,
+              "pm_dec_mas_yr": 49.09,
+              "parallax_mas": 66.5,
+              "radial_velocity_km_s": -15.8
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alderamin"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SADALSUUD",
+          "id": 116,
+          "doc": "Sadalsuud, beta Aquarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Aquarii",
+            "class": "STAR",
+            "hip": 106278,
+            "magnitude": 2.89,
+            "astrometry": {
+              "ra_deg": 322.88971698347876,
+              "dec_deg": -5.5711748280636115,
+              "pm_ra_mas_yr": 19.214,
+              "pm_dec_mas_yr": -8.163,
+              "parallax_mas": 5.9728,
+              "radial_velocity_km_s": 6.451
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sadalsuud"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ENIF",
+          "id": 117,
+          "doc": "Enif, epsilon Pegasi",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "epsilon Pegasi",
+            "class": "STAR",
+            "hip": 107315,
+            "magnitude": 2.39,
+            "astrometry": {
+              "ra_deg": 326.04648391416663,
+              "dec_deg": 9.875008653333333,
+              "pm_ra_mas_yr": 26.92,
+              "pm_dec_mas_yr": 0.44,
+              "parallax_mas": 4.73,
+              "radial_velocity_km_s": 3.39
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2005A&A...430..165F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Enif"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SADALMELIK",
+          "id": 118,
+          "doc": "Sadalmelik, alpha Aquarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Aquarii",
+            "class": "STAR",
+            "hip": 109074,
+            "magnitude": 2.94,
+            "astrometry": {
+              "ra_deg": 331.4459814409479,
+              "dec_deg": -0.3198509554241667,
+              "pm_ra_mas_yr": 18.59,
+              "pm_dec_mas_yr": -10.45,
+              "parallax_mas": 4.9451,
+              "radial_velocity_km_s": 6.829
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sadalmelik"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ALNAIR",
+          "id": 119,
+          "doc": "Alnair, alpha Gruis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Gruis",
+            "class": "STAR",
+            "hip": 109268,
+            "magnitude": 1.71,
+            "astrometry": {
+              "ra_deg": 332.05826969609114,
+              "dec_deg": -46.96097438191952,
+              "pm_ra_mas_yr": 126.69,
+              "pm_dec_mas_yr": -147.47,
+              "parallax_mas": 32.29,
+              "radial_velocity_km_s": 10.9
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Alnair"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SADALBARI",
+          "id": 120,
+          "doc": "Sadalbari, mu Pegasi",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "mu Pegasi",
+            "class": "STAR",
+            "hip": 112748,
+            "magnitude": 3.48,
+            "astrometry": {
+              "ra_deg": 342.50080447836956,
+              "dec_deg": 24.601581283481668,
+              "pm_ra_mas_yr": 145.24,
+              "pm_dec_mas_yr": -42.396,
+              "parallax_mas": 28.934,
+              "radial_velocity_km_s": 13.791
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Sadalbari"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SKAT",
+          "id": 121,
+          "doc": "Skat, delta Aquarii",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "delta Aquarii",
+            "class": "STAR",
+            "hip": 113136,
+            "magnitude": 3.28,
+            "astrometry": {
+              "ra_deg": 343.66252607413,
+              "dec_deg": -15.820819565200004,
+              "pm_ra_mas_yr": -34.152,
+              "pm_dec_mas_yr": -26.359,
+              "parallax_mas": 23.1451,
+              "radial_velocity_km_s": 10.96
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2022yCat.1355....0G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Skat"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "FOMALHAUT",
+          "id": 122,
+          "doc": "Fomalhaut, alpha Piscis Austrini: a royal star",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "alpha Piscis Austrini",
+            "class": "STAR",
+            "hip": 113368,
+            "magnitude": 1.16,
+            "astrometry": {
+              "ra_deg": 344.4126927211701,
+              "dec_deg": -29.622237033389442,
+              "pm_ra_mas_yr": 328.95,
+              "pm_dec_mas_yr": -164.67,
+              "parallax_mas": 129.81,
+              "radial_velocity_km_s": 6.5
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2006AstL...32..759G"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Fomalhaut"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SCHEAT",
+          "id": 123,
+          "doc": "Scheat, beta Pegasi",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "beta Pegasi",
+            "class": "STAR",
+            "hip": 113881,
+            "magnitude": 2.42,
+            "astrometry": {
+              "ra_deg": 345.9435727452067,
+              "dec_deg": 28.082787124606668,
+              "pm_ra_mas_yr": 187.65,
+              "pm_dec_mas_yr": 136.93,
+              "parallax_mas": 16.64,
+              "radial_velocity_km_s": 7.99
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2009A&A...498..627F"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Scheat"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ERRAI",
+          "id": 124,
+          "doc": "Errai, gamma Cephei",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "gamma Cephei",
+            "class": "STAR",
+            "hip": 116727,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 354.83712672241,
+              "dec_deg": 77.63236410594,
+              "pm_ra_mas_yr": -64.86,
+              "pm_dec_mas_yr": 171.159,
+              "parallax_mas": 72.5167,
+              "radial_velocity_km_s": -43.668
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05",
+              "ref": "coordinates 2020yCat.1350....0G (Gaia DR3 (Gaia Collaboration 2020)); proper motion 2020yCat.1350....0G; parallax 2020yCat.1350....0G; radial velocity 2018A&A...616A...7S"
+            },
+            {
+              "text": "IAU Working Group on Star Names, the list of IAU-approved star names",
+              "ref": "Errai"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SGR_A_STAR",
+          "id": 125,
+          "doc": "Sagittarius A*, the compact radio source at the galactic centre: the anchor of the four Galactic Centre ayanamshas",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "Sgr A*",
+            "class": "RADIO_SOURCE",
+            "hip": null,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 266.41681662499997,
+              "dec_deg": -29.00782497222222,
+              "pm_ra_mas_yr": -3.156,
+              "pm_dec_mas_yr": -5.585,
+              "parallax_mas": 0.0,
+              "radial_velocity_km_s": 0.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates, TAP query of 2026-09-05",
+              "ref": "coordinates 2011AJ....142...35P (Petrov et al. 2011, VLBI)"
+            },
+            {
+              "text": "Reid, M. J. and Brunthaler, A. (2020), The proper motion of Sagittarius A*. III., ApJ 892, 39",
+              "ref": "the apparent proper motion −3.156 ± 0.006 (east, the great-circle rate) and −5.585 ± 0.010 mas/yr (north), the reflex of the Sun's galactic motion"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GALACTIC_POLE",
+          "id": 126,
+          "doc": "The north galactic pole of the galactic coordinate system referred to the ICRS (Liu, Zhu and Zhang 2011): the anchor of the True and Mula galactic-equator ayanamshas",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "north galactic pole",
+            "class": "DIRECTION",
+            "hip": null,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 192.90297999208332,
+              "dec_deg": 27.103109214444444,
+              "pm_ra_mas_yr": 0.0,
+              "pm_dec_mas_yr": 0.0,
+              "parallax_mas": 0.0,
+              "radial_velocity_km_s": 0.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "Liu, J.-C., Zhu, Z. and Zhang, H. (2011), Reconsidering the Galactic coordinate system, A&A 526, A16",
+              "ref": "the north galactic pole in the ICRS, 12h51m36.7151981s +27°06′11.193172″"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GALACTIC_POLE_IAU1958",
+          "id": 127,
+          "doc": "The IAU 1958 north galactic pole (12h49m +27°24′ at B1950.0) referred to the ICRS: the anchor of the IAU 1958 galactic-equator ayanamsha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "designation": "north galactic pole (IAU 1958)",
+            "class": "DIRECTION",
+            "hip": null,
+            "magnitude": null,
+            "astrometry": {
+              "ra_deg": 192.85947787499998,
+              "dec_deg": 27.128252416666665,
+              "pm_ra_mas_yr": 0.0,
+              "pm_dec_mas_yr": 0.0,
+              "parallax_mas": 0.0,
+              "radial_velocity_km_s": 0.0
+            },
+            "yogatara_of": null
+          },
+          "sources": [
+            {
+              "text": "Liu, J.-C., Zhu, Z. and Zhang, H. (2011), Reconsidering the Galactic coordinate system, A&A 526, A16",
+              "ref": "the IAU 1958 pole transformed to the ICRS, 12h51m26.27469s +27°07′41.7087″"
+            },
+            {
+              "text": "Blaauw, A., Gum, C. S., Pawsey, J. L. and Westerhout, G. (1960), The new IAU system of galactic coordinates, MNRAS 121, 123",
+              "ref": "the original definition at B1950.0"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "star_class",
+      "number": 57,
+      "version": 1,
+      "doc": "What kind of object a star-table member is.",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "STAR",
+          "id": 0,
+          "doc": "A star",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "structural",
+              "ref": "design"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RADIO_SOURCE",
+          "id": 1,
+          "doc": "A compact radio source, such as the galactic centre",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "structural",
+              "ref": "design"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DIRECTION",
+          "id": 2,
+          "doc": "A fixed direction on the sky without a body, such as a galactic pole",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "structural",
+              "ref": "design"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [
