@@ -3,12 +3,14 @@
 //! sidereal time at a place, and the apparent equatorial position of a
 //! body that the rise and set solver reads.
 
-use teistro_core::angle::normalise_deg;
+use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Longitude, Tt, Ut1};
 use teistro_port_ephemeris::{Body, Obliquity};
 
+use crate::delta_t::{DeltaTModel, delta_t};
 use crate::iau::{self, DEG2RAD, RAD2DEG};
+use crate::scale::tt_from_ut1;
 
 /// A spherical position: longitude or right ascension and latitude or
 /// declination, degrees.
@@ -139,6 +141,44 @@ impl<S: ApparentPositions + ?Sized> ApparentPositions for &S {
     fn describe(&self) -> String {
         (**self).describe()
     }
+}
+
+/// The equation of time at a UT1 instant, seconds: apparent solar time less
+/// mean solar time, from the Greenwich apparent sidereal time and the Sun's
+/// apparent right ascension in `sky`. Positive when the sundial is ahead
+/// of the clock (about +16.4 minutes in early November, −14.2 in
+/// mid-February).
+///
+/// ```
+/// use teistro_astro::sky::equation_of_time_seconds;
+/// use teistro_astro::{Completion, DeltaTModel};
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_core::settings::OverridePolicy;
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// let provider = TestProvider::new();
+/// let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// let e = equation_of_time_seconds(&sky, JulianDay::<Ut1>::J2000, DeltaTModel::TableThenModel).expect("the Sun");
+/// assert!(e.abs() < 17.0 * 60.0);
+/// ```
+///
+/// # Errors
+///
+/// The sky's error for the Sun, or a Delta T model that cannot answer.
+pub fn equation_of_time_seconds(
+    sky: &dyn ApparentPositions,
+    ut1: JulianDay<Ut1>,
+    delta_t_model: DeltaTModel,
+) -> Result<f64, Error> {
+    let tt = tt_from_ut1(ut1, &delta_t(ut1, delta_t_model)?);
+    let sidereal = greenwich_sidereal_time_deg(ut1, tt);
+    // The hour angle of the mean Sun at Greenwich: the time since midnight.
+    let since_midnight_deg = (ut1.get() + 0.5).rem_euclid(1.0) * 360.0;
+    let sun = sky.apparent(Body::Sun, ut1)?;
+    // The true Sun's hour angle less the mean Sun's, folded to a half turn,
+    // at four minutes a degree.
+    let apart_deg = difference_deg(sidereal - sun.ra_deg, since_midnight_deg + 180.0);
+    Ok(apart_deg * 240.0)
 }
 
 #[cfg(test)]

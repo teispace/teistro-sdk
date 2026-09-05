@@ -32,6 +32,9 @@
 //!   astrometry: proper motion, parallax, deflection and aberration over
 //!   the SDK's own Earth ephemeris, then the frame bias, precession and
 //!   nutation; what the star-anchored ayanamshas read.
+//! - [`phenomena`]: what a body looks like: elongation, phase, the disc,
+//!   the horizontal parallax and the visual magnitude under the Almanac's
+//!   models; and the equation of time beside the sidereal time in [`sky`].
 //! - [`events`]: crossings of a longitude, a composite angle or a speed
 //!   over a lattice of boundaries, and stations, one kernel over the
 //!   boundary solver.
@@ -51,6 +54,7 @@ pub mod delta_t;
 pub mod events;
 pub mod houses;
 pub mod iau;
+pub mod phenomena;
 pub mod precession;
 pub mod rise_set;
 pub mod scale;
@@ -65,5 +69,7 @@ pub use completion::{Completed, Completion, CompletionError, Implementation, Ste
 pub use delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
 pub use rise_set::{DayEvents, HorizonEvent, Method, Outcome};
 pub use scale::{tt_from_ut1, tt_of, ut1_from_tt};
-pub use sky::{Apparent, ApparentPositions, Spherical, obliquity, sidereal_time_deg};
+pub use sky::{
+    Apparent, ApparentPositions, Spherical, equation_of_time_seconds, obliquity, sidereal_time_deg,
+};
 pub use solve::{Caps, Crossing, SolveError, first_zero, next_crossing, refine};
