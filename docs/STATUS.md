@@ -4,14 +4,30 @@ The living tracker. Read this first in any session; update it before ending
 one. It answers four questions: what is done, what is being done now, what
 comes next, and what happened in each session.
 
-**Project phase:** Phase 0 exited on 2026-09-05 (decisions made, four
-spikes measured, repository live); Phase 1, Foundation, begins with its
-design pages.
+**Project phase:** Phase 2, the astronomy layer, met its exit criteria
+on 2026-09-05: the accuracy document (`05-testing/ACCURACY.md`,
+generated and gated) shows every built `astro` row within its target
+against Teimeris, and houses compute for all twenty-two systems and
+sunrise for a Nepali place without a provider override. Two of its
+deliverables are deferred by decision: the completion's centre,
+corrections and equinox steps to Phase 3, where the built-in ephemeris
+needs them, and eclipses to v1.x. Phase 1, Foundation, remains open:
+`core`, the ports, `time`, `calendar`, the test provider, the Teimeris
+adapter and the conformance kit exist; the `intl` engine and CLI, the
+`ffi` crate with the API description and the generators, the Node and
+Dart bindings with the parity gate, the test-only infrastructure, the
+cross-architecture hash matrix, the conformance repository and the docs
+site are not built (`07-roadmap/00-roadmap.md`). Phase 0 exited on
+2026-09-05 (decisions made, four spikes measured, repository live).
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-05, end of the twenty-third session (the
+**Last updated:** 2026-09-05, end of the twenty-sixth session (Phase
+2's exit review recorded here and in the roadmap); before that the
+twenty-fifth session (one request for both bodies of a composite
+quantity), the twenty-fourth (visibility and the heliacal phenomena
+under three named criteria), the twenty-third session (the
 sidereal time moved to the IAU 2006 expression `gst06b`, held to
 Teimeris within 0.0012″ strictly inside its 1850 to 2050 window by
 `tests/teimeris_sidereal.rs`; F1 measured beyond the window, F6 filed;
@@ -58,7 +74,12 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. The next task is Phase 2's close: the items under "Now". `crates/core`, `crates/port-ephemeris`,
+3. The next task is the maintainer's choice between Phase 1's remaining
+   deliverables (the `intl` crate and CLI from spike 4, `ffi` with the
+   API description and the generators from spike 2, the Node and Dart
+   bindings with the parity gate, the conformance repository) and the
+   astronomy follow-ups under "Now"; Phase 3, the built-in ephemeris,
+   may run beside Phase 4 per the roadmap. `crates/core`, `crates/port-ephemeris`,
    `crates/astro`, `crates/ephemeris-kit`, `crates/siddhanta`,
    `crates/calendar` (with the Bikram Sambat engine and the drik model),
    `crates/time` and `crates/port-timezone` exist; `cargo xtask
@@ -470,11 +491,18 @@ binding (ADR-0023).
 
 ## Now
 
-- Phase 2's close: the visibility follow-ups (a photometric criterion,
-  the stars' heliacal search, the Moon's first crescent;
+- Phase 2 has met its exit criteria (the project phase line above). Its
+  follow-ups stay listed: the visibility follow-ups (a photometric
+  criterion, the stars' heliacal search, the Moon's first crescent;
   `astro-planetary-phenomena.md` §10); cusp speeds and house positions
-  when the chart layer needs them (Phase 4); then Phase 2's exit review
-  against `07-roadmap` (the accuracy document, the port, the kit). The completion's
+  when the chart layer needs them (Phase 4); the completion's centre,
+  corrections and equinox steps with the built-in ephemeris (Phase 3).
+- Phase 1's remaining deliverables are the next block of work, in the
+  roadmap's order: the `intl` engine and CLI with the `en` and `ne`
+  packs (from spike 4), the `ffi` crate with the ABI conventions, the
+  API description and the generators (from spike 2), the Node and Dart
+  bindings with the parity gate, the test-only infrastructure, the hash
+  matrix, the conformance repository (ADR-0022), the docs site. The completion's
   centre, corrections and equinox steps wait for the built-in ephemeris
   (Phase 3). The memo's R3 stays open (a third source; the committee's
   earlier years are not online).
@@ -525,6 +553,7 @@ binding (ADR-0023).
 | 2026-09-05 (thirteenth session) | `crates/siddhanta` completed to the text (the sighra daily motion, the latitudes, the Lagna) against Burgess's 1860 worked computation, and presented behind the ephemeris port as a classical astronomy (`SiddhantaProvider`) that passes the kit; the port's `Astronomy`, `SpeedModel`, `DistanceUnit` and `DUT1` override; the kit's sixteenth check, its second-difference continuity and its informational rows for a classical provider (C36, C37); the completion's zodiac-then-rotation order; the planetary hours in `time` under `hora_reckoning` (proportional, as 52 of 55 fixtures decide and the other three cannot) and UT1 from a provider's DUT1. Next: Phase 2's astronomy pages, the ayanamsha catalogue, houses, crossings and stations. |
 | 2026-09-05 (fourteenth session) | The national panchanga committee's 2082 and 2083 panchangas fetched from `npns.gov.np` through the browser and read into `fixtures/official/npns-2082-2083.json` (24 sankranti instants, printed places, sunrise and sunset, tithi ends). The SDK's engine reproduces every instant within 1.6 minutes and every month start; the committee's Sun is the text's within 3″, its Moon the text's with four revolutions fewer on the apsis, its star planets modern positions in the Lahiri frame, its sunrise modern under its own convention. R2 closed for the method; C30 explained as the earlier makers' decisions; C38 and C39 opened. Next: Phase 2's astronomy pages. |
 | 2026-09-05 (fifteenth session) | Phase 2's astronomy begun: new ERFA ports (IAU 2006 precession, Vondrák 2011 long-term poles and matrices, the vector primitives) with their reference values; `astro::precession` as four models with consistent obliquities; `astro::ayanamsha` computing every epoch-defined member from its published definition with the fitted-model correction, mean or nutated, custom definitions, the anchored members refused by name; the completion completing the sidereal zodiac from the SDK's catalogue. Measured: TT-epoch definitions within 1e-7″ of Teimeris and UT-epoch ones within 2.1e-4″ over 1044 recorded rows; 142 ns a precession matrix, 0.58 µs an ayanamsha. Design pages `astro-timescales-and-frames.md` and `astro-ayanamsha-catalogue.md`. Next: houses, crossings and stations, the star table. |
+| 2026-09-05 (twenty-sixth session) | Phase 2's exit review against `07-roadmap/00-roadmap.md`: the exit criteria are met (the accuracy document generated and gated with every built row within its target against Teimeris; houses for all systems and sunrise for a Nepali place without an override); the deliverables deferred by decision are named (the completion's centre, corrections and equinox steps to Phase 3; eclipses to v1.x); Phase 1's remaining deliverables are listed as the next block of work. Recorded in the project phase line, the roadmap's Phase 2 section and "Now". |
 | 2026-09-05 (twenty-fifth session) | One request for both bodies of a composite quantity: `Longitudes::longitude_and_speed_pair` (provided as the two single readings; the completion answers one position request, sharing the instant's obliquity, nutation and precession), used by every composite crossing and by the visibility reading of the body and the Sun; a counting source in the tests proves the tithi search reads pairs alone and the ingress search singles alone. Measured A/B in one run: the tithi search 336 µs to 185 µs over the test provider, the ingress search unchanged. The events and phenomena pages' performance tables re-measured in one machine state, with the note that rows compare within a table (the machine's state moves every row by tens of per cent between sessions). Next: the visibility follow-ups; cusp speeds; Phase 2's exit review. |
 | 2026-09-05 (twenty-fourth session) | Visibility and the heliacal phenomena (`astro::visibility`): three named criteria, the Surya Siddhanta's degrees of time (IX.2 to 11, X.1, read from Burgess's 1860 translation: Jupiter 11, Saturn 15, Mars 17, Venus 10/8, Mercury 14/12, the Moon 12; the star classes of IX.12 to 15 and the six stars of IX.18 as data), the tradition's combustion orb over the same numbers in longitude, and Ptolemy's arcus visionis (Almagest XIII.7 to 9 as Burgess quotes them) read at the deepest twilight the body is up in; the state of a local mean day and the day-by-day scan for the four heliacal events over the rise and set solver and the completion, so any provider answers. `Solver::altitude_deg`, `sky::local_mean_midnight` (moved from the classical crate). By hand against Teimeris's photometric model at Kathmandu: Venus's rising of June 2020 and setting of May 2020 within two days under every criterion, Jupiter's rising of February 2021 within a week (bound ten days). Research: the tradition's combustion orbs verified as the text's own numbers (C17 closed at rank 1; C44 opened on the unit). Next: one request for both bodies of a composite crossing; the visibility follow-ups. |
 | 2026-09-05 (twenty-third session) | The sidereal time expression question closed by measurement: the engine's default sidereal time strictly inside its 1850 to 2050 window is the IERS 2010 expression and agrees with the SDK's IAU 2006 form to 0.0012″ (1850) and 0.0004″ (from 1875); the +0.088″ once read "inside the window" was the boundary instant, which the engine gives to its long-term branch. The SDK's GAST moved from `gst00b` to `gst06b` (IAU 2006 mean sidereal time, IAU 2006 mean obliquity, IAU 2000B nutation): cusps move under 0.002″ between 1950 and 2050. New: `iau::ee06b`, `iau::gst06b` (against ERFA's `ee06a`/`gst06a` within the 2000B truncation), the adapter's `sidereal-table` binary, `fixtures/teimeris/sidereal.json` (49 instants), `tests/teimeris_sidereal.rs` (three accuracy rows in CI), crux C43 (the 2000B nutation read two ways). Engine findings: F1 measured beyond the window (−0.50″ at 1700 to +2.46″ at 2300, commented on teimeris#1); F6 filed (teimeris#6: the 2000B fixed offsets −0.135/+0.388 mas omitted, inherited from upstream). Next: the heliacal phenomena. |

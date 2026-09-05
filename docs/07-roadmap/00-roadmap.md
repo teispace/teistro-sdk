@@ -1,7 +1,8 @@
 # Roadmap
 
-Status: `draft`, revised 2026-09-04 after the day's decisions and again
-for ADR-0016 to ADR-0023 (exact arithmetic, kernels, containment, the
+Status: `draft`, revised 2026-09-04 after the day's decisions, again
+for ADR-0016 to ADR-0023, and on 2026-09-05 to record Phase 2's exit
+(`STATUS.md`, twenty-sixth session); it was revised for ADR-0016 to ADR-0023 (exact arithmetic, kernels, containment, the
 reference ephemeris path, the conformance repository, type safety). Team: the
 maintainer and this assistant (Q14); the repository is public, so CI
 minutes are not a constraint. Phases are ordered by dependency and each
@@ -111,6 +112,15 @@ Exit: the generated accuracy document (`05-testing/ACCURACY.md`, by
 `cargo xtask accuracy`, gated) shows every `astro` row within its target
 against Teimeris; the SDK computes houses for all systems and sunrise for
 a Nepali place without any provider override.
+
+**Met on 2026-09-05** (`STATUS.md`, twenty-sixth session): the accuracy
+document is generated and gated with every built row within its target;
+houses compute for all twenty-two systems and sunrise for a Nepali place
+without an override. Deferred by decision: the completion's centre,
+corrections and equinox steps to Phase 3, where the built-in ephemeris
+needs them; eclipses to v1.x. Built beyond the list: the star table with
+SIMBAD astrometry, the equation of time, visibility and the heliacal
+phenomena, the `CROSSINGS` override, the engine findings register.
 
 ## Phase 3: The built-in ephemeris (own phase, may run beside Phase 4)
 
