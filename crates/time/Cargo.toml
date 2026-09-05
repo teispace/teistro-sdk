@@ -5,15 +5,32 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Teistro SDK time layer: zone offset histories and local mean time; scales, Delta T, zone resolution, the local day and ghati-pala follow"
+description = "Teistro SDK time layer: time scales and Delta T, leap seconds, civil time, zone resolution with replay-safe metadata over the embedded tzdb, the local day and ghati-pala"
 readme = "README.md"
-keywords = ["time", "timezone", "astrology"]
+keywords = ["time", "timezone", "delta-t", "astrology"]
 categories = ["date-and-time"]
 # Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
 publish = false
 
 [dependencies]
+# The embedded zone database: tzdb as TZif, bundled and never read from
+# the host, so a resolution is the same on every machine (ADR-0022).
+jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
+jiff-tzdb = "0.1"
+serde = { version = "1", features = ["derive"] }
+teistro-calendar = { path = "../calendar" }
 teistro-core = { path = "../core" }
+teistro-port-timezone = { path = "../port-timezone" }
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false }
+proptest = "1"
+serde_json = "1"
+teistro-siddhanta = { path = "../siddhanta" }
+
+[[bench]]
+name = "time"
+harness = false
 
 [lints]
 workspace = true

@@ -466,7 +466,7 @@ fn bs_fit_detail(official: &Official) -> i32 {
 
 /// The shipped engine: the text's model over Nepal's clock at Kathmandu
 /// under the shipped rule.
-fn shipped_frame() -> (SuryaSiddhanta, &'static teistro_time::OffsetHistory) {
+fn shipped_frame() -> (SuryaSiddhanta, &'static teistro_time::ZoneClock) {
     (SuryaSiddhanta::text(), zones::nepal())
 }
 
@@ -702,25 +702,24 @@ fn fit_report_json(report: &FitReport, official: &Official) -> String {
 
 /// Writes the table and the report.
 pub(crate) fn generate(root: &Path) -> i32 {
-    let (table, report) = render(root);
-    std::fs::write(root.join(TABLE_FILE), &table).expect("write the table");
-    std::fs::write(root.join(FIT_FILE), &report).expect("write the report");
-    println!("wrote {TABLE_FILE} ({} bytes) and {FIT_FILE}", table.len());
-    0
+    crate::generated::write(root, &outputs(root))
 }
 
 /// Regenerates in memory and compares with the checked-in files.
 pub(crate) fn check(root: &Path) -> i32 {
+    crate::generated::check(root, &outputs(root), "cargo xtask gen calendars")
+}
+
+fn outputs(root: &Path) -> Vec<crate::generated::Output> {
     let (table, report) = render(root);
-    let mut failures = 0;
-    for (path, expected) in [(TABLE_FILE, table), (FIT_FILE, report)] {
-        let actual = std::fs::read_to_string(root.join(path)).unwrap_or_default();
-        if actual == expected {
-            println!("ok    {path}");
-        } else {
-            println!("FAIL  {path} differs from what `cargo xtask gen calendars` produces");
-            failures += 1;
-        }
-    }
-    failures
+    vec![
+        crate::generated::Output {
+            path: TABLE_FILE,
+            text: table,
+        },
+        crate::generated::Output {
+            path: FIT_FILE,
+            text: report,
+        },
+    ]
 }

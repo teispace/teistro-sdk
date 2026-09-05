@@ -350,6 +350,12 @@ impl<S: Scale> JulianDay<S> {
         scale: PhantomData,
     };
 
+    /// 1970 January 1.0, the Unix epoch.
+    pub const UNIX_EPOCH: JulianDay<S> = JulianDay {
+        jd: 2_440_587.5,
+        scale: PhantomData,
+    };
+
     /// Accepts a finite Julian day.
     ///
     /// # Errors

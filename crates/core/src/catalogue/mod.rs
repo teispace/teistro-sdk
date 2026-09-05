@@ -204,9 +204,11 @@ pub(crate) fn lookup<T: Copy>(table: &[(&str, T)], key: &str) -> Option<T> {
 }
 
 /// The Levenshtein distance, for suggestions; both inputs are short, and
-/// a length difference beyond the suggestion threshold is answered at
-/// once.
-pub(crate) fn distance(a: &str, b: &str) -> usize {
+/// a length difference beyond the suggestion threshold of two is
+/// answered at once with that difference, a lower bound on the distance
+/// that is still above the threshold.
+#[must_use]
+pub fn distance(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();
     if a.len().abs_diff(b.len()) > 2 {

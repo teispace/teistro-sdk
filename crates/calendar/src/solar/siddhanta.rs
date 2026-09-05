@@ -7,27 +7,29 @@ use teistro_core::time::LocalMeanTime;
 use teistro_siddhanta::SuryaSiddhanta;
 
 use crate::fixed::FixedDay;
-use crate::solar::{DayArc, SolarModel};
+use crate::solar::{DayArc, DayLight, SolarModel};
 
 impl SolarModel for SuryaSiddhanta {
     fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error> {
         Ok(self.sun_longitude_deg(jd_ut))
     }
 
-    fn day_arc(&self, day: FixedDay, place: &Place) -> Result<Option<DayArc>, Error> {
+    fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
         // The text reckons the day in local mean time at the place: its
         // midnight is the civil midnight less the longitude's offset.
         let clock = LocalMeanTime::new(place.longitude);
-        let local_midnight = day.jd_at_midnight()?.get() - clock.offset().days();
-        let Some(arc) =
-            SuryaSiddhanta::day_arc(self, JulianDay::try_new(local_midnight)?, place.latitude)
-        else {
-            return Ok(None);
-        };
-        Ok(Some(DayArc {
-            sunrise: arc.sunrise.relabel(),
-            sunset: arc.sunset.relabel(),
-        }))
+        let local_midnight =
+            JulianDay::try_new(day.jd_at_midnight()?.get() - clock.offset().days())?;
+        Ok(
+            match SuryaSiddhanta::day_arc(self, local_midnight, place.latitude) {
+                Some(arc) => DayLight::Arc(DayArc {
+                    sunrise: arc.sunrise.relabel(),
+                    sunset: arc.sunset.relabel(),
+                }),
+                None if self.sun_up_all_day(local_midnight, place.latitude) => DayLight::AlwaysUp,
+                None => DayLight::NeverUp,
+            },
+        )
     }
 
     fn describe(&self) -> String {
@@ -73,5 +75,12 @@ mod tests {
             Altitude::literal(0.0),
         );
         assert!(model.day_arc(day, &tromso).unwrap().is_none());
+        assert_eq!(model.day_light(day, &tromso).unwrap(), DayLight::AlwaysUp);
+        let december = Gregorian.to_fixed_ymd(2024, 12, 21).unwrap();
+        assert_eq!(
+            model.day_light(december, &tromso).unwrap(),
+            DayLight::NeverUp
+        );
+        assert!(DayLight::AlwaysUp.arc().is_none());
     }
 }

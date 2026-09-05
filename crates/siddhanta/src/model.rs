@@ -439,6 +439,20 @@ impl SuryaSiddhanta {
     }
 }
 
+impl SuryaSiddhanta {
+    /// Whether, on a day without a sunrise, the Sun is above the horizon
+    /// throughout (a polar day) rather than below it (a polar night): the
+    /// declination at local mean noon has the latitude's sign.
+    #[must_use]
+    pub fn sun_up_all_day(&self, local_mean_midnight: JulianDay<Ut1>, latitude: Latitude) -> bool {
+        let noon = local_mean_midnight.get() + 0.5;
+        let sun = self.sun_longitude_deg(noon);
+        let ayanamsha = JulianDay::try_new(noon).map_or(0.0, |at| self.ayanamsha_deg(at));
+        let declination = self.declination_deg(sun + ayanamsha);
+        (latitude.get() >= 0.0) == (declination >= 0.0)
+    }
+}
+
 impl From<Trace> for Position {
     fn from(trace: Trace) -> Position {
         Position {
@@ -673,6 +687,8 @@ mod tests {
         // Polar: none.
         let tromso = Latitude::try_new(69.6).unwrap();
         assert!(text.day_arc(jd_of(2024, 6, 21), tromso).is_none());
+        assert!(text.sun_up_all_day(jd_of(2024, 6, 21), tromso));
+        assert!(!text.sun_up_all_day(jd_of(2024, 12, 21), tromso));
     }
 
     #[test]

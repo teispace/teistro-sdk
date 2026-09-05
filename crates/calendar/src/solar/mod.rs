@@ -37,6 +37,28 @@ impl DayArc {
     }
 }
 
+/// What the Sun does on a civil day at a place.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum DayLight {
+    /// It rises and sets.
+    Arc(DayArc),
+    /// It never sets (polar day).
+    AlwaysUp,
+    /// It never rises (polar night).
+    NeverUp,
+}
+
+impl DayLight {
+    /// The arc, when there is one.
+    #[must_use]
+    pub const fn arc(self) -> Option<DayArc> {
+        match self {
+            DayLight::Arc(arc) => Some(arc),
+            DayLight::AlwaysUp | DayLight::NeverUp => None,
+        }
+    }
+}
+
 /// A model of the Sun a solar calendar can be computed from.
 pub trait SolarModel: Send + Sync {
     /// The Sun's sidereal longitude in degrees at a Universal Time Julian
@@ -49,16 +71,26 @@ pub trait SolarModel: Send + Sync {
     /// its data); the classical model never fails.
     fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error>;
 
+    /// What the Sun does on a civil day at a place: its sunrise and
+    /// sunset, or which polar state the day is in.
+    ///
+    /// # Errors
+    ///
+    /// As [`SolarModel::sidereal_sun_deg`].
+    fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error>;
+
+    /// The model's name for provenance stamps.
+    fn describe(&self) -> String;
+
     /// Sunrise and sunset of a civil day at a place, or `None` where the
     /// Sun neither rises nor sets that day.
     ///
     /// # Errors
     ///
-    /// As [`SolarModel::sidereal_sun_deg`].
-    fn day_arc(&self, day: FixedDay, place: &Place) -> Result<Option<DayArc>, Error>;
-
-    /// The model's name for provenance stamps.
-    fn describe(&self) -> String;
+    /// As [`SolarModel::day_light`].
+    fn day_arc(&self, day: FixedDay, place: &Place) -> Result<Option<DayArc>, Error> {
+        Ok(self.day_light(day, place)?.arc())
+    }
 }
 
 impl<M: SolarModel + ?Sized> SolarModel for &M {
@@ -66,8 +98,8 @@ impl<M: SolarModel + ?Sized> SolarModel for &M {
         (**self).sidereal_sun_deg(jd_ut)
     }
 
-    fn day_arc(&self, day: FixedDay, place: &Place) -> Result<Option<DayArc>, Error> {
-        (**self).day_arc(day, place)
+    fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
+        (**self).day_light(day, place)
     }
 
     fn describe(&self) -> String {

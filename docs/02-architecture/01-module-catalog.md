@@ -17,7 +17,8 @@ family package) in every binding.
 |---|---|---|---|
 | `core` | keys and entity catalogue (grahas, rashis, nakshatras with padas, tithis, karanas, yogas, varas, vargas, dignities, states, ayanamshas, house systems, samvatsaras), angles with the canonical nanoarcsecond type and exact classification (`core::angle`, ADR-0016), exact rationals, Julian day and timescales, settings and profiles, result envelope with the calculation version (ADR-0020), errors, capabilities, registries, limits | none | `core` data, enums, types |
 | `port-ephemeris` | the ephemeris port trait (positions required; overrides optional), request and response types, capability descriptor, provider conformance kit | `core` | `AstronomicalBackend` |
-| `port-calendar`, `port-timezone`, `port-geo`, `port-intl-data`, `port-log` | as before | `core` | |
+| `port-timezone` | the zone database contract: version, zones, the offset at an instant with the abbreviation and the before-rules flag, the candidates of a civil time (one, a gap, an overlap), the offsets a zone applies today. Built 2026-09-05 | `core` | P0 | |
+| `port-calendar`, `port-geo`, `port-intl-data`, `port-log` | as before | `core` | |
 
 ## L1.5 astronomy
 
@@ -38,7 +39,7 @@ promotion).
 | module | contents | depends on | tier | baseline source |
 |---|---|---|---|---|
 | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat (the official table plus the SDK's computed extension, with the solar-calendar engine: a `SolarModel`, the sankranti finder, the month-start rules as rows, the measurement), Indian lunisolar (Amanta, Purnimanta, adhika, kshaya, solar months), eras and samvatsara; later Nepal Sambat, Saka, regional solar, Hijri, Hebrew, Persian, Chinese | `port-calendar`, `astro`, `siddhanta` | P0 | `BsCalendarService`, `CalendarService` |
-| `time` | civil to instant resolution, DST policies, LMT, ghati-pala, sunrise-anchored day, planetary hours; built so far: a zone's offset history as a local clock and Nepal's rows from tzdb (the `LocalClock` trait and `UtcOffset` live in `core::time`) | `port-timezone`, `astro`, `calendar` | P0 | timezone resolver, ghati-pala, birth timing |
+| `time` | civil to instant resolution with replay-safe metadata under the DST policies, local mean time, time scales with Delta T as the IERS table then a model, the leap-second table, the sunrise-anchored day from a solar model with the polar policies, ghati-pala; planetary hours later. Built 2026-09-05 (`03-design/time-and-timezone.md`); the embedded tzdb is `jiff`'s bundled data, never the host's | `port-timezone`, `calendar` (later `astro`) | P0 | timezone resolver, ghati-pala, birth timing |
 | `chart` | birth data, foundation (positions in both frames with speeds, declinations, RA; cusps; frames), chart kinds | `astro`, `time` | P0 | `ChartFoundation` |
 | `houses` | placement policy, Bhava-Chalit variants (Sripati, Vehlow, Porphyry, KP), placements by span, whole sign, equal, degeneracy states | `chart`, `astro` | P0 | `HouseService` |
 | `vargas` | one table-driven evaluator (`03-design/varga-kernel.md`): standard and extended vargas and every named variant as rows, arbitrary D-N under a recorded convention, the mixed-chart axis, vargottama, varga change search | `chart`, `astro` (crossings) | P0 | `VargaService` |

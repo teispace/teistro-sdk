@@ -26,6 +26,8 @@ locale packs, never in code.
 | deliberate difference | a registry row that explains a known divergence between the SDK and a golden-vector source (a convention the SDK does not copy, or a defect the source has), so the harness reports it instead of failing (`05-testing/01-golden-vectors.md`) |
 | fixture | one golden-vector file: an input, a complete settings profile with its hash, provenance, and the recorded outputs of one source under one profile (`fixtures/README.md`) |
 | golden vector | a recorded output of another implementation or a text that the SDK must reproduce within the tolerance for the provider class, cited to its source (ADR-0022) |
+| Delta T | Terrestrial Time less Universal Time, the seconds the Earth's rotation lags the uniform scale; the IERS table where measured, a cited model either side, an uncertainty on every value (`crates/time`) |
+| zone resolution | the record a stored chart keeps beside its instant: the offset applied, its source (the database, local mean time, a stated offset), its era (current rules, earlier rules, before the zone's first rule), the database version and what the daylight-saving policy did |
 | drik | computation by observed astronomy (Swiss Ephemeris, Teimeris, JPL); opposed to Surya Siddhanta or other siddhantic models |
 | footedness | the odd or even classification of signs in groups of three from Aries, used for the duration count in rashi dashas; a distinct type from sign parity, which governs the sequence direction |
 | entity | a named astrological object with a stable key: graha, rashi, nakshatra, tithi, karana, yoga, vara, varga, dignity, and so on |

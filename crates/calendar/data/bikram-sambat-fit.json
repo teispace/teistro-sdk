@@ -13,7 +13,7 @@
     1700,
     2500
   ],
-  "frame": "Surya Siddhanta (the text, the sine table); Asia/Kathmandu (tzdb asia: LMT +05:41:16 to 1920, +05:30 to 1986, +05:45); 27.7172°N 85.324°E 1400 m; rule PUNYAKALA",
+  "frame": "Surya Siddhanta (the text, the sine table); Asia/Kathmandu (tzdb 2026c); 27.7172°N 85.324°E 1400 m; rule PUNYAKALA",
   "months": {
     "compared": 1512,
     "matched": 1490,

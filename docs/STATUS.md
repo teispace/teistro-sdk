@@ -11,15 +11,16 @@ design pages.
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-05, end of the tenth session (the Bikram
-Sambat computation engine: `crates/siddhanta` with the Surya Siddhanta
-as the text prints it, the seeds of `crates/astro` (the boundary solver)
-and `crates/time` (offset histories, Nepal's rows), the solar-calendar
-engine in `crates/calendar` with the month-start rules as rows, the
-measurement against the official table that found the punya-kala rule
-(98.5 % of month lengths, every New Year, no drift), the table
-regenerated for 1700 to 2500 BS with a CI gate, and the source memo,
-design pages and cruxes updated).
+**Last updated:** 2026-09-05, end of the eleventh session (`crates/time`
+built from its design page: time scales with Delta T as the IERS table
+then Espenak and Meeus with Morrison and Stephenson's uncertainties, the
+IANA leap-second table, civil time, zone resolution over the embedded
+tzdb with replay-safe metadata under the daylight-saving policies, local
+mean time, the sunrise-anchored day with the polar policies, ghati-pala
+as exact integer arithmetic; `crates/port-timezone` as the zone
+database's contract; every zone resolution of the 55 fixture charts
+reproduces the baseline's instant and metadata; the data files
+generated into tables with a CI gate).
 
 ## How to resume
 
@@ -28,17 +29,17 @@ design pages and cruxes updated).
    and `cargo deny check` must pass before any commit; commits are
    signed off (`git commit -s`) with Conventional Commits subjects; the
    clean-room policy (`CLEAN_ROOM.md`) is binding.
-3. The next task is `crates/time` proper from
-   `03-design/time-and-timezone.md` (scales and Delta T, zone
-   resolution over the embedded tzdb, the local day, ghati-pala; the
-   seed with `OffsetHistory` and Nepal's rows exists), then the
-   promotion of spike 3's port crate to `crates/port-ephemeris` with the
-   drik `SolarModel` for the calendar engine. `crates/core`,
-   `crates/calendar` (with the Bikram Sambat engine), `crates/siddhanta`
-   and the seeds of `crates/astro` and `crates/time` exist;
-   `cargo xtask check-catalogue` and `check-calendars` are gates;
-   `cargo xtask calendars bs-fit` (and `--detail`) is the measurement
-   behind the shipped Bikram Sambat rule (`docs/calendars/bikram-sambat.md`).
+3. The next task is the promotion of spike 3's port crate to
+   `crates/port-ephemeris` with the drik `SolarModel` for the calendar
+   engine and the rise and set solver in `astro` (which gives the local
+   day its modern sunrise and the `SUNRISE` fallback its instant).
+   `crates/core`, `crates/calendar` (with the Bikram Sambat engine),
+   `crates/siddhanta`, `crates/time`, `crates/port-timezone` and the
+   seed of `crates/astro` exist; `cargo xtask check-catalogue`,
+   `check-calendars` and `check-time` are gates; `cargo xtask calendars
+   bs-fit` (and `--detail`) is the measurement behind the shipped Bikram
+   Sambat rule (`docs/calendars/bikram-sambat.md`); `gen time` rebuilds
+   the time tables from `crates/time/data/`.
    Spike 1 is done: its fixtures are in
    `fixtures/baseline/` (read `fixtures/README.md` before touching them;
    `cargo xtask check-fixtures` is their gate); the export script lives
@@ -252,6 +253,40 @@ design pages and cruxes updated).
   minutes of the rule's boundary. The source memo, the Bikram Sambat and
   time design pages, the new `siddhanta.md`, the module catalogue, the
   cruxes register (C27 to C31), the changelog and the glossary updated.
+- 2026-09-05 (eleventh session): `crates/time` built from
+  `03-design/time-and-timezone.md`, with `crates/port-timezone` as the
+  zone database's contract. Scales: TT from UT1 and back through Delta
+  T, UTC read as UT1 with DUT1 zero and stamped, UTC before 1972 as
+  proleptic, TT from UTC through the leap-second table exactly; the
+  envelope's time stamp filled from what was applied. Delta T: the IERS
+  EOP C01 series (UT1 from 1956 to August 2026, 708 rows at a tenth of a
+  year, fetched from the IERS with its provenance) interpolated where
+  measured, Espenak and Meeus (2006) either side with the seam offset
+  tapered and the end slope trusted for a decade, Morrison and
+  Stephenson's (2004) standard errors as the uncertainty before the
+  atomic era and a growing one after the table; Stephenson, Morrison and
+  Hohenkerk (2016) registered and refused as unsourced (C32). Leap
+  seconds: the IANA list (28 rows, expiring 2027-06-28) with a warning
+  beyond its word; a civil 23:59:60 accepted only where the table has
+  one, folded onto the following midnight. Zones: `ZoneSpec` (IANA, local
+  mean time, a fixed offset), the gap and overlap policies from the
+  settings, `ZoneResolution` with offset, source, era (current, earlier
+  rules, before the zone's first rule, decided against the offsets the
+  zone applies in the database's own year, never the clock), the
+  database version, the abbreviation, what the policy did and the
+  warnings; a stored resolution is itself a clock for replay; the
+  embedded database is `jiff`'s bundled tzdb (2026c), never the host's,
+  with suggestions for a misspelt zone. The local day from any
+  `SolarModel` with the three polar policies; ghati-pala exact on a
+  tenth-of-a-millisecond grid in both reckonings, every vipala of a day
+  round-tripping. Tests: 55 fixture charts reproduce the baseline's
+  instant (to the second; to the minute for its rounded local mean
+  time), offset, source, era and warnings, with the five era labels the
+  baseline took from its export-time offset named as deliberate
+  difference eleven (C33). `cargo xtask gen time` and `check-time`;
+  `core::settings` now exports its knob enums; the calendar's solar
+  model reports polar days; the Bikram Sambat table regenerated under
+  the tzdb-backed clock (same rows, the frame stamp naming the version).
 
 ## Decided (all on 2026-09-04 unless dated)
 
@@ -285,22 +320,20 @@ binding (ADR-0023).
 
 ## Now
 
-- `crates/time` proper from `03-design/time-and-timezone.md`: scales
-  and their conversions, Delta T as a table then a model, zone resolution
-  over the embedded tzdb with replay-safe metadata and the DST policies,
-  the local day and ghati-pala, on top of the seed (`OffsetHistory`,
-  Nepal's rows) and `core::time`. Then spike 3's port crate promoted to
-  `crates/port-ephemeris` with the drik `SolarModel` for the calendar
-  engine, so the memo's classical-against-modern comparison comes from
-  the SDK's own code. The memo's R1 to R3 (the committee's publications
-  and its tables of sankranti instants) pursued in parallel.
+- Spike 3's port crate promoted to `crates/port-ephemeris`, with the
+  drik `SolarModel` for the calendar engine (so the memo's
+  classical-against-modern comparison comes from the SDK's own code) and
+  the rise and set solver in `astro` (the local day's modern sunrise, the
+  `SUNRISE` unknown-time fallback, the sunrise convention knob). The
+  memo's R1 to R3 pursued in parallel.
 
 ## Next
 
-1. `crates/time` and the port promotion with the drik solar model as
-   above (they are "Now"); the `siddhanta` crate's remaining verses
-   (the sighra daily motion II.50 to 51, latitudes II.56 to 58, the
-   Lagna III.42 to 50) and its provider adapter behind the port.
+1. The port promotion with the drik solar model and the rise and set
+   solver as above (they are "Now"); the `siddhanta` crate's remaining
+   verses (the sighra daily motion II.50 to 51, latitudes II.56 to 58,
+   the Lagna III.42 to 50) and its provider adapter behind the port;
+   planetary hours in `time`; DUT1 from the provider port.
 2. ADR-0007's consequences into `02-architecture/07-binding-architecture.md`
    in Phase 1: the blob encoding as the designed wire format, finaliser-
    backed handles with explicit `dispose`, the `api:` metadata line as
@@ -338,5 +371,6 @@ binding (ADR-0023).
 | 2026-09-05 (sixth session) | Spike 4 done: Teistro Intl under `spikes/04-teistro-intl/`, the stable `MessageFormat 2` grammar with the SDK's functions and ICU4X plurals, the `i18n/` conventions on 49 entities and 13 messages in English and Nepali, a validator with twelve proven gates, the `.tpack` container, typed accessors for TypeScript and Dart with harnesses that reject wrong usages, and the CLI. Measured: renders 0.5 to 2.7 µs, a 6 KB pack verified in 1.4 µs, a lookup in 0.46 µs. Findings: stable syntax over the draft, no parameter sidecar, entities select on their own gender, exact ordinal keys for Nepali, source text in packs with a locale bundle to come. The design page written; Phase 0 exited. Next: the Phase 1 design pages (core types and catalogue first). |
 | 2026-09-05 (seventh session) | The five Phase 1 foundation design pages written in `03-design/` (core types and the catalogue, settings and profiles, time and time zones, the arithmetic calendars, Bikram Sambat), each following the ten-section template with a data model, algorithms, an API, errors, a budget, tests, localisation and open questions; the architecture pages they settle and the design index updated. Decisions recorded: the lagna is a point, not a graha; school-dependent values are kernel rows, never catalogue attributes; only the resolved settings are hashed; Delta T is a table then a model; `Resolution` gains `Defined`; Bikram Sambat's month-start rule is chosen by measurement against the official table. Next: `crates/core`. |
 | 2026-09-05 (eighth session) | `crates/core` built from its design page: the catalogue as YAML sources (53 kinds, 629 members, cited and marked) with a generator and a CI gate; keys, ids and suggestions; validated quantities with compile-fail proofs; the exact angle with a property-tested partition of the circle; bounded rationals; status codes and a small error; the provenance envelope; registries and limits; settings with thirteen knob groups, patches, five shipped profiles over a cited root, coherence rules and a canonical hash. Benchmarked: key resolution 40 ns, classification 1.7 ns, profile resolution 1.9 µs, settings hash 15 µs. Next: `crates/time` and `crates/calendar`. |
+| 2026-09-05 (eleventh session) | `crates/time` and `crates/port-timezone` built: scales and their stamps, Delta T as the IERS series (1956 to August 2026, fetched with provenance) then Espenak and Meeus with Morrison and Stephenson's uncertainties, the IANA leap seconds with folding and expiry, civil time, zone resolution over the embedded tzdb (2026c) with replay-safe metadata under the daylight-saving policies and an era decided without a clock, local mean time, the local day with the polar policies, ghati-pala exact on a tenth-of-a-millisecond grid; `gen time` and `check-time`. The 55 fixture charts reproduce the baseline's instant and metadata; five era labels differ by design (C33). Findings: the IERS carries UT1 only from 1956; Stephenson, Morrison and Hohenkerk's coefficients are not in hand (C32); an `f64` Julian day resolves fifty microseconds, so ghati-pala snaps to a hundred. Next: the port promotion with the drik solar model and the rise and set solver. |
 | 2026-09-05 (tenth session) | The Bikram Sambat computation engine: `crates/siddhanta` (the text by verse, exact mean places, the sine table, both equations, the four steps, motion, precession, declination, the day's arc; 54 ns for the Sun, bit-identical), the `astro` seed (the boundary solver), the `time` seed (offset histories, Nepal's rows) with `core::time`, and in `crates/calendar` the `SolarModel`, the sankranti finder, the month-start rules as cited rows, the engine, the fit report and the table regenerated for 1700 to 2500 BS with a CI gate. Measured: the text's Sun at Kathmandu under Nepal's clock with the Dharmasindhu's punya-kala rule reproduces 1490 of 1512 official month lengths (98.5 %), 116 of 126 years exactly, every year total and every New Year, no drift; the eleven residual boundaries lie within 25 minutes of the rule's boundary. Findings: the baseline's seven-hour epoch shift and 0.705 cutoff nearly cancel to the civil day; the two ayana sankrantis are the whole difference; exact trigonometry changes one boundary; the tradition's day count changes none. Next: `crates/time` proper, then the port promotion with the drik model. |
 | 2026-09-05 (ninth session) | `crates/calendar` built: the fixed day, Gregorian, Julian, mixed (1582, 1752, 1918) and ISO week with every day of −9999 to 9999 round-tripped and agreed with the `calendrical_calculations` oracle; Bikram Sambat over the baseline's table (1856 to 2457, official span stamped `Tabular`, the rest `Computed`) anchored on 13 April 1913; the source memo opened with the generator's findings (Surya Siddhanta at Kathmandu, Nepal's offset history, a fitted 0.705 cutoff, 87 % of month splits, drift within a day). Maintainer's mandate: compute Bikram Sambat from first principles for any year so Nepal's panchanga can use the SDK. Next: the Bikram Sambat engine (siddhanta Sun, drik through the port, rule rows, fit harness), then `crates/time`. |

@@ -29,6 +29,8 @@ impl FixedDay {
     pub const JD_EPOCH: f64 = 1_721_424.5;
     /// Fixed day 1: Monday, 1 January 1 CE.
     pub const EPOCH: FixedDay = FixedDay(1);
+    /// 1970 January 1, the Unix epoch, as a fixed day.
+    pub const UNIX_EPOCH: FixedDay = FixedDay(719_163);
 
     /// A fixed day.
     #[must_use]

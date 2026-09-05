@@ -25,7 +25,13 @@ report `Divergent`. Nothing else computes yet.
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
 - `crates/core`, `crates/calendar` (the arithmetic calendars and Bikram
-  Sambat), `crates/siddhanta` (the Surya Siddhanta model), the seeds of
-  `crates/astro` (the boundary solver) and `crates/time` (offset
-  histories), and the Bikram Sambat engine with its measurement
-  (`docs/calendars/bikram-sambat.md`).
+  Sambat), `crates/siddhanta` (the Surya Siddhanta model), the seed of
+  `crates/astro` (the boundary solver), and the Bikram Sambat engine with
+  its measurement (`docs/calendars/bikram-sambat.md`).
+- `crates/time` and `crates/port-timezone`: time scales with Delta T as
+  the IERS table (1956 to the present) then Espenak and Meeus (2006)
+  with Morrison and Stephenson's uncertainties, the IANA leap-second
+  table, civil time, zone resolution over the embedded tzdb with the
+  metadata a stored chart replays, local mean time, the sunrise-anchored
+  day with the polar policies, ghati-pala. Every zone resolution of the
+  55 fixture charts reproduces the baseline's instant and metadata.
