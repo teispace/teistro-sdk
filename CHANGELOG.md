@@ -41,8 +41,12 @@ Galactic Centre and the three Galactic Equator members) compute for the
 first time, over the star table's SIMBAD astrometry (Hipparcos, the new
 reduction, and Gaia DR3) and the SDK's own Earth ephemeris, so every
 provider gives the same sidereal longitudes under them; the star table
-itself (128 catalogued members) has places for the first time. Nothing
-else computes yet.
+itself (128 catalogued members) has places for the first time. The
+planetary phenomena compute for the first time: elongation, phase angle
+and illuminated fraction, apparent disc and horizontal parallax, and the
+visual magnitude under the Astronomical Almanac's models (Mallama and
+Hilton 2018 for the planets); so does the equation of time. Nothing else
+computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.

@@ -31,6 +31,10 @@ path = "src/bin/houses_table.rs"
 name = "teistro-ephemeris-teimeris-stars-table"
 path = "src/bin/stars_table.rs"
 
+[[bin]]
+name = "teistro-ephemeris-teimeris-pheno-table"
+path = "src/bin/pheno_table.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

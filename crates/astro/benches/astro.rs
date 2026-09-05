@@ -15,8 +15,8 @@ use teistro_astro::events::{Lattice, Quantity, Search};
 use teistro_astro::houses::{self, Input};
 use teistro_astro::precession::{self, PrecessionModel};
 use teistro_astro::rise_set::Solver;
-use teistro_astro::stars;
 use teistro_astro::{Completion, DeltaTModel, delta_t, sky};
+use teistro_astro::{phenomena, stars};
 use teistro_core::catalogue::{Ayanamsha, HouseSystem, Star};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Tt, Ut1};
 use teistro_core::settings::{OverridePolicy, PolarPolicy};
@@ -125,9 +125,20 @@ fn benches(c: &mut Criterion) {
     event_benches(c, &completion);
 }
 
-/// The event solvers over the test provider: a day's rise and set at
-/// Kathmandu, the Sun's ingresses and the Moon's tithis.
+/// The event solvers and the phenomena over the test provider: a day's
+/// rise and set at Kathmandu, the Sun's ingresses and the Moon's tithis,
+/// Mars's phenomena and the equation of time.
 fn event_benches(c: &mut Criterion, completion: &Completion<'_, TestProvider>) {
+    let tt = JulianDay::<Tt>::literal(2_460_000.5);
+    let ut1 = JulianDay::<Ut1>::literal(2_460_000.5);
+    c.bench_function("phenomena: Mars over the test provider", |b| {
+        b.iter(|| phenomena::phenomena(completion, Body::Mars, black_box(tt)));
+    });
+    c.bench_function("equation of time over the test provider", |b| {
+        b.iter(|| {
+            sky::equation_of_time_seconds(completion, black_box(ut1), DeltaTModel::TableThenModel)
+        });
+    });
     let kathmandu = Place::new(
         Latitude::literal(27.7172),
         Longitude::literal(85.324),

@@ -40,7 +40,11 @@ The astronomy layer of the Teistro SDK: everything above raw positions
   centre and the galactic poles placed on the equator and ecliptic of
   date from their ICRS astrometry (proper motion, parallax, deflection,
   aberration over the SDK's own Earth ephemeris, the frame bias,
-  precession, nutation), which the twelve star-anchored ayanamshas read.
+  precession, nutation), which the twelve star-anchored ayanamshas read;
+- the planetary phenomena (`phenomena`): elongation, phase angle and
+  illuminated fraction, the apparent disc and horizontal parallax, and
+  the visual magnitude under the Astronomical Almanac's models, over the
+  completion or a supplied geometry; and the equation of time (`sky`).
 
 ```rust
 use teistro_astro::rise_set::Solver;
@@ -59,5 +63,5 @@ assert!(day.arc().is_some());
 
 Design: `docs/03-design/ephemeris-port-and-adapters.md` (the port and
 the completion), `astro-events-and-crossings.md` (the solvers),
-`time-and-timezone.md` (Delta T), `astro-star-table.md` (the stars).
-Cusp speeds and house positions follow in Phase 2.
+`time-and-timezone.md` (Delta T), `astro-star-table.md` (the stars),
+`astro-planetary-phenomena.md` (the phenomena and the equation of time).
