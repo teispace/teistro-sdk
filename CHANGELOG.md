@@ -79,3 +79,17 @@ yet.
   revolutions fewer on the apsis, and that its star planets are modern
   positions (`docs/calendars/bikram-sambat.md`, R2; cruxes C38, C39). No
   computed number moved.
+- `crates/astro`: precession as a catalogue of models (Vondrák 2011 the
+  default, IAU 2006, IAU 1976, Newcomb) over new ERFA ports (the IAU 2006
+  angles and matrices, the long-term poles and matrices, the vector
+  primitives, each against ERFA's reference values) and Vondrák's own
+  obliquity series; the ayanamsha catalogue, every epoch-defined and
+  frame member computed from its published definition with the
+  fitted-model correction, mean or nutated, custom definitions linear;
+  the frame completion now completes a sidereal zodiac from the SDK's
+  catalogue when the provider declares no override, so `sdk-only`
+  sidereal charts compute for the first time. Against Teimeris's
+  recorded values (`fixtures/teimeris/ayanamsha.json`, 1044 rows) the
+  definitions stated in TT agree within 1e-7″ and those in Universal
+  Time within 2.1e-4″. The twelve star-anchored members are refused by
+  name until the star table (`docs/03-design/astro-ayanamsha-catalogue.md`).

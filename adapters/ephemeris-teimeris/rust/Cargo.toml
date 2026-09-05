@@ -19,7 +19,13 @@ path = "src/bin/kit.rs"
 name = "teistro-ephemeris-teimeris-bs-fit"
 path = "src/bin/bs_fit.rs"
 
+[[bin]]
+name = "teistro-ephemeris-teimeris-ayanamsha-table"
+path = "src/bin/ayanamsha_table.rs"
+
 [dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 teimeris = { path = "../../../../teimeris/bindings/rust/teimeris" }
 teistro-astro = { path = "../../../crates/astro" }
 teistro-calendar = { path = "../../../crates/calendar" }

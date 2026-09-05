@@ -28,16 +28,40 @@
 //! | [`ee00b`] | `eraEe00b` | the equation of the equinoxes (IAU 2000B) |
 //! | [`gst00b`] | `eraGst00b` | Greenwich apparent sidereal time (IAU 2000B) |
 //! | [`refco`] | `eraRefco` | the refraction constants of a standard model |
+//! | [`vector::ir`], [`vector::rx`], [`vector::ry`], [`vector::rz`], [`vector::rxr`], [`vector::tr`], [`vector::rxp`], [`vector::trxp`], [`vector::pxp`], [`vector::pdp`], [`vector::pm`], [`vector::pn`], [`vector::sxp`], [`vector::c2s`], [`vector::s2c`], [`vector::anpm`] | `eraIr` and kin | the vector and matrix primitives |
+//! | [`p06::p06e`] | `eraP06e` | the sixteen IAU 2006 precession angles |
+//! | [`p06::pfw06`] | `eraPfw06` | the IAU 2006 bias-precession Fukushima-Williams angles |
+//! | [`p06::fw2m`] | `eraFw2m` | a rotation matrix from Fukushima-Williams angles |
+//! | [`p06::pmat06`] | `eraPmat06` | the IAU 2006 bias-precession matrix |
+//! | [`p06::bp06`] | `eraBp06` | the frame bias, precession and bias-precession matrices (IAU 2006) |
+//! | [`p06::bi00`] | `eraBi00` | the frame bias constants (IAU 2000) |
+//! | [`ltp::ltpecl`] | `eraLtpecl` | the long-term ecliptic pole (Vondrák 2011) |
+//! | [`ltp::ltpequ`] | `eraLtpequ` | the long-term equator pole (Vondrák 2011) |
+//! | [`ltp::ltp`] | `eraLtp` | the long-term precession matrix (Vondrák 2011) |
+//! | [`ltp::ltpb`] | `eraLtpb` | the long-term precession matrix with the frame bias |
+//! | [`ltp::ltpeps`] | none | the long-term general precession and obliquity series of Vondrák, Capitaine and Wallace (2011), equations 10 and Table 5, which ERFA does not carry; checked at J2000.0 against the IAU 2006 obliquity and over a millennium either side |
 //!
 //! Nothing here reads a clock or allocates; every function is a pure
 //! computation on its arguments.
 
+pub mod ltp;
 pub mod nut00b;
+pub mod p06;
+pub mod vector;
 
 /// J2000.0 as a Julian day (`ERFA_DJ00`).
 pub const DJ00: f64 = 2_451_545.0;
 /// Days per Julian century (`ERFA_DJC`).
 pub const DJC: f64 = 36_525.0;
+
+/// The Modified Julian Date zero point, JD 2400000.5.
+pub const DJM0: f64 = 2_400_000.5;
+
+/// J2000.0 as a Modified Julian Date.
+pub const DJM00: f64 = 51_544.5;
+
+/// Days in a Julian year.
+pub const DJY: f64 = 365.25;
 /// Arcseconds to radians (`ERFA_DAS2R`, 4.848136811095359935899141e-6,
 /// written to the double's own precision).
 pub const DAS2R: f64 = 4.848_136_811_095_36e-6;

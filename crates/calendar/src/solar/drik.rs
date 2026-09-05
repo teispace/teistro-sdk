@@ -22,8 +22,8 @@ use crate::solar::{DayArc, DayLight, SolarModel};
 
 /// The drik Sun over a provider: positions through the port, the zodiac
 /// by a catalogued ayanamsha (the provider's own value under the override
-/// policy; the SDK's catalogue arrives in Phase 2), the day's arc from the
-/// SDK's solver under the profile's sunrise convention.
+/// policy, or the SDK's own catalogue), the day's arc from the SDK's
+/// solver under the profile's sunrise convention.
 ///
 /// ```
 /// use teistro_astro::DeltaTModel;
@@ -35,8 +35,10 @@ use crate::solar::{DayArc, DayLight, SolarModel};
 /// let provider = TestProvider::new();
 /// let drik = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
 /// assert!(drik.describe().starts_with("drik"));
-/// // The test provider has no ayanamsha, so a sidereal longitude is refused by name.
-/// assert!(drik.sidereal_sun_deg(2_451_545.0).unwrap_err().message.contains("ayanamsha"));
+/// // The test provider has no ayanamsha of its own, so the SDK's catalogue
+/// // supplies Lahiri's: the sidereal Sun at J2000.0 is the tropical one less 23.86°.
+/// let sidereal = drik.sidereal_sun_deg(2_451_545.0).unwrap();
+/// assert!((0.0..360.0).contains(&sidereal));
 /// ```
 pub struct DrikSun<'p, P: EphemerisProvider + ?Sized> {
     completion: Completion<'p, P>,

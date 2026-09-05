@@ -10,8 +10,11 @@
 )]
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use teistro_astro::ayanamsha;
+use teistro_astro::precession::{self, PrecessionModel};
 use teistro_astro::rise_set::Solver;
 use teistro_astro::{Completion, DeltaTModel, delta_t, sky};
+use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Tt, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
@@ -30,6 +33,35 @@ fn benches(c: &mut Criterion) {
     c.bench_function("delta_t: table", |b| {
         b.iter(|| delta_t(black_box(ut1), DeltaTModel::TableThenModel));
     });
+    c.bench_function("precession matrix (Vondrak 2011)", |b| {
+        b.iter(|| precession::matrix(PrecessionModel::Vondrak2011, black_box(tt)));
+    });
+    c.bench_function("precession matrix (IAU 2006)", |b| {
+        b.iter(|| precession::matrix(PrecessionModel::Iau2006, black_box(tt)));
+    });
+    c.bench_function("ayanamsha: Lahiri, mean (Vondrak 2011)", |b| {
+        b.iter(|| {
+            ayanamsha::mean_deg(
+                &Ayanamsha::Lahiri.into(),
+                black_box(tt),
+                PrecessionModel::Vondrak2011,
+                DeltaTModel::TableThenModel,
+            )
+        });
+    });
+    c.bench_function(
+        "ayanamsha: Fagan/Bradley, mean (fitted with Newcomb)",
+        |b| {
+            b.iter(|| {
+                ayanamsha::mean_deg(
+                    &Ayanamsha::FaganBradley.into(),
+                    black_box(tt),
+                    PrecessionModel::Vondrak2011,
+                    DeltaTModel::TableThenModel,
+                )
+            });
+        },
+    );
     let provider = TestProvider::new();
     let completion = Completion::new(
         &provider,

@@ -14,6 +14,13 @@
 //! - [`completion`]: frame completion over the ephemeris port, from the
 //!   frame a provider returns to the frame a caller asks for, with the
 //!   override policy deciding who does each step and every step stamped;
+//! - [`precession`]: precession as a catalogue of models (Vondrák 2011,
+//!   IAU 2006, IAU 1976, Newcomb) over the ported routines, with the mean
+//!   obliquity each is consistent with;
+//! - [`ayanamsha`]: the ayanamsha catalogue, every epoch-defined member
+//!   computed by the SDK from its published epoch and value carried by
+//!   precession, mean or with nutation, so a sidereal zodiac needs no
+//!   provider override;
 //! - [`solve`]: the shared boundary solver, one root finder every event
 //!   search in the SDK goes through;
 //! - [`rise_set`]: the rise and set solver under a horizon convention,
@@ -28,9 +35,11 @@
 //! assert!((dt.seconds - 63.83).abs() < 0.02);
 //! ```
 
+pub mod ayanamsha;
 pub mod completion;
 pub mod delta_t;
 pub mod iau;
+pub mod precession;
 pub mod rise_set;
 pub mod scale;
 pub mod sky;

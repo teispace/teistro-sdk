@@ -160,7 +160,11 @@ native frame and completes the difference:
   `native-only` when it declares the override, from the SDK under
   `sdk-only`; speeds by central difference over 1e-3 day;
 - zodiac: the sidereal shift through the ayanamsha, from the provider's
-  override or, in Phase 2, the SDK's catalogue; the shift is applied
+  override under `prefer-native` and `native-only` when it declares one,
+  otherwise from the SDK's own catalogue (`astro-ayanamsha-catalogue.md`:
+  every epoch-defined member, the mean value carried by the precession
+  model in force, within 1e-7″ of Teimeris; the twelve star-anchored
+  members refused by name until the star table); the shift is applied
   while the columns are ecliptic (before a rotation out of the ecliptic,
   after one into it), so a sidereal ecliptic native frame completes to
   tropical equatorial coordinates, which is what the rise and set solver
