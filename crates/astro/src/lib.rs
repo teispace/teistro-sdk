@@ -27,7 +27,10 @@
 //! - [`solve`]: the shared boundary solver, one root finder every event
 //!   search in the SDK goes through;
 //! - [`rise_set`]: the rise and set solver under a horizon convention,
-//!   with polar days and nights as reported states.
+//!   with polar days and nights as reported states;
+//! - [`events`]: crossings of a longitude, a composite angle or a speed
+//!   over a lattice of boundaries, and stations, one kernel over the
+//!   boundary solver.
 //!
 //! ```
 //! use teistro_astro::delta_t::{DeltaTModel, delta_t};
@@ -41,6 +44,7 @@
 pub mod ayanamsha;
 pub mod completion;
 pub mod delta_t;
+pub mod events;
 pub mod houses;
 pub mod iau;
 pub mod precession;
@@ -57,4 +61,4 @@ pub use delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
 pub use rise_set::{DayEvents, HorizonEvent, Method, Outcome};
 pub use scale::{tt_from_ut1, tt_of, ut1_from_tt};
 pub use sky::{Apparent, ApparentPositions, Spherical, obliquity, sidereal_time_deg};
-pub use solve::{Caps, Crossing, SolveError, first_zero, next_crossing};
+pub use solve::{Caps, Crossing, SolveError, first_zero, next_crossing, refine};

@@ -11,6 +11,7 @@
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use teistro_astro::ayanamsha;
+use teistro_astro::events::{Lattice, Quantity, Search};
 use teistro_astro::houses::{self, Input};
 use teistro_astro::precession::{self, PrecessionModel};
 use teistro_astro::rise_set::Solver;
@@ -104,13 +105,19 @@ fn benches(c: &mut Criterion) {
             b.iter(|| completion.positions(black_box(&equatorial)));
         },
     );
+    event_benches(c, &completion);
+}
+
+/// The event solvers over the test provider: a day's rise and set at
+/// Kathmandu, the Sun's ingresses and the Moon's tithis.
+fn event_benches(c: &mut Criterion, completion: &Completion<'_, TestProvider>) {
     let kathmandu = Place::new(
         Latitude::literal(27.7172),
         Longitude::literal(85.324),
         Altitude::literal(1400.0),
     );
     let solver = Solver::new(
-        &completion,
+        completion,
         Body::Sun,
         kathmandu,
         Horizon::CENTRE_NO_REFRACTION,
@@ -121,6 +128,22 @@ fn benches(c: &mut Criterion) {
         "rise and set: a day at Kathmandu over the test provider",
         |b| {
             b.iter(|| solver.day(black_box(midnight)));
+        },
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let from = JulianDay::<Ut1>::literal(2_460_000.5);
+    let ingresses = Search::new(&longitudes, Quantity::Longitude(Body::Sun), Lattice::SIGNS);
+    c.bench_function(
+        "crossings: the Sun's twelve ingresses of a year over the test provider",
+        |b| {
+            b.iter(|| ingresses.between(black_box(from), from.plus_days(365.25).expect("a year")));
+        },
+    );
+    let tithis = Search::new(&longitudes, Quantity::ELONGATION, Lattice::TITHIS);
+    c.bench_function(
+        "crossings: the thirty tithis of a lunation over the test provider",
+        |b| {
+            b.iter(|| tithis.between(black_box(from), from.plus_days(29.53).expect("a month")));
         },
     );
 }

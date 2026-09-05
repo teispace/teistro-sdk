@@ -26,8 +26,16 @@ unchanged by their move from `time` to `astro`. The Surya Siddhanta's
 star planets now report the text's daily motion (II.50 to 51) instead of
 a central difference of the text's places, up to 0.23° a day apart for
 Mars; their longitudes did not move. The text's latitudes, its Lagna and
-the planetary hours compute for the first time. Nothing else computes
-yet.
+the planetary hours compute for the first time. Crossings and stations
+compute for the first time: sign ingresses with their retrograde
+re-entries, the tithi, nakshatra, yoga and karana boundaries, composite
+angles and single targets, and the stations, over any source of
+longitudes. The boundary solver's narrowing moved from bisection to the
+ITP method: every searched instant (a sunrise, a sankranti, a boundary)
+is still the middle of a bracket no wider than its tolerance, so an
+instant may differ from the previous release's by up to that tolerance
+(under a hundredth of a second for the sankranti and the sunrise), in
+about a quarter of the evaluations. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
