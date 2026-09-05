@@ -700,7 +700,9 @@
     "NEPAL_SAMBAT": {},
     "BUDDHA": {},
     "KOLLAM": {},
-    "BENGALI": {}
+    "BENGALI": {},
+    "COMMON_ERA": {},
+    "BEFORE_COMMON_ERA": {}
   },
   "body_class": {
     "LUMINARY": {},

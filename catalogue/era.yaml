@@ -52,3 +52,17 @@ members:
       - text: "calendar-time-architecture"
         ref: "docs/02-architecture/04-calendar-time-architecture.md"
     mark: V
+  - key: COMMON_ERA
+    id: 7
+    doc: "The common era of the Gregorian and Julian calendars"
+    sources:
+      - text: "calendar-gregorian-julian"
+        ref: "docs/03-design/calendar-gregorian-julian.md"
+    mark: V
+  - key: BEFORE_COMMON_ERA
+    id: 8
+    doc: "Before the common era; year 1 BCE is astronomical year 0"
+    sources:
+      - text: "calendar-gregorian-julian"
+        ref: "docs/03-design/calendar-gregorian-julian.md"
+    mark: V

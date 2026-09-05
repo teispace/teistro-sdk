@@ -26,11 +26,17 @@ pub enum Era {
     Kollam = 5,
     /// Bengali
     Bengali = 6,
+    /// The common era of the Gregorian and Julian calendars
+    CommonEra = 7,
+    /// Before the common era; year 1 BCE is astronomical year 0
+    BeforeCommonEra = 8,
 }
 
-const BY_KEY: [(&str, Era); 7] = [
+const BY_KEY: [(&str, Era); 9] = [
+    ("BEFORE_COMMON_ERA", Era::BeforeCommonEra),
     ("BENGALI", Era::Bengali),
     ("BUDDHA", Era::Buddha),
+    ("COMMON_ERA", Era::CommonEra),
     ("KALI", Era::Kali),
     ("KOLLAM", Era::Kollam),
     ("NEPAL_SAMBAT", Era::NepalSambat),
@@ -46,7 +52,7 @@ impl Era {
     pub const KIND: Kind = Kind::Era;
 
     /// Every member, in id order.
-    pub const ALL: [Era; 7] = [
+    pub const ALL: [Era; 9] = [
         Era::Vikrama,
         Era::Shaka,
         Era::Kali,
@@ -54,6 +60,8 @@ impl Era {
         Era::Buddha,
         Era::Kollam,
         Era::Bengali,
+        Era::CommonEra,
+        Era::BeforeCommonEra,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -67,6 +75,8 @@ impl Era {
             Era::Buddha => "BUDDHA",
             Era::Kollam => "KOLLAM",
             Era::Bengali => "BENGALI",
+            Era::CommonEra => "COMMON_ERA",
+            Era::BeforeCommonEra => "BEFORE_COMMON_ERA",
         }
     }
 
@@ -81,6 +91,8 @@ impl Era {
             Era::Buddha => "era.BUDDHA",
             Era::Kollam => "era.KOLLAM",
             Era::Bengali => "era.BENGALI",
+            Era::CommonEra => "era.COMMON_ERA",
+            Era::BeforeCommonEra => "era.BEFORE_COMMON_ERA",
         }
     }
 
@@ -95,6 +107,8 @@ impl Era {
             Era::Buddha => "Buddha",
             Era::Kollam => "Kollam",
             Era::Bengali => "Bengali",
+            Era::CommonEra => "The common era of the Gregorian and Julian calendars",
+            Era::BeforeCommonEra => "Before the common era; year 1 BCE is astronomical year 0",
         }
     }
 
@@ -109,6 +123,8 @@ impl Era {
             Era::Buddha => None,
             Era::Kollam => None,
             Era::Bengali => None,
+            Era::CommonEra => None,
+            Era::BeforeCommonEra => None,
         }
     }
 
@@ -123,6 +139,8 @@ impl Era {
             Era::Buddha => Mark::Verified,
             Era::Kollam => Mark::Verified,
             Era::Bengali => Mark::Verified,
+            Era::CommonEra => Mark::Verified,
+            Era::BeforeCommonEra => Mark::Verified,
         }
     }
 
@@ -137,6 +155,8 @@ impl Era {
             Era::Buddha => false,
             Era::Kollam => false,
             Era::Bengali => false,
+            Era::CommonEra => false,
+            Era::BeforeCommonEra => false,
         }
     }
 
@@ -151,6 +171,8 @@ impl Era {
             Era::Buddha => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
             Era::Kollam => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
             Era::Bengali => &[Source { text: "calendar-time-architecture", reference: "docs/02-architecture/04-calendar-time-architecture.md" }],
+            Era::CommonEra => &[Source { text: "calendar-gregorian-julian", reference: "docs/03-design/calendar-gregorian-julian.md" }],
+            Era::BeforeCommonEra => &[Source { text: "calendar-gregorian-julian", reference: "docs/03-design/calendar-gregorian-julian.md" }],
         }
     }
 
@@ -165,6 +187,8 @@ impl Era {
             Era::Buddha => &[],
             Era::Kollam => &[],
             Era::Bengali => &[],
+            Era::CommonEra => &[],
+            Era::BeforeCommonEra => &[],
         }
     }
 
@@ -197,6 +221,8 @@ impl Era {
             4 => Some(Era::Buddha),
             5 => Some(Era::Kollam),
             6 => Some(Era::Bengali),
+            7 => Some(Era::CommonEra),
+            8 => Some(Era::BeforeCommonEra),
             _ => None,
         }
     }

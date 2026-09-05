@@ -344,7 +344,7 @@ impl Kind {
             Kind::Direction => 8,
             Kind::Gender => 3,
             Kind::Calendar => 6,
-            Kind::Era => 7,
+            Kind::Era => 9,
             Kind::BodyClass => 4,
             Kind::Parity => 2,
             Kind::Rising => 3,

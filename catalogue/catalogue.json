@@ -12899,6 +12899,40 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "COMMON_ERA",
+          "id": 7,
+          "doc": "The common era of the Gregorian and Julian calendars",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "calendar-gregorian-julian",
+              "ref": "docs/03-design/calendar-gregorian-julian.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BEFORE_COMMON_ERA",
+          "id": 8,
+          "doc": "Before the common era; year 1 BCE is astronomical year 0",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "calendar-gregorian-julian",
+              "ref": "docs/03-design/calendar-gregorian-julian.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },
