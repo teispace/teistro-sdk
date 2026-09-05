@@ -53,11 +53,10 @@ const PARALLAX_BOUND_ARCSEC: f64 = 0.5;
 /// sidereal time, through 2030.
 const EQUATION_BOUND_SECONDS: f64 = 1e-3;
 
-/// Beyond 2030 the engine's own equation of time and the Sun it places at
-/// a UT1 instant take different Delta T extrapolations, so its value is
-/// 0.12 s from the one its own Sun implies (1.9″ of hour angle); the SDK's
-/// two are one construction. Held loosely there, and recorded in
-/// `docs/03-design/astro-planetary-phenomena.md`.
+/// From 2050 the engine's sidereal time steps by 1.9″ where its long-term
+/// branch takes over (`docs/05-testing/02-engine-findings.md`, F1), so its
+/// equation of time is 0.127 s from the one its own Sun implies; the SDK's
+/// sidereal time is continuous. Held loosely there.
 const LATER_EQUATION_BOUND_SECONDS: f64 = 0.2;
 const LAST_CONSISTENT_JD: f64 = 2_462_502.5;
 

@@ -164,10 +164,11 @@ three position requests through the completion.
   apparent distance: 0.32″ of the Moon's 3400″ (bound 0.5″). The engine
   writes zero for a point's magnitude where the SDK writes none. The
   equation of time from the engine's Sun with the SDK's sidereal time
-  within 0.0003 s through 2030 (bound 0.001 s); beyond 2030 the engine's
-  own equation of time and the Sun it places at a UT1 instant take
-  different Delta T extrapolations, 0.12 s apart (1.9″ of hour angle),
-  where the SDK's two are one construction; held at 0.2 s there.
+  within 0.0003 s through 2030 (bound 0.001 s); from 2050 the engine's
+  sidereal time steps by 1.9″ where its long-term branch takes over
+  (`05-testing/02-engine-findings.md`, F1), so its equation of time is
+  0.127 s from the one its own Sun implies; the SDK's GAST is continuous
+  and the comparison is held at 0.2 s there.
 - By hand over the engine's positions through the completion (the
   adapter's `tests/phenomena.rs`, ten bodies at six instants): the phase
   angles within 1.6e-12° and the elongations within 2.7e-13°, the

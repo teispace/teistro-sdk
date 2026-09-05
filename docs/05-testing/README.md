@@ -17,12 +17,13 @@ module must pass to be done.
 | page | contents |
 |---|---|
 | [`01-golden-vectors.md`](01-golden-vectors.md) | **drafted**: the sources by rank, the spike 1 result (115 baseline fixtures over 55 charts, the searched boundary instants, the settings-profile variants, the tree-as-rows format, ten baseline conventions for the deliberate-difference registry), how the harness will consume the corpus, and the move of `fixtures/` into the separate CC0 conformance repository before Phase 1 exits (ADR-0022) |
-| `02-conformance-harness.md` | the runner, the central tolerance file keyed by field and provider class, deliberate-difference registry, the cross-architecture hash matrix, generated `CONFORMANCE.md` |
-| `03-property-tests.md` | invariants per module |
-| `04-cross-binding-parity.md` | canonical JSON emission per binding, the diff gate |
-| `05-provider-conformance-kit.md` | the kit shipped to consumers |
-| `06-fuzzing.md` | targets, corpus, schedule |
-| `07-benchmarks.md` | harness, baselines, results schema |
+| [`02-engine-findings.md`](02-engine-findings.md) | **active**: the register of discrepancies traced to the reference engine, each measured, filed upstream with a reproduction and assigned, with the bound the SDK holds it at meanwhile |
+| `03-conformance-harness.md` | the runner, the central tolerance file keyed by field and provider class, deliberate-difference registry, the cross-architecture hash matrix, generated `CONFORMANCE.md` |
+| `04-property-tests.md` | invariants per module |
+| `05-cross-binding-parity.md` | canonical JSON emission per binding, the diff gate |
+| `06-provider-conformance-kit.md` | the kit shipped to consumers |
+| `07-fuzzing.md` | targets, corpus, schedule |
+| `08-benchmarks.md` | harness, baselines, results schema |
 | `08-coverage.md` | floors per crate and the gate |
 | `09-type-safety.md` | `trybuild` compile-fail tests, the strictness consumer projects per binding, the shared validator corpus (ADR-0023) |
 | `perf/` | profiling findings, one file per investigation, so the same investigation is not repeated |
