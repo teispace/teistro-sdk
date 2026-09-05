@@ -25,8 +25,7 @@ use teistro_port_ephemeris::{EphemerisProvider, TimeScale};
 /// ancient anchors the historical definitions are stated at.
 const EPOCH_YEARS: [f64; 24] = [
     -700.0, -500.0, -300.0, -100.0, 100.0, 300.0, 500.0, 700.0, 900.0, 1100.0, 1300.0, 1500.0,
-    1600.0, 1700.0, 1800.0, 1850.0, 1900.0, 1950.0, 2000.0, 2025.0, 2050.0, 2100.0, 2300.0,
-    2500.0,
+    1600.0, 1700.0, 1800.0, 1850.0, 1900.0, 1950.0, 2000.0, 2025.0, 2050.0, 2100.0, 2300.0, 2500.0,
 ];
 
 #[derive(Serialize)]
@@ -74,7 +73,10 @@ fn main() -> ExitCode {
     }
     let table = Table {
         schema: "teistro-conformance/ayanamsha-table/1",
-        tool: format!("{} {}", capabilities.identity.name, capabilities.identity.version),
+        tool: format!(
+            "{} {}",
+            capabilities.identity.name, capabilities.identity.version
+        ),
         scale: "TT",
         basis: "MEAN",
         rows,

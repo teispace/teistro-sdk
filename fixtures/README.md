@@ -17,7 +17,7 @@ files are under this repository's licence.
 | `pyjhora/` | PyJHora | 3 | planned |
 | `texts/` | classical texts and printed almanacs, hand-entered with citations | 1 | planned |
 | `official/` | the authority's own publications: the national panchanga committee's yearly panchanga for BS 2082 and 2083, read from its published files | 1 for the official calendar | 24 sankranti instants, 4 rows of printed places, 22 days of sunrise and sunset, 8 tithi ends (2026-09-05) |
-| `teimeris/` | Teimeris | 2 | `ayanamsha.json`: the engine's mean ayanamsha for every epoch-defined member at 24 Julian epochs from −700 to 2500, 1044 rows, written by the adapter's `ayanamsha-table` binary (teimeris 0.1.0, 2026-09-05) |
+| `teimeris/` | Teimeris | 2 | `ayanamsha.json`: the engine's mean ayanamsha for every epoch-defined member at 24 Julian epochs from −700 to 2500, 1044 rows, written by the adapter's `ayanamsha-table` binary; `houses.json`: the engine's cusps and angles for twenty-one house systems at ten latitudes, two longitudes and three instants, 1260 rows, by its `houses-table` binary (teimeris 0.1.0, 2026-09-05) |
 
 `tolerances.json` is the one central tolerance file, keyed by field and
 provider class, never per fixture. It is provisional until the harness

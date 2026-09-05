@@ -247,7 +247,9 @@ impl TeimerisProvider {
     }
 
     /// Runs `f` with the context, serialised.
-    fn with_context<T>(&self, f: impl FnOnce(&Context) -> T) -> T {
+    /// Runs a closure over the engine's context, for the adapter's own
+    /// binaries that read the engine directly (the reference tables).
+    pub fn with_context<T>(&self, f: impl FnOnce(&Context) -> T) -> T {
         let guard = self.context.lock().unwrap_or_else(PoisonError::into_inner);
         f(&guard)
     }
