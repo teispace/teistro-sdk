@@ -21,7 +21,14 @@ The astronomy layer of the Teistro SDK: everything above raw positions
 - the shared boundary solver (`solve`): one root finder every event
   search in the SDK goes through;
 - the rise and set solver (`rise_set`) under a horizon convention, with
-  polar days and nights reported as absences.
+  polar days and nights reported as absences;
+- precession as a catalogue of models (`precession`: Vondrák 2011 the
+  default, IAU 2006, IAU 1976, Newcomb) over the ported IAU 2006 and
+  long-term routines, with the mean obliquity each is consistent with;
+- the ayanamsha catalogue (`ayanamsha`): every epoch-defined member
+  computed from its published epoch and value carried by precession,
+  mean or with nutation, within 1e-7″ of Teimeris, so a sidereal zodiac
+  needs no provider override.
 
 ```rust
 use teistro_astro::rise_set::Solver;

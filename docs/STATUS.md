@@ -11,7 +11,13 @@ design pages.
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-05, end of the fourteenth session (the
+**Last updated:** 2026-09-05, end of the fifteenth session (Phase 2's
+astronomy begun: `astro::precession` as a catalogue of four models over
+new ERFA ports, `astro::ayanamsha` computing every epoch-defined member
+within 1e-7″ of Teimeris over 1044 recorded rows, the completion
+completing the sidereal zodiac from the SDK's catalogue, the design
+pages `astro-timescales-and-frames.md` and
+`astro-ayanamsha-catalogue.md`); before that the fourteenth session (the
 national panchanga committee's 2082 and 2083 panchangas obtained from
 `npns.gov.np` through the browser and read into
 `fixtures/official/npns-2082-2083.json`: the SDK's engine reproduces all
@@ -377,6 +383,28 @@ provider's DUT1).
   Tests: `crates/calendar/tests/official.rs`,
   `crates/siddhanta/tests/official.rs`. Memo R1 to R3 revised, cruxes
   C28 and C30 updated, C38 and C39 added, fixtures README `official/`.
+- 2026-09-05 (fifteenth session): Phase 2's astronomy begun. ERFA ports
+  added with their reference values: the IAU 2006 precession angles and
+  matrices (`p06e`, `pfw06`, `fw2m`, `pmat06`, `bp06`, `bi00`), the
+  long-term poles and matrices of Vondrák 2011 (`ltpecl`, `ltpequ`,
+  `ltp`, `ltpb`) with the paper's own obliquity series (`ltpeps`, a
+  microarcsecond at J2000), and the vector primitives.
+  `astro::precession`: four models (Vondrák 2011 the default, IAU 2006,
+  IAU 1976, Newcomb) with the obliquity each is consistent with; 142 ns
+  a matrix. `astro::ayanamsha`: the forty-seven members as definitions
+  (epoch and value, frame, anchor), the published construction with
+  the fitted-model correction, mean and nutated values, custom linear
+  definitions, the twelve anchored members refused by name; 0.58 µs a
+  value. The completion completes a sidereal zodiac from the catalogue
+  when the provider declares no override. Measured against Teimeris's
+  recorded values (`fixtures/teimeris/ayanamsha.json`, 1044 rows from
+  the adapter's new `ayanamsha-table` binary): TT-epoch definitions
+  within 1e-7″ (bit-identical in most rows), UT-epoch definitions within
+  2.1e-4″ (the two Delta T models in antiquity). Design pages written:
+  `astro-timescales-and-frames.md` (the models, the completion steps
+  built and designed), `astro-ayanamsha-catalogue.md` (every member with
+  its source); the port page, module catalogue, fixtures README and
+  astro README revised.
 
 ## Decided (all on 2026-09-04 unless dated)
 
@@ -410,14 +438,15 @@ binding (ADR-0023).
 
 ## Now
 
-- Phase 2's astronomy pages and their first code: `astro`'s time scales
-  and frames page (the completion's centre, equinox and corrections
-  steps: light time, aberration, deflection, nutation, precession, so a
-  J2000 geometric provider completes to the canonical frame), the
-  ayanamsha catalogue in `astro` (so `sdk-only` completes the zodiac
-  without a provider override), the house systems, and the crossings
-  and stations kernel over the boundary solver
-  (`astro-events-and-crossings.md`, next revision). The memo's R3 stays
+- Phase 2's astronomy, continued: the house systems page and code
+  (`astro-house-systems.md`: every system Swiss and Teimeris offer with
+  the polar policy, held to Teimeris at ten latitudes and to the
+  baseline's fixtures); the crossings and stations kernel over the
+  boundary solver (`astro-events-and-crossings.md`, next revision); the
+  star table (`astro-star-table.md`: the anchors and the yogataras from
+  Hipparcos and Gaia, proper motion, aberration) that unlocks the twelve
+  anchored ayanamshas. The completion's centre, corrections and equinox
+  steps wait for the built-in ephemeris (Phase 3). The memo's R3 stays
   open (a third source; the committee's earlier years are not online).
 
 ## Next
@@ -465,5 +494,6 @@ binding (ADR-0023).
 | 2026-09-05 (twelfth session) | Spike 3's port promoted into `crates/port-ephemeris` (with the rise and set override), `crates/astro` (Delta T moved in from `time`; the ERFA ports with a provenance table; sidereal time and the obliquity; frame completion; the rise and set solver) and `crates/ephemeris-kit` (fifteen checks); `DrikSun` for the calendars; the local day's convention and the `SUNRISE` fallback; the adapters under `adapters/` with a Teimeris rise and set override and a `bs-fit` binary. Measured: 0.13 s against Teimeris's geometric sunrise, 7.3 s refracted at 64°N (C34), 2.5 s against the fixtures below 60° (C35); modern positions 65 % of the official Bikram Sambat months against the text's 98.5 %; the committee names the Surya Siddhanta as its method. Next: the `siddhanta` verses and provider adapter, planetary hours, DUT1. |
 | 2026-09-05 (thirteenth session) | `crates/siddhanta` completed to the text (the sighra daily motion, the latitudes, the Lagna) against Burgess's 1860 worked computation, and presented behind the ephemeris port as a classical astronomy (`SiddhantaProvider`) that passes the kit; the port's `Astronomy`, `SpeedModel`, `DistanceUnit` and `DUT1` override; the kit's sixteenth check, its second-difference continuity and its informational rows for a classical provider (C36, C37); the completion's zodiac-then-rotation order; the planetary hours in `time` under `hora_reckoning` (proportional, as 52 of 55 fixtures decide and the other three cannot) and UT1 from a provider's DUT1. Next: Phase 2's astronomy pages, the ayanamsha catalogue, houses, crossings and stations. |
 | 2026-09-05 (fourteenth session) | The national panchanga committee's 2082 and 2083 panchangas fetched from `npns.gov.np` through the browser and read into `fixtures/official/npns-2082-2083.json` (24 sankranti instants, printed places, sunrise and sunset, tithi ends). The SDK's engine reproduces every instant within 1.6 minutes and every month start; the committee's Sun is the text's within 3″, its Moon the text's with four revolutions fewer on the apsis, its star planets modern positions in the Lahiri frame, its sunrise modern under its own convention. R2 closed for the method; C30 explained as the earlier makers' decisions; C38 and C39 opened. Next: Phase 2's astronomy pages. |
+| 2026-09-05 (fifteenth session) | Phase 2's astronomy begun: new ERFA ports (IAU 2006 precession, Vondrák 2011 long-term poles and matrices, the vector primitives) with their reference values; `astro::precession` as four models with consistent obliquities; `astro::ayanamsha` computing every epoch-defined member from its published definition with the fitted-model correction, mean or nutated, custom definitions, the anchored members refused by name; the completion completing the sidereal zodiac from the SDK's catalogue. Measured: TT-epoch definitions within 1e-7″ of Teimeris and UT-epoch ones within 2.1e-4″ over 1044 recorded rows; 142 ns a precession matrix, 0.58 µs an ayanamsha. Design pages `astro-timescales-and-frames.md` and `astro-ayanamsha-catalogue.md`. Next: houses, crossings and stations, the star table. |
 | 2026-09-05 (tenth session) | The Bikram Sambat computation engine: `crates/siddhanta` (the text by verse, exact mean places, the sine table, both equations, the four steps, motion, precession, declination, the day's arc; 54 ns for the Sun, bit-identical), the `astro` seed (the boundary solver), the `time` seed (offset histories, Nepal's rows) with `core::time`, and in `crates/calendar` the `SolarModel`, the sankranti finder, the month-start rules as cited rows, the engine, the fit report and the table regenerated for 1700 to 2500 BS with a CI gate. Measured: the text's Sun at Kathmandu under Nepal's clock with the Dharmasindhu's punya-kala rule reproduces 1490 of 1512 official month lengths (98.5 %), 116 of 126 years exactly, every year total and every New Year, no drift; the eleven residual boundaries lie within 25 minutes of the rule's boundary. Findings: the baseline's seven-hour epoch shift and 0.705 cutoff nearly cancel to the civil day; the two ayana sankrantis are the whole difference; exact trigonometry changes one boundary; the tradition's day count changes none. Next: `crates/time` proper, then the port promotion with the drik model. |
 | 2026-09-05 (ninth session) | `crates/calendar` built: the fixed day, Gregorian, Julian, mixed (1582, 1752, 1918) and ISO week with every day of −9999 to 9999 round-tripped and agreed with the `calendrical_calculations` oracle; Bikram Sambat over the baseline's table (1856 to 2457, official span stamped `Tabular`, the rest `Computed`) anchored on 13 April 1913; the source memo opened with the generator's findings (Surya Siddhanta at Kathmandu, Nepal's offset history, a fitted 0.705 cutoff, 87 % of month splits, drift within a day). Maintainer's mandate: compute Bikram Sambat from first principles for any year so Nepal's panchanga can use the SDK. Next: the Bikram Sambat engine (siddhanta Sun, drik through the port, rule rows, fit harness), then `crates/time`. |

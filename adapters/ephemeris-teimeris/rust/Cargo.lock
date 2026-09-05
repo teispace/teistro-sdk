@@ -354,6 +354,7 @@ dependencies = [
 name = "teistro-ephemeris-teimeris"
 version = "0.0.0"
 dependencies = [
+ "serde",
  "serde_json",
  "teimeris",
  "teistro-astro",

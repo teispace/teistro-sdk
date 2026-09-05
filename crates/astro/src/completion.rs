@@ -16,14 +16,16 @@ use core::fmt;
 use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Ut1};
+use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
     Body, Capabilities, Cell, Coordinates, EphemerisProvider, Obliquity, Overrides,
     PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
+use crate::ayanamsha;
 use crate::delta_t::DeltaTModel;
+use crate::precession::PrecessionModel;
 use crate::scale::tt_of;
 use crate::sky::{self, Apparent, ApparentPositions, Spherical};
 
@@ -171,23 +173,64 @@ pub struct Completion<'p, P: EphemerisProvider + ?Sized> {
     capabilities: Capabilities,
     policy: OverridePolicy,
     delta_t: DeltaTModel,
+    precession: PrecessionModel,
 }
 
 impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// Binds a provider under a policy; the capabilities are read once.
+    /// The SDK's ayanamshas are carried by the default precession model
+    /// until [`Completion::with_precession`] says otherwise.
     pub fn new(provider: &'p P, policy: OverridePolicy, delta_t: DeltaTModel) -> Completion<'p, P> {
         Completion {
             provider,
             capabilities: provider.capabilities(),
             policy,
             delta_t,
+            precession: PrecessionModel::default(),
         }
+    }
+
+    /// The precession model the SDK's ayanamshas are carried by.
+    #[must_use]
+    pub const fn with_precession(mut self, model: PrecessionModel) -> Self {
+        self.precession = model;
+        self
     }
 
     /// The policy in force.
     #[must_use]
     pub const fn policy(&self) -> OverridePolicy {
         self.policy
+    }
+
+    /// The precession model in force for the SDK's ayanamshas.
+    #[must_use]
+    pub const fn precession(&self) -> PrecessionModel {
+        self.precession
+    }
+
+    /// The TT instant of a request's instant, converting from UT1 through
+    /// the Delta T model and stamping the step.
+    fn tt_at(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        steps: &mut Vec<Step>,
+    ) -> Result<JulianDay<Tt>, CompletionError> {
+        match scale {
+            TimeScale::Tt => Ok(JulianDay::try_new(jd).map_err(Error::from)?),
+            TimeScale::Ut1 => {
+                let (tt, _) = tt_of(JulianDay::try_new(jd).map_err(Error::from)?, self.delta_t)?;
+                push_once(
+                    steps,
+                    Step {
+                        name: "delta-t",
+                        implementation: Implementation::Sdk,
+                    },
+                );
+                Ok(tt)
+            }
+        }
     }
 
     /// The provider's capabilities, as read at construction.
@@ -238,21 +281,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         let value = if implementation == Implementation::Native {
             self.provider.obliquity(jd, scale)?
         } else {
-            let tt = match scale {
-                TimeScale::Tt => JulianDay::try_new(jd).map_err(Error::from)?,
-                TimeScale::Ut1 => {
-                    let (tt, _) =
-                        tt_of(JulianDay::try_new(jd).map_err(Error::from)?, self.delta_t)?;
-                    push_once(
-                        steps,
-                        Step {
-                            name: "delta-t",
-                            implementation: Implementation::Sdk,
-                        },
-                    );
-                    tt
-                }
-            };
+            let tt = self.tt_at(jd, scale, steps)?;
             sky::obliquity(tt)
         };
         push_once(
@@ -408,20 +437,28 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 step: "sidereal-equatorial",
             });
         }
-        let value = |zodiac: Zodiac, jd: f64| -> Result<f64, CompletionError> {
+        // The provider's override when the policy allows and it declares
+        // one; otherwise the SDK's catalogue, the mean value carried by the
+        // precession model in force, which every epoch-defined ayanamsha has.
+        let implementation = self.choose(Overrides::AYANAMSHA, "ayanamsha")?;
+        let mut ayanamsha_steps = Vec::new();
+        let mut value = |zodiac: Zodiac, jd: f64| -> Result<f64, CompletionError> {
             match zodiac {
                 Zodiac::Tropical => Ok(0.0),
-                Zodiac::Sidereal { ayanamsha } => {
-                    match self.choose(Overrides::AYANAMSHA, "ayanamsha")? {
-                        Implementation::Native => {
-                            Ok(self.provider.ayanamsha_deg(jd, request.scale, ayanamsha)?)
-                        }
-                        // The SDK's ayanamsha catalogue arrives in Phase 2.
-                        _ => Err(CompletionError::Unsupported {
-                            step: "ayanamsha-sdk",
-                        }),
+                Zodiac::Sidereal { ayanamsha } => match implementation {
+                    Implementation::Native => {
+                        Ok(self.provider.ayanamsha_deg(jd, request.scale, ayanamsha)?)
                     }
-                }
+                    Implementation::Sdk | Implementation::PassThrough => {
+                        let tt = self.tt_at(jd, request.scale, &mut ayanamsha_steps)?;
+                        Ok(ayanamsha::mean_deg(
+                            &ayanamsha.into(),
+                            tt,
+                            self.precession,
+                            self.delta_t,
+                        )?)
+                    }
+                },
             }
         };
         for (jd_index, jd) in request.jds.iter().enumerate() {
@@ -442,11 +479,14 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 }
             }
         }
+        for step in ayanamsha_steps {
+            push_once(steps, step);
+        }
         push_once(
             steps,
             Step {
                 name: "ayanamsha",
-                implementation: Implementation::Native,
+                implementation,
             },
         );
         push_once(
@@ -642,14 +682,30 @@ mod tests {
             completion.positions(&request).err(),
             Some(CompletionError::Unsupported { step: "equinox" })
         );
+        // A sidereal request over a provider without the ayanamsha override
+        // is completed by the SDK's own catalogue: the longitude moves by
+        // Lahiri's value at the instant and the step says who did it.
         let sidereal =
             request.in_frame(Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)));
-        assert_eq!(
-            completion.positions(&sidereal).err(),
-            Some(CompletionError::Unsupported {
-                step: "ayanamsha-sdk"
-            })
+        let done = completion.positions(&sidereal).unwrap();
+        let tropical = completion
+            .positions(&request.in_frame(Frame::CANONICAL))
+            .unwrap();
+        let shift = teistro_core::angle::difference_deg(
+            tropical.columns.at(0, 0).unwrap().lon,
+            done.columns.at(0, 0).unwrap().lon,
         );
+        assert!((shift - 24.2).abs() < 0.05, "{shift}");
+        assert!(
+            done.steps
+                .iter()
+                .any(|step| step.name == "ayanamsha" && step.implementation == Implementation::Sdk)
+        );
+        // A star-anchored ayanamsha is refused by name until the star table.
+        let anchored =
+            request.in_frame(Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::TrueChitra)));
+        let refused = completion.positions(&anchored).unwrap_err();
+        assert!(refused.to_string().contains("Spica"), "{refused}");
         let native_only = self::completion(OverridePolicy::NativeOnly);
         let equatorial =
             request.in_frame(Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));
