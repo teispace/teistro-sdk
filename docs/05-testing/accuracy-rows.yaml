@@ -23,8 +23,8 @@ rows:
     area: sidereal time
     target: "1e-9″"
     page: 03-design/astro-events-and-crossings.md
-    evidence: "`gmst00`, `ee00b`, `gst00b`, `era00` against ERFA's reference values to 1e-12 rad (`iau::tests`)"
-    by_hand: "against Teimeris's GAST: 0.0013″ around 2000, 0.088″ at 1850 inside its IERS window; its own 1.9″ step at 2050 and 0.1″ step at 1850 are its (`02-engine-findings.md`, F1; 2026-09-05)"
+    evidence: "`gmst00`, `gmst06`, `ee00b`, `eect00`, `gst00b`, `era00` against ERFA's reference values to 1e-12 rad, `ee06b` and `gst06b` against ERFA's `ee06a` and `gst06a` within the 2000B truncation (`iau::tests`); `teimeris_sidereal.rs` over `fixtures/teimeris/sidereal.json`: the engine's apparent sidereal time at 41 instants strictly inside its 1850 to 2050 window and 8 at and beyond its bounds, on the engine's own Delta T"
+    by_hand: "the engine's long-term branch at and beyond its window, reported by the same test: −0.50″ at 1700, +0.098″ at 1850-01-01, −1.908″ at 2050-01-01, +2.46″ at 2300 (`02-engine-findings.md`, F1; 2026-09-05)"
   - id: precession
     area: precession
     target: bit-identical per model
@@ -35,7 +35,7 @@ rows:
     area: nutation and obliquity
     target: "1e-9″"
     page: 03-design/astro-timescales-and-frames.md
-    evidence: "`nut00b` (the 77-term table checked row by row), `obl06`, `obl80`, `numat` against ERFA's reference values"
+    evidence: "`nut00b` (the 77-term table checked row by row), `obl06`, `obl80`, `numat` against ERFA's reference values; `teimeris_sidereal.rs`: the engine's IAU 2000B nutation at 49 instants from 1700 to 2300, the model read two ways (C43, F6)"
     by_hand: "the kit's `override_obliquity`: Teimeris's and the Swiss Ephemeris's native obliquity within 4.0e-4″ of the SDK's IAU 2006 and 2000B (2026-09-05)"
   - id: frame_bias
     area: frame bias and reference frames

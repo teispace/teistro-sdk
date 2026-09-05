@@ -70,7 +70,14 @@ models Swiss offers (Laskar 1986, Williams 1994, Simon 1994, Bretagnon
 registered in the research and arrive with a model knob (§10).
 
 **Nutation.** IAU 2000B (77 terms, `nut00b`) as built: 1 mas against
-IAU 2000A in the modern era. IAU 2000A (1365 terms, `nut00a`) and its
+IAU 2000A in the modern era. The port reads the model as its authors
+specified it: the five Delaunay arguments linear in time and the fixed
+offsets in lieu of the planetary terms (−0.135 mas in longitude, +0.388
+mas in obliquity). Teimeris and its upstream read the same series with
+the full Simon et al. (1994) argument polynomials and without the
+offsets, so the two 2000B readings differ by 0.4 mas at J2000.0 and 6
+mas at 1700 (C43; `05-testing/02-engine-findings.md`, F6;
+`tests/teimeris_sidereal.rs` holds them within 0.01″). IAU 2000A (1365 terms, `nut00a`) and its
 P03 adjustment (`nut06a`) are the next ports, for the star table and
 for a provider that asks for them.
 

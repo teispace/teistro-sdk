@@ -49,15 +49,16 @@ pub fn obliquity(tt: JulianDay<Tt>) -> Obliquity {
 
 /// Greenwich apparent sidereal time, degrees, from the UT1 instant (the
 /// Earth's rotation) and the TT instant (the precession and nutation):
-/// the IAU 2000 mean sidereal time plus the equation of the equinoxes
-/// with the IAU 2000B nutation, as ERFA's `gst00b` computes with the two
-/// scales distinguished.
+/// the IAU 2006 mean sidereal time plus the equation of the equinoxes
+/// with the IAU 2006 mean obliquity and the IAU 2000B nutation, the
+/// equinox-based expression of IERS Conventions 2010 (ERFA's `gst06a`
+/// differs by the IAU 2000A nutation, under a milliarcsecond), so the
+/// meridian agrees with the precession the frames are built with.
 #[must_use]
 pub fn greenwich_sidereal_time_deg(ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> f64 {
     let (uta, utb) = ut1.split();
     let (tta, ttb) = tt.split();
-    let gast = iau::anp(iau::gmst00(uta, utb, tta, ttb) + iau::ee00b(tta, ttb));
-    normalise_deg(gast * RAD2DEG)
+    normalise_deg(iau::gst06b(uta, utb, tta, ttb) * RAD2DEG)
 }
 
 /// Local apparent sidereal time at a longitude, degrees.
@@ -70,7 +71,9 @@ pub fn greenwich_sidereal_time_deg(ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> f6
 /// let ut1 = JulianDay::<Ut1>::literal(2_400_000.5 + 53_736.0);
 /// let tt = JulianDay::<Tt>::literal(2_400_000.5 + 53_736.0);
 /// let greenwich = sidereal_time_deg(ut1, tt, Longitude::literal(0.0));
-/// assert!((greenwich - 1.754_166_136_510_680_589f64.to_degrees()).abs() < 1e-9);
+/// // ERFA's `gst06a` at that instant, which the IAU 2000A nutation
+/// // separates from the SDK's 2000B by 0.3 milliarcseconds.
+/// assert!((greenwich - 1.754_166_137_675_019_159f64.to_degrees()).abs() < 3e-7);
 /// ```
 #[must_use]
 pub fn sidereal_time_deg(ut1: JulianDay<Ut1>, tt: JulianDay<Tt>, longitude: Longitude) -> f64 {
