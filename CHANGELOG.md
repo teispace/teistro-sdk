@@ -22,7 +22,11 @@ boundaries, and 2096 to 2100 are computed, no longer marked official.
 Inside the official span no date moved; eleven boundaries there now
 report `Divergent`. Sunrise and sunset from modern positions compute for
 the first time (the rise and set solver); Delta T's values are
-unchanged by their move from `time` to `astro`. Nothing else computes
+unchanged by their move from `time` to `astro`. The Surya Siddhanta's
+star planets now report the text's daily motion (II.50 to 51) instead of
+a central difference of the text's places, up to 0.23° a day apart for
+Mars; their longitudes did not move. The text's latitudes, its Lagna and
+the planetary hours compute for the first time. Nothing else computes
 yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
@@ -53,3 +57,16 @@ yet.
   Bikram Sambat (the Surya Siddhanta) recorded in the memo, and modern
   positions measured at 65 % of the official months against the text's
   98.5 %.
+- `crates/siddhanta` completed to the text: the sighra daily motion
+  (II.50 to 51), the latitudes (II.56 to 58) and the Lagna from the
+  oblique ascensions (III.42 to 50), each reproduced against Burgess's
+  worked computation for 1 January 1860; `SiddhantaProvider` presents the
+  model behind the ephemeris port as a classical astronomy and passes
+  the kit, whose report publishes the text's distance from modern
+  astronomy (the obliquity, the sunrise, the speed rule) instead of
+  gating it. The port gained `Astronomy`, `SpeedModel`, `DistanceUnit`
+  and the `DUT1` override; the completion orders the zodiac shift and
+  the rotation so a sidereal ecliptic provider completes to equatorial
+  tropical coordinates. `crates/time` gained the planetary hours under
+  the `hora_reckoning` knob (proportional by default, as the baseline's
+  fixtures decide) and UT1 from a provider's DUT1.

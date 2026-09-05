@@ -107,11 +107,15 @@ SDK completed it (section 5).
 
 A provider declares once: its identity (name, version, data version,
 tier, and the SHA-256 and byte length of every data file it reads), its
-coverage as a Julian Day range, its bodies, its native frame, whether it
-computes speeds, its overrides as a bit set (obliquity, Delta T,
-sidereal time, ayanamsha, topocentric, houses, rise and set, crossings,
-stations, eclipses, stars), the ayanamshas it knows, and whether it is
-deterministic. The SDK validates every request against the capabilities
+coverage as a Julian Day range, its bodies, its native frame, which
+astronomy it computes (`MODERN`, the sky as observed; `CLASSICAL`, a
+text's model whose obliquity, precession, motions and sunrise are its
+own definitions), whether it computes speeds and how (`DERIVATIVE` of
+its places, or a text's `RULE`), its distance unit (astronomical units,
+or a classical model's hypotenuse on its radius, `MEAN_DISTANCES`), its
+overrides as a bit set (obliquity, Delta T, sidereal time, ayanamsha,
+topocentric, houses, rise and set, crossings, stations, eclipses, stars,
+DUT1), the ayanamshas it knows, and whether it is deterministic. The SDK validates every request against the capabilities
 before any call: a topocentric frame needs an observer, every body must
 be offered, every instant must be finite.
 
@@ -156,7 +160,13 @@ native frame and completes the difference:
   `native-only` when it declares the override, from the SDK under
   `sdk-only`; speeds by central difference over 1e-3 day;
 - zodiac: the sidereal shift through the ayanamsha, from the provider's
-  override or, in Phase 2, the SDK's catalogue;
+  override or, in Phase 2, the SDK's catalogue; the shift is applied
+  while the columns are ecliptic (before a rotation out of the ecliptic,
+  after one into it), so a sidereal ecliptic native frame completes to
+  tropical equatorial coordinates, which is what the rise and set solver
+  asks for: the provider's own centre, equinox and corrections with
+  equatorial coordinates in the tropical zodiac, so an engine answers in
+  the apparent frame and a classical text in its own;
 - centre, equinox and corrections: refused in the spike; Phase 2's
   `astro-timescales-and-frames.md` supplies light time, aberration,
   deflection, nutation and precession so that a J2000 geometric provider
@@ -238,29 +248,38 @@ and 2565 µs completed.
 
 ## 9. Tests and the conformance kit
 
-The kit (`crates/ephemeris-kit`) runs the same fifteen checks against
+The kit (`crates/ephemeris-kit`) runs the same sixteen checks against
 every provider under one published set of bounds (`Bounds::DEFAULT`),
 never per provider; measured on 2026-09-05 against the test provider,
 Teimeris 0.1.0 and the Swiss Ephemeris 2.10.03 over the same twelve
-`.se1` files:
+`.se1` files, and against the Surya Siddhanta provider
+(`crates/siddhanta`, `tests/kit.rs`):
 
-| check | bound | test provider | Teimeris | Swiss Ephemeris |
-|---|---:|---:|---:|---:|
-| capabilities well formed | | 8 bodies, no overrides | 14 bodies, 5 overrides, 47 ayanamshas | 14 bodies, 4 overrides |
-| positions finite in range | | 40 cells | 70 cells | 70 cells |
-| determinism: identical bits on a repeated request | | identical | identical | identical |
-| batch equals single calls, bit for bit | | identical | identical | identical |
-| reported speed against a central difference | 2e-3 °/day | 3.2e-5 | 9.4e-5 | 9.4e-5 |
-| continuity: longitude change over 1e-4 day against speed times the step | 5e-6 ° | 3.8e-9 | 8.1e-9 | 8.1e-9 |
-| out of range reported per cell | | pass | pass | pass |
-| unsupported body refused by name | | refused | every body offered | every body offered |
-| native obliquity against IAU 2006 and IAU 2000B | 0.01″ | not declared | 4.0e-4″ | 4.0e-4″ |
-| native Delta T against the IERS table, inside the table's span | 1 s | not declared | 0.33 s, at the table's last row | 0.33 s |
-| native ayanamsha at J2000 against the published values | 0.1° | not declared | 0.011° (Lahiri 23.8571, Raman 22.4108, Krishnamurti 23.7602) | the same |
-| native rise and set of the Sun against the SDK's solver, the geometric convention, three sea-level places | 1 s | not declared | 0.13 s | not declared |
-| the same under the almanac's convention (the upper limb with refraction) | 10 s | not declared | 7.3 s, at Reykjavík (C34) | not declared |
-| completion through the native obliquity against the provider's own ecliptic output | 1e-4″ | cannot return equatorial | 2.0e-10″ | 2.0e-10″ |
-| completion through the SDK's obliquity and nutation | 0.05″ | | 3.9e-4″ | 3.9e-4″ |
+| check | bound | test provider | Teimeris | Swiss Ephemeris | Surya Siddhanta |
+|---|---:|---:|---:|---:|---:|
+| capabilities well formed | | 8 bodies, no overrides | 14 bodies, 5 overrides, 47 ayanamshas | 14 bodies, 4 overrides | 9 bodies, 3 overrides, classical, speeds by rule |
+| positions finite in range | | 40 cells | 70 cells | 70 cells | 45 cells |
+| determinism: identical bits on a repeated request | | identical | identical | identical | identical |
+| batch equals single calls, bit for bit | | identical | identical | identical | identical |
+| reported speed against a central difference (published, not gated, for speeds by rule) | 2e-3 °/day | 3.2e-5 | 9.4e-5 | 9.4e-5 | 0.23 °/day, Mars (C36) |
+| continuity: longitude change over 1e-4 day against speed times the step (the second difference for speeds by rule) | 5e-6 ° | 3.8e-9 | 8.1e-9 | 8.1e-9 | 4.9e-10 |
+| out of range reported per cell | | pass | pass | pass | pass |
+| unsupported body refused by name | | refused | every body offered | every body offered | refused |
+| native obliquity against IAU 2006 and IAU 2000B (published, not gated, for a classical astronomy) | 0.01″ | not declared | 4.0e-4″ | 4.0e-4″ | 2065″: the text's 24° |
+| native Delta T against the IERS table, inside the table's span | 1 s | not declared | 0.33 s, at the table's last row | 0.33 s | not declared |
+| native ayanamsha against the published values (at J2000, or at Burgess's instant for the text's own) | 0.1° | not declared | 0.011° (Lahiri 23.8571, Raman 22.4108, Krishnamurti 23.7602) | the same | 7.4e-5° (20.4108° in 1860) |
+| native DUT1 within the 0.9 s bound | 0.9 s | not declared | not declared | not declared | not declared |
+| native rise and set of the Sun against the SDK's solver, the geometric convention, three sea-level places (published, not gated, for a classical astronomy) | 1 s | not declared | 0.13 s | not declared | 250 s: no equation of time (C37) |
+| the same under the almanac's convention (the upper limb with refraction; skipped when the provider refuses the convention) | 10 s | not declared | 7.3 s, at Reykjavík (C34) | not declared | refused: the text gives the centre on the geometric horizon |
+| completion through the native obliquity against the provider's own ecliptic output | 1e-4″ | cannot return equatorial | 2.0e-10″ | 2.0e-10″ | cannot return equatorial |
+| completion through the SDK's obliquity and nutation | 0.05″ | | 3.9e-4″ | 3.9e-4″ | |
+
+A classical provider is held to what modern astronomy can check
+(determinism, batches, continuity, the refusals, its own ayanamsha
+against a published figure) and its definitions are measured against
+the IAU routines and published in the report rather than gated: the
+text's obliquity, its sunrise and its speed rule are the tradition's
+answers, not approximations of the sky's.
 
 The Delta T row is the engines' own table against the IERS series the
 SDK carries: they agree to a few hundredths of a second inside the

@@ -50,7 +50,9 @@ pub mod test_provider;
 pub mod vtable;
 
 pub use body::{Body, TimeScale};
-pub use capabilities::{Capabilities, DataHash, Identity, Obliquity, Overrides};
+pub use capabilities::{
+    Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
+};
 pub use columns::{Cell, CellStatus, EphemerisKind, PositionColumns, Source};
 pub use error::ProviderError;
 pub use frame::{Centre, Coordinates, Corrections, Equinox, Frame, Zodiac};

@@ -55,8 +55,10 @@ impl Overrides {
     pub const ECLIPSES: Overrides = Overrides(1 << 9);
     /// Fixed stars.
     pub const STARS: Overrides = Overrides(1 << 10);
+    /// UT1 less UTC (DUT1), from the provider's own IERS bulletins.
+    pub const DUT1: Overrides = Overrides(1 << 11);
 
-    const NAMES: [(Overrides, &'static str); 11] = [
+    const NAMES: [(Overrides, &'static str); 12] = [
         (Overrides::OBLIQUITY, "obliquity"),
         (Overrides::DELTA_T, "delta_t"),
         (Overrides::SIDEREAL_TIME, "sidereal_time"),
@@ -68,6 +70,7 @@ impl Overrides {
         (Overrides::STATIONS, "stations"),
         (Overrides::ECLIPSES, "eclipses"),
         (Overrides::STARS, "stars"),
+        (Overrides::DUT1, "dut1"),
     ];
 
     /// The union.
@@ -215,6 +218,118 @@ impl fmt::Display for Identity {
     }
 }
 
+/// What a cell's distance is measured in.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum DistanceUnit {
+    /// Astronomical units: an ephemeris.
+    #[default]
+    AstronomicalUnits,
+    /// The body's mean distance, so 1 is the mean: a classical model,
+    /// whose hypotenuse is on the radius.
+    MeanDistances,
+}
+
+impl DistanceUnit {
+    /// The stable id at the C boundary.
+    #[must_use]
+    pub const fn id(self) -> u8 {
+        match self {
+            DistanceUnit::AstronomicalUnits => 0,
+            DistanceUnit::MeanDistances => 1,
+        }
+    }
+
+    /// The unit with an id.
+    #[must_use]
+    pub const fn from_id(id: u8) -> Option<DistanceUnit> {
+        match id {
+            0 => Some(DistanceUnit::AstronomicalUnits),
+            1 => Some(DistanceUnit::MeanDistances),
+            _ => None,
+        }
+    }
+
+    /// The key stamped in provenance.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            DistanceUnit::AstronomicalUnits => "AU",
+            DistanceUnit::MeanDistances => "MEAN_DISTANCES",
+        }
+    }
+}
+
+/// How a provider's speeds are defined.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SpeedModel {
+    /// The rate of the position: a central difference over a short step
+    /// agrees with it, which the kit checks.
+    #[default]
+    Derivative,
+    /// A text's rule for the daily motion, which its tradition uses as
+    /// the speed and which need not be the derivative of its places.
+    Rule,
+}
+
+impl SpeedModel {
+    /// The stable id at the C boundary.
+    #[must_use]
+    pub const fn id(self) -> u8 {
+        match self {
+            SpeedModel::Derivative => 0,
+            SpeedModel::Rule => 1,
+        }
+    }
+
+    /// The model with an id.
+    #[must_use]
+    pub const fn from_id(id: u8) -> Option<SpeedModel> {
+        match id {
+            0 => Some(SpeedModel::Derivative),
+            1 => Some(SpeedModel::Rule),
+            _ => None,
+        }
+    }
+}
+
+/// Which astronomy a provider computes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Astronomy {
+    /// The sky as observed: an ephemeris, whose overrides the kit holds
+    /// to the SDK's IAU routines.
+    #[default]
+    Modern,
+    /// A classical text's model, whose obliquity, precession, daily
+    /// motions and sunrise are the text's own definitions; the kit
+    /// measures their distance from modern astronomy and publishes it
+    /// rather than gating it.
+    Classical,
+}
+
+impl Astronomy {
+    /// The stable id at the C boundary.
+    #[must_use]
+    pub const fn id(self) -> u8 {
+        match self {
+            Astronomy::Modern => 0,
+            Astronomy::Classical => 1,
+        }
+    }
+
+    /// The astronomy with an id.
+    #[must_use]
+    pub const fn from_id(id: u8) -> Option<Astronomy> {
+        match id {
+            0 => Some(Astronomy::Modern),
+            1 => Some(Astronomy::Classical),
+            _ => None,
+        }
+    }
+}
+
 /// What a provider declares about itself.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Capabilities {
@@ -226,8 +341,14 @@ pub struct Capabilities {
     pub bodies: Vec<Body>,
     /// The frame `positions` returns.
     pub native_frame: Frame,
+    /// Which astronomy it computes.
+    pub astronomy: Astronomy,
     /// Whether it returns speeds.
     pub speeds: bool,
+    /// How its speeds are defined.
+    pub speed_model: SpeedModel,
+    /// What its distances are measured in.
+    pub distance_unit: DistanceUnit,
     /// The native overrides it offers.
     pub overrides: Overrides,
     /// The ayanamshas its override knows.
@@ -266,14 +387,25 @@ impl Capabilities {
     pub fn describe(&self) -> String {
         let ayanamshas: Vec<&str> = self.ayanamshas.iter().map(|a| a.key()).collect();
         format!(
-            "{}: {} bodies, JD {:.1} to {:.1}, native frame {}, overrides [{}], ayanamshas [{}]{}",
+            "{}: {} bodies, JD {:.1} to {:.1}, native frame {}, distances in {}, overrides [{}], ayanamshas [{}]{}{}{}",
             self.identity,
             self.bodies.len(),
             self.jd_range.0,
             self.jd_range.1,
             self.native_frame,
+            self.distance_unit.key(),
             self.overrides,
             ayanamshas.join(", "),
+            if self.astronomy == Astronomy::Classical {
+                ", classical"
+            } else {
+                ""
+            },
+            if self.speed_model == SpeedModel::Rule {
+                ", speeds by rule"
+            } else {
+                ""
+            },
             if self.deterministic {
                 ""
             } else {
@@ -357,7 +489,10 @@ mod tests {
             jd_range: (0.0, 10.0),
             bodies: vec![Body::Sun],
             native_frame: Frame::CANONICAL,
+            astronomy: Astronomy::Modern,
             speeds: true,
+            speed_model: SpeedModel::Derivative,
+            distance_unit: DistanceUnit::AstronomicalUnits,
             overrides: Overrides::AYANAMSHA,
             ayanamshas: vec![Ayanamsha::Lahiri],
             deterministic: false,
@@ -367,5 +502,21 @@ mod tests {
         assert!(capabilities.has_ayanamsha(Ayanamsha::Lahiri));
         assert!(!capabilities.has_ayanamsha(Ayanamsha::Raman));
         assert!(capabilities.describe().ends_with("non-deterministic"));
+        assert!(capabilities.describe().contains("distances in AU"));
+        assert_eq!(
+            DistanceUnit::from_id(DistanceUnit::MeanDistances.id()),
+            Some(DistanceUnit::MeanDistances)
+        );
+        assert_eq!(
+            SpeedModel::from_id(SpeedModel::Rule.id()),
+            Some(SpeedModel::Rule)
+        );
+        assert_eq!(DistanceUnit::from_id(9), None);
+        assert_eq!(SpeedModel::from_id(9), None);
+        assert_eq!(
+            Astronomy::from_id(Astronomy::Classical.id()),
+            Some(Astronomy::Classical)
+        );
+        assert_eq!(Astronomy::from_id(9), None);
     }
 }

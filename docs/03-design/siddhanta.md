@@ -1,8 +1,9 @@
 # The Surya Siddhanta model
 
 Status: `draft`, written 2026-09-05 when `crates/siddhanta` was built
-for the Bikram Sambat engine; revised when the crate becomes a provider
-behind the ephemeris port. Derives from
+for the Bikram Sambat engine; revised the same day when the crate gained
+the sighra daily motion, the latitudes and the Lagna and became a
+provider behind the ephemeris port. Derives from
 `02-architecture/01-module-catalog.md` (the `siddhanta` module),
 `03-design/calendar-bikram-sambat.md` (the first consumer) and the text
 itself in the translation of Ebenezer Burgess (1860), which is the
@@ -20,11 +21,12 @@ its sine table and interpolation rule, the manda and sighra equations
 with the four-step procedure for the star planets, the true daily motion
 of the Sun and the Moon, the text's precession, declination and
 ascensional difference (which give sunrise and sunset the way an almanac
-computes them), and nothing the text does not say. Latitudes (II.56 to
-58), the sighra daily motion (II.50 to 51) and the Lagna (III.42 to 50)
-are later additions to the same crate. The crate is a model first and a
-provider second: it answers for a graha at an instant; the adapter that
-presents it behind the ephemeris port arrives with the port's promotion.
+computes them), the latitudes (II.56 to 58), the true daily motion of
+the star planets (II.50 to 51), the Lagna from the oblique ascensions
+(III.42 to 50), and nothing the text does not say. The crate is a model
+first and a provider second: it answers for a graha at an instant, and
+`SiddhantaProvider` presents it behind the ephemeris port so a classical
+chart runs through the same trait, completion and solver as the engines.
 
 ## 2. Inputs, settings and ports
 
@@ -35,7 +37,8 @@ plain values: the [`Parameters`] (the text's, or the text's with a
 tradition's bija applied) and the [`Trig`] (the text's table, or exact
 trigonometry for comparison). The settings knob `frame.siddhanta`
 selects the model in a profile; `Surya { bija: true }` is refused as
-unsourced until a bija set is cited (§10). No ports.
+unsourced until a bija set is cited (§10). The model uses no port; the
+provider adapter answers one (§5).
 
 ## 3. The data model
 
@@ -52,16 +55,22 @@ pub struct Parameters {                    // every field cites its verse (param
     manda: [Epicycle; 7], sighra: [Epicycle; 5],   // circumferences at the even and odd quadrant ends: II.34 to 37
     obliquity_sine: u32,                   // 1397 on a radius of 3438: II.28
     ayana_revolutions_per_yuga: u32, ayana_extent_deg: u32,   // 600 and 27: III.9 to 12
+    extreme_latitudes_arcmin: [u32; 6],    // Moon 270, Mars 90, Mercury 120, Jupiter 60, Venus 120, Saturn 120: I.68 to 70
+    lanka_rising_asu: [u32; 3],            // 1670, 1795, 1935 for the first three signs: III.42 to 43
 }
 pub struct Motion { revolutions: u64, cycle: Cycle /* Yuga | Kalpa */, retrograde: bool }
 pub struct Epicycle { even_arcmin: u32, odd_arcmin: u32 }
 pub struct Bija { moon, moon_apsis, moon_node, mars, mercury, jupiter, venus, saturn: i64 }   // whole revolutions per age added to the counts
 pub enum Trig { Table, Exact }
 pub struct Ahargana { days: i64, fraction: f64 }   // whole days since the epoch, exact; the current day's fraction
-pub struct Position { longitude: Degrees, speed_deg_per_day: f64 }
-pub struct Trace { graha, ahargana, mean_deg, apsis_deg, conjunction_deg: Option<f64>, manda_equation_deg,
-                   manda_corrected_deg, sighra_equation_deg: Option<f64>, karna: Option<f64>, longitude_deg, speed_deg_per_day }
+pub struct Position { longitude: Degrees, latitude_deg: f64, speed_deg_per_day: f64 }
+pub struct Trace { graha, ahargana, mean_deg, apsis_deg, node_deg: Option<f64>, conjunction_deg: Option<f64>,
+                   manda_equation_deg, manda_corrected_deg, sighra_equation_deg: Option<f64>, karna: Option<f64>,
+                   longitude_deg, latitude_deg, speed_deg_per_day }
 pub struct DayArc { sunrise: JulianDay<Ut1>, sunset: JulianDay<Ut1>, ascensional_difference_deg, declination_deg }
+pub struct RisingTimes { asu: [f64; 12] }   // the oblique rising time of each sign at a latitude, in respirations
+pub struct Lagna { sidereal_deg, tropical_deg, meridian_sidereal_deg, sun_tropical_deg, elapsed_asu, rising: RisingTimes }
+pub struct SiddhantaProvider { model: SuryaSiddhanta }   // the model behind the ephemeris port
 ```
 
 The sidereal frame is the text's own: mean places counted from the
@@ -120,13 +129,44 @@ applied to it. Mercury's and Venus's mean place is the Sun's and their
 own motion is their conjunction; the others' conjunction is the Sun's
 mean place (I.29).
 
-**Daily motion** (II.47 to 49). The anomaly's daily motion (the mean
-motion less the apsis's) times the cosine of the reduced anomaly (the
-table's difference of sines over the step) times the corrected
-circumference over 360, taken from the mean motion in the half from
-Makara through Mithuna and added in the other. The star planets' motion
-is the change over the day centred on the instant until II.50 to 51 is
-implemented.
+**Daily motion** (II.47 to 51). The Sun's and the Moon's: the anomaly's
+daily motion (the mean motion less the apsis's) times the table's
+difference of sines at the reduced anomaly over the step, times the
+corrected circumference over 360, taken from the mean motion in the half
+from Makara through Mithuna and added in the other (II.47 to 49). The
+star planets': the same manda correction of the mean motion, then the
+sighra correction (II.50 to 51): the conjunction's motion less the
+equated motion, times the hypotenuse less the radius over the
+hypotenuse, added to the equated motion; a negative result is
+retrograde. Mercury and Venus take the Sun's motion as the mean and
+their own as the conjunction's, the others their own and the Sun's. This
+is the text's rule and not the derivative of the text's places: the kit
+measures the two up to 0.23° a day apart for Mars (cruxes C36), so the
+provider declares its speeds as a rule and the kit publishes the gap.
+
+**Latitudes** (I.68 to 70, II.56 to 58). The extreme latitudes are the
+Moon's 270′, Mars's 90′, Mercury's and Venus's 120′, Jupiter's 60′ and
+Saturn's 120′. The latitude is the sine of the planet's distance from
+its node times the extreme latitude over the hypotenuse (over the radius
+for the Moon), north when the reduced arc's sine is positive. The
+distance is taken from the manda-corrected place for the superior
+planets and from the conjunction with the manda equation applied for
+the inferior ones (II.57 to 58); the Sun and the nodes have none.
+
+**The Lagna** (III.42 to 50). The rising times of the first three signs
+at Lanka are 1670, 1795 and 1935 respirations of the 21 600 in a day
+(III.42 to 43), and the quadrants mirror them. At a latitude the
+ascensional differences of 30°, 60° and 90° of tropical longitude give
+three portions, taken from the first three signs and added to the next
+three, the second half of the zodiac mirroring the first (III.44 to
+45). The horoscope point after a time from sunrise: the Sun's tropical
+place at sunrise, the part of its sign still to rise at that sign's
+rate, the following signs in succession, and the remainder at the sign
+reached (III.46 to 48); before sunrise the same walk backward; the
+meridian point from the hour angle at Lanka's rates (III.49); the time
+between two points by the walk inverted (III.50). The sunrise is the
+text's own day arc at the place's local mean time, so the Lagna the
+tradition computes by hand comes out of the same numbers.
 
 **Precession** (III.9 to 12). The equinoxes librate 600 times an age;
 the reduced arc of the libration's argument, three tenths of it, is the
@@ -155,12 +195,25 @@ Rust: `SuryaSiddhanta::text()` and `SuryaSiddhanta::new(params, trig)`;
 catalogue's order), `trace(graha, at)` (the tradition's figures),
 `sun_longitude_deg(jd)` (the form a root finder calls), `ahargana(at)`,
 `mean_deg`, `apsis_deg`, `node_deg`, `ayanamsha_deg(at)`,
+`planet_node_deg`, `moon_apogee(at)`, `ayanamsha_deg(at)`,
 `declination_deg(tropical)`, `ascensional_difference_deg(latitude,
-declination)`, `day_arc(local_mean_midnight, latitude)`, `describe()`;
-`Parameters::TEXT`, `Parameters::with_bija(&Bija)`. The calendar crate
-implements its `SolarModel` over this (`calendar-bikram-sambat.md`). C ABI
-and bindings: through the ephemeris port once the crate is a provider;
-until then the model is Rust-only.
+declination)`, `day_arc(local_mean_midnight, latitude)`,
+`local_mean_midnight(at, longitude)`, `rising_times(latitude)`,
+`lagna(at, latitude, longitude)`, `describe()`; `RisingTimes::lanka`,
+`RisingTimes::at`, `of_sign`, `point_after(from, asu)` and
+`asu_between(from, to)`; `Parameters::TEXT`,
+`Parameters::with_bija(&Bija)`. The calendar crate implements its
+`SolarModel` over this (`calendar-bikram-sambat.md`).
+`SiddhantaProvider::text()` (or `new(model)`) implements
+`EphemerisProvider`: nine bodies (the seven grahas, the mean node and
+the mean apogee) in the text's own frame (geocentric, of date, ecliptic,
+sidereal by the text's ayanamsha, geometric), distances as the hypotenuse
+on the radius (`DistanceUnit::MeanDistances`), speeds by the text's rule
+(`SpeedModel::Rule`), `Astronomy::Classical`; its overrides are the
+text's obliquity, its ayanamsha and its sunrise and sunset (the centre
+on the geometric horizon; other conventions refused as unsupported). C
+ABI and bindings reach the model through the port's vtable the way they
+reach an engine.
 
 ## 6. Errors and degenerate states
 
@@ -176,11 +229,12 @@ until then the model is Rust-only.
 | operation | budget | measured (`cargo bench -p teistro-siddhanta`, Apple M-series, 2026-09-05) |
 |---|---:|---:|
 | the Sun's longitude, table | 200 ns | 54 ns |
-| the Sun's longitude, exact trigonometry | 300 ns | 107 ns |
-| the Moon, table | 300 ns | 71 ns |
-| a star planet (four steps, a central difference), table | 2 µs | 712 ns |
-| all nine grahas, table | 5 µs | 3.8 µs |
-| the day's arc at Kathmandu | 1 µs | 618 ns |
+| the Sun's longitude, exact trigonometry | 300 ns | 89 ns |
+| the Moon with its latitude, table | 300 ns | 94 ns |
+| a star planet (four steps, the motion by rule, the latitude), table | 2 µs | 298 ns |
+| all nine grahas, table | 5 µs | 1.65 µs |
+| the day's arc at Kathmandu | 1 µs | 754 ns |
+| the Lagna at Kathmandu (the day's arc, the rising times, the walk) | 3 µs | 1.10 µs |
 
 No allocation anywhere in the crate.
 
@@ -216,6 +270,24 @@ No allocation anywhere in the crate.
   zero at the equator, asin(tan φ tan δ) at Kathmandu, mirrored south of
   the equator, absent above the polar circle; Kathmandu's day is 13.8
   hours in June and 10.2 in December.
+- Burgess's worked computation for midnight of 1 January 1860 at
+  Washington (his notes to I.48 to 53, II.47 to 51, II.56 to 58, III.9 to
+  12 and III.42 to 49) reproduces: the day count 1 811 945 (714 404 108
+  572 from the creation), the mean Sun 8s 17°48′7″ within 2″, the
+  precession 20°24′39″ within 5″, the Moon's mean place, apsis and node of
+  his table within 5″, the Moon's anomaly 10s 18°46′15″ (his print reads
+  18°4′15″, which his own table contradicts; §10), the Moon's true motion
+  737′4″, the Sun's 61′26″, Mars's motion 32′3″ from an equated 27′45″ and
+  a hypotenuse of 3984, the Moon's latitude 3°36′ north at 53°14′ from
+  the node and Mercury's 2°4′ north; the ascensional differences at
+  Washington 578′, 1061′ and 1263′ and the oblique rising times 1312½,
+  1733½, 2137½ and 2278½ respirations within 2; the horoscope point 4s
+  25° at 6555 respirations after a sunrise with the Sun at 1s 12° within
+  0.15°.
+- The kit over `SiddhantaProvider` (`tests/kit.rs`) passes: determinism,
+  batches, continuity by the second difference, the range and body
+  refusals, the text's ayanamsha against Burgess's figure; the
+  informational rows measure the text against modern astronomy (§10).
 - Property tests: every longitude in range and continuous over a
   hundredth of a day across three centuries; the table inverts and
   tracks the true sine.
@@ -243,9 +315,23 @@ the locale packs carry the presentation forms.
 3. **The sign of the libration.** III.9 to 12 give a triangular
    libration; the tradition applies it with the sign that makes the
    ayanamsha positive today; the crate follows the tradition and says so.
-4. **II.50 to 51** (the sighra daily motion), **II.56 to 58** (latitudes)
-   and **III.42 to 50** (the Lagna from the oblique ascensions) are not
-   yet implemented; the star planets' motion is a central difference.
+4. Closed: **II.50 to 51**, **II.56 to 58** and **III.42 to 50** are
+   implemented and tested against Burgess's worked example; the star
+   planets' speeds are the text's rule, and its distance from the
+   derivative is published (C36).
+6. **The text against modern astronomy**, measured by the kit over the
+   provider and published rather than gated: the obliquity 24° against
+   IAU's 23.44° (2065″); the text's sunrise, six hours less the
+   ascensional difference in local mean time, against hour-angle
+   geometry over the text's own places up to 250 s, the text having no
+   equation of time (C37); the speed rule against the derivative up to
+   0.23° a day. A chart from this provider is the tradition's, and the
+   provenance names it.
+7. **Burgess's Moon anomaly.** His worked example under II.47 to 49
+   prints the mean anomaly as 10s 18°4′15″; his own table of mean places
+   for the same instant gives the apsis 327°50′24″ and the Moon 9°4′9″,
+   whose difference is 18°46′15″, which the crate reproduces and the
+   tests assert; the printed figure is taken as a misprint.
 5. **The tradition's day count** is one more than the text's midnight
    count for the same civil day (the worked example); the Bikram Sambat
    measurement shows the difference is immaterial to the calendar under

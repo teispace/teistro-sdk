@@ -7,7 +7,7 @@
 use teistro_core::angle::normalise_deg;
 
 use crate::body::Body;
-use crate::capabilities::{Capabilities, Identity, Overrides};
+use crate::capabilities::{Astronomy, Capabilities, DistanceUnit, Identity, Overrides, SpeedModel};
 use crate::columns::{Cell, CellStatus, EphemerisKind, PositionColumns, Source};
 use crate::error::ProviderError;
 use crate::frame::Frame;
@@ -156,7 +156,10 @@ impl EphemerisProvider for TestProvider {
             jd_range: TestProvider::JD_RANGE,
             bodies: TestProvider::BODIES.to_vec(),
             native_frame: Frame::CANONICAL,
+            astronomy: Astronomy::Modern,
             speeds: true,
+            speed_model: SpeedModel::Derivative,
+            distance_unit: DistanceUnit::AstronomicalUnits,
             overrides: Overrides::NONE,
             ayanamshas: Vec::new(),
             deterministic: true,

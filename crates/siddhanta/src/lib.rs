@@ -17,9 +17,12 @@
 //! - [`equation`]: the corrected epicycle, the manda and sighra
 //!   equations, the four-step procedure and the true daily motion;
 //! - [`model`]: [`SuryaSiddhanta`], which answers for a graha at an
-//!   instant, and the text's declination, ascensional difference and
-//!   precession, which give sunrise and sunset the way an almanac
-//!   computes them.
+//!   instant (its place, latitude and daily motion), and the text's
+//!   declination, ascensional difference and precession, which give
+//!   sunrise and sunset the way an almanac computes them;
+//! - [`lagna`]: the times of rising of the signs and the horoscope point;
+//! - [`provider`]: the model behind the ephemeris port, so the chart
+//!   layer reads it as it reads an engine.
 //!
 //! The classical path ([`Trig::Table`]) uses only the table and
 //! elementary arithmetic, so its results are bit-identical on every
@@ -42,13 +45,17 @@
 //! ```
 
 pub mod equation;
+pub mod lagna;
 pub mod mean;
 pub mod model;
 pub mod params;
+pub mod provider;
 pub mod trig;
 
 pub use equation::{Epicycle, SighraEquation};
+pub use lagna::{Lagna, RisingTimes};
 pub use mean::{Ahargana, Cycle, Motion};
 pub use model::{DayArc, Position, SuryaSiddhanta, Trace};
 pub use params::{Bija, Parameters, Planet};
+pub use provider::SiddhantaProvider;
 pub use trig::Trig;

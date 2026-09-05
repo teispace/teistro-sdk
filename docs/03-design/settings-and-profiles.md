@@ -56,6 +56,7 @@ every shipped profile. The v1 inventory:
 | day | `day_boundary` | enum | `MIDNIGHT`, `SUNRISE`, `SUNSET`, `NOON` |
 | day | `polar_day_policy` | enum | `UNDEFINED`, `NEAREST_EVENT`, `CIVIL_MIDNIGHT` |
 | day | `ghati_reckoning` | enum | `CIVIL`, `PROPORTIONAL` |
+| day | `hora_reckoning` | enum | `PROPORTIONAL`, `EQUAL` |
 | time | `dst_gap` | enum | `ERROR`, `SHIFT_FORWARD` |
 | time | `dst_overlap` | enum | `EARLIER`, `LATER`, `ERROR` |
 | time | `unknown_time` | enum | `REFUSE`, `NOON`, `SUNRISE`, `MIDNIGHT` |

@@ -387,7 +387,9 @@ name = "teistro-siddhanta"
 version = "0.0.0"
 dependencies = [
  "serde",
+ "teistro-astro",
  "teistro-core",
+ "teistro-port-ephemeris",
 ]
 
 [[package]]
@@ -400,6 +402,7 @@ dependencies = [
  "teistro-astro",
  "teistro-calendar",
  "teistro-core",
+ "teistro-port-ephemeris",
  "teistro-port-timezone",
 ]
 

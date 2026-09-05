@@ -5,7 +5,8 @@ the same day when `crates/time` and `crates/port-timezone` were built,
 and again when the ephemeris port was promoted: Delta T moved to
 `crates/astro`, the local day took the rise and set solver through the
 drik solar model and carries its sunrise convention, and the `SUNRISE`
-unknown-time fallback resolves. The port's DUT1 is still to be wired. Derives from
+unknown-time fallback resolves; and again when the planetary hours and
+the port's DUT1 were added. Derives from
 `02-architecture/04-calendar-time-architecture.md`,
 `01-research/platform/05-calendars-timezones.md`,
 `01-research/platform/13-astronomy-layer.md` (time scales), ADR-0020
@@ -82,10 +83,13 @@ pub struct LeapSeconds { table_version: TableVersion, /* (utc_jd, tai_minus_utc)
 Conversions are explicit functions, never `From`: `tt_from_ut1(jd,
 delta_t)`, `ut1_from_tt`, `utc_from_ut1` and back. UTC to UT1 assumes
 DUT1 is zero (under 0.9 s by definition, a hundredth of an arcsecond of
-lunar motion) and stamps `dut1_applied: 0`; a consumer with IERS
-bulletins may supply DUT1 through the provider port later. UTC before
-1972 is treated as UT1 and stamped `proleptic_utc`. TT is never exposed
-to a consumer as an input; every request instant is civil or UTC.
+lunar motion) and stamps `dut1_applied: 0`; `ut1_from_utc_with` and
+`utc_from_ut1_with` take an ephemeris provider and apply the DUT1 it
+declares (the port's `DUT1` override, from an engine with IERS
+bulletins), checked against the 0.9 s bound and stamped as applied. UTC
+before 1972 is treated as UT1 and stamped `proleptic_utc`. TT is never
+exposed to a consumer as an input; every request instant is civil or
+UTC.
 
 Delta T, per spike 3: a table of the measured values to the present
 (the IERS series, shipped with the data packs and versioned) and a
@@ -134,7 +138,12 @@ pub struct LocalDay {
 }
 pub struct GhatiPala { ghati: u8, pala: u8, vipala: u8 }   // 0 ghati 0 pala at sunrise
 pub enum Reckoning { Civil, Proportional }
+pub struct Hora { number: u8 /* 1 to 24 */, lord: Graha, start: JulianDay<Utc>, end: JulianDay<Utc> }
+pub enum hora::Reckoning { Proportional, Equal }   // from the `hora_reckoning` knob
 ```
+
+The local day carries its `vara` (the weekday of the sunrise-anchored
+day), which the planetary hours start from.
 
 Civil reckoning: a ghati is 24 minutes, a pala 24 seconds, a vipala 0.4
 seconds, counted from sunrise. Proportional: thirty ghatis span the
@@ -184,6 +193,17 @@ circles the solver reports no event; `polar_day_policy` then yields an
 (`CIVIL_MIDNIGHT`, stamped). The baseline engine synthesises polar days;
 the SDK reports what it did.
 
+**Planetary hours.** Twenty-four horas from sunrise, each ruled by a
+graha: the first by the day's vara lord, each next by the lord of the
+sixth weekday on, which is the Chaldean order (Sun, Venus, Mercury,
+Moon, Saturn, Jupiter, Mars). Under `PROPORTIONAL` twelve horas divide
+the day from sunrise to sunset and twelve the night to the next sunrise;
+under `EQUAL` each is sixty minutes from sunrise. `horas(day, reckoning)`
+lists the twenty-four; `hora_at(day, instant, reckoning)` finds the one
+holding an instant and refuses one outside the day, naming the day's
+span. The baseline engine reckons proportionally (its fixtures decide,
+convention thirteen in `fixtures/README.md`).
+
 **Ghati-pala.** `elapsed = instant − sunrise` in microseconds; civil:
 `vipala = elapsed / 400 000`; proportional: `vipala = elapsed × 108 000
 / span` where `span` is the day or night length in microseconds and the
@@ -202,9 +222,11 @@ the `SUNRISE` fallback; `date_of(instant, &dyn LocalClock, calendar)`;
 `local_day(&dyn SolarModel, calendar, &dyn LocalClock, &Place,
 &CalendarDate, PolarDayPolicy)`; `ghati_pala(&LocalDay, instant,
 Reckoning)` and `instant_of(&LocalDay, GhatiPala, Reckoning)`;
-`delta_t(jd_ut1, DeltaTModel)`, `tt_from_ut1`, `ut1_from_tt`,
-`ut1_from_utc`, `utc_from_ut1`, `tt_from_utc`, `utc_from_tt` and `stamp`
-for the envelope; `EmbeddedTzdb::shared()` as the default provider and
+`horas(&LocalDay, hora::Reckoning)` and `hora_at(&LocalDay, instant,
+hora::Reckoning)`; `delta_t(jd_ut1, DeltaTModel)`, `tt_from_ut1`,
+`ut1_from_tt`, `ut1_from_utc`, `utc_from_ut1`, `ut1_from_utc_with` and
+`utc_from_ut1_with` (over a provider's DUT1), `tt_from_utc`,
+`utc_from_tt` and `stamp` for the envelope; `EmbeddedTzdb::shared()` as the default provider and
 `EmbeddedTzdb::clock(name)` for a zone as a `LocalClock`; `zones::nepal()`.
 The port (`crates/port-timezone`): `TimeZoneProvider` with `version`,
 `has_zone`, `zones`, `offset_at`, `candidates` and `current_offsets`.
@@ -260,6 +282,16 @@ union; `CivilDateTime` constructed only through validating builders;
   the stamp names the model.
 - Ghati-pala: exhaustive round trip over a day at microsecond steps
   in both reckonings; the sunrise instant is 0-0-0.
+- Planetary hours (`tests/hora_fixtures.rs`): the lord at the birth
+  instant matches the baseline's for every fixture chart under the
+  proportional reckoning except the three the baseline's day-early block
+  or its synthesised polar day decides (c022, c028, c039); the equal
+  reckoning disagrees on fewer than thirty, which shows the fixtures
+  distinguish the two; the lords follow the Chaldean order from the vara
+  lord; the horas tile the day exactly.
+- DUT1: a provider that declares the override moves UT1 by its value and
+  the stamp says so; a value outside 0.9 s is refused as the provider's
+  error naming the field.
 - Polar: the fixtures from the baseline's synthesised days become
   `NEAREST_EVENT` cases with the convention asserted in provenance.
 - The tzdb version stamp changes when the embedded database is updated;
@@ -274,8 +306,9 @@ vipala) and the zone-source labels.
 
 ## 10. Open questions
 
-1. DUT1: a provider-supplied table is designed in (`Provider` stamp) but
-   not shipped in v1; `ut1_from_utc` applies zero and says so.
+1. Closed: DUT1 comes from a provider that declares the port's `DUT1`
+   override (`ut1_from_utc_with`); without one `ut1_from_utc` applies
+   zero and says so. No shipped provider declares it yet.
 2. The ghati-pala rounding at the sunrise boundary is pinned by the
    baseline's fixtures when the harness runs; floor on a tenth-of-a-
    millisecond grid is the working rule.

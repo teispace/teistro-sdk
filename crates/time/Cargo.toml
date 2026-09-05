@@ -21,6 +21,7 @@ serde = { version = "1", features = ["derive"] }
 teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-core = { path = "../core" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-port-timezone = { path = "../port-timezone" }
 
 [dev-dependencies]

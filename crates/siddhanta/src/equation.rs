@@ -114,6 +114,10 @@ pub struct FourStep {
     pub manda_corrected_deg: f64,
     /// The manda equation applied in step three, degrees, signed.
     pub manda_equation_deg: f64,
+    /// The manda anomaly of step three (the apsis less the twice-corrected
+    /// place), degrees: what the daily motion's equation is taken at
+    /// (II.47 to 49).
+    pub manda_anomaly_deg: f64,
     /// The sighra equation applied in step four.
     pub sighra: SighraEquation,
     /// The true place, degrees in `[0, 360)`.
@@ -134,12 +138,14 @@ pub fn four_step(
     let first = (mean_deg + half_sighra).rem_euclid(360.0);
     let half_manda = manda_equation_deg(trig, manda, apsis_deg - first) / 2.0;
     let second = (first + half_manda).rem_euclid(360.0);
-    let manda_equation = manda_equation_deg(trig, manda, apsis_deg - second);
+    let manda_anomaly = apsis_deg - second;
+    let manda_equation = manda_equation_deg(trig, manda, manda_anomaly);
     let manda_corrected = (mean_deg + manda_equation).rem_euclid(360.0);
     let sighra_result = sighra_equation(trig, sighra, conjunction_deg - manda_corrected);
     FourStep {
         manda_corrected_deg: manda_corrected,
         manda_equation_deg: manda_equation,
+        manda_anomaly_deg: manda_anomaly,
         sighra: sighra_result,
         true_deg: (manda_corrected + sighra_result.equation_deg).rem_euclid(360.0),
     }
@@ -170,6 +176,51 @@ pub fn manda_motion_deg_per_day(
     }
 }
 
+/// The true daily motion of a star planet (II.50 to 51): the daily
+/// motion corrected for the apsis (II.47 to 49 at the third step's
+/// anomaly) taken from the conjunction's daily motion is the equated
+/// synodic motion; that times the excess of the last hypotenuse over the
+/// radius, over the hypotenuse, is the conjunction's equation of motion,
+/// additive when the hypotenuse exceeds the radius and subtractive when
+/// it is less; a subtractive equation greater than the motion leaves a
+/// retrograde motion, which is the negative result. Degrees per day.
+#[must_use]
+pub fn sighra_motion_deg_per_day(
+    equated_motion_deg: f64,
+    conjunction_motion_deg: f64,
+    karna: f64,
+) -> f64 {
+    if karna <= 0.0 {
+        return equated_motion_deg;
+    }
+    let synodic = conjunction_motion_deg - equated_motion_deg;
+    equated_motion_deg + synodic * (karna - RADIUS) / karna
+}
+
+/// The latitude of a planet (II.57): the sine of its distance from its
+/// node times the extreme latitude, over the last hypotenuse (or over
+/// the radius for the Moon, whose `karna` is the radius); north when the
+/// distance's sine is positive. Degrees.
+#[must_use]
+pub fn latitude_deg(
+    trig: Trig,
+    distance_from_node_deg: f64,
+    extreme_arcmin: u32,
+    karna: f64,
+) -> f64 {
+    if karna <= 0.0 {
+        return 0.0;
+    }
+    let bhuja = Bhuja::of(distance_from_node_deg);
+    let minutes = trig.sine(bhuja.arc_deg) * f64::from(extreme_arcmin) / karna;
+    let degrees = minutes / 60.0;
+    if bhuja.sine_positive {
+        degrees
+    } else {
+        -degrees
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
@@ -178,6 +229,49 @@ mod tests {
     use crate::params::{Parameters, Planet};
 
     const SUN: Epicycle = Epicycle::new(14 * 60, 13 * 60 + 40);
+
+    #[test]
+    fn the_sighra_motion_follows_burgess_worked_mars() {
+        // Burgess under II.50 to 51, midnight of 1 January 1860 at
+        // Washington: Mars's motion equated for the apsis 27′45″, the
+        // Sun's 59′8″, the last hypotenuse 3984 (546 above the radius):
+        // the equation for the conjunction is 4′18″, additive, and the
+        // true motion 32′3″.
+        let equated = (27.0 + 45.0 / 60.0) / 60.0;
+        let sun = (59.0 + 8.0 / 60.0) / 60.0;
+        let motion = sighra_motion_deg_per_day(equated, sun, 3984.0);
+        let expected = (32.0 + 3.0 / 60.0) / 60.0;
+        assert!(
+            (motion - expected).abs() * 3600.0 < 1.5,
+            "{}",
+            motion * 60.0
+        );
+        // A hypotenuse below the radius takes the equation away, and one
+        // far enough below turns the motion retrograde.
+        assert!(sighra_motion_deg_per_day(equated, sun, 3000.0) < equated);
+        assert!(sighra_motion_deg_per_day(0.05, 4.09, 2000.0) < 0.0);
+        assert!((sighra_motion_deg_per_day(equated, sun, 0.0) - equated).abs() < 1e-12);
+    }
+
+    #[test]
+    fn the_latitude_follows_the_extreme_value_and_the_hypotenuse() {
+        // The Moon at 53°14′ from its node: the sine 2754 times 270′ over
+        // the radius is 216′, 3°36′ north (Burgess's table under II.58).
+        let moon = latitude_deg(Trig::Table, 53.0 + 14.0 / 60.0, 270, RADIUS);
+        assert!((moon - 3.6).abs() < 0.01, "{moon}");
+        // Ninety degrees from the node the latitude is the extreme; at
+        // the node it vanishes; past the descending node it is south; a
+        // hypotenuse above the radius brings the planet nearer the
+        // ecliptic.
+        assert!((latitude_deg(Trig::Table, 90.0, 270, RADIUS) - 4.5).abs() < 1e-9);
+        assert!(latitude_deg(Trig::Table, 0.0, 90, RADIUS).abs() < 1e-9);
+        assert!(latitude_deg(Trig::Table, 270.0, 90, RADIUS) < 0.0);
+        assert!(
+            latitude_deg(Trig::Table, 90.0, 90, 2.0 * RADIUS)
+                < latitude_deg(Trig::Table, 90.0, 90, RADIUS)
+        );
+        assert!(latitude_deg(Trig::Table, 90.0, 90, 0.0).abs() < 1e-12);
+    }
 
     #[test]
     fn the_corrected_epicycle_moves_from_even_to_odd() {

@@ -225,6 +225,7 @@ mod tests {
                 Altitude::literal(0.0),
             ),
             date: CalendarDate::defined(Calendar::Gregorian, 2023, 2, 24),
+            vara: teistro_core::catalogue::Vara::Shukravara,
             sunrise,
             sunset: sunrise.plus_days(11.5 / 24.0).unwrap(),
             next_sunrise: sunrise.plus_days(1.0 - 20.0 / 86_400.0).unwrap(),

@@ -19,7 +19,9 @@ use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 
 use crate::body::{Body, TimeScale};
-use crate::capabilities::{Capabilities, DataHash, Identity, Obliquity, Overrides};
+use crate::capabilities::{
+    Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
+};
 use crate::columns::{CellStatus, PositionColumns, Source, tier_bits, tier_from_bits};
 use crate::error::ProviderError;
 use crate::frame::Frame;
@@ -179,8 +181,14 @@ pub struct CapabilitiesC {
     pub deterministic: u8,
     /// The tier plus one, zero for none ([`Source::to_bits`] encoding).
     pub tier: u8,
+    /// [`DistanceUnit::id`].
+    pub distance_unit: u8,
+    /// [`SpeedModel::id`].
+    pub speed_model: u8,
+    /// [`Astronomy::id`].
+    pub astronomy: u8,
     /// Reserved, zero.
-    pub reserved: u8,
+    pub reserved: [u8; 2],
     /// The name, NUL-terminated.
     pub name: *const c_char,
     /// The version, NUL-terminated.
@@ -252,6 +260,10 @@ pub struct ProviderVtable {
             ayanamsha: u16,
             out_deg: *mut f64,
         ) -> i32,
+    >,
+    /// The DUT1 override, seconds.
+    pub dut1: Option<
+        unsafe extern "C" fn(user_data: *mut c_void, jd_utc: f64, out_seconds: *mut f64) -> i32,
     >,
     /// The rise and set override: writes the instant and whether the
     /// event was found inside the window.
@@ -362,7 +374,10 @@ impl VtableProvider {
             speeds: 0,
             deterministic: 0,
             tier: 0,
-            reserved: 0,
+            distance_unit: 0,
+            speed_model: 0,
+            astronomy: 0,
+            reserved: [0; 2],
             name: ptr::null(),
             version: ptr::null(),
             data_version: ptr::null(),
@@ -425,6 +440,12 @@ unsafe fn capabilities_from_c(raw: &CapabilitiesC) -> Result<Capabilities, Provi
             bytes: h.bytes,
         })
         .collect();
+    let distance_unit = DistanceUnit::from_id(raw.distance_unit)
+        .ok_or_else(|| ProviderError::invalid(format!("distance unit id {}", raw.distance_unit)))?;
+    let speed_model = SpeedModel::from_id(raw.speed_model)
+        .ok_or_else(|| ProviderError::invalid(format!("speed model id {}", raw.speed_model)))?;
+    let astronomy = Astronomy::from_id(raw.astronomy)
+        .ok_or_else(|| ProviderError::invalid(format!("astronomy id {}", raw.astronomy)))?;
     Ok(Capabilities {
         identity: Identity {
             name: text(raw.name),
@@ -436,7 +457,10 @@ unsafe fn capabilities_from_c(raw: &CapabilitiesC) -> Result<Capabilities, Provi
         jd_range: (raw.jd_min, raw.jd_max),
         bodies,
         native_frame: Frame::try_from_bits(raw.native_frame_bits)?,
+        astronomy,
         speeds: raw.speeds != 0,
+        speed_model,
+        distance_unit,
         overrides: Overrides::from_bits(raw.overrides),
         ayanamshas,
         deterministic: raw.deterministic != 0,
@@ -545,6 +569,16 @@ impl EphemerisProvider for VtableProvider {
             unsafe { f(self.user_data, jd, scale.id(), ayanamsha.id(), &raw mut out) },
             "ayanamsha",
         )?;
+        Ok(out)
+    }
+
+    fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
+        let Some(f) = self.vtable.dut1 else {
+            return Err(ProviderError::unsupported("dut1"));
+        };
+        let mut out = 0.0f64;
+        // SAFETY: `out` is a valid, writable f64 for the call.
+        check(unsafe { f(self.user_data, jd_utc, &raw mut out) }, "dut1")?;
         Ok(out)
     }
 
@@ -662,6 +696,7 @@ impl<P: EphemerisProvider> Exported<P> {
             obliquity: Some(obliquity_trampoline::<P>),
             delta_t: Some(delta_t_trampoline::<P>),
             ayanamsha: Some(ayanamsha_trampoline::<P>),
+            dut1: Some(dut1_trampoline::<P>),
             horizon_event: Some(horizon_event_trampoline::<P>),
         }
     }
@@ -714,7 +749,10 @@ unsafe extern "C" fn capabilities_trampoline<P: EphemerisProvider>(
         speeds: u8::from(caps.speeds),
         deterministic: u8::from(caps.deterministic),
         tier: u8::try_from(tier_bits(caps.identity.tier)).unwrap_or(0),
-        reserved: 0,
+        distance_unit: caps.distance_unit.id(),
+        speed_model: caps.speed_model.id(),
+        astronomy: caps.astronomy.id(),
+        reserved: [0; 2],
         name: this.name.as_ptr(),
         version: this.version.as_ptr(),
         data_version: this.data_version.as_ptr(),
@@ -877,6 +915,24 @@ unsafe extern "C" fn delta_t_trampoline<P: EphemerisProvider>(
     )
 }
 
+unsafe extern "C" fn dut1_trampoline<P: EphemerisProvider>(
+    user_data: *mut c_void,
+    jd_utc: f64,
+    out: *mut f64,
+) -> i32 {
+    if user_data.is_null() || out.is_null() {
+        return invalid_call();
+    }
+    // SAFETY: `user_data` is the `Exported` box registered with this vtable.
+    let this = unsafe { &*user_data.cast::<Exported<P>>() };
+    // SAFETY: the caller promises a writable f64.
+    status(
+        this.provider
+            .dut1_seconds(jd_utc)
+            .map(|v| unsafe { out.write(v) }),
+    )
+}
+
 unsafe extern "C" fn ayanamsha_trampoline<P: EphemerisProvider>(
     user_data: *mut c_void,
     jd: f64,
@@ -987,6 +1043,10 @@ impl EphemerisProvider for ExportedVtable<'_> {
         self.provider.ayanamsha_deg(jd, scale, ayanamsha)
     }
 
+    fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
+        self.provider.dut1_seconds(jd_utc)
+    }
+
     fn horizon_event(
         &self,
         request: &HorizonRequest,
@@ -1027,6 +1087,7 @@ mod tests {
         assert_eq!(via_vtable.frame, via_trait.frame);
         assert!(bound.obliquity(2_460_000.5, TimeScale::Tt).is_err());
         assert!(bound.delta_t_seconds(2_460_000.5).is_err());
+        assert!(bound.dut1_seconds(2_460_000.5).is_err());
         assert!(
             bound
                 .ayanamsha_deg(2_460_000.5, TimeScale::Tt, Ayanamsha::Lahiri)

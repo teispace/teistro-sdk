@@ -23,9 +23,9 @@ use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
-    Body, Capabilities, CellStatus, Coordinates, EphemerisProvider, Frame, Horizon,
+    Astronomy, Body, Capabilities, CellStatus, Coordinates, EphemerisProvider, Frame, Horizon,
     HorizonEventKind, HorizonRequest, Identity, Obliquity, Overrides, PositionColumns,
-    PositionRequest, ProviderError, TimeScale,
+    PositionRequest, ProviderError, SpeedModel, TimeScale,
 };
 
 use crate::bench::Row;
@@ -46,6 +46,8 @@ pub struct Bounds {
     pub delta_t_seconds: f64,
     /// A native ayanamsha at J2000.0 against the published value, degrees.
     pub ayanamsha_deg: f64,
+    /// A native DUT1 against the definition's bound, seconds.
+    pub dut1_seconds: f64,
     /// A native rise or set of the Sun against the SDK's solver under the
     /// geometric convention (the disc's centre on the true horizon, no
     /// refraction), seconds: pure geometry on both sides.
@@ -70,6 +72,7 @@ impl Bounds {
         obliquity_arcsec: 0.01,
         delta_t_seconds: 1.0,
         ayanamsha_deg: 0.1,
+        dut1_seconds: 0.9,
         rise_set_geometric_seconds: 1.0,
         rise_set_refracted_seconds: 10.0,
         completion_native_arcsec: 1e-4,
@@ -132,6 +135,22 @@ impl Check {
 
     fn skipped(name: &'static str, detail: impl Into<String>) -> Check {
         Check::pass(name, format!("skipped: {}", detail.into()))
+    }
+
+    /// A measurement published without a bound: a classical text's
+    /// definition against modern astronomy, or a rule's speed against
+    /// the derivative.
+    fn informational(
+        name: &'static str,
+        measured: f64,
+        unit: &'static str,
+        detail: impl Into<String>,
+    ) -> Check {
+        Check {
+            measured: Some(measured),
+            unit: Some(unit),
+            ..Check::pass(name, format!("measured, not gated: {}", detail.into()))
+        }
     }
 
     /// Whether the check ran rather than being skipped.
@@ -316,13 +335,28 @@ pub fn run<P: EphemerisProvider + ?Sized>(provider: &P, bounds: &Bounds) -> Repo
             format!("the native-frame request failed: {error}"),
         )),
     }
-    checks.push(check_speed(provider, &jds, &bodies, frame, bounds));
-    checks.push(check_continuity(provider, &jds, &bodies, frame, bounds));
+    checks.push(check_speed(
+        provider,
+        &jds,
+        &bodies,
+        frame,
+        bounds,
+        capabilities.speed_model,
+    ));
+    checks.push(check_continuity(
+        provider,
+        &jds,
+        &bodies,
+        frame,
+        bounds,
+        capabilities.speed_model,
+    ));
     checks.push(check_out_of_range(provider, &capabilities, &bodies, frame));
     checks.push(check_unsupported_body(provider, &capabilities, &jds, frame));
     checks.push(check_obliquity(provider, &capabilities, &jds, bounds));
     checks.push(check_delta_t(provider, &capabilities, bounds));
     checks.push(check_ayanamsha(provider, &capabilities, bounds));
+    checks.push(check_dut1(provider, &capabilities, &jds, bounds));
     checks.push(check_rise_set(
         provider,
         &capabilities,
@@ -488,6 +522,7 @@ fn check_speed<P: EphemerisProvider + ?Sized>(
     bodies: &[Body],
     frame: Frame,
     bounds: &Bounds,
+    speed_model: SpeedModel,
 ) -> Check {
     let sample: Vec<Body> = bodies
         .iter()
@@ -525,6 +560,17 @@ fn check_speed<P: EphemerisProvider + ?Sized>(
             }
         }
     }
+    if speed_model == SpeedModel::Rule {
+        // A text's rule for the daily motion is the speed its tradition
+        // uses; its distance from the derivative of the text's places is
+        // published.
+        return Check::informational(
+            "speed_consistency",
+            worst,
+            "deg/day",
+            format!("the provider's speeds follow its rule, not the derivative; worst {where_}"),
+        );
+    }
     Check::measured(
         "speed_consistency",
         worst,
@@ -534,32 +580,74 @@ fn check_speed<P: EphemerisProvider + ?Sized>(
     )
 }
 
+fn check_dut1<P: EphemerisProvider + ?Sized>(
+    provider: &P,
+    capabilities: &Capabilities,
+    jds: &[f64],
+    bounds: &Bounds,
+) -> Check {
+    if !capabilities.has(Overrides::DUT1) {
+        return Check::skipped("override_dut1", "not declared");
+    }
+    let mut worst = 0.0f64;
+    for jd in jds {
+        match provider.dut1_seconds(*jd) {
+            Ok(value) if value.is_finite() => worst = worst.max(value.abs()),
+            Ok(value) => {
+                return Check::fail("override_dut1", format!("declared, but answered {value}"));
+            }
+            Err(error) => {
+                return Check::fail("override_dut1", format!("declared, but failed: {error}"));
+            }
+        }
+    }
+    Check::measured(
+        "override_dut1",
+        worst,
+        bounds.dut1_seconds,
+        "s",
+        "the largest native DUT1 on the kit's instants against the definition's bound",
+    )
+}
+
+/// Positions are continuous over the step: the change over it agrees
+/// with the reported speed times the step or, for a provider whose
+/// speeds follow a rule, with the change over the step before (the
+/// second difference vanishes), which catches a jump without appeal to
+/// the speed.
 fn check_continuity<P: EphemerisProvider + ?Sized>(
     provider: &P,
     jds: &[f64],
     bodies: &[Body],
     frame: Frame,
     bounds: &Bounds,
+    speed_model: SpeedModel,
 ) -> Check {
     let h = bounds.continuity_step_days;
     let mut worst = 0.0f64;
     let mut where_ = String::new();
     for jd in jds {
-        let two = [*jd, jd + h];
-        let columns = match provider.positions(&request(&two, bodies, frame, true)) {
+        let three = [jd - h, *jd, jd + h];
+        let columns = match provider.positions(&request(&three, bodies, frame, true)) {
             Ok(c) => c,
             Err(error) => return Check::fail("continuity", format!("{error}")),
         };
         for (body_index, body) in bodies.iter().enumerate() {
-            let (Some(a), Some(b)) = (columns.at(0, body_index), columns.at(1, body_index)) else {
+            let (Some(before), Some(at), Some(after)) = (
+                columns.at(0, body_index),
+                columns.at(1, body_index),
+                columns.at(2, body_index),
+            ) else {
                 continue;
             };
-            if !a.is_ok() || !b.is_ok() {
+            if !before.is_ok() || !at.is_ok() || !after.is_ok() {
                 continue;
             }
-            let predicted = a.lon_speed * h;
-            let actual = difference_deg(b.lon, a.lon);
-            let error = (actual - predicted).abs();
+            let forward = difference_deg(after.lon, at.lon);
+            let error = match speed_model {
+                SpeedModel::Derivative => (forward - at.lon_speed * h).abs(),
+                SpeedModel::Rule => (forward - difference_deg(at.lon, before.lon)).abs(),
+            };
             if error > worst {
                 worst = error;
                 where_ = format!("{} at JD {jd}", body.key());
@@ -684,6 +772,14 @@ fn check_obliquity<P: EphemerisProvider + ?Sized>(
             * 3600.0;
         worst = worst.max(error);
     }
+    if capabilities.astronomy == Astronomy::Classical {
+        return Check::informational(
+            "override_obliquity",
+            worst,
+            "arcsec",
+            "the text's obliquity against IAU 2006 and IAU 2000B",
+        );
+    }
     Check::measured(
         "override_obliquity",
         worst,
@@ -753,24 +849,42 @@ fn check_ayanamsha<P: EphemerisProvider + ?Sized>(
     if !capabilities.has(Overrides::AYANAMSHA) {
         return Check::skipped("override_ayanamsha", "not declared");
     }
-    // The published values at J2000.0 (Lahiri from the Indian Astronomical
-    // Ephemeris; Raman and Krishnamurti from their authors' tables), as
-    // capability honesty rather than accuracy.
+    // The published values (Lahiri at J2000.0 from the Indian Astronomical
+    // Ephemeris; Raman and Krishnamurti at J2000.0 from their authors'
+    // tables; the Surya Siddhanta's own at Burgess's instant, midnight of
+    // 1 January 1860 at Washington, from his worked example under III.9 to
+    // 12), as capability honesty rather than accuracy.
     let expected = [
-        (Ayanamsha::Lahiri, 23.85),
-        (Ayanamsha::Raman, 22.40),
-        (Ayanamsha::Krishnamurti, 23.76),
+        (
+            Ayanamsha::Lahiri,
+            teistro_astro::iau::DJ00,
+            23.85,
+            "J2000.0",
+        ),
+        (Ayanamsha::Raman, teistro_astro::iau::DJ00, 22.40, "J2000.0"),
+        (
+            Ayanamsha::Krishnamurti,
+            teistro_astro::iau::DJ00,
+            23.76,
+            "J2000.0",
+        ),
+        (
+            Ayanamsha::Suryasiddhanta,
+            2_400_410.714,
+            20.0 + 24.0 / 60.0 + 39.0 / 3600.0,
+            "Burgess's 1860 instant",
+        ),
     ];
     let mut worst = 0.0f64;
     let mut details = Vec::new();
-    for (ayanamsha, value) in expected {
+    for (ayanamsha, jd, value, at) in expected {
         if !capabilities.has_ayanamsha(ayanamsha) {
             continue;
         }
-        match provider.ayanamsha_deg(teistro_astro::iau::DJ00, TimeScale::Tt, ayanamsha) {
+        match provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha) {
             Ok(native) => {
                 worst = worst.max((native - value).abs());
-                details.push(format!("{}: {native:.4}", ayanamsha.key()));
+                details.push(format!("{} at {at}: {native:.4}", ayanamsha.key()));
             }
             Err(error) => {
                 return Check::fail(
@@ -791,7 +905,7 @@ fn check_ayanamsha<P: EphemerisProvider + ?Sized>(
         worst,
         bounds.ayanamsha_deg,
         "deg",
-        format!("at J2000.0: {}", details.join(", ")),
+        details.join(", "),
     )
 }
 
@@ -841,6 +955,9 @@ fn check_rise_set<P: EphemerisProvider + ?Sized>(
                     horizon,
                 }) {
                     Ok(found) => found,
+                    Err(ProviderError::Unsupported { what }) => {
+                        return Check::skipped(name, format!("the provider does not offer {what}"));
+                    }
                     Err(error) => {
                         return Check::fail(
                             name,
@@ -877,6 +994,17 @@ fn check_rise_set<P: EphemerisProvider + ?Sized>(
                 }
             }
         }
+    }
+    if capabilities.astronomy == Astronomy::Classical {
+        return Check::informational(
+            name,
+            worst.0,
+            "s",
+            format!(
+                "{horizon}: the text's sunrise against hour-angle geometry over its own places; {compared} events compared; worst {}",
+                worst.1
+            ),
+        );
     }
     Check::measured(
         name,
@@ -1044,8 +1172,9 @@ mod tests {
         assert!(failed.is_empty(), "{}", report.markdown());
         assert!(!report.check("completion_native").unwrap().ran());
         assert!(!report.check("override_rise_set_geometric").unwrap().ran());
+        assert!(!report.check("override_dut1").unwrap().ran());
         assert!(report.check("speed_consistency").unwrap().ran());
-        assert_eq!(report.checks.len(), 14);
+        assert_eq!(report.checks.len(), 15);
         assert!(report.markdown().contains("all passed"));
         let results = Results {
             provider: String::from("test-provider"),
@@ -1071,7 +1200,8 @@ mod tests {
                 overrides: Overrides::OBLIQUITY
                     .with(Overrides::DELTA_T)
                     .with(Overrides::AYANAMSHA)
-                    .with(Overrides::RISE_SET),
+                    .with(Overrides::RISE_SET)
+                    .with(Overrides::DUT1),
                 ayanamshas: vec![Ayanamsha::Lahiri],
                 ..TestProvider::new().capabilities()
             }
@@ -1090,6 +1220,10 @@ mod tests {
                 TimeScale::Ut1 => jd + self.delta_t_seconds(jd)? / 86_400.0,
             };
             Ok(sky::obliquity(JulianDay::literal(tt)))
+        }
+
+        fn dut1_seconds(&self, _jd_utc: f64) -> Result<f64, ProviderError> {
+            Ok(0.0)
         }
 
         fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
@@ -1135,6 +1269,7 @@ mod tests {
             "override_obliquity",
             "override_delta_t",
             "override_ayanamsha",
+            "override_dut1",
             "override_rise_set_geometric",
             "override_rise_set_refracted",
         ] {

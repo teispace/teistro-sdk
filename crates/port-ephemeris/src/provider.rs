@@ -147,6 +147,19 @@ pub trait EphemerisProvider: Send + Sync {
         Err(ProviderError::unsupported("ayanamsha"))
     }
 
+    /// UT1 less UTC in seconds at a UTC instant, from the provider's own
+    /// copy of the IERS bulletins; an override. By definition within
+    /// ±0.9 s.
+    ///
+    /// # Errors
+    ///
+    /// [`ProviderError::Unsupported`] unless declared, or an instant the
+    /// provider's bulletins do not reach.
+    fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
+        let _ = jd_utc;
+        Err(ProviderError::unsupported("dut1"))
+    }
+
     /// The next horizon event of a body at a place from the provider's own
     /// search, or `None` when the event does not happen inside the
     /// request's window (a polar day, a circumpolar body); an override.
@@ -188,6 +201,10 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
         ayanamsha: Ayanamsha,
     ) -> Result<f64, ProviderError> {
         (**self).ayanamsha_deg(jd, scale, ayanamsha)
+    }
+
+    fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
+        (**self).dut1_seconds(jd_utc)
     }
 
     fn horizon_event(
@@ -269,6 +286,7 @@ mod tests {
         let by_ref: &dyn EphemerisProvider = &provider;
         assert!(by_ref.obliquity(2_451_545.0, TimeScale::Tt).is_err());
         assert!(by_ref.delta_t_seconds(2_451_545.0).is_err());
+        assert!(by_ref.dut1_seconds(2_451_545.0).is_err());
         assert!(
             by_ref
                 .ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Lahiri)

@@ -6,6 +6,7 @@ use core::fmt;
 
 use teistro_calendar::solar::{DayLight, SolarModel};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
+use teistro_core::catalogue::Vara;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::{PolarDayPolicy, SunriseConvention};
@@ -47,6 +48,9 @@ pub struct LocalDay {
     pub place: Place,
     /// The civil date.
     pub date: CalendarDate,
+    /// The day's vara: the weekday of the date, which the sunrise-anchored
+    /// reckoning keeps for the whole day from sunrise to sunrise.
+    pub vara: Vara,
     /// Sunrise, or what the policy put in its place.
     pub sunrise: JulianDay<Utc>,
     /// Sunset.
@@ -204,6 +208,7 @@ pub fn local_day(
     Ok(LocalDay {
         place: *place,
         date: date.clone(),
+        vara: day.weekday().vara(),
         sunrise,
         sunset,
         next_sunrise,
@@ -309,6 +314,7 @@ mod tests {
         assert!((day.night_days() * 24.0 - 10.2).abs() < 0.1);
         assert!(day.contains(day.sunrise) && !day.contains(day.next_sunrise));
         assert!(day.model.starts_with("Surya Siddhanta"));
+        assert_eq!(day.vara, Vara::Shukravara, "2024-06-21 is a Friday");
         assert_eq!(
             day.convention,
             teistro_core::settings::Sunrise::CentreNoRefraction.into()

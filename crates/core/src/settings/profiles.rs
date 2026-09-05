@@ -10,9 +10,9 @@ use crate::catalogue::{
 
 use super::knobs::{
     AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, LunarMonth, NakshatraScheme, Node, NodeAspects, NodeCoLordship,
-    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, SeedOverflow, Sunrise, Tier,
-    UnattestedDn, UnknownTime, YearLength, Zodiac,
+    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, NakshatraScheme, Node, NodeAspects,
+    NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, SeedOverflow, Sunrise,
+    Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -111,6 +111,7 @@ pub fn root() -> Settings {
             day_boundary: DayBoundary::Sunrise,
             polar_day_policy: PolarDayPolicy::Undefined,
             ghati_reckoning: GhatiReckoning::Civil,
+            hora_reckoning: HoraReckoning::Proportional,
         },
         time: Time {
             dst_gap: DstGap::Error,

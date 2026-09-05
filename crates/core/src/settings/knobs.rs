@@ -122,6 +122,12 @@ knob!(
         Proportional = "PROPORTIONAL" }
 );
 knob!(
+    /// How the planetary hours (horas) are counted.
+    HoraReckoning { /// Twelve over the daylight and twelve over the night.
+        Proportional = "PROPORTIONAL", /// Twenty-four of sixty minutes from sunrise.
+        Equal = "EQUAL" }
+);
+knob!(
     /// A civil time inside a daylight-saving gap.
     DstGap { /// Refuse.
         Error = "ERROR", /// Add the gap.

@@ -15,6 +15,7 @@ locale packs, never in code.
 | binding | a generated language package that exposes the SDK's API idiomatically in that language |
 | capability | a declaration by a provider (ephemeris, calendar, timezone, locale data) of what it can compute; the SDK validates settings against it |
 | base locale | `en-Latn`, the locale whose sources define every key and parameter; every other locale is validated against it (Teistro Intl) |
+| hora | a planetary hour: one of twelve divisions of the day from sunrise to sunset and twelve of the night to the next sunrise (or twenty-four of sixty minutes from sunrise under the equal reckoning), each ruled by a graha in the Chaldean order starting from the weekday's lord (`time::horas`) |
 | namespace (intl) | one JSON file per locale, `sdk.entity`, `sdk.reason` and the like; keys are dotted paths inside it; consumers own every namespace not prefixed `sdk.` |
 | pack (`.tpack`) | a compiled namespace of one locale: a sorted key table over a byte arena with a checksum, a content hash and the locale's metadata; what a runtime loads |
 | context (intl) | a closed set of values a message may select on, declared in `_meta.json` (`gender: [m, f, n]`) and typed in the generated accessors |

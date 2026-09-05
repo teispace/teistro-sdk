@@ -100,6 +100,28 @@ fn charts() -> Vec<Chart> {
     charts
 }
 
+/// The largest gap seen, in seconds, and where.
+#[derive(Default)]
+struct Worst {
+    seconds: f64,
+    at: String,
+}
+
+impl Worst {
+    fn offer(&mut self, signed_seconds: f64, label: &str) {
+        if signed_seconds.abs() > self.seconds {
+            self.seconds = signed_seconds.abs();
+            label.clone_into(&mut self.at);
+        }
+    }
+}
+
+impl std::fmt::Display for Worst {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:.2} s at {}", self.seconds, self.at)
+    }
+}
+
 #[test]
 fn the_solver_and_the_native_search_reproduce_the_baselines_sunrise_at_sea_level() {
     let provider = TeimerisProvider::open(&data_dir_from_env()).unwrap_or_else(|e| panic!("{e}"));
@@ -110,9 +132,9 @@ fn the_solver_and_the_native_search_reproduce_the_baselines_sunrise_at_sea_level
     );
     let charts = charts();
     assert_eq!(charts.len(), 55);
-    let mut worst_sdk = (0.0f64, String::new());
-    let mut worst_native = (0.0f64, String::new());
-    let mut worst_sdk_vs_native = (0.0f64, String::new());
+    let mut worst_sdk = Worst::default();
+    let mut worst_native = Worst::default();
+    let mut worst_sdk_vs_native = Worst::default();
     let mut compared = 0;
     let mut skipped = Vec::new();
     let mut day_early = Vec::new();
@@ -164,24 +186,15 @@ fn the_solver_and_the_native_search_reproduce_the_baselines_sunrise_at_sea_level
             from = sdk.instant;
             compared += 1;
             let label = format!("{} {kind} (altitude {} m)", chart.id, chart.altitude_m);
-            let gap_sdk = (sdk.instant.get() - expected).abs() * 86_400.0;
-            let gap_native = (native.get() - expected).abs() * 86_400.0;
-            let gap_between = (sdk.instant.get() - native.get()).abs() * 86_400.0;
+            let gap_sdk = (sdk.instant.get() - expected) * 86_400.0;
+            let gap_native = (native.get() - expected) * 86_400.0;
+            let gap_between = (sdk.instant.get() - native.get()) * 86_400.0;
             println!(
-                "{label}: SDK - baseline {:+.2} s, native - baseline {:+.2} s, SDK - native {:+.2} s",
-                (sdk.instant.get() - expected) * 86_400.0,
-                (native.get() - expected) * 86_400.0,
-                (sdk.instant.get() - native.get()) * 86_400.0
+                "{label}: SDK - baseline {gap_sdk:+.2} s, native - baseline {gap_native:+.2} s, SDK - native {gap_between:+.2} s"
             );
-            if gap_sdk > worst_sdk.0 {
-                worst_sdk = (gap_sdk, label.clone());
-            }
-            if gap_native > worst_native.0 {
-                worst_native = (gap_native, label.clone());
-            }
-            if gap_between > worst_sdk_vs_native.0 {
-                worst_sdk_vs_native = (gap_between, label);
-            }
+            worst_sdk.offer(gap_sdk, &label);
+            worst_native.offer(gap_native, &label);
+            worst_sdk_vs_native.offer(gap_between, &label);
         }
         if !found {
             skipped.push(format!(
@@ -196,18 +209,9 @@ fn the_solver_and_the_native_search_reproduce_the_baselines_sunrise_at_sea_level
         charts.len()
     );
     assert_eq!(day_early, vec!["c022", "c025", "c039"]);
-    println!(
-        "worst SDK solver against the baseline: {:.2} s at {}",
-        worst_sdk.0, worst_sdk.1
-    );
-    println!(
-        "worst native search against the baseline: {:.2} s at {}",
-        worst_native.0, worst_native.1
-    );
-    println!(
-        "worst SDK solver against the native search: {:.2} s at {}",
-        worst_sdk_vs_native.0, worst_sdk_vs_native.1
-    );
-    assert!(worst_sdk_vs_native.0 < 30.0, "{}", worst_sdk_vs_native.1);
-    assert!(worst_sdk.0 < 12.0, "{}", worst_sdk.1);
+    println!("worst SDK solver against the baseline: {worst_sdk}");
+    println!("worst native search against the baseline: {worst_native}");
+    println!("worst SDK solver against the native search: {worst_sdk_vs_native}");
+    assert!(worst_sdk_vs_native.seconds < 30.0, "{worst_sdk_vs_native}");
+    assert!(worst_sdk.seconds < 12.0, "{worst_sdk}");
 }

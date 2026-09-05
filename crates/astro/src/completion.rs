@@ -19,7 +19,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, Coordinates, EphemerisProvider, Frame, Obliquity, Overrides,
+    Body, Capabilities, Cell, Coordinates, EphemerisProvider, Obliquity, Overrides,
     PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
@@ -318,15 +318,31 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }];
         let native_request = request.in_frame(native);
         let mut columns = self.provider.positions(&native_request)?;
-        if wanted.coordinates != native.coordinates {
-            self.rotate(&mut columns, request, wanted.coordinates, &mut steps)?;
-        }
-        if wanted.zodiac != native.zodiac {
+        // The zodiac is a shift of ecliptic longitude, so it is applied
+        // while the columns are ecliptic: before a rotation out of the
+        // ecliptic, after a rotation into it. A rotation to the equator
+        // takes the tropical longitude, so a sidereal native frame is
+        // shifted first.
+        let shift = wanted.zodiac != native.zodiac;
+        let native_ecliptic = native.coordinates == Coordinates::Ecliptic;
+        if shift && native_ecliptic {
             self.shift_zodiac(
                 &mut columns,
                 request,
-                native.zodiac,
-                wanted.zodiac,
+                (native.zodiac, wanted.zodiac),
+                native.coordinates,
+                &mut steps,
+            )?;
+        }
+        if wanted.coordinates != native.coordinates {
+            self.rotate(&mut columns, request, wanted.coordinates, &mut steps)?;
+        }
+        if shift && !native_ecliptic {
+            self.shift_zodiac(
+                &mut columns,
+                request,
+                (native.zodiac, wanted.zodiac),
+                wanted.coordinates,
                 &mut steps,
             )?;
         }
@@ -377,16 +393,17 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         Ok(())
     }
 
-    /// Moves longitudes between the tropical and a sidereal zodiac.
+    /// Moves longitudes between the tropical and a sidereal zodiac; the
+    /// columns hold `coordinates`, which must be ecliptic.
     fn shift_zodiac(
         &self,
         columns: &mut PositionColumns,
         request: &PositionRequest<'_>,
-        from: Zodiac,
-        to: Zodiac,
+        (from, to): (Zodiac, Zodiac),
+        coordinates: Coordinates,
         steps: &mut Vec<Step>,
     ) -> Result<(), CompletionError> {
-        if request.frame.coordinates != Coordinates::Ecliptic {
+        if coordinates != Coordinates::Ecliptic {
             return Err(CompletionError::Unsupported {
                 step: "sidereal-equatorial",
             });
@@ -447,13 +464,16 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
     fn apparent(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
         let jds = [ut1.get()];
         let bodies = [body];
-        let request = PositionRequest::new(
-            &jds,
-            TimeScale::Ut1,
-            &bodies,
-            Frame::CANONICAL.with_coordinates(Coordinates::Equatorial),
-        )
-        .without_speeds();
+        // Equatorial coordinates in the tropical zodiac, with the
+        // provider's own centre, equinox and corrections: an ephemeris
+        // answers in the apparent frame, a classical text in its own,
+        // and "apparent" to an observer is what each provides.
+        let frame = self
+            .capabilities
+            .native_frame
+            .with_coordinates(Coordinates::Equatorial)
+            .with_zodiac(Zodiac::Tropical);
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame).without_speeds();
         let done = self.positions(&request)?;
         let cell = done
             .columns
@@ -535,7 +555,7 @@ mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use teistro_core::catalogue::Ayanamsha;
-    use teistro_port_ephemeris::{Equinox, TestProvider};
+    use teistro_port_ephemeris::{Equinox, Frame, TestProvider};
 
     use super::*;
 

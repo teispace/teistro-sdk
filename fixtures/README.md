@@ -223,3 +223,13 @@ explained rather than a failure or a silent adoption.
     c039 the baseline's `foundation.sunrise` block holds the previous
     day's events and its `next_day` block the civil date's own (C35): a
     comparison reads the latter there.
+
+13. Planetary hours. The baseline reckons twelve horas over the day from
+    sunrise to sunset and twelve over the night (`hora_reckoning:
+    PROPORTIONAL`); `crates/time/tests/hora_fixtures.rs` reproduces the
+    lord at the birth instant for every chart except c022 and c039, whose
+    day-early sunrise block (convention twelve) places the birth in
+    another day's horas, and c028, whose polar day the baseline
+    synthesises. The equal reckoning (sixty-minute horas from sunrise)
+    disagrees with the fixtures on many charts, so they decide the
+    default.
