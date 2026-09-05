@@ -98,8 +98,8 @@ on. The Sun is −26.86 at one astronomical unit, scaled by the square of
 its disc's ratio to the disc at one unit (the radius cancels).
 
 **The equation of time.** Apparent solar time less mean solar time: the
-Greenwich apparent sidereal time (the SDK's own, IAU 2000 with the 2000B
-equation of the equinoxes) less the Sun's apparent right ascension is
+Greenwich apparent sidereal time (the SDK's own, IAU 2006 with the 2000B
+nutation, `gst06b`) less the Sun's apparent right ascension is
 the true Sun's hour angle at Greenwich; less the time since midnight
 plus twelve hours is the mean Sun's; the difference folded to a half
 turn, at four minutes a degree. Positive when the sundial is ahead:

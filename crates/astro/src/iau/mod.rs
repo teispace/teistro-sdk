@@ -27,6 +27,8 @@
 //! | [`ee00`] | `eraEe00` | the equation of the equinoxes from an obliquity and a nutation |
 //! | [`ee00b`] | `eraEe00b` | the equation of the equinoxes (IAU 2000B) |
 //! | [`gst00b`] | `eraGst00b` | Greenwich apparent sidereal time (IAU 2000B) |
+//! | [`ee06b`] | none: `eraEe06a` with the IAU 2000B nutation | the equation of the equinoxes (IAU 2006 precession, 2000B nutation) |
+//! | [`gst06b`] | none: `eraGst06a` with the IAU 2000B nutation | Greenwich apparent sidereal time (IAU 2006 precession, 2000B nutation) |
 //! | [`refco`] | `eraRefco` | the refraction constants of a standard model |
 //! | [`vector::ir`], [`vector::rx`], [`vector::ry`], [`vector::rz`], [`vector::rxr`], [`vector::tr`], [`vector::rxp`], [`vector::trxp`], [`vector::pxp`], [`vector::pdp`], [`vector::pm`], [`vector::pn`], [`vector::sxp`], [`vector::c2s`], [`vector::s2c`], [`vector::anpm`] | `eraIr` and kin | the vector and matrix primitives |
 //! | [`p06::p06e`] | `eraP06e` | the sixteen IAU 2006 precession angles |
@@ -451,6 +453,29 @@ pub fn gst00b(uta: f64, utb: f64) -> f64 {
     anp(gmst + ee)
 }
 
+/// The equation of the equinoxes consistent with IAU 2006 precession and
+/// the IAU 2000B nutation, radians, at a TT date: the nutation in
+/// longitude times the cosine of the IAU 2006 mean obliquity plus the
+/// complementary terms, the equinox-based expression of IERS Conventions
+/// 2010 (§5.5.7) with the truncated nutation. ERFA's `ee06a` is the same
+/// with the IAU 2000A nutation; the two differ by that nutation's
+/// truncation, under a milliarcsecond in the modern era.
+#[must_use]
+pub fn ee06b(date1: f64, date2: f64) -> f64 {
+    let epsa = obl06(date1, date2);
+    let nutation = nut00b(date1, date2);
+    ee00(date1, date2, epsa, nutation.dpsi)
+}
+
+/// Greenwich apparent sidereal time consistent with IAU 2006 precession
+/// and the IAU 2000B nutation, radians, from a UT1 date (the Earth's
+/// rotation) and a TT date (the precession and nutation): [`gmst06`] plus
+/// [`ee06b`]. ERFA's `gst06a` is the same with the IAU 2000A nutation.
+#[must_use]
+pub fn gst06b(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
+    anp(gmst06(uta, utb, tta, ttb) + ee06b(tta, ttb))
+}
+
 /// `ERFA_GMAX` then `ERFA_GMIN`: the larger of the value and the lower
 /// bound, then the smaller of that and the upper bound, by the C macros'
 /// comparisons.
@@ -616,6 +641,32 @@ mod tests {
         let (a, b) = refco(800.0, 10.0, 0.9, 0.4);
         vvd(a, 0.226_494_995_624_141_500_9e-3, 1e-15, "refco refa");
         vvd(b, -0.259_865_826_172_934_397_0e-6, 1e-18, "refco refb");
+    }
+
+    #[test]
+    fn the_iau_2006_sidereal_time_agrees_with_erfa_within_the_2000b_truncation() {
+        // The IAU 2006 expressions with the 2000B nutation against ERFA's
+        // `ee06a` and `gst06a` with the 2000A: the truncation, 0.3 mas at
+        // this date, inside a milliarcsecond (4.85e-9 rad); and the
+        // composition is exact.
+        vvd(
+            ee06b(2_400_000.5, 53_736.0),
+            -0.883_419_507_204_379_015_6e-5,
+            4.85e-9,
+            "ee06b against ee06a",
+        );
+        vvd(
+            gst06b(2_400_000.5, 53_736.0, 2_400_000.5, 53_736.0),
+            1.754_166_137_675_019_159,
+            4.85e-9,
+            "gst06b against gst06a",
+        );
+        vvd(
+            gst06b(2_400_000.5, 53_736.0, 2_400_000.5, 53_736.0),
+            anp(gmst06(2_400_000.5, 53_736.0, 2_400_000.5, 53_736.0) + ee06b(2_400_000.5, 53_736.0)),
+            0.0,
+            "gst06b is gmst06 plus ee06b",
+        );
     }
 
     #[test]

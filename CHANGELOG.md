@@ -52,6 +52,11 @@ search answers within 0.004 s of the SDK's kernel, so no instant moves
 beyond that. The kit's Surya Siddhanta ayanamsha expectation for a modern
 engine is now the catalogued epoch definition (18.94° at Burgess's 1860
 instant), the text's own value being the classical astronomy's alone.
+The Greenwich apparent sidereal time is now the IAU 2006 expression with
+the IAU 2000B nutation (`gst06b`) instead of the IAU 2000 one (`gst00b`):
+the meridian, every house cusp and the equation of time move by under
+0.002″ (6e-7°) between 1950 and 2050 and by 0.01″ at 1850, and
+Teimeris's sidereal time inside its window is matched within 0.0012″.
 Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the

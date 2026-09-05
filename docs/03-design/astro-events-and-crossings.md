@@ -117,12 +117,23 @@ ones equal the boundaries the quantity advanced past net.
 ## 4. Algorithms
 
 **Sidereal time and the obliquity** (`sky`). Greenwich apparent sidereal
-time is the IAU 2000 mean sidereal time plus the equation of the
-equinoxes with the IAU 2000B nutation, from the ported `gmst00` and
-`ee00b` with the UT1 and TT instants distinguished (ERFA's `gst00b`
-takes one date for both); local apparent sidereal time adds the
-longitude. The obliquity record is the IAU 2006 mean obliquity and the
-IAU 2000B nutation. Every ported routine is in `astro::iau` with the
+time is the IAU 2006 mean sidereal time plus the equation of the
+equinoxes with the IAU 2006 mean obliquity and the IAU 2000B nutation:
+the ported `gmst06` and `ee06b`, the equinox-based expression of IERS
+Conventions 2010 with the UT1 and TT instants distinguished, so the
+meridian agrees with the precession the frames are built with (ERFA's
+`gst06a` differs by the IAU 2000A nutation, 0.3 mas at its reference
+instant; the SDK used the IAU 2000 expression, `gst00b`, until
+2026-09-05, 0.002″ away between 1950 and 2050 and 0.01″ at 1850).
+Teimeris computes the same expression strictly inside its 1850 to 2050
+window: `tests/teimeris_sidereal.rs` holds the SDK to it within 0.002″
+there (measured 0.0012″ at 1850 and under 0.0004″ from 1875, the two
+readings of the 2000B nutation, C43 and F6) and to the engine's IERS
+2010 model within 0.01″ from 1700 to 2300 (measured 0.0052″); at the
+bounds and beyond them the engine's long-term construction departs by
+up to 2.5″ (`05-testing/02-engine-findings.md`, F1). Local apparent
+sidereal time adds the longitude. The obliquity record is the IAU 2006
+mean obliquity and the IAU 2000B nutation. Every ported routine is in `astro::iau` with the
 provenance table ADR-0021 requires and is tested against the reference
 values of ERFA's own test program.
 
