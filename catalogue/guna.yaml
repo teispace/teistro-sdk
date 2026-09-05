@@ -1,0 +1,26 @@
+kind: guna
+number: 36
+version: 1
+doc: "The three gunas."
+members:
+  - key: SATTVA
+    id: 0
+    doc: "Sattva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RAJAS
+    id: 1
+    doc: "Rajas"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: TAMAS
+    id: 2
+    doc: "Tamas"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

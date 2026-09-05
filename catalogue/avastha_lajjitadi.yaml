@@ -1,0 +1,47 @@
+kind: avastha_lajjitadi
+number: 53
+version: 1
+doc: "The six Lajjitadi states."
+members:
+  - key: LAJJITA
+    id: 0
+    doc: "Lajjita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GARVITA
+    id: 1
+    doc: "Garvita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KSHUDHA
+    id: 2
+    doc: "Kshudha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: TRISHITA
+    id: 3
+    doc: "Trishita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MUDITA
+    id: 4
+    doc: "Mudita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KSHOBHITA
+    id: 5
+    doc: "Kshobhita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

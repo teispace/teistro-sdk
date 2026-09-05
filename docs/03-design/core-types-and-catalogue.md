@@ -1,8 +1,11 @@
 # Core types and the catalogue
 
-Status: `draft`, written 2026-09-05 as the first Phase 1 design page;
-revised when `crates/core` is built, which happens before any other
-crate. Derives from `02-architecture/05-data-model-identifiers.md`,
+Status: `draft`, written 2026-09-05 as the first Phase 1 design page and
+revised the same day when `crates/core` was built: fifty-three kinds
+in `catalogue/`, the generator and its gate, the newtypes with
+compile-fail proofs, the exact angle and rationals, the envelope and
+the error, registries and limits, and the settings module, all measured
+(section 7). Derives from `02-architecture/05-data-model-identifiers.md`,
 `06-api-conventions.md`, `08-extensibility.md`, `exact-arithmetic.md`,
 ADR-0003, ADR-0016, ADR-0018, ADR-0020 and ADR-0023, and from the shapes
 the spikes fixed: the `api:` description lines (spike 2), the packing of
@@ -48,7 +51,7 @@ diacritics elsewhere):
 |---:|---|---:|---|---|
 | 1 | `graha` | 12 | `SUN`, `MOON`, `MARS`, `MERCURY`, `JUPITER`, `VENUS`, `SATURN`, `RAHU`, `KETU`, `URANUS`, `NEPTUNE`, `PLUTO` | body class, nature, gender, element, guna, varna, direction, exaltation, debilitation, moolatrikona, own signs, natural relationships |
 | 2 | `rashi` | 12 | `ARIES` to `PISCES` | lord, element, modality, parity, rising type |
-| 3 | `nakshatra` | 28 | `ASHWINI` to `REVATI`, then `ABHIJIT` (id 27, present only in the 28-scheme) | Vimshottari lord, deity, gana, nadi, yoni with its sex, varna, element, muhurta nature, span scheme, four padas with their aksharas |
+| 3 | `nakshatra` | 27 | `ASHWINI` to `REVATI` | Vimshottari lord, deity, gana, nadi, yoni with its sex, varna, element, muhurta nature, four padas with their aksharas; Abhijit is a span of the 28-scheme's table, not a member |
 | 4 | `tithi` | 30 | `SHUKLA_PRATIPADA` to `PURNIMA`, `KRISHNA_PRATIPADA` to `AMAVASYA` | paksha, number, deity, class (nanda, bhadra, jaya, rikta, purna) |
 | 5 | `karana` | 11 | `BAVA`, `BALAVA`, `KAULAVA`, `TAITILA`, `GARIJA`, `VANIJA`, `VISHTI`, `SHAKUNI`, `CHATUSHPADA`, `NAGA`, `KIMSTUGHNA` | movable or fixed, deity |
 | 6 | `yoga` | 27 | `VISHKAMBHA` to `VAIDHRITI` | deity, auspiciousness class |
@@ -66,7 +69,7 @@ diacritics elsewhere):
 | 18 | `deity` | about 45 | `ASHWINI_KUMARA` and the rest | |
 | 19 | `dignity` | 11 | `DEEP_EXALTED` to `DEEP_DEBILITATED` | rank |
 | 20 | `relationship` | 5 | `GREAT_FRIEND`, `FRIEND`, `NEUTRAL`, `ENEMY`, `GREAT_ENEMY` | rank |
-| 21 | `avastha` | 35 | `BALA`, `KUMARA`, `YUVA`, `VRIDDHA`, `MRITA`; `JAGRAT`, `SVAPNA`, `SUSHUPTI`; the nine Deeptadi; the six Lajjitadi; the twelve Sayanadi | family |
+| 21, 51 to 54 | `avastha_baladi`, `avastha_jagradadi`, `avastha_deeptadi`, `avastha_lajjitadi`, `avastha_sayanadi` | 5, 3, 9, 6, 12 | `BALA` to `MRITA`; `JAGRAT` to `SUSHUPTI`; the nine Deeptadi; the six Lajjitadi; the twelve Sayanadi; one kind per family because two families share a member name (`MUDITA`) | |
 | 22 | `state` | 12 | `RETROGRADE`, `STATIONARY`, `COMBUST`, `PLANETARY_WAR`, `GANDANTA`, `SANDHI`, `VARGOTTAMA`, `PUSHKARA_NAVAMSA`, `PUSHKARA_BHAGA`, `MRITYU_BHAGA`, `MARANA_KARAKA_STHANA`, `ECLIPSED` | |
 | 23 | `ayanamsha` | 47 | `LAHIRI`, `RAMAN`, `KRISHNAMURTI`, `TRUE_CHITRA` and the rest of the Swiss catalogue | the Swiss sidereal-mode number, the defining epoch and value where formula-defined |
 | 24 | `house_system` | 26 | `WHOLE_SIGN`, `PLACIDUS`, `KOCH`, `REGIOMONTANUS`, `CAMPANUS`, `EQUAL`, `PORPHYRY`, `SRIPATI`, `VEHLOW`, `ALCABITIUS`, `MORINUS`, `TOPOCENTRIC` and the rest | the Swiss letter, degeneracy behaviour |
@@ -89,7 +92,11 @@ diacritics elsewhere):
 
 The lagna is a point, not a graha: the baseline engine files it under
 grahas for convenience, and the SDK does not, because a point has a
-formula and no ephemeris body. Kinds 25 to 27, 31, 32 and 39 hold the
+formula and no ephemeris body. Kinds 41 to 55 are the small value sets
+the attributes use (body class, parity, rising type, sex, tithi class,
+auspiciousness, degeneracy, the ayanamsha category, the dasha family,
+the point family); everything enumerable is a kind so every value has a
+key a pack can name. Kinds 25 to 27, 31, 32 and 39 hold the
 identity of their members here and the definition rows in the crate
 that owns the kernel (ADR-0017); `core` never holds a kernel table.
 
@@ -241,7 +248,8 @@ Nakshatra spans are a scheme, not an attribute of the member: the
 27-scheme is 27 equal spans; the 28-scheme inserts Abhijit from 276°40′
 to 280°53′20″ and shortens Uttara Ashadha and Shravana around it. Both
 are span tables in `Nas` (`exact-arithmetic.md`), selected by a settings
-knob, and the 28-scheme is the only place the member `ABHIJIT` appears.
+knob; Abhijit is the 28th span's flag on the panchanga result, never a
+member, so no attribute needs an option for it.
 
 ### 3.5 Quantity newtypes
 
@@ -320,9 +328,10 @@ the JSON agree on the hash. The cache key every binding documents is
 `(input_hash, settings_hash, calculation_version)`.
 
 Errors are one closed status with a stable code, a detail code, an
-English message that names the field and the range, and an optional
-message key with slots for localisation; a success never carries a
-message:
+English message that names the field and the range, and, behind one
+pointer so a `Result` stays small on the success path, the field, a
+hint (`did you mean ...`) and an optional message key with slots for
+localisation; a success never carries a message:
 
 | status | code | when |
 |---|---:|---|
@@ -404,12 +413,16 @@ never emits one.
 
 ## 7. Performance budget and benchmark
 
-| operation | budget |
-|---|---:|
-| key parse and resolve | 100 ns, no allocation |
-| id to attributes | 5 ns (a static table index) |
-| envelope construction | one allocation per vector present |
-| the catalogue's static tables | under 64 KB in `.rodata` across every kind |
+| operation | budget | measured (Apple Silicon, release) |
+|---|---:|---:|
+| key parse and resolve | 100 ns, no allocation | 40 ns (`graha.MARS`); 20 ns inside a kind |
+| an unknown key with a suggestion | 10 µs | 5.4 µs |
+| id to attributes | 5 ns (a static table index) | 0.7 ns |
+| `Nas::from_degrees`; sign, nakshatra and pada | 20 ns | 3.7 ns; 1.7 ns |
+| settings resolution from a profile | 5 µs | 1.9 µs |
+| canonical JSON and hash of the shipped document | 10 µs per KB | 15 µs for the 2 KB document with its two forty-entry dasha maps |
+| envelope construction | one allocation per vector present | |
+| the catalogue's static tables | under 64 KB in `.rodata` across every kind | |
 
 The benchmark is `core`'s criterion set with an instruction-count row
 per operation in the pull-request gate (`05-testing/01-quality-bar.md`).

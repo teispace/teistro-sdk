@@ -1,0 +1,18 @@
+error[E0308]: arguments to this function are incorrect
+ --> tests/ui/swapped_place.rs:8:13
+  |
+8 |     let _ = Place::new(longitude, latitude, altitude);
+  |             ^^^^^^^^^^ ---------  -------- expected `Longitude`, found `Latitude`
+  |                        |
+  |                        expected `Latitude`, found `Longitude`
+  |
+note: associated function defined here
+ --> src/quantity.rs
+  |
+  |     pub const fn new(latitude: Latitude, longitude: Longitude, altitude: Altitude) -> Place {
+  |                  ^^^
+help: swap these arguments
+  |
+8 -     let _ = Place::new(longitude, latitude, altitude);
+8 +     let _ = Place::new(latitude, longitude, altitude);
+  |

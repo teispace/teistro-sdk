@@ -1,0 +1,326 @@
+kind: dasha_system
+number: 26
+version: 1
+doc: "The dasha systems the catalogue names; each row of the kernel lives in the dasha crate, and only V rows are implemented."
+attributes: { family: key:dasha_family }
+members:
+  - key: VIMSHOTTARI
+    id: 0
+    doc: "Vimshottari"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: ASHTOTTARI
+    id: 1
+    doc: "Ashtottari"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: DWADASHOTTARI
+    id: 2
+    doc: "Dwadashottari"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: PANCHOTTARI
+    id: 3
+    doc: "Panchottari"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: SHATABDIKA
+    id: 4
+    doc: "Shatabdika"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: CHATURASHITI_SAMA
+    id: 5
+    doc: "Chaturashiti Sama"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: DWISAPTATI_SAMA
+    id: 6
+    doc: "Dwisaptati Sama"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: YOGINI
+    id: 7
+    doc: "Yogini"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: TRIBHAGI
+    id: 8
+    doc: "Tribhagi"
+    attributes: { family: SCALE }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: SHODASHOTTARI
+    id: 9
+    doc: "Shodashottari"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: SHATTRIMSHA_SAMA
+    id: 10
+    doc: "Shattrimsha Sama"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: SHASHTIHAYANI
+    id: 11
+    doc: "Shashtihayani"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: TITHI_ASHTOTTARI
+    id: 12
+    doc: "Tithi Ashtottari"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: TITHI_YOGINI
+    id: 13
+    doc: "Tithi Yogini"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: YOGA_VIMSHOTTARI
+    id: 14
+    doc: "Yoga Vimshottari"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: KARANA_CHATURASHITI
+    id: 15
+    doc: "Karana Chaturashiti"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: NAISARGIKA
+    id: 16
+    doc: "Naisargika"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: TARA
+    id: 17
+    doc: "Tara"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: KARAKA
+    id: 18
+    doc: "Karaka"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: AAYU
+    id: 19
+    doc: "Aayu"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: ASHTAKAVARGA
+    id: 20
+    doc: "Ashtakavarga"
+    attributes: { family: UDU }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: PANCHASWARA
+    id: 21
+    doc: "Panchaswara"
+    attributes: { family: OWN }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: CHARA
+    id: 22
+    doc: "Chara"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: NARAYANA
+    id: 23
+    doc: "Narayana"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: PADANADHAMSA
+    id: 24
+    doc: "Padanadhamsa"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: TRIKONA
+    id: 25
+    doc: "Trikona"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: DRIG
+    id: 26
+    doc: "Drig"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: SHOOLA
+    id: 27
+    doc: "Shoola"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: NIRYANA_SHOOLA
+    id: 28
+    doc: "Niryana Shoola"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: MANDOOKA
+    id: 29
+    doc: "Mandooka"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: STHIRA
+    id: 30
+    doc: "Sthira"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: SUDASA
+    id: 31
+    doc: "Sudasa"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: VARNADA
+    id: 32
+    doc: "Varnada"
+    attributes: { family: RASHI }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: YOGARDHA
+    id: 33
+    doc: "Yogardha"
+    attributes: { family: COMPOSITION }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: KALACHAKRA
+    id: 34
+    doc: "Kalachakra"
+    attributes: { family: KALACHAKRA }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: SUDARSHANA_CHAKRA
+    id: 35
+    doc: "Sudarshana Chakra"
+    attributes: { family: COMPOSITION }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: PATYAYINI
+    id: 36
+    doc: "Patyayini"
+    attributes: { family: OWN }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: S
+  - key: MUDDA
+    id: 37
+    doc: "Mudda"
+    attributes: { family: SCALE }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: VARSHA_NARAYANA
+    id: 38
+    doc: "Varsha Narayana"
+    attributes: { family: SCALE }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T
+  - key: VARSHA_YOGINI
+    id: 39
+    doc: "Varsha Yogini"
+    attributes: { family: SCALE }
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: T

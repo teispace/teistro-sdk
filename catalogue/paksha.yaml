@@ -1,0 +1,19 @@
+kind: paksha
+number: 11
+version: 1
+doc: "The two halves of the lunar month."
+members:
+  - key: SHUKLA
+    id: 0
+    doc: "The bright half"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRISHNA
+    id: 1
+    doc: "The dark half"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

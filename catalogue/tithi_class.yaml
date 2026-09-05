@@ -1,0 +1,40 @@
+kind: tithi_class
+number: 45
+version: 1
+doc: "The five tithi classes."
+members:
+  - key: NANDA
+    id: 0
+    doc: "Nanda"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BHADRA
+    id: 1
+    doc: "Bhadra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: JAYA
+    id: 2
+    doc: "Jaya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RIKTA
+    id: 3
+    doc: "Rikta"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PURNA
+    id: 4
+    doc: "Purna"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

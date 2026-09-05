@@ -37,7 +37,8 @@ teistro-sdk/
     interpret/ intl/ serial/
     ffi/                       the only unsafe crate; C ABI; cbindgen config
     test-provider/             fixed-table ephemeris for tests
-  catalogue/                   entity catalogue YAML (keys, ids, attributes, citations)
+  catalogue/                   entity catalogue YAML (keys, ids, attributes, citations); present, with its README,
+                               generated into crates/core by `cargo xtask gen catalogue` and gated by `check-catalogue`
   i18n/
     en-Latn/  ne-Deva-NP/  hi-Deva-IN/  sa-Deva/     Teistro Intl sources (SDK namespaces)
   packs/

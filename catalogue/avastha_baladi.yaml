@@ -1,0 +1,40 @@
+kind: avastha_baladi
+number: 21
+version: 1
+doc: "The five age states."
+members:
+  - key: BALA
+    id: 0
+    doc: "Bala"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KUMARA
+    id: 1
+    doc: "Kumara"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: YUVA
+    id: 2
+    doc: "Yuva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VRIDDHA
+    id: 3
+    doc: "Vriddha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MRITA
+    id: 4
+    doc: "Mrita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

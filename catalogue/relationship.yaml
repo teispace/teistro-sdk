@@ -1,0 +1,40 @@
+kind: relationship
+number: 20
+version: 1
+doc: "The five-fold compound relationship."
+members:
+  - key: GREAT_FRIEND
+    id: 0
+    doc: "Great Friend"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: FRIEND
+    id: 1
+    doc: "Friend"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NEUTRAL
+    id: 2
+    doc: "Neutral"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ENEMY
+    id: 3
+    doc: "Enemy"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GREAT_ENEMY
+    id: 4
+    doc: "Great Enemy"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

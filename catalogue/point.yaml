@@ -1,0 +1,398 @@
+kind: point
+number: 31
+version: 1
+doc: "Derived points that behave like bodies; each has a formula in the module that owns it."
+attributes: { family: key:point_family }
+members:
+  - key: LAGNA
+    id: 0
+    doc: "The ascendant"
+    attributes: { family: ANGLE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MC
+    id: 1
+    doc: "The midheaven"
+    attributes: { family: ANGLE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DESCENDANT
+    id: 2
+    doc: "The descendant"
+    attributes: { family: ANGLE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: IC
+    id: 3
+    doc: "The imum coeli"
+    attributes: { family: ANGLE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BHAVA_LAGNA
+    id: 4
+    doc: "Bhava lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: HORA_LAGNA
+    id: 5
+    doc: "Hora lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GHATI_LAGNA
+    id: 6
+    doc: "Ghati lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIGHATI_LAGNA
+    id: 7
+    doc: "Vighati lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: VARNADA_LAGNA
+    id: 8
+    doc: "Varnada lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: SREE_LAGNA
+    id: 9
+    doc: "Sree lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: INDU_LAGNA
+    id: 10
+    doc: "Indu lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: PRANAPADA_LAGNA
+    id: 11
+    doc: "Pranapada lagna"
+    attributes: { family: SPECIAL_LAGNA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: DHUMA
+    id: 12
+    doc: "Dhuma"
+    attributes: { family: UPAGRAHA_SOLAR }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VYATIPATA
+    id: 13
+    doc: "Vyatipata"
+    attributes: { family: UPAGRAHA_SOLAR }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PARIVESHA
+    id: 14
+    doc: "Parivesha"
+    attributes: { family: UPAGRAHA_SOLAR }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: INDRACHAPA
+    id: 15
+    doc: "Indrachapa"
+    attributes: { family: UPAGRAHA_SOLAR }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: UPAKETU
+    id: 16
+    doc: "Upaketu"
+    attributes: { family: UPAGRAHA_SOLAR }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GULIKA
+    id: 17
+    doc: "Gulika"
+    attributes: { family: UPAGRAHA_DAY }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MANDI
+    id: 18
+    doc: "Mandi"
+    attributes: { family: UPAGRAHA_DAY }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KALA
+    id: 19
+    doc: "Kala"
+    attributes: { family: UPAGRAHA_DAY }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: MRITYU
+    id: 20
+    doc: "Mrityu"
+    attributes: { family: UPAGRAHA_DAY }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: ARDHAPRAHARA
+    id: 21
+    doc: "Ardhaprahara"
+    attributes: { family: UPAGRAHA_DAY }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: YAMAGHANTAKA
+    id: 22
+    doc: "Yamaghantaka"
+    attributes: { family: UPAGRAHA_DAY }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: BHRIGU_BINDU
+    id: 23
+    doc: "Bhrigu bindu"
+    attributes: { family: MIDPOINT }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: YOGI
+    id: 24
+    doc: "The yogi point"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AVAYOGI
+    id: 25
+    doc: "The avayogi point"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: SAHAYOGI
+    id: 26
+    doc: "The sahayogi point"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: TRISPHUTA
+    id: 27
+    doc: "Trisphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: CHATUSSPHUTA
+    id: 28
+    doc: "Chatussphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: PANCHASPHUTA
+    id: 29
+    doc: "Panchasphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: PRANA_SPHUTA
+    id: 30
+    doc: "Prana sphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: DEHA_SPHUTA
+    id: 31
+    doc: "Deha sphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: MRITYU_SPHUTA
+    id: 32
+    doc: "Mrityu sphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: BEEJA_SPHUTA
+    id: 33
+    doc: "Beeja sphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: KSHETRA_SPHUTA
+    id: 34
+    doc: "Kshetra sphuta"
+    attributes: { family: SPHUTA }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: KARAKAMSHA
+    id: 35
+    doc: "Karakamsha"
+    attributes: { family: JAIMINI }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SWAMSHA
+    id: 36
+    doc: "Swamsha"
+    attributes: { family: JAIMINI }
+    sources:
+      - text: "JHora feature list"
+        ref: "01-research/feature-universe/01-vedic-parashari-core.md"
+    mark: T
+  - key: A1
+    id: 37
+    doc: "Arudha of house 1"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A2
+    id: 38
+    doc: "Arudha of house 2"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A3
+    id: 39
+    doc: "Arudha of house 3"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A4
+    id: 40
+    doc: "Arudha of house 4"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A5
+    id: 41
+    doc: "Arudha of house 5"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A6
+    id: 42
+    doc: "Arudha of house 6"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A7
+    id: 43
+    doc: "Arudha of house 7"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A8
+    id: 44
+    doc: "Arudha of house 8"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A9
+    id: 45
+    doc: "Arudha of house 9"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A10
+    id: 46
+    doc: "Arudha of house 10"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A11
+    id: 47
+    doc: "Arudha of house 11"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: A12
+    id: 48
+    doc: "Arudha of house 12"
+    attributes: { family: ARUDHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

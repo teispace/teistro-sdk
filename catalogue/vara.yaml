@@ -1,0 +1,62 @@
+kind: vara
+number: 7
+version: 1
+doc: "The seven weekdays with their lords."
+attributes: { lord: key:graha, weekday: u8 }
+members:
+  - key: RAVIVARA
+    id: 0
+    doc: "Sunday"
+    attributes: { lord: SUN, weekday: 0 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SOMAVARA
+    id: 1
+    doc: "Monday"
+    attributes: { lord: MOON, weekday: 1 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MANGALAVARA
+    id: 2
+    doc: "Tuesday"
+    attributes: { lord: MARS, weekday: 2 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BUDHAVARA
+    id: 3
+    doc: "Wednesday"
+    attributes: { lord: MERCURY, weekday: 3 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GURUVARA
+    id: 4
+    doc: "Thursday"
+    attributes: { lord: JUPITER, weekday: 4 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKRAVARA
+    id: 5
+    doc: "Friday"
+    attributes: { lord: VENUS, weekday: 5 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHANIVARA
+    id: 6
+    doc: "Saturday"
+    attributes: { lord: SATURN, weekday: 6 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

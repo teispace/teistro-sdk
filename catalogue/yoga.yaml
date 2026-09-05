@@ -1,0 +1,250 @@
+kind: yoga
+number: 6
+version: 1
+doc: "The twenty-seven nitya yogas of the Sun and Moon."
+attributes: { lord: option<key:graha>, auspiciousness: key:auspiciousness }
+members:
+  - key: VISHKAMBHA
+    id: 0
+    doc: "Vishkambha"
+    aliases: [VISHKAMBA]
+    attributes: { lord: SATURN, auspiciousness: INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: PRITI
+    id: 1
+    doc: "Priti"
+    attributes: { lord: MERCURY, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: AYUSHMAN
+    id: 2
+    doc: "Ayushman"
+    attributes: { lord: VENUS, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SAUBHAGYA
+    id: 3
+    doc: "Saubhagya"
+    attributes: { lord: SUN, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SHOBHANA
+    id: 4
+    doc: "Shobhana"
+    attributes: { lord: MOON, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: ATIGANDA
+    id: 5
+    doc: "Atiganda"
+    attributes: { lord: MARS, auspiciousness: INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SUKARMA
+    id: 6
+    doc: "Sukarma"
+    attributes: { lord: JUPITER, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: DHRITI
+    id: 7
+    doc: "Dhriti"
+    attributes: { lord: MERCURY, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SHOOLA
+    id: 8
+    doc: "Shoola"
+    attributes: { lord: SUN, auspiciousness: INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: GANDA
+    id: 9
+    doc: "Ganda"
+    attributes: { lord: MOON, auspiciousness: INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: VRIDDHI
+    id: 10
+    doc: "Vriddhi"
+    attributes: { lord: MARS, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: DHRUVA
+    id: 11
+    doc: "Dhruva"
+    attributes: { lord: JUPITER, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: VYAGHATA
+    id: 12
+    doc: "Vyaghata"
+    attributes: { lord: SUN, auspiciousness: INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: HARSHANA
+    id: 13
+    doc: "Harshana"
+    attributes: { lord: MOON, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: VAJRA
+    id: 14
+    doc: "Vajra"
+    attributes: { lord: MARS, auspiciousness: MIXED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SIDDHI
+    id: 15
+    doc: "Siddhi"
+    attributes: { lord: MERCURY, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: VYATIPATA
+    id: 16
+    doc: "Vyatipata"
+    attributes: { lord: MOON, auspiciousness: HIGHLY_INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: VARIYANA
+    id: 17
+    doc: "Variyana"
+    attributes: { lord: VENUS, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: PARIGHA
+    id: 18
+    doc: "Parigha"
+    attributes: { lord: SUN, auspiciousness: INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SHIVA
+    id: 19
+    doc: "Shiva"
+    attributes: { lord: MERCURY, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SIDDHA
+    id: 20
+    doc: "Siddha"
+    attributes: { lord: JUPITER, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SADHYA
+    id: 21
+    doc: "Sadhya"
+    attributes: { lord: VENUS, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SHUBHA
+    id: 22
+    doc: "Shubha"
+    attributes: { lord: SATURN, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: SHUKLA
+    id: 23
+    doc: "Shukla"
+    attributes: { lord: MERCURY, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: BRAHMA
+    id: 24
+    doc: "Brahma"
+    attributes: { lord: SUN, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: INDRA
+    id: 25
+    doc: "Indra"
+    attributes: { lord: MOON, auspiciousness: AUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord]
+  - key: VAIDHRITI
+    id: 26
+    doc: "Vaidhriti"
+    attributes: { lord: SATURN, auspiciousness: HIGHLY_INAUSPICIOUS }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+    unverified: [lord, auspiciousness]

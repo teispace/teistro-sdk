@@ -1,0 +1,476 @@
+kind: ayanamsha
+number: 23
+version: 1
+doc: "The catalogued ayanamshas; a custom one is a settings value, not a member."
+attributes: { swiss_mode: u8, category: key:ayanamsha_category }
+members:
+  - key: FAGAN_BRADLEY
+    id: 0
+    doc: "Fagan and Bradley"
+    attributes: { swiss_mode: 0, category: WESTERN_SIDEREAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: LAHIRI
+    id: 1
+    doc: "Lahiri (Chitrapaksha), the Indian government's ayanamsha"
+    attributes: { swiss_mode: 1, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: DELUCE
+    id: 2
+    doc: "Deluce"
+    attributes: { swiss_mode: 2, category: WESTERN_SIDEREAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: RAMAN
+    id: 3
+    doc: "B. V. Raman"
+    attributes: { swiss_mode: 3, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: USHASHASHI
+    id: 4
+    doc: "Ushashashi"
+    attributes: { swiss_mode: 4, category: WESTERN_SIDEREAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: KRISHNAMURTI
+    id: 5
+    doc: "Krishnamurti (KP)"
+    attributes: { swiss_mode: 5, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: DJWHAL_KHUL
+    id: 6
+    doc: "Djwhal Khul"
+    attributes: { swiss_mode: 6, category: WESTERN_SIDEREAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: YUKTESHWAR
+    id: 7
+    doc: "Yukteshwar"
+    attributes: { swiss_mode: 7, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: JN_BHASIN
+    id: 8
+    doc: "Jn Bhasin"
+    attributes: { swiss_mode: 8, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: BABYL_KUGLER1
+    id: 9
+    doc: "Babyl Kugler1"
+    attributes: { swiss_mode: 9, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: BABYL_KUGLER2
+    id: 10
+    doc: "Babyl Kugler2"
+    attributes: { swiss_mode: 10, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: BABYL_KUGLER3
+    id: 11
+    doc: "Babyl Kugler3"
+    attributes: { swiss_mode: 11, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: BABYL_HUBER
+    id: 12
+    doc: "Babyl Huber"
+    attributes: { swiss_mode: 12, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: BABYL_ETPSC
+    id: 13
+    doc: "Babyl Etpsc"
+    attributes: { swiss_mode: 13, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: ALDEBARAN_15TAU
+    id: 14
+    doc: "Aldebaran 15tau"
+    attributes: { swiss_mode: 14, category: STAR_ANCHORED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: HIPPARCHOS
+    id: 15
+    doc: "Hipparchos"
+    attributes: { swiss_mode: 15, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: SASSANIAN
+    id: 16
+    doc: "Sassanian"
+    attributes: { swiss_mode: 16, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALCENT_0SAG
+    id: 17
+    doc: "Galcent 0sag"
+    attributes: { swiss_mode: 17, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: J2000
+    id: 18
+    doc: J2000
+    attributes: { swiss_mode: 18, category: EPOCH }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: J1900
+    id: 19
+    doc: J1900
+    attributes: { swiss_mode: 19, category: EPOCH }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: B1950
+    id: 20
+    doc: B1950
+    attributes: { swiss_mode: 20, category: EPOCH }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: SURYASIDDHANTA
+    id: 21
+    doc: "Suryasiddhanta"
+    attributes: { swiss_mode: 21, category: VEDIC_CLASSICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: SURYASIDDHANTA_MSUN
+    id: 22
+    doc: "Suryasiddhanta Msun"
+    attributes: { swiss_mode: 22, category: VEDIC_CLASSICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: ARYABHATA
+    id: 23
+    doc: "Aryabhata"
+    attributes: { swiss_mode: 23, category: VEDIC_CLASSICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: ARYABHATA_MSUN
+    id: 24
+    doc: "Aryabhata Msun"
+    attributes: { swiss_mode: 24, category: VEDIC_CLASSICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: SS_REVATI
+    id: 25
+    doc: "Ss Revati"
+    attributes: { swiss_mode: 25, category: VEDIC_CLASSICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: SS_CITRA
+    id: 26
+    doc: "Ss Citra"
+    attributes: { swiss_mode: 26, category: VEDIC_CLASSICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: TRUE_CHITRA
+    id: 27
+    doc: "True Chitra Paksha: Spica at 180 degrees"
+    attributes: { swiss_mode: 27, category: STAR_ANCHORED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: TRUE_REVATI
+    id: 28
+    doc: "True Revati"
+    attributes: { swiss_mode: 28, category: STAR_ANCHORED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: TRUE_PUSHYA
+    id: 29
+    doc: "True Pushya"
+    attributes: { swiss_mode: 29, category: STAR_ANCHORED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALCENT_RGILBRAND
+    id: 30
+    doc: "Galcent Rgilbrand"
+    attributes: { swiss_mode: 30, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALEQU_IAU1958
+    id: 31
+    doc: "Galequ Iau1958"
+    attributes: { swiss_mode: 31, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALEQU_TRUE
+    id: 32
+    doc: "Galequ True"
+    attributes: { swiss_mode: 32, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALEQU_MULA
+    id: 33
+    doc: "Galequ Mula"
+    attributes: { swiss_mode: 33, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALALIGN_MARDYKS
+    id: 34
+    doc: "Galalign Mardyks"
+    attributes: { swiss_mode: 34, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: TRUE_MULA
+    id: 35
+    doc: "True Mula"
+    attributes: { swiss_mode: 35, category: STAR_ANCHORED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALCENT_MULA_WILHELM
+    id: 36
+    doc: "Galcent Mula Wilhelm"
+    attributes: { swiss_mode: 36, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: ARYABHATA_522
+    id: 37
+    doc: "Aryabhata 522"
+    attributes: { swiss_mode: 37, category: VEDIC_CLASSICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: BABYL_BRITTON
+    id: 38
+    doc: "Babyl Britton"
+    attributes: { swiss_mode: 38, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: TRUE_SHEORAN
+    id: 39
+    doc: "True Sheoran"
+    attributes: { swiss_mode: 39, category: STAR_ANCHORED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALCENT_COCHRANE
+    id: 40
+    doc: "Galcent Cochrane"
+    attributes: { swiss_mode: 40, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: GALEQU_FIORENZA
+    id: 41
+    doc: "Galequ Fiorenza"
+    attributes: { swiss_mode: 41, category: GALACTIC }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: VALENS_MOON
+    id: 42
+    doc: "Valens Moon"
+    attributes: { swiss_mode: 42, category: HISTORICAL }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: LAHIRI_1940
+    id: 43
+    doc: "Lahiri 1940"
+    attributes: { swiss_mode: 43, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: LAHIRI_VP285
+    id: 44
+    doc: "Lahiri Vp285"
+    attributes: { swiss_mode: 44, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: KRISHNAMURTI_VP291
+    id: 45
+    doc: "Krishnamurti Vp291"
+    attributes: { swiss_mode: 45, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V
+  - key: LAHIRI_ICRC
+    id: 46
+    doc: "Lahiri Icrc"
+    attributes: { swiss_mode: 46, category: VEDIC_STANDARD }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "sidereal modes"
+    mark: V

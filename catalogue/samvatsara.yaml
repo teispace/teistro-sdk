@@ -1,0 +1,425 @@
+kind: samvatsara
+number: 12
+version: 1
+doc: "The sixty years of the Jovian cycle, in order."
+members:
+  - key: PRABHAVA
+    id: 0
+    doc: "Prabhava"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIBHAVA
+    id: 1
+    doc: "Vibhava"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUKLA
+    id: 2
+    doc: "Shukla"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PRAMODOOTA
+    id: 3
+    doc: "Pramodoota"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PRAJOTPATTI
+    id: 4
+    doc: "Prajotpatti"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ANGIRAS
+    id: 5
+    doc: "Angiras"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHRIMUKHA
+    id: 6
+    doc: "Shrimukha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BHAVA
+    id: 7
+    doc: "Bhava"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: YUVA
+    id: 8
+    doc: "Yuva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DHAATA
+    id: 9
+    doc: "Dhaata"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ISHVARA
+    id: 10
+    doc: "Ishvara"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BAHUDHANYA
+    id: 11
+    doc: "Bahudhanya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PRAMATHI
+    id: 12
+    doc: "Pramathi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIKRAMA
+    id: 13
+    doc: "Vikrama"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VRISHA
+    id: 14
+    doc: "Vrisha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: CHITRABHANU
+    id: 15
+    doc: "Chitrabhanu"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SUBHANU
+    id: 16
+    doc: "Subhanu"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: TAARANA
+    id: 17
+    doc: "Taarana"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PAARTHIVA
+    id: 18
+    doc: "Paarthiva"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VYAYA
+    id: 19
+    doc: "Vyaya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SARVAJIT
+    id: 20
+    doc: "Sarvajit"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SARVADHARI
+    id: 21
+    doc: "Sarvadhari"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIRODHI
+    id: 22
+    doc: "Virodhi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIKRITA
+    id: 23
+    doc: "Vikrita"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KHARA
+    id: 24
+    doc: "Khara"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NANDANA
+    id: 25
+    doc: "Nandana"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIJAYA
+    id: 26
+    doc: "Vijaya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: JAYA
+    id: 27
+    doc: "Jaya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MANMATHA
+    id: 28
+    doc: "Manmatha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DURMUKHI
+    id: 29
+    doc: "Durmukhi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: HEVILAMBI
+    id: 30
+    doc: "Hevilambi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VILAMBI
+    id: 31
+    doc: "Vilambi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIKARI
+    id: 32
+    doc: "Vikari"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHARVARI
+    id: 33
+    doc: "Sharvari"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PLAVA
+    id: 34
+    doc: "Plava"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUBHAKRIT
+    id: 35
+    doc: "Shubhakrit"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHOBHAKRIT
+    id: 36
+    doc: "Shobhakrit"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRODHI
+    id: 37
+    doc: "Krodhi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VISHVAVASU
+    id: 38
+    doc: "Vishvavasu"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PARABHAVA
+    id: 39
+    doc: "Parabhava"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PLAVANGA
+    id: 40
+    doc: "Plavanga"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KILAKA
+    id: 41
+    doc: "Kilaka"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SAUMYA
+    id: 42
+    doc: "Saumya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SADHARANA
+    id: 43
+    doc: "Sadharana"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VIRODHIKRIT
+    id: 44
+    doc: "Virodhikrit"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PARIDHAAVI
+    id: 45
+    doc: "Paridhaavi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PRAMADICHA
+    id: 46
+    doc: "Pramadicha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: ANANDA
+    id: 47
+    doc: "Ananda"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RAKSHASA
+    id: 48
+    doc: "Rakshasa"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NALA
+    id: 49
+    doc: "Nala"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: PINGALA
+    id: 50
+    doc: "Pingala"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KALAYUKTA
+    id: 51
+    doc: "Kalayukta"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SIDDHARTHI
+    id: 52
+    doc: "Siddharthi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RAUDRA
+    id: 53
+    doc: "Raudra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DURMATI
+    id: 54
+    doc: "Durmati"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: DUNDUBHI
+    id: 55
+    doc: "Dundubhi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RUDHIRODGARI
+    id: 56
+    doc: "Rudhirodgari"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: RAKTAKSHI
+    id: 57
+    doc: "Raktakshi"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KRODHANA
+    id: 58
+    doc: "Krodhana"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: AKSHAYA
+    id: 59
+    doc: "Akshaya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

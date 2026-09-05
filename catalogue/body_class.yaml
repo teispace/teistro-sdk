@@ -1,0 +1,33 @@
+kind: body_class
+number: 41
+version: 1
+doc: "What kind of body a graha is."
+members:
+  - key: LUMINARY
+    id: 0
+    doc: "Luminary"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: PLANET
+    id: 1
+    doc: "Planet"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: NODE
+    id: 2
+    doc: "Node"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: OUTER
+    id: 3
+    doc: "Outer"
+    sources:
+      - text: structural
+        ref: design
+    mark: V

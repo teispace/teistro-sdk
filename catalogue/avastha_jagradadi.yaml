@@ -1,0 +1,26 @@
+kind: avastha_jagradadi
+number: 51
+version: 1
+doc: "The three wakefulness states."
+members:
+  - key: JAGRAT
+    id: 0
+    doc: "Jagrat"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SWAPNA
+    id: 1
+    doc: "Swapna"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SUSHUPTI
+    id: 2
+    doc: "Sushupti"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

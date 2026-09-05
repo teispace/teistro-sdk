@@ -1,0 +1,15 @@
+error[E0308]: mismatched types
+ --> tests/ui/scale_mismatch.rs:8:14
+  |
+8 |     needs_tt(ut1);
+  |     -------- ^^^ expected `JulianDay<Tt>`, found `JulianDay<Ut1>`
+  |     |
+  |     arguments to this function are incorrect
+  |
+  = note: expected struct `JulianDay<Tt>`
+             found struct `JulianDay<Ut1>`
+note: function defined here
+ --> tests/ui/scale_mismatch.rs:3:4
+  |
+3 | fn needs_tt(_: JulianDay<Tt>) {}
+  |    ^^^^^^^^ ----------------

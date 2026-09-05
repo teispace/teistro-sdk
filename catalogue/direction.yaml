@@ -1,0 +1,61 @@
+kind: direction
+number: 37
+version: 1
+doc: "The eight directions."
+members:
+  - key: EAST
+    id: 0
+    doc: "East"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: WEST
+    id: 1
+    doc: "West"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NORTH
+    id: 2
+    doc: "North"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SOUTH
+    id: 3
+    doc: "South"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NORTHEAST
+    id: 4
+    doc: "Northeast"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NORTHWEST
+    id: 5
+    doc: "Northwest"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SOUTHEAST
+    id: 6
+    doc: "Southeast"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SOUTHWEST
+    id: 7
+    doc: "Southwest"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

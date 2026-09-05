@@ -1,0 +1,47 @@
+kind: dasha_family
+number: 50
+version: 1
+doc: "Which kernel a dasha system runs on."
+members:
+  - key: UDU
+    id: 0
+    doc: "Udu"
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: RASHI
+    id: 1
+    doc: "Rashi"
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: KALACHAKRA
+    id: 2
+    doc: "Kalachakra"
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: SCALE
+    id: 3
+    doc: "Scale"
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: COMPOSITION
+    id: 4
+    doc: "Composition"
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V
+  - key: OWN
+    id: 5
+    doc: "Own"
+    sources:
+      - text: "dasha-kernels"
+        ref: "docs/03-design/dasha-kernels.md"
+    mark: V

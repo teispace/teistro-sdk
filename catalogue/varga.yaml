@@ -1,0 +1,216 @@
+kind: varga
+number: 25
+version: 1
+doc: "The divisional charts the SDK ships; the kernel row of each lives in the vargas crate."
+attributes: { divisions: u16 }
+members:
+  - key: D1
+    id: 0
+    doc: "Rashi"
+    attributes: { divisions: 1 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D2
+    id: 1
+    doc: "Hora"
+    attributes: { divisions: 2 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D3
+    id: 2
+    doc: "Drekkana"
+    attributes: { divisions: 3 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D4
+    id: 3
+    doc: "Chaturthamsha"
+    attributes: { divisions: 4 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D5
+    id: 4
+    doc: "Panchamsha"
+    attributes: { divisions: 5 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D6
+    id: 5
+    doc: "Shashthamsha"
+    attributes: { divisions: 6 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D7
+    id: 6
+    doc: "Saptamsha"
+    attributes: { divisions: 7 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D8
+    id: 7
+    doc: "Ashtamsha"
+    attributes: { divisions: 8 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D9
+    id: 8
+    doc: "Navamsha"
+    attributes: { divisions: 9 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D10
+    id: 9
+    doc: "Dashamsha"
+    attributes: { divisions: 10 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D11
+    id: 10
+    doc: "Rudramsha"
+    attributes: { divisions: 11 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D12
+    id: 11
+    doc: "Dwadashamsha"
+    attributes: { divisions: 12 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D16
+    id: 12
+    doc: "Shodashamsha"
+    attributes: { divisions: 16 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D20
+    id: 13
+    doc: "Vimshamsha"
+    attributes: { divisions: 20 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D24
+    id: 14
+    doc: "Chaturvimshamsha"
+    attributes: { divisions: 24 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D27
+    id: 15
+    doc: "Saptavimshamsha"
+    attributes: { divisions: 27 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D30
+    id: 16
+    doc: "Trimshamsha"
+    attributes: { divisions: 30 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D40
+    id: 17
+    doc: "Khavedamsha"
+    attributes: { divisions: 40 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D45
+    id: 18
+    doc: "Akshavedamsha"
+    attributes: { divisions: 45 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D60
+    id: 19
+    doc: "Shashtiamsha"
+    attributes: { divisions: 60 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V
+  - key: D150
+    id: 20
+    doc: "Nadiamsha"
+    attributes: { divisions: 150 }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: BPHS
+        ref: "6"
+    mark: V

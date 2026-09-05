@@ -1,0 +1,248 @@
+kind: house_system
+number: 24
+version: 1
+doc: "The house systems; the cusp arithmetic lives in the astro layer."
+attributes: { swiss_letter: str, degeneracy: key:degeneracy }
+members:
+  - key: WHOLE_SIGN
+    id: 0
+    doc: "Whole Sign"
+    attributes: { swiss_letter: W, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: PLACIDUS
+    id: 1
+    doc: "Placidus"
+    attributes: { swiss_letter: P, degeneracy: POLAR_UNDEFINED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: KOCH
+    id: 2
+    doc: "Koch"
+    attributes: { swiss_letter: K, degeneracy: POLAR_UNDEFINED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: REGIOMONTANUS
+    id: 3
+    doc: "Regiomontanus"
+    attributes: { swiss_letter: R, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: CAMPANUS
+    id: 4
+    doc: "Campanus"
+    attributes: { swiss_letter: C, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: EQUAL
+    id: 5
+    doc: "Equal"
+    attributes: { swiss_letter: A, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: MERIDIAN
+    id: 6
+    doc: "Meridian"
+    attributes: { swiss_letter: X, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: ALCABITIUS
+    id: 7
+    doc: "Alcabitius"
+    attributes: { swiss_letter: B, degeneracy: POLAR_UNDEFINED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: PORPHYRY
+    id: 8
+    doc: "Porphyry"
+    attributes: { swiss_letter: O, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: TOPOCENTRIC
+    id: 9
+    doc: "Topocentric"
+    attributes: { swiss_letter: T, degeneracy: POLAR_UNDEFINED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: MORINUS
+    id: 10
+    doc: "Morinus"
+    attributes: { swiss_letter: M, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: SRIPATI
+    id: 11
+    doc: "Sripati"
+    attributes: { swiss_letter: S, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: EQUAL_MC
+    id: 12
+    doc: "Equal Mc"
+    attributes: { swiss_letter: D, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: EQUAL_ARIES
+    id: 13
+    doc: "Equal Aries"
+    attributes: { swiss_letter: N, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: VEHLOW
+    id: 14
+    doc: "Vehlow"
+    attributes: { swiss_letter: V, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: CARTER
+    id: 15
+    doc: "Carter"
+    attributes: { swiss_letter: F, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: HORIZON
+    id: 16
+    doc: "Horizon"
+    attributes: { swiss_letter: H, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: SUNSHINE
+    id: 17
+    doc: "Sunshine"
+    attributes: { swiss_letter: I, degeneracy: POLAR_UNDEFINED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: PULLEN_SD
+    id: 18
+    doc: "Pullen Sd"
+    attributes: { swiss_letter: L, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: PULLEN_SR
+    id: 19
+    doc: "Pullen Sr"
+    attributes: { swiss_letter: Q, degeneracy: NONE }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: KRUSINSKI
+    id: 20
+    doc: "Krusinski"
+    attributes: { swiss_letter: U, degeneracy: POLAR_UNDEFINED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]
+  - key: APC
+    id: 21
+    doc: "Apc"
+    attributes: { swiss_letter: Y, degeneracy: POLAR_UNDEFINED }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+      - text: "Swiss Ephemeris documentation"
+        ref: "house systems"
+    mark: V
+    unverified: [degeneracy]

@@ -1,0 +1,19 @@
+kind: degeneracy
+number: 47
+version: 1
+doc: "Whether a house system is undefined at some latitudes."
+members:
+  - key: NONE
+    id: 0
+    doc: "None"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: POLAR_UNDEFINED
+    id: 1
+    doc: "Polar Undefined"
+    sources:
+      - text: structural
+        ref: design
+    mark: V

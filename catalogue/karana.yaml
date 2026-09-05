@@ -1,0 +1,94 @@
+kind: karana
+number: 5
+version: 1
+doc: "The eleven karanas: seven movable, four fixed."
+attributes: { movable: bool, deity: option<key:deity> }
+members:
+  - key: BAVA
+    id: 0
+    doc: "Bava"
+    attributes: { movable: true, deity: INDRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: BALAVA
+    id: 1
+    doc: "Balava"
+    attributes: { movable: true, deity: BRAHMA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KAULAVA
+    id: 2
+    doc: "Kaulava"
+    attributes: { movable: true, deity: VISHNU }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: TAITILA
+    id: 3
+    doc: "Taitila"
+    attributes: { movable: true, deity: ARYAMAN }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: GARIJA
+    id: 4
+    doc: "Garija"
+    attributes: { movable: true, deity: TVASHTA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VANIJA
+    id: 5
+    doc: "Vanija"
+    attributes: { movable: true, deity: VARUNA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VISHTI
+    id: 6
+    doc: "Vishti"
+    attributes: { movable: true, deity: YAMA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHAKUNI
+    id: 7
+    doc: "Shakuni"
+    attributes: { movable: false, deity: SHANI }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: CHATUSHPADA
+    id: 8
+    doc: "Chatushpada"
+    attributes: { movable: false, deity: SURYA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: NAGA
+    id: 9
+    doc: "Naga"
+    attributes: { movable: false, deity: SHUKRA }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KIMSTUGHNA
+    id: 10
+    doc: "Kimstughna"
+    attributes: { movable: false, deity: ~ }
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

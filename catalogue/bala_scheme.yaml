@@ -1,0 +1,19 @@
+kind: bala_scheme
+number: 27
+version: 1
+doc: "The strength schemes; rows live in the strength kernel."
+members:
+  - key: PARASHARA
+    id: 0
+    doc: "Parashara"
+    sources:
+      - text: "strength-schemes"
+        ref: "docs/03-design/strength-schemes.md"
+    mark: T
+  - key: PARASHARA_EXTENDED
+    id: 1
+    doc: "Parashara Extended"
+    sources:
+      - text: "strength-schemes"
+        ref: "docs/03-design/strength-schemes.md"
+    mark: T

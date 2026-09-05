@@ -1,0 +1,19 @@
+kind: sex
+number: 44
+version: 1
+doc: "The sex of a nakshatra's yoni animal."
+members:
+  - key: MALE
+    id: 0
+    doc: "Male"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: FEMALE
+    id: 1
+    doc: "Female"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

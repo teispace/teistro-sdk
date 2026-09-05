@@ -1,0 +1,40 @@
+kind: varna
+number: 14
+version: 1
+doc: "The varna classification of nakshatras and grahas."
+members:
+  - key: BRAHMIN
+    id: 0
+    doc: "Brahmin"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: KSHATRIYA
+    id: 1
+    doc: "Kshatriya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: VAISHYA
+    id: 2
+    doc: "Vaishya"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: SHUDRA
+    id: 3
+    doc: "Shudra"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V
+  - key: MLECCHA
+    id: 4
+    doc: "Mleccha"
+    sources:
+      - text: "baseline-engine"
+        ref: "core data"
+    mark: V

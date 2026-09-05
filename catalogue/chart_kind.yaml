@@ -1,0 +1,54 @@
+kind: chart_kind
+number: 30
+version: 1
+doc: "What a chart is a chart of."
+members:
+  - key: NATAL
+    id: 0
+    doc: "Natal"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: TRANSIT
+    id: 1
+    doc: "Transit"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: EVENT
+    id: 2
+    doc: "Event"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: PRASHNA
+    id: 3
+    doc: "Prashna"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: RETURN
+    id: 4
+    doc: "Return"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: RELOCATED
+    id: 5
+    doc: "Relocated"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
+  - key: COMPOSITE
+    id: 6
+    doc: "Composite"
+    sources:
+      - text: structural
+        ref: design
+    mark: V
