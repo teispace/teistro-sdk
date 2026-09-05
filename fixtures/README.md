@@ -16,6 +16,7 @@ files are under this repository's licence.
 | `baseline/` | the baseline engine, version 1.8.0 | 2 | 115 fixtures over 55 charts, exported 2026-09-04 (spike 1) |
 | `pyjhora/` | PyJHora | 3 | planned |
 | `texts/` | classical texts and printed almanacs, hand-entered with citations | 1 | planned |
+| `official/` | the authority's own publications: the national panchanga committee's yearly panchanga for BS 2082 and 2083, read from its published files | 1 for the official calendar | 24 sankranti instants, 4 rows of printed places, 22 days of sunrise and sunset, 8 tithi ends (2026-09-05) |
 | `teimeris/` | Teimeris | 2 | planned |
 
 `tolerances.json` is the one central tolerance file, keyed by field and
@@ -26,6 +27,26 @@ exists (`docs/05-testing/01-golden-vectors.md`).
 its schema, carries the settings hash of the profile it claims, holds
 every section it lists, is listed in the manifest with nothing unlisted
 beside it, and contains no forbidden term.
+
+## `official/`
+
+`npns-2082-2083.json` holds what the national panchanga committee
+(`npns.gov.np`) printed in its Rashtriya Panchangam for BS 2082 and
+2083, read from the page images of the published PDFs (they carry no
+text layer; each sankranti line was read at two magnifications), with
+the file URLs, page numbers and retrieval date in the file: the twelve
+sankranti instants of each year to the minute in Nepal time, printed
+under the panchanga day (sunrise to sunrise, so an hour past 24 is the
+small hours of the following civil day); four rows of the "planets at
+sunrise" table (sign:degree:minute:second, sidereal); the printed
+sunrise and sunset of 22 days; eight tithi ends. It is rank 1 for the
+official calendar and for what the committee computes. What it shows
+(`docs/calendars/bikram-sambat.md`, R2): the committee's Sun is the
+text's within three arcseconds and its 24 sankrantis reproduce within
+1.6 minutes; every month start follows the shipped rule; its Moon is
+the text's with the apsis making four revolutions fewer in an age; its
+star planets are modern positions in the Lahiri frame. Tests:
+`crates/calendar/tests/official.rs`, `crates/siddhanta/tests/official.rs`.
 
 ## `baseline/`
 
