@@ -20,6 +20,8 @@
     reason = "tests fail by panicking, read a recorded table and print the measurement under --nocapture"
 )]
 
+mod common;
+
 use std::path::Path;
 
 use serde_json::Value;
@@ -169,6 +171,14 @@ fn the_pipeline_reproduces_the_engines_places_on_its_own_astrometry() {
         "{compared} places compared; worst {:.6}\" at {}",
         worst.0, worst.1
     );
+    common::record(
+        "star_table",
+        "places over the engine's own astrometry",
+        worst.0,
+        "″",
+        PIPELINE_BOUND_ARCSEC,
+        compared,
+    );
 }
 
 #[test]
@@ -239,6 +249,14 @@ fn the_catalogues_astrometry_stays_within_the_catalogues_of_the_engines() {
         worst.1,
         worst.0
     );
+    common::record(
+        "star_table",
+        "the two catalogues' astrometry apart",
+        worst.0,
+        "″",
+        DATA_BOUND_ARCSEC,
+        compared,
+    );
 }
 
 /// The frame the engine reads its ecliptic coordinates in against the
@@ -248,6 +266,8 @@ fn the_catalogues_astrometry_stays_within_the_catalogues_of_the_engines() {
 fn the_obliquity_and_nutation_agree_with_the_engines() {
     let table = fixture();
     let mut compared = 0;
+    let mut worst_obliquity = 0.0f64;
+    let mut worst_nutation = 0.0f64;
     for frame in table["frames"].as_array().unwrap() {
         let tt = JulianDay::<Tt>::literal(frame["jd_tt"].as_f64().unwrap());
         let (date1, date2) = tt.split();
@@ -260,6 +280,7 @@ fn the_obliquity_and_nutation_agree_with_the_engines() {
             "mean obliquity at JD {}: {apart:+.6}\"",
             tt.get()
         );
+        worst_obliquity = worst_obliquity.max(apart.abs());
         let nutation = nut00b(date1, date2);
         let dpsi = (nutation.dpsi * RAD2DEG - frame["nutation_lon_deg"].as_f64().unwrap()) * 3600.0;
         let deps = (nutation.deps * RAD2DEG - frame["nutation_obl_deg"].as_f64().unwrap()) * 3600.0;
@@ -270,7 +291,24 @@ fn the_obliquity_and_nutation_agree_with_the_engines() {
             "nutation at JD {}: {dpsi} {deps}",
             tt.get()
         );
+        worst_nutation = worst_nutation.max(dpsi.abs()).max(deps.abs());
         compared += 1;
     }
     assert!(compared >= 4);
+    common::record(
+        "precession",
+        "the Vondrák mean obliquity against the engine's",
+        worst_obliquity,
+        "″",
+        1e-3,
+        compared,
+    );
+    common::record(
+        "nutation",
+        "IAU 2000B against the engine's nutation",
+        worst_nutation,
+        "″",
+        2e-3,
+        compared,
+    );
 }

@@ -107,9 +107,10 @@ Every row gated against Teimeris with its published agreement, climbed one
 reduction stage at a time with Teimeris's flags as the reference at each
 rung.
 
-Exit: the generated accuracy document shows every `astro` row within its
-target against Teimeris; the SDK computes houses for all systems and
-sunrise for a Nepali place without any provider override.
+Exit: the generated accuracy document (`05-testing/ACCURACY.md`, by
+`cargo xtask accuracy`, gated) shows every `astro` row within its target
+against Teimeris; the SDK computes houses for all systems and sunrise for
+a Nepali place without any provider override.
 
 ## Phase 3: The built-in ephemeris (own phase, may run beside Phase 4)
 

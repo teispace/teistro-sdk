@@ -46,6 +46,8 @@ jobs:
         run: cargo xtask check-calendars
       - name: Time tables gate (the IERS series and the leap-second list reproduce the checked-in tables)
         run: cargo xtask check-time
+      - name: Accuracy document gate (the measurement tests reproduce the checked-in document)
+        run: cargo xtask check-accuracy
 
   dco:
     name: dco

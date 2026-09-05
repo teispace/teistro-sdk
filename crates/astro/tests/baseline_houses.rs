@@ -13,6 +13,8 @@
     reason = "tests fail by panicking, read fixtures and print the measurement under --nocapture"
 )]
 
+mod common;
+
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -66,6 +68,7 @@ fn every_system_reproduces_the_baselines_cusps_on_all_charts() {
     assert_eq!(charts.len(), 55);
     let mut worst: BTreeMap<String, (f64, String)> = BTreeMap::new();
     let mut worst_far: BTreeMap<String, (f64, String)> = BTreeMap::new();
+    let (mut near_compared, mut far_compared) = (0usize, 0usize);
     let mut compared = 0;
     let mut substituted = Vec::new();
     for chart in &charts {
@@ -123,6 +126,11 @@ fn every_system_reproduces_the_baselines_cusps_on_all_charts() {
             }
             let far = !(NEAR_SPAN.0..NEAR_SPAN.1).contains(&ut1.get());
             let table = if far { &mut worst_far } else { &mut worst };
+            let counted = if far {
+                &mut far_compared
+            } else {
+                &mut near_compared
+            };
             let entry = table.entry(name.clone()).or_insert((0.0, String::new()));
             for (house, (theirs, mine)) in expected.iter().zip(ours.cusps.iter()).enumerate() {
                 let tropical_theirs = theirs + ayanamsha;
@@ -131,6 +139,7 @@ fn every_system_reproduces_the_baselines_cusps_on_all_charts() {
                     *entry = (apart, format!("{id} house {}", house + 1));
                 }
                 compared += 1;
+                *counted += 1;
             }
         }
     }
@@ -149,4 +158,46 @@ fn every_system_reproduces_the_baselines_cusps_on_all_charts() {
             assert!(*apart < bound, "{name}: {apart}° at {where_}");
         }
     }
+    record_measurements(&worst, &worst_far, near_compared, far_compared);
+}
+
+/// The worst differences for the accuracy document: the systems other than
+/// Sunshine over the two spans, and Sunshine on its own bound.
+fn record_measurements(
+    worst: &BTreeMap<String, (f64, String)>,
+    worst_far: &BTreeMap<String, (f64, String)>,
+    near_compared: usize,
+    far_compared: usize,
+) {
+    let worst_of = |table: &BTreeMap<String, (f64, String)>, sunshine: bool| {
+        table
+            .iter()
+            .filter(|(name, _)| (name.as_str() == "sunshine") == sunshine)
+            .map(|(_, (apart, _))| *apart)
+            .fold(0.0, f64::max)
+    };
+    common::record(
+        "houses",
+        "cusps against the baseline's charts, 1800 to 2200",
+        worst_of(worst, false),
+        "°",
+        BOUND_DEG,
+        near_compared,
+    );
+    common::record(
+        "houses",
+        "cusps against the baseline's charts beyond 2200",
+        worst_of(worst_far, false),
+        "°",
+        FAR_BOUND_DEG,
+        far_compared,
+    );
+    common::record(
+        "houses",
+        "Sunshine cusps against the baseline's topocentric Sun",
+        worst_of(worst, true).max(worst_of(worst_far, true)),
+        "°",
+        0.1,
+        near_compared + far_compared,
+    );
 }
