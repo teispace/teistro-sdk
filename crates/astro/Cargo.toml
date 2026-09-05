@@ -1,0 +1,22 @@
+[package]
+name = "teistro-astro"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Teistro SDK astronomy layer: the shared boundary solver; the IAU routines, frame completion, ayanamshas, houses and rise and set follow"
+readme = "README.md"
+keywords = ["astronomy", "ephemeris", "astrology"]
+categories = ["science"]
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[dependencies]
+teistro-core = { path = "../core" }
+
+[dev-dependencies]
+proptest = "1"
+
+[lints]
+workspace = true

@@ -12,7 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
-**Numbers:** not applicable; there is no computation yet.
+**Numbers:** the Bikram Sambat table's computed rows moved. Every year
+outside the official span (BS 1970 to 2095) is now computed by the SDK's
+own engine (the Surya Siddhanta as the text prints it, Nepal's clock,
+Kathmandu, the punya-kala rule) and the table runs from 1700 to 2500 BS;
+the earlier rows for 1856 to 1969 and 2096 to 2457 were the baseline
+engine's projections and differ from these by a day at some month
+boundaries, and 2096 to 2100 are computed, no longer marked official.
+Inside the official span no date moved; eleven boundaries there now
+report `Divergent`. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/core`, `crates/calendar` (the arithmetic calendars and Bikram
+  Sambat), `crates/siddhanta` (the Surya Siddhanta model), the seeds of
+  `crates/astro` (the boundary solver) and `crates/time` (offset
+  histories), and the Bikram Sambat engine with its measurement
+  (`docs/calendars/bikram-sambat.md`).

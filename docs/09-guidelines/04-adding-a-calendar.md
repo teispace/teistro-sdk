@@ -1,7 +1,11 @@
 # Adding a calendar
 
-Status: `draft`, revised 2026-09-04 (the research standard added);
-worked example after Phase 1.
+Status: `draft`, revised 2026-09-05 (the research standard added on
+2026-09-04). Worked example: Bikram Sambat, whose source memo
+(`docs/calendars/bikram-sambat.md`) records R1 to R5, whose engine and
+measurement (`cargo xtask calendars bs-fit`) chose the month-start rule
+against the official table, and whose shipped table is generated and
+gated (`cargo xtask gen calendars`, `check-calendars`).
 
 0. **Research first, and write the source memo** (`docs/calendars/<id>.md`,
    reviewed before code is written), meeting all five requirements:

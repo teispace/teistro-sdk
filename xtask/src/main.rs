@@ -5,6 +5,11 @@
 //! - `check-docs`: the documentation gates.
 //! - `check-dco BASE HEAD`: every commit in `BASE..HEAD` carries a sign-off.
 //! - `check-fixtures`: the golden-vector corpus is well formed and listed.
+//! - `check-catalogue` and `gen catalogue`: the entity catalogue's generated
+//!   code equals its sources.
+//! - `check-calendars`, `gen calendars` and `calendars bs-fit`: the Bikram
+//!   Sambat table equals what the official rows and the engine produce, and
+//!   the measurement that chose the engine's rule.
 //!
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
@@ -22,6 +27,7 @@
     clippy::indexing_slicing
 )]
 
+mod calendars;
 mod catalogue;
 
 use std::env;
@@ -42,8 +48,14 @@ fn main() {
         },
         Some("check-fixtures") => check_fixtures(),
         Some("check-catalogue") => catalogue::check(&repo_root()),
+        Some("check-calendars") => calendars::check(&repo_root()),
+        Some("calendars") => match args.get(1).map(String::as_str) {
+            Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
+            _ => usage(),
+        },
         Some("gen") => match args.get(1).map(String::as_str) {
             Some("catalogue") => catalogue::generate(&repo_root()),
+            Some("calendars") => calendars::generate(&repo_root()),
             _ => usage(),
         },
         _ => usage(),
@@ -53,7 +65,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | gen catalogue>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | calendars bs-fit | gen catalogue | gen calendars>"
     );
     2
 }

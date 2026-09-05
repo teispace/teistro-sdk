@@ -1,0 +1,167 @@
+{
+  "calendar": "BIKRAM_SAMBAT",
+  "generator": "cargo xtask gen calendars",
+  "official": {
+    "authority": "Panchanga Nirnayak Samiti, Government of Nepal (the calendar-determining committee)",
+    "edition": "official-1970-2095/1",
+    "span": [
+      1970,
+      2095
+    ]
+  },
+  "shipped_span": [
+    1700,
+    2500
+  ],
+  "frame": "Surya Siddhanta (the text, the sine table); Asia/Kathmandu (tzdb asia: LMT +05:41:16 to 1920, +05:30 to 1986, +05:45); 27.7172°N 85.324°E 1400 m; rule PUNYAKALA",
+  "months": {
+    "compared": 1512,
+    "matched": 1490,
+    "agreement_percent": 98.54
+  },
+  "years": {
+    "compared": 126,
+    "exact": 116,
+    "totals_matched": 126
+  },
+  "drift": {
+    "end": 0,
+    "max": 0,
+    "within_a_day": true
+  },
+  "start_offset_max_days": 0,
+  "divergences": [
+    {
+      "year": 1977,
+      "month": 6,
+      "tabular": 31,
+      "computed": 30
+    },
+    {
+      "year": 1977,
+      "month": 7,
+      "tabular": 29,
+      "computed": 30
+    },
+    {
+      "year": 1977,
+      "month": 9,
+      "tabular": 30,
+      "computed": 29
+    },
+    {
+      "year": 1977,
+      "month": 10,
+      "tabular": 29,
+      "computed": 30
+    },
+    {
+      "year": 1981,
+      "month": 11,
+      "tabular": 29,
+      "computed": 30
+    },
+    {
+      "year": 1981,
+      "month": 12,
+      "tabular": 31,
+      "computed": 30
+    },
+    {
+      "year": 1989,
+      "month": 7,
+      "tabular": 30,
+      "computed": 29
+    },
+    {
+      "year": 1989,
+      "month": 8,
+      "tabular": 29,
+      "computed": 30
+    },
+    {
+      "year": 1998,
+      "month": 5,
+      "tabular": 32,
+      "computed": 31
+    },
+    {
+      "year": 1998,
+      "month": 6,
+      "tabular": 30,
+      "computed": 31
+    },
+    {
+      "year": 2024,
+      "month": 3,
+      "tabular": 31,
+      "computed": 32
+    },
+    {
+      "year": 2024,
+      "month": 4,
+      "tabular": 32,
+      "computed": 31
+    },
+    {
+      "year": 2035,
+      "month": 1,
+      "tabular": 30,
+      "computed": 31
+    },
+    {
+      "year": 2035,
+      "month": 2,
+      "tabular": 32,
+      "computed": 31
+    },
+    {
+      "year": 2046,
+      "month": 10,
+      "tabular": 29,
+      "computed": 30
+    },
+    {
+      "year": 2046,
+      "month": 11,
+      "tabular": 30,
+      "computed": 29
+    },
+    {
+      "year": 2051,
+      "month": 3,
+      "tabular": 31,
+      "computed": 32
+    },
+    {
+      "year": 2051,
+      "month": 4,
+      "tabular": 32,
+      "computed": 31
+    },
+    {
+      "year": 2066,
+      "month": 11,
+      "tabular": 29,
+      "computed": 30
+    },
+    {
+      "year": 2066,
+      "month": 12,
+      "tabular": 31,
+      "computed": 30
+    },
+    {
+      "year": 2073,
+      "month": 10,
+      "tabular": 29,
+      "computed": 30
+    },
+    {
+      "year": 2073,
+      "month": 11,
+      "tabular": 30,
+      "computed": 29
+    }
+  ]
+}

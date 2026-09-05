@@ -14,6 +14,8 @@
 //!   provenance every result carries (ADR-0020);
 //! - [`settings`]: the knobs, the profiles, their resolution, coherence
 //!   and the hash every result carries;
+//! - [`time`]: clock offsets and the local-clock abstraction the calendars
+//!   and the time layer share;
 //! - [`registry`] and [`limits`]: what a context registers and bounds.
 //!
 //! ```
@@ -39,6 +41,7 @@ pub mod quantity;
 pub mod ratio;
 pub mod registry;
 pub mod settings;
+pub mod time;
 
 pub use angle::Nas;
 pub use catalogue::{Catalogued, Kind, Mark, Source, UnknownKey};
@@ -48,3 +51,4 @@ pub use key::KeyId;
 pub use quantity::{Altitude, Degrees, InvalidValue, JulianDay, Latitude, Longitude, Place};
 pub use ratio::Ratio;
 pub use settings::{Profile, Settings, SettingsPatch};
+pub use time::{LocalClock, UtcOffset};

@@ -72,7 +72,20 @@ impl FixedDay {
         reason = "the floor of a finite day count"
     )]
     pub fn from_jd(jd: JulianDay<Utc>) -> (FixedDay, f64) {
-        let shifted = jd.get() - FixedDay::JD_EPOCH;
+        FixedDay::from_local_jd(jd.get())
+    }
+
+    /// The fixed day a Julian-day value falls in and the fraction of that
+    /// day elapsed, for a value already shifted to a local clock (a UTC
+    /// Julian day plus the clock's offset), where the typed instant does
+    /// not apply.
+    #[must_use]
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "the floor of a finite day count"
+    )]
+    pub fn from_local_jd(jd: f64) -> (FixedDay, f64) {
+        let shifted = jd - FixedDay::JD_EPOCH;
         let day = shifted.floor();
         (FixedDay(day as i64), shifted - day)
     }

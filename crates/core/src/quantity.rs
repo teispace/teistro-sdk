@@ -91,6 +91,22 @@ macro_rules! bounded_float {
                 }
             }
 
+            /// A value written as a literal in a constant.
+            ///
+            /// # Panics
+            ///
+            /// When the value is outside the range; in a constant that is a
+            /// compile error, which is what the constructor is for. Runtime
+            /// values go through `try_new`.
+            #[must_use]
+            pub const fn literal(value: f64) -> $name {
+                assert!(
+                    value >= $min && value <= $max,
+                    concat!(stringify!($name), " literal outside ", $accepted)
+                );
+                $name(value)
+            }
+
             /// The value.
             #[must_use]
             pub const fn get(self) -> f64 {
@@ -352,6 +368,22 @@ impl<S: Scale> JulianDay<S> {
                 accepted: "a finite number of days",
                 field: None,
             })
+        }
+    }
+
+    /// A Julian day written as a literal in a constant.
+    ///
+    /// # Panics
+    ///
+    /// When the value is not finite; in a constant that is a compile
+    /// error, which is what the constructor is for. Runtime values go
+    /// through [`JulianDay::try_new`].
+    #[must_use]
+    pub const fn literal(jd: f64) -> JulianDay<S> {
+        assert!(jd.is_finite(), "a Julian day literal must be finite");
+        JulianDay {
+            jd,
+            scale: PhantomData,
         }
     }
 

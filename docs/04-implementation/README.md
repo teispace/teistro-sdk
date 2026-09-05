@@ -23,13 +23,15 @@ teistro-sdk/
   rfcs/                        the RFC process for significant changes
   Cargo.toml                   workspace; rust-toolchain.toml
   crates/
-    core/
+    core/                      present: the catalogue, keys, quantities, angles, settings, the envelope, clock offsets
     port-ephemeris/ port-calendar/ port-timezone/ port-geo/ port-intl-data/ port-log/
-    astro/                     the astronomy layer; its IAU routines are a port of ERFA (ADR-0021)
+    astro/                     the astronomy layer; its IAU routines are a port of ERFA (ADR-0021); present as a seed (the boundary solver)
     ephemeris-builtin/         VSOP87, ELP/MPP02, fitted Pluto; tiers as features, plus the DE-refit `reference` tier
     ephemeris-de/              the JPL DE file reader provider (v1.x, ADR-0021)
-    siddhanta/
-    calendar/ time/
+    siddhanta/                 present: the Surya Siddhanta model (docs/03-design/siddhanta.md)
+    calendar/                  present: the arithmetic calendars, Bikram Sambat and the solar-calendar engine;
+                               data/ holds the official rows, src/bikram_sambat/generated.rs the generated table
+    time/                      present as a seed: offset histories and Nepal's rows
     chart/ houses/ vargas/ state/ aspect/ points/
     strength/ dasha/ rules/ jaimini/ kp/ tajika/
     panchanga/ muhurta/ gochar/ prashna/ matching/ rectification/ longevity/
@@ -53,8 +55,10 @@ teistro-sdk/
     ephemeris-teimeris/<binding>/    published separately (Teimeris terms)
     ephemeris-sweph/<binding>/       published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
-                               verify, idl extract, gen <binding>, ephemgen, rulegen, bench,
-                               conformance, size, release (ADR-0014)
+                               check-fixtures, check-catalogue, check-calendars, gen catalogue,
+                               gen calendars, calendars bs-fit; later verify, idl extract,
+                               gen <binding>, ephemgen, rulegen, bench, conformance, size,
+                               release (ADR-0014)
   crates/cli/                  the consumer-facing `teistro` binary: intl (validate, build, gen,
                                extract, analyze, ...), provider conformance kit, pack tools
   fuzz/                        cargo-fuzz targets

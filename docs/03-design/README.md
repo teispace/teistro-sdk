@@ -7,7 +7,8 @@ ADR-0017): the kernels are falsified against the catalogue before any
 code exists; the ephemeris port and Teistro Intl pages came from spikes 3
 and 4; the five Phase 1 foundation pages (core types and the catalogue,
 settings and profiles, time and time zones, the arithmetic calendars,
-Bikram Sambat) were written at Phase 1's start.
+Bikram Sambat) were written at Phase 1's start, and the Surya Siddhanta
+page with its crate for the Bikram Sambat engine.
 
 ## What a design page contains
 
@@ -38,7 +39,8 @@ Bikram Sambat) were written at Phase 1's start.
 | [`settings-and-profiles.md`](settings-and-profiles.md) | the knob inventory as typed groups, profiles as patches over a cited root, resolution and coherence rules, the canonical form and hash, the five shipped profiles, per-request patches |
 | [`time-and-timezone.md`](time-and-timezone.md) | scales and instants, Delta T as a table then a model, zone resolution with replay-safe metadata and DST policies, local mean time, the sunrise-anchored day, ghati-pala as exact integer arithmetic |
 | [`calendar-gregorian-julian.md`](calendar-gregorian-julian.md) | the fixed day and the Julian day, the four arithmetic calendars over Reingold and Dershowitz, the mixed transition, ISO weeks, exhaustive and differential tests |
-| [`calendar-bikram-sambat.md`](calendar-bikram-sambat.md) | the official table and the computed extension, the month-start rule chosen by measurement, tabular, computed and divergent resolution, era numbers by new-year rules, the source memo |
+| [`calendar-bikram-sambat.md`](calendar-bikram-sambat.md) | the official table and the computed extension from the SDK's own engine, the month-start rules as rows with the punya-kala rule chosen by measurement (98.5 % of the official month lengths, every New Year), tabular, computed and divergent resolution, the generated table and its gate, era numbers by new-year rules, the source memo |
+| [`siddhanta.md`](siddhanta.md) | the Surya Siddhanta as a computation: the text's numbers by verse, exact integer mean places, the sine table, the manda and sighra equations and the four steps, daily motion, precession, declination and the day's arc; the classical path bit-identical everywhere |
 
 ## Planned pages (in roadmap order)
 

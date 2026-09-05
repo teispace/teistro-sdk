@@ -6,6 +6,9 @@ resolver = "3"
 members = [
     "xtask",
     "crates/core",
+    "crates/astro",
+    "crates/siddhanta",
+    "crates/time",
     "crates/calendar",
     # Spike 2 (spikes/README.md): built and linted like the rest, never published.
     "spikes/02-binding-toolchain/slice",
