@@ -41,8 +41,11 @@ pub(crate) fn record(row: &str, quantity: &str, value: f64, unit: &str, bound: f
         .append(true)
         .open(&path)
         .unwrap_or_else(|error| panic!("cannot open {}: {error}", path.display()));
-    // One line per call, written whole: appends of a short line do not
-    // interleave.
-    writeln!(file, "{line}")
+    // One line per call, written in one call: tests record from parallel
+    // threads, and a short append written whole does not interleave with
+    // another's, where a formatted write in pieces did.
+    let mut text = line.to_string();
+    text.push('\n');
+    file.write_all(text.as_bytes())
         .unwrap_or_else(|error| panic!("cannot write {}: {error}", path.display()));
 }
