@@ -1079,6 +1079,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3a6bfce3d99adfa72d24750a61f782f3036a81e7f86d8841ee1326deaebd171"
 
 [[package]]
+name = "teistro-astro"
+version = "0.0.0"
+dependencies = [
+ "proptest",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-calendar"
 version = "0.0.0"
 dependencies = [
@@ -1086,7 +1094,10 @@ dependencies = [
  "proptest",
  "serde",
  "serde_json",
+ "teistro-astro",
  "teistro-core",
+ "teistro-siddhanta",
+ "teistro-time",
 ]
 
 [[package]]
@@ -1099,6 +1110,17 @@ dependencies = [
  "serde_json",
  "sha2",
  "trybuild",
+]
+
+[[package]]
+name = "teistro-siddhanta"
+version = "0.0.0"
+dependencies = [
+ "criterion",
+ "proptest",
+ "serde",
+ "serde_json",
+ "teistro-core",
 ]
 
 [[package]]
@@ -1165,6 +1187,13 @@ dependencies = [
 [[package]]
 name = "teistro-spike-slice"
 version = "0.0.0"
+
+[[package]]
+name = "teistro-time"
+version = "0.0.0"
+dependencies = [
+ "teistro-core",
+]
 
 [[package]]
 name = "tempfile"
@@ -1377,6 +1406,10 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml_ng",
+ "teistro-calendar",
+ "teistro-core",
+ "teistro-siddhanta",
+ "teistro-time",
 ]
 
 [[package]]

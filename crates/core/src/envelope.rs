@@ -167,11 +167,28 @@ pub enum CalendarResolution {
     },
     /// Inside the range and the two disagree; the table was followed.
     Divergent {
-        /// The table's day.
-        tabular: u8,
-        /// The computed day.
-        computed: u8,
+        /// The table's month and day.
+        tabular: MonthDay,
+        /// The computed month and day.
+        computed: MonthDay,
+        /// The rule or model that computed the other answer.
+        model: String,
     },
+}
+
+/// A month and a day inside a year, for a divergence report.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct MonthDay {
+    /// The month, 1-based.
+    pub month: u8,
+    /// The day, 1-based.
+    pub day: u8,
+}
+
+impl fmt::Display for MonthDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:02}-{:02}", self.month, self.day)
+    }
 }
 
 /// A classical model answered rather than the modern one.
@@ -381,8 +398,9 @@ mod tests {
             vec![("key".into(), "VISHKAMBA".into())],
         );
         provenance.calendar = Some(CalendarResolution::Divergent {
-            tabular: 30,
-            computed: 31,
+            tabular: MonthDay { month: 2, day: 32 },
+            computed: MonthDay { month: 3, day: 1 },
+            model: String::from("a model"),
         });
         let envelope = Envelope::new(42u32, provenance.clone());
         let json = serde_json::to_string(&envelope).unwrap_or_default();

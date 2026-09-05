@@ -11,7 +11,7 @@ locale packs, never in code.
 | confidence mark | V (verified against the baseline engine or a text), T (traditional, awaiting a citation) or S (shape only) on every table row; only V ships (ADR-0018) |
 | clean room | the policy in `CLEAN_ROOM.md`: what may be taken from each source by rank, and what may never be |
 | crux | an open verification item in `01-research/feature-universe/19-verification-cruxes.md`: a text that disagrees with itself, a third party that disagrees with the baseline engine, or a convention the SDK had to choose |
-| BS | Bikram Sambat, the official calendar of Nepal; table-driven for the officially published span |
+| BS | Bikram Sambat, the official calendar of Nepal; the published span as a table, every other year computed by the SDK's engine from the Surya Siddhanta under the punya-kala rule (`docs/calendars/bikram-sambat.md`) |
 | binding | a generated language package that exposes the SDK's API idiomatically in that language |
 | capability | a declaration by a provider (ephemeris, calendar, timezone, locale data) of what it can compute; the SDK validates settings against it |
 | base locale | `en-Latn`, the locale whose sources define every key and parameter; every other locale is validated against it (Teistro Intl) |
@@ -44,4 +44,10 @@ locale packs, never in code.
 | row | one variant of a family expressed as data over a kernel, with citations and a confidence mark |
 | settings snapshot | the complete set of computational choices a result was produced under; stored with the result |
 | siddhanta | the computational model of planetary motion: drik or Surya Siddhanta |
+| sankranti | the Sun's entry into a sidereal sign; a solar month begins at one, placed on a civil day by a month-start rule |
+| punya-kala | the period of merit around a sankranti in which it is observed; the Dharmasindhu's rule for which day it falls on, which the two ayana sankrantis (Karka and Makara) follow differently from the rest, is `MonthStartRule::Punyakala` |
+| ayana sankranti | the Sun's entry into Karka or Makara, the turning points of its northward and southward course |
+| ahargana | the count of civil days from an epoch, the Surya Siddhanta's argument for every mean place; the text counts to midnight at Lanka, the tradition's hand computations one day more |
+| jya | a sine on the Surya Siddhanta's radius of 3438, from its table of twenty-four |
+| manda, sighra | the two equations of the Surya Siddhanta: the apsis's (the equation of centre) and the conjunction's (the annual parallax of a star planet) |
 | varga | a divisional chart (D-n) |

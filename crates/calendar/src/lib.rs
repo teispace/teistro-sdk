@@ -21,6 +21,7 @@ pub mod gregorian;
 pub mod iso_week;
 pub mod julian;
 pub mod mixed;
+pub mod solar;
 
 pub use bikram_sambat::BikramSambat;
 pub use date::{CalendarCapabilities, CalendarDate, CalendarSystem, EraNumber, shipped};
@@ -29,3 +30,4 @@ pub use gregorian::Gregorian;
 pub use iso_week::{IsoWeek, IsoWeekDate};
 pub use julian::Julian;
 pub use mixed::{Mixed, Transition};
+pub use solar::{MonthStartRule, SolarModel};

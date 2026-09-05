@@ -1,7 +1,10 @@
 # Time and time zones
 
-Status: `draft`, written 2026-09-05 as a Phase 1 design page; revised
-when `crates/time` and the time types in `core` are built. Derives from
+Status: `draft`, written 2026-09-05 as a Phase 1 design page; the seed
+of `crates/time` (a zone's offset history as a local clock, Nepal's rows
+from tzdb) and `core::time` (`UtcOffset`, the `LocalClock` trait, local
+mean time) were built the same day for the Bikram Sambat engine; revised
+when the rest of `crates/time` is built. Derives from
 `02-architecture/04-calendar-time-architecture.md`,
 `01-research/platform/05-calendars-timezones.md`,
 `01-research/platform/13-astronomy-layer.md` (time scales), ADR-0020

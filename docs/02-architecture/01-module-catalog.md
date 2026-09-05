@@ -1,6 +1,8 @@
 # Module catalogue
 
-Status: `draft`, revised 2026-09-04 after Q7, Q8 and Q10 (the `astro`
+Status: `draft`, revised 2026-09-05 (what is built so far noted per
+row; `time` consumes `calendar`, `calendar` consumes `siddhanta`);
+revised 2026-09-04 after Q7, Q8 and Q10 (the `astro`
 layer, the built-in ephemeris and Teistro Intl added) and after
 ADR-0016, ADR-0017 and ADR-0021 (exact arithmetic in `core`, kernels and
 tables for dasha, vargas, strength and rules, the ERFA-derived IAU
@@ -24,14 +26,19 @@ family package) in every binding.
 | `astro` | timescales and Delta T models, sidereal time, precession (11 models), nutation (5), obliquity, frame bias, frame completion (light-time, aberration, deflection, nutation), topocentric parallax, coordinate transforms and refraction, the ayanamsha catalogue (47 plus custom), house systems (all) with the polar policy, the shared boundary solver (one root finder with a per-use tolerance), the event-scan kernel (bracket then refine; step from the quantity's rate; scored searches excluded), rise/set/transit, crossings and stations, equation of time, star table (anchors and yogataras), eclipses (v1.x). The IAU routines are a faithful port of ERFA (BSD-3) with a provenance table (ADR-0021) | `core`, `port-ephemeris` | P0 | see `01-research/platform/13-astronomy-layer.md`; conformance against Teimeris and the C ERFA library |
 | `ephemeris-builtin` | analytic ephemeris implementing the port: VSOP87 planets, ELP/MPP02 Moon, fitted Pluto, nodes and apogees, analytic speeds; tiers `compact`, `standard`, `full`, and `reference` (a Chebyshev refit from DE440 over 1600 to 2400, per-body blobs, ADR-0021); generated tables with citations | `core`, `port-ephemeris` | P0 (own phase); `reference` Phase 3 or v1.x | see `14-builtin-ephemeris.md`; removable by tree-shaking |
 | `ephemeris-de` (v1.x) | a provider reading JPL DE files directly: DAF/SPK types 2 and 3, Clenshaw evaluation, centre chaining from segment metadata, record access suited to HTTP range requests; 0.001 arcsecond against Horizons | `core`, `port-ephemeris` | P1 | ADR-0021; fuzzed as a parser of untrusted files |
-| `siddhanta` | Surya Siddhanta positions with bija, as a provider | `core`, `port-ephemeris` | P0 | The baseline engine |
+| `siddhanta` | the Surya Siddhanta as a computation: mean places in exact integer arithmetic, the sine table, the manda and sighra equations and the four steps, daily motion, precession, declination and the day's arc, with a bija overlay; later a provider behind the port (`03-design/siddhanta.md`) | `core` (later `port-ephemeris`) | P0 | the text (Burgess, 1860); the baseline engine for structure only |
+
+Built so far (2026-09-05): `astro` as a seed holding the shared boundary
+solver (`solve::next_crossing`, the kernel every ingress-shaped search
+uses); `siddhanta` as the model (the provider adapter follows the port's
+promotion).
 
 ## L2 domain modules
 
 | module | contents | depends on | tier | baseline source |
 |---|---|---|---|---|
-| `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat (table plus computed), Indian lunisolar (Amanta, Purnimanta, adhika, kshaya, solar months), eras and samvatsara; later Nepal Sambat, Saka, regional solar, Hijri, Hebrew, Persian, Chinese | `port-calendar`, `astro` (lunisolar) | P0 | `BsCalendarService`, `CalendarService` |
-| `time` | civil to instant resolution, DST policies, LMT, ghati-pala, sunrise-anchored day, planetary hours | `port-timezone`, `astro` | P0 | timezone resolver, ghati-pala, birth timing |
+| `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat (the official table plus the SDK's computed extension, with the solar-calendar engine: a `SolarModel`, the sankranti finder, the month-start rules as rows, the measurement), Indian lunisolar (Amanta, Purnimanta, adhika, kshaya, solar months), eras and samvatsara; later Nepal Sambat, Saka, regional solar, Hijri, Hebrew, Persian, Chinese | `port-calendar`, `astro`, `siddhanta` | P0 | `BsCalendarService`, `CalendarService` |
+| `time` | civil to instant resolution, DST policies, LMT, ghati-pala, sunrise-anchored day, planetary hours; built so far: a zone's offset history as a local clock and Nepal's rows from tzdb (the `LocalClock` trait and `UtcOffset` live in `core::time`) | `port-timezone`, `astro`, `calendar` | P0 | timezone resolver, ghati-pala, birth timing |
 | `chart` | birth data, foundation (positions in both frames with speeds, declinations, RA; cusps; frames), chart kinds | `astro`, `time` | P0 | `ChartFoundation` |
 | `houses` | placement policy, Bhava-Chalit variants (Sripati, Vehlow, Porphyry, KP), placements by span, whole sign, equal, degeneracy states | `chart`, `astro` | P0 | `HouseService` |
 | `vargas` | one table-driven evaluator (`03-design/varga-kernel.md`): standard and extended vargas and every named variant as rows, arbitrary D-N under a recorded convention, the mixed-chart axis, vargottama, varga change search | `chart`, `astro` (crossings) | P0 | `VargaService` |

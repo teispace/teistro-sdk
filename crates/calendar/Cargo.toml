@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Teistro SDK calendars: the fixed day, Gregorian, Julian, mixed and ISO week arithmetic, and Bikram Sambat over its table"
+description = "Teistro SDK calendars: the fixed day, Gregorian, Julian, mixed and ISO week arithmetic, Bikram Sambat over its table, and the solar-calendar engine that computes it from the Surya Siddhanta"
 readme = "README.md"
 keywords = ["calendar", "bikram-sambat", "gregorian", "julian"]
 categories = ["date-and-time"]
@@ -14,13 +14,18 @@ publish = false
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
+teistro-siddhanta = { path = "../siddhanta" }
 
 [dev-dependencies]
 # The differential oracle for the arithmetic calendars (Unicode/ICU4X; Apache-2.0).
 calendrical_calculations = "0.2"
 proptest = "1"
 serde_json = "1"
+# Nepal's clock history for the Bikram Sambat engine's tests; the time
+# layer consumes the calendars at runtime, never the reverse.
+teistro-time = { path = "../time" }
 
 [lints]
 workspace = true
