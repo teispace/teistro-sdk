@@ -1,7 +1,11 @@
 # Calendars: Gregorian, Julian, mixed and ISO week
 
-Status: `draft`, written 2026-09-05 as a Phase 1 design page; revised
-when `crates/calendar` is built. Derives from
+Status: `draft`, written 2026-09-05 as a Phase 1 design page and revised
+the same day when `crates/calendar` landed it: the fixed day, the four
+calendars, the transitions of 1582, 1752 and 1918, every day of −9999 to
+9999 round-tripped in each calendar and agreed with the
+`calendrical_calculations` oracle; the trait's conversions are named
+`date_of` and `fixed_of`. Derives from
 `02-architecture/04-calendar-time-architecture.md` (the calendar port,
 the fixed day number, resolution), `01-research/platform/05-calendars-timezones.md`,
 `09-guidelines/04-adding-a-calendar.md` and `time-and-timezone.md`. The
