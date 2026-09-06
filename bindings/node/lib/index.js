@@ -23,6 +23,7 @@ import {
   TimeScaleById,
 } from './catalogue.js';
 import { decodeIntlRender, decodePositions } from './blob.js';
+import { entityForms, messages } from './messages.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -367,6 +368,7 @@ export class Rendered extends Decoded {
  */
 export class Context {
   #inner;
+  #messages = null;
 
   /**
    * @param {object} [options]
@@ -477,6 +479,33 @@ export class Context {
     return guarded(this.#inner, () => this.#inner.intlHas(key)) === 1;
   }
 
+  /**
+   * An entity's forms in the current locale or its fallbacks: its name,
+   * its prose form, its transliteration, and the glyph and gender the
+   * locale gives it.
+   */
+  entity(key) {
+    return entityForms(guarded(this.#inner, () => this.#inner.intlEntity(key)));
+  }
+
+  /**
+   * The typed accessors: every message of the SDK's own locale as a
+   * function of its parameters, and every catalogued entity as its forms.
+   * A key is spelled once, by the generator, and never by an application.
+   *
+   * ```js
+   * ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 });
+   * ctx.messages.entity.graha.SUN().name;
+   * ```
+   */
+  get messages() {
+    this.#messages ??= messages({
+      render: (key, params) => this.render(key, params).text,
+      entity: (key) => this.entity(key),
+    });
+    return this.#messages;
+  }
+
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
   loadPack(bytes) {
     return guarded(this.#inner, () => this.#inner.intlLoadPack(Buffer.from(bytes)));
@@ -565,4 +594,5 @@ export const packFrame = (frame) => native.framePack(clean(frame));
 export const unpackFrame = (bits) => native.frameUnpack(bits);
 
 export { decodeIntlRender, decodePositions } from './blob.js';
+export { entityForms, messages } from './messages.js';
 export * from './catalogue.js';

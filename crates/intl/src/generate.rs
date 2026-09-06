@@ -219,6 +219,10 @@ final class DateValue {
   final int year;
   final int month;
   final int day;
+
+  /// The value as a renderer takes it.
+  Map<String, Object?> get json =>
+      {'calendar': calendar, 'year': year, 'month': month, 'day': day};
 }
 
 final class TimeValue {
@@ -226,12 +230,19 @@ final class TimeValue {
   final int hour;
   final int minute;
   final int second;
+
+  /// The value as a renderer takes it.
+  Map<String, Object?> get json =>
+      {'hour': hour, 'minute': minute, 'second': second};
 }
 
 final class DateTimeValue {
   const DateTimeValue({required this.date, required this.time});
   final DateValue date;
   final TimeValue time;
+
+  /// The value as a renderer takes it.
+  Map<String, Object?> get json => {'date': date.json, 'time': time.json};
 }
 
 final class GhatiValue {
@@ -239,12 +250,27 @@ final class GhatiValue {
   final int ghati;
   final int pala;
   final int vipala;
+
+  /// The value as a renderer takes it.
+  Map<String, Object?> get json =>
+      {'ghati': ghati, 'pala': pala, 'vipala': vipala};
 }
 ";
 
 /// The TypeScript surface.
 #[must_use]
 pub fn typescript(model: &Model) -> String {
+    let mut out = ts_types(model);
+    out.push_str("export function messages(r: Renderer) {\n  return {\n");
+    ts_group(&mut out, &model.root, 2);
+    out.push_str("  } as const;\n}\n\nexport type Messages = ReturnType<typeof messages>;\n");
+    out
+}
+
+/// The types both TypeScript outputs carry: the contexts, the catalogue
+/// keys by kind, every message key, the value shapes, an entity's forms
+/// and the renderer they are read through.
+fn ts_types(model: &Model) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
@@ -287,43 +313,137 @@ pub fn typescript(model: &Model) -> String {
     }
     out.push_str("}\n\n");
     out.push_str("export interface Renderer {\n  render(key: MessageKey, params?: Readonly<Record<string, unknown>>): string;\n  entity(key: EntityKey): EntityForms;\n}\n\n");
-    out.push_str("export function messages(r: Renderer) {\n  return {\n");
-    ts_group(&mut out, &model.root, 2);
-    out.push_str("  } as const;\n}\n\nexport type Messages = ReturnType<typeof messages>;\n");
     out
 }
 
+/// How a node of the tree is rendered: the single-file TypeScript
+/// target, the JavaScript module a package ships, or the declarations
+/// beside it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum TsShape {
+    /// `name: (p: { x: number }) => r.render('k', p),`
+    Typed,
+    /// `name: (p) => r.render('k', p),`
+    Plain,
+    /// `readonly name: (p: { x: number }) => string;`
+    Declared,
+}
+
 fn ts_group(out: &mut String, group: &Group, depth: usize) {
+    ts_tree(out, group, depth, TsShape::Typed);
+}
+
+fn ts_tree(out: &mut String, group: &Group, depth: usize, shape: TsShape) {
     let pad = "  ".repeat(depth);
+    let declared = shape == TsShape::Declared;
+    let (lead, close) = if declared {
+        ("readonly ", "};")
+    } else {
+        ("", "},")
+    };
     for (segment, node) in &group.children {
         match node {
             Node::Group(child) => {
-                let _ = writeln!(out, "{pad}{segment}: {{");
-                ts_group(out, child, depth + 1);
-                let _ = writeln!(out, "{pad}}},");
+                let _ = writeln!(out, "{pad}{lead}{segment}: {{");
+                ts_tree(out, child, depth + 1, shape);
+                let _ = writeln!(out, "{pad}{close}");
             }
             Node::Message(message) => {
-                if message.params.is_empty() {
-                    let _ = writeln!(out, "{pad}{segment}: () => r.render('{}'),", message.key);
-                } else {
-                    let fields: Vec<String> = message
-                        .params
-                        .iter()
-                        .map(|(name, kind)| format!("{name}: {}", ts_type(kind)))
-                        .collect();
-                    let _ = writeln!(
-                        out,
-                        "{pad}{segment}: (p: {{ {} }}) => r.render('{}', p),",
-                        fields.join("; "),
-                        message.key
-                    );
-                }
+                let fields: Vec<String> = message
+                    .params
+                    .iter()
+                    .map(|(name, kind)| format!("{name}: {}", ts_type(kind)))
+                    .collect();
+                let typed = format!("p: {{ {} }}", fields.join("; "));
+                let line = match (shape, message.params.is_empty()) {
+                    (TsShape::Typed | TsShape::Plain, true) => {
+                        format!("{segment}: () => r.render('{}'),", message.key)
+                    }
+                    (TsShape::Typed, false) => {
+                        let map: Vec<String> = message
+                            .params
+                            .iter()
+                            .map(|(n, k)| format!("{n}: {}", js_value(n, k)))
+                            .collect();
+                        format!(
+                            "{segment}: ({typed}) => r.render('{}', {{ {} }}),",
+                            message.key,
+                            map.join(", ")
+                        )
+                    }
+                    (TsShape::Plain, false) => {
+                        let map: Vec<String> = message
+                            .params
+                            .iter()
+                            .map(|(n, k)| format!("{n}: {}", js_value(n, k)))
+                            .collect();
+                        format!(
+                            "{segment}: (p) => r.render('{}', {{ {} }}),",
+                            message.key,
+                            map.join(", ")
+                        )
+                    }
+                    (TsShape::Declared, true) => format!("readonly {segment}: () => string;"),
+                    (TsShape::Declared, false) => {
+                        format!("readonly {segment}: ({typed}) => string;")
+                    }
+                };
+                let _ = writeln!(out, "{pad}{line}");
             }
             Node::Entity(key) => {
-                let _ = writeln!(out, "{pad}{segment}: () => r.entity('{key}'),");
+                let line = if declared {
+                    format!("readonly {segment}: () => EntityForms;")
+                } else {
+                    format!("{segment}: () => r.entity('{key}'),")
+                };
+                let _ = writeln!(out, "{pad}{line}");
             }
         }
     }
+}
+
+/// The declarations a JavaScript package ships beside the module: every
+/// type, the shape `messages` hands back as an interface, and the two
+/// functions the module exports.
+#[must_use]
+pub fn typescript_declarations(model: &Model) -> String {
+    let mut out = ts_types(model);
+    out.push_str("export interface Messages {\n");
+    ts_tree(&mut out, &model.root, 1, TsShape::Declared);
+    out.push_str("}\n\n");
+    out.push_str("/** The typed accessors over a renderer. */\nexport declare function messages(r: Renderer): Messages;\n\n");
+    out.push_str("/** An entity's forms, as `ts_intl_entity` hands them out. */\nexport declare function entityForms(json: string | Readonly<Record<string, unknown>>): EntityForms;\n");
+    out
+}
+
+/// The module itself: the same tree in plain JavaScript, so a package
+/// needs no compiler.
+#[must_use]
+pub fn javascript(model: &Model) -> String {
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "// Generated by teistro-intl from i18n/{}. Do not edit.\n// Keys and parameter shapes only; text comes from packs.\n",
+        model.locale
+    );
+    out.push_str(
+        "/** The typed accessors over a renderer. */\nexport function messages(r) {\n  return {\n",
+    );
+    ts_tree(&mut out, &model.root, 2, TsShape::Plain);
+    out.push_str("  };\n}\n\n");
+    out.push_str("/** An entity's forms, as `ts_intl_entity` hands them out. */\nexport function entityForms(json) {\n  const forms = typeof json === 'string' ? JSON.parse(json) : json;\n  return Object.freeze({\n");
+    for form in &model.forms.0 {
+        let _ = writeln!(out, "    {form}: forms.{form} ?? '',");
+    }
+    for form in &model.forms.1 {
+        let _ = writeln!(out, "    {form}: forms.{form},");
+    }
+    out.push_str("    glyph: forms.glyph,\n");
+    if model.contexts.contains_key("gender") {
+        out.push_str("    gender: forms.gender,\n");
+    }
+    out.push_str("  });\n}\n");
+    out
 }
 
 fn dart_type(kind: &ParamType) -> String {
@@ -341,11 +461,35 @@ fn dart_type(kind: &ParamType) -> String {
     }
 }
 
+/// A parameter as the renderer's JSON takes it: a tagged object for an
+/// entity, a date, a time, a date and time or a ghati count, the key for
+/// a context or a catalogued entity, and the value itself otherwise. The
+/// tags are the engine's own (`$entity`, `$date`, `$time`, `$datetime`,
+/// `$ghati`), so the accessors need no help from the layer above.
 fn dart_value(name: &str, kind: &ParamType) -> String {
     match kind {
-        ParamType::Context(_) | ParamType::Entity(Some(_)) => format!("{name}.key"),
+        ParamType::Context(_) => format!("{name}.key"),
+        ParamType::Entity(Some(_)) => format!("{{r'$entity': {name}.key}}"),
+        ParamType::Entity(None) => format!("{{r'$entity': {name}}}"),
+        ParamType::Date => format!("{{r'$date': {name}.json}}"),
+        ParamType::Time => format!("{{r'$time': {name}.json}}"),
+        ParamType::DateTime => format!("{{r'$datetime': {name}.json}}"),
+        ParamType::Ghati => format!("{{r'$ghati': {name}.json}}"),
         _ => name.to_string(),
     }
+}
+
+/// The same, in JavaScript, where a value class is a plain object.
+fn js_value(name: &str, kind: &ParamType) -> String {
+    let tag = match kind {
+        ParamType::Entity(_) => "$entity",
+        ParamType::Date => "$date",
+        ParamType::Time => "$time",
+        ParamType::DateTime => "$datetime",
+        ParamType::Ghati => "$ghati",
+        _ => return format!("p.{name}"),
+    };
+    format!("{{ '{tag}': p.{name} }}")
 }
 
 /// The Dart surface.
@@ -354,7 +498,7 @@ pub fn dart(model: &Model) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
-        "// Generated by teistro-intl from i18n/{}. Do not edit.\n// Keys and parameter shapes only; text comes from packs.\n",
+        "// Generated by teistro-intl from i18n/{}. Do not edit.\n// Keys and parameter shapes only; text comes from packs.\n//\n// The generator lays this file out, so `dart format .` leaves it alone\n// and the gate that regenerates it can compare it byte for byte.\n// dart format off\n\nimport 'dart:convert';\n",
         model.locale
     );
     for (context, values) in &model.contexts {
@@ -396,6 +540,20 @@ pub fn dart(model: &Model) -> String {
         out.push_str("    this.gender,\n");
     }
     out.push_str("  });\n\n");
+    // The forms as `ts_intl_entity` hands them out, so a binding reads an
+    // entity without knowing which forms this locale carries.
+    out.push_str("  /// The forms as the boundary hands them out, whether\n  /// as the JSON text or as the object it parses to.\n  factory EntityForms.of(Object json) {\n    final forms = json is String\n        ? jsonDecode(json) as Map<String, Object?>\n        : json as Map<String, Object?>;\n    String? text(String form) => forms[form] as String?;\n    return EntityForms(\n");
+    for form in &model.forms.0 {
+        let _ = writeln!(out, "      {form}: text('{form}') ?? '',");
+    }
+    for form in &model.forms.1 {
+        let _ = writeln!(out, "      {form}: text('{form}'),");
+    }
+    out.push_str("      glyph: text('glyph'),\n");
+    if model.contexts.contains_key("gender") {
+        out.push_str("      gender: Gender.values\n          .where((g) => g.key == text('gender'))\n          .firstOrNull,\n");
+    }
+    out.push_str("    );\n  }\n\n");
     for form in &model.forms.0 {
         let _ = writeln!(out, "  final String {form};");
     }

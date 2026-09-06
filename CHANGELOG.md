@@ -127,7 +127,13 @@ compared value by value. Both refuse a library that is not the build they
 were generated from: `ts_build_info` says what a build is (version, ABI,
 commit, profile, target, sanitizer, compiler), and a mismatched version,
 a sanitizer build, or an unoptimised one the loader searched out is
-refused rather than loaded. The API description (`idl/api.json`, `teistro-idl`) is extracted
+refused rather than loaded. Both carry the SDK's typed message accessors,
+so an application spells a message key once, in the generator: every
+message of the SDK's locale is a function of its typed parameters, and
+every catalogued entity is its forms in the locale
+(`ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 })`,
+`ctx.entity('graha.SUN').name`), over the new `ts_intl_entity` entry
+point. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

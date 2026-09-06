@@ -10189,6 +10189,57 @@
       "source": "crates/ffi/src/intl.rs"
     },
     {
+      "name": "ts_intl_entity",
+      "doc": "An entity's forms in the current locale or its fallbacks, as a JSON\nobject lent until the next call on the context: every form the locale\ngives (`name`, `prose`, `iast`, `short`, and any it adds), the\n`glyph` when it has one, and the `gender` when the locale marks one.\nA key the locale chain does not carry is `UNSUPPORTED`, naming the\nlocale that was asked.\n\nThe typed accessors each binding generates read entities through this,\nso an application spells `graha.SUN` once and never a name.",
+      "safety": "`context` must be a live handle; `key` a NUL-terminated string;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "key",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsStr"
+            },
+            "mutable": true
+          },
+          "role": "str_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/intl.rs"
+    },
+    {
       "name": "ts_intl_render",
       "doc": "Renders a message with parameters given as a JSON object: a string, an\ninteger, a number or an array is itself; an entity is\n`{\"$entity\": \"graha.SUN\"}`; a date `{\"$date\": {\"calendar\": \"GREGORIAN\",\n\"year\": 2026, \"month\": 9, \"day\": 6}}`; a time `{\"$time\": {\"hour\": 6,\n\"minute\": 15, \"second\": 0}}`; a date and time `{\"$datetime\": {\"date\":\n{...}, \"time\": {...}}}`; a ghati count `{\"$ghati\": {\"ghati\": 12,\n\"pala\": 30, \"vipala\": 0}}`. A null `params_json` renders with none.\nThe result blob carries the text, where it resolved from and the\nwarnings; a missing message renders as its key with a warning, never\nan error.",
       "safety": "`context` must be a live handle; `key` a NUL-terminated string;\n`params_json` null or one; `out_blob` valid for a write.",

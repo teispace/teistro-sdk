@@ -13,6 +13,7 @@ carry `// dart format off`, so the generator's layout is what ships and
 | `lib/src/catalogue.dart` | every enum as a Dart enum carrying the id the C boundary uses and the key every pack and fixture spells; a catalogue kind gains an `unknown` member so a `switch` stays exhaustive against a newer library | the generator |
 | `lib/src/ffi.dart` | the `dart:ffi` declarations that match the C header name for name, a typed value class per boundary struct, the exception, and the context with a native finaliser | the generator |
 | `lib/src/blob.dart` | one decoder per result blob, reading the `TSRB` layout into typed-data views over the blob's bytes | the generator |
+| `lib/src/messages.dart`, `lib/messages.dart` | the typed accessors: every message of the SDK's locale as a function of its parameters, every catalogued entity as its forms (`cargo xtask gen intl`) | the generator, and a one-line entry point by hand |
 | `lib/teistro.dart` | the layer a consumer uses: finding the shared library and checking its ABI, the defaults, the JSON both ways, and the conveniences a generator cannot know are wanted | by hand |
 | `lib/src/host.dart` | the port adapter: an ephemeris written in Dart bound into the vtable through `NativeCallable.isolateLocal` | by hand |
 | `test/` | the surface end to end, and the decoders against blobs the library produced | by hand |
@@ -24,6 +25,7 @@ carry `// dart format off`, so the generator's layout is what ships and
 This is `example/teistro_example.dart`, which the gate runs:
 
 ```dart
+import 'package:teistro/messages.dart' as intl;
 import 'package:teistro/teistro.dart';
 
 void main() {
@@ -60,13 +62,15 @@ void main() {
   );
   print('the Sun at ${sky.at(0, 0).longitude.toStringAsFixed(4)} degrees');
 
-  // A message in the context's locale.
+  // A message in the context's locale, by its typed accessor, and an
+  // entity's name in that locale.
   print(
-    ctx.render('sdk.reason.grahaInBhava', {
-      'graha': {r'$entity': 'graha.JUPITER'},
-      'bhava': 7,
-    }).text,
+    ctx.messages.sdk.reason.grahaInBhava(
+      graha: intl.GrahaKey.jupiter,
+      bhava: 7,
+    ),
   );
+  print('${ctx.entity('graha.SUN').name} ${ctx.entity('graha.SUN').glyph}');
 
   ctx.dispose();
 }

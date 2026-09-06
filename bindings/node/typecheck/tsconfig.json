@@ -17,5 +17,5 @@
     "skipLibCheck": false,
     "noEmit": true
   },
-  "include": ["consumer.ts", "layer.ts"]
+  "include": ["consumer.ts", "layer.ts", "messages.ts"]
 }

@@ -23,6 +23,10 @@
       "types": "./lib/catalogue.d.ts",
       "default": "./lib/catalogue.js"
     },
+    "./messages": {
+      "types": "./lib/messages.d.ts",
+      "default": "./lib/messages.js"
+    },
     "./types": {
       "types": "./lib/types.d.ts"
     },

@@ -9,6 +9,7 @@
 )]
 
 use core::ffi::c_char;
+use core::fmt::Write as _;
 
 use teistro_calendar::CalendarDate;
 use teistro_core::Status;
@@ -136,6 +137,88 @@ pub unsafe extern "C" fn ts_intl_has(
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_has, "out_has", u8::from(has)) }
     })
+}
+
+/// An entity's forms in the current locale or its fallbacks, as a JSON
+/// object lent until the next call on the context: every form the locale
+/// gives (`name`, `prose`, `iast`, `short`, and any it adds), the
+/// `glyph` when it has one, and the `gender` when the locale marks one.
+/// A key the locale chain does not carry is `UNSUPPORTED`, naming the
+/// locale that was asked.
+///
+/// The typed accessors each binding generates read entities through this,
+/// so an application spells `graha.SUN` once and never a name.
+///
+/// # Safety
+///
+/// `context` must be a live handle; `key` a NUL-terminated string;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_intl_entity(
+    context: *const TsContext,
+    key: *const c_char,
+    out_json: *mut TsStr,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let key = unsafe { text(key, "key") }?;
+        let intl = ctx.intl();
+        let locale = intl.locale();
+        let entity = intl.entity_from(locale, key).ok_or_else(|| {
+            Error::unsupported(format!("no entity `{key}` in `{locale}`"))
+                .with_field("key")
+                .with_hint(format!(
+                    "the catalogue's key, as `graha.SUN`; `{locale}` and its fallbacks carry none"
+                ))
+        })?;
+        let json = entity_json(entity);
+        let lent = ctx.lend(&json);
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", lent) }
+    })
+}
+
+/// An entity's forms as the JSON object the bindings read: every form,
+/// then `glyph` and `gender` when the locale gives them. The keys are
+/// sorted, because the map they come from is.
+fn entity_json(entity: &teistro_intl::source::Entity) -> String {
+    let mut fields: Vec<(&str, &str)> = entity
+        .forms
+        .iter()
+        .map(|(form, text)| (form.as_str(), text.as_str()))
+        .collect();
+    if let Some(glyph) = entity.glyph.as_deref() {
+        fields.push(("glyph", glyph));
+    }
+    if let Some(gender) = entity.gender.as_deref() {
+        fields.push(("gender", gender));
+    }
+    let body: Vec<String> = fields
+        .iter()
+        .map(|(name, value)| format!("{}:{}", json_string(name), json_string(value)))
+        .collect();
+    format!("{{{}}}", body.join(","))
+}
+
+/// A JSON string, escaped as the grammar requires.
+fn json_string(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push('"');
+    for c in text.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => {
+                let _ = write!(out, "\\u{:04x}", c as u32);
+            }
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
 }
 
 /// Renders a message with parameters given as a JSON object: a string, an

@@ -1032,6 +1032,8 @@ typedef TsIntlLocaleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointe
 typedef TsIntlLocaleDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StrStruct>);
 typedef TsIntlHasNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
 typedef TsIntlHasDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
+typedef TsIntlEntityNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
+typedef TsIntlEntityDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlRenderNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsIntlRenderDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsPositionsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<PositionRequestStruct>, ffi.Pointer<BlobStruct>);
@@ -1077,6 +1079,7 @@ final class TeistroLibrary {
         ts_intl_set_locale = library.lookupFunction<TsIntlSetLocaleNative, TsIntlSetLocaleDart>('ts_intl_set_locale'),
         ts_intl_locale = library.lookupFunction<TsIntlLocaleNative, TsIntlLocaleDart>('ts_intl_locale'),
         ts_intl_has = library.lookupFunction<TsIntlHasNative, TsIntlHasDart>('ts_intl_has'),
+        ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions');
 
@@ -1236,6 +1239,17 @@ final class TeistroLibrary {
 
   /// Whether the current locale or its fallbacks have a message: `1` or `0`.
   final TsIntlHasDart ts_intl_has;
+
+  /// An entity's forms in the current locale or its fallbacks, as a JSON
+  /// object lent until the next call on the context: every form the locale
+  /// gives (`name`, `prose`, `iast`, `short`, and any it adds), the
+  /// `glyph` when it has one, and the `gender` when the locale marks one.
+  /// A key the locale chain does not carry is `UNSUPPORTED`, naming the
+  /// locale that was asked.
+  ///
+  /// The typed accessors each binding generates read entities through this,
+  /// so an application spells `graha.SUN` once and never a name.
+  final TsIntlEntityDart ts_intl_entity;
 
   /// Renders a message with parameters given as a JSON object: a string, an
   /// integer, a number or an array is itself; an entity is
@@ -2907,6 +2921,26 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_intl_has(_handle, rawkey, outHas);
         if (status != 0) _fail(status);
         return outHas.value;
+    });
+  }
+
+  /// An entity's forms in the current locale or its fallbacks, as a JSON
+  /// object lent until the next call on the context: every form the locale
+  /// gives (`name`, `prose`, `iast`, `short`, and any it adds), the
+  /// `glyph` when it has one, and the `gender` when the locale marks one.
+  /// A key the locale chain does not carry is `UNSUPPORTED`, naming the
+  /// locale that was asked.
+  ///
+  /// The typed accessors each binding generates read entities through this,
+  /// so an application spells `graha.SUN` once and never a name.
+  String intlEntity(String key) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawkey = key.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StrStruct>();
+        final status = _lib.ts_intl_entity(_handle, rawkey, outJson);
+        if (status != 0) _fail(status);
+        return _takeStr(outJson);
     });
   }
 

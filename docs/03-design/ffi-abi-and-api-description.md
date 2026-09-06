@@ -235,7 +235,7 @@ no presence flag, and the bodies by their catalogue keys.
 
 ## 5. The API
 
-Thirty-seven entry points, all in the header with their documentation:
+Thirty-eight entry points, all in the header with their documentation:
 
 | group | entry points |
 |---|---|
@@ -246,7 +246,7 @@ Thirty-seven entry points, all in the header with their documentation:
 | frame | `ts_frame_canonical`, `ts_frame_pack`, `ts_frame_unpack` |
 | calendar | `ts_calendar_from_fixed`, `ts_calendar_to_fixed`, `ts_calendar_convert`, `ts_calendar_month_length`, `ts_calendar_is_leap`, `ts_calendar_weekday`, `ts_calendar_jd_of_fixed`, `ts_calendar_fixed_of_jd` |
 | time | `ts_time_resolve`, `ts_time_civil`, `ts_time_convert`, `ts_time_delta_t` |
-| intl | `ts_intl_load_pack`, `ts_intl_set_locale`, `ts_intl_locale`, `ts_intl_has`, `ts_intl_render` |
+| intl | `ts_intl_load_pack`, `ts_intl_set_locale`, `ts_intl_locale`, `ts_intl_has`, `ts_intl_entity`, `ts_intl_render` |
 | positions | `ts_positions` |
 
 ### The Node binding's generated layers
