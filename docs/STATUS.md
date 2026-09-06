@@ -94,23 +94,31 @@ provider's DUT1).
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
 3. The next task is the maintainer's choice between Phase 1's remaining
-   deliverables (the `intl` crate and CLI from spike 4, `ffi` with the
-   API description and the generators from spike 2, the Node and Dart
-   bindings with the parity gate, the conformance repository) and the
-   astronomy follow-ups under "Now"; Phase 3, the built-in ephemeris,
-   may run beside Phase 4 per the roadmap. `crates/core`, `crates/port-ephemeris`,
+   deliverables (the bindings' packaging beyond the build handshake, the
+   instruction-count benchmarks, the conformance repository, the docs
+   site) and the astronomy follow-ups under "Now"; Phase 3, the built-in
+   ephemeris, may run beside Phase 4 per the roadmap. The `intl` crate
+   and its CLI, `ffi` with the API description and the generators, and
+   the Node and Dart bindings with the parity gate are built. `crates/core`, `crates/port-ephemeris`,
    `crates/astro`, `crates/ephemeris-kit`, `crates/siddhanta`,
    `crates/calendar` (with the Bikram Sambat engine and the drik model),
    `crates/time` and `crates/port-timezone` exist; `cargo xtask
-   check-catalogue`, `check-calendars`, `check-time` and `check-accuracy`
-   (the accuracy document, `05-testing/ACCURACY.md`) are gates; the
+   check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`
+   (the accuracy document, `05-testing/ACCURACY.md`), `check-intl`,
+   `check-ffi` and `check-lints` (the determinism rules) are gates on
+   every push, and `check-c`, `check-node`, `check-dart` and
+   `check-parity` are the bindings' own, run by hand and in the nightly
+   matrix; `cargo xtask hashes` and `compare-hashes` are the determinism
+   matrix's; the
    conformance kit runs in `cargo test -p teistro-ephemeris-kit`;
    `cargo xtask calendars bs-fit` (and `--detail`) is the measurement
    behind the shipped Bikram Sambat rule (`docs/calendars/bikram-sambat.md`);
    `gen time` rebuilds the Delta T tables (`crates/astro/data/`) and the
    leap seconds (`crates/time/data/`). The adapters under `adapters/`
    are outside the workspace and need the engines locally
-   (`TEIMERIS_LIB_DIR`, `SWEPH_SRC_DIR`; `adapters/README.md`): their
+   (`TEIMERIS_LIB_DIR`, `SWEPH_SRC_DIR`, and `TEIMERIS_PROFILE=max` for
+   the engine's corrected astronomy, which is what the recorded tables
+   are taken under; `adapters/README.md`): their
    kit binaries, the Teimeris `bs-fit` binary (the drik comparison) and
    the Teimeris fixture test (the solver against the 55 charts) are run
    by hand.
@@ -554,19 +562,26 @@ binding (ADR-0023).
   session: `bindings/dart/lib/src/`, the `dart:ffi` declarations, the
   value classes, the catalogue enums and the blob decoders from the same
   description; `lib/teistro.dart` the hand-written layer; `cargo xtask
-  check-dart` analysing, format-checking and running twenty-one tests
+  check-dart` analysing, format-checking and running thirty-three tests
   against the real library, an ephemeris written in Dart among them; the
   parity gate `cargo xtask check-parity` holding the two bindings to each
-  other over a hundred and two values, the build handshake and the typed
-  accessors among them).
+  other over a hundred and three values, the build handshake, the typed
+  accessors and the branded quantities among them). Every engine finding
+  is closed (thirty-fifth session: the six fixed upstream, the fixtures
+  re-recorded under the engine's corrected profile, every bound
+  tightened; `05-testing/02-engine-findings.md`).
   Next in it: the bindings' packaging beyond the handshake (prebuilds per
   platform, manifests, publishing), which waits on the release matrix;
   then the
   test-only infrastructure beyond the determinism lints and the counting
   allocator (instruction-count benchmarks, which need Linux), the
-  conformance repository (ADR-0022), the docs site. The cross-architecture hash matrix is built (thirty-fifth
+  conformance repository (ADR-0022), the docs site. The
+  cross-architecture hash matrix is built and has run (thirty-fifth
   session: `cargo xtask hashes` and the `hash-matrix` workflow over Linux
-  x86-64, Linux aarch64 and macOS aarch64). The completion's
+  x86-64, Linux aarch64 and macOS aarch64; the two architectures agree
+  bit for bit on all 100,236 values, which is the exit criterion, and the
+  macOS difference is the platform's maths library, measured and
+  published). The completion's
   centre, corrections and equinox steps wait for the built-in ephemeris
   (Phase 3). The memo's R3 stays open (a third source; the committee's
   earlier years are not online).
@@ -576,29 +591,35 @@ binding (ADR-0023).
 1. Phase 2's astronomy as above (it is "Now"); a settable atmosphere
    for the rise and set solver (C34); the classical provider's Lagna and
    planetary hours exposed through the chart layer when it exists.
-2. The bindings' remaining work: the
-   Dart binding from the same description (`gen_dart.rs` rewritten over
-   `teistro-idl`, with `NativeCallable.isolateLocal` for the provider and
-   a `NativeFinalizer` for the handles), the typed intl accessors in both,
-   packaging with the `buildinfo` handshake, and the parity gate comparing
-   the generated surfaces with the description and the two bindings'
-   canonical JSON with each other. Q34, the default profile, awaits the
-   maintainer.
+2. The bindings' remaining work. Built: the Dart binding from the same
+   description with its own provider and finaliser, the typed intl
+   accessors in both, the build handshake, and the parity gate over 103
+   values. Left: packaging beyond the handshake (prebuilt libraries per
+   platform, the manifests, publishing), which waits on the release
+   matrix; rich renderers per binding, which wait on a serialisation of
+   a rendered message's parts that both bindings can read; the wasm and
+   Python bindings from the same description. Q34, the default profile,
+   awaits the maintainer.
 3. Spike 3's remaining consequences: the kit's corpus checks (positions
    against fixtures per tier) and the `sdk-only` cross-provider
    byte-identity check; the Teimeris adapter as the Teimeris package's
    own crate.
-4. Spike 4's consequences in Phase 1: the `intl` crate and the
-   `teistro-intl` CLI from the spike's crate, the locale bundle
-   container, the calendar-aware `:date` family, rich renderers per
-   binding, and `migrate baseline` into the entity namespace.
+4. Spike 4's consequences in Phase 1 are built but for three: day-period
+   ranges a locale states for itself (the four parts are the same ranges
+   everywhere today), the `zone` option on the date functions (it waits
+   on zoned instants crossing the port), and the composite provider's
+   precedence once a binding loads packs from several places.
 5. Q24: conduct and security mailboxes on the Teispace domain.
 6. Before Phase 1 exits: create `teispace/teistro-conformance` (CC0-1.0)
    and move `fixtures/` into it as a submodule (ADR-0022); the
    maintainer creates the repository.
 7. Close the cruxes that block Phase 5 (C6 year length per system, C1,
    C2, C3, C8) by reading the texts; tradition reviewers as they appear.
-8. A second baseline export (the same script, more sections) for the
+8. The rest of Phase 1's test-only infrastructure: instruction-count
+   benchmarks (`iai-callgrind`, which needs Linux, so they belong to the
+   nightly matrix rather than a laptop), and the docs site skeleton with
+   the generated reference.
+9. A second baseline export (the same script, more sections) for the
    seventeen other dasha systems, aspects, yogas and doshas, strengths,
    Ashtakavarga, the Jaimini slice, KP and milan, once the design pages
    say what each fixture must carry; and the harness itself in Phase 1
