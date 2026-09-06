@@ -52,6 +52,12 @@ void main() {
   put('sdk', teistro.version);
   put('catalogue-version', teistro.catalogue);
   put('default-profile', teistro.defaultProfileId);
+  put('build-sdk', teistro.build.sdk);
+  put('build-abi', teistro.build.abi);
+  put('build-catalogue', teistro.build.catalogue);
+  put('build-commit', teistro.build.commit);
+  put('build-dirty', teistro.build.dirty);
+  put('build-target', teistro.build.target);
 
   // ── A context ────────────────────────────────────────────────────────
   final ctx = teistro.context(

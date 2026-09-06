@@ -5,12 +5,26 @@
 
 import type {
   Body,
+  BuildInfo,
   Calendar,
   Context,
   EphemerisProvider,
   PositionsRequest,
   Scale,
 } from '../lib/index.js';
+
+declare const build: BuildInfo;
+declare function refuse(info: BuildInfo, named: boolean): string | null;
+
+/** The build handshake, typed. */
+function handshake(): string {
+  const refusal: string | null = refuse(build, true);
+  // @ts-expect-error a build is described, not guessed at
+  const missing: number = build.commit;
+  // @ts-expect-error the report is read, never edited
+  build.sdk = '9.9.9';
+  return `${build.sdk} ${String(missing)} ${refusal ?? 'taken'}`;
+}
 
 declare const ctx: Context;
 
@@ -83,4 +97,4 @@ const wrongAnswer: EphemerisProvider = {
   positions: () => ({ lon: ['1'] }),
 };
 
-export { nameless, provider, wrongAnswer, wrongBody };
+export { handshake, nameless, provider, wrongAnswer, wrongBody };

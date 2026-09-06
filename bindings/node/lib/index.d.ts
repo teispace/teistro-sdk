@@ -284,6 +284,39 @@ export declare class Context {
   keyName(id: number): string;
 }
 
+/**
+ * What the loaded addon says about its own build: the SDK version, the
+ * ABI and catalogue versions, the commit it came from and whether that
+ * tree was clean, the profile, the target, whether it is optimised, the
+ * sanitizer if any, and the compiler. The two halves of the binding must
+ * be one build, and the loader refuses one that is not.
+ */
+export interface BuildInfo {
+  readonly sdk: string;
+  readonly abi: number;
+  readonly catalogue: number;
+  readonly commit: string;
+  readonly dirty: boolean;
+  readonly profile: string;
+  readonly target: string;
+  readonly debug_assertions: boolean;
+  readonly optimised: boolean;
+  readonly sanitizer: string;
+  readonly rustc: string;
+}
+
+/** What the loaded addon says about its own build. */
+export declare const buildInfo: BuildInfo;
+
+/**
+ * Why a build may not be loaded, or `null` when it may. The loader calls
+ * it; a test or a packaging check may call it with a build of its own.
+ *
+ * @param info what the addon reported
+ * @param named whether its path was given rather than searched for
+ */
+export declare function refuseBuild(info: BuildInfo, named: boolean): string | null;
+
 /** The ABI the addon implements. */
 export declare function abiVersion(): number;
 /** The SDK's version. */

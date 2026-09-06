@@ -122,8 +122,12 @@ through an isolate-local callback, asked once for a whole grid, and may
 refuse a frame by answering with nothing, in which case the astronomy
 layer completes the rest from the provider's own frame. The two bindings
 are held to each other by a parity gate: one scenario walked through both
-ergonomic layers, ninety values reported by each, and the two compared
-value by value. The API description (`idl/api.json`, `teistro-idl`) is extracted
+ergonomic layers, ninety-six values reported by each, and the two
+compared value by value. Both refuse a library that is not the build they
+were generated from: `ts_build_info` says what a build is (version, ABI,
+commit, profile, target, sanitizer, compiler), and a mismatched version,
+a sanitizer build, or an unoptimised one the loader searched out is
+refused rather than loaded. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

@@ -15,7 +15,13 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ABI_VERSION, BodyById, CONTEXT_TEST_PROVIDER, TimeScaleById } from './catalogue.js';
+import {
+  ABI_VERSION,
+  BodyById,
+  CONTEXT_TEST_PROVIDER,
+  SDK_VERSION,
+  TimeScaleById,
+} from './catalogue.js';
 import { decodeIntlRender, decodePositions } from './blob.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -23,8 +29,9 @@ const require = createRequire(import.meta.url);
 
 /** The addon: a packaged build first, then the workspace's own. */
 function loadAddon() {
+  const named = process.env.TEISTRO_ADDON;
   const candidates = [
-    process.env.TEISTRO_ADDON,
+    named,
     join(HERE, '..', 'native', 'index.node'),
     join(HERE, '..', '..', '..', 'target', 'release', addonName()),
     join(HERE, '..', '..', '..', 'target', 'debug', addonName()),
@@ -37,7 +44,46 @@ function loadAddon() {
       )}\nBuild it with \`cargo build -p teistro-node\`, or set TEISTRO_ADDON to its path.`,
     );
   }
-  return require(found);
+  return [require(found), found === named];
+}
+
+/**
+ * Whether a build may be loaded, as a sentence when it may not.
+ *
+ * The two halves of a binding must be one build: the addon carries the
+ * library, and these files were generated from a description of it. A
+ * mismatched ABI or version is refused outright. A sanitizer build is
+ * refused because it answers differently and slowly and is never chosen
+ * by accident; an unoptimised one is refused only when the loader found
+ * it itself, because naming a path is a deliberate act and a development
+ * build is what a developer means by it.
+ *
+ * @param {object} info what `buildInfo()` parsed
+ * @param {boolean} named whether the path was given rather than searched
+ */
+export function refuseBuild(info, named) {
+  if (info.abi !== ABI_VERSION) {
+    return `the addon implements ABI ${info.abi}, these types were generated for ${ABI_VERSION}`;
+  }
+  if (info.sdk !== SDK_VERSION) {
+    return `the addon is Teistro ${info.sdk}, these types were generated from ${SDK_VERSION}`;
+  }
+  if (info.sanitizer) {
+    return `the addon is a ${info.sanitizer} sanitizer build, which is not for use`;
+  }
+  if (!named && info.optimised === false) {
+    return `the addon at ${info.profile ?? 'an unoptimised path'} is an unoptimised build; build it with \`--release\`, or set TEISTRO_ADDON to load this one deliberately`;
+  }
+  return null;
+}
+
+/** What the loaded addon says about its own build. */
+function readBuildInfo(addon) {
+  try {
+    return JSON.parse(addon.buildInfo());
+  } catch (cause) {
+    throw new Error(`the addon did not describe its build: ${cause.message}`);
+  }
 }
 
 function addonName() {
@@ -46,13 +92,13 @@ function addonName() {
   return 'libteistro_node.so';
 }
 
-const native = loadAddon();
+const [native, wasNamed] = loadAddon();
 
-if (native.abiVersion() !== ABI_VERSION) {
-  throw new Error(
-    `the addon implements ABI ${native.abiVersion()}, these types were generated for ${ABI_VERSION}`,
-  );
-}
+/** What the loaded addon says about its own build (ADR-0007). */
+export const buildInfo = Object.freeze(readBuildInfo(native));
+
+const refusal = refuseBuild(buildInfo, wasNamed);
+if (refusal) throw new Error(refusal);
 
 /**
  * A failed call. The status and its code are the same in every binding;

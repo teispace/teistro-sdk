@@ -140,8 +140,13 @@ copies them into its own string on the way out.
 - Native library located by an explicit path, then the package's
   prebuilds, then a development build directory, with a deny-list for
   sanitizer and unoptimised builds (Teimeris's loader lesson).
-- The language half and the native half must be from the same build
-  (`buildinfo.json` handshake) or the package refuses to load.
+- The language half and the native half must be from the same build or
+  the package refuses to load. Built: `ts_build_info` returns what the
+  library is (version, ABI, commit, profile, target, sanitizer,
+  compiler), written when it is compiled; each loader refuses another ABI
+  or version, a sanitizer build however it was found, and an unoptimised
+  build it searched out rather than was given
+  (`03-design/ffi-abi-and-api-description.md`, §5).
 - The IDL ships inside every package so tooling on top can read real
   signatures.
 

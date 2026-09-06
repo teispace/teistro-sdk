@@ -66,8 +66,8 @@ pub fn catalogue(api: &Api) -> String {
     let mut out = preamble(api, "\n// ignore_for_file: constant_identifier_names\n");
     let _ = writeln!(
         out,
-        "/// The ABI these declarations were generated for; the library must agree.\nconst int generatedAbiVersion = {};\n",
-        api.abi_version
+        "/// The ABI these declarations were generated for; the library must agree.\nconst int generatedAbiVersion = {};\n\n/// The SDK version these declarations were generated from; the library\n/// must be the same build (`Teistro.open` checks it).\nconst String generatedSdkVersion = '{}';\n",
+        api.abi_version, api.sdk_version
     );
     for c in constants(api) {
         let _ = writeln!(

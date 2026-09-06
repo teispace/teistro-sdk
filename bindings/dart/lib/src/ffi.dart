@@ -970,6 +970,8 @@ typedef TsCatalogueVersionNative = ffi.Uint32 Function();
 typedef TsCatalogueVersionDart = int Function();
 typedef TsDefaultProfileNative = ffi.Pointer<ffi.Char> Function();
 typedef TsDefaultProfileDart = ffi.Pointer<ffi.Char> Function();
+typedef TsBuildInfoNative = ffi.Pointer<ffi.Char> Function();
+typedef TsBuildInfoDart = ffi.Pointer<ffi.Char> Function();
 typedef TsStatusMessageNative = ffi.Pointer<ffi.Char> Function(ffi.Int32);
 typedef TsStatusMessageDart = ffi.Pointer<ffi.Char> Function(int);
 typedef TsStringFreeNative = ffi.Void Function(ffi.Pointer<StringStruct>);
@@ -1044,6 +1046,7 @@ final class TeistroLibrary {
         ts_sdk_version = library.lookupFunction<TsSdkVersionNative, TsSdkVersionDart>('ts_sdk_version'),
         ts_catalogue_version = library.lookupFunction<TsCatalogueVersionNative, TsCatalogueVersionDart>('ts_catalogue_version'),
         ts_default_profile = library.lookupFunction<TsDefaultProfileNative, TsDefaultProfileDart>('ts_default_profile'),
+        ts_build_info = library.lookupFunction<TsBuildInfoNative, TsBuildInfoDart>('ts_build_info'),
         ts_status_message = library.lookupFunction<TsStatusMessageNative, TsStatusMessageDart>('ts_status_message'),
         ts_string_free = library.lookupFunction<TsStringFreeNative, TsStringFreeDart>('ts_string_free'),
         ts_blob_free = library.lookupFunction<TsBlobFreeNative, TsBlobFreeDart>('ts_blob_free'),
@@ -1092,6 +1095,19 @@ final class TeistroLibrary {
   /// The profile a context uses when its options name none, as a static
   /// NUL-terminated string.
   final TsDefaultProfileDart ts_default_profile;
+
+  /// What this build is, as a static NUL-terminated JSON object: the SDK
+  /// version, the ABI and catalogue versions, the commit and whether its
+  /// tree was clean, the profile, the target, whether debug assertions and
+  /// optimisation are on, the sanitizer if any, and the compiler.
+  ///
+  /// A binding reads it when it loads the library and refuses one that is
+  /// not the build its own half was generated for
+  /// (`02-architecture/07-binding-architecture.md`, "Loading and
+  /// identity"). The document is written when the library is compiled, so
+  /// it costs nothing to ask and cannot disagree with the library it
+  /// describes.
+  final TsBuildInfoDart ts_build_info;
 
   /// A static NUL-terminated English phrase for a status code; `unknown
   /// status` for a code this build does not know.
@@ -3003,6 +3019,20 @@ int catalogueVersion(TeistroLibrary lib) {
 /// NUL-terminated string.
 String defaultProfile(TeistroLibrary lib) =>
     lib.ts_default_profile().cast<pkg_ffi.Utf8>().toDartString();
+
+/// What this build is, as a static NUL-terminated JSON object: the SDK
+/// version, the ABI and catalogue versions, the commit and whether its
+/// tree was clean, the profile, the target, whether debug assertions and
+/// optimisation are on, the sanitizer if any, and the compiler.
+///
+/// A binding reads it when it loads the library and refuses one that is
+/// not the build its own half was generated for
+/// (`02-architecture/07-binding-architecture.md`, "Loading and
+/// identity"). The document is written when the library is compiled, so
+/// it costs nothing to ask and cannot disagree with the library it
+/// describes.
+String buildInfo(TeistroLibrary lib) =>
+    lib.ts_build_info().cast<pkg_ffi.Utf8>().toDartString();
 
 /// A static NUL-terminated English phrase for a status code; `unknown
 /// status` for a code this build does not know.

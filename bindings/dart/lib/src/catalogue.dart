@@ -13,6 +13,10 @@
 /// The ABI these declarations were generated for; the library must agree.
 const int generatedAbiVersion = 1;
 
+/// The SDK version these declarations were generated from; the library
+/// must be the same build (`Teistro.open` checks it).
+const String generatedSdkVersion = '0.0.0';
+
 /// The ABI version of the vtable layout.
 const int vtableAbiVersion = 2;
 

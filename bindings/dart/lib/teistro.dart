@@ -41,17 +41,20 @@ export 'src/host.dart';
 /// layer's [TeistroLibrary] unless you want it, and [library] hands that
 /// over when you do.
 final class Teistro {
-  Teistro._(this.library);
+  Teistro._(this.library, this.build);
 
   /// The generated declarations, for a call this layer does not wrap.
   final TeistroLibrary library;
+
+  /// What the open library says about its own build.
+  final BuildInfo build;
 
   /// The environment variable that names the shared library, which wins
   /// over every other place it is looked for.
   static const String pathVariable = 'TEISTRO_LIBRARY';
 
-  /// Opens the shared library and checks that it implements the ABI these
-  /// declarations were generated for.
+  /// Opens the shared library and checks that it is the build these
+  /// declarations were generated from.
   ///
   /// `path` names the library outright. Without one, the SDK looks at
   /// `$TEISTRO_LIBRARY`, then beside this package, then in the workspace's
@@ -59,22 +62,26 @@ final class Teistro {
   /// loader for the bare name, which finds an installed library.
   ///
   /// Throws a [TeistroException] with `Status.unsupported` when the
-  /// library implements another ABI, and a [StateError] naming every place
-  /// it looked when there is no library to open.
+  /// library is not that build ([refuseBuild] says why), and a
+  /// [StateError] naming every place it looked when there is no library
+  /// to open.
   factory Teistro.open({String? path}) {
     final opened = path == null ? _search() : ffi.DynamicLibrary.open(path);
     final library = TeistroLibrary(opened);
     rememberLibrary(library);
-    final abi = abiVersion(library);
-    if (abi != generatedAbiVersion) {
+    final named = path != null || _named != null;
+    final build = BuildInfo.of(buildInfo(library));
+    final refusal = refuseBuild(build, named: named);
+    if (refusal != null) {
       throw TeistroException(
         Status.unsupported,
-        'the library implements ABI $abi, these declarations were '
-        'generated for ABI $generatedAbiVersion',
-        hint: 'regenerate the binding with `cargo xtask gen ffi`',
+        refusal,
+        hint:
+            'regenerate the binding with `cargo xtask gen ffi`, or build '
+            'the library with `cargo build --release -p teistro-ffi`',
       );
     }
-    return Teistro._(library);
+    return Teistro._(library, build);
   }
 
   /// The file name the platform gives the SDK's shared library.
@@ -84,12 +91,18 @@ final class Teistro {
     return 'libteistro_ffi.so';
   }
 
+  /// The library the environment names, when it names one.
+  static String? get _named {
+    final named = Platform.environment[pathVariable];
+    return named == null || named.isEmpty ? null : named;
+  }
+
   /// Every place [Teistro.open] looks, in order.
   static List<String> get searchPath {
     final here = File.fromUri(Platform.script).parent.path;
-    final named = Platform.environment[pathVariable];
+    final named = _named;
     return <String>[
-      if (named != null && named.isNotEmpty) named,
+      if (named != null) named,
       '$here/$libraryName',
       'bindings/dart/$libraryName',
       'target/release/$libraryName',
@@ -361,6 +374,125 @@ final class Context {
     _inner.dispose();
     _host?.dispose();
   }
+}
+
+/// What a library says about its own build: the SDK version, the ABI and
+/// catalogue versions, the commit it came from and whether that tree was
+/// clean, the profile, the target, whether it is optimised, the sanitizer
+/// if any, and the compiler.
+///
+/// The two halves of a binding must be one build: the library carries the
+/// SDK, and these declarations were generated from a description of it.
+/// [Teistro.open] reads this and refuses a library that is not that
+/// build.
+final class BuildInfo {
+  const BuildInfo({
+    required this.sdk,
+    required this.abi,
+    required this.catalogue,
+    required this.commit,
+    required this.dirty,
+    required this.profile,
+    required this.target,
+    required this.debugAssertions,
+    required this.optimised,
+    required this.sanitizer,
+    required this.rustc,
+  });
+
+  /// Reads the document `ts_build_info` hands out.
+  factory BuildInfo.of(String json) {
+    final Map<String, Object?> document;
+    try {
+      document = jsonDecode(json) as Map<String, Object?>;
+    } on FormatException catch (error) {
+      throw StateError('the library did not describe its build: $error');
+    }
+    String text(String key) => '${document[key] ?? ''}';
+    int number(String key) => (document[key] as num?)?.toInt() ?? 0;
+    bool flag(String key) => document[key] == true;
+    return BuildInfo(
+      sdk: text('sdk'),
+      abi: number('abi'),
+      catalogue: number('catalogue'),
+      commit: text('commit'),
+      dirty: flag('dirty'),
+      profile: text('profile'),
+      target: text('target'),
+      debugAssertions: flag('debug_assertions'),
+      optimised: flag('optimised'),
+      sanitizer: text('sanitizer'),
+      rustc: text('rustc'),
+    );
+  }
+
+  /// The SDK's version.
+  final String sdk;
+
+  /// The ABI the library implements.
+  final int abi;
+
+  /// The catalogue's schema version.
+  final int catalogue;
+
+  /// The commit it was built from, `unknown` outside a checkout.
+  final String commit;
+
+  /// Whether that tree had uncommitted changes.
+  final bool dirty;
+
+  /// The Cargo profile it was built with.
+  final String profile;
+
+  /// The target triple it was built for.
+  final String target;
+
+  /// Whether debug assertions are on.
+  final bool debugAssertions;
+
+  /// Whether it was optimised.
+  final bool optimised;
+
+  /// The sanitizer it carries, empty for none.
+  final String sanitizer;
+
+  /// The compiler that built it.
+  final String rustc;
+
+  @override
+  String toString() =>
+      'Teistro $sdk (ABI $abi) $profile for $target, commit '
+      '${commit.length > 8 ? commit.substring(0, 8) : commit}'
+      '${dirty ? '-dirty' : ''}';
+}
+
+/// Why a build may not be loaded, or null when it may.
+///
+/// A mismatched ABI or version is refused outright: the two halves of a
+/// binding must be one build. A sanitizer build is refused because it
+/// answers differently and slowly and is never chosen by accident. An
+/// unoptimised one is refused only when the loader found it itself,
+/// because naming a path is a deliberate act and a development build is
+/// what a developer means by it.
+String? refuseBuild(BuildInfo info, {required bool named}) {
+  if (info.abi != generatedAbiVersion) {
+    return 'the library implements ABI ${info.abi}, these declarations '
+        'were generated for ABI $generatedAbiVersion';
+  }
+  if (info.sdk != generatedSdkVersion) {
+    return 'the library is Teistro ${info.sdk}, these declarations were '
+        'generated from $generatedSdkVersion';
+  }
+  if (info.sanitizer.isNotEmpty) {
+    return 'the library is a ${info.sanitizer} sanitizer build, which is '
+        'not for use';
+  }
+  if (!named && !info.optimised) {
+    return 'the library found at a searched path is an unoptimised '
+        '${info.profile} build; build it with `--release`, or set '
+        '\$${Teistro.pathVariable} to load this one deliberately';
+  }
+  return null;
 }
 
 /// Closes the callbacks of a provider written in Dart when the context

@@ -5,6 +5,9 @@
 /** The ABI these declarations were generated for; the addon must agree. */
 export declare const ABI_VERSION: 1;
 
+/** The SDK version these declarations were generated from; the addon must be the same build. */
+export declare const SDK_VERSION: "0.0.0";
+
 /**
  * The ABI version of the vtable layout.
  */

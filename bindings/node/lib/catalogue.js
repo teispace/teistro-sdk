@@ -4,6 +4,8 @@
 
 export const ABI_VERSION = 1;
 
+export const SDK_VERSION = "0.0.0";
+
 /**
  * The ABI version of the vtable layout.
  */
