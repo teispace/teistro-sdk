@@ -28,6 +28,10 @@ import 'src/blob.dart';
 import 'src/catalogue.dart';
 import 'src/ffi.dart';
 import 'src/host.dart';
+// Prefixed because the locale's names are its own: `Gender` is a word the
+// catalogue uses too. A consumer that wants them imports
+// `package:teistro/messages.dart`.
+import 'src/messages.dart' as intl;
 
 export 'src/blob.dart';
 export 'src/catalogue.dart';
@@ -311,6 +315,30 @@ final class Context {
   /// Whether the current locale or its fallbacks have a message.
   bool has(String key) => _inner.intlHas(key) == 1;
 
+  /// An entity's forms in the current locale or its fallbacks: its name,
+  /// its prose form, its transliteration, and the glyph and gender the
+  /// locale gives it.
+  intl.EntityForms entity(String key) =>
+      intl.EntityForms.of(_inner.intlEntity(key));
+
+  /// The typed accessors: every message of the SDK's own locale as a
+  /// function of its parameters, and every catalogued entity as its
+  /// forms. A key is spelled once, by the generator, and never by an
+  /// application.
+  ///
+  /// ```dart
+  /// ctx.messages.sdk.reason.grahaInBhava(
+  ///   graha: GrahaKey.jupiter,
+  ///   bhava: 7,
+  /// );
+  /// ctx.messages.sdk.entity.graha.sun.name;
+  /// ```
+  ///
+  /// The types are `package:teistro/messages.dart`.
+  intl.Messages get messages => _messages ??= intl.Messages(_Renderer(this));
+
+  intl.Messages? _messages;
+
   /// Loads a `.tpack` or `.tbundle` file into the locale engine.
   IntlLoaded loadPack(Uint8List bytes) => _inner.intlLoadPack(bytes);
 
@@ -493,6 +521,21 @@ String? refuseBuild(BuildInfo info, {required bool named}) {
         '\$${Teistro.pathVariable} to load this one deliberately';
   }
   return null;
+}
+
+/// A context as the generated accessors read it: text for a message, and
+/// the forms for an entity.
+final class _Renderer implements intl.Renderer {
+  const _Renderer(this._context);
+
+  final Context _context;
+
+  @override
+  String render(String key, [Map<String, Object?> params = const {}]) =>
+      _context.render(key, params.isEmpty ? null : params).text;
+
+  @override
+  intl.EntityForms entity(String key) => _context.entity(key);
 }
 
 /// Closes the callbacks of a provider written in Dart when the context

@@ -5558,6 +5558,21 @@ ts_status ts_intl_locale(const ts_context * context, ts_str * out_locale);
 ts_status ts_intl_has(const ts_context * context, const char * key, uint8_t * out_has);
 
 /**
+ * An entity's forms in the current locale or its fallbacks, as a JSON
+ * object lent until the next call on the context: every form the locale
+ * gives (`name`, `prose`, `iast`, `short`, and any it adds), the
+ * `glyph` when it has one, and the `gender` when the locale marks one.
+ * A key the locale chain does not carry is `UNSUPPORTED`, naming the
+ * locale that was asked.
+ *
+ * The typed accessors each binding generates read entities through this,
+ * so an application spells `graha.SUN` once and never a name.
+ * Safety: `context` must be a live handle; `key` a NUL-terminated string;
+ * `out_json` valid for a write.
+ */
+ts_status ts_intl_entity(const ts_context * context, const char * key, ts_str * out_json);
+
+/**
  * Renders a message with parameters given as a JSON object: a string, an
  * integer, a number or an array is itself; an entity is
  * `{"$entity": "graha.SUN"}`; a date `{"$date": {"calendar": "GREGORIAN",

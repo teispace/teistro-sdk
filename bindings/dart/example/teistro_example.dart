@@ -1,6 +1,7 @@
 // The README's example, kept honest: `cargo xtask check-dart` runs this
 // file, so the README cannot drift from what the binding does.
 
+import 'package:teistro/messages.dart' as intl;
 import 'package:teistro/teistro.dart';
 
 void main() {
@@ -37,13 +38,15 @@ void main() {
   );
   print('the Sun at ${sky.at(0, 0).longitude.toStringAsFixed(4)} degrees');
 
-  // A message in the context's locale.
+  // A message in the context's locale, by its typed accessor, and an
+  // entity's name in that locale.
   print(
-    ctx.render('sdk.reason.grahaInBhava', {
-      'graha': {r'$entity': 'graha.JUPITER'},
-      'bhava': 7,
-    }).text,
+    ctx.messages.sdk.reason.grahaInBhava(
+      graha: intl.GrahaKey.jupiter,
+      bhava: 7,
+    ),
   );
+  print('${ctx.entity('graha.SUN').name} ${ctx.entity('graha.SUN').glyph}');
 
   ctx.dispose();
 }

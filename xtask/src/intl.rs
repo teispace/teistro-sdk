@@ -6,13 +6,18 @@
 
 use std::path::Path;
 
-use teistro_intl::generate::{Model, RustPaths, rust};
+use teistro_intl::generate::{Model, RustPaths, dart, javascript, rust, typescript_declarations};
 use teistro_intl::source::Tree;
 use teistro_intl::validate;
 
 use crate::generated::{Output, check, write};
 
 const MESSAGES: &str = "crates/intl/src/messages.rs";
+/// The typed accessors each binding ships: the same model, in the shape
+/// its language reads (`03-design/intl-engine-and-packs.md`).
+const NODE_MESSAGES: &str = "bindings/node/lib/messages.js";
+const NODE_MESSAGE_TYPES: &str = "bindings/node/lib/messages.d.ts";
+const DART_MESSAGES: &str = "bindings/dart/lib/src/messages.dart";
 
 fn outputs(root: &Path) -> Vec<Output> {
     let tree = Tree::load(&root.join("i18n")).expect("the i18n/ sources load");
@@ -25,10 +30,24 @@ fn outputs(root: &Path) -> Vec<Output> {
     }
     let base = tree.base().expect("the base locale");
     let model = Model::of(base).expect("every base message parses");
-    vec![Output {
-        path: MESSAGES,
-        text: rust(&model, RustPaths::SDK),
-    }]
+    vec![
+        Output {
+            path: MESSAGES,
+            text: rust(&model, RustPaths::SDK),
+        },
+        Output {
+            path: NODE_MESSAGES,
+            text: javascript(&model),
+        },
+        Output {
+            path: NODE_MESSAGE_TYPES,
+            text: typescript_declarations(&model),
+        },
+        Output {
+            path: DART_MESSAGES,
+            text: dart(&model),
+        },
+    ]
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {

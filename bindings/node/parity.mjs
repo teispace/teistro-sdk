@@ -142,6 +142,18 @@ put('render-resolved-from', rendered.resolvedFrom);
 put('render-fallback', rendered.isFallback);
 put('has-message', ctx.has('sdk.reason.grahaInBhava'));
 put('has-missing-message', ctx.has('sdk.nope.missing'));
+put('entity-sun-name', ctx.entity('graha.SUN').name);
+put('entity-sun-iast', ctx.entity('graha.SUN').iast);
+put('entity-sun-glyph', ctx.entity('graha.SUN').glyph);
+put('entity-sun-gender', ctx.entity('graha.SUN').gender);
+put(
+  'message-graha-in-bhava',
+  ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }),
+);
+put(
+  'message-bs-date',
+  ctx.messages.sdk.calendar.BIKRAM_SAMBAT.date.long({ day: 1, monthName: 'बैशाख', year: 2072 }),
+);
 
 // ── Positions ──────────────────────────────────────────────────────────
 const frame = canonicalFrame();

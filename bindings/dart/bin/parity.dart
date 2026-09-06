@@ -12,6 +12,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:teistro/messages.dart' as intl;
 import 'package:teistro/teistro.dart';
 
 final Map<String, String> report = {};
@@ -141,6 +142,25 @@ void main() {
   put('render-fallback', rendered.fallback);
   put('has-message', ctx.has('sdk.reason.grahaInBhava'));
   put('has-missing-message', ctx.has('sdk.nope.missing'));
+  put('entity-sun-name', ctx.entity('graha.SUN').name);
+  put('entity-sun-iast', ctx.entity('graha.SUN').iast);
+  put('entity-sun-glyph', ctx.entity('graha.SUN').glyph);
+  put('entity-sun-gender', ctx.entity('graha.SUN').gender?.key);
+  put(
+    'message-graha-in-bhava',
+    ctx.messages.sdk.reason.grahaInBhava(
+      graha: intl.GrahaKey.jupiter,
+      bhava: 7,
+    ),
+  );
+  put(
+    'message-bs-date',
+    ctx.messages.sdk.calendar.bikramSambat.date.long(
+      day: 1,
+      monthName: 'बैशाख',
+      year: 2072,
+    ),
+  );
 
   // ── Positions ────────────────────────────────────────────────────────
   final frame = teistro.canonicalFrame;

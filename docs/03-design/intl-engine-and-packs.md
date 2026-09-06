@@ -1,6 +1,7 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, written 2026-09-05 from spike 4
+Status: `draft`, revised 2026-09-06 when the typed accessors reached the
+bindings (§9); written 2026-09-05 from spike 4
 (`spikes/04-teistro-intl/README.md`); revised 2026-09-06 when the `intl`
 crate (`crates/intl`, `teistro-intl`) and its command line were built
 from the spike: the SDK's catalogue became the authority for every entity
@@ -289,6 +290,35 @@ regenerating. The TypeScript and Dart surfaces compile clean and reject
 wrong usages (six in TypeScript, five in Dart) as compile errors (spike
 4's harnesses); the Rust surface compiles as part of the crate. Python
 and Java follow the same model with their bindings.
+
+**In the bindings.** `cargo xtask gen intl` writes the accessors into
+both packages beside the Rust ones, and `check-intl` holds all three to
+the sources: `bindings/node/lib/messages.js` with its declarations
+`messages.d.ts` (a `.js` and a `.d.ts` rather than a `.ts`, because the
+package ships no compiler), and `bindings/dart/lib/src/messages.dart`.
+Each accessor wraps its parameters as the engine's JSON takes them
+(`{"$entity": "graha.JUPITER"}`, `{"$date": {...}}`), so a caller passes
+a key or a value and never a tagged object. A context reaches them
+through the layer:
+
+```js
+ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 });
+ctx.entity('graha.SUN').name;
+```
+
+```dart
+ctx.messages.sdk.reason.grahaInBhava(graha: GrahaKey.jupiter, bhava: 7);
+ctx.entity('graha.SUN').name;
+```
+
+An entity's forms come from a boundary entry point of their own,
+`ts_intl_entity`, which hands back every form the locale gives (`name`,
+`prose`, `iast`, `short` and any it adds), the glyph and the gender as a
+JSON object lent until the next call; a key the locale chain does not
+carry is `UNSUPPORTED` naming the locale that was asked. In Dart the
+accessors are their own entry point (`package:teistro/messages.dart`),
+because the locale's names are its own and one of them (`Gender`) is a
+word the catalogue uses too.
 
 ## 10. Performance budget and benchmark
 

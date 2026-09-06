@@ -13,6 +13,7 @@ which is thin on purpose.
 | `lib/catalogue.d.ts`, `lib/catalogue.js` | every enum as a string union with a frozen table beside it, and an id table for the enums a result blob's columns carry | the generator |
 | `lib/types.d.ts` | every boundary struct as a readonly interface, with each member's documentation, unit, range and example | the generator |
 | `lib/blob.d.ts`, `lib/blob.js` | one decoder per result blob, reading the `TSRB` layout into typed-array views over the blob's own bytes | the generator |
+| `lib/messages.js`, `lib/messages.d.ts` | the typed accessors: every message of the SDK's locale as a function of its parameters, every catalogued entity as its forms (`cargo xtask gen intl`) | the generator |
 | `lib/index.js`, `lib/index.d.ts` | the layer a consumer uses: where the addon is, validation at the door, defaults, errors with their field and hint, results decoded on first use | by hand |
 | `native/src/provider.rs` | the port adapter: an ephemeris written in JavaScript bound into the port's vtable | by hand |
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |

@@ -2743,6 +2743,31 @@ impl Context {
         Ok(out_has as _)
     }
 
+    /// An entity's forms in the current locale or its fallbacks, as a JSON
+    /// object lent until the next call on the context: every form the locale
+    /// gives (`name`, `prose`, `iast`, `short`, and any it adds), the
+    /// `glyph` when it has one, and the `gender` when the locale marks one.
+    /// A key the locale chain does not carry is `UNSUPPORTED`, naming the
+    /// locale that was asked.
+    ///
+    /// The typed accessors each binding generates read entities through this,
+    /// so an application spells `graha.SUN` once and never a name.
+    #[napi]
+    pub fn intl_entity(&self, env: Env, key: String) -> Result<String> {
+        let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::strings::TsStr {
+            data: ptr::null(),
+            len: 0,
+        };
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status =
+            unsafe { ffi::intl::ts_intl_entity(self.handle, key.as_ptr(), &raw mut out_json) };
+        self.leave()?;
+        self.check(status)?;
+        Ok(unsafe { text(out_json.data) }.unwrap_or_default())
+    }
+
     /// Renders a message with parameters given as a JSON object: a string, an
     /// integer, a number or an array is itself; an entity is
     /// `{"$entity": "graha.SUN"}`; a date `{"$date": {"calendar": "GREGORIAN",
