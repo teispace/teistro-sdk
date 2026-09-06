@@ -24,9 +24,9 @@ use crate::support::{c_struct, read_in, write_out};
 pub struct TsFrame {
     /// `sizeof(ts_frame)` as the caller compiled it.
     pub struct_size: u32,
-    /// The ayanamsha's catalogue id when `sidereal` is non-zero; ignored
-    /// otherwise. `0xFFFF` names none.
-    /// `api: enum=Ayanamsha example=0`
+    /// The ayanamsha, read only when `sidereal` is set; `0xFFFF` names
+    /// none, which is what a tropical frame carries.
+    /// `api: enum=Ayanamsha nullable example=0`
     pub ayanamsha: u16,
     /// Where the position is seen from; a topocentric frame needs the
     /// request's observer.
@@ -38,20 +38,20 @@ pub struct TsFrame {
     /// Ecliptic or equatorial.
     /// `api: enum=Coordinates example=0`
     pub coordinates: u8,
-    /// Non-zero for the sidereal zodiac, which uses `ayanamsha`.
-    /// `api: example=0`
+    /// The sidereal zodiac, which uses `ayanamsha`; tropical otherwise.
+    /// `api: flag example=0`
     pub sidereal: u8,
-    /// Non-zero when light time is applied.
-    /// `api: example=1`
+    /// Whether light time is applied.
+    /// `api: flag example=1`
     pub light_time: u8,
-    /// Non-zero when annual aberration is applied.
-    /// `api: example=1`
+    /// Whether annual aberration is applied.
+    /// `api: flag example=1`
     pub aberration: u8,
-    /// Non-zero when relativistic deflection is applied.
-    /// `api: example=0`
+    /// Whether relativistic deflection is applied.
+    /// `api: flag example=0`
     pub deflection: u8,
-    /// Non-zero when nutation is applied.
-    /// `api: example=1`
+    /// Whether nutation is applied.
+    /// `api: flag example=1`
     pub nutation: u8,
 }
 

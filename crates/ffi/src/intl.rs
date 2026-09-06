@@ -150,6 +150,7 @@ pub unsafe extern "C" fn ts_intl_has(
 /// an error.
 ///
 /// `api: blob=intl_render`
+/// `api: params_json: nullable`
 ///
 /// # Safety
 ///

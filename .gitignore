@@ -34,6 +34,11 @@ build/
 # Scratch
 /tmp/
 
+# The bindings' built artefacts: the addon Cargo builds and Node loads,
+# and the type-checker a contributor installs beside the consumer.
+bindings/node/native/index.node
+bindings/**/node_modules/
+
 # Spikes: built addons and Dart tool output; results are kept
 spikes/**/native/index.node
 spikes/**/.dart_tool/

@@ -98,7 +98,15 @@ string union with a frozen table, every boundary struct a readonly
 interface with its units, ranges and examples), the catalogue's tables,
 and one decoder per result blob reading columns as views over the blob's
 own bytes; `cargo xtask check-node` runs the decoders against blobs the
-library produced and type-checks a consumer at maximum strictness. The API description (`idl/api.json`, `teistro-idl`) is extracted
+library produced and type-checks a consumer at maximum strictness. The
+Node addon computes for the first time (`bindings/node`, generated napi
+glue over the C ABI with a hand-written layer above it): a context from a
+profile, a settings patch and a locale; dates in every shipped calendar;
+civil times to instants with their zone metadata and the scale
+conversions; messages in any loaded locale; and positions through the
+ephemeris port, decoded from the result blob on first use. A failed call
+is a `TeistroError` carrying the status, the code, the field and the hint
+the library gave. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

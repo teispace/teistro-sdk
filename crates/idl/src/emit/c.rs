@@ -8,7 +8,7 @@ use std::fmt::Write;
 
 use crate::emit::{DocStyle, block_comment, field_doc_with};
 use crate::layout::{Target, struct_layout};
-use crate::model::{Api, Role, TypeRef};
+use crate::model::{Api, FieldDef, Role, TypeRef};
 use crate::names::{c_constant_name, c_enum_member, c_type_name};
 use crate::rules::has_handshake;
 
@@ -134,13 +134,15 @@ fn render_structs(out: &mut String, api: &Api) {
                 .enum_name
                 .as_deref()
                 .map(|e| c_type_name(&api.prefix, e));
+            let doc = format!(
+                "{}{}",
+                field_doc_with(f, DocStyle::Prose, linked.as_deref()),
+                c_note(api, f)
+            );
             let _ = writeln!(
                 out,
                 "{}    {ty} {}{suffix};",
-                block_comment(
-                    &field_doc_with(f, DocStyle::Prose, linked.as_deref()),
-                    "    "
-                ),
+                block_comment(&doc, "    "),
                 f.name
             );
         }
@@ -208,6 +210,29 @@ fn render_layout_checks(out: &mut String, api: &Api) {
         }
     }
     let _ = writeln!(out, "#endif\n");
+}
+
+/// What C needs told that the type does not say: a flag's values, a bit
+/// set's members, an array's count, an optional field's flag.
+fn c_note(api: &Api, f: &FieldDef) -> String {
+    let mut note = String::new();
+    if f.meta.flag {
+        note.push_str(" Non-zero for true, zero for false.");
+    }
+    if let Some(name) = &f.meta.bitset {
+        let _ = write!(
+            note,
+            " A set of `{}`: bit `n` for the member whose value is `n`.",
+            c_type_name(&api.prefix, name)
+        );
+    }
+    if let Some(count) = &f.meta.len {
+        let _ = write!(note, " Points at `{count}` elements.");
+    }
+    if let Some(flag) = &f.meta.present_if {
+        let _ = write!(note, " Read only when `{flag}` is non-zero.");
+    }
+    note
 }
 
 /// The C spelling of a boundary type.
@@ -324,6 +349,7 @@ mod tests {
                             false,
                         ),
                         role: Role::StructIn,
+                        meta: Meta::default(),
                     },
                     ParamDef {
                         name: "out_context".into(),
@@ -337,6 +363,7 @@ mod tests {
                             true,
                         ),
                         role: Role::HandleOut,
+                        meta: Meta::default(),
                     },
                 ],
                 returns: Some(TypeRef::scalar(Scalar::I32)),

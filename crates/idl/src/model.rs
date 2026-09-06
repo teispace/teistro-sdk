@@ -323,6 +323,20 @@ pub struct Meta {
     /// The ABI version an item appeared in, when later than the first.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub since: Option<u32>,
+    /// An integer that carries a boolean (`api: flag`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub flag: bool,
+    /// An integer that carries a set of an enum's members, bit `n` for the
+    /// member with value `n` (`api: bitset=Name`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bitset: Option<String>,
+    /// The field holding this pointer's element count (`api: len=field`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub len: Option<String>,
+    /// The flag field that says whether this one is present
+    /// (`api: present_if=field`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub present_if: Option<String>,
 }
 
 /// An exported integer constant.
@@ -391,6 +405,9 @@ pub enum StructRole {
     Blob,
     /// A table of function pointers a host implements.
     Vtable,
+    /// Caller-allocated arrays the library or a provider writes into,
+    /// with a capacity beside them.
+    Columns,
 }
 
 /// A `#[repr(C)]` struct.
@@ -480,6 +497,11 @@ pub struct ParamDef {
     pub ty: TypeRef,
     /// What the parameter is for.
     pub role: Role,
+    /// Units, ranges, examples and enum links, from an `api:` line of the
+    /// function's documentation that names this parameter
+    /// (`` `api: calendar: enum=Calendar` ``).
+    #[serde(default)]
+    pub meta: Meta,
 }
 
 /// The role of a parameter, inferred from its type and name

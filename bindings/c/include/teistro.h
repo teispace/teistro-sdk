@@ -4228,19 +4228,23 @@ struct ts_position_request {
      */
     uint32_t struct_size;
     /**
-     * `TimeScale::id`.
+     * The scale the instants are on.
+     * Enum: ts_time_scale. Example: 0.
      */
     uint32_t scale;
     /**
-     * `Frame::to_bits`.
+     * The frame the positions are wanted in, packed; `ts_frame_pack`
+     * builds it from a frame's fields and `ts_frame_unpack` reads it back.
+     * Example: 0.
      */
     uint32_t frame_bits;
     /**
-     * Non-zero when speeds are wanted.
+     * Whether speeds are wanted.
+     * Example: 1. Non-zero for true, zero for false.
      */
     uint8_t speeds;
     /**
-     * Non-zero when `observer` is set.
+     * Whether `observer` is set. Non-zero for true, zero for false.
      */
     uint8_t has_observer;
     /**
@@ -4248,11 +4252,12 @@ struct ts_position_request {
      */
     uint8_t reserved[2];
     /**
-     * The observer, read when `has_observer` is non-zero.
+     * The observer, which a topocentric frame needs. Read only when `has_observer` is non-zero.
      */
     ts_observer observer;
     /**
-     * The instants.
+     * The instants, on the request's scale.
+     * Unit: jd. Points at `jd_count` elements.
      */
     const double * jds;
     /**
@@ -4260,7 +4265,8 @@ struct ts_position_request {
      */
     size_t jd_count;
     /**
-     * The bodies as `Body::id`.
+     * The bodies.
+     * Enum: ts_body. Points at `body_count` elements.
      */
     const uint16_t * bodies;
     /**
@@ -4285,34 +4291,38 @@ struct ts_position_columns {
     uint32_t frame_bits;
     /**
      * Longitudes.
+     * Unit: deg. Points at `capacity` elements.
      */
     double * lon;
     /**
      * Latitudes.
+     * Unit: deg. Points at `capacity` elements.
      */
     double * lat;
     /**
-     * Distances.
+     * Distances. Points at `capacity` elements.
      */
     double * dist;
     /**
      * Longitude speeds.
+     * Unit: deg/day. Points at `capacity` elements.
      */
     double * lon_speed;
     /**
      * Latitude speeds.
+     * Unit: deg/day. Points at `capacity` elements.
      */
     double * lat_speed;
     /**
-     * Distance speeds.
+     * Distance speeds. Points at `capacity` elements.
      */
     double * dist_speed;
     /**
-     * Per-cell status codes (`CellStatus::code`).
+     * Per-cell status codes (`CellStatus::code`). Points at `capacity` elements.
      */
     int32_t * status;
     /**
-     * Per-cell sources (`Source::to_bits`).
+     * Per-cell sources (`Source::to_bits`). Points at `capacity` elements.
      */
     uint32_t * source;
     /**
@@ -4508,11 +4518,11 @@ struct ts_capabilities {
      */
     uint32_t struct_size;
     /**
-     * Non-zero when speeds are returned.
+     * Whether speeds are returned. Non-zero for true, zero for false.
      */
     uint8_t speeds;
     /**
-     * Non-zero when identical requests give identical bits.
+     * Whether identical requests give identical bits. Non-zero for true, zero for false.
      */
     uint8_t deterministic;
     /**
@@ -4557,6 +4567,7 @@ struct ts_capabilities {
     double jd_max;
     /**
      * The bodies as ids.
+     * Enum: ts_body. Points at `body_count` elements.
      */
     const uint16_t * bodies;
     /**
@@ -4573,6 +4584,7 @@ struct ts_capabilities {
     uint32_t overrides;
     /**
      * The ayanamshas the override knows, as catalogue ids.
+     * Enum: ts_ayanamsha. Points at `ayanamsha_count` elements.
      */
     const uint16_t * ayanamshas;
     /**
@@ -4580,7 +4592,7 @@ struct ts_capabilities {
      */
     size_t ayanamsha_count;
     /**
-     * The data hashes.
+     * The data hashes. Points at `hash_count` elements.
      */
     const ts_data_hash * hashes;
     /**
@@ -4794,9 +4806,9 @@ struct ts_frame {
      */
     uint32_t struct_size;
     /**
-     * The ayanamsha's catalogue id when `sidereal` is non-zero; ignored
-     * otherwise. `0xFFFF` names none.
-     * Enum: ts_ayanamsha. Example: 0.
+     * The ayanamsha, read only when `sidereal` is set; `0xFFFF` names
+     * none, which is what a tropical frame carries.
+     * Enum: ts_ayanamsha. Example: 0. May be null.
      */
     uint16_t ayanamsha;
     /**
@@ -4816,28 +4828,28 @@ struct ts_frame {
      */
     uint8_t coordinates;
     /**
-     * Non-zero for the sidereal zodiac, which uses `ayanamsha`.
-     * Example: 0.
+     * The sidereal zodiac, which uses `ayanamsha`; tropical otherwise.
+     * Example: 0. Non-zero for true, zero for false.
      */
     uint8_t sidereal;
     /**
-     * Non-zero when light time is applied.
-     * Example: 1.
+     * Whether light time is applied.
+     * Example: 1. Non-zero for true, zero for false.
      */
     uint8_t light_time;
     /**
-     * Non-zero when annual aberration is applied.
-     * Example: 1.
+     * Whether annual aberration is applied.
+     * Example: 1. Non-zero for true, zero for false.
      */
     uint8_t aberration;
     /**
-     * Non-zero when relativistic deflection is applied.
-     * Example: 0.
+     * Whether relativistic deflection is applied.
+     * Example: 0. Non-zero for true, zero for false.
      */
     uint8_t deflection;
     /**
-     * Non-zero when nutation is applied.
-     * Example: 1.
+     * Whether nutation is applied.
+     * Example: 1. Non-zero for true, zero for false.
      */
     uint8_t nutation;
 };
@@ -4858,8 +4870,9 @@ struct ts_calendar_date {
      */
     uint16_t calendar;
     /**
-     * The era's id, or `0xFFFF` when the calendar attaches none.
-     * Enum: ts_era. Example: 7.
+     * The era the calendar attaches, `0xFFFF` for none; filled by the
+     * library and ignored on input.
+     * Enum: ts_era. Example: 7. May be null.
      */
     uint16_t era;
     /**
@@ -4926,8 +4939,9 @@ struct ts_civil_time {
      */
     uint8_t second;
     /**
-     * Non-zero when the time is given; zero for a date-only civil time.
-     * Example: 1.
+     * Whether the time is given; a date-only civil time has none, and the
+     * context's unknown-time policy decides what to do.
+     * Example: 1. Non-zero for true, zero for false.
      */
     uint8_t has_time;
     /**
@@ -5020,8 +5034,8 @@ struct ts_zone_resolution {
      */
     int32_t dst_shift_seconds;
     /**
-     * The warnings as a bit set.
-     * Enum: ts_zone_warning. Example: 0.
+     * What the resolution wants the consumer to know.
+     * Example: 0. A set of `ts_zone_warning`: bit `n` for the member whose value is `n`.
      */
     uint32_t warnings;
     /**
@@ -5061,7 +5075,7 @@ struct ts_zone_resolution {
      */
     uint8_t chosen;
     /**
-     * Non-zero when the time was given rather than supplied by a policy.
+     * Whether the time was given rather than supplied by a policy. Non-zero for true, zero for false.
      */
     uint8_t time_known;
     /**
@@ -5095,11 +5109,11 @@ struct ts_time_conversion {
      */
     uint8_t delta_t_source;
     /**
-     * Non-zero when UTC before 1972 was read as UT1.
+     * Whether UTC before 1972 was read as UT1. Non-zero for true, zero for false.
      */
     uint8_t proleptic_utc;
     /**
-     * Non-zero when `uncertainty_seconds` is meaningful.
+     * Whether `uncertainty_seconds` is meaningful. Non-zero for true, zero for false.
      */
     uint8_t has_uncertainty;
     /**
@@ -5149,7 +5163,7 @@ struct ts_delta_t {
      */
     uint8_t source;
     /**
-     * Non-zero when `uncertainty_seconds` is meaningful.
+     * Whether `uncertainty_seconds` is meaningful. Non-zero for true, zero for false.
      */
     uint8_t has_uncertainty;
     /**

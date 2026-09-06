@@ -288,6 +288,7 @@ fn collect_struct(
         Some("borrowed_string") => StructRole::BorrowedString,
         Some("blob") => StructRole::Blob,
         Some("vtable") => StructRole::Vtable,
+        Some("columns") => StructRole::Columns,
         Some(other) => {
             return Err(ExtractError::new(
                 &source.relative,
@@ -325,6 +326,7 @@ fn collect_callback(t: &syn::ItemType, source: &Source, api: &mut Api) -> Result
                 name,
                 ty,
                 role: Role::Value,
+                meta: Meta::default(),
             })
         })
         .collect::<Result<Vec<_>, _>>()?;
@@ -343,7 +345,7 @@ fn collect_callback(t: &syn::ItemType, source: &Source, api: &mut Api) -> Result
 }
 
 fn collect_function(f: &syn::ItemFn, source: &Source, api: &mut Api) -> Result<(), ExtractError> {
-    let (doc, meta, _) = doc_of(&f.attrs);
+    let (doc, meta, flags) = doc_of(&f.attrs);
     let (doc, safety) = split_safety(&doc);
     let params = f
         .sig
@@ -358,10 +360,12 @@ fn collect_function(f: &syn::ItemFn, source: &Source, api: &mut Api) -> Result<(
                 syn::Pat::Ident(ident) => ident.ident.to_string(),
                 _ => String::from("_"),
             };
+            let meta = flags.params.get(&name).cloned().unwrap_or_default();
             type_ref(&pat.ty, &source.relative).map(|ty| ParamDef {
                 name,
                 ty,
                 role: Role::Value,
+                meta,
             })
         })
         .collect::<Result<Vec<_>, _>>()?;
@@ -418,6 +422,9 @@ struct Flags {
     constant: bool,
     deprecated: bool,
     role: Option<String>,
+    /// The metadata of a function's parameters, by name, from the `api:`
+    /// lines that open with `<parameter>:`.
+    params: std::collections::BTreeMap<String, Meta>,
 }
 
 /// The doc lines of an item, the `api:` metadata pulled out of them, and
@@ -442,7 +449,15 @@ fn doc_of(attrs: &[Attribute]) -> (String, Meta, Flags) {
         let line = s.value();
         let trimmed = line.trim();
         if let Some(rest) = trimmed.strip_prefix("`api:") {
-            parse_meta(rest.trim_end_matches('`').trim(), &mut meta, &mut flags);
+            let rest = rest.trim_end_matches('`').trim();
+            match rest.split_once(':') {
+                // `api: calendar: enum=Calendar` describes one parameter.
+                Some((name, tail)) if is_parameter_name(name) => {
+                    let entry = flags.params.entry(name.trim().to_string()).or_default();
+                    parse_meta(tail.trim(), entry, &mut Flags::default());
+                }
+                _ => parse_meta(rest, &mut meta, &mut flags),
+            }
         } else {
             lines.push(clean_doc(trimmed));
         }
@@ -456,6 +471,18 @@ fn doc_of(attrs: &[Attribute]) -> (String, Meta, Flags) {
     (lines.join("\n"), meta, flags)
 }
 
+/// Whether an `api:` line opens with a parameter's name rather than a
+/// metadata key: lower case and underscores, with no `=` and no space.
+fn is_parameter_name(text: &str) -> bool {
+    let name = text.trim();
+    !name.is_empty()
+        && !name.contains('=')
+        && !name.contains(' ')
+        && name
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+}
+
 fn parse_meta(text: &str, meta: &mut Meta, flags: &mut Flags) {
     for pair in text.split_whitespace() {
         match pair.split_once('=') {
@@ -465,8 +492,12 @@ fn parse_meta(text: &str, meta: &mut Meta, flags: &mut Flags) {
             Some(("enum", value)) => meta.enum_name = Some(value.to_string()),
             Some(("blob", value)) => meta.blob = Some(value.to_string()),
             Some(("since", value)) => meta.since = value.parse().ok(),
+            Some(("bitset", value)) => meta.bitset = Some(value.to_string()),
+            Some(("len", value)) => meta.len = Some(value.to_string()),
+            Some(("present_if", value)) => meta.present_if = Some(value.to_string()),
             Some(("role", value)) => flags.role = Some(value.to_string()),
             None if pair == "nullable" => meta.nullable = true,
+            None if pair == "flag" => meta.flag = true,
             None if pair == "constant" => flags.constant = true,
             _ => {}
         }
@@ -741,14 +772,39 @@ fn check_links(api: &Api) -> Result<(), ExtractError> {
             ));
         }
     }
+    for f in &api.functions {
+        for p in &f.params {
+            if let Some(name) = &p.meta.enum_name {
+                if api.enum_named(name).is_none() {
+                    return Err(ExtractError::new(
+                        &format!("{}({})", f.name, p.name),
+                        format!("`api: {}: enum={name}` names no enum", p.name),
+                    ));
+                }
+            }
+        }
+    }
     for s in &api.structs {
         for f in &s.fields {
-            if let Some(e) = &f.meta.enum_name {
-                if api.enum_named(e).is_none() {
-                    return Err(ExtractError::new(
-                        &format!("{}.{}", s.name, f.name),
-                        format!("`api: enum={e}` names no enum"),
-                    ));
+            let at = format!("{}.{}", s.name, f.name);
+            for (key, name) in [("enum", &f.meta.enum_name), ("bitset", &f.meta.bitset)] {
+                if let Some(name) = name {
+                    if api.enum_named(name).is_none() {
+                        return Err(ExtractError::new(
+                            &at,
+                            format!("`api: {key}={name}` names no enum"),
+                        ));
+                    }
+                }
+            }
+            for (key, name) in [("len", &f.meta.len), ("present_if", &f.meta.present_if)] {
+                if let Some(name) = name {
+                    if !s.fields.iter().any(|other| other.name == *name) {
+                        return Err(ExtractError::new(
+                            &at,
+                            format!("`api: {key}={name}` names no field of `{}`", s.name),
+                        ));
+                    }
                 }
             }
         }

@@ -5,9 +5,11 @@
 //! fails on any difference, so a new entry point, a changed field or a
 //! reworded doc comment can never leave a binding behind.
 
+use std::io::Write as _;
 use std::path::Path;
+use std::process::{Command, Stdio};
 
-use teistro_idl::emit::{c, ts};
+use teistro_idl::emit::{c, node, ts};
 use teistro_idl::sdk::describe;
 
 use crate::generated::{Output, check, write};
@@ -19,6 +21,35 @@ const TS_TABLES: &str = "bindings/node/lib/catalogue.js";
 const TS_TYPES: &str = "bindings/node/lib/types.d.ts";
 const TS_BLOB_TYPES: &str = "bindings/node/lib/blob.d.ts";
 const TS_DECODERS: &str = "bindings/node/lib/blob.js";
+const NAPI_GLUE: &str = "bindings/node/native/src/generated.rs";
+
+/// Rust text as `rustfmt` writes it, so the generated file passes the
+/// format gate. Text rustfmt cannot parse comes back unchanged, and the
+/// gate then says so.
+fn rustfmt(text: &str) -> String {
+    let child = Command::new("rustfmt")
+        .args(["--edition", "2024", "--emit", "stdout", "--quiet"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn();
+    let Ok(mut child) = child else {
+        eprintln!("no `rustfmt` on this machine; the generated glue is written unformatted");
+        return text.to_string();
+    };
+    if let Some(stdin) = child.stdin.as_mut() {
+        let _ = stdin.write_all(text.as_bytes());
+    }
+    match child.wait_with_output() {
+        Ok(output) if output.status.success() => {
+            String::from_utf8(output.stdout).unwrap_or_else(|_| text.to_string())
+        }
+        _ => {
+            eprintln!("`rustfmt` refused the generated glue; it is written unformatted");
+            text.to_string()
+        }
+    }
+}
 
 fn outputs(root: &Path) -> Vec<Output> {
     let api = describe(
@@ -67,6 +98,13 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output {
             path: TS_DECODERS,
             text: ts::decoders(&api),
+        },
+        Output {
+            path: NAPI_GLUE,
+            // Formatted here rather than by `cargo fmt`, because napi's
+            // derive macro reads the source file and a `rustfmt::skip` on
+            // the module stops it finding the class before its `impl`.
+            text: rustfmt(&node::render(&api)),
         },
     ]
 }

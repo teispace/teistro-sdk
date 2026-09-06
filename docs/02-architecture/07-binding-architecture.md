@@ -21,10 +21,11 @@ the port; the description `idl/api.json` extracted from the Rust source
 by `cargo xtask gen ffi` and rendered into `bindings/c/include/teistro.h`
 and the Node binding's five generated files (the enums and their tables,
 the boundary's value types, the result-blob decoders), all gated by
-`check-ffi`. The Node addon and ergonomic layer, the Dart binding, the
-wasm binding, the packaging and the parity gate are next; each is
-generated from the same description by an emitter beside the two that
-exist.
+`check-ffi`. The Node addon (`bindings/node/native`, generated) and its ergonomic
+layer (hand-written, 380 lines) complete that binding but for a
+host-implemented provider. The Dart binding, the wasm binding, the
+packaging and the parity gate are next; each is generated from the same
+description by an emitter beside the three that exist.
 
 ## The description's source
 

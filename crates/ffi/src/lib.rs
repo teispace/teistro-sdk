@@ -116,6 +116,8 @@ pub extern "C" fn ts_default_profile() -> *const c_char {
 
 /// A static NUL-terminated English phrase for a status code; `unknown
 /// status` for a code this build does not know.
+///
+/// `api: status: enum=Status`
 #[unsafe(no_mangle)]
 #[allow(
     unsafe_code,

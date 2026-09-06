@@ -204,8 +204,9 @@ pub struct TsCivilTime {
     /// The second; `60` only for a leap second the table has.
     /// `api: range=[0,60] example=0`
     pub second: u8,
-    /// Non-zero when the time is given; zero for a date-only civil time.
-    /// `api: example=1`
+    /// Whether the time is given; a date-only civil time has none, and the
+    /// context's unknown-time policy decides what to do.
+    /// `api: flag example=1`
     pub has_time: u8,
     /// Nanoseconds within the second.
     /// `api: range=[0,999999999] example=0`
@@ -263,8 +264,8 @@ pub struct TsZoneResolution {
     /// How far a civil time inside a gap was shifted forward, seconds.
     /// `api: unit=s example=0`
     pub dst_shift_seconds: i32,
-    /// The warnings as a bit set.
-    /// `api: enum=TsZoneWarning example=0`
+    /// What the resolution wants the consumer to know.
+    /// `api: bitset=TsZoneWarning example=0`
     pub warnings: u32,
     /// The instant on UTC.
     /// `api: unit=jd example=2446431.2743`
@@ -289,7 +290,8 @@ pub struct TsZoneResolution {
     /// an overlap.
     /// `api: enum=TsChosen example=0`
     pub chosen: u8,
-    /// Non-zero when the time was given rather than supplied by a policy.
+    /// Whether the time was given rather than supplied by a policy.
+    /// `api: flag`
     pub time_known: u8,
     /// Reserved, zero.
     pub reserved: [u8; 3],
@@ -310,9 +312,11 @@ pub struct TsTimeConversion {
     /// What produced the Delta T applied.
     /// `api: enum=TsDeltaTSource example=0`
     pub delta_t_source: u8,
-    /// Non-zero when UTC before 1972 was read as UT1.
+    /// Whether UTC before 1972 was read as UT1.
+    /// `api: flag`
     pub proleptic_utc: u8,
-    /// Non-zero when `uncertainty_seconds` is meaningful.
+    /// Whether `uncertainty_seconds` is meaningful.
+    /// `api: flag`
     pub has_uncertainty: u8,
     /// Reserved, zero.
     pub reserved: u8,
@@ -343,7 +347,8 @@ pub struct TsDeltaT {
     /// What produced it.
     /// `api: enum=TsDeltaTSource example=0`
     pub source: u8,
-    /// Non-zero when `uncertainty_seconds` is meaningful.
+    /// Whether `uncertainty_seconds` is meaningful.
+    /// `api: flag`
     pub has_uncertainty: u8,
     /// Reserved, zero.
     pub reserved: [u8; 2],
@@ -522,6 +527,9 @@ pub unsafe extern "C" fn ts_time_resolve(
 /// The civil date-time of a UTC instant in a zone, in a calendar, with
 /// the resolution that applied.
 ///
+/// `api: calendar: enum=Calendar`
+/// `api: jd_utc: unit=jd`
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `zone` valid for a read; `out_civil`
@@ -645,6 +653,10 @@ fn convert(jd: f64, from: TsScale, to: TsScale, ctx: &TsContext) -> Result<(f64,
 /// model, reporting what was applied. A model that cannot answer for the
 /// instant is `OUT_OF_RANGE`.
 ///
+/// `api: from: enum=TsScale`
+/// `api: to: enum=TsScale`
+/// `api: jd: unit=jd`
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_conversion` valid for a read of
@@ -691,6 +703,8 @@ pub unsafe extern "C" fn ts_time_convert(
 
 /// Delta T (TT less UT1) at a UT1 instant under the context's model, with
 /// what produced it and its uncertainty where the source has one.
+///
+/// `api: jd_ut1: unit=jd`
 ///
 /// # Safety
 ///
