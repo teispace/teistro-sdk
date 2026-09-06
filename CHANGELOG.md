@@ -106,7 +106,11 @@ civil times to instants with their zone metadata and the scale
 conversions; messages in any loaded locale; and positions through the
 ephemeris port, decoded from the result blob on first use. A failed call
 is a `TeistroError` carrying the status, the code, the field and the hint
-the library gave. The API description (`idl/api.json`, `teistro-idl`) is extracted
+the library gave. An ephemeris written in JavaScript answers the SDK for
+the first time: an object with a `positions` callback is bound into the
+port's vtable, asked once for a whole grid, and may refuse a frame by
+answering with nothing, in which case the astronomy layer completes the
+rest from the provider's own frame. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

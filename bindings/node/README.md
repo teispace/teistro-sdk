@@ -14,6 +14,7 @@ which is thin on purpose.
 | `lib/types.d.ts` | every boundary struct as a readonly interface, with each member's documentation, unit, range and example | the generator |
 | `lib/blob.d.ts`, `lib/blob.js` | one decoder per result blob, reading the `TSRB` layout into typed-array views over the blob's own bytes | the generator |
 | `lib/index.js`, `lib/index.d.ts` | the layer a consumer uses: where the addon is, validation at the door, defaults, errors with their field and hint, results decoded on first use | by hand |
+| `native/src/provider.rs` | the port adapter: an ephemeris written in JavaScript bound into the port's vtable | by hand |
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |
 | `typecheck/` | a consumer and the layer's own declarations at maximum strictness, where every wrong usage is a compile error the file asserts | by hand |
 
@@ -38,8 +39,37 @@ console.log(positions.at(0, 0).longitude, positions.provenance.settings_hash);
 
 A context with no provider computes calendars, times and messages;
 positions need one, and `{ testProvider: true }` selects the SDK's
-analytic provider for examples and tests. A host-implemented provider
-comes with the next block of work.
+analytic provider for examples and tests.
+
+## An ephemeris of your own
+
+```js
+const ctx = new Context({
+  provider: {
+    name: 'my-engine',
+    bodies: [Body.Sun, Body.Moon],
+    positions(request) {
+      // One call for the whole grid, never a loop. One value per cell,
+      // instants outermost: cell `i * bodies.length + j` is instant `i`,
+      // body `j`.
+      const cells = request.jds.length * request.bodies.length;
+      return { lon: new Float64Array(cells), status: new Int32Array(cells) };
+    },
+  },
+});
+```
+
+Returning nothing means "not in that frame": the SDK asks again in the
+provider's own frame and completes the rest itself, so an engine that
+computes equatorial positions gets the ecliptic ones for free, each step
+stamped in the result's provenance. A provider that throws reaches the
+caller as a `TeistroError` with its own sentence, because only a code
+crosses the C boundary and the binding knows the message.
+
+The adapter is `native/src/provider.rs`, hand-written like the layer: the
+architecture puts a port adapter in the ergonomic layer because every
+binding wraps its own callback mechanism. What it does is small, because
+the port already carries the machinery.
 
 ## Running the tests
 

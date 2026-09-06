@@ -779,6 +779,454 @@ impl PositionRequest {
     }
 }
 
+/// C columns the provider fills: caller-owned arrays of `capacity` cells,
+/// instants outermost.
+#[napi(object)]
+#[derive(Clone, Debug)]
+pub struct PositionColumns {
+    /// Written by the provider: `Frame::to_bits` of the values.
+    pub frame_bits: u32,
+    /// Longitudes.
+    /// Unit: deg.
+    pub lon: Vec<f64>,
+    /// Latitudes.
+    /// Unit: deg.
+    pub lat: Vec<f64>,
+    /// Distances.
+    pub dist: Vec<f64>,
+    /// Longitude speeds.
+    /// Unit: deg/day.
+    pub lon_speed: Vec<f64>,
+    /// Latitude speeds.
+    /// Unit: deg/day.
+    pub lat_speed: Vec<f64>,
+    /// Distance speeds.
+    pub dist_speed: Vec<f64>,
+    /// Per-cell status codes (`CellStatus::code`).
+    pub status: Vec<i32>,
+    /// Per-cell sources (`Source::to_bits`).
+    pub source: Vec<u32>,
+}
+
+/// What a `PositionColumns` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldPositionColumns {
+    frame_bits: u32,
+    lon: Vec<f64>,
+    lat: Vec<f64>,
+    dist: Vec<f64>,
+    lon_speed: Vec<f64>,
+    lat_speed: Vec<f64>,
+    dist_speed: Vec<f64>,
+    status: Vec<i32>,
+    source: Vec<u32>,
+}
+
+impl HeldPositionColumns {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> port::vtable::PositionColumnsC {
+        port::vtable::PositionColumnsC {
+            struct_size: core::mem::size_of::<port::vtable::PositionColumnsC>() as u32,
+            frame_bits: self.frame_bits,
+            lon: self.lon.as_ptr().cast_mut(),
+            lat: self.lat.as_ptr().cast_mut(),
+            dist: self.dist.as_ptr().cast_mut(),
+            lon_speed: self.lon_speed.as_ptr().cast_mut(),
+            lat_speed: self.lat_speed.as_ptr().cast_mut(),
+            dist_speed: self.dist_speed.as_ptr().cast_mut(),
+            status: self.status.as_ptr().cast_mut(),
+            source: self.source.as_ptr().cast_mut(),
+            capacity: self.lon.len(),
+        }
+    }
+}
+
+impl PositionColumns {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldPositionColumns> {
+        Ok(HeldPositionColumns {
+            frame_bits: self.frame_bits as u32,
+            lon: self.lon.iter().map(|v| *v as f64).collect(),
+            lat: self.lat.iter().map(|v| *v as f64).collect(),
+            dist: self.dist.iter().map(|v| *v as f64).collect(),
+            lon_speed: self.lon_speed.iter().map(|v| *v as f64).collect(),
+            lat_speed: self.lat_speed.iter().map(|v| *v as f64).collect(),
+            dist_speed: self.dist_speed.iter().map(|v| *v as f64).collect(),
+            status: self.status.iter().map(|v| *v as i32).collect(),
+            source: self.source.iter().map(|v| *v as u32).collect(),
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &port::vtable::PositionColumnsC) -> Self {
+        PositionColumns {
+            frame_bits: raw.frame_bits as _,
+            lon: unsafe { slice_or_empty(raw.lon.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            lat: unsafe { slice_or_empty(raw.lat.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            dist: unsafe { slice_or_empty(raw.dist.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            lon_speed: unsafe { slice_or_empty(raw.lon_speed.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            lat_speed: unsafe { slice_or_empty(raw.lat_speed.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            dist_speed: unsafe { slice_or_empty(raw.dist_speed.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            status: unsafe { slice_or_empty(raw.status.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            source: unsafe { slice_or_empty(raw.source.cast_const(), raw.capacity) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+        }
+    }
+}
+
+/// A C obliquity.
+#[napi(object)]
+#[derive(Clone, Debug)]
+pub struct Obliquity {
+    /// Mean obliquity, degrees.
+    pub mean_deg: f64,
+    /// True obliquity, degrees.
+    pub true_deg: f64,
+    /// Nutation in longitude, degrees.
+    pub nutation_lon_deg: f64,
+    /// Nutation in obliquity, degrees.
+    pub nutation_obl_deg: f64,
+}
+
+/// What a `Obliquity` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldObliquity {
+    mean_deg: f64,
+    true_deg: f64,
+    nutation_lon_deg: f64,
+    nutation_obl_deg: f64,
+}
+
+impl HeldObliquity {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> port::vtable::ObliquityC {
+        port::vtable::ObliquityC {
+            mean_deg: self.mean_deg,
+            true_deg: self.true_deg,
+            nutation_lon_deg: self.nutation_lon_deg,
+            nutation_obl_deg: self.nutation_obl_deg,
+        }
+    }
+}
+
+impl Obliquity {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldObliquity> {
+        Ok(HeldObliquity {
+            mean_deg: self.mean_deg as f64,
+            true_deg: self.true_deg as f64,
+            nutation_lon_deg: self.nutation_lon_deg as f64,
+            nutation_obl_deg: self.nutation_obl_deg as f64,
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &port::vtable::ObliquityC) -> Self {
+        Obliquity {
+            mean_deg: raw.mean_deg as _,
+            true_deg: raw.true_deg as _,
+            nutation_lon_deg: raw.nutation_lon_deg as _,
+            nutation_obl_deg: raw.nutation_obl_deg as _,
+        }
+    }
+}
+
+/// A C horizon-event request.
+#[napi(object)]
+#[derive(Clone, Debug)]
+pub struct HorizonRequest {
+    /// `Body::id`.
+    pub body: u32,
+    /// `HorizonEventKind::id`.
+    pub kind: u32,
+    /// `DiscPoint::id`.
+    pub disc: u32,
+    /// `Refraction::id`.
+    pub refraction: u32,
+    /// The place.
+    pub observer: Observer,
+    /// The search begins here, UT1.
+    pub from_jd_ut1: f64,
+    /// The search ends this many days later.
+    pub window_days: f64,
+    /// The altitude of the disc point at the event, degrees.
+    pub altitude_deg: f64,
+}
+
+/// What a `HorizonRequest` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldHorizonRequest {
+    body: u16,
+    kind: u8,
+    disc: u8,
+    refraction: u8,
+    observer: HeldObserver,
+    from_jd_ut1: f64,
+    window_days: f64,
+    altitude_deg: f64,
+}
+
+impl HeldHorizonRequest {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> port::vtable::HorizonRequestC {
+        port::vtable::HorizonRequestC {
+            struct_size: core::mem::size_of::<port::vtable::HorizonRequestC>() as u32,
+            body: self.body,
+            kind: self.kind,
+            disc: self.disc,
+            refraction: self.refraction,
+            reserved: Default::default(),
+            observer: self.observer.as_c(),
+            from_jd_ut1: self.from_jd_ut1,
+            window_days: self.window_days,
+            altitude_deg: self.altitude_deg,
+        }
+    }
+}
+
+impl HorizonRequest {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldHorizonRequest> {
+        Ok(HeldHorizonRequest {
+            body: self.body as u16,
+            kind: self.kind as u8,
+            disc: self.disc as u8,
+            refraction: self.refraction as u8,
+            observer: self.observer.read()?,
+            from_jd_ut1: self.from_jd_ut1 as f64,
+            window_days: self.window_days as f64,
+            altitude_deg: self.altitude_deg as f64,
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &port::vtable::HorizonRequestC) -> Self {
+        HorizonRequest {
+            body: raw.body as _,
+            kind: raw.kind as _,
+            disc: raw.disc as _,
+            refraction: raw.refraction as _,
+            observer: unsafe { Observer::write(&raw.observer) },
+            from_jd_ut1: raw.from_jd_ut1 as _,
+            window_days: raw.window_days as _,
+            altitude_deg: raw.altitude_deg as _,
+        }
+    }
+}
+
+/// A C crossings request.
+#[napi(object)]
+#[derive(Clone, Debug)]
+pub struct CrossingRequest {
+    /// `Frame::to_bits`.
+    pub frame_bits: u32,
+    /// `Quantity::kind_id`: 0 a longitude, 1 a speed, 2 a composite.
+    pub quantity_kind: u32,
+    /// Whether `observer` is set.
+    pub has_observer: u32,
+    /// `Body::id` of the first body.
+    pub first_body: u32,
+    /// `Body::id` of the second body of a composite; else zero.
+    pub second_body: u32,
+    /// The first body's coefficient in a composite.
+    pub coefficient_a: f64,
+    /// The second body's coefficient in a composite.
+    pub coefficient_b: f64,
+    /// The lattice's first line, degrees.
+    pub origin_deg: f64,
+    /// The lattice's spacing, degrees; zero for a single target.
+    pub step_deg: f64,
+    /// The window's start, UT1.
+    pub from_jd_ut1: f64,
+    /// The window's end, UT1.
+    pub to_jd_ut1: f64,
+    /// How closely each instant is placed, days.
+    pub tolerance_days: f64,
+    /// The observer, read when `has_observer` is set.
+    pub observer: Observer,
+}
+
+/// What a `CrossingRequest` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldCrossingRequest {
+    frame_bits: u32,
+    quantity_kind: u8,
+    has_observer: u8,
+    first_body: u16,
+    second_body: u16,
+    coefficient_a: f64,
+    coefficient_b: f64,
+    origin_deg: f64,
+    step_deg: f64,
+    from_jd_ut1: f64,
+    to_jd_ut1: f64,
+    tolerance_days: f64,
+    observer: HeldObserver,
+}
+
+impl HeldCrossingRequest {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> port::vtable::CrossingRequestC {
+        port::vtable::CrossingRequestC {
+            struct_size: core::mem::size_of::<port::vtable::CrossingRequestC>() as u32,
+            frame_bits: self.frame_bits,
+            quantity_kind: self.quantity_kind,
+            has_observer: self.has_observer,
+            reserved: Default::default(),
+            first_body: self.first_body,
+            second_body: self.second_body,
+            coefficient_a: self.coefficient_a,
+            coefficient_b: self.coefficient_b,
+            origin_deg: self.origin_deg,
+            step_deg: self.step_deg,
+            from_jd_ut1: self.from_jd_ut1,
+            to_jd_ut1: self.to_jd_ut1,
+            tolerance_days: self.tolerance_days,
+            observer: self.observer.as_c(),
+        }
+    }
+}
+
+impl CrossingRequest {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldCrossingRequest> {
+        Ok(HeldCrossingRequest {
+            frame_bits: self.frame_bits as u32,
+            quantity_kind: self.quantity_kind as u8,
+            has_observer: self.has_observer as u8,
+            first_body: self.first_body as u16,
+            second_body: self.second_body as u16,
+            coefficient_a: self.coefficient_a as f64,
+            coefficient_b: self.coefficient_b as f64,
+            origin_deg: self.origin_deg as f64,
+            step_deg: self.step_deg as f64,
+            from_jd_ut1: self.from_jd_ut1 as f64,
+            to_jd_ut1: self.to_jd_ut1 as f64,
+            tolerance_days: self.tolerance_days as f64,
+            observer: self.observer.read()?,
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &port::vtable::CrossingRequestC) -> Self {
+        CrossingRequest {
+            frame_bits: raw.frame_bits as _,
+            quantity_kind: raw.quantity_kind as _,
+            has_observer: raw.has_observer as _,
+            first_body: raw.first_body as _,
+            second_body: raw.second_body as _,
+            coefficient_a: raw.coefficient_a as _,
+            coefficient_b: raw.coefficient_b as _,
+            origin_deg: raw.origin_deg as _,
+            step_deg: raw.step_deg as _,
+            from_jd_ut1: raw.from_jd_ut1 as _,
+            to_jd_ut1: raw.to_jd_ut1 as _,
+            tolerance_days: raw.tolerance_days as _,
+            observer: unsafe { Observer::write(&raw.observer) },
+        }
+    }
+}
+
+/// A C crossing event.
+#[napi(object)]
+#[derive(Clone, Debug)]
+pub struct CrossingEvent {
+    /// The instant, UT1.
+    pub jd_ut1: f64,
+    /// The boundary reached, degrees.
+    pub boundary_deg: f64,
+    /// `Direction::id`.
+    pub direction: u32,
+}
+
+/// What a `CrossingEvent` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldCrossingEvent {
+    jd_ut1: f64,
+    boundary_deg: f64,
+    direction: u8,
+}
+
+impl HeldCrossingEvent {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> port::vtable::CrossingEventC {
+        port::vtable::CrossingEventC {
+            jd_ut1: self.jd_ut1,
+            boundary_deg: self.boundary_deg,
+            direction: self.direction,
+            reserved: Default::default(),
+        }
+    }
+}
+
+impl CrossingEvent {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldCrossingEvent> {
+        Ok(HeldCrossingEvent {
+            jd_ut1: self.jd_ut1 as f64,
+            boundary_deg: self.boundary_deg as f64,
+            direction: self.direction as u8,
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &port::vtable::CrossingEventC) -> Self {
+        CrossingEvent {
+            jd_ut1: raw.jd_ut1 as _,
+            boundary_deg: raw.boundary_deg as _,
+            direction: raw.direction as _,
+        }
+    }
+}
+
 /// A SHA-256 as thirty-two bytes; every hash the SDK reports in
 /// provenance is one, rendered as sixty-four hex digits in JSON.
 #[napi(object)]
@@ -1777,6 +2225,8 @@ pub struct TimeCivilResult {
 #[napi]
 pub struct Context {
     handle: *mut ffi::context::TsContext,
+    /// The host-implemented provider, alive while the handle is.
+    host: Option<crate::provider::Host>,
 }
 
 // SAFETY: a context is used by one thread at a time, which is the contract
@@ -1794,10 +2244,25 @@ impl Context {
     /// on failure, when `out_error` is not null, it receives the error's
     /// message as a string to free with `ts_string_free`.
     #[napi(constructor)]
-    pub fn new(options: Option<ContextOptions>) -> Result<Self> {
+    pub fn new(
+        options: Option<ContextOptions>,
+        provider: Option<crate::provider::ProviderInfo>,
+        provider_positions: Option<Function<FnArgs<(PositionRequest,)>, Option<PositionColumns>>>,
+    ) -> Result<Self> {
         let held_options = options.map(|v| v.read()).transpose()?;
         let raw_options = held_options.as_ref().map(HeldContextOptions::as_c);
         let options = raw_options.as_ref().map_or(ptr::null(), |v| &raw const *v);
+        let host = match (provider, provider_positions) {
+            (Some(info), Some(callback)) => Some(crate::provider::Host::bind(info, &callback)?),
+            (None, None) => None,
+            _ => {
+                return Err(Error::from_reason(
+                    "a provider needs both its description and its positions callback",
+                ));
+            }
+        };
+        let (host_vtable, user_data) = crate::provider::parts(host.as_ref());
+        let provider = host_vtable.as_ref().map_or(ptr::null(), |v| &raw const *v);
         let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
         let mut out_error = ffi::strings::TsString::empty();
         // SAFETY: every pointer is valid for the call; the handle is owned
@@ -1805,8 +2270,8 @@ impl Context {
         let status = unsafe {
             ffi::context::ts_context_new(
                 options,
-                ptr::null(),
-                ptr::null_mut(),
+                provider,
+                user_data,
                 &raw mut handle,
                 &raw mut out_error,
             )
@@ -1819,7 +2284,7 @@ impl Context {
                 message
             }));
         }
-        Ok(Context { handle })
+        Ok(Context { handle, host })
     }
 
     /// The outcome of the last call on this context, which the layer
@@ -1857,16 +2322,33 @@ impl Context {
         Err(Error::from_reason(message))
     }
 
+    /// Lends the environment to the host provider for one call.
+    fn enter(&self, env: Env) {
+        if let Some(host) = self.host.as_ref() {
+            host.enter(env);
+        }
+    }
+
+    /// Takes it back, and reports what the provider threw.
+    fn leave(&self) -> Result<()> {
+        match self.host.as_ref() {
+            Some(host) => host.leave(),
+            None => Ok(()),
+        }
+    }
+
     /// The id of the profile the context's settings came from, lent until the
     /// next call on the context.
     #[napi]
-    pub fn profile(&self) -> Result<String> {
+    pub fn profile(&self, env: Env) -> Result<String> {
         let mut out_profile = ffi::strings::TsStr {
             data: ptr::null(),
             len: 0,
         };
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::context::ts_context_profile(self.handle, &raw mut out_profile) };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { text(out_profile.data) }.unwrap_or_default())
     }
@@ -1875,11 +2357,13 @@ impl Context {
     /// the caller; free it with `ts_string_free`. Two contexts with the same
     /// document compute the same numbers.
     #[napi]
-    pub fn settings_json(&self) -> Result<String> {
+    pub fn settings_json(&self, env: Env) -> Result<String> {
         let mut out_json = ffi::strings::TsString::empty();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
             unsafe { ffi::context::ts_context_settings_json(self.handle, &raw mut out_json) };
+        self.leave()?;
         self.check(status)?;
         Ok(take_string(&mut out_json))
     }
@@ -1887,14 +2371,16 @@ impl Context {
     /// The SHA-256 of the canonical settings document: the `settings_hash`
     /// every result's provenance carries.
     #[napi]
-    pub fn settings_hash(&self) -> Result<Hash> {
+    pub fn settings_hash(&self, env: Env) -> Result<Hash> {
         // SAFETY: every field is a plain integer, float or pointer, so
         // all-zero is a valid value; a size, where the struct has one, is set
         // before the call reads it.
         let mut out_hash: ffi::strings::TsHash = unsafe { core::mem::zeroed() };
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
             unsafe { ffi::context::ts_context_settings_hash(self.handle, &raw mut out_hash) };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { Hash::write(&out_hash) })
     }
@@ -1903,11 +2389,13 @@ impl Context {
     /// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
     /// the hint in the context's last error.
     #[napi]
-    pub fn key_parse(&self, key: String) -> Result<u32> {
+    pub fn key_parse(&self, env: Env, key: String) -> Result<u32> {
         let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
         let mut out_id: u32 = Default::default();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::keys::ts_key_parse(self.handle, key.as_ptr(), &raw mut out_id) };
+        self.leave()?;
         self.check(status)?;
         Ok(out_id as _)
     }
@@ -1915,26 +2403,34 @@ impl Context {
     /// The full key of a packed id (`graha.SUN`), lent until the next call on
     /// the context. An id no catalogued member has is `UNSUPPORTED`.
     #[napi]
-    pub fn key_name(&self, id: u32) -> Result<String> {
+    pub fn key_name(&self, env: Env, id: u32) -> Result<String> {
         let mut out_key = ffi::strings::TsStr {
             data: ptr::null(),
             len: 0,
         };
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::keys::ts_key_name(self.handle, id as u32, &raw mut out_key) };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { text(out_key.data) }.unwrap_or_default())
     }
 
     /// The date a fixed day falls on in a calendar.
     #[napi]
-    pub fn calendar_from_fixed(&self, calendar: String, fixed: i64) -> Result<CalendarDate> {
+    pub fn calendar_from_fixed(
+        &self,
+        env: Env,
+        calendar: String,
+        fixed: i64,
+    ) -> Result<CalendarDate> {
         let calendar = calendar_from_str(&calendar)? as u16;
         // SAFETY: every field is a plain integer, float or pointer, so
         // all-zero is a valid value; a size, where the struct has one, is set
         // before the call reads it.
         let mut out_date: ffi::calendar::TsCalendarDate = unsafe { core::mem::zeroed() };
         out_date.struct_size = core::mem::size_of::<ffi::calendar::TsCalendarDate>() as u32;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::calendar::ts_calendar_from_fixed(
@@ -1944,6 +2440,7 @@ impl Context {
                 &raw mut out_date,
             )
         };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { CalendarDate::write(&out_date) })
     }
@@ -1951,21 +2448,28 @@ impl Context {
     /// The fixed day of a date, validated: a date the calendar does not have
     /// is `INVALID_ARG` with the `NONEXISTENT_DATE` detail.
     #[napi]
-    pub fn calendar_to_fixed(&self, date: CalendarDate) -> Result<i64> {
+    pub fn calendar_to_fixed(&self, env: Env, date: CalendarDate) -> Result<i64> {
         let held_date = date.read()?;
         let raw_date = held_date.as_c();
         let date = &raw const raw_date;
         let mut out_fixed: i64 = Default::default();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
             unsafe { ffi::calendar::ts_calendar_to_fixed(self.handle, date, &raw mut out_fixed) };
+        self.leave()?;
         self.check(status)?;
         Ok(out_fixed as _)
     }
 
     /// Converts a date into another calendar.
     #[napi]
-    pub fn calendar_convert(&self, date: CalendarDate, into: String) -> Result<CalendarDate> {
+    pub fn calendar_convert(
+        &self,
+        env: Env,
+        date: CalendarDate,
+        into: String,
+    ) -> Result<CalendarDate> {
         let held_date = date.read()?;
         let raw_date = held_date.as_c();
         let date = &raw const raw_date;
@@ -1975,19 +2479,28 @@ impl Context {
         // before the call reads it.
         let mut out_date: ffi::calendar::TsCalendarDate = unsafe { core::mem::zeroed() };
         out_date.struct_size = core::mem::size_of::<ffi::calendar::TsCalendarDate>() as u32;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::calendar::ts_calendar_convert(self.handle, date, into, &raw mut out_date)
         };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { CalendarDate::write(&out_date) })
     }
 
     /// The length of a month in a calendar.
     #[napi]
-    pub fn calendar_month_length(&self, calendar: String, year: i32, month: u32) -> Result<u32> {
+    pub fn calendar_month_length(
+        &self,
+        env: Env,
+        calendar: String,
+        year: i32,
+        month: u32,
+    ) -> Result<u32> {
         let calendar = calendar_from_str(&calendar)? as u16;
         let mut out_length: u8 = Default::default();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::calendar::ts_calendar_month_length(
@@ -1998,15 +2511,17 @@ impl Context {
                 &raw mut out_length,
             )
         };
+        self.leave()?;
         self.check(status)?;
         Ok(out_length as _)
     }
 
     /// Whether a year is a leap year in a calendar: `1` or `0`.
     #[napi]
-    pub fn calendar_is_leap(&self, calendar: String, year: i32) -> Result<u32> {
+    pub fn calendar_is_leap(&self, env: Env, calendar: String, year: i32) -> Result<u32> {
         let calendar = calendar_from_str(&calendar)? as u16;
         let mut out_leap: u8 = Default::default();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::calendar::ts_calendar_is_leap(
@@ -2016,20 +2531,23 @@ impl Context {
                 &raw mut out_leap,
             )
         };
+        self.leave()?;
         self.check(status)?;
         Ok(out_leap as _)
     }
 
     /// The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
     #[napi]
-    pub fn calendar_weekday(&self, date: CalendarDate) -> Result<u32> {
+    pub fn calendar_weekday(&self, env: Env, date: CalendarDate) -> Result<u32> {
         let held_date = date.read()?;
         let raw_date = held_date.as_c();
         let date = &raw const raw_date;
         let mut out_weekday: u8 = Default::default();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
             unsafe { ffi::calendar::ts_calendar_weekday(self.handle, date, &raw mut out_weekday) };
+        self.leave()?;
         self.check(status)?;
         Ok(out_weekday as _)
     }
@@ -2040,7 +2558,12 @@ impl Context {
     /// names as the hint; a civil time inside a gap under the `error` policy
     /// is `INVALID_ARG` with the `DST_GAP` detail.
     #[napi]
-    pub fn time_resolve(&self, civil: CivilDateTime, zone: ZoneSpec) -> Result<ZoneResolution> {
+    pub fn time_resolve(
+        &self,
+        env: Env,
+        civil: CivilDateTime,
+        zone: ZoneSpec,
+    ) -> Result<ZoneResolution> {
         let held_civil = civil.read()?;
         let raw_civil = held_civil.as_c();
         let civil = &raw const raw_civil;
@@ -2052,10 +2575,12 @@ impl Context {
         // before the call reads it.
         let mut out_resolution: ffi::time::TsZoneResolution = unsafe { core::mem::zeroed() };
         out_resolution.struct_size = core::mem::size_of::<ffi::time::TsZoneResolution>() as u32;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::time::ts_time_resolve(self.handle, civil, zone, &raw mut out_resolution)
         };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { ZoneResolution::write(&out_resolution) })
     }
@@ -2065,6 +2590,7 @@ impl Context {
     #[napi]
     pub fn time_civil(
         &self,
+        env: Env,
         jd_utc: f64,
         zone: ZoneSpec,
         calendar: String,
@@ -2083,6 +2609,7 @@ impl Context {
         // before the call reads it.
         let mut out_resolution: ffi::time::TsZoneResolution = unsafe { core::mem::zeroed() };
         out_resolution.struct_size = core::mem::size_of::<ffi::time::TsZoneResolution>() as u32;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::time::ts_time_civil(
@@ -2094,6 +2621,7 @@ impl Context {
                 &raw mut out_resolution,
             )
         };
+        self.leave()?;
         self.check(status)?;
         Ok(TimeCivilResult {
             civil: unsafe { CivilDateTime::write(&out_civil) },
@@ -2105,7 +2633,13 @@ impl Context {
     /// model, reporting what was applied. A model that cannot answer for the
     /// instant is `OUT_OF_RANGE`.
     #[napi]
-    pub fn time_convert(&self, jd: f64, from: String, to: String) -> Result<TimeConversion> {
+    pub fn time_convert(
+        &self,
+        env: Env,
+        jd: f64,
+        from: String,
+        to: String,
+    ) -> Result<TimeConversion> {
         let from = scale_from_str(&from)? as u32;
         let to = scale_from_str(&to)? as u32;
         // SAFETY: every field is a plain integer, float or pointer, so
@@ -2113,10 +2647,12 @@ impl Context {
         // before the call reads it.
         let mut out_conversion: ffi::time::TsTimeConversion = unsafe { core::mem::zeroed() };
         out_conversion.struct_size = core::mem::size_of::<ffi::time::TsTimeConversion>() as u32;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::time::ts_time_convert(self.handle, jd as f64, from, to, &raw mut out_conversion)
         };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { TimeConversion::write(&out_conversion) })
     }
@@ -2124,15 +2660,17 @@ impl Context {
     /// Delta T (TT less UT1) at a UT1 instant under the context's model, with
     /// what produced it and its uncertainty where the source has one.
     #[napi]
-    pub fn time_delta_t(&self, jd_ut1: f64) -> Result<DeltaT> {
+    pub fn time_delta_t(&self, env: Env, jd_ut1: f64) -> Result<DeltaT> {
         // SAFETY: every field is a plain integer, float or pointer, so
         // all-zero is a valid value; a size, where the struct has one, is set
         // before the call reads it.
         let mut out_delta_t: ffi::time::TsDeltaT = unsafe { core::mem::zeroed() };
         out_delta_t.struct_size = core::mem::size_of::<ffi::time::TsDeltaT>() as u32;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
             unsafe { ffi::time::ts_time_delta_t(self.handle, jd_ut1 as f64, &raw mut out_delta_t) };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { DeltaT::write(&out_delta_t) })
     }
@@ -2141,12 +2679,13 @@ impl Context {
     /// namespace it brings replaces what was loaded under the same keys. A
     /// file that does not verify is `PACK`.
     #[napi]
-    pub fn intl_load_pack(&self, bytes: Buffer) -> Result<IntlLoaded> {
+    pub fn intl_load_pack(&self, env: Env, bytes: Buffer) -> Result<IntlLoaded> {
         // SAFETY: every field is a plain integer, float or pointer, so
         // all-zero is a valid value; a size, where the struct has one, is set
         // before the call reads it.
         let mut out_loaded: ffi::intl::TsIntlLoaded = unsafe { core::mem::zeroed() };
         out_loaded.struct_size = core::mem::size_of::<ffi::intl::TsIntlLoaded>() as u32;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::intl::ts_intl_load_pack(
@@ -2156,6 +2695,7 @@ impl Context {
                 &raw mut out_loaded,
             )
         };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { IntlLoaded::write(&out_loaded) })
     }
@@ -2163,11 +2703,13 @@ impl Context {
     /// Selects the locale every render resolves from; an unknown one is
     /// `UNSUPPORTED` naming the loaded locales.
     #[napi]
-    pub fn intl_set_locale(&self, locale: String) -> Result<()> {
+    pub fn intl_set_locale(&self, env: Env, locale: String) -> Result<()> {
         let locale =
             std::ffi::CString::new(locale).map_err(|e| Error::from_reason(e.to_string()))?;
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_set_locale(self.handle, locale.as_ptr()) };
+        self.leave()?;
         self.check(status)?;
         Ok(())
     }
@@ -2175,24 +2717,28 @@ impl Context {
     /// The locale every render resolves from, lent until the next call on the
     /// context.
     #[napi]
-    pub fn intl_locale(&self) -> Result<String> {
+    pub fn intl_locale(&self, env: Env) -> Result<String> {
         let mut out_locale = ffi::strings::TsStr {
             data: ptr::null(),
             len: 0,
         };
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_locale(self.handle, &raw mut out_locale) };
+        self.leave()?;
         self.check(status)?;
         Ok(unsafe { text(out_locale.data) }.unwrap_or_default())
     }
 
     /// Whether the current locale or its fallbacks have a message: `1` or `0`.
     #[napi]
-    pub fn intl_has(&self, key: String) -> Result<u32> {
+    pub fn intl_has(&self, env: Env, key: String) -> Result<u32> {
         let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
         let mut out_has: u8 = Default::default();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_has(self.handle, key.as_ptr(), &raw mut out_has) };
+        self.leave()?;
         self.check(status)?;
         Ok(out_has as _)
     }
@@ -2208,17 +2754,24 @@ impl Context {
     /// warnings; a missing message renders as its key with a warning, never
     /// an error.
     #[napi]
-    pub fn intl_render(&self, key: String, params_json: Option<String>) -> Result<Buffer> {
+    pub fn intl_render(
+        &self,
+        env: Env,
+        key: String,
+        params_json: Option<String>,
+    ) -> Result<Buffer> {
         let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
         let params_json = params_json
             .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
             .transpose()?;
         let params_json = params_json.as_ref().map_or(ptr::null(), |s| s.as_ptr());
         let mut out_blob = ffi::blob::TsBlob::empty();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::intl::ts_intl_render(self.handle, key.as_ptr(), params_json, &raw mut out_blob)
         };
+        self.leave()?;
         self.check(status)?;
         Ok(take_blob(&mut out_blob))
     }
@@ -2229,14 +2782,16 @@ impl Context {
     /// context without an ephemeris is `CAPABILITY`; a provider failure is
     /// `PROVIDER` with the provider's own code in the last error.
     #[napi]
-    pub fn positions(&self, request: PositionRequest) -> Result<Buffer> {
+    pub fn positions(&self, env: Env, request: PositionRequest) -> Result<Buffer> {
         let held_request = request.read()?;
         let raw_request = held_request.as_c();
         let request = &raw const raw_request;
         let mut out_blob = ffi::blob::TsBlob::empty();
+        self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
             unsafe { ffi::positions::ts_positions(self.handle, request, &raw mut out_blob) };
+        self.leave()?;
         self.check(status)?;
         Ok(take_blob(&mut out_blob))
     }

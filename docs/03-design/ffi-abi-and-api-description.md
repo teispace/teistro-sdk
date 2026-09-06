@@ -267,7 +267,35 @@ checks its ABI against the one the types were generated for, validates at
 the door, fills in defaults, decodes a result on first use rather than
 eagerly, and rethrows a failure as a `TeistroError` carrying the status,
 the code, the detail, the field, the hint and the message key the library
-gave. A host-implemented ephemeris provider is the next block.
+gave. ### A host-implemented provider
+
+An ephemeris written in the binding's own language reaches the SDK
+through the port's vtable, which is what the port exists for (ADR-0002)
+and what decided the toolchain (ADR-0007, finding 1: Diplomat cannot
+express it at all). The adapter is hand-written per binding, as
+`02-architecture/07-binding-architecture.md` says, because each wraps its
+own callback mechanism; what it does is small, because the port carries
+the machinery: a Rust `EphemerisProvider` becomes a vtable through
+`Exported`, whose round trip is tested bit for bit, so the adapter only
+has to be that provider.
+
+In Node (`bindings/node/native/src/provider.rs`) the provider is an
+object with a `name`, the `bodies` it answers and one `positions`
+callback; everything else has a default. The generated class holds the
+bound provider for as long as the handle lives, because the vtable points
+into it, and lends the environment for the length of each call so a
+callback that escaped finds nothing to call into. Four things the
+adapter settles:
+
+| what | how |
+|---|---|
+| the batch shape | one call per grid, never a loop: the request carries the instants, the bodies, the scale, the frame and the observer, and the answer one value per cell |
+| refusing a frame | answering with nothing is `UNSUPPORTED`, so the SDK asks again in the provider's native frame and completes the rest, every step stamped |
+| what a provider may be asked | the port's own `validate` runs before the callback, so a body, an instant or a frame it did not declare is refused by name rather than left for the callback to discover |
+| a failure's words | only a code crosses the C boundary, so the adapter keeps the sentence and the layer above reports it: `the ephemeris provider threw: no data for that instant` |
+
+The Dart binding will need its own adapter over
+`NativeCallable.isolateLocal`; Python's over `Py<PyAny>` with the GIL.
 
 The toolchain: `cargo xtask gen ffi` writes `idl/api.json`,
 `bindings/c/include/teistro.h` and the five Node files; `cargo xtask

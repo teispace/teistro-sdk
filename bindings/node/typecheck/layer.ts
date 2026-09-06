@@ -3,7 +3,14 @@
 // Its own file so a change to `index.d.ts` fails here rather than in an
 // application. Every `@ts-expect-error` is a proof, as in `consumer.ts`.
 
-import type { Body, Calendar, Context, PositionsRequest, Scale } from '../lib/index.js';
+import type {
+  Body,
+  Calendar,
+  Context,
+  EphemerisProvider,
+  PositionsRequest,
+  Scale,
+} from '../lib/index.js';
 
 declare const ctx: Context;
 
@@ -48,3 +55,32 @@ const writeCell = () => {
 };
 
 export { partialObserver, scenario, write, writeCell, wrongScale };
+
+/** An ephemeris written in JavaScript, typed. */
+const provider: EphemerisProvider = {
+  name: 'my-engine',
+  bodies: ['sun', 'moon'],
+  jdRange: [2451545, 2460000],
+  positions(request) {
+    const cells = request.jds.length * request.bodies.length;
+    if (request.frameBits !== 0) return null;
+    return { lon: new Float64Array(cells), status: new Int32Array(cells) };
+  },
+};
+
+// @ts-expect-error a provider names itself and its bodies
+const nameless: EphemerisProvider = { bodies: ['sun'], positions: () => null };
+const wrongBody: EphemerisProvider = {
+  name: 'x',
+  // @ts-expect-error a body is named by its key, not its id
+  bodies: [0],
+  positions: () => null,
+};
+const wrongAnswer: EphemerisProvider = {
+  name: 'x',
+  bodies: ['sun'],
+  // @ts-expect-error a column is numbers, not strings
+  positions: () => ({ lon: ['1'] }),
+};
+
+export { nameless, provider, wrongAnswer, wrongBody };

@@ -80,14 +80,20 @@ export class TeistroError extends Error {
   }
 }
 
-/** Runs a call on the addon and rethrows its failure with everything the library said. */
+/**
+ * Runs a call on the addon and rethrows its failure with everything the
+ * library said. Only a code crosses the C boundary for a provider's own
+ * failure, so when the library reports one the caught message — which
+ * came from the provider, in this language — is the one kept.
+ */
 function guarded(context, call) {
   try {
     return call();
   } catch (cause) {
     const record = context?.lastError?.();
-    if (record) throw new TeistroError(record);
-    throw cause;
+    if (!record) throw cause;
+    const fromProvider = record.status === 'provider' && cause?.message;
+    throw new TeistroError(fromProvider ? { ...record, message: cause.message } : record);
   }
 }
 
@@ -109,6 +115,57 @@ function clean(value) {
     if (kept !== undefined) out[key] = kept;
   }
   return out;
+}
+
+/**
+ * A provider as the addon takes it: its description and its callback,
+ * apart, because the mechanical layer holds a reference to the function
+ * itself rather than a property of an object it does not own.
+ */
+function describeProvider(provider) {
+  if (provider === undefined || provider === null) return [undefined, undefined];
+  if (typeof provider.positions !== 'function') {
+    throw new TypeError('provider: expected a `positions(request)` function');
+  }
+  if (typeof provider.name !== 'string' || provider.name.length === 0) {
+    throw new TypeError('provider: expected a `name`, which every result is stamped with');
+  }
+  if (!Array.isArray(provider.bodies) || provider.bodies.length === 0) {
+    throw new TypeError('provider: expected `bodies`, the catalogue keys it answers');
+  }
+  const info = clean({
+    name: provider.name,
+    bodies: provider.bodies,
+    version: provider.version,
+    dataVersion: provider.dataVersion,
+    jdMin: provider.jdRange?.[0],
+    jdMax: provider.jdRange?.[1],
+    nativeFrameBits: provider.frame === undefined ? undefined : native.framePack(clean(provider.frame)),
+    speeds: provider.speeds,
+    deterministic: provider.deterministic,
+  });
+  // The callback answers with plain arrays; a column left out is zeroes,
+  // which is what a provider that computes no speeds means.
+  const positions = (request) => {
+    const answer = provider.positions(request);
+    // Nothing means "I cannot produce that frame"; the SDK then asks for
+    // the provider's native frame and completes the rest itself.
+    if (answer === null || answer === undefined) return null;
+    const cells = request.jds.length * request.bodies.length;
+    const column = (name) => Array.from(answer[name] ?? new Float64Array(cells));
+    return {
+      frameBits: answer.frameBits ?? request.frameBits,
+      lon: column('lon'),
+      lat: column('lat'),
+      dist: column('dist'),
+      lonSpeed: column('lonSpeed'),
+      latSpeed: column('latSpeed'),
+      distSpeed: column('distSpeed'),
+      status: Array.from(answer.status ?? new Int32Array(cells)),
+      source: Array.from(answer.source ?? new Uint32Array(cells)),
+    };
+  };
+  return [info, positions];
 }
 
 /** A finite number, or a `TypeError` naming the argument. */
@@ -273,9 +330,13 @@ export class Context {
    * @param {string} [options.locale] the locale every render resolves from
    * @param {boolean} [options.testProvider] use the SDK's analytic test
    *   provider, for examples and tests only
+   * @param {object} [options.provider] an ephemeris of your own: `name`,
+   *   `bodies` (their catalogue keys) and `positions(request)`, which
+   *   answers with the columns; everything else has a default
    */
   constructor(options = {}) {
-    const { profile, settings, locale, testProvider = false } = options;
+    const { profile, settings, locale, testProvider = false, provider } = options;
+    const [info, positions] = describeProvider(provider);
     this.#inner = guarded(null, () =>
       new native.Context(
         clean({
@@ -284,6 +345,8 @@ export class Context {
           settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
           locale,
         }),
+        info,
+        positions,
       ),
     );
   }

@@ -7,5 +7,7 @@
 //! actually uses is `bindings/node/lib/index.js`, hand-written and thin.
 
 mod generated;
+mod provider;
 
 pub use generated::*;
+pub use provider::ProviderInfo;
