@@ -145,6 +145,89 @@ fn a_date_converts_to_the_calendar_the_option_names() {
 }
 
 #[test]
+fn a_twelve_hour_clock_reads_as_each_locale_reads_it() {
+    let english = engine("en-Latn");
+    let nepali = engine("ne-Deva-NP");
+    let morning = ClockTime::new(6, 15, 0);
+    let evening = ClockTime::new(18, 5, 30);
+    let midnight = ClockTime::new(0, 0, 0);
+    let noon = ClockTime::new(12, 0, 0);
+
+    // English reads by am and pm.
+    assert_eq!(
+        text(&english, "{$v :time hour12=true}", Value::Time(morning)),
+        "6:15 am"
+    );
+    assert_eq!(
+        text(&english, "{$v :time hour12=true}", Value::Time(evening)),
+        "6:05 pm"
+    );
+    assert_eq!(
+        text(
+            &english,
+            "{$v :time hour12=true style=long}",
+            Value::Time(evening)
+        ),
+        "6:05:30 pm"
+    );
+    assert_eq!(
+        text(&english, "{$v :time hour12=true}", Value::Time(midnight)),
+        "12:00 am",
+        "midnight is twelve, not zero"
+    );
+    assert_eq!(
+        text(&english, "{$v :time hour12=true}", Value::Time(noon)),
+        "12:00 pm"
+    );
+
+    // Nepali reads by the part of the day, in its own digits.
+    assert_eq!(
+        text(&nepali, "{$v :time hour12=true}", Value::Time(morning)),
+        "बिहान ६:१५"
+    );
+    assert_eq!(
+        text(&nepali, "{$v :time hour12=true}", Value::Time(evening)),
+        "साँझ ६:०५"
+    );
+    assert_eq!(
+        text(&nepali, "{$v :time hour12=true}", Value::Time(midnight)),
+        "राति १२:००"
+    );
+    assert_eq!(
+        text(
+            &nepali,
+            "{$v :time hour12=true}",
+            Value::Time(ClockTime::new(14, 30, 0))
+        ),
+        "दिउँसो २:३०"
+    );
+
+    // The clock the option does not ask for is unchanged.
+    assert_eq!(text(&english, "{$v :time}", Value::Time(evening)), "18:05");
+
+    // A date and time takes the option too.
+    let date = CalendarDate::defined(Calendar::Gregorian, 2024, 9, 4);
+    assert_eq!(
+        text(
+            &english,
+            "{$v :datetime hour12=true}",
+            Value::DateTime(date.clone(), morning)
+        ),
+        "2024-09-04, 6:15 am"
+    );
+
+    // A pattern of the caller's own reads the same parameters.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :time pattern=sdk.calendar.time.numeric12}",
+            Value::Time(morning)
+        ),
+        "6:15 am"
+    );
+}
+
+#[test]
 fn times_datetimes_ghatis_and_durations_render_and_pluralise() {
     let english = engine("en-Latn");
     let nepali = engine("ne-Deva-NP");

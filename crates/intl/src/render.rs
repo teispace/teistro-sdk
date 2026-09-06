@@ -277,6 +277,94 @@ fn default_date(style: &NumberStyle, date: &CalendarDate) -> String {
     )
 }
 
+/// The parameters the engine itself supplies to one of its own pattern
+/// messages, which a locale may use whether or not the base locale's
+/// pattern does. A Nepali clock reads by the part of the day and an
+/// English one by am and pm, and neither is inventing a parameter: both
+/// are given every one of them.
+///
+/// ```
+/// use teistro_intl::engine_params;
+///
+/// assert!(engine_params("sdk.calendar.time.numeric12").contains(&"dayPeriod"));
+/// assert!(engine_params("sdk.reason.welcome").is_empty());
+/// ```
+#[must_use]
+pub fn engine_params(key: &str) -> &'static [&'static str] {
+    const TIME: &[&str] = &[
+        "hour",
+        "minute",
+        "second",
+        "hour12",
+        "dayPeriod",
+        "meridiem",
+    ];
+    const DATE: &[&str] = &[
+        "year",
+        "month",
+        "day",
+        "era",
+        "weekday",
+        "weekdayName",
+        "monthName",
+    ];
+    let Some(rest) = key.strip_prefix("sdk.calendar.") else {
+        return &[];
+    };
+    let last = rest.rsplit('.').next().unwrap_or(rest);
+    match last {
+        _ if rest.starts_with("time.") => TIME,
+        "join" => &["date", "time"],
+        "numeric" | "long" | "full" if rest.contains(".date.") => DATE,
+        "monthName" | "monthShort" | "weekdayName" | "weekdayShort" => DATE,
+        _ if rest.starts_with("ghati.") => &["ghati", "pala", "vipala"],
+        _ if rest.starts_with("duration.") => &["n"],
+        _ => &[],
+    }
+}
+
+/// The hour on a twelve-hour clock: midnight and noon are 12.
+const fn hour12(hour: u8) -> u8 {
+    match hour % 12 {
+        0 => 12,
+        h => h,
+    }
+}
+
+/// The part of the day an hour falls in, as the key a locale names it by
+/// (`sdk.calendar.dayPeriod.morning`). The ranges are the same in every
+/// locale for now: night from 20 to 3, morning from 4 to 11, afternoon
+/// from 12 to 15, evening from 16 to 19. A locale whose day divides
+/// elsewhere writes its pattern on `meridiem` or on `hour` instead,
+/// until the sources can carry ranges of their own
+/// (`03-design/intl-engine-and-packs.md`, §13).
+const fn day_period(hour: u8) -> &'static str {
+    match hour {
+        4..=11 => "morning",
+        12..=15 => "afternoon",
+        16..=19 => "evening",
+        _ => "night",
+    }
+}
+
+/// The built-in twelve-hour pattern: `H:MM am`, or `H:MM:SS am`.
+fn default_time12(style: &NumberStyle, time: ClockTime, seconds: bool, meridiem: &str) -> String {
+    let mut out = format!(
+        "{}:{}",
+        style.integer(i64::from(hour12(time.hour))),
+        padded(style, i64::from(time.minute), 2)
+    );
+    if seconds {
+        out.push(':');
+        out.push_str(&padded(style, i64::from(time.second), 2));
+    }
+    if !meridiem.is_empty() {
+        out.push(' ');
+        out.push_str(meridiem);
+    }
+    out
+}
+
 /// The built-in time pattern: `HH:MM`, or `HH:MM:SS`.
 fn default_time(style: &NumberStyle, time: ClockTime, seconds: bool) -> String {
     let mut out = format!(
@@ -1260,7 +1348,8 @@ impl<'a> Eval<'a> {
         let mut text = self.pattern_text(&key, &params, |style| default_date(style, &date));
         if with_time {
             let time = time.unwrap_or_default();
-            let time_text = self.time_text(time, style);
+            let hour12 = options.get("hour12").is_some_and(|v| v == "true");
+            let time_text = self.time_text(time, style, hour12);
             let mut join = Params::new();
             join.insert(String::from("date"), Value::Str(text));
             join.insert(String::from("time"), Value::Str(time_text));
@@ -1278,15 +1367,49 @@ impl<'a> Eval<'a> {
         }
     }
 
-    fn time_text(&mut self, time: ClockTime, style: &str) -> String {
+    /// The parameters a time pattern reads: `hour` (0 to 23), `minute`,
+    /// `second`, `hour12` (1 to 12), `dayPeriod` (the locale's word for
+    /// the part of the day) and `meridiem` (its `am` or `pm`). All six
+    /// are there whatever the clock, so a locale writes the pattern its
+    /// readers expect and the option only chooses which pattern.
+    fn time_params(&mut self, time: ClockTime) -> Params {
         let mut params = Params::new();
         params.insert(String::from("hour"), Value::Int(i64::from(time.hour)));
         params.insert(String::from("minute"), Value::Int(i64::from(time.minute)));
         params.insert(String::from("second"), Value::Int(i64::from(time.second)));
-        let key = format!("sdk.calendar.time.{style}");
+        params.insert(
+            String::from("hour12"),
+            Value::Int(i64::from(hour12(time.hour))),
+        );
+        let period = day_period(time.hour);
+        let meridiem = if time.hour < 12 { "am" } else { "pm" };
+        for (name, key) in [("dayPeriod", period), ("meridiem", meridiem)] {
+            let text = self
+                .text_of_key(&format!("sdk.calendar.dayPeriod.{key}"), &Params::new())
+                .unwrap_or_else(|| String::from(key));
+            params.insert(String::from(name), Value::Str(text));
+        }
+        params
+    }
+
+    fn time_text(&mut self, time: ClockTime, style: &str, hour12: bool) -> String {
+        let params = self.time_params(time);
+        let key = if hour12 {
+            format!("sdk.calendar.time.{style}12")
+        } else {
+            format!("sdk.calendar.time.{style}")
+        };
         let seconds = style != "numeric";
+        let meridiem = match params.get("meridiem") {
+            Some(Value::Str(text)) => text.clone(),
+            _ => String::new(),
+        };
         self.pattern_text(&key, &params, |number_style| {
-            default_time(number_style, time, seconds)
+            if hour12 {
+                default_time12(number_style, time, seconds, &meridiem)
+            } else {
+                default_time(number_style, time, seconds)
+            }
         })
     }
 
@@ -1304,18 +1427,16 @@ impl<'a> Eval<'a> {
         };
         let time = *time;
         let style = options.get("style").map_or("numeric", String::as_str);
+        let hour12 = options.get("hour12").is_some_and(|v| v == "true");
         let text = match options.get("pattern") {
             Some(pattern) => {
-                let mut params = Params::new();
-                params.insert(String::from("hour"), Value::Int(i64::from(time.hour)));
-                params.insert(String::from("minute"), Value::Int(i64::from(time.minute)));
-                params.insert(String::from("second"), Value::Int(i64::from(time.second)));
+                let params = self.time_params(time);
                 let key = pattern.clone();
                 self.pattern_text(&key, &params, |number_style| {
                     default_time(number_style, time, true)
                 })
             }
-            None => self.time_text(time, style),
+            None => self.time_text(time, style, hour12),
         };
         Formatted {
             value: source,

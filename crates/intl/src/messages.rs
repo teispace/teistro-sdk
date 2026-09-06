@@ -464,6 +464,76 @@ pub mod sdk {
 
         }
 
+        /// The `dayPeriod` group.
+        pub mod day_period {
+            /// The message `sdk.calendar.dayPeriod.afternoon`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Afternoon;
+
+            impl crate::TypedMessage for Afternoon {
+                const KEY: &'static str = "sdk.calendar.dayPeriod.afternoon";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+            /// The message `sdk.calendar.dayPeriod.am`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Am;
+
+            impl crate::TypedMessage for Am {
+                const KEY: &'static str = "sdk.calendar.dayPeriod.am";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+            /// The message `sdk.calendar.dayPeriod.evening`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Evening;
+
+            impl crate::TypedMessage for Evening {
+                const KEY: &'static str = "sdk.calendar.dayPeriod.evening";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+            /// The message `sdk.calendar.dayPeriod.morning`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Morning;
+
+            impl crate::TypedMessage for Morning {
+                const KEY: &'static str = "sdk.calendar.dayPeriod.morning";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+            /// The message `sdk.calendar.dayPeriod.night`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Night;
+
+            impl crate::TypedMessage for Night {
+                const KEY: &'static str = "sdk.calendar.dayPeriod.night";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+            /// The message `sdk.calendar.dayPeriod.pm`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Pm;
+
+            impl crate::TypedMessage for Pm {
+                const KEY: &'static str = "sdk.calendar.dayPeriod.pm";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+        }
+
         /// The `duration` group.
         pub mod duration {
             /// The message `sdk.calendar.duration.day`.
@@ -598,6 +668,31 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.time.long12`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Long12 {
+                /// The `hour12` parameter.
+                pub hour12: i64,
+                /// The `meridiem` parameter.
+                pub meridiem: String,
+                /// The `minute` parameter.
+                pub minute: i64,
+                /// The `second` parameter.
+                pub second: i64,
+            }
+
+            impl crate::TypedMessage for Long12 {
+                const KEY: &'static str = "sdk.calendar.time.long12";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("hour12", crate::Value::Int(self.hour12)),
+                        ("meridiem", crate::Value::Str(self.meridiem.clone())),
+                        ("minute", crate::Value::Int(self.minute)),
+                        ("second", crate::Value::Int(self.second)),
+                    ])
+                }
+            }
+
             /// The message `sdk.calendar.time.numeric`.
             #[derive(Clone, Debug, PartialEq)]
             pub struct Numeric {
@@ -612,6 +707,28 @@ pub mod sdk {
                 fn params(&self) -> crate::Params {
                     crate::params([
                         ("hour", crate::Value::Int(self.hour)),
+                        ("minute", crate::Value::Int(self.minute)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.time.numeric12`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Numeric12 {
+                /// The `hour12` parameter.
+                pub hour12: i64,
+                /// The `meridiem` parameter.
+                pub meridiem: String,
+                /// The `minute` parameter.
+                pub minute: i64,
+            }
+
+            impl crate::TypedMessage for Numeric12 {
+                const KEY: &'static str = "sdk.calendar.time.numeric12";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("hour12", crate::Value::Int(self.hour12)),
+                        ("meridiem", crate::Value::Str(self.meridiem.clone())),
                         ("minute", crate::Value::Int(self.minute)),
                     ])
                 }

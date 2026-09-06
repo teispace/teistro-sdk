@@ -1,7 +1,8 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, revised 2026-09-06 when the typed accessors reached the
-bindings (§9); written 2026-09-05 from spike 4
+Status: `draft`, revised 2026-09-06 when the twelve-hour clock and the
+day periods were added (§5); revised the same day when the typed
+accessors reached the bindings (§9); written 2026-09-05 from spike 4
 (`spikes/04-teistro-intl/README.md`); revised 2026-09-06 when the `intl`
 crate (`crates/intl`, `teistro-intl`) and its command line were built
 from the spike: the SDK's catalogue became the authority for every entity
@@ -150,8 +151,8 @@ panics (two property tests).
 | `:list` | list | `type=and\|or` | | list |
 | `:msg` | a key literal | | | none |
 | `:date` | a calendar date | `calendar=<calendar key>`, `style=numeric\|long\|full`, `pattern=<message key>` | | date |
-| `:time` | a time of day | `style=numeric\|long`, `pattern` | | time |
-| `:datetime` | a date with a time | `calendar`, `style`, `pattern` | | date and time |
+| `:time` | a time of day | `style=numeric\|long`, `hour12=true`, `pattern` | | time |
+| `:datetime` | a date with a time | `calendar`, `style`, `hour12=true`, `pattern` | | date and time |
 | `:ghati` | a ghati-pala count | `style=numeric\|long`, `pattern` | | ghati |
 | `:duration` | number | `unit=day\|hour\|minute\|second` | | number |
 
@@ -174,10 +175,24 @@ the message `pattern=` names, with the era's year and short form when
 the date carries an era; `:time` a `ClockTime`; `:datetime` both, joined
 by `datetime.join`; `:ghati` a `Ghati` (the time crate's ghati-pala
 count); `:duration` a count of a unit through the unit's plural message.
+A time pattern is given six parameters whatever the clock: `hour` (0 to
+23), `minute`, `second`, `hour12` (1 to 12, so midnight and noon are
+twelve), `dayPeriod` (the locale's word for the part of the day) and
+`meridiem` (its am or pm). `hour12=true` chooses the locale's
+`sdk.calendar.time.<style>12` pattern instead of `<style>`, and each
+locale writes the one its readers expect: English by am and pm (`6:15
+am`), Nepali by the part of the day (`बिहान ६:१५`). The parts are
+`morning` from 4 to 11, `afternoon` from 12 to 15, `evening` from 16 to
+19 and `night` from 20 to 3, the same ranges in every locale until the
+sources can carry ranges of their own (§13); a locale whose day divides
+elsewhere writes its pattern on `meridiem` or on `hour`. These are the
+engine's own parameters, so validation lets a locale use one the base
+locale's pattern does not (`engine_params`).
+
 A locale that declares no pattern gets the built-in default (the ISO
-order for a date, `HH:MM` for a time, `GG-PP` for a ghati, the number
-and the unit's name for a duration) with a warning that names the
-missing key. A value of the wrong kind warns and renders the fallback
+order for a date, `HH:MM` for a time or `H:MM am` on a twelve-hour
+clock, `GG-PP` for a ghati, the number and the unit's name for a
+duration) with a warning that names the missing key. A value of the wrong kind warns and renders the fallback
 text; a date, time or ghati offers no selection keys.
 
 ## 6. The engine's API
@@ -387,9 +402,11 @@ here.
   loads in call order, later entries replacing earlier ones.
 - The twenty baseline entity types without a catalogue kind, and the
   synonyms the engine's names carry (not a form yet).
-- The date functions' next steps: twelve-hour clocks and day periods,
-  abbreviated month names for Nepali (the locale links the full names),
-  `:duration` over several units at once, and the `zone` option once the
-  time crate's zoned instants cross the port.
+- The date functions' next steps: day-period ranges per locale (the
+  ranges are the same in every locale today, which suits English and
+  Nepali and will not suit every language), abbreviated month names for
+  Nepali (the locale links the full names), `:duration` over several
+  units at once, and the `zone` option once the time crate's zoned
+  instants cross the port.
 - Transliteration, XLIFF, and `migrate baseline` for the four launch
   languages' name tables into `sdk.entity`.

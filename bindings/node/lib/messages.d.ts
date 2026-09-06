@@ -25,7 +25,7 @@ export type VarnaKey = 'varna.BRAHMIN' | 'varna.KSHATRIYA' | 'varna.VAISHYA' | '
 export type YogaKey = 'yoga.VISHKAMBHA' | 'yoga.PRITI' | 'yoga.AYUSHMAN' | 'yoga.SAUBHAGYA' | 'yoga.SHOBHANA' | 'yoga.ATIGANDA' | 'yoga.SUKARMA' | 'yoga.DHRITI' | 'yoga.SHOOLA' | 'yoga.GANDA' | 'yoga.VRIDDHI' | 'yoga.DHRUVA' | 'yoga.VYAGHATA' | 'yoga.HARSHANA' | 'yoga.VAJRA' | 'yoga.SIDDHI' | 'yoga.VYATIPATA' | 'yoga.VARIYANA' | 'yoga.PARIGHA' | 'yoga.SHIVA' | 'yoga.SIDDHA' | 'yoga.SADHYA' | 'yoga.SHUBHA' | 'yoga.SHUKLA' | 'yoga.BRAHMA' | 'yoga.INDRA' | 'yoga.VAIDHRITI';
 export type YoniKey = 'yoni.HORSE' | 'yoni.ELEPHANT' | 'yoni.GOAT' | 'yoni.SERPENT' | 'yoni.DOG' | 'yoni.CAT' | 'yoni.RAT' | 'yoni.COW' | 'yoni.BUFFALO' | 'yoni.TIGER' | 'yoni.DEER' | 'yoni.MONKEY' | 'yoni.MONGOOSE' | 'yoni.LION';
 export type EntityKey = AvasthaBaladiKey | AyanaKey | CharaKarakaKey | DeityKey | DignityKey | EraKey | GanaKey | GrahaKey | KaranaKey | NadiKey | NakshatraKey | PakshaKey | PointKey | RashiKey | RelationshipKey | SamvatsaraKey | TatwaKey | TithiKey | VaraKey | VarnaKey | YogaKey | YoniKey;
-export type MessageKey = 'sdk.calendar.weekdayName' | 'sdk.calendar.weekdayShort' | 'sdk.calendar.GREGORIAN.monthName' | 'sdk.calendar.GREGORIAN.monthShort' | 'sdk.calendar.GREGORIAN.date.numeric' | 'sdk.calendar.GREGORIAN.date.long' | 'sdk.calendar.GREGORIAN.date.full' | 'sdk.calendar.JULIAN.monthName' | 'sdk.calendar.JULIAN.monthShort' | 'sdk.calendar.JULIAN.date.numeric' | 'sdk.calendar.JULIAN.date.long' | 'sdk.calendar.JULIAN.date.full' | 'sdk.calendar.MIXED.monthName' | 'sdk.calendar.MIXED.monthShort' | 'sdk.calendar.MIXED.date.numeric' | 'sdk.calendar.MIXED.date.long' | 'sdk.calendar.MIXED.date.full' | 'sdk.calendar.ISO_WEEK.date.numeric' | 'sdk.calendar.ISO_WEEK.date.long' | 'sdk.calendar.ISO_WEEK.date.full' | 'sdk.calendar.BIKRAM_SAMBAT.monthName' | 'sdk.calendar.BIKRAM_SAMBAT.monthShort' | 'sdk.calendar.BIKRAM_SAMBAT.date.numeric' | 'sdk.calendar.BIKRAM_SAMBAT.date.long' | 'sdk.calendar.BIKRAM_SAMBAT.date.full' | 'sdk.calendar.time.numeric' | 'sdk.calendar.time.long' | 'sdk.calendar.datetime.join' | 'sdk.calendar.ghati.numeric' | 'sdk.calendar.ghati.long' | 'sdk.calendar.duration.day' | 'sdk.calendar.duration.hour' | 'sdk.calendar.duration.minute' | 'sdk.calendar.duration.second' | 'sdk.reason.appName' | 'sdk.reason.welcome' | 'sdk.reason.grahaInBhava' | 'sdk.reason.grahaInRashi' | 'sdk.reason.grahaAt' | 'sdk.reason.exactLongitude' | 'sdk.reason.conjunction' | 'sdk.reason.rashiNature' | 'sdk.reason.greeting' | 'sdk.reason.lordship' | 'sdk.reason.occupants' | 'sdk.reason.strength.score' | 'sdk.reason.strength.rank';
+export type MessageKey = 'sdk.calendar.weekdayName' | 'sdk.calendar.weekdayShort' | 'sdk.calendar.GREGORIAN.monthName' | 'sdk.calendar.GREGORIAN.monthShort' | 'sdk.calendar.GREGORIAN.date.numeric' | 'sdk.calendar.GREGORIAN.date.long' | 'sdk.calendar.GREGORIAN.date.full' | 'sdk.calendar.JULIAN.monthName' | 'sdk.calendar.JULIAN.monthShort' | 'sdk.calendar.JULIAN.date.numeric' | 'sdk.calendar.JULIAN.date.long' | 'sdk.calendar.JULIAN.date.full' | 'sdk.calendar.MIXED.monthName' | 'sdk.calendar.MIXED.monthShort' | 'sdk.calendar.MIXED.date.numeric' | 'sdk.calendar.MIXED.date.long' | 'sdk.calendar.MIXED.date.full' | 'sdk.calendar.ISO_WEEK.date.numeric' | 'sdk.calendar.ISO_WEEK.date.long' | 'sdk.calendar.ISO_WEEK.date.full' | 'sdk.calendar.BIKRAM_SAMBAT.monthName' | 'sdk.calendar.BIKRAM_SAMBAT.monthShort' | 'sdk.calendar.BIKRAM_SAMBAT.date.numeric' | 'sdk.calendar.BIKRAM_SAMBAT.date.long' | 'sdk.calendar.BIKRAM_SAMBAT.date.full' | 'sdk.calendar.time.numeric' | 'sdk.calendar.time.long' | 'sdk.calendar.time.numeric12' | 'sdk.calendar.time.long12' | 'sdk.calendar.datetime.join' | 'sdk.calendar.ghati.numeric' | 'sdk.calendar.ghati.long' | 'sdk.calendar.duration.day' | 'sdk.calendar.duration.hour' | 'sdk.calendar.duration.minute' | 'sdk.calendar.duration.second' | 'sdk.calendar.dayPeriod.am' | 'sdk.calendar.dayPeriod.pm' | 'sdk.calendar.dayPeriod.morning' | 'sdk.calendar.dayPeriod.afternoon' | 'sdk.calendar.dayPeriod.evening' | 'sdk.calendar.dayPeriod.night' | 'sdk.reason.appName' | 'sdk.reason.welcome' | 'sdk.reason.grahaInBhava' | 'sdk.reason.grahaInRashi' | 'sdk.reason.grahaAt' | 'sdk.reason.exactLongitude' | 'sdk.reason.conjunction' | 'sdk.reason.rashiNature' | 'sdk.reason.greeting' | 'sdk.reason.lordship' | 'sdk.reason.occupants' | 'sdk.reason.strength.score' | 'sdk.reason.strength.rank';
 
 export interface DateValue { readonly calendar: string; readonly year: number; readonly month: number; readonly day: number; }
 export interface TimeValue { readonly hour: number; readonly minute: number; readonly second: number; }
@@ -95,6 +95,14 @@ export interface Messages {
       readonly datetime: {
         readonly join: (p: { date: string; time: string }) => string;
       };
+      readonly dayPeriod: {
+        readonly afternoon: () => string;
+        readonly am: () => string;
+        readonly evening: () => string;
+        readonly morning: () => string;
+        readonly night: () => string;
+        readonly pm: () => string;
+      };
       readonly duration: {
         readonly day: (p: { n: number }) => string;
         readonly hour: (p: { n: number }) => string;
@@ -107,7 +115,9 @@ export interface Messages {
       };
       readonly time: {
         readonly long: (p: { hour: number; minute: number; second: number }) => string;
+        readonly long12: (p: { hour12: number; meridiem: string; minute: number; second: number }) => string;
         readonly numeric: (p: { hour: number; minute: number }) => string;
+        readonly numeric12: (p: { hour12: number; meridiem: string; minute: number }) => string;
       };
       readonly weekdayName: (p: { weekday: number }) => string;
       readonly weekdayShort: (p: { weekday: number }) => string;

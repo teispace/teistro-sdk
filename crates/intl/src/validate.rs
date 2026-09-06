@@ -583,8 +583,14 @@ fn check_selectors(
 }
 
 fn check_parity(findings: &mut Findings, tag: &str, key: &str, this: &Signature, base: &Signature) {
+    // The engine's own patterns are rendered with a parameter set it
+    // supplies, so a locale may use one the base locale's pattern does
+    // not: a Nepali clock reads by the part of the day and an English one
+    // by am and pm.
+    let supplied = crate::render::engine_params(key);
     for (name, kind) in &this.params {
         match base.params.get(name) {
+            None if supplied.contains(&name.as_str()) => {}
             None => findings.error(
                 tag,
                 key,
@@ -602,7 +608,7 @@ fn check_parity(findings: &mut Findings, tag: &str, key: &str, this: &Signature,
     // so it uses the base's without naming them.
     if this.links.is_empty() {
         for name in base.params.keys() {
-            if !this.params.contains_key(name) {
+            if !this.params.contains_key(name) && !supplied.contains(&name.as_str()) {
                 findings.warning(tag, key, format!("does not use `${name}`"));
             }
         }
