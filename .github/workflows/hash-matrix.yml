@@ -1,0 +1,83 @@
+# The cross-architecture hash matrix: the same source computes the same
+# numbers, or it says where it does not.
+#
+# `cargo xtask hashes` walks a fixed scenario through the calendars, the
+# astronomy, the house systems and the classical model, and hashes every
+# value's bits per section. This workflow runs it on each architecture we
+# ship for and compares what they print, which is Phase 1's exit criterion
+# "hash-identical across x86-64 and aarch64" (docs/07-roadmap/00-roadmap.md).
+#
+# It runs nightly and on demand rather than on every push: the fast check
+# stays fast (ADR-0014), and a difference here is a property of the
+# toolchain and the platform's maths library, not of a pull request.
+name: hash-matrix
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Nightly, after the day's merges.
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    name: digest (${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: linux-x86_64
+          - os: ubuntu-24.04-arm
+            arch: linux-aarch64
+          - os: macos-latest
+            arch: macos-aarch64
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: What this build computes
+        run: cargo xtask hashes | tee "digest-${{ matrix.arch }}.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.arch }}
+          path: digest-${{ matrix.arch }}.txt
+
+  compare:
+    name: compare
+    needs: digest
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-*
+          merge-multiple: true
+      - name: Every architecture computed the same numbers
+        run: |
+          set -u
+          ls -1 digest-*.txt
+          reference=$(ls -1 digest-*.txt | head -1)
+          echo "## The digests" >> "$GITHUB_STEP_SUMMARY"
+          for file in digest-*.txt; do
+            echo "### ${file}" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat "$file" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+          failures=0
+          for file in digest-*.txt; do
+            if ! diff -u "$reference" "$file" > /dev/null; then
+              echo "::error::${file} differs from ${reference}"
+              diff -u "$reference" "$file" || true
+              failures=$((failures + 1))
+            fi
+          done
+          if [ "$failures" -gt 0 ]; then
+            echo "$failures architecture(s) computed different numbers"
+            exit 1
+          fi
+          echo "every architecture computed the same numbers"

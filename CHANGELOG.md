@@ -146,7 +146,10 @@ translator's own tools and come back: `teistro-intl export xliff` and
 latitude can no longer be passed where a longitude is wanted: the
 description says which quantity a number carries, TypeScript gets a
 branded type and Dart an extension type, and the constructor checks the
-range. The API description (`idl/api.json`, `teistro-idl`) is extracted
+range. Whether the same source computes the same numbers on another
+machine is now measured rather than assumed: `cargo xtask hashes` hashes
+a hundred thousand computed values per build, and the nightly matrix
+compares Linux x86-64, Linux aarch64 and macOS aarch64. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the
