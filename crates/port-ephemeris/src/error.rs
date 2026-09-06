@@ -6,6 +6,8 @@ use core::fmt;
 use serde::Serialize;
 use teistro_core::error::{Error, Status};
 
+use crate::vtable::ProviderCode;
+
 /// Why a provider could not answer. A per-cell failure is a
 /// [`crate::CellStatus`], not an error.
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -51,36 +53,43 @@ impl ProviderError {
     /// codes stay outside `-6` to `-1` and `0`.
     pub const RESERVED_CODES: core::ops::RangeInclusive<i32> = -6..=0;
 
-    /// The stable code at the C boundary.
+    /// The stable code at the C boundary, which every binding reads from
+    /// [`ProviderCode`] rather than writing as a number.
     #[must_use]
     pub fn code(&self) -> i32 {
-        match self {
-            ProviderError::Unsupported { .. } => -1,
-            ProviderError::OutOfRange { .. } => -2,
-            ProviderError::DataMissing { .. } => -3,
-            ProviderError::Refused { .. } => -4,
-            ProviderError::Invalid { .. } => -5,
-            ProviderError::Provider { code, .. } => *code,
-        }
+        let named = match self {
+            ProviderError::Unsupported { .. } => ProviderCode::Unsupported,
+            ProviderError::OutOfRange { .. } => ProviderCode::OutOfRange,
+            ProviderError::DataMissing { .. } => ProviderCode::DataMissing,
+            ProviderError::Refused { .. } => ProviderCode::Refused,
+            ProviderError::Invalid { .. } => ProviderCode::Invalid,
+            ProviderError::Provider { code, .. } => return *code,
+        };
+        named as i32
     }
 
     /// The error a C code stands for, with a context string as detail.
     #[must_use]
     pub fn from_code(code: i32, context: &str) -> ProviderError {
-        match code {
-            -1 => ProviderError::unsupported(context),
-            -2 => ProviderError::OutOfRange { jd: f64::NAN },
-            -3 => ProviderError::DataMissing {
+        if code == ProviderCode::Unsupported as i32 {
+            ProviderError::unsupported(context)
+        } else if code == ProviderCode::OutOfRange as i32 {
+            ProviderError::OutOfRange { jd: f64::NAN }
+        } else if code == ProviderCode::DataMissing as i32 {
+            ProviderError::DataMissing {
                 detail: context.to_string(),
-            },
-            -4 => ProviderError::Refused {
+            }
+        } else if code == ProviderCode::Refused as i32 {
+            ProviderError::Refused {
                 detail: context.to_string(),
-            },
-            -5 => ProviderError::invalid(context),
-            other => ProviderError::Provider {
-                code: other,
+            }
+        } else if code == ProviderCode::Invalid as i32 {
+            ProviderError::invalid(context)
+        } else {
+            ProviderError::Provider {
+                code,
                 detail: context.to_string(),
-            },
+            }
         }
     }
 

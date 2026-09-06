@@ -20,9 +20,10 @@ pub const ABI_VERSION_CONSTANT: &str = "TS_ABI_VERSION";
 /// The sources the boundary is read from, repository-relative, in the
 /// order their items appear in the header: the status, the port's
 /// bodies, scales and vtable, then the C ABI crate module by module.
-pub const SOURCES: [&str; 14] = [
+pub const SOURCES: [&str; 15] = [
     "crates/core/src/error.rs",
     "crates/port-ephemeris/src/body.rs",
+    "crates/port-ephemeris/src/capabilities.rs",
     "crates/port-ephemeris/src/frame.rs",
     "crates/port-ephemeris/src/vtable.rs",
     "crates/ffi/src/lib.rs",

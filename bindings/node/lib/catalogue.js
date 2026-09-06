@@ -1126,6 +1126,24 @@ export const TimeScaleById = new Map([
   [1, 'tt'],
 ]);
 
+/** Every DistanceUnit by name. */
+export const DistanceUnit = Object.freeze({
+  AstronomicalUnits: 'astronomical-units',
+  MeanDistances: 'mean-distances',
+});
+
+/** Every SpeedModel by name. */
+export const SpeedModel = Object.freeze({
+  Derivative: 'derivative',
+  Rule: 'rule',
+});
+
+/** Every Astronomy by name. */
+export const Astronomy = Object.freeze({
+  Modern: 'modern',
+  Classical: 'classical',
+});
+
 /** Every Centre by name. */
 export const Centre = Object.freeze({
   Geocentric: 'geocentric',
@@ -1144,6 +1162,16 @@ export const Equinox = Object.freeze({
 export const Coordinates = Object.freeze({
   Ecliptic: 'ecliptic',
   Equatorial: 'equatorial',
+});
+
+/** Every ProviderCode by name. */
+export const ProviderCode = Object.freeze({
+  Ok: 'ok',
+  Unsupported: 'unsupported',
+  OutOfRange: 'out-of-range',
+  DataMissing: 'data-missing',
+  Refused: 'refused',
+  Invalid: 'invalid',
 });
 
 /** Every Resolution by name. */

@@ -2601,14 +2601,14 @@ final class TeistroContext implements ffi.Finalizable {
   /// until `ts_context_free`. On success `*out_context` owns the context;
   /// on failure, when `out_error` is not null, it receives the error's
   /// message as a string to free with `ts_string_free`.
-  factory TeistroContext(TeistroLibrary lib, {ContextOptions? options}) {
+  factory TeistroContext(TeistroLibrary lib, {ContextOptions? options, ffi.Pointer<ProviderVtableStruct>? provider, ffi.Pointer<ffi.Void>? providerUserData}) {
     rememberLibrary(lib);
     return pkg_ffi.using((arena) {
       final rawoptions = options == null ? ffi.nullptr : arena<ContextOptionsStruct>();
       options?.write(rawoptions, arena);
       final out = arena<ffi.Pointer<Context>>();
       final error = arena<StringStruct>();
-      final status = lib.ts_context_new(rawoptions, ffi.nullptr, ffi.nullptr, out, error);
+      final status = lib.ts_context_new(rawoptions, provider ?? ffi.nullptr, providerUserData ?? ffi.nullptr, out, error);
       if (status != 0) {
         final message = error.ref.data == ffi.nullptr
             ? 'the context could not be built (code $status)'

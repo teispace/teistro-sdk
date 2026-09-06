@@ -3557,15 +3557,6 @@ enum Status {
 /// numbering; a body an adapter cannot compute is reported per cell,
 /// never guessed. The astrological grahas of the catalogue map onto these
 /// under the node knob (Rahu is the mean or the true node).
-///
-/// ```
-/// use teistro_port_ephemeris::Body;
-///
-/// assert_eq!(Body::MeanNode.key(), "MEAN_NODE");
-/// assert_eq!("moon".parse::<Body>().ok(), Some(Body::Moon));
-/// assert_eq!(Body::from_id(Body::Pluto.id()), Some(Body::Pluto));
-/// assert!(!Body::TrueNode.has_distance());
-/// ```
 enum Body {
   /// The Sun.
   sun(0, 'sun'),
@@ -3624,13 +3615,6 @@ enum Body {
 }
 
 /// The time scale of the instants in a request.
-///
-/// ```
-/// use teistro_port_ephemeris::TimeScale;
-///
-/// assert_eq!(TimeScale::from_id(TimeScale::Tt.id()), Some(TimeScale::Tt));
-/// assert_eq!(TimeScale::Ut1.to_string(), "UT1");
-/// ```
 enum TimeScale {
   /// Universal Time (UT1), the scale of civil time and of rise and set.
   ut1(0, 'ut1'),
@@ -3656,6 +3640,115 @@ enum TimeScale {
 
   /// The member with a key, or `null` for one this build does not know.
   static TimeScale? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What a cell's distance is measured in.
+enum DistanceUnit {
+  /// Astronomical units: an ephemeris.
+  astronomicalUnits(0, 'astronomical-units'),
+  /// The body's mean distance, so 1 is the mean: a classical model,
+  /// whose hypotenuse is on the radius.
+  meanDistances(1, 'mean-distances');
+
+  const DistanceUnit(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DistanceUnit byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DistanceUnit'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DistanceUnit? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How a provider's speeds are defined.
+enum SpeedModel {
+  /// The rate of the position: a central difference over a short step
+  /// agrees with it, which the kit checks.
+  derivative(0, 'derivative'),
+  /// A text's rule for the daily motion, which its tradition uses as
+  /// the speed and which need not be the derivative of its places.
+  rule(1, 'rule');
+
+  const SpeedModel(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static SpeedModel byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a SpeedModel'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static SpeedModel? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which astronomy a provider computes.
+enum Astronomy {
+  /// The sky as observed: an ephemeris, whose overrides the kit holds
+  /// to the SDK's IAU routines.
+  modern(0, 'modern'),
+  /// A classical text's model, whose obliquity, precession, daily
+  /// motions and sunrise are the text's own definitions; the kit
+  /// measures their distance from modern astronomy and publishes it
+  /// rather than gating it.
+  classical(1, 'classical');
+
+  const Astronomy(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Astronomy byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Astronomy'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Astronomy? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;
@@ -3762,6 +3855,54 @@ enum Coordinates {
 
   /// The member with a key, or `null` for one this build does not know.
   static Coordinates? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What a vtable function returns: `0` for success, and one of these for
+/// a failure the port names. A provider's own code stays outside them
+/// (`ProviderError::RESERVED_CODES`), so a binding that implements a
+/// provider need never write a number.
+enum ProviderCode {
+  /// The call succeeded.
+  ok(0, 'ok'),
+  /// The operation, the frame or the option is not implemented by this
+  /// provider. A provider that cannot answer in the frame asked for
+  /// says so with this, and the SDK asks again in the provider's own
+  /// frame and completes the rest itself.
+  unsupported(-1, 'unsupported'),
+  /// The instant is outside the provider's coverage.
+  outOfRange(-2, 'out-of-range'),
+  /// A data file the provider needs is missing.
+  dataMissing(-3, 'data-missing'),
+  /// The provider refused rather than answer with something else.
+  refused(-4, 'refused'),
+  /// The request is malformed.
+  invalid(-5, 'invalid');
+
+  const ProviderCode(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static ProviderCode byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a ProviderCode'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ProviderCode? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

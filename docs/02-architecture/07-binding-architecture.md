@@ -30,8 +30,9 @@ with nothing, and reports its own failures in its own words
 built the same way, from a fourth emitter over the same description: the
 `dart:ffi` declarations, the value classes, the catalogue enums and the
 blob decoders are generated, and only the ergonomic layer and the tests
-are written by hand. Its host-implemented provider, the wasm binding, the
-packaging and the parity gate are next.
+are written by hand, its port adapter among them: an ephemeris written in
+Dart is bound into the vtable through `NativeCallable.isolateLocal`. The
+packaging, the parity gate and the wasm binding are next.
 
 ## The description's source
 

@@ -14,6 +14,7 @@ carry `// dart format off`, so the generator's layout is what ships and
 | `lib/src/ffi.dart` | the `dart:ffi` declarations that match the C header name for name, a typed value class per boundary struct, the exception, and the context with a native finaliser | the generator |
 | `lib/src/blob.dart` | one decoder per result blob, reading the `TSRB` layout into typed-data views over the blob's bytes | the generator |
 | `lib/teistro.dart` | the layer a consumer uses: finding the shared library and checking its ABI, the defaults, the JSON both ways, and the conveniences a generator cannot know are wanted | by hand |
+| `lib/src/host.dart` | the port adapter: an ephemeris written in Dart bound into the vtable through `NativeCallable.isolateLocal` | by hand |
 | `test/` | the surface end to end, and the decoders against blobs the library produced | by hand |
 | `example/` | the code this README shows, run by the gate so the two cannot drift | by hand |
 
@@ -81,6 +82,41 @@ the explicit form rather than the only one (ADR-0007).
 The layer is thin on purpose. Anything it does not wrap is on the
 generated types: `teistro.library` is the declarations, `context.inner`
 the generated context, and every value class marshals itself.
+
+## An ephemeris of your own
+
+Extend `EphemerisProvider` and give the context one. It is asked once for
+a whole grid, never in a loop, and everything but the name, the bodies
+and the positions has a default.
+
+```dart
+final class MyEphemeris extends EphemerisProvider {
+  @override
+  String get name => 'my-ephemeris';
+
+  @override
+  List<Body> get bodies => const [Body.sun, Body.moon];
+
+  @override
+  PositionAnswer? positions(PositionQuery query) {
+    final cells = query.cellCount;
+    // Return null for "not in that frame": the SDK then asks in your
+    // native frame and completes the rest itself, stamping every step.
+    return PositionAnswer(
+      lon: Float64List(cells),
+      lat: Float64List(cells),
+      dist: Float64List(cells),
+    );
+  }
+}
+
+final ctx = teistro.context(provider: MyEphemeris());
+```
+
+A body, an observer or an instant the provider never declared is refused
+before the call reaches it, by name. What the provider throws is what the
+caller sees, because only a code crosses the C boundary and the adapter
+keeps the sentence.
 
 ## Running the tests
 
