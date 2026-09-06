@@ -224,8 +224,74 @@ pub fn rashi_key(index: usize) -> String {
     format!("{}.{}", Kind::Rashi.name(), sign.key())
 }
 
-/// The duration units `:duration` knows.
+/// The duration units `:duration` knows, longest first. The order is the
+/// order a decomposition walks them in, so it is the order the constant
+/// is written in rather than a sort at every call.
 pub const DURATION_UNITS: [&str; 4] = ["day", "hour", "minute", "second"];
+
+/// How many seconds one of each duration unit is, in the same order.
+const DURATION_SECONDS: [f64; 4] = [86_400.0, 3_600.0, 60.0, 1.0];
+
+/// How many seconds a duration unit is, or `None` when nothing is called
+/// that.
+fn unit_seconds(unit: &str) -> Option<f64> {
+    DURATION_UNITS
+        .iter()
+        .position(|known| *known == unit)
+        .and_then(|at| DURATION_SECONDS.get(at).copied())
+}
+
+/// A duration in seconds, split into the units named, longest first.
+///
+/// Every part but the last is whole; the last keeps whatever is left,
+/// fraction and all, so nothing is silently rounded away. A part that is
+/// zero is dropped, because "one hour and no minutes" is not how anyone
+/// says it — unless every part is zero, when the shortest unit is kept so
+/// that a duration of nothing still renders as a duration.
+///
+/// The sign rides on the first part: a negative duration reads
+/// "−1 hour, 2 minutes and 5 seconds", which is the whole length made
+/// negative rather than each part of it.
+fn decompose(seconds: f64, units: &[&str]) -> Vec<(&'static str, f64)> {
+    let negative = seconds.is_sign_negative();
+    let mut left = seconds.abs();
+    let mut parts: Vec<(&'static str, f64)> = Vec::with_capacity(units.len());
+    for (index, unit) in units.iter().enumerate() {
+        let Some((name, size)) = DURATION_UNITS
+            .iter()
+            .position(|known| known == unit)
+            .and_then(|at| Some((*DURATION_UNITS.get(at)?, *DURATION_SECONDS.get(at)?)))
+        else {
+            continue;
+        };
+        let last = index + 1 == units.len();
+        let count = if last {
+            left / size
+        } else {
+            (left / size).trunc()
+        };
+        left -= count * size;
+        parts.push((name, count));
+    }
+    if parts.iter().all(|(_, count)| *count == 0.0) {
+        parts.truncate(1);
+        if let Some(last) = parts.last_mut() {
+            // The shortest unit named, so a duration of nothing reads as
+            // "0 seconds" rather than as "0 days".
+            if let Some(&shortest) = units.last()
+                && let Some(name) = DURATION_UNITS.iter().find(|known| **known == shortest)
+            {
+                *last = (name, 0.0);
+            }
+        }
+    } else {
+        parts.retain(|(_, count)| *count != 0.0);
+    }
+    if negative && let Some(first) = parts.first_mut() {
+        first.1 = -first.1;
+    }
+    parts
+}
 
 /// A date converted to the calendar a `calendar=` option names, through
 /// the shipped calendars' fixed day.
@@ -332,22 +398,6 @@ const fn hour12(hour: u8) -> u8 {
     match hour % 12 {
         0 => 12,
         h => h,
-    }
-}
-
-/// The part of the day an hour falls in, as the key a locale names it by
-/// (`sdk.calendar.dayPeriod.morning`). The ranges are the same in every
-/// locale for now: night from 20 to 3, morning from 4 to 11, afternoon
-/// from 12 to 15, evening from 16 to 19. A locale whose day divides
-/// elsewhere writes its pattern on `meridiem` or on `hour` instead,
-/// until the sources can carry ranges of their own
-/// (`03-design/intl-engine-and-packs.md`, §13).
-const fn day_period(hour: u8) -> &'static str {
-    match hour {
-        4..=11 => "morning",
-        12..=15 => "afternoon",
-        16..=19 => "evening",
-        _ => "night",
     }
 }
 
@@ -1385,12 +1435,26 @@ impl<'a> Eval<'a> {
             String::from("hour12"),
             Value::Int(i64::from(hour12(time.hour))),
         );
-        let period = day_period(time.hour);
-        let meridiem = if time.hour < 12 { "am" } else { "pm" };
-        for (name, key) in [("dayPeriod", period), ("meridiem", meridiem)] {
+        // The locale's own division of the day, which is the default
+        // division unless its `_meta.json` states another. The whole
+        // message key is built here so that the borrow of the locale ends
+        // before the lookup that needs the renderer.
+        let day_period = format!(
+            "sdk.calendar.dayPeriod.{}",
+            self.locale.meta.day_period(time.hour)
+        );
+        let meridiem = if time.hour < 12 {
+            "sdk.calendar.dayPeriod.am"
+        } else {
+            "sdk.calendar.dayPeriod.pm"
+        };
+        for (name, key) in [("dayPeriod", day_period.as_str()), ("meridiem", meridiem)] {
+            // A locale that names no word for the part of the day falls
+            // back to the part's own name, which is the key's last
+            // segment.
             let text = self
-                .text_of_key(&format!("sdk.calendar.dayPeriod.{key}"), &Params::new())
-                .unwrap_or_else(|| String::from(key));
+                .text_of_key(key, &Params::new())
+                .unwrap_or_else(|| String::from(key.rsplit('.').next().unwrap_or(key)));
             params.insert(String::from(name), Value::Str(text));
         }
         params
@@ -1483,10 +1547,14 @@ impl<'a> Eval<'a> {
 
     /// `:duration`: a count of `unit=day|hour|minute|second` (minutes by
     /// default) through the locale's plural message for the unit.
-    #[allow(
-        clippy::cast_possible_truncation,
-        reason = "an integral value under 9e15 rounds to itself"
-    )]
+    ///
+    /// `into=|hour,minute,second|` breaks the count into several units
+    /// and joins them with the locale's own list pattern, so a dasha
+    /// period or a muhurta reads the way a person would say it rather
+    /// than as a number of minutes they have to divide in their head. The
+    /// units may be named in any order; the decomposition always walks
+    /// them longest first. The bars are the grammar's: a comma cannot sit
+    /// in an option value unless the value is quoted.
     fn duration(&mut self, operand: Option<&Val>, options: &BTreeMap<String, String>) -> Formatted {
         let Some(value) = self.numeric(operand) else {
             return Formatted {
@@ -1499,6 +1567,57 @@ impl<'a> Eval<'a> {
         if !DURATION_UNITS.contains(&unit) {
             self.warn(format!("`unit={unit}` is not a duration unit"));
         }
+        let into = self.duration_units(options.get("into").map(String::as_str));
+        let text = match (into.as_slice(), unit_seconds(unit)) {
+            ([], _) | (_, None) => self.duration_text(unit, value),
+            (units, Some(size)) => {
+                let parts: Vec<String> = decompose(value * size, units)
+                    .into_iter()
+                    .map(|(name, count)| self.duration_text(name, count))
+                    .collect();
+                self.join_list(&parts, "and")
+            }
+        };
+        Formatted {
+            value: Self::source_value(operand),
+            parts: text_parts(text),
+            keys: Keys::None,
+        }
+    }
+
+    /// The units an `into=` option names, in the order a decomposition
+    /// walks them, with anything unknown reported and dropped.
+    fn duration_units(&mut self, into: Option<&str>) -> Vec<&'static str> {
+        let Some(into) = into else {
+            return Vec::new();
+        };
+        let named: Vec<&str> = into
+            .split(',')
+            .map(str::trim)
+            .filter(|unit| !unit.is_empty())
+            .collect();
+        for unit in &named {
+            if !DURATION_UNITS.contains(unit) {
+                self.warn(format!(
+                    "`into=` names `{unit}`, which is not a duration unit"
+                ));
+            }
+        }
+        // Longest first and each unit once, whatever order they arrived
+        // in: the decomposition's meaning does not depend on how a
+        // message happened to spell it.
+        DURATION_UNITS
+            .into_iter()
+            .filter(|unit| named.contains(unit))
+            .collect()
+    }
+
+    /// One count of one unit through the locale's plural message for it.
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "an integral value under 9e15 rounds to itself"
+    )]
+    fn duration_text(&mut self, unit: &str, value: f64) -> String {
         let count = if value.fract() == 0.0 && value.abs() < 9.0e15 {
             Value::Int(value.round() as i64)
         } else {
@@ -1507,14 +1626,9 @@ impl<'a> Eval<'a> {
         let mut params = Params::new();
         params.insert(String::from("n"), count);
         let key = format!("sdk.calendar.duration.{unit}");
-        let text = self.pattern_text(&key, &params, |style| {
+        self.pattern_text(&key, &params, |style| {
             format!("{} {unit}", style.localise(&ascii_decimal(value, 0, 3)))
-        });
-        Formatted {
-            value: Self::source_value(operand),
-            parts: text_parts(text),
-            keys: Keys::None,
-        }
+        })
     }
 
     /// Degrees, minutes and seconds of an angle, rounded at `precision`,

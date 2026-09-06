@@ -187,6 +187,23 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- Teistro Intl: the parts of the day became a locale's own, and
+  `:duration` learnt to break a count into several units. A locale states
+  `dayPeriods` in its `_meta.json` — the hour each part begins at and the
+  key that names it, in order, the last wrapping past midnight — and one
+  that states none takes the division English and Nepali share, which is
+  what every locale had before. The validator holds a stated division to
+  being in order, inside a day and named once, because an order that
+  slips silently swallows a part and a key with no message renders as
+  itself in the wrong language. `{$v :duration unit=second
+  into=|hour,minute,second|}` over 3725 now reads "1 hour, 2 minutes and
+  5 seconds", each part through the unit's own plural message and joined
+  by the locale's `and` list pattern, in the locale's digits; the units
+  may be named in any order, a zero part is dropped unless every part is,
+  the shortest unit keeps the remainder rather than rounding it away, and
+  a negative duration is negative once rather than on each part. No
+  number moves and no rendering changes for a locale that states nothing
+  new (`03-design/intl-engine-and-packs.md` §5).
 - Instruction-count benchmarks. `crates/scenario` holds the fixed
   scenario the SDK measures itself with — the calendars, the astronomy,
   the house systems and the classical model over the same fixed days and

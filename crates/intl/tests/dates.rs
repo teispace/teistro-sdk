@@ -15,7 +15,7 @@
 use teistro_calendar::{CalendarDate, shipped};
 use teistro_core::catalogue::{Calendar, Era};
 use teistro_intl::analysis::{ParamType, signature};
-use teistro_intl::source::Tree;
+use teistro_intl::source::{DayPeriod, Entry, Tree};
 use teistro_intl::{ClockTime, Ghati, Intl, Value, params, sdk_root};
 
 fn engine(locale: &str) -> Intl {
@@ -362,5 +362,189 @@ fn integers_take_padding_and_grouping_options_and_the_analysis_types_the_functio
     assert_eq!(
         sig.links,
         vec![String::from("sdk.calendar.GREGORIAN.date.long")]
+    );
+}
+
+/// An engine whose base locale renders a time as the part of the day it
+/// falls in, with the division the caller gives, so the whole path can be
+/// walked: the metadata, the walk over the parts, the message the key
+/// resolves to, and the pattern that places it.
+fn day_period_engine(periods: Vec<DayPeriod>) -> Intl {
+    let mut tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
+    let base = tree
+        .locales
+        .get_mut("en-Latn")
+        .unwrap_or_else(|| panic!("the base locale"));
+    if !periods.is_empty() {
+        base.meta.day_periods = periods;
+    }
+    base.namespaces
+        .get_mut("sdk.calendar")
+        .unwrap_or_else(|| panic!("sdk.calendar"))
+        .insert(
+            String::from("time.numeric"),
+            Entry::Message(String::from("{$dayPeriod}")),
+        );
+    let mut intl = Intl::from_tree(&tree).unwrap_or_else(|e| panic!("{e}"));
+    intl.set_locale("en-Latn").unwrap_or_else(|e| panic!("{e}"));
+    intl
+}
+
+#[test]
+fn the_part_of_the_day_comes_from_the_locales_own_division() {
+    // What every locale takes when it states nothing.
+    let default = day_period_engine(Vec::new());
+    for (hour, expected) in [
+        (0, "at night"),
+        (3, "at night"),
+        (4, "in the morning"),
+        (11, "in the morning"),
+        (12, "in the afternoon"),
+        (15, "in the afternoon"),
+        (16, "in the evening"),
+        (19, "in the evening"),
+        (20, "at night"),
+        (23, "at night"),
+    ] {
+        assert_eq!(
+            text(
+                &default,
+                "{$v :time}",
+                Value::Time(ClockTime::new(hour, 0, 0))
+            ),
+            expected,
+            "hour {hour}"
+        );
+    }
+
+    // A language whose day divides in two rather than four. Nothing but
+    // `_meta.json` changes: the same keys, the same messages, the same
+    // pattern.
+    let halves = day_period_engine(vec![
+        DayPeriod {
+            from: 6,
+            key: String::from("morning"),
+        },
+        DayPeriod {
+            from: 18,
+            key: String::from("night"),
+        },
+    ]);
+    for (hour, expected) in [
+        (5, "at night"),
+        (6, "in the morning"),
+        (17, "in the morning"),
+        (18, "at night"),
+    ] {
+        assert_eq!(
+            text(
+                &halves,
+                "{$v :time}",
+                Value::Time(ClockTime::new(hour, 0, 0))
+            ),
+            expected,
+            "hour {hour}"
+        );
+    }
+}
+
+#[test]
+fn a_duration_breaks_into_the_units_a_message_names() {
+    let english = engine("en-Latn");
+    let nepali = engine("ne-Deva-NP");
+
+    // 3725 seconds is an hour, two minutes and five seconds, joined by
+    // the locale's own `and` pattern.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute,second|}",
+            Value::Int(3725)
+        ),
+        "1 hour, 2 minutes and 5 seconds"
+    );
+
+    // The order the units are named in does not change the reading.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|second,hour,minute|}",
+            Value::Int(3725)
+        ),
+        "1 hour, 2 minutes and 5 seconds"
+    );
+
+    // A part that is zero is dropped: nobody says "and no minutes".
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute,second|}",
+            Value::Int(3605)
+        ),
+        "1 hour and 5 seconds"
+    );
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute|}",
+            Value::Int(7200)
+        ),
+        "2 hours"
+    );
+
+    // Unless every part is zero, when the shortest unit named keeps it.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute,second|}",
+            Value::Int(0)
+        ),
+        "0 seconds"
+    );
+
+    // The last unit keeps the remainder rather than rounding it away.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|minute,second|}",
+            Value::Num(90.5)
+        ),
+        "1 minute and 30.5 seconds"
+    );
+
+    // Whole days out of minutes, which is what a dasha period arrives as.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration into=|day,hour,minute|}",
+            Value::Int(1_501)
+        ),
+        "1 day, 1 hour and 1 minute"
+    );
+
+    // The whole length is negative, not each part of it.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute|}",
+            Value::Int(-3720)
+        ),
+        "-1 hour and 2 minutes"
+    );
+
+    // The locale's digits, its plural rules and its own list pattern.
+    assert_eq!(
+        text(
+            &nepali,
+            "{$v :duration unit=second into=|hour,minute,second|}",
+            Value::Int(3725)
+        ),
+        "१ घण्टा, २ मिनेट र ५ सेकेन्ड"
+    );
+
+    // Without `into=`, nothing changes.
+    assert_eq!(
+        text(&english, "{$v :duration unit=hour}", Value::Int(3)),
+        "3 hours"
     );
 }

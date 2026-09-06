@@ -54,6 +54,40 @@ pub struct ListPattern {
     pub end: String,
 }
 
+/// One part of the day: the hour it starts at, and the key the locale
+/// names it by (`sdk.calendar.dayPeriod.morning`).
+///
+/// The parts are stated in order and the last wraps around midnight, so
+/// `[4 morning, 12 afternoon, 16 evening, 20 night]` puts hours 0 to 3 in
+/// `night` without anyone writing two entries for it.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct DayPeriod {
+    /// The first hour of the part, 0 to 23.
+    pub from: u8,
+    /// The key under `sdk.calendar.dayPeriod.` that names it.
+    pub key: String,
+}
+
+/// The parts of the day a locale falls back to when it states none: the
+/// division English and Nepali share. A language whose day divides
+/// elsewhere states its own, which is what the field is for.
+#[must_use]
+pub fn default_day_periods() -> Vec<DayPeriod> {
+    [
+        (4, "morning"),
+        (12, "afternoon"),
+        (16, "evening"),
+        (20, "night"),
+    ]
+    .into_iter()
+    .map(|(from, key)| DayPeriod {
+        from,
+        key: String::from(key),
+    })
+    .collect()
+}
+
 /// `_meta.json`.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -92,6 +126,28 @@ pub struct Meta {
     /// List patterns by type (`and`, `or`).
     #[serde(default)]
     pub list_patterns: BTreeMap<String, ListPattern>,
+    /// The parts of the day, in order, the last wrapping past midnight.
+    /// A locale that states none takes the division English and Nepali
+    /// share ([`default_day_periods`]).
+    #[serde(default = "default_day_periods")]
+    pub day_periods: Vec<DayPeriod>,
+}
+
+impl Meta {
+    /// The key of the part of the day an hour falls in.
+    ///
+    /// The parts are in order and the last wraps, so an hour before the
+    /// first belongs to the last: under the default division, two o'clock
+    /// is `night`.
+    #[must_use]
+    pub fn day_period(&self, hour: u8) -> &str {
+        self.day_periods
+            .iter()
+            .rev()
+            .find(|period| hour >= period.from)
+            .or_else(|| self.day_periods.last())
+            .map_or("night", |period| period.key.as_str())
+    }
 }
 
 fn latn() -> String {
@@ -532,6 +588,63 @@ mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]
 
     use super::*;
+
+    #[test]
+    fn the_day_divides_where_the_locale_says() {
+        let mut meta = Meta {
+            locale: String::from("x"),
+            direction: Direction::default(),
+            numbering_system: latn(),
+            grouping: three(),
+            decimal: full_stop(),
+            group: comma(),
+            fallback: Vec::new(),
+            completeness: Completeness::default(),
+            contexts: BTreeMap::new(),
+            term_style: None,
+            list_patterns: BTreeMap::new(),
+            day_periods: default_day_periods(),
+        };
+        // The default division, over the whole day, with the last part
+        // wrapping past midnight.
+        let expected = |hour: u8| match hour {
+            4..=11 => "morning",
+            12..=15 => "afternoon",
+            16..=19 => "evening",
+            _ => "night",
+        };
+        for hour in 0..24 {
+            assert_eq!(meta.day_period(hour), expected(hour), "hour {hour}");
+        }
+
+        // A language whose day divides elsewhere: two parts, one of them
+        // wrapping over midnight and through the small hours.
+        meta.day_periods = vec![
+            DayPeriod {
+                from: 6,
+                key: String::from("day"),
+            },
+            DayPeriod {
+                from: 18,
+                key: String::from("night"),
+            },
+        ];
+        assert_eq!(meta.day_period(0), "night");
+        assert_eq!(meta.day_period(5), "night");
+        assert_eq!(meta.day_period(6), "day");
+        assert_eq!(meta.day_period(17), "day");
+        assert_eq!(meta.day_period(18), "night");
+        assert_eq!(meta.day_period(23), "night");
+
+        // One part is the whole day, whatever hour it starts at.
+        meta.day_periods = vec![DayPeriod {
+            from: 9,
+            key: String::from("whenever"),
+        }];
+        for hour in 0..24 {
+            assert_eq!(meta.day_period(hour), "whenever", "hour {hour}");
+        }
+    }
 
     #[test]
     fn the_sdk_sources_load() {

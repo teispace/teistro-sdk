@@ -1,6 +1,8 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, revised 2026-09-06 when XLIFF export and import were
+Status: `draft`, revised 2026-09-06 when the parts of the day became a
+locale's own (`_meta.json`'s `dayPeriods`) and `:duration` learnt to
+break a count into several units (§5); revised the same day when XLIFF export and import were
 added (§3); revised the same day when transliteration and the derived
 `sa-Latn` locale were added (§3); revised the same day when the
 twelve-hour clock and the day periods were added (§5); revised the same day when the typed
@@ -194,7 +196,7 @@ panics (two property tests).
 | `:time` | a time of day | `style=numeric\|long`, `hour12=true`, `pattern` | | time |
 | `:datetime` | a date with a time | `calendar`, `style`, `hour12=true`, `pattern` | | date and time |
 | `:ghati` | a ghati-pala count | `style=numeric\|long`, `pattern` | | ghati |
-| `:duration` | number | `unit=day\|hour\|minute\|second` | | number |
+| `:duration` | number | `unit=day\|hour\|minute\|second`, `into=\|hour,minute,second\|` | | number |
 
 Numbers render in the locale's numbering system, grouping and
 separators; angles in the same digits. `:zodiac` looks the sign name up
@@ -221,13 +223,28 @@ twelve), `dayPeriod` (the locale's word for the part of the day) and
 `meridiem` (its am or pm). `hour12=true` chooses the locale's
 `sdk.calendar.time.<style>12` pattern instead of `<style>`, and each
 locale writes the one its readers expect: English by am and pm (`6:15
-am`), Nepali by the part of the day (`बिहान ६:१५`). The parts are
-`morning` from 4 to 11, `afternoon` from 12 to 15, `evening` from 16 to
-19 and `night` from 20 to 3, the same ranges in every locale until the
-sources can carry ranges of their own (§13); a locale whose day divides
-elsewhere writes its pattern on `meridiem` or on `hour`. These are the
-engine's own parameters, so validation lets a locale use one the base
-locale's pattern does not (`engine_params`).
+am`), Nepali by the part of the day (`बिहान ६:१५`). The parts of the day are the
+locale's own, stated in `_meta.json` as `dayPeriods`: a list of the hour
+each part begins at and the key that names it, in order, the last
+wrapping past midnight, so `[4 morning, 12 afternoon, 16 evening, 20
+night]` puts the small hours in `night` without a second entry for them.
+A locale that states none takes that division, which suits English and
+Nepali; a language whose day divides elsewhere states its own, and the
+validator holds it to being in order, inside a day and named once. These
+are the engine's own parameters, so validation lets a locale use one the
+base locale's pattern does not (`engine_params`).
+
+`:duration` renders one unit by default and several when `into=` names
+them: `{$v :duration unit=second into=|hour,minute,second|}` over 3725
+reads "1 hour, 2 minutes and 5 seconds", each part through the unit's own
+plural message and joined by the locale's `and` list pattern. The units
+may be named in any order and the decomposition walks them longest
+first; a part that is zero is dropped unless every part is, when the
+shortest unit named keeps it ("0 seconds"); the shortest unit keeps the
+remainder rather than rounding it away; and a negative duration is
+negative once, on its first part, rather than on each. The bars are the
+grammar's: a comma cannot sit in an option value unless the value is
+quoted.
 
 A locale that declares no pattern gets the built-in default (the ISO
 order for a date, `HH:MM` for a time or `H:MM am` on a twelve-hour
@@ -442,12 +459,10 @@ here.
   loads in call order, later entries replacing earlier ones.
 - The twenty baseline entity types without a catalogue kind, and the
   synonyms the engine's names carry (not a form yet).
-- The date functions' next steps: day-period ranges per locale (the
-  ranges are the same in every locale today, which suits English and
-  Nepali and will not suit every language), abbreviated month names for
-  Nepali (the locale links the full names), `:duration` over several
-  units at once, and the `zone` option once the time crate's zoned
-  instants cross the port.
+- The date functions' next steps: abbreviated month names for Nepali
+  (the locale links the full names) and the `zone` option once the time
+  crate's zoned instants cross the port. Day-period ranges per locale and
+  `:duration` over several units are done (§5).
 - The reverse transliteration
   (IAST to Devanagari) and the other scripts of §"Axes that are not the
   language" (Tamil, Bengali).
