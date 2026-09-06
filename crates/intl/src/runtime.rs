@@ -429,20 +429,20 @@ mod tests {
         assert_eq!(second, "नयाँ नाम");
         assert_eq!(intl.loaded().len(), 2);
         // A bundle brings a new locale, selectable, falling back to the base.
-        let mut hindi = nepali.clone();
-        hindi.tag = String::from("hi-Deva-IN");
-        hindi.meta.locale = hindi.tag.clone();
-        hindi.meta.fallback = vec![BASE_LOCALE.to_string()];
-        hindi.namespaces = [(
+        let mut marathi = nepali.clone();
+        marathi.tag = String::from("mr-Deva-IN");
+        marathi.meta.locale = marathi.tag.clone();
+        marathi.meta.fallback = vec![BASE_LOCALE.to_string()];
+        marathi.namespaces = [(
             String::from("sdk.reason"),
             namespace(&[("appName", "टेइस्ट्रो")]),
         )]
         .into_iter()
         .collect();
-        let bundle = pack::build_bundle(&hindi).unwrap();
+        let bundle = pack::build_bundle(&marathi).unwrap();
         let loaded = intl.load_pack(&bundle).unwrap();
-        assert_eq!(loaded.locale, "hi-Deva-IN");
-        intl.set_locale("hi-Deva-IN").unwrap();
+        assert_eq!(loaded.locale, "mr-Deva-IN");
+        intl.set_locale("mr-Deva-IN").unwrap();
         assert_eq!(
             intl.render("sdk.reason.appName", &params([])).text,
             "टेइस्ट्रो"
@@ -454,16 +454,19 @@ mod tests {
         assert!(intl.load_pack(b"TPK1junk").is_err());
         assert_eq!(intl.loaded().len(), 3);
         let report = intl.report();
-        assert_eq!(report.current, "hi-Deva-IN");
+        assert_eq!(report.current, "mr-Deva-IN");
         assert_eq!(report.loaded.len(), 3);
-        let hindi_row = report
+        let marathi_row = report
             .locales
             .iter()
-            .find(|l| l.tag == "hi-Deva-IN")
+            .find(|l| l.tag == "mr-Deva-IN")
             .unwrap();
-        assert_eq!(hindi_row.entries, 1);
+        assert_eq!(marathi_row.entries, 1);
         let base_keys = intl.locales.get(BASE_LOCALE).unwrap().keys().count();
-        assert_eq!(hindi_row.coverage.map(|(_, total)| total), Some(base_keys));
-        assert!(report.markdown().contains("| hi-Deva-IN |"));
+        assert_eq!(
+            marathi_row.coverage.map(|(_, total)| total),
+            Some(base_keys)
+        );
+        assert!(report.markdown().contains("| mr-Deva-IN |"));
     }
 }

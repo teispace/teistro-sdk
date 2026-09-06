@@ -351,6 +351,12 @@ pub fn is_key_segment(s: &str) -> bool {
     let Some(first) = s.bytes().next() else {
         return false;
     };
+    // The catalogue's kind names are the groups of the entity namespace,
+    // and a kind of two words is written with an underscore
+    // (`avastha_baladi`).
+    if teistro_core::catalogue::Kind::from_name(s).is_some() {
+        return true;
+    }
     if first.is_ascii_lowercase() {
         s.bytes().all(|b| b.is_ascii_alphanumeric())
     } else if first.is_ascii_uppercase() {
@@ -522,9 +528,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn the_spike_sources_load() {
+    fn the_sdk_sources_load() {
         let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
-        assert_eq!(tree.locales.len(), 2);
+        assert_eq!(tree.locales.len(), 4);
         let base = tree.base().unwrap_or_else(|| panic!("base"));
         assert_eq!(base.meta.numbering_system, "latn");
         let sun = base.entity("graha.SUN").unwrap_or_else(|| panic!("sun"));

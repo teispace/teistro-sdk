@@ -78,7 +78,10 @@ loaded and covered. The date functions: `:date`, `:time`, `:datetime`,
 `:ghati` and `:duration`, calendar-aware over the calendar crate, with
 the patterns and names a locale declares in `sdk.calendar` (shipped for
 `en-Latn` and `ne-Deva-NP`), era records for the nine eras, and the
-`useGrouping` and `minimumIntegerDigits` options on numbers. No number
+`useGrouping` and `minimumIntegerDigits` options on numbers. The
+baseline engine's entity name tables are imported (`teistro-intl migrate
+baseline`): 274 records in each of four languages, `hi-Deva-IN` and
+`sa-Deva` joining the shipped locales at `base` completeness. No number
 moves. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the

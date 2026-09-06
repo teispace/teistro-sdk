@@ -13,7 +13,7 @@ files are under this repository's licence.
 
 | directory | source | evidence rank (ADR-0018) | state |
 |---|---|---|---|
-| `baseline/` | the baseline engine, version 1.8.0 | 2 | 115 fixtures over 55 charts, exported 2026-09-04 (spike 1) |
+| `baseline/` | the baseline engine, version 1.8.0 | 2 | 115 fixtures over 55 charts, exported 2026-09-04 (spike 1); `names.json`: its entity name tables, 40 types and 383 entities in four languages, exported 2026-09-06 for `teistro-intl migrate baseline` |
 | `pyjhora/` | PyJHora | 3 | planned |
 | `texts/` | classical texts and printed almanacs, hand-entered with citations | 1 | planned |
 | `official/` | the authority's own publications: the national panchanga committee's yearly panchanga for BS 2082 and 2083, read from its published files | 1 for the official calendar | 24 sankranti instants, 4 rows of printed places, 22 days of sunrise and sunset, 8 tithi ends (2026-09-05) |
@@ -59,7 +59,9 @@ baseline/
 
 The export script lives in the baseline engine's own repository, in that
 repository's language, and reads the engine's built packages and its
-ephemeris data files. It is not part of this repository. To regenerate:
+ephemeris data files. It is not part of this repository. The names
+exporter beside it (`export-name-tables.mjs`) writes `names.json` from
+the engine's entity registry the same way. To regenerate:
 run it with `--out <a scratch directory>`, copy `charts/`, `variants/`
 and `manifest.json` here, and run `cargo xtask check-fixtures`. A
 regeneration under a newer engine version is a corpus version bump, never

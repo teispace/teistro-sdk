@@ -655,16 +655,52 @@ pub mod sdk {
 
     /// The `entity` group.
     pub mod entity {
+        /// The `avastha_baladi` group.
+        pub mod avastha_baladi {
+        }
+
+        /// The `ayana` group.
+        pub mod ayana {
+        }
+
+        /// The `chara_karaka` group.
+        pub mod chara_karaka {
+        }
+
+        /// The `deity` group.
+        pub mod deity {
+        }
+
+        /// The `dignity` group.
+        pub mod dignity {
+        }
+
         /// The `era` group.
         pub mod era {
+        }
+
+        /// The `gana` group.
+        pub mod gana {
         }
 
         /// The `graha` group.
         pub mod graha {
         }
 
+        /// The `karana` group.
+        pub mod karana {
+        }
+
+        /// The `nadi` group.
+        pub mod nadi {
+        }
+
         /// The `nakshatra` group.
         pub mod nakshatra {
+        }
+
+        /// The `paksha` group.
+        pub mod paksha {
         }
 
         /// The `point` group.
@@ -673,6 +709,38 @@ pub mod sdk {
 
         /// The `rashi` group.
         pub mod rashi {
+        }
+
+        /// The `relationship` group.
+        pub mod relationship {
+        }
+
+        /// The `samvatsara` group.
+        pub mod samvatsara {
+        }
+
+        /// The `tatwa` group.
+        pub mod tatwa {
+        }
+
+        /// The `tithi` group.
+        pub mod tithi {
+        }
+
+        /// The `vara` group.
+        pub mod vara {
+        }
+
+        /// The `varna` group.
+        pub mod varna {
+        }
+
+        /// The `yoga` group.
+        pub mod yoga {
+        }
+
+        /// The `yoni` group.
+        pub mod yoni {
         }
 
     }

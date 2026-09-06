@@ -21,6 +21,8 @@
 //!   loaded and covered;
 //! - [`messages`]: the SDK's own namespaces as typed Rust accessors,
 //!   generated from `i18n/en-Latn` by `cargo xtask gen intl`;
+//! - [`migrate`]: the one-time import of the baseline engine's name tables
+//!   into `sdk.entity`, the catalogue staying the authority;
 //! - [`cli`]: the `teistro-intl` command line as library functions.
 //!
 //! ```
@@ -45,6 +47,7 @@ pub mod analysis;
 pub mod cli;
 pub mod generate;
 pub mod mf2;
+pub mod migrate;
 pub mod pack;
 pub mod render;
 pub mod runtime;

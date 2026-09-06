@@ -44,12 +44,40 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   here is an error.
 - **Namespaces** are lowercase dotted words; the SDK's are prefixed
   `sdk.`; the entity namespace `sdk.entity` holds records, every other
-  namespace holds messages.
-- **Keys** are dotted paths; a segment is a `camelCase` identifier or a
-  catalogue key (`UPPER_SNAKE`); a full key is the namespace plus the
-  path (`sdk.reason.strength.rank`, `sdk.entity.graha.SUN`). Inside
-  `sdk.entity` the path is a catalogue key (`graha.SUN`, `point.LAGNA`),
-  resolved against `teistro_core`'s catalogue; any other is refused.
+  namespace holds messages. The SDK ships four locales: `en-Latn` (the
+  base) and `ne-Deva-NP` at `strict` completeness, `hi-Deva-IN` and
+  `sa-Deva` at `base` completeness until their messages are translated;
+  the last two came whole from the baseline engine's name tables
+  (`teistro-intl migrate baseline`, below), the first two gained the same
+  tables under their hand-shaped records.
+- **Keys** are dotted paths; a segment is a `camelCase` identifier, a
+  catalogue key (`UPPER_SNAKE`) or a catalogue kind's name
+  (`avastha_baladi`); a full key is the namespace plus the path
+  (`sdk.reason.strength.rank`, `sdk.entity.graha.SUN`). Inside
+  `sdk.entity` the path is a catalogue key (`graha.SUN`, `point.LAGNA`,
+  `chara_karaka.ATMAKARAKA`), resolved against `teistro_core`'s
+  catalogue; any other is refused.
+- **`migrate baseline`** imports the baseline engine's entity name tables
+  once: the engine's exporter (in its own repository, beside its
+  golden-vector exporter) writes every entity type with its entities in
+  index order and their names in `sa`, `ne`, `en` and `hi` (primary,
+  abbreviation, transliteration, synonyms) to one document
+  (`fixtures/baseline/names.json`); the command maps twenty of its forty
+  types onto catalogue kinds (with the spelling aliases the two do not
+  share: `VISHKAMBA`, the deities' display names, the chara karakas'
+  initials, the Lagna as a point) and writes records whose `name` and
+  `prose` are the primary name, `short` the abbreviation where the engine
+  has one, `iast` the language's transliteration or else the Sanskrit
+  one, the glyph the engine's symbol or the catalogue skeleton's and the
+  gender the skeleton's; a record a locale already has is kept unless
+  `--overwrite`. Every written key resolves in the catalogue; a key that
+  does not is reported and skipped; the twenty types the catalogue has no
+  kind for (the jagradadi, deeptadi and lajjitadi avasthas, the yoni
+  genders, the anga labels, the natural and temporary friendships, the
+  combust statuses, the ayurdaya methods and tiers, the maraka triggers,
+  the dasha levels, the two named muhurtas, vashya, paya and disha, the
+  nakshatra vargas, the transit events, the muhurta activities and the
+  Nepali rite names) are reported for the catalogue's growth.
 - **Messages** are `MessageFormat 2` source strings.
 - **`sdk.calendar`** holds what the date functions read: per calendar
   key (`GREGORIAN`, `BIKRAM_SAMBAT`, ...) a `monthName` and `monthShort`
@@ -327,6 +355,8 @@ here.
 - The composite provider's precedence rules once a binding loads packs
   from several places (baked, blob, filesystem): the Rust runtime API
   loads in call order, later entries replacing earlier ones.
+- The twenty baseline entity types without a catalogue kind, and the
+  synonyms the engine's names carry (not a form yet).
 - The date functions' next steps: twelve-hour clocks and day periods,
   abbreviated month names for Nepali (the locale links the full names),
   `:duration` over several units at once, and the `zone` option once the

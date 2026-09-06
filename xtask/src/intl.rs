@@ -17,8 +17,12 @@ const MESSAGES: &str = "crates/intl/src/messages.rs";
 fn outputs(root: &Path) -> Vec<Output> {
     let tree = Tree::load(&root.join("i18n")).expect("the i18n/ sources load");
     let report = validate::validate(&tree);
-    eprintln!("{}", report.markdown());
-    assert!(report.passed(), "the i18n/ sources do not validate");
+    if report.passed() {
+        eprintln!("{}", report.markdown().lines().next().unwrap_or_default());
+    } else {
+        eprintln!("{}", report.markdown());
+        panic!("the i18n/ sources do not validate");
+    }
     let base = tree.base().expect("the base locale");
     let model = Model::of(base).expect("every base message parses");
     vec![Output {

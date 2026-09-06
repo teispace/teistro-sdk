@@ -710,7 +710,11 @@ mod tests {
         );
         assert!(dart.contains("enum NakshatraKey {\n  ashwini('nakshatra.ASHWINI')"));
         assert!(dart.contains("SdkReasonStrength get strength"));
-        assert!(model.forms.0.contains("prose") && model.forms.0.contains("iast"));
-        assert!(model.forms.1.is_empty(), "{:?}", model.forms.1);
+        // Every record has a name and a prose form; the short form and the
+        // transliteration are the records' own where the sources have them.
+        assert!(model.forms.0.contains("name") && model.forms.0.contains("prose"));
+        assert!(model.forms.1.contains("short"), "{:?}", model.forms.1);
+        assert!(ts.contains("export type TithiKey = 'tithi.SHUKLA_PRATIPADA'"));
+        assert!(dart.contains("enum SamvatsaraKey {"));
     }
 }
