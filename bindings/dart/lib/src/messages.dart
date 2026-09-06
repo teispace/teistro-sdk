@@ -658,6 +658,19 @@ final class MessagesSdkCalendarDatetime {
       _r.render('sdk.calendar.datetime.join', {'date': date, 'time': time});
 }
 
+final class MessagesSdkCalendarDayPeriod {
+  const MessagesSdkCalendarDayPeriod(this._r);
+
+  final Renderer _r;
+
+  String afternoon() => _r.render('sdk.calendar.dayPeriod.afternoon');
+  String am() => _r.render('sdk.calendar.dayPeriod.am');
+  String evening() => _r.render('sdk.calendar.dayPeriod.evening');
+  String morning() => _r.render('sdk.calendar.dayPeriod.morning');
+  String night() => _r.render('sdk.calendar.dayPeriod.night');
+  String pm() => _r.render('sdk.calendar.dayPeriod.pm');
+}
+
 final class MessagesSdkCalendarDuration {
   const MessagesSdkCalendarDuration(this._r);
 
@@ -691,8 +704,12 @@ final class MessagesSdkCalendarTime {
 
   String long({required int hour, required int minute, required int second}) =>
       _r.render('sdk.calendar.time.long', {'hour': hour, 'minute': minute, 'second': second});
+  String long12({required int hour12, required String meridiem, required int minute, required int second}) =>
+      _r.render('sdk.calendar.time.long12', {'hour12': hour12, 'meridiem': meridiem, 'minute': minute, 'second': second});
   String numeric({required int hour, required int minute}) =>
       _r.render('sdk.calendar.time.numeric', {'hour': hour, 'minute': minute});
+  String numeric12({required int hour12, required String meridiem, required int minute}) =>
+      _r.render('sdk.calendar.time.numeric12', {'hour12': hour12, 'meridiem': meridiem, 'minute': minute});
 }
 
 final class MessagesSdkCalendar {
@@ -706,6 +723,7 @@ final class MessagesSdkCalendar {
   MessagesSdkCalendarJulian get julian => MessagesSdkCalendarJulian(_r);
   MessagesSdkCalendarMixed get mixed => MessagesSdkCalendarMixed(_r);
   MessagesSdkCalendarDatetime get datetime => MessagesSdkCalendarDatetime(_r);
+  MessagesSdkCalendarDayPeriod get dayPeriod => MessagesSdkCalendarDayPeriod(_r);
   MessagesSdkCalendarDuration get duration => MessagesSdkCalendarDuration(_r);
   MessagesSdkCalendarGhati get ghati => MessagesSdkCalendarGhati(_r);
   MessagesSdkCalendarTime get time => MessagesSdkCalendarTime(_r);

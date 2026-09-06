@@ -133,7 +133,10 @@ message of the SDK's locale is a function of its typed parameters, and
 every catalogued entity is its forms in the locale
 (`ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 })`,
 `ctx.entity('graha.SUN').name`), over the new `ts_intl_entity` entry
-point. The API description (`idl/api.json`, `teistro-idl`) is extracted
+point. A time renders on a twelve-hour clock where a locale reads one:
+`:time hour12=true` gives every pattern the hour on both clocks, the
+locale's word for the part of the day and its am or pm, so English reads
+`6:15 am` and Nepali `बिहान ६:१५`. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

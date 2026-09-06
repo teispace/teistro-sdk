@@ -1,64 +1,74 @@
 {
-  "weekdayName": ".input {$weekday :integer} .match $weekday 0 {{Sunday}} 1 {{Monday}} 2 {{Tuesday}} 3 {{Wednesday}} 4 {{Thursday}} 5 {{Friday}} 6 {{Saturday}} * {{{$weekday}}}",
-  "weekdayShort": ".input {$weekday :integer} .match $weekday 0 {{Sun}} 1 {{Mon}} 2 {{Tue}} 3 {{Wed}} 4 {{Thu}} 5 {{Fri}} 6 {{Sat}} * {{{$weekday}}}",
-  "GREGORIAN": {
-    "monthName": ".input {$month :integer} .match $month 1 {{January}} 2 {{February}} 3 {{March}} 4 {{April}} 5 {{May}} 6 {{June}} 7 {{July}} 8 {{August}} 9 {{September}} 10 {{October}} 11 {{November}} 12 {{December}} * {{{$month}}}",
-    "monthShort": ".input {$month :integer} .match $month 1 {{Jan}} 2 {{Feb}} 3 {{Mar}} 4 {{Apr}} 5 {{May}} 6 {{Jun}} 7 {{Jul}} 8 {{Aug}} 9 {{Sep}} 10 {{Oct}} 11 {{Nov}} 12 {{Dec}} * {{{$month}}}",
-    "date": {
-      "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}",
-      "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false}",
-      "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false}"
-    }
-  },
-  "JULIAN": {
-    "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
-    "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
-    "date": {
-      "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
-      "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
-      "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
-    }
-  },
-  "MIXED": {
-    "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
-    "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
-    "date": {
-      "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
-      "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
-      "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
-    }
-  },
-  "ISO_WEEK": {
-    "date": {
-      "numeric": "{$year :integer useGrouping=false}-W{$month :integer minimumIntegerDigits=2}-{$day :integer}",
-      "long": "week {$month :integer} of {$year :integer useGrouping=false}, day {$day :integer}",
-      "full": "{sdk.calendar.ISO_WEEK.date.long :msg}"
-    }
-  },
-  "BIKRAM_SAMBAT": {
-    "monthName": ".input {$month :integer} .match $month 1 {{Baishakh}} 2 {{Jestha}} 3 {{Asar}} 4 {{Shrawan}} 5 {{Bhadra}} 6 {{Ashwin}} 7 {{Kartik}} 8 {{Mangsir}} 9 {{Poush}} 10 {{Magh}} 11 {{Falgun}} 12 {{Chaitra}} * {{{$month}}}",
-    "monthShort": ".input {$month :integer} .match $month 1 {{Bai}} 2 {{Jes}} 3 {{Asa}} 4 {{Shr}} 5 {{Bha}} 6 {{Ash}} 7 {{Kar}} 8 {{Man}} 9 {{Pou}} 10 {{Mag}} 11 {{Fal}} 12 {{Cha}} * {{{$month}}}",
-    "date": {
-      "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} BS",
-      "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} BS",
-      "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} BS"
-    }
-  },
-  "time": {
-    "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
-    "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}"
-  },
-  "datetime": {
-    "join": "{$date}, {$time}"
-  },
-  "ghati": {
-    "numeric": "{$ghati :integer minimumIntegerDigits=2}-{$pala :integer minimumIntegerDigits=2}",
-    "long": ".input {$ghati :integer} .input {$pala :integer} .match $ghati one {{{$ghati} ghati {$pala} pala}} * {{{$ghati} ghatis {$pala} pala}}"
-  },
-  "duration": {
-    "day": ".input {$n :number} .match $n one {{{$n} day}} * {{{$n} days}}",
-    "hour": ".input {$n :number} .match $n one {{{$n} hour}} * {{{$n} hours}}",
-    "minute": ".input {$n :number} .match $n one {{{$n} minute}} * {{{$n} minutes}}",
-    "second": ".input {$n :number} .match $n one {{{$n} second}} * {{{$n} seconds}}"
+ "weekdayName": ".input {$weekday :integer} .match $weekday 0 {{Sunday}} 1 {{Monday}} 2 {{Tuesday}} 3 {{Wednesday}} 4 {{Thursday}} 5 {{Friday}} 6 {{Saturday}} * {{{$weekday}}}",
+ "weekdayShort": ".input {$weekday :integer} .match $weekday 0 {{Sun}} 1 {{Mon}} 2 {{Tue}} 3 {{Wed}} 4 {{Thu}} 5 {{Fri}} 6 {{Sat}} * {{{$weekday}}}",
+ "GREGORIAN": {
+  "monthName": ".input {$month :integer} .match $month 1 {{January}} 2 {{February}} 3 {{March}} 4 {{April}} 5 {{May}} 6 {{June}} 7 {{July}} 8 {{August}} 9 {{September}} 10 {{October}} 11 {{November}} 12 {{December}} * {{{$month}}}",
+  "monthShort": ".input {$month :integer} .match $month 1 {{Jan}} 2 {{Feb}} 3 {{Mar}} 4 {{Apr}} 5 {{May}} 6 {{Jun}} 7 {{Jul}} 8 {{Aug}} 9 {{Sep}} 10 {{Oct}} 11 {{Nov}} 12 {{Dec}} * {{{$month}}}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}",
+   "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false}",
+   "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false}"
   }
+ },
+ "JULIAN": {
+  "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
+  "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+  "date": {
+   "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
+   "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
+   "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
+  }
+ },
+ "MIXED": {
+  "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
+  "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+  "date": {
+   "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
+   "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
+   "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
+  }
+ },
+ "ISO_WEEK": {
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-W{$month :integer minimumIntegerDigits=2}-{$day :integer}",
+   "long": "week {$month :integer} of {$year :integer useGrouping=false}, day {$day :integer}",
+   "full": "{sdk.calendar.ISO_WEEK.date.long :msg}"
+  }
+ },
+ "BIKRAM_SAMBAT": {
+  "monthName": ".input {$month :integer} .match $month 1 {{Baishakh}} 2 {{Jestha}} 3 {{Asar}} 4 {{Shrawan}} 5 {{Bhadra}} 6 {{Ashwin}} 7 {{Kartik}} 8 {{Mangsir}} 9 {{Poush}} 10 {{Magh}} 11 {{Falgun}} 12 {{Chaitra}} * {{{$month}}}",
+  "monthShort": ".input {$month :integer} .match $month 1 {{Bai}} 2 {{Jes}} 3 {{Asa}} 4 {{Shr}} 5 {{Bha}} 6 {{Ash}} 7 {{Kar}} 8 {{Man}} 9 {{Pou}} 10 {{Mag}} 11 {{Fal}} 12 {{Cha}} * {{{$month}}}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} BS",
+   "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} BS",
+   "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} BS"
+  }
+ },
+ "time": {
+  "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
+  "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",
+  "numeric12": "{$hour12 :integer}:{$minute :integer minimumIntegerDigits=2} {$meridiem}",
+  "long12": "{$hour12 :integer}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2} {$meridiem}"
+ },
+ "datetime": {
+  "join": "{$date}, {$time}"
+ },
+ "ghati": {
+  "numeric": "{$ghati :integer minimumIntegerDigits=2}-{$pala :integer minimumIntegerDigits=2}",
+  "long": ".input {$ghati :integer} .input {$pala :integer} .match $ghati one {{{$ghati} ghati {$pala} pala}} * {{{$ghati} ghatis {$pala} pala}}"
+ },
+ "duration": {
+  "day": ".input {$n :number} .match $n one {{{$n} day}} * {{{$n} days}}",
+  "hour": ".input {$n :number} .match $n one {{{$n} hour}} * {{{$n} hours}}",
+  "minute": ".input {$n :number} .match $n one {{{$n} minute}} * {{{$n} minutes}}",
+  "second": ".input {$n :number} .match $n one {{{$n} second}} * {{{$n} seconds}}"
+ },
+ "dayPeriod": {
+  "am": "am",
+  "pm": "pm",
+  "morning": "in the morning",
+  "afternoon": "in the afternoon",
+  "evening": "in the evening",
+  "night": "at night"
+ }
 }

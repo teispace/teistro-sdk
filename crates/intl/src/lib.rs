@@ -61,7 +61,8 @@ pub mod validate;
 pub mod messages;
 
 pub use render::{
-    ClockTime, Ghati, Intl, OutPart, Params, Rendered, Resolution, TypedMessage, Value, params,
+    ClockTime, Ghati, Intl, OutPart, Params, Rendered, Resolution, TypedMessage, Value,
+    engine_params, params,
 };
 pub use runtime::{Loaded, LocaleReport, RuntimeReport};
 pub use source::{BASE_LOCALE, ENTITY_NAMESPACE, sdk_root};

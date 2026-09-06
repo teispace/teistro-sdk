@@ -52,6 +52,14 @@ export function messages(r) {
         datetime: {
           join: (p) => r.render('sdk.calendar.datetime.join', { date: p.date, time: p.time }),
         },
+        dayPeriod: {
+          afternoon: () => r.render('sdk.calendar.dayPeriod.afternoon'),
+          am: () => r.render('sdk.calendar.dayPeriod.am'),
+          evening: () => r.render('sdk.calendar.dayPeriod.evening'),
+          morning: () => r.render('sdk.calendar.dayPeriod.morning'),
+          night: () => r.render('sdk.calendar.dayPeriod.night'),
+          pm: () => r.render('sdk.calendar.dayPeriod.pm'),
+        },
         duration: {
           day: (p) => r.render('sdk.calendar.duration.day', { n: p.n }),
           hour: (p) => r.render('sdk.calendar.duration.hour', { n: p.n }),
@@ -64,7 +72,9 @@ export function messages(r) {
         },
         time: {
           long: (p) => r.render('sdk.calendar.time.long', { hour: p.hour, minute: p.minute, second: p.second }),
+          long12: (p) => r.render('sdk.calendar.time.long12', { hour12: p.hour12, meridiem: p.meridiem, minute: p.minute, second: p.second }),
           numeric: (p) => r.render('sdk.calendar.time.numeric', { hour: p.hour, minute: p.minute }),
+          numeric12: (p) => r.render('sdk.calendar.time.numeric12', { hour12: p.hour12, meridiem: p.meridiem, minute: p.minute }),
         },
         weekdayName: (p) => r.render('sdk.calendar.weekdayName', { weekday: p.weekday }),
         weekdayShort: (p) => r.render('sdk.calendar.weekdayShort', { weekday: p.weekday }),

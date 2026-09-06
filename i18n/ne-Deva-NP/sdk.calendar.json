@@ -1,64 +1,74 @@
 {
-  "weekdayName": ".input {$weekday :integer} .match $weekday 0 {{आइतबार}} 1 {{सोमबार}} 2 {{मङ्गलबार}} 3 {{बुधबार}} 4 {{बिहीबार}} 5 {{शुक्रबार}} 6 {{शनिबार}} * {{{$weekday}}}",
-  "weekdayShort": ".input {$weekday :integer} .match $weekday 0 {{आइत}} 1 {{सोम}} 2 {{मङ्गल}} 3 {{बुध}} 4 {{बिही}} 5 {{शुक्र}} 6 {{शनि}} * {{{$weekday}}}",
-  "GREGORIAN": {
-    "monthName": ".input {$month :integer} .match $month 1 {{जनवरी}} 2 {{फेब्रुअरी}} 3 {{मार्च}} 4 {{अप्रिल}} 5 {{मे}} 6 {{जुन}} 7 {{जुलाई}} 8 {{अगस्ट}} 9 {{सेप्टेम्बर}} 10 {{अक्टोबर}} 11 {{नोभेम्बर}} 12 {{डिसेम्बर}} * {{{$month}}}",
-    "monthShort": "{sdk.calendar.GREGORIAN.monthName :msg}",
-    "date": {
-      "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}",
-      "long": "{$year :integer useGrouping=false} {$monthName} {$day :integer}",
-      "full": "{$weekdayName}, {$year :integer useGrouping=false} {$monthName} {$day :integer}"
-    }
-  },
-  "JULIAN": {
-    "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
-    "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
-    "date": {
-      "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
-      "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
-      "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
-    }
-  },
-  "MIXED": {
-    "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
-    "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
-    "date": {
-      "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
-      "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
-      "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
-    }
-  },
-  "ISO_WEEK": {
-    "date": {
-      "numeric": "{$year :integer useGrouping=false}-W{$month :integer minimumIntegerDigits=2}-{$day :integer}",
-      "long": "{$year :integer useGrouping=false} को {$month :integer} हप्ता, दिन {$day :integer}",
-      "full": "{sdk.calendar.ISO_WEEK.date.long :msg}"
-    }
-  },
-  "BIKRAM_SAMBAT": {
-    "monthName": ".input {$month :integer} .match $month 1 {{बैशाख}} 2 {{जेठ}} 3 {{असार}} 4 {{साउन}} 5 {{भदौ}} 6 {{असोज}} 7 {{कात्तिक}} 8 {{मंसिर}} 9 {{पुष}} 10 {{माघ}} 11 {{फागुन}} 12 {{चैत}} * {{{$month}}}",
-    "monthShort": "{sdk.calendar.BIKRAM_SAMBAT.monthName :msg}",
-    "date": {
-      "numeric": "{$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2} गते",
-      "long": "{$year :integer useGrouping=false} {$monthName} {$day :integer} गते",
-      "full": "{$weekdayName}, {$year :integer useGrouping=false} {$monthName} {$day :integer} गते"
-    }
-  },
-  "time": {
-    "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
-    "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}"
-  },
-  "datetime": {
-    "join": "{$date}, {$time}"
-  },
-  "ghati": {
-    "numeric": "{$ghati :integer minimumIntegerDigits=2}-{$pala :integer minimumIntegerDigits=2}",
-    "long": "{$ghati :integer} घडी {$pala :integer} पला"
-  },
-  "duration": {
-    "day": "{$n :number} दिन",
-    "hour": "{$n :number} घण्टा",
-    "minute": "{$n :number} मिनेट",
-    "second": "{$n :number} सेकेन्ड"
+ "weekdayName": ".input {$weekday :integer} .match $weekday 0 {{आइतबार}} 1 {{सोमबार}} 2 {{मङ्गलबार}} 3 {{बुधबार}} 4 {{बिहीबार}} 5 {{शुक्रबार}} 6 {{शनिबार}} * {{{$weekday}}}",
+ "weekdayShort": ".input {$weekday :integer} .match $weekday 0 {{आइत}} 1 {{सोम}} 2 {{मङ्गल}} 3 {{बुध}} 4 {{बिही}} 5 {{शुक्र}} 6 {{शनि}} * {{{$weekday}}}",
+ "GREGORIAN": {
+  "monthName": ".input {$month :integer} .match $month 1 {{जनवरी}} 2 {{फेब्रुअरी}} 3 {{मार्च}} 4 {{अप्रिल}} 5 {{मे}} 6 {{जुन}} 7 {{जुलाई}} 8 {{अगस्ट}} 9 {{सेप्टेम्बर}} 10 {{अक्टोबर}} 11 {{नोभेम्बर}} 12 {{डिसेम्बर}} * {{{$month}}}",
+  "monthShort": "{sdk.calendar.GREGORIAN.monthName :msg}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}",
+   "long": "{$year :integer useGrouping=false} {$monthName} {$day :integer}",
+   "full": "{$weekdayName}, {$year :integer useGrouping=false} {$monthName} {$day :integer}"
   }
+ },
+ "JULIAN": {
+  "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
+  "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+  "date": {
+   "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
+   "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
+   "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
+  }
+ },
+ "MIXED": {
+  "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
+  "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+  "date": {
+   "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
+   "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
+   "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
+  }
+ },
+ "ISO_WEEK": {
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-W{$month :integer minimumIntegerDigits=2}-{$day :integer}",
+   "long": "{$year :integer useGrouping=false} को {$month :integer} हप्ता, दिन {$day :integer}",
+   "full": "{sdk.calendar.ISO_WEEK.date.long :msg}"
+  }
+ },
+ "BIKRAM_SAMBAT": {
+  "monthName": ".input {$month :integer} .match $month 1 {{बैशाख}} 2 {{जेठ}} 3 {{असार}} 4 {{साउन}} 5 {{भदौ}} 6 {{असोज}} 7 {{कात्तिक}} 8 {{मंसिर}} 9 {{पुष}} 10 {{माघ}} 11 {{फागुन}} 12 {{चैत}} * {{{$month}}}",
+  "monthShort": "{sdk.calendar.BIKRAM_SAMBAT.monthName :msg}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2} गते",
+   "long": "{$year :integer useGrouping=false} {$monthName} {$day :integer} गते",
+   "full": "{$weekdayName}, {$year :integer useGrouping=false} {$monthName} {$day :integer} गते"
+  }
+ },
+ "time": {
+  "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
+  "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",
+  "numeric12": "{$dayPeriod} {$hour12 :integer}:{$minute :integer minimumIntegerDigits=2}",
+  "long12": "{$dayPeriod} {$hour12 :integer}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}"
+ },
+ "datetime": {
+  "join": "{$date}, {$time}"
+ },
+ "ghati": {
+  "numeric": "{$ghati :integer minimumIntegerDigits=2}-{$pala :integer minimumIntegerDigits=2}",
+  "long": "{$ghati :integer} घडी {$pala :integer} पला"
+ },
+ "duration": {
+  "day": "{$n :number} दिन",
+  "hour": "{$n :number} घण्टा",
+  "minute": "{$n :number} मिनेट",
+  "second": "{$n :number} सेकेन्ड"
+ },
+ "dayPeriod": {
+  "am": "पूर्वाह्न",
+  "pm": "अपराह्न",
+  "morning": "बिहान",
+  "afternoon": "दिउँसो",
+  "evening": "साँझ",
+  "night": "राति"
+ }
 }
