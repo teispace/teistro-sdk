@@ -395,7 +395,13 @@ fn load_locale(dir: &Path) -> Result<LocaleSource, SourceError> {
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| path.extension().is_some_and(|e| e == "json"))
-        .filter(|path| path.file_name().is_none_or(|n| n != META_FILE))
+        // A file whose name opens with `_` belongs to the tooling rather
+        // than to the locale: `_meta.json`, and the overrides a derived
+        // locale keeps beside its sources.
+        .filter(|path| {
+            path.file_stem()
+                .is_none_or(|n| !n.to_string_lossy().starts_with('_'))
+        })
         .collect();
     files.sort();
     for file in files {
@@ -530,7 +536,7 @@ mod tests {
     #[test]
     fn the_sdk_sources_load() {
         let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
-        assert_eq!(tree.locales.len(), 4);
+        assert_eq!(tree.locales.len(), 5, "four written, `sa-Latn` derived");
         let base = tree.base().unwrap_or_else(|| panic!("base"));
         assert_eq!(base.meta.numbering_system, "latn");
         let sun = base.entity("graha.SUN").unwrap_or_else(|| panic!("sun"));

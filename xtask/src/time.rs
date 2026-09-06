@@ -138,10 +138,7 @@ fn render_delta_t(root: &Path) -> Output {
         let _ = writeln!(out, "    ({year}, {seconds}, {}),", sigma.unwrap_or(0));
     }
     let _ = writeln!(out, "];");
-    Output {
-        path: DELTA_T_GENERATED,
-        text: out,
-    }
+    Output::new(DELTA_T_GENERATED, out)
 }
 
 fn render_leap(root: &Path) -> Output {
@@ -195,10 +192,7 @@ fn render_leap(root: &Path) -> Output {
         );
     }
     let _ = writeln!(out, "];");
-    Output {
-        path: LEAP_GENERATED,
-        text: out,
-    }
+    Output::new(LEAP_GENERATED, out)
 }
 
 fn render(root: &Path) -> Vec<Output> {

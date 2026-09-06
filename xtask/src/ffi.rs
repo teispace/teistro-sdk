@@ -74,53 +74,23 @@ fn outputs(root: &Path) -> Vec<Output> {
     );
     let json = serde_json::to_string_pretty(&api).expect("the description serialises");
     vec![
-        Output {
-            path: API_JSON,
-            text: format!("{json}\n"),
-        },
-        Output {
-            path: C_HEADER,
-            text: c::render(&api),
-        },
-        Output {
-            path: TS_CATALOGUE,
-            text: ts::catalogue_declarations(&api),
-        },
-        Output {
-            path: TS_TABLES,
-            text: ts::tables(&api),
-        },
-        Output {
-            path: TS_TYPES,
-            text: ts::type_declarations(&api),
-        },
-        Output {
-            path: TS_BLOB_TYPES,
-            text: ts::blob_declarations(&api),
-        },
-        Output {
-            path: TS_DECODERS,
-            text: ts::decoders(&api),
-        },
-        Output {
-            path: DART_CATALOGUE,
-            text: dart::catalogue(&api),
-        },
-        Output {
-            path: DART_FFI,
-            text: dart::declarations(&api),
-        },
-        Output {
-            path: DART_BLOB,
-            text: dart::decoders(&api),
-        },
-        Output {
-            path: NAPI_GLUE,
+        Output::new(API_JSON, format!("{json}\n")),
+        Output::new(C_HEADER, c::render(&api)),
+        Output::new(TS_CATALOGUE, ts::catalogue_declarations(&api)),
+        Output::new(TS_TABLES, ts::tables(&api)),
+        Output::new(TS_TYPES, ts::type_declarations(&api)),
+        Output::new(TS_BLOB_TYPES, ts::blob_declarations(&api)),
+        Output::new(TS_DECODERS, ts::decoders(&api)),
+        Output::new(DART_CATALOGUE, dart::catalogue(&api)),
+        Output::new(DART_FFI, dart::declarations(&api)),
+        Output::new(DART_BLOB, dart::decoders(&api)),
+        Output::new(
+            NAPI_GLUE,
             // Formatted here rather than by `cargo fmt`, because napi's
             // derive macro reads the source file and a `rustfmt::skip` on
             // the module stops it finding the class before its `impl`.
-            text: rustfmt(&node::render(&api)),
-        },
+            rustfmt(&node::render(&api)),
+        ),
     ]
 }
 

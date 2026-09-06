@@ -142,6 +142,7 @@ void main() {
   put('render-fallback', rendered.fallback);
   put('has-message', ctx.has('sdk.reason.grahaInBhava'));
   put('has-missing-message', ctx.has('sdk.nope.missing'));
+  put('transliterated', ctx.transliterate('सूर्य बृहस्पति'));
   put('entity-sun-name', ctx.entity('graha.SUN').name);
   put('entity-sun-iast', ctx.entity('graha.SUN').iast);
   put('entity-sun-glyph', ctx.entity('graha.SUN').glyph);

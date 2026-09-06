@@ -711,7 +711,7 @@ mod tests {
         // The engine names 27 of the catalogue's 37 deities.
         assert!(kind("deity").present == 27 && kind("deity").total == 37);
         assert!(kind("masa").present == 0 && kind("masa").total == 12);
-        assert_eq!(report.coverage.len(), 4);
+        assert_eq!(report.coverage.len(), 5, "four written, `sa-Latn` derived");
         assert!(
             !report.catalogue.contains_key("rule"),
             "an open kind has no coverage row"

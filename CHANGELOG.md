@@ -136,7 +136,11 @@ every catalogued entity is its forms in the locale
 point. A time renders on a twelve-hour clock where a locale reads one:
 `:time hour12=true` gives every pattern the hour on both clocks, the
 locale's word for the part of the day and its am or pm, so English reads
-`6:15 am` and Nepali `बिहान ६:१५`. The API description (`idl/api.json`, `teistro-idl`) is extracted
+`6:15 am` and Nepali `बिहान ६:१५`. A Sanskrit or Nepali term written in
+Devanagari reads in Latin: the transliteration is a table
+(`teistro_intl::translit`, `ts_intl_transliterate` at the boundary), and
+`sa-Latn` is derived from `sa-Deva` by it, so a Latin-script reader gets
+all 274 entities without anyone writing them twice. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

@@ -16,6 +16,7 @@ use teistro_core::Status;
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
 use teistro_idl::blob::{FixedValue, Writer};
+use teistro_intl::translit::{Script, transliterate};
 use teistro_intl::{ClockTime, Ghati, Params, Value};
 
 use crate::blob::TsBlob;
@@ -136,6 +137,49 @@ pub unsafe extern "C" fn ts_intl_has(
         let has = ctx.intl().has(key);
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_has, "out_has", u8::from(has)) }
+    })
+}
+
+/// Text from one script into another (`deva`, `iast`), as a string lent
+/// until the next call on the context. A pair the build has no table for
+/// is `UNSUPPORTED` naming both scripts; anything the table does not know
+/// passes through, so a name written in two scripts is transliterated in
+/// the half that needs it.
+///
+/// # Safety
+///
+/// `context` must be a live handle; `text`, `from` and `to`
+/// NUL-terminated strings; `out_text` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_intl_transliterate(
+    context: *const TsContext,
+    text: *const c_char,
+    from: *const c_char,
+    to: *const c_char,
+    out_text: *mut TsStr,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let (source, from_key, to_key) = unsafe {
+            (
+                crate::support::text(text, "text")?,
+                crate::support::text(from, "from")?,
+                crate::support::text(to, "to")?,
+            )
+        };
+        let script = |key: &str, field: &'static str| {
+            Script::from_key(key).ok_or_else(|| {
+                Error::unsupported(format!("no script `{key}`"))
+                    .with_field(field)
+                    .with_hint(String::from("the scripts are `deva` and `iast`"))
+            })
+        };
+        let (from, to) = (script(from_key, "from")?, script(to_key, "to")?);
+        let written = transliterate(source, from, to)
+            .map_err(|e| Error::unsupported(e.to_string()).with_field("to"))?;
+        let lent = ctx.lend(&written);
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_text, "out_text", lent) }
     })
 }
 

@@ -87,6 +87,32 @@ void main() {
     );
   });
 
+  test('a term written in one script reads in the other', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    expect(ctx.transliterate('सूर्य बृहस्पति'), 'sūrya bṛhaspati');
+    expect(ctx.transliterate(ctx.entity('graha.MARS').name), 'maṅgala');
+    expect(
+      ctx.transliterate('Jupiter'),
+      'Jupiter',
+      reason: 'what is not the script passes through',
+    );
+    expect(
+      () => ctx.transliterate('x', from: 'iast', to: 'deva'),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.status,
+          'status',
+          Status.unsupported,
+        ),
+      ),
+    );
+    expect(
+      () => ctx.transliterate('x', to: 'taml'),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'to')),
+    );
+  });
+
   test('the accessors are a tree over any renderer', () {
     final asked = <(String, Map<String, Object?>)>[];
     final tree = intl.Messages(_Recording(asked));

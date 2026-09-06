@@ -56,6 +56,21 @@ test('an entity the locale does not carry is refused by name', () => {
   );
 });
 
+test('a term written in one script reads in the other', () => {
+  const ctx = context();
+  assert.equal(ctx.transliterate('सूर्य बृहस्पति'), 'sūrya bṛhaspati');
+  assert.equal(ctx.transliterate(ctx.entity('graha.MARS').name), 'maṅgala');
+  assert.equal(ctx.transliterate('Jupiter'), 'Jupiter', 'what is not the script passes through');
+  assert.throws(
+    () => ctx.transliterate('x', 'iast', 'deva'),
+    (error) => error.status === 'unsupported',
+  );
+  assert.throws(
+    () => ctx.transliterate('x', 'deva', 'taml'),
+    (error) => error.status === 'unsupported' && error.field === 'to',
+  );
+});
+
 test('the accessors are a tree over any renderer', () => {
   const asked = [];
   const tree = messages({
