@@ -4712,6 +4712,12 @@ export declare const Body: {
 };
 
 /**
+ * Every Body by the id a result blob's columns carry, so a column of
+ * ids reads as members without decoding it eagerly.
+ */
+export declare const BodyById: ReadonlyMap<number, Body>;
+
+/**
  * The time scale of the instants in a request.
  *
  * ```
@@ -4734,6 +4740,12 @@ export declare const TimeScale: {
    */
   readonly Tt: 'tt';
 };
+
+/**
+ * Every TimeScale by the id a result blob's columns carry, so a column of
+ * ids reads as members without decoding it eagerly.
+ */
+export declare const TimeScaleById: ReadonlyMap<number, TimeScale>;
 
 /**
  * Where a position is seen from.

@@ -16,6 +16,7 @@ members = [
     "crates/intl",
     "crates/idl",
     "crates/ffi",
+    "bindings/node/native",
     # Spike 2 (spikes/README.md): built and linted like the rest, never published.
     "spikes/02-binding-toolchain/slice",
     "spikes/02-binding-toolchain/a-ffi",

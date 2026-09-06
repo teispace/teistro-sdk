@@ -24,10 +24,168 @@ pub fn is_reserved(field: &FieldDef) -> bool {
     field.name.starts_with("reserved")
 }
 
-/// A field a binding shows: not the handshake, not padding.
+/// A field a binding shows: not the handshake, not padding, and not the
+/// bookkeeping another field's role absorbs (an element count, a presence
+/// flag).
 #[must_use]
 pub fn is_visible(field: &FieldDef) -> bool {
     !is_struct_size(field) && !is_reserved(field)
+}
+
+/// What a struct field is, which decides how every binding marshals it.
+/// Read once by [`field_roles`] so the C header, the TypeScript surface
+/// and the napi glue agree.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FieldRole {
+    /// The `struct_size` handshake; a binding sets it and never shows it.
+    Handshake,
+    /// Padding; zero.
+    Reserved,
+    /// A boolean carried as an integer.
+    Flag,
+    /// A set of an enum's members, bit `n` for the member with value `n`.
+    BitSet {
+        /// The enum's Rust name.
+        enum_name: String,
+    },
+    /// A pointer to `count` elements of a scalar or an enum.
+    Array {
+        /// The field holding the element count.
+        count: String,
+    },
+    /// The element count of the array field that names it.
+    Count {
+        /// That field.
+        of: String,
+    },
+    /// A NUL-terminated UTF-8 string.
+    Text,
+    /// A value present only when a flag field says so.
+    Optional {
+        /// The flag.
+        flag: String,
+    },
+    /// The flag that says whether another field is present.
+    Presence {
+        /// That field.
+        of: String,
+    },
+    /// A struct carried by value.
+    Nested {
+        /// Its Rust name.
+        name: String,
+    },
+    /// A caller-allocated array the library or a provider writes into.
+    Column,
+    /// A fixed-size run of bytes carried in the struct itself (a hash).
+    FixedBytes {
+        /// How many.
+        len: usize,
+    },
+    /// A scalar, or an integer standing for an enum.
+    Value,
+}
+
+impl FieldRole {
+    /// Whether a binding shows the field: the bookkeeping roles another
+    /// field absorbs are not part of any binding's surface.
+    #[must_use]
+    pub const fn is_shown(&self) -> bool {
+        !matches!(
+            self,
+            FieldRole::Handshake
+                | FieldRole::Reserved
+                | FieldRole::Count { .. }
+                | FieldRole::Presence { .. }
+        )
+    }
+}
+
+/// Every field's role, in field order.
+#[must_use]
+pub fn field_roles(api: &Api, s: &StructDef) -> Vec<FieldRole> {
+    let counts: Vec<(&str, &str)> = s
+        .fields
+        .iter()
+        .filter_map(|f| f.meta.len.as_deref().map(|len| (len, f.name.as_str())))
+        .collect();
+    let presences: Vec<(&str, &str)> = s
+        .fields
+        .iter()
+        .filter_map(|f| {
+            f.meta
+                .present_if
+                .as_deref()
+                .map(|flag| (flag, f.name.as_str()))
+        })
+        .collect();
+    s.fields
+        .iter()
+        .map(|f| field_role(api, s, f, &counts, &presences))
+        .collect()
+}
+
+fn field_role(
+    api: &Api,
+    s: &StructDef,
+    f: &FieldDef,
+    counts: &[(&str, &str)],
+    presences: &[(&str, &str)],
+) -> FieldRole {
+    if is_struct_size(f) {
+        return FieldRole::Handshake;
+    }
+    if is_reserved(f) {
+        return FieldRole::Reserved;
+    }
+    if let Some((_, of)) = counts.iter().find(|(len, _)| *len == f.name) {
+        return FieldRole::Count {
+            of: (*of).to_string(),
+        };
+    }
+    if let Some((_, of)) = presences.iter().find(|(flag, _)| *flag == f.name) {
+        return FieldRole::Presence {
+            of: (*of).to_string(),
+        };
+    }
+    if let Some(flag) = &f.meta.present_if {
+        return FieldRole::Optional { flag: flag.clone() };
+    }
+    if let Some(enum_name) = &f.meta.bitset {
+        return FieldRole::BitSet {
+            enum_name: enum_name.clone(),
+        };
+    }
+    if f.meta.flag {
+        return FieldRole::Flag;
+    }
+    if let Some(count) = &f.meta.len {
+        return FieldRole::Array {
+            count: count.clone(),
+        };
+    }
+    match &f.ty {
+        TypeRef::Pointer { to, mutable } => match &**to {
+            TypeRef::Char => FieldRole::Text,
+            _ if *mutable && s.role == StructRole::Columns => FieldRole::Column,
+            _ => FieldRole::Value,
+        },
+        TypeRef::Array { of, len }
+            if matches!(
+                **of,
+                TypeRef::Scalar {
+                    scalar: crate::model::Scalar::U8
+                }
+            ) =>
+        {
+            FieldRole::FixedBytes { len: *len }
+        }
+        TypeRef::Struct { name } => {
+            let _ = api;
+            FieldRole::Nested { name: name.clone() }
+        }
+        _ => FieldRole::Value,
+    }
 }
 
 /// Whether a struct carries `struct_size`.
@@ -72,8 +230,8 @@ pub fn infer_role(api: &Api, param_name: &str, ty: &TypeRef, previous: Option<&P
                     StructRole::OwnedString if out => Role::StringOut,
                     StructRole::OwnedString => Role::StringFree,
                     StructRole::BorrowedString => Role::StrOut,
-                    StructRole::Object if out => Role::StructOut,
-                    StructRole::Object => Role::StructIn,
+                    StructRole::Object | StructRole::Columns if out => Role::StructOut,
+                    StructRole::Object | StructRole::Columns => Role::StructIn,
                 }
             }
             TypeRef::Scalar { scalar } if *mutable && is_out_name(param_name) => {
@@ -305,6 +463,7 @@ mod tests {
             role: infer_role(&api, name, &ty, previous),
             name: name.into(),
             ty,
+            meta: Meta::default(),
         };
         let bytes = param(
             "bytes",

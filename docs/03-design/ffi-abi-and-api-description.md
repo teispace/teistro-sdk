@@ -1,7 +1,9 @@
 # The C ABI and the API description
 
-Status: `draft`, revised 2026-09-06 when the Node binding's generated
-layers were added (§5, the TypeScript surface and the blob decoders);
+Status: `draft`, revised 2026-09-06 when the Node addon and its
+ergonomic layer were added (§3.5's field and parameter roles, §5's
+binding); revised the same day when the Node binding's generated layers
+were added (§5, the TypeScript surface and the blob decoders);
 written 2026-09-06 when `crates/ffi` (`teistro-ffi`) and
 `crates/idl` (`teistro-idl`) were built from spike 2
 (`spikes/02-binding-toolchain/README.md`, ADR-0007). Derives from
@@ -155,8 +157,30 @@ and names and never from a function's name:
 The `api:` line is the one place a unit, a range, an example or an enum
 link is written; it lives in the Rust doc comment, inside backticks, so
 rustdoc shows it as code and the extractor reads it once for every
-binding (ADR-0023). Rustdoc's link syntax is flattened to plain text in
-the description so no binding shows a Rust path.
+binding (ADR-0023). A line that opens with a parameter's name and a colon
+describes that parameter (`` `api: calendar: enum=Calendar` ``), so an
+integer parameter standing for an enum is named in the header and crosses
+as a member in every binding. Rustdoc's link syntax is flattened to plain
+text in the description so no binding shows a Rust path.
+
+**A struct's fields carry roles too**, read once and used by every
+emitter, so a C struct's bookkeeping never reaches a binding's surface:
+
+| field role | how it is marked | what a binding sees |
+|---|---|---|
+| handshake, padding | `struct_size`, `reserved*` | nothing |
+| flag | `api: flag` | a boolean |
+| bit set | `api: bitset=<Enum>` | the members it holds |
+| array | `api: len=<field>` | the elements, as members when the field names an enum, else numbers; the count is gone |
+| count, presence | named by another field's `len=` or `present_if=` | nothing |
+| optional | `api: present_if=<flag>` | the value or its absence |
+| text | a `const char *` | a string |
+| fixed bytes | a `[u8; N]` | a buffer |
+| columns | the struct's `api: role=columns` | typed arrays the caller allocates |
+
+So `ts_position_request` reaches JavaScript as `{ scale, frameBits,
+speeds: boolean, observer?, jds: number[], bodies: Body[] }`: no counts,
+no presence flag, and the bodies by their catalogue keys.
 
 ## 4. Algorithms
 
@@ -233,8 +257,17 @@ application does not use:
 | `blob.d.ts` | each result blob's decoded shape: a column section is one typed array per column plus a `length` |
 | `blob.js` | one decoder per schema over the `TSRB` layout, reading columns as views over the blob's own bytes; a buffer that does not start on an eight-byte boundary is copied once rather than misread, and a wrong magic, version, length or schema id is a `TypeError` |
 
-The napi addon and the ergonomic layer over them follow; until they land
-the package has types and decoders and no native call.
+The addon (`bindings/node/native`, `teistro-node`) is the sixth file the
+generator writes: `src/generated.rs`, a napi module with a class over the
+context handle, an object per boundary struct with the `Held*` value that
+owns whatever the C struct points at, the enums as the strings the tables
+name, and the calls with their `unsafe` blocks. Above it,
+`bindings/node/lib/index.js` is hand-written and thin: it finds the addon,
+checks its ABI against the one the types were generated for, validates at
+the door, fills in defaults, decodes a result on first use rather than
+eagerly, and rethrows a failure as a `TeistroError` carrying the status,
+the code, the detail, the field, the hint and the message key the library
+gave. A host-implemented ephemeris provider is the next block.
 
 The toolchain: `cargo xtask gen ffi` writes `idl/api.json`,
 `bindings/c/include/teistro.h` and the five Node files; `cargo xtask
@@ -340,8 +373,10 @@ yet.
   wrong usage is marked `@ts-expect-error`, so TypeScript fails the check
   when a surface stops refusing one. A key of another kind, a bare member
   name, a misspelt key (TypeScript answers "Did you mean
-  '\"graha.PLUTO\"'?"), a write to a result's field and an unchecked
-  nullable are all compile errors the file asserts.
+  '\"graha.PLUTO\"'?"), a write to a result's field, an unchecked
+  optional, a body given by its id, a count the boundary keeps to itself,
+  a flag as an integer and a partial observer are all compile errors the
+  files assert.
 - Planned: a `cargo-fuzz` target over the blob reader and every entry
   point (the quality bar's fuzzing row), and the sanitizer builds.
 

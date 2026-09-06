@@ -43,8 +43,9 @@ pub struct TsCalendarDate {
     /// The calendar's id.
     /// `api: enum=Calendar example=0`
     pub calendar: u16,
-    /// The era's id, or `0xFFFF` when the calendar attaches none.
-    /// `api: enum=Era example=7`
+    /// The era the calendar attaches, `0xFFFF` for none; filled by the
+    /// library and ignored on input.
+    /// `api: enum=Era nullable example=7`
     pub era: u16,
     /// The astronomical year.
     /// `api: example=2026`
@@ -152,6 +153,8 @@ pub(crate) fn system_of(id: u16) -> Result<&'static dyn CalendarSystem, Error> {
 
 /// The date a fixed day falls on in a calendar.
 ///
+/// `api: calendar: enum=Calendar`
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_date` valid for a read of its
@@ -194,6 +197,8 @@ pub unsafe extern "C" fn ts_calendar_to_fixed(
 
 /// Converts a date into another calendar.
 ///
+/// `api: into: enum=Calendar`
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `date` valid for a read; `out_date`
@@ -216,6 +221,8 @@ pub unsafe extern "C" fn ts_calendar_convert(
 
 /// The length of a month in a calendar.
 ///
+/// `api: calendar: enum=Calendar`
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_length` valid for a write.
@@ -235,6 +242,8 @@ pub unsafe extern "C" fn ts_calendar_month_length(
 }
 
 /// Whether a year is a leap year in a calendar: `1` or `0`.
+///
+/// `api: calendar: enum=Calendar`
 ///
 /// # Safety
 ///
@@ -276,6 +285,8 @@ pub unsafe extern "C" fn ts_calendar_weekday(
 
 /// The Julian day at the UTC midnight that begins a fixed day (fixed day
 /// 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`).
+///
+/// `api: fixed: example=735702`
 #[unsafe(no_mangle)]
 #[allow(clippy::cast_precision_loss, reason = "days are far below 2^53")]
 pub extern "C" fn ts_calendar_jd_of_fixed(fixed: i64) -> f64 {

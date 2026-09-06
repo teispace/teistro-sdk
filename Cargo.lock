@@ -1273,6 +1273,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-node"
+version = "0.0.0"
+dependencies = [
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "teistro-core",
+ "teistro-ffi",
+ "teistro-port-ephemeris",
+]
+
+[[package]]
 name = "teistro-port-ephemeris"
 version = "0.0.0"
 dependencies = [

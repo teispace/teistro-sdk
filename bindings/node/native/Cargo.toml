@@ -1,0 +1,45 @@
+[package]
+name = "teistro-node"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+description = "The Teistro SDK's Node addon: napi glue over the C ABI, generated from the API description"
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { version = "3", default-features = false, features = ["napi8"] }
+napi-derive = "3"
+teistro-core = { path = "../../../crates/core" }
+teistro-ffi = { path = "../../../crates/ffi" }
+teistro-port-ephemeris = { path = "../../../crates/port-ephemeris" }
+
+[build-dependencies]
+napi-build = "2"
+
+# The addon's boundary: the generated glue holds the unsafe calls into the
+# C ABI, each with a SAFETY comment, so unsafe is `deny` rather than the
+# workspace's `forbid`; the rest of the workspace table is kept.
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"

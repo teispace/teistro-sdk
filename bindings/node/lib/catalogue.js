@@ -1078,11 +1078,41 @@ export const Body = Object.freeze({
   OsculatingApogee: 'osculating-apogee',
 });
 
+/**
+ * Every Body by the id a result blob's columns carry, so a column of
+ * ids reads as members without decoding it eagerly.
+ */
+export const BodyById = new Map([
+  [0, 'sun'],
+  [1, 'moon'],
+  [2, 'mercury'],
+  [3, 'venus'],
+  [4, 'mars'],
+  [5, 'jupiter'],
+  [6, 'saturn'],
+  [7, 'uranus'],
+  [8, 'neptune'],
+  [9, 'pluto'],
+  [10, 'mean-node'],
+  [11, 'true-node'],
+  [12, 'mean-apogee'],
+  [13, 'osculating-apogee'],
+]);
+
 /** Every TimeScale by name. */
 export const TimeScale = Object.freeze({
   Ut1: 'ut1',
   Tt: 'tt',
 });
+
+/**
+ * Every TimeScale by the id a result blob's columns carry, so a column of
+ * ids reads as members without decoding it eagerly.
+ */
+export const TimeScaleById = new Map([
+  [0, 'ut1'],
+  [1, 'tt'],
+]);
 
 /** Every Centre by name. */
 export const Centre = Object.freeze({

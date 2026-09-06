@@ -1,11 +1,12 @@
-//! The Node binding's own tests: the generated decoders against blobs the
-//! library really produced, and the generated types against a consumer
-//! that type-checks at maximum strictness (ADR-0023).
+//! The Node binding's own tests: the addon built and loaded, the whole
+//! surface exercised through the ergonomic layer, the generated decoders
+//! against blobs the library really produced, and the generated types
+//! against a consumer that type-checks at maximum strictness (ADR-0023).
 //!
 //! Run by hand (`cargo xtask check-node`) and in the nightly matrix; the
 //! fast check stays Rust-only (ADR-0014). The TypeScript step is skipped
 //! with a note when no compiler is on the machine, because a type-check
-//! needs one and the decoder tests do not.
+//! needs one and the tests do not.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -13,6 +14,39 @@ use std::process::Command;
 const FIXTURES: &str = "target/tsrb";
 const TESTS: &str = "bindings/node/test/";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
+/// Where the addon is loaded from: Node requires the `.node` suffix, so
+/// the cdylib Cargo builds is copied there.
+const ADDON: &str = "bindings/node/native/index.node";
+
+/// The name Cargo gives the addon on this platform.
+fn addon_artefact() -> &'static str {
+    if cfg!(target_os = "macos") {
+        "libteistro_node.dylib"
+    } else if cfg!(target_os = "windows") {
+        "teistro_node.dll"
+    } else {
+        "libteistro_node.so"
+    }
+}
+
+/// Builds the addon and puts it where the loader looks.
+fn build_addon(root: &Path) -> Result<(), ()> {
+    step(
+        Command::new(cargo())
+            .args(["build", "--quiet", "--release", "-p", "teistro-node"])
+            .current_dir(root),
+        "",
+        "the Node addon did not build",
+    )?;
+    let built = root.join("target/release").join(addon_artefact());
+    let addon = root.join(ADDON);
+    std::fs::copy(&built, &addon).map(|_| ()).map_err(|e| {
+        println!(
+            "FAIL  {} could not be copied to {ADDON}: {e}",
+            built.display()
+        );
+    })
+}
 
 fn cargo() -> String {
     std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"))
@@ -65,6 +99,9 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 0;
     }
     let fixtures = root.join(FIXTURES);
+    if build_addon(root).is_err() {
+        return 1;
+    }
     let outcome = step(
         Command::new(cargo())
             .args([

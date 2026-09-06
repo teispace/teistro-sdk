@@ -7,7 +7,7 @@
 // Type-checked by `cargo xtask check-node`.
 
 import type { Body, Graha, Status, TimeScale } from '../lib/catalogue.js';
-import type { CalendarDate, DeltaT, ZoneResolution } from '../lib/types.js';
+import type { CalendarDate, DeltaT, PositionRequest, ZoneResolution } from '../lib/types.js';
 import type { IntlRender, Positions } from '../lib/blob.js';
 
 // A catalogue member is its full key, everywhere.
@@ -55,9 +55,12 @@ function describe(delta: DeltaT, zone: ZoneResolution, date: CalendarDate): stri
   } s in ${zone.tzdbVersion}, ${date.year}-${date.month}-${date.day}`;
 }
 
-/** A nullable field is `| null`, so it cannot be used without a check. */
+/**
+ * A field the library may not fill is an optional property, which is what
+ * the addon carries on both sides, so it cannot be used without a check.
+ */
 function abbreviation(zone: ZoneResolution): string {
-  // @ts-expect-error the abbreviation may be null
+  // @ts-expect-error the abbreviation may be absent
   const bad: string = zone.abbreviation;
   return zone.abbreviation ?? '';
 }
@@ -77,4 +80,41 @@ function rendered(message: IntlRender): string {
   return `${message.text} (${message.resolvedFrom}, ${message.warningCount} warnings)`;
 }
 
-export { abbreviation, bareName, describe, firstLongitude, ketu, newer, node, notAGraha, notAStatus, ok, refused, rendered, scaleName, sun, ut1, wrongKind };
+/**
+ * A position request names its bodies by key and its instants as numbers;
+ * the counts and the presence flags the C struct carries are the
+ * boundary's business, not a consumer's.
+ */
+function request(instants: readonly number[], bodies: readonly Body[]): PositionRequest {
+  return { scale: 'ut1', frameBits: 0, speeds: true, jds: instants, bodies };
+}
+
+// @ts-expect-error `jdCount` is the boundary's bookkeeping, not a field
+const withCount: PositionRequest = { scale: 'ut1', frameBits: 0, speeds: true, jds: [], bodies: [], jdCount: 0 };
+// @ts-expect-error a body is named by its key, not its id
+const byId: PositionRequest = { scale: 'ut1', frameBits: 0, speeds: true, jds: [], bodies: [0] };
+// @ts-expect-error `speeds` is a boolean, not the integer the C struct holds
+const byInteger: PositionRequest = { scale: 'ut1', frameBits: 0, speeds: 1, jds: [], bodies: [] };
+
+export {
+  abbreviation,
+  bareName,
+  byId,
+  byInteger,
+  describe,
+  firstLongitude,
+  ketu,
+  newer,
+  node,
+  notAGraha,
+  notAStatus,
+  ok,
+  refused,
+  rendered,
+  request,
+  scaleName,
+  sun,
+  ut1,
+  withCount,
+  wrongKind,
+};

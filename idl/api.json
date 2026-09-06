@@ -5920,7 +5920,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "out",
@@ -5932,7 +5933,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -5954,7 +5956,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "request",
@@ -5966,7 +5969,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out",
@@ -5978,7 +5982,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -6000,7 +6005,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "jd",
@@ -6008,7 +6014,8 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "scale",
@@ -6016,7 +6023,8 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out",
@@ -6028,7 +6036,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -6050,7 +6059,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "jd_ut1",
@@ -6058,7 +6068,8 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_seconds",
@@ -6070,7 +6081,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -6092,7 +6104,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "jd",
@@ -6100,7 +6113,8 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "scale",
@@ -6108,7 +6122,8 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "ayanamsha",
@@ -6116,7 +6131,8 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_deg",
@@ -6128,7 +6144,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -6150,7 +6167,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "jd_utc",
@@ -6158,7 +6176,8 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_seconds",
@@ -6170,7 +6189,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -6192,7 +6212,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "request",
@@ -6204,7 +6225,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out_jd_ut1",
@@ -6216,7 +6238,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         },
         {
           "name": "out_found",
@@ -6228,7 +6251,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -6250,7 +6274,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "request",
@@ -6262,7 +6287,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out_events",
@@ -6274,7 +6300,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         },
         {
           "name": "capacity",
@@ -6282,7 +6309,8 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_count",
@@ -6294,7 +6322,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -6360,8 +6389,11 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "`TimeScale::id`.",
-          "meta": {}
+          "doc": "The scale the instants are on.",
+          "meta": {
+            "example": "0",
+            "enum": "TimeScale"
+          }
         },
         {
           "name": "frame_bits",
@@ -6369,8 +6401,10 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "`Frame::to_bits`.",
-          "meta": {}
+          "doc": "The frame the positions are wanted in, packed; `ts_frame_pack`\nbuilds it from a frame's fields and `ts_frame_unpack` reads it back.",
+          "meta": {
+            "example": "0"
+          }
         },
         {
           "name": "speeds",
@@ -6378,8 +6412,11 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when speeds are wanted.",
-          "meta": {}
+          "doc": "Whether speeds are wanted.",
+          "meta": {
+            "example": "1",
+            "flag": true
+          }
         },
         {
           "name": "has_observer",
@@ -6387,8 +6424,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when `observer` is set.",
-          "meta": {}
+          "doc": "Whether `observer` is set.",
+          "meta": {
+            "flag": true
+          }
         },
         {
           "name": "reserved",
@@ -6409,8 +6448,10 @@
             "kind": "struct",
             "name": "ObserverC"
           },
-          "doc": "The observer, read when `has_observer` is non-zero.",
-          "meta": {}
+          "doc": "The observer, which a topocentric frame needs.",
+          "meta": {
+            "present_if": "has_observer"
+          }
         },
         {
           "name": "jds",
@@ -6422,8 +6463,11 @@
             },
             "mutable": false
           },
-          "doc": "The instants.",
-          "meta": {}
+          "doc": "The instants, on the request's scale.",
+          "meta": {
+            "unit": "jd",
+            "len": "jd_count"
+          }
         },
         {
           "name": "jd_count",
@@ -6444,8 +6488,11 @@
             },
             "mutable": false
           },
-          "doc": "The bodies as `Body::id`.",
-          "meta": {}
+          "doc": "The bodies.",
+          "meta": {
+            "enum": "Body",
+            "len": "body_count"
+          }
         },
         {
           "name": "body_count",
@@ -6462,7 +6509,7 @@
     {
       "name": "PositionColumnsC",
       "doc": "C columns the provider fills: caller-owned arrays of `capacity` cells,\ninstants outermost.",
-      "role": "object",
+      "role": "columns",
       "fields": [
         {
           "name": "struct_size",
@@ -6493,7 +6540,10 @@
             "mutable": true
           },
           "doc": "Longitudes.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "len": "capacity"
+          }
         },
         {
           "name": "lat",
@@ -6506,7 +6556,10 @@
             "mutable": true
           },
           "doc": "Latitudes.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "len": "capacity"
+          }
         },
         {
           "name": "dist",
@@ -6519,7 +6572,9 @@
             "mutable": true
           },
           "doc": "Distances.",
-          "meta": {}
+          "meta": {
+            "len": "capacity"
+          }
         },
         {
           "name": "lon_speed",
@@ -6532,7 +6587,10 @@
             "mutable": true
           },
           "doc": "Longitude speeds.",
-          "meta": {}
+          "meta": {
+            "unit": "deg/day",
+            "len": "capacity"
+          }
         },
         {
           "name": "lat_speed",
@@ -6545,7 +6603,10 @@
             "mutable": true
           },
           "doc": "Latitude speeds.",
-          "meta": {}
+          "meta": {
+            "unit": "deg/day",
+            "len": "capacity"
+          }
         },
         {
           "name": "dist_speed",
@@ -6558,7 +6619,9 @@
             "mutable": true
           },
           "doc": "Distance speeds.",
-          "meta": {}
+          "meta": {
+            "len": "capacity"
+          }
         },
         {
           "name": "status",
@@ -6571,7 +6634,9 @@
             "mutable": true
           },
           "doc": "Per-cell status codes (`CellStatus::code`).",
-          "meta": {}
+          "meta": {
+            "len": "capacity"
+          }
         },
         {
           "name": "source",
@@ -6584,7 +6649,9 @@
             "mutable": true
           },
           "doc": "Per-cell sources (`Source::to_bits`).",
-          "meta": {}
+          "meta": {
+            "len": "capacity"
+          }
         },
         {
           "name": "capacity",
@@ -7000,8 +7067,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when speeds are returned.",
-          "meta": {}
+          "doc": "Whether speeds are returned.",
+          "meta": {
+            "flag": true
+          }
         },
         {
           "name": "deterministic",
@@ -7009,8 +7078,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when identical requests give identical bits.",
-          "meta": {}
+          "doc": "Whether identical requests give identical bits.",
+          "meta": {
+            "flag": true
+          }
         },
         {
           "name": "tier",
@@ -7126,7 +7197,10 @@
             "mutable": false
           },
           "doc": "The bodies as ids.",
-          "meta": {}
+          "meta": {
+            "enum": "Body",
+            "len": "body_count"
+          }
         },
         {
           "name": "body_count",
@@ -7166,7 +7240,10 @@
             "mutable": false
           },
           "doc": "The ayanamshas the override knows, as catalogue ids.",
-          "meta": {}
+          "meta": {
+            "enum": "Ayanamsha",
+            "len": "ayanamsha_count"
+          }
         },
         {
           "name": "ayanamsha_count",
@@ -7188,7 +7265,9 @@
             "mutable": false
           },
           "doc": "The data hashes.",
-          "meta": {}
+          "meta": {
+            "len": "hash_count"
+          }
         },
         {
           "name": "hash_count",
@@ -7634,10 +7713,11 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "doc": "The ayanamsha's catalogue id when `sidereal` is non-zero; ignored\notherwise. `0xFFFF` names none.",
+          "doc": "The ayanamsha, read only when `sidereal` is set; `0xFFFF` names\nnone, which is what a tropical frame carries.",
           "meta": {
             "example": "0",
-            "enum": "Ayanamsha"
+            "enum": "Ayanamsha",
+            "nullable": true
           }
         },
         {
@@ -7682,9 +7762,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero for the sidereal zodiac, which uses `ayanamsha`.",
+          "doc": "The sidereal zodiac, which uses `ayanamsha`; tropical otherwise.",
           "meta": {
-            "example": "0"
+            "example": "0",
+            "flag": true
           }
         },
         {
@@ -7693,9 +7774,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when light time is applied.",
+          "doc": "Whether light time is applied.",
           "meta": {
-            "example": "1"
+            "example": "1",
+            "flag": true
           }
         },
         {
@@ -7704,9 +7786,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when annual aberration is applied.",
+          "doc": "Whether annual aberration is applied.",
           "meta": {
-            "example": "1"
+            "example": "1",
+            "flag": true
           }
         },
         {
@@ -7715,9 +7798,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when relativistic deflection is applied.",
+          "doc": "Whether relativistic deflection is applied.",
           "meta": {
-            "example": "0"
+            "example": "0",
+            "flag": true
           }
         },
         {
@@ -7726,9 +7810,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when nutation is applied.",
+          "doc": "Whether nutation is applied.",
           "meta": {
-            "example": "1"
+            "example": "1",
+            "flag": true
           }
         }
       ],
@@ -7766,10 +7851,11 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "doc": "The era's id, or `0xFFFF` when the calendar attaches none.",
+          "doc": "The era the calendar attaches, `0xFFFF` for none; filled by the\nlibrary and ignored on input.",
           "meta": {
             "example": "7",
-            "enum": "Era"
+            "enum": "Era",
+            "nullable": true
           }
         },
         {
@@ -7920,9 +8006,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when the time is given; zero for a date-only civil time.",
+          "doc": "Whether the time is given; a date-only civil time has none, and the\ncontext's unknown-time policy decides what to do.",
           "meta": {
-            "example": "1"
+            "example": "1",
+            "flag": true
           }
         },
         {
@@ -8120,10 +8207,10 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "The warnings as a bit set.",
+          "doc": "What the resolution wants the consumer to know.",
           "meta": {
             "example": "0",
-            "enum": "TsZoneWarning"
+            "bitset": "TsZoneWarning"
           }
         },
         {
@@ -8218,8 +8305,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when the time was given rather than supplied by a policy.",
-          "meta": {}
+          "doc": "Whether the time was given rather than supplied by a policy.",
+          "meta": {
+            "flag": true
+          }
         },
         {
           "name": "reserved",
@@ -8293,8 +8382,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when UTC before 1972 was read as UT1.",
-          "meta": {}
+          "doc": "Whether UTC before 1972 was read as UT1.",
+          "meta": {
+            "flag": true
+          }
         },
         {
           "name": "has_uncertainty",
@@ -8302,8 +8393,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when `uncertainty_seconds` is meaningful.",
-          "meta": {}
+          "doc": "Whether `uncertainty_seconds` is meaningful.",
+          "meta": {
+            "flag": true
+          }
         },
         {
           "name": "reserved",
@@ -8409,8 +8502,10 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "doc": "Non-zero when `uncertainty_seconds` is meaningful.",
-          "meta": {}
+          "doc": "Whether `uncertainty_seconds` is meaningful.",
+          "meta": {
+            "flag": true
+          }
         },
         {
           "name": "reserved",
@@ -8594,7 +8689,10 @@
             "kind": "scalar",
             "scalar": "i32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "Status"
+          }
         }
       ],
       "returns": {
@@ -8622,7 +8720,8 @@
             },
             "mutable": true
           },
-          "role": "string_free"
+          "role": "string_free",
+          "meta": {}
         }
       ],
       "meta": {},
@@ -8643,7 +8742,8 @@
             },
             "mutable": true
           },
-          "role": "blob_free"
+          "role": "blob_free",
+          "meta": {}
         }
       ],
       "meta": {},
@@ -8664,7 +8764,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "provider",
@@ -8676,7 +8777,8 @@
             },
             "mutable": false
           },
-          "role": "vtable_in"
+          "role": "vtable_in",
+          "meta": {}
         },
         {
           "name": "provider_user_data",
@@ -8687,7 +8789,8 @@
             },
             "mutable": true
           },
-          "role": "user_data"
+          "role": "user_data",
+          "meta": {}
         },
         {
           "name": "out_context",
@@ -8703,7 +8806,8 @@
             },
             "mutable": true
           },
-          "role": "handle_out"
+          "role": "handle_out",
+          "meta": {}
         },
         {
           "name": "out_error",
@@ -8715,7 +8819,8 @@
             },
             "mutable": true
           },
-          "role": "string_out"
+          "role": "string_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -8740,7 +8845,8 @@
             },
             "mutable": true
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         }
       ],
       "meta": {},
@@ -8761,7 +8867,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "out_error",
@@ -8773,7 +8880,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -8798,7 +8906,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "out_profile",
@@ -8810,7 +8919,8 @@
             },
             "mutable": true
           },
-          "role": "str_out"
+          "role": "str_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -8835,7 +8945,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "out_json",
@@ -8847,7 +8958,8 @@
             },
             "mutable": true
           },
-          "role": "string_out"
+          "role": "string_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -8872,7 +8984,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "out_hash",
@@ -8884,7 +8997,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -8909,7 +9023,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "key",
@@ -8920,7 +9035,8 @@
             },
             "mutable": false
           },
-          "role": "string_in"
+          "role": "string_in",
+          "meta": {}
         },
         {
           "name": "out_id",
@@ -8932,7 +9048,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -8957,7 +9074,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "id",
@@ -8965,7 +9083,8 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_key",
@@ -8977,7 +9096,8 @@
             },
             "mutable": true
           },
-          "role": "str_out"
+          "role": "str_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9002,7 +9122,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9027,7 +9148,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out_bits",
@@ -9039,7 +9161,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9060,7 +9183,8 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_frame",
@@ -9072,7 +9196,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9097,7 +9222,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "calendar",
@@ -9105,7 +9231,10 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "Calendar"
+          }
         },
         {
           "name": "fixed",
@@ -9113,7 +9242,8 @@
             "kind": "scalar",
             "scalar": "i64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_date",
@@ -9125,7 +9255,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9150,7 +9281,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "date",
@@ -9162,7 +9294,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out_fixed",
@@ -9174,7 +9307,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9199,7 +9333,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "date",
@@ -9211,7 +9346,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "into",
@@ -9219,7 +9355,10 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "Calendar"
+          }
         },
         {
           "name": "out_date",
@@ -9231,7 +9370,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9256,7 +9396,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "calendar",
@@ -9264,7 +9405,10 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "Calendar"
+          }
         },
         {
           "name": "year",
@@ -9272,7 +9416,8 @@
             "kind": "scalar",
             "scalar": "i32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "month",
@@ -9280,7 +9425,8 @@
             "kind": "scalar",
             "scalar": "u8"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_length",
@@ -9292,7 +9438,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9317,7 +9464,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "calendar",
@@ -9325,7 +9473,10 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "Calendar"
+          }
         },
         {
           "name": "year",
@@ -9333,7 +9484,8 @@
             "kind": "scalar",
             "scalar": "i32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_leap",
@@ -9345,7 +9497,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9370,7 +9523,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "date",
@@ -9382,7 +9536,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out_weekday",
@@ -9394,7 +9549,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9414,7 +9570,10 @@
             "kind": "scalar",
             "scalar": "i64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "example": "735702"
+          }
         }
       ],
       "returns": {
@@ -9435,7 +9594,8 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {}
         },
         {
           "name": "out_fraction",
@@ -9447,7 +9607,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9472,7 +9633,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "civil",
@@ -9484,7 +9646,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "zone",
@@ -9496,7 +9659,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out_resolution",
@@ -9508,7 +9672,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9533,7 +9698,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "jd_utc",
@@ -9541,7 +9707,10 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "unit": "jd"
+          }
         },
         {
           "name": "zone",
@@ -9553,7 +9722,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "calendar",
@@ -9561,7 +9731,10 @@
             "kind": "scalar",
             "scalar": "u16"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "Calendar"
+          }
         },
         {
           "name": "out_civil",
@@ -9573,7 +9746,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         },
         {
           "name": "out_resolution",
@@ -9585,7 +9759,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9610,7 +9785,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "jd",
@@ -9618,7 +9794,10 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "unit": "jd"
+          }
         },
         {
           "name": "from",
@@ -9626,7 +9805,10 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "TsScale"
+          }
         },
         {
           "name": "to",
@@ -9634,7 +9816,10 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "enum": "TsScale"
+          }
         },
         {
           "name": "out_conversion",
@@ -9646,7 +9831,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9671,7 +9857,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "jd_ut1",
@@ -9679,7 +9866,10 @@
             "kind": "scalar",
             "scalar": "f64"
           },
-          "role": "value"
+          "role": "value",
+          "meta": {
+            "unit": "jd"
+          }
         },
         {
           "name": "out_delta_t",
@@ -9691,7 +9881,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9716,7 +9907,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "bytes",
@@ -9728,7 +9920,8 @@
             },
             "mutable": false
           },
-          "role": "bytes_in"
+          "role": "bytes_in",
+          "meta": {}
         },
         {
           "name": "bytes_len",
@@ -9736,7 +9929,8 @@
             "kind": "scalar",
             "scalar": "usize"
           },
-          "role": "length"
+          "role": "length",
+          "meta": {}
         },
         {
           "name": "out_loaded",
@@ -9748,7 +9942,8 @@
             },
             "mutable": true
           },
-          "role": "struct_out"
+          "role": "struct_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9773,7 +9968,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "locale",
@@ -9784,7 +9980,8 @@
             },
             "mutable": false
           },
-          "role": "string_in"
+          "role": "string_in",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9809,7 +10006,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "out_locale",
@@ -9821,7 +10019,8 @@
             },
             "mutable": true
           },
-          "role": "str_out"
+          "role": "str_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9846,7 +10045,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "key",
@@ -9857,7 +10057,8 @@
             },
             "mutable": false
           },
-          "role": "string_in"
+          "role": "string_in",
+          "meta": {}
         },
         {
           "name": "out_has",
@@ -9869,7 +10070,8 @@
             },
             "mutable": true
           },
-          "role": "scalar_out"
+          "role": "scalar_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9894,7 +10096,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "key",
@@ -9905,7 +10108,8 @@
             },
             "mutable": false
           },
-          "role": "string_in"
+          "role": "string_in",
+          "meta": {}
         },
         {
           "name": "params_json",
@@ -9916,7 +10120,10 @@
             },
             "mutable": false
           },
-          "role": "string_in"
+          "role": "string_in",
+          "meta": {
+            "nullable": true
+          }
         },
         {
           "name": "out_blob",
@@ -9928,7 +10135,8 @@
             },
             "mutable": true
           },
-          "role": "blob_out"
+          "role": "blob_out",
+          "meta": {}
         }
       ],
       "returns": {
@@ -9955,7 +10163,8 @@
             },
             "mutable": false
           },
-          "role": "handle"
+          "role": "handle",
+          "meta": {}
         },
         {
           "name": "request",
@@ -9967,7 +10176,8 @@
             },
             "mutable": false
           },
-          "role": "struct_in"
+          "role": "struct_in",
+          "meta": {}
         },
         {
           "name": "out_blob",
@@ -9979,7 +10189,8 @@
             },
             "mutable": true
           },
-          "role": "blob_out"
+          "role": "blob_out",
+          "meta": {}
         }
       ],
       "returns": {

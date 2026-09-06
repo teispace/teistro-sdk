@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, Ayanamsha, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -28,41 +28,36 @@ export interface Observer {
  */
 export interface PositionRequest {
   /**
-   * `TimeScale::id`.
+   * The scale the instants are on.
+   * @enum TimeScale
+   * @example 0
    */
-  readonly scale: number;
+  readonly scale: TimeScale;
   /**
-   * `Frame::to_bits`.
+   * The frame the positions are wanted in, packed; `ts_frame_pack`
+   * builds it from a frame's fields and `ts_frame_unpack` reads it back.
+   * @example 0
    */
   readonly frameBits: number;
   /**
-   * Non-zero when speeds are wanted.
+   * Whether speeds are wanted.
+   * @example 1
    */
-  readonly speeds: number;
+  readonly speeds: boolean;
   /**
-   * Non-zero when `observer` is set.
+   * The observer, which a topocentric frame needs.
    */
-  readonly hasObserver: number;
+  readonly observer?: Observer;
   /**
-   * The observer, read when `has_observer` is non-zero.
+   * The instants, on the request's scale.
+   * @unit jd
    */
-  readonly observer: unknown;
+  readonly jds: Float64Array | readonly number[];
   /**
-   * The instants.
+   * The bodies.
+   * @enum Body
    */
-  readonly jds: unknown;
-  /**
-   * How many instants.
-   */
-  readonly jdCount: number;
-  /**
-   * The bodies as `Body::id`.
-   */
-  readonly bodies: unknown;
-  /**
-   * How many bodies.
-   */
-  readonly bodyCount: number;
+  readonly bodies: readonly Body[];
 }
 
 /**
@@ -76,40 +71,40 @@ export interface PositionColumns {
   readonly frameBits: number;
   /**
    * Longitudes.
+   * @unit deg
    */
-  readonly lon: unknown;
+  readonly lon: Float64Array;
   /**
    * Latitudes.
+   * @unit deg
    */
-  readonly lat: unknown;
+  readonly lat: Float64Array;
   /**
    * Distances.
    */
-  readonly dist: unknown;
+  readonly dist: Float64Array;
   /**
    * Longitude speeds.
+   * @unit deg/day
    */
-  readonly lonSpeed: unknown;
+  readonly lonSpeed: Float64Array;
   /**
    * Latitude speeds.
+   * @unit deg/day
    */
-  readonly latSpeed: unknown;
+  readonly latSpeed: Float64Array;
   /**
    * Distance speeds.
    */
-  readonly distSpeed: unknown;
+  readonly distSpeed: Float64Array;
   /**
    * Per-cell status codes (`CellStatus::code`).
    */
-  readonly status: unknown;
+  readonly status: Int32Array;
   /**
    * Per-cell sources (`Source::to_bits`).
    */
-  readonly source: unknown;
-  /**
-   * The number of cells each array holds.
-   */
-  readonly capacity: number;
+  readonly source: Uint32Array;
 }
 
 /**
@@ -157,7 +152,7 @@ export interface HorizonRequest {
   /**
    * The place.
    */
-  readonly observer: unknown;
+  readonly observer: Observer;
   /**
    * The search begins here, UT1.
    */
@@ -227,7 +222,7 @@ export interface CrossingRequest {
   /**
    * The observer, read when `has_observer` is set.
    */
-  readonly observer: unknown;
+  readonly observer: Observer;
 }
 
 /**
@@ -272,13 +267,13 @@ export interface DataHash {
  */
 export interface Capabilities {
   /**
-   * Non-zero when speeds are returned.
+   * Whether speeds are returned.
    */
-  readonly speeds: number;
+  readonly speeds: boolean;
   /**
-   * Non-zero when identical requests give identical bits.
+   * Whether identical requests give identical bits.
    */
-  readonly deterministic: number;
+  readonly deterministic: boolean;
   /**
    * The tier plus one, zero for none (`Source::to_bits` encoding).
    */
@@ -317,12 +312,9 @@ export interface Capabilities {
   readonly jdMax: number;
   /**
    * The bodies as ids.
+   * @enum Body
    */
-  readonly bodies: unknown;
-  /**
-   * How many.
-   */
-  readonly bodyCount: number;
+  readonly bodies: readonly Body[];
   /**
    * `Frame::to_bits` of the native frame.
    */
@@ -333,20 +325,13 @@ export interface Capabilities {
   readonly overrides: number;
   /**
    * The ayanamshas the override knows, as catalogue ids.
+   * @enum Ayanamsha
    */
-  readonly ayanamshas: unknown;
-  /**
-   * How many.
-   */
-  readonly ayanamshaCount: number;
+  readonly ayanamshas: readonly Ayanamsha[];
   /**
    * The data hashes.
    */
-  readonly hashes: unknown;
-  /**
-   * How many.
-   */
-  readonly hashCount: number;
+  readonly hashes: Uint8Array | readonly number[];
 }
 
 /**
@@ -377,20 +362,20 @@ export interface ContextOptions {
    * @example parashari-classical
    * @nullable
    */
-  readonly profile: string | null;
+  readonly profile?: string;
   /**
    * A JSON settings patch over the profile: an object whose groups and
    * knobs are the settings document's, every one optional; an unknown
    * knob or a value outside its type is `INVALID_ARG` naming it.
    * @nullable
    */
-  readonly settingsJson: string | null;
+  readonly settingsJson?: string;
   /**
    * The locale every render resolves from (`ne-Deva-NP`).
    * @example en-Latn
    * @nullable
    */
-  readonly locale: string | null;
+  readonly locale?: string;
 }
 
 /**
@@ -412,7 +397,7 @@ export interface Error {
    * The detail's name (`UNKNOWN_KEY`), or null.
    * @nullable
    */
-  readonly detail: string | null;
+  readonly detail?: string;
   /**
    * The English message naming the field and the range.
    */
@@ -421,17 +406,17 @@ export interface Error {
    * The field involved, or null.
    * @nullable
    */
-  readonly field: string | null;
+  readonly field?: string;
   /**
    * A hint (`did you mean ...`), or null.
    * @nullable
    */
-  readonly hint: string | null;
+  readonly hint?: string;
   /**
    * The localisable message key, or null.
    * @nullable
    */
-  readonly key: string | null;
+  readonly key?: string;
 }
 
 /**
@@ -440,12 +425,13 @@ export interface Error {
  */
 export interface Frame {
   /**
-   * The ayanamsha's catalogue id when `sidereal` is non-zero; ignored
-   * otherwise. `0xFFFF` names none.
+   * The ayanamsha, read only when `sidereal` is set; `0xFFFF` names
+   * none, which is what a tropical frame carries.
    * @enum Ayanamsha
    * @example 0
+   * @nullable
    */
-  readonly ayanamsha: Ayanamsha;
+  readonly ayanamsha?: Ayanamsha;
   /**
    * Where the position is seen from; a topocentric frame needs the
    * request's observer.
@@ -466,30 +452,30 @@ export interface Frame {
    */
   readonly coordinates: Coordinates;
   /**
-   * Non-zero for the sidereal zodiac, which uses `ayanamsha`.
+   * The sidereal zodiac, which uses `ayanamsha`; tropical otherwise.
    * @example 0
    */
-  readonly sidereal: number;
+  readonly sidereal: boolean;
   /**
-   * Non-zero when light time is applied.
+   * Whether light time is applied.
    * @example 1
    */
-  readonly lightTime: number;
+  readonly lightTime: boolean;
   /**
-   * Non-zero when annual aberration is applied.
+   * Whether annual aberration is applied.
    * @example 1
    */
-  readonly aberration: number;
+  readonly aberration: boolean;
   /**
-   * Non-zero when relativistic deflection is applied.
+   * Whether relativistic deflection is applied.
    * @example 0
    */
-  readonly deflection: number;
+  readonly deflection: boolean;
   /**
-   * Non-zero when nutation is applied.
+   * Whether nutation is applied.
    * @example 1
    */
-  readonly nutation: number;
+  readonly nutation: boolean;
 }
 
 /**
@@ -504,11 +490,13 @@ export interface CalendarDate {
    */
   readonly calendar: Calendar;
   /**
-   * The era's id, or `0xFFFF` when the calendar attaches none.
+   * The era the calendar attaches, `0xFFFF` for none; filled by the
+   * library and ignored on input.
    * @enum Era
    * @example 7
+   * @nullable
    */
-  readonly era: Era;
+  readonly era?: Era;
   /**
    * The astronomical year.
    * @example 2026
@@ -570,10 +558,11 @@ export interface CivilTime {
    */
   readonly second: number;
   /**
-   * Non-zero when the time is given; zero for a date-only civil time.
+   * Whether the time is given; a date-only civil time has none, and the
+   * context's unknown-time policy decides what to do.
    * @example 1
    */
-  readonly hasTime: number;
+  readonly hasTime: boolean;
   /**
    * Nanoseconds within the second.
    * @range [0,999999999]
@@ -589,11 +578,11 @@ export interface CivilDateTime {
   /**
    * The date.
    */
-  readonly date: unknown;
+  readonly date: CalendarDate;
   /**
    * The time of day.
    */
-  readonly time: unknown;
+  readonly time: CivilTime;
 }
 
 /**
@@ -625,7 +614,7 @@ export interface ZoneSpec {
    * @example Asia/Kathmandu
    * @nullable
    */
-  readonly zone: string | null;
+  readonly zone?: string;
 }
 
 /**
@@ -646,11 +635,10 @@ export interface ZoneResolution {
    */
   readonly dstShiftSeconds: number;
   /**
-   * The warnings as a bit set.
-   * @enum ZoneWarning
+   * What the resolution wants the consumer to know.
    * @example 0
    */
-  readonly warnings: ZoneWarning;
+  readonly warnings: readonly ZoneWarning[];
   /**
    * The instant on UTC.
    * @unit jd
@@ -667,7 +655,7 @@ export interface ZoneResolution {
    * the next call on the context.
    * @nullable
    */
-  readonly abbreviation: string | null;
+  readonly abbreviation?: string;
   /**
    * Where the offset came from.
    * @enum ZoneSource
@@ -694,9 +682,9 @@ export interface ZoneResolution {
    */
   readonly chosen: Chosen;
   /**
-   * Non-zero when the time was given rather than supplied by a policy.
+   * Whether the time was given rather than supplied by a policy.
    */
-  readonly timeKnown: number;
+  readonly timeKnown: boolean;
 }
 
 /**
@@ -722,13 +710,13 @@ export interface TimeConversion {
    */
   readonly deltaTSource: DeltaTSource;
   /**
-   * Non-zero when UTC before 1972 was read as UT1.
+   * Whether UTC before 1972 was read as UT1.
    */
-  readonly prolepticUtc: number;
+  readonly prolepticUtc: boolean;
   /**
-   * Non-zero when `uncertainty_seconds` is meaningful.
+   * Whether `uncertainty_seconds` is meaningful.
    */
-  readonly hasUncertainty: number;
+  readonly hasUncertainty: boolean;
   /**
    * The instant on the target scale.
    * @unit jd
@@ -772,9 +760,9 @@ export interface DeltaT {
    */
   readonly source: DeltaTSource;
   /**
-   * Non-zero when `uncertainty_seconds` is meaningful.
+   * Whether `uncertainty_seconds` is meaningful.
    */
-  readonly hasUncertainty: number;
+  readonly hasUncertainty: boolean;
   /**
    * TT less UT1, seconds.
    * @unit s

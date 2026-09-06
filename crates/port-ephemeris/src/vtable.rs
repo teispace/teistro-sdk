@@ -68,23 +68,31 @@ impl ObserverC {
 pub struct PositionRequestC {
     /// `sizeof(PositionRequestC)` as the caller compiled it.
     pub struct_size: u32,
-    /// [`TimeScale::id`].
+    /// The scale the instants are on.
+    /// `api: enum=TimeScale example=0`
     pub scale: u32,
-    /// [`Frame::to_bits`].
+    /// The frame the positions are wanted in, packed; `ts_frame_pack`
+    /// builds it from a frame's fields and `ts_frame_unpack` reads it back.
+    /// `api: example=0`
     pub frame_bits: u32,
-    /// Non-zero when speeds are wanted.
+    /// Whether speeds are wanted.
+    /// `api: flag example=1`
     pub speeds: u8,
-    /// Non-zero when `observer` is set.
+    /// Whether `observer` is set.
+    /// `api: flag`
     pub has_observer: u8,
     /// Reserved, zero.
     pub reserved: [u8; 2],
-    /// The observer, read when `has_observer` is non-zero.
+    /// The observer, which a topocentric frame needs.
+    /// `api: present_if=has_observer`
     pub observer: ObserverC,
-    /// The instants.
+    /// The instants, on the request's scale.
+    /// `api: len=jd_count unit=jd`
     pub jds: *const f64,
     /// How many instants.
     pub jd_count: usize,
-    /// The bodies as [`Body::id`].
+    /// The bodies.
+    /// `api: len=body_count enum=Body`
     pub bodies: *const u16,
     /// How many bodies.
     pub body_count: usize,
@@ -177,6 +185,8 @@ impl PositionRequestC {
 
 /// C columns the provider fills: caller-owned arrays of `capacity` cells,
 /// instants outermost.
+///
+/// `api: role=columns`
 #[repr(C)]
 #[derive(Debug)]
 pub struct PositionColumnsC {
@@ -185,20 +195,28 @@ pub struct PositionColumnsC {
     /// Written by the provider: [`Frame::to_bits`] of the values.
     pub frame_bits: u32,
     /// Longitudes.
+    /// `api: len=capacity unit=deg`
     pub lon: *mut f64,
     /// Latitudes.
+    /// `api: len=capacity unit=deg`
     pub lat: *mut f64,
     /// Distances.
+    /// `api: len=capacity`
     pub dist: *mut f64,
     /// Longitude speeds.
+    /// `api: len=capacity unit=deg/day`
     pub lon_speed: *mut f64,
     /// Latitude speeds.
+    /// `api: len=capacity unit=deg/day`
     pub lat_speed: *mut f64,
     /// Distance speeds.
+    /// `api: len=capacity`
     pub dist_speed: *mut f64,
     /// Per-cell status codes ([`CellStatus::code`]).
+    /// `api: len=capacity`
     pub status: *mut i32,
     /// Per-cell sources ([`Source::to_bits`]).
+    /// `api: len=capacity`
     pub source: *mut u32,
     /// The number of cells each array holds.
     pub capacity: usize,
@@ -341,9 +359,11 @@ pub struct DataHashC {
 pub struct CapabilitiesC {
     /// `sizeof(CapabilitiesC)` as the caller compiled it.
     pub struct_size: u32,
-    /// Non-zero when speeds are returned.
+    /// Whether speeds are returned.
+    /// `api: flag`
     pub speeds: u8,
-    /// Non-zero when identical requests give identical bits.
+    /// Whether identical requests give identical bits.
+    /// `api: flag`
     pub deterministic: u8,
     /// The tier plus one, zero for none ([`Source::to_bits`] encoding).
     pub tier: u8,
@@ -366,6 +386,7 @@ pub struct CapabilitiesC {
     /// Coverage end, UT1.
     pub jd_max: f64,
     /// The bodies as ids.
+    /// `api: len=body_count enum=Body`
     pub bodies: *const u16,
     /// How many.
     pub body_count: usize,
@@ -374,10 +395,12 @@ pub struct CapabilitiesC {
     /// [`Overrides::bits`].
     pub overrides: u32,
     /// The ayanamshas the override knows, as catalogue ids.
+    /// `api: len=ayanamsha_count enum=Ayanamsha`
     pub ayanamshas: *const u16,
     /// How many.
     pub ayanamsha_count: usize,
     /// The data hashes.
+    /// `api: len=hash_count`
     pub hashes: *const DataHashC,
     /// How many.
     pub hash_count: usize,

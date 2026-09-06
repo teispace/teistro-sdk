@@ -14,9 +14,11 @@
 use std::fmt::Write;
 
 use crate::emit::{DocStyle, block_comment, field_doc_with};
-use crate::model::{Api, BlobSchema, EnumDef, Scalar, SectionKind, StructDef, TypeRef};
+use crate::model::{
+    Api, BlobSchema, EnumDef, FieldDef, Scalar, SectionKind, StructDef, StructRole, TypeRef,
+};
 use crate::names::{binding_type_name, camel, kebab, pascal};
-use crate::rules::{is_visible, status_enum};
+use crate::rules::{FieldRole, field_roles, is_read_by_host, status_enum};
 
 /// The header every generated file carries.
 fn preamble(api: &Api, comment: &str) -> String {
@@ -53,28 +55,65 @@ fn ts_scalar(scalar: Scalar) -> &'static str {
     }
 }
 
-/// The TypeScript type of a struct field.
-fn ts_field(ty: &TypeRef, enum_name: Option<&str>, nullable: bool) -> String {
+/// The TypeScript type of a struct field, from its role: a flag is a
+/// boolean, a bit set the members it holds, an array of an enum's ids the
+/// members themselves, an optional value `| null`.
+fn ts_field(field: &FieldDef, role: &FieldRole, reads: bool) -> String {
+    match role {
+        FieldRole::Flag => String::from("boolean"),
+        FieldRole::BitSet { enum_name } => format!("readonly {}[]", binding_type_name(enum_name)),
+        FieldRole::Array { .. } | FieldRole::Column => array_type(field, reads),
+        FieldRole::Text => String::from("string"),
+        FieldRole::Nested { name } => binding_type_name(name),
+        FieldRole::Optional { .. } => match &field.ty {
+            TypeRef::Struct { name } => binding_type_name(name),
+            other => ts_plain(other, field.meta.enum_name.as_deref()),
+        },
+        _ => ts_plain(&field.ty, field.meta.enum_name.as_deref()),
+    }
+}
+
+/// Whether a field is optional: napi carries an absent value as an absent
+/// property, on the way in and on the way out, so the surface says so
+/// rather than promising a `null` that never arrives.
+fn is_optional(field: &FieldDef, role: &FieldRole) -> bool {
+    field.meta.nullable || matches!(role, FieldRole::Optional { .. })
+}
+
+/// A pointer to `count` elements: the members themselves when the field
+/// names an enum, else numbers. A struct the host reads back carries the
+/// typed array the library filled; one the host writes accepts either.
+fn array_type(field: &FieldDef, reads: bool) -> String {
+    if let Some(name) = &field.meta.enum_name {
+        return format!("readonly {}[]", binding_type_name(name));
+    }
+    let element = field
+        .ty
+        .pointee()
+        .and_then(TypeRef::as_scalar)
+        .unwrap_or(Scalar::U8);
+    let array = typed_array(element);
+    if reads {
+        array.to_string()
+    } else {
+        format!("{array} | readonly {}[]", ts_scalar(element))
+    }
+}
+
+/// A scalar or an enum, with nothing a role adds.
+fn ts_plain(ty: &TypeRef, enum_name: Option<&str>) -> String {
     if let Some(name) = enum_name {
         return binding_type_name(name);
     }
-    let base = match ty {
+    match ty {
         TypeRef::Scalar { scalar } => ts_scalar(*scalar).to_string(),
         TypeRef::Enum { name } => binding_type_name(name),
         TypeRef::Array { of, len } => {
-            let element = ts_field(of, None, false);
+            let element = ts_plain(of, None);
             format!("readonly [{}]", vec![element; *len].join(", "))
         }
-        TypeRef::Pointer { to, .. } => match &**to {
-            TypeRef::Char => String::from("string"),
-            _ => String::from("unknown"),
-        },
+        TypeRef::Pointer { to, .. } if matches!(**to, TypeRef::Char) => String::from("string"),
         _ => String::from("unknown"),
-    };
-    if nullable {
-        format!("{base} | null")
-    } else {
-        base
     }
 }
 
@@ -84,13 +123,14 @@ fn ts_field(ty: &TypeRef, enum_name: Option<&str>, nullable: bool) -> String {
 #[must_use]
 pub fn catalogue_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
+    let by_id = enums_in_blobs(api);
     let _ = writeln!(
         out,
         "/** The ABI these declarations were generated for; the addon must agree. */\nexport declare const ABI_VERSION: {};\n",
         api.abi_version
     );
     for e in &api.enums {
-        render_enum_type(&mut out, e);
+        render_enum_type(&mut out, e, by_id.contains(&e.name));
     }
     out
 }
@@ -109,7 +149,7 @@ pub fn type_declarations(api: &Api) -> String {
         );
     }
     for s in api.structs.iter().filter(|s| shown(s)) {
-        render_interface(&mut out, s);
+        render_interface(api, &mut out, s);
     }
     render_error_type(&mut out, api);
     out
@@ -134,17 +174,19 @@ fn enums_used_by_structs(api: &Api) -> Vec<String> {
         used.push(binding_type_name(&status.name));
     }
     for s in api.structs.iter().filter(|s| shown(s)) {
-        for f in s.fields.iter().filter(|f| is_visible(f)) {
-            let name = f
-                .meta
-                .enum_name
-                .as_deref()
+        for (f, role) in s.fields.iter().zip(field_roles(api, s)) {
+            if !role.is_shown() {
+                continue;
+            }
+            let named = [f.meta.enum_name.as_deref(), f.meta.bitset.as_deref()]
+                .into_iter()
+                .flatten()
                 .map(binding_type_name)
-                .or_else(|| match &f.ty {
+                .chain(match &f.ty {
                     TypeRef::Enum { name } => Some(binding_type_name(name)),
                     _ => None,
                 });
-            if let Some(name) = name {
+            for name in named {
                 if !used.contains(&name) {
                     used.push(name);
                 }
@@ -154,13 +196,17 @@ fn enums_used_by_structs(api: &Api) -> Vec<String> {
     used
 }
 
-/// A struct a binding shows as an object: not a vtable, not a carrier of
-/// the library's own memory, and with at least one visible field.
+/// A struct a binding shows as an object: a plain object or a set of
+/// caller-allocated columns, with at least one field of its own; not a
+/// vtable, and not a carrier of the library's own memory.
 fn shown(s: &StructDef) -> bool {
-    matches!(s.role, crate::model::StructRole::Object) && s.fields.iter().any(is_visible)
+    matches!(s.role, StructRole::Object | StructRole::Columns)
+        && s.fields
+            .iter()
+            .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
 }
 
-fn render_enum_type(out: &mut String, e: &EnumDef) {
+fn render_enum_type(out: &mut String, e: &EnumDef, by_id: bool) {
     let name = binding_type_name(&e.name);
     let mut values: Vec<String> = e
         .values
@@ -205,23 +251,34 @@ fn render_enum_type(out: &mut String, e: &EnumDef) {
         );
     }
     let _ = writeln!(out, "}};\n");
+    if by_id {
+        let _ = writeln!(
+            out,
+            "/**\n * Every {name} by the id a result blob's columns carry, so a column of\n * ids reads as members without decoding it eagerly.\n */\nexport declare const {name}ById: ReadonlyMap<number, {name}>;\n"
+        );
+    }
 }
 
-fn render_interface(out: &mut String, s: &StructDef) {
+fn render_interface(api: &Api, out: &mut String, s: &StructDef) {
     let name = binding_type_name(&s.name);
+    let reads = is_read_by_host(api, s) || s.role == StructRole::Columns;
     let _ = writeln!(
         out,
         "{}export interface {name} {{",
         block_comment(&s.doc, "")
     );
-    for f in s.fields.iter().filter(|f| is_visible(f)) {
+    for (f, role) in s.fields.iter().zip(field_roles(api, s)) {
+        if !role.is_shown() {
+            continue;
+        }
         let linked = f.meta.enum_name.as_deref().map(binding_type_name);
+        let optional = if is_optional(f, &role) { "?" } else { "" };
         let _ = writeln!(
             out,
-            "{}  readonly {}: {};",
+            "{}  readonly {}{optional}: {};",
             block_comment(&field_doc_with(f, DocStyle::JsDoc, linked.as_deref()), "  "),
             camel(&f.name),
-            ts_field(&f.ty, f.meta.enum_name.as_deref(), f.meta.nullable)
+            ts_field(f, &role, reads)
         );
     }
     let _ = writeln!(out, "}}\n");
@@ -347,11 +404,13 @@ fn render_error_type(out: &mut String, api: &Api) {
 }
 
 /// Renders `catalogue.js`: the `const` tables the declarations promise,
-/// one exported constant per enum so a bundler keeps only what is used.
+/// one exported constant per enum so a bundler keeps only what is used,
+/// and an id table for every enum a result blob's columns carry.
 #[must_use]
 pub fn tables(api: &Api) -> String {
     let mut out = preamble(api, "//");
     let _ = writeln!(out, "export const ABI_VERSION = {};\n", api.abi_version);
+    let by_id = enums_in_blobs(api);
     for e in &api.enums {
         let name = binding_type_name(&e.name);
         let _ = writeln!(
@@ -367,8 +426,41 @@ pub fn tables(api: &Api) -> String {
             );
         }
         let _ = writeln!(out, "}});\n");
+        if by_id.contains(&e.name) {
+            let _ = writeln!(
+                out,
+                "/**\n * Every {name} by the id a result blob's columns carry, so a column of\n * ids reads as members without decoding it eagerly.\n */\nexport const {name}ById = new Map(["
+            );
+            for v in &e.values {
+                let _ = writeln!(
+                    out,
+                    "  [{}, '{}'],",
+                    v.value,
+                    member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
+                );
+            }
+            let _ = writeln!(out, "]);\n");
+        }
     }
     out
+}
+
+/// The enums a result blob's columns and fixed fields carry as ids.
+fn enums_in_blobs(api: &Api) -> Vec<String> {
+    let mut names = Vec::new();
+    for column in api
+        .blobs
+        .iter()
+        .flat_map(|b| b.sections.iter())
+        .flat_map(|s| s.fields.iter())
+    {
+        if let Some(name) = &column.enum_name {
+            if !names.contains(name) {
+                names.push(name.clone());
+            }
+        }
+    }
+    names
 }
 
 /// Renders `blob.js`: one decoder per schema, over the `TSRB` layout.
@@ -684,7 +776,7 @@ mod tests {
             "export interface DeltaT {",
             "  readonly seconds: number;",
             "@unit s",
-            "  readonly model: string | null;",
+            "  readonly model?: string;",
             "  readonly source: Status;",
             "export declare class TeistroError extends Error {",
         ] {

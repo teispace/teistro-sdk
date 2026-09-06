@@ -4,9 +4,11 @@
 //!
 //! - [`c`]: the header every other binding is generated against;
 //! - [`ts`]: the TypeScript surface and the JavaScript decoders of the
-//!   Node and wasm bindings.
+//!   Node and wasm bindings;
+//! - [`node`]: the Node addon's napi glue over the C ABI.
 
 pub mod c;
+pub mod node;
 pub mod ts;
 
 use std::fmt::Write;
