@@ -140,7 +140,9 @@ locale's word for the part of the day and its am or pm, so English reads
 Devanagari reads in Latin: the transliteration is a table
 (`teistro_intl::translit`, `ts_intl_transliterate` at the boundary), and
 `sa-Latn` is derived from `sa-Deva` by it, so a Latin-script reader gets
-all 274 entities without anyone writing them twice. The API description (`idl/api.json`, `teistro-idl`) is extracted
+all 274 entities without anyone writing them twice. The sources go to a
+translator's own tools and come back: `teistro-intl export xliff` and
+`import xliff` round-trip every message and entity form as XLIFF 2.1. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

@@ -55,6 +55,8 @@ pub mod runtime;
 pub mod source;
 pub mod translit;
 pub mod validate;
+#[cfg(feature = "cli")]
+pub mod xliff;
 
 /// The SDK's own namespaces as typed accessors, generated from
 /// `i18n/en-Latn` by `cargo xtask gen intl` and held by `check-intl`.

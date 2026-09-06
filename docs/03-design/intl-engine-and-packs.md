@@ -1,7 +1,8 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, revised 2026-09-06 when transliteration and the
-derived `sa-Latn` locale were added (§3); revised the same day when the
+Status: `draft`, revised 2026-09-06 when XLIFF export and import were
+added (§3); revised the same day when transliteration and the derived
+`sa-Latn` locale were added (§3); revised the same day when the
 twelve-hour clock and the day periods were added (§5); revised the same day when the typed
 accessors reached the bindings (§9); written 2026-09-05 from spike 4
 (`spikes/04-teistro-intl/README.md`); revised 2026-09-06 when the `intl`
@@ -58,6 +59,20 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
 - **A file whose name opens with `_`** belongs to the tooling rather than
   to the locale: `_meta.json`, and the `_overrides.json` a derived locale
   keeps its hand corrections in.
+- **`export xliff` and `import xliff`** take the sources to a
+  translator's tools and bring them back (XLIFF 2.1, one file per
+  locale): the base locale is the source and the locale being translated
+  the target, one `<file>` per namespace, one `<unit>` per message and
+  per translated entity form (`sdk.entity.graha.SUN#name`), and a note
+  naming a message's parameters so a translator keeps every one of them.
+  A message crosses as its `MessageFormat 2` source, because XLIFF has no
+  notion of one. The glyph and the gender do not cross: a symbol is the
+  same in every language and a gender is a fact the locale states.
+  Importing replaces what the file names and nothing else, so a unit with
+  an empty target is one nobody has translated yet, a unit whose id the
+  base locale does not have is reported, and a form the file leaves out
+  is kept. `sa-Deva` exports as 1056 units with 99 untranslated, and what
+  is exported imports back unchanged.
 - **`derive`** writes a locale in another script from one already
   written: `teistro-intl derive --from sa-Deva --to sa-Latn` transliterates
   every entity's forms, keeps the `iast` form because it is already in
@@ -433,6 +448,6 @@ here.
   Nepali (the locale links the full names), `:duration` over several
   units at once, and the `zone` option once the time crate's zoned
   instants cross the port.
-- XLIFF, for a translator's own tools; the reverse transliteration
+- The reverse transliteration
   (IAST to Devanagari) and the other scripts of §"Axes that are not the
   language" (Tamil, Bengali).
