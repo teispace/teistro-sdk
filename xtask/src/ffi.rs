@@ -9,7 +9,7 @@ use std::io::Write as _;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use teistro_idl::emit::{c, node, ts};
+use teistro_idl::emit::{c, dart, node, ts};
 use teistro_idl::sdk::describe;
 
 use crate::generated::{Output, check, write};
@@ -22,6 +22,9 @@ const TS_TYPES: &str = "bindings/node/lib/types.d.ts";
 const TS_BLOB_TYPES: &str = "bindings/node/lib/blob.d.ts";
 const TS_DECODERS: &str = "bindings/node/lib/blob.js";
 const NAPI_GLUE: &str = "bindings/node/native/src/generated.rs";
+const DART_CATALOGUE: &str = "bindings/dart/lib/src/catalogue.dart";
+const DART_FFI: &str = "bindings/dart/lib/src/ffi.dart";
+const DART_BLOB: &str = "bindings/dart/lib/src/blob.dart";
 
 /// Rust text as `rustfmt` writes it, so the generated file passes the
 /// format gate. Text rustfmt cannot parse comes back unchanged, and the
@@ -98,6 +101,18 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output {
             path: TS_DECODERS,
             text: ts::decoders(&api),
+        },
+        Output {
+            path: DART_CATALOGUE,
+            text: dart::catalogue(&api),
+        },
+        Output {
+            path: DART_FFI,
+            text: dart::declarations(&api),
+        },
+        Output {
+            path: DART_BLOB,
+            text: dart::decoders(&api),
         },
         Output {
             path: NAPI_GLUE,

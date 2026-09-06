@@ -15,7 +15,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ABI_VERSION, BodyById, TimeScaleById } from './catalogue.js';
+import { ABI_VERSION, BodyById, CONTEXT_TEST_PROVIDER, TimeScaleById } from './catalogue.js';
 import { decodeIntlRender, decodePositions } from './blob.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -340,7 +340,7 @@ export class Context {
     this.#inner = guarded(null, () =>
       new native.Context(
         clean({
-          flags: testProvider ? 1 : 0,
+          flags: testProvider ? CONTEXT_TEST_PROVIDER : 0,
           profile,
           settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
           locale,

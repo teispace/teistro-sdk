@@ -10,6 +10,8 @@
 use std::path::Path;
 use std::process::Command;
 
+use crate::binding::{build, present};
+
 const SMOKE: &str = "bindings/c/tests/smoke.c";
 const HEADER_DIR: &str = "bindings/c/include";
 
@@ -20,20 +22,12 @@ fn compiler() -> String {
 
 pub(crate) fn check(root: &Path) -> i32 {
     let cc = compiler();
-    if Command::new(&cc).arg("--version").output().is_err() {
+    if !present(&cc, "--version") {
         eprintln!("no `{cc}` on this machine; the C binding's test needs a C compiler");
         return 0;
     }
-    let built = Command::new(std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo")))
-        .args(["build", "--release", "-p", "teistro-ffi"])
-        .current_dir(root)
-        .status();
-    match built {
-        Ok(status) if status.success() => {}
-        _ => {
-            println!("FAIL  the library did not build");
-            return 1;
-        }
+    if build(root, "teistro-ffi", "the library").is_err() {
+        return 1;
     }
     let out = root.join("target/release/teistro-c-smoke");
     let library = root.join("target/release");

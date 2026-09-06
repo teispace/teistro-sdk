@@ -26,10 +26,12 @@ layer (hand-written) complete that binding, a host-implemented ephemeris
 provider included: an object with a `positions` callback is bound into
 the port's vtable by a hand-written adapter, refuses a frame by answering
 with nothing, and reports its own failures in its own words
-(`03-design/ffi-abi-and-api-description.md`, §5). The Dart binding, the
-wasm binding, the packaging and the parity gate are next; each is
-generated from the same description by an emitter beside the three that
-exist.
+(`03-design/ffi-abi-and-api-description.md`, §5). The Dart binding is
+built the same way, from a fourth emitter over the same description: the
+`dart:ffi` declarations, the value classes, the catalogue enums and the
+blob decoders are generated, and only the ergonomic layer and the tests
+are written by hand. Its host-implemented provider, the wasm binding, the
+packaging and the parity gate are next.
 
 ## The description's source
 

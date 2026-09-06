@@ -4,6 +4,18 @@
 
 export const ABI_VERSION = 1;
 
+/**
+ * The ABI version of the vtable layout.
+ */
+export const VTABLE_ABI_VERSION = 2;
+
+/**
+ * A context flag: use the SDK's analytic test provider when no provider
+ * vtable is given. For tests and examples only; its positions are not
+ * astronomy.
+ */
+export const CONTEXT_TEST_PROVIDER = 1;
+
 /** Every Kind by name. */
 export const Kind = Object.freeze({
   Graha: 'graha',

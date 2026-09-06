@@ -1,0 +1,467 @@
+/// The Teistro SDK for Dart and Flutter: the layer a consumer uses.
+///
+/// HAND-WRITTEN, and thin on purpose. Everything beneath it is generated
+/// from the API description: the declarations and the value classes
+/// (`src/ffi.dart`), the catalogue's enums (`src/catalogue.dart`) and the
+/// result-blob decoders (`src/blob.dart`). What this file adds is what a
+/// generator cannot know: where the shared library is, defaults, JSON in
+/// and out, and the small conveniences a decoded result deserves.
+///
+/// ```dart
+/// final teistro = Teistro.open();
+/// final context = teistro.context(testProvider: true);
+/// final sun = context.positions(
+///   instants: [2451545.0],
+///   bodies: [Body.sun],
+/// ).at(0, 0);
+/// print(sun.longitude);
+/// context.dispose();
+/// ```
+library;
+
+import 'dart:convert';
+import 'dart:ffi' as ffi;
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'src/blob.dart';
+import 'src/catalogue.dart';
+import 'src/ffi.dart';
+
+export 'src/blob.dart';
+export 'src/catalogue.dart';
+export 'src/ffi.dart';
+
+/// The SDK's shared library, opened once and shared by every context.
+///
+/// [open] finds it; [context] builds a context on it; the static calls of
+/// the C ABI are its getters and methods, so nothing needs the generated
+/// layer's [TeistroLibrary] unless you want it, and [library] hands that
+/// over when you do.
+final class Teistro {
+  Teistro._(this.library);
+
+  /// The generated declarations, for a call this layer does not wrap.
+  final TeistroLibrary library;
+
+  /// The environment variable that names the shared library, which wins
+  /// over every other place it is looked for.
+  static const String pathVariable = 'TEISTRO_LIBRARY';
+
+  /// Opens the shared library and checks that it implements the ABI these
+  /// declarations were generated for.
+  ///
+  /// `path` names the library outright. Without one, the SDK looks at
+  /// `$TEISTRO_LIBRARY`, then beside this package, then in the workspace's
+  /// `target/release` and `target/debug`, and finally asks the platform's
+  /// loader for the bare name, which finds an installed library.
+  ///
+  /// Throws a [TeistroException] with `Status.unsupported` when the
+  /// library implements another ABI, and a [StateError] naming every place
+  /// it looked when there is no library to open.
+  factory Teistro.open({String? path}) {
+    final opened = path == null ? _search() : ffi.DynamicLibrary.open(path);
+    final library = TeistroLibrary(opened);
+    rememberLibrary(library);
+    final abi = abiVersion(library);
+    if (abi != generatedAbiVersion) {
+      throw TeistroException(
+        Status.unsupported,
+        'the library implements ABI $abi, these declarations were '
+        'generated for ABI $generatedAbiVersion',
+        hint: 'regenerate the binding with `cargo xtask gen ffi`',
+      );
+    }
+    return Teistro._(library);
+  }
+
+  /// The file name the platform gives the SDK's shared library.
+  static String get libraryName {
+    if (Platform.isMacOS) return 'libteistro_ffi.dylib';
+    if (Platform.isWindows) return 'teistro_ffi.dll';
+    return 'libteistro_ffi.so';
+  }
+
+  /// Every place [Teistro.open] looks, in order.
+  static List<String> get searchPath {
+    final here = File.fromUri(Platform.script).parent.path;
+    final named = Platform.environment[pathVariable];
+    return <String>[
+      if (named != null && named.isNotEmpty) named,
+      '$here/$libraryName',
+      'bindings/dart/$libraryName',
+      'target/release/$libraryName',
+      'target/debug/$libraryName',
+      '../../target/release/$libraryName',
+      '../../target/debug/$libraryName',
+    ];
+  }
+
+  static ffi.DynamicLibrary _search() {
+    final looked = searchPath;
+    for (final candidate in looked) {
+      if (File(candidate).existsSync()) {
+        return ffi.DynamicLibrary.open(candidate);
+      }
+    }
+    try {
+      return ffi.DynamicLibrary.open(libraryName);
+    } on ArgumentError {
+      throw StateError(
+        'no Teistro library found. Looked in:\n  ${looked.join('\n  ')}\n'
+        'Build it with `cargo build -p teistro-ffi`, or set '
+        '\$$pathVariable to its path.',
+      );
+    }
+  }
+
+  /// The ABI the open library implements.
+  int get abi => abiVersion(library);
+
+  /// The SDK's version.
+  String get version => sdkVersion(library);
+
+  /// The catalogue's schema version, stamped in every result's provenance.
+  int get catalogue => catalogueVersion(library);
+
+  /// The profile a context uses when none is named.
+  String get defaultProfileId => defaultProfile(library);
+
+  /// The SDK's canonical frame: apparent geocentric ecliptic of date,
+  /// tropical, which every chart module consumes.
+  Frame get canonicalFrame => frameCanonical(library);
+
+  /// Packs a frame's fields into the bits a position request carries.
+  int packFrame(Frame frame) => framePack(library, frame);
+
+  /// Reads packed frame bits back into their fields.
+  Frame unpackFrame(int bits) => frameUnpack(library, bits);
+
+  /// The Julian day at the UTC midnight that begins a fixed day.
+  double julianDayOfFixed(int fixed) => calendarJdOfFixed(library, fixed);
+
+  /// The fixed day a Julian day falls in, and the fraction of that day
+  /// elapsed since its midnight.
+  ({int value, double fraction}) fixedOfJulianDay(double jd) =>
+      calendarFixedOfJd(library, jd);
+
+  /// Builds a context: settings resolved from a profile and a patch, a
+  /// locale, and an ephemeris. One context serves one thread; an isolate
+  /// builds its own.
+  ///
+  /// `profile` names a shipped profile ([defaultProfileId] by default),
+  /// `settings` is a patch over it as the settings document's own groups
+  /// and knobs, `locale` is what every render resolves from, and
+  /// `testProvider` selects the SDK's analytic provider, which is for
+  /// examples and tests only. Without a provider the context has no
+  /// ephemeris and positions answer `Status.capability`.
+  Context context({
+    String? profile,
+    Map<String, Object?>? settings,
+    String? locale,
+    bool testProvider = false,
+  }) {
+    return Context._(
+      this,
+      TeistroContext(
+        library,
+        options: ContextOptions(
+          flags: testProvider ? contextTestProvider : 0,
+          profile: profile,
+          settingsJson: settings == null ? null : jsonEncode(settings),
+          locale: locale,
+        ),
+      ),
+    );
+  }
+}
+
+/// A context: settings, a locale and an ephemeris, with the calls that use
+/// them. Built by [Teistro.context].
+///
+/// The native context is freed when this object is collected; [dispose]
+/// frees it at once, and every call after that is a [StateError].
+final class Context {
+  Context._(this._teistro, this._inner);
+
+  final Teistro _teistro;
+  final TeistroContext _inner;
+
+  /// The library this context was built on.
+  Teistro get teistro => _teistro;
+
+  /// The generated context, for a call this layer does not wrap.
+  TeistroContext get inner => _inner;
+
+  /// The id of the profile the settings came from.
+  String get profile => _inner.profile();
+
+  /// The resolved settings, as their canonical document.
+  Map<String, Object?> get settings =>
+      jsonDecode(_inner.settingsJson()) as Map<String, Object?>;
+
+  /// The SHA-256 of the canonical settings, in hex; every result carries
+  /// it, and two runs that agree on it are comparable.
+  String get settingsHash => _hex(_inner.settingsHash().bytes);
+
+  /// The locale every render resolves from.
+  String get locale => _inner.intlLocale();
+
+  set locale(String tag) => _inner.intlSetLocale(tag);
+
+  /// Positions over a grid of instants and bodies, completed into the
+  /// frame asked for; the canonical frame by default.
+  ///
+  /// The result's cells are instants outermost: cell `i * bodies.length +
+  /// b` is body `b` at instant `i`, which [Positions.at] reads for you.
+  Positions positions({
+    required List<double> instants,
+    required List<Body> bodies,
+    TimeScale scale = TimeScale.ut1,
+    Frame? frame,
+    bool speeds = true,
+    Observer? observer,
+  }) {
+    if (instants.isEmpty) {
+      throw ArgumentError.value(instants, 'instants', 'expected an instant');
+    }
+    if (bodies.isEmpty) {
+      throw ArgumentError.value(bodies, 'bodies', 'expected a body');
+    }
+    final bits = _teistro.packFrame(frame ?? _teistro.canonicalFrame);
+    return decodePositions(
+      _inner.positions(
+        PositionRequest(
+          scale: scale,
+          frameBits: bits,
+          speeds: speeds,
+          observer: observer,
+          jds: instants,
+          bodies: bodies,
+        ),
+      ),
+    );
+  }
+
+  /// Renders a message of the current locale with its parameters.
+  IntlRender render(String key, [Map<String, Object?>? params]) =>
+      decodeIntlRender(
+        _inner.intlRender(key, params == null ? null : jsonEncode(params)),
+      );
+
+  /// Whether the current locale or its fallbacks have a message.
+  bool has(String key) => _inner.intlHas(key) == 1;
+
+  /// Loads a `.tpack` or `.tbundle` file into the locale engine.
+  IntlLoaded loadPack(Uint8List bytes) => _inner.intlLoadPack(bytes);
+
+  /// The date a fixed day falls on in a calendar.
+  CalendarDate dateOf(Calendar calendar, int fixed) =>
+      _inner.calendarFromFixed(calendar, fixed);
+
+  /// The fixed day of a date.
+  int fixedOf(CalendarDate date) => _inner.calendarToFixed(date);
+
+  /// The same date in another calendar.
+  CalendarDate convert(CalendarDate date, Calendar into) =>
+      _inner.calendarConvert(date, into);
+
+  /// The weekday of a date, Monday `1` to Sunday `7`.
+  int weekdayOf(CalendarDate date) => _inner.calendarWeekday(date);
+
+  /// The length of a month.
+  int monthLength(Calendar calendar, int year, int month) =>
+      _inner.calendarMonthLength(calendar, year, month);
+
+  /// Whether a year is a leap year.
+  bool isLeap(Calendar calendar, int year) =>
+      _inner.calendarIsLeap(calendar, year) == 1;
+
+  /// A civil date and time in a zone, resolved to an instant with what the
+  /// resolution had to decide.
+  ZoneResolution resolve(CivilDateTime civil, ZoneSpec zone) =>
+      _inner.timeResolve(civil, zone);
+
+  /// The civil date and time of an instant in a zone.
+  ({CivilDateTime civil, ZoneResolution resolution}) civilOf(
+    double jdUtc,
+    ZoneSpec zone,
+    Calendar calendar,
+  ) => _inner.timeCivil(jdUtc, zone, calendar);
+
+  /// Converts an instant between the time scales.
+  TimeConversion convertTime(double jd, Scale from, Scale to) =>
+      _inner.timeConvert(jd, from, to);
+
+  /// Delta T at a UT1 instant, with what produced it.
+  DeltaT deltaT(double jdUt1) => _inner.timeDeltaT(jdUt1);
+
+  /// The packed id of a catalogue key (`graha.SUN`, an alias, or a former
+  /// key).
+  int keyId(String key) => _inner.keyParse(key);
+
+  /// The catalogue key of a packed id.
+  String keyName(int id) => _inner.keyName(id);
+
+  /// Frees the native context now rather than when this object is
+  /// collected. Calling it twice is harmless.
+  void dispose() => _inner.dispose();
+}
+
+/// A date in a calendar, without naming the fields a call fills in.
+///
+/// ```dart
+/// final date = Calendar.gregorian.date(2015, 4, 14);
+/// ```
+extension CalendarDates on Calendar {
+  /// A date in this calendar. `era` and the era year are what the call
+  /// resolves them to, and the resolution is [Resolution.defined], which
+  /// is what a date a caller states means.
+  CalendarDate date(int year, int month, int day) => CalendarDate(
+    calendar: this,
+    year: year,
+    eraYear: 0,
+    month: month,
+    day: day,
+    resolution: Resolution.defined,
+    computedMonth: 0,
+    computedDay: 0,
+  );
+}
+
+/// A date with a time of day, or with none.
+extension CivilDateTimes on CalendarDate {
+  /// This date at a time of day.
+  ///
+  /// ```dart
+  /// final birth = Calendar.gregorian.date(1986, 1, 1).at(hour: 0, minute: 20);
+  /// ```
+  CivilDateTime at({
+    int hour = 0,
+    int minute = 0,
+    int second = 0,
+    int nanos = 0,
+  }) => CivilDateTime(
+    date: this,
+    time: CivilTime(
+      hour: hour,
+      minute: minute,
+      second: second,
+      hasTime: true,
+      nanos: nanos,
+    ),
+  );
+
+  /// This date with the time of day unknown, which a resolution reports
+  /// rather than guesses.
+  CivilDateTime get whenUnknown => CivilDateTime(
+    date: this,
+    time: const CivilTime(
+      hour: 0,
+      minute: 0,
+      second: 0,
+      hasTime: false,
+      nanos: 0,
+    ),
+  );
+}
+
+/// A zone of the embedded database, by its IANA name
+/// (`Asia/Kathmandu`).
+ZoneSpec ianaZone(String name) => ZoneSpec(
+  kind: ZoneKind.iana,
+  offsetSeconds: 0,
+  longitudeDeg: 0,
+  zone: name,
+);
+
+/// A fixed offset from UTC, in seconds east.
+ZoneSpec fixedZone(int offsetSeconds) => ZoneSpec(
+  kind: ZoneKind.fixed,
+  offsetSeconds: offsetSeconds,
+  longitudeDeg: 0,
+);
+
+/// Local mean time at a longitude, in degrees east, which is what a chart
+/// before the zone existed is cast in.
+ZoneSpec localMeanZone(double longitudeDeg) => ZoneSpec(
+  kind: ZoneKind.localMean,
+  offsetSeconds: 0,
+  longitudeDeg: longitudeDeg,
+);
+
+/// One cell of a position grid.
+typedef Cell =
+    ({
+      double longitude,
+      double latitude,
+      double distance,
+      double longitudeSpeed,
+      double latitudeSpeed,
+      double distanceSpeed,
+      int status,
+      int source,
+    });
+
+/// What a decoded position grid means, beyond the columns themselves.
+extension PositionsResult on Positions {
+  /// The instants of the request, in order.
+  Float64List get jds => instants.jd;
+
+  /// The bodies of the request, in order.
+  List<Body> get bodyKeys =>
+      List<Body>.generate(bodies.length, (i) => Body.byId(bodies.body[i]));
+
+  /// The time scale the instants are on.
+  TimeScale get timeScale => TimeScale.byId(scale);
+
+  /// The frame the positions are in.
+  Frame frame(Teistro teistro) => teistro.unpackFrame(frameBits);
+
+  /// The completion steps the SDK applied, in order.
+  List<Object?> get stepsApplied => jsonDecode(steps) as List<Object?>;
+
+  /// Everything that reproduces this result.
+  Map<String, Object?> get provenanceOf =>
+      jsonDecode(provenance) as Map<String, Object?>;
+
+  /// One cell of the grid, by the indices of its instant and its body.
+  Cell at(int instant, int body) {
+    if (instant < 0 || instant >= jdCount || body < 0 || body >= bodyCount) {
+      throw RangeError(
+        'at($instant, $body): the grid is $jdCount by $bodyCount',
+      );
+    }
+    final i = instant * bodyCount + body;
+    return (
+      longitude: cells.lon[i],
+      latitude: cells.lat[i],
+      distance: cells.dist[i],
+      longitudeSpeed: cells.lonSpeed[i],
+      latitudeSpeed: cells.latSpeed[i],
+      distanceSpeed: cells.distSpeed[i],
+      status: cells.status[i],
+      source: cells.source[i],
+    );
+  }
+}
+
+/// What a rendered message means, beyond its text.
+extension RenderedMessage on IntlRender {
+  /// Whether a fallback locale answered.
+  bool get fallback => isFallback != 0;
+
+  /// Whether a runtime override answered.
+  bool get override => isOverride != 0;
+
+  /// The locale whose message answered, null when none had it.
+  String? get from => resolvedFrom.isEmpty ? null : resolvedFrom;
+
+  /// Every problem met; rendering continues past each.
+  List<String> get warningList =>
+      (jsonDecode(warnings) as List<Object?>).cast<String>();
+}
+
+/// A digest as the hex every binding prints.
+String _hex(Uint8List bytes) =>
+    bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();

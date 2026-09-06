@@ -6,6 +6,18 @@
 export declare const ABI_VERSION: 1;
 
 /**
+ * The ABI version of the vtable layout.
+ */
+export declare const VTABLE_ABI_VERSION: 2;
+
+/**
+ * A context flag: use the SDK's analytic test provider when no provider
+ * vtable is given. For tests and examples only; its positions are not
+ * astronomy.
+ */
+export declare const CONTEXT_TEST_PROVIDER: 1;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =
