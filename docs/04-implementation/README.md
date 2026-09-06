@@ -52,6 +52,8 @@ teistro-sdk/
     ffi/                       present: the C ABI (contexts, keys, calendars, time, intl, positions; the result
                                blob; the last error), the workspace's only unsafe, every block with a SAFETY
                                comment; the SDK's locale bundles embedded by its build script
+    test-allocator/            present: a global allocator that counts what the calling thread allocates, so a
+                               test asserts a hot path's budget rather than guessing it; test-only, never published
     idl/                       present: the API description model, the naming and layout rules, the result blob
                                encoder and decoder, the extractor over the boundary crates and the C emitter
   catalogue/                   entity catalogue YAML (keys, ids, attributes, citations); present, with its README,

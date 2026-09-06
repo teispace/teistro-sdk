@@ -18,6 +18,7 @@
 //! assert!(matches!(bs.date_of(early).expect("in the table").resolution, CalendarResolution::Computed { .. }));
 //! ```
 
+use std::borrow::Cow;
 use std::sync::OnceLock;
 
 use teistro_core::catalogue::{Calendar, Era};
@@ -237,7 +238,7 @@ impl BikramSambat {
     ) -> CalendarResolution {
         if !self.is_official(year) {
             return CalendarResolution::Computed {
-                model: self.table.frame.to_string(),
+                model: Cow::Borrowed(self.table.frame),
             };
         }
         let model_label = self
@@ -253,11 +254,11 @@ impl BikramSambat {
             Some(computed) if computed != tabular => CalendarResolution::Divergent {
                 tabular,
                 computed,
-                model: self.table.frame.to_string(),
+                model: Cow::Borrowed(self.table.frame),
             },
             _ => CalendarResolution::Tabular {
-                authority: self.table.authority.to_string(),
-                edition: self.table.edition.to_string(),
+                authority: Cow::Borrowed(self.table.authority),
+                edition: Cow::Borrowed(self.table.edition),
             },
         }
     }

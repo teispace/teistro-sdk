@@ -6,6 +6,7 @@
 //! `(input_hash, settings_hash, calculation_version)`.
 
 use core::fmt;
+use std::borrow::Cow;
 
 use sha2::{Digest, Sha256};
 
@@ -202,6 +203,12 @@ pub struct TimeStamp {
 }
 
 /// How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
+///
+/// The strings are borrowed when they name a shipped table, whose
+/// authority, edition and model are static text, and owned when a
+/// calendar of the consumer's own names its source: a date read from the
+/// Bikram Sambat table allocates nothing, and the type still carries
+/// whatever another calendar wants to say.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "kind", rename_all = "lowercase")]
 pub enum CalendarResolution {
@@ -210,14 +217,14 @@ pub enum CalendarResolution {
     /// From the authority's published table.
     Tabular {
         /// The authority.
-        authority: String,
+        authority: Cow<'static, str>,
         /// The table's edition.
-        edition: String,
+        edition: Cow<'static, str>,
     },
     /// Computed outside the table's range.
     Computed {
         /// The rule or model.
-        model: String,
+        model: Cow<'static, str>,
     },
     /// Inside the range and the two disagree; the table was followed.
     Divergent {
@@ -226,7 +233,7 @@ pub enum CalendarResolution {
         /// The computed month and day.
         computed: MonthDay,
         /// The rule or model that computed the other answer.
-        model: String,
+        model: Cow<'static, str>,
     },
 }
 
@@ -461,7 +468,7 @@ mod tests {
         provenance.calendar = Some(CalendarResolution::Divergent {
             tabular: MonthDay { month: 2, day: 32 },
             computed: MonthDay { month: 3, day: 1 },
-            model: String::from("a model"),
+            model: Cow::Borrowed("a model"),
         });
         let envelope = Envelope::new(42u32, provenance.clone());
         let json = serde_json::to_string(&envelope).unwrap_or_default();

@@ -29,13 +29,15 @@ const COMPUTATION: [&str; 8] = [
 ];
 
 /// The crates that may hold `unsafe` code, and so may downgrade the
-/// workspace's `forbid` on it: the port's C vtable, the boundary crate
-/// and the Node addon. Everything else inherits `forbid`, which the
-/// compiler then enforces; what this rule watches is a manifest quietly
-/// changing its mind.
-const UNSAFE_CRATES: [&str; 3] = [
+/// workspace's `forbid` on it: the port's C vtable, the boundary crate,
+/// the Node addon, and the counting allocator the tests install, which is
+/// never published. Everything else inherits `forbid`, which the compiler
+/// then enforces; what this rule watches is a manifest quietly changing
+/// its mind.
+const UNSAFE_CRATES: [&str; 4] = [
     "crates/port-ephemeris",
     "crates/ffi",
+    "crates/test-allocator",
     "bindings/node/native",
 ];
 
