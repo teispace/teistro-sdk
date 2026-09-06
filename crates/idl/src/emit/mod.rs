@@ -1,8 +1,13 @@
 //! The emitters: each renders one binding's mechanical layer from the
 //! description and nothing else. The documentation helpers live here so
 //! every emitter spells a unit, a range and an example the same way.
+//!
+//! - [`c`]: the header every other binding is generated against;
+//! - [`ts`]: the TypeScript surface and the JavaScript decoders of the
+//!   Node and wasm bindings.
 
 pub mod c;
+pub mod ts;
 
 use std::fmt::Write;
 

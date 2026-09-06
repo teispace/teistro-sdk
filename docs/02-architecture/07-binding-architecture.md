@@ -15,13 +15,16 @@ finaliser-backed handles.
 ## What is built
 
 The boundary (`crates/ffi`, `teistro-ffi`) and the description toolchain
-(`crates/idl`, `teistro-idl`): thirty-three entry points over contexts,
-keys, calendars, time, the locale engine and positions through the port;
-the description `idl/api.json` extracted from the Rust source by `cargo
-xtask gen ffi` and rendered into `bindings/c/include/teistro.h`, both
-gated by `check-ffi`. The Node, wasm and Dart layers, their ergonomic
-layers, the packaging and the parity gate are next; each is generated
-from the same description by an emitter beside the C one.
+(`crates/idl`, `teistro-idl`): thirty-six entry points over contexts,
+keys, frames, calendars, time, the locale engine and positions through
+the port; the description `idl/api.json` extracted from the Rust source
+by `cargo xtask gen ffi` and rendered into `bindings/c/include/teistro.h`
+and the Node binding's five generated files (the enums and their tables,
+the boundary's value types, the result-blob decoders), all gated by
+`check-ffi`. The Node addon and ergonomic layer, the Dart binding, the
+wasm binding, the packaging and the parity gate are next; each is
+generated from the same description by an emitter beside the two that
+exist.
 
 ## The description's source
 
