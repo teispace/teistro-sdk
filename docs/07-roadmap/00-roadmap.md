@@ -9,7 +9,7 @@ minutes are not a constraint. Phases are ordered by dependency and each
 has an exit criterion met by a gate, not a date. Durations are not
 estimated; the session log in `STATUS.md` is the record of pace.
 
-## Phase 0: Discovery and decisions (now)
+## Phase 0: Discovery and decisions
 
 Deliverables: the research and architecture pages, decisions recorded as
 ADRs, the GitHub repository `teispace/teistro-sdk` with the Apache-2.0
@@ -113,9 +113,31 @@ Where each stands, 2026-09-06:
 
 | the conformance repository, with `fixtures/` moved into it | **met**: `teispace/teistro-conformance` v0.1.1 under CC0-1.0, mounted here as a submodule pinned to a tag; the corpus validates itself on every push and `check-fixtures` refuses a checkout without it |
 
-Nothing remains for the phase itself. Its exit review is the next step:
-the criteria above are met, the deliverables are built, and what was
-deferred by decision is listed where it was deferred.
+**Met on 2026-09-06** (`STATUS.md`, the fortieth session). Every
+criterion in the table above is met and every deliverable is built, each
+held by a gate rather than by a claim: `check-parity` over 103 values
+through both bindings, the `hash-matrix` workflow over 100,236 values on
+two architectures, the conformance kit against the Teimeris adapter, the
+compile-fail proofs in three languages, `check-package` installing all
+four packages into throwaway projects and running a consumer against
+each, `check-site` rendering every generated reference page, and
+`check-fixtures` over a corpus that now lives in its own repository and
+validates itself.
+
+Deferred by decision, each where it was decided: a Flutter plugin that
+carries the library into an Android or iOS build, with the mobile
+targets in v1.x; a musl row in the platform table, which is two rows and
+an apt step whenever an Alpine consumer asks; runners per binding
+emitting the conformance report schema, which waits for the report to
+have been emitted once; versioned and Nepali documentation, which waits
+for a second release and for enough guides to be worth translating.
+
+Built beyond the list: the determinism lints and the counting allocator,
+the instruction-count benchmarks against a pull request's own base
+commit, the release matrix over five platforms with provenance, the
+documentation site with its reference generated from the same
+description as every binding, and Teistro Intl's transliteration, XLIFF
+round trip and typed accessors.
 
 ## Phase 2: The astronomy layer
 
@@ -145,7 +167,7 @@ needs them; eclipses to v1.x. Built beyond the list: the star table with
 SIMBAD astrometry, the equation of time, visibility and the heliacal
 phenomena, the `CROSSINGS` override, the engine findings register.
 
-## Phase 3: The built-in ephemeris (own phase, may run beside Phase 4)
+## Phase 3: The built-in ephemeris (now; own phase, may run beside Phase 4)
 
 `tools/ephemgen`, VSOP87 planets, ELP/MPP02 Moon, fitted Pluto, nodes and
 apogees, analytic speeds, three analytic tiers, the DE-refit `reference`
@@ -159,7 +181,7 @@ Exit: a full chart computes with nothing but the SDK installed; the
 `standard` tier meets its accuracy target against Teimeris; sizes per tier
 are within budget.
 
-## Phase 4: Chart core and panchanga day
+## Phase 4: Chart core and panchanga day (now, beside Phase 3)
 
 `chart` foundation with the mixed-chart axis, `houses` with named
 Bhava-Chalit variants (a short falsification pass over the four methods
