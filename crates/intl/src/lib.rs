@@ -57,6 +57,8 @@ pub mod validate;
 #[allow(clippy::all, clippy::pedantic, reason = "generated")]
 pub mod messages;
 
-pub use render::{Intl, OutPart, Params, Rendered, Resolution, TypedMessage, Value, params};
+pub use render::{
+    ClockTime, Ghati, Intl, OutPart, Params, Rendered, Resolution, TypedMessage, Value, params,
+};
 pub use runtime::{Loaded, LocaleReport, RuntimeReport};
 pub use source::{BASE_LOCALE, ENTITY_NAMESPACE, sdk_root};

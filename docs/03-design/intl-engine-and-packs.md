@@ -51,6 +51,18 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   `sdk.entity` the path is a catalogue key (`graha.SUN`, `point.LAGNA`),
   resolved against `teistro_core`'s catalogue; any other is refused.
 - **Messages** are `MessageFormat 2` source strings.
+- **`sdk.calendar`** holds what the date functions read: per calendar
+  key (`GREGORIAN`, `BIKRAM_SAMBAT`, ...) a `monthName` and `monthShort`
+  message selecting on `$month`, and `date.numeric`, `date.long` and
+  `date.full` patterns over `$year`, `$month`, `$day`, `$monthName`,
+  `$weekday`, `$weekdayName` and `$era`; `weekdayName` and
+  `weekdayShort` selecting on `$weekday` (0 Sunday to 6 Saturday);
+  `time.numeric` and `time.long` over `$hour`, `$minute`, `$second`;
+  `datetime.join` over `$date` and `$time`; `ghati.numeric` and
+  `ghati.long` over `$ghati`, `$pala`, `$vipala`; `duration.day`,
+  `hour`, `minute` and `second` selecting on `$n`. A calendar that
+  shares another's names links them (`{sdk.calendar.GREGORIAN.monthName
+  :msg}`). Era names are `sdk.entity.era` records.
 - **Entity records** are objects with named forms (`short`, `name`,
   `prose`, `iast`, and any a locale adds; `name` is required), an
   optional `gender` from the `gender` context, and an optional `glyph`.
@@ -101,13 +113,18 @@ panics (two property tests).
 | function | operand | options | selection keys | parameter type |
 |---|---|---|---|---|
 | `:string` | any | | the text | `string`, or the context whose name or values it selects with |
-| `:integer` | number | `select=ordinal` | exact numeric match, then the plural category | integer |
-| `:number` | number | `minimumFractionDigits`, `maximumFractionDigits`, `select=ordinal` | as `:integer`, on the visible digits | number |
+| `:integer` | number | `select=ordinal`, `useGrouping=false`, `minimumIntegerDigits` | exact numeric match, then the plural category | integer |
+| `:number` | number | `minimumFractionDigits`, `maximumFractionDigits`, `useGrouping=false`, `minimumIntegerDigits`, `select=ordinal` | as `:integer`, on the visible digits | number |
 | `:dms` | degrees | `precision=deg\|min\|sec`, `signed=true` | | number |
 | `:zodiac` | ecliptic longitude | `form=degree-in-sign\|sign-degree`, `precision`, `signNames=name\|short\|glyph\|iast` | the sign's key | number |
 | `:entity` | catalogue key | `form=short\|name\|prose\|iast\|glyph`, `kind=<catalogue kind>` | the bare key, the full key, the gender | a member of the kind (the catalogue's enum in Rust), or any catalogue key |
 | `:list` | list | `type=and\|or` | | list |
 | `:msg` | a key literal | | | none |
+| `:date` | a calendar date | `calendar=<calendar key>`, `style=numeric\|long\|full`, `pattern=<message key>` | | date |
+| `:time` | a time of day | `style=numeric\|long`, `pattern` | | time |
+| `:datetime` | a date with a time | `calendar`, `style`, `pattern` | | date and time |
+| `:ghati` | a ghati-pala count | `style=numeric\|long`, `pattern` | | ghati |
+| `:duration` | number | `unit=day\|hour\|minute\|second` | | number |
 
 Numbers render in the locale's numbering system, grouping and
 separators; angles in the same digits. `:zodiac` looks the sign name up
@@ -120,8 +137,19 @@ key against the catalogue at render (`teistro_core::key::resolve`) and
 warns on one the catalogue lacks; `:zodiac` takes the sign keys from the
 catalogue's `rashi` kind. Selection follows the specification: for each
 selector the function's keys in preference order, variants filtered and
-sorted by rank, `*` last. Still to come: `:date`, `:time`, `:datetime`
-(calendar-aware, over the calendar crate), `:ghati` and `:duration`.
+sorted by rank, `*` last. `:date` renders a `CalendarDate` in its own
+calendar or the one `calendar=` names (converted through the shipped
+calendars' fixed day; an unknown or unshipped target warns and leaves
+the date), through the locale's `sdk.calendar` pattern for the style or
+the message `pattern=` names, with the era's year and short form when
+the date carries an era; `:time` a `ClockTime`; `:datetime` both, joined
+by `datetime.join`; `:ghati` a `Ghati` (the time crate's ghati-pala
+count); `:duration` a count of a unit through the unit's plural message.
+A locale that declares no pattern gets the built-in default (the ISO
+order for a date, `HH:MM` for a time, `GG-PP` for a ghati, the number
+and the unit's name for a duration) with a warning that names the
+missing key. A value of the wrong kind warns and renders the fallback
+text; a date, time or ghati offers no selection keys.
 
 ## 6. The engine's API
 
@@ -162,8 +190,11 @@ outside the base; strict locales complete; a translation uses only the
 base message's parameters with agreeing types (a warning when it drops
 one, or adds markup the base lacks); every selector key is valid for
 its type (a plural category the locale produces, a value of the
-context, an entity key or a gender); `:msg` targets exist; the
-catalogue is the authority for entities: an entity record's key and an
+context, an entity key or a gender); `:msg` targets and the
+`pattern=` a date, time or ghati function names exist in the base; a
+translation that links another message with `:msg` forwards every
+parameter and is not asked to name them; a matcher cannot select on a
+date, time or ghati; the catalogue is the authority for entities: an entity record's key and an
 `:entity` literal must be catalogue keys (an error naming the nearest
 key), `kind=` must name a catalogue kind (an error), and a catalogue key
 the entity namespace does not describe yet is a warning, since its
@@ -264,12 +295,19 @@ bits as their keys; validation tests for every gate, the catalogue's
 among them; pack round trip, corruption and truncation; the bundle's
 round trip, its size against the separate packs, a lone metadata-less
 pack refused, corruption and truncation; generator tests for key
-coverage and the absence of text; the command line's value parsing and
-`extract`; the runtime API: an override standing before the entry and the
+coverage and the absence of text; the date functions (`tests/dates.rs`:
+the architecture page's Bikram Sambat example `२०८१/०५/१९ गते`, Gregorian
+dates in three styles and both locales, a Julian date through the linked
+patterns, an era's year and short form, `pattern=`, the conversion
+`calendar=BIKRAM_SAMBAT` against the calendar crate's own answer, an
+unknown calendar warned, times, a datetime, ghatis, durations
+pluralised, the defaults with their warning when a locale declares no
+patterns, the number options, the analysis's types and links); the
+command line's value parsing and `extract`; the runtime API: an override standing before the entry and the
 fallback, refused when it does not parse, cleared back, a pack adding a
 namespace, a replacement rendering anew, a bundle adding a selectable
 locale that falls back to the base, the report; the language harnesses
-under `spikes/04-teistro-intl/harness/` (39 tests and a doctest in the
+under `spikes/04-teistro-intl/harness/` (44 tests and a doctest in the
 crate). To come: fuzzing under
 `cargo-fuzz` and cross-binding rendering parity on a snapshot set.
 
@@ -289,7 +327,9 @@ here.
 - The composite provider's precedence rules once a binding loads packs
   from several places (baked, blob, filesystem): the Rust runtime API
   loads in call order, later entries replacing earlier ones.
-- The calendar-aware `:date`, `:time` and `:datetime`, `:ghati` and
-  `:duration`, over the calendar crate.
+- The date functions' next steps: twelve-hour clocks and day periods,
+  abbreviated month names for Nepali (the locale links the full names),
+  `:duration` over several units at once, and the `zone` option once the
+  time crate's zoned instants cross the port.
 - Transliteration, XLIFF, and `migrate baseline` for the four launch
   languages' name tables into `sdk.entity`.

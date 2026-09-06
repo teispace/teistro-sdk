@@ -195,8 +195,52 @@ fn ts_type(kind: &ParamType) -> String {
         ParamType::Entity(Some(kind)) => format!("{}Key", pascal(kind)),
         ParamType::Entity(None) => String::from("EntityKey"),
         ParamType::List => String::from("readonly (string | EntityKey)[]"),
+        ParamType::Date => String::from("DateValue"),
+        ParamType::Time => String::from("TimeValue"),
+        ParamType::DateTime => String::from("DateTimeValue"),
+        ParamType::Ghati => String::from("GhatiValue"),
     }
 }
+
+/// The value shapes the date, time and ghati functions take, in every
+/// target: a date as its calendar key and numbers, a time of day, both,
+/// a ghati-pala count.
+const TS_VALUE_TYPES: &str = "\
+export interface DateValue { readonly calendar: string; readonly year: number; readonly month: number; readonly day: number; }
+export interface TimeValue { readonly hour: number; readonly minute: number; readonly second: number; }
+export interface DateTimeValue { readonly date: DateValue; readonly time: TimeValue; }
+export interface GhatiValue { readonly ghati: number; readonly pala: number; readonly vipala: number; }
+";
+
+const DART_VALUE_TYPES: &str = "\
+final class DateValue {
+  const DateValue({required this.calendar, required this.year, required this.month, required this.day});
+  final String calendar;
+  final int year;
+  final int month;
+  final int day;
+}
+
+final class TimeValue {
+  const TimeValue({required this.hour, required this.minute, this.second = 0});
+  final int hour;
+  final int minute;
+  final int second;
+}
+
+final class DateTimeValue {
+  const DateTimeValue({required this.date, required this.time});
+  final DateValue date;
+  final TimeValue time;
+}
+
+final class GhatiValue {
+  const GhatiValue({required this.ghati, required this.pala, this.vipala = 0});
+  final int ghati;
+  final int pala;
+  final int vipala;
+}
+";
 
 /// The TypeScript surface.
 #[must_use]
@@ -228,6 +272,8 @@ pub fn typescript(model: &Model) -> String {
     }
     let keys: Vec<String> = model.keys.iter().map(|k| format!("'{k}'")).collect();
     let _ = writeln!(out, "export type MessageKey = {};", keys.join(" | "));
+    out.push('\n');
+    out.push_str(TS_VALUE_TYPES);
     out.push_str("\nexport interface EntityForms {\n");
     for form in &model.forms.0 {
         let _ = writeln!(out, "  readonly {form}: string;");
@@ -288,6 +334,10 @@ fn dart_type(kind: &ParamType) -> String {
         ParamType::Number => String::from("num"),
         ParamType::Entity(Some(kind)) => format!("{}Key", pascal(kind)),
         ParamType::List => String::from("List<Object>"),
+        ParamType::Date => String::from("DateValue"),
+        ParamType::Time => String::from("TimeValue"),
+        ParamType::DateTime => String::from("DateTimeValue"),
+        ParamType::Ghati => String::from("GhatiValue"),
     }
 }
 
@@ -331,6 +381,8 @@ pub fn dart(model: &Model) -> String {
             members.join(",\n  ")
         );
     }
+    out.push_str(DART_VALUE_TYPES);
+    out.push('\n');
     out.push_str("abstract interface class Renderer {\n  String render(String key, [Map<String, Object?> params = const {}]);\n  EntityForms entity(String key);\n}\n\n");
     out.push_str("final class EntityForms {\n  const EntityForms({\n");
     for form in &model.forms.0 {
@@ -480,6 +532,15 @@ fn rust_type(kind: &ParamType, paths: RustPaths<'_>) -> String {
             format!("teistro_core::catalogue::{}", pascal(kind))
         }
         ParamType::List => format!("Vec<{}::Value>", paths.intl),
+        ParamType::Date => String::from("teistro_calendar::CalendarDate"),
+        ParamType::Time => format!("{}::ClockTime", paths.intl),
+        ParamType::DateTime => {
+            format!(
+                "(teistro_calendar::CalendarDate, {}::ClockTime)",
+                paths.intl
+            )
+        }
+        ParamType::Ghati => format!("{}::Ghati", paths.intl),
         // Text, and an entity of an open kind or of no kind: its key as text.
         ParamType::String | ParamType::Entity(_) => String::from("String"),
     }
@@ -498,6 +559,12 @@ fn rust_value(name: &str, kind: &ParamType, paths: RustPaths<'_>) -> String {
         }
         ParamType::Entity(_) => format!("{value}::entity(&self.{field})"),
         ParamType::List => format!("{value}::List(self.{field}.clone())"),
+        ParamType::Date => format!("{value}::Date(self.{field}.clone())"),
+        ParamType::Time => format!("{value}::Time(self.{field})"),
+        ParamType::DateTime => {
+            format!("{value}::DateTime(self.{field}.0.clone(), self.{field}.1)")
+        }
+        ParamType::Ghati => format!("{value}::Ghati(self.{field})"),
     }
 }
 

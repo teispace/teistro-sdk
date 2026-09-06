@@ -567,6 +567,16 @@ fn check_selectors(
                     }
                 }
             }
+            ParamType::Date | ParamType::Time | ParamType::DateTime | ParamType::Ghati => {
+                findings.error(
+                    tag,
+                    key,
+                    format!(
+                        "`${}` is a date, time or ghati value, which offers no selection keys",
+                        selector.variable
+                    ),
+                );
+            }
             ParamType::String | ParamType::List => {}
         }
     }
@@ -588,9 +598,13 @@ fn check_parity(findings: &mut Findings, tag: &str, key: &str, this: &Signature,
             Some(_) => {}
         }
     }
-    for name in base.params.keys() {
-        if !this.params.contains_key(name) {
-            findings.warning(tag, key, format!("does not use `${name}`"));
+    // A message that links another with `:msg` forwards every parameter,
+    // so it uses the base's without naming them.
+    if this.links.is_empty() {
+        for name in base.params.keys() {
+            if !this.params.contains_key(name) {
+                findings.warning(tag, key, format!("does not use `${name}`"));
+            }
         }
     }
     for markup in &this.markup {
@@ -642,7 +656,7 @@ mod tests {
         assert!(report.passed(), "{}", report.markdown());
         assert_eq!(report.coverage.len(), 2);
         assert!(report.coverage.values().all(|c| c.missing.is_empty()));
-        assert!(report.messages > 10 && report.entities == 49, "{report:?}");
+        assert!(report.messages > 40 && report.entities == 58, "{report:?}");
         // The catalogue's coverage is reported per closed kind: the signs
         // and the nakshatras complete, nine grahas so far (the outer
         // planets' records come with the migration of the name tables),
@@ -657,6 +671,7 @@ mod tests {
         assert_eq!(kind("rashi").present, 12);
         assert_eq!(kind("nakshatra").present, 27);
         assert_eq!(kind("point").present, 1);
+        assert_eq!(kind("era").present, 9);
         assert!(kind("tithi").present == 0 && kind("tithi").total == 30);
         assert!(
             !report.catalogue.contains_key("rule"),

@@ -33,6 +33,7 @@ icu_plurals = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 sha2 = "0.11"
+teistro-calendar = { path = "../calendar" }
 teistro-core = { path = "../core" }
 
 [dev-dependencies]

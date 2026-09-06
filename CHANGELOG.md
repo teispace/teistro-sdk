@@ -74,7 +74,12 @@ and the `teistro-intl` command line; the SDK's `i18n/` ships `en-Latn`
 and `ne-Deva-NP` with the entity records of the grahas, the signs, the
 nakshatras and the Lagna. The engine's runtime API: a pack or bundle
 loaded after construction, in-memory overrides, and the report of what is
-loaded and covered. No number moves. Nothing else computes yet.
+loaded and covered. The date functions: `:date`, `:time`, `:datetime`,
+`:ghati` and `:duration`, calendar-aware over the calendar crate, with
+the patterns and names a locale declares in `sdk.calendar` (shipped for
+`en-Latn` and `ne-Deva-NP`), era records for the nine eras, and the
+`useGrouping` and `minimumIntegerDigits` options on numbers. No number
+moves. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.

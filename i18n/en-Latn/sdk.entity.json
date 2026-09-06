@@ -344,5 +344,61 @@
       "glyph": "Asc",
       "gender": "n"
     }
+  },
+  "era": {
+    "VIKRAMA": {
+      "short": "BS",
+      "name": "Vikram Sambat",
+      "prose": "the Vikram Sambat",
+      "iast": "Vikrama Saṃvat"
+    },
+    "SHAKA": {
+      "short": "SS",
+      "name": "Shaka Samvat",
+      "prose": "the Shaka Samvat",
+      "iast": "Śaka Saṃvat"
+    },
+    "KALI": {
+      "short": "KY",
+      "name": "Kali Yuga",
+      "prose": "the Kali Yuga",
+      "iast": "Kali Yuga"
+    },
+    "NEPAL_SAMBAT": {
+      "short": "NS",
+      "name": "Nepal Sambat",
+      "prose": "the Nepal Sambat",
+      "iast": "Nepāla Saṃvat"
+    },
+    "BUDDHA": {
+      "short": "BE",
+      "name": "Buddhist Era",
+      "prose": "the Buddhist Era",
+      "iast": "Buddha Saṃvat"
+    },
+    "KOLLAM": {
+      "short": "KE",
+      "name": "Kollam Era",
+      "prose": "the Kollam Era",
+      "iast": "Kollaṃ Āṇṭu"
+    },
+    "BENGALI": {
+      "short": "BS",
+      "name": "Bengali San",
+      "prose": "the Bengali San",
+      "iast": "Baṅgābda"
+    },
+    "COMMON_ERA": {
+      "short": "CE",
+      "name": "Common Era",
+      "prose": "the Common Era",
+      "iast": "Īsvī Saṃvat"
+    },
+    "BEFORE_COMMON_ERA": {
+      "short": "BCE",
+      "name": "Before Common Era",
+      "prose": "before the Common Era",
+      "iast": "Īsvī Pūrva"
+    }
   }
 }
