@@ -4,10 +4,11 @@
 //! Wall-clock time on a shared runner is noise: a neighbouring job moves
 //! it further than most changes do, so a wall-clock gate either passes
 //! everything or fails at random. Callgrind counts instructions instead,
-//! and the count is exact — the same build over the same input executes
-//! the same instructions every time, on a busy machine and an idle one.
-//! That is what makes a 1% threshold meaningful (ADR-0022's quality bar:
-//! fail above 3%, warn above 1%).
+//! and the count barely moves — the same scenario counted twice differs
+//! by a few parts in a million, on a busy machine and an idle one, where
+//! wall-clock time differs by tens of per cent. That is what makes a 1%
+//! threshold meaningful (ADR-0022's quality bar: fail above 3%, warn
+//! above 1%).
 //!
 //! The scenario is `teistro-scenario`, the same code the determinism
 //! matrix hashes, so neither gate measures a path the other never walks.
