@@ -1,0 +1,35 @@
+{
+  "locale": "sa-Deva",
+  "direction": "ltr",
+  "numberingSystem": "deva",
+  "grouping": [
+    3,
+    2
+  ],
+  "decimal": ".",
+  "group": ",",
+  "fallback": [
+    "en-Latn"
+  ],
+  "completeness": "base",
+  "contexts": {
+    "gender": [
+      "m",
+      "f",
+      "n"
+    ]
+  },
+  "termStyle": "vernacular",
+  "listPatterns": {
+    "and": {
+      "pair": "{0} तथा {1}",
+      "middle": "{0}, {1}",
+      "end": "{0} तथा {1}"
+    },
+    "or": {
+      "pair": "{0} वा {1}",
+      "middle": "{0}, {1}",
+      "end": "{0} वा {1}"
+    }
+  }
+}

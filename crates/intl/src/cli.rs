@@ -98,12 +98,36 @@ pub enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+    /// One-time imports into the sources.
+    Migrate {
+        /// What to import.
+        #[command(subcommand)]
+        source: MigrateSource,
+    },
     /// Validates, builds every pack and bundle, generates every target and
     /// writes `intl.json`.
     Report {
         /// Where to write the results.
         #[arg(long, default_value = "target/intl-report")]
         out: PathBuf,
+    },
+}
+
+/// What `migrate` imports.
+#[derive(Debug, Subcommand)]
+pub enum MigrateSource {
+    /// The baseline engine's entity name tables, from its names exporter's
+    /// document, into `sdk.entity` for the four launch languages.
+    Baseline {
+        /// The exporter's document (`fixtures/baseline/names.json`).
+        #[arg(long)]
+        dump: PathBuf,
+        /// The catalogue's entity skeleton, for glyphs and genders.
+        #[arg(long)]
+        skeleton: Option<PathBuf>,
+        /// Replace records the locales already have.
+        #[arg(long)]
+        overwrite: bool,
     },
 }
 
@@ -196,6 +220,32 @@ pub fn run(cli: Cli) -> Result<bool, Box<dyn std::error::Error>> {
                 println!("written {}", path.display());
             }
             Ok(true)
+        }
+        Command::Migrate {
+            source:
+                MigrateSource::Baseline {
+                    dump,
+                    skeleton,
+                    overwrite,
+                },
+        } => {
+            let dump = crate::migrate::read_dump(&dump)?;
+            let skeleton = skeleton
+                .or_else(|| Some(tree.root.join("../catalogue/entity-skeleton.json")))
+                .and_then(|path| crate::migrate::read_skeleton(&path));
+            let mut migration = crate::migrate::plan(&dump, skeleton.as_ref());
+            for path in crate::migrate::apply(&mut migration, &tree.root, overwrite)? {
+                println!("written {}", path.display());
+            }
+            print!("{}", migration.report.markdown());
+            let reloaded = crate::migrate::reload(&tree.root)?;
+            let report = validate::validate(&reloaded);
+            println!(
+                "after the migration: {} errors, {} warnings",
+                report.errors(),
+                report.diagnostics.len() - report.errors()
+            );
+            Ok(report.passed() && migration.report.unknown_keys.is_empty())
         }
         Command::Report { out } => {
             let results = report(&tree, &out)?;

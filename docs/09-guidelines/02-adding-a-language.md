@@ -3,7 +3,9 @@
 Status: `draft`, revised 2026-09-06 when the `teistro-intl` command line
 was built (`crates/intl`, `cargo run -p teistro-intl -- <command>`):
 `extract`, `validate`, `build`, `gen` and `render` below run today;
-`report` writes sizes and coverage; the runtime `load_pack`,
+`report` writes sizes and coverage; `migrate baseline` imported the
+baseline engine's name tables (the four launch languages' entity records,
+2026-09-06); the runtime `load_pack`,
 `set_override` and `report` calls exist on the Rust engine
 (`teistro_intl::Intl`) and reach the bindings with them; the
 coverage-in-docs step comes with the docs site.

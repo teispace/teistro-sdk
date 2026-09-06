@@ -53,8 +53,9 @@ teistro-sdk/
                                (the analytic test provider lives in port-ephemeris::test_provider)
   catalogue/                   entity catalogue YAML (keys, ids, attributes, citations); present, with its README,
                                generated into crates/core by `cargo xtask gen catalogue` and gated by `check-catalogue`
-  i18n/                        present: en-Latn (the base) and ne-Deva-NP, sdk.entity and sdk.reason, gated by
-    en-Latn/  ne-Deva-NP/      `cargo xtask check-intl`; hi-Deva-IN and sa-Deva to come with the migration
+  i18n/                        present: en-Latn (the base), ne-Deva-NP, hi-Deva-IN and sa-Deva; sdk.entity (283
+    en-Latn/  ne-Deva-NP/      records from the catalogue's kinds, the baseline's name tables migrated), sdk.reason
+    hi-Deva-IN/  sa-Deva/      and sdk.calendar; gated by `cargo xtask check-intl`
   packs/
     interpret/<locale>/        interpretation sources with citations
     rules/<pack>/              rule packs (yogas, doshas, muhurta, matching, remedies)
