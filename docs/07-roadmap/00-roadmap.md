@@ -94,6 +94,21 @@ adapter; the classification property tests pass for every divisor; a
 swapped latitude and longitude does not compile in Rust or type-check in
 TypeScript.
 
+Where each stands, 2026-09-06:
+
+| criterion | state |
+|---|---|
+| the same scenario through both bindings, byte for byte | **met**: `cargo xtask check-parity` compares 103 values through the Node and Dart ergonomic layers, the calendars, the zone resolution with its metadata, the scales, the typed accessors in Nepali and English, and the positions among them |
+| hash-identical across x86-64 and aarch64 | **met**: the `hash-matrix` workflow computes 100,236 values on Linux x86-64 and Linux aarch64 and they agree bit for bit; macOS differs by its maths library's rounding, measured and published (`05-testing/01-quality-bar.md`) |
+| the conformance kit on the Teimeris adapter | **met**: every check passes against the engine, including its corrected profile |
+| the classification property tests for every divisor | **met** (`crates/core`, the exact partition of the circle) |
+| a swapped latitude and longitude refused | **met** in Rust (`crates/core/tests/ui`), TypeScript (`@ts-expect-error` in the strict consumer) and Dart (`bindings/dart/typecheck/wrong.dart`) |
+| a Flutter app | the Dart binding runs on the Dart VM; the Flutter plugin that builds the library per platform is part of the packaging that waits on the release matrix |
+
+What remains for the phase itself: the bindings' packaging beyond the
+build handshake, the instruction-count benchmarks, the conformance
+repository, and the docs site.
+
 ## Phase 2: The astronomy layer
 
 `astro`: timescales and Delta T models, sidereal time, precession and
