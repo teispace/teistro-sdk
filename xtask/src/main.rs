@@ -18,6 +18,8 @@
 //! - `check-c`: the C binding's smoke test compiles against the generated
 //!   header with warnings as errors and passes (needs a C compiler; run by
 //!   hand and in the nightly matrix).
+//! - `check-dart`: the Dart binding's layer and decoders against the real
+//!   library, the package analysed and formatted.
 //! - `check-node`: the Node binding's decoders read blobs the library
 //!   produced and its types pass a consumer's strict type-check (needs
 //!   Node, and TypeScript for the second half).
@@ -39,9 +41,11 @@
 )]
 
 mod accuracy;
+mod binding;
 mod c_binding;
 mod calendars;
 mod catalogue;
+mod dart_binding;
 mod ffi;
 mod generated;
 mod intl;
@@ -73,6 +77,7 @@ fn main() {
         Some("check-ffi") => ffi::check_generated(&repo_root()),
         Some("check-c") => c_binding::check(&repo_root()),
         Some("check-node") => node_binding::check(&repo_root()),
+        Some("check-dart") => dart_binding::check(&repo_root()),
         Some("accuracy") => accuracy::generate(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
@@ -93,7 +98,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

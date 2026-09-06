@@ -1,0 +1,12 @@
+# The Dart binding is held to the recommended lints, with the generated
+# files excluded from style rules they cannot follow (a C name is not
+# camel case) but not from analysis: they must still be correct Dart.
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    todo: ignore

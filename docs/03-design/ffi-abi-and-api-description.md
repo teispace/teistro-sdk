@@ -1,6 +1,8 @@
 # The C ABI and the API description
 
-Status: `draft`, revised 2026-09-06 when the Node addon and its
+Status: `draft`, revised 2026-09-06 when the Dart binding was added
+(§5's Dart layers, §8's tests); revised the same day when the Node addon
+and its
 ergonomic layer were added (§3.5's field and parameter roles, §5's
 binding); revised the same day when the Node binding's generated layers
 were added (§5, the TypeScript surface and the blob decoders);
@@ -17,8 +19,9 @@ description of it every binding is generated from. The boundary is the
 `ffi` crate: a C ABI over the SDK's Rust crates, built as a shared and a
 static library, holding the workspace's only `unsafe` code. The
 description is `idl/api.json`, extracted from the Rust source of the
-boundary crates by the `idl` crate and rendered into the C header today
-and the Node, TypeScript and Dart layers next. This page settles the ABI
+boundary crates by the `idl` crate and rendered into the C header, the
+Node binding's TypeScript surface and napi addon, and the Dart binding's
+`dart:ffi` declarations, value classes and decoders. This page settles the ABI
 conventions as built, the result blob's wire layout, what the description
 carries and how it is inferred, the layout rules, and the gates that keep
 the header, the description and the library equal.
@@ -267,7 +270,35 @@ checks its ABI against the one the types were generated for, validates at
 the door, fills in defaults, decodes a result on first use rather than
 eagerly, and rethrows a failure as a `TeistroError` carrying the status,
 the code, the detail, the field, the hint and the message key the library
-gave. ### A host-implemented provider
+gave.
+
+### The Dart binding's generated layers
+
+Three files under `bindings/dart/lib/src/`, rendered from the same
+description as the C header, so the two agree by construction:
+
+| file | what it holds |
+|---|---|
+| `catalogue.dart` | every enum as a Dart enum carrying the id the boundary uses and the key the packs and fixtures spell, the same string the TypeScript surface uses; a catalogued member gains `fullKey` (`graha.SUN`) and an `unknown` member, so a `switch` over a value from a newer library stays exhaustive (§3.6); the boundary's constants come with them, so a flag's value is never a literal in a binding |
+| `ffi.dart` | the `dart:ffi` declarations that match the header name for name, the library class that looks every symbol up once, a value class per boundary struct that marshals itself into an arena, a bitset field as a `Set`, the context class with a `NativeFinalizer` over `ts_context_free`, and the exception carrying the status, detail, field, hint and message key |
+| `blob.dart` | one decoder per result blob over the `TSRB` layout, each column a typed-data view over the blob's own bytes; a blob at an offset a typed list cannot start on is copied once, and a wrong magic, version, length or schema id is a `FormatException` |
+
+Above them `bindings/dart/lib/teistro.dart` is hand-written and thin, as
+the Node layer is: it finds the shared library and checks its ABI against
+the one the declarations were generated for, opens contexts with the
+defaults, encodes and decodes the JSON the boundary takes as text, and
+adds the conveniences a generator cannot know are wanted
+(`Calendar.gregorian.date(2015, 4, 14).at(hour: 0, minute: 20)`, a cell of
+a position grid by its two indices, a rendered message's warnings).
+
+Two decisions are Dart's own. The generated files carry `// dart format
+off`, so the generator's layout is what ships: `cargo xtask check-ffi`
+regenerates them byte for byte on a machine with no Dart toolchain, and
+`dart format .` still passes over the package. And a context frees itself
+when it is collected, through the finaliser, so `dispose` is the explicit
+form rather than the only one.
+
+### A host-implemented provider
 
 An ephemeris written in the binding's own language reaches the SDK
 through the port's vtable, which is what the port exists for (ADR-0002)
@@ -294,15 +325,16 @@ adapter settles:
 | what a provider may be asked | the port's own `validate` runs before the callback, so a body, an instant or a frame it did not declare is refused by name rather than left for the callback to discover |
 | a failure's words | only a code crosses the C boundary, so the adapter keeps the sentence and the layer above reports it: `the ephemeris provider threw: no data for that instant` |
 
-The Dart binding will need its own adapter over
-`NativeCallable.isolateLocal`; Python's over `Py<PyAny>` with the GIL.
+The Dart binding's adapter is next, over `NativeCallable.isolateLocal`;
+Python's over `Py<PyAny>` with the GIL.
 
 The toolchain: `cargo xtask gen ffi` writes `idl/api.json`,
-`bindings/c/include/teistro.h` and the five Node files; `cargo xtask
-check-ffi` regenerates them all in memory and fails on any difference, in
-the fast check. The crates:
+`bindings/c/include/teistro.h`, the six Node files and the three Dart
+files; `cargo xtask check-ffi` regenerates them all in memory and fails on
+any difference, in the fast check. The crates:
 `teistro-idl` (`model`, `names`, `layout`, `rules`, `blob`, `extract`
-behind the `extract` feature, `sdk`, `emit::c`) and `teistro-ffi`
+behind the `extract` feature, `sdk`, `emit::{c, ts, node, dart}`) and
+`teistro-ffi`
 (`context`, `keys`, `frame`, `calendar`, `time`, `intl`, `positions`,
 `strings`, `blob`, `schemas`, and the private `support`).
 
@@ -405,6 +437,20 @@ yet.
   optional, a body given by its id, a count the boundary keeps to itself,
   a flag as an integer and a partial observer are all compile errors the
   files assert.
+- The Dart binding's own tests (`cargo xtask check-dart`): the same
+  scenario the other two walk, through the generated declarations and the
+  ergonomic layer against the real shared library, and the generated
+  decoders against blobs the library produced. Fifteen tests: the ABI and
+  the versions, a context's settings and their hash and a patch that
+  changes both, a refusal's status, detail, field and hint, 14 April 2015
+  in Bikram Sambat with its era and resolution, a Nepali birth time
+  resolved and converted back with its metadata and the same instant from
+  a named offset and from local mean time, the scales with what they
+  applied, positions through the test provider with the frame round trip
+  and the provenance, the locale engine in Nepali and English with a
+  missing message's warning, keys parsed and named. The package is also
+  analysed with `--fatal-infos` and format-checked. It needs the Dart
+  SDK, so it runs by hand and in the nightly matrix.
 - Planned: a `cargo-fuzz` target over the blob reader and every entry
   point (the quality bar's fuzzing row), and the sanitizer builds.
 
@@ -421,11 +467,11 @@ the engine's English sentences, as the engine defines them.
   product's charts.
 - Rich renderers: `ts_intl_render` hands back the plain text; the parts
   (text and markup) wait for a serialisation the bindings agree on.
-- The Node binding's native half: the napi addon generated from the same
-  description, the ergonomic layer with branded scalars and the port
-  adapter that wraps a host provider into the vtable, the loader with the
-  `buildinfo` handshake, and packaging. The Dart binding follows the same
-  order.
+- The two bindings' packaging: the loader with the `buildinfo`
+  handshake, the prebuilt libraries per platform, and the parity gate
+  that runs one scenario through both and compares the answers.
+- The Dart binding's host-implemented provider, over
+  `NativeCallable.isolateLocal`, which the Node binding already has.
 - A host-language provider is bound through the port's vtable with the
   same contract as a native one (callable from any thread); the bindings
   that register isolate-local callbacks keep one context per isolate.

@@ -39,6 +39,10 @@ build/
 bindings/node/native/index.node
 bindings/**/node_modules/
 
+# The Dart package is a library, so its resolution is not checked in
+# (`cargo xtask check-dart` runs `dart pub get`).
+bindings/dart/pubspec.lock
+
 # Spikes: built addons and Dart tool output; results are kept
 spikes/**/native/index.node
 spikes/**/.dart_tool/

@@ -74,7 +74,11 @@ teistro-sdk/
                                the hand-written ergonomic layer), test/ (the surface end to end, a provider of
                                its own, and the decoders against blobs the library produced), typecheck/
                                (a consumer at maximum strictness); `cargo xtask check-node`
-    cpp/ node/ wasm/ python/ dart/ teistro_flutter/ rust/ java/
+    dart/                      present: lib/src/ (the generated dart:ffi declarations, value classes,
+                               catalogue enums and blob decoders), lib/teistro.dart (the hand-written
+                               ergonomic layer), test/ (the surface end to end against the real library, and
+                               the decoders against blobs it produced); `cargo xtask check-dart`
+    cpp/ wasm/ python/ teistro_flutter/ rust/ java/
     shared/                    ergonomic code shared by node and wasm
   adapters/                    outside the workspace (ADR-0019), with their README
     ephemeris-teimeris/rust/   present: the port over Teimeris's Rust binding, its kit binary and the Bikram
@@ -82,7 +86,7 @@ teistro-sdk/
     ephemeris-sweph/rust/      present: the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
                                check-fixtures, check-catalogue, check-calendars, check-time, check-accuracy,
-                               check-intl, check-ffi, check-c, check-node, gen catalogue, gen calendars,
+                               check-intl, check-ffi, check-c, check-node, check-dart, gen catalogue, gen calendars,
                                gen time, gen intl, gen ffi, accuracy, calendars bs-fit; later verify, ephemgen,
                                rulegen, bench, conformance, size, release (ADR-0014)
   crates/cli/                  the consumer-facing `teistro` binary: intl (validate, build, gen,

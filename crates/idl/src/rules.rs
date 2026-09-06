@@ -5,7 +5,8 @@
 //! names").
 
 use crate::model::{
-    Api, EnumDef, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, StructDef, StructRole, TypeRef,
+    Api, EnumDef, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar, StructDef, StructRole,
+    TypeRef,
 };
 use crate::names;
 
@@ -353,10 +354,95 @@ pub fn message_function(api: &Api) -> Option<&FunctionDef> {
     api.functions.iter().find(|f| {
         matches!(&f.returns, Some(TypeRef::Pointer { to, .. }) if matches!(**to, TypeRef::Char))
             && f.params.len() == 1
-            && f.params
-                .first()
-                .is_some_and(|p| matches!(&p.ty, TypeRef::Enum { name } if *name == status.name))
+            && f.params.first().is_some_and(|p| is_named(p, &status.name))
     })
+}
+
+/// Whether a parameter carries a named enum, whether the description kept
+/// the name in the type or lowered it to the integer the ABI passes and
+/// marked it `api:enum=<name>`.
+#[must_use]
+pub fn is_named(param: &ParamDef, name: &str) -> bool {
+    match &param.ty {
+        TypeRef::Enum { name: named } => named == name,
+        _ => param.meta.enum_name.as_deref() == Some(name),
+    }
+}
+
+/// The constants a binding renders: every described one but the ABI
+/// version, which each binding already states as the version it was
+/// generated for.
+pub fn constants(api: &Api) -> impl Iterator<Item = &crate::model::ConstantDef> {
+    api.constants
+        .iter()
+        .filter(|c| !c.name.ends_with("ABI_VERSION") || c.name.starts_with("VTABLE"))
+}
+
+/// A constant's name without the C prefix every symbol carries, so each
+/// binding cases the same word: `TS_CONTEXT_TEST_PROVIDER` is
+/// `CONTEXT_TEST_PROVIDER` in TypeScript and `contextTestProvider` in
+/// Dart.
+#[must_use]
+pub fn constant_key(c: &crate::model::ConstantDef) -> &str {
+    c.name.trim_start_matches("TS_")
+}
+
+/// What a call hands back: its returned scalar, when that is not a status,
+/// and every out parameter, in order. Every binding asks here, so the
+/// shape a call has in one language is the shape it has in the others.
+#[must_use]
+pub fn results<'a>(api: &'a Api, f: &'a FunctionDef) -> Vec<Handed<'a>> {
+    let mut out = Vec::new();
+    if !returns_status(api, f) {
+        if let Some(scalar) = returned_scalar(f) {
+            out.push(Handed::Returned(scalar));
+        }
+    }
+    for p in &f.params {
+        match p.role {
+            Role::StructOut => out.push(Handed::Struct(p)),
+            Role::BlobOut => out.push(Handed::Blob(p)),
+            Role::StringOut => out.push(Handed::Owned(p)),
+            Role::StrOut => out.push(Handed::Lent(p)),
+            Role::ScalarOut => out.push(Handed::Scalar(p)),
+            _ => {}
+        }
+    }
+    out
+}
+
+/// One thing a call hands back.
+#[derive(Debug, Clone, Copy)]
+pub enum Handed<'a> {
+    /// The value the function returns, when it is not a status.
+    Returned(Scalar),
+    /// A struct the caller lends and the call fills.
+    Struct(&'a ParamDef),
+    /// A blob the library allocated and the caller frees.
+    Blob(&'a ParamDef),
+    /// A string the library allocated and the caller frees.
+    Owned(&'a ParamDef),
+    /// A string the library lent until the next call.
+    Lent(&'a ParamDef),
+    /// A number the call writes through a pointer.
+    Scalar(&'a ParamDef),
+}
+
+impl Handed<'_> {
+    /// The name a binding hands it back under: `value` for the returned
+    /// scalar, and the parameter's name without its `out_` prefix for the
+    /// rest, so `out_fraction` is read back as `fraction`.
+    #[must_use]
+    pub fn name(&self) -> String {
+        match self {
+            Handed::Returned(_) => String::from("value"),
+            Handed::Struct(p)
+            | Handed::Blob(p)
+            | Handed::Owned(p)
+            | Handed::Lent(p)
+            | Handed::Scalar(p) => names::snake(p.name.strip_prefix("out_").unwrap_or(&p.name)),
+        }
+    }
 }
 
 /// The scalar a function returns, if it returns one.

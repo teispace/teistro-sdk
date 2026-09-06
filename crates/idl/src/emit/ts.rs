@@ -17,8 +17,8 @@ use crate::emit::{DocStyle, block_comment, field_doc_with};
 use crate::model::{
     Api, BlobSchema, EnumDef, FieldDef, Scalar, SectionKind, StructDef, StructRole, TypeRef,
 };
-use crate::names::{binding_type_name, camel, kebab, pascal};
-use crate::rules::{FieldRole, field_roles, is_read_by_host, status_enum};
+use crate::names::{binding_type_name, camel, kebab, pascal, screaming};
+use crate::rules::{FieldRole, constant_key, constants, field_roles, is_read_by_host, status_enum};
 
 /// The header every generated file carries.
 fn preamble(api: &Api, comment: &str) -> String {
@@ -129,6 +129,15 @@ pub fn catalogue_declarations(api: &Api) -> String {
         "/** The ABI these declarations were generated for; the addon must agree. */\nexport declare const ABI_VERSION: {};\n",
         api.abi_version
     );
+    for c in constants(api) {
+        let _ = writeln!(
+            out,
+            "{}export declare const {}: {};\n",
+            block_comment(&c.doc, ""),
+            screaming(constant_key(c)),
+            c.value
+        );
+    }
     for e in &api.enums {
         render_enum_type(&mut out, e, by_id.contains(&e.name));
     }
@@ -410,6 +419,15 @@ fn render_error_type(out: &mut String, api: &Api) {
 pub fn tables(api: &Api) -> String {
     let mut out = preamble(api, "//");
     let _ = writeln!(out, "export const ABI_VERSION = {};\n", api.abi_version);
+    for c in constants(api) {
+        let _ = writeln!(
+            out,
+            "{}export const {} = {};\n",
+            block_comment(&c.doc, ""),
+            screaming(constant_key(c)),
+            c.value
+        );
+    }
     let by_id = enums_in_blobs(api);
     for e in &api.enums {
         let name = binding_type_name(&e.name);

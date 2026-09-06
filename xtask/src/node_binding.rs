@@ -11,6 +11,8 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use crate::binding::{blob_fixtures, build, present, step};
+
 const FIXTURES: &str = "target/tsrb";
 const TESTS: &str = "bindings/node/test/";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
@@ -31,13 +33,7 @@ fn addon_artefact() -> &'static str {
 
 /// Builds the addon and puts it where the loader looks.
 fn build_addon(root: &Path) -> Result<(), ()> {
-    step(
-        Command::new(cargo())
-            .args(["build", "--quiet", "--release", "-p", "teistro-node"])
-            .current_dir(root),
-        "",
-        "the Node addon did not build",
-    )?;
+    build(root, "teistro-node", "the Node addon")?;
     let built = root.join("target/release").join(addon_artefact());
     let addon = root.join(ADDON);
     std::fs::copy(&built, &addon).map(|_| ()).map_err(|e| {
@@ -46,10 +42,6 @@ fn build_addon(root: &Path) -> Result<(), ()> {
             built.display()
         );
     })
-}
-
-fn cargo() -> String {
-    std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"))
 }
 
 /// The TypeScript compiler, when the machine has one: `TSC`, a local
@@ -78,23 +70,8 @@ fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     }
 }
 
-/// Runs a step and reports it: `Ok(())` when it passed, `Err(())` when it
-/// did not, with the line the gate prints either way.
-fn step(command: &mut Command, passed: &str, failed: &str) -> Result<(), ()> {
-    let status = command.status();
-    if status.is_ok_and(|s| s.success()) {
-        if !passed.is_empty() {
-            println!("ok    {passed}");
-        }
-        Ok(())
-    } else {
-        println!("FAIL  {failed}");
-        Err(())
-    }
-}
-
 pub(crate) fn check(root: &Path) -> i32 {
-    if Command::new("node").arg("--version").output().is_err() {
+    if !present("node", "--version") {
         eprintln!("no `node` on this machine; the Node binding's tests need it");
         return 0;
     }
@@ -102,23 +79,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     if build_addon(root).is_err() {
         return 1;
     }
-    let outcome = step(
-        Command::new(cargo())
-            .args([
-                "run",
-                "--quiet",
-                "-p",
-                "teistro-ffi",
-                "--example",
-                "blob_fixtures",
-                "--",
-            ])
-            .arg(&fixtures)
-            .current_dir(root),
-        "",
-        "the blob fixtures did not build",
-    )
-    .and_then(|()| {
+    let outcome = blob_fixtures(root, &fixtures).and_then(|()| {
         step(
             Command::new("node")
                 .args(["--test", TESTS])

@@ -110,7 +110,13 @@ the library gave. An ephemeris written in JavaScript answers the SDK for
 the first time: an object with a `positions` callback is bound into the
 port's vtable, asked once for a whole grid, and may refuse a frame by
 answering with nothing, in which case the astronomy layer completes the
-rest from the provider's own frame. The API description (`idl/api.json`, `teistro-idl`) is extracted
+rest from the provider's own frame. The Dart binding computes for the
+first time (`bindings/dart`, generated `dart:ffi` declarations, value
+classes, catalogue enums and blob decoders with a hand-written layer
+above them): the same calls the Node binding answers, with a context
+freed by a native finaliser, a bitset field read as a `Set`, and a call
+that hands back two things returning a named record whose fields are the
+Node object's. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

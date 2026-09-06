@@ -20,12 +20,12 @@ use std::fmt::Write;
 
 use crate::emit::{DocStyle, field_doc_with, line_comment};
 use crate::model::{
-    Api, EnumDef, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar, StructDef, TypeRef,
+    Api, EnumDef, FieldDef, FunctionDef, OpaqueDef, Role, Scalar, StructDef, TypeRef,
 };
 use crate::names::{binding_type_name, pascal, snake};
 use crate::rules::{
-    FieldRole, constructor, destructor, field_roles, has_handshake, method_name, methods,
-    pointee_opaque, pointee_struct, returned_scalar, returns_status, status_enum,
+    FieldRole, Handed, constructor, destructor, field_roles, has_handshake, method_name, methods,
+    pointee_opaque, pointee_struct, results, returns_status, status_enum,
 };
 
 use super::ts::{UNKNOWN_MEMBER, member_value};
@@ -317,50 +317,7 @@ fn last_error_struct(api: &Api) -> Option<&StructDef> {
 
 // ── Results ────────────────────────────────────────────────────────────────
 
-/// What a call hands back: its returned scalar, when that is not a status,
-/// and every out parameter, in order.
-fn results<'a>(api: &'a Api, f: &'a FunctionDef) -> Vec<Handed<'a>> {
-    let mut out = Vec::new();
-    if !returns_status(api, f) {
-        if let Some(scalar) = returned_scalar(f) {
-            out.push(Handed::Returned(scalar));
-        }
-    }
-    for p in &f.params {
-        match p.role {
-            Role::StructOut => out.push(Handed::Struct(p)),
-            Role::BlobOut => out.push(Handed::Blob(p)),
-            Role::StringOut => out.push(Handed::Owned(p)),
-            Role::StrOut => out.push(Handed::Lent(p)),
-            Role::ScalarOut => out.push(Handed::Scalar(p)),
-            _ => {}
-        }
-    }
-    out
-}
-
-#[derive(Clone, Copy)]
-enum Handed<'a> {
-    Returned(Scalar),
-    Struct(&'a ParamDef),
-    Blob(&'a ParamDef),
-    Owned(&'a ParamDef),
-    Lent(&'a ParamDef),
-    Scalar(&'a ParamDef),
-}
-
 impl Handed<'_> {
-    fn name(&self) -> String {
-        match self {
-            Handed::Returned(_) => String::from("value"),
-            Handed::Struct(p)
-            | Handed::Blob(p)
-            | Handed::Owned(p)
-            | Handed::Lent(p)
-            | Handed::Scalar(p) => snake(p.name.strip_prefix("out_").unwrap_or(&p.name)),
-        }
-    }
-
     fn napi_type(&self, api: &Api) -> String {
         match self {
             Handed::Returned(scalar) => napi_scalar(*scalar).to_string(),
