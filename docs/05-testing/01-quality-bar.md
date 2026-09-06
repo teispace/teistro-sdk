@@ -37,14 +37,16 @@ the house systems and the classical model; `cargo xtask hashes`):
 | pair | outcome |
 |---|---|
 | Linux x86-64 against Linux aarch64 | every value bit for bit the same |
-| Linux aarch64 against macOS aarch64 | the calendars and the classical model bit for bit the same; the astronomy and the house systems differ |
+| Linux aarch64 against macOS aarch64 | the calendars and the classical model bit for bit the same; 139 of the 16,060 astronomy values and 1,883 of the 58,240 house values differ |
 
 The architectures agree; the C libraries do not. The two Linux runners
 share glibc and compute the same numbers on different hardware, which is
 Phase 1's exit criterion. macOS is a different maths library, and the
-functions the astronomy layer calls round differently in the last place
-there; the calendars and the classical model do not call them, and agree
-everywhere.
+functions the astronomy layer calls round differently there; the
+calendars and the classical model do not call them, and agree everywhere.
+The nightly run publishes how far apart the differing values are and
+prints the first few of each section, so the next reader sees whether a
+difference is a rounding or a formula.
 
 So the matrix fails on an architecture difference and reports a C library
 difference. Making a chart bit-identical across operating systems as well

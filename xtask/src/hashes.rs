@@ -35,7 +35,7 @@ use teistro_siddhanta::SuryaSiddhanta;
 /// double as a double, and neither is squeezed through the other.
 struct Section {
     name: &'static str,
-    values: Vec<[u8; 8]>,
+    values: Vec<u64>,
 }
 
 impl Section {
@@ -47,18 +47,18 @@ impl Section {
     }
 
     fn push(&mut self, value: f64) {
-        self.values.push(value.to_bits().to_le_bytes());
+        self.values.push(value.to_bits());
     }
 
     fn push_int(&mut self, value: i64) {
-        self.values.push(value.to_le_bytes());
+        self.values.push(u64::from_ne_bytes(value.to_ne_bytes()));
     }
 
     /// The section's digest: every value's bits, in order.
     fn digest(&self) -> String {
         let mut hasher = Sha256::new();
         for value in &self.values {
-            hasher.update(value);
+            hasher.update(value.to_le_bytes());
         }
         hex(&hasher.finalize())
     }
@@ -220,7 +220,10 @@ fn values_file(sections: &[Section], path: &Path) -> std::io::Result<()> {
     let mut out = String::new();
     for section in sections {
         for (index, value) in section.values.iter().enumerate() {
-            let _ = writeln!(out, "{}\t{index}\t{}", section.name, hex(value));
+            // As a number, not as its bytes: a byte-reversed hex string
+            // reads back as a value nowhere near the one written, and
+            // every distance taken over it is meaningless.
+            let _ = writeln!(out, "{}\t{index}\t{value:016x}", section.name);
         }
     }
     std::fs::write(path, out)
