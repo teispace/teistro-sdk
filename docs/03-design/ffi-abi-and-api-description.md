@@ -1,6 +1,7 @@
 # The C ABI and the API description
 
-Status: `draft`, revised 2026-09-06 when the parity gate was added
+Status: `draft`, revised 2026-09-06 when the build handshake was added
+(§5's handshake); revised the same day when the parity gate was added
 (§8's tests); revised the same day when an ephemeris written in Dart
 answered the SDK (§5's provider, §8's tests); revised the same day when
 the Dart binding was added (§5's Dart layers, §8's tests); revised the same day when the Node addon
@@ -234,11 +235,11 @@ no presence flag, and the bodies by their catalogue keys.
 
 ## 5. The API
 
-Thirty-six entry points, all in the header with their documentation:
+Thirty-seven entry points, all in the header with their documentation:
 
 | group | entry points |
 |---|---|
-| static | `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_status_message` |
+| static | `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message` |
 | context | `ts_context_new`, `ts_context_free`, `ts_context_last_error`, `ts_context_profile`, `ts_context_settings_json`, `ts_context_settings_hash` |
 | memory | `ts_string_free`, `ts_blob_free` |
 | keys | `ts_key_parse`, `ts_key_name` |
@@ -299,6 +300,33 @@ regenerates them byte for byte on a machine with no Dart toolchain, and
 `dart format .` still passes over the package. And a context frees itself
 when it is collected, through the finaliser, so `dispose` is the explicit
 form rather than the only one.
+
+### The build handshake
+
+The two halves of a binding must be one build: the library carries the
+SDK, and the generated files were rendered from a description of it.
+`ts_build_info` returns a static JSON object written when the library is
+compiled, so asking costs nothing and the answer cannot disagree with the
+library it describes: the SDK version, the ABI and catalogue versions,
+the commit and whether its tree was clean, the Cargo profile, the target
+triple, whether debug assertions and optimisation are on, the sanitizer
+if any, and the compiler.
+
+Each loader reads it and applies the same three rules, which each binding
+states in its own language and tests with builds of its own making:
+
+| what | outcome |
+|---|---|
+| another ABI, or another SDK version than the generated files carry | refused |
+| a sanitizer build | refused however it was found: it answers differently and slowly and is never chosen by accident |
+| an unoptimised build | refused only when the loader searched it out, because naming a path is a deliberate act and a development build is what a developer means by it |
+
+The report is on the surface too (`buildInfo` in Node, `Teistro.build` in
+Dart), because an application that stores a chart should be able to store
+what computed it. The parity gate carries the SDK version, the ABI, the
+catalogue version, the commit, the dirty flag and the target, so a run
+where the addon and the shared library came from different trees fails
+rather than passing quietly.
 
 ### A host-implemented provider
 
@@ -506,8 +534,9 @@ the engine's English sentences, as the engine defines them.
   product's charts.
 - Rich renderers: `ts_intl_render` hands back the plain text; the parts
   (text and markup) wait for a serialisation the bindings agree on.
-- The two bindings' packaging: the loader with the `buildinfo`
-  handshake and the prebuilt libraries per platform.
+- The two bindings' packaging: the prebuilt libraries per platform, the
+  manifests and the publishing, which wait on the release matrix. The
+  loader's half of it, the build handshake, is built (§5).
 - The wasm and Python bindings, from the same description.
 - A host-language provider is bound through the port's vtable with the
   same contract as a native one (callable from any thread); the bindings

@@ -126,8 +126,8 @@ pub fn catalogue_declarations(api: &Api) -> String {
     let by_id = enums_in_blobs(api);
     let _ = writeln!(
         out,
-        "/** The ABI these declarations were generated for; the addon must agree. */\nexport declare const ABI_VERSION: {};\n",
-        api.abi_version
+        "/** The ABI these declarations were generated for; the addon must agree. */\nexport declare const ABI_VERSION: {};\n\n/** The SDK version these declarations were generated from; the addon must be the same build. */\nexport declare const SDK_VERSION: \"{}\";\n",
+        api.abi_version, api.sdk_version
     );
     for c in constants(api) {
         let _ = writeln!(
@@ -419,6 +419,7 @@ fn render_error_type(out: &mut String, api: &Api) {
 pub fn tables(api: &Api) -> String {
     let mut out = preamble(api, "//");
     let _ = writeln!(out, "export const ABI_VERSION = {};\n", api.abi_version);
+    let _ = writeln!(out, "export const SDK_VERSION = {:?};\n", api.sdk_version);
     for c in constants(api) {
         let _ = writeln!(
             out,

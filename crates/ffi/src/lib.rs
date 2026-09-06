@@ -114,6 +114,31 @@ pub extern "C" fn ts_default_profile() -> *const c_char {
     concat!("parashari-classical", "\0").as_ptr().cast()
 }
 
+/// What this build is, as a static NUL-terminated JSON object: the SDK
+/// version, the ABI and catalogue versions, the commit and whether its
+/// tree was clean, the profile, the target, whether debug assertions and
+/// optimisation are on, the sanitizer if any, and the compiler.
+///
+/// A binding reads it when it loads the library and refuses one that is
+/// not the build its own half was generated for
+/// (`02-architecture/07-binding-architecture.md`, "Loading and
+/// identity"). The document is written when the library is compiled, so
+/// it costs nothing to ask and cannot disagree with the library it
+/// describes.
+#[unsafe(no_mangle)]
+#[allow(
+    unsafe_code,
+    reason = "the exported-symbol attribute is unsafe in edition 2024"
+)]
+pub extern "C" fn ts_build_info() -> *const c_char {
+    concat!(
+        include_str!(concat!(env!("OUT_DIR"), "/buildinfo.json")),
+        "\0"
+    )
+    .as_ptr()
+    .cast()
+}
+
 /// A static NUL-terminated English phrase for a status code; `unknown
 /// status` for a code this build does not know.
 ///
@@ -143,11 +168,36 @@ pub extern "C" fn ts_status_message(status: i32) -> *const c_char {
 
 #[cfg(test)]
 mod tests {
-    #![allow(unsafe_code, clippy::unwrap_used, reason = "tests cross the boundary")]
+    #![allow(
+        unsafe_code,
+        clippy::unwrap_used,
+        clippy::panic,
+        clippy::indexing_slicing,
+        reason = "tests cross the boundary and fail by panicking"
+    )]
 
     use core::ffi::CStr;
 
     use super::*;
+
+    #[test]
+    fn the_build_describes_itself() {
+        // SAFETY: the entry point returns a static NUL-terminated string.
+        let text = unsafe { CStr::from_ptr(ts_build_info()) }
+            .to_str()
+            .unwrap_or_else(|e| panic!("{e}"));
+        let info: serde_json::Value = serde_json::from_str(text).unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(info["abi"], 1);
+        assert_eq!(info["sdk"], SDK_VERSION);
+        assert_eq!(info["catalogue"], 1);
+        assert!(info["target"].as_str().is_some_and(|t| t.contains('-')));
+        assert!(matches!(info["dirty"], serde_json::Value::Bool(_)));
+        assert!(
+            info["rustc"]
+                .as_str()
+                .is_some_and(|r| r.starts_with("rustc"))
+        );
+    }
 
     #[test]
     fn the_static_answers_read_back() {

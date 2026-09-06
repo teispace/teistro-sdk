@@ -15,6 +15,7 @@ import {
   Context,
   Scale,
   abiVersion,
+  buildInfo,
   canonicalFrame,
   catalogueVersion,
   defaultProfile,
@@ -47,6 +48,12 @@ put('abi', abiVersion());
 put('sdk', sdkVersion());
 put('catalogue-version', catalogueVersion());
 put('default-profile', defaultProfile());
+put('build-sdk', buildInfo.sdk);
+put('build-abi', buildInfo.abi);
+put('build-catalogue', buildInfo.catalogue);
+put('build-commit', buildInfo.commit);
+put('build-dirty', buildInfo.dirty);
+put('build-target', buildInfo.target);
 
 // ── A context ──────────────────────────────────────────────────────────
 const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP', testProvider: true });

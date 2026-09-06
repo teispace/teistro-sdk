@@ -8773,6 +8773,20 @@
       "source": "crates/ffi/src/lib.rs"
     },
     {
+      "name": "ts_build_info",
+      "doc": "What this build is, as a static NUL-terminated JSON object: the SDK\nversion, the ABI and catalogue versions, the commit and whether its\ntree was clean, the profile, the target, whether debug assertions and\noptimisation are on, the sanitizer if any, and the compiler.\n\nA binding reads it when it loads the library and refuses one that is\nnot the build its own half was generated for\n(`02-architecture/07-binding-architecture.md`, \"Loading and\nidentity\"). The document is written when the library is compiled, so\nit costs nothing to ask and cannot disagree with the library it\ndescribes.",
+      "params": [],
+      "returns": {
+        "kind": "pointer",
+        "to": {
+          "kind": "char"
+        },
+        "mutable": false
+      },
+      "meta": {},
+      "source": "crates/ffi/src/lib.rs"
+    },
+    {
       "name": "ts_status_message",
       "doc": "A static NUL-terminated English phrase for a status code; `unknown\nstatus` for a code this build does not know.",
       "params": [
