@@ -13,7 +13,9 @@ use teistro_core::catalogue::Kind;
 use crate::analysis::{ParamType, Signature, signature};
 use crate::mf2::parse;
 use crate::render::{Intl, digits};
-use crate::source::{BASE_LOCALE, Completeness, ENTITY_NAMESPACE, Entry, LocaleSource, Tree};
+use crate::source::{
+    BASE_LOCALE, Completeness, DayPeriod, ENTITY_NAMESPACE, Entry, LocaleSource, Meta, Tree,
+};
 
 /// How bad a finding is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -378,6 +380,7 @@ fn check_meta(findings: &mut Findings, tree: &Tree, locale: &LocaleSource) {
             "the fallback chain does not end in the base locale",
         );
     }
+    check_day_periods(findings, tag, meta);
     for (kind, pattern) in &meta.list_patterns {
         for (name, template) in [
             ("pair", &pattern.pair),
@@ -392,6 +395,57 @@ fn check_meta(findings: &mut Findings, tree: &Tree, locale: &LocaleSource) {
                 );
             }
         }
+    }
+}
+
+/// The parts of the day: in order, inside a day, and each named by a key
+/// the locale can render.
+///
+/// A division that is out of order silently swallows a part — the walk
+/// takes the last entry an hour reaches — and a key with no message
+/// renders as the key itself, in the middle of a sentence, in the wrong
+/// language. Neither announces itself at runtime.
+fn check_day_periods(findings: &mut Findings, tag: &str, meta: &Meta) {
+    if meta.day_periods.is_empty() {
+        findings.error(
+            tag,
+            "",
+            "`dayPeriods` is empty; leave it out to take the default division",
+        );
+        return;
+    }
+    let mut previous: Option<&DayPeriod> = None;
+    for period in &meta.day_periods {
+        if period.from > 23 {
+            findings.error(
+                tag,
+                "",
+                format!(
+                    "day period `{}` starts at hour {}, which is not an hour of the day",
+                    period.key, period.from
+                ),
+            );
+        }
+        if let Some(before) = previous
+            && before.from >= period.from
+        {
+            findings.error(
+                tag,
+                "",
+                format!(
+                    "day period `{}` starts at {} and `{}` at {}: they are stated in order, earliest first, and the last wraps past midnight",
+                    before.key, before.from, period.key, period.from
+                ),
+            );
+        }
+        previous = Some(period);
+    }
+    let mut seen: Vec<&str> = meta.day_periods.iter().map(|p| p.key.as_str()).collect();
+    seen.sort_unstable();
+    let count = seen.len();
+    seen.dedup();
+    if seen.len() != count {
+        findings.error(tag, "", "two day periods share a key");
     }
 }
 
@@ -654,6 +708,62 @@ mod tests {
             .filter(|d| d.severity == Severity::Error)
             .map(|d| format!("{} {}: {}", d.locale, d.key, d.message))
             .collect()
+    }
+
+    /// The day periods of one locale, replaced, and what the validator
+    /// says about them.
+    fn day_periods(periods: Vec<DayPeriod>) -> Vec<String> {
+        let mut tree = tree();
+        tree.locales
+            .get_mut("en-Latn")
+            .unwrap_or_else(|| panic!("the base locale"))
+            .meta
+            .day_periods = periods;
+        errors(&validate(&tree))
+    }
+
+    fn period(from: u8, key: &str) -> DayPeriod {
+        DayPeriod {
+            from,
+            key: String::from(key),
+        }
+    }
+
+    #[test]
+    fn a_days_parts_are_in_order_and_named_once() {
+        assert!(
+            day_periods(vec![period(6, "day"), period(18, "night")]).is_empty(),
+            "a division of the locale's own is accepted"
+        );
+
+        // Out of order, which would silently swallow a part: the walk
+        // takes the last entry an hour reaches.
+        let out_of_order = day_periods(vec![period(18, "night"), period(6, "day")]);
+        assert!(
+            out_of_order.iter().any(|e| e.contains("earliest first")),
+            "{out_of_order:?}"
+        );
+
+        // Two parts at the same hour, which is the same swallowing.
+        let same_hour = day_periods(vec![period(6, "day"), period(6, "night")]);
+        assert!(!same_hour.is_empty(), "two parts may not start together");
+
+        let not_an_hour = day_periods(vec![period(24, "day")]);
+        assert!(
+            not_an_hour
+                .iter()
+                .any(|e| e.contains("not an hour of the day")),
+            "{not_an_hour:?}"
+        );
+
+        let twice = day_periods(vec![period(6, "day"), period(18, "day")]);
+        assert!(twice.iter().any(|e| e.contains("share a key")), "{twice:?}");
+
+        let none = day_periods(Vec::new());
+        assert!(
+            none.iter().any(|e| e.contains("leave it out")),
+            "an empty division names the way back: {none:?}"
+        );
     }
 
     #[test]

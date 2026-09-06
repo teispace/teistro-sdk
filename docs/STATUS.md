@@ -26,7 +26,9 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-06, end of the thirty-eighth session (the
+**Last updated:** 2026-09-06, end of the thirty-ninth session (the parts
+of the day became a locale's own and `:duration` learnt to break a count
+into several units); before that the thirty-eighth session (the
 instruction-count benchmarks over a fixed scenario shared with the
 determinism matrix, compared against the pull request's own base commit);
 before that the thirty-seventh session (the
@@ -554,9 +556,11 @@ binding (ADR-0023).
   model as the Rust ones, `ts_intl_entity` for an entity's forms); still
   the twelve-hour clock with the day periods, transliteration with the
   derived `sa-Latn` locale, and the XLIFF round trip (thirty-fifth
-  session); still to come in it: the composite provider's precedence with
-  the bindings, day-period ranges per locale and the `zone` option, rich
-  renderers per binding.
+  session); and the parts of the day as a locale's own
+  (`_meta.json`'s `dayPeriods`) with `:duration` over several units at
+  once (thirty-ninth session); still to come in it: the composite
+  provider's precedence with the bindings, abbreviated month names for
+  Nepali, the `zone` option, rich renderers per binding.
   The `ffi` crate with the ABI conventions, the API description and its
   first generator exist (thirty-first session: `crates/ffi` with
   thirty-three entry points over contexts, keys, calendars, time, the
