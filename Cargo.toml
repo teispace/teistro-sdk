@@ -14,6 +14,7 @@ members = [
     "crates/calendar",
     "crates/ephemeris-kit",
     "crates/intl",
+    "crates/test-allocator",
     "crates/idl",
     "crates/ffi",
     "bindings/node/native",

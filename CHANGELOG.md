@@ -158,7 +158,14 @@ translator's own tools and come back: `teistro-intl export xliff` and
 latitude can no longer be passed where a longitude is wanted: the
 description says which quantity a number carries, TypeScript gets a
 branded type and Dart an extension type, and the constructor checks the
-range. Four determinism rules no compiler checks are now a gate on every push
+range. **Numbers:** reading a Bikram Sambat date no longer allocates. The date
+itself is unchanged; what moved is that `CalendarResolution` borrows the
+authority and the edition of the table it came from rather than copying
+them, so the path every chart takes for every date it shows allocates
+nothing. A counting allocator now holds that and the other hot paths to
+their measured budgets.
+
+Four determinism rules no compiler checks are now a gate on every push
 (`cargo xtask check-lints`): no unordered iteration in a computation
 crate unless the file says why, no reads of the clock or the environment
 in one, only the port and the boundary may hold unsafe code, and the

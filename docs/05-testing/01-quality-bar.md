@@ -81,8 +81,28 @@ it.
 | interleaved A/B against the baseline engine | the SDK through Node is not slower than the engine it replaces on the same inputs | the A/B harness | release |
 | results schema | a claim is refused when it is smaller than its own spread, has no noise floor or no record of what was measured | `cargo xtask bench --check` | every benchmark run |
 | FFI cost | the cost of a callback-based provider and of result marshalling per binding is measured and published, never guessed | binding benchmarks | nightly |
-| allocation counts | hot paths (foundation, rule evaluation, dasha trees, panchanga day) allocate a fixed, documented number of times per call, asserted by a counting allocator in tests; `dasha_at` allocates zero times after warm-up | test-only global allocator | fast check |
+| allocation counts | hot paths allocate a fixed, documented number of times per call, asserted by a counting allocator in tests, and the count does not grow with the work: a completion allocates 13 times for a grid of 10 cells and 13 for 1000; a calendar conversion allocates nothing; a render parses once and the second render of a key allocates less than the first. The modules of Phase 4 (foundation, rule evaluation, dasha trees, panchanga day) join as they are built | `teistro-test-allocator` in each crate's tests | fast check |
 | profiles on file | every optimisation is preceded by a profile and followed by a measurement; the numbers go in the commit body | `cargo flamegraph`, `perf`, `dhat` | before any optimisation lands |
+
+### What the counting allocator measures today
+
+Measured 2026-09-06 (`crates/*/tests/allocations.rs`):
+
+| path | allocations | what they are |
+|---|---:|---|
+| a completion over 10 cells | 13 | the eight columns, the steps and the provider's own vectors |
+| a completion over 1000 cells | 13 | the same: the columns are allocated once each, whatever the grid |
+| Delta T, the obliquity, the nutation | 0 | a table and two series |
+| a date in any shipped calendar, read or written | 0 | integer arithmetic over a fixed day |
+| thirty Bikram Sambat dates | 0 | the same, thirty times |
+| a render, first time | 126 | the message parsed and the text built |
+| the same render again | 58 | the parse is cached; the text is built again |
+
+The calendar's zero is new: reading a Bikram Sambat date allocated twice
+per call for the authority and the edition of the table it came from,
+which are static text. `CalendarResolution` now borrows them, so a date
+on the path every chart takes for every date it shows allocates nothing.
+The counting allocator found that on its first run.
 
 ## Memory
 

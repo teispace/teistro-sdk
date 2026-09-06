@@ -20,6 +20,7 @@ teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-siddhanta = { path = "../siddhanta" }
 
 [dev-dependencies]
+teistro-test-allocator = { path = "../test-allocator" }
 # The differential oracle for the arithmetic calendars (Unicode/ICU4X; Apache-2.0).
 calendrical_calculations = "0.2"
 proptest = "1"

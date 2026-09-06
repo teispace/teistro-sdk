@@ -1198,6 +1198,7 @@ dependencies = [
  "serde_json",
  "teistro-core",
  "teistro-port-ephemeris",
+ "teistro-test-allocator",
 ]
 
 [[package]]
@@ -1212,6 +1213,7 @@ dependencies = [
  "teistro-core",
  "teistro-port-ephemeris",
  "teistro-siddhanta",
+ "teistro-test-allocator",
  "teistro-time",
 ]
 
@@ -1280,6 +1282,7 @@ dependencies = [
  "sha2",
  "teistro-calendar",
  "teistro-core",
+ "teistro-test-allocator",
 ]
 
 [[package]]
@@ -1381,6 +1384,10 @@ dependencies = [
 
 [[package]]
 name = "teistro-spike-slice"
+version = "0.0.0"
+
+[[package]]
+name = "teistro-test-allocator"
 version = "0.0.0"
 
 [[package]]
