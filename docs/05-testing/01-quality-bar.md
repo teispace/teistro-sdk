@@ -20,7 +20,7 @@ its code compiles.
 | property tests | invariants hold for random inputs: exact partition of the circle for every divisor and varga, sums, tree consistency, `dasha_at` finds every instant, monotonic transitions, serialise-deserialise fixed points, calendar round trips; generators deliberately produce values at and one microarcsecond either side of every classification boundary, because that is where defects live | `proptest` | fast check |
 | snapshot tests | serialised outputs and composed text per language do not change unnoticed | `insta` | fast check |
 | cross-binding parity | the same inputs give byte-identical canonical JSON in every binding; the generated type surfaces match the API description | parity harness | nightly, release |
-| cross-architecture determinism | the same fixtures give identical output hashes on x86-64 and aarch64 Linux, macOS and Windows, Node and wasm32 (Node and browser); a divergence fails with the first differing field | the determinism matrix (ADR-0022) | nightly, release |
+| cross-architecture determinism | the same scenario gives identical output hashes on x86-64 and aarch64 Linux, and the wider matrix (macOS, Windows, Node and wasm32) is measured and published; a divergence names the section, how many values moved and by how many places | `cargo xtask hashes` and `compare-hashes`, the `hash-matrix` workflow (ADR-0022) | nightly, release |
 | type safety per binding | swapped newtypes and incomplete builders do not compile (`trybuild`); a consumer project per binding type-checks at maximum strictness; one shared corpus of valid and invalid inputs agrees across every binding's validators and the Rust constructors | `trybuild`, per-binding consumer projects, the validator corpus (ADR-0023) | fast check (Rust), nightly (bindings) |
 | provider conformance kit | every adapter and every built-in tier meets its published bound | `teistro` CLI | nightly, release |
 | doc examples | every example in the docs runs and prints what it claims | `cargo xtask doc-examples` | fast check |
@@ -28,6 +28,30 @@ its code compiles.
 | mutation testing | at least 80% of mutants caught on kernel crates; a surviving mutant is a missing test | `cargo-mutants` | nightly |
 | feature matrix | every feature builds and tests alone and with no default features; no feature silently requires another | `cargo-hack --each-feature`, powerset sampled | fast check (sample), nightly (full) |
 | public API stability | no unintended breaking change in a minor release | `cargo-semver-checks` | fast check on release branches |
+
+### What the determinism matrix measures today
+
+Measured 2026-09-06 over 100,236 values (the calendars, the astronomy,
+the house systems and the classical model; `cargo xtask hashes`):
+
+| pair | outcome |
+|---|---|
+| Linux x86-64 against Linux aarch64 | every value bit for bit the same |
+| Linux aarch64 against macOS aarch64 | the calendars and the classical model bit for bit the same; the astronomy and the house systems differ |
+
+The architectures agree; the C libraries do not. The two Linux runners
+share glibc and compute the same numbers on different hardware, which is
+Phase 1's exit criterion. macOS is a different maths library, and the
+functions the astronomy layer calls round differently in the last place
+there; the calendars and the classical model do not call them, and agree
+everywhere.
+
+So the matrix fails on an architecture difference and reports a C library
+difference. Making a chart bit-identical across operating systems as well
+would mean the astronomy layer carrying its own maths functions rather
+than the platform's, which is a decision for its own ADR: it buys
+reproducibility across platforms and costs agreement with ERFA, which
+uses the platform's.
 
 ## Robustness
 

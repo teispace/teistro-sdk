@@ -9,7 +9,7 @@ built 2026-09-06. The research is in
 | workflow | when | what |
 |---|---|---|
 | `fast-check` | every push to `main`, every pull request | format, lint, the dependency policy, the workspace's tests, and every gate the Rust toolchain alone can run (`check-docs`, `check-fixtures`, `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`, `check-intl`, `check-ffi`); on a pull request, that every commit is signed off |
-| `hash-matrix` | nightly and on demand | `cargo xtask hashes` on Linux x86-64, Linux aarch64 and macOS aarch64, and the three digests compared |
+| `hash-matrix` | nightly and on demand | `cargo xtask hashes` on Linux x86-64, Linux aarch64 and macOS aarch64; the two Linux runs compared value by value (a difference fails the job) and macOS reported against them (a difference is published, not failed) |
 
 `cargo xtask hashes` walks a fixed scenario through the calendars, the
 astronomy, the house systems and the classical model, and hashes every
@@ -18,8 +18,10 @@ difference of one unit in the last place is a difference: the point is to
 find out whether the same source computes the same numbers on another
 machine, not to decide how close is close enough. The report names the
 section, so a difference says which layer moved rather than only that one
-did. That is Phase 1's exit criterion, "hash-identical across x86-64 and
-aarch64".
+did, and `cargo xtask compare-hashes` says how many values moved and by
+how many places. That is Phase 1's exit criterion, "hash-identical across
+x86-64 and aarch64", which the first run met; what the wider matrix
+measures is in `05-testing/01-quality-bar.md`.
 
 The gates that need another toolchain (`check-c`, `check-node`,
 `check-dart`, `check-parity`) run by hand today and belong to the nightly

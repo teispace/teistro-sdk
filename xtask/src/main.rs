@@ -23,7 +23,10 @@
 //! - `check-parity`: one scenario through both bindings, and the two
 //!   reports compared value by value.
 //! - `hashes`: what this build computes for a fixed scenario, hashed per
-//!   section, so two architectures can be compared.
+//!   section, so two architectures can be compared; with a path, every
+//!   value's bits are written there too.
+//! - `compare-hashes`: two such value files, with how many values differ
+//!   and by how many units in the last place.
 //! - `check-node`: the Node binding's decoders read blobs the library
 //!   produced and its types pass a consumer's strict type-check (needs
 //!   Node, and TypeScript for the second half).
@@ -85,7 +88,11 @@ fn main() {
         Some("check-node") => node_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
-        Some("hashes") => hashes::report(),
+        Some("hashes") => hashes::report(args.get(1).map(Path::new)),
+        Some("compare-hashes") => match args.as_slice() {
+            [_, left, right] => hashes::compare(Path::new(left), Path::new(right)),
+            _ => usage(),
+        },
         Some("accuracy") => accuracy::generate(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
@@ -106,7 +113,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | hashes | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

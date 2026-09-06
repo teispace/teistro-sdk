@@ -13,7 +13,9 @@
 //! `cargo xtask hashes` prints the report; the matrix runs it on each
 //! architecture and compares what they print.
 
+use std::collections::BTreeMap;
 use std::fmt::Write as _;
+use std::path::Path;
 
 use sha2::{Digest, Sha256};
 use teistro_astro::ayanamsha::{self, Basis};
@@ -212,7 +214,19 @@ fn siddhanta() -> Section {
     section
 }
 
-pub(crate) fn report() -> i32 {
+/// Every value as its bits, so two machines that disagree can be told how
+/// far apart they are rather than only that they are.
+fn values_file(sections: &[Section], path: &Path) -> std::io::Result<()> {
+    let mut out = String::new();
+    for section in sections {
+        for (index, value) in section.values.iter().enumerate() {
+            let _ = writeln!(out, "{}\t{index}\t{}", section.name, hex(value));
+        }
+    }
+    std::fs::write(path, out)
+}
+
+pub(crate) fn report(values: Option<&Path>) -> i32 {
     let sections = [calendars(), astronomy(), houses(), siddhanta()];
     let mut all = Sha256::new();
     println!("{:<12} {:>9}  digest", "section", "values");
@@ -222,5 +236,119 @@ pub(crate) fn report() -> i32 {
         println!("{:<12} {:>9}  {digest}", section.name, section.values.len());
     }
     println!("{:<12} {:>9}  {}", "all", "", hex(&all.finalize()));
+    if let Some(path) = values {
+        if let Err(error) = values_file(&sections, path) {
+            eprintln!("cannot write {}: {error}", path.display());
+            return 1;
+        }
+        eprintln!("wrote every value to {}", path.display());
+    }
     0
+}
+
+/// Compares two value files and reports how far apart they are: how many
+/// values differ, and the largest difference in units in the last place.
+/// A difference in the last place is still a difference, but knowing it
+/// is one place rather than a thousand is the difference between a
+/// rounding mode and a wrong formula.
+pub(crate) fn compare(left: &Path, right: &Path) -> i32 {
+    let (Ok(left_text), Ok(right_text)) = (
+        std::fs::read_to_string(left),
+        std::fs::read_to_string(right),
+    ) else {
+        eprintln!("both value files must be readable");
+        return 1;
+    };
+    let (left_values, right_values) = (read_values(&left_text), read_values(&right_text));
+    if left_values.len() != right_values.len() {
+        println!(
+            "the two runs computed {} and {} values; they are not the same scenario",
+            left_values.len(),
+            right_values.len()
+        );
+        return 1;
+    }
+    let mut counts: BTreeMap<&str, Difference> = BTreeMap::new();
+    for ((section, left), (_, right)) in left_values.iter().zip(&right_values) {
+        let entry = counts.entry(section.as_str()).or_default();
+        entry.values += 1;
+        if left == right {
+            continue;
+        }
+        entry.differ += 1;
+        entry.ulps = entry.ulps.max(ulps(*left, *right));
+        let (a, b) = (f64::from_bits(*left), f64::from_bits(*right));
+        let scale = a.abs().max(b.abs()).max(f64::MIN_POSITIVE);
+        entry.relative = entry.relative.max((a - b).abs() / scale);
+    }
+    let mut differing = 0;
+    println!(
+        "{:<12} {:>9} {:>9} {:>9} {:>13}",
+        "section", "values", "differ", "max ulp", "max relative"
+    );
+    for (section, difference) in &counts {
+        differing += difference.differ;
+        println!(
+            "{section:<12} {:>9} {:>9} {:>9} {:>13.3e}",
+            difference.values, difference.differ, difference.ulps, difference.relative
+        );
+    }
+    if differing == 0 {
+        println!("every value is bit for bit the same");
+        return 0;
+    }
+    println!("{differing} value(s) differ");
+    1
+}
+
+/// What two runs did to one section.
+#[derive(Default)]
+struct Difference {
+    values: usize,
+    differ: usize,
+    ulps: u64,
+    relative: f64,
+}
+
+/// A value file as its sections and bits.
+fn read_values(text: &str) -> Vec<(String, u64)> {
+    text.lines()
+        .filter_map(|line| {
+            let mut parts = line.split('\t');
+            let section = parts.next()?;
+            let _index = parts.next()?;
+            let bits = u64::from_str_radix(parts.next()?, 16).ok()?;
+            Some((section.to_string(), bits))
+        })
+        .collect()
+}
+
+/// How many representable doubles lie between two of them, which is the
+/// honest measure of "how different" for numbers of the same magnitude.
+fn ulps(left: u64, right: u64) -> u64 {
+    // The bits of a double order like an integer within a sign; the two
+    // signs are counted from zero outwards and added, which is the
+    // distance across zero.
+    let split = |bits: u64| -> (bool, u64) { (bits >> 63 == 1, bits & !(1 << 63)) };
+    match (split(left), split(right)) {
+        ((a_sign, a), (b_sign, b)) if a_sign == b_sign => a.abs_diff(b),
+        ((_, a), (_, b)) => a.saturating_add(b),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::panic, reason = "tests fail by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn the_distance_between_two_doubles_is_the_places_between_them() {
+        let one = 1.0_f64.to_bits();
+        assert_eq!(ulps(one, one), 0);
+        assert_eq!(ulps(one, (1.0_f64 + f64::EPSILON).to_bits()), 1);
+        assert_eq!(ulps(one, (1.0_f64 - f64::EPSILON / 2.0).to_bits()), 1);
+        assert_eq!(ulps(0.0_f64.to_bits(), (-0.0_f64).to_bits()), 0);
+        assert_eq!(ulps(1.0_f64.to_bits(), (-1.0_f64).to_bits()), 2 * one);
+    }
 }
