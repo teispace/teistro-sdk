@@ -276,21 +276,32 @@ pub(crate) fn compare(left: &Path, right: &Path) -> i32 {
             continue;
         }
         entry.differ += 1;
-        entry.ulps = entry.ulps.max(ulps(*left, *right));
+        let places = ulps(*left, *right);
+        entry.ulps = entry.ulps.max(places);
+        match places {
+            0..=1 => entry.near += 1,
+            2..=1_000 => entry.close += 1,
+            _ => entry.far += 1,
+        }
         let (a, b) = (f64::from_bits(*left), f64::from_bits(*right));
         let scale = a.abs().max(b.abs()).max(f64::MIN_POSITIVE);
         entry.relative = entry.relative.max((a - b).abs() / scale);
     }
     let mut differing = 0;
     println!(
-        "{:<12} {:>9} {:>9} {:>9} {:>13}",
-        "section", "values", "differ", "max ulp", "max relative"
+        "{:<12} {:>8} {:>8} {:>8} {:>8} {:>8} {:>13}",
+        "section", "values", "differ", "1 place", "to 1e3", "beyond", "max relative"
     );
     for (section, difference) in &counts {
         differing += difference.differ;
         println!(
-            "{section:<12} {:>9} {:>9} {:>9} {:>13.3e}",
-            difference.values, difference.differ, difference.ulps, difference.relative
+            "{section:<12} {:>8} {:>8} {:>8} {:>8} {:>8} {:>13.3e}",
+            difference.values,
+            difference.differ,
+            difference.near,
+            difference.close,
+            difference.far,
+            difference.relative
         );
     }
     if differing == 0 {
@@ -298,14 +309,31 @@ pub(crate) fn compare(left: &Path, right: &Path) -> i32 {
         return 0;
     }
     println!("{differing} value(s) differ");
+    let far: usize = counts.values().map(|d| d.far).sum();
+    if far > 0 {
+        println!(
+            "{far} of them by more than a thousand places, which is a wrap or a sign rather than a rounding"
+        );
+    }
     1
 }
 
-/// What two runs did to one section.
+/// What two runs did to one section: how many values differ, how far
+/// apart they are, and how the distances are spread. A difference of a
+/// place or two is a maths library rounding differently; a difference of
+/// a whole turn is a value at a wrap, where one place below 360 on one
+/// machine is one place above 0 on the other, and the quantity has not
+/// really moved at all. The spread tells them apart.
 #[derive(Default)]
 struct Difference {
     values: usize,
     differ: usize,
+    /// Differing by one place.
+    near: usize,
+    /// Differing by two to a thousand places.
+    close: usize,
+    /// Differing by more, which is a wrap, a sign or a real disagreement.
+    far: usize,
     ulps: u64,
     relative: f64,
 }
