@@ -24,6 +24,7 @@ use crate::render::{Intl, Params, Value};
 use crate::source::{BASE_LOCALE, Completeness, Entry, LocaleSource, META_FILE, Tree, sdk_root};
 use crate::translit::{Script, transliterate};
 use crate::validate::{self, Report};
+use crate::xliff;
 
 /// The command line.
 #[derive(Debug, Parser)]
@@ -130,12 +131,58 @@ pub enum Command {
         /// The text.
         text: Vec<String>,
     },
+    /// Writes a locale's messages and entity forms as XLIFF 2.1, with the
+    /// base locale as the source, for a translator's own tools.
+    Export {
+        /// What to write.
+        #[command(subcommand)]
+        format: ExportFormat,
+    },
+    /// Reads an XLIFF 2.1 file back into the locale it names as its
+    /// target: a unit with an empty target is left alone, and a unit the
+    /// base locale does not have is reported.
+    Import {
+        /// What to read.
+        #[command(subcommand)]
+        format: ImportFormat,
+    },
     /// Validates, builds every pack and bundle, generates every target and
     /// writes `intl.json`.
     Report {
         /// Where to write the results.
         #[arg(long, default_value = "target/intl-report")]
         out: PathBuf,
+    },
+}
+
+/// What `export` writes.
+#[derive(Debug, Subcommand)]
+pub enum ExportFormat {
+    /// XLIFF 2.1, one file per locale.
+    Xliff {
+        /// The locale to write, the base locale being the source.
+        #[arg(long)]
+        locale: String,
+        /// Where to write it; `<locale>.xlf` in the working directory by
+        /// default.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+}
+
+/// What `import` reads.
+#[derive(Debug, Subcommand)]
+pub enum ImportFormat {
+    /// XLIFF 2.1, as `export xliff` writes it.
+    Xliff {
+        /// The file.
+        file: PathBuf,
+        /// Where the locale's directory is; the root by default.
+        #[arg(long)]
+        out: Option<PathBuf>,
+        /// Report what would change without writing it.
+        #[arg(long)]
+        dry_run: bool,
     },
 }
 
@@ -193,6 +240,69 @@ fn run_derive(
         println!("stale override: {stale}");
     }
     Ok(derived.stale.is_empty())
+}
+
+/// Writes a locale as XLIFF, and reports how much of it is translated.
+fn run_export(
+    tree: &Tree,
+    locale: &str,
+    out: Option<PathBuf>,
+) -> Result<bool, Box<dyn std::error::Error>> {
+    let exported = xliff::export(tree, locale)?;
+    let path = out.unwrap_or_else(|| PathBuf::from(format!("{locale}.xlf")));
+    if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(&path, &exported.text)?;
+    println!(
+        "written {} ({} units, {} untranslated)",
+        path.display(),
+        exported.units,
+        exported.untranslated
+    );
+    Ok(true)
+}
+
+/// Reads an XLIFF file into the locale it names, and reports what it
+/// changed.
+fn run_import(
+    tree: &Tree,
+    file: &Path,
+    root: &Path,
+    dry_run: bool,
+) -> Result<bool, Box<dyn std::error::Error>> {
+    let xml = std::fs::read_to_string(file)?;
+    let imported = xliff::import(tree, &xml)?;
+    let locale = tree
+        .locales
+        .get(&imported.locale)
+        .ok_or_else(|| format!("no locale `{}` in the sources", imported.locale))?;
+    println!(
+        "{}: {} translated, {} left alone, {} unknown",
+        imported.locale,
+        imported.translated,
+        imported.empty,
+        imported.unknown.len()
+    );
+    for unknown in &imported.unknown {
+        println!("unknown key: {unknown}");
+    }
+    if dry_run {
+        return Ok(imported.unknown.is_empty());
+    }
+    let namespaces = xliff::apply(&imported, locale);
+    let mut files = BTreeMap::new();
+    for (name, namespace) in &namespaces {
+        let mut root = Map::new();
+        for (key, entry) in namespace.in_source_order() {
+            insert_nested(&mut root, key, entry_json(entry));
+        }
+        files.insert(format!("{name}.json"), Json::Object(root));
+    }
+    for path in write_files(&root.join(&imported.locale), &files)? {
+        println!("written {}", path.display());
+    }
+    Ok(imported.unknown.is_empty())
 }
 
 /// Renders one key and reports where it resolved from.
@@ -321,6 +431,12 @@ pub fn run(cli: Cli) -> Result<bool, Box<dyn std::error::Error>> {
             );
             Ok(report.passed() && migration.report.unknown_keys.is_empty())
         }
+        Command::Export {
+            format: ExportFormat::Xliff { locale, out },
+        } => run_export(&tree, &locale, out),
+        Command::Import {
+            format: ImportFormat::Xliff { file, out, dry_run },
+        } => run_import(&tree, &file, out.as_deref().unwrap_or(&cli.root), dry_run),
         Command::Report { out } => {
             let results = report(&tree, &out)?;
             print!("{}", results.markdown());

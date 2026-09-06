@@ -15,7 +15,7 @@ publish = false
 [features]
 # The command line; a binding that embeds the engine turns it off.
 default = ["cli"]
-cli = ["dep:clap"]
+cli = ["dep:clap", "dep:quick-xml"]
 
 [[bin]]
 name = "teistro-intl"
@@ -30,6 +30,7 @@ crc32fast = "1"
 fixed_decimal = "0.7"
 icu_locale_core = "2"
 icu_plurals = "2"
+quick-xml = { version = "0.41", optional = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 sha2 = "0.11"
