@@ -17,6 +17,7 @@ import {
   TeistroError,
   ZoneKind,
   abiVersion,
+  canonicalFrame,
   catalogueVersion,
   defaultProfile,
   fixedOfJulianDay,
@@ -254,4 +255,134 @@ test('a catalogue key packs to an id and back', () => {
   assert.equal(ctx.keyName(id), 'graha.SUN');
   assert.equal(ctx.keyName(ctx.keyId('nakshatra.ASHWINI')), 'nakshatra.ASHWINI');
   assert.throws(() => ctx.keyName(0xffffffff), (error) => error.status === 'unsupported');
+});
+
+/** An ephemeris written in JavaScript: a straight line per body. */
+function jsProvider(over = {}) {
+  const calls = [];
+  return {
+    calls,
+    provider: {
+      name: 'a-provider-in-javascript',
+      bodies: [Body.Sun, Body.Moon],
+      version: '1.2.3',
+      positions(request) {
+        calls.push(request);
+        const cells = request.jds.length * request.bodies.length;
+        const lon = new Float64Array(cells);
+        const lonSpeed = new Float64Array(cells);
+        for (let i = 0; i < request.jds.length; i += 1) {
+          for (let j = 0; j < request.bodies.length; j += 1) {
+            const k = i * request.bodies.length + j;
+            lon[k] = (request.jds[i] + j * 100) % 360;
+            lonSpeed[k] = j === 0 ? 0.9856 : 13.176;
+          }
+        }
+        return { frameBits: request.frameBits, lon, lonSpeed, status: new Int32Array(cells) };
+      },
+      ...over,
+    },
+  };
+}
+
+test('an ephemeris written in JavaScript answers the SDK', () => {
+  const { calls, provider } = jsProvider();
+  const ctx = new Context({ provider, profile: 'nepali-default' });
+  const positions = ctx.positions({
+    instants: [2451545.0, 2451546.0],
+    bodies: [Body.Sun, Body.Moon],
+  });
+
+  // One call for the whole grid: the port is a batch call, not a loop.
+  assert.equal(calls.length, 1);
+  const asked = calls[0];
+  assert.deepEqual(Array.from(asked.jds), [2451545, 2451546]);
+  assert.deepEqual(asked.bodies, ['sun', 'moon']);
+  assert.equal(asked.scale, 'ut1');
+  assert.equal(asked.speeds, true);
+  assert.equal(asked.observer, undefined, 'a geocentric frame needs none');
+
+  assert.equal(positions.cells.length, 4);
+  assert.ok(Math.abs(positions.at(0, 0).longitude - ((2451545 + 0) % 360)) < 1e-9);
+  assert.equal(positions.at(0, 1).longitudeSpeed, 13.176);
+  assert.equal(positions.provenance.provider.name, 'a-provider-in-javascript');
+  assert.equal(positions.provenance.provider.version, '1.2.3');
+});
+
+test('a provider that refuses a frame is completed by the SDK', () => {
+  const equatorial = { ...canonicalFrame(), coordinates: 'equatorial' };
+  const asked = [];
+  const provider = {
+    name: 'equatorial-provider',
+    bodies: [Body.Sun],
+    frame: equatorial,
+    positions(request) {
+      asked.push(request.frameBits);
+      // Nothing means "not in that frame"; the SDK asks again in ours.
+      if (request.frameBits !== packFrame(equatorial)) return null;
+      const cells = request.jds.length * request.bodies.length;
+      return {
+        frameBits: request.frameBits,
+        lon: new Float64Array(cells).fill(280),
+        lat: new Float64Array(cells),
+        status: new Int32Array(cells),
+      };
+    },
+  };
+  const positions = new Context({ provider }).positions({
+    instants: [2451545.0],
+    bodies: [Body.Sun],
+    frame: canonicalFrame(),
+  });
+  assert.equal(asked.length, 2, "the canonical frame, then the provider's own");
+  const steps = positions.steps.map((step) => `${step.name}:${step.implementation}`);
+  assert.deepEqual(steps, [
+    'positions:NATIVE',
+    'delta-t:SDK',
+    'obliquity:SDK',
+    'rotate-equatorial-to-ecliptic:SDK',
+  ]);
+  assert.ok(Math.abs(positions.at(0, 0).longitude - 280.8787) < 1e-3, 'rotated onto the ecliptic');
+});
+
+test('a provider that fails says so in its own words', () => {
+  const throwing = {
+    name: 'throws',
+    bodies: [Body.Sun],
+    positions() {
+      throw new Error('no data for that instant');
+    },
+  };
+  assert.throws(
+    () => new Context({ provider: throwing }).positions({ instants: [2451545.0], bodies: [Body.Sun] }),
+    (error) => {
+      assert.equal(error.status, 'provider');
+      assert.equal(error.message, 'the ephemeris provider threw: no data for that instant');
+      return true;
+    },
+  );
+
+  const short = { name: 'short', bodies: [Body.Sun], positions: () => ({ lon: [1], status: [0] }) };
+  assert.throws(
+    () => new Context({ provider: short }).positions({ instants: [2451545.0, 2451546.0], bodies: [Body.Sun] }),
+    /returned 1 values in `lon` for 2 cells/u,
+  );
+
+  // A provider is checked at the door, before a call can reach it.
+  assert.throws(() => new Context({ provider: { name: 'x', bodies: [Body.Sun] } }), TypeError);
+  assert.throws(() => new Context({ provider: { bodies: [Body.Sun], positions() {} } }), TypeError);
+  assert.throws(() => new Context({ provider: { name: 'x', bodies: [], positions() {} } }), TypeError);
+  assert.throws(
+    () => new Context({ provider: { name: 'x', bodies: ['graha.PLOOTO'], positions() {} } }),
+    /not a body the port knows/u,
+  );
+});
+
+test('a provider answers only the bodies it declared', () => {
+  const { provider } = jsProvider({ bodies: [Body.Sun] });
+  const ctx = new Context({ provider });
+  assert.throws(
+    () => ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Mars] }),
+    (error) => error.status === 'unsupported' || error.status === 'capability',
+  );
 });

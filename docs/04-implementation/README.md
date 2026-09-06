@@ -68,11 +68,12 @@ teistro-sdk/
   bindings/
     c/                         present: include/teistro.h, the generated C header, and tests/smoke.c, the
                                binding's own test (`cargo xtask check-c`), with its README
-    node/                      present: native/ (the generated napi addon over the C ABI), lib/ (the generated
-                               TypeScript surface, catalogue tables and blob decoders, and the hand-written
-                               ergonomic layer), test/ (the surface end to end and the decoders against blobs
-                               the library produced), typecheck/ (a consumer at maximum strictness);
-                               `cargo xtask check-node`. A host-implemented provider follows
+    node/                      present: native/ (the generated napi addon over the C ABI, and the hand-written
+                               port adapter that binds an ephemeris written in JavaScript into the vtable),
+                               lib/ (the generated TypeScript surface, catalogue tables and blob decoders, and
+                               the hand-written ergonomic layer), test/ (the surface end to end, a provider of
+                               its own, and the decoders against blobs the library produced), typecheck/
+                               (a consumer at maximum strictness); `cargo xtask check-node`
     cpp/ node/ wasm/ python/ dart/ teistro_flutter/ rust/ java/
     shared/                    ergonomic code shared by node and wasm
   adapters/                    outside the workspace (ADR-0019), with their README

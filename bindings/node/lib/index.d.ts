@@ -138,6 +138,79 @@ export interface PositionsRequest {
   readonly observer?: { readonly longitudeDeg: number; readonly latitudeDeg: number; readonly altitudeM: number };
 }
 
+/**
+ * An ephemeris of your own. `positions` is asked once for a whole grid,
+ * never in a loop, and answers with one value per cell, instants
+ * outermost. Returning nothing means "not in that frame": the SDK then
+ * asks again in the provider's own frame and completes the rest itself.
+ */
+export interface EphemerisProvider {
+  /** What the provider is; every result's provenance is stamped with it. */
+  readonly name: string;
+  /** The bodies it answers, by their catalogue keys. */
+  readonly bodies: readonly Body[];
+  /** The one call: a grid in, the columns out. */
+  positions(request: ProviderRequest): ProviderColumns | null | undefined;
+  /** Its version; empty by default. */
+  readonly version?: string;
+  /** What identifies its data; empty by default. */
+  readonly dataVersion?: string;
+  /** The Julian days it covers; year 0 to year 3000 by default. */
+  readonly jdRange?: readonly [number, number];
+  /** The frame it returns natively; the canonical frame by default. */
+  readonly frame?: Frame;
+  /** Whether it computes speeds; `true` by default. */
+  readonly speeds?: boolean;
+  /**
+   * Whether identical requests give identical bits; `true` by default,
+   * and a provider that is not deterministic must say so, because the
+   * conformance contract rests on it (ADR-0022).
+   */
+  readonly deterministic?: boolean;
+}
+
+/** What a provider is asked for. */
+export interface ProviderRequest {
+  /** The instants, as Julian days on `scale`. */
+  readonly jds: readonly number[];
+  /** The bodies, by their catalogue keys. */
+  readonly bodies: readonly Body[];
+  /** The scale the instants are on. */
+  readonly scale: TimeScale;
+  /** The frame the positions are wanted in, packed; `unpackFrame` reads it. */
+  readonly frameBits: number;
+  /** Whether speeds are wanted. */
+  readonly speeds: boolean;
+  /** The place a topocentric frame needs. */
+  readonly observer?: { readonly longitudeDeg: number; readonly latitudeDeg: number; readonly altitudeM: number };
+}
+
+/**
+ * What a provider answers with: one value per cell, instants outermost,
+ * so cell `i * bodies.length + j` is instant `i`, body `j`. A column left
+ * out is zeroes, which is what a provider that computes no speeds means.
+ */
+export interface ProviderColumns {
+  /** The frame the values are in; the request's by default. */
+  readonly frameBits?: number;
+  /** Longitudes in degrees. */
+  readonly lon?: Float64Array | readonly number[];
+  /** Latitudes in degrees. */
+  readonly lat?: Float64Array | readonly number[];
+  /** Distances. */
+  readonly dist?: Float64Array | readonly number[];
+  /** Longitude speeds in degrees per day. */
+  readonly lonSpeed?: Float64Array | readonly number[];
+  /** Latitude speeds in degrees per day. */
+  readonly latSpeed?: Float64Array | readonly number[];
+  /** Distance speeds per day. */
+  readonly distSpeed?: Float64Array | readonly number[];
+  /** A status per cell; zero, or absent, is a value. */
+  readonly status?: Int32Array | readonly number[];
+  /** What computed each cell. */
+  readonly source?: Uint32Array | readonly number[];
+}
+
 /** How a context is built. */
 export interface ContextInit {
   /** A shipped profile's id; `defaultProfile()` names the default. */
@@ -148,6 +221,8 @@ export interface ContextInit {
   readonly locale?: string;
   /** Use the SDK's analytic test provider; for examples and tests only. */
   readonly testProvider?: boolean;
+  /** An ephemeris of your own, answered in this language. */
+  readonly provider?: EphemerisProvider;
 }
 
 /**

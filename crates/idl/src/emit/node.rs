@@ -155,10 +155,18 @@ fn enums_at_the_boundary(api: &Api) -> BTreeSet<String> {
     used
 }
 
-/// The structs a function reads or writes, and everything those nest.
+/// The structs a function or a callback reads or writes, and everything
+/// those nest. A callback's structs are there because a host-implemented
+/// port is answered in this binding's own language, so the shapes it is
+/// asked in and answers with are part of the surface.
 fn objects_at_the_boundary(api: &Api) -> BTreeSet<String> {
     let mut reachable = BTreeSet::new();
-    for p in api.functions.iter().flat_map(|f| f.params.iter()) {
+    let params = api
+        .functions
+        .iter()
+        .flat_map(|f| f.params.iter())
+        .chain(api.callbacks.iter().flat_map(|c| c.params.iter()));
+    for p in params {
         if matches!(p.role, Role::StructIn | Role::StructOut) {
             if let Some(s) = pointee_struct(api, p) {
                 reachable.insert(s.name.clone());
@@ -181,12 +189,60 @@ fn objects_at_the_boundary(api: &Api) -> BTreeSet<String> {
             grown |= reachable.insert(name);
         }
         if !grown {
-            if let Some(error) = last_error_struct(api) {
-                reachable.remove(&error.name);
-            }
-            return reachable;
+            break;
         }
     }
+    // The error struct crosses as `LastError`, a shape of its own; a
+    // struct holding an array of structs is described rather than built
+    // (a binding would have to keep every element's own buffers alive for
+    // the call, which is the adapter's business, not an object's).
+    if let Some(error) = last_error_struct(api) {
+        reachable.remove(&error.name);
+    }
+    let nested_arrays: Vec<String> = api
+        .structs
+        .iter()
+        .filter(|s| reachable.contains(&s.name))
+        .filter(|s| {
+            s.fields.iter().zip(field_roles(api, s)).any(|(f, role)| {
+                matches!(role, FieldRole::Array { .. })
+                    && matches!(f.ty.pointee(), Some(TypeRef::Struct { .. }))
+            })
+        })
+        .map(|s| s.name.clone())
+        .collect();
+    for name in nested_arrays {
+        reachable.remove(&name);
+    }
+    let referenced: BTreeSet<String> = api
+        .structs
+        .iter()
+        .filter(|s| reachable.contains(&s.name))
+        .flat_map(|s| s.fields.iter())
+        .filter_map(|f| f.ty.pointee().or(Some(&f.ty)))
+        .filter_map(|ty| match ty {
+            TypeRef::Struct { name } => Some(name.clone()),
+            _ => None,
+        })
+        .collect();
+    let orphans: Vec<String> = reachable
+        .iter()
+        .filter(|name| !referenced.contains(*name) && !named_by_a_call(api, name))
+        .cloned()
+        .collect();
+    for name in orphans {
+        reachable.remove(&name);
+    }
+    reachable
+}
+
+/// Whether a function or a callback names a struct directly.
+fn named_by_a_call(api: &Api, name: &str) -> bool {
+    api.functions
+        .iter()
+        .flat_map(|f| f.params.iter())
+        .chain(api.callbacks.iter().flat_map(|c| c.params.iter()))
+        .any(|p| matches!(p.ty.pointee(), Some(TypeRef::Struct { name: n }) if n == name))
 }
 
 /// A function with no handle in play and no memory to reclaim.
@@ -552,7 +608,16 @@ fn render_held(
             FieldRole::Reserved => String::from("Default::default()"),
             FieldRole::Count { of } => format!("self.{}.len()", snake(of)),
             FieldRole::Presence { of } => format!("u8::from(self.{}.is_some())", snake(of)),
-            FieldRole::Array { .. } => format!("self.{field}.as_ptr()"),
+            FieldRole::Array { .. } => {
+                // A column the library writes into wants a `*mut`; the
+                // buffer is this value's, so the cast hands out what it
+                // owns rather than something borrowed elsewhere.
+                if matches!(&f.ty, TypeRef::Pointer { mutable: true, .. }) {
+                    format!("self.{field}.as_ptr().cast_mut()")
+                } else {
+                    format!("self.{field}.as_ptr()")
+                }
+            }
             FieldRole::Text => format!("self.{field}.as_ref().map_or(ptr::null(), |s| s.as_ptr())"),
             FieldRole::Optional { .. } => match &f.ty {
                 TypeRef::Struct { name } => format!(
@@ -942,8 +1007,20 @@ fn build_call(api: &Api, f: &FunctionDef) -> Call {
                 args.push(format!("{name}.as_ptr()"));
             }
             Role::Length => args.push(format!("{last_pointer}.len()")),
-            Role::VtableIn => args.push(String::from("ptr::null()")),
-            Role::UserData => args.push(String::from("ptr::null_mut()")),
+            Role::VtableIn => {
+                params.push(String::from(
+                    "provider: Option<crate::provider::ProviderInfo>",
+                ));
+                params.push(String::from(
+                    "provider_positions: Option<Function<FnArgs<(PositionRequest,)>, Option<PositionColumns>>>",
+                ));
+                let _ = writeln!(
+                    setup,
+                    "        let host = match (provider, provider_positions) {{\n            (Some(info), Some(callback)) => Some(crate::provider::Host::bind(info, &callback)?),\n            (None, None) => None,\n            _ => {{\n                return Err(Error::from_reason(\n                    \"a provider needs both its description and its positions callback\",\n                ));\n            }}\n        }};\n        let (host_vtable, user_data) = crate::provider::parts(host.as_ref());\n        let {name} = host_vtable.as_ref().map_or(ptr::null(), |v| &raw const *v);"
+                );
+                args.push(name);
+            }
+            Role::UserData => args.push(String::from("user_data")),
             Role::BlobFree | Role::StringFree => {}
         }
     }
@@ -1012,18 +1089,32 @@ fn zeroed(path: &str, binding: &str, handshake: bool) -> String {
 fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     let name = binding_type_name(&opaque.name);
     let c = struct_path(api, &opaque.name);
+    let host = takes_host(api, opaque);
+    // A host-implemented port is answered in this binding's own language,
+    // so the adapter that wraps it into the vtable is hand-written, in
+    // `crate::provider` (`02-architecture/07-binding-architecture.md`).
+    // The class owns it, because the vtable points into it for as long as
+    // the handle lives.
+    let field = if host {
+        "\n    /// The host-implemented provider, alive while the handle is.\n    host: Option<crate::provider::Host>,"
+    } else {
+        ""
+    };
     let _ = writeln!(
         out,
-        "{}#[napi]\npub struct {name} {{\n    handle: *mut {c},\n}}\n\n// SAFETY: a context is used by one thread at a time, which is the contract\n// the boundary documents; a worker thread builds its own.\nunsafe impl Send for {name} {{}}\n\n#[napi]\nimpl {name} {{",
+        "{}#[napi]\npub struct {name} {{\n    handle: *mut {c},{field}\n}}\n\n// SAFETY: a context is used by one thread at a time, which is the contract\n// the boundary documents; a worker thread builds its own.\nunsafe impl Send for {name} {{}}\n\n#[napi]\nimpl {name} {{",
         doc(&opaque.doc, "")
     );
     if let Some(ctor) = constructor(api, opaque) {
-        render_constructor(out, api, ctor, &name);
+        render_constructor(out, api, ctor, &name, host);
     }
     render_last_error_method(out, api);
     render_check(out, api);
+    if host {
+        render_host_helpers(out);
+    }
     for m in methods(api, opaque) {
-        render_method(out, api, opaque, m);
+        render_method(out, api, opaque, m, host);
     }
     let _ = writeln!(out, "}}\n");
     if let Some(free) = destructor(api, opaque) {
@@ -1035,15 +1126,32 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     }
 }
 
-fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str) {
+fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str, host: bool) {
     let call = build_call(api, ctor);
+    let built = if host { ", host" } else { "" };
     let _ = writeln!(
         out,
-        "{}    #[napi(constructor)]\n    pub fn new({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            let message = take_string(&mut out_error);\n            return Err(Error::from_reason(if message.is_empty() {{\n                format!(\"the context could not be built (code {{}})\", status.code())\n            }} else {{\n                message\n            }}));\n        }}\n        Ok({name} {{ handle }})\n    }}\n",
+        "{}    #[napi(constructor)]\n    pub fn new({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            let message = take_string(&mut out_error);\n            return Err(Error::from_reason(if message.is_empty() {{\n                format!(\"the context could not be built (code {{}})\", status.code())\n            }} else {{\n                message\n            }}));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
         doc(&ctor.doc, "    "),
         call.params.join(", "),
         call.setup,
         call_expression(ctor, &call.args.join(", "))
+    );
+}
+
+/// Whether an opaque's constructor takes a host-implemented port.
+fn takes_host(api: &Api, opaque: &OpaqueDef) -> bool {
+    constructor(api, opaque)
+        .is_some_and(|ctor| ctor.params.iter().any(|p| p.role == Role::VtableIn))
+}
+
+/// The two lines every call of a class with a host runs: the environment
+/// is lent for the length of the call and taken back after it, so a
+/// callback that escaped finds nothing to call into.
+fn render_host_helpers(out: &mut String) {
+    let _ = writeln!(
+        out,
+        "    /// Lends the environment to the host provider for one call.\n    fn enter(&self, env: Env) {{\n        if let Some(host) = self.host.as_ref() {{\n            host.enter(env);\n        }}\n    }}\n\n    /// Takes it back, and reports what the provider threw.\n    fn leave(&self) -> Result<()> {{\n        match self.host.as_ref() {{\n            Some(host) => host.leave(),\n            None => Ok(()),\n        }}\n    }}\n"
     );
 }
 
@@ -1081,23 +1189,34 @@ fn render_check(out: &mut String, api: &Api) {
     );
 }
 
-fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, m: &FunctionDef) {
+fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, m: &FunctionDef, host: bool) {
     if m.name.ends_with("_last_error") {
         return;
     }
     let method = snake(&method_name(api, opaque, m));
     let call = build_call(api, m);
     let called = call_expression(m, &call.args.join(", "));
-    let body = if returns_status(api, m) {
-        format!("        let status = {called};\n        self.check(status)?;")
+    // A call that may reach the host provider brackets itself: the
+    // environment is lent before it and taken back after, and what the
+    // provider threw is reported in place of the status it turned into.
+    let (env_param, lend, take) = if host {
+        (
+            "env: Env, ",
+            "        self.enter(env);\n",
+            "        self.leave()?;\n",
+        )
     } else {
-        format!("        let value = {called};")
+        ("", "", "")
+    };
+    let body = if returns_status(api, m) {
+        format!("        let status = {called};\n{take}        self.check(status)?;")
+    } else {
+        format!("        let value = {called};\n{take}")
     };
     let _ = writeln!(
         out,
-        "{}    #[napi]\n    pub fn {method}(&self{}{}) -> Result<{}> {{\n{}        // SAFETY: the handle is live and every pointer is valid for the call.\n{body}\n{}    }}\n",
+        "{}    #[napi]\n    pub fn {method}(&self, {env_param}{}) -> Result<{}> {{\n{}{lend}        // SAFETY: the handle is live and every pointer is valid for the call.\n{body}\n{}    }}\n",
         doc(&m.doc, "    "),
-        if call.params.is_empty() { "" } else { ", " },
         call.params.join(", "),
         call.returns,
         call.setup,
