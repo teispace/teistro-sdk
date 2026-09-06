@@ -269,11 +269,17 @@ pub(crate) fn compare(left: &Path, right: &Path) -> i32 {
         return 1;
     }
     let mut counts: BTreeMap<&str, Difference> = BTreeMap::new();
-    for ((section, left), (_, right)) in left_values.iter().zip(&right_values) {
+    for (index, ((section, left), (_, right))) in left_values.iter().zip(&right_values).enumerate()
+    {
         let entry = counts.entry(section.as_str()).or_default();
         entry.values += 1;
         if left == right {
             continue;
+        }
+        if entry.examples.len() < 3 {
+            entry
+                .examples
+                .push((index, f64::from_bits(*left), f64::from_bits(*right)));
         }
         entry.differ += 1;
         let places = ulps(*left, *right);
@@ -308,6 +314,11 @@ pub(crate) fn compare(left: &Path, right: &Path) -> i32 {
         println!("every value is bit for bit the same");
         return 0;
     }
+    for (section, difference) in &counts {
+        for (index, left, right) in &difference.examples {
+            println!("{section}[{index}]: {left:.17e} against {right:.17e}");
+        }
+    }
     println!("{differing} value(s) differ");
     let far: usize = counts.values().map(|d| d.far).sum();
     if far > 0 {
@@ -336,6 +347,9 @@ struct Difference {
     far: usize,
     ulps: u64,
     relative: f64,
+    /// The first few, so a reader can see what kind of difference it is
+    /// rather than infer it from a distance.
+    examples: Vec<(usize, f64, f64)>,
 }
 
 /// A value file as its sections and bits.
