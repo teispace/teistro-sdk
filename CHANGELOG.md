@@ -87,9 +87,12 @@ contexts from a profile, a JSON settings patch, a locale and the port's
 vtable; the last error with its message, field and hint; keys and ids;
 dates in every shipped calendar; civil times to instants with the zone
 metadata and the scale conversions; the locale engine over the embedded
-bundles; positions through the port completed into the requested frame,
-as a result blob (`TSRB`) with the completion steps and the provenance
-envelope. The API description (`idl/api.json`, `teistro-idl`) is extracted
+bundles; the frame a request asks for by name (centre, equinox,
+coordinates, zodiac, corrections) rather than by its packed bits; and
+positions through the port completed into that frame, as a result blob
+(`TSRB`) with the completion steps and the provenance envelope. The C
+binding's own test compiles against the header with warnings as errors
+and runs (`cargo xtask check-c`). The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

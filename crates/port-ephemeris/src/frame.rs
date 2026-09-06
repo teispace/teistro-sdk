@@ -12,6 +12,7 @@ use crate::error::ProviderError;
 /// Where a position is seen from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[repr(u8)]
 pub enum Centre {
     /// The centre of the Earth.
     Geocentric,
@@ -39,6 +40,7 @@ impl Centre {
 /// The equinox and equator the coordinates refer to.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[repr(u8)]
 pub enum Equinox {
     /// The equinox of date.
     OfDate,
@@ -60,6 +62,7 @@ impl Equinox {
 /// The coordinate system of a position.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[repr(u8)]
 pub enum Coordinates {
     /// Ecliptic longitude and latitude.
     Ecliptic,

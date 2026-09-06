@@ -7,7 +7,8 @@
 //!   the Rust spellings of "this is the boundary form".
 //! - Its C name is the prefix plus the snake case: `ts_position_request`.
 //! - An enum member `Status::InvalidArg` is `TS_STATUS_INVALID_ARG` in C; a
-//!   catalogue member keeps its key: `TS_GRAHA_PURVA_PHALGUNI`.
+//!   catalogued member's own key names it, upper-cased, so the C name and
+//!   the key are the same word: `TS_GRAHA_PURVA_PHALGUNI`, `TS_KIND_GRAHA`.
 //! - A symbol is already `ts_<module>_<verb>` in Rust and stays so.
 
 /// The binding-facing name of a Rust boundary type: `TsContext` becomes
@@ -35,8 +36,9 @@ pub fn c_type_name(prefix: &str, rust_name: &str) -> String {
     format!("{prefix}{}", snake(&binding_type_name(rust_name)))
 }
 
-/// The C name of an enum member: `TS_STATUS_INVALID_ARG`; a catalogue
-/// member's key is used as it is (`TS_GRAHA_PURVA_PHALGUNI`).
+/// The C name of an enum member: `TS_STATUS_INVALID_ARG`; a catalogued
+/// member's own key names it, upper-cased (`TS_GRAHA_PURVA_PHALGUNI`,
+/// `TS_KIND_GRAHA`).
 #[must_use]
 pub fn c_enum_member(
     prefix: &str,
@@ -44,7 +46,7 @@ pub fn c_enum_member(
     variant: &str,
     key: Option<&str>,
 ) -> String {
-    let member = key.map_or_else(|| screaming(variant), str::to_string);
+    let member = key.map_or_else(|| screaming(variant), str::to_ascii_uppercase);
     format!(
         "{}{}_{member}",
         prefix.to_ascii_uppercase(),
@@ -207,6 +209,10 @@ mod tests {
         assert_eq!(
             c_enum_member("ts_", "Graha", "PurvaPhalguni", Some("PURVA_PHALGUNI")),
             "TS_GRAHA_PURVA_PHALGUNI"
+        );
+        assert_eq!(
+            c_enum_member("ts_", "Kind", "Graha", Some("graha")),
+            "TS_KIND_GRAHA"
         );
         assert_eq!(
             c_enum_member("ts_", "TimeScale", "Ut1", None),
