@@ -28,11 +28,45 @@ import { entityForms, messages } from './messages.js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
-/** The addon: a packaged build first, then the workspace's own. */
+/**
+ * The npm package that carries this host's prebuilt addon.
+ *
+ * A release publishes one package per platform and this package depends
+ * on all of them as optional dependencies, so npm installs the one that
+ * matches and skips the rest. The name is built from Node's own words for
+ * the host, which are the same words npm matched `os` and `cpu` against.
+ */
+export function platformPackage() {
+  return `@teistro/sdk-${process.platform}-${process.arch}`;
+}
+
+/**
+ * The addon's path inside its platform package, or `null` when npm did not
+ * install one: on a host no release covers, under `--no-optional`, or in
+ * a lockfile written on another platform.
+ */
+function packagedAddon() {
+  try {
+    return require.resolve(`${platformPackage()}/teistro.node`);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The addon: the one a path names, then the one npm installed for this
+ * host, then this repository's own build.
+ *
+ * A consumer only ever has the second; a contributor only ever has the
+ * third, because the platform packages are published rather than checked
+ * in. The order matters anyway for the case where someone has both and
+ * wants the release they installed.
+ */
 function loadAddon() {
   const named = process.env.TEISTRO_ADDON;
   const candidates = [
     named,
+    packagedAddon(),
     join(HERE, '..', 'native', 'index.node'),
     join(HERE, '..', '..', '..', 'target', 'release', addonName()),
     join(HERE, '..', '..', '..', 'target', 'debug', addonName()),
@@ -40,9 +74,9 @@ function loadAddon() {
   const found = candidates.find((path) => existsSync(path));
   if (!found) {
     throw new Error(
-      `no Teistro addon found. Looked in:\n  ${candidates.join(
+      `no Teistro addon for ${process.platform}-${process.arch}. Looked in:\n  ${candidates.join(
         '\n  ',
-      )}\nBuild it with \`cargo build -p teistro-node\`, or set TEISTRO_ADDON to its path.`,
+      )}\nInstall the prebuilt addon with \`npm install ${platformPackage()}\` (npm normally does that for you), build it with \`cargo build --release -p teistro-node\`, or set TEISTRO_ADDON to its path.`,
     );
   }
   return [require(found), found === named];

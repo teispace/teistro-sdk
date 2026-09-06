@@ -34,7 +34,10 @@ exclude = [
     "adapters/ephemeris-sweph/rust",
 ]
 
+# One version for the whole SDK: every crate takes it from here, and
+# `cargo xtask check-versions` holds the bindings' manifests to it.
 [workspace.package]
+version = "0.0.0"
 edition = "2024"
 license = "Apache-2.0"
 repository = "https://github.com/teispace/teistro-sdk"

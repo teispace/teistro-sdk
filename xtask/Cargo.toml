@@ -1,6 +1,6 @@
 [package]
 name = "xtask"
-version = "0.0.0"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -9,11 +9,13 @@ publish = false
 description = "Repository tasks for Teistro SDK: gates, generators, release steps"
 
 [dependencies]
+flate2 = "1"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 serde_yaml_ng = "0.10"
 sha2 = "0.11"
+tar = "0.4"
 teistro-astro = { path = "../crates/astro" }
 teistro-calendar = { path = "../crates/calendar" }
 teistro-core = { path = "../crates/core" }

@@ -1,0 +1,62 @@
+# The full verify matrix: every gate that needs a toolchain the fast check
+# does not have, on every platform the SDK ships for.
+#
+# The fast check stays Rust-only and runs on every push (ADR-0014). This
+# runs nightly, on demand, and before a release, because a C compiler, a
+# Node and a Dart on five platforms is minutes of machine time and a
+# contributor should not wait for it to see a typo.
+#
+# A skip is not a pass: each gate prints `skip` with the tool it wanted,
+# and the summary below counts what actually ran.
+name: verify
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Nightly, an hour after the hash matrix, so the two do not queue
+    # against each other for runners.
+    - cron: "0 4 * * *"
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  bindings:
+    name: bindings (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64
+          - os: macos-latest
+            platform: darwin-arm64
+          - os: macos-13
+            platform: darwin-x64
+          - os: windows-latest
+            platform: win32-x64
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: dart-lang/setup-dart@v1
+      - name: One version across the workspace and both packages
+        run: cargo xtask check-versions
+      - name: The C binding against the generated header
+        run: cargo xtask check-c
+      - name: The Node binding, its decoders and a strict consumer
+        run: cargo xtask check-node
+      - name: The Dart binding against the real library
+        run: cargo xtask check-dart
+      - name: The two bindings against each other, value by value
+        run: cargo xtask check-parity
+      - name: The packages installed into throwaway projects and run
+        run: cargo xtask check-package

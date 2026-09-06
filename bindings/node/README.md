@@ -19,12 +19,36 @@ which is thin on purpose.
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |
 | `typecheck/` | a consumer, the layer's declarations and the typed accessors at maximum strictness, where every wrong usage is a compile error the file asserts, a swapped latitude and longitude among them | by hand |
 | `parity.mjs` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Dart binding's | by hand |
+| `packaging/consumer.mjs` | a consumer that imports the published package by name, run by `cargo xtask check-package` inside a project that installed it | by hand |
 
 A catalogue member is its full key everywhere a string names it
 (`'graha.SUN'`), which is what packs, fixtures and serialised results
 carry; any other enum member is its name in kebab case (`'invalid-arg'`).
 A field the library may not fill is an optional property, which is what
 the addon carries on both sides.
+
+## Installing it
+
+```sh
+npm install @teistro/sdk
+```
+
+The addon is a prebuilt binary, and it is not in this package. A release
+publishes one package per platform — `@teistro/sdk-linux-x64`,
+`@teistro/sdk-darwin-arm64`, and so on — and this package depends on all
+of them as optional dependencies, so npm installs exactly the one that
+matches the host and skips the rest. Nothing is compiled at install time
+and there is no install script.
+
+The loader looks for the addon in three places, in order: `$TEISTRO_ADDON`
+when it names one, the platform package npm installed (`platformPackage()`
+says which that is), and this repository's own `cargo build` output. When
+it finds none, the error names the package that was wanted and the command
+that builds one.
+
+A host no release covers — musl today, anything else tomorrow — installs
+no platform package. Build the addon from source (`cargo build --release
+-p teistro-node`) and point `$TEISTRO_ADDON` at it.
 
 ## Using it
 

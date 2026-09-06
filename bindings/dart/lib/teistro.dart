@@ -28,6 +28,7 @@ import 'src/blob.dart';
 import 'src/catalogue.dart';
 import 'src/ffi.dart';
 import 'src/host.dart';
+import 'src/install.dart';
 // Prefixed because the locale's names are its own: `Gender` is a word the
 // catalogue uses too. A consumer that wants them imports
 // `package:teistro/messages.dart`.
@@ -37,6 +38,11 @@ export 'src/blob.dart';
 export 'src/catalogue.dart';
 export 'src/ffi.dart';
 export 'src/host.dart';
+export 'src/install.dart'
+    show hostPlatform, install, installedLibrary, InstallException, Installed;
+// The version this package expects its library to be, which is the
+// release its installer fetches from.
+export 'src/prebuilt.dart' show prebuiltVersion;
 
 /// The SDK's shared library, opened once and shared by every context.
 ///
@@ -89,11 +95,10 @@ final class Teistro {
   }
 
   /// The file name the platform gives the SDK's shared library.
-  static String get libraryName {
-    if (Platform.isMacOS) return 'libteistro_ffi.dylib';
-    if (Platform.isWindows) return 'teistro_ffi.dll';
-    return 'libteistro_ffi.so';
-  }
+  ///
+  /// The installer needs the same name and cannot import this library, so
+  /// the name is defined beside it and read back here.
+  static String get libraryName => libraryFileName;
 
   /// The library the environment names, when it names one.
   static String? get _named {
@@ -107,6 +112,9 @@ final class Teistro {
     final named = _named;
     return <String>[
       if (named != null) named,
+      // What `dart run teistro:install` fetched for this project, which a
+      // consumer has and a contributor does not.
+      installedLibrary(),
       '$here/$libraryName',
       'bindings/dart/$libraryName',
       'target/release/$libraryName',

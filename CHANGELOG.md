@@ -187,6 +187,28 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- Packaging and the release matrix. The SDK has one version, declared in
+  `[workspace.package]` and held across both package manifests, the five
+  platform packages and the API description by `cargo xtask
+  check-versions`; `cargo xtask version X` moves it. `cargo xtask package`
+  builds what a platform ships — the shared library gzipped, a C bundle
+  with the header and both libraries, and the npm package carrying that
+  platform's addon — each recorded in a manifest with its size and its
+  SHA-256, the library's taken uncompressed. `cargo xtask package stage`
+  merges the five and writes the two packages published once, the Node
+  package that depends on the platform packages and the Dart package whose
+  installer fetches from the release. `cargo xtask check-package` installs
+  all of it into throwaway projects and runs a consumer against each: the
+  C bundle unpacked and linked both ways, the npm packages packed and
+  installed into an empty project, and a Dart project that fetched its
+  library through `dart run teistro:install`. Node finds its addon in the
+  platform package npm chose (`@teistro/sdk-<platform>`); Dart fetches a
+  library and refuses one whose digest is not the one recorded when it was
+  built, with SHA-256 the package implements itself rather than take a
+  dependency for. Two workflows: `verify`, the bindings' gates and the
+  packaging on all five platforms nightly, and `release`, which builds,
+  merges, stages and publishes from a tag that must be the version the
+  repository carries (`docs/06-cicd/`).
 - `crates/core`, `crates/calendar` (the arithmetic calendars and Bikram
   Sambat), `crates/siddhanta` (the Surya Siddhanta model), the seed of
   `crates/astro` (the boundary solver), and the Bikram Sambat engine with

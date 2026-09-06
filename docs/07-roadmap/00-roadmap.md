@@ -103,11 +103,12 @@ Where each stands, 2026-09-06:
 | the conformance kit on the Teimeris adapter | **met**: every check passes against the engine, including its corrected profile |
 | the classification property tests for every divisor | **met** (`crates/core`, the exact partition of the circle) |
 | a swapped latitude and longitude refused | **met** in Rust (`crates/core/tests/ui`), TypeScript (`@ts-expect-error` in the strict consumer) and Dart (`bindings/dart/typecheck/wrong.dart`) |
-| a Flutter app | the Dart binding runs on the Dart VM; the Flutter plugin that builds the library per platform is part of the packaging that waits on the release matrix |
+| a Node app | **met**: `cargo xtask check-package` installs the published packages into an empty project and runs a consumer that imports `@teistro/sdk` by name; the addon comes from the platform package npm chose |
+| a Flutter app | the Dart binding runs on the Dart VM, and a pub consumer installs its library with `dart run teistro:install` and is proved by the same gate; a Flutter plugin that carries the library into an Android or iOS build is its own deliverable, in v1.x with the mobile targets |
+| the packages built, published and installable | **met**: five platforms, four packages, one version, `docs/06-cicd/02-build-matrix.md`; the `release` workflow builds, merges, stages and publishes from a tag |
 
-What remains for the phase itself: the bindings' packaging beyond the
-build handshake, the instruction-count benchmarks, the conformance
-repository, and the docs site.
+What remains for the phase itself: the instruction-count benchmarks, the
+conformance repository, and the docs site.
 
 ## Phase 2: The astronomy layer
 

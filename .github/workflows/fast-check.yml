@@ -5,7 +5,9 @@
 # check stays fast on purpose: a contributor should see red within minutes.
 #
 # Every task is `cargo xtask <task>` (ADR-0014): the tooling is Rust, so a
-# job needs the Rust toolchain and nothing else.
+# job needs the Rust toolchain and nothing else. The gates that need a C
+# compiler, a Node or a Dart run in `verify.yml`, nightly and before a
+# release.
 name: fast-check
 
 on:
@@ -54,6 +56,8 @@ jobs:
         run: cargo xtask check-ffi
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
         run: cargo xtask check-lints
+      - name: Version gate (one version across the workspace, both package manifests and the API description)
+        run: cargo xtask check-versions
 
   dco:
     name: dco

@@ -1,0 +1,180 @@
+# The release: one tag, five platforms, four packages.
+#
+# A tag `vX.Y.Z` is pushed at a commit whose workspace already declares
+# X.Y.Z (`cargo xtask version` moves it, `check-versions` holds it, and
+# `check-tag` here refuses a tag that does not match). Every job after
+# that is `cargo xtask ...`, so what runs on a runner is what runs on a
+# laptop.
+#
+#   gate     the tag is the version, and the version is releasable
+#   build    each platform builds its own artefacts and manifest
+#   stage    the manifests are merged and the two published packages staged
+#   publish  the GitHub release, then npm and pub.dev
+#
+# Nothing is published from a dispatch with `dry_run`, which is how the
+# whole chain is rehearsed before a tag exists.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and stage everything, publish nothing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ github.event_name == 'push' && inputs.dry_run != true }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: The tag is the version the repository carries
+        if: github.event_name == 'push'
+        run: cargo xtask check-tag "${GITHUB_REF_NAME}"
+      - name: One version across the workspace and both packages
+        run: cargo xtask check-versions
+      - name: The gates the fast check runs
+        run: |
+          cargo xtask check-docs
+          cargo xtask check-ffi
+          cargo xtask check-lints
+      - id: version
+        name: What is being released
+        run: |
+          version=$(cargo xtask version)
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "releasing ${version}" >> "$GITHUB_STEP_SUMMARY"
+      - name: The changelog answers whether any number moved
+        run: cargo xtask changelog-entry "$(cargo xtask version)"
+
+  build:
+    name: build (${{ matrix.platform }})
+    needs: gate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64
+          - os: macos-latest
+            platform: darwin-arm64
+          - os: macos-13
+            platform: darwin-x64
+          - os: windows-latest
+            platform: win32-x64
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: dart-lang/setup-dart@v1
+      - name: What this platform ships
+        run: cargo xtask package ${{ matrix.platform }}
+      - name: The packages installed into throwaway projects and run
+        run: cargo xtask check-package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform }}
+          # This platform's own npm package as well as its archives: the
+          # one that depends on them is staged once, in the next job.
+          path: |
+            target/dist/*.gz
+            target/dist/*.json
+            target/dist/npm/@teistro/sdk-*
+          if-no-files-found: error
+          retention-days: 7
+
+  stage:
+    name: stage
+    needs: [gate, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: target/dist
+      - name: Every platform, merged and staged
+        run: cargo xtask package stage
+      - name: What is being published
+        run: |
+          {
+            echo "### ${{ needs.gate.outputs.version }}"
+            echo '```'
+            cat target/dist/checksums.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: target/dist
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: publish
+    needs: [gate, stage]
+    if: needs.gate.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+      # npm provenance and pub.dev's automated publishing both take the
+      # runner's OIDC token instead of a long-lived credential.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: dist
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: https://registry.npmjs.org
+      - uses: dart-lang/setup-dart@v1
+
+      - uses: dtolnay/rust-toolchain@stable
+      - name: The GitHub release, with the archives and their digests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          cargo xtask changelog-entry "${{ needs.gate.outputs.version }}" > notes.md
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "Teistro ${{ needs.gate.outputs.version }}" \
+            --notes-file notes.md \
+            dist/*.gz dist/checksums.txt dist/manifest.json
+
+      - name: The platform packages, then the one that depends on them
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -eu
+          for package in dist/npm/@teistro/sdk-*; do
+            npm publish --provenance --access public "${package}"
+          done
+          npm publish --provenance --access public dist/npm/@teistro/sdk
+
+      - name: The Dart package
+        run: dart pub publish --force
+        working-directory: dist/pub/teistro

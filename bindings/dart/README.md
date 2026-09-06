@@ -20,6 +20,37 @@ carry `// dart format off`, so the generator's layout is what ships and
 | `example/` | the code this README shows, run by the gate so the two cannot drift | by hand |
 | `bin/parity.dart` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Node binding's | by hand |
 | `typecheck/wrong.dart` | the usages that must not compile, each with the error it must raise | by hand |
+| `lib/src/sha256.dart` | SHA-256, so the installer can check a download without the package taking a dependency for it | by hand |
+| `lib/src/install.dart`, `bin/install.dart` | the installer: where a prebuilt library comes from, the digest it must have, and where it is written | by hand |
+| `lib/src/prebuilt.dart` | the release the installer fetches from and the digest of each platform's library; empty in a checkout, written when a release is staged | the release |
+| `packaging/consumer.dart` | a consumer that uses the published package and the library its installer fetched, run by `cargo xtask check-package` | by hand |
+
+## Installing it
+
+```sh
+dart pub add teistro
+dart run teistro:install
+```
+
+The package carries no binaries: a pub package that shipped one for every
+platform would make every consumer download all of them. `install` fetches
+the shared library for this machine from the release this package's
+version was cut from, checks it against a digest recorded when it was
+built, and writes it to `.dart_tool/teistro/<version>/`, which is the
+first place `Teistro.open()` looks.
+
+The download is refused, and nothing is written, when the bytes are not
+the ones that were built. On a machine with no network, install from a
+file you already have:
+
+```sh
+dart run teistro:install --from libteistro_ffi-0.1.0-linux-x64.so.gz
+```
+
+`Teistro.open()` looks at `$TEISTRO_LIBRARY` first, then at what the
+installer wrote, then beside the script, then in this repository's build
+output, and finally asks the platform's loader for the bare name. Building
+from source needs none of it: `cargo build --release -p teistro-ffi`.
 
 ## Using it
 
