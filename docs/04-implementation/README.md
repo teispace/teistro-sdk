@@ -68,6 +68,10 @@ teistro-sdk/
   bindings/
     c/                         present: include/teistro.h, the generated C header, and tests/smoke.c, the
                                binding's own test (`cargo xtask check-c`), with its README
+    node/                      present: lib/ (the generated TypeScript surface, catalogue tables and blob
+                               decoders), test/ (the decoders against blobs the library produced), typecheck/
+                               (a consumer at maximum strictness); `cargo xtask check-node`. The addon and the
+                               ergonomic layer follow
     cpp/ node/ wasm/ python/ dart/ teistro_flutter/ rust/ java/
     shared/                    ergonomic code shared by node and wasm
   adapters/                    outside the workspace (ADR-0019), with their README
@@ -76,8 +80,8 @@ teistro-sdk/
     ephemeris-sweph/rust/      present: the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
                                check-fixtures, check-catalogue, check-calendars, check-time, check-accuracy,
-                               check-intl, check-ffi, check-c, gen catalogue, gen calendars, gen time, gen intl,
-                               gen ffi, accuracy, calendars bs-fit; later verify, gen <binding>, ephemgen,
+                               check-intl, check-ffi, check-c, check-node, gen catalogue, gen calendars,
+                               gen time, gen intl, gen ffi, accuracy, calendars bs-fit; later verify, ephemgen,
                                rulegen, bench, conformance, size, release (ADR-0014)
   crates/cli/                  the consumer-facing `teistro` binary: intl (validate, build, gen,
                                extract, analyze, ...), provider conformance kit, pack tools

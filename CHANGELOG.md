@@ -92,7 +92,13 @@ coordinates, zodiac, corrections) rather than by its packed bits; and
 positions through the port completed into that frame, as a result blob
 (`TSRB`) with the completion steps and the provenance envelope. The C
 binding's own test compiles against the header with warnings as errors
-and runs (`cargo xtask check-c`). The API description (`idl/api.json`, `teistro-idl`) is extracted
+and runs (`cargo xtask check-c`). The Node binding's generated layers
+come from the same description: the TypeScript surface (every enum a
+string union with a frozen table, every boundary struct a readonly
+interface with its units, ranges and examples), the catalogue's tables,
+and one decoder per result blob reading columns as views over the blob's
+own bytes; `cargo xtask check-node` runs the decoders against blobs the
+library produced and type-checks a consumer at maximum strictness. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

@@ -1,0 +1,36 @@
+{
+  "name": "@teistro/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Teistro SDK for Node: the generated types, the catalogue's tables and the result-blob decoders. The native addon and the ergonomic layer follow.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teispace/teistro-sdk.git",
+    "directory": "bindings/node"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    "./catalogue": {
+      "types": "./lib/catalogue.d.ts",
+      "default": "./lib/catalogue.js"
+    },
+    "./types": {
+      "types": "./lib/types.d.ts"
+    },
+    "./blob": {
+      "types": "./lib/blob.d.ts",
+      "default": "./lib/blob.js"
+    }
+  },
+  "files": [
+    "lib/"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  }
+}

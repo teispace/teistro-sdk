@@ -1,6 +1,8 @@
 # The C ABI and the API description
 
-Status: `draft`, written 2026-09-06 when `crates/ffi` (`teistro-ffi`) and
+Status: `draft`, revised 2026-09-06 when the Node binding's generated
+layers were added (§5, the TypeScript surface and the blob decoders);
+written 2026-09-06 when `crates/ffi` (`teistro-ffi`) and
 `crates/idl` (`teistro-idl`) were built from spike 2
 (`spikes/02-binding-toolchain/README.md`, ADR-0007). Derives from
 `02-architecture/07-binding-architecture.md`, `06-api-conventions.md`,
@@ -217,9 +219,27 @@ Thirty-six entry points, all in the header with their documentation:
 | intl | `ts_intl_load_pack`, `ts_intl_set_locale`, `ts_intl_locale`, `ts_intl_has`, `ts_intl_render` |
 | positions | `ts_positions` |
 
-The toolchain: `cargo xtask gen ffi` writes `idl/api.json` and
-`bindings/c/include/teistro.h`; `cargo xtask check-ffi` regenerates both
-in memory and fails on any difference, in the fast check. The crates:
+### The Node binding's generated layers
+
+Five files under `bindings/node/lib/`, laid out as a package is so that
+every runtime file has its own declarations and a bundler drops what an
+application does not use:
+
+| file | what it holds |
+|---|---|
+| `catalogue.d.ts` | every enum as a string union with the `const` table beside it: a catalogued member is its full key (`'graha.SUN'`), which is what packs, fixtures and serialised results carry, plus the `'unknown'` arm the design's §3.6 requires; any other member is its name in kebab case (`'invalid-arg'`); the `Kind` enum's members are the kind names themselves (`'avastha_baladi'`) |
+| `catalogue.js` | those tables, one frozen constant per enum |
+| `types.d.ts` | every boundary struct as a readonly interface, importing exactly the enums it names, with each member's documentation, unit, range and example as JSDoc; the `TeistroError` class |
+| `blob.d.ts` | each result blob's decoded shape: a column section is one typed array per column plus a `length` |
+| `blob.js` | one decoder per schema over the `TSRB` layout, reading columns as views over the blob's own bytes; a buffer that does not start on an eight-byte boundary is copied once rather than misread, and a wrong magic, version, length or schema id is a `TypeError` |
+
+The napi addon and the ergonomic layer over them follow; until they land
+the package has types and decoders and no native call.
+
+The toolchain: `cargo xtask gen ffi` writes `idl/api.json`,
+`bindings/c/include/teistro.h` and the five Node files; `cargo xtask
+check-ffi` regenerates them all in memory and fails on any difference, in
+the fast check. The crates:
 `teistro-idl` (`model`, `names`, `layout`, `rules`, `blob`, `extract`
 behind the `extract` feature, `sdk`, `emit::c`) and `teistro-ffi`
 (`context`, `keys`, `frame`, `calendar`, `time`, `intl`, `positions`,
@@ -304,6 +324,24 @@ yet.
   a refusal's detail and hint. It needs a C compiler, so it runs by hand
   and in the nightly matrix; the fast check stays Rust-only (ADR-0014).
   The header also compiles as C++17.
+- The Node binding's own tests (`cargo xtask check-node`): the generated
+  decoders against blobs the library really produced (a positions blob
+  over two instants and three bodies, a render blob in Nepali), written
+  by `cargo run -p teistro-ffi --example blob_fixtures` through the C
+  ABI, with Node's own test runner and no install. They check the grid,
+  the cells' statuses and longitudes, that a column is a view and not a
+  copy, the steps and the provenance as the JSON the library wrote, the
+  refusals (a wrong magic, a wrong version, the other schema, a
+  truncation, a value that is not a `Uint8Array`), and a blob at an odd
+  byte offset. Then `bindings/node/typecheck/consumer.ts` type-checks at
+  maximum strictness (`strict`, `noUncheckedIndexedAccess`,
+  `exactOptionalPropertyTypes`, `verbatimModuleSyntax`,
+  `noPropertyAccessFromIndexSignature`, `skipLibCheck: false`): every
+  wrong usage is marked `@ts-expect-error`, so TypeScript fails the check
+  when a surface stops refusing one. A key of another kind, a bare member
+  name, a misspelt key (TypeScript answers "Did you mean
+  '\"graha.PLUTO\"'?"), a write to a result's field and an unchecked
+  nullable are all compile errors the file asserts.
 - Planned: a `cargo-fuzz` target over the blob reader and every entry
   point (the quality bar's fuzzing row), and the sanitizer builds.
 
@@ -320,6 +358,11 @@ the engine's English sentences, as the engine defines them.
   product's charts.
 - Rich renderers: `ts_intl_render` hands back the plain text; the parts
   (text and markup) wait for a serialisation the bindings agree on.
+- The Node binding's native half: the napi addon generated from the same
+  description, the ergonomic layer with branded scalars and the port
+  adapter that wraps a host provider into the vtable, the loader with the
+  `buildinfo` handshake, and packaging. The Dart binding follows the same
+  order.
 - A host-language provider is bound through the port's vtable with the
   same contract as a native one (callable from any thread); the bindings
   that register isolate-local callbacks keep one context per isolate.
