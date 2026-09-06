@@ -1,0 +1,51 @@
+---
+title: ts_context_profile
+description: "The id of the profile the context's settings came from, lent until the next call on the context."
+---
+
+The id of the profile the context's settings came from, lent until the next call on the context.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_profile(const ts_context * context, ts_str * out_profile);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.profile(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.profile(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_profile` | `ts_str *` | receives a lent string | — |
+
+## What it hands back
+
+`profile`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_profile` valid for a write.
+
+Declared in `crates/ffi/src/context.rs`.

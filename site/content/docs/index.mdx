@@ -1,0 +1,44 @@
+---
+title: Teistro
+description: An ephemeris-agnostic astrology engine, with a reason attached to every number it computes.
+---
+
+Teistro computes the things an astrology application needs — calendars,
+time, positions, houses, the classical models — and attaches to each
+answer the evidence for it: which ephemeris produced it, which settings
+fixed the frame, and which model each correction used.
+
+It has one boundary, a C ABI, and every binding's mechanical layer is
+generated from a description of that boundary. That is why the same
+question gets the same answer in C, in Node and in Dart, and why a gate
+can hold the three to each other value by value.
+
+## Start here
+
+<Cards>
+  <Card title="Install it" href="/docs/install" description="npm, pub, or the C bundle." />
+  <Card title="The reference" href="/docs/reference" description="Every entry point of the C ABI." />
+</Cards>
+
+## What it is careful about
+
+- **One frame, stated.** Every result carries the settings hash of the
+  frame it was computed in, so a chart stored today can be recomputed
+  years from now and shown to be the same chart.
+- **Providers are pluggable.** The ephemeris is behind a port. The SDK
+  ships an analytic test provider, adapters exist for licensed engines,
+  and an application can write one in JavaScript or Dart and hand it in.
+- **Determinism is measured, not assumed.** The same source computes the
+  same numbers on x86-64 and aarch64, value for value; where a platform's
+  maths library rounds differently, the difference is published rather
+  than hidden.
+- **Nepali first.** The locale engine is part of the SDK, not an
+  afterthought: messages, entity names, numerals and the calendars a
+  Nepali reader expects.
+
+## Where things stand
+
+Teistro is unreleased. The version is `0.0.0`, nothing is published, and
+the packages are marked unpublishable until a release is cut. The
+[repository's status page](https://github.com/teispace/teistro-sdk/blob/main/docs/STATUS.md)
+is the living account of what is built and what is next.

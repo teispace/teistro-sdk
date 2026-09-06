@@ -1,0 +1,51 @@
+---
+title: ts_context_settings_json
+description: "The resolved settings as their canonical JSON document, allocated for the caller; free it with `ts_string_free`."
+---
+
+The resolved settings as their canonical JSON document, allocated for the caller; free it with `ts_string_free`. Two contexts with the same document compute the same numbers.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_settings_json(const ts_context * context, ts_string * out_json);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.settings_json(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.settingsJson(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/context.rs`.

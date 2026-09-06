@@ -1,0 +1,105 @@
+---
+title: Installing
+description: The Node package, the Dart package and the C bundle, and where each one finds the library.
+---
+
+Teistro is one library with several ways in. Each binding installs a
+prebuilt binary rather than compiling one, and each checks that the
+library it loaded is the build its generated types were made from.
+
+<Callout type="warn">
+  Nothing is published yet: the version is `0.0.0`, and both packages are
+  marked unpublishable until a release is cut. Until then, build the
+  library from source — the last section says how.
+</Callout>
+
+## Node
+
+```sh
+npm install @teistro/sdk
+```
+
+The addon is not in that package. A release publishes one package per
+platform — `@teistro/sdk-linux-x64`, `@teistro/sdk-darwin-arm64`, and so
+on — and `@teistro/sdk` depends on all of them as optional dependencies,
+so npm installs exactly the one that matches the host and skips the rest.
+Nothing is compiled at install time and there is no install script.
+
+```js
+import { Context } from '@teistro/sdk';
+import { Body } from '@teistro/sdk/catalogue';
+
+const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP' });
+const sun = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] }).at(0, 0);
+```
+
+`$TEISTRO_ADDON` names an addon outright when you have one the loader
+would not find.
+
+## Dart
+
+```sh
+dart pub add teistro
+dart run teistro:install
+```
+
+The package carries no binaries: one for every platform would make every
+consumer download all of them. `install` fetches the library for this
+machine from the release the package's version was cut from, checks it
+against a digest recorded when it was built, and writes it to
+`.dart_tool/teistro/<version>/`, which is where `Teistro.open()` looks
+first.
+
+```dart
+import 'package:teistro/teistro.dart';
+
+final teistro = Teistro.open();
+final ctx = teistro.context(profile: 'nepali-default', locale: 'ne-Deva-NP');
+final sun = ctx.positions(instants: [2451545.0], bodies: [Body.sun]).at(0, 0);
+```
+
+On a machine with no network, install from a file you already have:
+
+```sh
+dart run teistro:install --from libteistro_ffi-0.1.0-linux-x64.so.gz
+```
+
+`$TEISTRO_LIBRARY` names a library outright.
+
+## C, and everything that speaks C
+
+A release attaches one bundle per platform,
+`teistro-c-<version>-<platform>.tar.gz`, holding `include/teistro.h`, the
+shared and the static library, and the terms.
+
+```sh
+cc -std=c11 -Iteistro-c/include app.c teistro-c/lib/libteistro_ffi.a -o app
+```
+
+The header is generated from the same description as every other binding,
+and a C compiler checks every struct's size against the library's on
+64-bit targets, so a mismatched build refuses to compile rather than
+computing quietly wrong answers.
+
+C++, Swift, Kotlin (Panama or JNI) and Java (FFM) consume this header
+directly.
+
+## From source
+
+Everything above is a convenience over one build:
+
+```sh
+git clone https://github.com/teispace/teistro-sdk
+cd teistro-sdk
+cargo build --release -p teistro-ffi
+```
+
+Both loaders look in `target/release` on their own, so a checkout needs
+no install step at all.
+
+## What every binding checks
+
+The library reports its own build, and each binding refuses one that is
+not the build its generated layer was made from: a different ABI, a
+different SDK version, or a sanitizer build. The refusal names which of
+those it was, so a mismatch is a sentence rather than a crash.

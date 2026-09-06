@@ -1,0 +1,52 @@
+---
+title: ts_calendar_weekday
+description: "The weekday of a date as its ISO number: Monday is `1`, Sunday `7`."
+---
+
+The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_calendar_weekday(const ts_context * context, const ts_calendar_date * date, uint8_t * out_weekday);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.calendar_weekday(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.calendarWeekday(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `date` | `const ts_calendar_date *` | a struct read | — |
+| `out_weekday` | `uint8_t *` | receives a number | — |
+
+## What it hands back
+
+`weekday`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `date` valid for a read; `out_weekday` valid for a write.
+
+Declared in `crates/ffi/src/calendar.rs`.

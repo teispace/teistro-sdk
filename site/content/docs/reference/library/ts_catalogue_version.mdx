@@ -1,0 +1,42 @@
+---
+title: ts_catalogue_version
+description: "The catalogue schema version every result's provenance stamps."
+---
+
+The catalogue schema version every result's provenance stamps.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+uint32_t ts_catalogue_version(void);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+catalogue_version(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.catalogueVersion(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+The call takes no arguments.
+
+## What it hands back
+
+`value`.
+
+Declared in `crates/ffi/src/lib.rs`.

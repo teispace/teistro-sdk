@@ -1,0 +1,51 @@
+---
+title: ts_context_settings_hash
+description: "The SHA-256 of the canonical settings document: the `settings_hash` every result's provenance carries."
+---
+
+The SHA-256 of the canonical settings document: the `settings_hash` every result's provenance carries.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_settings_hash(const ts_context * context, ts_hash * out_hash);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.settings_hash(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.settingsHash(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_hash` | `ts_hash *` | a struct written | — |
+
+## What it hands back
+
+`hash`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_hash` valid for a write.
+
+Declared in `crates/ffi/src/context.rs`.

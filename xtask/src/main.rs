@@ -22,6 +22,8 @@
 //!   library, the package analysed and formatted.
 //! - `check-parity`: one scenario through both bindings, and the two
 //!   reports compared value by value.
+//! - `check-site`: the documentation site builds and renders every
+//!   generated reference page (needs Node).
 //! - `check-tag TAG`: the tag a release is cut from is the version the
 //!   repository carries.
 //! - `check-package`: the artefacts installed into throwaway projects and
@@ -81,6 +83,7 @@ mod package;
 mod parity;
 mod platform;
 mod release;
+mod site;
 mod time;
 
 use std::env;
@@ -113,6 +116,7 @@ fn main() {
         Some("check-lints") => lints::check(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
+        Some("check-site") => site::check(&repo_root()),
         Some("check-tag") => match args.as_slice() {
             [_, tag] => release::check_tag(&repo_root(), tag),
             _ => usage(),
@@ -158,7 +162,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-versions | check-package | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }
@@ -188,17 +192,19 @@ fn rel(root: &Path, path: &Path) -> String {
 fn check_docs() -> i32 {
     let root = repo_root();
     let files = markdown_files(&root);
+    let published = published_files(&root);
     let mut failures = Vec::new();
     failures.extend(check_links(&root, &files));
     failures.extend(check_status_lines(&root, &files));
     failures.extend(check_forbidden(&root, &files));
+    failures.extend(check_forbidden(&root, &published));
     failures.extend(check_status_tracker(&root));
     for failure in &failures {
         println!("FAIL  {failure}");
     }
     println!(
         "checked {} files: {} failure(s)",
-        files.len(),
+        files.len() + published.len(),
         failures.len()
     );
     i32::from(!failures.is_empty())
@@ -230,6 +236,43 @@ fn markdown_files(root: &Path) -> Vec<PathBuf> {
     files.sort();
     files.dedup();
     files
+}
+
+/// The documentation site's own text, which is published as a web page
+/// rather than read in the repository.
+///
+/// Its links are routes rather than paths and its pages carry no status
+/// line, so only the forbidden-terms rule applies; that rule applies
+/// because this is the most public text the project has.
+fn published_files(root: &Path) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    collect_extensions(&root.join("site"), &["mdx", "tsx", "ts", "css"], &mut files);
+    files.sort();
+    files
+}
+
+/// Recursively collects files with any of the given extensions, skipping
+/// build and dependency trees.
+fn collect_extensions(dir: &Path, extensions: &[&str], out: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if path.is_dir() {
+            if matches!(name.as_ref(), "node_modules" | "out" | ".next" | ".source") {
+                continue;
+            }
+            collect_extensions(&path, extensions, out);
+        } else if path
+            .extension()
+            .is_some_and(|ext| extensions.iter().any(|wanted| ext == *wanted))
+        {
+            out.push(path);
+        }
+    }
 }
 
 /// Recursively collects Markdown files, skipping build and dependency trees.

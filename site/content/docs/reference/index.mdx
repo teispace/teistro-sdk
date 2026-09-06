@@ -1,0 +1,124 @@
+---
+title: Reference
+description: Every entry point of the Teistro C ABI, generated from the API description.
+---
+
+The SDK has one boundary: a C ABI of 39 entry points over 25 structs and 75 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+
+ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
+
+## Where each entry point lives
+
+### The library
+
+| entry point | what it does |
+|---|---|
+| [`ts_abi_version`](library/ts_abi_version) | The ABI version this library implements. |
+| [`ts_sdk_version`](library/ts_sdk_version) | The SDK version as a static NUL-terminated string (`0.0.0`). |
+| [`ts_catalogue_version`](library/ts_catalogue_version) | The catalogue schema version every result's provenance stamps. |
+| [`ts_default_profile`](library/ts_default_profile) | The profile a context uses when its options name none, as a static NUL-terminated string. |
+| [`ts_build_info`](library/ts_build_info) | What this build is, as a static NUL-terminated JSON object: the SDK version, the ABI and catalogue versions, the commit and whether its tree was clean, the profile, the target, whether debug assertions and optimisation are on, the sanitizer if any, and the compiler. |
+| [`ts_status_message`](library/ts_status_message) | A static NUL-terminated English phrase for a status code; `unknown status` for a code this build does not know. |
+
+### Strings
+
+| entry point | what it does |
+|---|---|
+| [`ts_string_free`](strings/ts_string_free) | Frees a string the library allocated and zeroes the descriptor; null or an empty string is ignored. |
+
+### Blob
+
+| entry point | what it does |
+|---|---|
+| [`ts_blob_free`](blob/ts_blob_free) | Frees a blob the library allocated and zeroes the descriptor; null or an empty blob is ignored. |
+
+### Context
+
+| entry point | what it does |
+|---|---|
+| [`ts_context_new`](context/ts_context_new) | Creates a context. |
+| [`ts_context_free`](context/ts_context_free) | Frees a context; null is ignored. |
+| [`ts_context_last_error`](context/ts_context_last_error) | The outcome of the last call on the context: its status, the provider's code, and the message, field, hint and key as strings lent until the next call other than this one. |
+| [`ts_context_profile`](context/ts_context_profile) | The id of the profile the context's settings came from, lent until the next call on the context. |
+| [`ts_context_settings_json`](context/ts_context_settings_json) | The resolved settings as their canonical JSON document, allocated for the caller; free it with `ts_string_free`. |
+| [`ts_context_settings_hash`](context/ts_context_settings_hash) | The SHA-256 of the canonical settings document: the `settings_hash` every result's provenance carries. |
+
+### Keys
+
+| entry point | what it does |
+|---|---|
+| [`ts_key_parse`](keys/ts_key_parse) | Resolves a full key (`graha.SUN`, an alias, or a former key) to its packed id. |
+| [`ts_key_name`](keys/ts_key_name) | The full key of a packed id (`graha.SUN`), lent until the next call on the context. |
+
+### Frame
+
+| entry point | what it does |
+|---|---|
+| [`ts_frame_canonical`](frame/ts_frame_canonical) | Writes the SDK's canonical frame: apparent geocentric ecliptic of date, tropical, which both licensed engines return by default and every chart module consumes. |
+| [`ts_frame_pack`](frame/ts_frame_pack) | Packs a frame into the bits a position request carries. |
+| [`ts_frame_unpack`](frame/ts_frame_unpack) | Reads packed frame bits back into their fields; bits no frame sets are `INVALID_ARG`. |
+
+### Calendar
+
+| entry point | what it does |
+|---|---|
+| [`ts_calendar_from_fixed`](calendar/ts_calendar_from_fixed) | The date a fixed day falls on in a calendar. |
+| [`ts_calendar_to_fixed`](calendar/ts_calendar_to_fixed) | The fixed day of a date, validated: a date the calendar does not have is `INVALID_ARG` with the `NONEXISTENT_DATE` detail. |
+| [`ts_calendar_convert`](calendar/ts_calendar_convert) | Converts a date into another calendar. |
+| [`ts_calendar_month_length`](calendar/ts_calendar_month_length) | The length of a month in a calendar. |
+| [`ts_calendar_is_leap`](calendar/ts_calendar_is_leap) | Whether a year is a leap year in a calendar: `1` or `0`. |
+| [`ts_calendar_weekday`](calendar/ts_calendar_weekday) | The weekday of a date as its ISO number: Monday is `1`, Sunday `7`. |
+| [`ts_calendar_jd_of_fixed`](calendar/ts_calendar_jd_of_fixed) | The Julian day at the UTC midnight that begins a fixed day (fixed day 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`). |
+| [`ts_calendar_fixed_of_jd`](calendar/ts_calendar_fixed_of_jd) | The fixed day a Julian day falls in, and, when `out_fraction` is not null, the fraction of that day elapsed since its midnight. |
+
+### Time
+
+| entry point | what it does |
+|---|---|
+| [`ts_time_resolve`](time/ts_time_resolve) | Resolves a civil date-time in a zone to a UTC instant under the context's daylight-saving and unknown-time policies, with the metadata a stored chart keeps. |
+| [`ts_time_civil`](time/ts_time_civil) | The civil date-time of a UTC instant in a zone, in a calendar, with the resolution that applied. |
+| [`ts_time_convert`](time/ts_time_convert) | Converts an instant between UT1, TT and UTC under the context's Delta T model, reporting what was applied. |
+| [`ts_time_delta_t`](time/ts_time_delta_t) | Delta T (TT less UT1) at a UT1 instant under the context's model, with what produced it and its uncertainty where the source has one. |
+
+### Locale engine
+
+| entry point | what it does |
+|---|---|
+| [`ts_intl_load_pack`](intl/ts_intl_load_pack) | Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a namespace it brings replaces what was loaded under the same keys. |
+| [`ts_intl_set_locale`](intl/ts_intl_set_locale) | Selects the locale every render resolves from; an unknown one is `UNSUPPORTED` naming the loaded locales. |
+| [`ts_intl_locale`](intl/ts_intl_locale) | The locale every render resolves from, lent until the next call on the context. |
+| [`ts_intl_has`](intl/ts_intl_has) | Whether the current locale or its fallbacks have a message: `1` or `0`. |
+| [`ts_intl_transliterate`](intl/ts_intl_transliterate) | Text from one script into another (`deva`, `iast`), as a string lent until the next call on the context. |
+| [`ts_intl_entity`](intl/ts_intl_entity) | An entity's forms in the current locale or its fallbacks, as a JSON object lent until the next call on the context: every form the locale gives (`name`, `prose`, `iast`, `short`, and any it adds), the `glyph` when it has one, and the `gender` when the locale marks one. |
+| [`ts_intl_render`](intl/ts_intl_render) | Renders a message with parameters given as a JSON object: a string, an integer, a number or an array is itself; an entity is `{"$entity": "graha.SUN"}`; a date `{"$date": {"calendar": "GREGORIAN", "year": 2026, "month": 9, "day": 6}}`; a time `{"$time": {"hour": 6, "minute": 15, "second": 0}}`; a date and time `{"$datetime": {"date": {...}, "time": {...}}}`; a ghati count `{"$ghati": {"ghati": 12, "pala": 30, "vipala": 0}}`. |
+
+### Positions
+
+| entry point | what it does |
+|---|---|
+| [`ts_positions`](positions/ts_positions) | Positions over a grid of instants and bodies in the requested frame: the provider answers in the frame it can, the SDK completes the rest under the profile's override policy, and every step is stamped. |
+
+## The rules every entry point follows
+
+- Every struct begins with `struct_size`, which the caller sets to `sizeof` before the call: a library built from a newer description can tell how much of the struct the caller knows about.
+- A call that can fail returns a status; `ts_status_message` reports what went wrong, with the field and a hint when it has them.
+- The library frees what the library allocated. A result blob and an owned string are handed back with the call that frees them; a lent string is valid until the next call on the same context.
+- A panic never crosses the boundary: it becomes an internal status.
+
+## The sources
+
+- `crates/core/src/error.rs`
+- `crates/port-ephemeris/src/body.rs`
+- `crates/port-ephemeris/src/capabilities.rs`
+- `crates/port-ephemeris/src/frame.rs`
+- `crates/port-ephemeris/src/vtable.rs`
+- `crates/ffi/src/lib.rs`
+- `crates/ffi/src/strings.rs`
+- `crates/ffi/src/blob.rs`
+- `crates/ffi/src/context.rs`
+- `crates/ffi/src/keys.rs`
+- `crates/ffi/src/frame.rs`
+- `crates/ffi/src/calendar.rs`
+- `crates/ffi/src/time.rs`
+- `crates/ffi/src/intl.rs`
+- `crates/ffi/src/positions.rs`

@@ -60,3 +60,8 @@ jobs:
         run: cargo xtask check-parity
       - name: The packages installed into throwaway projects and run
         run: cargo xtask check-package
+      - name: The documentation site builds and renders every generated page
+        # One machine is enough: the site is the same everywhere, and the
+        # matrix is here for the libraries.
+        if: matrix.platform == 'linux-x64'
+        run: cargo xtask check-site

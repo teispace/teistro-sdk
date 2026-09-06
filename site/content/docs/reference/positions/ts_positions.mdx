@@ -1,0 +1,56 @@
+---
+title: ts_positions
+description: "Positions over a grid of instants and bodies in the requested frame: the provider answers in the frame it can, the SDK completes the rest under the profile's override policy, and every step is stamped."
+---
+
+Positions over a grid of instants and bodies in the requested frame: the provider answers in the frame it can, the SDK completes the rest under the profile's override policy, and every step is stamped. A context without an ephemeris is `CAPABILITY`; a provider failure is `PROVIDER` with the provider's own code in the last error.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_positions(const ts_context * context, const ts_position_request * request, ts_blob * out_blob);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.positions(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.positions(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request` | `const ts_position_request *` | a struct read | — |
+| `out_blob` | `ts_blob *` | receives a blob | — |
+
+## What it hands back
+
+`blob`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## The result blob
+
+The call fills a blob following the `positions` schema, which the binding's generated decoder reads. The schema is in `idl/api.json`, and every binding decodes it from the blob's own bytes rather than copying them.
+
+## Safety
+
+`context` must be a live handle; `request` valid for a read, with its instants and body ids valid for the counts it states; `out_blob` valid for a write.
+
+Declared in `crates/ffi/src/positions.rs`.

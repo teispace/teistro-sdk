@@ -1,0 +1,52 @@
+---
+title: ts_key_name
+description: "The full key of a packed id (`graha.SUN`), lent until the next call on the context."
+---
+
+The full key of a packed id (`graha.SUN`), lent until the next call on the context. An id no catalogued member has is `UNSUPPORTED`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_key_name(const ts_context * context, uint32_t id, ts_str * out_key);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.key_name(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.keyName(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `id` | `uint32_t` | a value | — |
+| `out_key` | `ts_str *` | receives a lent string | — |
+
+## What it hands back
+
+`key`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_key` valid for a write.
+
+Declared in `crates/ffi/src/keys.rs`.

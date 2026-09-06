@@ -1,0 +1,54 @@
+---
+title: ts_context_new
+description: "Creates a context."
+---
+
+Creates a context. `options` may be null for every default; `provider` may be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects the analytic test provider and no flag leaves the context without an ephemeris (positions are then `CAPABILITY`); `provider_user_data` is passed back to the vtable's functions untouched and must stay valid until `ts_context_free`. On success `*out_context` owns the context; on failure, when `out_error` is not null, it receives the error's message as a string to free with `ts_string_free`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_new(const ts_context_options * options, /* nullable */ const ts_provider_vtable * provider, /* nullable */ void * provider_user_data, ts_context * * out_context, ts_string * out_error);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context_new(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.contextNew(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `options` | `const ts_context_options *` | a struct read | — |
+| `provider` | `const ts_provider_vtable *` | a provider | — |
+| `provider_user_data` | `void *` | the provider's data | — |
+| `out_context` | `ts_context * *` | receives a handle | — |
+| `out_error` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`error`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+Every pointer must be null or valid for the access its documentation describes, for the duration of the call; a vtable's functions must be callable with `provider_user_data` until the context is freed.
+
+Declared in `crates/ffi/src/context.rs`.

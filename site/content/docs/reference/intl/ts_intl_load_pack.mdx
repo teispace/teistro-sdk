@@ -1,0 +1,53 @@
+---
+title: ts_intl_load_pack
+description: "Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a namespace it brings replaces what was loaded under the same keys."
+---
+
+Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a namespace it brings replaces what was loaded under the same keys. A file that does not verify is `PACK`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_load_pack(const ts_context * context, const uint8_t * bytes, size_t bytes_len, ts_intl_loaded * out_loaded);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.intl_load_pack(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.intlLoadPack(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `bytes` | `const uint8_t *` | bytes read | — |
+| `bytes_len` | `size_t` | a length | — |
+| `out_loaded` | `ts_intl_loaded *` | a struct written | — |
+
+## What it hands back
+
+`loaded`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `bytes` valid for `bytes_len` reads; `out_loaded` valid for a read of its `struct_size` and a write.
+
+Declared in `crates/ffi/src/intl.rs`.

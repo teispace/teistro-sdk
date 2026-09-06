@@ -2,7 +2,7 @@
 
 Status: `built`, 2026-09-06.
 
-Four workflows, and one rule that decides which of them a change waits
+Five workflows, and one rule that decides which of them a change waits
 for: **the fast check runs on every push and needs the Rust toolchain and
 nothing else** (ADR-0014). Everything that needs a C compiler, a Node, a
 Dart, or five machines runs on a schedule or before a release, because a
@@ -15,6 +15,7 @@ red teaches people to ignore it.
 | [`verify`](../../.github/workflows/verify.yml) | nightly, on demand, on a tag | the bindings on five platforms: the C header against a C compiler, the Node and Dart bindings against the real library, the two against each other, and the packages installed into throwaway projects and run |
 | [`hash-matrix`](../../.github/workflows/hash-matrix.yml) | nightly, on demand | the same source computes the same numbers on another architecture, value by value |
 | [`release`](../../.github/workflows/release.yml) | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published |
+| [`docs`](../../.github/workflows/docs.yml) | every push to `main`, a pull request touching the site, a tag | the site builds and renders every generated reference page; a tag publishes it |
 
 ## The fast check
 
@@ -54,6 +55,13 @@ Described in the [README](README.md) and measured in
 the determinism criterion, not a build gate: the two Linux architectures
 must agree value for value, and macOS is reported against them because
 its maths library rounds differently in the last place.
+
+## Docs
+
+The site and its generated reference, described in
+[`05-docs-deploy.md`](05-docs-deploy.md). It is published on a tag alone,
+so the site a reader lands on is the site of the version they are reading
+about.
 
 ## Release
 

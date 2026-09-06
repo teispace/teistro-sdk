@@ -1,0 +1,46 @@
+---
+title: ts_context_free
+description: "Frees a context; null is ignored."
+---
+
+Frees a context; null is ignored.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+void ts_context_free(ts_context * context);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context_free(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.contextFree(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `ts_context *` | the handle | — |
+
+## Safety
+
+`context` must be null or a handle from `ts_context_new` that is not used again.
+
+Declared in `crates/ffi/src/context.rs`.

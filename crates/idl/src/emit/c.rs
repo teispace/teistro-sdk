@@ -8,7 +8,7 @@ use std::fmt::Write;
 
 use crate::emit::{DocStyle, block_comment, field_doc_with};
 use crate::layout::{Target, struct_layout};
-use crate::model::{Api, FieldDef, Role, TypeRef};
+use crate::model::{Api, FieldDef, FunctionDef, Role, TypeRef};
 use crate::names::{c_constant_name, c_enum_member, c_type_name};
 use crate::rules::has_handshake;
 
@@ -150,29 +150,36 @@ fn render_structs(out: &mut String, api: &Api) {
     }
 }
 
+/// One function's C declaration, without its documentation: what the
+/// header states and what the reference quotes, so the two cannot drift.
+#[must_use]
+pub fn c_signature(api: &Api, f: &FunctionDef) -> String {
+    let params: Vec<String> = f
+        .params
+        .iter()
+        .map(|p| {
+            let qualifier = if p.role == Role::VtableIn || p.role == Role::UserData {
+                "/* nullable */ "
+            } else {
+                ""
+            };
+            format!("{qualifier}{} {}", c_type(api, &p.ty), p.name)
+        })
+        .collect();
+    let params = if params.is_empty() {
+        String::from("void")
+    } else {
+        params.join(", ")
+    };
+    let returns = f
+        .returns
+        .as_ref()
+        .map_or_else(|| String::from("void"), |t| c_type(api, t));
+    format!("{returns} {}({params});", f.name)
+}
+
 fn render_functions(out: &mut String, api: &Api) {
     for f in &api.functions {
-        let params: Vec<String> = f
-            .params
-            .iter()
-            .map(|p| {
-                let qualifier = if p.role == Role::VtableIn || p.role == Role::UserData {
-                    "/* nullable */ "
-                } else {
-                    ""
-                };
-                format!("{qualifier}{} {}", c_type(api, &p.ty), p.name)
-            })
-            .collect();
-        let params = if params.is_empty() {
-            String::from("void")
-        } else {
-            params.join(", ")
-        };
-        let returns = f
-            .returns
-            .as_ref()
-            .map_or_else(|| String::from("void"), |t| c_type(api, t));
         let mut doc = f.doc.clone();
         if let Some(blob) = &f.meta.blob {
             let _ = write!(
@@ -183,12 +190,7 @@ fn render_functions(out: &mut String, api: &Api) {
         if let Some(safety) = &f.safety {
             let _ = write!(doc, "\nSafety: {safety}");
         }
-        let _ = writeln!(
-            out,
-            "{}{returns} {}({params});\n",
-            block_comment(&doc, ""),
-            f.name
-        );
+        let _ = writeln!(out, "{}{}\n", block_comment(&doc, ""), c_signature(api, f));
     }
 }
 

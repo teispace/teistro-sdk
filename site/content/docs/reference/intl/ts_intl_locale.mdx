@@ -1,0 +1,51 @@
+---
+title: ts_intl_locale
+description: "The locale every render resolves from, lent until the next call on the context."
+---
+
+The locale every render resolves from, lent until the next call on the context.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_locale(const ts_context * context, ts_str * out_locale);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.intl_locale(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.intlLocale(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_locale` | `ts_str *` | receives a lent string | — |
+
+## What it hands back
+
+`locale`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_locale` valid for a write.
+
+Declared in `crates/ffi/src/intl.rs`.

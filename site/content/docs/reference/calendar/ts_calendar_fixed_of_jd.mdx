@@ -1,0 +1,51 @@
+---
+title: ts_calendar_fixed_of_jd
+description: "The fixed day a Julian day falls in, and, when `out_fraction` is not null, the fraction of that day elapsed since its midnight."
+---
+
+The fixed day a Julian day falls in, and, when `out_fraction` is not null, the fraction of that day elapsed since its midnight.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+int64_t ts_calendar_fixed_of_jd(double jd, double * out_fraction);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+calendar_fixed_of_jd(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.calendarFixedOfJd(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `jd` | `double` | a value | — |
+| `out_fraction` | `double *` | receives a number | — |
+
+## What it hands back
+
+`value` and `fraction`.
+
+## Safety
+
+`out_fraction` must be null or valid for a write.
+
+Declared in `crates/ffi/src/calendar.rs`.

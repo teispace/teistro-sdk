@@ -1,0 +1,47 @@
+---
+title: ts_intl_set_locale
+description: "Selects the locale every render resolves from; an unknown one is `UNSUPPORTED` naming the loaded locales."
+---
+
+Selects the locale every render resolves from; an unknown one is `UNSUPPORTED` naming the loaded locales.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_set_locale(const ts_context * context, const char * locale);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.intl_set_locale(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.intlSetLocale(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `locale` | `const char *` | a string read | — |
+
+## Safety
+
+`context` must be a live handle; `locale` a NUL-terminated string.
+
+Declared in `crates/ffi/src/intl.rs`.

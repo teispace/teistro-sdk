@@ -187,6 +187,24 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The documentation site, `site/`: Fumadocs on Next.js, exported as
+  static files. Its reference is generated from the same description every
+  binding is generated from (`crates/idl/src/emit/mdx.rs`): one page per
+  entry point, grouped by the boundary's own source files, each carrying
+  the doc comment, the C declaration, tabs naming what the Node addon and
+  the Dart library call it, a parameter table with every role, unit, range
+  and example the description knows, what the call hands back, the blob
+  schema it fills and its safety contract; with the structs and the enums
+  beside them. `cargo xtask gen ffi` writes the tree and `check-ffi` holds
+  it — including files the generator does not produce, so a page for a
+  removed entry point cannot linger. `cargo xtask check-site` builds the
+  site and checks that every generated page was rendered, which is what
+  proves the emitter's MDX escaping: a doc comment is prose written for
+  Rust, and MDX reads a `{` at the start of a line as an expression even
+  inside what a Markdown reader would call code. The `docs` workflow
+  publishes to GitHub Pages on a tag, so the site a reader lands on is the
+  site of the version they are reading about
+  (`docs/06-cicd/05-docs-deploy.md`).
 - Packaging and the release matrix. The SDK has one version, declared in
   `[workspace.package]` and held across both package manifests, the five
   platform packages and the API description by `cargo xtask

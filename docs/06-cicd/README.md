@@ -1,7 +1,7 @@
 # CI/CD
 
-Status: `built`, 2026-09-06 (the docs site's deploy is still planned).
-The research is in `01-research/platform/11-cicd-release.md`.
+Status: `built`, 2026-09-06. The research is in
+`01-research/platform/11-cicd-release.md`.
 
 ## What runs today
 
@@ -11,6 +11,7 @@ The research is in `01-research/platform/11-cicd-release.md`.
 | `hash-matrix` | nightly and on demand | `cargo xtask hashes` on Linux x86-64, Linux aarch64 and macOS aarch64; the two Linux runs compared value by value (a difference fails the job) and macOS reported against them (a difference is published, not failed) |
 | `verify` | nightly, on demand, on a tag | the bindings' own gates (`check-c`, `check-node`, `check-dart`, `check-parity`) and `check-package` on all five platforms |
 | `release` | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published to npm, pub.dev and the release page |
+| `docs` | every push to `main`, a pull request that touches the site, a tag | the site builds and renders every generated reference page; a tag publishes it to GitHub Pages |
 
 `cargo xtask hashes` walks a fixed scenario through the calendars, the
 astronomy, the house systems and the classical model, and hashes every
@@ -39,7 +40,7 @@ every toolchain installed.
 | [`02-build-matrix.md`](02-build-matrix.md) | the five platforms, what each produces, and how the packages are proved | built |
 | [`03-release-process.md`](03-release-process.md) | one version, cutting a release, what the tag starts, provenance, what a consumer installs | built |
 | `04-local-verify.md` | a `cargo xtask verify` that runs the whole matrix locally, and the Linux container that reproduces it | planned |
-| `05-docs-deploy.md` | site build and deploy | planned |
+| [`05-docs-deploy.md`](05-docs-deploy.md) | what the site generates, the three gates that hold it, and how it is published | built |
 
 ## Principles
 

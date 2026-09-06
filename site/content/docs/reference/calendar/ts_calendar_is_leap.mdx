@@ -1,0 +1,53 @@
+---
+title: ts_calendar_is_leap
+description: "Whether a year is a leap year in a calendar: `1` or `0`."
+---
+
+Whether a year is a leap year in a calendar: `1` or `0`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_calendar_is_leap(const ts_context * context, uint16_t calendar, int32_t year, uint8_t * out_leap);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.calendar_is_leap(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.calendarIsLeap(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `calendar` | `uint16_t` | a value | One of `ts_calendar`. |
+| `year` | `int32_t` | a value | — |
+| `out_leap` | `uint8_t *` | receives a number | — |
+
+## What it hands back
+
+`leap`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_leap` valid for a write.
+
+Declared in `crates/ffi/src/calendar.rs`.

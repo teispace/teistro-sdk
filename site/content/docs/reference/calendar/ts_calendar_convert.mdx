@@ -1,0 +1,53 @@
+---
+title: ts_calendar_convert
+description: "Converts a date into another calendar."
+---
+
+Converts a date into another calendar.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_calendar_convert(const ts_context * context, const ts_calendar_date * date, uint16_t into, ts_calendar_date * out_date);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.calendar_convert(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.calendarConvert(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `date` | `const ts_calendar_date *` | a struct read | — |
+| `into` | `uint16_t` | a value | One of `ts_calendar`. |
+| `out_date` | `ts_calendar_date *` | a struct written | — |
+
+## What it hands back
+
+`date`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `date` valid for a read; `out_date` valid for a read of its `struct_size` and a write.
+
+Declared in `crates/ffi/src/calendar.rs`.

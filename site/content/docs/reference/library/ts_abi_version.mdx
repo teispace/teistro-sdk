@@ -1,0 +1,42 @@
+---
+title: ts_abi_version
+description: "The ABI version this library implements."
+---
+
+The ABI version this library implements.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+uint32_t ts_abi_version(void);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+abi_version(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.abiVersion(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+The call takes no arguments.
+
+## What it hands back
+
+`value`.
+
+Declared in `crates/ffi/src/lib.rs`.

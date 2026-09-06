@@ -17,15 +17,20 @@ adapter, the conformance kit, the `intl` engine and CLI, and the `ffi`
 crate with the API description and the C header (its first generator)
 exist, as do the Node and Dart generators and bindings with the parity
 gate, the determinism lints and the counting allocator, the
-cross-architecture hash matrix, and the packaging with its release matrix;
-the instruction-count benchmarks, the conformance repository and the docs
-site are not built (`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
+cross-architecture hash matrix, the packaging with its release matrix, and
+the documentation site with its generated reference; the instruction-count
+benchmarks and the conformance repository are not built
+(`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
 made, four spikes measured, repository live).
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-06, end of the thirty-sixth session (the
+**Last updated:** 2026-09-06, end of the thirty-seventh session (the
+documentation site: Fumadocs in `site/`, with the API reference generated
+from the same description every binding is generated from, held by
+`check-ffi` and built by `check-site`); before that the thirty-sixth
+session (the
 packaging and the release matrix: one version across the repository, five
 platforms built into four packages, and every one of them installed into
 a throwaway project and run before it can be published); before that the
@@ -102,7 +107,7 @@ provider's DUT1).
    2026-09-05).
 3. The next task is the maintainer's choice between Phase 1's remaining
    deliverables (the instruction-count benchmarks, the conformance
-   repository, the docs site) and the astronomy follow-ups under "Now";
+   repository) and the astronomy follow-ups under "Now";
    Phase 3, the built-in ephemeris, may run beside Phase 4 per the
    roadmap. The conformance repository is the maintainer's to create
    (ADR-0022). The `intl` crate
@@ -590,10 +595,20 @@ binding (ADR-0023).
   teistro:install`; the `verify` and `release` workflows;
   `06-cicd/01-pipelines.md`, `02-build-matrix.md`,
   `03-release-process.md`).
+  The documentation site followed (thirty-seventh session: Fumadocs in
+  `site/`, statically exported; `crates/idl/src/emit/mdx.rs` rendering one
+  page per entry point from the API description, grouped by the boundary's
+  own files, with the structs and the enums beside them; `gen ffi` writing
+  the tree and `check-ffi` holding it, strays included; `check-site`
+  building the site and checking that every generated page was rendered;
+  the `docs` workflow publishing to GitHub Pages on a tag;
+  `06-cicd/05-docs-deploy.md`).
   Next in it: the
   test-only infrastructure beyond the determinism lints and the counting
-  allocator (instruction-count benchmarks, which need Linux), the
-  conformance repository (ADR-0022), the docs site. The
+  allocator (instruction-count benchmarks, which need Linux) and the
+  conformance repository (ADR-0022). The site's own remainder is listed in
+  `06-cicd/05-docs-deploy.md`: versioned docs, Nepali, examples executed
+  from the pages, and the interactive wasm demo. The
   cross-architecture hash matrix is built and has run (thirty-fifth
   session: `cargo xtask hashes` and the `hash-matrix` workflow over Linux
   x86-64, Linux aarch64 and macOS aarch64; the two architectures agree

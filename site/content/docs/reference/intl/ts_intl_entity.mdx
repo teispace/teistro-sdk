@@ -1,0 +1,54 @@
+---
+title: ts_intl_entity
+description: "An entity's forms in the current locale or its fallbacks, as a JSON object lent until the next call on the context: every form the locale gives (`name`, `prose`, `iast`, `short`, and any it adds), the `glyph` when it has one, and the `gender` when the locale marks one."
+---
+
+An entity's forms in the current locale or its fallbacks, as a JSON object lent until the next call on the context: every form the locale gives (`name`, `prose`, `iast`, `short`, and any it adds), the `glyph` when it has one, and the `gender` when the locale marks one. A key the locale chain does not carry is `UNSUPPORTED`, naming the locale that was asked.
+
+The typed accessors each binding generates read entities through this, so an application spells `graha.SUN` once and never a name.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_entity(const ts_context * context, const char * key, ts_str * out_json);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.intl_entity(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.intlEntity(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `key` | `const char *` | a string read | — |
+| `out_json` | `ts_str *` | receives a lent string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `key` a NUL-terminated string; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/intl.rs`.

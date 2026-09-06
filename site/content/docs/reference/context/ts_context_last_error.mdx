@@ -1,0 +1,51 @@
+---
+title: ts_context_last_error
+description: "The outcome of the last call on the context: its status, the provider's code, and the message, field, hint and key as strings lent until the next call other than this one."
+---
+
+The outcome of the last call on the context: its status, the provider's code, and the message, field, hint and key as strings lent until the next call other than this one. After a successful call the record is `OK` with a null message.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_last_error(const ts_context * context, ts_error * out_error);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.last_error(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.lastError(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_error` | `ts_error *` | a struct written | — |
+
+## What it hands back
+
+`error`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_error` valid for a read of its `struct_size` and a write.
+
+Declared in `crates/ffi/src/context.rs`.
