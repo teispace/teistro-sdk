@@ -88,6 +88,11 @@ pub fn default_day_periods() -> Vec<DayPeriod> {
     .collect()
 }
 
+/// Whether a division is the one every locale takes when it states none.
+fn is_default_day_periods(periods: &[DayPeriod]) -> bool {
+    periods == default_day_periods()
+}
+
 /// `_meta.json`.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -129,7 +134,14 @@ pub struct Meta {
     /// The parts of the day, in order, the last wrapping past midnight.
     /// A locale that states none takes the division English and Nepali
     /// share ([`default_day_periods`]).
-    #[serde(default = "default_day_periods")]
+    ///
+    /// Written back only when it is not that division, so a locale that
+    /// made no choice keeps saying nothing and a derived locale does not
+    /// gain a field its source never had.
+    #[serde(
+        default = "default_day_periods",
+        skip_serializing_if = "is_default_day_periods"
+    )]
     pub day_periods: Vec<DayPeriod>,
 }
 
