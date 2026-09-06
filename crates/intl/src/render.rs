@@ -130,6 +130,9 @@ pub struct Rendered {
     pub resolved_from: Option<String>,
     /// Whether the answer came from a fallback locale.
     pub is_fallback: bool,
+    /// Whether a runtime override supplied the message
+    /// ([`Intl::set_override`]).
+    pub is_override: bool,
     /// Every problem met: a missing parameter, an unknown function, a
     /// missing entity. Rendering continues past each.
     pub warnings: Vec<String>,
@@ -278,12 +281,31 @@ pub fn ascii_decimal(value: f64, min: usize, max: usize) -> String {
 
 /// The engine over a set of locales.
 pub struct Intl {
-    locales: BTreeMap<String, LocaleSource>,
-    plurals: BTreeMap<String, Plurals>,
-    current: String,
+    pub(crate) locales: BTreeMap<String, LocaleSource>,
+    pub(crate) plurals: BTreeMap<String, Plurals>,
+    pub(crate) current: String,
     /// Messages parsed once, by locale and key; parsing costs four times a
-    /// render, and a message never changes while the engine lives.
-    parsed: RwLock<HashMap<(String, String), Arc<Message>>>,
+    /// render, and an entry changes only through the runtime API, which
+    /// forgets what it replaced.
+    pub(crate) parsed: RwLock<HashMap<(String, String), Arc<Message>>>,
+    /// In-memory overrides by locale and full key, consulted before the
+    /// locale's own entries ([`Intl::set_override`]).
+    pub(crate) overrides: BTreeMap<String, BTreeMap<String, Entry>>,
+    /// The packs and bundles loaded after construction, in order.
+    pub(crate) loaded: Vec<crate::runtime::Loaded>,
+}
+
+/// Where a key resolved: the locale in the chain that answered, its
+/// entry, and whether an override supplied it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Resolution<'a> {
+    /// The locale that answered.
+    pub locale: &'a LocaleSource,
+    /// The entry.
+    pub entry: &'a Entry,
+    /// Whether the entry is a runtime override rather than the locale's
+    /// own.
+    pub is_override: bool,
 }
 
 impl fmt::Debug for Intl {
@@ -295,7 +317,7 @@ impl fmt::Debug for Intl {
     }
 }
 
-struct Plurals {
+pub(crate) struct Plurals {
     cardinal: PluralRules,
     ordinal: PluralRules,
 }
@@ -312,7 +334,7 @@ impl fmt::Display for IntlError {
 
 impl std::error::Error for IntlError {}
 
-fn plurals_for(tag: &str) -> Result<Plurals, IntlError> {
+pub(crate) fn plurals_for(tag: &str) -> Result<Plurals, IntlError> {
     let locale: Locale = tag
         .parse()
         .map_err(|e| IntlError(format!("{tag}: not a locale: {e}")))?;
@@ -356,6 +378,8 @@ impl Intl {
             plurals,
             current,
             parsed: RwLock::new(HashMap::new()),
+            overrides: BTreeMap::new(),
+            loaded: Vec::new(),
         })
     }
 
@@ -412,16 +436,54 @@ impl Intl {
     }
 
     /// The entry for a key along the chain from `tag`, with the locale
-    /// that has it.
+    /// that has it; an override of a locale stands before its own entries.
     #[must_use]
     pub fn resolve_from<'a>(
         &'a self,
         tag: &str,
         key: &str,
     ) -> Option<(&'a LocaleSource, &'a Entry)> {
-        self.chain_from(tag)
-            .into_iter()
-            .find_map(|locale| locale.entry(key).map(|entry| (locale, entry)))
+        self.resolution_from(tag, key)
+            .map(|found| (found.locale, found.entry))
+    }
+
+    /// The resolution of a key along the chain from `tag`: each locale's
+    /// overrides, then its own entries, before the next locale.
+    #[must_use]
+    pub fn resolution_from<'a>(&'a self, tag: &str, key: &str) -> Option<Resolution<'a>> {
+        for locale in self.chain_from(tag) {
+            if let Some(entry) = self
+                .overrides
+                .get(&locale.tag)
+                .and_then(|overrides| overrides.get(key))
+            {
+                return Some(Resolution {
+                    locale,
+                    entry,
+                    is_override: true,
+                });
+            }
+            if let Some(entry) = locale.entry(key) {
+                return Some(Resolution {
+                    locale,
+                    entry,
+                    is_override: false,
+                });
+            }
+        }
+        None
+    }
+
+    /// Forgets the parsed messages of a locale, or of one key of it, after
+    /// the runtime API replaced them.
+    pub(crate) fn forget_parsed(&self, tag: &str, key: Option<&str>) {
+        let mut parsed = self.parsed.write().unwrap_or_else(PoisonError::into_inner);
+        match key {
+            Some(key) => {
+                parsed.remove(&(tag.to_string(), key.to_string()));
+            }
+            None => parsed.retain(|(cached_tag, _), _| cached_tag != tag),
+        }
     }
 
     /// The entity for a catalogue key along the chain from `tag`.
@@ -470,17 +532,24 @@ impl Intl {
             parts,
             resolved_from: Some(locale.tag.clone()),
             is_fallback: false,
+            is_override: false,
             warnings: eval.warnings,
         })
     }
 
     fn render_from(&self, tag: &str, key: &str, params: &Params, depth: u8) -> Rendered {
-        let Some((locale, entry)) = self.resolve_from(tag, key) else {
+        let Some(Resolution {
+            locale,
+            entry,
+            is_override,
+        }) = self.resolution_from(tag, key)
+        else {
             return Rendered {
                 text: key.to_string(),
                 parts: vec![OutPart::Text(key.to_string())],
                 resolved_from: None,
                 is_fallback: false,
+                is_override: false,
                 warnings: vec![format!(
                     "missing message `{key}` in {tag} and its fallbacks"
                 )],
@@ -508,6 +577,7 @@ impl Intl {
             parts,
             resolved_from: Some(locale.tag.clone()),
             is_fallback,
+            is_override,
             warnings,
         }
     }

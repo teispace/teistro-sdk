@@ -138,6 +138,20 @@ the current locale then its declared fallbacks; every result says which
 locale answered. Messages are parsed once per key and cached. The
 measurements are in §10.
 
+The runtime API (`runtime`): `load_pack(&bytes)` takes a `.tpack` or a
+`.tbundle` after construction, adding a locale (its metadata from the
+file, its plural rules from ICU4X) or a namespace, or replacing entries
+already loaded under the same key, and returns the record the provenance
+envelope keeps (locale, namespaces, entries, replaced, SHA-256);
+`set_override(locale, key, source)` patches one message in memory,
+checked as it is set, standing before the locale's own entry and before
+any fallback until `clear_override` or `clear_overrides`; `report()`
+lists every locale with its coverage of the base keys, the files loaded
+and the overrides in force. A render says when an override answered
+(`Rendered::is_override`) as it says which locale did. The parse cache
+forgets what the runtime API replaces, so a replaced or overridden
+message renders anew at once.
+
 ## 7. Validation
 
 The gates, in one report with a coverage table and diagnostics sorted
@@ -251,8 +265,12 @@ among them; pack round trip, corruption and truncation; the bundle's
 round trip, its size against the separate packs, a lone metadata-less
 pack refused, corruption and truncation; generator tests for key
 coverage and the absence of text; the command line's value parsing and
-`extract`; the language harnesses under `spikes/04-teistro-intl/harness/`
-(37 tests and a doctest in the crate). To come: fuzzing under
+`extract`; the runtime API: an override standing before the entry and the
+fallback, refused when it does not parse, cleared back, a pack adding a
+namespace, a replacement rendering anew, a bundle adding a selectable
+locale that falls back to the base, the report; the language harnesses
+under `spikes/04-teistro-intl/harness/` (39 tests and a doctest in the
+crate). To come: fuzzing under
 `cargo-fuzz` and cross-binding rendering parity on a snapshot set.
 
 ## 12. Localisation
@@ -268,8 +286,9 @@ here.
   (the grammar's bidi marks are accepted; rendering policy is open).
 - Whether `:entity` form names are a closed set per catalogue kind or
   open per locale (open in the spike).
-- Runtime overrides and the composite provider's precedence rules (with
-  the bindings' `loadPack` and `overrides` calls).
+- The composite provider's precedence rules once a binding loads packs
+  from several places (baked, blob, filesystem): the Rust runtime API
+  loads in call order, later entries replacing earlier ones.
 - The calendar-aware `:date`, `:time` and `:datetime`, `:ghati` and
   `:duration`, over the calendar crate.
 - Transliteration, XLIFF, and `migrate baseline` for the four launch

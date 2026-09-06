@@ -16,6 +16,9 @@
 //!   reads with a checksum;
 //! - [`generate`]: typed accessors for TypeScript, Dart and Rust, keys and
 //!   parameter shapes only, never text;
+//! - [`runtime`]: the engine's runtime API, packs and bundles loaded
+//!   after construction, in-memory overrides and the report of what is
+//!   loaded and covered;
 //! - [`messages`]: the SDK's own namespaces as typed Rust accessors,
 //!   generated from `i18n/en-Latn` by `cargo xtask gen intl`;
 //! - [`cli`]: the `teistro-intl` command line as library functions.
@@ -44,6 +47,7 @@ pub mod generate;
 pub mod mf2;
 pub mod pack;
 pub mod render;
+pub mod runtime;
 pub mod source;
 pub mod validate;
 
@@ -53,5 +57,6 @@ pub mod validate;
 #[allow(clippy::all, clippy::pedantic, reason = "generated")]
 pub mod messages;
 
-pub use render::{Intl, OutPart, Params, Rendered, TypedMessage, Value, params};
+pub use render::{Intl, OutPart, Params, Rendered, Resolution, TypedMessage, Value, params};
+pub use runtime::{Loaded, LocaleReport, RuntimeReport};
 pub use source::{BASE_LOCALE, ENTITY_NAMESPACE, sdk_root};
