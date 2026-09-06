@@ -67,8 +67,9 @@ line worth reading.
 
 Nothing is timed. Wall-clock time on a shared runner moves further with a
 neighbouring job than with most changes, so a wall-clock gate either
-passes everything or fails at random; an instruction count is exact and
-reproducible, which is what makes a 1% threshold mean anything. The
+passes everything or fails at random; an instruction count barely moves —
+the first run against a base commit put every section within 0.00%, a few
+parts in a million — which is what makes a 1% threshold mean anything. The
 comparison is against the pull request's own base commit, measured in the
 same job on the same machine, because an instruction count belongs to a
 compiler and a target as much as to the source — a number checked into
