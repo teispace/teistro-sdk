@@ -18,15 +18,18 @@ crate with the API description and the C header (its first generator)
 exist, as do the Node and Dart generators and bindings with the parity
 gate, the determinism lints and the counting allocator, the
 cross-architecture hash matrix, the packaging with its release matrix, and
-the documentation site with its generated reference; the instruction-count
-benchmarks and the conformance repository are not built
+the documentation site with its generated reference and the
+instruction-count benchmarks; the conformance repository is not built
 (`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
 made, four spikes measured, repository live).
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-06, end of the thirty-seventh session (the
+**Last updated:** 2026-09-06, end of the thirty-eighth session (the
+instruction-count benchmarks over a fixed scenario shared with the
+determinism matrix, compared against the pull request's own base commit);
+before that the thirty-seventh session (the
 documentation site: Fumadocs in `site/`, with the API reference generated
 from the same description every binding is generated from, held by
 `check-ffi` and built by `check-site`); before that the thirty-sixth
@@ -105,9 +108,9 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. The next task is the maintainer's choice between Phase 1's remaining
-   deliverables (the instruction-count benchmarks, the conformance
-   repository) and the astronomy follow-ups under "Now";
+3. The next task is the maintainer's choice between Phase 1's last
+   deliverable (the conformance repository) and the astronomy follow-ups
+   under "Now";
    Phase 3, the built-in ephemeris, may run beside Phase 4 per the
    roadmap. The conformance repository is the maintainer's to create
    (ADR-0022). The `intl` crate
@@ -603,9 +606,13 @@ binding (ADR-0023).
   building the site and checking that every generated page was rendered;
   the `docs` workflow publishing to GitHub Pages on a tag;
   `06-cicd/05-docs-deploy.md`).
+  The instruction-count benchmarks followed (thirty-eighth session:
+  `crates/scenario` holding the fixed scenario, lifted out of the hash
+  gate so both walk the same code with every digest unchanged; `cargo
+  xtask bench` counting it under callgrind and `compare-bench` failing
+  above 3% and reporting above 1%; the `benchmarks` workflow measuring the
+  pull request's base commit in the same job).
   Next in it: the
-  test-only infrastructure beyond the determinism lints and the counting
-  allocator (instruction-count benchmarks, which need Linux) and the
   conformance repository (ADR-0022). The site's own remainder is listed in
   `06-cicd/05-docs-deploy.md`: versioned docs, Nepali, examples executed
   from the pages, and the interactive wasm demo. The

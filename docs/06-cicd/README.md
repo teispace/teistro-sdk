@@ -12,10 +12,13 @@ Status: `built`, 2026-09-06. The research is in
 | `verify` | nightly, on demand, on a tag | the bindings' own gates (`check-c`, `check-node`, `check-dart`, `check-parity`) and `check-package` on all five platforms |
 | `release` | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published to npm, pub.dev and the release page |
 | `docs` | every push to `main`, a pull request that touches the site, a tag | the site builds and renders every generated reference page; a tag publishes it to GitHub Pages |
+| `benchmarks` | every pull request, on demand | `cargo xtask bench` under callgrind, compared with the base commit measured in the same job: above 3% fails, above 1% is reported |
 
 `cargo xtask hashes` walks a fixed scenario through the calendars, the
 astronomy, the house systems and the classical model, and hashes every
-value's bits per section. Every value is hashed as its bits, because a
+value's bits per section. The scenario itself is `crates/scenario`, which
+the instruction-count benchmarks walk too, so neither gate measures a path
+the other never checked. Every value is hashed as its bits, because a
 difference of one unit in the last place is a difference: the point is to
 find out whether the same source computes the same numbers on another
 machine, not to decide how close is close enough. The report names the

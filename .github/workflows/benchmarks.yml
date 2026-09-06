@@ -1,0 +1,92 @@
+# Instruction counts: whether a change made the SDK do more work.
+#
+# Wall-clock time on a shared runner is noise, so nothing here is timed.
+# Callgrind counts instructions, and the count is exact: the same build
+# over the same input executes the same instructions on a busy machine and
+# an idle one. That is what makes ADR-0022's thresholds mean something —
+# a pull request may not raise any section by more than 3%, and 1% is
+# reported.
+#
+# The comparison is against the pull request's own base commit, measured
+# in the same job on the same machine, because an instruction count
+# belongs to a compiler and a target as much as to the source.
+#
+# Linux only: valgrind does not run on the macOS runners, and the question
+# this asks — did the code get heavier — is not a per-platform one.
+name: benchmarks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  instructions:
+    name: instructions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # The base commit is measured too, so its history has to be here.
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Valgrind
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends valgrind
+
+      - name: What this branch costs
+        run: cargo xtask bench head.tsv | tee head.txt
+
+      - name: What the base commit costs
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -eu
+          git worktree add ../base "$BASE"
+          if [ -f ../base/crates/scenario/Cargo.toml ]; then
+            (cd ../base && cargo xtask bench "$GITHUB_WORKSPACE/base.tsv")
+          else
+            echo "the base commit has no scenario crate; there is nothing to compare against" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: What moved
+        if: github.event_name == 'pull_request'
+        run: |
+          set -u
+          {
+            echo "### Instruction counts"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f base.tsv ]; then
+            cargo xtask compare-bench base.tsv head.tsv | tee -a "$GITHUB_STEP_SUMMARY"
+            status=${PIPESTATUS[0]}
+          else
+            cat head.txt >> "$GITHUB_STEP_SUMMARY"
+            status=0
+          fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: The counts, on a run with nothing to compare against
+        if: github.event_name != 'pull_request'
+        run: |
+          {
+            echo "### Instruction counts"
+            echo '```'
+            cat head.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: instruction-counts
+          path: |
+            head.tsv
+            base.tsv
+          if-no-files-found: warn
+          retention-days: 7

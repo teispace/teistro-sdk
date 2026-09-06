@@ -22,6 +22,7 @@ teistro-core = { path = "../crates/core" }
 teistro-ffi = { path = "../crates/ffi" }
 teistro-idl = { path = "../crates/idl" }
 teistro-intl = { path = "../crates/intl", default-features = false }
+teistro-scenario = { path = "../crates/scenario" }
 teistro-siddhanta = { path = "../crates/siddhanta" }
 teistro-time = { path = "../crates/time" }
 

@@ -1371,6 +1371,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-scenario"
+version = "0.0.0"
+dependencies = [
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-core",
+ "teistro-siddhanta",
+]
+
+[[package]]
 name = "teistro-siddhanta"
 version = "0.0.0"
 dependencies = [
@@ -1712,6 +1722,7 @@ dependencies = [
  "teistro-ffi",
  "teistro-idl",
  "teistro-intl",
+ "teistro-scenario",
  "teistro-siddhanta",
  "teistro-time",
 ]
