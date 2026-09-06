@@ -15,6 +15,8 @@ serde_json = { version = "1", features = ["preserve_order"] }
 serde_yaml_ng = "0.10"
 teistro-calendar = { path = "../crates/calendar" }
 teistro-core = { path = "../crates/core" }
+teistro-ffi = { path = "../crates/ffi" }
+teistro-idl = { path = "../crates/idl" }
 teistro-intl = { path = "../crates/intl", default-features = false }
 teistro-siddhanta = { path = "../crates/siddhanta" }
 teistro-time = { path = "../crates/time" }

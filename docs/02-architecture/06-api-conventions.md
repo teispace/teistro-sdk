@@ -1,8 +1,12 @@
 # API conventions
 
-Status: `draft`, revised 2026-09-04 (ADR-0020 and ADR-0023). Depends on
-Q2. These are the Teimeris design rules extended for tree-shaped results,
-consumer-implemented ports and typed surfaces in every binding.
+Status: `draft`, revised 2026-09-06 (the rules as built in `crates/ffi`:
+a wrong `struct_size` is `SCHEMA_VERSION`, the settings patch crosses as
+JSON, lent strings and owned strings, the construction error;
+`03-design/ffi-abi-and-api-description.md`); revised 2026-09-04
+(ADR-0020 and ADR-0023). Depends on Q2. These are the Teimeris design
+rules extended for tree-shaped results, consumer-implemented ports and
+typed surfaces in every binding.
 
 ## At the C ABI
 
@@ -25,6 +29,18 @@ consumer-implemented ports and typed surfaces in every binding.
 10. Callbacks (ports) are vtable structs of function pointers with
     `user_data`, a `struct_size`, and a capability descriptor; the core
     never stores a callback beyond the context's lifetime.
+11. A `struct_size` the library does not know is `SCHEMA_VERSION`, refused
+    before anything is read or written; a null required pointer is
+    `INVALID_ARG` naming it.
+12. Memory the library allocates, it frees (`ts_string_free`,
+    `ts_blob_free`, zeroing the descriptor so a second free is a no-op);
+    a string the library lends is valid until the next call on the same
+    context.
+13. The settings patch crosses as a JSON document, not a struct, so the
+    ABI does not change when a knob is appended; the resolved settings
+    come back as their canonical document and its hash.
+14. No panic crosses: every entry point runs under a guard that turns a
+    panic into `INTERNAL` with its message.
 
 ## Types at the boundary (ADR-0023)
 

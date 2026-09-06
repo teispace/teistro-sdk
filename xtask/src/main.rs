@@ -13,6 +13,8 @@
 //! - `check-time` and `gen time`: the Delta T tables of `astro` and the
 //!   leap-second table of `time` equal their data files (the IERS series,
 //!   the historical table, the IANA list).
+//! - `check-ffi` and `gen ffi`: the API description (`idl/api.json`) and
+//!   the C header equal what the boundary crates' source describes.
 //!
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
@@ -33,6 +35,7 @@
 mod accuracy;
 mod calendars;
 mod catalogue;
+mod ffi;
 mod generated;
 mod intl;
 mod time;
@@ -59,6 +62,7 @@ fn main() {
         Some("check-time") => time::check_generated(&repo_root()),
         Some("check-accuracy") => accuracy::check_generated(&repo_root()),
         Some("check-intl") => intl::check_generated(&repo_root()),
+        Some("check-ffi") => ffi::check_generated(&repo_root()),
         Some("accuracy") => accuracy::generate(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
@@ -69,6 +73,7 @@ fn main() {
             Some("calendars") => calendars::generate(&repo_root()),
             Some("time") => time::generate(&repo_root()),
             Some("intl") => intl::generate(&repo_root()),
+            Some("ffi") => ffi::generate(&repo_root()),
             _ => usage(),
         },
         _ => usage(),
@@ -78,7 +83,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

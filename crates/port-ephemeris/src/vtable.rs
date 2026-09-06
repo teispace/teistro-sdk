@@ -30,6 +30,8 @@ use crate::horizon::{DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Refra
 use crate::provider::{EphemerisProvider, PositionRequest};
 
 /// The ABI version of the vtable layout.
+///
+/// `api: constant`
 pub const VTABLE_ABI_VERSION: u32 = 2;
 
 /// A C observer: degrees and metres, validated into a [`Place`] on the
@@ -86,6 +88,91 @@ pub struct PositionRequestC {
     pub bodies: *const u16,
     /// How many bodies.
     pub body_count: usize,
+}
+
+/// A C request read into Rust: the instants borrowed from the caller, the
+/// bodies decoded from their ids, and the typed fields.
+#[derive(Debug)]
+pub struct DecodedRequest<'a> {
+    /// The instants.
+    pub jds: &'a [f64],
+    /// The bodies.
+    pub bodies: Vec<Body>,
+    /// The scale.
+    pub scale: TimeScale,
+    /// The frame.
+    pub frame: Frame,
+    /// The observer.
+    pub observer: Option<Place>,
+    /// Whether speeds are wanted.
+    pub speeds: bool,
+}
+
+impl DecodedRequest<'_> {
+    /// The request as the trait takes it.
+    #[must_use]
+    pub fn request(&self) -> PositionRequest<'_> {
+        PositionRequest {
+            jds: self.jds,
+            scale: self.scale,
+            bodies: &self.bodies,
+            frame: self.frame,
+            observer: self.observer,
+            speeds: self.speeds,
+        }
+    }
+}
+
+impl PositionRequestC {
+    /// Reads a C request: the size handshake, the scale and frame ids, the
+    /// observer, the instants and the body ids.
+    ///
+    /// # Safety
+    ///
+    /// `jds` must be null or valid for `jd_count` reads and `bodies` null or
+    /// valid for `body_count` reads, for as long as the result is used.
+    ///
+    /// # Errors
+    ///
+    /// [`ProviderError::Invalid`] for a wrong size, scale or observer, an
+    /// unknown frame, or [`ProviderError::Unsupported`] for a body id the
+    /// port does not know.
+    pub unsafe fn decode(&self) -> Result<DecodedRequest<'_>, ProviderError> {
+        if self.struct_size != size_of_u32::<PositionRequestC>() {
+            return Err(ProviderError::invalid(format!(
+                "request size {}; this port's is {}",
+                self.struct_size,
+                size_of_u32::<PositionRequestC>()
+            )));
+        }
+        let scale = TimeScale::from_id(self.scale)
+            .ok_or_else(|| ProviderError::invalid(format!("time scale id {}", self.scale)))?;
+        let frame = Frame::try_from_bits(self.frame_bits)?;
+        let observer = if self.has_observer == 0 {
+            None
+        } else {
+            Some(self.observer.place()?)
+        };
+        // SAFETY: the caller promises `jd_count` instants and `body_count` ids.
+        let (jds, ids) = unsafe {
+            (
+                slice_or_empty(self.jds, self.jd_count),
+                slice_or_empty(self.bodies, self.body_count),
+            )
+        };
+        let bodies: Vec<Body> = ids.iter().filter_map(|id| Body::from_id(*id)).collect();
+        if bodies.len() != ids.len() {
+            return Err(ProviderError::unsupported("body id"));
+        }
+        Ok(DecodedRequest {
+            jds,
+            bodies,
+            scale,
+            frame,
+            observer,
+            speeds: self.speeds != 0,
+        })
+    }
 }
 
 /// C columns the provider fills: caller-owned arrays of `capacity` cells,
@@ -296,6 +383,60 @@ pub struct CapabilitiesC {
     pub hash_count: usize,
 }
 
+/// Fills the capabilities; returns `0` or a [`ProviderError::code`].
+pub type CapabilitiesFn =
+    unsafe extern "C" fn(user_data: *mut c_void, out: *mut CapabilitiesC) -> i32;
+
+/// Fills the columns for a request; returns `0` or a [`ProviderError::code`].
+pub type PositionsFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    request: *const PositionRequestC,
+    out: *mut PositionColumnsC,
+) -> i32;
+
+/// The obliquity override: the mean and true obliquity and the nutation
+/// at an instant on a time scale ([`TimeScale::id`]).
+pub type ObliquityFn =
+    unsafe extern "C" fn(user_data: *mut c_void, jd: f64, scale: u32, out: *mut ObliquityC) -> i32;
+
+/// The Delta T override: TT less UT1 in seconds at a UT1 instant.
+pub type DeltaTFn =
+    unsafe extern "C" fn(user_data: *mut c_void, jd_ut1: f64, out_seconds: *mut f64) -> i32;
+
+/// The ayanamsha override: the mean ayanamsha in degrees at an instant,
+/// by catalogue id.
+pub type AyanamshaFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    jd: f64,
+    scale: u32,
+    ayanamsha: u16,
+    out_deg: *mut f64,
+) -> i32;
+
+/// The DUT1 override: UT1 less UTC in seconds at a UTC instant.
+pub type Dut1Fn =
+    unsafe extern "C" fn(user_data: *mut c_void, jd_utc: f64, out_seconds: *mut f64) -> i32;
+
+/// The rise and set override: writes the instant and whether the event
+/// was found inside the window.
+pub type HorizonEventFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    request: *const HorizonRequestC,
+    out_jd_ut1: *mut f64,
+    out_found: *mut u8,
+) -> i32;
+
+/// The crossings override: writes up to `capacity` events into the
+/// caller's buffer and the number found into `out_count`, which may exceed
+/// the capacity, in which case the caller calls again with a larger buffer.
+pub type CrossingsFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    request: *const CrossingRequestC,
+    out_events: *mut CrossingEventC,
+    capacity: u32,
+    out_count: *mut u32,
+) -> i32;
+
 /// The vtable: `user_data` is whatever the provider registered and is
 /// passed back to every function; a null function is an undeclared
 /// operation.
@@ -306,67 +447,22 @@ pub struct ProviderVtable {
     pub struct_size: u32,
     /// [`VTABLE_ABI_VERSION`].
     pub abi_version: u32,
-    /// Fills the capabilities; returns `0` or a [`ProviderError::code`].
-    pub capabilities:
-        Option<unsafe extern "C" fn(user_data: *mut c_void, out: *mut CapabilitiesC) -> i32>,
-    /// Fills the columns; returns `0` or a [`ProviderError::code`].
-    pub positions: Option<
-        unsafe extern "C" fn(
-            user_data: *mut c_void,
-            request: *const PositionRequestC,
-            out: *mut PositionColumnsC,
-        ) -> i32,
-    >,
+    /// The capabilities; must not be null.
+    pub capabilities: Option<CapabilitiesFn>,
+    /// The positions; must not be null.
+    pub positions: Option<PositionsFn>,
     /// The obliquity override.
-    pub obliquity: Option<
-        unsafe extern "C" fn(
-            user_data: *mut c_void,
-            jd: f64,
-            scale: u32,
-            out: *mut ObliquityC,
-        ) -> i32,
-    >,
+    pub obliquity: Option<ObliquityFn>,
     /// The Delta T override, seconds.
-    pub delta_t: Option<
-        unsafe extern "C" fn(user_data: *mut c_void, jd_ut1: f64, out_seconds: *mut f64) -> i32,
-    >,
+    pub delta_t: Option<DeltaTFn>,
     /// The ayanamsha override, degrees, by catalogue id.
-    pub ayanamsha: Option<
-        unsafe extern "C" fn(
-            user_data: *mut c_void,
-            jd: f64,
-            scale: u32,
-            ayanamsha: u16,
-            out_deg: *mut f64,
-        ) -> i32,
-    >,
+    pub ayanamsha: Option<AyanamshaFn>,
     /// The DUT1 override, seconds.
-    pub dut1: Option<
-        unsafe extern "C" fn(user_data: *mut c_void, jd_utc: f64, out_seconds: *mut f64) -> i32,
-    >,
-    /// The rise and set override: writes the instant and whether the
-    /// event was found inside the window.
-    pub horizon_event: Option<
-        unsafe extern "C" fn(
-            user_data: *mut c_void,
-            request: *const HorizonRequestC,
-            out_jd_ut1: *mut f64,
-            out_found: *mut u8,
-        ) -> i32,
-    >,
-    /// The crossings override: writes up to `capacity` events into the
-    /// caller's buffer and the number found into `out_count`, which may
-    /// exceed the capacity, in which case the caller calls again with a
-    /// larger buffer.
-    pub crossings: Option<
-        unsafe extern "C" fn(
-            user_data: *mut c_void,
-            request: *const CrossingRequestC,
-            out_events: *mut CrossingEventC,
-            capacity: u32,
-            out_count: *mut u32,
-        ) -> i32,
-    >,
+    pub dut1: Option<Dut1Fn>,
+    /// The rise and set override.
+    pub horizon_event: Option<HorizonEventFn>,
+    /// The crossings override.
+    pub crossings: Option<CrossingsFn>,
 }
 
 #[allow(
@@ -932,49 +1028,19 @@ unsafe extern "C" fn positions_trampoline<P: EphemerisProvider>(
     // SAFETY: `user_data` is the `Exported` box registered with this vtable;
     // the caller promises readable request and writable columns structs.
     let (this, req, columns) = unsafe { (&*user_data.cast::<Exported<P>>(), &*request, &mut *out) };
-    if req.struct_size != size_of_u32::<PositionRequestC>()
-        || columns.struct_size != size_of_u32::<PositionColumnsC>()
-    {
+    if columns.struct_size != size_of_u32::<PositionColumnsC>() {
         return invalid_call();
     }
-    let Some(scale) = TimeScale::from_id(req.scale) else {
-        return invalid_call();
-    };
-    let frame = match Frame::try_from_bits(req.frame_bits) {
-        Ok(frame) => frame,
+    // SAFETY: the caller promises the instants and ids the request counts.
+    let decoded = match unsafe { req.decode() } {
+        Ok(decoded) => decoded,
         Err(error) => return error.code(),
     };
-    let observer = if req.has_observer == 0 {
-        None
-    } else {
-        match req.observer.place() {
-            Ok(place) => Some(place),
-            Err(error) => return error.code(),
-        }
-    };
-    // SAFETY: the caller promises `jd_count` instants and `body_count` ids.
-    let (jds, ids) = unsafe {
-        (
-            slice_or_empty(req.jds, req.jd_count),
-            slice_or_empty(req.bodies, req.body_count),
-        )
-    };
-    let bodies: Vec<Body> = ids.iter().filter_map(|id| Body::from_id(*id)).collect();
-    if bodies.len() != ids.len() {
-        return ProviderError::unsupported("body id").code();
-    }
-    let needed = jds.len().saturating_mul(bodies.len());
+    let needed = decoded.jds.len().saturating_mul(decoded.bodies.len());
     if columns.capacity < needed {
         return invalid_call();
     }
-    let request = PositionRequest {
-        jds,
-        scale,
-        bodies: &bodies,
-        frame,
-        observer,
-        speeds: req.speeds != 0,
-    };
+    let request = decoded.request();
     let result = match this.provider.positions(&request) {
         Ok(result) => result,
         Err(error) => return error.code(),

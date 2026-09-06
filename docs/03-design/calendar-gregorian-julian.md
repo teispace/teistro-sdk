@@ -109,9 +109,12 @@ zero-sized types registered under `GREGORIAN`, `JULIAN`, `MIXED` (with
 its variants) and `ISO_WEEK`; `calendar::convert(date, to:
 CalendarKey)`, `calendar::from_fixed`, `calendar::to_fixed`,
 `calendar::weekday`, `calendar::iso_week`, and batch forms over arrays.
-C ABI: `ts_calendar_to_fixed`, `ts_calendar_from_fixed`,
-`ts_calendar_convert`, `ts_calendar_month_length`, `ts_calendar_is_leap`;
-dates cross as a `struct_size` struct with the calendar key id.
+C ABI, built: `ts_calendar_to_fixed`, `ts_calendar_from_fixed`,
+`ts_calendar_convert`, `ts_calendar_month_length`, `ts_calendar_is_leap`,
+`ts_calendar_weekday`, and the fixed day's relation to the Julian day
+(`ts_calendar_jd_of_fixed`, `ts_calendar_fixed_of_jd`); dates cross as a
+`struct_size` struct with the calendar id, the era view and the
+resolution (`ffi-abi-and-api-description.md`).
 Bindings: a `CalendarDate` value type with validating constructors per
 calendar (`gregorian(2000, 1, 1)`) and typed conversion methods.
 

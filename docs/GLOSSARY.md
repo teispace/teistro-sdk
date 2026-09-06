@@ -36,7 +36,9 @@ locale packs, never in code.
 | footedness | the odd or even classification of signs in groups of three from Aries, used for the duration count in rashi dashas; a distinct type from sign parity, which governs the sequence direction |
 | entity | a named astrological object with a stable key: graha, rashi, nakshatra, tithi, karana, yoga, vara, varga, dignity, and so on |
 | ephemeris provider | the consumer-supplied implementation of the ephemeris port |
-| IDL | the machine-readable description of the API from which every binding and the API reference are generated |
+| IDL | the machine-readable description of the API from which every binding and the API reference are generated; `idl/api.json`, extracted from the boundary crates' Rust source (`crates/idl`) |
+| result blob | the one allocation a tree- or grid-shaped result crosses the C boundary in: the `TSRB` layout (a header with the schema id, a table of contents, 8-aligned fixed, column and byte sections), owned by the library until `ts_blob_free`, decoded by generated decoders as views |
+| struct size handshake | the `struct_size` field every boundary struct begins with, set by the caller to `sizeof`, so either side can be older; a size the library does not know is `SCHEMA_VERSION` |
 | kernel | one implementation of the algorithmic shape a family of variants shares (udu dashas, rashi dashas, vargas, bala schemes, rules); the variants are rows of data over it (ADR-0017) |
 | key | a stable, language-neutral identifier for an entity, state or rule; engine output carries keys, never display strings |
 | mark and continue | the rule that an unsourced or unverified variant is registered but not implemented and is refused with a reason, never silently replaced by a default |

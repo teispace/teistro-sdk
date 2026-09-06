@@ -81,8 +81,21 @@ the patterns and names a locale declares in `sdk.calendar` (shipped for
 `useGrouping` and `minimumIntegerDigits` options on numbers. The
 baseline engine's entity name tables are imported (`teistro-intl migrate
 baseline`): 274 records in each of four languages, `hi-Deva-IN` and
-`sa-Deva` joining the shipped locales at `base` completeness. No number
-moves. Nothing else computes yet.
+`sa-Deva` joining the shipped locales at `base` completeness. The C ABI
+computes for the first time (`teistro-ffi`, `bindings/c/include/teistro.h`):
+contexts from a profile, a JSON settings patch, a locale and the port's
+vtable; the last error with its message, field and hint; keys and ids;
+dates in every shipped calendar; civil times to instants with the zone
+metadata and the scale conversions; the locale engine over the embedded
+bundles; positions through the port completed into the requested frame,
+as a result blob (`TSRB`) with the completion steps and the provenance
+envelope. The API description (`idl/api.json`, `teistro-idl`) is extracted
+from the boundary crates' source and gated. **The settings hash moved
+for any build that enabled the JSON layer's `preserve_order` feature**:
+the canonical document's keys are now sorted by the SDK itself, so the
+hash of a settings document is the same in every build (a crate compiled
+alone and the workspace hashed the same settings differently before);
+the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.

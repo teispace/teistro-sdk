@@ -49,8 +49,11 @@ teistro-sdk/
                                bundles, typed accessors (TypeScript, Dart, Rust; the SDK's own in src/messages.rs by
                                `cargo xtask gen intl`), the teistro-intl command line
     interpret/ serial/
-    ffi/                       the C ABI; cbindgen config; unsafe with reviewed SAFETY comments
-                               (the analytic test provider lives in port-ephemeris::test_provider)
+    ffi/                       present: the C ABI (contexts, keys, calendars, time, intl, positions; the result
+                               blob; the last error), the workspace's only unsafe, every block with a SAFETY
+                               comment; the SDK's locale bundles embedded by its build script
+    idl/                       present: the API description model, the naming and layout rules, the result blob
+                               encoder and decoder, the extractor over the boundary crates and the C emitter
   catalogue/                   entity catalogue YAML (keys, ids, attributes, citations); present, with its README,
                                generated into crates/core by `cargo xtask gen catalogue` and gated by `check-catalogue`
   i18n/                        present: en-Latn (the base), ne-Deva-NP, hi-Deva-IN and sa-Deva; sdk.entity (283
@@ -60,19 +63,21 @@ teistro-sdk/
     interpret/<locale>/        interpretation sources with citations
     rules/<pack>/              rule packs (yogas, doshas, muhurta, matching, remedies)
   profiles/*.yaml
-  idl/                         extracted API description, generators, checkers (or the Diplomat bridge, per ADR-0007)
+  idl/                         present: api.json, the extracted API description (`cargo xtask gen ffi`, gated by
+                               `check-ffi`), with its README
   bindings/
-    c/ cpp/ node/ wasm/ python/ dart/ teistro_flutter/ rust/ java/
+    c/                         present: include/teistro.h, the generated C header, with its README
+    cpp/ node/ wasm/ python/ dart/ teistro_flutter/ rust/ java/
     shared/                    ergonomic code shared by node and wasm
   adapters/                    outside the workspace (ADR-0019), with their README
     ephemeris-teimeris/rust/   present: the port over Teimeris's Rust binding, its kit binary and the Bikram
                                Sambat measurement binary; published separately (Teimeris terms)
     ephemeris-sweph/rust/      present: the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
-                               check-fixtures, check-catalogue, check-calendars, check-time,
-                               gen catalogue, gen calendars, gen time, calendars bs-fit; later verify, idl extract,
-                               gen <binding>, ephemgen, rulegen, bench, conformance, size,
-                               release (ADR-0014)
+                               check-fixtures, check-catalogue, check-calendars, check-time, check-accuracy,
+                               check-intl, check-ffi, gen catalogue, gen calendars, gen time, gen intl, gen ffi,
+                               accuracy, calendars bs-fit; later verify, gen <binding>, ephemgen, rulegen,
+                               bench, conformance, size, release (ADR-0014)
   crates/cli/                  the consumer-facing `teistro` binary: intl (validate, build, gen,
                                extract, analyze, ...), provider conformance kit, pack tools
   fuzz/                        cargo-fuzz targets

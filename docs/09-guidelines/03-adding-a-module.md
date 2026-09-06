@@ -27,9 +27,12 @@ must satisfy.
    pieces, and documentation on every public item.
 4. **Settings.** Any new knob added to the settings model with a default in
    every shipped profile and a note in the changelog.
-5. **API.** C ABI entry points in `ffi` following the conventions; the IDL
-   re-extracted; bindings regenerated; ergonomic wrappers added in every
-   binding with the same names; the parity gate passes.
+5. **API.** C ABI entry points in `ffi` following the conventions, each
+   with its `api:` metadata and a Safety section, its blob schema in
+   `schemas.rs` when it returns one; `cargo xtask gen ffi` re-extracts
+   the description and the header (`check-ffi` holds them); bindings
+   regenerated; ergonomic wrappers added in every binding with the same
+   names; the parity gate passes.
 6. **Tests.** Unit tests with classical examples, golden vectors (from
    the baseline engine, PyJHora or hand-computed) with tolerances and the
    settings hash asserted, property tests for invariants with boundary

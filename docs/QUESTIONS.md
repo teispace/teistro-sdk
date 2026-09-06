@@ -40,6 +40,7 @@ and links its ADR. Status key: `open`, `decided`, `deferred`.
 | Q31 | reference-accuracy ephemeris | the IAU routines as an ERFA port; a JPL DE file reader provider (v1.x); a DE-refit `reference` tier; stage-isolated validation | ADR-0021 |
 | Q32 | determinism and conformance | byte identity across architectures compared by hash; the corpus in a separate CC0 repository consumed as a pinned submodule; the quality bar extended (mutation, instruction counts, feature matrix, semver, compile-fail) | ADR-0022 |
 | Q33 | type safety in every binding | validated newtypes, generated typed surfaces with documentation and examples in every binding, runtime schemas, coherence validation, typed states and errors, compile-fail and strictness gates | ADR-0023 |
+| Q34 | the default profile | proposed 2026-09-06, open for the maintainer: a context whose options name no profile uses `parashari-classical` (the texts as read, nothing of one country's practice in it), named by `teistro_core::settings::DEFAULT_PROFILE` and `ts_default_profile` so every binding's constructor agrees; the alternative is `nepali-default`, the product's charts | `03-design/ffi-abi-and-api-description.md` §10 |
 
 Principle confirmed by the maintainer: the baseline engine's packages are the minimum
 bar, not the model. The SDK is structured, designed and governed as a

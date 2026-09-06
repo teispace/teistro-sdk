@@ -231,9 +231,13 @@ hora::Reckoning)`; `delta_t(jd_ut1, DeltaTModel)`, `tt_from_ut1`,
 The port (`crates/port-timezone`): `TimeZoneProvider` with `version`,
 `has_zone`, `zones`, `offset_at`, `candidates` and `current_offsets`.
 C ABI:
-`ts_time_resolve`, `ts_time_civil`, `ts_time_local_day`,
-`ts_time_ghati`, `ts_time_delta_t`, batch forms over arrays of civil
-times or instants with capacities. Bindings: `Resolved` and
+`ts_time_resolve`, `ts_time_civil`, `ts_time_convert` and
+`ts_time_delta_t` are built (`ffi-abi-and-api-description.md`: the civil
+date-time and the zone as `struct_size` structs, the resolution with the
+offset, source, era, database version, abbreviation, what the policy did
+and the warnings as a bit set); `ts_time_local_day`, `ts_time_ghati` and
+batch forms over arrays of civil
+times or instants with capacities follow. Bindings: `Resolved` and
 `ZoneResolution` as readonly typed objects; `ZoneSpec` as a tagged
 union; `CivilDateTime` constructed only through validating builders;
 `JulianDay` branded per scale so a UT1 value cannot be passed as TT.

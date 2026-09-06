@@ -1230,6 +1230,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-ffi"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-core",
+ "teistro-idl",
+ "teistro-intl",
+ "teistro-port-ephemeris",
+ "teistro-time",
+]
+
+[[package]]
+name = "teistro-idl"
+version = "0.0.0"
+dependencies = [
+ "proc-macro2",
+ "serde",
+ "serde_json",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "teistro-intl"
 version = "0.0.0"
 dependencies = [
@@ -1587,6 +1612,8 @@ dependencies = [
  "serde_yaml_ng",
  "teistro-calendar",
  "teistro-core",
+ "teistro-ffi",
+ "teistro-idl",
  "teistro-intl",
  "teistro-siddhanta",
  "teistro-time",

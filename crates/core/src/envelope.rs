@@ -9,6 +9,50 @@ use core::fmt;
 
 use sha2::{Digest, Sha256};
 
+/// The calculation version (ADR-0020): bumped, with a **Numbers** entry
+/// in the changelog, whenever any computed number moves; consumers cache
+/// on `(input_hash, settings_hash, calculation_version)`.
+pub const CALCULATION_VERSION: u32 = 1;
+
+/// The canonical JSON of a value: every object's keys in code-point
+/// order, no whitespace, so two builds and two bindings that agree on
+/// the value agree on the bytes and therefore on the hash (ADR-0022).
+/// The sort is explicit rather than relied on from the JSON layer's map,
+/// whose ordering changes with the `preserve_order` feature that any
+/// crate in a build may enable.
+#[must_use]
+pub fn canonical_json<T: serde::Serialize + ?Sized>(value: &T) -> String {
+    serde_json::to_value(value)
+        .map(sort_keys)
+        .and_then(|value| serde_json::to_string(&value))
+        .unwrap_or_default()
+}
+
+/// The hash of a value's canonical JSON.
+#[must_use]
+pub fn content_hash<T: serde::Serialize + ?Sized>(value: &T) -> Hash {
+    Hash::of(canonical_json(value).as_bytes())
+}
+
+fn sort_keys(value: serde_json::Value) -> serde_json::Value {
+    match value {
+        serde_json::Value::Object(map) => {
+            let mut entries: Vec<(String, serde_json::Value)> = map.into_iter().collect();
+            entries.sort_by(|a, b| a.0.cmp(&b.0));
+            serde_json::Value::Object(
+                entries
+                    .into_iter()
+                    .map(|(k, v)| (k, sort_keys(v)))
+                    .collect(),
+            )
+        }
+        serde_json::Value::Array(items) => {
+            serde_json::Value::Array(items.into_iter().map(sort_keys).collect())
+        }
+        other => other,
+    }
+}
+
 /// A semantic version.
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
@@ -31,6 +75,16 @@ impl Version {
             minor,
             patch,
         }
+    }
+
+    /// A version from `major.minor.patch`, as Cargo prints it; a
+    /// pre-release or build suffix after `-` or `+` is ignored.
+    #[must_use]
+    pub fn parse(text: &str) -> Option<Version> {
+        let core = text.split(['-', '+']).next()?;
+        let mut parts = core.split('.').map(|p| p.parse::<u16>().ok());
+        let version = Version::new(parts.next()??, parts.next()??, parts.next()??);
+        parts.next().is_none().then_some(version)
     }
 }
 
@@ -385,6 +439,13 @@ mod tests {
         assert_eq!(Hash::from_hex(&hash.to_string()), Some(hash));
         assert_eq!(Hash::from_hex("xyz"), None);
         assert_eq!(Version::new(1, 2, 3).to_string(), "1.2.3");
+        assert_eq!(Version::parse("1.2.3"), Some(Version::new(1, 2, 3)));
+        assert_eq!(
+            Version::parse("0.4.0-alpha.1+build"),
+            Some(Version::new(0, 4, 0))
+        );
+        assert_eq!(Version::parse("1.2"), None);
+        assert_eq!(Version::parse("1.2.3.4"), None);
         let mut provenance =
             Provenance::new(Version::new(0, 1, 0), 1, 1, "nepali-default", hash, hash);
         provenance.convention(
@@ -409,5 +470,39 @@ mod tests {
         assert_eq!(back.provenance.cache_key(), (hash, hash, 1));
         assert_eq!(envelope.map(|v| v * 2).value, 84);
         assert!(json.contains("\"kind\":\"divergent\""));
+    }
+
+    #[test]
+    fn canonical_json_sorts_every_object_whatever_the_map_order() {
+        #[derive(serde::Serialize)]
+        struct Unsorted {
+            zeta: u8,
+            alpha: Inner,
+            mid: Vec<Inner>,
+        }
+        #[derive(serde::Serialize)]
+        struct Inner {
+            second: u8,
+            first: u8,
+        }
+        let value = Unsorted {
+            zeta: 1,
+            alpha: Inner {
+                second: 2,
+                first: 3,
+            },
+            mid: vec![Inner {
+                second: 4,
+                first: 5,
+            }],
+        };
+        assert_eq!(
+            canonical_json(&value),
+            r#"{"alpha":{"first":3,"second":2},"mid":[{"first":5,"second":4}],"zeta":1}"#
+        );
+        assert_eq!(
+            content_hash(&value),
+            Hash::of(canonical_json(&value).as_bytes())
+        );
     }
 }
