@@ -32,8 +32,633 @@ impl From<Gender> for crate::Value {
 
 /// The `sdk` group.
 pub mod sdk {
+    /// The `calendar` group.
+    pub mod calendar {
+        /// The `BIKRAM_SAMBAT` group.
+        pub mod bikram_sambat {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.BIKRAM_SAMBAT.date.full`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.BIKRAM_SAMBAT.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.BIKRAM_SAMBAT.date.long`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.BIKRAM_SAMBAT.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.BIKRAM_SAMBAT.date.numeric`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.BIKRAM_SAMBAT.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.BIKRAM_SAMBAT.monthName`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.BIKRAM_SAMBAT.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.BIKRAM_SAMBAT.monthShort`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.BIKRAM_SAMBAT.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+        }
+
+        /// The `GREGORIAN` group.
+        pub mod gregorian {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.GREGORIAN.date.full`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.GREGORIAN.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.GREGORIAN.date.long`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.GREGORIAN.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.GREGORIAN.date.numeric`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.GREGORIAN.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.GREGORIAN.monthName`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.GREGORIAN.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.GREGORIAN.monthShort`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.GREGORIAN.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+        }
+
+        /// The `ISO_WEEK` group.
+        pub mod iso_week {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.ISO_WEEK.date.full`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full;
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.ISO_WEEK.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.calendar.ISO_WEEK.date.long`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.ISO_WEEK.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.ISO_WEEK.date.numeric`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.ISO_WEEK.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+            }
+
+        }
+
+        /// The `JULIAN` group.
+        pub mod julian {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.JULIAN.date.full`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full;
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.JULIAN.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.calendar.JULIAN.date.long`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long;
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.JULIAN.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.calendar.JULIAN.date.numeric`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric;
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.JULIAN.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.JULIAN.monthName`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName;
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.JULIAN.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+            /// The message `sdk.calendar.JULIAN.monthShort`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort;
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.JULIAN.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+        }
+
+        /// The `MIXED` group.
+        pub mod mixed {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.MIXED.date.full`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full;
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.MIXED.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.calendar.MIXED.date.long`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long;
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.MIXED.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.calendar.MIXED.date.numeric`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric;
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.MIXED.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.MIXED.monthName`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName;
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.MIXED.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+            /// The message `sdk.calendar.MIXED.monthShort`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort;
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.MIXED.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::Params::new()
+                }
+            }
+
+        }
+
+        /// The `datetime` group.
+        pub mod datetime {
+            /// The message `sdk.calendar.datetime.join`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Join {
+                /// The `date` parameter.
+                pub date: String,
+                /// The `time` parameter.
+                pub time: String,
+            }
+
+            impl crate::TypedMessage for Join {
+                const KEY: &'static str = "sdk.calendar.datetime.join";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("date", crate::Value::Str(self.date.clone())),
+                        ("time", crate::Value::Str(self.time.clone())),
+                    ])
+                }
+            }
+
+        }
+
+        /// The `duration` group.
+        pub mod duration {
+            /// The message `sdk.calendar.duration.day`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Day {
+                /// The `n` parameter.
+                pub n: f64,
+            }
+
+            impl crate::TypedMessage for Day {
+                const KEY: &'static str = "sdk.calendar.duration.day";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.hour`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Hour {
+                /// The `n` parameter.
+                pub n: f64,
+            }
+
+            impl crate::TypedMessage for Hour {
+                const KEY: &'static str = "sdk.calendar.duration.hour";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.minute`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Minute {
+                /// The `n` parameter.
+                pub n: f64,
+            }
+
+            impl crate::TypedMessage for Minute {
+                const KEY: &'static str = "sdk.calendar.duration.minute";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.second`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Second {
+                /// The `n` parameter.
+                pub n: f64,
+            }
+
+            impl crate::TypedMessage for Second {
+                const KEY: &'static str = "sdk.calendar.duration.second";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
+        }
+
+        /// The `ghati` group.
+        pub mod ghati {
+            /// The message `sdk.calendar.ghati.long`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Long {
+                /// The `ghati` parameter.
+                pub ghati: i64,
+                /// The `pala` parameter.
+                pub pala: i64,
+            }
+
+            impl crate::TypedMessage for Long {
+                const KEY: &'static str = "sdk.calendar.ghati.long";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("ghati", crate::Value::Int(self.ghati)),
+                        ("pala", crate::Value::Int(self.pala)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.ghati.numeric`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Numeric {
+                /// The `ghati` parameter.
+                pub ghati: i64,
+                /// The `pala` parameter.
+                pub pala: i64,
+            }
+
+            impl crate::TypedMessage for Numeric {
+                const KEY: &'static str = "sdk.calendar.ghati.numeric";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("ghati", crate::Value::Int(self.ghati)),
+                        ("pala", crate::Value::Int(self.pala)),
+                    ])
+                }
+            }
+
+        }
+
+        /// The `time` group.
+        pub mod time {
+            /// The message `sdk.calendar.time.long`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Long {
+                /// The `hour` parameter.
+                pub hour: i64,
+                /// The `minute` parameter.
+                pub minute: i64,
+                /// The `second` parameter.
+                pub second: i64,
+            }
+
+            impl crate::TypedMessage for Long {
+                const KEY: &'static str = "sdk.calendar.time.long";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("hour", crate::Value::Int(self.hour)),
+                        ("minute", crate::Value::Int(self.minute)),
+                        ("second", crate::Value::Int(self.second)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.time.numeric`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Numeric {
+                /// The `hour` parameter.
+                pub hour: i64,
+                /// The `minute` parameter.
+                pub minute: i64,
+            }
+
+            impl crate::TypedMessage for Numeric {
+                const KEY: &'static str = "sdk.calendar.time.numeric";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("hour", crate::Value::Int(self.hour)),
+                        ("minute", crate::Value::Int(self.minute)),
+                    ])
+                }
+            }
+
+        }
+
+        /// The message `sdk.calendar.weekdayName`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct WeekdayName {
+            /// The `weekday` parameter.
+            pub weekday: i64,
+        }
+
+        impl crate::TypedMessage for WeekdayName {
+            const KEY: &'static str = "sdk.calendar.weekdayName";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("weekday", crate::Value::Int(self.weekday)),
+                ])
+            }
+        }
+
+        /// The message `sdk.calendar.weekdayShort`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct WeekdayShort {
+            /// The `weekday` parameter.
+            pub weekday: i64,
+        }
+
+        impl crate::TypedMessage for WeekdayShort {
+            const KEY: &'static str = "sdk.calendar.weekdayShort";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("weekday", crate::Value::Int(self.weekday)),
+                ])
+            }
+        }
+
+    }
+
     /// The `entity` group.
     pub mod entity {
+        /// The `era` group.
+        pub mod era {
+        }
+
         /// The `graha` group.
         pub mod graha {
         }

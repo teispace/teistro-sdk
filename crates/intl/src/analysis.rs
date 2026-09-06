@@ -24,6 +24,14 @@ pub enum ParamType {
     Entity(Option<String>),
     /// A list of values.
     List,
+    /// A date in a calendar (`:date`).
+    Date,
+    /// A time of day (`:time`).
+    Time,
+    /// A date with a time of day (`:datetime`).
+    DateTime,
+    /// A ghati-pala count (`:ghati`).
+    Ghati,
 }
 
 impl ParamType {
@@ -179,7 +187,11 @@ impl Collector<'_> {
         let ordinal = function.option("select") == Some("ordinal");
         let kind = match function.name.to_string().as_str() {
             "integer" => ParamType::Integer,
-            "number" | "dms" | "zodiac" => ParamType::Number,
+            "number" | "dms" | "zodiac" | "duration" => ParamType::Number,
+            "date" => ParamType::Date,
+            "time" => ParamType::Time,
+            "datetime" => ParamType::DateTime,
+            "ghati" => ParamType::Ghati,
             "entity" => ParamType::Entity(function.option("kind").map(str::to_string)),
             "list" => ParamType::List,
             "string" if self.meta.contexts.contains_key(variable) => {
@@ -204,6 +216,16 @@ impl Collector<'_> {
                 self.sig.links.push(literal.value.clone());
             } else if function.name.is("entity") {
                 self.sig.entities.push(literal.value.clone());
+            }
+        }
+        // A `pattern=` a date, time or ghati function names is a message the
+        // base locale must have, like a `:msg` target.
+        if ["date", "datetime", "time", "ghati"]
+            .iter()
+            .any(|name| function.name.is(name))
+        {
+            if let Some(pattern) = function.option("pattern") {
+                self.sig.links.push(pattern.to_string());
             }
         }
     }

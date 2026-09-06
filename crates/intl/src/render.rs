@@ -17,9 +17,57 @@ use crate::mf2::ast::{
     Opt, OptValue, Part, Pattern,
 };
 use crate::mf2::{ParseError, parse};
-use teistro_core::catalogue::{Catalogued, Kind, Rashi};
+use teistro_calendar::{CalendarDate, shipped};
+use teistro_core::catalogue::{Calendar, Catalogued, Kind, Rashi};
 
 use crate::source::{BASE_LOCALE, Entity, Entry, LocaleSource, Meta, Tree};
+
+/// A time of day, for `:time` and `:datetime`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct ClockTime {
+    /// 0 to 23.
+    pub hour: u8,
+    /// 0 to 59.
+    pub minute: u8,
+    /// 0 to 60.
+    pub second: u8,
+}
+
+impl ClockTime {
+    /// A time of day.
+    #[must_use]
+    pub const fn new(hour: u8, minute: u8, second: u8) -> ClockTime {
+        ClockTime {
+            hour,
+            minute,
+            second,
+        }
+    }
+}
+
+/// A ghati-pala count since sunrise, for `:ghati`; the time crate's
+/// `GhatiPala` has the same three fields.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct Ghati {
+    /// Ghatis, 0 to 60.
+    pub ghati: u8,
+    /// Palas, 0 to 59.
+    pub pala: u8,
+    /// Vipalas, 0 to 59.
+    pub vipala: u8,
+}
+
+impl Ghati {
+    /// A count.
+    #[must_use]
+    pub const fn new(ghati: u8, pala: u8, vipala: u8) -> Ghati {
+        Ghati {
+            ghati,
+            pala,
+            vipala,
+        }
+    }
+}
 
 /// A parameter value.
 #[derive(Clone, Debug, PartialEq)]
@@ -34,6 +82,32 @@ pub enum Value {
     Entity(String),
     /// A list of values.
     List(Vec<Value>),
+    /// A date in a calendar, for `:date`.
+    Date(CalendarDate),
+    /// A time of day, for `:time`.
+    Time(ClockTime),
+    /// A date and a time of day, for `:datetime`.
+    DateTime(CalendarDate, ClockTime),
+    /// A ghati-pala count, for `:ghati`.
+    Ghati(Ghati),
+}
+
+impl From<CalendarDate> for Value {
+    fn from(date: CalendarDate) -> Value {
+        Value::Date(date)
+    }
+}
+
+impl From<ClockTime> for Value {
+    fn from(time: ClockTime) -> Value {
+        Value::Time(time)
+    }
+}
+
+impl From<Ghati> for Value {
+    fn from(ghati: Ghati) -> Value {
+        Value::Ghati(ghati)
+    }
 }
 
 impl From<&str> for Value {
@@ -146,6 +220,91 @@ pub fn rashi_key(index: usize) -> String {
     format!("{}.{}", Kind::Rashi.name(), sign.key())
 }
 
+/// The duration units `:duration` knows.
+pub const DURATION_UNITS: [&str; 4] = ["day", "hour", "minute", "second"];
+
+/// A date converted to the calendar a `calendar=` option names, through
+/// the shipped calendars' fixed day.
+fn convert(date: &CalendarDate, target: &str) -> Result<CalendarDate, String> {
+    let to = Calendar::from_key(target)
+        .ok_or_else(|| format!("`calendar={target}` is not a calendar key"))?;
+    if to == date.calendar {
+        return Ok(date.clone());
+    }
+    let from_system = shipped(date.calendar)
+        .ok_or_else(|| format!("{} is not a shipped calendar", date.calendar.key()))?;
+    let to_system =
+        shipped(to).ok_or_else(|| format!("`calendar={target}` is not a shipped calendar"))?;
+    let fixed = from_system.fixed_of(date).map_err(|e| e.to_string())?;
+    to_system.date_of(fixed).map_err(|e| e.to_string())
+}
+
+/// Zero-pads the integer part of an ASCII decimal to a width.
+fn pad_integer_part(decimal: &str, width: usize) -> String {
+    let (sign, digits) = match decimal.strip_prefix('-') {
+        Some(rest) => ("-", rest),
+        None => ("", decimal),
+    };
+    let (int, frac) = digits
+        .split_once('.')
+        .map_or((digits, None), |(i, f)| (i, Some(f)));
+    let mut out = String::from(sign);
+    for _ in int.len()..width {
+        out.push('0');
+    }
+    out.push_str(int);
+    if let Some(frac) = frac {
+        out.push('.');
+        out.push_str(frac);
+    }
+    out
+}
+
+/// A zero-padded integer in the locale's digits, no grouping.
+fn padded(style: &NumberStyle, value: i64, width: usize) -> String {
+    style.map_digits(&format!("{value:0width$}"))
+}
+
+/// The built-in date pattern when a locale declares none: the ISO order,
+/// with the era's short form when the date carries an era.
+fn default_date(style: &NumberStyle, date: &CalendarDate) -> String {
+    let year = date.era.as_ref().map_or(date.year, |e| e.year);
+    format!(
+        "{}-{}-{}",
+        padded(style, i64::from(year), 4),
+        padded(style, i64::from(date.month), 2),
+        padded(style, i64::from(date.day), 2)
+    )
+}
+
+/// The built-in time pattern: `HH:MM`, or `HH:MM:SS`.
+fn default_time(style: &NumberStyle, time: ClockTime, seconds: bool) -> String {
+    let mut out = format!(
+        "{}:{}",
+        padded(style, i64::from(time.hour), 2),
+        padded(style, i64::from(time.minute), 2)
+    );
+    if seconds {
+        out.push(':');
+        out.push_str(&padded(style, i64::from(time.second), 2));
+    }
+    out
+}
+
+/// The built-in ghati pattern: `GG-PP`, or `GG-PP-VV`.
+fn default_ghati(style: &NumberStyle, ghati: Ghati, vipalas: bool) -> String {
+    let mut out = format!(
+        "{}-{}",
+        padded(style, i64::from(ghati.ghati), 2),
+        padded(style, i64::from(ghati.pala), 2)
+    );
+    if vipalas {
+        out.push('-');
+        out.push_str(&padded(style, i64::from(ghati.vipala), 2));
+    }
+    out
+}
+
 /// How deep `:msg` may link before it gives up.
 pub const MSG_DEPTH: u8 = 8;
 
@@ -202,6 +361,13 @@ impl NumberStyle {
     /// and separators.
     #[must_use]
     pub fn localise(&self, ascii: &str) -> String {
+        self.localise_with(ascii, true)
+    }
+
+    /// As [`NumberStyle::localise`], with or without digit grouping (a
+    /// year, a code).
+    #[must_use]
+    pub fn localise_with(&self, ascii: &str, grouping: bool) -> String {
         let (sign, digits) = match ascii.strip_prefix('-') {
             Some(rest) => ("-", rest),
             None => ("", ascii),
@@ -219,7 +385,9 @@ impl NumberStyle {
                 .unwrap_or(3)
                 .max(1);
             if in_group == size {
-                grouped.push(self.group);
+                if grouping {
+                    grouped.push(self.group);
+                }
                 in_group = 0;
                 group_index += 1;
             }
@@ -824,6 +992,14 @@ impl<'a> Eval<'a> {
                 let texts: Vec<String> = items.iter().map(|item| self.default_text(item)).collect();
                 self.join_list(&texts, "and")
             }
+            Value::Date(date) => default_date(&self.style, date),
+            Value::Time(time) => default_time(&self.style, *time, false),
+            Value::DateTime(date, time) => format!(
+                "{} {}",
+                default_date(&self.style, date),
+                default_time(&self.style, *time, false)
+            ),
+            Value::Ghati(ghati) => default_ghati(&self.style, *ghati, false),
         }
     }
 
@@ -915,6 +1091,11 @@ impl<'a> Eval<'a> {
                 }
             }
             "number" | "integer" => self.number(operand.as_ref(), &options, name == "integer"),
+            "date" => self.date(operand.as_ref(), &options, false),
+            "datetime" => self.date(operand.as_ref(), &options, true),
+            "time" => self.time(operand.as_ref(), &options),
+            "ghati" => self.ghati(operand.as_ref(), &options),
+            "duration" => self.duration(operand.as_ref(), &options),
             "dms" => self.dms(operand.as_ref(), &options),
             "zodiac" => self.zodiac(operand.as_ref(), &options),
             "entity" => self.entity(operand.as_ref(), &options),
@@ -952,14 +1133,262 @@ impl<'a> Eval<'a> {
             let min = option("minimumFractionDigits").unwrap_or(0);
             (min, option("maximumFractionDigits").unwrap_or(min.max(3)))
         };
-        let decimal = ascii_decimal(value, min, max);
+        let mut decimal = ascii_decimal(value, min, max);
+        if let Some(width) = option("minimumIntegerDigits") {
+            decimal = pad_integer_part(&decimal, width);
+        }
+        let grouping = !options
+            .get("useGrouping")
+            .is_some_and(|g| g == "false" || g == "never");
         Formatted {
             value: Self::source_value(operand),
-            parts: text_parts(self.style.localise(&decimal)),
+            parts: text_parts(self.style.localise_with(&decimal, grouping)),
             keys: Keys::Plural {
                 decimal,
                 ordinal: options.get("select").is_some_and(|s| s == "ordinal"),
             },
+        }
+    }
+
+    /// Renders another key with its own parameters, one level deeper:
+    /// the month and weekday names and the date, time and ghati patterns
+    /// a locale declares in `sdk.calendar`. `None` when no locale in the
+    /// chain has the key.
+    fn text_of_key(&mut self, key: &str, params: &Params) -> Option<String> {
+        self.intl.resolution_from(&self.locale.tag, key)?;
+        if self.depth >= MSG_DEPTH {
+            self.warn(format!("nesting deeper than {MSG_DEPTH} at `{key}`"));
+            return None;
+        }
+        let rendered = self
+            .intl
+            .render_from(&self.locale.tag, key, params, self.depth + 1);
+        self.warnings.extend(rendered.warnings);
+        Some(rendered.text)
+    }
+
+    /// A pattern message rendered with its parameters, or the built-in
+    /// default when the locale chain has no such message, with a warning
+    /// so the gap shows.
+    fn pattern_text(
+        &mut self,
+        key: &str,
+        params: &Params,
+        default: impl FnOnce(&NumberStyle) -> String,
+    ) -> String {
+        if let Some(text) = self.text_of_key(key, params) {
+            return text;
+        }
+        let text = default(&self.style);
+        self.warn(format!(
+            "no `{key}` in {} or its fallbacks; the default pattern stands in",
+            self.locale.tag
+        ));
+        text
+    }
+
+    /// The parameters a date pattern reads: `year` (the era's year when
+    /// the date carries an era), `month`, `day`, `era` (the era's short
+    /// form from `sdk.entity`), `weekday` (0 Sunday to 6 Saturday) with
+    /// `weekdayName`, and `monthName` from the calendar's own messages.
+    fn date_params(&mut self, date: &CalendarDate) -> Params {
+        let calendar = date.calendar.key();
+        let mut params = Params::new();
+        let (year, era) = match &date.era {
+            Some(number) => (number.year, Some(number.era)),
+            None => (date.year, None),
+        };
+        params.insert(String::from("year"), Value::Int(i64::from(year)));
+        params.insert(String::from("month"), Value::Int(i64::from(date.month)));
+        params.insert(String::from("day"), Value::Int(i64::from(date.day)));
+        let era_text = era.map_or_else(String::new, |era| {
+            self.entity_form(&format!("era.{}", era.key()), "short")
+        });
+        params.insert(String::from("era"), Value::Str(era_text));
+        if let Some(weekday) = shipped(date.calendar).and_then(|system| system.weekday(date).ok()) {
+            let index = i64::from(weekday as u8);
+            let mut with_weekday = params.clone();
+            with_weekday.insert(String::from("weekday"), Value::Int(index));
+            let name = self
+                .text_of_key("sdk.calendar.weekdayName", &with_weekday)
+                .unwrap_or_else(|| self.style.integer(index));
+            params.insert(String::from("weekday"), Value::Int(index));
+            params.insert(String::from("weekdayName"), Value::Str(name));
+        }
+        let month_name = self
+            .text_of_key(&format!("sdk.calendar.{calendar}.monthName"), &params)
+            .unwrap_or_else(|| self.style.integer(i64::from(date.month)));
+        params.insert(String::from("monthName"), Value::Str(month_name));
+        params
+    }
+
+    /// `:date` and `:datetime`: the date in its own calendar or the one
+    /// `calendar=` names, through the locale's pattern for the style
+    /// (`numeric`, `long`, `full`) or the message `pattern=` names.
+    fn date(
+        &mut self,
+        operand: Option<&Val>,
+        options: &BTreeMap<String, String>,
+        with_time: bool,
+    ) -> Formatted {
+        let source = Self::source_value(operand);
+        let (mut date, time) = match &source {
+            Some(Value::Date(date)) => (date.clone(), None),
+            Some(Value::DateTime(date, time)) => (date.clone(), Some(*time)),
+            _ => {
+                let function = if with_time { "datetime" } else { "date" };
+                self.warn(format!("`:{function}` needs a date"));
+                return Formatted {
+                    value: None,
+                    parts: text_parts(Self::fallback_text(operand, function)),
+                    keys: Keys::None,
+                };
+            }
+        };
+        if let Some(target) = options.get("calendar") {
+            match convert(&date, target) {
+                Ok(converted) => date = converted,
+                Err(warning) => self.warn(warning),
+            }
+        }
+        let style = options.get("style").map_or("numeric", String::as_str);
+        let params = self.date_params(&date);
+        let key = options
+            .get("pattern")
+            .cloned()
+            .unwrap_or_else(|| format!("sdk.calendar.{}.date.{style}", date.calendar.key()));
+        let mut text = self.pattern_text(&key, &params, |style| default_date(style, &date));
+        if with_time {
+            let time = time.unwrap_or_default();
+            let time_text = self.time_text(time, style);
+            let mut join = Params::new();
+            join.insert(String::from("date"), Value::Str(text));
+            join.insert(String::from("time"), Value::Str(time_text));
+            text = self.pattern_text("sdk.calendar.datetime.join", &join, |_| {
+                match (join.get("date"), join.get("time")) {
+                    (Some(Value::Str(d)), Some(Value::Str(t))) => format!("{d} {t}"),
+                    _ => String::new(),
+                }
+            });
+        }
+        Formatted {
+            value: source,
+            parts: text_parts(text),
+            keys: Keys::None,
+        }
+    }
+
+    fn time_text(&mut self, time: ClockTime, style: &str) -> String {
+        let mut params = Params::new();
+        params.insert(String::from("hour"), Value::Int(i64::from(time.hour)));
+        params.insert(String::from("minute"), Value::Int(i64::from(time.minute)));
+        params.insert(String::from("second"), Value::Int(i64::from(time.second)));
+        let key = format!("sdk.calendar.time.{style}");
+        let seconds = style != "numeric";
+        self.pattern_text(&key, &params, |number_style| {
+            default_time(number_style, time, seconds)
+        })
+    }
+
+    /// `:time`: a time of day through the locale's pattern for the style
+    /// (`numeric` hours and minutes, `long` with seconds).
+    fn time(&mut self, operand: Option<&Val>, options: &BTreeMap<String, String>) -> Formatted {
+        let source = Self::source_value(operand);
+        let Some(Value::Time(time) | Value::DateTime(_, time)) = &source else {
+            self.warn(String::from("`:time` needs a time of day"));
+            return Formatted {
+                value: None,
+                parts: text_parts(Self::fallback_text(operand, "time")),
+                keys: Keys::None,
+            };
+        };
+        let time = *time;
+        let style = options.get("style").map_or("numeric", String::as_str);
+        let text = match options.get("pattern") {
+            Some(pattern) => {
+                let mut params = Params::new();
+                params.insert(String::from("hour"), Value::Int(i64::from(time.hour)));
+                params.insert(String::from("minute"), Value::Int(i64::from(time.minute)));
+                params.insert(String::from("second"), Value::Int(i64::from(time.second)));
+                let key = pattern.clone();
+                self.pattern_text(&key, &params, |number_style| {
+                    default_time(number_style, time, true)
+                })
+            }
+            None => self.time_text(time, style),
+        };
+        Formatted {
+            value: source,
+            parts: text_parts(text),
+            keys: Keys::None,
+        }
+    }
+
+    /// `:ghati`: a ghati-pala count through the locale's pattern for the
+    /// style (`numeric` as `GG-PP`, `long` in words).
+    fn ghati(&mut self, operand: Option<&Val>, options: &BTreeMap<String, String>) -> Formatted {
+        let source = Self::source_value(operand);
+        let Some(Value::Ghati(ghati)) = &source else {
+            self.warn(String::from("`:ghati` needs a ghati-pala count"));
+            return Formatted {
+                value: None,
+                parts: text_parts(Self::fallback_text(operand, "ghati")),
+                keys: Keys::None,
+            };
+        };
+        let ghati = *ghati;
+        let style = options.get("style").map_or("numeric", String::as_str);
+        let mut params = Params::new();
+        params.insert(String::from("ghati"), Value::Int(i64::from(ghati.ghati)));
+        params.insert(String::from("pala"), Value::Int(i64::from(ghati.pala)));
+        params.insert(String::from("vipala"), Value::Int(i64::from(ghati.vipala)));
+        let key = options
+            .get("pattern")
+            .cloned()
+            .unwrap_or_else(|| format!("sdk.calendar.ghati.{style}"));
+        let text = self.pattern_text(&key, &params, |number_style| {
+            default_ghati(number_style, ghati, style != "numeric")
+        });
+        Formatted {
+            value: source,
+            parts: text_parts(text),
+            keys: Keys::None,
+        }
+    }
+
+    /// `:duration`: a count of `unit=day|hour|minute|second` (minutes by
+    /// default) through the locale's plural message for the unit.
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "an integral value under 9e15 rounds to itself"
+    )]
+    fn duration(&mut self, operand: Option<&Val>, options: &BTreeMap<String, String>) -> Formatted {
+        let Some(value) = self.numeric(operand) else {
+            return Formatted {
+                value: None,
+                parts: text_parts(Self::fallback_text(operand, "duration")),
+                keys: Keys::None,
+            };
+        };
+        let unit = options.get("unit").map_or("minute", String::as_str);
+        if !DURATION_UNITS.contains(&unit) {
+            self.warn(format!("`unit={unit}` is not a duration unit"));
+        }
+        let count = if value.fract() == 0.0 && value.abs() < 9.0e15 {
+            Value::Int(value.round() as i64)
+        } else {
+            Value::Num(value)
+        };
+        let mut params = Params::new();
+        params.insert(String::from("n"), count);
+        let key = format!("sdk.calendar.duration.{unit}");
+        let text = self.pattern_text(&key, &params, |style| {
+            format!("{} {unit}", style.localise(&ascii_decimal(value, 0, 3)))
+        });
+        Formatted {
+            value: Self::source_value(operand),
+            parts: text_parts(text),
+            keys: Keys::None,
         }
     }
 

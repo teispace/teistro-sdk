@@ -462,7 +462,8 @@ mod tests {
             .find(|l| l.tag == "hi-Deva-IN")
             .unwrap();
         assert_eq!(hindi_row.entries, 1);
-        assert_eq!(hindi_row.coverage.map(|(_, total)| total), Some(62));
+        let base_keys = intl.locales.get(BASE_LOCALE).unwrap().keys().count();
+        assert_eq!(hindi_row.coverage.map(|(_, total)| total), Some(base_keys));
         assert!(report.markdown().contains("| hi-Deva-IN |"));
     }
 }

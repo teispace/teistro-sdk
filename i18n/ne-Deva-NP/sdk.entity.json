@@ -344,5 +344,61 @@
       "glyph": "Asc",
       "gender": "n"
     }
+  },
+  "era": {
+    "VIKRAMA": {
+      "short": "वि.सं.",
+      "name": "विक्रम संवत्",
+      "prose": "विक्रम संवत्",
+      "iast": "Vikrama Saṃvat"
+    },
+    "SHAKA": {
+      "short": "श.सं.",
+      "name": "शक संवत्",
+      "prose": "शक संवत्",
+      "iast": "Śaka Saṃvat"
+    },
+    "KALI": {
+      "short": "क.यु.",
+      "name": "कलियुग",
+      "prose": "कलियुग",
+      "iast": "Kali Yuga"
+    },
+    "NEPAL_SAMBAT": {
+      "short": "ने.सं.",
+      "name": "नेपाल संवत्",
+      "prose": "नेपाल संवत्",
+      "iast": "Nepāla Saṃvat"
+    },
+    "BUDDHA": {
+      "short": "बु.सं.",
+      "name": "बुद्ध संवत्",
+      "prose": "बुद्ध संवत्",
+      "iast": "Buddha Saṃvat"
+    },
+    "KOLLAM": {
+      "short": "को.सं.",
+      "name": "कोल्लम संवत्",
+      "prose": "कोल्लम संवत्",
+      "iast": "Kollaṃ Āṇṭu"
+    },
+    "BENGALI": {
+      "short": "बं.",
+      "name": "बंगाब्द",
+      "prose": "बंगाब्द",
+      "iast": "Baṅgābda"
+    },
+    "COMMON_ERA": {
+      "short": "ई.सं.",
+      "name": "ईस्वी संवत्",
+      "prose": "ईस्वी संवत्",
+      "iast": "Īsvī Saṃvat"
+    },
+    "BEFORE_COMMON_ERA": {
+      "short": "ई.पू.",
+      "name": "ईस्वी पूर्व",
+      "prose": "ईस्वी पूर्व",
+      "iast": "Īsvī Pūrva"
+    }
   }
 }
