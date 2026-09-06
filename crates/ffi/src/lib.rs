@@ -16,6 +16,7 @@
 //! - [`context`]: the handle, its options, the last error;
 //! - [`keys`]: catalogue keys and ids;
 //! - [`calendar`]: dates in every shipped calendar, the fixed day;
+//! - [`frame`]: the frame a position request asks for, by field;
 //! - [`time`]: civil times to instants with the zone metadata, the scales;
 //! - [`intl`]: the locale engine over the embedded bundles and loaded packs;
 //! - [`positions`]: positions over the ephemeris port, completed;
@@ -42,6 +43,7 @@
 pub mod blob;
 pub mod calendar;
 pub mod context;
+pub mod frame;
 pub mod intl;
 pub mod keys;
 pub mod positions;

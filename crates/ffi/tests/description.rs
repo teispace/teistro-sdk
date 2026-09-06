@@ -34,6 +34,7 @@ macro_rules! rust_layouts {
 fn every_struct_has_the_layout_the_description_computes() {
     use teistro_ffi::calendar::TsCalendarDate;
     use teistro_ffi::context::{TsContextOptions, TsError};
+    use teistro_ffi::frame::TsFrame;
     use teistro_ffi::intl::TsIntlLoaded;
     use teistro_ffi::strings::{TsHash, TsStr, TsString};
     use teistro_ffi::time::{
@@ -62,6 +63,7 @@ fn every_struct_has_the_layout_the_description_computes() {
         TsBlob => teistro_ffi::blob::TsBlob,
         TsContextOptions => TsContextOptions,
         TsError => TsError,
+        TsFrame => TsFrame,
         TsCalendarDate => TsCalendarDate,
         TsCivilTime => TsCivilTime,
         TsCivilDateTime => TsCivilDateTime,
@@ -114,6 +116,9 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
     let symbols: Vec<&str> = api.functions.iter().map(|f| f.name.as_str()).collect();
     for expected in [
         "ts_abi_version",
+        "ts_frame_canonical",
+        "ts_frame_pack",
+        "ts_frame_unpack",
         "ts_context_new",
         "ts_context_free",
         "ts_context_last_error",

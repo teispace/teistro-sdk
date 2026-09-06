@@ -6,12 +6,14 @@
   "sources": [
     "crates/core/src/error.rs",
     "crates/port-ephemeris/src/body.rs",
+    "crates/port-ephemeris/src/frame.rs",
     "crates/port-ephemeris/src/vtable.rs",
     "crates/ffi/src/lib.rs",
     "crates/ffi/src/strings.rs",
     "crates/ffi/src/blob.rs",
     "crates/ffi/src/context.rs",
     "crates/ffi/src/keys.rs",
+    "crates/ffi/src/frame.rs",
     "crates/ffi/src/calendar.rs",
     "crates/ffi/src/time.rs",
     "crates/ffi/src/intl.rs",
@@ -5606,6 +5608,70 @@
       "source": "crates/port-ephemeris/src/body.rs"
     },
     {
+      "name": "Centre",
+      "doc": "Where a position is seen from.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Geocentric",
+          "value": 0,
+          "doc": "The centre of the Earth."
+        },
+        {
+          "name": "Topocentric",
+          "value": 1,
+          "doc": "An observer on the Earth; the request carries the place."
+        },
+        {
+          "name": "Heliocentric",
+          "value": 2,
+          "doc": "The centre of the Sun."
+        },
+        {
+          "name": "Barycentric",
+          "value": 3,
+          "doc": "The solar-system barycentre."
+        }
+      ],
+      "source": "crates/port-ephemeris/src/frame.rs"
+    },
+    {
+      "name": "Equinox",
+      "doc": "The equinox and equator the coordinates refer to.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "OfDate",
+          "value": 0,
+          "doc": "The equinox of date."
+        },
+        {
+          "name": "J2000",
+          "value": 1,
+          "doc": "The J2000.0 equinox."
+        }
+      ],
+      "source": "crates/port-ephemeris/src/frame.rs"
+    },
+    {
+      "name": "Coordinates",
+      "doc": "The coordinate system of a position.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Ecliptic",
+          "value": 0,
+          "doc": "Ecliptic longitude and latitude."
+        },
+        {
+          "name": "Equatorial",
+          "value": 1,
+          "doc": "Right ascension and declination."
+        }
+      ],
+      "source": "crates/port-ephemeris/src/frame.rs"
+    },
+    {
       "name": "TsResolution",
       "doc": "How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).",
       "repr": "u8",
@@ -7549,6 +7615,126 @@
       "source": "crates/ffi/src/context.rs"
     },
     {
+      "name": "TsFrame",
+      "doc": "A frame by name: what a position is seen from, in which equinox and\ncoordinates, in which zodiac, with which corrections applied.",
+      "role": "object",
+      "fields": [
+        {
+          "name": "struct_size",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "doc": "`sizeof(ts_frame)` as the caller compiled it.",
+          "meta": {}
+        },
+        {
+          "name": "ayanamsha",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u16"
+          },
+          "doc": "The ayanamsha's catalogue id when `sidereal` is non-zero; ignored\notherwise. `0xFFFF` names none.",
+          "meta": {
+            "example": "0",
+            "enum": "Ayanamsha"
+          }
+        },
+        {
+          "name": "centre",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Where the position is seen from; a topocentric frame needs the\nrequest's observer.",
+          "meta": {
+            "example": "0",
+            "enum": "Centre"
+          }
+        },
+        {
+          "name": "equinox",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Which equinox the coordinates refer to.",
+          "meta": {
+            "example": "0",
+            "enum": "Equinox"
+          }
+        },
+        {
+          "name": "coordinates",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Ecliptic or equatorial.",
+          "meta": {
+            "example": "0",
+            "enum": "Coordinates"
+          }
+        },
+        {
+          "name": "sidereal",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Non-zero for the sidereal zodiac, which uses `ayanamsha`.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "light_time",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Non-zero when light time is applied.",
+          "meta": {
+            "example": "1"
+          }
+        },
+        {
+          "name": "aberration",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Non-zero when annual aberration is applied.",
+          "meta": {
+            "example": "1"
+          }
+        },
+        {
+          "name": "deflection",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Non-zero when relativistic deflection is applied.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "nutation",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Non-zero when nutation is applied.",
+          "meta": {
+            "example": "1"
+          }
+        }
+      ],
+      "source": "crates/ffi/src/frame.rs"
+    },
+    {
       "name": "TsCalendarDate",
       "doc": "A date in a calendar. Years are astronomical (1 BCE is 0); the era view\nis presentation only and is filled by the library, ignored on input.",
       "role": "object",
@@ -8800,6 +8986,101 @@
       },
       "meta": {},
       "source": "crates/ffi/src/keys.rs"
+    },
+    {
+      "name": "ts_frame_canonical",
+      "doc": "Writes the SDK's canonical frame: apparent geocentric ecliptic of date,\ntropical, which both licensed engines return by default and every chart\nmodule consumes. Set `struct_size` before the call.",
+      "safety": "`out_frame` must be valid for a read of its `struct_size` and a write.",
+      "params": [
+        {
+          "name": "out_frame",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsFrame"
+            },
+            "mutable": true
+          },
+          "role": "struct_out"
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/frame.rs"
+    },
+    {
+      "name": "ts_frame_pack",
+      "doc": "Packs a frame into the bits a position request carries.",
+      "safety": "`frame` must be valid for a read of its `struct_size`; `out_bits` for a\nwrite.",
+      "params": [
+        {
+          "name": "frame",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsFrame"
+            },
+            "mutable": false
+          },
+          "role": "struct_in"
+        },
+        {
+          "name": "out_bits",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u32"
+            },
+            "mutable": true
+          },
+          "role": "scalar_out"
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/frame.rs"
+    },
+    {
+      "name": "ts_frame_unpack",
+      "doc": "Reads packed frame bits back into their fields; bits no frame sets are\n`INVALID_ARG`.",
+      "safety": "`out_frame` must be valid for a read of its `struct_size` and a write.",
+      "params": [
+        {
+          "name": "bits",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "role": "value"
+        },
+        {
+          "name": "out_frame",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsFrame"
+            },
+            "mutable": true
+          },
+          "role": "struct_out"
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/frame.rs"
     },
     {
       "name": "ts_calendar_from_fixed",

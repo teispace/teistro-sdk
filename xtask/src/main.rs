@@ -15,6 +15,9 @@
 //!   the historical table, the IANA list).
 //! - `check-ffi` and `gen ffi`: the API description (`idl/api.json`) and
 //!   the C header equal what the boundary crates' source describes.
+//! - `check-c`: the C binding's smoke test compiles against the generated
+//!   header with warnings as errors and passes (needs a C compiler; run by
+//!   hand and in the nightly matrix).
 //!
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
@@ -33,6 +36,7 @@
 )]
 
 mod accuracy;
+mod c_binding;
 mod calendars;
 mod catalogue;
 mod ffi;
@@ -63,6 +67,7 @@ fn main() {
         Some("check-accuracy") => accuracy::check_generated(&repo_root()),
         Some("check-intl") => intl::check_generated(&repo_root()),
         Some("check-ffi") => ffi::check_generated(&repo_root()),
+        Some("check-c") => c_binding::check(&repo_root()),
         Some("accuracy") => accuracy::generate(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
@@ -83,7 +88,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

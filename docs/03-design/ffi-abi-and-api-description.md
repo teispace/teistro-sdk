@@ -203,7 +203,7 @@ the description so no binding shows a Rust path.
 
 ## 5. The API
 
-Thirty-three entry points, all in the header with their documentation:
+Thirty-six entry points, all in the header with their documentation:
 
 | group | entry points |
 |---|---|
@@ -211,6 +211,7 @@ Thirty-three entry points, all in the header with their documentation:
 | context | `ts_context_new`, `ts_context_free`, `ts_context_last_error`, `ts_context_profile`, `ts_context_settings_json`, `ts_context_settings_hash` |
 | memory | `ts_string_free`, `ts_blob_free` |
 | keys | `ts_key_parse`, `ts_key_name` |
+| frame | `ts_frame_canonical`, `ts_frame_pack`, `ts_frame_unpack` |
 | calendar | `ts_calendar_from_fixed`, `ts_calendar_to_fixed`, `ts_calendar_convert`, `ts_calendar_month_length`, `ts_calendar_is_leap`, `ts_calendar_weekday`, `ts_calendar_jd_of_fixed`, `ts_calendar_fixed_of_jd` |
 | time | `ts_time_resolve`, `ts_time_civil`, `ts_time_convert`, `ts_time_delta_t` |
 | intl | `ts_intl_load_pack`, `ts_intl_set_locale`, `ts_intl_locale`, `ts_intl_has`, `ts_intl_render` |
@@ -221,8 +222,16 @@ The toolchain: `cargo xtask gen ffi` writes `idl/api.json` and
 in memory and fails on any difference, in the fast check. The crates:
 `teistro-idl` (`model`, `names`, `layout`, `rules`, `blob`, `extract`
 behind the `extract` feature, `sdk`, `emit::c`) and `teistro-ffi`
-(`context`, `keys`, `calendar`, `time`, `intl`, `positions`, `strings`,
-`blob`, `schemas`, and the private `support`).
+(`context`, `keys`, `frame`, `calendar`, `time`, `intl`, `positions`,
+`strings`, `blob`, `schemas`, and the private `support`).
+
+**The frame is named, not packed by the caller.** A position request
+carries the frame as 32 bits, and the packing is the port's business, so
+`ts_frame` gives a C caller the fields (centre, equinox, coordinates, the
+sidereal flag with an ayanamsha id, the four correction flags) and
+`ts_frame_canonical`, `ts_frame_pack` and `ts_frame_unpack` move between
+them and the bits. The gap was found by writing the C test below: without
+them a consumer had to read the Rust source to build a request.
 
 The profile a context uses when its options name none is
 `teistro_core::settings::DEFAULT_PROFILE` (`parashari-classical`, the
@@ -281,9 +290,20 @@ yet.
 - The description against the library: every struct's computed layout
   equals Rust's, the ABI version and the SDK version are the constants,
   the status enum is the core's, every entry point is described.
-- The header compiles under `cc -std=c11 -Wall -Wextra -Wpedantic
-  -Werror -fsyntax-only` and as C++17, by hand on the maintainer's
-  machine; a CI job compiles it when the C binding's own tests land.
+- The C binding's own test (`bindings/c/tests/smoke.c`, `cargo xtask
+  check-c`): a consumer that uses nothing but the generated header and
+  the built library, compiled under `cc -std=c11 -Wall -Wextra -Wpedantic
+  -Werror` and run. It proves what no Rust test can, that a C compiler
+  agrees with the header about struct layouts, enum values and the
+  calling convention, and that the library links. It converts 14 April
+  2015 into 1 Baisakh 2072 with its era and resolution, resolves 00:20 on
+  1 January 1986 in Kathmandu to JD 2446431.274306 UTC at +05:45 under
+  tzdb 2026c, renders `sdk.reason.grahaInBhava` in Nepali out of the
+  render blob, reads the Sun's longitude at J2000 out of the positions
+  blob's columns in a frame it built with `ts_frame_canonical`, and reads
+  a refusal's detail and hint. It needs a C compiler, so it runs by hand
+  and in the nightly matrix; the fast check stays Rust-only (ADR-0014).
+  The header also compiles as C++17.
 - Planned: a `cargo-fuzz` target over the blob reader and every entry
   point (the quality bar's fuzzing row), and the sanitizer builds.
 
