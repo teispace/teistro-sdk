@@ -4,7 +4,9 @@ Status: `planned`, 2026-09-04; the quality bar is accepted and the
 golden-vectors page is drafted. The strategy is in
 `01-research/platform/09-testing-quality.md`; this directory will hold the
 detailed plans and the generated reports. The corpus itself is in
-`fixtures/` (see [`../../fixtures/README.md`](../../fixtures/README.md)).
+`fixtures/`, a pinned submodule of
+[`teispace/teistro-conformance`](https://github.com/teispace/teistro-conformance)
+(see [`01-golden-vectors.md`](01-golden-vectors.md)).
 
 ## The bar
 

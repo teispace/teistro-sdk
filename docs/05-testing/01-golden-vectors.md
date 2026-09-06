@@ -1,9 +1,17 @@
 # Golden vectors
 
-Status: `draft`, 2026-09-04. The result page of Phase 0 spike 1 and the
-plan for the corpus the conformance harness (ADR-0022) will consume. The
-files themselves and their schema are described in
-[`../../fixtures/README.md`](../../fixtures/README.md).
+Status: `draft`, 2026-09-04; revised 2026-09-06 when the corpus moved to
+its own repository. The result page of Phase 0 spike 1 and the plan for
+the corpus the conformance harness (ADR-0022) consumes.
+
+The corpus is [`teispace/teistro-conformance`](https://github.com/teispace/teistro-conformance),
+mounted here as a pinned submodule at `fixtures/`. What each fixture
+holds, what each chart is for and what every settings profile changes are
+described there, in [`fixtures/README.md`](../../fixtures/README.md) and
+[`fixtures/baseline/README.md`](../../fixtures/baseline/README.md). What
+is on this page is the SDK's own reading of it: where the vectors come
+from, how the harness will use them, and every convention of the
+recording engine that the SDK deliberately does not copy.
 
 ## What a golden vector is here
 
@@ -106,13 +114,29 @@ matter most for design:
    `CONFORMANCE.md` summarises it; a failing fixture blocks the release
    unless a registry row explains it.
 
-## The move (ADR-0022)
+## The move (ADR-0022), done 2026-09-06
 
-Before Phase 1 exits the maintainer creates `teispace/teistro-conformance`
-under CC0-1.0, `fixtures/` moves there with its README, tolerance file
-and manifest, gains a JSON Schema and runners per binding, and is mounted
-here as a version-pinned submodule; `cargo xtask check-fixtures` runs
-there as the corpus's own gate.
+`teispace/teistro-conformance` exists under CC0-1.0 with a version of its
+own, and `fixtures/` is a submodule of it pinned to a tag. Every file
+moved byte for byte; the SDK's own gate proves it after the move as it
+did before.
+
+The corpus took its description and its checking with it: JSON Schemas
+for a fixture, a manifest, the tolerance file and a conformance report,
+and `validate.py`, which checks every fixture against its schema, every
+settings hash against the profile it claims, every listed section against
+what the file holds, and every file against the manifest that must list
+it. It runs there on every push.
+
+What stayed here is what is the SDK's rather than the corpus's: the
+registry of conventions below, and `cargo xtask check-fixtures`, which
+now also refuses to pass when the submodule is not checked out — a
+corpus that is absent must not read as a corpus that agrees.
+
+Bumping the pin is deliberate: `git -C fixtures fetch --tags && git -C
+fixtures checkout vX.Y.Z`, then the SDK's gates, then a commit that says
+which values moved. What is still to come is runners per binding that
+emit the report schema.
 
 ## Open items
 
@@ -123,3 +147,74 @@ there as the corpus's own gate.
 - Rank-1 vectors for the cruxes that block Phase 5 (C1, C2, C3, C6, C8).
 - The tolerance bands are provisional until measured against Teimeris
   and the built-in tiers.
+
+## The baseline's conventions, registered rather than copied
+
+Observed while exporting. Each becomes a row of the deliberate-difference
+registry the harness reads, so a divergence here is expected and
+explained rather than a failure or a silent adoption.
+
+1. The natal panchanga uses the topocentric Moon (c055 shows tithi 1 a
+   second after the topocentric new moon); the daily panchanga is
+   geocentric like every almanac. The SDK's day-boundary and frame knobs
+   decide this explicitly (`02-architecture/05-data-model-identifiers.md`).
+2. Local mean time is rounded to the whole minute (c023, c047: a
+   longitude of -0.13° gives -1 minute, not -31 seconds), and
+   `tz_offset_min` is whole minutes while the resolved instant keeps the
+   seconds of historical offsets (c005, c011, c025, c038).
+3. Polar day and polar night have no horizon crossing; the engine
+   synthesises sunrise and sunset as the bounds of the civil day (c028:
+   a 24-hour day) or collapses them (c029: a zero-length day and a
+   post-sunset birth). The SDK's polar policy is a setting (ADR-0016's
+   companion pages); these two fixtures are recorded for comparison only.
+4. Sunrise ignores the observer's altitude; the altitude reaches only the
+   topocentric positions.
+5. The Placidus cusps at 69.6°N (c028, c029) are returned without a
+   degeneracy flag; the library falls back internally above the polar
+   circle and the engine's heuristic does not notice. The SDK's house
+   module must flag them (`03-design/` house page, planned).
+6. Ketu is Rahu plus 180° in the same frame; the nodes carry no
+   latitude, speed or distance of their own beyond what the library
+   reports for the node.
+7. The dasha balance breakdown uses 365.25-day years and 30.4375-day
+   months with integer floors and a rounded final minute.
+8. Zone ids come from the coordinates through a lookup library and
+   canonical tzdb names, so Tromsø resolves to `Europe/Berlin` (a tzdb
+   link); the SDK reports the id its own provider gives.
+9. The engine stores no tropical longitude; the exporter asked the
+   library for it in the positions' frame, and for the Lagna added the
+   nutated ayanamsha to the sidereal value (the two agree to a
+   milliarcsecond for the planets).
+10. The `outer` planets are geocentric even under a topocentric profile.
+11. A zone resolution's era is labelled by comparing the applied offset
+    with the offset in force when the export ran, a northern summer, so a
+    seasonal offset the zone still applies every year reads `historical`
+    (c018 Sydney and c019 Auckland in their summer time, c029 Berlin and
+    c035 New York in standard time, c037 the later occurrence of the New
+    York fold); the SDK compares with the offsets the zone applies in the
+    database's own year and reads no clock, so it calls those `current`
+    (cruxes register C33).
+
+12. Sunrise and sunset. The baseline's library computed refraction from
+    its standard atmosphere; the SDK's standard refraction is the
+    almanac's 34 arcminutes with the semidiameter and the horizontal
+    parallax from the distance, so the SDK's sunrise under the same
+    convention differs from the fixtures' by up to 2.5 s below 60° of
+    latitude and 9.8 s at Fairbanks on the solstice (cruxes C34); the
+    band on `foundation.sunrise.*_jd` is set from that spread when the
+    harness lands. The day's arc in the SDK is the civil date's sunrise
+    and the sunset that follows it, as the baseline reckons for c043,
+    whose sunset falls after the next civil midnight. For c022, c025 and
+    c039 the baseline's `foundation.sunrise` block holds the previous
+    day's events and its `next_day` block the civil date's own (C35): a
+    comparison reads the latter there.
+
+13. Planetary hours. The baseline reckons twelve horas over the day from
+    sunrise to sunset and twelve over the night (`hora_reckoning:
+    PROPORTIONAL`); `crates/time/tests/hora_fixtures.rs` reproduces the
+    lord at the birth instant for every chart except c022 and c039, whose
+    day-early sunrise block (convention twelve) places the birth in
+    another day's horas, and c028, whose polar day the baseline
+    synthesises. The equal reckoning (sixty-minute horas from sunrise)
+    disagrees with the fixtures on many charts, so they decide the
+    default.

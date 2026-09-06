@@ -29,6 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          submodules: recursive
           # The base commit is measured too, so its history has to be here.
           fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable

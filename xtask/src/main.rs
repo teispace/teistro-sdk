@@ -407,6 +407,17 @@ const BODY_ORDER: [&str; 10] = [
 fn check_fixtures() -> i32 {
     let root = repo_root();
     let base = root.join("fixtures/baseline");
+    // The corpus is a submodule (ADR-0022). A checkout without it has an
+    // empty `fixtures/`, and every check below would pass over nothing:
+    // an absent corpus must not read as a corpus that agrees.
+    if !base.is_dir() {
+        println!(
+            "FAIL  the conformance corpus is not checked out. It is a submodule of\n\
+             teispace/teistro-conformance, pinned to a tag; bring it with\n\
+             `git submodule update --init`, or clone with `--recurse-submodules`."
+        );
+        return 1;
+    }
     let mut failures = Vec::new();
     let manifest = match parse_json(&base.join("manifest.json")) {
         Ok(value) => value,

@@ -199,7 +199,7 @@ fn nepali_default() -> Profile {
                 "day.polar_day_policy",
                 Source::new(
                     "baseline-engine",
-                    "synthesised polar days; fixtures/README.md",
+                    "synthesised polar days; docs/05-testing/01-golden-vectors.md",
                 ),
             ),
             Citation::new("calendars.civil_calendar", BASELINE),
@@ -309,7 +309,7 @@ fn conformance_baseline() -> Profile {
             "*",
             Source::new(
                 "baseline-engine",
-                "fixtures/README.md, the baseline conventions",
+                "docs/05-testing/01-golden-vectors.md, the baseline conventions",
             ),
         )],
         mark: Mark::Verified,
