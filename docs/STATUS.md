@@ -38,7 +38,11 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-06, end of the fortieth session (the
+**Last updated:** 2026-09-07, end of the forty-first session (Q34
+decided and the defect it exposed fixed: the default profile patches the
+root rather than `nepali-default`, so it is the texts as read rather than
+those plus one engine's centre and one country's calendar; ADR-0024);
+before that the fortieth session (the
 conformance corpus left this repository for
 `teispace/teistro-conformance` v0.1.1 under CC0-1.0, mounted back as a
 pinned submodule, and Phase 1 met its exit criteria); before that the
@@ -116,7 +120,7 @@ provider's DUT1).
 
 ## How to resume
 
-1. Read this file, then `QUESTIONS.md` (every decision, one open question).
+1. Read this file, then `QUESTIONS.md` (every decision; none is open).
 2. The local checkout is the repository root; `cargo xtask check-docs`
    and `cargo deny check` must pass before any commit; commits are
    signed off (`git commit -s`) with Conventional Commits subjects; the
@@ -665,8 +669,7 @@ binding (ADR-0023).
    that both bindings can read; a musl row in the platform table; a
    Flutter plugin that carries the library into an Android or iOS build,
    which belongs with the mobile targets; the wasm and Python bindings
-   from the same description. Q34, the default profile, awaits the
-   maintainer.
+   from the same description.
 3. Spike 3's remaining consequences: the kit's corpus checks (positions
    against fixtures per tier) and the `sdk-only` cross-provider
    byte-identity check; the Teimeris adapter as the Teimeris package's

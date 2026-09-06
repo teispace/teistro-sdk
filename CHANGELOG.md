@@ -187,6 +187,34 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The default profile is the texts as read, and inherits nothing else
+  (Q34, ADR-0024). `parashari-classical` stays the profile a context gets
+  when its options name none, and it now patches the root rather than
+  `nepali-default`. It had been declared over that profile, so it
+  inherited the recording engine's topocentric centre, Nepal's civil
+  calendar and eras, and its synthesised polar days — none of which is in
+  any text, while the profile's own documentation said the opposite. It
+  is now geocentric, Gregorian, the three pan-Indic eras and an undefined
+  polar day, with the four knobs that define it cited: Sripati bhava
+  (BPHS), proportional ghatis, eight chara karakas (Jaimini 1.1.10-18)
+  and the Surya Siddhanta's combustion orbs. `nepali-default` is
+  unchanged and keeps all four, each cited to the engine whose charts it
+  reproduces.
+
+  **Numbers:** none today, and a great many later. The centre is the knob
+  that moves them, and the SDK's own frame completion does not apply the
+  topocentric step yet (Phase 3); what changes today is what a capable
+  provider is asked for under `prefer-native`, and the settings hash of
+  every result computed under the default, which is how a change of
+  defaults is meant to be visible. How much it will move is recorded
+  rather than estimated: the corpus holds the same six charts both ways
+  (`baseline/variants/*--geocentric.json`), and across them the Moon
+  differs by up to 39.1 arcminutes — a fifth of a pada — against 0.135
+  for the Sun, 0.246 for Venus and 0.060 for Mars. Two of the six change
+  a classification: c049's Moon moves from nakshatra 20 to 21, which
+  changes the Vimshottari mahadasha lord and the whole tree under it, and
+  c050's from pada 2 to pada 3. A caller at a polar latitude who names no
+  profile now gets a reported absence rather than a synthesised day.
 - Phase 1, Foundation, met its exit criteria on 2026-09-06. Every one is
   held by a gate rather than by a claim: one scenario through both
   bindings value by value (`check-parity`, 103 values), 100,236 values

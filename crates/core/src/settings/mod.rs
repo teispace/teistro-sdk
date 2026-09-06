@@ -814,16 +814,50 @@ mod tests {
             assert!(profile.version >= 1);
         }
         assert!(Profile::shipped("nowhere").is_none());
-        let classical = shipped("parashari-classical");
-        assert_eq!(
-            classical.base.as_ref().map(ProfileId::as_str),
-            Some("nepali-default")
-        );
+        // The default patches the root and nothing else, which is what
+        // makes "the texts as read, with nothing of one country's
+        // practice in it" true rather than stated (ADR-0024).
+        let classical = shipped(DEFAULT_PROFILE);
+        assert_eq!(classical.base, None);
         let resolved = classical
             .resolve(&SettingsPatch::default())
             .unwrap_or_else(|e| panic!("{e}"));
-        assert_eq!(resolved.settings.houses.chalit_system, HouseSystem::Sripati);
-        assert_eq!(resolved.settings.frame.zodiac, Zodiac::Sidereal);
         assert_eq!(resolved.profile.as_str(), "parashari-classical");
+        // What the texts give it.
+        assert_eq!(resolved.settings.houses.chalit_system, HouseSystem::Sripati);
+        assert_eq!(resolved.settings.jaimini.chara_karakas, CharaKarakas::Eight);
+        assert_eq!(resolved.settings.state.combustion_orbs, "SURYA_SIDDHANTA");
+        // What it must not have taken from anywhere else. The centre is
+        // the one that moves numbers: up to 39 arcminutes of Moon, which
+        // changes a mahadasha lord in one of the six charts the corpus
+        // records both ways.
+        assert_eq!(resolved.settings.frame.zodiac, Zodiac::Sidereal);
+        assert_eq!(resolved.settings.frame.centre, Centre::Geocentric);
+        assert_eq!(
+            resolved.settings.calendars.civil_calendar,
+            Calendar::Gregorian
+        );
+        assert!(!resolved.settings.calendars.eras.contains(&Era::NepalSambat));
+        assert_eq!(
+            resolved.settings.day.polar_day_policy,
+            PolarDayPolicy::Undefined
+        );
+
+        // The product's charts keep every one of them, cited to the
+        // engine whose charts they reproduce.
+        let nepali = shipped("nepali-default");
+        let product = nepali
+            .resolve(&SettingsPatch::default())
+            .unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(product.settings.frame.centre, Centre::Topocentric);
+        assert_eq!(
+            product.settings.calendars.civil_calendar,
+            Calendar::BikramSambat
+        );
+        assert!(product.settings.calendars.eras.contains(&Era::NepalSambat));
+
+        // A change of defaults is a change of hash, which is what makes
+        // it visible in every result computed under it.
+        assert_ne!(resolved.settings.hash(), product.settings.hash());
     }
 }
