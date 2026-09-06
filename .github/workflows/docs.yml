@@ -50,7 +50,10 @@ jobs:
       - name: The application's own types
         run: npm run types:check
         working-directory: site
-      - uses: actions/upload-pages-artifact@v3
+      # Only when there is something a publish could take: a pull
+      # request has proved the build and needs no artefact.
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: site/out
 
