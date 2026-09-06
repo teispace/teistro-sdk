@@ -4637,15 +4637,6 @@ export declare const Status: {
  * numbering; a body an adapter cannot compute is reported per cell,
  * never guessed. The astrological grahas of the catalogue map onto these
  * under the node knob (Rahu is the mean or the true node).
- *
- * ```
- * use teistro_port_ephemeris::Body;
- *
- * assert_eq!(Body::MeanNode.key(), "MEAN_NODE");
- * assert_eq!("moon".parse::<Body>().ok(), Some(Body::Moon));
- * assert_eq!(Body::from_id(Body::Pluto.id()), Some(Body::Pluto));
- * assert!(!Body::TrueNode.has_distance());
- * ```
  */
 export type Body =
   | 'sun'
@@ -4731,13 +4722,6 @@ export declare const BodyById: ReadonlyMap<number, Body>;
 
 /**
  * The time scale of the instants in a request.
- *
- * ```
- * use teistro_port_ephemeris::TimeScale;
- *
- * assert_eq!(TimeScale::from_id(TimeScale::Tt.id()), Some(TimeScale::Tt));
- * assert_eq!(TimeScale::Ut1.to_string(), "UT1");
- * ```
  */
 export type TimeScale = 'ut1' | 'tt';
 
@@ -4758,6 +4742,64 @@ export declare const TimeScale: {
  * ids reads as members without decoding it eagerly.
  */
 export declare const TimeScaleById: ReadonlyMap<number, TimeScale>;
+
+/**
+ * What a cell's distance is measured in.
+ */
+export type DistanceUnit = 'astronomical-units' | 'mean-distances';
+
+/** Every DistanceUnit by name; the values are the strings the union accepts. */
+export declare const DistanceUnit: {
+  /**
+   * Astronomical units: an ephemeris.
+   */
+  readonly AstronomicalUnits: 'astronomical-units';
+  /**
+   * The body's mean distance, so 1 is the mean: a classical model,
+   * whose hypotenuse is on the radius.
+   */
+  readonly MeanDistances: 'mean-distances';
+};
+
+/**
+ * How a provider's speeds are defined.
+ */
+export type SpeedModel = 'derivative' | 'rule';
+
+/** Every SpeedModel by name; the values are the strings the union accepts. */
+export declare const SpeedModel: {
+  /**
+   * The rate of the position: a central difference over a short step
+   * agrees with it, which the kit checks.
+   */
+  readonly Derivative: 'derivative';
+  /**
+   * A text's rule for the daily motion, which its tradition uses as
+   * the speed and which need not be the derivative of its places.
+   */
+  readonly Rule: 'rule';
+};
+
+/**
+ * Which astronomy a provider computes.
+ */
+export type Astronomy = 'modern' | 'classical';
+
+/** Every Astronomy by name; the values are the strings the union accepts. */
+export declare const Astronomy: {
+  /**
+   * The sky as observed: an ephemeris, whose overrides the kit holds
+   * to the SDK's IAU routines.
+   */
+  readonly Modern: 'modern';
+  /**
+   * A classical text's model, whose obliquity, precession, daily
+   * motions and sunrise are the text's own definitions; the kit
+   * measures their distance from modern astronomy and publishes it
+   * rather than gating it.
+   */
+  readonly Classical: 'classical';
+};
 
 /**
  * Where a position is seen from.
@@ -4816,6 +4858,45 @@ export declare const Coordinates: {
    * Right ascension and declination.
    */
   readonly Equatorial: 'equatorial';
+};
+
+/**
+ * What a vtable function returns: `0` for success, and one of these for
+ * a failure the port names. A provider's own code stays outside them
+ * (`ProviderError::RESERVED_CODES`), so a binding that implements a
+ * provider need never write a number.
+ */
+export type ProviderCode = 'ok' | 'unsupported' | 'out-of-range' | 'data-missing' | 'refused' | 'invalid';
+
+/** Every ProviderCode by name; the values are the strings the union accepts. */
+export declare const ProviderCode: {
+  /**
+   * The call succeeded.
+   */
+  readonly Ok: 'ok';
+  /**
+   * The operation, the frame or the option is not implemented by this
+   * provider. A provider that cannot answer in the frame asked for
+   * says so with this, and the SDK asks again in the provider's own
+   * frame and completes the rest itself.
+   */
+  readonly Unsupported: 'unsupported';
+  /**
+   * The instant is outside the provider's coverage.
+   */
+  readonly OutOfRange: 'out-of-range';
+  /**
+   * A data file the provider needs is missing.
+   */
+  readonly DataMissing: 'data-missing';
+  /**
+   * The provider refused rather than answer with something else.
+   */
+  readonly Refused: 'refused';
+  /**
+   * The request is malformed.
+   */
+  readonly Invalid: 'invalid';
 };
 
 /**

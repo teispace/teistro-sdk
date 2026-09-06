@@ -63,6 +63,6 @@ pub use provider::{EphemerisProvider, PositionRequest, validate};
 pub use test_provider::TestProvider;
 pub use vtable::{
     AyanamshaFn, CapabilitiesFn, CrossingsFn, DecodedRequest, DeltaTFn, Dut1Fn, Exported,
-    HorizonEventFn, ObliquityFn, PositionRequestC, PositionsFn, ProviderVtable, VTABLE_ABI_VERSION,
-    VtableProvider,
+    HorizonEventFn, ObliquityFn, PositionRequestC, PositionsFn, ProviderCode, ProviderVtable,
+    VTABLE_ABI_VERSION, VtableProvider,
 };

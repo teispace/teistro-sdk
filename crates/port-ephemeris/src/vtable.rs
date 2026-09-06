@@ -34,6 +34,37 @@ use crate::provider::{EphemerisProvider, PositionRequest};
 /// `api: constant`
 pub const VTABLE_ABI_VERSION: u32 = 2;
 
+/// What a vtable function returns: `0` for success, and one of these for
+/// a failure the port names. A provider's own code stays outside them
+/// ([`ProviderError::RESERVED_CODES`]), so a binding that implements a
+/// provider need never write a number.
+///
+/// ```
+/// use teistro_port_ephemeris::{ProviderCode, ProviderError};
+///
+/// assert_eq!(ProviderCode::Unsupported as i32, -1);
+/// assert_eq!(ProviderError::unsupported("positions").code(), ProviderCode::Unsupported as i32);
+/// ```
+#[repr(i32)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum ProviderCode {
+    /// The call succeeded.
+    Ok = 0,
+    /// The operation, the frame or the option is not implemented by this
+    /// provider. A provider that cannot answer in the frame asked for
+    /// says so with this, and the SDK asks again in the provider's own
+    /// frame and completes the rest itself.
+    Unsupported = -1,
+    /// The instant is outside the provider's coverage.
+    OutOfRange = -2,
+    /// A data file the provider needs is missing.
+    DataMissing = -3,
+    /// The provider refused rather than answer with something else.
+    Refused = -4,
+    /// The request is malformed.
+    Invalid = -5,
+}
+
 /// A C observer: degrees and metres, validated into a [`Place`] on the
 /// way in.
 #[repr(C)]

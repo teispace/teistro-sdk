@@ -221,25 +221,23 @@ impl fmt::Display for Identity {
 }
 
 /// What a cell's distance is measured in.
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DistanceUnit {
     /// Astronomical units: an ephemeris.
     #[default]
-    AstronomicalUnits,
+    AstronomicalUnits = 0,
     /// The body's mean distance, so 1 is the mean: a classical model,
     /// whose hypotenuse is on the radius.
-    MeanDistances,
+    MeanDistances = 1,
 }
 
 impl DistanceUnit {
     /// The stable id at the C boundary.
     #[must_use]
     pub const fn id(self) -> u8 {
-        match self {
-            DistanceUnit::AstronomicalUnits => 0,
-            DistanceUnit::MeanDistances => 1,
-        }
+        self as u8
     }
 
     /// The unit with an id.
@@ -263,26 +261,24 @@ impl DistanceUnit {
 }
 
 /// How a provider's speeds are defined.
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SpeedModel {
     /// The rate of the position: a central difference over a short step
     /// agrees with it, which the kit checks.
     #[default]
-    Derivative,
+    Derivative = 0,
     /// A text's rule for the daily motion, which its tradition uses as
     /// the speed and which need not be the derivative of its places.
-    Rule,
+    Rule = 1,
 }
 
 impl SpeedModel {
     /// The stable id at the C boundary.
     #[must_use]
     pub const fn id(self) -> u8 {
-        match self {
-            SpeedModel::Derivative => 0,
-            SpeedModel::Rule => 1,
-        }
+        self as u8
     }
 
     /// The model with an id.
@@ -297,28 +293,26 @@ impl SpeedModel {
 }
 
 /// Which astronomy a provider computes.
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Astronomy {
     /// The sky as observed: an ephemeris, whose overrides the kit holds
     /// to the SDK's IAU routines.
     #[default]
-    Modern,
+    Modern = 0,
     /// A classical text's model, whose obliquity, precession, daily
     /// motions and sunrise are the text's own definitions; the kit
     /// measures their distance from modern astronomy and publishes it
     /// rather than gating it.
-    Classical,
+    Classical = 1,
 }
 
 impl Astronomy {
     /// The stable id at the C boundary.
     #[must_use]
     pub const fn id(self) -> u8 {
-        match self {
-            Astronomy::Modern => 0,
-            Astronomy::Classical => 1,
-        }
+        self as u8
     }
 
     /// The astronomy with an id.

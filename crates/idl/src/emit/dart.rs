@@ -679,7 +679,20 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
                 );
                 args.push(format!("raw{field}"));
             }
-            Role::VtableIn | Role::UserData => args.push(String::from("ffi.nullptr")),
+            // A host-implemented port: the vtable and the pointer handed
+            // back to it are the caller's, so the binding takes them
+            // rather than passing null for both (`lib/src/host.dart`
+            // builds one from a Dart provider).
+            Role::VtableIn => {
+                let pointer = pointee_struct(api, p)
+                    .map_or_else(|| String::from("ffi.Void"), |s| struct_name(&s.name));
+                params.push(format!("ffi.Pointer<{pointer}>? {field}"));
+                args.push(format!("{field} ?? ffi.nullptr"));
+            }
+            Role::UserData => {
+                params.push(format!("ffi.Pointer<ffi.Void>? {field}"));
+                args.push(format!("{field} ?? ffi.nullptr"));
+            }
             Role::HandleOut => {
                 let _ = writeln!(body, "      final out = arena<ffi.Pointer<{name}>>();");
                 args.push(String::from("out"));

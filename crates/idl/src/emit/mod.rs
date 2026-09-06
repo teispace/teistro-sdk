@@ -76,9 +76,51 @@ fn capitalised(word: &str) -> String {
     })
 }
 
+/// Documentation without the Rust examples a boundary crate's items
+/// carry: a fenced block with no language, or one tagged as Rust, is an
+/// example in a language the reader of a binding does not write, so it is
+/// dropped rather than shown as if it were theirs. A block tagged with
+/// another language (`text`, `json`) is kept.
+#[must_use]
+pub fn without_rust_examples(text: &str) -> String {
+    const RUST: [&str; 6] = [
+        "",
+        "rust",
+        "ignore",
+        "no_run",
+        "compile_fail",
+        "should_panic",
+    ];
+    let mut out = String::with_capacity(text.len());
+    let mut dropping = false;
+    for line in text.lines() {
+        let trimmed = line.trim_start();
+        if let Some(tag) = trimmed.strip_prefix("```") {
+            if dropping {
+                dropping = false;
+                continue;
+            }
+            if RUST.contains(&tag.trim()) {
+                dropping = true;
+                continue;
+            }
+        }
+        if !dropping {
+            out.push_str(line);
+            out.push('\n');
+        }
+    }
+    // A dropped example often leaves the blank line that introduced it.
+    while out.ends_with("\n\n") {
+        out.pop();
+    }
+    out.trim_end().to_string()
+}
+
 /// A comment where every line carries the same marker (`/// `, `// `).
 #[must_use]
 pub fn line_comment(text: &str, indent: &str, marker: &str) -> String {
+    let text = without_rust_examples(text);
     let mut out = String::new();
     for line in text.lines() {
         if line.is_empty() {
@@ -94,6 +136,7 @@ pub fn line_comment(text: &str, indent: &str, marker: &str) -> String {
 /// empty text renders nothing, and a `*/` inside the text is defused.
 #[must_use]
 pub fn block_comment(text: &str, indent: &str) -> String {
+    let text = without_rust_examples(text);
     if text.trim().is_empty() {
         return String::new();
     }

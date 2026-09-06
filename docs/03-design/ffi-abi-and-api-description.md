@@ -1,7 +1,8 @@
 # The C ABI and the API description
 
-Status: `draft`, revised 2026-09-06 when the Dart binding was added
-(§5's Dart layers, §8's tests); revised the same day when the Node addon
+Status: `draft`, revised 2026-09-06 when an ephemeris written in Dart
+answered the SDK (§5's provider, §8's tests); revised the same day when
+the Dart binding was added (§5's Dart layers, §8's tests); revised the same day when the Node addon
 and its
 ergonomic layer were added (§3.5's field and parameter roles, §5's
 binding); revised the same day when the Node binding's generated layers
@@ -325,8 +326,21 @@ adapter settles:
 | what a provider may be asked | the port's own `validate` runs before the callback, so a body, an instant or a frame it did not declare is refused by name rather than left for the callback to discover |
 | a failure's words | only a code crosses the C boundary, so the adapter keeps the sentence and the layer above reports it: `the ephemeris provider threw: no data for that instant` |
 
-The Dart binding's adapter is next, over `NativeCallable.isolateLocal`;
-Python's over `Py<PyAny>` with the GIL.
+In Dart (`bindings/dart/lib/src/host.dart`) the provider is a class
+extending `EphemerisProvider`, and the adapter binds it through
+`NativeCallable.isolateLocal`, whose function pointer is callable only
+from the isolate that made it. That is the boundary's contract exactly
+(one context, one thread at a time), so the SDK reaching back into Dart
+inside a call this isolate made is the only way it is ever reached. The
+same four things are settled the same way, and two more are Dart's own:
+the vtable, the capability strings and the callbacks are allocated for
+the life of the binding rather than in an arena, and the context's
+finaliser closes them if nobody disposes it. The codes a vtable function
+returns are a described enum (`ProviderCode`), so a binding that
+implements a provider never writes a number; the one exception is
+`NativeCallable`'s `exceptionalReturn`, which the language requires to be
+a compile-time constant and the adapter checks against the catalogue when
+it binds. Python's adapter will be over `Py<PyAny>` with the GIL.
 
 The toolchain: `cargo xtask gen ffi` writes `idl/api.json`,
 `bindings/c/include/teistro.h`, the six Node files and the three Dart
@@ -437,6 +451,13 @@ yet.
   optional, a body given by its id, a count the boundary keeps to itself,
   a flag as an integer and a partial observer are all compile errors the
   files assert.
+- The Dart binding's provider tests: an ephemeris written in Dart asked
+  once for a whole grid, a provider that refuses the frame and is
+  completed by the SDK (`positions:NATIVE, delta-t:SDK, obliquity:SDK,
+  rotate-equatorial-to-ecliptic:SDK`), one that throws and is reported in
+  its own words, a body and an instant it never declared refused by name,
+  a nameless or bodiless provider refused at the door, and a short column
+  refused rather than read past its end.
 - The Dart binding's own tests (`cargo xtask check-dart`): the same
   scenario the other two walk, through the generated declarations and the
   ergonomic layer against the real shared library, and the generated
@@ -470,8 +491,7 @@ the engine's English sentences, as the engine defines them.
 - The two bindings' packaging: the loader with the `buildinfo`
   handshake, the prebuilt libraries per platform, and the parity gate
   that runs one scenario through both and compares the answers.
-- The Dart binding's host-implemented provider, over
-  `NativeCallable.isolateLocal`, which the Node binding already has.
+- The wasm and Python bindings, from the same description.
 - A host-language provider is bound through the port's vtable with the
   same contract as a native one (callable from any thread); the bindings
   that register isolate-local callbacks keep one context per isolate.

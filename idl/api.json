@@ -6,6 +6,7 @@
   "sources": [
     "crates/core/src/error.rs",
     "crates/port-ephemeris/src/body.rs",
+    "crates/port-ephemeris/src/capabilities.rs",
     "crates/port-ephemeris/src/frame.rs",
     "crates/port-ephemeris/src/vtable.rs",
     "crates/ffi/src/lib.rs",
@@ -5608,6 +5609,60 @@
       "source": "crates/port-ephemeris/src/body.rs"
     },
     {
+      "name": "DistanceUnit",
+      "doc": "What a cell's distance is measured in.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "AstronomicalUnits",
+          "value": 0,
+          "doc": "Astronomical units: an ephemeris."
+        },
+        {
+          "name": "MeanDistances",
+          "value": 1,
+          "doc": "The body's mean distance, so 1 is the mean: a classical model,\nwhose hypotenuse is on the radius."
+        }
+      ],
+      "source": "crates/port-ephemeris/src/capabilities.rs"
+    },
+    {
+      "name": "SpeedModel",
+      "doc": "How a provider's speeds are defined.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Derivative",
+          "value": 0,
+          "doc": "The rate of the position: a central difference over a short step\nagrees with it, which the kit checks."
+        },
+        {
+          "name": "Rule",
+          "value": 1,
+          "doc": "A text's rule for the daily motion, which its tradition uses as\nthe speed and which need not be the derivative of its places."
+        }
+      ],
+      "source": "crates/port-ephemeris/src/capabilities.rs"
+    },
+    {
+      "name": "Astronomy",
+      "doc": "Which astronomy a provider computes.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Modern",
+          "value": 0,
+          "doc": "The sky as observed: an ephemeris, whose overrides the kit holds\nto the SDK's IAU routines."
+        },
+        {
+          "name": "Classical",
+          "value": 1,
+          "doc": "A classical text's model, whose obliquity, precession, daily\nmotions and sunrise are the text's own definitions; the kit\nmeasures their distance from modern astronomy and publishes it\nrather than gating it."
+        }
+      ],
+      "source": "crates/port-ephemeris/src/capabilities.rs"
+    },
+    {
       "name": "Centre",
       "doc": "Where a position is seen from.",
       "repr": "u8",
@@ -5670,6 +5725,44 @@
         }
       ],
       "source": "crates/port-ephemeris/src/frame.rs"
+    },
+    {
+      "name": "ProviderCode",
+      "doc": "What a vtable function returns: `0` for success, and one of these for\na failure the port names. A provider's own code stays outside them\n(`ProviderError::RESERVED_CODES`), so a binding that implements a\nprovider need never write a number.\n\n```\nuse teistro_port_ephemeris::{ProviderCode, ProviderError};\n\nassert_eq!(ProviderCode::Unsupported as i32, -1);\nassert_eq!(ProviderError::unsupported(\"positions\").code(), ProviderCode::Unsupported as i32);\n```",
+      "repr": "i32",
+      "values": [
+        {
+          "name": "Ok",
+          "value": 0,
+          "doc": "The call succeeded."
+        },
+        {
+          "name": "Unsupported",
+          "value": -1,
+          "doc": "The operation, the frame or the option is not implemented by this\nprovider. A provider that cannot answer in the frame asked for\nsays so with this, and the SDK asks again in the provider's own\nframe and completes the rest itself."
+        },
+        {
+          "name": "OutOfRange",
+          "value": -2,
+          "doc": "The instant is outside the provider's coverage."
+        },
+        {
+          "name": "DataMissing",
+          "value": -3,
+          "doc": "A data file the provider needs is missing."
+        },
+        {
+          "name": "Refused",
+          "value": -4,
+          "doc": "The provider refused rather than answer with something else."
+        },
+        {
+          "name": "Invalid",
+          "value": -5,
+          "doc": "The request is malformed."
+        }
+      ],
+      "source": "crates/port-ephemeris/src/vtable.rs"
     },
     {
       "name": "TsResolution",

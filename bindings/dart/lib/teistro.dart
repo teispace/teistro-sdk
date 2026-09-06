@@ -27,10 +27,12 @@ import 'dart:typed_data';
 import 'src/blob.dart';
 import 'src/catalogue.dart';
 import 'src/ffi.dart';
+import 'src/host.dart';
 
 export 'src/blob.dart';
 export 'src/catalogue.dart';
 export 'src/ffi.dart';
+export 'src/host.dart';
 
 /// The SDK's shared library, opened once and shared by every context.
 ///
@@ -151,28 +153,39 @@ final class Teistro {
   ///
   /// `profile` names a shipped profile ([defaultProfileId] by default),
   /// `settings` is a patch over it as the settings document's own groups
-  /// and knobs, `locale` is what every render resolves from, and
-  /// `testProvider` selects the SDK's analytic provider, which is for
-  /// examples and tests only. Without a provider the context has no
-  /// ephemeris and positions answer `Status.capability`.
+  /// and knobs, `locale` is what every render resolves from, `provider`
+  /// is an ephemeris of your own, and `testProvider` selects the SDK's
+  /// analytic provider, which is for examples and tests only. With
+  /// neither the context has no ephemeris and positions answer
+  /// `Status.capability`.
   Context context({
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
+    EphemerisProvider? provider,
     bool testProvider = false,
   }) {
-    return Context._(
-      this,
-      TeistroContext(
-        library,
-        options: ContextOptions(
-          flags: testProvider ? contextTestProvider : 0,
-          profile: profile,
-          settingsJson: settings == null ? null : jsonEncode(settings),
-          locale: locale,
+    final host = provider == null ? null : HostProvider(library, provider);
+    try {
+      return Context._(
+        this,
+        TeistroContext(
+          library,
+          options: ContextOptions(
+            flags: testProvider && host == null ? contextTestProvider : 0,
+            profile: profile,
+            settingsJson: settings == null ? null : jsonEncode(settings),
+            locale: locale,
+          ),
+          provider: host?.vtable,
+          providerUserData: host?.userData,
         ),
-      ),
-    );
+        host,
+      );
+    } on Object {
+      host?.dispose();
+      rethrow;
+    }
   }
 }
 
@@ -182,10 +195,14 @@ final class Teistro {
 /// The native context is freed when this object is collected; [dispose]
 /// frees it at once, and every call after that is a [StateError].
 final class Context {
-  Context._(this._teistro, this._inner);
+  Context._(this._teistro, this._inner, this._host) {
+    final host = _host;
+    if (host != null) _hostFinaliser.attach(this, host, detach: this);
+  }
 
   final Teistro _teistro;
   final TeistroContext _inner;
+  final HostProvider? _host;
 
   /// The library this context was built on.
   Teistro get teistro => _teistro;
@@ -230,17 +247,42 @@ final class Context {
     }
     final bits = _teistro.packFrame(frame ?? _teistro.canonicalFrame);
     return decodePositions(
-      _inner.positions(
-        PositionRequest(
-          scale: scale,
-          frameBits: bits,
-          speeds: speeds,
-          observer: observer,
-          jds: instants,
-          bodies: bodies,
+      _guarded(
+        () => _inner.positions(
+          PositionRequest(
+            scale: scale,
+            frameBits: bits,
+            speeds: speeds,
+            observer: observer,
+            jds: instants,
+            bodies: bodies,
+          ),
         ),
       ),
     );
+  }
+
+  /// Runs a call that may reach a provider written in Dart, and reports
+  /// what the provider said. Only a code crosses the C boundary, so the
+  /// failure the provider itself raised is the one kept.
+  T _guarded<T>(T Function() call) {
+    _host?.thrown = null;
+    try {
+      return call();
+    } on TeistroException catch (failure) {
+      final thrown = _host?.thrown;
+      if (thrown == null) rethrow;
+      _host?.thrown = null;
+      throw TeistroException(
+        failure.status,
+        'the ephemeris provider failed: $thrown',
+        detail: failure.detail,
+        field: failure.field,
+        hint: failure.hint,
+        messageKey: failure.messageKey,
+        providerCode: failure.providerCode,
+      );
+    }
   }
 
   /// Renders a message of the current locale with its parameters.
@@ -303,10 +345,27 @@ final class Context {
   /// The catalogue key of a packed id.
   String keyName(int id) => _inner.keyName(id);
 
+  /// The provider written in Dart this context drives, null when it has
+  /// none or uses the SDK's own.
+  EphemerisProvider? get provider => _host?.provider;
+
   /// Frees the native context now rather than when this object is
-  /// collected. Calling it twice is harmless.
-  void dispose() => _inner.dispose();
+  /// collected, and with it the vtable of a provider written in Dart.
+  /// Calling it twice is harmless.
+  void dispose() {
+    _hostFinaliser.detach(this);
+    _inner.dispose();
+    _host?.dispose();
+  }
 }
+
+/// Closes the callbacks of a provider written in Dart when the context
+/// that drove it is collected, so a context nobody disposed leaks
+/// nothing. The native context is freed by its own finaliser, and
+/// neither call reaches the other.
+final Finalizer<HostProvider> _hostFinaliser = Finalizer(
+  (host) => host.dispose(),
+);
 
 /// A date in a calendar, without naming the fields a call fills in.
 ///
