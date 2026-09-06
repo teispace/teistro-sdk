@@ -100,7 +100,7 @@ it.
 | gate | what it proves | tool | where it runs |
 |---|---|---|---|
 | format and lint | `rustfmt` clean; `clippy` with `all` and `pedantic` as errors; in library crates no `unwrap`, `expect`, `panic`, `todo`, `dbg`, printing or slice indexing (workspace lints) | `cargo fmt --check`, `cargo clippy -D warnings` | fast check |
-| determinism lints | no `HashMap` in an output-producing path; no reads of the clock, the environment or the locale in computation crates; no `f64` division or `floor` in a classification path; no user-facing string literal in a computation crate | `cargo xtask check-lints` | fast check |
+| determinism lints | no unordered collection in a computation crate unless the file says why it is safe; no reads of the clock, the environment or the process in one; only the port, the boundary and the addon may hold unsafe code; the classification functions are `const fn`, which stable Rust cannot compute in floating point | `cargo xtask check-lints` | fast check |
 | unsafe confinement | `#![forbid(unsafe_code)]` everywhere except `ffi`; every `unsafe` block in `ffi` carries a `SAFETY:` comment reviewed | lint and review | fast check |
 | documentation | every public item documented with a compiled example; no warnings from `cargo doc` | `cargo doc -D warnings` | fast check |
 | dependencies | licences on the allow list (`deny.toml`; copyleft and MPL denied everywhere), no oracle or ephemeris adapter in a publishable crate's graph, advisories none, duplicates justified, every dependency vetted | `cargo deny check`, `cargo-audit`, `cargo-vet` | fast check (deny), weekly (audit) |

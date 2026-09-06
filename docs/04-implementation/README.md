@@ -89,7 +89,8 @@ teistro-sdk/
     ephemeris-sweph/rust/      present: the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
                                check-fixtures, check-catalogue, check-calendars, check-time, check-accuracy,
-                               check-intl, check-ffi, check-c, check-node, check-dart, check-parity, hashes,
+                               check-intl, check-ffi, check-lints, check-c, check-node, check-dart, check-parity,
+                               hashes,
                                gen catalogue,
                                gen calendars,
                                gen time, gen intl, gen ffi, accuracy, calendars bs-fit; later verify, ephemgen,

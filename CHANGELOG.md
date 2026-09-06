@@ -158,8 +158,13 @@ translator's own tools and come back: `teistro-intl export xliff` and
 latitude can no longer be passed where a longitude is wanted: the
 description says which quantity a number carries, TypeScript gets a
 branded type and Dart an extension type, and the constructor checks the
-range. Whether the same source computes the same numbers on another
-machine is now measured rather than assumed: `cargo xtask hashes` hashes
+range. Four determinism rules no compiler checks are now a gate on every push
+(`cargo xtask check-lints`): no unordered iteration in a computation
+crate unless the file says why, no reads of the clock or the environment
+in one, only the port and the boundary may hold unsafe code, and the
+classification functions stay integer arithmetic. Whether the same source
+computes the same numbers on another machine is now measured rather than
+assumed: `cargo xtask hashes` hashes
 a hundred thousand computed values per build, and the nightly matrix
 compares Linux x86-64, Linux aarch64 and macOS aarch64. The first run
 says the two architectures agree bit for bit, and that macOS differs in

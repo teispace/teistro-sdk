@@ -3,6 +3,10 @@
 //! and every problem met on the way. Plural categories come from ICU4X;
 //! nothing of CLDR is reimplemented here. The worst case renders the key
 //! itself, never a blank.
+//!
+//! `lint: deterministic-iteration` — the parse cache is a map from a
+//! locale and a key to a parsed message, read by key and never
+//! iterated; every table a render reads is a `BTreeMap`.
 
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::{self, Write};

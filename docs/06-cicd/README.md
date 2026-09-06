@@ -8,7 +8,7 @@ built 2026-09-06. The research is in
 
 | workflow | when | what |
 |---|---|---|
-| `fast-check` | every push to `main`, every pull request | format, lint, the dependency policy, the workspace's tests, and every gate the Rust toolchain alone can run (`check-docs`, `check-fixtures`, `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`, `check-intl`, `check-ffi`); on a pull request, that every commit is signed off |
+| `fast-check` | every push to `main`, every pull request | format, lint, the dependency policy, the workspace's tests, and every gate the Rust toolchain alone can run (`check-docs`, `check-fixtures`, `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`, `check-intl`, `check-ffi`, `check-lints`); on a pull request, that every commit is signed off |
 | `hash-matrix` | nightly and on demand | `cargo xtask hashes` on Linux x86-64, Linux aarch64 and macOS aarch64; the two Linux runs compared value by value (a difference fails the job) and macOS reported against them (a difference is published, not failed) |
 
 `cargo xtask hashes` walks a fixed scenario through the calendars, the
