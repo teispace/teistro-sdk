@@ -1,0 +1,55 @@
+---
+title: ts_time_civil
+description: "The civil date-time of a UTC instant in a zone, in a calendar, with the resolution that applied."
+---
+
+The civil date-time of a UTC instant in a zone, in a calendar, with the resolution that applied.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_time_civil(const ts_context * context, double jd_utc, const ts_zone_spec * zone, uint16_t calendar, ts_civil_date_time * out_civil, ts_zone_resolution * out_resolution);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.time_civil(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.timeCivil(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `jd_utc` | `double` | a value | Unit `jd`. |
+| `zone` | `const ts_zone_spec *` | a struct read | — |
+| `calendar` | `uint16_t` | a value | One of `ts_calendar`. |
+| `out_civil` | `ts_civil_date_time *` | a struct written | — |
+| `out_resolution` | `ts_zone_resolution *` | a struct written | — |
+
+## What it hands back
+
+`civil` and `resolution`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `zone` valid for a read; `out_civil` and `out_resolution` valid for reads of their `struct_size` and writes.
+
+Declared in `crates/ffi/src/time.rs`.

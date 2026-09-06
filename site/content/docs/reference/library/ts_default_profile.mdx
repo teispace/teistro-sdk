@@ -1,0 +1,38 @@
+---
+title: ts_default_profile
+description: "The profile a context uses when its options name none, as a static NUL-terminated string."
+---
+
+The profile a context uses when its options name none, as a static NUL-terminated string.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+const char * ts_default_profile(void);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+default_profile(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.defaultProfile(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+The call takes no arguments.
+
+Declared in `crates/ffi/src/lib.rs`.

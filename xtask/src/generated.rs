@@ -38,6 +38,56 @@ pub(crate) fn write(root: &Path, outputs: &[Output]) -> i32 {
     0
 }
 
+/// Every file under a generated directory that no output claims.
+///
+/// A generator that writes a tree, rather than a fixed list of files,
+/// leaves a stale file behind whenever an item is removed: the reference
+/// page of an entry point that no longer exists still builds, still
+/// appears in the sidebar, and still says the library has a call it does
+/// not. Nothing compares a file against a generator that never mentions
+/// it, so the directory is compared against the whole list instead.
+pub(crate) fn strays(root: &Path, dir: &str, outputs: &[Output]) -> Vec<String> {
+    let base = root.join(dir);
+    let mut found = Vec::new();
+    collect(&base, &mut found);
+    found
+        .iter()
+        .filter_map(|path| {
+            let relative = path.strip_prefix(root).unwrap_or(path).to_string_lossy();
+            let relative = relative.replace('\\', "/");
+            (!outputs.iter().any(|o| o.path == relative)).then_some(relative)
+        })
+        .collect()
+}
+
+/// Every file under a directory, recursively.
+fn collect(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    let mut paths: Vec<std::path::PathBuf> = entries.flatten().map(|e| e.path()).collect();
+    paths.sort();
+    for path in paths {
+        if path.is_dir() {
+            collect(&path, out);
+        } else {
+            out.push(path);
+        }
+    }
+}
+
+/// Removes what no output claims, so that writing a tree leaves only the
+/// tree.
+pub(crate) fn prune(root: &Path, dir: &str, outputs: &[Output]) {
+    for stray in strays(root, dir, outputs) {
+        let path = root.join(&stray);
+        match std::fs::remove_file(&path) {
+            Ok(()) => println!("removed {stray}"),
+            Err(err) => eprintln!("cannot remove {stray}: {err}"),
+        }
+    }
+}
+
 /// Compares every output with the checked-in file.
 pub(crate) fn check(root: &Path, outputs: &[Output], generator: &str) -> i32 {
     let mut failures = 0;

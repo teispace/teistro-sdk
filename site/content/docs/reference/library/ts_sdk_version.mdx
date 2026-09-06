@@ -1,0 +1,38 @@
+---
+title: ts_sdk_version
+description: "The SDK version as a static NUL-terminated string (`0.0.0`)."
+---
+
+The SDK version as a static NUL-terminated string (`0.0.0`).
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+const char * ts_sdk_version(void);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+sdk_version(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.sdkVersion(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+The call takes no arguments.
+
+Declared in `crates/ffi/src/lib.rs`.

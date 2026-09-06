@@ -1,0 +1,54 @@
+---
+title: ts_calendar_month_length
+description: "The length of a month in a calendar."
+---
+
+The length of a month in a calendar.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_calendar_month_length(const ts_context * context, uint16_t calendar, int32_t year, uint8_t month, uint8_t * out_length);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.calendar_month_length(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.calendarMonthLength(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `calendar` | `uint16_t` | a value | One of `ts_calendar`. |
+| `year` | `int32_t` | a value | — |
+| `month` | `uint8_t` | a value | — |
+| `out_length` | `uint8_t *` | receives a number | — |
+
+## What it hands back
+
+`length`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_length` valid for a write.
+
+Declared in `crates/ffi/src/calendar.rs`.

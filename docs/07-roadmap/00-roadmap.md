@@ -107,8 +107,10 @@ Where each stands, 2026-09-06:
 | a Flutter app | the Dart binding runs on the Dart VM, and a pub consumer installs its library with `dart run teistro:install` and is proved by the same gate; a Flutter plugin that carries the library into an Android or iOS build is its own deliverable, in v1.x with the mobile targets |
 | the packages built, published and installable | **met**: five platforms, four packages, one version, `docs/06-cicd/02-build-matrix.md`; the `release` workflow builds, merges, stages and publishes from a tag |
 
-What remains for the phase itself: the instruction-count benchmarks, the
-conformance repository, and the docs site.
+| the docs site skeleton with the generated reference | **met**: `site/` on Fumadocs, with one page per entry point generated from the API description, held by `check-ffi`, built by `check-site` and published on a tag (`06-cicd/05-docs-deploy.md`) |
+
+What remains for the phase itself: the instruction-count benchmarks and
+the conformance repository.
 
 ## Phase 2: The astronomy layer
 

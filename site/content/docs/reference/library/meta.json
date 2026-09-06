@@ -1,0 +1,4 @@
+{
+  "title": "The library",
+  "pages": ["ts_abi_version", "ts_sdk_version", "ts_catalogue_version", "ts_default_profile", "ts_build_info", "ts_status_message"]
+}

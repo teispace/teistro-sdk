@@ -1,0 +1,52 @@
+---
+title: ts_intl_has
+description: "Whether the current locale or its fallbacks have a message: `1` or `0`."
+---
+
+Whether the current locale or its fallbacks have a message: `1` or `0`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_has(const ts_context * context, const char * key, uint8_t * out_has);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.intl_has(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.intlHas(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `key` | `const char *` | a string read | — |
+| `out_has` | `uint8_t *` | receives a number | — |
+
+## What it hands back
+
+`has`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `key` a NUL-terminated string; `out_has` valid for a write.
+
+Declared in `crates/ffi/src/intl.rs`.

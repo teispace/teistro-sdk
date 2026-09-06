@@ -1,0 +1,46 @@
+---
+title: ts_calendar_jd_of_fixed
+description: "The Julian day at the UTC midnight that begins a fixed day (fixed day 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`)."
+---
+
+The Julian day at the UTC midnight that begins a fixed day (fixed day 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`).
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+double ts_calendar_jd_of_fixed(int64_t fixed);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+calendar_jd_of_fixed(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.calendarJdOfFixed(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `fixed` | `int64_t` | a value | For example `735702`. |
+
+## What it hands back
+
+`value`.
+
+Declared in `crates/ffi/src/calendar.rs`.

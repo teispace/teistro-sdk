@@ -1,0 +1,54 @@
+---
+title: ts_intl_transliterate
+description: "Text from one script into another (`deva`, `iast`), as a string lent until the next call on the context."
+---
+
+Text from one script into another (`deva`, `iast`), as a string lent until the next call on the context. A pair the build has no table for is `UNSUPPORTED` naming both scripts; anything the table does not know passes through, so a name written in two scripts is transliterated in the half that needs it.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_transliterate(const ts_context * context, const char * text, const char * from, const char * to, ts_str * out_text);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.intl_transliterate(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.intlTransliterate(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `text` | `const char *` | a string read | — |
+| `from` | `const char *` | a string read | — |
+| `to` | `const char *` | a string read | — |
+| `out_text` | `ts_str *` | receives a lent string | — |
+
+## What it hands back
+
+`text`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `text`, `from` and `to` NUL-terminated strings; `out_text` valid for a write.
+
+Declared in `crates/ffi/src/intl.rs`.

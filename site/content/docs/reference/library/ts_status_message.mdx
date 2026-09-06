@@ -1,0 +1,42 @@
+---
+title: ts_status_message
+description: "A static NUL-terminated English phrase for a status code; `unknown status` for a code this build does not know."
+---
+
+A static NUL-terminated English phrase for a status code; `unknown status` for a code this build does not know.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+const char * ts_status_message(int32_t status);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+status_message(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.statusMessage(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `status` | `int32_t` | a value | One of `ts_status`. |
+
+Declared in `crates/ffi/src/lib.rs`.

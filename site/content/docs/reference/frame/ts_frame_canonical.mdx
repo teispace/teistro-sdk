@@ -1,0 +1,50 @@
+---
+title: ts_frame_canonical
+description: "Writes the SDK's canonical frame: apparent geocentric ecliptic of date, tropical, which both licensed engines return by default and every chart module consumes."
+---
+
+Writes the SDK's canonical frame: apparent geocentric ecliptic of date, tropical, which both licensed engines return by default and every chart module consumes. Set `struct_size` before the call.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_frame_canonical(ts_frame * out_frame);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+frame_canonical(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.frameCanonical(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `out_frame` | `ts_frame *` | a struct written | — |
+
+## What it hands back
+
+`frame`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`out_frame` must be valid for a read of its `struct_size` and a write.
+
+Declared in `crates/ffi/src/frame.rs`.

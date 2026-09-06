@@ -1,0 +1,51 @@
+---
+title: ts_frame_pack
+description: "Packs a frame into the bits a position request carries."
+---
+
+Packs a frame into the bits a position request carries.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_frame_pack(const ts_frame * frame, uint32_t * out_bits);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+frame_pack(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.framePack(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `frame` | `const ts_frame *` | a struct read | — |
+| `out_bits` | `uint32_t *` | receives a number | — |
+
+## What it hands back
+
+`bits`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`frame` must be valid for a read of its `struct_size`; `out_bits` for a write.
+
+Declared in `crates/ffi/src/frame.rs`.

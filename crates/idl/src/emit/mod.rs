@@ -7,10 +7,13 @@
 //!   Node and wasm bindings;
 //! - [`node`]: the Node addon's napi glue over the C ABI;
 //! - [`dart`]: the Dart binding's `dart:ffi` layer, its typed classes and
-//!   its decoders.
+//!   its decoders;
+//! - [`mdx`]: the documentation site's reference pages, one per entry
+//!   point.
 
 pub mod c;
 pub mod dart;
+pub mod mdx;
 pub mod node;
 pub mod ts;
 

@@ -1,0 +1,4 @@
+{
+  "title": "Locale engine",
+  "pages": ["ts_intl_load_pack", "ts_intl_set_locale", "ts_intl_locale", "ts_intl_has", "ts_intl_transliterate", "ts_intl_entity", "ts_intl_render"]
+}

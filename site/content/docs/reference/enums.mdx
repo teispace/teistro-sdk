@@ -1,0 +1,1450 @@
+---
+title: Enums
+description: Every enum of the C ABI, with the value each member carries.
+---
+
+An enum crosses the boundary as its integer. The catalogue's kinds keep their values forever: a member's number is part of the ABI, and a stored result read back years later means what it meant when it was written.
+
+## ts_kind
+
+A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_KIND_GRAHA` | 1 | The nine grahas of the Parashari tradition and the three outer planets. |
+| `TS_KIND_RASHI` | 2 | The twelve signs. |
+| `TS_KIND_NAKSHATRA` | 3 | The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. |
+| `TS_KIND_TITHI` | 4 | The thirty tithis of the lunar month. |
+| `TS_KIND_KARANA` | 5 | The eleven karanas: seven movable, four fixed. |
+| `TS_KIND_YOGA` | 6 | The twenty-seven nitya yogas of the Sun and Moon. |
+| `TS_KIND_VARA` | 7 | The seven weekdays with their lords. |
+| `TS_KIND_MASA` | 8 | The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name. |
+| `TS_KIND_RITU` | 9 | The six seasons, two lunar months each. |
+| `TS_KIND_AYANA` | 10 | The two halves of the solar year. |
+| `TS_KIND_PAKSHA` | 11 | The two halves of the lunar month. |
+| `TS_KIND_SAMVATSARA` | 12 | The sixty years of the Jovian cycle, in order. |
+| `TS_KIND_TATWA` | 13 | The five elements. |
+| `TS_KIND_VARNA` | 14 | The varna classification of nakshatras and grahas. |
+| `TS_KIND_GANA` | 15 | The three ganas of the nakshatras. |
+| `TS_KIND_NADI` | 16 | The three nadis of the nakshatras. |
+| `TS_KIND_YONI` | 17 | The fourteen yoni animals of the nakshatras, each with its hostile pair. |
+| `TS_KIND_DEITY` | 18 | The deities the nakshatras, tithis and karanas are assigned to. |
+| `TS_KIND_DIGNITY` | 19 | The eleven levels of dignity. |
+| `TS_KIND_RELATIONSHIP` | 20 | The five-fold compound relationship. |
+| `TS_KIND_AVASTHA_BALADI` | 21 | The five age states. |
+| `TS_KIND_STATE` | 22 | Conditions a body can be in. |
+| `TS_KIND_AYANAMSHA` | 23 | The catalogued ayanamshas; a custom one is a settings value, not a member. |
+| `TS_KIND_HOUSE_SYSTEM` | 24 | The house systems; the cusp arithmetic lives in the astro layer. |
+| `TS_KIND_VARGA` | 25 | The divisional charts the SDK ships; the kernel row of each lives in the vargas crate. |
+| `TS_KIND_DASHA_SYSTEM` | 26 | The dasha systems the catalogue names; each row of the kernel lives in the dasha crate, and only V rows are implemented. |
+| `TS_KIND_BALA_SCHEME` | 27 | The strength schemes; rows live in the strength kernel. |
+| `TS_KIND_KOOTA` | 28 | The Ashta Koota and the Dasha Koota extensions. |
+| `TS_KIND_CHARA_KARAKA` | 29 | The Jaimini significators, in rank order. |
+| `TS_KIND_CHART_KIND` | 30 | What a chart is a chart of. |
+| `TS_KIND_POINT` | 31 | Derived points that behave like bodies; each has a formula in the module that owns it. |
+| `TS_KIND_MUHURTA_NATURE` | 33 | The seven muhurta natures of the nakshatras. |
+| `TS_KIND_MODALITY` | 34 | Movable, fixed and dual signs. |
+| `TS_KIND_NATURE` | 35 | The natural benefic or malefic character of a graha. |
+| `TS_KIND_GUNA` | 36 | The three gunas. |
+| `TS_KIND_DIRECTION` | 37 | The eight directions. |
+| `TS_KIND_GENDER` | 38 | Grammatical and classical gender. |
+| `TS_KIND_CALENDAR` | 39 | The calendars the SDK ships. |
+| `TS_KIND_ERA` | 40 | The era numbers a date may carry. |
+| `TS_KIND_BODY_CLASS` | 41 | What kind of body a graha is. |
+| `TS_KIND_PARITY` | 42 | Odd and even signs. |
+| `TS_KIND_RISING` | 43 | How a sign rises: head first, back first, or both. |
+| `TS_KIND_SEX` | 44 | The sex of a nakshatra's yoni animal. |
+| `TS_KIND_TITHI_CLASS` | 45 | The five tithi classes. |
+| `TS_KIND_AUSPICIOUSNESS` | 46 | The auspiciousness class of a nitya yoga. |
+| `TS_KIND_DEGENERACY` | 47 | Whether a house system is undefined at some latitudes. |
+| `TS_KIND_AYANAMSHA_CATEGORY` | 49 | How an ayanamsha is defined or used. |
+| `TS_KIND_DASHA_FAMILY` | 50 | Which kernel a dasha system runs on. |
+| `TS_KIND_AVASTHA_JAGRADADI` | 51 | The three wakefulness states. |
+| `TS_KIND_AVASTHA_DEEPTADI` | 52 | The nine Deeptadi states. |
+| `TS_KIND_AVASTHA_LAJJITADI` | 53 | The six Lajjitadi states. |
+| `TS_KIND_AVASTHA_SAYANADI` | 54 | The twelve Sayanadi states. |
+| `TS_KIND_POINT_FAMILY` | 55 | What kind of derived point. |
+| `TS_KIND_STAR` | 56 | The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`). |
+| `TS_KIND_STAR_CLASS` | 57 | What kind of object a star-table member is. |
+
+## ts_graha
+
+The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_GRAHA_SUN` | 0 | The Sun |
+| `TS_GRAHA_MOON` | 1 | The Moon |
+| `TS_GRAHA_MARS` | 2 | Mars |
+| `TS_GRAHA_MERCURY` | 3 | Mercury |
+| `TS_GRAHA_JUPITER` | 4 | Jupiter |
+| `TS_GRAHA_VENUS` | 5 | Venus |
+| `TS_GRAHA_SATURN` | 6 | Saturn |
+| `TS_GRAHA_RAHU` | 7 | The ascending lunar node |
+| `TS_GRAHA_KETU` | 8 | The descending lunar node |
+| `TS_GRAHA_URANUS` | 9 | Uranus |
+| `TS_GRAHA_NEPTUNE` | 10 | Neptune |
+| `TS_GRAHA_PLUTO` | 11 | Pluto |
+
+## ts_rashi
+
+The twelve signs. Members are the catalogue's ids; the full key id is `(TS_KIND_RASHI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RASHI_ARIES` | 0 | Aries |
+| `TS_RASHI_TAURUS` | 1 | Taurus |
+| `TS_RASHI_GEMINI` | 2 | Gemini |
+| `TS_RASHI_CANCER` | 3 | Cancer |
+| `TS_RASHI_LEO` | 4 | Leo |
+| `TS_RASHI_VIRGO` | 5 | Virgo |
+| `TS_RASHI_LIBRA` | 6 | Libra |
+| `TS_RASHI_SCORPIO` | 7 | Scorpio |
+| `TS_RASHI_SAGITTARIUS` | 8 | Sagittarius |
+| `TS_RASHI_CAPRICORN` | 9 | Capricorn |
+| `TS_RASHI_AQUARIUS` | 10 | Aquarius |
+| `TS_RASHI_PISCES` | 11 | Pisces |
+
+## ts_nakshatra
+
+The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_NAKSHATRA_ASHWINI` | 0 | Ashwini |
+| `TS_NAKSHATRA_BHARANI` | 1 | Bharani |
+| `TS_NAKSHATRA_KRITTIKA` | 2 | Krittika |
+| `TS_NAKSHATRA_ROHINI` | 3 | Rohini |
+| `TS_NAKSHATRA_MRIGASHIRA` | 4 | Mrigashira |
+| `TS_NAKSHATRA_ARDRA` | 5 | Ardra |
+| `TS_NAKSHATRA_PUNARVASU` | 6 | Punarvasu |
+| `TS_NAKSHATRA_PUSHYA` | 7 | Pushya |
+| `TS_NAKSHATRA_ASHLESHA` | 8 | Ashlesha |
+| `TS_NAKSHATRA_MAGHA` | 9 | Magha |
+| `TS_NAKSHATRA_PURVA_PHALGUNI` | 10 | Purva Phalguni |
+| `TS_NAKSHATRA_UTTARA_PHALGUNI` | 11 | Uttara Phalguni |
+| `TS_NAKSHATRA_HASTA` | 12 | Hasta |
+| `TS_NAKSHATRA_CHITRA` | 13 | Chitra |
+| `TS_NAKSHATRA_SWATI` | 14 | Swati |
+| `TS_NAKSHATRA_VISHAKHA` | 15 | Vishakha |
+| `TS_NAKSHATRA_ANURADHA` | 16 | Anuradha |
+| `TS_NAKSHATRA_JYESHTHA` | 17 | Jyeshtha |
+| `TS_NAKSHATRA_MULA` | 18 | Mula |
+| `TS_NAKSHATRA_PURVA_ASHADHA` | 19 | Purva Ashadha |
+| `TS_NAKSHATRA_UTTARA_ASHADHA` | 20 | Uttara Ashadha |
+| `TS_NAKSHATRA_SHRAVANA` | 21 | Shravana |
+| `TS_NAKSHATRA_DHANISHTHA` | 22 | Dhanishtha |
+| `TS_NAKSHATRA_SHATABHISHA` | 23 | Shatabhisha |
+| `TS_NAKSHATRA_PURVA_BHADRAPADA` | 24 | Purva Bhadrapada |
+| `TS_NAKSHATRA_UTTARA_BHADRAPADA` | 25 | Uttara Bhadrapada |
+| `TS_NAKSHATRA_REVATI` | 26 | Revati |
+
+## ts_tithi
+
+The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TITHI_SHUKLA_PRATIPADA` | 0 | Shukla Pratipada |
+| `TS_TITHI_SHUKLA_DVITIYA` | 1 | Shukla Dvitiya |
+| `TS_TITHI_SHUKLA_TRITIYA` | 2 | Shukla Tritiya |
+| `TS_TITHI_SHUKLA_CHATURTHI` | 3 | Shukla Chaturthi |
+| `TS_TITHI_SHUKLA_PANCHAMI` | 4 | Shukla Panchami |
+| `TS_TITHI_SHUKLA_SHASHTHI` | 5 | Shukla Shashthi |
+| `TS_TITHI_SHUKLA_SAPTAMI` | 6 | Shukla Saptami |
+| `TS_TITHI_SHUKLA_ASHTAMI` | 7 | Shukla Ashtami |
+| `TS_TITHI_SHUKLA_NAVAMI` | 8 | Shukla Navami |
+| `TS_TITHI_SHUKLA_DASHAMI` | 9 | Shukla Dashami |
+| `TS_TITHI_SHUKLA_EKADASHI` | 10 | Shukla Ekadashi |
+| `TS_TITHI_SHUKLA_DWADASHI` | 11 | Shukla Dwadashi |
+| `TS_TITHI_SHUKLA_TRAYODASHI` | 12 | Shukla Trayodashi |
+| `TS_TITHI_SHUKLA_CHATURDASHI` | 13 | Shukla Chaturdashi |
+| `TS_TITHI_PURNIMA` | 14 | Purnima |
+| `TS_TITHI_KRISHNA_PRATIPADA` | 15 | Krishna Pratipada |
+| `TS_TITHI_KRISHNA_DVITIYA` | 16 | Krishna Dvitiya |
+| `TS_TITHI_KRISHNA_TRITIYA` | 17 | Krishna Tritiya |
+| `TS_TITHI_KRISHNA_CHATURTHI` | 18 | Krishna Chaturthi |
+| `TS_TITHI_KRISHNA_PANCHAMI` | 19 | Krishna Panchami |
+| `TS_TITHI_KRISHNA_SHASHTHI` | 20 | Krishna Shashthi |
+| `TS_TITHI_KRISHNA_SAPTAMI` | 21 | Krishna Saptami |
+| `TS_TITHI_KRISHNA_ASHTAMI` | 22 | Krishna Ashtami |
+| `TS_TITHI_KRISHNA_NAVAMI` | 23 | Krishna Navami |
+| `TS_TITHI_KRISHNA_DASHAMI` | 24 | Krishna Dashami |
+| `TS_TITHI_KRISHNA_EKADASHI` | 25 | Krishna Ekadashi |
+| `TS_TITHI_KRISHNA_DWADASHI` | 26 | Krishna Dwadashi |
+| `TS_TITHI_KRISHNA_TRAYODASHI` | 27 | Krishna Trayodashi |
+| `TS_TITHI_KRISHNA_CHATURDASHI` | 28 | Krishna Chaturdashi |
+| `TS_TITHI_AMAVASYA` | 29 | Amavasya |
+
+## ts_karana
+
+The eleven karanas: seven movable, four fixed. Members are the catalogue's ids; the full key id is `(TS_KIND_KARANA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_KARANA_BAVA` | 0 | Bava |
+| `TS_KARANA_BALAVA` | 1 | Balava |
+| `TS_KARANA_KAULAVA` | 2 | Kaulava |
+| `TS_KARANA_TAITILA` | 3 | Taitila |
+| `TS_KARANA_GARIJA` | 4 | Garija |
+| `TS_KARANA_VANIJA` | 5 | Vanija |
+| `TS_KARANA_VISHTI` | 6 | Vishti |
+| `TS_KARANA_SHAKUNI` | 7 | Shakuni |
+| `TS_KARANA_CHATUSHPADA` | 8 | Chatushpada |
+| `TS_KARANA_NAGA` | 9 | Naga |
+| `TS_KARANA_KIMSTUGHNA` | 10 | Kimstughna |
+
+## ts_yoga
+
+The twenty-seven nitya yogas of the Sun and Moon. Members are the catalogue's ids; the full key id is `(TS_KIND_YOGA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_YOGA_VISHKAMBHA` | 0 | Vishkambha |
+| `TS_YOGA_PRITI` | 1 | Priti |
+| `TS_YOGA_AYUSHMAN` | 2 | Ayushman |
+| `TS_YOGA_SAUBHAGYA` | 3 | Saubhagya |
+| `TS_YOGA_SHOBHANA` | 4 | Shobhana |
+| `TS_YOGA_ATIGANDA` | 5 | Atiganda |
+| `TS_YOGA_SUKARMA` | 6 | Sukarma |
+| `TS_YOGA_DHRITI` | 7 | Dhriti |
+| `TS_YOGA_SHOOLA` | 8 | Shoola |
+| `TS_YOGA_GANDA` | 9 | Ganda |
+| `TS_YOGA_VRIDDHI` | 10 | Vriddhi |
+| `TS_YOGA_DHRUVA` | 11 | Dhruva |
+| `TS_YOGA_VYAGHATA` | 12 | Vyaghata |
+| `TS_YOGA_HARSHANA` | 13 | Harshana |
+| `TS_YOGA_VAJRA` | 14 | Vajra |
+| `TS_YOGA_SIDDHI` | 15 | Siddhi |
+| `TS_YOGA_VYATIPATA` | 16 | Vyatipata |
+| `TS_YOGA_VARIYANA` | 17 | Variyana |
+| `TS_YOGA_PARIGHA` | 18 | Parigha |
+| `TS_YOGA_SHIVA` | 19 | Shiva |
+| `TS_YOGA_SIDDHA` | 20 | Siddha |
+| `TS_YOGA_SADHYA` | 21 | Sadhya |
+| `TS_YOGA_SHUBHA` | 22 | Shubha |
+| `TS_YOGA_SHUKLA` | 23 | Shukla |
+| `TS_YOGA_BRAHMA` | 24 | Brahma |
+| `TS_YOGA_INDRA` | 25 | Indra |
+| `TS_YOGA_VAIDHRITI` | 26 | Vaidhriti |
+
+## ts_vara
+
+The seven weekdays with their lords. Members are the catalogue's ids; the full key id is `(TS_KIND_VARA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VARA_RAVIVARA` | 0 | Sunday |
+| `TS_VARA_SOMAVARA` | 1 | Monday |
+| `TS_VARA_MANGALAVARA` | 2 | Tuesday |
+| `TS_VARA_BUDHAVARA` | 3 | Wednesday |
+| `TS_VARA_GURUVARA` | 4 | Thursday |
+| `TS_VARA_SHUKRAVARA` | 5 | Friday |
+| `TS_VARA_SHANIVARA` | 6 | Saturday |
+
+## ts_masa
+
+The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name. Members are the catalogue's ids; the full key id is `(TS_KIND_MASA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MASA_CHAITRA` | 0 | Chaitra |
+| `TS_MASA_VAISHAKHA` | 1 | Vaishakha |
+| `TS_MASA_JYESHTHA` | 2 | Jyeshtha |
+| `TS_MASA_ASHADHA` | 3 | Ashadha |
+| `TS_MASA_SHRAVANA` | 4 | Shravana |
+| `TS_MASA_BHADRAPADA` | 5 | Bhadrapada |
+| `TS_MASA_ASHWINA` | 6 | Ashwina |
+| `TS_MASA_KARTIKA` | 7 | Kartika |
+| `TS_MASA_MARGASHIRSHA` | 8 | Margashirsha |
+| `TS_MASA_PAUSHA` | 9 | Pausha |
+| `TS_MASA_MAGHA` | 10 | Magha |
+| `TS_MASA_PHALGUNA` | 11 | Phalguna |
+
+## ts_ritu
+
+The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RITU_VASANTA` | 0 | Vasanta |
+| `TS_RITU_GRISHMA` | 1 | Grishma |
+| `TS_RITU_VARSHA` | 2 | Varsha |
+| `TS_RITU_SHARAD` | 3 | Sharad |
+| `TS_RITU_HEMANTA` | 4 | Hemanta |
+| `TS_RITU_SHISHIRA` | 5 | Shishira |
+
+## ts_ayana
+
+The two halves of the solar year. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AYANA_UTTARAYANA` | 0 | Uttarayana |
+| `TS_AYANA_DAKSHINAYANA` | 1 | Dakshinayana |
+
+## ts_paksha
+
+The two halves of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_PAKSHA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_PAKSHA_SHUKLA` | 0 | The bright half |
+| `TS_PAKSHA_KRISHNA` | 1 | The dark half |
+
+## ts_samvatsara
+
+The sixty years of the Jovian cycle, in order. Members are the catalogue's ids; the full key id is `(TS_KIND_SAMVATSARA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SAMVATSARA_PRABHAVA` | 0 | Prabhava |
+| `TS_SAMVATSARA_VIBHAVA` | 1 | Vibhava |
+| `TS_SAMVATSARA_SHUKLA` | 2 | Shukla |
+| `TS_SAMVATSARA_PRAMODOOTA` | 3 | Pramodoota |
+| `TS_SAMVATSARA_PRAJOTPATTI` | 4 | Prajotpatti |
+| `TS_SAMVATSARA_ANGIRAS` | 5 | Angiras |
+| `TS_SAMVATSARA_SHRIMUKHA` | 6 | Shrimukha |
+| `TS_SAMVATSARA_BHAVA` | 7 | Bhava |
+| `TS_SAMVATSARA_YUVA` | 8 | Yuva |
+| `TS_SAMVATSARA_DHAATA` | 9 | Dhaata |
+| `TS_SAMVATSARA_ISHVARA` | 10 | Ishvara |
+| `TS_SAMVATSARA_BAHUDHANYA` | 11 | Bahudhanya |
+| `TS_SAMVATSARA_PRAMATHI` | 12 | Pramathi |
+| `TS_SAMVATSARA_VIKRAMA` | 13 | Vikrama |
+| `TS_SAMVATSARA_VRISHA` | 14 | Vrisha |
+| `TS_SAMVATSARA_CHITRABHANU` | 15 | Chitrabhanu |
+| `TS_SAMVATSARA_SUBHANU` | 16 | Subhanu |
+| `TS_SAMVATSARA_TAARANA` | 17 | Taarana |
+| `TS_SAMVATSARA_PAARTHIVA` | 18 | Paarthiva |
+| `TS_SAMVATSARA_VYAYA` | 19 | Vyaya |
+| `TS_SAMVATSARA_SARVAJIT` | 20 | Sarvajit |
+| `TS_SAMVATSARA_SARVADHARI` | 21 | Sarvadhari |
+| `TS_SAMVATSARA_VIRODHI` | 22 | Virodhi |
+| `TS_SAMVATSARA_VIKRITA` | 23 | Vikrita |
+| `TS_SAMVATSARA_KHARA` | 24 | Khara |
+| `TS_SAMVATSARA_NANDANA` | 25 | Nandana |
+| `TS_SAMVATSARA_VIJAYA` | 26 | Vijaya |
+| `TS_SAMVATSARA_JAYA` | 27 | Jaya |
+| `TS_SAMVATSARA_MANMATHA` | 28 | Manmatha |
+| `TS_SAMVATSARA_DURMUKHI` | 29 | Durmukhi |
+| `TS_SAMVATSARA_HEVILAMBI` | 30 | Hevilambi |
+| `TS_SAMVATSARA_VILAMBI` | 31 | Vilambi |
+| `TS_SAMVATSARA_VIKARI` | 32 | Vikari |
+| `TS_SAMVATSARA_SHARVARI` | 33 | Sharvari |
+| `TS_SAMVATSARA_PLAVA` | 34 | Plava |
+| `TS_SAMVATSARA_SHUBHAKRIT` | 35 | Shubhakrit |
+| `TS_SAMVATSARA_SHOBHAKRIT` | 36 | Shobhakrit |
+| `TS_SAMVATSARA_KRODHI` | 37 | Krodhi |
+| `TS_SAMVATSARA_VISHVAVASU` | 38 | Vishvavasu |
+| `TS_SAMVATSARA_PARABHAVA` | 39 | Parabhava |
+| `TS_SAMVATSARA_PLAVANGA` | 40 | Plavanga |
+| `TS_SAMVATSARA_KILAKA` | 41 | Kilaka |
+| `TS_SAMVATSARA_SAUMYA` | 42 | Saumya |
+| `TS_SAMVATSARA_SADHARANA` | 43 | Sadharana |
+| `TS_SAMVATSARA_VIRODHIKRIT` | 44 | Virodhikrit |
+| `TS_SAMVATSARA_PARIDHAAVI` | 45 | Paridhaavi |
+| `TS_SAMVATSARA_PRAMADICHA` | 46 | Pramadicha |
+| `TS_SAMVATSARA_ANANDA` | 47 | Ananda |
+| `TS_SAMVATSARA_RAKSHASA` | 48 | Rakshasa |
+| `TS_SAMVATSARA_NALA` | 49 | Nala |
+| `TS_SAMVATSARA_PINGALA` | 50 | Pingala |
+| `TS_SAMVATSARA_KALAYUKTA` | 51 | Kalayukta |
+| `TS_SAMVATSARA_SIDDHARTHI` | 52 | Siddharthi |
+| `TS_SAMVATSARA_RAUDRA` | 53 | Raudra |
+| `TS_SAMVATSARA_DURMATI` | 54 | Durmati |
+| `TS_SAMVATSARA_DUNDUBHI` | 55 | Dundubhi |
+| `TS_SAMVATSARA_RUDHIRODGARI` | 56 | Rudhirodgari |
+| `TS_SAMVATSARA_RAKTAKSHI` | 57 | Raktakshi |
+| `TS_SAMVATSARA_KRODHANA` | 58 | Krodhana |
+| `TS_SAMVATSARA_AKSHAYA` | 59 | Akshaya |
+
+## ts_tatwa
+
+The five elements. Members are the catalogue's ids; the full key id is `(TS_KIND_TATWA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TATWA_AGNI` | 0 | Fire |
+| `TS_TATWA_PRITHVI` | 1 | Earth |
+| `TS_TATWA_VAYU` | 2 | Air |
+| `TS_TATWA_JALA` | 3 | Water |
+| `TS_TATWA_AKASHA` | 4 | Ether |
+
+## ts_varna
+
+The varna classification of nakshatras and grahas. Members are the catalogue's ids; the full key id is `(TS_KIND_VARNA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VARNA_BRAHMIN` | 0 | Brahmin |
+| `TS_VARNA_KSHATRIYA` | 1 | Kshatriya |
+| `TS_VARNA_VAISHYA` | 2 | Vaishya |
+| `TS_VARNA_SHUDRA` | 3 | Shudra |
+| `TS_VARNA_MLECCHA` | 4 | Mleccha |
+
+## ts_gana
+
+The three ganas of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_GANA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_GANA_DEVA` | 0 | Deva |
+| `TS_GANA_MANUSHYA` | 1 | Manushya |
+| `TS_GANA_RAKSHASA` | 2 | Rakshasa |
+
+## ts_nadi
+
+The three nadis of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_NADI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_NADI_AADI` | 0 | Aadi |
+| `TS_NADI_MADHYA` | 1 | Madhya |
+| `TS_NADI_ANTYA` | 2 | Antya |
+
+## ts_yoni
+
+The fourteen yoni animals of the nakshatras, each with its hostile pair. Members are the catalogue's ids; the full key id is `(TS_KIND_YONI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_YONI_HORSE` | 0 | Horse |
+| `TS_YONI_ELEPHANT` | 1 | Elephant |
+| `TS_YONI_GOAT` | 2 | Goat |
+| `TS_YONI_SERPENT` | 3 | Serpent |
+| `TS_YONI_DOG` | 4 | Dog |
+| `TS_YONI_CAT` | 5 | Cat |
+| `TS_YONI_RAT` | 6 | Rat |
+| `TS_YONI_COW` | 7 | Cow |
+| `TS_YONI_BUFFALO` | 8 | Buffalo |
+| `TS_YONI_TIGER` | 9 | Tiger |
+| `TS_YONI_DEER` | 10 | Deer |
+| `TS_YONI_MONKEY` | 11 | Monkey |
+| `TS_YONI_MONGOOSE` | 12 | Mongoose |
+| `TS_YONI_LION` | 13 | Lion |
+
+## ts_deity
+
+The deities the nakshatras, tithis and karanas are assigned to. Members are the catalogue's ids; the full key id is `(TS_KIND_DEITY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DEITY_ASHWINI_KUMARA` | 0 | The Ashwini Kumaras, the divine physicians |
+| `TS_DEITY_YAMA` | 1 | Yama |
+| `TS_DEITY_AGNI` | 2 | Agni |
+| `TS_DEITY_BRAHMA` | 3 | Brahma |
+| `TS_DEITY_SOMA` | 4 | Soma |
+| `TS_DEITY_RUDRA` | 5 | Rudra |
+| `TS_DEITY_ADITI` | 6 | Aditi |
+| `TS_DEITY_BRIHASPATI` | 7 | Brihaspati |
+| `TS_DEITY_NAGA` | 8 | Naga |
+| `TS_DEITY_PITRU` | 9 | Pitru |
+| `TS_DEITY_BHAGA` | 10 | Bhaga |
+| `TS_DEITY_ARYAMAN` | 11 | Aryaman |
+| `TS_DEITY_SAVITR` | 12 | Savitr, the Sun as impeller |
+| `TS_DEITY_VISHVAKARMA` | 13 | Vishvakarma |
+| `TS_DEITY_VAYU` | 14 | Vayu |
+| `TS_DEITY_INDRAGNI` | 15 | Indra and Agni together |
+| `TS_DEITY_MITRA` | 16 | Mitra |
+| `TS_DEITY_INDRA` | 17 | Indra |
+| `TS_DEITY_NIRRITI` | 18 | Nirriti |
+| `TS_DEITY_APAS` | 19 | Apas |
+| `TS_DEITY_VISHVADEVA` | 20 | The Vishvadevas, all the gods |
+| `TS_DEITY_VISHNU` | 21 | Vishnu |
+| `TS_DEITY_VASU` | 22 | The eight Vasus |
+| `TS_DEITY_VARUNA` | 23 | Varuna |
+| `TS_DEITY_AJA_EKAPADA` | 24 | Aja Ekapada |
+| `TS_DEITY_AHIRBUDHNYA` | 25 | Ahirbudhnya |
+| `TS_DEITY_PUSHAN` | 26 | Pushan |
+| `TS_DEITY_VIDHATA` | 27 | Vidhata |
+| `TS_DEITY_KARTIKEYA` | 28 | Kartikeya |
+| `TS_DEITY_SURYA` | 29 | Surya, the Sun as deity |
+| `TS_DEITY_SHIVA` | 30 | Shiva |
+| `TS_DEITY_DURGA` | 31 | Durga |
+| `TS_DEITY_KAMADEVA` | 32 | Kamadeva |
+| `TS_DEITY_CHANDRA` | 33 | Chandra, the Moon as deity |
+| `TS_DEITY_TVASHTA` | 34 | Tvashta |
+| `TS_DEITY_SHANI` | 35 | Shani, Saturn as deity |
+| `TS_DEITY_SHUKRA` | 36 | Shukra, Venus as deity |
+
+## ts_dignity
+
+The eleven levels of dignity. Members are the catalogue's ids; the full key id is `(TS_KIND_DIGNITY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DIGNITY_DEEP_EXALTED` | 0 | Deep Exalted |
+| `TS_DIGNITY_EXALTED` | 1 | Exalted |
+| `TS_DIGNITY_MOOLTRIKONA` | 2 | Mooltrikona |
+| `TS_DIGNITY_OWN_SIGN` | 3 | Own Sign |
+| `TS_DIGNITY_GREAT_FRIEND` | 4 | Great Friend |
+| `TS_DIGNITY_FRIEND` | 5 | Friend |
+| `TS_DIGNITY_NEUTRAL` | 6 | Neutral |
+| `TS_DIGNITY_ENEMY` | 7 | Enemy |
+| `TS_DIGNITY_GREAT_ENEMY` | 8 | Great Enemy |
+| `TS_DIGNITY_DEBILITATED` | 9 | Debilitated |
+| `TS_DIGNITY_DEEP_DEBILITATED` | 10 | Deep Debilitated |
+
+## ts_relationship
+
+The five-fold compound relationship. Members are the catalogue's ids; the full key id is `(TS_KIND_RELATIONSHIP << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RELATIONSHIP_GREAT_FRIEND` | 0 | Great Friend |
+| `TS_RELATIONSHIP_FRIEND` | 1 | Friend |
+| `TS_RELATIONSHIP_NEUTRAL` | 2 | Neutral |
+| `TS_RELATIONSHIP_ENEMY` | 3 | Enemy |
+| `TS_RELATIONSHIP_GREAT_ENEMY` | 4 | Great Enemy |
+
+## ts_avastha_baladi
+
+The five age states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_BALADI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AVASTHA_BALADI_BALA` | 0 | Bala |
+| `TS_AVASTHA_BALADI_KUMARA` | 1 | Kumara |
+| `TS_AVASTHA_BALADI_YUVA` | 2 | Yuva |
+| `TS_AVASTHA_BALADI_VRIDDHA` | 3 | Vriddha |
+| `TS_AVASTHA_BALADI_MRITA` | 4 | Mrita |
+
+## ts_state
+
+Conditions a body can be in. Members are the catalogue's ids; the full key id is `(TS_KIND_STATE << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_STATE_RETROGRADE` | 0 | Retrograde |
+| `TS_STATE_STATIONARY` | 1 | Stationary |
+| `TS_STATE_COMBUST` | 2 | Combust |
+| `TS_STATE_PLANETARY_WAR` | 3 | Planetary War |
+| `TS_STATE_GANDANTA` | 4 | Gandanta |
+| `TS_STATE_SANDHI` | 5 | Sandhi |
+| `TS_STATE_VARGOTTAMA` | 6 | Vargottama |
+| `TS_STATE_PUSHKARA_NAVAMSA` | 7 | Pushkara Navamsa |
+| `TS_STATE_PUSHKARA_BHAGA` | 8 | Pushkara Bhaga |
+| `TS_STATE_MRITYU_BHAGA` | 9 | Mrityu Bhaga |
+| `TS_STATE_MARANA_KARAKA_STHANA` | 10 | Marana Karaka Sthana |
+| `TS_STATE_ECLIPSED` | 11 | Eclipsed |
+
+## ts_ayanamsha
+
+The catalogued ayanamshas; a custom one is a settings value, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AYANAMSHA_FAGAN_BRADLEY` | 0 | Fagan and Bradley |
+| `TS_AYANAMSHA_LAHIRI` | 1 | Lahiri (Chitrapaksha), the Indian government's ayanamsha |
+| `TS_AYANAMSHA_DELUCE` | 2 | Deluce |
+| `TS_AYANAMSHA_RAMAN` | 3 | B. V. Raman |
+| `TS_AYANAMSHA_USHASHASHI` | 4 | Ushashashi |
+| `TS_AYANAMSHA_KRISHNAMURTI` | 5 | Krishnamurti (KP) |
+| `TS_AYANAMSHA_DJWHAL_KHUL` | 6 | Djwhal Khul |
+| `TS_AYANAMSHA_YUKTESHWAR` | 7 | Yukteshwar |
+| `TS_AYANAMSHA_JN_BHASIN` | 8 | Jn Bhasin |
+| `TS_AYANAMSHA_BABYL_KUGLER1` | 9 | Babyl Kugler1 |
+| `TS_AYANAMSHA_BABYL_KUGLER2` | 10 | Babyl Kugler2 |
+| `TS_AYANAMSHA_BABYL_KUGLER3` | 11 | Babyl Kugler3 |
+| `TS_AYANAMSHA_BABYL_HUBER` | 12 | Babyl Huber |
+| `TS_AYANAMSHA_BABYL_ETPSC` | 13 | Babyl Etpsc |
+| `TS_AYANAMSHA_ALDEBARAN_15TAU` | 14 | Aldebaran 15tau |
+| `TS_AYANAMSHA_HIPPARCHOS` | 15 | Hipparchos |
+| `TS_AYANAMSHA_SASSANIAN` | 16 | Sassanian |
+| `TS_AYANAMSHA_GALCENT_0SAG` | 17 | Galcent 0sag |
+| `TS_AYANAMSHA_J2000` | 18 | J2000 |
+| `TS_AYANAMSHA_J1900` | 19 | J1900 |
+| `TS_AYANAMSHA_B1950` | 20 | B1950 |
+| `TS_AYANAMSHA_SURYASIDDHANTA` | 21 | Suryasiddhanta |
+| `TS_AYANAMSHA_SURYASIDDHANTA_MSUN` | 22 | Suryasiddhanta Msun |
+| `TS_AYANAMSHA_ARYABHATA` | 23 | Aryabhata |
+| `TS_AYANAMSHA_ARYABHATA_MSUN` | 24 | Aryabhata Msun |
+| `TS_AYANAMSHA_SS_REVATI` | 25 | Ss Revati |
+| `TS_AYANAMSHA_SS_CITRA` | 26 | Ss Citra |
+| `TS_AYANAMSHA_TRUE_CHITRA` | 27 | True Chitra Paksha: Spica at 180 degrees |
+| `TS_AYANAMSHA_TRUE_REVATI` | 28 | True Revati |
+| `TS_AYANAMSHA_TRUE_PUSHYA` | 29 | True Pushya |
+| `TS_AYANAMSHA_GALCENT_RGILBRAND` | 30 | Galcent Rgilbrand |
+| `TS_AYANAMSHA_GALEQU_IAU1958` | 31 | Galequ Iau1958 |
+| `TS_AYANAMSHA_GALEQU_TRUE` | 32 | Galequ True |
+| `TS_AYANAMSHA_GALEQU_MULA` | 33 | Galequ Mula |
+| `TS_AYANAMSHA_GALALIGN_MARDYKS` | 34 | Galalign Mardyks |
+| `TS_AYANAMSHA_TRUE_MULA` | 35 | True Mula |
+| `TS_AYANAMSHA_GALCENT_MULA_WILHELM` | 36 | Galcent Mula Wilhelm |
+| `TS_AYANAMSHA_ARYABHATA_522` | 37 | Aryabhata 522 |
+| `TS_AYANAMSHA_BABYL_BRITTON` | 38 | Babyl Britton |
+| `TS_AYANAMSHA_TRUE_SHEORAN` | 39 | True Sheoran |
+| `TS_AYANAMSHA_GALCENT_COCHRANE` | 40 | Galcent Cochrane |
+| `TS_AYANAMSHA_GALEQU_FIORENZA` | 41 | Galequ Fiorenza |
+| `TS_AYANAMSHA_VALENS_MOON` | 42 | Valens Moon |
+| `TS_AYANAMSHA_LAHIRI_1940` | 43 | Lahiri 1940 |
+| `TS_AYANAMSHA_LAHIRI_VP285` | 44 | Lahiri Vp285 |
+| `TS_AYANAMSHA_KRISHNAMURTI_VP291` | 45 | Krishnamurti Vp291 |
+| `TS_AYANAMSHA_LAHIRI_ICRC` | 46 | Lahiri Icrc |
+
+## ts_house_system
+
+The house systems; the cusp arithmetic lives in the astro layer. Members are the catalogue's ids; the full key id is `(TS_KIND_HOUSE_SYSTEM << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_HOUSE_SYSTEM_WHOLE_SIGN` | 0 | Whole Sign |
+| `TS_HOUSE_SYSTEM_PLACIDUS` | 1 | Placidus |
+| `TS_HOUSE_SYSTEM_KOCH` | 2 | Koch |
+| `TS_HOUSE_SYSTEM_REGIOMONTANUS` | 3 | Regiomontanus |
+| `TS_HOUSE_SYSTEM_CAMPANUS` | 4 | Campanus |
+| `TS_HOUSE_SYSTEM_EQUAL` | 5 | Equal |
+| `TS_HOUSE_SYSTEM_MERIDIAN` | 6 | Meridian |
+| `TS_HOUSE_SYSTEM_ALCABITIUS` | 7 | Alcabitius |
+| `TS_HOUSE_SYSTEM_PORPHYRY` | 8 | Porphyry |
+| `TS_HOUSE_SYSTEM_TOPOCENTRIC` | 9 | Topocentric |
+| `TS_HOUSE_SYSTEM_MORINUS` | 10 | Morinus |
+| `TS_HOUSE_SYSTEM_SRIPATI` | 11 | Sripati |
+| `TS_HOUSE_SYSTEM_EQUAL_MC` | 12 | Equal Mc |
+| `TS_HOUSE_SYSTEM_EQUAL_ARIES` | 13 | Equal Aries |
+| `TS_HOUSE_SYSTEM_VEHLOW` | 14 | Vehlow |
+| `TS_HOUSE_SYSTEM_CARTER` | 15 | Carter |
+| `TS_HOUSE_SYSTEM_HORIZON` | 16 | Horizon |
+| `TS_HOUSE_SYSTEM_SUNSHINE` | 17 | Sunshine |
+| `TS_HOUSE_SYSTEM_PULLEN_SD` | 18 | Pullen Sd |
+| `TS_HOUSE_SYSTEM_PULLEN_SR` | 19 | Pullen Sr |
+| `TS_HOUSE_SYSTEM_KRUSINSKI` | 20 | Krusinski |
+| `TS_HOUSE_SYSTEM_APC` | 21 | Apc |
+
+## ts_varga
+
+The divisional charts the SDK ships; the kernel row of each lives in the vargas crate. Members are the catalogue's ids; the full key id is `(TS_KIND_VARGA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VARGA_D1` | 0 | Rashi |
+| `TS_VARGA_D2` | 1 | Hora |
+| `TS_VARGA_D3` | 2 | Drekkana |
+| `TS_VARGA_D4` | 3 | Chaturthamsha |
+| `TS_VARGA_D5` | 4 | Panchamsha |
+| `TS_VARGA_D6` | 5 | Shashthamsha |
+| `TS_VARGA_D7` | 6 | Saptamsha |
+| `TS_VARGA_D8` | 7 | Ashtamsha |
+| `TS_VARGA_D9` | 8 | Navamsha |
+| `TS_VARGA_D10` | 9 | Dashamsha |
+| `TS_VARGA_D11` | 10 | Rudramsha |
+| `TS_VARGA_D12` | 11 | Dwadashamsha |
+| `TS_VARGA_D16` | 12 | Shodashamsha |
+| `TS_VARGA_D20` | 13 | Vimshamsha |
+| `TS_VARGA_D24` | 14 | Chaturvimshamsha |
+| `TS_VARGA_D27` | 15 | Saptavimshamsha |
+| `TS_VARGA_D30` | 16 | Trimshamsha |
+| `TS_VARGA_D40` | 17 | Khavedamsha |
+| `TS_VARGA_D45` | 18 | Akshavedamsha |
+| `TS_VARGA_D60` | 19 | Shashtiamsha |
+| `TS_VARGA_D150` | 20 | Nadiamsha |
+
+## ts_dasha_system
+
+The dasha systems the catalogue names; each row of the kernel lives in the dasha crate, and only V rows are implemented. Members are the catalogue's ids; the full key id is `(TS_KIND_DASHA_SYSTEM << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DASHA_SYSTEM_VIMSHOTTARI` | 0 | Vimshottari |
+| `TS_DASHA_SYSTEM_ASHTOTTARI` | 1 | Ashtottari |
+| `TS_DASHA_SYSTEM_DWADASHOTTARI` | 2 | Dwadashottari |
+| `TS_DASHA_SYSTEM_PANCHOTTARI` | 3 | Panchottari |
+| `TS_DASHA_SYSTEM_SHATABDIKA` | 4 | Shatabdika |
+| `TS_DASHA_SYSTEM_CHATURASHITI_SAMA` | 5 | Chaturashiti Sama |
+| `TS_DASHA_SYSTEM_DWISAPTATI_SAMA` | 6 | Dwisaptati Sama |
+| `TS_DASHA_SYSTEM_YOGINI` | 7 | Yogini |
+| `TS_DASHA_SYSTEM_TRIBHAGI` | 8 | Tribhagi |
+| `TS_DASHA_SYSTEM_SHODASHOTTARI` | 9 | Shodashottari |
+| `TS_DASHA_SYSTEM_SHATTRIMSHA_SAMA` | 10 | Shattrimsha Sama |
+| `TS_DASHA_SYSTEM_SHASHTIHAYANI` | 11 | Shashtihayani |
+| `TS_DASHA_SYSTEM_TITHI_ASHTOTTARI` | 12 | Tithi Ashtottari |
+| `TS_DASHA_SYSTEM_TITHI_YOGINI` | 13 | Tithi Yogini |
+| `TS_DASHA_SYSTEM_YOGA_VIMSHOTTARI` | 14 | Yoga Vimshottari |
+| `TS_DASHA_SYSTEM_KARANA_CHATURASHITI` | 15 | Karana Chaturashiti |
+| `TS_DASHA_SYSTEM_NAISARGIKA` | 16 | Naisargika |
+| `TS_DASHA_SYSTEM_TARA` | 17 | Tara |
+| `TS_DASHA_SYSTEM_KARAKA` | 18 | Karaka |
+| `TS_DASHA_SYSTEM_AAYU` | 19 | Aayu |
+| `TS_DASHA_SYSTEM_ASHTAKAVARGA` | 20 | Ashtakavarga |
+| `TS_DASHA_SYSTEM_PANCHASWARA` | 21 | Panchaswara |
+| `TS_DASHA_SYSTEM_CHARA` | 22 | Chara |
+| `TS_DASHA_SYSTEM_NARAYANA` | 23 | Narayana |
+| `TS_DASHA_SYSTEM_PADANADHAMSA` | 24 | Padanadhamsa |
+| `TS_DASHA_SYSTEM_TRIKONA` | 25 | Trikona |
+| `TS_DASHA_SYSTEM_DRIG` | 26 | Drig |
+| `TS_DASHA_SYSTEM_SHOOLA` | 27 | Shoola |
+| `TS_DASHA_SYSTEM_NIRYANA_SHOOLA` | 28 | Niryana Shoola |
+| `TS_DASHA_SYSTEM_MANDOOKA` | 29 | Mandooka |
+| `TS_DASHA_SYSTEM_STHIRA` | 30 | Sthira |
+| `TS_DASHA_SYSTEM_SUDASA` | 31 | Sudasa |
+| `TS_DASHA_SYSTEM_VARNADA` | 32 | Varnada |
+| `TS_DASHA_SYSTEM_YOGARDHA` | 33 | Yogardha |
+| `TS_DASHA_SYSTEM_KALACHAKRA` | 34 | Kalachakra |
+| `TS_DASHA_SYSTEM_SUDARSHANA_CHAKRA` | 35 | Sudarshana Chakra |
+| `TS_DASHA_SYSTEM_PATYAYINI` | 36 | Patyayini |
+| `TS_DASHA_SYSTEM_MUDDA` | 37 | Mudda |
+| `TS_DASHA_SYSTEM_VARSHA_NARAYANA` | 38 | Varsha Narayana |
+| `TS_DASHA_SYSTEM_VARSHA_YOGINI` | 39 | Varsha Yogini |
+
+## ts_bala_scheme
+
+The strength schemes; rows live in the strength kernel. Members are the catalogue's ids; the full key id is `(TS_KIND_BALA_SCHEME << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BALA_SCHEME_PARASHARA` | 0 | Parashara |
+| `TS_BALA_SCHEME_PARASHARA_EXTENDED` | 1 | Parashara Extended |
+
+## ts_koota
+
+The Ashta Koota and the Dasha Koota extensions. Members are the catalogue's ids; the full key id is `(TS_KIND_KOOTA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_KOOTA_VARNA` | 0 | Varna |
+| `TS_KOOTA_VASHYA` | 1 | Vashya |
+| `TS_KOOTA_TARA` | 2 | Tara |
+| `TS_KOOTA_YONI` | 3 | Yoni |
+| `TS_KOOTA_GRAHA_MAITRI` | 4 | Graha Maitri |
+| `TS_KOOTA_GANA` | 5 | Gana |
+| `TS_KOOTA_BHAKOOT` | 6 | Bhakoot |
+| `TS_KOOTA_NADI` | 7 | Nadi |
+| `TS_KOOTA_RAJJU` | 8 | Rajju |
+| `TS_KOOTA_VEDHA` | 9 | Vedha |
+| `TS_KOOTA_STREE_DEERGHA` | 10 | Stree Deergha |
+| `TS_KOOTA_MAHENDRA` | 11 | Mahendra |
+
+## ts_chara_karaka
+
+The Jaimini significators, in rank order. Members are the catalogue's ids; the full key id is `(TS_KIND_CHARA_KARAKA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CHARA_KARAKA_ATMAKARAKA` | 0 | Atmakaraka |
+| `TS_CHARA_KARAKA_AMATYAKARAKA` | 1 | Amatyakaraka |
+| `TS_CHARA_KARAKA_BHRATRIKARAKA` | 2 | Bhratrikaraka |
+| `TS_CHARA_KARAKA_MATRIKARAKA` | 3 | Matrikaraka |
+| `TS_CHARA_KARAKA_PUTRAKARAKA` | 4 | Putrakaraka |
+| `TS_CHARA_KARAKA_GNATIKARAKA` | 5 | Gnatikaraka |
+| `TS_CHARA_KARAKA_DARAKARAKA` | 6 | Darakaraka |
+| `TS_CHARA_KARAKA_PITRIKARAKA` | 7 | Pitrikaraka |
+
+## ts_chart_kind
+
+What a chart is a chart of. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_KIND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CHART_KIND_NATAL` | 0 | Natal |
+| `TS_CHART_KIND_TRANSIT` | 1 | Transit |
+| `TS_CHART_KIND_EVENT` | 2 | Event |
+| `TS_CHART_KIND_PRASHNA` | 3 | Prashna |
+| `TS_CHART_KIND_RETURN` | 4 | Return |
+| `TS_CHART_KIND_RELOCATED` | 5 | Relocated |
+| `TS_CHART_KIND_COMPOSITE` | 6 | Composite |
+
+## ts_point
+
+Derived points that behave like bodies; each has a formula in the module that owns it. Members are the catalogue's ids; the full key id is `(TS_KIND_POINT << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_POINT_LAGNA` | 0 | The ascendant |
+| `TS_POINT_MC` | 1 | The midheaven |
+| `TS_POINT_DESCENDANT` | 2 | The descendant |
+| `TS_POINT_IC` | 3 | The imum coeli |
+| `TS_POINT_BHAVA_LAGNA` | 4 | Bhava lagna |
+| `TS_POINT_HORA_LAGNA` | 5 | Hora lagna |
+| `TS_POINT_GHATI_LAGNA` | 6 | Ghati lagna |
+| `TS_POINT_VIGHATI_LAGNA` | 7 | Vighati lagna |
+| `TS_POINT_VARNADA_LAGNA` | 8 | Varnada lagna |
+| `TS_POINT_SREE_LAGNA` | 9 | Sree lagna |
+| `TS_POINT_INDU_LAGNA` | 10 | Indu lagna |
+| `TS_POINT_PRANAPADA_LAGNA` | 11 | Pranapada lagna |
+| `TS_POINT_DHUMA` | 12 | Dhuma |
+| `TS_POINT_VYATIPATA` | 13 | Vyatipata |
+| `TS_POINT_PARIVESHA` | 14 | Parivesha |
+| `TS_POINT_INDRACHAPA` | 15 | Indrachapa |
+| `TS_POINT_UPAKETU` | 16 | Upaketu |
+| `TS_POINT_GULIKA` | 17 | Gulika |
+| `TS_POINT_MANDI` | 18 | Mandi |
+| `TS_POINT_KALA` | 19 | Kala |
+| `TS_POINT_MRITYU` | 20 | Mrityu |
+| `TS_POINT_ARDHAPRAHARA` | 21 | Ardhaprahara |
+| `TS_POINT_YAMAGHANTAKA` | 22 | Yamaghantaka |
+| `TS_POINT_BHRIGU_BINDU` | 23 | Bhrigu bindu |
+| `TS_POINT_YOGI` | 24 | The yogi point |
+| `TS_POINT_AVAYOGI` | 25 | The avayogi point |
+| `TS_POINT_SAHAYOGI` | 26 | The sahayogi point |
+| `TS_POINT_TRISPHUTA` | 27 | Trisphuta |
+| `TS_POINT_CHATUSSPHUTA` | 28 | Chatussphuta |
+| `TS_POINT_PANCHASPHUTA` | 29 | Panchasphuta |
+| `TS_POINT_PRANA_SPHUTA` | 30 | Prana sphuta |
+| `TS_POINT_DEHA_SPHUTA` | 31 | Deha sphuta |
+| `TS_POINT_MRITYU_SPHUTA` | 32 | Mrityu sphuta |
+| `TS_POINT_BEEJA_SPHUTA` | 33 | Beeja sphuta |
+| `TS_POINT_KSHETRA_SPHUTA` | 34 | Kshetra sphuta |
+| `TS_POINT_KARAKAMSHA` | 35 | Karakamsha |
+| `TS_POINT_SWAMSHA` | 36 | Swamsha |
+| `TS_POINT_A1` | 37 | Arudha of house 1 |
+| `TS_POINT_A2` | 38 | Arudha of house 2 |
+| `TS_POINT_A3` | 39 | Arudha of house 3 |
+| `TS_POINT_A4` | 40 | Arudha of house 4 |
+| `TS_POINT_A5` | 41 | Arudha of house 5 |
+| `TS_POINT_A6` | 42 | Arudha of house 6 |
+| `TS_POINT_A7` | 43 | Arudha of house 7 |
+| `TS_POINT_A8` | 44 | Arudha of house 8 |
+| `TS_POINT_A9` | 45 | Arudha of house 9 |
+| `TS_POINT_A10` | 46 | Arudha of house 10 |
+| `TS_POINT_A11` | 47 | Arudha of house 11 |
+| `TS_POINT_A12` | 48 | Arudha of house 12 |
+
+## ts_muhurta_nature
+
+The seven muhurta natures of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_NATURE << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MUHURTA_NATURE_DHRUVA` | 0 | Dhruva |
+| `TS_MUHURTA_NATURE_CHARA` | 1 | Chara |
+| `TS_MUHURTA_NATURE_UGRA` | 2 | Ugra |
+| `TS_MUHURTA_NATURE_KSHIPRA` | 3 | Kshipra |
+| `TS_MUHURTA_NATURE_MRIDU` | 4 | Mridu |
+| `TS_MUHURTA_NATURE_MISHRA` | 5 | Mishra |
+| `TS_MUHURTA_NATURE_TIKSHNA` | 6 | Tikshna |
+
+## ts_modality
+
+Movable, fixed and dual signs. Members are the catalogue's ids; the full key id is `(TS_KIND_MODALITY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MODALITY_CHARA` | 0 | Movable |
+| `TS_MODALITY_STHIRA` | 1 | Fixed |
+| `TS_MODALITY_DWISWABHAVA` | 2 | Dual |
+
+## ts_nature
+
+The natural benefic or malefic character of a graha. Members are the catalogue's ids; the full key id is `(TS_KIND_NATURE << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_NATURE_BENEFIC` | 0 | Benefic |
+| `TS_NATURE_MALEFIC` | 1 | Malefic |
+| `TS_NATURE_NEUTRAL` | 2 | Neutral |
+
+## ts_guna
+
+The three gunas. Members are the catalogue's ids; the full key id is `(TS_KIND_GUNA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_GUNA_SATTVA` | 0 | Sattva |
+| `TS_GUNA_RAJAS` | 1 | Rajas |
+| `TS_GUNA_TAMAS` | 2 | Tamas |
+
+## ts_direction
+
+The eight directions. Members are the catalogue's ids; the full key id is `(TS_KIND_DIRECTION << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DIRECTION_EAST` | 0 | East |
+| `TS_DIRECTION_WEST` | 1 | West |
+| `TS_DIRECTION_NORTH` | 2 | North |
+| `TS_DIRECTION_SOUTH` | 3 | South |
+| `TS_DIRECTION_NORTHEAST` | 4 | Northeast |
+| `TS_DIRECTION_NORTHWEST` | 5 | Northwest |
+| `TS_DIRECTION_SOUTHEAST` | 6 | Southeast |
+| `TS_DIRECTION_SOUTHWEST` | 7 | Southwest |
+
+## ts_gender
+
+Grammatical and classical gender. Members are the catalogue's ids; the full key id is `(TS_KIND_GENDER << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_GENDER_MALE` | 0 | Male |
+| `TS_GENDER_FEMALE` | 1 | Female |
+| `TS_GENDER_NEUTRAL` | 2 | Neutral |
+
+## ts_calendar
+
+The calendars the SDK ships. Members are the catalogue's ids; the full key id is `(TS_KIND_CALENDAR << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CALENDAR_GREGORIAN` | 0 | Gregorian |
+| `TS_CALENDAR_JULIAN` | 1 | Julian |
+| `TS_CALENDAR_MIXED` | 2 | Mixed |
+| `TS_CALENDAR_ISO_WEEK` | 3 | Iso Week |
+| `TS_CALENDAR_BIKRAM_SAMBAT` | 4 | Bikram Sambat |
+| `TS_CALENDAR_INDIAN_LUNISOLAR` | 5 | Indian Lunisolar |
+
+## ts_era
+
+The era numbers a date may carry. Members are the catalogue's ids; the full key id is `(TS_KIND_ERA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ERA_VIKRAMA` | 0 | Vikrama |
+| `TS_ERA_SHAKA` | 1 | Shaka |
+| `TS_ERA_KALI` | 2 | Kali |
+| `TS_ERA_NEPAL_SAMBAT` | 3 | Nepal Sambat |
+| `TS_ERA_BUDDHA` | 4 | Buddha |
+| `TS_ERA_KOLLAM` | 5 | Kollam |
+| `TS_ERA_BENGALI` | 6 | Bengali |
+| `TS_ERA_COMMON_ERA` | 7 | The common era of the Gregorian and Julian calendars |
+| `TS_ERA_BEFORE_COMMON_ERA` | 8 | Before the common era; year 1 BCE is astronomical year 0 |
+
+## ts_body_class
+
+What kind of body a graha is. Members are the catalogue's ids; the full key id is `(TS_KIND_BODY_CLASS << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BODY_CLASS_LUMINARY` | 0 | Luminary |
+| `TS_BODY_CLASS_PLANET` | 1 | Planet |
+| `TS_BODY_CLASS_NODE` | 2 | Node |
+| `TS_BODY_CLASS_OUTER` | 3 | Outer |
+
+## ts_parity
+
+Odd and even signs. Members are the catalogue's ids; the full key id is `(TS_KIND_PARITY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_PARITY_ODD` | 0 | Odd |
+| `TS_PARITY_EVEN` | 1 | Even |
+
+## ts_rising
+
+How a sign rises: head first, back first, or both. Members are the catalogue's ids; the full key id is `(TS_KIND_RISING << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RISING_SIRSHODAYA` | 0 | Sirshodaya |
+| `TS_RISING_PRISHTODAYA` | 1 | Prishtodaya |
+| `TS_RISING_UBHAYODAYA` | 2 | Ubhayodaya |
+
+## ts_sex
+
+The sex of a nakshatra's yoni animal. Members are the catalogue's ids; the full key id is `(TS_KIND_SEX << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SEX_MALE` | 0 | Male |
+| `TS_SEX_FEMALE` | 1 | Female |
+
+## ts_tithi_class
+
+The five tithi classes. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI_CLASS << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TITHI_CLASS_NANDA` | 0 | Nanda |
+| `TS_TITHI_CLASS_BHADRA` | 1 | Bhadra |
+| `TS_TITHI_CLASS_JAYA` | 2 | Jaya |
+| `TS_TITHI_CLASS_RIKTA` | 3 | Rikta |
+| `TS_TITHI_CLASS_PURNA` | 4 | Purna |
+
+## ts_auspiciousness
+
+The auspiciousness class of a nitya yoga. Members are the catalogue's ids; the full key id is `(TS_KIND_AUSPICIOUSNESS << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AUSPICIOUSNESS_AUSPICIOUS` | 0 | Auspicious |
+| `TS_AUSPICIOUSNESS_INAUSPICIOUS` | 1 | Inauspicious |
+| `TS_AUSPICIOUSNESS_MIXED` | 2 | Mixed |
+| `TS_AUSPICIOUSNESS_HIGHLY_INAUSPICIOUS` | 3 | Highly Inauspicious |
+
+## ts_degeneracy
+
+Whether a house system is undefined at some latitudes. Members are the catalogue's ids; the full key id is `(TS_KIND_DEGENERACY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DEGENERACY_NONE` | 0 | None |
+| `TS_DEGENERACY_POLAR_UNDEFINED` | 1 | Polar Undefined |
+
+## ts_ayanamsha_category
+
+How an ayanamsha is defined or used. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA_CATEGORY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AYANAMSHA_CATEGORY_VEDIC_STANDARD` | 0 | Vedic Standard |
+| `TS_AYANAMSHA_CATEGORY_VEDIC_CLASSICAL` | 1 | Vedic Classical |
+| `TS_AYANAMSHA_CATEGORY_STAR_ANCHORED` | 2 | Star Anchored |
+| `TS_AYANAMSHA_CATEGORY_WESTERN_SIDEREAL` | 3 | Western Sidereal |
+| `TS_AYANAMSHA_CATEGORY_GALACTIC` | 4 | Galactic |
+| `TS_AYANAMSHA_CATEGORY_HISTORICAL` | 5 | Historical |
+| `TS_AYANAMSHA_CATEGORY_EPOCH` | 6 | Epoch |
+
+## ts_dasha_family
+
+Which kernel a dasha system runs on. Members are the catalogue's ids; the full key id is `(TS_KIND_DASHA_FAMILY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DASHA_FAMILY_UDU` | 0 | Udu |
+| `TS_DASHA_FAMILY_RASHI` | 1 | Rashi |
+| `TS_DASHA_FAMILY_KALACHAKRA` | 2 | Kalachakra |
+| `TS_DASHA_FAMILY_SCALE` | 3 | Scale |
+| `TS_DASHA_FAMILY_COMPOSITION` | 4 | Composition |
+| `TS_DASHA_FAMILY_OWN` | 5 | Own |
+
+## ts_avastha_jagradadi
+
+The three wakefulness states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_JAGRADADI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AVASTHA_JAGRADADI_JAGRAT` | 0 | Jagrat |
+| `TS_AVASTHA_JAGRADADI_SWAPNA` | 1 | Swapna |
+| `TS_AVASTHA_JAGRADADI_SUSHUPTI` | 2 | Sushupti |
+
+## ts_avastha_deeptadi
+
+The nine Deeptadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_DEEPTADI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AVASTHA_DEEPTADI_DEEPTA` | 0 | Deepta |
+| `TS_AVASTHA_DEEPTADI_SWASTHA` | 1 | Swastha |
+| `TS_AVASTHA_DEEPTADI_MUDITA` | 2 | Mudita |
+| `TS_AVASTHA_DEEPTADI_SHANTA` | 3 | Shanta |
+| `TS_AVASTHA_DEEPTADI_DINA` | 4 | Dina |
+| `TS_AVASTHA_DEEPTADI_DUKHI` | 5 | Dukhi |
+| `TS_AVASTHA_DEEPTADI_VIKALA` | 6 | Vikala |
+| `TS_AVASTHA_DEEPTADI_KHALA` | 7 | Khala |
+| `TS_AVASTHA_DEEPTADI_KOPA` | 8 | Kopa |
+
+## ts_avastha_lajjitadi
+
+The six Lajjitadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_LAJJITADI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AVASTHA_LAJJITADI_LAJJITA` | 0 | Lajjita |
+| `TS_AVASTHA_LAJJITADI_GARVITA` | 1 | Garvita |
+| `TS_AVASTHA_LAJJITADI_KSHUDHA` | 2 | Kshudha |
+| `TS_AVASTHA_LAJJITADI_TRISHITA` | 3 | Trishita |
+| `TS_AVASTHA_LAJJITADI_MUDITA` | 4 | Mudita |
+| `TS_AVASTHA_LAJJITADI_KSHOBHITA` | 5 | Kshobhita |
+
+## ts_avastha_sayanadi
+
+The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AVASTHA_SAYANADI_SHAYANA` | 0 | Shayana |
+| `TS_AVASTHA_SAYANADI_UPAVESHANA` | 1 | Upaveshana |
+| `TS_AVASTHA_SAYANADI_NETRAPANI` | 2 | Netrapani |
+| `TS_AVASTHA_SAYANADI_PRAKASHANA` | 3 | Prakashana |
+| `TS_AVASTHA_SAYANADI_GAMANA` | 4 | Gamana |
+| `TS_AVASTHA_SAYANADI_AGAMANA` | 5 | Agamana |
+| `TS_AVASTHA_SAYANADI_SABHA` | 6 | Sabha |
+| `TS_AVASTHA_SAYANADI_AGAMA` | 7 | Agama |
+| `TS_AVASTHA_SAYANADI_BHOJANA` | 8 | Bhojana |
+| `TS_AVASTHA_SAYANADI_NRITYALIPSA` | 9 | Nrityalipsa |
+| `TS_AVASTHA_SAYANADI_KAUTUKA` | 10 | Kautuka |
+| `TS_AVASTHA_SAYANADI_NIDRA` | 11 | Nidra |
+
+## ts_point_family
+
+What kind of derived point. Members are the catalogue's ids; the full key id is `(TS_KIND_POINT_FAMILY << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_POINT_FAMILY_ANGLE` | 0 | Angle |
+| `TS_POINT_FAMILY_SPECIAL_LAGNA` | 1 | Special Lagna |
+| `TS_POINT_FAMILY_UPAGRAHA_SOLAR` | 2 | Upagraha Solar |
+| `TS_POINT_FAMILY_UPAGRAHA_DAY` | 3 | Upagraha Day |
+| `TS_POINT_FAMILY_ARUDHA` | 4 | Arudha |
+| `TS_POINT_FAMILY_SPHUTA` | 5 | Sphuta |
+| `TS_POINT_FAMILY_JAIMINI` | 6 | Jaimini |
+| `TS_POINT_FAMILY_MIDPOINT` | 7 | Midpoint |
+
+## ts_star
+
+The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_STAR << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_STAR_SHERATAN` | 0 | Sheratan, beta Arietis: the yogatara of Ashwini |
+| `TS_STAR_BHARANI` | 1 | Bharani, 41 Arietis: the yogatara of Bharani |
+| `TS_STAR_ALCYONE` | 2 | Alcyone, eta Tauri: the yogatara of Krittika; the brightest of the Pleiades |
+| `TS_STAR_ALDEBARAN` | 3 | Aldebaran, alpha Tauri: the yogatara of Rohini; a royal star |
+| `TS_STAR_MEISSA` | 4 | Meissa, lambda Orionis: the yogatara of Mrigashira |
+| `TS_STAR_BETELGEUSE` | 5 | Betelgeuse, alpha Orionis: the yogatara of Ardra |
+| `TS_STAR_POLLUX` | 6 | Pollux, beta Geminorum: the yogatara of Punarvasu |
+| `TS_STAR_ASELLUS_AUSTRALIS` | 7 | Asellus Australis, delta Cancri: the yogatara of Pushya; the anchor of the True Pushya and Sheoran ayanamshas |
+| `TS_STAR_ASHLESHA` | 8 | Ashlesha, epsilon Hydrae: the yogatara of Ashlesha |
+| `TS_STAR_REGULUS` | 9 | Regulus, alpha Leonis: the yogatara of Magha; a royal star |
+| `TS_STAR_ZOSMA` | 10 | Zosma, delta Leonis: the yogatara of Purva Phalguni |
+| `TS_STAR_DENEBOLA` | 11 | Denebola, beta Leonis: the yogatara of Uttara Phalguni |
+| `TS_STAR_ALGORAB` | 12 | Algorab, delta Corvi: the yogatara of Hasta |
+| `TS_STAR_SPICA` | 13 | Spica, alpha Virginis: the yogatara of Chitra; the anchor of the True Chitra ayanamsha (Spica at 180°) |
+| `TS_STAR_ARCTURUS` | 14 | Arcturus, alpha Boötis: the yogatara of Swati |
+| `TS_STAR_ZUBENELGENUBI` | 15 | Zubenelgenubi, alpha² Librae: the yogatara of Vishakha; the Surya Siddhanta names iota Librae instead |
+| `TS_STAR_DSCHUBBA` | 16 | Dschubba, delta Scorpii: the yogatara of Anuradha |
+| `TS_STAR_ANTARES` | 17 | Antares, alpha Scorpii: the yogatara of Jyeshtha; a royal star |
+| `TS_STAR_SHAULA` | 18 | Shaula, lambda Scorpii: the yogatara of Mula; the anchor of the True Mula ayanamsha |
+| `TS_STAR_KAUS_MEDIA` | 19 | Kaus Media, delta Sagittarii: the yogatara of Purva Ashadha |
+| `TS_STAR_NUNKI` | 20 | Nunki, sigma Sagittarii: the yogatara of Uttara Ashadha |
+| `TS_STAR_VEGA` | 21 | Vega, alpha Lyrae: the yogatara of Abhijit, the twenty-eighth nakshatra of the span table |
+| `TS_STAR_ALTAIR` | 22 | Altair, alpha Aquilae: the yogatara of Shravana |
+| `TS_STAR_ROTANEV` | 23 | Rotanev, beta Delphini: the yogatara of Dhanishtha |
+| `TS_STAR_HYDOR` | 24 | Hydor, lambda Aquarii: the yogatara of Shatabhisha |
+| `TS_STAR_MARKAB` | 25 | Markab, alpha Pegasi: the yogatara of Purva Bhadrapada |
+| `TS_STAR_ALGENIB` | 26 | Algenib, gamma Pegasi: the yogatara of Uttara Bhadrapada |
+| `TS_STAR_REVATI` | 27 | Revati, zeta Piscium A: the yogatara of Revati; the anchor of the True Revati ayanamsha (359°50′) |
+| `TS_STAR_ALPHERATZ` | 28 | Alpheratz, alpha Andromedae |
+| `TS_STAR_CAPH` | 29 | Caph, beta Cassiopeiae |
+| `TS_STAR_ANKAA` | 30 | Ankaa, alpha Phoenicis |
+| `TS_STAR_SCHEDAR` | 31 | Schedar, alpha Cassiopeiae |
+| `TS_STAR_DIPHDA` | 32 | Diphda, beta Ceti |
+| `TS_STAR_MIRACH` | 33 | Mirach, beta Andromedae |
+| `TS_STAR_ACHERNAR` | 34 | Achernar, alpha Eridani |
+| `TS_STAR_ALMACH` | 35 | Almach, gamma¹ Andromedae |
+| `TS_STAR_HAMAL` | 36 | Hamal, alpha Arietis |
+| `TS_STAR_POLARIS` | 37 | Polaris, alpha Ursae Minoris |
+| `TS_STAR_MENKAR` | 38 | Menkar, alpha Ceti |
+| `TS_STAR_ALGOL` | 39 | Algol, beta Persei |
+| `TS_STAR_MIRFAK` | 40 | Mirfak, alpha Persei |
+| `TS_STAR_AIN` | 41 | Ain, epsilon Tauri |
+| `TS_STAR_CHAMUKUY` | 42 | Chamukuy, theta² Tauri |
+| `TS_STAR_RIGEL` | 43 | Rigel, beta Orionis |
+| `TS_STAR_CAPELLA` | 44 | Capella, alpha Aurigae |
+| `TS_STAR_BELLATRIX` | 45 | Bellatrix, gamma Orionis |
+| `TS_STAR_ELNATH` | 46 | Elnath, beta Tauri |
+| `TS_STAR_NIHAL` | 47 | Nihal, beta Leporis |
+| `TS_STAR_MINTAKA` | 48 | Mintaka, delta Orionis |
+| `TS_STAR_ALNILAM` | 49 | Alnilam, epsilon Orionis |
+| `TS_STAR_ALNITAK` | 50 | Alnitak, zeta Orionis |
+| `TS_STAR_SAIPH` | 51 | Saiph, kappa Orionis |
+| `TS_STAR_MENKALINAN` | 52 | Menkalinan, beta Aurigae |
+| `TS_STAR_CANOPUS` | 53 | Canopus, alpha Carinae |
+| `TS_STAR_ALHENA` | 54 | Alhena, gamma Geminorum |
+| `TS_STAR_SIRIUS` | 55 | Sirius, alpha Canis Majoris |
+| `TS_STAR_ADHARA` | 56 | Adhara, epsilon Canis Majoris |
+| `TS_STAR_WEZEN` | 57 | Wezen, delta Canis Majoris |
+| `TS_STAR_ALUDRA` | 58 | Aludra, eta Canis Majoris |
+| `TS_STAR_CASTOR` | 59 | Castor, alpha Geminorum |
+| `TS_STAR_PROCYON` | 60 | Procyon, alpha Canis Minoris |
+| `TS_STAR_NAOS` | 61 | Naos, zeta Puppis |
+| `TS_STAR_TUREIS` | 62 | Tureis, rho Puppis |
+| `TS_STAR_AVIOR` | 63 | Avior, epsilon Carinae |
+| `TS_STAR_ALSEPHINA` | 64 | Alsephina, delta¹ Velorum |
+| `TS_STAR_SUHAIL` | 65 | Suhail, lambda Velorum |
+| `TS_STAR_MIAPLACIDUS` | 66 | Miaplacidus, beta Carinae |
+| `TS_STAR_ASPIDISKE` | 67 | Aspidiske, iota Carinae |
+| `TS_STAR_ALPHARD` | 68 | Alphard, alpha Hydrae |
+| `TS_STAR_ALGIEBA` | 69 | Algieba, gamma Leonis |
+| `TS_STAR_MERAK` | 70 | Merak, beta Ursae Majoris |
+| `TS_STAR_DUBHE` | 71 | Dubhe, alpha Ursae Majoris |
+| `TS_STAR_PHECDA` | 72 | Phecda, gamma Ursae Majoris |
+| `TS_STAR_ZANIAH` | 73 | Zaniah, eta Virginis |
+| `TS_STAR_ACRUX` | 74 | Acrux, alpha Crucis |
+| `TS_STAR_GACRUX` | 75 | Gacrux, gamma Crucis |
+| `TS_STAR_MIMOSA` | 76 | Mimosa, beta Crucis |
+| `TS_STAR_ALIOTH` | 77 | Alioth, epsilon Ursae Majoris |
+| `TS_STAR_VINDEMIATRIX` | 78 | Vindemiatrix, epsilon Virginis |
+| `TS_STAR_MIZAR` | 79 | Mizar, zeta Ursae Majoris |
+| `TS_STAR_HEZE` | 80 | Heze, zeta Virginis |
+| `TS_STAR_ALKAID` | 81 | Alkaid, eta Ursae Majoris |
+| `TS_STAR_HADAR` | 82 | Hadar, beta Centauri |
+| `TS_STAR_THUBAN` | 83 | Thuban, alpha Draconis |
+| `TS_STAR_MENKENT` | 84 | Menkent, theta Centauri |
+| `TS_STAR_SYRMA` | 85 | Syrma, iota Virginis |
+| `TS_STAR_SEGINUS` | 86 | Seginus, gamma Boötis |
+| `TS_STAR_RIGIL_KENTAURUS` | 87 | Rigil Kentaurus, alpha Centauri A |
+| `TS_STAR_IZAR` | 88 | Izar, epsilon Boötis |
+| `TS_STAR_ZUBENESCHAMALI` | 89 | Zubeneschamali, beta Librae |
+| `TS_STAR_ALPHECCA` | 90 | Alphecca, alpha Coronae Borealis |
+| `TS_STAR_UNUKALHAI` | 91 | Unukalhai, alpha Serpentis |
+| `TS_STAR_FANG` | 92 | Fang, pi Scorpii |
+| `TS_STAR_YED_PRIOR` | 93 | Yed Prior, delta Ophiuchi |
+| `TS_STAR_KORNEPHOROS` | 94 | Kornephoros, beta Herculis |
+| `TS_STAR_MARFIK` | 95 | Marfik, lambda Ophiuchi |
+| `TS_STAR_ATRIA` | 96 | Atria, alpha Trianguli Australis |
+| `TS_STAR_SABIK` | 97 | Sabik, eta Ophiuchi |
+| `TS_STAR_RASALGETHI` | 98 | Rasalgethi, alpha Herculis |
+| `TS_STAR_RASALHAGUE` | 99 | Rasalhague, alpha Ophiuchi |
+| `TS_STAR_SARGAS` | 100 | Sargas, theta Scorpii |
+| `TS_STAR_ALNASL` | 101 | Alnasl, gamma² Sagittarii |
+| `TS_STAR_KAUS_AUSTRALIS` | 102 | Kaus Australis, epsilon Sagittarii |
+| `TS_STAR_KAUS_BOREALIS` | 103 | Kaus Borealis, lambda Sagittarii |
+| `TS_STAR_SHELIAK` | 104 | Sheliak, beta Lyrae |
+| `TS_STAR_ASCELLA` | 105 | Ascella, zeta Sagittarii |
+| `TS_STAR_ALBALDAH` | 106 | Albaldah, pi Sagittarii |
+| `TS_STAR_ALBIREO` | 107 | Albireo, beta¹ Cygni |
+| `TS_STAR_ALSHAIN` | 108 | Alshain, beta Aquilae |
+| `TS_STAR_ALGEDI` | 109 | Algedi, alpha² Capricorni |
+| `TS_STAR_SADR` | 110 | Sadr, gamma Cygni |
+| `TS_STAR_PEACOCK` | 111 | Peacock, alpha Pavonis |
+| `TS_STAR_DENEB` | 112 | Deneb, alpha Cygni |
+| `TS_STAR_ALJANAH` | 113 | Aljanah, epsilon Cygni |
+| `TS_STAR_KITALPHA` | 114 | Kitalpha, alpha Equulei |
+| `TS_STAR_ALDERAMIN` | 115 | Alderamin, alpha Cephei |
+| `TS_STAR_SADALSUUD` | 116 | Sadalsuud, beta Aquarii |
+| `TS_STAR_ENIF` | 117 | Enif, epsilon Pegasi |
+| `TS_STAR_SADALMELIK` | 118 | Sadalmelik, alpha Aquarii |
+| `TS_STAR_ALNAIR` | 119 | Alnair, alpha Gruis |
+| `TS_STAR_SADALBARI` | 120 | Sadalbari, mu Pegasi |
+| `TS_STAR_SKAT` | 121 | Skat, delta Aquarii |
+| `TS_STAR_FOMALHAUT` | 122 | Fomalhaut, alpha Piscis Austrini: a royal star |
+| `TS_STAR_SCHEAT` | 123 | Scheat, beta Pegasi |
+| `TS_STAR_ERRAI` | 124 | Errai, gamma Cephei |
+| `TS_STAR_SGR_A_STAR` | 125 | Sagittarius A*, the compact radio source at the galactic centre: the anchor of the four Galactic Centre ayanamshas |
+| `TS_STAR_GALACTIC_POLE` | 126 | The north galactic pole of the galactic coordinate system referred to the ICRS (Liu, Zhu and Zhang 2011): the anchor of the True and Mula galactic-equator ayanamshas |
+| `TS_STAR_GALACTIC_POLE_IAU1958` | 127 | The IAU 1958 north galactic pole (12h49m +27°24′ at B1950.0) referred to the ICRS: the anchor of the IAU 1958 galactic-equator ayanamsha |
+
+## ts_star_class
+
+What kind of object a star-table member is. Members are the catalogue's ids; the full key id is `(TS_KIND_STAR_CLASS << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_STAR_CLASS_STAR` | 0 | A star |
+| `TS_STAR_CLASS_RADIO_SOURCE` | 1 | A compact radio source, such as the galactic centre |
+| `TS_STAR_CLASS_DIRECTION` | 2 | A fixed direction on the sky without a body, such as a galactic pole |
+
+## ts_status
+
+The status of a call, with the code it has at the C boundary.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_STATUS_OK` | 0 | Success. |
+| `TS_STATUS_INVALID_ARG` | -1 | A value refused at construction, or a request that contradicts itself. |
+| `TS_STATUS_OUT_OF_RANGE` | -2 | An instant or place outside the provider's or the calendar's coverage. |
+| `TS_STATUS_CAPABILITY` | -3 | The settings need something the provider does not declare. |
+| `TS_STATUS_PROVIDER` | -4 | The provider failed; its own code and message are carried. |
+| `TS_STATUS_NOT_CONVERGED` | -5 | A search hit its iteration cap. |
+| `TS_STATUS_UNSUPPORTED` | -6 | A registered but unimplemented variant, or an unknown key. |
+| `TS_STATUS_PACK` | -7 | A pack failed validation or targets another catalogue version. |
+| `TS_STATUS_LIMIT` | -8 | A batch, range or cache limit was exceeded. |
+| `TS_STATUS_SCHEMA_VERSION` | -9 | A struct or blob from an incompatible version. |
+| `TS_STATUS_INTERNAL` | -10 | A panic caught at the boundary; never expected. |
+
+## ts_body
+
+The bodies the port knows: the ten classical bodies of modern astrology and the four lunar points. Adapters map them to their own numbering; a body an adapter cannot compute is reported per cell, never guessed. The astrological grahas of the catalogue map onto these under the node knob (Rahu is the mean or the true node).
+
+```
+use teistro_port_ephemeris::Body;
+
+assert_eq!(Body::MeanNode.key(), "MEAN_NODE");
+assert_eq!("moon".parse::<Body>().ok(), Some(Body::Moon));
+assert_eq!(Body::from_id(Body::Pluto.id()), Some(Body::Pluto));
+assert!(!Body::TrueNode.has_distance());
+```
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BODY_SUN` | 0 | The Sun. |
+| `TS_BODY_MOON` | 1 | The Moon. |
+| `TS_BODY_MERCURY` | 2 | Mercury. |
+| `TS_BODY_VENUS` | 3 | Venus. |
+| `TS_BODY_MARS` | 4 | Mars. |
+| `TS_BODY_JUPITER` | 5 | Jupiter. |
+| `TS_BODY_SATURN` | 6 | Saturn. |
+| `TS_BODY_URANUS` | 7 | Uranus. |
+| `TS_BODY_NEPTUNE` | 8 | Neptune. |
+| `TS_BODY_PLUTO` | 9 | Pluto. |
+| `TS_BODY_MEAN_NODE` | 10 | The mean ascending lunar node. |
+| `TS_BODY_TRUE_NODE` | 11 | The true (osculating) ascending lunar node. |
+| `TS_BODY_MEAN_APOGEE` | 12 | The mean lunar apogee. |
+| `TS_BODY_OSCULATING_APOGEE` | 13 | The osculating lunar apogee. |
+
+## ts_time_scale
+
+The time scale of the instants in a request.
+
+```
+use teistro_port_ephemeris::TimeScale;
+
+assert_eq!(TimeScale::from_id(TimeScale::Tt.id()), Some(TimeScale::Tt));
+assert_eq!(TimeScale::Ut1.to_string(), "UT1");
+```
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TIME_SCALE_UT1` | 0 | Universal Time (UT1), the scale of civil time and of rise and set. |
+| `TS_TIME_SCALE_TT` | 1 | Terrestrial Time, the scale of the ephemerides. |
+
+## ts_distance_unit
+
+What a cell's distance is measured in.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DISTANCE_UNIT_ASTRONOMICAL_UNITS` | 0 | Astronomical units: an ephemeris. |
+| `TS_DISTANCE_UNIT_MEAN_DISTANCES` | 1 | The body's mean distance, so 1 is the mean: a classical model, whose hypotenuse is on the radius. |
+
+## ts_speed_model
+
+How a provider's speeds are defined.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SPEED_MODEL_DERIVATIVE` | 0 | The rate of the position: a central difference over a short step agrees with it, which the kit checks. |
+| `TS_SPEED_MODEL_RULE` | 1 | A text's rule for the daily motion, which its tradition uses as the speed and which need not be the derivative of its places. |
+
+## ts_astronomy
+
+Which astronomy a provider computes.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ASTRONOMY_MODERN` | 0 | The sky as observed: an ephemeris, whose overrides the kit holds to the SDK's IAU routines. |
+| `TS_ASTRONOMY_CLASSICAL` | 1 | A classical text's model, whose obliquity, precession, daily motions and sunrise are the text's own definitions; the kit measures their distance from modern astronomy and publishes it rather than gating it. |
+
+## ts_centre
+
+Where a position is seen from.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CENTRE_GEOCENTRIC` | 0 | The centre of the Earth. |
+| `TS_CENTRE_TOPOCENTRIC` | 1 | An observer on the Earth; the request carries the place. |
+| `TS_CENTRE_HELIOCENTRIC` | 2 | The centre of the Sun. |
+| `TS_CENTRE_BARYCENTRIC` | 3 | The solar-system barycentre. |
+
+## ts_equinox
+
+The equinox and equator the coordinates refer to.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_EQUINOX_OF_DATE` | 0 | The equinox of date. |
+| `TS_EQUINOX_J2000` | 1 | The J2000.0 equinox. |
+
+## ts_coordinates
+
+The coordinate system of a position.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_COORDINATES_ECLIPTIC` | 0 | Ecliptic longitude and latitude. |
+| `TS_COORDINATES_EQUATORIAL` | 1 | Right ascension and declination. |
+
+## ts_provider_code
+
+What a vtable function returns: `0` for success, and one of these for a failure the port names. A provider's own code stays outside them (`ProviderError::RESERVED_CODES`), so a binding that implements a provider need never write a number.
+
+```
+use teistro_port_ephemeris::{ProviderCode, ProviderError};
+
+assert_eq!(ProviderCode::Unsupported as i32, -1);
+assert_eq!(ProviderError::unsupported("positions").code(), ProviderCode::Unsupported as i32);
+```
+
+| member | value | what it is |
+|---|---|---|
+| `TS_PROVIDER_CODE_OK` | 0 | The call succeeded. |
+| `TS_PROVIDER_CODE_UNSUPPORTED` | -1 | The operation, the frame or the option is not implemented by this provider. A provider that cannot answer in the frame asked for says so with this, and the SDK asks again in the provider's own frame and completes the rest itself. |
+| `TS_PROVIDER_CODE_OUT_OF_RANGE` | -2 | The instant is outside the provider's coverage. |
+| `TS_PROVIDER_CODE_DATA_MISSING` | -3 | A data file the provider needs is missing. |
+| `TS_PROVIDER_CODE_REFUSED` | -4 | The provider refused rather than answer with something else. |
+| `TS_PROVIDER_CODE_INVALID` | -5 | The request is malformed. |
+
+## ts_resolution
+
+How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RESOLUTION_DEFINED` | 0 | A mathematical definition; exact by construction. |
+| `TS_RESOLUTION_TABULAR` | 1 | From the authority's published table. |
+| `TS_RESOLUTION_COMPUTED` | 2 | Computed by the SDK's engine outside the table's range. |
+| `TS_RESOLUTION_DIVERGENT` | 3 | Inside the range and the table and the engine disagree; the table was followed and the engine's month and day are reported beside it. |
+
+## ts_scale
+
+A time scale of the conversions; the first two ids are the port's.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SCALE_UT1` | 0 | Universal Time (UT1). |
+| `TS_SCALE_TT` | 1 | Terrestrial Time. |
+| `TS_SCALE_UTC` | 2 | Coordinated Universal Time, through the leap-second table from 1972 and read as UT1 before it. |
+
+## ts_zone_kind
+
+What a zone specification names.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ZONE_KIND_IANA` | 0 | A zone of the embedded database, by IANA name. |
+| `TS_ZONE_KIND_FIXED` | 1 | A fixed offset from UTC. |
+| `TS_ZONE_KIND_LOCAL_MEAN` | 2 | Local mean time at a longitude. |
+
+## ts_zone_source
+
+Where a resolution's offset came from.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ZONE_SOURCE_IANA` | 0 | The zone database. |
+| `TS_ZONE_SOURCE_LOCAL_MEAN` | 1 | Local mean time from the longitude. |
+| `TS_ZONE_SOURCE_MANUAL` | 2 | A fixed offset the consumer stated. |
+
+## ts_zone_era
+
+Which rules produced the offset.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ZONE_ERA_CURRENT` | 0 | An offset the zone applies in the database's own year. |
+| `TS_ZONE_ERA_HISTORICAL` | 1 | An offset from the zone's earlier rules. |
+| `TS_ZONE_ERA_BEFORE_RULES` | 2 | Before the zone's first rule: the database's local-mean-time stub. |
+
+## ts_dst
+
+What the daylight-saving policy did.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DST_NONE` | 0 | The civil time was unambiguous. |
+| `TS_DST_GAP` | 1 | The civil time fell in a gap and was shifted forward past it. |
+| `TS_DST_OVERLAP` | 2 | The civil time fell in an overlap and one occurrence was chosen. |
+
+## ts_chosen
+
+Which occurrence an overlap resolved to.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CHOSEN_EARLIER` | 0 | The first occurrence, the earlier instant. |
+| `TS_CHOSEN_LATER` | 1 | The second occurrence, the later instant. |
+
+## ts_zone_warning
+
+A warning of a resolution; `warnings` in the resolution is a bit set, bit `n` for the warning with value `n`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ZONE_WARNING_OFFSET_DIFFERS_FROM_CURRENT_RULES` | 0 | The offset is not one the zone applies today. |
+| `TS_ZONE_WARNING_DST_AMBIGUOUS` | 1 | The civil time occurred twice; the policy chose. |
+| `TS_ZONE_WARNING_DST_GAP_SHIFTED` | 2 | The civil time did not exist; the policy shifted it forward. |
+| `TS_ZONE_WARNING_LEAP_SECOND_FOLDED` | 3 | A leap second (23:59:60) was folded onto the following midnight. |
+| `TS_ZONE_WARNING_LEAP_TABLE_EXPIRED` | 4 | The instant lies beyond the leap-second table's word. |
+| `TS_ZONE_WARNING_TIME_UNKNOWN_FALLBACK` | 5 | The time was not given; the policy supplied one. |
+
+## ts_delta_t_source
+
+What produced a Delta T value.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DELTA_T_SOURCE_TABLE` | 0 | Interpolated in the IERS table. |
+| `TS_DELTA_T_SOURCE_MODEL` | 1 | From a model, outside the table. |
+| `TS_DELTA_T_SOURCE_LEAP_SECONDS` | 2 | Through the leap-second table: TT less UTC, exact. |
+| `TS_DELTA_T_SOURCE_CUSTOM` | 3 | Supplied by the consumer. |
+

@@ -1,0 +1,51 @@
+---
+title: ts_frame_unpack
+description: "Reads packed frame bits back into their fields; bits no frame sets are `INVALID_ARG`."
+---
+
+Reads packed frame bits back into their fields; bits no frame sets are `INVALID_ARG`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_frame_unpack(uint32_t bits, ts_frame * out_frame);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+frame_unpack(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.frameUnpack(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `bits` | `uint32_t` | a value | — |
+| `out_frame` | `ts_frame *` | a struct written | — |
+
+## What it hands back
+
+`frame`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`out_frame` must be valid for a read of its `struct_size` and a write.
+
+Declared in `crates/ffi/src/frame.rs`.

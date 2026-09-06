@@ -1,0 +1,342 @@
+---
+title: Structs
+description: Every struct of the C ABI, with each field's unit, range and example.
+---
+
+Every struct begins with `struct_size`, which a caller sets to `sizeof` before the call. A field a library may not fill is optional in the typed bindings, and a field with a unit or a range carries it here because the description carries it.
+
+## ts_observer
+
+A C observer: degrees and metres, validated into a `Place` on the way in.
+
+| field | type | what it carries |
+|---|---|---|
+| `longitude_deg` | `double` | Degrees, east positive. Unit `deg`. Range `[-180,180]`. Example `85.3240`. |
+| `latitude_deg` | `double` | Degrees, north positive. Unit `deg`. Range `[-90,90]`. Example `27.7172`. |
+| `altitude_m` | `double` | Metres above sea level. Unit `m`. Range `[-500,12000]`. Example `1400`. |
+
+## ts_position_request
+
+A C position request over a grid.
+
+| field | type | what it carries |
+|---|---|---|
+| `scale` | `uint32_t` | The scale the instants are on. One of `ts_time_scale`. Example `0`. |
+| `frame_bits` | `uint32_t` | The frame the positions are wanted in, packed; `ts_frame_pack` builds it from a frame's fields and `ts_frame_unpack` reads it back. Example `0`. |
+| `speeds` | `uint8_t` | Whether speeds are wanted. Example `1`. |
+| `has_observer` | `uint8_t` | Whether `observer` is set. |
+| `observer` | `ts_observer` | The observer, which a topocentric frame needs. |
+| `jds` | `const double *` | The instants, on the request's scale. Unit `jd`. |
+| `jd_count` | `size_t` | How many instants. |
+| `bodies` | `const uint16_t *` | The bodies. One of `ts_body`. |
+| `body_count` | `size_t` | How many bodies. |
+
+## ts_position_columns
+
+C columns the provider fills: caller-owned arrays of `capacity` cells, instants outermost.
+
+| field | type | what it carries |
+|---|---|---|
+| `frame_bits` | `uint32_t` | Written by the provider: `Frame::to_bits` of the values. |
+| `lon` | `double *` | Longitudes. Unit `deg`. |
+| `lat` | `double *` | Latitudes. Unit `deg`. |
+| `dist` | `double *` | Distances. |
+| `lon_speed` | `double *` | Longitude speeds. Unit `deg/day`. |
+| `lat_speed` | `double *` | Latitude speeds. Unit `deg/day`. |
+| `dist_speed` | `double *` | Distance speeds. |
+| `status` | `int32_t *` | Per-cell status codes (`CellStatus::code`). |
+| `source` | `uint32_t *` | Per-cell sources (`Source::to_bits`). |
+| `capacity` | `size_t` | The number of cells each array holds. |
+
+## ts_obliquity
+
+A C obliquity.
+
+| field | type | what it carries |
+|---|---|---|
+| `mean_deg` | `double` | Mean obliquity, degrees. |
+| `true_deg` | `double` | True obliquity, degrees. |
+| `nutation_lon_deg` | `double` | Nutation in longitude, degrees. |
+| `nutation_obl_deg` | `double` | Nutation in obliquity, degrees. |
+
+## ts_horizon_request
+
+A C horizon-event request.
+
+| field | type | what it carries |
+|---|---|---|
+| `body` | `uint16_t` | `Body::id`. |
+| `kind` | `uint8_t` | `HorizonEventKind::id`. |
+| `disc` | `uint8_t` | `DiscPoint::id`. |
+| `refraction` | `uint8_t` | `Refraction::id`. |
+| `observer` | `ts_observer` | The place. |
+| `from_jd_ut1` | `double` | The search begins here, UT1. |
+| `window_days` | `double` | The search ends this many days later. |
+| `altitude_deg` | `double` | The altitude of the disc point at the event, degrees. |
+
+## ts_crossing_request
+
+A C crossings request.
+
+| field | type | what it carries |
+|---|---|---|
+| `frame_bits` | `uint32_t` | `Frame::to_bits`. |
+| `quantity_kind` | `uint8_t` | `Quantity::kind_id`: 0 a longitude, 1 a speed, 2 a composite. |
+| `has_observer` | `uint8_t` | Whether `observer` is set. |
+| `first_body` | `uint16_t` | `Body::id` of the first body. |
+| `second_body` | `uint16_t` | `Body::id` of the second body of a composite; else zero. |
+| `coefficient_a` | `double` | The first body's coefficient in a composite. |
+| `coefficient_b` | `double` | The second body's coefficient in a composite. |
+| `origin_deg` | `double` | The lattice's first line, degrees. |
+| `step_deg` | `double` | The lattice's spacing, degrees; zero for a single target. |
+| `from_jd_ut1` | `double` | The window's start, UT1. |
+| `to_jd_ut1` | `double` | The window's end, UT1. |
+| `tolerance_days` | `double` | How closely each instant is placed, days. |
+| `observer` | `ts_observer` | The observer, read when `has_observer` is set. |
+
+## ts_crossing_event
+
+A C crossing event.
+
+| field | type | what it carries |
+|---|---|---|
+| `jd_ut1` | `double` | The instant, UT1. |
+| `boundary_deg` | `double` | The boundary reached, degrees. |
+| `direction` | `uint8_t` | `Direction::id`. |
+
+## ts_data_hash
+
+A C data hash.
+
+| field | type | what it carries |
+|---|---|---|
+| `file` | `const char *` | The file name, NUL-terminated. |
+| `sha256` | `const char *` | SHA-256 as hex, NUL-terminated. |
+| `bytes` | `uint64_t` | The size in bytes. |
+
+## ts_capabilities
+
+C capabilities; every pointer is owned by the provider and valid for its lifetime.
+
+| field | type | what it carries |
+|---|---|---|
+| `speeds` | `uint8_t` | Whether speeds are returned. |
+| `deterministic` | `uint8_t` | Whether identical requests give identical bits. |
+| `tier` | `uint8_t` | The tier plus one, zero for none (`Source::to_bits` encoding). |
+| `distance_unit` | `uint8_t` | `DistanceUnit::id`. |
+| `speed_model` | `uint8_t` | `SpeedModel::id`. |
+| `astronomy` | `uint8_t` | `Astronomy::id`. |
+| `name` | `const char *` | The name, NUL-terminated. |
+| `version` | `const char *` | The version, NUL-terminated. |
+| `data_version` | `const char *` | The data version, NUL-terminated. |
+| `jd_min` | `double` | Coverage start, UT1. |
+| `jd_max` | `double` | Coverage end, UT1. |
+| `bodies` | `const uint16_t *` | The bodies as ids. One of `ts_body`. |
+| `body_count` | `size_t` | How many. |
+| `native_frame_bits` | `uint32_t` | `Frame::to_bits` of the native frame. |
+| `overrides` | `uint32_t` | `Overrides::bits`. |
+| `ayanamshas` | `const uint16_t *` | The ayanamshas the override knows, as catalogue ids. One of `ts_ayanamsha`. |
+| `ayanamsha_count` | `size_t` | How many. |
+| `hashes` | `const ts_data_hash *` | The data hashes. |
+| `hash_count` | `size_t` | How many. |
+
+## ts_provider_vtable
+
+The vtable: `user_data` is whatever the provider registered and is passed back to every function; a null function is an undeclared operation.
+
+| field | type | what it carries |
+|---|---|---|
+| `abi_version` | `uint32_t` | `VTABLE_ABI_VERSION`. |
+| `capabilities` | `ts_capabilities_fn` | The capabilities; must not be null. |
+| `positions` | `ts_positions_fn` | The positions; must not be null. |
+| `obliquity` | `ts_obliquity_fn` | The obliquity override. |
+| `delta_t` | `ts_delta_t_fn` | The Delta T override, seconds. |
+| `ayanamsha` | `ts_ayanamsha_fn` | The ayanamsha override, degrees, by catalogue id. |
+| `dut1` | `ts_dut1_fn` | The DUT1 override, seconds. |
+| `horizon_event` | `ts_horizon_event_fn` | The rise and set override. |
+| `crossings` | `ts_crossings_fn` | The crossings override. |
+
+## ts_string
+
+A string the library allocated: UTF-8, NUL-terminated at `datalen`, `len` bytes before the NUL, freed by `ts_string_free`.
+
+| field | type | what it carries |
+|---|---|---|
+| `data` | `uint8_t *` | The bytes; null when empty. |
+| `len` | `size_t` | The number of bytes before the NUL. |
+| `cap` | `size_t` | The allocation's capacity, needed to free it. |
+
+## ts_str
+
+A string the library lends: UTF-8, NUL-terminated, `len` bytes before the NUL, valid until the next call on the same context.
+
+| field | type | what it carries |
+|---|---|---|
+| `data` | `const char *` | The bytes; never null once written. |
+| `len` | `size_t` | The number of bytes before the NUL. |
+
+## ts_hash
+
+A SHA-256 as thirty-two bytes; every hash the SDK reports in provenance is one, rendered as sixty-four hex digits in JSON.
+
+| field | type | what it carries |
+|---|---|---|
+| `bytes` | `uint8_t[32]` | The digest. |
+
+## ts_blob
+
+A result blob the library allocated; its layout is the `TSRB` encoding under the schema the entry point names, both in `idl/api.json`.
+
+| field | type | what it carries |
+|---|---|---|
+| `data` | `uint8_t *` | The bytes, 8-aligned; null when empty. |
+| `len` | `size_t` | The number of bytes. |
+| `cap` | `size_t` | The allocation's capacity, needed to free it. |
+
+## ts_context_options
+
+How a context is built. Every field may be left at its zero value: a null `profile` selects `ts_default_profile`, a null `settings_json` patches nothing, a null `locale` renders in the base locale.
+
+| field | type | what it carries |
+|---|---|---|
+| `flags` | `uint32_t` | `TS_CONTEXT_*` flags, or zero. Example `0`. |
+| `profile` | `const char *` | The shipped profile's id (`parashari-classical`, `nepali-default`, `kp-default`, `western-tropical-default`, `conformance-baseline`). Example `parashari-classical`. |
+| `settings_json` | `const char *` | A JSON settings patch over the profile: an object whose groups and knobs are the settings document's, every one optional; an unknown knob or a value outside its type is `INVALID_ARG` naming it. |
+| `locale` | `const char *` | The locale every render resolves from (`ne-Deva-NP`). Example `en-Latn`. |
+
+## ts_error
+
+The last error of a call on a context: the status, the detail, and the message, field, hint and message key as strings the context lends until its next call; an `OK` record has empty strings.
+
+| field | type | what it carries |
+|---|---|---|
+| `status` | `int32_t` | The status code. One of `ts_status`. |
+| `provider_code` | `int32_t` | The provider's own code when the status is `PROVIDER`, else zero. |
+| `detail` | `const char *` | The detail's name (`UNKNOWN_KEY`), or null. |
+| `message` | `const char *` | The English message naming the field and the range. |
+| `field` | `const char *` | The field involved, or null. |
+| `hint` | `const char *` | A hint (`did you mean ...`), or null. |
+| `key` | `const char *` | The localisable message key, or null. |
+
+## ts_frame
+
+A frame by name: what a position is seen from, in which equinox and coordinates, in which zodiac, with which corrections applied.
+
+| field | type | what it carries |
+|---|---|---|
+| `ayanamsha` | `uint16_t` | The ayanamsha, read only when `sidereal` is set; `0xFFFF` names none, which is what a tropical frame carries. One of `ts_ayanamsha`. Example `0`. |
+| `centre` | `uint8_t` | Where the position is seen from; a topocentric frame needs the request's observer. One of `ts_centre`. Example `0`. |
+| `equinox` | `uint8_t` | Which equinox the coordinates refer to. One of `ts_equinox`. Example `0`. |
+| `coordinates` | `uint8_t` | Ecliptic or equatorial. One of `ts_coordinates`. Example `0`. |
+| `sidereal` | `uint8_t` | The sidereal zodiac, which uses `ayanamsha`; tropical otherwise. Example `0`. |
+| `light_time` | `uint8_t` | Whether light time is applied. Example `1`. |
+| `aberration` | `uint8_t` | Whether annual aberration is applied. Example `1`. |
+| `deflection` | `uint8_t` | Whether relativistic deflection is applied. Example `0`. |
+| `nutation` | `uint8_t` | Whether nutation is applied. Example `1`. |
+
+## ts_calendar_date
+
+A date in a calendar. Years are astronomical (1 BCE is 0); the era view is presentation only and is filled by the library, ignored on input.
+
+| field | type | what it carries |
+|---|---|---|
+| `calendar` | `uint16_t` | The calendar's id. One of `ts_calendar`. Example `0`. |
+| `era` | `uint16_t` | The era the calendar attaches, `0xFFFF` for none; filled by the library and ignored on input. One of `ts_era`. Example `7`. |
+| `year` | `int32_t` | The astronomical year. Example `2026`. |
+| `era_year` | `int32_t` | The year in the era, 1-based; meaningful when `era` is set. Example `2026`. |
+| `month` | `uint8_t` | The month, 1-based; for the ISO week date, the week. Range `[1,53]`. Example `9`. |
+| `day` | `uint8_t` | The day, 1-based; for the ISO week date, the weekday 1 to 7. Range `[1,32]`. Example `6`. |
+| `resolution` | `uint8_t` | How the date was resolved. One of `ts_resolution`. Example `0`. |
+| `computed_month` | `uint8_t` | The engine's month when the resolution is divergent, else zero. |
+| `computed_day` | `uint8_t` | The engine's day when the resolution is divergent, else zero. |
+
+## ts_civil_time
+
+A time of day, or none when the birth time is unknown.
+
+| field | type | what it carries |
+|---|---|---|
+| `hour` | `uint8_t` | The hour. Range `[0,23]`. Example `6`. |
+| `minute` | `uint8_t` | The minute. Range `[0,59]`. Example `15`. |
+| `second` | `uint8_t` | The second; `60` only for a leap second the table has. Range `[0,60]`. Example `0`. |
+| `has_time` | `uint8_t` | Whether the time is given; a date-only civil time has none, and the context's unknown-time policy decides what to do. Example `1`. |
+| `nanos` | `uint32_t` | Nanoseconds within the second. Range `[0,999999999]`. Example `0`. |
+
+## ts_civil_date_time
+
+A civil date and time in a calendar.
+
+| field | type | what it carries |
+|---|---|---|
+| `date` | `ts_calendar_date` | The date. |
+| `time` | `ts_civil_time` | The time of day. |
+
+## ts_zone_spec
+
+A zone: an IANA name, a fixed offset, or local mean time at a longitude.
+
+| field | type | what it carries |
+|---|---|---|
+| `kind` | `uint8_t` | Which field applies. One of `ts_zone_kind`. Example `0`. |
+| `offset_seconds` | `int32_t` | The offset east of UTC in seconds, for a fixed offset. Unit `s`. Range `[-86400,86400]`. Example `20700`. |
+| `longitude_deg` | `double` | The longitude east-positive in degrees, for local mean time. Unit `deg`. Range `[-180,180]`. Example `85.3240`. |
+| `zone` | `const char *` | The IANA name, for a database zone. Example `Asia/Kathmandu`. |
+
+## ts_zone_resolution
+
+What a resolution applied, enough to reproduce it after the zone database changes.
+
+| field | type | what it carries |
+|---|---|---|
+| `offset_seconds` | `int32_t` | The offset east of UTC applied, seconds. Unit `s`. Example `20700`. |
+| `dst_shift_seconds` | `int32_t` | How far a civil time inside a gap was shifted forward, seconds. Unit `s`. Example `0`. |
+| `warnings` | `uint32_t` | What the resolution wants the consumer to know. Example `0`. |
+| `instant_jd_utc` | `double` | The instant on UTC. Unit `jd`. Example `2446431.2743`. |
+| `tzdb_version` | `const char *` | The zone database version (`2026c`), `manual` or `lmt`; lent until the next call on the context. |
+| `abbreviation` | `const char *` | The zone's abbreviation at the instant (`NPT`), or null; lent until the next call on the context. |
+| `source` | `uint8_t` | Where the offset came from. One of `ts_zone_source`. Example `0`. |
+| `era` | `uint8_t` | Which rules produced it. One of `ts_zone_era`. Example `0`. |
+| `dst` | `uint8_t` | What the daylight-saving policy did. One of `ts_dst`. Example `0`. |
+| `chosen` | `uint8_t` | Which occurrence an overlap resolved to; meaningful when `dst` is an overlap. One of `ts_chosen`. Example `0`. |
+| `time_known` | `uint8_t` | Whether the time was given rather than supplied by a policy. |
+
+## ts_time_conversion
+
+A conversion between time scales with what it applied.
+
+| field | type | what it carries |
+|---|---|---|
+| `from` | `uint32_t` | The scale converted from. One of `ts_scale`. Example `2`. |
+| `to` | `uint32_t` | The scale converted to. One of `ts_scale`. Example `1`. |
+| `delta_t_source` | `uint8_t` | What produced the Delta T applied. One of `ts_delta_t_source`. Example `0`. |
+| `proleptic_utc` | `uint8_t` | Whether UTC before 1972 was read as UT1. |
+| `has_uncertainty` | `uint8_t` | Whether `uncertainty_seconds` is meaningful. |
+| `jd` | `double` | The instant on the target scale. Unit `jd`. Example `2451545.0007`. |
+| `delta_t_seconds` | `double` | The Delta T applied, seconds; zero for a conversion that needs none. Unit `s`. Example `63.83`. |
+| `uncertainty_seconds` | `double` | Delta T's one-sigma uncertainty, seconds, when `has_uncertainty`. Unit `s`. Example `0.0`. |
+| `dut1_seconds` | `double` | UT1 less UTC applied, seconds: zero until a provider supplies the IERS bulletins. Unit `s`. Example `0.0`. |
+| `delta_t_model` | `const char *` | The Delta T model's key (`TABLE_THEN_MODEL`); lent until the next call on the context. |
+
+## ts_delta_t
+
+Delta T at an instant with what produced it.
+
+| field | type | what it carries |
+|---|---|---|
+| `source` | `uint8_t` | What produced it. One of `ts_delta_t_source`. Example `0`. |
+| `has_uncertainty` | `uint8_t` | Whether `uncertainty_seconds` is meaningful. |
+| `seconds` | `double` | TT less UT1, seconds. Unit `s`. Example `63.83`. |
+| `uncertainty_seconds` | `double` | The one-sigma uncertainty, seconds, when `has_uncertainty`. Unit `s`. Example `0.0`. |
+| `model` | `const char *` | The model's key; lent until the next call on the context. |
+
+## ts_intl_loaded
+
+What a loaded pack or bundle carried.
+
+| field | type | what it carries |
+|---|---|---|
+| `entries` | `uint32_t` | The entries the file carried. |
+| `replaced` | `uint32_t` | The entries that replaced ones already loaded. |
+| `locale` | `const char *` | The locale; lent until the next call on the context. |
+| `sha256` | `const char *` | The file's SHA-256 as sixty-four hex digits; lent until the next call on the context. |
+
