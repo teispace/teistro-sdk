@@ -1,0 +1,19 @@
+[package]
+name = "teistro-scenario"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The fixed scenario the SDK measures itself with: what the determinism matrix hashes and what the instruction-count benchmarks count"
+# A measurement, not a product.
+publish = false
+
+[dependencies]
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-core = { path = "../core" }
+teistro-siddhanta = { path = "../siddhanta" }
+
+[lints]
+workspace = true

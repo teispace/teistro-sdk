@@ -109,8 +109,9 @@ Where each stands, 2026-09-06:
 
 | the docs site skeleton with the generated reference | **met**: `site/` on Fumadocs, with one page per entry point generated from the API description, held by `check-ffi`, built by `check-site` and published on a tag (`06-cicd/05-docs-deploy.md`) |
 
-What remains for the phase itself: the instruction-count benchmarks and
-the conformance repository.
+| the test-only infrastructure | **met**: the determinism lints, the counting allocator, the compile-fail harnesses in all three languages, and the instruction-count benchmarks (`cargo xtask bench`, the `benchmarks` workflow) |
+
+What remains for the phase itself: the conformance repository.
 
 ## Phase 2: The astronomy layer
 

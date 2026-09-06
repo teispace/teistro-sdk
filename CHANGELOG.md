@@ -187,6 +187,21 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- Instruction-count benchmarks. `crates/scenario` holds the fixed
+  scenario the SDK measures itself with — the calendars, the astronomy,
+  the house systems and the classical model over the same fixed days and
+  instants — lifted out of the hash gate so that the determinism matrix
+  and the benchmarks walk the same code and neither measures a path the
+  other never checked; every digest is unchanged by the move. `cargo
+  xtask bench` runs it under callgrind, once per section and once doing
+  nothing at all, and reports the difference as what that section costs;
+  `compare-bench` compares two such runs, failing above 3% and reporting
+  above 1% (ADR-0022's quality bar). Nothing is timed: wall-clock time on
+  a shared runner moves further with a neighbouring job than with most
+  changes, while an instruction count is exact. The `benchmarks` workflow
+  runs it on every pull request against the base commit measured in the
+  same job on the same machine, because an instruction count belongs to a
+  compiler and a target as much as to the source.
 - The documentation site, `site/`: Fumadocs on Next.js, exported as
   static files. Its reference is generated from the same description every
   binding is generated from (`crates/idl/src/emit/mdx.rs`): one page per

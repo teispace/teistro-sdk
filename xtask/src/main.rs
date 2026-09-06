@@ -41,6 +41,9 @@
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
+//! - `bench` and `compare-bench`: how many instructions the same
+//!   scenario costs, counted under callgrind, and two such runs compared
+//!   (fail above 3%, warn above 1%).
 //! - `hashes`: what this build computes for a fixed scenario, hashed per
 //!   section, so two architectures can be compared; with a path, every
 //!   value's bits are written there too.
@@ -67,6 +70,7 @@
 )]
 
 mod accuracy;
+mod bench;
 mod binding;
 mod c_binding;
 mod calendars;
@@ -137,6 +141,11 @@ fn main() {
             [_, wanted] => release::changelog_entry(&repo_root(), wanted),
             _ => usage(),
         },
+        Some("bench") => bench::report(&repo_root(), args.get(1).map(Path::new)),
+        Some("compare-bench") => match args.as_slice() {
+            [_, base, head] => bench::compare(Path::new(base), Path::new(head)),
+            _ => usage(),
+        },
         Some("hashes") => hashes::report(args.get(1).map(Path::new)),
         Some("compare-hashes") => match args.as_slice() {
             [_, left, right] => hashes::compare(Path::new(left), Path::new(right)),
@@ -162,7 +171,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

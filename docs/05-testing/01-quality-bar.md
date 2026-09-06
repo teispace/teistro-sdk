@@ -76,7 +76,7 @@ it.
 | gate | what it proves | tool | where it runs |
 |---|---|---|---|
 | micro-benchmarks per module with budgets | each operation stays within its budget (`02-architecture/09-performance-architecture.md`) | `criterion`, baselines checked in | nightly, regression beyond the noise floor fails |
-| instruction-count regression | a pull request does not raise the instruction count of any benchmark by more than 3% (fail) or 1% (warn) against its base commit; deterministic on shared runners where wall clock is not | `iai-callgrind` | every pull request |
+| instruction-count regression | a pull request does not raise the instruction count of any section of the fixed scenario by more than 3% (fail) or 1% (warn) against its base commit, both measured in the same job on the same machine; deterministic on shared runners where wall clock is not | `cargo xtask bench` and `compare-bench` over callgrind (`benchmarks` workflow) | every pull request |
 | wasm size delta | a pull request does not grow any profile's gzipped wasm by more than 2% without a note | `cargo xtask size` | every pull request |
 | interleaved A/B against the baseline engine | the SDK through Node is not slower than the engine it replaces on the same inputs | the A/B harness | release |
 | results schema | a claim is refused when it is smaller than its own spread, has no noise floor or no record of what was measured | `cargo xtask bench --check` | every benchmark run |

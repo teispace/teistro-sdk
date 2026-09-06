@@ -2,7 +2,7 @@
 
 Status: `built`, 2026-09-06.
 
-Five workflows, and one rule that decides which of them a change waits
+Six workflows, and one rule that decides which of them a change waits
 for: **the fast check runs on every push and needs the Rust toolchain and
 nothing else** (ADR-0014). Everything that needs a C compiler, a Node, a
 Dart, or five machines runs on a schedule or before a release, because a
@@ -16,6 +16,7 @@ red teaches people to ignore it.
 | [`hash-matrix`](../../.github/workflows/hash-matrix.yml) | nightly, on demand | the same source computes the same numbers on another architecture, value by value |
 | [`release`](../../.github/workflows/release.yml) | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published |
 | [`docs`](../../.github/workflows/docs.yml) | every push to `main`, a pull request touching the site, a tag | the site builds and renders every generated reference page; a tag publishes it |
+| [`benchmarks`](../../.github/workflows/benchmarks.yml) | every pull request, on demand | the instruction count of every section of the fixed scenario, against the base commit measured in the same job |
 
 ## The fast check
 
@@ -55,6 +56,27 @@ Described in the [README](README.md) and measured in
 the determinism criterion, not a build gate: the two Linux architectures
 must agree value for value, and macOS is reported against them because
 its maths library rounds differently in the last place.
+
+## Benchmarks
+
+`cargo xtask bench` runs `teistro-scenario` — the same fixed scenario the
+hash matrix hashes — under callgrind, once per section and once doing
+nothing at all, and reports the difference as what that section costs.
+`compare-bench` compares two such runs: above 3% is a failure, above 1% a
+line worth reading.
+
+Nothing is timed. Wall-clock time on a shared runner moves further with a
+neighbouring job than with most changes, so a wall-clock gate either
+passes everything or fails at random; an instruction count is exact and
+reproducible, which is what makes a 1% threshold mean anything. The
+comparison is against the pull request's own base commit, measured in the
+same job on the same machine, because an instruction count belongs to a
+compiler and a target as much as to the source — a number checked into
+the repository would go stale the next time the toolchain moved.
+
+The scenario lives in `crates/scenario` rather than in either gate, so
+the benchmarks cannot measure a path the determinism matrix never checked
+and the matrix cannot check a path nobody benchmarks.
 
 ## Docs
 
