@@ -328,7 +328,13 @@ pub struct Provenance {
 `Hash` is a SHA-256 in canonical hex; hashes are computed over the
 canonical serialisation `serial` defines, so two bindings that agree on
 the JSON agree on the hash. The cache key every binding documents is
-`(input_hash, settings_hash, calculation_version)`.
+`(input_hash, settings_hash, calculation_version)`. The canonical form
+is `envelope::canonical_json`: every object's keys sorted by the SDK
+itself, never left to the JSON layer's map, whose order the
+`preserve_order` feature changes whenever any crate in a build enables
+it (found 2026-09-06 while building the C ABI: the settings hash of a
+crate compiled alone differed from the same crate compiled in the
+workspace). `CALCULATION_VERSION` lives beside it (ADR-0020).
 
 Errors are one closed status with a stable code, a detail code, an
 English message that names the field and the range, and, behind one
@@ -394,11 +400,14 @@ Rust: `core::catalogue::{Graha, Rashi, Nakshatra, …}` enums with
 `key() -> &'static str`, `id() -> KeyId`, `attributes() -> &'static
 …Attributes`, `from_key(&str)`, `from_id(KeyId)` and `ALL`;
 `core::quantity::{Latitude, Longitude, …}`; `core::envelope::{Envelope,
-Provenance, Error, Status}`; `core::registry::Registry`. C ABI:
-`ts_key_parse(const char*, ts_key_id*)`, `ts_key_name(ts_key_id, char*,
-size_t)`, `ts_catalogue_version()`, and every kind as a typed enum in
-the generated header; the API description gains `kind=` on enum members
-so the generators know which union a member belongs to. Bindings: the
+Provenance, Error, Status}`; `core::registry::Registry`. C ABI, as built: `ts_key_parse(ctx, const
+char *key, uint32_t *out_id)`, `ts_key_name(ctx, uint32_t id, ts_str
+*out_key)` (the full key, lent until the next call), and
+`ts_catalogue_version()`; every kind is a typed enum in the generated
+header (`ts_graha`, `TS_GRAHA_SUN`, `TS_GRAHA_UNKNOWN = -1`) and `ts_kind`
+holds the kind numbers, both read from `catalogue/catalogue.json` into
+the API description, whose enums carry `kind` so the generators know
+which union a member belongs to (`ffi-abi-and-api-description.md`). Bindings: the
 generated unions of section 3.6, the branded quantity types with
 validating constructors, and `catalogue.json` shipped for tooling that
 needs attributes without a native call.

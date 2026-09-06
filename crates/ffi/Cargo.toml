@@ -1,0 +1,58 @@
+[package]
+name = "teistro-ffi"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Teistro SDK C ABI: the one audited boundary every binding is generated against (contexts, calendars, time, keys, intl and positions over the ephemeris port, with the result blob)"
+readme = "README.md"
+keywords = ["ffi", "c-abi", "astrology"]
+categories = ["development-tools::ffi"]
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[lib]
+crate-type = ["rlib", "cdylib", "staticlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-core = { path = "../core" }
+teistro-idl = { path = "../idl", default-features = false }
+teistro-intl = { path = "../intl", default-features = false }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-time = { path = "../time" }
+
+# The build script builds the SDK's locale bundles from `i18n/` so the
+# library carries its own messages (ADR-0010).
+[build-dependencies]
+teistro-intl = { path = "../intl", default-features = false }
+
+[dev-dependencies]
+teistro-idl = { path = "../idl" }
+
+# The one crate that may hold unsafe code: the C boundary. The workspace
+# forbids it everywhere else; here it is `deny` so that each module that
+# crosses the boundary allows it explicitly, and every block carries a
+# SAFETY comment (docs/05-testing/01-quality-bar.md, "unsafe confinement").
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"

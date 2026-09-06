@@ -37,7 +37,7 @@ pub use knobs::{
     NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, SeedOverflow, Sunrise,
     Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
-pub use profiles::{Profile, ProfileId, SHIPPED_PROFILES, root};
+pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
 /// The settings document's schema version; a later knob appends and an
 /// old document still hashes the same under the old schema.
@@ -415,13 +415,10 @@ impl Settings {
     }
 
     /// The canonical document: keys in code-point order, no whitespace,
-    /// every knob present. The JSON layer's map is ordered, so a pass
-    /// through `Value` sorts every object.
+    /// every knob present ([`crate::envelope::canonical_json`]).
     #[must_use]
     pub fn canonical_json(&self) -> String {
-        serde_json::to_value(self)
-            .and_then(|value| serde_json::to_string(&value))
-            .unwrap_or_default()
+        crate::envelope::canonical_json(self)
     }
 
     /// The hash of the canonical document.
@@ -713,6 +710,11 @@ mod tests {
             );
             let json = resolved.settings.canonical_json();
             assert!(!json.contains(' '), "{id}: canonical form has whitespace");
+            assert!(
+                json.starts_with("{\"aspect\":{\"drishti_table\""),
+                "{id}: canonical form is not key-sorted: {}",
+                &json[..40]
+            );
             let back: Settings = serde_json::from_str(&json).unwrap_or_else(|e| panic!("{e}"));
             assert_eq!(back, resolved.settings);
             assert_eq!(

@@ -1,6 +1,7 @@
 # Module catalogue
 
-Status: `draft`, revised 2026-09-05 (what is built so far noted per
+Status: `draft`, revised 2026-09-06 (`ffi` and `idl` built, rows
+added); revised 2026-09-05 (what is built so far noted per
 row; `time` consumes `calendar`, `calendar` consumes `siddhanta`);
 revised 2026-09-04 after Q7, Q8 and Q10 (the `astro`
 layer, the built-in ephemeris and Teistro Intl added) and after
@@ -20,6 +21,8 @@ family package) in every binding.
 | `ephemeris-kit` | the provider conformance kit: eighteen checks under one published set of bounds, the report, the timing rows and the runner the kit binaries share; run against the test provider in CI and against the adapters by hand. Built 2026-09-05 | `port-ephemeris`, `astro` | |
 | `port-timezone` | the zone database contract: version, zones, the offset at an instant with the abbreviation and the before-rules flag, the candidates of a civil time (one, a gap, an overlap), the offsets a zone applies today. Built 2026-09-05 | `core` | P0 | |
 | `port-calendar`, `port-geo`, `port-intl-data`, `port-log` | as before | `core` | |
+| `idl` | the API description (`idl/api.json`, `teistro-api/1`): the model, the naming rules, the C layout rules, the `TSRB` result blob encoder and decoder, the extractor over the boundary crates' Rust source with roles inferred from types and names, the SDK's own sources and catalogue kinds put through it, and the emitters (the C header today; Node, TypeScript, Dart next). Built 2026-09-06 (`03-design/ffi-abi-and-api-description.md`) | none (`syn` behind the `extract` feature) | the spike-2 extractor and emitters |
+| `ffi` | the C ABI, the workspace's only `unsafe`: contexts from a profile, a JSON patch, a locale and the port's vtable; the last error with its message, field and hint; keys and ids; dates in every shipped calendar; civil times to instants with the zone metadata and the scale conversions; the locale engine over the embedded bundles; positions through the port completed into the requested frame, as a result blob with the steps and the provenance. Thirty-three entry points; `cargo xtask gen ffi` and `check-ffi`. Built 2026-09-06 | `core`, `port-ephemeris`, `astro`, `calendar`, `time`, `intl`, `idl` | Teimeris's C ABI conventions |
 
 ## L1.5 astronomy
 

@@ -61,4 +61,8 @@ pub use frame::{Centre, Coordinates, Corrections, Equinox, Frame, Zodiac};
 pub use horizon::{DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Refraction};
 pub use provider::{EphemerisProvider, PositionRequest, validate};
 pub use test_provider::TestProvider;
-pub use vtable::{Exported, ProviderVtable, VTABLE_ABI_VERSION, VtableProvider};
+pub use vtable::{
+    AyanamshaFn, CapabilitiesFn, CrossingsFn, DecodedRequest, DeltaTFn, Dut1Fn, Exported,
+    HorizonEventFn, ObliquityFn, PositionRequestC, PositionsFn, ProviderVtable, VTABLE_ABI_VERSION,
+    VtableProvider,
+};

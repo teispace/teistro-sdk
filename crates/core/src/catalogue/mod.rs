@@ -24,6 +24,11 @@ mod generated;
 
 pub use generated::*;
 
+/// The catalogue's schema version (`teistro-catalogue/1` in
+/// `catalogue/catalogue.json`), stamped as `catalogue_version` in every
+/// result's provenance; a kind's own version lives in its source file.
+pub const SCHEMA_VERSION: u32 = 1;
+
 /// How well a catalogue row is sourced (ADR-0018).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Mark {

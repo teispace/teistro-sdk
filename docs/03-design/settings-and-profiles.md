@@ -170,14 +170,18 @@ Rust: `Profile::shipped(id)`, `Profile::resolve(&self, patch:
 Diagnostics>`, `Settings::hash()`, `Settings::canonical_json()`,
 `Settings::patch(&self, patch) -> Settings` for per-request overrides,
 and a typed builder for `SettingsPatch` in every binding (`settings()
-.ayanamsha(Ayanamsha::Raman).node(Node::True)`). C ABI:
-`ts_settings_resolve(ctx, profile_id, const ts_settings_patch*,
-ts_settings*)` with the patch struct carrying a presence bitmask beside
-its fields and `struct_size`, `ts_settings_hash(const ts_settings*,
-char[65])`, `ts_settings_json(...)`. Bindings expose the resolved value
-as a readonly typed object and the patch builder; a request takes an
-optional patch, never a profile id, so the context's profile is the one
-source of defaults.
+.ayanamsha(Ayanamsha::Raman).node(Node::True)`). C ABI, as built
+(`ffi-abi-and-api-description.md`, §3.2): the profile id and the patch
+as a JSON document travel in `ts_context_options` to `ts_context_new`,
+which resolves and validates them once; `ts_context_profile`,
+`ts_context_settings_json` (the canonical document) and
+`ts_context_settings_hash` read the result back. The patch is JSON rather
+than a struct so the ABI does not change when a knob is appended; the
+bindings' typed builders serialise to it. A null profile selects
+`DEFAULT_PROFILE` (`parashari-classical`), which `ts_default_profile`
+names. Bindings expose the resolved value as a readonly typed object and
+the patch builder; a request takes an optional patch, never a profile
+id, so the context's profile is the one source of defaults.
 
 ## 6. Errors and degenerate states
 

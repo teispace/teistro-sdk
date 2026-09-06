@@ -13,19 +13,25 @@ deliverables are deferred by decision: the completion's centre,
 corrections and equinox steps to Phase 3, where the built-in ephemeris
 needs them, and eclipses to v1.x. Phase 1, Foundation, remains open:
 `core`, the ports, `time`, `calendar`, the test provider, the Teimeris
-adapter and the conformance kit exist; the `intl` engine and CLI, the
-`ffi` crate with the API description and the generators, the Node and
-Dart bindings with the parity gate, the test-only infrastructure, the
-cross-architecture hash matrix, the conformance repository and the docs
-site are not built (`07-roadmap/00-roadmap.md`). Phase 0 exited on
-2026-09-05 (decisions made, four spikes measured, repository live).
+adapter, the conformance kit, the `intl` engine and CLI, and the `ffi`
+crate with the API description and the C header (its first generator)
+exist; the Node and Dart generators and bindings with the parity gate,
+the test-only infrastructure, the cross-architecture hash matrix, the
+conformance repository and the docs site are not built
+(`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
+made, four spikes measured, repository live).
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-06, end of the twenty-seventh session (Teistro
-Intl built as `crates/intl` from spike 4, the SDK's `i18n/` sources at
-the root gated by `check-intl`); before that the twenty-sixth session
+**Last updated:** 2026-09-06, end of the thirty-first session (the C ABI
+built as `crates/ffi` and the API description toolchain as `crates/idl`
+from spike 2: thirty-three entry points, `idl/api.json` and the C header
+gated by `check-ffi`, the settings hash made build-independent); before
+that the thirtieth to twenty-seventh sessions (Teistro Intl built as
+`crates/intl` from spike 4 with its runtime API, date functions and the
+baseline migration, the SDK's `i18n/` sources at the root gated by
+`check-intl`); before that the twenty-sixth session
 (Phase 2's exit review recorded here and in the roadmap), before that the
 twenty-fifth session (one request for both bodies of a composite
 quantity), the twenty-fourth (visibility and the heliacal phenomena
@@ -511,9 +517,17 @@ binding (ADR-0023).
   twelve-hour clocks and the `zone` option,
   transliteration, XLIFF and `migrate baseline` (the four launch
   languages' name tables into `sdk.entity`), rich renderers per binding.
-  Then the `ffi` crate with the ABI conventions, the API description and
-  the generators (from spike 2), the Node and Dart bindings with the
-  parity gate, the test-only infrastructure, the hash matrix, the
+  The `ffi` crate with the ABI conventions, the API description and its
+  first generator exist (thirty-first session: `crates/ffi` with
+  thirty-three entry points over contexts, keys, calendars, time, the
+  locale engine and positions; `crates/idl` with the model, the naming
+  and layout rules, the `TSRB` blob, the extractor and the C emitter;
+  `idl/api.json` and `bindings/c/include/teistro.h` by `cargo xtask gen
+  ffi`, gated by `check-ffi`; `03-design/ffi-abi-and-api-description.md`).
+  Next in it: the Node emitter (napi glue, TypeScript surface, blob
+  decoders) and the Dart emitter from the spike's models over the same
+  description, the two bindings' ergonomic layers and packaging, the
+  parity gate; then the test-only infrastructure, the hash matrix, the
   conformance repository (ADR-0022), the docs site. The completion's
   centre, corrections and equinox steps wait for the built-in ephemeris
   (Phase 3). The memo's R3 stays open (a third source; the committee's
@@ -524,10 +538,16 @@ binding (ADR-0023).
 1. Phase 2's astronomy as above (it is "Now"); a settable atmosphere
    for the rise and set solver (C34); the classical provider's Lagna and
    planetary hours exposed through the chart layer when it exists.
-2. ADR-0007's consequences into `02-architecture/07-binding-architecture.md`
-   in Phase 1: the blob encoding as the designed wire format, finaliser-
-   backed handles with explicit `dispose`, the `api:` metadata line as
-   the description's source, generated decoders.
+2. The Node and Dart layers over the description: the emitters from the
+   spike's `gen_node.rs`, `gen_ts.rs` and `gen_dart.rs` rewritten over
+   `teistro-idl` (roles, the `TSRB` decoders as views, finaliser-backed
+   handles with `dispose`), the hand-written ergonomic layers with the
+   branded types and the typed intl accessors, packaging with the
+   `buildinfo` handshake, and the parity gate comparing the generated
+   surfaces with the description and the two bindings' canonical JSON
+   with each other (ADR-0007's consequences are in
+   `02-architecture/07-binding-architecture.md` since the thirty-first
+   session). Q34, the default profile, awaits the maintainer.
 3. Spike 3's remaining consequences: the kit's corpus checks (positions
    against fixtures per tier) and the `sdk-only` cross-provider
    byte-identity check; the Teimeris adapter as the Teimeris package's
@@ -565,6 +585,7 @@ binding (ADR-0023).
 | 2026-09-05 (thirteenth session) | `crates/siddhanta` completed to the text (the sighra daily motion, the latitudes, the Lagna) against Burgess's 1860 worked computation, and presented behind the ephemeris port as a classical astronomy (`SiddhantaProvider`) that passes the kit; the port's `Astronomy`, `SpeedModel`, `DistanceUnit` and `DUT1` override; the kit's sixteenth check, its second-difference continuity and its informational rows for a classical provider (C36, C37); the completion's zodiac-then-rotation order; the planetary hours in `time` under `hora_reckoning` (proportional, as 52 of 55 fixtures decide and the other three cannot) and UT1 from a provider's DUT1. Next: Phase 2's astronomy pages, the ayanamsha catalogue, houses, crossings and stations. |
 | 2026-09-05 (fourteenth session) | The national panchanga committee's 2082 and 2083 panchangas fetched from `npns.gov.np` through the browser and read into `fixtures/official/npns-2082-2083.json` (24 sankranti instants, printed places, sunrise and sunset, tithi ends). The SDK's engine reproduces every instant within 1.6 minutes and every month start; the committee's Sun is the text's within 3″, its Moon the text's with four revolutions fewer on the apsis, its star planets modern positions in the Lahiri frame, its sunrise modern under its own convention. R2 closed for the method; C30 explained as the earlier makers' decisions; C38 and C39 opened. Next: Phase 2's astronomy pages. |
 | 2026-09-05 (fifteenth session) | Phase 2's astronomy begun: new ERFA ports (IAU 2006 precession, Vondrák 2011 long-term poles and matrices, the vector primitives) with their reference values; `astro::precession` as four models with consistent obliquities; `astro::ayanamsha` computing every epoch-defined member from its published definition with the fitted-model correction, mean or nutated, custom definitions, the anchored members refused by name; the completion completing the sidereal zodiac from the SDK's catalogue. Measured: TT-epoch definitions within 1e-7″ of Teimeris and UT-epoch ones within 2.1e-4″ over 1044 recorded rows; 142 ns a precession matrix, 0.58 µs an ayanamsha. Design pages `astro-timescales-and-frames.md` and `astro-ayanamsha-catalogue.md`. Next: houses, crossings and stations, the star table. |
+| 2026-09-06 (thirty-first session) | The C ABI and the API description toolchain built from spike 2: `crates/idl` (`teistro-idl`: the description model `teistro-api/1`, the naming rules, the C layout rules on both pointer widths, the `TSRB` result blob encoder and decoder, the extractor over Rust source with roles inferred from types and names and the `api:` metadata line, the SDK's sources and catalogue kinds put through it, the C header emitter with `_Static_assert`s of every struct's size) and `crates/ffi` (`teistro-ffi`, the workspace's only `unsafe`: contexts from a profile, a JSON settings patch, a locale and the port's vtable, with the size handshake refused as `SCHEMA_VERSION`, the last error kept on the context, owned strings and blobs freed by the library, lent strings valid until the next call, a panic guard into `INTERNAL`; keys and ids; dates in every shipped calendar with eras and resolutions; civil times to instants with the zone metadata, the scale conversions, Delta T; the locale engine over the SDK's bundles embedded at build time; positions through the port completed into the requested frame as a blob with the steps and the provenance). Thirty-three entry points, twenty-four structs, sixty-eight enums (the catalogue's kinds among them), eight callbacks; `idl/api.json` and `bindings/c/include/teistro.h` by `cargo xtask gen ffi`, gated by `check-ffi`; the header compiles under C11 and C++17 with warnings as errors. The port's vtable callbacks became named aliases, `Body` and `TimeScale` gained `#[repr]` discriminants, the port's request decoding is one method. Found and fixed: the settings hash depended on whether any crate in the build enabled the JSON layer's `preserve_order` feature; `canonical_json` sorts keys itself now (ADR-0022). `DEFAULT_PROFILE` (`parashari-classical`, Q34 for the maintainer), `CALCULATION_VERSION` and the catalogue schema version live in `core`. The design page `03-design/ffi-abi-and-api-description.md`; the binding architecture, API conventions, module catalogue, settings, core, time and calendar pages, the glossary and the module guideline revised. `teistro-idl` 17 tests, `teistro-ffi` 16 tests, both with doctests. Next: the Node and Dart emitters and bindings with the parity gate. |
 | 2026-09-06 (thirtieth session) | `teistro-intl migrate baseline` (`crates/intl/src/migrate.rs`): the baseline engine's entity name tables, exported by a names exporter beside its golden-vector exporter into `fixtures/baseline/names.json` (40 types, 383 entities, four languages), mapped onto the catalogue's kinds with the spelling aliases the two do not share and written as `sdk.entity` records (`name`, `prose`, `short` where the engine abbreviates, `iast` from the language or the Sanskrit transliteration, glyph and gender from the engine or the catalogue's skeleton); twenty types mapped (274 records per language, 0 unknown keys), twenty without a catalogue kind reported for the catalogue's growth; `en-Latn` and `ne-Deva-NP` keep their 49 hand-shaped records and gain 225, `hi-Deva-IN` and `sa-Deva` are created at `base` completeness. A catalogue kind's name (`avastha_baladi`) is a key segment now; the intl gate prints the summary when the sources pass. 47 tests. |
 | 2026-09-06 (twenty-ninth session) | The intl date functions: `:date`, `:time`, `:datetime`, `:ghati` and `:duration` over the calendar crate (`Value::Date(CalendarDate)`, `Time(ClockTime)`, `DateTime`, `Ghati`), rendering through the patterns and names a locale declares in `sdk.calendar` (month and weekday names as `.match` messages, `date.numeric|long|full` per calendar, `time`, `datetime.join`, `ghati`, `duration.<unit>` plurals; a calendar sharing another's names links them with `:msg`), `calendar=` converting through the shipped calendars, `pattern=` naming any message, built-in defaults with a warning when a locale declares none; `useGrouping=false` and `minimumIntegerDigits` on numbers; the analysis types the new functions and links `pattern=` targets; the validator refuses a date selector and lets a linked message forward the base's parameters. `sdk.calendar` shipped for `en-Latn` and `ne-Deva-NP`; era records for the nine eras in both. The architecture page's Bikram Sambat example `२०८१/०५/१९ गते` renders as written. 44 tests. |
 | 2026-09-06 (twenty-eighth session) | The intl engine's runtime API (`crates/intl/src/runtime.rs`): `Intl::load_pack` takes a `.tpack` or `.tbundle` after construction (a new locale with its metadata and plural rules, a new namespace, or entries replacing loaded ones, the record with the file's SHA-256 kept for the envelope), `set_override`/`set_overrides`/`clear_override`/`clear_overrides` patch messages in memory, checked as they are set and standing before the locale's own entry and any fallback, `report` lists every locale's coverage of the base keys, the files loaded and the overrides in force; `Rendered::is_override` and `Intl::resolution_from` say when an override answered; the parse cache forgets what the runtime API replaces. 39 tests. |

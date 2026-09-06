@@ -21,38 +21,39 @@ use teistro_core::error::Error;
 /// assert_eq!(Body::from_id(Body::Pluto.id()), Some(Body::Pluto));
 /// assert!(!Body::TrueNode.has_distance());
 /// ```
+#[repr(u16)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[non_exhaustive]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Body {
     /// The Sun.
-    Sun,
+    Sun = 0,
     /// The Moon.
-    Moon,
+    Moon = 1,
     /// Mercury.
-    Mercury,
+    Mercury = 2,
     /// Venus.
-    Venus,
+    Venus = 3,
     /// Mars.
-    Mars,
+    Mars = 4,
     /// Jupiter.
-    Jupiter,
+    Jupiter = 5,
     /// Saturn.
-    Saturn,
+    Saturn = 6,
     /// Uranus.
-    Uranus,
+    Uranus = 7,
     /// Neptune.
-    Neptune,
+    Neptune = 8,
     /// Pluto.
-    Pluto,
+    Pluto = 9,
     /// The mean ascending lunar node.
-    MeanNode,
+    MeanNode = 10,
     /// The true (osculating) ascending lunar node.
-    TrueNode,
+    TrueNode = 11,
     /// The mean lunar apogee.
-    MeanApogee,
+    MeanApogee = 12,
     /// The osculating lunar apogee.
-    OsculatingApogee,
+    OsculatingApogee = 13,
 }
 
 impl Body {
@@ -88,14 +89,11 @@ impl Body {
         Body::Pluto,
     ];
 
-    /// The stable numeric id used at the C boundary.
+    /// The stable numeric id used at the C boundary: the discriminant,
+    /// which is the body's position in [`Body::ALL`].
     #[must_use]
-    pub fn id(self) -> u16 {
-        Body::ALL
-            .iter()
-            .position(|b| *b == self)
-            .and_then(|i| u16::try_from(i).ok())
-            .unwrap_or(u16::MAX)
+    pub const fn id(self) -> u16 {
+        self as u16
     }
 
     /// The body with a given id.
@@ -179,23 +177,21 @@ impl FromStr for Body {
 /// assert_eq!(TimeScale::from_id(TimeScale::Tt.id()), Some(TimeScale::Tt));
 /// assert_eq!(TimeScale::Ut1.to_string(), "UT1");
 /// ```
+#[repr(u32)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TimeScale {
     /// Universal Time (UT1), the scale of civil time and of rise and set.
-    Ut1,
+    Ut1 = 0,
     /// Terrestrial Time, the scale of the ephemerides.
-    Tt,
+    Tt = 1,
 }
 
 impl TimeScale {
-    /// The stable id at the C boundary.
+    /// The stable id at the C boundary: the discriminant.
     #[must_use]
     pub const fn id(self) -> u32 {
-        match self {
-            TimeScale::Ut1 => 0,
-            TimeScale::Tt => 1,
-        }
+        self as u32
     }
 
     /// The scale with a given id.

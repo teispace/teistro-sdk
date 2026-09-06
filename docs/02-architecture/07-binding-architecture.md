@@ -1,12 +1,37 @@
 # Binding architecture
 
-Status: `draft`, revised 2026-09-05 (ADR-0007 decides approach A by
-measurement; ADR-0023 adds the type-safety section). Depends on Q3
-(languages). Written for approach A (C ABI plus an extracted API
-description plus generators of our own); the spike that decided it,
-`spikes/02-binding-toolchain/`, is the model for the Phase 1 extractor,
-emitters, result blob and finaliser-backed handles, and this page absorbs
-its consequences in Phase 1.
+Status: `draft`, revised 2026-09-06 (ADR-0007's consequences absorbed:
+the result blob as the designed wire encoding, finaliser-backed handles
+with an explicit `dispose`, the `api:` metadata line as the description's
+source, generated decoders; `crates/ffi`, `crates/idl`, `idl/api.json`
+and the C header are built, `03-design/ffi-abi-and-api-description.md`);
+revised 2026-09-05 (ADR-0007 decides approach A by measurement; ADR-0023
+adds the type-safety section). Depends on Q3 (languages). Written for
+approach A (C ABI plus an extracted API description plus generators of
+our own); the spike that decided it, `spikes/02-binding-toolchain/`, was
+the model for the extractor, the emitters, the result blob and the
+finaliser-backed handles.
+
+## What is built
+
+The boundary (`crates/ffi`, `teistro-ffi`) and the description toolchain
+(`crates/idl`, `teistro-idl`): thirty-three entry points over contexts,
+keys, calendars, time, the locale engine and positions through the port;
+the description `idl/api.json` extracted from the Rust source by `cargo
+xtask gen ffi` and rendered into `bindings/c/include/teistro.h`, both
+gated by `check-ffi`. The Node, wasm and Dart layers, their ergonomic
+layers, the packaging and the parity gate are next; each is generated
+from the same description by an emitter beside the C one.
+
+## The description's source
+
+Every unit, range, example, enum link and nullability is written once,
+as an `api:` line inside the Rust doc comment of the field or function
+(`` `api: unit=deg range=[-90,90] example=27.7` ``); rustdoc shows it as
+code and the extractor reads it for every binding (ADR-0023). Roles are
+inferred from types and parameter names, never from a function's name,
+so a new entry point reaches every binding by re-running the generator.
+A shape the extractor cannot carry fails the build.
 
 ## Three layers per binding
 
@@ -50,10 +75,27 @@ type surfaces against the description.
 | grids (positions, cusps, dasha rows, panchanga limb rows) | columnar typed arrays | zero-copy views (Float64Array, numpy, Dart typed data) |
 | trees and nested results (full chart, rule results, dasha tree, muhurta rows) | result blob: length-prefixed sections with a table of contents; strings as key ids | lazy decoders produce native objects on access; JSON export is a blob-to-JSON routine shared by all bindings (so canonical JSON is byte-identical everywhere) |
 
-The blob layout is part of the IDL and versioned; every binding's decoder
-is generated from the same description, reads the schema version first,
-accepts the current and the previous version, and refuses others with a
-typed error. Decoders are fuzz targets.
+The blob is `TSRB` (`03-design/ffi-abi-and-api-description.md`, §3.4):
+a 32-byte header with the layout version and the schema id, a table of
+contents, then 8-aligned sections of three kinds (fixed records, columns
+with a directory, bytes). Its schemas are declared once in the boundary
+crate and appear in the description; every binding's decoder is generated
+from them, reads the version first, finds sections by id so an appended
+section is skipped by an older decoder, and refuses another version with
+a typed error. The reference encoder and decoder live in `teistro-idl`
+and are what a generated decoder is checked against. Decoders are fuzz
+targets.
+
+## Handles and memory
+
+A result the library allocates (a blob, an owned string) is freed by the
+library's own `ts_blob_free` or `ts_string_free`; a context by
+`ts_context_free`. Every binding wraps these in a finaliser-backed handle
+(`FinalizationRegistry` in JavaScript, `NativeFinalizer` in Dart) and
+also exposes an explicit `dispose`, because a result that waits for the
+collector can exhaust memory (ADR-0007, finding 4). Strings the library
+lends stay valid until the next call on the same context; a binding
+copies them into its own string on the way out.
 
 ## Ports across the boundary
 

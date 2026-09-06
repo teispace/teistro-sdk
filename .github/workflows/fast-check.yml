@@ -50,6 +50,8 @@ jobs:
         run: cargo xtask check-accuracy
       - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
         run: cargo xtask check-intl
+      - name: FFI gate (the boundary crates reproduce the checked-in API description and C header)
+        run: cargo xtask check-ffi
 
   dco:
     name: dco

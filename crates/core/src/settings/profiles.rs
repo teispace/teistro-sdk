@@ -65,6 +65,11 @@ pub struct Profile {
     pub mark: Mark,
 }
 
+/// The profile a context uses when the consumer names none: the texts as
+/// read, with nothing of any one country's practice in it. A binding's
+/// constructor and the C ABI's `ts_context_new` both fall back to it.
+pub const DEFAULT_PROFILE: &str = "parashari-classical";
+
 /// The ids of the shipped profiles.
 pub const SHIPPED_PROFILES: [&str; 5] = [
     "nepali-default",

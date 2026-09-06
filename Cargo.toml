@@ -14,6 +14,8 @@ members = [
     "crates/calendar",
     "crates/ephemeris-kit",
     "crates/intl",
+    "crates/idl",
+    "crates/ffi",
     # Spike 2 (spikes/README.md): built and linted like the rest, never published.
     "spikes/02-binding-toolchain/slice",
     "spikes/02-binding-toolchain/a-ffi",
