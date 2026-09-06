@@ -33,7 +33,7 @@ with its reason:
   database's own year, never against the offset in force when the
   software runs (no clock reads in a computation crate, ADR-0022); the
   baseline compared with the offset at export time, a deliberate
-  difference (C33, `fixtures/README.md` convention eleven).
+  difference (C33, `docs/05-testing/01-golden-vectors.md` convention eleven).
 - The local day takes any `SolarModel` from the calendar crate for its
   arc: the Surya Siddhanta, or modern astronomy through the ephemeris
   port (`DrikSun`, which reads the sunrise convention knob and runs
@@ -202,7 +202,7 @@ under `EQUAL` each is sixty minutes from sunrise. `horas(day, reckoning)`
 lists the twenty-four; `hora_at(day, instant, reckoning)` finds the one
 holding an instant and refuses one outside the day, naming the day's
 span. The baseline engine reckons proportionally (its fixtures decide,
-convention thirteen in `fixtures/README.md`).
+convention thirteen in `05-testing/01-golden-vectors.md`).
 
 **Ghati-pala.** `elapsed = instant − sunrise` in microseconds; civil:
 `vipala = elapsed / 400 000`; proportional: `vipala = elapsed × 108 000

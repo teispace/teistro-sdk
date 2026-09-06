@@ -1,6 +1,7 @@
 # ADR-0022: The determinism contract and the conformance repository
 
-Status: accepted (maintainer, 2026-09-04); extends ADR-0015
+Status: accepted (maintainer, 2026-09-04); extends ADR-0015; the
+repository was created and the corpus moved 2026-09-06
 Date: 2026-09-04
 Question: Q32
 
@@ -61,7 +62,13 @@ corpus are flagged as probable duplicates.
 - The determinism matrix runs from the first crate; wasm joins when the
   binding exists (Phase 5).
 - `fixtures/` here becomes a submodule mount point; the golden-vector
-  page documents the move.
+  page documents the move. Done 2026-09-06:
+  `teispace/teistro-conformance` v0.1.1 under CC0-1.0, every file moved
+  byte for byte, with JSON Schemas for a fixture, a manifest, the
+  tolerance file and a conformance report, and `validate.py` running as
+  the corpus's own gate. `cargo xtask check-fixtures` fails when the
+  submodule is absent, and every workflow checks it out. Runners per
+  binding are still to come.
 - The quality bar rows are gated in the fast check where fast (lints,
   compile-fail tests, feature matrix on a sample) and nightly otherwise.
 

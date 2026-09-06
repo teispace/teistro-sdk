@@ -18,15 +18,20 @@ crate with the API description and the C header (its first generator)
 exist, as do the Node and Dart generators and bindings with the parity
 gate, the determinism lints and the counting allocator, the
 cross-architecture hash matrix, the packaging with its release matrix, and
-the documentation site with its generated reference and the
-instruction-count benchmarks; the conformance repository is not built
-(`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
+the documentation site with its generated reference, the
+instruction-count benchmarks and the conformance repository. Every
+deliverable of Phase 1 is built and every exit criterion is met; the
+phase's exit review is the next step (`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
 made, four spikes measured, repository live).
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-06, end of the thirty-ninth session (the parts
+**Last updated:** 2026-09-06, end of the fortieth session (the
+conformance corpus left this repository for
+`teispace/teistro-conformance` v0.1.1 under CC0-1.0, mounted back as a
+pinned submodule: Phase 1's last deliverable); before that the
+thirty-ninth session (the parts
 of the day became a locale's own and `:duration` learnt to break a count
 into several units); before that the thirty-eighth session (the
 instruction-count benchmarks over a fixed scenario shared with the
@@ -110,9 +115,9 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. The next task is the maintainer's choice between Phase 1's last
-   deliverable (the conformance repository) and the astronomy follow-ups
-   under "Now";
+3. Phase 1 has no deliverables left; its exit review is the next task,
+   and after it the maintainer's choice among the astronomy follow-ups
+   under "Now",
    Phase 3, the built-in ephemeris, may run beside Phase 4 per the
    roadmap. The conformance repository is the maintainer's to create
    (ADR-0022). The `intl` crate
@@ -141,7 +146,8 @@ provider's DUT1).
    the Teimeris fixture test (the solver against the 55 charts) are run
    by hand.
    Spike 1 is done: its fixtures are in
-   `fixtures/baseline/` (read `fixtures/README.md` before touching them;
+   `fixtures/baseline/` (a submodule of `teispace/teistro-conformance`;
+   read its README before touching them;
    `cargo xtask check-fixtures` is their gate); the export script lives
    inside the baseline engine's own repository, in that repository's
    language, uncommitted there unless the maintainer asks, and is run
@@ -201,7 +207,7 @@ provider's DUT1).
   (48 chosen for zone, latitude, altitude and data-range hostility, 7
   placed by search to the second at classification boundaries in the
   topocentric frame), 115 fixtures under 13 settings profiles, 8.9 MB,
-  in `fixtures/baseline/` with a manifest; `fixtures/README.md` (layout,
+  in `fixtures/baseline/` with a manifest; the corpus's README (layout,
   provenance, the chart set, the profiles, the schema, ten baseline
   conventions for the deliberate-difference registry);
   `fixtures/tolerances.json` (provisional, keyed by field and provider
@@ -616,8 +622,11 @@ binding (ADR-0023).
   xtask bench` counting it under callgrind and `compare-bench` failing
   above 3% and reporting above 1%; the `benchmarks` workflow measuring the
   pull request's base commit in the same job).
-  Next in it: the
-  conformance repository (ADR-0022). The site's own remainder is listed in
+  The conformance repository followed and closed the phase (fortieth
+  session: `teispace/teistro-conformance` v0.1.1 under CC0-1.0, every file
+  moved byte for byte, with the schemas and a validator of its own;
+  mounted here as a submodule pinned to a tag, with `check-fixtures`
+  refusing a checkout without it and every workflow bringing it). The site's own remainder is listed in
   `06-cicd/05-docs-deploy.md`: versioned docs, Nepali, examples executed
   from the pages, and the interactive wasm demo. The
   cross-architecture hash matrix is built and has run (thirty-fifth

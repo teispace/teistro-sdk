@@ -22,6 +22,22 @@ You need the stable Rust toolchain (`rustup` installs it; `rust-toolchain.toml`
 selects it) and nothing else. Every repository task is Rust and runs as
 `cargo xtask <task>` (ADR-0014).
 
+Clone with the conformance corpus, which is a submodule at `fixtures/`
+(ADR-0022):
+
+```sh
+git clone --recurse-submodules https://github.com/teispace/teistro-sdk
+# or, in a clone that already exists
+git submodule update --init
+```
+
+Without it the tests that read recorded values cannot run, and
+`cargo xtask check-fixtures` says so rather than passing over an empty
+directory. The corpus is
+[`teispace/teistro-conformance`](https://github.com/teispace/teistro-conformance),
+pinned to a tag; changing that pin is its own commit, and the changelog
+entry says which values moved.
+
 1. Fork and branch: `feat/<area>-<short>`, `fix/<area>-<short>`,
    `docs/<short>`, `spike/<short>`.
 2. Make the change. Documents state their status and date; numbers come

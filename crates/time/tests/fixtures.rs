@@ -1,7 +1,7 @@
 //! The zone resolutions of spike 1's fixtures: every chart's civil time
 //! resolves to the baseline engine's instant, offset, source and era
 //! under the embedded tzdb, with the deliberate differences named
-//! (`fixtures/README.md`, the baseline conventions).
+//! (`docs/05-testing/01-golden-vectors.md`, the baseline conventions).
 
 #![allow(
     clippy::panic,

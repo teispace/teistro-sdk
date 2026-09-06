@@ -187,6 +187,24 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The conformance corpus left this repository.
+  [`teispace/teistro-conformance`](https://github.com/teispace/teistro-conformance)
+  v0.1.1 holds it under CC0-1.0 with a version of its own, and `fixtures/`
+  is a submodule of it pinned to a tag (ADR-0022). Every file moved byte
+  for byte and no recorded value changed: the SDK's gate proves the corpus
+  after the move exactly as it did before. A standard obtainable only by
+  cloning one implementation is not a standard, which is why it went.
+  It took its description and its checking with it — what each of the 55
+  charts is for, what each of the 13 profiles changes, what every section
+  of a fixture holds, JSON Schemas for a fixture, a manifest, the
+  tolerance file and a conformance report, and a validator that runs on
+  every push there. What stayed here is what is the SDK's rather than the
+  corpus's: the thirteen conventions of the recording engine that the SDK
+  deliberately does not copy, now in `05-testing/01-golden-vectors.md`
+  where the pages that cite them can reach them. `cargo xtask
+  check-fixtures` refuses a checkout with no corpus rather than passing
+  over an empty directory, every workflow checks the submodule out, and
+  `CONTRIBUTING.md` says to clone with `--recurse-submodules`.
 - Teistro Intl: the parts of the day became a locale's own, and
   `:duration` learnt to break a count into several units. A locale states
   `dayPeriods` in its `_meta.json` — the hour each part begins at and the

@@ -2,7 +2,7 @@
 //! each chart's birth under the proportional reckoning, from the
 //! panchanga day the baseline recorded (its sunrise, sunset and the next
 //! sunrise), with the two charts the baseline's own conventions decide
-//! named (`fixtures/README.md`, conventions three and twelve).
+//! named (`05-testing/01-golden-vectors.md`, conventions three and twelve).
 
 #![allow(
     clippy::panic,

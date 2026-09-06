@@ -25,7 +25,7 @@ locale packs, never in code.
 | core | the language-native library every binding wraps |
 | dasha | a planetary period system; the SDK has a registry of systems, each a plug-in |
 | deliberate difference | a registry row that explains a known divergence between the SDK and a golden-vector source (a convention the SDK does not copy, or a defect the source has), so the harness reports it instead of failing (`05-testing/01-golden-vectors.md`) |
-| fixture | one golden-vector file: an input, a complete settings profile with its hash, provenance, and the recorded outputs of one source under one profile (`fixtures/README.md`) |
+| fixture | one golden-vector file: an input, a complete settings profile with its hash, provenance, and the recorded outputs of one source under one profile (`05-testing/01-golden-vectors.md`) |
 | golden vector | a recorded output of another implementation or a text that the SDK must reproduce within the tolerance for the provider class, cited to its source (ADR-0022) |
 | Delta T | Terrestrial Time less Universal Time, the seconds the Earth's rotation lags the uniform scale; the IERS table where measured, a cited model either side, an uncertainty on every value (`crates/time`) |
 | frame completion | the SDK's route from the frame a provider returns to the frame a caller asks for (coordinates through the obliquity, the zodiac through an ayanamsha; the centre, equinox and corrections in Phase 2), each step stamped with who did it, under the override policy (`crates/astro`) |

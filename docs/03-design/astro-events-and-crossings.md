@@ -342,7 +342,7 @@ under bisection.
   the engine present) reproduces the baseline's sunrise and sunset for
   the 52 non-polar charts within 2.5 s below 60° of latitude and 9.8 s
   at Fairbanks on the solstice, and names the three charts whose
-  baseline block is a day early (`fixtures/README.md`, convention
+  baseline block is a day early (`05-testing/01-golden-vectors.md`, convention
   twelve; C35).
 - The Teimeris adapter's crossings test (`tests/crossings.rs`, by hand
   with the engine present) holds the kernel over Teimeris's positions to
@@ -353,7 +353,7 @@ under bisection.
   stations of two years within 0.3 s (bound 1 s for a crossing, 600 s for
   a station). Against the baseline's panchanga day in the 55 charts (the
   280 tithi, nakshatra, yoga and karana ends inside the days, which the
-  baseline reckoned geocentrically in Lahiri's zodiac; `fixtures/README.md`,
+  baseline reckoned geocentrically in Lahiri's zodiac; `05-testing/01-golden-vectors.md`,
   convention one): within 7.8 s, median 3.3 s. The positions are the same
   engine lineage's, so the residual is the baseline's own search, which
   stops within 0.001° of the boundary (seven seconds of the Moon's
