@@ -22,6 +22,9 @@
 //!   library, the package analysed and formatted.
 //! - `check-parity`: one scenario through both bindings, and the two
 //!   reports compared value by value.
+//! - `check-lints`: the determinism rules no compiler checks — unordered
+//!   iteration, ambient input, the `unsafe` inventory, exact
+//!   classification.
 //! - `hashes`: what this build computes for a fixed scenario, hashed per
 //!   section, so two architectures can be compared; with a path, every
 //!   value's bits are written there too.
@@ -57,6 +60,7 @@ mod ffi;
 mod generated;
 mod hashes;
 mod intl;
+mod lints;
 mod node_binding;
 mod parity;
 mod time;
@@ -88,6 +92,7 @@ fn main() {
         Some("check-node") => node_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
+        Some("check-lints") => lints::check(&repo_root()),
         Some("hashes") => hashes::report(args.get(1).map(Path::new)),
         Some("compare-hashes") => match args.as_slice() {
             [_, left, right] => hashes::compare(Path::new(left), Path::new(right)),
@@ -113,7 +118,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

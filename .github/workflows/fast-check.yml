@@ -52,6 +52,8 @@ jobs:
         run: cargo xtask check-intl
       - name: FFI gate (the boundary crates reproduce the checked-in API description and C header)
         run: cargo xtask check-ffi
+      - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
+        run: cargo xtask check-lints
 
   dco:
     name: dco

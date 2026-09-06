@@ -1,5 +1,9 @@
 //! The data-model checks the specification requires beyond the grammar:
 //! a parsed message that fails one is not a valid message.
+//!
+//! `lint: deterministic-iteration` — every set here is a membership
+//! test (`insert` returning false is a duplicate); none is iterated, so
+//! what the checker reports follows the message's own order.
 
 use std::collections::HashSet;
 
