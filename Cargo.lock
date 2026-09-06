@@ -1230,6 +1230,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-intl"
+version = "0.0.0"
+dependencies = [
+ "clap",
+ "crc32fast",
+ "criterion",
+ "fixed_decimal",
+ "icu_locale_core",
+ "icu_plurals",
+ "proptest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-port-ephemeris"
 version = "0.0.0"
 dependencies = [
@@ -1569,6 +1586,7 @@ dependencies = [
  "serde_yaml_ng",
  "teistro-calendar",
  "teistro-core",
+ "teistro-intl",
  "teistro-siddhanta",
  "teistro-time",
 ]

@@ -1,11 +1,13 @@
 # Teistro Intl: the engine, the sources and the packs
 
 Status: `draft`, written 2026-09-05 from spike 4
-(`spikes/04-teistro-intl/README.md`); revised in Phase 1 when the `intl`
-crate and the `teistro-intl` CLI are built. Derives from
-`02-architecture/03-localization-architecture.md`, ADR-0010, ADR-0020 and
-ADR-0023. Names are the spike's; Phase 1 renames into the SDK's
-catalogue without changing the shapes.
+(`spikes/04-teistro-intl/README.md`); revised 2026-09-06 when the `intl`
+crate (`crates/intl`, `teistro-intl`) and its command line were built
+from the spike: the SDK's catalogue became the authority for every entity
+key, the locale bundle and the Rust accessors were added, the sources
+moved to `i18n/` at the repository root and are gated by `cargo xtask
+check-intl`. Derives from `02-architecture/03-localization-architecture.md`,
+ADR-0010, ADR-0020 and ADR-0023.
 
 ## 1. Purpose and scope
 
@@ -45,7 +47,9 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   namespace holds messages.
 - **Keys** are dotted paths; a segment is a `camelCase` identifier or a
   catalogue key (`UPPER_SNAKE`); a full key is the namespace plus the
-  path (`sdk.reason.strength.rank`, `sdk.entity.graha.SUN`).
+  path (`sdk.reason.strength.rank`, `sdk.entity.graha.SUN`). Inside
+  `sdk.entity` the path is a catalogue key (`graha.SUN`, `point.LAGNA`),
+  resolved against `teistro_core`'s catalogue; any other is refused.
 - **Messages** are `MessageFormat 2` source strings.
 - **Entity records** are objects with named forms (`short`, `name`,
   `prose`, `iast`, and any a locale adds; `name` is required), an
@@ -101,7 +105,7 @@ panics (two property tests).
 | `:number` | number | `minimumFractionDigits`, `maximumFractionDigits`, `select=ordinal` | as `:integer`, on the visible digits | number |
 | `:dms` | degrees | `precision=deg\|min\|sec`, `signed=true` | | number |
 | `:zodiac` | ecliptic longitude | `form=degree-in-sign\|sign-degree`, `precision`, `signNames=name\|short\|glyph\|iast` | the sign's key | number |
-| `:entity` | catalogue key | `form=short\|name\|prose\|iast\|glyph`, `kind=<group>` | the bare key, the full key, the gender | entity key of the kind, or any entity key |
+| `:entity` | catalogue key | `form=short\|name\|prose\|iast\|glyph`, `kind=<catalogue kind>` | the bare key, the full key, the gender | a member of the kind (the catalogue's enum in Rust), or any catalogue key |
 | `:list` | list | `type=and\|or` | | list |
 | `:msg` | a key literal | | | none |
 
@@ -111,22 +115,28 @@ in `sdk.entity.rashi` along the fallback chain. `:msg` renders another
 key with the same parameters, eight levels deep at most. An unknown
 function, a missing parameter or a missing entity yields a warning in
 the result and the standard fallback text (`{$name}`, the key); the
-worst case renders the key itself, never a blank. Selection follows the
-specification: for each selector the function's keys in preference
-order, variants filtered and sorted by rank, `*` last. Phase 1 adds
-`:date`, `:time`, `:datetime` (calendar-aware), `:ghati` and
-`:duration`.
+worst case renders the key itself, never a blank. `:entity` checks its
+key against the catalogue at render (`teistro_core::key::resolve`) and
+warns on one the catalogue lacks; `:zodiac` takes the sign keys from the
+catalogue's `rashi` kind. Selection follows the specification: for each
+selector the function's keys in preference order, variants filtered and
+sorted by rank, `*` last. Still to come: `:date`, `:time`, `:datetime`
+(calendar-aware, over the calendar crate), `:ghati` and `:duration`.
 
 ## 6. The engine's API
 
-`Intl::new(locales)`, `set_locale(tag)`, `has(key)`, `render(key,
-params) -> Rendered { text, parts, resolved_from, is_fallback, warnings }`,
-`render_source(source, params)` for tools. Parameters are `Str`, `Int`,
-`Num`, `Entity(key)` or `List`. Resolution walks the current locale then
-its declared fallbacks; every result says which locale answered.
-Messages are parsed once per key and cached. Measured: 0.5 µs for a
-literal, 2.2 to 2.7 µs for a message with an entity, an ordinal select
-or a `:zodiac`; 5 µs to parse a five-variant matcher.
+`Intl::new(locales)` over sources rebuilt from packs, `Intl::from_tree(&tree)`
+over a loaded `i18n/` root (`Tree::load`, `sdk_root()` for the SDK's
+own), `set_locale(tag)`, `has(key)`, `render(key, &params) -> Rendered {
+text, parts, resolved_from, is_fallback, warnings }`,
+`render_typed(&message)` for a `TypedMessage` (a generated accessor: its
+key and parameters checked by the compiler), `render_source(source,
+&params)` for tools. Parameters (`Value`) are `Str`, `Int`, `Num`,
+`Entity(key)` or `List`; `Value::catalogued(Graha::Sun)` is the typed
+entity, `Value::entity("graha.SUN")` the textual one. Resolution walks
+the current locale then its declared fallbacks; every result says which
+locale answered. Messages are parsed once per key and cached. The
+measurements are in §10.
 
 ## 7. Validation
 
@@ -138,30 +148,41 @@ outside the base; strict locales complete; a translation uses only the
 base message's parameters with agreeing types (a warning when it drops
 one, or adds markup the base lacks); every selector key is valid for
 its type (a plural category the locale produces, a value of the
-context, an entity key or a gender); `:msg` targets and `:entity`
-literals exist and `kind=` names a group; entity genders are context
-values and forms match the base (a warning for a missing form). Twelve
-mistakes are proven caught by the spike's tests.
+context, an entity key or a gender); `:msg` targets exist; the
+catalogue is the authority for entities: an entity record's key and an
+`:entity` literal must be catalogue keys (an error naming the nearest
+key), `kind=` must name a catalogue kind (an error), and a catalogue key
+the entity namespace does not describe yet is a warning, since its
+record can come later; entity genders are context values and forms match
+the base (a warning for a missing form). The report also counts, per
+closed catalogue kind, how many members the base locale describes: the
+signs and the nakshatras are complete, nine grahas and the Lagna are
+described, the rest await the migration of the name tables; reported,
+not gated. Fourteen mistakes are proven caught by the tests.
 
 ## 8. Packs
 
 `.tpack`, one locale and one namespace per file: magic `TPK1`, format
-version, locale, namespace, entry count, arena length, a CRC32 of the
+version 2, locale, namespace, entry count, arena length, a CRC32 of the
 body, a SHA-256 of the body for the provenance envelope (ADR-0020), the
-locale's metadata as JSON, a key table (16 bytes an entry: key offset
-and length, kind, value offset and length) sorted by key, and a byte
-arena. Messages are source text; entities are length-prefixed forms,
-gender and glyph. Reads are zero-copy and bounds-checked; parsing
-verifies the checksum and the key order (1.4 µs for a 6 KB pack) and
-decodes values on access (0.46 µs a lookup). A runtime rebuilds locales
-from packs alone (65 µs for four packs with plural rules); an engine
-over packs renders the same bits as one over sources (tested).
+locale's metadata as JSON (or none, when the pack's bundle carries it),
+a key table (16 bytes an entry: key offset and length, kind, value
+offset and length) sorted by key, and a byte arena. Messages are source
+text; entities are length-prefixed forms, gender and glyph. Reads are
+zero-copy and bounds-checked; parsing verifies the checksum and the key
+order and decodes values on access.
 
-Phase 1 adds the bundle: one file per locale with every namespace behind
-one metadata block, because the metadata is the overhead that makes a
-small namespace's pack larger than its JSON; per-namespace slicing stays
-a build option. Interpretation packs use the same container with
-citation fields and a licence.
+`.tbundle`, one locale with every namespace: magic `TPB1`, format
+version, locale, namespace count, a CRC32 and a SHA-256 of the payload;
+the payload is the metadata once, an index (namespace name and length),
+and the namespaces' packs without metadata, each verified on its own
+terms. The bundle is smaller than the separate packs by the metadata it
+pays once (§10). `locales_from_packs` rebuilds locales from any mix of
+packs and bundles, a pack without metadata being refused unless its
+locale is already known; an engine over packs renders the same bits as
+one over sources (tested). Per-namespace slicing stays a build option
+(`build` against `build --bundle`). Interpretation packs use the same
+container with citation fields and a licence.
 
 ## 9. Typed accessors
 
@@ -178,28 +199,60 @@ order, contexts, the forms every entity has), one emitter per target:
   and one class per group: `Messages(renderer).sdk.reason.grahaInBhava(
   graha: GrahaKey.jupiter, bhava: 7)`.
 
+- Rust: an enum per context with its `key()`, and a struct per message
+  with typed fields (`i64`, `f64`, `String`, the context's enum, the
+  catalogue's own enum for `kind=graha`, `Vec<Value>` for a list)
+  implementing `TypedMessage { KEY, params() }`, in modules that follow
+  the key's segments: `sdk::reason::GrahaInBhava { bhava: 7, graha:
+  Graha::Jupiter }`, rendered by `Intl::render_typed`. Entities need no
+  accessor: the catalogue's enums are the typed keys. The SDK's own
+  namespaces are generated into `teistro_intl::messages` by `cargo xtask
+  gen intl` and held by `check-intl`; a consumer runs `teistro-intl gen
+  --target rs` on its own `i18n/`.
+
 The generated code holds keys and parameter shapes only, never text
 (tested), so a message changes or is overridden at runtime without
-regenerating. Both surfaces compile clean and reject wrong usages (six
-in TypeScript, five in Dart) as compile errors. Python, Rust and Java
-follow the same model in Phase 1.
+regenerating. The TypeScript and Dart surfaces compile clean and reject
+wrong usages (six in TypeScript, five in Dart) as compile errors (spike
+4's harnesses); the Rust surface compiles as part of the crate. Python
+and Java follow the same model with their bindings.
 
 ## 10. Performance budget and benchmark
 
 Budget: a render under 5 µs, a pack lookup under 1 µs, a pack of ten
 thousand entries verified under 5 ms, a locale loaded under 1 ms per
-thousand entries. The benchmark is the CLI's `report`, whose rows the
-spike's result page quotes.
+thousand entries. The benchmark is `crates/intl/benches/intl.rs`
+(criterion, over the SDK's own sources), measured in one session on
+2026-09-06 (release, Apple Silicon; rows compare within the table):
+
+| operation | measured |
+|---|---:|
+| render: a literal | 0.34 µs |
+| render: an ordinal select with an entity | 2.28 µs |
+| render: an entity and a zodiac angle | 2.01 µs |
+| parse: a matcher with two declarations and three variants | 2.21 µs |
+| pack: build the Nepali entity namespace | 7.50 µs (49 entities) |
+| pack: parse and verify it | 1.42 µs (6.2 KB) |
+| pack: look up `graha.SUN` | 0.50 µs |
+| bundle: parse and verify the Nepali locale | 2.92 µs (8.4 KB, two namespaces) |
+| engine: build from every pack, plural rules included | 68 µs (four packs) |
+
+Sizes (`teistro-intl report`): the English entity namespace 49 entries, 7 097 source bytes, 4 989 pack bytes; its reason namespace 13 entries, 1 464 against 1 965 (the metadata is the overhead of a small pack); the Nepali entity namespace 8 298 against 6 215, its reason namespace 1 944 against 2 470; the English bundle 6 692 bytes against 6 954 for its two packs, the Nepali 8 404 against 8 685. The generated surfaces: TypeScript 109 lines (6.3 KB), Dart 257 (8.5 KB), Rust 286 (9.3 KB), no message text in any (tested).
 
 ## 11. Tests
 
 Parser unit tests per construct with error offsets; the round-trip
 property test; robustness property tests; evaluation tests in both
 languages for every function and selector kind, including fallback,
-missing keys and missing parameters; validation tests for every gate;
-pack round trip, corruption and truncation; generator tests for key
-coverage and the absence of text; the language harnesses under
-`spikes/04-teistro-intl/harness/`. Phase 1 adds fuzzing under
+missing keys and missing parameters; the catalogued value and the
+catalogue's sign keys; the generated typed messages rendering the same
+bits as their keys; validation tests for every gate, the catalogue's
+among them; pack round trip, corruption and truncation; the bundle's
+round trip, its size against the separate packs, a lone metadata-less
+pack refused, corruption and truncation; generator tests for key
+coverage and the absence of text; the command line's value parsing and
+`extract`; the language harnesses under `spikes/04-teistro-intl/harness/`
+(37 tests and a doctest in the crate). To come: fuzzing under
 `cargo-fuzz` and cross-binding rendering parity on a snapshot set.
 
 ## 12. Localisation
@@ -215,5 +268,9 @@ here.
   (the grammar's bidi marks are accepted; rendering policy is open).
 - Whether `:entity` form names are a closed set per catalogue kind or
   open per locale (open in the spike).
-- The bundle container's index and the composite provider's precedence
-  rules (Phase 1, with the runtime overrides API).
+- Runtime overrides and the composite provider's precedence rules (with
+  the bindings' `loadPack` and `overrides` calls).
+- The calendar-aware `:date`, `:time` and `:datetime`, `:ghati` and
+  `:duration`, over the calendar crate.
+- Transliteration, XLIFF, and `migrate baseline` for the four launch
+  languages' name tables into `sdk.entity`.

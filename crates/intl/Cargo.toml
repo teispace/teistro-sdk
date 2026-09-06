@@ -1,0 +1,47 @@
+[package]
+name = "teistro-intl"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Teistro Intl: the MessageFormat 2 engine bound to the SDK's types, the i18n/ source conventions, validation, the .tpack and bundle containers, typed accessors for every binding, and the teistro-intl command line as a library"
+readme = "README.md"
+keywords = ["i18n", "messageformat", "localization", "astrology"]
+categories = ["internationalization"]
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[features]
+# The command line; a binding that embeds the engine turns it off.
+default = ["cli"]
+cli = ["dep:clap"]
+
+[[bin]]
+name = "teistro-intl"
+path = "src/bin/teistro-intl.rs"
+required-features = ["cli"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"], optional = true }
+crc32fast = "1"
+# CLDR plural rules and locale parsing: ICU4X with compiled data, nothing
+# of CLDR reimplemented (ADR-0010).
+fixed_decimal = "0.7"
+icu_locale_core = "2"
+icu_plurals = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+sha2 = "0.11"
+teistro-core = { path = "../core" }
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false }
+proptest = "1"
+
+[[bench]]
+name = "intl"
+harness = false
+
+[lints]
+workspace = true

@@ -48,6 +48,8 @@ jobs:
         run: cargo xtask check-time
       - name: Accuracy document gate (the measurement tests reproduce the checked-in document)
         run: cargo xtask check-accuracy
+      - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
+        run: cargo xtask check-intl
 
   dco:
     name: dco

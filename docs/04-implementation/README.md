@@ -45,13 +45,16 @@ teistro-sdk/
     strength/ dasha/ rules/ jaimini/ kp/ tajika/
     panchanga/ muhurta/ gochar/ prashna/ matching/ rectification/ longevity/
     remedies/ numerology/ lalkitab/ pakshi/ namakarana/ rashifal/ research/
-    interpret/ intl/ serial/
+    intl/                      present: Teistro Intl, the MF2 engine bound to the SDK's types, validation, packs and
+                               bundles, typed accessors (TypeScript, Dart, Rust; the SDK's own in src/messages.rs by
+                               `cargo xtask gen intl`), the teistro-intl command line
+    interpret/ serial/
     ffi/                       the C ABI; cbindgen config; unsafe with reviewed SAFETY comments
                                (the analytic test provider lives in port-ephemeris::test_provider)
   catalogue/                   entity catalogue YAML (keys, ids, attributes, citations); present, with its README,
                                generated into crates/core by `cargo xtask gen catalogue` and gated by `check-catalogue`
-  i18n/
-    en-Latn/  ne-Deva-NP/  hi-Deva-IN/  sa-Deva/     Teistro Intl sources (SDK namespaces)
+  i18n/                        present: en-Latn (the base) and ne-Deva-NP, sdk.entity and sdk.reason, gated by
+    en-Latn/  ne-Deva-NP/      `cargo xtask check-intl`; hi-Deva-IN and sa-Deva to come with the migration
   packs/
     interpret/<locale>/        interpretation sources with citations
     rules/<pack>/              rule packs (yogas, doshas, muhurta, matching, remedies)
