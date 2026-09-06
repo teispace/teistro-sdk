@@ -66,8 +66,16 @@ pub struct Profile {
 }
 
 /// The profile a context uses when the consumer names none: the texts as
-/// read, with nothing of any one country's practice in it. A binding's
-/// constructor and the C ABI's `ts_context_new` both fall back to it.
+/// read, with nothing of any one country's practice in it (ADR-0024). A
+/// binding's constructor and the C ABI's `ts_context_new` both fall back
+/// to it.
+///
+/// It is the one profile chosen by not choosing, so it is the one that
+/// has to need the least defending: every value in it is cited to a text
+/// or to the root, and nothing is inherited from an implementation's
+/// convenience. The choice matters — the centre alone moves the Moon by
+/// up to 39 arcminutes, which changes a Vimshottari mahadasha lord in one
+/// of the six charts the corpus records both ways.
 pub const DEFAULT_PROFILE: &str = "parashari-classical";
 
 /// The ids of the shipped profiles.
@@ -208,6 +216,14 @@ fn nepali_default() -> Profile {
     }
 }
 
+/// The texts as read, and nothing else (ADR-0024).
+///
+/// It patches the root rather than another profile, which is what makes
+/// "nothing of one country's practice in it" true rather than stated: on
+/// `nepali-default` it inherited that engine's topocentric centre,
+/// Nepal's civil calendar and its synthesised polar days, none of which
+/// is in any text. Everything not patched here comes from [`root`],
+/// which is cited knob by knob.
 fn parashari_classical() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.houses.chalit_system = Some(HouseSystem::Sripati);
@@ -216,8 +232,12 @@ fn parashari_classical() -> Profile {
     patch.state.combustion_orbs = Some(String::from("SURYA_SIDDHANTA"));
     Profile {
         id: ProfileId::new("parashari-classical"),
-        version: 1,
-        base: Some(ProfileId::new("nepali-default")),
+        // 2: the base moved from `nepali-default` to the root, so the
+        // centre became geocentric, the civil calendar Gregorian, the
+        // eras the three pan-Indic ones and a polar day undefined
+        // (ADR-0024).
+        version: 2,
+        base: None,
         patch,
         sources: vec![
             Citation::new(
@@ -225,8 +245,19 @@ fn parashari_classical() -> Profile {
                 Source::new("BPHS", "the Sripati bhava"),
             ),
             Citation::new(
+                "day.ghati_reckoning",
+                Source::new(
+                    "BPHS",
+                    "the day divided by its own arcs, as the ishta-kaal is reckoned",
+                ),
+            ),
+            Citation::new(
                 "jaimini.chara_karakas",
                 Source::new("Jaimini Sutras", "1.1.10-18"),
+            ),
+            Citation::new(
+                "state.combustion_orbs",
+                Source::new("Surya Siddhanta", "the text's own orbs where it gives them"),
             ),
         ],
         mark: Mark::Traditional,

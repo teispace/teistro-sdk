@@ -552,9 +552,6 @@ the engine's English sentences, as the engine defines them.
 
 ## 10. Open questions
 
-- Q34: the default profile. `parashari-classical` is proposed as the
-  texts as read; the maintainer may prefer `nepali-default` for the
-  product's charts.
 - Rich renderers: `ts_intl_render` hands back the plain text; the parts
   (text and markup) wait for a serialisation the bindings agree on.
 - The two bindings' packaging: the prebuilt libraries per platform, the
