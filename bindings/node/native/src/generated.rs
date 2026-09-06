@@ -631,10 +631,13 @@ pub fn delta_t_source_to_str(value: u8) -> String {
 #[derive(Clone, Debug)]
 pub struct Observer {
     /// Degrees, east positive.
+    /// Unit: deg. Range: [-180,180]. Example: 85.3240.
     pub longitude_deg: f64,
     /// Degrees, north positive.
+    /// Unit: deg. Range: [-90,90]. Example: 27.7172.
     pub latitude_deg: f64,
     /// Metres above sea level.
+    /// Unit: m. Range: [-500,12000]. Example: 1400.
     pub altitude_m: f64,
 }
 

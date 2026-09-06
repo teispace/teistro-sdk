@@ -617,7 +617,7 @@ extension CivilDateTimes on CalendarDate {
 ZoneSpec ianaZone(String name) => ZoneSpec(
   kind: ZoneKind.iana,
   offsetSeconds: 0,
-  longitudeDeg: 0,
+  longitudeDeg: Longitude(0),
   zone: name,
 );
 
@@ -625,12 +625,12 @@ ZoneSpec ianaZone(String name) => ZoneSpec(
 ZoneSpec fixedZone(int offsetSeconds) => ZoneSpec(
   kind: ZoneKind.fixed,
   offsetSeconds: offsetSeconds,
-  longitudeDeg: 0,
+  longitudeDeg: Longitude(0),
 );
 
-/// Local mean time at a longitude, in degrees east, which is what a chart
-/// before the zone existed is cast in.
-ZoneSpec localMeanZone(double longitudeDeg) => ZoneSpec(
+/// Local mean time at a longitude east of Greenwich, which is what a
+/// chart from before the zone existed is cast in.
+ZoneSpec localMeanZone(Longitude longitudeDeg) => ZoneSpec(
   kind: ZoneKind.localMean,
   offsetSeconds: 0,
   longitudeDeg: longitudeDeg,

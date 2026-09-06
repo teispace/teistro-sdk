@@ -244,7 +244,7 @@ pub struct TsZoneSpec {
     /// Reserved, zero.
     pub reserved2: u32,
     /// The longitude east-positive in degrees, for local mean time.
-    /// `api: unit=deg range=[-180,180] example=85.3240`
+    /// `api: unit=deg range=[-180,180] brand=longitude example=85.3240`
     pub longitude_deg: f64,
     /// The IANA name, for a database zone.
     /// `api: nullable example=Asia/Kathmandu`

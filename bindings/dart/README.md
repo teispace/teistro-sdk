@@ -19,6 +19,7 @@ carry `// dart format off`, so the generator's layout is what ships and
 | `test/` | the surface end to end, and the decoders against blobs the library produced | by hand |
 | `example/` | the code this README shows, run by the gate so the two cannot drift | by hand |
 | `bin/parity.dart` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Node binding's | by hand |
+| `typecheck/wrong.dart` | the usages that must not compile, each with the error it must raise | by hand |
 
 ## Using it
 

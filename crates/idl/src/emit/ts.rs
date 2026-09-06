@@ -11,6 +11,7 @@
 //! `catalogue.js`), the boundary's value types (`types.d.ts`, no runtime),
 //! and the result-blob decoders (`blob.d.ts` beside `blob.js`).
 
+use std::collections::BTreeSet;
 use std::fmt::Write;
 
 use crate::emit::{DocStyle, block_comment, field_doc_with};
@@ -59,6 +60,9 @@ fn ts_scalar(scalar: Scalar) -> &'static str {
 /// boolean, a bit set the members it holds, an array of an enum's ids the
 /// members themselves, an optional value `| null`.
 fn ts_field(field: &FieldDef, role: &FieldRole, reads: bool) -> String {
+    if let Some(brand) = &field.meta.brand {
+        return pascal(brand);
+    }
     match role {
         FieldRole::Flag => String::from("boolean"),
         FieldRole::BitSet { enum_name } => format!("readonly {}[]", binding_type_name(enum_name)),
@@ -100,6 +104,34 @@ fn array_type(field: &FieldDef, reads: bool) -> String {
     }
 }
 
+/// `An` before a vowel, `A` before anything else.
+fn article(word: &str) -> &'static str {
+    if word.starts_with(['a', 'e', 'i', 'o', 'u']) {
+        "An"
+    } else {
+        "A"
+    }
+}
+
+/// The quantities the description brands, in the order they are declared.
+/// A branded number is its own type, so a latitude cannot be passed where
+/// a longitude is wanted; the layer's constructor is the only way to make
+/// one, and it checks the range (ADR-0023, and Phase 1's exit criterion).
+#[must_use]
+pub fn brands(api: &Api) -> Vec<(String, &FieldDef)> {
+    let mut seen: BTreeSet<&str> = BTreeSet::new();
+    let mut out = Vec::new();
+    for field in api.structs.iter().flat_map(|s| &s.fields) {
+        let Some(brand) = &field.meta.brand else {
+            continue;
+        };
+        if seen.insert(brand.as_str()) {
+            out.push((brand.clone(), field));
+        }
+    }
+    out
+}
+
 /// A scalar or an enum, with nothing a role adds.
 fn ts_plain(ty: &TypeRef, enum_name: Option<&str>) -> String {
     if let Some(name) = enum_name {
@@ -123,6 +155,7 @@ fn ts_plain(ty: &TypeRef, enum_name: Option<&str>) -> String {
 #[must_use]
 pub fn catalogue_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
+    render_brands(&mut out, api);
     let by_id = enums_in_blobs(api);
     let _ = writeln!(
         out,
@@ -149,7 +182,8 @@ pub fn catalogue_declarations(api: &Api) -> String {
 #[must_use]
 pub fn type_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
-    let used = enums_used_by_structs(api);
+    let mut used = enums_used_by_structs(api);
+    used.extend(brands(api).into_iter().map(|(brand, _)| pascal(&brand)));
     if !used.is_empty() {
         let _ = writeln!(
             out,
@@ -162,6 +196,39 @@ pub fn type_declarations(api: &Api) -> String {
     }
     render_error_type(&mut out, api);
     out
+}
+
+/// The branded quantities: a type nothing else is assignable to, and the
+/// function that makes one. Two numbers of the same kind stay swappable;
+/// a latitude and a longitude do not.
+fn render_brands(out: &mut String, api: &Api) {
+    for (brand, field) in brands(api) {
+        let name = pascal(&brand);
+        let article = article(&brand);
+        let unit = field.meta.unit.as_deref().unwrap_or("");
+        let range = field.meta.range.as_deref().unwrap_or("");
+        let _ = writeln!(
+            out,
+            "/**\n * {article} {brand}{}{}. Its own type, so it cannot be passed where\n * another quantity is wanted; `{}()` is the only way to make one, and it\n * checks the range.\n */\nexport type {name} = number & {{ readonly __brand: '{brand}' }};\n\n/** {article} {brand}{}, checked. */\nexport declare function {}(value: number): {name};\n",
+            if unit.is_empty() {
+                String::new()
+            } else {
+                format!(" in {unit}")
+            },
+            if range.is_empty() {
+                String::new()
+            } else {
+                format!(", {range}")
+            },
+            camel(&brand),
+            if unit.is_empty() {
+                String::new()
+            } else {
+                format!(" in {unit}")
+            },
+            camel(&brand),
+        );
+    }
 }
 
 /// Renders `blob.d.ts`: each result blob's decoded shape and its decoder.
@@ -412,6 +479,49 @@ fn render_error_type(out: &mut String, api: &Api) {
     );
 }
 
+/// The branded quantities' constructors, in JavaScript: the only way to
+/// make one, and the check the range asks for. Rendered into the tables
+/// file because it is the runtime half of `catalogue.d.ts`'s neighbours
+/// and a bundler drops what an application does not call.
+fn render_brand_constructors(out: &mut String, api: &Api) {
+    for (brand, field) in brands(api) {
+        let name = camel(&brand);
+        let unit = field.meta.unit.as_deref().unwrap_or("");
+        let check = match brand_range(field) {
+            Some((low, high)) => format!(
+                "\n  if (!(value >= {low} && value <= {high})) {{\n    throw new RangeError(`{brand}: expected {low} to {high}{}, got ${{value}}`);\n  }}",
+                if unit.is_empty() {
+                    String::new()
+                } else {
+                    format!(" {unit}")
+                }
+            ),
+            _ => String::new(),
+        };
+        let _ = writeln!(
+            out,
+            "/** {} {brand}{}, checked. */\nexport function {name}(value) {{\n  if (typeof value !== 'number' || !Number.isFinite(value)) {{\n    throw new TypeError(`{brand}: expected a finite number, got ${{String(value)}}`);\n  }}{check}\n  return value;\n}}\n",
+            article(&brand),
+            if unit.is_empty() {
+                String::new()
+            } else {
+                format!(" in {unit}")
+            },
+        );
+    }
+}
+
+/// The two ends of a branded field's range, when it states one as
+/// `[low,high]`. Every binding checks the same numbers.
+#[must_use]
+pub fn brand_range(field: &FieldDef) -> Option<(&str, &str)> {
+    let range = field.meta.range.as_deref()?;
+    let inside = range.trim_start_matches('[').trim_end_matches(']');
+    inside
+        .split_once(',')
+        .map(|(low, high)| (low.trim(), high.trim()))
+}
+
 /// Renders `catalogue.js`: the `const` tables the declarations promise,
 /// one exported constant per enum so a bundler keeps only what is used,
 /// and an id table for every enum a result blob's columns carry.
@@ -429,6 +539,7 @@ pub fn tables(api: &Api) -> String {
             c.value
         );
     }
+    render_brand_constructors(&mut out, api);
     let by_id = enums_in_blobs(api);
     for e in &api.enums {
         let name = binding_type_name(&e.name);

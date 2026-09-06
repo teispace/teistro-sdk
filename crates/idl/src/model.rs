@@ -305,6 +305,11 @@ pub struct Meta {
     /// The unit, such as `deg` or `deg/day`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unit: Option<String>,
+    /// The quantity the number carries, where two of the same type would
+    /// otherwise be swappable: a latitude is not a longitude. A binding
+    /// that can express a distinct type for it does (ADR-0023).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brand: Option<String>,
     /// The range in interval notation, such as `[1,5]`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub range: Option<String>,

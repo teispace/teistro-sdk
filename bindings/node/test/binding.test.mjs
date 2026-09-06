@@ -10,6 +10,9 @@ import { test } from 'node:test';
 import {
   Body,
   Calendar,
+  altitude,
+  latitude,
+  longitude,
   Context,
   Era,
   Resolution,
@@ -246,6 +249,28 @@ test('the locale engine renders typed parameters, and says where from', () => {
     () => ctx.render('sdk.reason.grahaInBhava', 'not an object'),
     (error) => error.status === 'invalid-arg' && error.field === 'params_json',
   );
+});
+
+test('a quantity is its own type, and its constructor checks the range', () => {
+  const ctx = context();
+  assert.equal(latitude(27.7172), 27.7172, 'a branded number is a number at run time');
+  assert.throws(() => latitude(91), RangeError);
+  assert.throws(() => longitude(-181), RangeError);
+  assert.throws(() => altitude(20000), RangeError);
+  assert.throws(() => latitude(Number.NaN), TypeError);
+  assert.throws(() => longitude('85.3'), TypeError);
+
+  // The place reaches the boundary and comes back through the frame.
+  const positions = ctx.positions({
+    instants: [2451545.0],
+    bodies: [Body.Sun],
+    observer: {
+      latitudeDeg: latitude(27.7172),
+      longitudeDeg: longitude(85.324),
+      altitudeM: altitude(1400),
+    },
+  });
+  assert.equal(positions.cells.length, 1);
 });
 
 test('a catalogue key packs to an id and back', () => {

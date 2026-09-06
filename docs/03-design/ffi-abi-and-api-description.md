@@ -1,6 +1,7 @@
 # The C ABI and the API description
 
-Status: `draft`, revised 2026-09-06 when the build handshake was added
+Status: `draft`, revised 2026-09-06 when the branded quantities were
+added (§5); revised the same day when the build handshake was added
 (§5's handshake); revised the same day when the parity gate was added
 (§8's tests); revised the same day when an ephemeris written in Dart
 answered the SDK (§5's provider, §8's tests); revised the same day when
@@ -300,6 +301,28 @@ regenerates them byte for byte on a machine with no Dart toolchain, and
 `dart format .` still passes over the package. And a context frees itself
 when it is collected, through the finaliser, so `dispose` is the explicit
 form rather than the only one.
+
+### Quantities that cannot be swapped
+
+A latitude and a longitude are both a `f64` at the boundary, and nothing
+in C stops one being passed for the other. The description says which
+quantity a number carries (`api: brand=latitude`), and each binding gives
+it a type of its own:
+
+| binding | how |
+|---|---|
+| TypeScript | `type Latitude = number & { readonly __brand: 'latitude' }`, with `latitude(27.7)` the only way to make one |
+| Dart | `extension type const Latitude._(double value) implements double`, zero cost at run time |
+| C | the header's documentation and its range; C has no way to say more |
+
+The constructor checks the range the description states, so a latitude
+beyond ±90 is refused where it is written rather than at the boundary.
+The gates prove the point rather than assert it: the TypeScript consumer
+marks a swapped pair `@ts-expect-error`, so the check fails if the
+surface ever stops refusing it, and `bindings/dart/typecheck/wrong.dart`
+is analysed on its own and must report every error it expects. That is
+Phase 1's exit criterion, "a swapped latitude and longitude does not
+compile in Rust or type-check in TypeScript", in the two bindings.
 
 ### The build handshake
 

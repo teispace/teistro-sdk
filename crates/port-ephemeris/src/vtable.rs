@@ -71,10 +71,13 @@ pub enum ProviderCode {
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ObserverC {
     /// Degrees, east positive.
+    /// `api: unit=deg range=[-180,180] brand=longitude example=85.3240`
     pub longitude_deg: f64,
     /// Degrees, north positive.
+    /// `api: unit=deg range=[-90,90] brand=latitude example=27.7172`
     pub latitude_deg: f64,
     /// Metres above sea level.
+    /// `api: unit=m range=[-500,12000] brand=altitude example=1400`
     pub altitude_m: f64,
 }
 

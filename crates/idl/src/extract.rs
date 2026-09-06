@@ -487,6 +487,7 @@ fn parse_meta(text: &str, meta: &mut Meta, flags: &mut Flags) {
     for pair in text.split_whitespace() {
         match pair.split_once('=') {
             Some(("unit", value)) => meta.unit = Some(value.to_string()),
+            Some(("brand", value)) => meta.brand = Some(value.to_string()),
             Some(("range", value)) => meta.range = Some(value.to_string()),
             Some(("example", value)) => meta.example = Some(value.to_string()),
             Some(("enum", value)) => meta.enum_name = Some(value.to_string()),

@@ -12,6 +12,7 @@ import type {
   PositionsRequest,
   Scale,
 } from '../lib/index.js';
+import { altitude, latitude, longitude } from '../lib/catalogue.js';
 
 declare const build: BuildInfo;
 declare function refuse(info: BuildInfo, named: boolean): string | null;
@@ -63,6 +64,37 @@ const partialObserver: PositionsRequest = {
   // @ts-expect-error an observer names all three of its parts
   observer: { longitudeDeg: 85.324 },
 };
+/** A place, as the boundary takes one. */
+const place: PositionsRequest = {
+  instants: [],
+  bodies: [],
+  observer: {
+    latitudeDeg: latitude(27.7172),
+    longitudeDeg: longitude(85.324),
+    altitudeM: altitude(1400),
+  },
+};
+const swappedPlace: PositionsRequest = {
+  instants: [],
+  bodies: [],
+  observer: {
+    // @ts-expect-error a longitude is not a latitude
+    latitudeDeg: longitude(85.324),
+    // @ts-expect-error and a latitude is not a longitude
+    longitudeDeg: latitude(27.7172),
+    altitudeM: altitude(1400),
+  },
+};
+const barePlace: PositionsRequest = {
+  instants: [],
+  bodies: [],
+  observer: {
+    // @ts-expect-error a latitude is made by `latitude()`, never by a literal
+    latitudeDeg: 27.7172,
+    longitudeDeg: longitude(85.324),
+    altitudeM: altitude(1400),
+  },
+};
 const writeCell = () => {
   // @ts-expect-error a cell is read-only, like every result
   ctx.positions({ instants: [], bodies: [] }).at(0, 0).longitude = 0;
@@ -97,4 +129,13 @@ const wrongAnswer: EphemerisProvider = {
   positions: () => ({ lon: ['1'] }),
 };
 
-export { handshake, nameless, provider, wrongAnswer, wrongBody };
+export {
+  barePlace,
+  handshake,
+  nameless,
+  place,
+  provider,
+  swappedPlace,
+  wrongAnswer,
+  wrongBody,
+};
