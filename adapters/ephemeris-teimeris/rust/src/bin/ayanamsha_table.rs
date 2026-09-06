@@ -18,7 +18,9 @@ use std::process::ExitCode;
 
 use serde::Serialize;
 use teistro_core::catalogue::Ayanamsha;
-use teistro_ephemeris_teimeris::{TeimerisProvider, data_dir_from_env};
+use teistro_ephemeris_teimeris::{
+    TeimerisProvider, data_dir_from_env, profile_from_env, profile_key,
+};
 use teistro_port_ephemeris::{EphemerisProvider, TimeScale};
 
 /// The instants: Julian epochs 1500 to 2500 by fifty years, and the
@@ -32,6 +34,10 @@ const EPOCH_YEARS: [f64; 24] = [
 struct Table {
     schema: &'static str,
     tool: String,
+    /// The engine profile the numbers were taken under: `compatible`
+    /// reproduces the engine's own upstream, `max` carries the
+    /// corrections the findings register asked for.
+    profile: &'static str,
     scale: &'static str,
     basis: &'static str,
     rows: Vec<Row>,
@@ -45,6 +51,7 @@ struct Row {
 }
 
 fn main() -> ExitCode {
+    let profile = profile_from_env();
     let data_dir = data_dir_from_env();
     let provider = match TeimerisProvider::open(&data_dir) {
         Ok(provider) => provider,
@@ -77,6 +84,7 @@ fn main() -> ExitCode {
             "{} {}",
             capabilities.identity.name, capabilities.identity.version
         ),
+        profile: profile_key(profile),
         scale: "TT",
         basis: "MEAN",
         rows,

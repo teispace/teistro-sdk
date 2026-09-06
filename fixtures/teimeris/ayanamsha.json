@@ -1,6 +1,7 @@
 {
   "schema": "teistro-conformance/ayanamsha-table/1",
   "tool": "teimeris 0.1.0",
+  "profile": "max",
   "scale": "TT",
   "basis": "MEAN",
   "rows": [
@@ -2047,87 +2048,87 @@
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 1976720.0,
-      "mean_deg": 8.739682111266802
+      "mean_deg": 8.739825445933349
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2049770.0,
-      "mean_deg": 11.51847825619339
+      "mean_deg": 11.518599545131366
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2122820.0,
-      "mean_deg": 14.299724348476474
+      "mean_deg": 14.299823589585685
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2195870.0,
-      "mean_deg": 17.083440909605315
+      "mean_deg": 17.083518100796596
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2268920.0,
-      "mean_deg": 19.869641960135368
+      "mean_deg": 19.86969709930986
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2305445.0,
-      "mean_deg": 21.26367736646091
+      "mean_deg": 21.263721478845525
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2341970.0,
-      "mean_deg": 22.658328393970294
+      "mean_deg": 22.658361479659277
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2378495.0,
-      "mean_deg": 24.053612507641105
+      "mean_deg": 24.053634564320703
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2396757.5,
-      "mean_deg": 24.75148863061571
+      "mean_deg": 24.751505173706335
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2415020.0,
-      "mean_deg": 25.44951147463553
+      "mean_deg": 25.449522503512128
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2433282.5,
-      "mean_deg": 26.147704345326247
+      "mean_deg": 26.14770985982915
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2451545.0,
-      "mean_deg": 26.846047716785392
+      "mean_deg": 26.846047716992075
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2460676.25,
-      "mean_deg": 27.195278022035495
+      "mean_deg": 27.1952752647353
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2469807.5,
-      "mean_deg": 27.544549954940294
+      "mean_deg": 27.544544440541813
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2488070.0,
-      "mean_deg": 28.243203778425084
+      "mean_deg": 28.24319274902888
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2561120.0,
-      "mean_deg": 31.039397608562012
+      "mean_deg": 31.03936451882339
     },
     {
       "ayanamsha": "GALCENT_0SAG",
       "jd_tt": 2634170.0,
-      "mean_deg": 33.83808633239653
+      "mean_deg": 33.83803118025446
     },
     {
       "ayanamsha": "J2000",
@@ -3212,22 +3213,22 @@
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 1976720.0,
-      "mean_deg": 5.748421757476478
+      "mean_deg": 5.748421757476507
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2049770.0,
-      "mean_deg": 8.525062481761552
+      "mean_deg": 8.52506248176158
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2122820.0,
-      "mean_deg": 11.304114659475971
+      "mean_deg": 11.304114659476
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2195870.0,
-      "mean_deg": 14.085589836381246
+      "mean_deg": 14.085589836381274
     },
     {
       "ayanamsha": "TRUE_CHITRA",
@@ -3237,27 +3238,27 @@
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2305445.0,
-      "mean_deg": 18.26238114005406
+      "mean_deg": 18.26238114005409
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2341970.0,
-      "mean_deg": 19.65587158014631
+      "mean_deg": 19.65587157915303
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2378495.0,
-      "mean_deg": 21.04997296865423
+      "mean_deg": 21.049972967964976
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2396757.5,
-      "mean_deg": 21.747250747032297
+      "mean_deg": 21.747250746535997
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2415020.0,
-      "mean_deg": 22.444683659433025
+      "mean_deg": 22.444683659433053
     },
     {
       "ayanamsha": "TRUE_CHITRA",
@@ -3267,7 +3268,7 @@
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2451545.0,
-      "mean_deg": 23.840017913727564
+      "mean_deg": 23.840017913397247
     },
     {
       "ayanamsha": "TRUE_CHITRA",
@@ -3277,7 +3278,7 @@
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2469807.5,
-      "mean_deg": 24.53791534369759
+      "mean_deg": 24.537915343571314
     },
     {
       "ayanamsha": "TRUE_CHITRA",
@@ -3287,17 +3288,17 @@
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2561120.0,
-      "mean_deg": 28.029699332958216
+      "mean_deg": 28.029699332958245
     },
     {
       "ayanamsha": "TRUE_CHITRA",
       "jd_tt": 2634170.0,
-      "mean_deg": 30.825896263952444
+      "mean_deg": 30.825896263952473
     },
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 1976720.0,
-      "mean_deg": 1.8949198445595812
+      "mean_deg": 1.8949198445595243
     },
     {
       "ayanamsha": "TRUE_REVATI",
@@ -3317,7 +3318,7 @@
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2268920.0,
-      "mean_deg": 13.052109655749632
+      "mean_deg": 13.052109655749689
     },
     {
       "ayanamsha": "TRUE_REVATI",
@@ -3327,22 +3328,22 @@
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2341970.0,
-      "mean_deg": 15.84749173794961
+      "mean_deg": 15.847491739023269
     },
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2378495.0,
-      "mean_deg": 17.246102019390264
+      "mean_deg": 17.246102020059027
     },
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2396757.5,
-      "mean_deg": 17.94564022955217
+      "mean_deg": 17.945640230062168
     },
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2415020.0,
-      "mean_deg": 18.645329392364147
+      "mean_deg": 18.645329392364204
     },
     {
       "ayanamsha": "TRUE_REVATI",
@@ -3352,7 +3353,7 @@
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2451545.0,
-      "mean_deg": 20.045161738521188
+      "mean_deg": 20.045161738878107
     },
     {
       "ayanamsha": "TRUE_REVATI",
@@ -3362,7 +3363,7 @@
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2469807.5,
-      "mean_deg": 20.745308207463722
+      "mean_deg": 20.745308207612197
     },
     {
       "ayanamsha": "TRUE_REVATI",
@@ -3372,7 +3373,7 @@
     {
       "ayanamsha": "TRUE_REVATI",
       "jd_tt": 2561120.0,
-      "mean_deg": 24.24835050518891
+      "mean_deg": 24.248350505188967
     },
     {
       "ayanamsha": "TRUE_REVATI",
@@ -3382,77 +3383,77 @@
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 1976720.0,
-      "mean_deg": 4.603812057845431
+      "mean_deg": 4.6038120578453885
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2049770.0,
-      "mean_deg": 7.385341402286443
+      "mean_deg": 7.385341402286386
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2122820.0,
-      "mean_deg": 10.169282803653331
+      "mean_deg": 10.169282803653303
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2195870.0,
-      "mean_deg": 12.955640820373517
+      "mean_deg": 12.955640820373588
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2268920.0,
-      "mean_deg": 15.744429708145816
+      "mean_deg": 15.744429708145915
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2305445.0,
-      "mean_deg": 17.139735277141398
+      "mean_deg": 17.13973527714137
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2341970.0,
-      "mean_deg": 18.53566307438443
+      "mean_deg": 18.535663072969058
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2378495.0,
-      "mean_deg": 19.93219104566532
+      "mean_deg": 19.93219104574588
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2396757.5,
-      "mean_deg": 20.630682360311255
+      "mean_deg": 20.630682359971956
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2415020.0,
-      "mean_deg": 21.329338265697984
+      "mean_deg": 21.329338265698013
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2433282.5,
-      "mean_deg": 22.02813764241236
+      "mean_deg": 22.028137642412446
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2451545.0,
-      "mean_deg": 22.727091656410607
+      "mean_deg": 22.727091655940228
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2460676.25,
-      "mean_deg": 23.076627450572715
+      "mean_deg": 23.0766274505728
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2469807.5,
-      "mean_deg": 23.426198515148684
+      "mean_deg": 23.426198514801257
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2488070.0,
-      "mean_deg": 24.12545750102717
+      "mean_deg": 24.125457501027256
     },
     {
       "ayanamsha": "TRUE_PUSHYA",
@@ -3462,177 +3463,177 @@
     {
       "ayanamsha": "TRUE_PUSHYA",
       "jd_tt": 2634170.0,
-      "mean_deg": 29.7250663390426
+      "mean_deg": 29.72506633904257
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 1976720.0,
-      "mean_deg": 4.362741094266802
+      "mean_deg": 4.362884428933349
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2049770.0,
-      "mean_deg": 7.14153723919339
+      "mean_deg": 7.141658528131366
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2122820.0,
-      "mean_deg": 9.922783331476474
+      "mean_deg": 9.922882572585685
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2195870.0,
-      "mean_deg": 12.706499892605315
+      "mean_deg": 12.706577083796596
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2268920.0,
-      "mean_deg": 15.492700943135368
+      "mean_deg": 15.49275608230986
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2305445.0,
-      "mean_deg": 16.88673634946091
+      "mean_deg": 16.886780461845525
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2341970.0,
-      "mean_deg": 18.281387376970294
+      "mean_deg": 18.281420462659277
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2378495.0,
-      "mean_deg": 19.676671490641105
+      "mean_deg": 19.676693547320703
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2396757.5,
-      "mean_deg": 20.37454761361571
+      "mean_deg": 20.374564156706334
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2415020.0,
-      "mean_deg": 21.07257045763553
+      "mean_deg": 21.072581486512128
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2433282.5,
-      "mean_deg": 21.770763328326247
+      "mean_deg": 21.77076884282915
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2451545.0,
-      "mean_deg": 22.469106699785392
+      "mean_deg": 22.469106699992075
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2460676.25,
-      "mean_deg": 22.818337005035495
+      "mean_deg": 22.8183342477353
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2469807.5,
-      "mean_deg": 23.167608937940294
+      "mean_deg": 23.167603423541813
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2488070.0,
-      "mean_deg": 23.866262761425084
+      "mean_deg": 23.86625173202888
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2561120.0,
-      "mean_deg": 26.662456591562012
+      "mean_deg": 26.66242350182339
     },
     {
       "ayanamsha": "GALCENT_RGILBRAND",
       "jd_tt": 2634170.0,
-      "mean_deg": 29.46114531539653
+      "mean_deg": 29.46109016325446
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 1976720.0,
-      "mean_deg": 11.817202409513072
+      "mean_deg": 11.817251334071898
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2049770.0,
-      "mean_deg": 14.611579837825104
+      "mean_deg": 14.611628759105457
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2122820.0,
-      "mean_deg": 17.4083249612423
+      "mean_deg": 17.408373879018257
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2195870.0,
-      "mean_deg": 20.207447139822875
+      "mean_deg": 20.207496053870926
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2268920.0,
-      "mean_deg": 23.008953312612135
+      "mean_deg": 23.00900222271133
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2305445.0,
-      "mean_deg": 24.410601903742872
+      "mean_deg": 24.410650811785587
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2341970.0,
-      "mean_deg": 25.812848001636297
+      "mean_deg": 25.812896907568188
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2378495.0,
-      "mean_deg": 27.215691793107
+      "mean_deg": 27.215740696874093
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2396757.5,
-      "mean_deg": 27.91733784306649
+      "mean_deg": 27.91738674573105
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2415020.0,
-      "mean_deg": 28.619133319927442
+      "mean_deg": 28.61918222147611
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2433282.5,
-      "mean_deg": 29.32107820419344
+      "mean_deg": 29.321127104612827
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2451545.0,
-      "mean_deg": 30.023172468632083
+      "mean_deg": 30.023221367909002
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2460676.25,
-      "mean_deg": 30.374275607558474
+      "mean_deg": 30.374324506259114
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2469807.5,
-      "mean_deg": 30.72541607704389
+      "mean_deg": 30.725464975164982
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2488070.0,
-      "mean_deg": 31.427808982632968
+      "mean_deg": 31.427857879585076
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2561120.0,
-      "mean_deg": 34.23887232313655
+      "mean_deg": 34.23892121528135
     },
     {
       "ayanamsha": "GALEQU_IAU1958",
       "jd_tt": 2634170.0,
-      "mean_deg": 37.05231830978698
+      "mean_deg": 37.05236719691649
     },
     {
       "ayanamsha": "GALEQU_TRUE",
@@ -3692,22 +3693,22 @@
     {
       "ayanamsha": "GALEQU_TRUE",
       "jd_tt": 2451545.0,
-      "mean_deg": 30.07609217977435
+      "mean_deg": 30.076092179774378
     },
     {
       "ayanamsha": "GALEQU_TRUE",
       "jd_tt": 2460676.25,
-      "mean_deg": 30.427194769687702
+      "mean_deg": 30.42719476968773
     },
     {
       "ayanamsha": "GALEQU_TRUE",
       "jd_tt": 2469807.5,
-      "mean_deg": 30.77833468653921
+      "mean_deg": 30.77833468653924
     },
     {
       "ayanamsha": "GALEQU_TRUE",
       "jd_tt": 2488070.0,
-      "mean_deg": 31.480726476020095
+      "mean_deg": 31.480726476020124
     },
     {
       "ayanamsha": "GALEQU_TRUE",
@@ -3777,22 +3778,22 @@
     {
       "ayanamsha": "GALEQU_MULA",
       "jd_tt": 2451545.0,
-      "mean_deg": 23.40942551307435
+      "mean_deg": 23.40942551307438
     },
     {
       "ayanamsha": "GALEQU_MULA",
       "jd_tt": 2460676.25,
-      "mean_deg": 23.760528102987703
+      "mean_deg": 23.76052810298773
     },
     {
       "ayanamsha": "GALEQU_MULA",
       "jd_tt": 2469807.5,
-      "mean_deg": 24.11166801983921
+      "mean_deg": 24.11166801983924
     },
     {
       "ayanamsha": "GALEQU_MULA",
       "jd_tt": 2488070.0,
-      "mean_deg": 24.814059809320096
+      "mean_deg": 24.814059809320124
     },
     {
       "ayanamsha": "GALEQU_MULA",
@@ -3932,7 +3933,7 @@
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2049770.0,
-      "mean_deg": 9.255505306885453
+      "mean_deg": 9.255505306885482
     },
     {
       "ayanamsha": "TRUE_MULA",
@@ -3942,12 +3943,12 @@
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2195870.0,
-      "mean_deg": 14.819112548136218
+      "mean_deg": 14.819112548136161
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2268920.0,
-      "mean_deg": 17.604734040087294
+      "mean_deg": 17.60473404008718
     },
     {
       "ayanamsha": "TRUE_MULA",
@@ -3957,47 +3958,47 @@
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2341970.0,
-      "mean_deg": 20.392905925137768
+      "mean_deg": 20.39290592571666
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2378495.0,
-      "mean_deg": 21.78795708794962
+      "mean_deg": 21.78795708736368
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2396757.5,
-      "mean_deg": 22.485722676167256
+      "mean_deg": 22.48572267611462
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2415020.0,
-      "mean_deg": 23.18363906147806
+      "mean_deg": 23.183639061478118
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2433282.5,
-      "mean_deg": 23.881729886635696
+      "mean_deg": 23.88172988663564
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2451545.0,
-      "mean_deg": 24.5799749479973
+      "mean_deg": 24.57997494818966
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2460676.25,
-      "mean_deg": 24.929157680844583
+      "mean_deg": 24.92915768084447
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2469807.5,
-      "mean_deg": 25.27838302986595
+      "mean_deg": 25.2783830300952
     },
     {
       "ayanamsha": "TRUE_MULA",
       "jd_tt": 2488070.0,
-      "mean_deg": 25.9769463316635
+      "mean_deg": 25.976946331663385
     },
     {
       "ayanamsha": "TRUE_MULA",
@@ -4012,87 +4013,87 @@
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 1976720.0,
-      "mean_deg": 1.1744963184561925
+      "mean_deg": 1.1746460122332394
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2049770.0,
-      "mean_deg": 4.062662901307135
+      "mean_deg": 4.062789621718423
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2122820.0,
-      "mean_deg": 6.956371834170227
+      "mean_deg": 6.956475549828525
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2195870.0,
-      "mean_deg": 9.855363898224198
+      "mean_deg": 9.85544458474726
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2268920.0,
-      "mean_deg": 12.759359703138387
+      "mean_deg": 12.759417343424559
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2305445.0,
-      "mean_deg": 14.213141990938482
+      "mean_deg": 14.213188104049607
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2341970.0,
-      "mean_deg": 15.66805360730774
+      "mean_deg": 15.668088192455286
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2378495.0,
-      "mean_deg": 17.12407252292229
+      "mean_deg": 17.12409557780495
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2396757.5,
-      "mean_deg": 17.852481036262475
+      "mean_deg": 17.852498327319267
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2415020.0,
-      "mean_deg": 18.581139024850188
+      "mean_deg": 18.581150551810936
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2433282.5,
-      "mean_deg": 19.31006559542044
+      "mean_deg": 19.31007135864496
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2451545.0,
-      "mean_deg": 20.039235113444363
+      "mean_deg": 20.039235113659004
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2460676.25,
-      "mean_deg": 20.403911617192875
+      "mean_deg": 20.403908735811513
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2469807.5,
-      "mean_deg": 20.768651067356984
+      "mean_deg": 20.768645305013365
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2488070.0,
-      "mean_deg": 21.498300534168322
+      "mean_deg": 21.49828900975467
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2561120.0,
-      "mean_deg": 24.41919204010037
+      "mean_deg": 24.419157478558418
     },
     {
       "ayanamsha": "GALCENT_MULA_WILHELM",
       "jd_tt": 2634170.0,
-      "mean_deg": 27.343460509750628
+      "mean_deg": 27.34340293346679
     },
     {
       "ayanamsha": "ARYABHATA_522",
@@ -4337,77 +4338,77 @@
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 1976720.0,
-      "mean_deg": 7.1111698415954265
+      "mean_deg": 7.111169841595384
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2049770.0,
-      "mean_deg": 9.892699186036438
+      "mean_deg": 9.892699186036381
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2122820.0,
-      "mean_deg": 12.676640587403327
+      "mean_deg": 12.676640587403298
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2195870.0,
-      "mean_deg": 15.462998604123513
+      "mean_deg": 15.462998604123584
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2268920.0,
-      "mean_deg": 18.25178749189581
+      "mean_deg": 18.25178749189591
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2305445.0,
-      "mean_deg": 19.647093060891393
+      "mean_deg": 19.647093060891365
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2341970.0,
-      "mean_deg": 21.043020858134426
+      "mean_deg": 21.043020856719053
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2378495.0,
-      "mean_deg": 22.439548829415315
+      "mean_deg": 22.439548829495877
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2396757.5,
-      "mean_deg": 23.13804014406125
+      "mean_deg": 23.138040143721952
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2415020.0,
-      "mean_deg": 23.83669604944798
+      "mean_deg": 23.83669604944801
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2433282.5,
-      "mean_deg": 24.535495426162356
+      "mean_deg": 24.53549542616244
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2451545.0,
-      "mean_deg": 25.234449440160603
+      "mean_deg": 25.234449439690223
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2460676.25,
-      "mean_deg": 25.58398523432271
+      "mean_deg": 25.583985234322796
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2469807.5,
-      "mean_deg": 25.93355629889868
+      "mean_deg": 25.933556298551252
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2488070.0,
-      "mean_deg": 26.632815284777166
+      "mean_deg": 26.63281528477725
     },
     {
       "ayanamsha": "TRUE_SHEORAN",
@@ -4417,92 +4418,92 @@
     {
       "ayanamsha": "TRUE_SHEORAN",
       "jd_tt": 2634170.0,
-      "mean_deg": 32.232424122792594
+      "mean_deg": 32.232424122792565
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 1976720.0,
-      "mean_deg": 338.7396821112668
+      "mean_deg": 338.7398254459333
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2049770.0,
-      "mean_deg": 341.51847825619336
+      "mean_deg": 341.51859954513134
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2122820.0,
-      "mean_deg": 344.2997243484765
+      "mean_deg": 344.2998235895857
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2195870.0,
-      "mean_deg": 347.0834409096053
+      "mean_deg": 347.0835181007966
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2268920.0,
-      "mean_deg": 349.86964196013537
+      "mean_deg": 349.86969709930986
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2305445.0,
-      "mean_deg": 351.2636773664609
+      "mean_deg": 351.2637214788455
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2341970.0,
-      "mean_deg": 352.6583283939703
+      "mean_deg": 352.6583614796593
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2378495.0,
-      "mean_deg": 354.0536125076411
+      "mean_deg": 354.0536345643207
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2396757.5,
-      "mean_deg": 354.7514886306157
+      "mean_deg": 354.75150517370633
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2415020.0,
-      "mean_deg": 355.44951147463553
+      "mean_deg": 355.4495225035121
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2433282.5,
-      "mean_deg": 356.14770434532625
+      "mean_deg": 356.14770985982915
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2451545.0,
-      "mean_deg": 356.8460477167854
+      "mean_deg": 356.8460477169921
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2460676.25,
-      "mean_deg": 357.1952780220355
+      "mean_deg": 357.1952752647353
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2469807.5,
-      "mean_deg": 357.5445499549403
+      "mean_deg": 357.5445444405418
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2488070.0,
-      "mean_deg": 358.2432037784251
+      "mean_deg": 358.2431927490289
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2561120.0,
-      "mean_deg": 1.0393976085620125
+      "mean_deg": 1.0393645188233904
     },
     {
       "ayanamsha": "GALCENT_COCHRANE",
       "jd_tt": 2634170.0,
-      "mean_deg": 3.8380863323965286
+      "mean_deg": 3.838031180254461
     },
     {
       "ayanamsha": "GALEQU_FIORENZA",

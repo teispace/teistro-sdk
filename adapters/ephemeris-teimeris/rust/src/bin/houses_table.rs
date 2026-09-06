@@ -20,7 +20,9 @@ use std::process::ExitCode;
 use serde::Serialize;
 use teimeris::HouseSystem as EngineSystem;
 use teistro_core::catalogue::HouseSystem;
-use teistro_ephemeris_teimeris::{TeimerisProvider, data_dir_from_env};
+use teistro_ephemeris_teimeris::{
+    TeimerisProvider, data_dir_from_env, profile_from_env, profile_key,
+};
 use teistro_port_ephemeris::EphemerisProvider;
 
 /// Latitudes from the southern polar circle to inside the northern one.
@@ -67,6 +69,10 @@ fn engine_system(system: HouseSystem) -> Option<EngineSystem> {
 struct Table {
     schema: &'static str,
     tool: String,
+    /// The engine profile the numbers were taken under: `compatible`
+    /// reproduces the engine's own upstream, `max` carries the
+    /// corrections the findings register asked for.
+    profile: &'static str,
     zodiac: &'static str,
     rows: Vec<Row>,
 }
@@ -91,6 +97,7 @@ struct Row {
 }
 
 fn main() -> ExitCode {
+    let profile = profile_from_env();
     let data_dir = data_dir_from_env();
     let provider = match TeimerisProvider::open(&data_dir) {
         Ok(provider) => provider,
@@ -143,6 +150,7 @@ fn main() -> ExitCode {
             "{} {}",
             capabilities.identity.name, capabilities.identity.version
         ),
+        profile: profile_key(profile),
         zodiac: "TROPICAL",
         rows,
     };

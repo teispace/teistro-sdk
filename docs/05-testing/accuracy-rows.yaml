@@ -24,7 +24,7 @@ rows:
     target: "1e-9″"
     page: 03-design/astro-events-and-crossings.md
     evidence: "`gmst00`, `gmst06`, `ee00b`, `eect00`, `gst00b`, `era00` against ERFA's reference values to 1e-12 rad, `ee06b` and `gst06b` against ERFA's `ee06a` and `gst06a` within the 2000B truncation (`iau::tests`); `teimeris_sidereal.rs` over `fixtures/teimeris/sidereal.json`: the engine's apparent sidereal time at 41 instants strictly inside its 1850 to 2050 window and 8 at and beyond its bounds, on the engine's own Delta T"
-    by_hand: "the engine's long-term branch at and beyond its window, reported by the same test: −0.50″ at 1700, +0.098″ at 1850-01-01, −1.908″ at 2050-01-01, +2.46″ at 2300 (`02-engine-findings.md`, F1; 2026-09-05)"
+    by_hand: "the engine's long-term branch beyond its window, reported by the same test: −0.59″ at 1700, +0.27″ at 1800, +0.11″ at 2100, +4.36″ at 2300; at the window's own bounds it now meets the expression within 0.0014″, where it stepped by −1.909″ at 2050 and +0.098″ at 1850 until the engine's joining offsets were fixed (`02-engine-findings.md`, F1, closed; 2026-09-06)"
   - id: precession
     area: precession
     target: bit-identical per model
@@ -68,7 +68,7 @@ rows:
     target: "0.01″"
     page: 03-design/astro-star-table.md
     evidence: "`teimeris_stars.rs` over `fixtures/teimeris/stars.json`: 126 stars at four instants, the pipeline over the engine's own astrometry and the two catalogues' astrometry apart; `epv00`, `pmpx`, `ab`, `ld`, `ldsun` against ERFA's reference values"
-    by_hand: "three of the engine's named rows point at other stars or carry stale motions (`02-engine-findings.md`, F5)"
+    by_hand: "every row of the engine's table now compares: two named other stars, one carried another catalogue's proper motion, one a rate with the declination factor applied twice and one another definition of the galactic pole until the engine's table was corrected (`02-engine-findings.md`, F5, closed); what remains is Gaia against Hipparcos, worst Rigil Kentaurus 6.3″ at 2100 (2026-09-06)"
   - id: houses
     area: house systems
     target: "1e-6° against Teimeris at 10 latitudes, including the polar failure modes"
@@ -91,13 +91,13 @@ rows:
     target: exact to rounding over the same geometry
     page: 03-design/astro-planetary-phenomena.md
     evidence: "`teimeris_phenomena.rs` over `fixtures/teimeris/pheno.json`: eleven bodies at sixteen instants over the engine's own geometry"
-    by_hand: "through the completion over the engine's positions: phase angles within 1.6e-12°, magnitudes within 1.4e-7; the Sun's disc 0.84″ (the engine's older radius) and the Moon's parallax 0.32″ apart (`02-engine-findings.md`, F2) (2026-09-05)"
+    by_hand: "through the completion over the engine's positions: phase angles within 1.6e-12°, magnitudes within 1.4e-7; the Sun's disc 0.84″ apart (the engine's older radius, a stated constant); the Moon's parallax now 0.0002″ apart, where it was 0.32″ until the engine read it from the same apparent distance as the disc (`02-engine-findings.md`, F2, closed) (2026-09-06)"
   - id: equation_of_time
     area: equation of time
     target: exact
     page: 03-design/astro-planetary-phenomena.md
     evidence: "`teimeris_phenomena.rs`: the engine's equation of time from the same Sun with the SDK's sidereal time, at sixteen instants"
-    by_hand: "within 2 µs of Teimeris over every day of the year 2000; 0.127 s apart from 2050, the engine's sidereal-time step (F1) (2026-09-05)"
+    by_hand: "within 2 µs of Teimeris over every day of the year 2000; 7.5 ms apart at 2100, the departure of the engine's long-term branch from the IERS 2010 expression, where it was 0.127 s at 2050 from the branch's step (F1, closed) (2026-09-06)"
   - id: eclipses
     area: eclipses and occultations
     target: "v1.x, 1 s of contact times"

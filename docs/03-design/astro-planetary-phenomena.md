@@ -245,16 +245,16 @@ sessions (`astro-events-and-crossings.md` §7).
   apparent diameters to the rounding for every body but the Sun, whose
   older 696 000 km radius in the engine is 0.84″ of disc (bound 1″). The
   engine's horizontal parallax is compared for the Moon alone, which is
-  the one body it reports it for, and it reads it from a distance up to
-  40 km from the one its disc uses where the SDK reads both from the
-  apparent distance: 0.32″ of the Moon's 3400″ (bound 0.5″). The engine
-  writes zero for a point's magnitude where the SDK writes none. The
-  equation of time from the engine's Sun with the SDK's sidereal time
-  within 0.0003 s through 2030 (bound 0.001 s); from 2050 the engine's
-  sidereal time steps by 1.9″ where its long-term branch takes over
-  (`05-testing/02-engine-findings.md`, F1), so its equation of time is
-  0.127 s from the one its own Sun implies; the SDK's GAST is continuous
-  and the comparison is held at 0.2 s there.
+  the one body it reports it for; both now read it from the apparent
+  distance and agree within 0.0002″ of the Moon's 3400″ (bound 0.001″),
+  where the engine read it from a distance up to 40 km away until its fix
+  (`05-testing/02-engine-findings.md`, F2, closed). The engine reports a
+  point's magnitude as absent rather than zero (F3, closed). The equation
+  of time from the engine's Sun with the SDK's sidereal time within
+  0.00007 s inside the engine's 1850 to 2050 sidereal-time window (bound
+  0.001 s) and 0.0075 s beyond it (bound 0.01 s), the departure of the
+  engine's long-term construction from the IERS 2010 expression; it was
+  0.127 s at 2050 until the branch stopped stepping (F1, closed).
 - Visibility (`visibility::tests`): the text's thresholds verse by
   verse, Ptolemy's, a custom table; the star classes cover the
   twenty-seven junction stars (four at thirteen, nine at fourteen, seven

@@ -129,11 +129,15 @@ instant; the SDK used the IAU 2000 expression, `gst00b`, until
 2026-09-05, 0.002″ away between 1950 and 2050 and 0.01″ at 1850).
 Teimeris computes the same expression strictly inside its 1850 to 2050
 window: `tests/teimeris_sidereal.rs` holds the SDK to it within 0.002″
-there (measured 0.0012″ at 1850 and under 0.0004″ from 1875, the two
-readings of the 2000B nutation, C43 and F6) and to the engine's IERS
+there (measured 0.0017″ at 1850 and under 0.0004″ from 1875, the two
+readings of the 2000B nutation, C43) and to the engine's IERS
 2010 model within 0.01″ from 1700 to 2300 (measured 0.0052″); at the
-bounds and beyond them the engine's long-term construction departs by
-up to 2.5″ (`05-testing/02-engine-findings.md`, F1). Local apparent
+window's bounds the engine's long-term construction now meets the
+expression within 0.0014″, held by the same test, where it stepped by
+−1.909″ at 2050 until its joining offsets were fixed
+(`05-testing/02-engine-findings.md`, F1, closed); beyond the window it
+is a different model and departs by up to 4.4″ at 2300, reported and not
+held. Local apparent
 sidereal time adds the longitude. The obliquity record is the IAU 2006
 mean obliquity and the IAU 2000B nutation. Every ported routine is in `astro::iau` with the
 provenance table ADR-0021 requires and is tested against the reference

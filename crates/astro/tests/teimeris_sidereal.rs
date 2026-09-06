@@ -41,6 +41,15 @@ const EXPRESSION_BOUND_ARCSEC: f64 = 0.01;
 /// two ways.
 const NUTATION_BOUND_ARCSEC: f64 = 0.01;
 
+/// Where the engine's long-term branch takes over from the IERS 2010
+/// expression, the two must meet: the branch's joining offsets are the
+/// engine's own, and they stepped by −1.909″ at 2050 until they were
+/// fixed (F1). Measured at 0.001″ either side.
+const JOIN_BOUND_ARCSEC: f64 = 0.01;
+
+/// The bounds of the engine's window, where the branches join.
+const WINDOW: (f64, f64) = (2_396_758.5, 2_469_807.5);
+
 fn fixture() -> Value {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/teimeris/sidereal.json");
     serde_json::from_str(&std::fs::read_to_string(path).expect("the recorded table"))
@@ -59,6 +68,8 @@ fn the_sidereal_time_reproduces_the_engines_expression_on_the_same_tt() {
     let mut inside = 0;
     let mut worst_expression = 0.0f64;
     let mut worst_nutation = 0.0f64;
+    let mut worst_join = 0.0f64;
+    let mut joins = 0;
     let mut compared = 0;
     for row in table["rows"].as_array().unwrap() {
         let jd = row["jd_ut1"].as_f64().unwrap();
@@ -90,8 +101,21 @@ fn the_sidereal_time_reproduces_the_engines_expression_on_the_same_tt() {
             );
             worst_inside = worst_inside.max(default.abs());
             inside += 1;
+        } else if (jd - WINDOW.0).abs() < 0.5 || (jd - WINDOW.1).abs() < 0.5 {
+            // At the window's bounds the engine's long-term branch must
+            // meet the expression: it stepped by −1.909″ at 2050 and
+            // +0.098″ at 1850 until the engine's joining offsets were
+            // fixed (`docs/05-testing/02-engine-findings.md`, F1, closed),
+            // and this is the regression test for that.
+            assert!(
+                default.abs() < JOIN_BOUND_ARCSEC,
+                "JD {jd}: the branch joins {default}″ from the expression"
+            );
+            worst_join = worst_join.max(default.abs());
+            joins += 1;
         } else {
-            // The long-term branch is the engine's own (F1); reported, not held.
+            // Beyond the window the branch is a different model rather
+            // than the IERS 2010 expression; reported, not held.
             println!(
                 "JD {jd}: the engine's long-term branch {:+.3}″ from the expression",
                 -default
@@ -99,8 +123,9 @@ fn the_sidereal_time_reproduces_the_engines_expression_on_the_same_tt() {
         }
     }
     assert!(inside >= 40 && compared >= 48);
+    assert_eq!(joins, 2, "the window's two bounds are in the table");
     println!(
-        "{compared} instants; inside the window worst {worst_inside:.5}″ over {inside}; against the IERS 2010 expression worst {worst_expression:.5}″; nutation worst {worst_nutation:.5}″"
+        "{compared} instants; inside the window worst {worst_inside:.5}″ over {inside}; at the window's bounds worst {worst_join:.5}″; against the IERS 2010 expression worst {worst_expression:.5}″; nutation worst {worst_nutation:.5}″"
     );
     common::record(
         "sidereal_time",

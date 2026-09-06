@@ -22,7 +22,9 @@ use std::process::ExitCode;
 use serde::Serialize;
 use teimeris::{Context, Flags, TimeScale};
 use teistro_core::catalogue::Star;
-use teistro_ephemeris_teimeris::{TeimerisProvider, data_dir_from_env};
+use teistro_ephemeris_teimeris::{
+    TeimerisProvider, data_dir_from_env, profile_from_env, profile_key,
+};
 use teistro_port_ephemeris::EphemerisProvider;
 
 /// Four TT instants: 1900, J2000.0, 2023 and 2100.
@@ -50,6 +52,10 @@ fn engine_name(star: Star) -> String {
 struct Table {
     schema: &'static str,
     tool: String,
+    /// The engine profile the numbers were taken under: `compatible`
+    /// reproduces the engine's own upstream, `max` carries the
+    /// corrections the findings register asked for.
+    profile: &'static str,
     scale: &'static str,
     /// The engine's obliquity and nutation at each instant, degrees.
     frames: Vec<Frame>,
@@ -136,6 +142,7 @@ fn places(ctx: &Context, name: &str) -> Result<Vec<Place>, teimeris::Error> {
 }
 
 fn main() -> ExitCode {
+    let profile = profile_from_env();
     let data_dir = data_dir_from_env();
     let provider = match TeimerisProvider::open(&data_dir) {
         Ok(provider) => provider,
@@ -209,6 +216,7 @@ fn main() -> ExitCode {
             "{} {}",
             capabilities.identity.name, capabilities.identity.version
         ),
+        profile: profile_key(profile),
         scale: "TT",
         frames,
         rows,

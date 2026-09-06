@@ -112,16 +112,6 @@ fn every_system_reproduces_the_engines_cusps_and_angles_at_ten_latitudes() {
             ),
             (angles.polar_ascendant_deg, "polar_ascendant_deg"),
         ] {
-            // The horizon system's transform of the latitude leaves the
-            // engine's restored value a hair below zero at the equator, so
-            // its Munkasey co-ascendant there takes the southern branch, a
-            // point whose pole height is 90° and which is degenerate anyway.
-            if system == HouseSystem::Horizon
-                && latitude == 0.0
-                && field == "co_ascendant_munkasey_deg"
-            {
-                continue;
-            }
             note(mine, row[field].as_f64().unwrap(), field);
         }
     }
@@ -129,9 +119,10 @@ fn every_system_reproduces_the_engines_cusps_and_angles_at_ten_latitudes() {
         println!("{key:<14} worst {apart:.9}° {where_}");
     }
     println!("{compared} values compared, {substituted} rows substituted by both");
-    // Twenty-one systems, sixty rows each, twenty values a row, less the six
-    // equatorial Horizon rows' Munkasey co-ascendant.
-    assert_eq!(compared, 21 * 60 * 20 - 6);
+    // Twenty-one systems, sixty rows each, twenty values a row. The six
+    // equatorial Horizon rows' Munkasey co-ascendant were left out until
+    // the engine's fix for it landed (F4).
+    assert_eq!(compared, 21 * 60 * 20);
     for (key, (apart, where_)) in &worst {
         assert!(*apart < BOUND_DEG, "{key}: {apart}° {where_}");
     }

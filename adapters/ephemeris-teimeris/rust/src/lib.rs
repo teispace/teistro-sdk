@@ -38,7 +38,9 @@ use teistro_port_ephemeris::{
 };
 
 /// The environment variable naming the data directory.
-pub const DATA_DIR_ENV: &str = "TEIMERIS_DATA_DIR";
+pub const PROFILE_ENV: &str = "TEIMERIS_PROFILE";
+
+const DATA_DIR_ENV: &str = "TEIMERIS_DATA_DIR";
 
 /// The offset added to the engine's status codes so they stay clear of the
 /// port's reserved range (-1 to -6): the engine's -2 arrives as -102.
@@ -56,6 +58,28 @@ impl core::fmt::Debug for TeimerisProvider {
             .field("version", &self.capabilities.identity.version)
             .field("jd_range", &self.capabilities.jd_range)
             .finish_non_exhaustive()
+    }
+}
+
+/// The profile `$TEIMERIS_PROFILE` names (`compatible`, `max`), and the
+/// compatible one when it names none. A recorder or a measurement runs
+/// under either without a rebuild, and the table it writes says which it
+/// was.
+#[must_use]
+pub fn profile_from_env() -> Profile {
+    match std::env::var(PROFILE_ENV).ok().as_deref() {
+        Some("max" | "MAX") => Profile::MAX,
+        _ => Profile::COMPATIBLE,
+    }
+}
+
+/// The name a profile goes by, for a table's provenance.
+#[must_use]
+pub fn profile_key(profile: Profile) -> &'static str {
+    if profile.raw() == Profile::MAX.raw() {
+        "max"
+    } else {
+        "compatible"
     }
 }
 
@@ -195,12 +219,27 @@ fn map_flags(frame: Frame, speeds: bool) -> Flags {
 
 impl TeimerisProvider {
     /// Opens a context over a data directory of `.se1` files, in the
-    /// engine's compatible profile, and hashes the files it will read.
+    /// profile the environment names, and hashes the files it will read.
     ///
     /// # Errors
     ///
     /// When the directory holds no planet block, or the engine cannot open.
     pub fn open(data_dir: &Path) -> Result<TeimerisProvider, ProviderError> {
+        TeimerisProvider::open_with(data_dir, profile_from_env())
+    }
+
+    /// The same, in a profile of the caller's choosing.
+    ///
+    /// The engine ships two: `COMPATIBLE`, which reproduces its own
+    /// upstream bit for bit, and `MAX`, which carries the corrections the
+    /// SDK's findings register asked for (`05-testing/02-engine-findings.md`)
+    /// and which is therefore the profile the SDK's own astronomy agrees
+    /// with.
+    ///
+    /// # Errors
+    ///
+    /// As [`TeimerisProvider::open`].
+    pub fn open_with(data_dir: &Path, profile: Profile) -> Result<TeimerisProvider, ProviderError> {
         let files = sefile::scan(data_dir).map_err(|error| ProviderError::DataMissing {
             detail: format!("{}: {error}", data_dir.display()),
         })?;
@@ -211,7 +250,7 @@ impl TeimerisProvider {
         };
         let context = Context::builder()
             .ephemeris_path(data_dir.to_string_lossy())
-            .profile(Profile::COMPATIBLE)
+            .profile(profile)
             .open()
             .map_err(|error| map_error(&error, f64::NAN))?;
         let ayanamshas = files.ayanamshas();
