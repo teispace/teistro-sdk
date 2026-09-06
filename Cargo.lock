@@ -1632,6 +1632,8 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml_ng",
+ "sha2",
+ "teistro-astro",
  "teistro-calendar",
  "teistro-core",
  "teistro-ffi",
