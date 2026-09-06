@@ -169,10 +169,7 @@ fn outputs(root: &Path) -> Vec<Output> {
             m.row
         );
     }
-    vec![Output {
-        path: DOCUMENT,
-        text: render(&rows, &measurements),
-    }]
+    vec![Output::new(DOCUMENT, render(&rows, &measurements))]
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {

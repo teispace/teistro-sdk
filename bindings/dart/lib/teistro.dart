@@ -315,6 +315,14 @@ final class Context {
   /// Whether the current locale or its fallbacks have a message.
   bool has(String key) => _inner.intlHas(key) == 1;
 
+  /// Text from one script into another (`deva`, `iast`), for a Sanskrit
+  /// or Nepali term written in the other.
+  String transliterate(
+    String text, {
+    String from = 'deva',
+    String to = 'iast',
+  }) => _inner.intlTransliterate(text, from, to);
+
   /// An entity's forms in the current locale or its fallbacks: its name,
   /// its prose form, its transliteration, and the glyph and gender the
   /// locale gives it.

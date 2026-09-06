@@ -1032,6 +1032,8 @@ typedef TsIntlLocaleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointe
 typedef TsIntlLocaleDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StrStruct>);
 typedef TsIntlHasNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
 typedef TsIntlHasDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
+typedef TsIntlTransliterateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
+typedef TsIntlTransliterateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlEntityNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlEntityDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlRenderNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
@@ -1079,6 +1081,7 @@ final class TeistroLibrary {
         ts_intl_set_locale = library.lookupFunction<TsIntlSetLocaleNative, TsIntlSetLocaleDart>('ts_intl_set_locale'),
         ts_intl_locale = library.lookupFunction<TsIntlLocaleNative, TsIntlLocaleDart>('ts_intl_locale'),
         ts_intl_has = library.lookupFunction<TsIntlHasNative, TsIntlHasDart>('ts_intl_has'),
+        ts_intl_transliterate = library.lookupFunction<TsIntlTransliterateNative, TsIntlTransliterateDart>('ts_intl_transliterate'),
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions');
@@ -1239,6 +1242,13 @@ final class TeistroLibrary {
 
   /// Whether the current locale or its fallbacks have a message: `1` or `0`.
   final TsIntlHasDart ts_intl_has;
+
+  /// Text from one script into another (`deva`, `iast`), as a string lent
+  /// until the next call on the context. A pair the build has no table for
+  /// is `UNSUPPORTED` naming both scripts; anything the table does not know
+  /// passes through, so a name written in two scripts is transliterated in
+  /// the half that needs it.
+  final TsIntlTransliterateDart ts_intl_transliterate;
 
   /// An entity's forms in the current locale or its fallbacks, as a JSON
   /// object lent until the next call on the context: every form the locale
@@ -2921,6 +2931,24 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_intl_has(_handle, rawkey, outHas);
         if (status != 0) _fail(status);
         return outHas.value;
+    });
+  }
+
+  /// Text from one script into another (`deva`, `iast`), as a string lent
+  /// until the next call on the context. A pair the build has no table for
+  /// is `UNSUPPORTED` naming both scripts; anything the table does not know
+  /// passes through, so a name written in two scripts is transliterated in
+  /// the half that needs it.
+  String intlTransliterate(String text, String from, String to) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawtext = text.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final rawfrom = from.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final rawto = to.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outText = arena<StrStruct>();
+        final status = _lib.ts_intl_transliterate(_handle, rawtext, rawfrom, rawto, outText);
+        if (status != 0) _fail(status);
+        return _takeStr(outText);
     });
   }
 

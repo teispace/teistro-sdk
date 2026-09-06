@@ -5558,6 +5558,17 @@ ts_status ts_intl_locale(const ts_context * context, ts_str * out_locale);
 ts_status ts_intl_has(const ts_context * context, const char * key, uint8_t * out_has);
 
 /**
+ * Text from one script into another (`deva`, `iast`), as a string lent
+ * until the next call on the context. A pair the build has no table for
+ * is `UNSUPPORTED` naming both scripts; anything the table does not know
+ * passes through, so a name written in two scripts is transliterated in
+ * the half that needs it.
+ * Safety: `context` must be a live handle; `text`, `from` and `to`
+ * NUL-terminated strings; `out_text` valid for a write.
+ */
+ts_status ts_intl_transliterate(const ts_context * context, const char * text, const char * from, const char * to, ts_str * out_text);
+
+/**
  * An entity's forms in the current locale or its fallbacks, as a JSON
  * object lent until the next call on the context: every form the locale
  * gives (`name`, `prose`, `iast`, `short`, and any it adds), the

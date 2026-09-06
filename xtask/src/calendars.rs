@@ -713,13 +713,7 @@ pub(crate) fn check(root: &Path) -> i32 {
 fn outputs(root: &Path) -> Vec<crate::generated::Output> {
     let (table, report) = render(root);
     vec![
-        crate::generated::Output {
-            path: TABLE_FILE,
-            text: table,
-        },
-        crate::generated::Output {
-            path: FIT_FILE,
-            text: report,
-        },
+        crate::generated::Output::new(TABLE_FILE, table),
+        crate::generated::Output::new(FIT_FILE, report),
     ]
 }

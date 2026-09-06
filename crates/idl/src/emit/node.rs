@@ -75,12 +75,14 @@ pub fn render(api: &Api) -> String {
 /// What every call shares: reading the library's strings and buffers.
 const HELPERS: &str = r"
 /// A string the library lent or returned, copied before the next call
-/// frees or replaces it.
+/// frees or replaces it. Named apart from anything a parameter may be
+/// called, because a generated body binds its parameters by their own
+/// names (an entry point takes a `text`).
 ///
 /// # Safety
 ///
 /// `ptr` must be null or a NUL-terminated string valid for this call.
-unsafe fn text(ptr: *const c_char) -> Option<String> {
+unsafe fn lent_text(ptr: *const c_char) -> Option<String> {
     if ptr.is_null() {
         return None;
     }
@@ -113,7 +115,7 @@ fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
 /// The text of a string the library allocated, copied and the string freed.
 fn take_string(string: &mut ffi::strings::TsString) -> String {
     // SAFETY: the library wrote a NUL-terminated string, or left it null.
-    let text = unsafe { text(string.data.cast_const().cast()) }.unwrap_or_default();
+    let text = unsafe { lent_text(string.data.cast_const().cast()) }.unwrap_or_default();
     // SAFETY: a descriptor this call passed to the library, freed once.
     unsafe { ffi::strings::ts_string_free(&raw mut *string) };
     text
@@ -348,7 +350,7 @@ impl Handed<'_> {
             Handed::Owned(p) => format!("take_string(&mut {})", snake(&p.name)),
             // SAFETY of the read is argued at the call site's block.
             Handed::Lent(p) => format!(
-                "unsafe {{ text({}.data) }}.unwrap_or_default()",
+                "unsafe {{ lent_text({}.data) }}.unwrap_or_default()",
                 snake(&p.name)
             ),
             Handed::Scalar(p) => format!("{} as _", snake(&p.name)),
@@ -740,7 +742,7 @@ fn write_value(api: &Api, f: &FieldDef, role: &FieldRole) -> String {
         FieldRole::Column => format!("Vec::new() /* `{field}` is filled by the caller */"),
         FieldRole::FixedBytes { .. } => format!("Buffer::from(raw.{field}.to_vec())"),
         FieldRole::Text => {
-            let read = format!("unsafe {{ text(raw.{field}) }}");
+            let read = format!("unsafe {{ lent_text(raw.{field}) }}");
             if f.meta.nullable {
                 read
             } else {
@@ -795,7 +797,7 @@ fn render_last_error_object(out: &mut String, api: &Api) {
     let c = struct_path(api, &error.name);
     let _ = writeln!(
         out,
-        "/// The outcome of the last call on a context, as the ergonomic layer\n/// rethrows it: the status by name and by code, the provider's own code,\n/// and the message, detail, field, hint and message key the library gave.\n#[napi(object)]\n#[derive(Clone, Debug)]\npub struct LastError {{\n    pub status: String,\n    pub code: i32,\n    pub provider_code: i32,\n    pub message: Option<String>,\n    pub detail: Option<String>,\n    pub field: Option<String>,\n    pub hint: Option<String>,\n    pub message_key: Option<String>,\n}}\n\nimpl LastError {{\n    /// # Safety\n    ///\n    /// Every pointer in `raw` must be a string the context lent for this\n    /// call, or null.\n    unsafe fn of(raw: &{c}) -> Self {{\n        // SAFETY: the caller's contract.\n        unsafe {{\n            LastError {{\n                status: {to}(raw.status),\n                code: raw.status,\n                provider_code: raw.provider_code,\n                message: text(raw.message),\n                detail: text(raw.detail),\n                field: text(raw.field),\n                hint: text(raw.hint),\n                message_key: text(raw.key),\n            }}\n        }}\n    }}\n}}\n"
+        "/// The outcome of the last call on a context, as the ergonomic layer\n/// rethrows it: the status by name and by code, the provider's own code,\n/// and the message, detail, field, hint and message key the library gave.\n#[napi(object)]\n#[derive(Clone, Debug)]\npub struct LastError {{\n    pub status: String,\n    pub code: i32,\n    pub provider_code: i32,\n    pub message: Option<String>,\n    pub detail: Option<String>,\n    pub field: Option<String>,\n    pub hint: Option<String>,\n    pub message_key: Option<String>,\n}}\n\nimpl LastError {{\n    /// # Safety\n    ///\n    /// Every pointer in `raw` must be a string the context lent for this\n    /// call, or null.\n    unsafe fn of(raw: &{c}) -> Self {{\n        // SAFETY: the caller's contract.\n        unsafe {{\n            LastError {{\n                status: {to}(raw.status),\n                code: raw.status,\n                provider_code: raw.provider_code,\n                message: lent_text(raw.message),\n                detail: lent_text(raw.detail),\n                field: lent_text(raw.field),\n                hint: lent_text(raw.hint),\n                message_key: lent_text(raw.key),\n            }}\n        }}\n    }}\n}}\n"
     );
 }
 
@@ -1142,7 +1144,7 @@ fn render_check(out: &mut String, api: &Api) {
     let _ = api;
     let _ = writeln!(
         out,
-        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence; the layer above adds the field, the hint and the code\n    /// from `last_error`.\n    fn check(&self, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n        let message = self\n            .last_error()\n            .and_then(|e| e.message)\n            .unwrap_or_else(|| {{\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe {{ text(ffi::ts_status_message(status.code())) }}.unwrap_or_default()\n            }});\n        Err(Error::from_reason(message))\n    }}\n"
+        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence; the layer above adds the field, the hint and the code\n    /// from `last_error`.\n    fn check(&self, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n        let message = self\n            .last_error()\n            .and_then(|e| e.message)\n            .unwrap_or_else(|| {{\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe {{ lent_text(ffi::ts_status_message(status.code())) }}.unwrap_or_default()\n            }});\n        Err(Error::from_reason(message))\n    }}\n"
     );
 }
 
@@ -1188,7 +1190,7 @@ fn render_free_function(out: &mut String, api: &Api, f: &FunctionDef) {
     if matches!(&f.returns, Some(TypeRef::Pointer { to, .. }) if matches!(**to, TypeRef::Char)) {
         let _ = writeln!(
             out,
-            "{}#[napi]\npub fn {name}({}) -> Result<String> {{\n{}    // SAFETY: the library returns a static NUL-terminated string.\n    Ok(unsafe {{ text({called}) }}.unwrap_or_default())\n}}\n",
+            "{}#[napi]\npub fn {name}({}) -> Result<String> {{\n{}    // SAFETY: the library returns a static NUL-terminated string.\n    Ok(unsafe {{ lent_text({called}) }}.unwrap_or_default())\n}}\n",
             doc(&f.doc, ""),
             call.params.join(", "),
             call.setup.replace("        ", "    ")
@@ -1199,7 +1201,7 @@ fn render_free_function(out: &mut String, api: &Api, f: &FunctionDef) {
     let finish = call.finish.replace("        ", "    ");
     let body = if returns_status(api, f) {
         format!(
-            "    let status = {called};\n    if status != core_::Status::Ok {{\n        // SAFETY: the library returns a static NUL-terminated string.\n        let message = unsafe {{ text(ffi::ts_status_message(status.code())) }}.unwrap_or_default();\n        return Err(Error::from_reason(format!(\"{}: {{message}}\")));\n    }}",
+            "    let status = {called};\n    if status != core_::Status::Ok {{\n        // SAFETY: the library returns a static NUL-terminated string.\n        let message = unsafe {{ lent_text(ffi::ts_status_message(status.code())) }}.unwrap_or_default();\n        return Err(Error::from_reason(format!(\"{}: {{message}}\")));\n    }}",
             f.name
         )
     } else {

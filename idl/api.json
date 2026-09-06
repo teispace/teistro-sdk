@@ -10189,6 +10189,81 @@
       "source": "crates/ffi/src/intl.rs"
     },
     {
+      "name": "ts_intl_transliterate",
+      "doc": "Text from one script into another (`deva`, `iast`), as a string lent\nuntil the next call on the context. A pair the build has no table for\nis `UNSUPPORTED` naming both scripts; anything the table does not know\npasses through, so a name written in two scripts is transliterated in\nthe half that needs it.",
+      "safety": "`context` must be a live handle; `text`, `from` and `to`\nNUL-terminated strings; `out_text` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "text",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "from",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "to",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_text",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsStr"
+            },
+            "mutable": true
+          },
+          "role": "str_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/intl.rs"
+    },
+    {
       "name": "ts_intl_entity",
       "doc": "An entity's forms in the current locale or its fallbacks, as a JSON\nobject lent until the next call on the context: every form the locale\ngives (`name`, `prose`, `iast`, `short`, and any it adds), the\n`glyph` when it has one, and the `gender` when the locale marks one.\nA key the locale chain does not carry is `UNSUPPORTED`, naming the\nlocale that was asked.\n\nThe typed accessors each binding generates read entities through this,\nso an application spells `graha.SUN` once and never a name.",
       "safety": "`context` must be a live handle; `key` a NUL-terminated string;\n`out_json` valid for a write.",

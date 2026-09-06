@@ -1,7 +1,8 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, revised 2026-09-06 when the twelve-hour clock and the
-day periods were added (§5); revised the same day when the typed
+Status: `draft`, revised 2026-09-06 when transliteration and the
+derived `sa-Latn` locale were added (§3); revised the same day when the
+twelve-hour clock and the day periods were added (§5); revised the same day when the typed
 accessors reached the bindings (§9); written 2026-09-05 from spike 4
 (`spikes/04-teistro-intl/README.md`); revised 2026-09-06 when the `intl`
 crate (`crates/intl`, `teistro-intl`) and its command line were built
@@ -46,12 +47,36 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   here is an error.
 - **Namespaces** are lowercase dotted words; the SDK's are prefixed
   `sdk.`; the entity namespace `sdk.entity` holds records, every other
-  namespace holds messages. The SDK ships four locales: `en-Latn` (the
-  base) and `ne-Deva-NP` at `strict` completeness, `hi-Deva-IN` and
-  `sa-Deva` at `base` completeness until their messages are translated;
-  the last two came whole from the baseline engine's name tables
-  (`teistro-intl migrate baseline`, below), the first two gained the same
-  tables under their hand-shaped records.
+  namespace holds messages. The SDK ships five locales: `en-Latn` (the
+  base) and `ne-Deva-NP` at `strict` completeness, `hi-Deva-IN`,
+  `sa-Deva` and `sa-Latn` at `base` completeness until their messages are
+  translated; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
+  engine's name tables (`teistro-intl migrate baseline`, below),
+  `en-Latn` and `ne-Deva-NP` gained the same tables under their
+  hand-shaped records, and `sa-Latn` is derived from `sa-Deva` by
+  transliteration (below), so it is generated rather than written.
+- **A file whose name opens with `_`** belongs to the tooling rather than
+  to the locale: `_meta.json`, and the `_overrides.json` a derived locale
+  keeps its hand corrections in.
+- **`derive`** writes a locale in another script from one already
+  written: `teistro-intl derive --from sa-Deva --to sa-Latn` transliterates
+  every entity's forms, keeps the `iast` form because it is already in
+  the target's script, gives each word the capital a Latin-script name
+  carries, and applies the target's `_overrides.json` last, so
+  regenerating never loses a correction; an override that matches nothing
+  is reported rather than left to rot, and `cargo xtask gen intl` writes
+  the locale while `check-intl` holds it to its source. The
+  transliteration is a table, not code (`teistro_intl::translit`): the
+  vowels, the vowel signs, the consonants with the inherent `a` a sign or
+  a virama replaces, the marks, the nukta letters and the digits, with an
+  anusvara taking the nasal of whatever follows it (`maṅgala`, not
+  `maṃgala`). Its measure is the sources themselves: 241 of the 274
+  entities' Devanagari names transliterate letter for letter into the
+  hand-written `iast` form beside them, and the 33 that differ are the
+  sources' own variants (an `iast` form that adds the category word,
+  `Deva Gaṇa` for देव; a differently spelled Devanagari name), not the
+  table's mistakes. `ts_intl_transliterate` puts the same function at the
+  boundary, so a binding transliterates a term without loading a locale.
 - **Keys** are dotted paths; a segment is a `camelCase` identifier, a
   catalogue key (`UPPER_SNAKE`) or a catalogue kind's name
   (`avastha_baladi`); a full key is the namespace plus the path
@@ -408,5 +433,6 @@ here.
   Nepali (the locale links the full names), `:duration` over several
   units at once, and the `zone` option once the time crate's zoned
   instants cross the port.
-- Transliteration, XLIFF, and `migrate baseline` for the four launch
-  languages' name tables into `sdk.entity`.
+- XLIFF, for a translator's own tools; the reverse transliteration
+  (IAST to Devanagari) and the other scripts of §"Axes that are not the
+  language" (Tamil, Bengali).

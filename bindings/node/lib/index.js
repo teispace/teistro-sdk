@@ -480,6 +480,14 @@ export class Context {
   }
 
   /**
+   * Text from one script into another (`deva`, `iast`), for a Sanskrit
+   * or Nepali term written in the other.
+   */
+  transliterate(text, from = 'deva', to = 'iast') {
+    return guarded(this.#inner, () => this.#inner.intlTransliterate(text, from, to));
+  }
+
+  /**
    * An entity's forms in the current locale or its fallbacks: its name,
    * its prose form, its transliteration, and the glyph and gender the
    * locale gives it.

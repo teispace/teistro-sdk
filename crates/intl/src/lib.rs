@@ -45,6 +45,7 @@
 pub mod analysis;
 #[cfg(feature = "cli")]
 pub mod cli;
+pub mod derive;
 pub mod generate;
 pub mod mf2;
 pub mod migrate;
@@ -52,6 +53,7 @@ pub mod pack;
 pub mod render;
 pub mod runtime;
 pub mod source;
+pub mod translit;
 pub mod validate;
 
 /// The SDK's own namespaces as typed accessors, generated from

@@ -26,12 +26,14 @@ use teistro_ffi as ffi;
 use teistro_port_ephemeris as port;
 
 /// A string the library lent or returned, copied before the next call
-/// frees or replaces it.
+/// frees or replaces it. Named apart from anything a parameter may be
+/// called, because a generated body binds its parameters by their own
+/// names (an entry point takes a `text`).
 ///
 /// # Safety
 ///
 /// `ptr` must be null or a NUL-terminated string valid for this call.
-unsafe fn text(ptr: *const c_char) -> Option<String> {
+unsafe fn lent_text(ptr: *const c_char) -> Option<String> {
     if ptr.is_null() {
         return None;
     }
@@ -68,7 +70,7 @@ fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
 /// The text of a string the library allocated, copied and the string freed.
 fn take_string(string: &mut ffi::strings::TsString) -> String {
     // SAFETY: the library wrote a NUL-terminated string, or left it null.
-    let text = unsafe { text(string.data.cast_const().cast()) }.unwrap_or_default();
+    let text = unsafe { lent_text(string.data.cast_const().cast()) }.unwrap_or_default();
     // SAFETY: a descriptor this call passed to the library, freed once.
     unsafe { ffi::strings::ts_string_free(&raw mut *string) };
     text
@@ -1352,9 +1354,9 @@ impl ContextOptions {
     pub unsafe fn write(raw: &ffi::context::TsContextOptions) -> Self {
         ContextOptions {
             flags: raw.flags as _,
-            profile: unsafe { text(raw.profile) },
-            settings_json: unsafe { text(raw.settings_json) },
-            locale: unsafe { text(raw.locale) },
+            profile: unsafe { lent_text(raw.profile) },
+            settings_json: unsafe { lent_text(raw.settings_json) },
+            locale: unsafe { lent_text(raw.locale) },
         }
     }
 }
@@ -1768,7 +1770,7 @@ impl ZoneSpec {
             kind: zone_kind_to_str(raw.kind),
             offset_seconds: raw.offset_seconds as _,
             longitude_deg: raw.longitude_deg as _,
-            zone: unsafe { text(raw.zone) },
+            zone: unsafe { lent_text(raw.zone) },
         }
     }
 }
@@ -1897,8 +1899,8 @@ impl ZoneResolution {
                 .map(|bit| zone_warning_to_str(bit as u8))
                 .collect(),
             instant_jd_utc: raw.instant_jd_utc as _,
-            tzdb_version: unsafe { text(raw.tzdb_version) }.unwrap_or_default(),
-            abbreviation: unsafe { text(raw.abbreviation) },
+            tzdb_version: unsafe { lent_text(raw.tzdb_version) }.unwrap_or_default(),
+            abbreviation: unsafe { lent_text(raw.abbreviation) },
             source: zone_source_to_str(raw.source),
             era: zone_era_to_str(raw.era),
             dst: dst_to_str(raw.dst),
@@ -2017,7 +2019,7 @@ impl TimeConversion {
             delta_t_seconds: raw.delta_t_seconds as _,
             uncertainty_seconds: raw.uncertainty_seconds as _,
             dut1_seconds: raw.dut1_seconds as _,
-            delta_t_model: unsafe { text(raw.delta_t_model) }.unwrap_or_default(),
+            delta_t_model: unsafe { lent_text(raw.delta_t_model) }.unwrap_or_default(),
         }
     }
 }
@@ -2092,7 +2094,7 @@ impl DeltaT {
             has_uncertainty: raw.has_uncertainty != 0,
             seconds: raw.seconds as _,
             uncertainty_seconds: raw.uncertainty_seconds as _,
-            model: unsafe { text(raw.model) }.unwrap_or_default(),
+            model: unsafe { lent_text(raw.model) }.unwrap_or_default(),
         }
     }
 }
@@ -2160,8 +2162,8 @@ impl IntlLoaded {
         IntlLoaded {
             entries: raw.entries as _,
             replaced: raw.replaced as _,
-            locale: unsafe { text(raw.locale) }.unwrap_or_default(),
-            sha256: unsafe { text(raw.sha256) }.unwrap_or_default(),
+            locale: unsafe { lent_text(raw.locale) }.unwrap_or_default(),
+            sha256: unsafe { lent_text(raw.sha256) }.unwrap_or_default(),
         }
     }
 }
@@ -2194,11 +2196,11 @@ impl LastError {
                 status: status_to_str(raw.status),
                 code: raw.status,
                 provider_code: raw.provider_code,
-                message: text(raw.message),
-                detail: text(raw.detail),
-                field: text(raw.field),
-                hint: text(raw.hint),
-                message_key: text(raw.key),
+                message: lent_text(raw.message),
+                detail: lent_text(raw.detail),
+                field: lent_text(raw.field),
+                hint: lent_text(raw.hint),
+                message_key: lent_text(raw.key),
             }
         }
     }
@@ -2317,7 +2319,7 @@ impl Context {
             .and_then(|e| e.message)
             .unwrap_or_else(|| {
                 // SAFETY: the library returns a static NUL-terminated string.
-                unsafe { text(ffi::ts_status_message(status.code())) }.unwrap_or_default()
+                unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()
             });
         Err(Error::from_reason(message))
     }
@@ -2350,7 +2352,7 @@ impl Context {
         let status = unsafe { ffi::context::ts_context_profile(self.handle, &raw mut out_profile) };
         self.leave()?;
         self.check(status)?;
-        Ok(unsafe { text(out_profile.data) }.unwrap_or_default())
+        Ok(unsafe { lent_text(out_profile.data) }.unwrap_or_default())
     }
 
     /// The resolved settings as their canonical JSON document, allocated for
@@ -2413,7 +2415,7 @@ impl Context {
         let status = unsafe { ffi::keys::ts_key_name(self.handle, id as u32, &raw mut out_key) };
         self.leave()?;
         self.check(status)?;
-        Ok(unsafe { text(out_key.data) }.unwrap_or_default())
+        Ok(unsafe { lent_text(out_key.data) }.unwrap_or_default())
     }
 
     /// The date a fixed day falls on in a calendar.
@@ -2727,7 +2729,7 @@ impl Context {
         let status = unsafe { ffi::intl::ts_intl_locale(self.handle, &raw mut out_locale) };
         self.leave()?;
         self.check(status)?;
-        Ok(unsafe { text(out_locale.data) }.unwrap_or_default())
+        Ok(unsafe { lent_text(out_locale.data) }.unwrap_or_default())
     }
 
     /// Whether the current locale or its fallbacks have a message: `1` or `0`.
@@ -2741,6 +2743,42 @@ impl Context {
         self.leave()?;
         self.check(status)?;
         Ok(out_has as _)
+    }
+
+    /// Text from one script into another (`deva`, `iast`), as a string lent
+    /// until the next call on the context. A pair the build has no table for
+    /// is `UNSUPPORTED` naming both scripts; anything the table does not know
+    /// passes through, so a name written in two scripts is transliterated in
+    /// the half that needs it.
+    #[napi]
+    pub fn intl_transliterate(
+        &self,
+        env: Env,
+        text: String,
+        from: String,
+        to: String,
+    ) -> Result<String> {
+        let text = std::ffi::CString::new(text).map_err(|e| Error::from_reason(e.to_string()))?;
+        let from = std::ffi::CString::new(from).map_err(|e| Error::from_reason(e.to_string()))?;
+        let to = std::ffi::CString::new(to).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_text = ffi::strings::TsStr {
+            data: ptr::null(),
+            len: 0,
+        };
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_transliterate(
+                self.handle,
+                text.as_ptr(),
+                from.as_ptr(),
+                to.as_ptr(),
+                &raw mut out_text,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(unsafe { lent_text(out_text.data) }.unwrap_or_default())
     }
 
     /// An entity's forms in the current locale or its fallbacks, as a JSON
@@ -2765,7 +2803,7 @@ impl Context {
             unsafe { ffi::intl::ts_intl_entity(self.handle, key.as_ptr(), &raw mut out_json) };
         self.leave()?;
         self.check(status)?;
-        Ok(unsafe { text(out_json.data) }.unwrap_or_default())
+        Ok(unsafe { lent_text(out_json.data) }.unwrap_or_default())
     }
 
     /// Renders a message with parameters given as a JSON object: a string, an
@@ -2841,7 +2879,7 @@ pub fn abi_version() -> Result<u32> {
 #[napi]
 pub fn sdk_version() -> Result<String> {
     // SAFETY: the library returns a static NUL-terminated string.
-    Ok(unsafe { text(ffi::ts_sdk_version()) }.unwrap_or_default())
+    Ok(unsafe { lent_text(ffi::ts_sdk_version()) }.unwrap_or_default())
 }
 
 /// The catalogue schema version every result's provenance stamps.
@@ -2857,7 +2895,7 @@ pub fn catalogue_version() -> Result<u32> {
 #[napi]
 pub fn default_profile() -> Result<String> {
     // SAFETY: the library returns a static NUL-terminated string.
-    Ok(unsafe { text(ffi::ts_default_profile()) }.unwrap_or_default())
+    Ok(unsafe { lent_text(ffi::ts_default_profile()) }.unwrap_or_default())
 }
 
 /// What this build is, as a static NUL-terminated JSON object: the SDK
@@ -2874,7 +2912,7 @@ pub fn default_profile() -> Result<String> {
 #[napi]
 pub fn build_info() -> Result<String> {
     // SAFETY: the library returns a static NUL-terminated string.
-    Ok(unsafe { text(ffi::ts_build_info()) }.unwrap_or_default())
+    Ok(unsafe { lent_text(ffi::ts_build_info()) }.unwrap_or_default())
 }
 
 /// A static NUL-terminated English phrase for a status code; `unknown
@@ -2883,7 +2921,7 @@ pub fn build_info() -> Result<String> {
 pub fn status_message(status: String) -> Result<String> {
     let status = status_from_str(&status)? as i32;
     // SAFETY: the library returns a static NUL-terminated string.
-    Ok(unsafe { text(ffi::ts_status_message(status)) }.unwrap_or_default())
+    Ok(unsafe { lent_text(ffi::ts_status_message(status)) }.unwrap_or_default())
 }
 
 /// Writes the SDK's canonical frame: apparent geocentric ecliptic of date,
@@ -2900,7 +2938,8 @@ pub fn frame_canonical() -> Result<Frame> {
     let status = unsafe { ffi::frame::ts_frame_canonical(&raw mut out_frame) };
     if status != core_::Status::Ok {
         // SAFETY: the library returns a static NUL-terminated string.
-        let message = unsafe { text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
+        let message =
+            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
         return Err(Error::from_reason(format!("ts_frame_canonical: {message}")));
     }
     Ok(unsafe { Frame::write(&out_frame) })
@@ -2917,7 +2956,8 @@ pub fn frame_pack(frame: Frame) -> Result<u32> {
     let status = unsafe { ffi::frame::ts_frame_pack(frame, &raw mut out_bits) };
     if status != core_::Status::Ok {
         // SAFETY: the library returns a static NUL-terminated string.
-        let message = unsafe { text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
+        let message =
+            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
         return Err(Error::from_reason(format!("ts_frame_pack: {message}")));
     }
     Ok(out_bits as _)
@@ -2936,7 +2976,8 @@ pub fn frame_unpack(bits: u32) -> Result<Frame> {
     let status = unsafe { ffi::frame::ts_frame_unpack(bits as u32, &raw mut out_frame) };
     if status != core_::Status::Ok {
         // SAFETY: the library returns a static NUL-terminated string.
-        let message = unsafe { text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
+        let message =
+            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
         return Err(Error::from_reason(format!("ts_frame_unpack: {message}")));
     }
     Ok(unsafe { Frame::write(&out_frame) })

@@ -22,6 +22,7 @@ use crate::generate::{self, Model, RustPaths};
 use crate::pack;
 use crate::render::{Intl, Params, Value};
 use crate::source::{BASE_LOCALE, Completeness, Entry, LocaleSource, META_FILE, Tree, sdk_root};
+use crate::translit::{Script, transliterate};
 use crate::validate::{self, Report};
 
 /// The command line.
@@ -104,6 +105,31 @@ pub enum Command {
         #[command(subcommand)]
         source: MigrateSource,
     },
+    /// Derives a locale from another by transliteration, with the hand
+    /// corrections in the target's `_overrides.json` applied last
+    /// (`sa-Latn` from `sa-Deva`).
+    Derive {
+        /// The locale to read.
+        #[arg(long)]
+        from: String,
+        /// The locale to write, whose tag names the script.
+        #[arg(long)]
+        to: String,
+        /// Where to write it; the root by default.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+    /// Transliterates text between scripts (`deva`, `iast`).
+    Translit {
+        /// The script the text is in.
+        #[arg(long, default_value = "deva")]
+        from: String,
+        /// The script to write it in.
+        #[arg(long, default_value = "iast")]
+        to: String,
+        /// The text.
+        text: Vec<String>,
+    },
     /// Validates, builds every pack and bundle, generates every target and
     /// writes `intl.json`.
     Report {
@@ -140,6 +166,68 @@ pub enum Target {
     Dart,
     /// Rust.
     Rs,
+}
+
+/// Writes a locale derived from another, and reports what it took.
+fn run_derive(
+    tree: &Tree,
+    from: &str,
+    to: &str,
+    root: &Path,
+) -> Result<bool, Box<dyn std::error::Error>> {
+    let overrides = crate::derive::overrides_of(root, to)?;
+    let derived = crate::derive::derive(tree, from, to, &overrides)?;
+    for (path, text) in &derived.files {
+        let path = root.join(path);
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(&path, text)?;
+        println!("written {}", path.display());
+    }
+    println!(
+        "{} entities, {} form(s) overridden, {} letter for letter the source's own iast",
+        derived.entities, derived.overridden, derived.agreeing
+    );
+    for stale in &derived.stale {
+        println!("stale override: {stale}");
+    }
+    Ok(derived.stale.is_empty())
+}
+
+/// Renders one key and reports where it resolved from.
+fn run_render(
+    tree: &Tree,
+    locale: &str,
+    key: &str,
+    params: &[String],
+) -> Result<bool, Box<dyn std::error::Error>> {
+    let mut intl = Intl::from_tree(tree)?;
+    intl.set_locale(locale)?;
+    let rendered = intl.render(key, &parse_params(params));
+    println!("{}", rendered.text);
+    println!(
+        "resolved from {}{}",
+        rendered.resolved_from.as_deref().unwrap_or("nowhere"),
+        if rendered.is_fallback {
+            " (fallback)"
+        } else {
+            ""
+        }
+    );
+    for warning in &rendered.warnings {
+        println!("warning: {warning}");
+    }
+    Ok(rendered.warnings.is_empty())
+}
+
+/// Writes text in another script.
+fn run_translit(from: &str, to: &str, text: &[String]) -> Result<bool, Box<dyn std::error::Error>> {
+    let (Some(from), Some(to)) = (Script::from_key(from), Script::from_key(to)) else {
+        return Err(Box::from("a script is `deva` or `iast`"));
+    };
+    println!("{}", transliterate(&text.join(" "), from, to)?);
+    Ok(true)
 }
 
 /// Parses the arguments, runs the command, prints, and exits non-zero on
@@ -186,29 +274,15 @@ pub fn run(cli: Cli) -> Result<bool, Box<dyn std::error::Error>> {
             }
             Ok(true)
         }
+        Command::Derive { from, to, out } => {
+            run_derive(&tree, &from, &to, out.as_deref().unwrap_or(&cli.root))
+        }
+        Command::Translit { from, to, text } => run_translit(&from, &to, &text),
         Command::Render {
             locale,
             key,
             params,
-        } => {
-            let mut intl = Intl::from_tree(&tree)?;
-            intl.set_locale(&locale)?;
-            let rendered = intl.render(&key, &parse_params(&params));
-            println!("{}", rendered.text);
-            println!(
-                "resolved from {}{}",
-                rendered.resolved_from.as_deref().unwrap_or("nowhere"),
-                if rendered.is_fallback {
-                    " (fallback)"
-                } else {
-                    ""
-                }
-            );
-            for warning in &rendered.warnings {
-                println!("warning: {warning}");
-            }
-            Ok(rendered.warnings.is_empty())
-        }
+        } => run_render(&tree, &locale, &key, &params),
         Command::Extract {
             locale,
             namespaces,

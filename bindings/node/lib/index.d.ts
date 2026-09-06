@@ -250,6 +250,8 @@ export declare class Context {
   positions(request: PositionsRequest): Positions;
   /** Renders a message of the current locale with its parameters. */
   render(key: string, params?: Record<string, unknown>): Rendered;
+  /** Text from one script into another (`deva`, `iast`). */
+  transliterate(text: string, from?: string, to?: string): string;
   /** Whether the current locale or its fallbacks have a message. */
   has(key: string): boolean;
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
