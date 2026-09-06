@@ -4,7 +4,18 @@ The living tracker. Read this first in any session; update it before ending
 one. It answers four questions: what is done, what is being done now, what
 comes next, and what happened in each session.
 
-**Project phase:** Phase 2, the astronomy layer, met its exit criteria
+**Project phase:** Phase 1, Foundation, met its exit criteria on
+2026-09-06, and Phase 2, the astronomy layer, met its own on 2026-09-05.
+Phase 1's every criterion is held by a gate rather than by a claim
+(`07-roadmap/00-roadmap.md`): one scenario through both bindings value by
+value, 100,236 values identical across two architectures, the conformance
+kit against the Teimeris adapter, a swapped latitude and longitude
+refused in all three languages, and all four packages installed into
+throwaway projects and run before they can be published. The next phases
+are 3, the built-in ephemeris, and 4, the chart layer, which may run
+beside each other.
+
+Phase 2 met its exit criteria
 on 2026-09-05: the accuracy document (`05-testing/ACCURACY.md`,
 generated and gated) shows every built `astro` row within its target
 against Teimeris, and houses compute for all twenty-two systems and
@@ -30,7 +41,7 @@ request (the `dco` and `fast-check` jobs), rebase merge.
 **Last updated:** 2026-09-06, end of the fortieth session (the
 conformance corpus left this repository for
 `teispace/teistro-conformance` v0.1.1 under CC0-1.0, mounted back as a
-pinned submodule: Phase 1's last deliverable); before that the
+pinned submodule, and Phase 1 met its exit criteria); before that the
 thirty-ninth session (the parts
 of the day became a locale's own and `:duration` learnt to break a count
 into several units); before that the thirty-eighth session (the

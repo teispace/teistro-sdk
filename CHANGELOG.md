@@ -187,6 +187,16 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- Phase 1, Foundation, met its exit criteria on 2026-09-06. Every one is
+  held by a gate rather than by a claim: one scenario through both
+  bindings value by value (`check-parity`, 103 values), 100,236 values
+  identical across x86-64 and aarch64 (the `hash-matrix` workflow), the
+  conformance kit against the Teimeris adapter, the classification
+  property tests over every divisor, a swapped latitude and longitude
+  refused in Rust, TypeScript and Dart, and all four packages installed
+  into throwaway projects and run before they can be published
+  (`check-package`). The roadmap records what was deferred by decision
+  and what was built beyond the list (`07-roadmap/00-roadmap.md`).
 - The conformance corpus left this repository.
   [`teispace/teistro-conformance`](https://github.com/teispace/teistro-conformance)
   v0.1.1 holds it under CC0-1.0 with a version of its own, and `fixtures/`
