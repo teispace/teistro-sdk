@@ -17,6 +17,7 @@ carry `// dart format off`, so the generator's layout is what ships and
 | `lib/src/host.dart` | the port adapter: an ephemeris written in Dart bound into the vtable through `NativeCallable.isolateLocal` | by hand |
 | `test/` | the surface end to end, and the decoders against blobs the library produced | by hand |
 | `example/` | the code this README shows, run by the gate so the two cannot drift | by hand |
+| `bin/parity.dart` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Node binding's | by hand |
 
 ## Using it
 
@@ -122,10 +123,14 @@ keeps the sentence.
 
 ```sh
 cargo xtask check-dart
+cargo xtask check-parity
 ```
 
-That builds the C library, resolves the package's dependencies and runs
-the tests. It needs the Dart SDK, so it runs by hand and in the nightly
+The first builds the C library, resolves the package's dependencies and
+runs the tests; the second walks one scenario through this binding and
+the Node binding and compares the ninety values they report, so a
+difference between the two layers is a failed gate rather than something
+a reader has to notice. It needs the Dart SDK, so it runs by hand and in the nightly
 matrix; the fast check needs the Rust toolchain and nothing else
 (ADR-0014).
 

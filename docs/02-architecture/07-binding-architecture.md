@@ -32,7 +32,10 @@ built the same way, from a fourth emitter over the same description: the
 blob decoders are generated, and only the ergonomic layer and the tests
 are written by hand, its port adapter among them: an ephemeris written in
 Dart is bound into the vtable through `NativeCallable.isolateLocal`. The
-packaging, the parity gate and the wasm binding are next.
+two are held to each other by the parity gate (`cargo xtask
+check-parity`), which walks one scenario through both ergonomic layers
+and compares the ninety values they report; the packaging and the wasm
+binding are next.
 
 ## The description's source
 

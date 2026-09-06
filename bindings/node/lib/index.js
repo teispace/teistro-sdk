@@ -358,7 +358,15 @@ export class Context {
 
   /** The resolved settings, as their canonical document. */
   get settings() {
-    return JSON.parse(guarded(this.#inner, () => this.#inner.settingsJson()));
+    return JSON.parse(this.settingsJson);
+  }
+
+  /**
+   * The same document as the text the library wrote, which is what the
+   * settings hash is taken over and what a stored chart keeps.
+   */
+  get settingsJson() {
+    return guarded(this.#inner, () => this.#inner.settingsJson());
   }
 
   /** The SHA-256 of the canonical settings, in hex; every result carries it. */

@@ -18,23 +18,21 @@ const TESTS: &str = "bindings/node/test/";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
 /// Where the addon is loaded from: Node requires the `.node` suffix, so
 /// the cdylib Cargo builds is copied there.
-const ADDON: &str = "bindings/node/native/index.node";
+pub(crate) const ADDON: &str = "bindings/node/native/index.node";
 
 /// The name Cargo gives the addon on this platform.
-fn addon_artefact() -> &'static str {
-    if cfg!(target_os = "macos") {
-        "libteistro_node.dylib"
-    } else if cfg!(target_os = "windows") {
-        "teistro_node.dll"
-    } else {
-        "libteistro_node.so"
-    }
-}
+pub(crate) const ADDON_ARTEFACT: &str = if cfg!(target_os = "macos") {
+    "libteistro_node.dylib"
+} else if cfg!(target_os = "windows") {
+    "teistro_node.dll"
+} else {
+    "libteistro_node.so"
+};
 
 /// Builds the addon and puts it where the loader looks.
 fn build_addon(root: &Path) -> Result<(), ()> {
     build(root, "teistro-node", "the Node addon")?;
-    let built = root.join("target/release").join(addon_artefact());
+    let built = root.join("target/release").join(ADDON_ARTEFACT);
     let addon = root.join(ADDON);
     std::fs::copy(&built, &addon).map(|_| ()).map_err(|e| {
         println!(

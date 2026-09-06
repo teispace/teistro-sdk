@@ -17,6 +17,7 @@ which is thin on purpose.
 | `native/src/provider.rs` | the port adapter: an ephemeris written in JavaScript bound into the port's vtable | by hand |
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |
 | `typecheck/` | a consumer and the layer's own declarations at maximum strictness, where every wrong usage is a compile error the file asserts | by hand |
+| `parity.mjs` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Dart binding's | by hand |
 
 A catalogue member is its full key everywhere a string names it
 (`'graha.SUN'`), which is what packs, fixtures and serialised results
@@ -75,14 +76,18 @@ the port already carries the machinery.
 
 ```sh
 cargo xtask check-node
+cargo xtask check-parity
 ```
 
-That builds the addon, copies it where the loader looks, writes blob
+The first builds the addon, copies it where the loader looks, writes blob
 fixtures through the C ABI, runs the tests with Node, and type-checks the
 consumer when a TypeScript compiler is on the machine (`npm install
 typescript` in `typecheck/`, or set `TSC`). It needs Node, so it runs by
 hand and in the nightly matrix; the fast check needs the Rust toolchain
-and nothing else (ADR-0014).
+and nothing else (ADR-0014). The second walks one scenario through this
+binding and the Dart binding and compares the ninety values they report,
+so a difference between the two layers is a failed gate rather than
+something a reader has to notice.
 
 Never edit what the generator writes: change the Rust source and
 regenerate.

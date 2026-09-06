@@ -73,11 +73,14 @@ teistro-sdk/
                                lib/ (the generated TypeScript surface, catalogue tables and blob decoders, and
                                the hand-written ergonomic layer), test/ (the surface end to end, a provider of
                                its own, and the decoders against blobs the library produced), typecheck/
-                               (a consumer at maximum strictness); `cargo xtask check-node`
+                               (a consumer at maximum strictness), parity.mjs (its half of the parity
+                               report); `cargo xtask check-node`
     dart/                      present: lib/src/ (the generated dart:ffi declarations, value classes,
                                catalogue enums and blob decoders), lib/teistro.dart (the hand-written
                                ergonomic layer), test/ (the surface end to end against the real library, and
-                               the decoders against blobs it produced); `cargo xtask check-dart`
+                               the decoders against blobs it produced, and an ephemeris written in Dart),
+                               bin/parity.dart (its half of the parity report); `cargo xtask check-dart`
+                               and `check-parity`
     cpp/ wasm/ python/ teistro_flutter/ rust/ java/
     shared/                    ergonomic code shared by node and wasm
   adapters/                    outside the workspace (ADR-0019), with their README
@@ -86,7 +89,8 @@ teistro-sdk/
     ephemeris-sweph/rust/      present: the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
                                check-fixtures, check-catalogue, check-calendars, check-time, check-accuracy,
-                               check-intl, check-ffi, check-c, check-node, check-dart, gen catalogue, gen calendars,
+                               check-intl, check-ffi, check-c, check-node, check-dart, check-parity, gen catalogue,
+                               gen calendars,
                                gen time, gen intl, gen ffi, accuracy, calendars bs-fit; later verify, ephemgen,
                                rulegen, bench, conformance, size, release (ADR-0014)
   crates/cli/                  the consumer-facing `teistro` binary: intl (validate, build, gen,

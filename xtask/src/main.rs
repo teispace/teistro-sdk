@@ -20,6 +20,8 @@
 //!   hand and in the nightly matrix).
 //! - `check-dart`: the Dart binding's layer and decoders against the real
 //!   library, the package analysed and formatted.
+//! - `check-parity`: one scenario through both bindings, and the two
+//!   reports compared value by value.
 //! - `check-node`: the Node binding's decoders read blobs the library
 //!   produced and its types pass a consumer's strict type-check (needs
 //!   Node, and TypeScript for the second half).
@@ -50,6 +52,7 @@ mod ffi;
 mod generated;
 mod intl;
 mod node_binding;
+mod parity;
 mod time;
 
 use std::env;
@@ -78,6 +81,7 @@ fn main() {
         Some("check-c") => c_binding::check(&repo_root()),
         Some("check-node") => node_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
+        Some("check-parity") => parity::check(&repo_root()),
         Some("accuracy") => accuracy::generate(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
@@ -98,7 +102,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }
