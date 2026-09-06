@@ -1,11 +1,19 @@
 # The cross-architecture hash matrix: the same source computes the same
-# numbers, or it says where it does not.
+# numbers, or it says where it does not and by how much.
 #
 # `cargo xtask hashes` walks a fixed scenario through the calendars, the
-# astronomy, the house systems and the classical model, and hashes every
-# value's bits per section. This workflow runs it on each architecture we
-# ship for and compares what they print, which is Phase 1's exit criterion
-# "hash-identical across x86-64 and aarch64" (docs/07-roadmap/00-roadmap.md).
+# astronomy, the house systems and the classical model, hashes every
+# value's bits per section, and writes every value out;
+# `cargo xtask compare-hashes` says how many values differ and by how many
+# units in the last place. This workflow runs both across the platforms we
+# ship for.
+#
+# Phase 1's exit criterion is x86-64 against aarch64, which is the same C
+# library on two architectures: that comparison fails the job. macOS is
+# another C library, and its maths functions round differently in the last
+# place; that comparison is reported rather than failed, because a nightly
+# that is always red teaches people to ignore it. The measurement is in
+# `docs/05-testing/01-quality-bar.md`.
 #
 # It runs nightly and on demand rather than on every push: the fast check
 # stays fast (ADR-0014), and a difference here is a property of the
@@ -40,11 +48,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: What this build computes
-        run: cargo xtask hashes | tee "digest-${{ matrix.arch }}.txt"
+        run: |
+          cargo xtask hashes "values-${{ matrix.arch }}.tsv" \
+            | tee "digest-${{ matrix.arch }}.txt"
       - uses: actions/upload-artifact@v4
         with:
-          name: digest-${{ matrix.arch }}
-          path: digest-${{ matrix.arch }}.txt
+          name: run-${{ matrix.arch }}
+          path: |
+            digest-${{ matrix.arch }}.txt
+            values-${{ matrix.arch }}.tsv
 
   compare:
     name: compare
@@ -52,32 +64,43 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - uses: actions/download-artifact@v4
         with:
-          pattern: digest-*
+          pattern: run-*
           merge-multiple: true
-      - name: Every architecture computed the same numbers
+      - name: The digests
+        run: |
+          for file in digest-*.txt; do
+            {
+              echo "### ${file}"
+              echo '```'
+              cat "$file"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
+      - name: x86-64 and aarch64 compute the same numbers
         run: |
           set -u
-          ls -1 digest-*.txt
-          reference=$(ls -1 digest-*.txt | head -1)
-          echo "## The digests" >> "$GITHUB_STEP_SUMMARY"
-          for file in digest-*.txt; do
-            echo "### ${file}" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            cat "$file" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-          done
-          failures=0
-          for file in digest-*.txt; do
-            if ! diff -u "$reference" "$file" > /dev/null; then
-              echo "::error::${file} differs from ${reference}"
-              diff -u "$reference" "$file" || true
-              failures=$((failures + 1))
-            fi
-          done
-          if [ "$failures" -gt 0 ]; then
-            echo "$failures architecture(s) computed different numbers"
-            exit 1
-          fi
-          echo "every architecture computed the same numbers"
+          {
+            echo "### Linux x86-64 against Linux aarch64"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cargo xtask compare-hashes values-linux-x86_64.tsv values-linux-aarch64.tsv \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          status=${PIPESTATUS[0]}
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: What another C library computes, reported
+        if: always()
+        run: |
+          set -u
+          {
+            echo "### Linux aarch64 against macOS aarch64 (another C library)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cargo xtask compare-hashes values-linux-aarch64.tsv values-macos-aarch64.tsv \
+            | tee -a "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

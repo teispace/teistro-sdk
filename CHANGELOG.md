@@ -149,7 +149,11 @@ branded type and Dart an extension type, and the constructor checks the
 range. Whether the same source computes the same numbers on another
 machine is now measured rather than assumed: `cargo xtask hashes` hashes
 a hundred thousand computed values per build, and the nightly matrix
-compares Linux x86-64, Linux aarch64 and macOS aarch64. The API description (`idl/api.json`, `teistro-idl`) is extracted
+compares Linux x86-64, Linux aarch64 and macOS aarch64. The first run
+says the two architectures agree bit for bit, and that macOS differs in
+the astronomy and the house systems because its maths library rounds
+differently in the last place; the calendars and the classical model
+agree everywhere. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the
