@@ -2,6 +2,36 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
+/**
+ * A longitude in deg, [-180,180]. Its own type, so it cannot be passed where
+ * another quantity is wanted; `longitude()` is the only way to make one, and it
+ * checks the range.
+ */
+export type Longitude = number & { readonly __brand: 'longitude' };
+
+/** A longitude in deg, checked. */
+export declare function longitude(value: number): Longitude;
+
+/**
+ * A latitude in deg, [-90,90]. Its own type, so it cannot be passed where
+ * another quantity is wanted; `latitude()` is the only way to make one, and it
+ * checks the range.
+ */
+export type Latitude = number & { readonly __brand: 'latitude' };
+
+/** A latitude in deg, checked. */
+export declare function latitude(value: number): Latitude;
+
+/**
+ * An altitude in m, [-500,12000]. Its own type, so it cannot be passed where
+ * another quantity is wanted; `altitude()` is the only way to make one, and it
+ * checks the range.
+ */
+export type Altitude = number & { readonly __brand: 'altitude' };
+
+/** An altitude in m, checked. */
+export declare function altitude(value: number): Altitude;
+
 /** The ABI these declarations were generated for; the addon must agree. */
 export declare const ABI_VERSION: 1;
 

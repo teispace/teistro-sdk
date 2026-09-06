@@ -18,6 +18,39 @@ export const VTABLE_ABI_VERSION = 2;
  */
 export const CONTEXT_TEST_PROVIDER = 1;
 
+/** A longitude in deg, checked. */
+export function longitude(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new TypeError(`longitude: expected a finite number, got ${String(value)}`);
+  }
+  if (!(value >= -180 && value <= 180)) {
+    throw new RangeError(`longitude: expected -180 to 180 deg, got ${value}`);
+  }
+  return value;
+}
+
+/** A latitude in deg, checked. */
+export function latitude(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new TypeError(`latitude: expected a finite number, got ${String(value)}`);
+  }
+  if (!(value >= -90 && value <= 90)) {
+    throw new RangeError(`latitude: expected -90 to 90 deg, got ${value}`);
+  }
+  return value;
+}
+
+/** An altitude in m, checked. */
+export function altitude(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new TypeError(`altitude: expected a finite number, got ${String(value)}`);
+  }
+  if (!(value >= -500 && value <= 12000)) {
+    throw new RangeError(`altitude: expected -500 to 12000 m, got ${value}`);
+  }
+  return value;
+}
+
 /** Every Kind by name. */
 export const Kind = Object.freeze({
   Graha: 'graha',

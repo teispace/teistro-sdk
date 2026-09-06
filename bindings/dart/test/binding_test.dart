@@ -181,13 +181,10 @@ void main() {
     expect(back.civil.time.hasTime, isTrue);
     expect(back.resolution.offsetSeconds, 20700);
 
-    const unknown = ZoneSpec(
-      kind: ZoneKind.iana,
-      offsetSeconds: 0,
-      longitudeDeg: 0,
-      zone: 'Asia/Kathmandou',
+    expect(
+      () => ctx.resolve(civil, ianaZone('Asia/Kathmandou')),
+      throwsA(isA<TeistroException>()),
     );
-    expect(() => ctx.resolve(civil, unknown), throwsA(isA<TeistroException>()));
   });
 
   test('the time scales convert with what they applied', () {
@@ -307,6 +304,32 @@ void main() {
             .having((e) => e.hint, 'hint', contains('sa-Deva')),
       ),
     );
+  });
+
+  test('a quantity is its own type, and its constructor checks the '
+      'range', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    expect(
+      Latitude(27.7172),
+      27.7172,
+      reason: 'a branded number is a double at run time',
+    );
+    expect(() => Latitude(91), throwsRangeError);
+    expect(() => Longitude(-181), throwsRangeError);
+    expect(() => Altitude(20000), throwsRangeError);
+
+    // The place reaches the boundary and comes back through the frame.
+    final positions = ctx.positions(
+      instants: [2451545.0],
+      bodies: [Body.sun],
+      observer: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+    );
+    expect(positions.cells.length, 1);
   });
 
   test('a catalogue key packs to an id and back', () {

@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -11,16 +11,25 @@ import type { Status, TimeScale, Body, Ayanamsha, Centre, Equinox, Coordinates, 
 export interface Observer {
   /**
    * Degrees, east positive.
+   * @unit deg
+   * @range [-180,180]
+   * @example 85.3240
    */
-  readonly longitudeDeg: number;
+  readonly longitudeDeg: Longitude;
   /**
    * Degrees, north positive.
+   * @unit deg
+   * @range [-90,90]
+   * @example 27.7172
    */
-  readonly latitudeDeg: number;
+  readonly latitudeDeg: Latitude;
   /**
    * Metres above sea level.
+   * @unit m
+   * @range [-500,12000]
+   * @example 1400
    */
-  readonly altitudeM: number;
+  readonly altitudeM: Altitude;
 }
 
 /**
@@ -608,7 +617,7 @@ export interface ZoneSpec {
    * @range [-180,180]
    * @example 85.3240
    */
-  readonly longitudeDeg: number;
+  readonly longitudeDeg: Longitude;
   /**
    * The IANA name, for a database zone.
    * @example Asia/Kathmandu

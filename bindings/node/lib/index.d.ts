@@ -21,6 +21,7 @@ import type {
   DeltaT,
   Frame,
   IntlLoaded,
+  Observer,
   TimeConversion,
   ZoneResolution,
   ZoneSpec,
@@ -135,7 +136,7 @@ export interface PositionsRequest {
   /** Whether speeds are wanted; `true` by default. */
   readonly speeds?: boolean;
   /** The place a topocentric frame needs. */
-  readonly observer?: { readonly longitudeDeg: number; readonly latitudeDeg: number; readonly altitudeM: number };
+  readonly observer?: Observer;
 }
 
 /**
@@ -182,7 +183,7 @@ export interface ProviderRequest {
   /** Whether speeds are wanted. */
   readonly speeds: boolean;
   /** The place a topocentric frame needs. */
-  readonly observer?: { readonly longitudeDeg: number; readonly latitudeDeg: number; readonly altitudeM: number };
+  readonly observer?: Observer;
 }
 
 /**

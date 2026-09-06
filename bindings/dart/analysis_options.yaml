@@ -4,6 +4,10 @@
 include: package:lints/recommended.yaml
 
 analyzer:
+  # The file whose whole purpose is to be wrong; the gate analyses it on
+  # its own and fails unless every error it expects is reported.
+  exclude:
+    - typecheck/**
   language:
     strict-casts: true
     strict-inference: true

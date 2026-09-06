@@ -4275,14 +4275,17 @@ typedef int32_t (*ts_crossings_fn)(void * user_data, const ts_crossing_request *
 struct ts_observer {
     /**
      * Degrees, east positive.
+     * Unit: deg. Range: [-180,180]. Example: 85.3240.
      */
     double longitude_deg;
     /**
      * Degrees, north positive.
+     * Unit: deg. Range: [-90,90]. Example: 27.7172.
      */
     double latitude_deg;
     /**
      * Metres above sea level.
+     * Unit: m. Range: [-500,12000]. Example: 1400.
      */
     double altitude_m;
 };

@@ -235,6 +235,7 @@ pub fn declarations(api: &Api) -> String {
     }
     render_library(&mut out, api);
     render_exception(&mut out, api);
+    render_brands(&mut out, api);
     for s in api.structs.iter().filter(|s| shown(api, s)) {
         render_value_class(&mut out, api, s);
     }
@@ -412,6 +413,9 @@ fn value_type(api: &Api, field: &FieldDef, role: &FieldRole) -> String {
 }
 
 fn plain_value(api: &Api, field: &FieldDef, ty: &TypeRef) -> String {
+    if let Some(brand) = &field.meta.brand {
+        return pascal(brand);
+    }
     if let Some(name) = &field.meta.enum_name {
         return binding_type_name(name);
     }
@@ -432,6 +436,40 @@ fn element(field: &FieldDef) -> Scalar {
         .pointee()
         .and_then(TypeRef::as_scalar)
         .unwrap_or(Scalar::U8)
+}
+
+/// The branded quantities as extension types: a `Latitude` is a `double`
+/// at run time and its own type at compile time, so a latitude cannot be
+/// passed where a longitude is wanted. The unnamed constructor checks the
+/// range the description states; the private one is how a value the
+/// library produced comes back, which needs no check because the library
+/// made it (ADR-0023, and Phase 1's exit criterion).
+fn render_brands(out: &mut String, api: &Api) {
+    for (brand, field) in crate::emit::ts::brands(api) {
+        let name = pascal(&brand);
+        let unit = field.meta.unit.as_deref().unwrap_or("");
+        let where_ = if unit.is_empty() {
+            String::new()
+        } else {
+            format!(" in {unit}")
+        };
+        let range = field.meta.range.as_deref().unwrap_or("");
+        let check = match crate::emit::ts::brand_range(field) {
+            Some((low, high)) => format!(
+                "\n    if (!(value >= {low} && value <= {high})) {{\n      throw RangeError.range(value, {low}, {high}, '{brand}');\n    }}"
+            ),
+            None => String::new(),
+        };
+        let _ = writeln!(
+            out,
+            "/// A {brand}{where_}{}. Its own type, so it cannot be passed where\n/// another quantity is wanted.\nextension type const {name}._(double value) implements double {{\n  /// A {brand}{where_}, checked.\n  factory {name}(double value) {{{check}\n    return {name}._(value);\n  }}\n}}\n",
+            if range.is_empty() {
+                String::new()
+            } else {
+                format!(", {range}")
+            }
+        );
+    }
 }
 
 fn render_value_class(out: &mut String, api: &Api, s: &StructDef) {
@@ -613,6 +651,8 @@ fn render_read(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole], 
                     } else {
                         format!("{e}.byId(raw.{field})")
                     }
+                } else if let Some(brand) = &f.meta.brand {
+                    format!("{}._(raw.{field})", pascal(brand))
                 } else {
                     format!("raw.{field}")
                 }

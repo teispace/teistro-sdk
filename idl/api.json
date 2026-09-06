@@ -6439,7 +6439,12 @@
             "scalar": "f64"
           },
           "doc": "Degrees, east positive.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "brand": "longitude",
+            "range": "[-180,180]",
+            "example": "85.3240"
+          }
         },
         {
           "name": "latitude_deg",
@@ -6448,7 +6453,12 @@
             "scalar": "f64"
           },
           "doc": "Degrees, north positive.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "brand": "latitude",
+            "range": "[-90,90]",
+            "example": "27.7172"
+          }
         },
         {
           "name": "altitude_m",
@@ -6457,7 +6467,12 @@
             "scalar": "f64"
           },
           "doc": "Metres above sea level.",
-          "meta": {}
+          "meta": {
+            "unit": "m",
+            "brand": "altitude",
+            "range": "[-500,12000]",
+            "example": "1400"
+          }
         }
       ],
       "source": "crates/port-ephemeris/src/vtable.rs"
@@ -8234,6 +8249,7 @@
           "doc": "The longitude east-positive in degrees, for local mean time.",
           "meta": {
             "unit": "deg",
+            "brand": "longitude",
             "range": "[-180,180]",
             "example": "85.3240"
           }

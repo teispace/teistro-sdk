@@ -17,7 +17,7 @@ which is thin on purpose.
 | `lib/index.js`, `lib/index.d.ts` | the layer a consumer uses: where the addon is, validation at the door, defaults, errors with their field and hint, results decoded on first use | by hand |
 | `native/src/provider.rs` | the port adapter: an ephemeris written in JavaScript bound into the port's vtable | by hand |
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |
-| `typecheck/` | a consumer and the layer's own declarations at maximum strictness, where every wrong usage is a compile error the file asserts | by hand |
+| `typecheck/` | a consumer, the layer's declarations and the typed accessors at maximum strictness, where every wrong usage is a compile error the file asserts, a swapped latitude and longitude among them | by hand |
 | `parity.mjs` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Dart binding's | by hand |
 
 A catalogue member is its full key everywhere a string names it

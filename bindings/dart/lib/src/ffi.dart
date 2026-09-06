@@ -63,14 +63,17 @@ typedef CrossingsFnDart = int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<Crossi
 /// way in.
 final class ObserverStruct extends ffi.Struct {
   /// Degrees, east positive.
+  /// Unit: deg. Range: [-180,180]. Example: 85.3240.
   @ffi.Double()
   external double longitudeDeg;
 
   /// Degrees, north positive.
+  /// Unit: deg. Range: [-90,90]. Example: 27.7172.
   @ffi.Double()
   external double latitudeDeg;
 
   /// Metres above sea level.
+  /// Unit: m. Range: [-500,12000]. Example: 1400.
   @ffi.Double()
   external double altitudeM;
 
@@ -1328,6 +1331,42 @@ final class TeistroException implements Exception {
   }
 }
 
+/// A longitude in deg, [-180,180]. Its own type, so it cannot be passed where
+/// another quantity is wanted.
+extension type const Longitude._(double value) implements double {
+  /// A longitude in deg, checked.
+  factory Longitude(double value) {
+    if (!(value >= -180 && value <= 180)) {
+      throw RangeError.range(value, -180, 180, 'longitude');
+    }
+    return Longitude._(value);
+  }
+}
+
+/// A latitude in deg, [-90,90]. Its own type, so it cannot be passed where
+/// another quantity is wanted.
+extension type const Latitude._(double value) implements double {
+  /// A latitude in deg, checked.
+  factory Latitude(double value) {
+    if (!(value >= -90 && value <= 90)) {
+      throw RangeError.range(value, -90, 90, 'latitude');
+    }
+    return Latitude._(value);
+  }
+}
+
+/// A altitude in m, [-500,12000]. Its own type, so it cannot be passed where
+/// another quantity is wanted.
+extension type const Altitude._(double value) implements double {
+  /// A altitude in m, checked.
+  factory Altitude(double value) {
+    if (!(value >= -500 && value <= 12000)) {
+      throw RangeError.range(value, -500, 12000, 'altitude');
+    }
+    return Altitude._(value);
+  }
+}
+
 /// A C observer: degrees and metres, validated into a `Place` on the
 /// way in.
 final class Observer {
@@ -1335,13 +1374,16 @@ final class Observer {
   const Observer({required this.longitudeDeg, required this.latitudeDeg, required this.altitudeM});
 
   /// Degrees, east positive.
-  final double longitudeDeg;
+  /// Unit: deg. Range: [-180,180]. Example: 85.3240.
+  final Longitude longitudeDeg;
 
   /// Degrees, north positive.
-  final double latitudeDeg;
+  /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+  final Latitude latitudeDeg;
 
   /// Metres above sea level.
-  final double altitudeM;
+  /// Unit: m. Range: [-500,12000]. Example: 1400.
+  final Altitude altitudeM;
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -1361,9 +1403,9 @@ final class Observer {
 
   /// Reads a value out of a struct, which may be one held inside another.
   static Observer readFrom(ObserverStruct raw) => Observer(
-        longitudeDeg: raw.longitudeDeg,
-        latitudeDeg: raw.latitudeDeg,
-        altitudeM: raw.altitudeM,
+        longitudeDeg: Longitude._(raw.longitudeDeg),
+        latitudeDeg: Latitude._(raw.latitudeDeg),
+        altitudeM: Altitude._(raw.altitudeM),
       );
 }
 
@@ -2284,7 +2326,7 @@ final class ZoneSpec {
 
   /// The longitude east-positive in degrees, for local mean time.
   /// Unit: deg. Range: [-180,180]. Example: 85.3240.
-  final double longitudeDeg;
+  final Longitude longitudeDeg;
 
   /// The IANA name, for a database zone.
   /// Example: Asia/Kathmandu. May be null.
@@ -2314,7 +2356,7 @@ final class ZoneSpec {
   static ZoneSpec readFrom(ZoneSpecStruct raw) => ZoneSpec(
         kind: ZoneKind.byId(raw.kind),
         offsetSeconds: raw.offsetSeconds,
-        longitudeDeg: raw.longitudeDeg,
+        longitudeDeg: Longitude._(raw.longitudeDeg),
         zone: raw.zone == ffi.nullptr
             ? null
             : raw.zone.cast<pkg_ffi.Utf8>().toDartString(),
