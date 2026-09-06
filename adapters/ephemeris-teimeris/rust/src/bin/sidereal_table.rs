@@ -23,7 +23,9 @@ use std::process::ExitCode;
 
 use serde::Serialize;
 use teimeris::{Context, ModelKind, SiderealTimeModel, TimeScale};
-use teistro_ephemeris_teimeris::{TeimerisProvider, data_dir_from_env};
+use teistro_ephemeris_teimeris::{
+    TeimerisProvider, data_dir_from_env, profile_from_env, profile_key,
+};
 use teistro_port_ephemeris::EphemerisProvider;
 
 /// The engine's window: strictly inside it the IERS 2010 expression, at
@@ -58,6 +60,10 @@ fn instants() -> Vec<f64> {
 struct Table {
     schema: &'static str,
     tool: String,
+    /// The engine profile the numbers were taken under: `compatible`
+    /// reproduces the engine's own upstream, `max` carries the
+    /// corrections the findings register asked for.
+    profile: &'static str,
     scale: &'static str,
     rows: Vec<Row>,
 }
@@ -101,6 +107,7 @@ fn row(ctx: &Context, jd_ut1: f64) -> Result<Row, teimeris::Error> {
 }
 
 fn main() -> ExitCode {
+    let profile = profile_from_env();
     let data_dir = data_dir_from_env();
     let provider = match TeimerisProvider::open(&data_dir) {
         Ok(provider) => provider,
@@ -123,6 +130,7 @@ fn main() -> ExitCode {
             "{} {}",
             capabilities.identity.name, capabilities.identity.version
         ),
+        profile: profile_key(profile),
         scale: "UT1",
         rows,
     };

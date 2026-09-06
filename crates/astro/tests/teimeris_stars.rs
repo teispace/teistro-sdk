@@ -187,6 +187,7 @@ fn the_catalogues_astrometry_stays_within_the_catalogues_of_the_engines() {
     let mut worst = (0.0f64, String::new());
     let mut ranked: Vec<(f64, String)> = Vec::new();
     let mut compared = 0;
+    let mut left_out = 0;
     for row in table["rows"].as_array().unwrap() {
         let key = row["star"].as_str().unwrap();
         let star = Star::from_key(key).expect("a catalogued key");
@@ -198,6 +199,7 @@ fn the_catalogues_astrometry_stays_within_the_catalogues_of_the_engines() {
         let theirs = engine_astrometry(record);
         let at_epoch = separation_arcsec(ours.ra_deg, ours.dec_deg, theirs.ra_deg, theirs.dec_deg);
         if at_epoch > DIFFERENT_STAR_ARCSEC {
+            left_out += 1;
             println!(
                 "{key}: the engine's row named {} is {} ({at_epoch:.0}\" away), not this star",
                 record["name"].as_str().unwrap_or_default(),
@@ -209,6 +211,7 @@ fn the_catalogues_astrometry_stays_within_the_catalogues_of_the_engines() {
             + (ours.pm_dec_mas_yr - theirs.pm_dec_mas_yr).powi(2))
         .sqrt();
         if pm_apart > DIFFERENT_ROW_MAS_YR {
+            left_out += 1;
             println!(
                 "{key}: the engine's row moves {pm_apart:.0} mas/yr differently ({}, {} against {}, {}): another catalogue's row",
                 theirs.pm_ra_mas_yr, theirs.pm_dec_mas_yr, ours.pm_ra_mas_yr, ours.pm_dec_mas_yr
@@ -240,9 +243,15 @@ fn the_catalogues_astrometry_stays_within_the_catalogues_of_the_engines() {
     }
     assert!(compared >= 100 * 4, "{compared} places compared");
     println!(
-        "{compared} places compared; the catalogues differ most at {}: {:.4}\"",
+        "{compared} places compared, {left_out} row(s) left out; the catalogues differ most at {}: {:.4}\"",
         worst.1, worst.0
     );
+    // Five rows were left out until the engine's table was corrected
+    // (`docs/05-testing/02-engine-findings.md`, F5, closed): two named
+    // another star, one carried another catalogue's proper motion, one had
+    // a rate with the declination factor applied twice, and one was a
+    // different definition of the galactic pole. Every row now compares.
+    assert_eq!(left_out, 0, "{left_out} row(s) left out of the comparison");
     assert!(
         worst.0 <= DATA_BOUND_ARCSEC,
         "{}: the SDK's and the engine's astrometry place it {:.4}\" apart (bound {DATA_BOUND_ARCSEC}\")",

@@ -46,18 +46,21 @@ const UT_EPOCH_BOUND_ARCSEC: f64 = 5e-4;
 /// the measured differences (`docs/03-design/astro-star-table.md`, §8):
 /// the anchors both tables take from Hipparcos (Spica, λ Scorpii) and the
 /// true galactic pole agree to 0.003″; the galactic centre differs by the
-/// engine's FK5 record and its east proper motion (0.4 mas/yr short of
-/// Reid and Brunthaler's) times the years, 0.02″ at J2000.0 and 0.54″ at
-/// 700 CE; the two Gaia DR3 rows (ζ Piscium A, δ Cancri) differ from the
-/// engine's Hipparcos rows by about 1.1 mas/yr, 1.5″ at 700 CE; the IAU
-/// 1958 pole differs by the two transforms of the 1958 definition to the
-/// ICRS (Liu, Zhu and Zhang's against the engine's own), up to 0.18″.
+/// engine's FK5 record alone, 0.025″ over ±1300 years; the two Gaia DR3
+/// rows (ζ Piscium A, δ Cancri) differ from the engine's Hipparcos rows
+/// by about 1.1 mas/yr, 1.5″ at 700 CE.
+///
+/// Two of these were wider until the engine's star table was corrected
+/// (`docs/05-testing/02-engine-findings.md`, F5, closed): the galactic
+/// centre carried a drift term for an east proper motion 0.4 mas/yr short
+/// of Reid and Brunthaler's (0.68″ at 700 CE, now 0.05″ flat), and the
+/// IAU 1958 pole carried 0.3″ for a built-in row that was the B1950
+/// definition (now 0.0002″, inside the general bound).
 fn anchored_bound_arcsec(anchor: Star, jd_tt: f64) -> f64 {
     let years = ((jd_tt - 2_451_545.0) / 365.25).abs();
     match anchor {
-        Star::SgrAStar => 0.03 + 0.5e-3 * years,
+        Star::SgrAStar => 0.05,
         Star::Revati | Star::AsellusAustralis => 0.05 + 1.5e-3 * years,
-        Star::GalacticPoleIau1958 => 0.3,
         _ => 5e-3,
     }
 }

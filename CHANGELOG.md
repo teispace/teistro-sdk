@@ -12,7 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
-**Numbers:** the Bikram Sambat table's computed rows moved. Every year
+**Numbers:** the reference engine's own corrections moved what the SDK is
+measured against, not what it computes. All six findings the SDK filed
+against Teimeris were fixed upstream and the recorded tables were taken
+again under the engine's corrected profile: its sidereal time no longer
+steps by 1.9″ at 2050, its Moon's parallax and disc now come from the
+same distance, its Horizon co-ascendant at the equator agrees with every
+other system, its star table's five wrong rows are right, and its IAU
+2000B nutation carries the model's fixed offsets. The SDK's own numbers
+are unchanged: it already computed all six the corrected way, which is
+why the comparisons tightened rather than moved (the Moon's parallax from
+0.5″ to 0.0002″, the equation of time from 0.2 s to 0.0075 s beyond 2050,
+the galactic-centre ayanamshas from 0.68″ to 0.05″).
+The Bikram Sambat table's computed rows moved. Every year
 outside the official span (BS 1970 to 2095) is now computed by the SDK's
 own engine (the Surya Siddhanta as the text prints it, Nepal's clock,
 Kathmandu, the punya-kala rule) and the table runs from 1700 to 2500 BS;

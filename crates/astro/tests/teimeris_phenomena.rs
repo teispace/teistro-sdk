@@ -46,21 +46,28 @@ const DIAMETER_BOUND_ARCSEC: f64 = 1.0;
 
 /// The horizontal parallax. The engine reports it for the Moon alone and
 /// zero for the rest, where the SDK gives every body its own, so the
-/// Moon's rows are compared; and the engine reads it from a distance up to
-/// 40 km from the one its disc uses, where the SDK reads both from the
-/// apparent distance: 0.35″ of the Moon's 3400″.
-const PARALLAX_BOUND_ARCSEC: f64 = 0.5;
+/// Moon's rows are compared.
+///
+/// It was half an arcsecond until the engine stopped reading the parallax
+/// from the geometric distance and the disc from the apparent one, 40 km
+/// apart (`docs/05-testing/02-engine-findings.md`, F2, closed); the two
+/// now agree to 0.0002″ of the Moon's 3400″, two thousand times tighter.
+const PARALLAX_BOUND_ARCSEC: f64 = 1e-3;
 
 /// The equation of time from the same right ascension with the SDK's
-/// sidereal time, through 2030.
+/// sidereal time, inside the engine's 1850 to 2050 sidereal-time window.
 const EQUATION_BOUND_SECONDS: f64 = 1e-3;
 
-/// From 2050 the engine's sidereal time steps by 1.9″ where its long-term
-/// branch takes over (`docs/05-testing/02-engine-findings.md`, F1), so its
-/// equation of time is 0.127 s from the one its own Sun implies; the SDK's
-/// sidereal time is continuous. Held loosely there.
-const LATER_EQUATION_BOUND_SECONDS: f64 = 0.2;
-const LAST_CONSISTENT_JD: f64 = 2_462_502.5;
+/// Beyond the window the engine's sidereal time is its long-term
+/// construction, which is a different model rather than the IERS 2010
+/// expression and departs from it by 0.1″ at 2100 and 4.4″ at 2300; the
+/// equation of time inherits that, 1.5 ms at 2070 and 7.5 ms at 2100. It
+/// was a fifth of a second here until the engine's branch stopped
+/// stepping at the window's bounds
+/// (`docs/05-testing/02-engine-findings.md`, F1, closed), twenty times
+/// looser than what the model's own departure costs.
+const LATER_EQUATION_BOUND_SECONDS: f64 = 1e-2;
+const LAST_CONSISTENT_JD: f64 = 2_469_807.5;
 
 fn fixture() -> Value {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/teimeris/pheno.json");
@@ -83,6 +90,8 @@ fn the_arithmetic_reproduces_the_engines_phenomena_on_its_own_geometry() {
     let mut compared = 0;
     let mut worst_magnitude = (0.0f64, String::new());
     let mut worst_angle = 0.0f64;
+    let mut worst_parallax = 0.0f64;
+    let mut worst_diameter = 0.0f64;
     for row in table["rows"].as_array().unwrap() {
         let body = Body::from_key(row["body"].as_str().unwrap()).expect("a catalogued body");
         let tt = JulianDay::<Tt>::literal(row["jd_tt"].as_f64().unwrap());
@@ -125,6 +134,7 @@ fn the_arithmetic_reproduces_the_engines_phenomena_on_its_own_geometry() {
             diameter_apart < DIAMETER_BOUND_ARCSEC,
             "{where_}: diameter {diameter_apart}\" apart"
         );
+        worst_diameter = worst_diameter.max(diameter_apart);
         if body == Body::Moon {
             let parallax_apart =
                 (ours.disc.parallax_deg - row["horizontal_parallax_deg"].as_f64().unwrap()).abs()
@@ -133,6 +143,7 @@ fn the_arithmetic_reproduces_the_engines_phenomena_on_its_own_geometry() {
                 parallax_apart < PARALLAX_BOUND_ARCSEC,
                 "{where_}: parallax {parallax_apart}\" apart"
             );
+            worst_parallax = worst_parallax.max(parallax_apart);
         }
         match (ours.magnitude, row["magnitude"].as_f64()) {
             (Some(a), Some(b)) => {
@@ -154,7 +165,7 @@ fn the_arithmetic_reproduces_the_engines_phenomena_on_its_own_geometry() {
     }
     assert!(compared >= 11 * 16, "{compared} rows compared");
     println!(
-        "{compared} rows compared; magnitudes worst {:.6} at {}",
+        "{compared} rows compared; magnitudes worst {:.6} at {}; the Moon's parallax worst {worst_parallax:.6}\", the disc worst {worst_diameter:.6}\"",
         worst_magnitude.0, worst_magnitude.1
     );
     common::record(
@@ -223,10 +234,10 @@ fn the_equation_of_time_reproduces_the_engines_from_the_same_sun() {
         compared += 1;
     }
     assert!(compared >= 16);
-    println!("{compared} instants; equation of time worst {worst:.6} s through 2030");
+    println!("{compared} instants; equation of time worst {worst:.6} s inside the window");
     common::record(
         "equation_of_time",
-        "from the engine's Sun with the SDK's sidereal time, through 2030",
+        "from the engine's Sun with the SDK's sidereal time, inside its window",
         worst,
         " s",
         EQUATION_BOUND_SECONDS,

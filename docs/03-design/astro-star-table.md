@@ -223,11 +223,16 @@ optimisation should a consumer need one (§10).
   milliarcseconds a year apart in proper motion) or by two or three
   arcseconds in the position itself (Heze, Aljanah, Alnasl, Algieba);
   bound 10″, a guard against a wrong unit or a wrong star, since the
-  difference is the catalogues' and not the SDK's. Three names resolve to
-  other rows in the engine and are reported rather than compared: its
-  Rigil Kentaurus carries a proper motion 224 mas/yr from Hipparcos's,
-  its Algedi is α¹ Capricorni where the IAU name is α²'s, and its
-  Sadalbari is λ Pegasi where the IAU name is μ's.
+  difference is the catalogues' and not the SDK's. Every row compares,
+  and the test asserts that none is left out: five were reported rather
+  than compared until the engine's table was corrected
+  (`05-testing/02-engine-findings.md`, F5, closed 2026-09-06) — its
+  Rigil Kentaurus carried a proper motion 224 mas/yr from Hipparcos's,
+  its Algedi was α¹ Capricorni where the IAU name is α²'s, its Sadalbari
+  λ Pegasi where the IAU name is μ's, its Sgr A* an east rate with cos δ
+  applied twice, and its built-in IAU 1958 pole the B1950 definition. The
+  worst is now Rigil Kentaurus at 6.3″ in 2100, Gaia against Hipparcos
+  for the nearest star.
 - The anchored members against Teimeris's recorded values over −700 to
   2500 (`fixtures/teimeris/ayanamsha.json`, `teimeris_ayanamsha.rs`),
   arcseconds, the SDK less the engine:
@@ -236,8 +241,8 @@ optimisation should a consumer need one (§10).
   |---|---:|---:|---:|---:|---|
   | `TRUE_CHITRA`, `TRUE_MULA` | 0.0000 | 0.0000 | −0.0026, +0.0001 | −0.0004, 0.0000 | the same Hipparcos rows |
   | `GALEQU_TRUE`, `GALEQU_MULA` | −0.0002 | −0.0002 | −0.0002 | −0.0002 | the same pole, geometric |
-  | `GALEQU_IAU1958` | | | +0.176 | | the two transforms of the 1958 pole to the ICRS (C42) |
-  | the four `GALCENT_*` | +0.020 | +0.010 | +0.54 | −0.18 | the engine's FK5 record and its cos δ on the proper motion (C40) |
+  | `GALEQU_IAU1958` | −0.0002 | −0.0002 | −0.0002 | −0.0002 | the same pole since the engine's built-in row was corrected (C42, F5); it was +0.176″ at 700 CE against the B1950 definition |
+  | the four `GALCENT_*` | +0.020 | +0.010 | +0.025 | −0.007 | the engine's FK5 record (C40); the growth to +0.54″ at 700 CE was its cos δ on the proper motion, corrected (F5) |
   | `TRUE_REVATI` | −0.016 | −0.045 | +1.44 | −0.59 | Gaia DR3 against Hipparcos, 1.1 mas/yr (C41) |
   | `TRUE_PUSHYA`, `TRUE_SHEORAN` | −0.002 | −0.030 | +1.46 | −0.56 | the same (C41) |
 

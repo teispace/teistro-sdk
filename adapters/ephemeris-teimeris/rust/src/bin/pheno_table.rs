@@ -21,7 +21,9 @@ use std::process::ExitCode;
 
 use serde::Serialize;
 use teimeris::{Body as EngineBody, Context, Flags, TimeScale};
-use teistro_ephemeris_teimeris::{TeimerisProvider, data_dir_from_env};
+use teistro_ephemeris_teimeris::{
+    TeimerisProvider, data_dir_from_env, profile_from_env, profile_key,
+};
 use teistro_port_ephemeris::{Body, EphemerisProvider};
 
 /// The light time for one astronomical unit, days.
@@ -68,6 +70,10 @@ const BODIES: [(Body, EngineBody); 11] = [
 struct Table {
     schema: &'static str,
     tool: String,
+    /// The engine profile the numbers were taken under: `compatible`
+    /// reproduces the engine's own upstream, `max` carries the
+    /// corrections the findings register asked for.
+    profile: &'static str,
     scale: &'static str,
     rows: Vec<Row>,
     solar: Vec<Solar>,
@@ -167,6 +173,7 @@ fn solar(ctx: &Context, jd_ut1: f64) -> Result<Solar, teimeris::Error> {
 }
 
 fn main() -> ExitCode {
+    let profile = profile_from_env();
     let data_dir = data_dir_from_env();
     let provider = match TeimerisProvider::open(&data_dir) {
         Ok(provider) => provider,
@@ -196,6 +203,7 @@ fn main() -> ExitCode {
             "{} {}",
             capabilities.identity.name, capabilities.identity.version
         ),
+        profile: profile_key(profile),
         scale: "TT",
         rows,
         solar: solar_rows,
