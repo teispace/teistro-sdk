@@ -11,19 +11,15 @@
 #   stage    the manifests are merged and the two published packages staged
 #   publish  the GitHub release, then npm and pub.dev
 #
-# Nothing is published from a dispatch with `dry_run`, which is how the
-# whole chain is rehearsed before a tag exists.
+# A dispatch runs everything except `publish`, which is how the whole
+# chain is rehearsed before a tag exists; only a tag publishes.
 name: release
 
 on:
   push:
     tags: ["v*"]
+  # Builds, stages and checks everything; publishes nothing.
   workflow_dispatch:
-    inputs:
-      dry_run:
-        description: Build and stage everything, publish nothing
-        type: boolean
-        default: true
 
 permissions:
   contents: read
@@ -34,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
-      publish: ${{ github.event_name == 'push' && inputs.dry_run != true }}
+      publish: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
@@ -91,11 +87,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.platform }}
-          # This platform's own npm package as well as its archives: the
-          # one that depends on them is staged once, in the next job.
+          # This platform's own npm package and manifest, not the merged
+          # one `check-package` wrote from one platform: the merge and the
+          # package that depends on them are staged once, in the next job.
           path: |
             target/dist/*.gz
-            target/dist/*.json
+            target/dist/teistro-*.json
             target/dist/npm/@teistro/sdk-*
           if-no-files-found: error
           retention-days: 7

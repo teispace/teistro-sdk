@@ -97,6 +97,12 @@ Sambat date, the resolved instant and zone, the rendered Nepali message,
 and the Sun's longitude at J2000 — so a package that loads but answers
 differently fails here rather than in the field.
 
+On Windows the C step skips: the bundle is built with MSVC and the gate
+drives a `cc`-style compiler, which the runner does not have in a form
+that links an MSVC `.lib`. The Windows bundle is therefore built and
+recorded but not compiled against, which is the one gap in this gate;
+the Node and Dart packages are proved there like everywhere else.
+
 This is the only thing that tests the packages rather than the code in
 them. A test that imports `../lib/index.js` cannot catch an export left
 out of `files`, a subpath that resolves in a checkout and not in an
