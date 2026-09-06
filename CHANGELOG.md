@@ -120,7 +120,10 @@ Node object's. An ephemeris written in Dart answers the SDK for the first
 time: a class with a `positions` call is bound into the port's vtable
 through an isolate-local callback, asked once for a whole grid, and may
 refuse a frame by answering with nothing, in which case the astronomy
-layer completes the rest from the provider's own frame. The API description (`idl/api.json`, `teistro-idl`) is extracted
+layer completes the rest from the provider's own frame. The two bindings
+are held to each other by a parity gate: one scenario walked through both
+ergonomic layers, ninety values reported by each, and the two compared
+value by value. The API description (`idl/api.json`, `teistro-idl`) is extracted
 from the boundary crates' source and gated. **The settings hash moved
 for any build that enabled the JSON layer's `preserve_order` feature**:
 the canonical document's keys are now sorted by the SDK itself, so the

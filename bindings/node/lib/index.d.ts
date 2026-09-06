@@ -235,6 +235,11 @@ export declare class Context {
   readonly profile: string;
   /** The resolved settings, as their canonical document. */
   readonly settings: Record<string, unknown>;
+  /**
+   * The same document as the text the library wrote, which is what the
+   * settings hash is taken over and what a stored chart keeps.
+   */
+  readonly settingsJson: string;
   /** The SHA-256 of the canonical settings, in hex. */
   readonly settingsHash: string;
   /** The locale every render resolves from. */

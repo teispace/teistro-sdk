@@ -215,7 +215,11 @@ final class Context {
 
   /// The resolved settings, as their canonical document.
   Map<String, Object?> get settings =>
-      jsonDecode(_inner.settingsJson()) as Map<String, Object?>;
+      jsonDecode(settingsJson) as Map<String, Object?>;
+
+  /// The same document as the text the library wrote, which is what the
+  /// settings hash is taken over and what a stored chart keeps.
+  String get settingsJson => _inner.settingsJson();
 
   /// The SHA-256 of the canonical settings, in hex; every result carries
   /// it, and two runs that agree on it are comparable.

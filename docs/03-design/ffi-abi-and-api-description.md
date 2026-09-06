@@ -1,6 +1,7 @@
 # The C ABI and the API description
 
-Status: `draft`, revised 2026-09-06 when an ephemeris written in Dart
+Status: `draft`, revised 2026-09-06 when the parity gate was added
+(§8's tests); revised the same day when an ephemeris written in Dart
 answered the SDK (§5's provider, §8's tests); revised the same day when
 the Dart binding was added (§5's Dart layers, §8's tests); revised the same day when the Node addon
 and its
@@ -472,6 +473,23 @@ yet.
   missing message's warning, keys parsed and named. The package is also
   analysed with `--fatal-infos` and format-checked. It needs the Dart
   SDK, so it runs by hand and in the nightly matrix.
+- The parity gate (`cargo xtask check-parity`): one scenario walked
+  through both bindings' own ergonomic layers, each printing a report of
+  `key<TAB>value` lines, and the two compared value by value. Ninety
+  values: the versions, a context's profile, locale, settings hash and
+  the hash of the settings document as the library wrote it, the calendar
+  conversion with its era and resolution, the fixed day and the weekday,
+  the zone resolution with its offset, era, source and tzdb version and
+  the civil time back, the scales and Delta T, a key packed and named and
+  a refusal's status, detail and hint, a rendered message hashed, the
+  frame and its round trip, every cell of a two-by-three grid, the
+  completion's steps, and the provenance hashed. Nothing in the gate says
+  what a value should be: the point is that the two bindings agree with
+  each other, so a fact written into it could only weaken it. Two numbers
+  are compared as numbers within 2e-9, which is one in the last place
+  both reports print and no more, so a tenth of a second in a Julian day
+  is a failure. The gate is checked against itself: a value moved by
+  1e-6, an extra key and a wrong integer are each reported.
 - Planned: a `cargo-fuzz` target over the blob reader and every entry
   point (the quality bar's fuzzing row), and the sanitizer builds.
 
@@ -489,8 +507,7 @@ the engine's English sentences, as the engine defines them.
 - Rich renderers: `ts_intl_render` hands back the plain text; the parts
   (text and markup) wait for a serialisation the bindings agree on.
 - The two bindings' packaging: the loader with the `buildinfo`
-  handshake, the prebuilt libraries per platform, and the parity gate
-  that runs one scenario through both and compares the answers.
+  handshake and the prebuilt libraries per platform.
 - The wasm and Python bindings, from the same description.
 - A host-language provider is bound through the port's vtable with the
   same contract as a native one (callable from any thread); the bindings
