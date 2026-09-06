@@ -34,6 +34,7 @@ mod accuracy;
 mod calendars;
 mod catalogue;
 mod generated;
+mod intl;
 mod time;
 
 use std::env;
@@ -57,6 +58,7 @@ fn main() {
         Some("check-calendars") => calendars::check(&repo_root()),
         Some("check-time") => time::check_generated(&repo_root()),
         Some("check-accuracy") => accuracy::check_generated(&repo_root()),
+        Some("check-intl") => intl::check_generated(&repo_root()),
         Some("accuracy") => accuracy::generate(&repo_root()),
         Some("calendars") => match args.get(1).map(String::as_str) {
             Some("bs-fit") => calendars::bs_fit(&repo_root(), args.iter().any(|a| a == "--detail")),
@@ -66,6 +68,7 @@ fn main() {
             Some("catalogue") => catalogue::generate(&repo_root()),
             Some("calendars") => calendars::generate(&repo_root()),
             Some("time") => time::generate(&repo_root()),
+            Some("intl") => intl::generate(&repo_root()),
             _ => usage(),
         },
         _ => usage(),
@@ -75,7 +78,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl>"
     );
     2
 }

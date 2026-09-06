@@ -1,8 +1,10 @@
 # Adding a language
 
-Status: `draft`, revised 2026-09-05 after spike 4, whose CLI
-(`spikes/04-teistro-intl/`) is the model for `validate`, `build`, `gen`
-and `render`; becomes a worked example when the Phase 1 CLI exists.
+Status: `draft`, revised 2026-09-06 when the `teistro-intl` command line
+was built (`crates/intl`, `cargo run -p teistro-intl -- <command>`):
+`extract`, `validate`, `build`, `gen` and `render` below run today;
+`report` writes sizes and coverage; the runtime `loadPack` and
+`overrides` calls and the coverage-in-docs step come with the bindings.
 
 ## For a consumer (no SDK changes)
 

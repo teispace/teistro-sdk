@@ -1,0 +1,17 @@
+{
+  "appName": "टेइस्ट्रो",
+  "welcome": "{sdk.reason.appName :msg}मा स्वागत छ",
+  "grahaInBhava": ".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava 1 {{{$graha} पहिलो भावमा}} 2 {{{$graha} दोस्रो भावमा}} 3 {{{$graha} तेस्रो भावमा}} 4 {{{$graha} चौथो भावमा}} * {{{$graha} {$bhava}औं भावमा}}",
+  "grahaInRashi": "{$graha :entity kind=graha} {$rashi :entity kind=rashi}मा",
+  "grahaAt": "{$graha :entity kind=graha} {$longitude :zodiac form=degree-in-sign}मा",
+  "exactLongitude": "{$longitude :dms precision=sec}",
+  "conjunction": ".input {$count :integer} .input {$graha :entity kind=graha form=prose} .match $count 0 {{{$graha}सँग कुनै ग्रह छैन}} one {{{$graha}सँग एक ग्रह छ}} * {{{$graha}सँग {$count} ग्रह छन्}}",
+  "rashiNature": ".input {$rashi :entity kind=rashi} .match $rashi m {{{$rashi} पुरुष राशि हो}} f {{{$rashi} स्त्री राशि हो}} * {{{$rashi} राशि हो}}",
+  "greeting": ".input {$gender :string} .match $gender f {{प्रिय {$name} ज्यू, तपाईंकी कुण्डली तयार छ।}} * {{प्रिय {$name} ज्यू, तपाईंको कुण्डली तयार छ।}}",
+  "lordship": "{#b}{$graha :entity kind=graha}{/b} {$bhava :integer} भावको स्वामी हो",
+  "occupants": "{$rashi :entity kind=rashi}मा {$grahas :list type=and}",
+  "strength": {
+    "score": "{$graha :entity kind=graha}ले {$score :number minimumFractionDigits=2} रूपा पाउँछ",
+    "rank": ".input {$rank :integer select=ordinal} .match $rank 1 {{{$rank}लो}} 2 {{{$rank}रो}} 3 {{{$rank}रो}} 4 {{{$rank}थो}} * {{{$rank}औं}}"
+  }
+}

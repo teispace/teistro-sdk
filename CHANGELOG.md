@@ -66,7 +66,13 @@ classical crate to `astro::sky` unchanged. A composite quantity's two
 bodies (the tithi, the yoga, an aspect) and a visibility reading's body
 and Sun are now read in one position request: no instant moves, and the
 tithi search costs 45 % less measured against its previous form in the
-same run. Nothing else computes yet.
+same run. Teistro Intl computes for the first time (`teistro-intl`): the
+stable `MessageFormat 2` grammar with the SDK's functions, validation
+with the catalogue as the authority for entity keys, `.tpack` packs and
+`.tbundle` locale bundles, typed accessors for TypeScript, Dart and Rust,
+and the `teistro-intl` command line; the SDK's `i18n/` ships `en-Latn`
+and `ne-Deva-NP` with the entity records of the grahas, the signs, the
+nakshatras and the Lagna. No number moves. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
