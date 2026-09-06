@@ -14,6 +14,32 @@ header asserts the sizes the library was built with on 64-bit targets.
 
 Never edit the header: change the Rust source and regenerate.
 
+## Installing it
+
+A release attaches one bundle per platform,
+`teistro-c-<version>-<platform>.tar.gz`:
+
+```
+teistro-c-0.1.0-linux-x64/
+  include/teistro.h
+  lib/libteistro_ffi.so        # and libteistro_ffi.a
+  LICENSE  NOTICE  README.md
+```
+
+```sh
+cc -std=c11 -Iteistro-c-0.1.0-linux-x64/include app.c \
+   teistro-c-0.1.0-linux-x64/lib/libteistro_ffi.a -o app
+```
+
+or against the shared library with `-L .../lib -lteistro_ffi`. Both are
+compiled and run by `cargo xtask check-package` on every platform before
+a release is published, out of the unpacked bundle and against this same
+smoke test.
+
+Every archive's SHA-256 is in `checksums.txt` on the release, in the
+format `sha256sum -c` reads, and `manifest.json` carries the digest of
+each library uncompressed.
+
 ## The test
 
 `tests/smoke.c` is a consumer that uses nothing but this header and the

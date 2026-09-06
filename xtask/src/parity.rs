@@ -150,7 +150,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         }
         let built = root
             .join("target/release")
-            .join(super::node_binding::ADDON_ARTEFACT);
+            .join(super::node_binding::addon_artefact());
         if std::fs::copy(&built, root.join(super::node_binding::ADDON)).is_err() {
             println!("FAIL  the Node addon could not be copied into the package");
             return 1;

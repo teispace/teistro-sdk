@@ -22,6 +22,20 @@
 //!   library, the package analysed and formatted.
 //! - `check-parity`: one scenario through both bindings, and the two
 //!   reports compared value by value.
+//! - `check-tag TAG`: the tag a release is cut from is the version the
+//!   repository carries.
+//! - `check-package`: the artefacts installed into throwaway projects and
+//!   a consumer run against each, which is the only thing that tests the
+//!   packages rather than the code in them.
+//! - `package [TARGET]` and `package stage`: what a platform ships, built
+//!   and staged, and the merge that turns the matrix's manifests into the
+//!   packages a release publishes (`--partial` stages what one machine
+//!   built, for trying it out).
+//! - `check-versions`, `version` and `version X`: one version across the
+//!   workspace, both package manifests and the API description; the
+//!   command prints it, and with an argument moves it.
+//! - `changelog-entry X`: the changelog's entry for a version, which is a
+//!   release's notes.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -55,6 +69,7 @@ mod binding;
 mod c_binding;
 mod calendars;
 mod catalogue;
+mod consumer;
 mod dart_binding;
 mod ffi;
 mod generated;
@@ -62,7 +77,10 @@ mod hashes;
 mod intl;
 mod lints;
 mod node_binding;
+mod package;
 mod parity;
+mod platform;
+mod release;
 mod time;
 
 use std::env;
@@ -93,6 +111,28 @@ fn main() {
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
         Some("check-lints") => lints::check(&repo_root()),
+        Some("check-versions") => release::check(&repo_root()),
+        Some("check-package") => consumer::check(&repo_root()),
+        Some("check-tag") => match args.as_slice() {
+            [_, tag] => release::check_tag(&repo_root(), tag),
+            _ => usage(),
+        },
+        Some("package") => match args.get(1).map(String::as_str) {
+            Some("stage") => package::stage(&repo_root(), args.iter().any(|a| a == "--partial")),
+            target => package::build(&repo_root(), target),
+        },
+        Some("version") => match args.as_slice() {
+            [_] => {
+                println!("{}", release::version(&repo_root()));
+                0
+            }
+            [_, wanted] => release::set(&repo_root(), wanted),
+            _ => usage(),
+        },
+        Some("changelog-entry") => match args.as_slice() {
+            [_, wanted] => release::changelog_entry(&repo_root(), wanted),
+            _ => usage(),
+        },
         Some("hashes") => hashes::report(args.get(1).map(Path::new)),
         Some("compare-hashes") => match args.as_slice() {
             [_, left, right] => hashes::compare(Path::new(left), Path::new(right)),
@@ -118,7 +158,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-versions | check-package | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

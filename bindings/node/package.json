@@ -37,9 +37,17 @@
   },
   "files": [
     "lib/",
-    "native/index.node"
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
     "test": "node --test test/"
+  },
+  "optionalDependencies": {
+    "@teistro/sdk-linux-x64": "0.0.0",
+    "@teistro/sdk-linux-arm64": "0.0.0",
+    "@teistro/sdk-darwin-arm64": "0.0.0",
+    "@teistro/sdk-darwin-x64": "0.0.0",
+    "@teistro/sdk-win32-x64": "0.0.0"
   }
 }

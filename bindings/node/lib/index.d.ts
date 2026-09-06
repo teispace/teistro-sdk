@@ -312,6 +312,17 @@ export interface BuildInfo {
 export declare const buildInfo: BuildInfo;
 
 /**
+ * The npm package that carries this host's prebuilt addon, as
+ * `@teistro/sdk-<platform>-<arch>` in Node's own words for the host.
+ *
+ * A release publishes one such package per platform and this package
+ * depends on all of them optionally, so npm installs the matching one.
+ * It is exported because the name is what an install failure has to name,
+ * and a deployment script may want to fetch it itself.
+ */
+export declare function platformPackage(): string;
+
+/**
  * Why a build may not be loaded, or `null` when it may. The loader calls
  * it; a test or a packaging check may call it with a build of its own.
  *

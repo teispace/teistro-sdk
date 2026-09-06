@@ -6,6 +6,12 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use crate::platform::Platform;
+
+/// The crate that builds the SDK's shared library, as Cargo names its
+/// artefacts.
+pub(crate) const LIBRARY_STEM: &str = "teistro_ffi";
+
 /// Cargo, as the environment names it.
 pub(crate) fn cargo() -> String {
     std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"))
@@ -33,14 +39,8 @@ pub(crate) fn step(command: &mut Command, passed: &str, failed: &str) -> Result<
 }
 
 /// The file name this platform gives the SDK's shared library.
-pub(crate) fn library_artefact() -> &'static str {
-    if cfg!(target_os = "macos") {
-        "libteistro_ffi.dylib"
-    } else if cfg!(target_os = "windows") {
-        "teistro_ffi.dll"
-    } else {
-        "libteistro_ffi.so"
-    }
+pub(crate) fn library_artefact() -> String {
+    Platform::host().shared(LIBRARY_STEM)
 }
 
 /// Builds a crate in release, quietly.

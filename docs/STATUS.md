@@ -15,16 +15,23 @@ needs them, and eclipses to v1.x. Phase 1, Foundation, remains open:
 `core`, the ports, `time`, `calendar`, the test provider, the Teimeris
 adapter, the conformance kit, the `intl` engine and CLI, and the `ffi`
 crate with the API description and the C header (its first generator)
-exist; the Node and Dart generators and bindings with the parity gate,
-the test-only infrastructure, the cross-architecture hash matrix, the
-conformance repository and the docs site are not built
-(`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
+exist, as do the Node and Dart generators and bindings with the parity
+gate, the determinism lints and the counting allocator, the
+cross-architecture hash matrix, and the packaging with its release matrix;
+the instruction-count benchmarks, the conformance repository and the docs
+site are not built (`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
 made, four spikes measured, repository live).
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-06, end of the thirty-fourth session (an
+**Last updated:** 2026-09-06, end of the thirty-sixth session (the
+packaging and the release matrix: one version across the repository, five
+platforms built into four packages, and every one of them installed into
+a throwaway project and run before it can be published); before that the
+thirty-fifth session (the Dart binding, the parity gate, the typed intl
+accessors in both bindings, the hash matrix's first run, the determinism
+lints and the counting allocator); before that the thirty-fourth session (an
 ephemeris written in JavaScript answers the SDK through the port's
 vtable, refuses a frame so the astronomy layer completes it, and reports
 its failures in its own words); before that the thirty-third session (the Node
@@ -94,10 +101,11 @@ provider's DUT1).
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
 3. The next task is the maintainer's choice between Phase 1's remaining
-   deliverables (the bindings' packaging beyond the build handshake, the
-   instruction-count benchmarks, the conformance repository, the docs
-   site) and the astronomy follow-ups under "Now"; Phase 3, the built-in
-   ephemeris, may run beside Phase 4 per the roadmap. The `intl` crate
+   deliverables (the instruction-count benchmarks, the conformance
+   repository, the docs site) and the astronomy follow-ups under "Now";
+   Phase 3, the built-in ephemeris, may run beside Phase 4 per the
+   roadmap. The conformance repository is the maintainer's to create
+   (ADR-0022). The `intl` crate
    and its CLI, `ffi` with the API description and the generators, and
    the Node and Dart bindings with the parity gate are built. `crates/core`, `crates/port-ephemeris`,
    `crates/astro`, `crates/ephemeris-kit`, `crates/siddhanta`,
@@ -570,9 +578,19 @@ binding (ADR-0023).
   is closed (thirty-fifth session: the six fixed upstream, the fixtures
   re-recorded under the engine's corrected profile, every bound
   tightened; `05-testing/02-engine-findings.md`).
-  Next in it: the bindings' packaging beyond the handshake (prebuilds per
-  platform, manifests, publishing), which waits on the release matrix;
-  then the
+  The packaging and the release matrix followed (thirty-sixth session:
+  one version in `[workspace.package]` held across both package manifests,
+  the five platform packages and the API description by `check-versions`
+  and moved by `cargo xtask version`; `cargo xtask package` building what
+  a platform ships and `package stage` merging the five into the two
+  packages published once; `check-package` installing all of it into
+  throwaway projects and running a consumer against each; the Node loader
+  finding its addon in the platform package npm chose and the Dart
+  package fetching and checking its library through `dart run
+  teistro:install`; the `verify` and `release` workflows;
+  `06-cicd/01-pipelines.md`, `02-build-matrix.md`,
+  `03-release-process.md`).
+  Next in it: the
   test-only infrastructure beyond the determinism lints and the counting
   allocator (instruction-count benchmarks, which need Linux), the
   conformance repository (ADR-0022), the docs site. The
@@ -593,13 +611,16 @@ binding (ADR-0023).
    planetary hours exposed through the chart layer when it exists.
 2. The bindings' remaining work. Built: the Dart binding from the same
    description with its own provider and finaliser, the typed intl
-   accessors in both, the build handshake, and the parity gate over 103
-   values. Left: packaging beyond the handshake (prebuilt libraries per
-   platform, the manifests, publishing), which waits on the release
-   matrix; rich renderers per binding, which wait on a serialisation of
-   a rendered message's parts that both bindings can read; the wasm and
-   Python bindings from the same description. Q34, the default profile,
-   awaits the maintainer.
+   accessors in both, the build handshake, the parity gate over 103
+   values, and the packaging — five platforms, four packages, one
+   version, each installed into a throwaway project and run by
+   `check-package` before it can be published. Left: rich renderers per
+   binding, which wait on a serialisation of a rendered message's parts
+   that both bindings can read; a musl row in the platform table; a
+   Flutter plugin that carries the library into an Android or iOS build,
+   which belongs with the mobile targets; the wasm and Python bindings
+   from the same description. Q34, the default profile, awaits the
+   maintainer.
 3. Spike 3's remaining consequences: the kit's corpus checks (positions
    against fixtures per tier) and the `sdk-only` cross-provider
    byte-identity check; the Teimeris adapter as the Teimeris package's

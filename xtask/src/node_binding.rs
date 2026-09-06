@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::binding::{blob_fixtures, build, present, step};
+use crate::platform::Platform;
 
 const FIXTURES: &str = "target/tsrb";
 const TESTS: &str = "bindings/node/test/";
@@ -20,19 +21,18 @@ const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
 /// the cdylib Cargo builds is copied there.
 pub(crate) const ADDON: &str = "bindings/node/native/index.node";
 
+/// The crate that builds the addon, as Cargo names its artefacts.
+pub(crate) const ADDON_STEM: &str = "teistro_node";
+
 /// The name Cargo gives the addon on this platform.
-pub(crate) const ADDON_ARTEFACT: &str = if cfg!(target_os = "macos") {
-    "libteistro_node.dylib"
-} else if cfg!(target_os = "windows") {
-    "teistro_node.dll"
-} else {
-    "libteistro_node.so"
-};
+pub(crate) fn addon_artefact() -> String {
+    Platform::host().shared(ADDON_STEM)
+}
 
 /// Builds the addon and puts it where the loader looks.
 fn build_addon(root: &Path) -> Result<(), ()> {
     build(root, "teistro-node", "the Node addon")?;
-    let built = root.join("target/release").join(ADDON_ARTEFACT);
+    let built = root.join("target/release").join(addon_artefact());
     let addon = root.join(ADDON);
     std::fs::copy(&built, &addon).map(|_| ()).map_err(|e| {
         println!(
