@@ -139,52 +139,72 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. Phase 1 has no deliverables left; its exit review is the next task,
-   and after it the maintainer's choice among the astronomy follow-ups
-   under "Now",
-   Phase 3, the built-in ephemeris, may run beside Phase 4 per the
-   roadmap. The conformance repository is the maintainer's to create
-   (ADR-0022). The `intl` crate
-   and its CLI, `ffi` with the API description and the generators, and
-   the Node and Dart bindings with the parity gate are built. `crates/core`, `crates/port-ephemeris`,
-   `crates/astro`, `crates/ephemeris-kit`, `crates/siddhanta`,
-   `crates/calendar` (with the Bikram Sambat engine and the drik model),
-   `crates/time` and `crates/port-timezone` exist; `cargo xtask
-   check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`
-   (the accuracy document, `05-testing/ACCURACY.md`), `check-intl`,
-   `check-ffi` and `check-lints` (the determinism rules) are gates on
-   every push, and `check-c`, `check-node`, `check-dart` and
-   `check-parity` are the bindings' own, run by hand and in the nightly
-   matrix; `cargo xtask hashes` and `compare-hashes` are the determinism
-   matrix's; the
-   conformance kit runs in `cargo test -p teistro-ephemeris-kit`;
-   `cargo xtask calendars bs-fit` (and `--detail`) is the measurement
-   behind the shipped Bikram Sambat rule (`docs/calendars/bikram-sambat.md`);
-   `gen time` rebuilds the Delta T tables (`crates/astro/data/`) and the
-   leap seconds (`crates/time/data/`). The adapters under `adapters/`
-   are outside the workspace and need the engines locally
-   (`TEIMERIS_LIB_DIR`, `SWEPH_SRC_DIR`, and `TEIMERIS_PROFILE=max` for
-   the engine's corrected astronomy, which is what the recorded tables
-   are taken under; `adapters/README.md`): their
-   kit binaries, the Teimeris `bs-fit` binary (the drik comparison) and
-   the Teimeris fixture test (the solver against the 55 charts) are run
-   by hand.
-   Spike 1 is done: its fixtures are in
-   `fixtures/baseline/` (a submodule of `teispace/teistro-conformance`;
-   read its README before touching them;
-   `cargo xtask check-fixtures` is their gate); the export script lives
-   inside the baseline engine's own repository, in that repository's
-   language, uncommitted there unless the maintainer asks, and is run
-   again only for a deliberate corpus version bump. Spike 2 is done: the
-   toolchain is option A (ADR-0007) and `spikes/02-binding-toolchain/`
-   holds the model for the Phase 1 extractor and generators. Spike 3 is
-   done: `spikes/03-ephemeris-port/port` is the model for the Phase 1
-   `ephemeris` module and its kit; the two adapters there are standalone
-   crates outside the workspace (ADR-0019) and need the engines locally
-   (`TEIMERIS_LIB_DIR`, `SWEPH_SRC_DIR`; see the spike's README). Spike 4
-   is done: `spikes/04-teistro-intl/intl` is the model for the Phase 1
-   `intl` crate and the `teistro-intl` CLI; its harnesses need Node with
-   `npm install` and Dart with `dart pub get` (see the spike's README).
+3. **The next task is `docs/03-design/panchanga-day.md`**, then the
+   `panchanga` module. Phases 1 and 2 are closed; Phase 4 is open and
+   under way, and Phase 3 may run beside it. The evidence for doing the
+   page first: each of the four modules of `crates/chart` was designed
+   before it was written, and building each one corrected something —
+   two entries of the deliberate-difference registry, one wrong section
+   of a design page and one wrong setting in a shipped profile.
+
+   `panchanga_day` is the corpus's largest unread section: every tithi,
+   nakshatra, yoga and karana with its start and end instants, the
+   inauspicious periods, the choghadiya and hora sequences, Abhijit and
+   Brahma muhurta, the lunar month under both conventions, panchaka,
+   moonrise and moonset. `crates/chart` is what it builds on and
+   `astro::events` is where the boundary instants come from.
+
+4. What is built, and what runs it:
+
+   | crate | what it is |
+   |---|---|
+   | `core` | settings and profiles, the catalogue, the exact angle, the envelope |
+   | `port-ephemeris` | the provider port, the test provider, the vtable |
+   | `astro` | the ERFA ports, precession, the ayanamsha catalogue, 22 house systems, rise and set, crossings, the phenomena, the star table |
+   | `siddhanta` | the Surya Siddhanta as a provider |
+   | `time`, `port-timezone` | the scales, Delta T, the zones, the ghati and the hora, the local day |
+   | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat, the drik and classical solar models |
+   | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
+   | `intl` | the locale engine, the CLI, the packs |
+   | `idl`, `ffi` | the API description and the one C ABI |
+   | `ephemeris-kit` | the provider conformance kit |
+   | `scenario` | the fixed scenario the hash matrix and the benchmarks share |
+   | `test-allocator` | the counting allocator |
+
+   Gates on every push (`fast-check`): `check-docs`, `check-fixtures`,
+   `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
+   `check-intl`, `check-ffi`, `check-chalit`, `check-lints`,
+   `check-versions`. Needing another toolchain, run by hand and in
+   `verify`: `check-c`, `check-node`, `check-dart`, `check-parity`,
+   `check-package`, `check-site`. Also: `cargo xtask hashes` and
+   `compare-hashes` (the determinism matrix), `bench` and `compare-bench`
+   (instruction counts, Linux), `package` and `package stage` (what a
+   release ships), `version X` (the one version), `chalit` (the bhava
+   falsification page), `accuracy`, `calendars bs-fit`, `gen ffi|intl|
+   catalogue|calendars|time`.
+
+   The corpus is a **submodule** at `fixtures/`
+   (`teispace/teistro-conformance`, pinned to `v0.1.1`): clone with
+   `--recurse-submodules`, or `git submodule update --init`.
+   `check-fixtures` refuses a checkout without it.
+
+   The adapters under `adapters/` are outside the workspace and need the
+   engines locally (`TEIMERIS_LIB_DIR`, `SWEPH_SRC_DIR`, and
+   `TEIMERIS_PROFILE=max`, which is what the recorded tables are taken
+   under; `adapters/README.md`).
+
+5. Deferred by the maintainer to the very end: the npm organisation, the
+   pub.dev account and the publishing credential. Nothing needs them
+   before a release, and all three names were free on 2026-09-07.
+   GitHub Pages is enabled with Actions as its source, so `docs`
+   publishes on a tag.
+
+6. The spikes are all done and their results are in the pages they
+   inform: spike 1 in `05-testing/01-golden-vectors.md`, spike 2 as
+   ADR-0007 (`spikes/02-binding-toolchain/`), spike 3 in
+   `03-design/ephemeris-port-and-adapters.md`
+   (`spikes/03-ephemeris-port/`), spike 4 in
+   `03-design/intl-engine-and-packs.md` (`spikes/04-teistro-intl/`).
 
 ## Done
 
@@ -602,10 +622,17 @@ daylight rather than sunset to sunrise, up to 1.80 minutes out (entry 15);
 and the engine applies the nutated ayanamsha, 18.46 arcseconds from the
 mean one and 0.0086 from the true, so `conformance-baseline` sets
 `ayanamsha_basis = TRUE` (entry 16). `ChartFoundation` and `Founder`
-assemble them into the value every module above a chart starts from. The birth timing is a field
-and the value comes back stamped, so the foundation is complete; the
-panchanga day's own design page and module are next, and are what the
-corpus's largest unread section is waiting for.
+assemble them into the value every module above a chart starts from, with
+the birth timing as a field and the whole stamped in an `Envelope`, so
+the foundation is complete (`crates/chart`, 37 tests).
+
+**The next task is `03-design/panchanga-day.md`, then the `panchanga`
+module.** `panchanga_day` is the corpus's largest unread section — every
+tithi, nakshatra, yoga and karana with its start and end instants, the
+inauspicious periods, the choghadiya and hora sequences, Abhijit and
+Brahma muhurta, the lunar month under both conventions, panchaka,
+moonrise and moonset. It builds on `crates/chart` and takes its boundary
+instants from `astro::events`.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,
