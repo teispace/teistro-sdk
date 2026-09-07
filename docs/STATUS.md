@@ -39,9 +39,11 @@ Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
 **Last updated:** 2026-09-07, end of the forty-second session (Phase 4
-opened with the bhava chalit falsification pass the roadmap asks for
-first: the four methods measured against each other over the 55 recorded
-charts, and the answer that they are not variants of one thing); before
+opened: the bhava chalit falsification pass the roadmap asks for first —
+the four methods measured against each other over the 55 recorded charts,
+and the answer that they are not variants of one thing — and the chart
+foundation's design page, whose crux is that the day a chart belongs to
+is not its civil date); before
 that the forty-first session (Phase 1
 closed and its "Now" rewritten for the two phases that follow; GitHub
 Pages enabled, the registries deferred to the release; Q34
@@ -582,8 +584,9 @@ is done (`03-design/chart-bhava-chalit.md`, by `cargo xtask chalit`, held
 by `check-chalit`): the four are not variants of one thing, so a house
 carries the method that produced it as a position carries its frame, and
 the house service returns the madhya as well as the sandhi. There is
-still no design page for the chart foundation or the panchanga day, and
-this project writes the page first.
+foundation's design page is written
+(`03-design/chart-foundation.md`), which leaves the panchanga day's, and
+then the `chart` crate itself.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

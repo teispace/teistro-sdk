@@ -187,6 +187,35 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The chart foundation's design page
+  (`03-design/chart-foundation.md`), Phase 4's first. It settles what
+  every module above the chart starts from, and three things in it are
+  not obvious.
+
+  **The day a chart belongs to is not its civil date.** A panchanga day
+  runs sunrise to sunrise, so an instant before the civil date's sunrise
+  belongs to the day that began the morning before — and with it the
+  vara, the hora sequence, the ishtakaal and the lagna's anchor all move
+  back a day. `c001` was recorded to prove exactly this: a birth at 05:30
+  in Kathmandu where sunrise is 05:30:44. An implementation that looks up
+  the civil date's sunrise is wrong by a day for every instant between
+  midnight and sunrise. `time::local_day` answers "what is the arc of
+  this date"; the foundation needs the inverse and carries a `DayArc`
+  with two parts, not three: "pre-sunrise" is the previous day's night
+  and calling it that stops the question being asked once per module.
+
+  **A house placement is not a number.** It carries the chalit that
+  produced it, how far through its bhava the graha is, and how far from
+  the madhya — because the falsification pass measured the four methods
+  disagreeing on 10% to 51% of placements, and because
+  `astro::houses::Houses` has no notion of a madhya at all, which is what
+  bhava bala is built on.
+
+  **The foundation holds what is needed to compute, never what is
+  computed.** The corpus's own `foundation` carries the arudha and
+  navamsha lagnas; the SDK's does not, because both depend on modules
+  that depend on the foundation, and the usual way that circle gets
+  broken is a second evaluator of the same rule.
 - The bhava chalit falsification pass, which the roadmap asks for before
   the chart layer is written. `cargo xtask chalit` computes each of the
   four named methods with the SDK's own house systems over the 55
