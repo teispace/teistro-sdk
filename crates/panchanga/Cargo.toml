@@ -1,0 +1,26 @@
+[package]
+name = "teistro-panchanga"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's daily panchanga: the almanac of one day at one place, with every limb as a span and every period as a division of an arc"
+readme = "README.md"
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[dependencies]
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-chart = { path = "../chart" }
+teistro-core = { path = "../core" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-time = { path = "../time" }
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

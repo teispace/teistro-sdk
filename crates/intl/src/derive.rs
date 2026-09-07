@@ -236,7 +236,7 @@ mod tests {
         let derived = derive(&tree(), "sa-Deva", "sa-Latn", &BTreeMap::new())
             .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.files.len(), 2);
-        assert_eq!(derived.entities, 274);
+        assert_eq!(derived.entities, 294);
         assert!(derived.stale.is_empty());
 
         let entities = &derived.files[1].1;
@@ -251,7 +251,7 @@ mod tests {
         assert!(meta.contains("\"numberingSystem\": \"latn\""));
         assert!(meta.contains("tathā"), "the list pattern is transliterated");
         assert_eq!(
-            derived.agreeing, 241,
+            derived.agreeing, 261,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

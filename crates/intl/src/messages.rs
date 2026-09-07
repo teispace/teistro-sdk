@@ -784,6 +784,10 @@ pub mod sdk {
         pub mod chara_karaka {
         }
 
+        /// The `choghadiya` group.
+        pub mod choghadiya {
+        }
+
         /// The `deity` group.
         pub mod deity {
         }
@@ -804,8 +808,16 @@ pub mod sdk {
         pub mod graha {
         }
 
+        /// The `kaala` group.
+        pub mod kaala {
+        }
+
         /// The `karana` group.
         pub mod karana {
+        }
+
+        /// The `muhurta_yoga` group.
+        pub mod muhurta_yoga {
         }
 
         /// The `nadi` group.
@@ -818,6 +830,10 @@ pub mod sdk {
 
         /// The `paksha` group.
         pub mod paksha {
+        }
+
+        /// The `panchaka` group.
+        pub mod panchaka {
         }
 
         /// The `point` group.

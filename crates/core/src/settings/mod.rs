@@ -33,9 +33,9 @@ use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
     AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, NakshatraScheme, Node, NodeAspects,
-    NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, SeedOverflow, Sunrise,
-    Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents, NakshatraScheme, Node,
+    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
+    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -205,6 +205,25 @@ group!(
 );
 
 group!(
+    /// The daily panchanga.
+    ///
+    /// Three knobs, each one a difference the conformance corpus
+    /// measured (`03-design/panchanga-day.md` §2). The window the day's
+    /// limbs run over is `day.day_boundary`, and the arcs its periods
+    /// divide are the `day.sunrise` ones, so neither is repeated here.
+    Panchanga, PanchangaPatch {
+        /// Which centre the day's limbs are computed from. An almanac is
+        /// geocentric wherever the chart is: the lunar parallax reaches a
+        /// degree, which is two hours of tithi boundary.
+        centre: Centre,
+        /// Which window the Moon's rise and set are found in.
+        moon_events: MoonEvents,
+        /// The muhurta yoga tables' key, as `aspect.drishti_table` is.
+        muhurta_tables: String,
+    }
+);
+
+group!(
     /// Time resolution.
     Time, TimePatch {
         /// A civil time in a DST gap.
@@ -320,6 +339,8 @@ pub struct Settings {
     pub houses: Houses,
     /// The local day.
     pub day: Day,
+    /// The daily panchanga.
+    pub panchanga: Panchanga,
     /// Time resolution.
     pub time: Time,
     /// Dashas.
@@ -352,6 +373,8 @@ pub struct SettingsPatch {
     pub houses: HousesPatch,
     /// The local day.
     pub day: DayPatch,
+    /// The daily panchanga.
+    pub panchanga: PanchangaPatch,
     /// Time resolution.
     pub time: TimePatch,
     /// Dashas.
@@ -401,6 +424,7 @@ impl Settings {
         self.frame.apply(&patch.frame);
         self.houses.apply(&patch.houses);
         self.day.apply(&patch.day);
+        self.panchanga.apply(&patch.panchanga);
         self.time.apply(&patch.time);
         self.dasha.apply(&patch.dasha);
         self.jaimini.apply(&patch.jaimini);

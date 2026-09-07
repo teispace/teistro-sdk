@@ -225,8 +225,26 @@ pub fn quantity_rate_deg_per_day(quantity: Quantity) -> f64 {
     }
 }
 
-/// The quantity at an instant from a source of longitudes: an angle reduced
-/// to `[0, 360)`, or a rate in degrees a day.
+/// The quantity at an instant from a source of longitudes: an angle
+/// reduced to `[0, 360)`, or a rate in degrees a day.
+///
+/// Public because a caller that has already searched a lattice often has
+/// to name what lies *between* two boundaries — which tithi runs between
+/// two tithi boundaries — and reading the quantity there is how it does
+/// so, with the same evaluation the search used.
+///
+/// # Errors
+///
+/// The source's own refusal for the instant or the bodies.
+pub fn value_of<S: Longitudes + ?Sized>(
+    quantity: Quantity,
+    source: &S,
+    ut1: JulianDay<Ut1>,
+) -> Result<f64, Error> {
+    evaluate(quantity, source, ut1)
+}
+
+/// The quantity at an instant, as the search reads it.
 fn evaluate<S: Longitudes + ?Sized>(
     quantity: Quantity,
     source: &S,

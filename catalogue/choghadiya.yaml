@@ -1,0 +1,62 @@
+kind: choghadiya
+number: 58
+version: 1
+doc: "The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it."
+attributes: { lord: key:graha, auspicious: bool }
+members:
+  - key: UDVEG
+    id: 0
+    doc: "Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with"
+    attributes: { lord: SUN, auspicious: false }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.day_choghadiya, measured over 880 eighths"
+    mark: V
+  - key: CHAR
+    id: 1
+    doc: "Char, Venus's: movable, and so suited to travel"
+    attributes: { lord: VENUS, auspicious: true }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.day_choghadiya, measured over 880 eighths"
+    mark: V
+  - key: LAABH
+    id: 2
+    doc: "Laabh, Mercury's: gain"
+    attributes: { lord: MERCURY, auspicious: true }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.day_choghadiya, measured over 880 eighths"
+    mark: V
+  - key: AMRIT
+    id: 3
+    doc: "Amrit, the Moon's: nectar, the most auspicious"
+    attributes: { lord: MOON, auspicious: true }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.day_choghadiya, measured over 880 eighths"
+    mark: V
+  - key: KAAL
+    id: 4
+    doc: "Kaal, Saturn's: loss"
+    attributes: { lord: SATURN, auspicious: false }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.day_choghadiya, measured over 880 eighths"
+    mark: V
+  - key: SHUBHA
+    id: 5
+    doc: "Shubha, Jupiter's: auspicious"
+    attributes: { lord: JUPITER, auspicious: true }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.day_choghadiya, measured over 880 eighths"
+    mark: V
+  - key: ROG
+    id: 6
+    doc: "Rog, Mars's: illness"
+    attributes: { lord: MARS, auspicious: false }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.day_choghadiya, measured over 880 eighths"
+    mark: V

@@ -101,6 +101,15 @@ export function messages(r) {
           PITRIKARAKA: () => r.entity('chara_karaka.PITRIKARAKA'),
           PUTRAKARAKA: () => r.entity('chara_karaka.PUTRAKARAKA'),
         },
+        choghadiya: {
+          AMRIT: () => r.entity('choghadiya.AMRIT'),
+          CHAR: () => r.entity('choghadiya.CHAR'),
+          KAAL: () => r.entity('choghadiya.KAAL'),
+          LAABH: () => r.entity('choghadiya.LAABH'),
+          ROG: () => r.entity('choghadiya.ROG'),
+          SHUBHA: () => r.entity('choghadiya.SHUBHA'),
+          UDVEG: () => r.entity('choghadiya.UDVEG'),
+        },
         deity: {
           ADITI: () => r.entity('deity.ADITI'),
           AGNI: () => r.entity('deity.AGNI'),
@@ -170,6 +179,11 @@ export function messages(r) {
           SUN: () => r.entity('graha.SUN'),
           VENUS: () => r.entity('graha.VENUS'),
         },
+        kaala: {
+          GULIKA_KAALA: () => r.entity('kaala.GULIKA_KAALA'),
+          RAHU_KAALA: () => r.entity('kaala.RAHU_KAALA'),
+          YAMAGHANDA: () => r.entity('kaala.YAMAGHANDA'),
+        },
         karana: {
           BALAVA: () => r.entity('karana.BALAVA'),
           BAVA: () => r.entity('karana.BAVA'),
@@ -182,6 +196,13 @@ export function messages(r) {
           TAITILA: () => r.entity('karana.TAITILA'),
           VANIJA: () => r.entity('karana.VANIJA'),
           VISHTI: () => r.entity('karana.VISHTI'),
+        },
+        muhurta_yoga: {
+          AMRIT_SIDDHI: () => r.entity('muhurta_yoga.AMRIT_SIDDHI'),
+          DWIPUSHKAR: () => r.entity('muhurta_yoga.DWIPUSHKAR'),
+          SARVARTHA_SIDDHI: () => r.entity('muhurta_yoga.SARVARTHA_SIDDHI'),
+          SIDDHA: () => r.entity('muhurta_yoga.SIDDHA'),
+          TRIPUSHKAR: () => r.entity('muhurta_yoga.TRIPUSHKAR'),
         },
         nadi: {
           AADI: () => r.entity('nadi.AADI'),
@@ -220,6 +241,13 @@ export function messages(r) {
         paksha: {
           KRISHNA: () => r.entity('paksha.KRISHNA'),
           SHUKLA: () => r.entity('paksha.SHUKLA'),
+        },
+        panchaka: {
+          AGNI: () => r.entity('panchaka.AGNI'),
+          CHORA: () => r.entity('panchaka.CHORA'),
+          MRITYU: () => r.entity('panchaka.MRITYU'),
+          RAJA: () => r.entity('panchaka.RAJA'),
+          ROGA: () => r.entity('panchaka.ROGA'),
         },
         point: {
           LAGNA: () => r.entity('point.LAGNA'),

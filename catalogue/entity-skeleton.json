@@ -939,5 +939,33 @@
     "STAR": {},
     "RADIO_SOURCE": {},
     "DIRECTION": {}
+  },
+  "choghadiya": {
+    "UDVEG": {},
+    "CHAR": {},
+    "LAABH": {},
+    "AMRIT": {},
+    "KAAL": {},
+    "SHUBHA": {},
+    "ROG": {}
+  },
+  "kaala": {
+    "RAHU_KAALA": {},
+    "YAMAGHANDA": {},
+    "GULIKA_KAALA": {}
+  },
+  "panchaka": {
+    "MRITYU": {},
+    "AGNI": {},
+    "RAJA": {},
+    "CHORA": {},
+    "ROGA": {}
+  },
+  "muhurta_yoga": {
+    "AMRIT_SIDDHI": {},
+    "SARVARTHA_SIDDHI": {},
+    "SIDDHA": {},
+    "DWIPUSHKAR": {},
+    "TRIPUSHKAR": {}
   }
 }

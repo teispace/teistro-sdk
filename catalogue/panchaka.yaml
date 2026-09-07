@@ -1,0 +1,46 @@
+kind: panchaka
+number: 60
+version: 1
+doc: "The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's."
+attributes: { nakshatra: key:nakshatra }
+members:
+  - key: MRITYU
+    id: 0
+    doc: "Mrityu panchaka, the Moon in Dhanishtha"
+    attributes: { nakshatra: DHANISHTHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.panchaka, measured on all nine days that carry one"
+    mark: V
+  - key: AGNI
+    id: 1
+    doc: "Agni panchaka, the Moon in Shatabhisha"
+    attributes: { nakshatra: SHATABHISHA }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.panchaka, measured on all nine days that carry one"
+    mark: V
+  - key: RAJA
+    id: 2
+    doc: "Raja panchaka, the Moon in Purva Bhadrapada"
+    attributes: { nakshatra: PURVA_BHADRAPADA }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.panchaka, measured on all nine days that carry one"
+    mark: V
+  - key: CHORA
+    id: 3
+    doc: "Chora panchaka, the Moon in Uttara Bhadrapada"
+    attributes: { nakshatra: UTTARA_BHADRAPADA }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.panchaka, measured on all nine days that carry one"
+    mark: V
+  - key: ROGA
+    id: 4
+    doc: "Roga panchaka, the Moon in Revati"
+    attributes: { nakshatra: REVATI }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.panchaka, measured on all nine days that carry one"
+    mark: V

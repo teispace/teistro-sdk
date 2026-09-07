@@ -136,7 +136,15 @@ enum Kind {
   /// The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`).
   star(56, 'star'),
   /// What kind of object a star-table member is.
-  starClass(57, 'star_class');
+  starClass(57, 'star_class'),
+  /// The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it.
+  choghadiya(58, 'choghadiya'),
+  /// The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.
+  kaala(59, 'kaala'),
+  /// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+  panchaka(60, 'panchaka'),
+  /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+  muhurtaYoga(61, 'muhurta_yoga');
 
   const Kind(this.id, this.key);
 
@@ -3496,6 +3504,178 @@ enum StarClass {
 
   /// The member with a key, or `null` for one this build does not know.
   static StarClass? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. Members are the catalogue's ids; the full key id is `(TS_KIND_CHOGHADIYA << 16) | member`.
+enum Choghadiya {
+  /// Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with
+  udveg(0, 'UDVEG'),
+  /// Char, Venus's: movable, and so suited to travel
+  char(1, 'CHAR'),
+  /// Laabh, Mercury's: gain
+  laabh(2, 'LAABH'),
+  /// Amrit, the Moon's: nectar, the most auspicious
+  amrit(3, 'AMRIT'),
+  /// Kaal, Saturn's: loss
+  kaal(4, 'KAAL'),
+  /// Shubha, Jupiter's: auspicious
+  shubha(5, 'SHUBHA'),
+  /// Rog, Mars's: illness
+  rog(6, 'ROG'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Choghadiya(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  String get fullKey => 'choghadiya.$key';
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Choghadiya byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Choghadiya.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Choghadiya? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. Members are the catalogue's ids; the full key id is `(TS_KIND_KAALA << 16) | member`.
+enum Kaala {
+  /// Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic.
+  rahuKaala(0, 'RAHU_KAALA'),
+  /// Yamaghanda. The third eighth counted backwards from the vara, modulo seven.
+  yamaghanda(1, 'YAMAGHANDA'),
+  /// Gulika kaala. The fifth eighth counted backwards from the vara, modulo seven.
+  gulikaKaala(2, 'GULIKA_KAALA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Kaala(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  String get fullKey => 'kaala.$key';
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Kaala byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Kaala.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Kaala? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+enum Panchaka {
+  /// Mrityu panchaka, the Moon in Dhanishtha
+  mrityu(0, 'MRITYU'),
+  /// Agni panchaka, the Moon in Shatabhisha
+  agni(1, 'AGNI'),
+  /// Raja panchaka, the Moon in Purva Bhadrapada
+  raja(2, 'RAJA'),
+  /// Chora panchaka, the Moon in Uttara Bhadrapada
+  chora(3, 'CHORA'),
+  /// Roga panchaka, the Moon in Revati
+  roga(4, 'ROGA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Panchaka(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  String get fullKey => 'panchaka.$key';
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Panchaka byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Panchaka.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Panchaka? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
+enum MuhurtaYoga {
+  /// Amrit Siddhi yoga: one vara and nakshatra pair each
+  amritSiddhi(0, 'AMRIT_SIDDHI'),
+  /// Sarvartha Siddhi yoga: a set of nakshatras per vara
+  sarvarthaSiddhi(1, 'SARVARTHA_SIDDHI'),
+  /// Siddha yoga
+  siddha(2, 'SIDDHA'),
+  /// Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings
+  dwipushkar(3, 'DWIPUSHKAR'),
+  /// Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings
+  tripushkar(4, 'TRIPUSHKAR'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const MuhurtaYoga(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  String get fullKey => 'muhurta_yoga.$key';
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static MuhurtaYoga byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => MuhurtaYoga.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static MuhurtaYoga? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

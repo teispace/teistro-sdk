@@ -10,14 +10,14 @@ use crate::catalogue::{
 
 use super::knobs::{
     AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, NakshatraScheme, Node, NodeAspects,
-    NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, SeedOverflow, Sunrise,
-    Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents, NakshatraScheme, Node,
+    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
+    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
-    Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch, Siddhanta, State, Strength,
-    Time, Vargas,
+    Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch, Siddhanta, State,
+    Strength, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -125,6 +125,15 @@ pub fn root() -> Settings {
             polar_day_policy: PolarDayPolicy::Undefined,
             ghati_reckoning: GhatiReckoning::Civil,
             hora_reckoning: HoraReckoning::Proportional,
+        },
+        panchanga: Panchanga {
+            // An almanac is geocentric wherever the chart is; the daily
+            // limbs of every published panchanga are, and the corpus
+            // measures the difference at five classifications in 136
+            // (`03-design/panchanga-day.md` §10).
+            centre: Centre::Geocentric,
+            moon_events: MoonEvents::Window,
+            muhurta_tables: String::from("CLASSICAL"),
         },
         time: Time {
             dst_gap: DstGap::Error,
@@ -338,11 +347,16 @@ fn conformance_baseline() -> Profile {
     patch.time.dst_overlap = Some(DstOverlap::Earlier);
     patch.provider.overrides = Some(OverridePolicy::PreferNative);
     patch.calendars.civil_calendar = Some(Calendar::BikramSambat);
+    // The engine's daily moonrise and moonset are the first at or after
+    // local civil midnight, inside a section every other field of which
+    // is bounded by sunrise (entry 18).
+    patch.panchanga.moon_events = Some(MoonEvents::CivilDay);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
         // applies (entry 16 of the deliberate-difference registry).
-        version: 2,
+        // 3: the Moon's rise and set became the civil day's (entry 18).
+        version: 3,
         base: None,
         patch,
         sources: vec![
@@ -358,6 +372,13 @@ fn conformance_baseline() -> Profile {
                 Source::new(
                     "baseline-engine",
                     "measured: the recorded ayanamsha carries the nutation, 18.46\" against 0.0086\"",
+                ),
+            ),
+            Citation::new(
+                "panchanga.moon_events",
+                Source::new(
+                    "baseline-engine",
+                    "measured: 24 of the 108 recorded moon events fall outside the day's own window, and none before local midnight",
                 ),
             ),
         ],

@@ -10,6 +10,8 @@
 //! - [`angle`]: the canonical nanoarcsecond angle and exact
 //!   classification (ADR-0016);
 //! - [`ratio`]: exact rationals for period arithmetic;
+//! - [`interval`]: an interval of time and the equal division every
+//!   period of a day is;
 //! - [`error`] and [`envelope`]: the status codes, the error, and the
 //!   provenance every result carries (ADR-0020);
 //! - [`settings`]: the knobs, the profiles, their resolution, coherence
@@ -35,6 +37,7 @@ pub mod angle;
 pub mod catalogue;
 pub mod envelope;
 pub mod error;
+pub mod interval;
 pub mod key;
 pub mod limits;
 pub mod quantity;
@@ -47,6 +50,7 @@ pub use angle::Nas;
 pub use catalogue::{Catalogued, Kind, Mark, Source, UnknownKey};
 pub use envelope::{Envelope, Provenance};
 pub use error::{Error, Result, Status};
+pub use interval::Interval;
 pub use key::KeyId;
 pub use quantity::{Altitude, Degrees, InvalidValue, JulianDay, Latitude, Longitude, Place};
 pub use ratio::Ratio;

@@ -122,6 +122,19 @@ knob!(
         Proportional = "PROPORTIONAL" }
 );
 knob!(
+    /// Which window a daily panchanga finds the Moon's rise and set in.
+    ///
+    /// Every other field of an almanac day is bounded by sunrise; the
+    /// recording engine's moonrise and moonset are the first at or after
+    /// local civil midnight, so a quarter of them fall outside the day
+    /// its own limbs occupy (entry 18 of the deliberate-difference
+    /// registry). The SDK uses the day's own window and offers the other
+    /// reading rather than hiding it.
+    MoonEvents { /// The rises and sets inside the panchanga day.
+        Window = "WINDOW", /// The first rise and the first set at or after local civil midnight.
+        CivilDay = "CIVIL_DAY" }
+);
+knob!(
     /// How the planetary hours (horas) are counted.
     HoraReckoning { /// Twelve over the daylight and twelve over the night.
         Proportional = "PROPORTIONAL", /// Twenty-four of sixty minutes from sunrise.
