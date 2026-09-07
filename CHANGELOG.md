@@ -187,6 +187,32 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The chart day against the corpus, and two things it corrected. The day
+  selection, the lagna's anchor, day-or-night and the ishtakaal now read
+  the corpus's `foundation` section, which nothing had read before.
+
+  **Numbers:** none moved. Over the 50 charts comparable without a
+  registered exception, the arc holding the birth, the sunrise anchoring
+  the lagna and `is_day_birth` are the recorded ones on every chart, 20
+  of them births before sunrise; the ishtakaal agrees over 100 readings
+  in both reckonings.
+
+  **Bhayat and bhabhoga are not the day's part**, which the chart
+  foundation's design page said they were. They are the duration of the
+  Moon's traversal of its nakshatra and the elapsed part of it at birth:
+  they reproduce `dashas.methods.temporal.nakshatra_span` over all 55
+  charts to within 0.39 minutes, the ghati-pala rounding, and they are
+  nowhere near the length of the night. They belong to `dasha`; the page
+  is corrected and a test asserts the fact so it cannot drift back.
+
+  **The engine's night is `24h` minus the daylight**, not the interval
+  from sunset to the next sunrise. True of all 110 nights the corpus
+  records, and up to 1.80 minutes from the real interval; the two agree
+  only when consecutive days have equal daylight. It reaches the
+  proportional ishtakaal, which spreads thirty ghatis over the night, and
+  the SDK — which divides the night it actually has — is up to 3 palas
+  from the engine over the corpus. Entry 15 of the deliberate-difference
+  registry.
 - `crates/chart`, the first code of Phase 4: the two parts the design
   named as easy to get wrong, both against all 55 recorded charts.
 
