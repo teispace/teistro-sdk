@@ -187,6 +187,31 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The bhava chalit falsification pass, which the roadmap asks for before
+  the chart layer is written. `cargo xtask chalit` computes each of the
+  four named methods with the SDK's own house systems over the 55
+  recorded charts, places the recorded grahas in them, and writes
+  `03-design/chart-bhava-chalit.md`; `check-chalit` holds the page, so
+  every number on it is what this build produces.
+
+  **Numbers:** none moved; this measures numbers that were already there.
+  What it found: the recording engine's `bhava_chalit` calls itself
+  `equal-house` on all 55 charts and is Vehlow, which reproduces every
+  recorded placement on 55 of 55 where Sripati manages 20 and Porphyry
+  none. And the four methods are not variants of one thing — they put a
+  graha in a different house between 10% and 51% of the time depending on
+  the pair. The sharpest pair is Sripati against Porphyry at 50.5%: the
+  *same cusps*, agreeing to the last decimal, read once as house middles
+  and once as house starts. Sripati against Vehlow, the two a Jyotisha
+  application actually chooses between, is 21.8% — better than one
+  placement in five, and 37.2% beyond 30° of latitude. So a result that
+  names a house without naming the method is not reproducible, which is
+  what `houses.chalit_system` in the settings hash is for, and the chart
+  layer must report the madhya as well as the sandhi: `astro::houses`
+  returns cusps alone, which places a graha and cannot say how near the
+  middle of its house it sits. Entry 14 of the deliberate-difference
+  registry (`05-testing/01-golden-vectors.md`), and principle 4 now cites
+  the measurement rather than asserting it.
 - The default profile is the texts as read, and inherits nothing else
   (Q34, ADR-0024). `parashari-classical` stays the profile a context gets
   when its options name none, and it now patches the root rather than
