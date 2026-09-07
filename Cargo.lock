@@ -1500,6 +1500,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-vargas"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-port-ephemeris",
+ "teistro-time",
+]
+
+[[package]]
 name = "tempfile"
 version = "3.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

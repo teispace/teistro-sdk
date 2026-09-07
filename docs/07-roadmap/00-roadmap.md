@@ -205,9 +205,19 @@ Where it stands, 2026-09-07:
 | the panchanga day | **built**: `crates/panchanga`, 59 tests. The falsification pass first (`cargo xtask panchanga`, held by `check-panchanga`), then the design page, then the crate — the limbs as spans with both pairs of bounds, one divider on two arcs, the choghadiya as the hora's walk, the yogas as intervals; three new knobs and four new catalogue kinds. Every period, the month, panchaka, the ayana and the disha shool reproduce the corpus exactly; the limb *instants* wait on the conformance harness, which needs an adapter |
 | `houses` with the named variants | the geometry is in `chart::bhava`; the service over it waits on the chart layer's shape |
 | the Indian lunisolar calendar | **needed next by `panchanga`**: the amanta month is named from the new moon's solar sign, which the crate computes, but adhika and kshaya are the calendar's to decide |
-| `vargas`, `state`, `aspect`, `points` | designed (`varga-kernel.md`) or planned; none started |
+| `vargas` | **built**: `crates/vargas`, 41 tests. Falsified first (`cargo xtask vargas`, held by `check-vargas`): a divisional chart is a function of one longitude and the corpus records both, so each chart's table was derived from the corpus and the design's rule held to it — 19 530 placements over 93 fixtures and two zodiacs, nothing left over. One evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
+| `state`, `aspect`, `points` | planned; `state` is next and the corpus decides most of it |
 | `serial` JSON with the extended envelope | planned |
 | the Python binding | planned |
+
+Falsifying the divisional charts found three more corrections and one
+registry entry, and it is the sharpest measurement the corpus supports:
+the spans belong to a classifier group rather than to a chart (D30's two
+groups differ); `divisions` names a chart and is not always its part
+count; and vargottama is a property of a body rather than of a graha
+(entry 20 — the engine never marks a lagna, and two recorded lagnas
+qualify). Nothing else moved: the design's central claim, that there is
+exactly one evaluator, survived 19 530 placements over two zodiacs.
 
 Falsifying the daily panchanga before designing it found three more
 differences and one limb the corpus cannot settle at all: Brahma muhurta

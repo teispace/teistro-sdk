@@ -60,6 +60,8 @@ jobs:
         run: cargo xtask check-chalit
       - name: Panchanga conventions page (the measured conventions of the recorded daily panchanga reproduce)
         run: cargo xtask check-panchanga
+      - name: Varga tables page (the recorded divisional charts' derived tables reproduce)
+        run: cargo xtask check-vargas
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

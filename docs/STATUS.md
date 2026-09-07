@@ -38,15 +38,20 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-third session (the
+**Last updated:** 2026-09-07, end of the forty-fourth session (the varga
+kernel falsified and built: a divisional chart is a function of one
+longitude and the corpus records both, so `cargo xtask vargas` derives
+each chart's table from the corpus and holds the design to it — 19 530
+placements over two zodiacs, with nothing left over — and `crates/vargas`
+is the design built, 41 tests, with the three corrections the measurement
+found); before that the forty-third session (the
 panchanga day falsified, designed and built: `cargo xtask panchanga`
 proposed a rule for each of the recorded daily panchanga's twenty-seven
 fields and measured it over all 55 days, three of the rules it falsified
 became registry entries 17 to 19 before a line of the module existed,
 and `crates/panchanga` was written to the page that came out of it —
 59 tests, `core::interval::Interval`, three knobs and four catalogue
-kinds); before that the
-forty-second session (Phase 4
+kinds); before that the forty-second session (Phase 4
 opened: the bhava chalit falsification pass the roadmap asks for first —
 the four methods measured against each other over the 55 recorded charts,
 and the answer that they are not variants of one thing — the chart
@@ -147,31 +152,39 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is `crates/vargas`**, the single table-driven
-   evaluator over `03-design/varga-kernel.md`, with every recorded
-   chart's twenty-one divisional charts as rows. Phases 1 and 2 are
+3. **The next task is `crates/state`**, over `chart` and `vargas`:
+   dignities, relationships, combustion, retrogression, planetary war,
+   gandanta, the avasthas and marana karaka sthana. Phases 1 and 2 are
    closed; Phase 4 is open and under way, and Phase 3 may run beside it.
+   The corpus decides most of it: `positions.bodies.*` records the
+   dignity, the moolatrikona flag, combustion, the distance from the Sun,
+   the three friendship views and four avastha families for all 55
+   charts.
 
-   Two things `panchanga` left behind, in the order they are wanted:
+   Two things earlier modules left behind, in the order they are wanted:
 
    - **The Indian lunisolar calendar** (`calendar-indian-lunisolar.md`,
-     a Phase 2 page nothing has written). The panchanga names the amanta
+     a Phase 2 page nothing has written). `panchanga` names the amanta
      month from the solar sign the new moon fell in, which is right; what
      it cannot say is whether the month is adhika or kshaya, and no other
      module can either.
    - **The conformance harness over an adapter**, which Phase 1 deferred.
-     Every arithmetic claim the corpus can decide is tested
-     (`crates/panchanga/tests/baseline.rs`); the limb *instants* need
-     real positions, and so does the rank-1 comparison against the eight
-     printed tithi ends of Nepal's national panchangam — the only
-     evidence in the project that is not another implementation.
+     Every arithmetic claim the corpus can decide is tested; anything
+     needing positions *over time* — a tithi's boundary instant, a
+     varga change, the Moon's rise — needs real positions, and so does
+     the rank-1 comparison against the eight printed tithi ends of
+     Nepal's national panchangam, the only evidence in the project that
+     is not another implementation.
 
-   The pattern to keep, twice earned: **falsify, then design, then
-   build.** `cargo xtask chalit` and `cargo xtask panchanga` each
-   proposed rules and measured them against the corpus before a line of
-   the module existed, and between them they found seven differences
-   (registry entries 14 to 19 and the bhayat correction) that would
-   otherwise have been written into code as facts.
+   The pattern to keep, earned three times: **falsify, then design, then
+   build.** `cargo xtask chalit`, `panchanga` and `vargas` each proposed
+   rules and measured them against the corpus before a line of the module
+   existed, and between them they found eight differences (registry
+   entries 14 to 20, and the bhayat correction) that would otherwise have
+   been written into code as facts. The vargas pass is the sharpest of
+   the three, because a divisional chart is a function of one longitude
+   and the corpus records both: 19 530 placements decided the whole
+   kernel outright.
 
 4. What is built, and what runs it:
 
@@ -183,6 +196,7 @@ provider's DUT1).
    | `siddhanta` | the Surya Siddhanta as a provider |
    | `time`, `port-timezone` | the scales, Delta T, the zones, the ghati and the hora, the local day |
    | `panchanga` | the almanac of one day at one place: the limbs as spans, the periods as divisions of the arcs, the month, the omens and the Moon's and Sun's day |
+   | `vargas` | the divisional charts: one evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
    | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat, the drik and classical solar models |
    | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
    | `intl` | the locale engine, the CLI, the packs |
@@ -194,14 +208,14 @@ provider's DUT1).
    Gates on every push (`fast-check`): `check-docs`, `check-fixtures`,
    `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
    `check-intl`, `check-ffi`, `check-chalit`, `check-panchanga`,
-   `check-lints`, `check-versions`. Needing another toolchain, run by
+   `check-vargas`, `check-lints`, `check-versions`. Needing another toolchain, run by
    hand and in `verify`: `check-c`, `check-node`, `check-dart`,
    `check-parity`, `check-package`, `check-site`. Also: `cargo xtask
    hashes` and `compare-hashes` (the determinism matrix), `bench` and
    `compare-bench` (instruction counts, Linux), `package` and `package
-   stage` (what a release ships), `version X` (the one version), `chalit`
-   and `panchanga` (the two falsification pages), `accuracy`, `calendars
-   bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
+   stage` (what a release ships), `version X` (the one version), `chalit`,
+   `panchanga` and `vargas` (the three falsification pages), `accuracy`,
+   `calendars bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
    (`teispace/teistro-conformance`, pinned to `v0.1.1`): clone with
@@ -677,6 +691,29 @@ module above will want, three new knobs (`panchanga.centre`,
 `panchanga.moon_events`, `panchanga.muhurta_tables`), four new catalogue
 kinds with names in all five locales, and the first reader of
 `day.day_boundary`, declared in Phase 1 and unread until now.
+
+`crates/vargas` is the third module of the phase and the sharpest test
+the corpus can put to anything. A divisional chart is a function of one
+sidereal longitude, and the corpus records the longitude *and* the
+answer, so `cargo xtask vargas` does not compare within a tolerance — it
+**derives each chart's table from the corpus** and holds the design's
+proposed rule to it. The rule survived: 19 530 recorded placements over
+93 fixtures and two zodiacs, with nothing left over
+(`03-design/varga-tables-measured.md`, held by `check-vargas`). Four of
+the fixtures are tropical, which moves every longitude twenty-four
+degrees, so the rules are not fitted to one zodiac.
+
+It corrected three things. The spans belong to the **group** and not to
+the chart, because D30's odd signs are cut 5, 5, 8, 7, 5 degrees and its
+even signs the same widths reversed; `divisions` names the chart and is
+not always its part count, D30 being called thirty and cutting a sign
+into five; and vargottama is a property of a body rather than of a graha
+— the engine never marks a lagna, and on two recorded charts the lagna's
+navamsha sign is its rashi sign (registry entry 20). The crate (41 tests)
+carries the kernel, a whole chart of a founded moment with the mixed
+axis, arbitrary D-N under the cyclic convention, and the varga change
+search, which uses a lattice where the parts are equal and bisection for
+the one chart where they are not.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

@@ -285,3 +285,14 @@ explained rather than a failure or a silent adoption.
     `number`, never the two numbers. Measured over all 109 recorded
     tithi spans. Found 2026-09-07 by `cargo xtask panchanga`
     (`03-design/panchanga-day-conventions.md`, §2).
+
+20. Vargottama. A body is vargottama when its navamsha sign is the sign
+    it already stood in, and the engine computes it for the **grahas
+    only**: over the 93 fixtures that carry divisional charts it agrees
+    with the definition on all 837 graha readings and marks no lagna at
+    all, though on two of them the lagna's navamsha sign is its rashi
+    sign (c032 and c034 under the default profile). A vargottama lagna is
+    a standard term, so this is the engine restricting a general property
+    rather than defining it differently. The SDK computes it for whatever
+    it is asked about. Found 2026-09-07 by `cargo xtask vargas`
+    (`03-design/varga-tables-measured.md`, §5).
