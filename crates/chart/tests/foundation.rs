@@ -33,7 +33,7 @@ use teistro_chart::foundation::{ChartFoundation, Founder, bodies_of};
 use teistro_core::angle::difference_deg;
 use teistro_core::catalogue::{Ayanamsha, ChartKind, Graha, HouseSystem};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro_core::settings::{OverridePolicy, Profile, Settings, SettingsPatch, Sunrise};
+use teistro_core::settings::{OverridePolicy, Profile, Resolved, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::test_provider::TestProvider;
 
@@ -46,18 +46,17 @@ fn place() -> Place {
     )
 }
 
-fn settings() -> Settings {
+fn resolved() -> Resolved {
     Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
         .unwrap_or_else(|| panic!("the default profile"))
         .resolve(&SettingsPatch::default())
         .unwrap_or_else(|e| panic!("{e}"))
-        .settings
 }
 
 /// Founds a chart at an instant, with everything the founder needs.
 fn found(instant: f64) -> ChartFoundation {
     let provider = TestProvider;
-    let settings = settings();
+    let resolved = resolved();
     let model = DrikSun::new(
         &provider,
         Ayanamsha::Lahiri,
@@ -68,7 +67,7 @@ fn found(instant: f64) -> ChartFoundation {
     let clock = UtcOffset::literal(5, 45, 0);
     let founder = Founder::new(
         &provider,
-        &settings,
+        &resolved,
         &model,
         &Gregorian,
         &clock,
@@ -82,6 +81,7 @@ fn found(instant: f64) -> ChartFoundation {
             ChartKind::Natal,
         )
         .unwrap_or_else(|e| panic!("{e}"))
+        .value
 }
 
 /// A spread of instants across a day and across the centuries, so the
@@ -236,7 +236,7 @@ fn founding_the_same_moment_twice_gives_the_same_value() {
 
     // And a batch is its members, in order.
     let provider = TestProvider;
-    let settings = settings();
+    let resolved = resolved();
     let model = DrikSun::new(
         &provider,
         Ayanamsha::Lahiri,
@@ -247,7 +247,7 @@ fn founding_the_same_moment_twice_gives_the_same_value() {
     let clock = UtcOffset::literal(5, 45, 0);
     let founder = Founder::new(
         &provider,
-        &settings,
+        &resolved,
         &model,
         &Gregorian,
         &clock,
@@ -255,10 +255,19 @@ fn founding_the_same_moment_twice_gives_the_same_value() {
         DeltaTModel::TableThenModel,
     );
     let instants: Vec<JulianDay<Utc>> = INSTANTS.iter().map(|jd| JulianDay::literal(*jd)).collect();
-    let batch = founder
+    let stamped = founder
         .found(&instants, &place(), ChartKind::Natal)
         .unwrap_or_else(|e| panic!("{e}"));
+    let batch = &stamped.value;
     assert_eq!(batch.len(), INSTANTS.len());
+    // The stamp says what produced them.
+    assert_eq!(stamped.provenance.profile, resolved.profile.as_str());
+    assert_eq!(
+        stamped.provenance.settings_hash,
+        resolved.settings.hash(),
+        "a change of settings is a change of hash"
+    );
+    assert!(!stamped.provenance.provider.name.is_empty());
     for (one, instant) in batch.iter().zip(INSTANTS) {
         assert_eq!(*one, found(instant));
     }
@@ -267,7 +276,7 @@ fn founding_the_same_moment_twice_gives_the_same_value() {
 #[test]
 fn the_chart_carries_both_divisions_and_says_which_is_which() {
     let chart = found(INSTANTS[2]);
-    let settings = settings();
+    let settings = resolved().settings;
     // The default profile places by whole sign and reads its chalit as
     // Sripati (ADR-0024), which are different divisions and different
     // answers.
@@ -306,4 +315,120 @@ fn the_chart_carries_both_divisions_and_says_which_is_which() {
     assert_eq!(bodies_of(&settings).len(), 8);
     assert_eq!(chart.grahas.len(), 9);
     assert!(chart.graha(Graha::Ketu).is_some());
+}
+
+#[test]
+fn the_timing_is_counted_from_the_day_the_chart_belongs_to() {
+    for instant in INSTANTS {
+        let chart = found(instant);
+        let timing = &chart.timing;
+        // The ishtakaal is a count within a day: sixty ghatis, or sixty
+        // and a little where a sunrise-to-sunrise day runs past
+        // twenty-four hours under the civil reckoning.
+        assert!(timing.ishtakaal.ghati <= 60, "{}", timing.ishtakaal.ghati);
+        assert!(timing.ishtakaal.pala < 60);
+        assert!(timing.ishtakaal.vipala < 60);
+        assert_eq!(timing.ghati_reckoning, settings_of().day.ghati_reckoning);
+
+        // The hora holds the instant and belongs to the same day.
+        assert!((1..=24).contains(&timing.hora.number));
+        assert!(
+            timing.hora.start.get() <= chart.instant.get()
+                && chart.instant.get() <= timing.hora.end.get(),
+            "the hora does not hold the instant it was asked for"
+        );
+        assert_eq!(
+            timing.hora.is_daytime(),
+            chart.day.part.is_daylight(),
+            "a daytime hora is a daytime birth"
+        );
+    }
+
+    // The case the whole day module exists for: a birth before dawn is
+    // counted from the previous morning, so its ishtakaal is late in the
+    // day rather than early.
+    let before_dawn = found(INSTANTS[0]);
+    assert!(
+        before_dawn.timing.ishtakaal.ghati > 30,
+        "a birth in the small hours is late in its own day, not early: {} ghati",
+        before_dawn.timing.ishtakaal.ghati
+    );
+    let by_day = found(INSTANTS[1]);
+    assert!(
+        by_day.timing.ishtakaal.ghati < 30,
+        "and a daylight birth is early"
+    );
+}
+
+#[test]
+fn a_foundation_is_stamped_with_what_produced_it() {
+    let provider = TestProvider;
+    let resolved = resolved();
+    let model = DrikSun::new(
+        &provider,
+        Ayanamsha::Lahiri,
+        Sunrise::CentreNoRefraction.into(),
+        OverridePolicy::PreferNative,
+        DeltaTModel::TableThenModel,
+    );
+    let clock = UtcOffset::literal(5, 45, 0);
+    let founder = Founder::new(
+        &provider,
+        &resolved,
+        &model,
+        &Gregorian,
+        &clock,
+        PrecessionModel::Vondrak2011,
+        DeltaTModel::TableThenModel,
+    );
+    let stamped = founder
+        .found_one(
+            JulianDay::<Utc>::literal(INSTANTS[2]),
+            &place(),
+            ChartKind::Natal,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
+
+    let stamp = &stamped.provenance;
+    assert_eq!(stamp.profile, resolved.profile.as_str());
+    assert_eq!(stamp.settings_hash, resolved.settings.hash());
+    assert_eq!(
+        stamp.calculation_version,
+        teistro_core::envelope::CALCULATION_VERSION
+    );
+    assert_eq!(
+        stamp.catalogue_version,
+        teistro_core::catalogue::SCHEMA_VERSION
+    );
+    assert!(
+        !stamp.provider.name.is_empty(),
+        "the ephemeris that answered"
+    );
+    assert!(!stamp.provider.frame.is_empty(), "the frame it answered in");
+    assert!(!stamp.time.delta_t_model.is_empty());
+    assert!(!stamp.time.leap_table.is_empty());
+
+    // The input hash tells two questions apart and two askings of one
+    // question together.
+    let again = founder
+        .found_one(
+            JulianDay::<Utc>::literal(INSTANTS[2]),
+            &place(),
+            ChartKind::Natal,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(again.provenance.input_hash, stamp.input_hash);
+    let elsewhere = founder
+        .found_one(
+            JulianDay::<Utc>::literal(INSTANTS[3]),
+            &place(),
+            ChartKind::Natal,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
+    assert_ne!(elsewhere.provenance.input_hash, stamp.input_hash);
+}
+
+/// The settings the tests found charts under.
+fn settings_of() -> teistro_core::settings::Settings {
+    resolved().settings
 }

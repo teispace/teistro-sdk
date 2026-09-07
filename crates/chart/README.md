@@ -9,7 +9,7 @@ What every module above a chart starts from.
 
 | module | what it settles |
 |---|---|
-| [`foundation`](src/foundation.rs) | the value itself: one moment at one place, with the day, the zodiac, the lagna and its anchor, both divisions of the sky and every graha placed in them. `Founder` is built once with a provider and a profile and founds as many charts as are asked for |
+| [`foundation`](src/foundation.rs) | the value itself: one moment at one place, with the day, the zodiac, the lagna and its anchor, both divisions of the sky, the birth timing and every graha placed in them, stamped with what produced it. `Founder` is built once with a provider and a profile and founds as many charts as are asked for |
 | [`day`](src/day.rs) | the day an instant belongs to, which is **not** its civil date: a panchanga day runs sunrise to sunrise, so an instant before the civil date's sunrise belongs to the day that began the morning before, and the vara, the hora, the ishtakaal and the lagna's anchor move back with it |
 | [`zodiac`](src/zodiac.rs) | the zodiac a chart is computed in: **one** ayanamsha value for the grahas and the cusps alike, so the chart asks a provider for tropical positions and shifts them itself rather than comparing a graha in the provider's zodiac with a cusp in the SDK's |
 | [`bhava`](src/bhava.rs) | the twelve bhavas of a chart with their madhya as well as their sandhi, and where a graha falls between them — carrying the chalit that placed it, because the methods disagree |
@@ -87,9 +87,17 @@ circularity gets broken is a second evaluator of the same rule.
 A field belongs here when more than one module above needs it and no
 module above can produce it.
 
+## The stamp
+
+A foundation comes back inside an `Envelope`, as every result of the SDK
+does: the profile it was founded under and its settings hash, the
+calculation and catalogue versions, the ephemeris that placed the grahas
+with the frame it answered in and the steps the SDK completed itself, the
+Delta T model and the leap-second table, and a hash of what was asked. A
+batch carries one stamp, because everything in it was founded under the
+same settings by the same provider.
+
 ## Still to come
 
-The provenance stamp over the value, and the birth timing as a field
-rather than a call. `time::ghati` already computes the ishtakaal from the
-`ChartDay`, and `crates/chart/tests/baseline_day.rs` measures it against
-the corpus; what is missing is carrying it in the value.
+The panchanga day's limbs, which are the `panchanga` module and its own
+design page, and what the corpus's largest unread section is waiting for.

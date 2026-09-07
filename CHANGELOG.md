@@ -187,6 +187,23 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The foundation's birth timing and its stamp. The ishtakaal and the
+  planetary hour are fields rather than calls, both counted over the arc
+  of **the day the chart belongs to** — so a birth in the small hours is
+  late in its own day rather than early in the next, which a test asserts
+  in both directions. Bhayat and bhabhoga are still absent, and the type
+  says why: they are the Moon's nakshatra transit and belong to `dasha`.
+
+  A foundation now comes back inside an `Envelope`, as every result of
+  the SDK does: the profile and its settings hash, the calculation and
+  catalogue versions, the ephemeris that placed the grahas with the frame
+  it answered in and the steps the SDK completed itself, the Delta T
+  model and the leap-second table, and a hash of what was asked — which
+  tells two questions apart and two askings of one question together. A
+  batch carries one stamp, because everything in it was founded under the
+  same settings by the same provider.
+
+  **Numbers:** none.
 - `ChartFoundation` and `Founder`: the value the three modules beneath
   them were built for. One moment at one place, with the day it belongs
   to, the zodiac it is measured in, the lagna and the sunrise that
