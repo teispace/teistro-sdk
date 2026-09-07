@@ -16,10 +16,10 @@ teistro-calendar = { path = "../calendar" }
 teistro-core = { path = "../core" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-time = { path = "../time" }
+serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
 serde_json = "1"
-teistro-time = { path = "../time" }
 
 [lints]
 workspace = true

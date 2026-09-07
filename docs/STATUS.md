@@ -602,9 +602,10 @@ daylight rather than sunset to sunrise, up to 1.80 minutes out (entry 15);
 and the engine applies the nutated ayanamsha, 18.46 arcseconds from the
 mean one and 0.0086 from the true, so `conformance-baseline` sets
 `ayanamsha_basis = TRUE` (entry 16). `ChartFoundation` and `Founder`
-assemble them into the value every module above a chart starts from. What
-remains of it is the provenance stamp and the birth timing as a field;
-then the panchanga day's own design page.
+assemble them into the value every module above a chart starts from. The birth timing is a field
+and the value comes back stamped, so the foundation is complete; the
+panchanga day's own design page and module are next, and are what the
+corpus's largest unread section is waiting for.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,
