@@ -31,6 +31,7 @@ use serde::Serialize;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Rashi, Varga};
 use teistro_core::error::{Error, Status};
+use teistro_core::settings::{Settings, UnattestedDn};
 
 /// The most parts a chart may divide the zodiac into.
 ///
@@ -320,13 +321,57 @@ impl Scheme {
             .unwrap_or(SCHEMES[0])
     }
 
-    /// The rule of an arbitrary D-N under the parivritti (cyclic)
-    /// convention.
+    /// The rule of an arbitrary D-N under the convention the settings
+    /// name.
     ///
     /// **There is no classical rule for D37.** Producing one takes a
-    /// chosen convention, and cyclic is the one `vargas.unattested_dn`
-    /// names; the result carries the convention in its provenance, which
-    /// is what makes it reproducible rather than merely plausible.
+    /// chosen convention, and `vargas.unattested_dn` is where the choice
+    /// is made; the result carries it in its provenance, which is what
+    /// makes the chart reproducible rather than merely plausible.
+    ///
+    /// The match on the convention is **exhaustive**, so a reading added
+    /// to the catalogue forces a decision here rather than being
+    /// silently ignored — which is what the knob having no reader had
+    /// meant until now (`check-lints`, `knob-has-a-reader`).
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` for nought divisions, and `OUT_OF_RANGE` past
+    /// [`MOST_DIVISIONS`], both naming the limit; `UNSUPPORTED` for a
+    /// convention this crate does not implement, naming it.
+    pub fn unattested(divisions: u16, convention: UnattestedDn) -> Result<Scheme, Error> {
+        match convention {
+            UnattestedDn::Cyclic => Scheme::cyclic(divisions),
+            // `UnattestedDn` is non-exhaustive: a reading the catalogue
+            // gains and this crate has not been taught is refused by
+            // name rather than quietly read as the cyclic one.
+            other => Err(Error::unsupported(format!(
+                "no rule for an arbitrary divisional chart under `{}`; \
+                 the SDK ships `{}`",
+                other.key(),
+                UnattestedDn::Cyclic.key()
+            ))
+            .with_field("vargas.unattested_dn")),
+        }
+    }
+
+    /// The rule of an arbitrary D-N under the convention a chart's own
+    /// settings name.
+    ///
+    /// This is the reader of `vargas.unattested_dn`: a caller with
+    /// settings in hand asks here rather than choosing a convention and
+    /// hoping it is the one the chart was computed under.
+    ///
+    /// # Errors
+    ///
+    /// As [`Scheme::unattested`].
+    pub fn for_settings(divisions: u16, settings: &Settings) -> Result<Scheme, Error> {
+        Scheme::unattested(divisions, settings.vargas.unattested_dn)
+    }
+
+    /// The rule of an arbitrary D-N under the parivritti (cyclic)
+    /// convention, which is what [`Scheme::unattested`] resolves
+    /// `vargas.unattested_dn` to.
     ///
     /// # Errors
     ///
@@ -438,6 +483,8 @@ mod tests {
         clippy::indexing_slicing,
         reason = "tests fail by panicking and index their own fixtures"
     )]
+
+    use teistro_core::settings::UnattestedDn;
 
     use super::{
         Classifier, MOST_DIVISIONS, Map, SCHEMES, Scheme, SignBase, Spans, part_of, target,
@@ -637,5 +684,34 @@ mod tests {
         assert!(Scheme::cyclic(0).is_err(), "nought is not a division");
         assert!(Scheme::cyclic(MOST_DIVISIONS).is_ok());
         assert!(Scheme::cyclic(MOST_DIVISIONS + 1).is_err());
+    }
+
+    #[test]
+    fn an_arbitrary_chart_takes_the_convention_the_settings_name() {
+        // The knob had no reader until this: `Scheme::cyclic` named a
+        // convention it never asked for, and a reading added to the
+        // catalogue would have been ignored (`check-lints`,
+        // `knob-has-a-reader`).
+        let asked = Scheme::unattested(37, UnattestedDn::Cyclic).expect("a cyclic D37");
+        let direct = Scheme::cyclic(37).expect("the same");
+        assert_eq!(asked.divisions, direct.divisions);
+        assert_eq!(asked.classifier, direct.classifier);
+        assert_eq!(asked.varga, None, "no catalogue row names it");
+        // And the bounds are the same either way in.
+        assert!(Scheme::unattested(0, UnattestedDn::Cyclic).is_err());
+        assert!(Scheme::unattested(MOST_DIVISIONS + 1, UnattestedDn::Cyclic).is_err());
+        assert!(Scheme::unattested(MOST_DIVISIONS, UnattestedDn::Cyclic).is_ok());
+
+        // And a caller with settings in hand asks them rather than
+        // choosing, which is what gives the knob its reader.
+        let settings =
+            teistro_core::settings::Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
+                .expect("the default profile")
+                .resolve(&teistro_core::settings::SettingsPatch::default())
+                .expect("it resolves")
+                .settings;
+        let from_settings = Scheme::for_settings(37, &settings).expect("a D37");
+        assert_eq!(from_settings.divisions, asked.divisions);
+        assert_eq!(from_settings.classifier, asked.classifier);
     }
 }

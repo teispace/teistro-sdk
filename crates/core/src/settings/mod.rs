@@ -168,8 +168,15 @@ group!(
         /// Apparent or true.
         positions: Positions,
         /// Modern or classical astronomy.
+        /// lint: knob-has-a-reader — the chart layer takes a provider by
+        /// argument, so `crates/siddhanta` answers as one rather than being
+        /// chosen here; the knob becomes a reader when a caller asks the SDK
+        /// to pick a provider for it (Phase 3, the built-in ephemeris).
         siddhanta: Siddhanta,
         /// Twenty-seven or twenty-eight nakshatras.
+        /// lint: knob-has-a-reader — `panchanga` and `core::angle` both divide
+        /// by twenty-seven today; the twenty-eighth (Abhijit) is unequal and
+        /// wants its own measurement before either reads this.
         nakshatra_scheme: NakshatraScheme,
     }
 );
@@ -241,12 +248,16 @@ group!(
     /// Dasha computation.
     Dasha, DashaPatch {
         /// How the first period is balanced.
+        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         balance: Balance,
         /// The year length per system.
+        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         year_length: BTreeMap<DashaSystem, YearLength>,
         /// The default depth per system.
+        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         depth: BTreeMap<DashaSystem, Depth>,
         /// A seed outside a conditional cycle.
+        /// lint: knob-has-a-reader — `dasha`, Phase 5 (ADR-0017).
         seed_overflow: SeedOverflow,
     }
 );
@@ -255,8 +266,11 @@ group!(
     /// Jaimini conventions.
     Jaimini, JaiminiPatch {
         /// Seven or eight chara karakas.
+        /// lint: knob-has-a-reader — `jaimini`, Phase 5. The corpus records both readings under
+        /// `houses.chara_karakas`, so this one has a target waiting.
         chara_karakas: CharaKarakas,
         /// The nodes' co-lordship.
+        /// lint: knob-has-a-reader — `jaimini`, Phase 5.
         node_co_lordship: NodeCoLordship,
     }
 );
@@ -283,8 +297,10 @@ group!(
     /// Strength.
     Strength, StrengthPatch {
         /// The bala scheme.
+        /// lint: knob-has-a-reader — `strength`, Phase 5 (`03-design/strength-schemes.md`).
         bala_scheme: BalaScheme,
         /// The Ashtakavarga reduction rule.
+        /// lint: knob-has-a-reader — `strength`, Phase 5.
         ekadhipatya: Ekadhipatya,
     }
 );
@@ -301,10 +317,16 @@ group!(
     /// Calendars.
     Calendars, CalendarsPatch {
         /// The civil calendar of a request's dates.
+        /// lint: knob-has-a-reader — the chart layer takes a calendar by argument, so a caller
+        /// chooses one rather than asking the settings; this gains a reader
+        /// when `serial` or a binding builds a chart from a settings document
+        /// alone.
         civil_calendar: Calendar,
         /// The lunar month system.
         lunar_month: LunarMonth,
         /// The era numbers a date carries.
+        /// lint: knob-has-a-reader — as `civil_calendar` above — `crates/calendar` renders the eras a
+        /// caller asks for rather than the ones the settings name.
         eras: BTreeSet<Era>,
     }
 );
@@ -315,6 +337,8 @@ group!(
         /// The override policy (ADR-0013).
         overrides: OverridePolicy,
         /// The built-in ephemeris tier.
+        /// lint: knob-has-a-reader — Phase 3's built-in ephemeris, which is what has tiers to choose
+        /// between; a provider a caller supplies declares its own.
         tier: Tier,
     }
 );
@@ -361,6 +385,42 @@ pub struct Settings {
     pub provider: Provider,
     /// Output.
     pub output: Output,
+}
+
+impl Settings {
+    /// Every knob of every group, as `("group", "knob")`, in document
+    /// order.
+    ///
+    /// One list, so that a rule about the knobs has a single source of
+    /// truth rather than a copy — `cargo xtask check-lints` uses it for
+    /// the `knob-has-a-reader` rule. The group names are the field names
+    /// a settings document uses, and
+    /// `every_group_of_the_document_is_in_the_knob_paths` holds this
+    /// list to the document itself, so a group added without a line here
+    /// fails rather than going unwatched.
+    #[must_use]
+    pub fn knob_paths() -> Vec<(&'static str, &'static str)> {
+        let groups: [(&str, &[&str]); 14] = [
+            ("frame", Frame::KNOBS),
+            ("houses", Houses::KNOBS),
+            ("day", Day::KNOBS),
+            ("panchanga", Panchanga::KNOBS),
+            ("time", Time::KNOBS),
+            ("dasha", Dasha::KNOBS),
+            ("jaimini", Jaimini::KNOBS),
+            ("aspect", Aspect::KNOBS),
+            ("state", State::KNOBS),
+            ("strength", Strength::KNOBS),
+            ("vargas", Vargas::KNOBS),
+            ("calendars", Calendars::KNOBS),
+            ("provider", Provider::KNOBS),
+            ("output", Output::KNOBS),
+        ];
+        groups
+            .into_iter()
+            .flat_map(|(group, knobs)| knobs.iter().map(move |knob| (group, *knob)))
+            .collect()
+    }
 }
 
 /// A patch: every group's knobs optional.
@@ -710,6 +770,7 @@ mod tests {
     #![allow(
         clippy::panic,
         clippy::unwrap_used,
+        clippy::expect_used,
         clippy::indexing_slicing,
         reason = "tests fail by panicking"
     )]
@@ -883,5 +944,49 @@ mod tests {
         // A change of defaults is a change of hash, which is what makes
         // it visible in every result computed under it.
         assert_ne!(resolved.settings.hash(), product.settings.hash());
+    }
+
+    #[test]
+    fn every_group_of_the_document_is_in_the_knob_paths() {
+        // The list `knob_paths` holds is checked against the document
+        // itself, so a group added to `Settings` without a line there
+        // fails here rather than going unwatched by the lint that reads
+        // it.
+        let document = serde_json::to_value(root()).expect("a settings document");
+        let object = document.as_object().expect("an object");
+        let paths = Settings::knob_paths();
+        let mut groups: Vec<&str> = paths.iter().map(|(group, _)| *group).collect();
+        groups.sort_unstable();
+        groups.dedup();
+        for key in object.keys() {
+            // `schema` is the document's version and not a knob.
+            if key == "schema" {
+                continue;
+            }
+            assert!(groups.contains(&key.as_str()), "{key} is not in knob_paths");
+        }
+        assert_eq!(
+            groups.len(),
+            object.len() - 1,
+            "knob_paths names a group the document does not have"
+        );
+        // And every knob of every group is a field of that group.
+        for (group, knob) in &paths {
+            let fields = object
+                .get(*group)
+                .and_then(serde_json::Value::as_object)
+                .unwrap_or_else(|| panic!("{group} is a group"));
+            assert!(fields.contains_key(*knob), "{group}.{knob}");
+        }
+        assert_eq!(
+            paths.len(),
+            object
+                .iter()
+                .filter(|(key, _)| *key != "schema")
+                .filter_map(|(_, value)| value.as_object())
+                .map(serde_json::Map::len)
+                .sum::<usize>(),
+            "every knob of the document is named once"
+        );
     }
 }

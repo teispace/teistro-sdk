@@ -38,8 +38,15 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-ninth session (the
-canonical form falsified, designed and built: the pass read the source
+**Last updated:** 2026-09-07, end of the fiftieth session (the
+`knob-has-a-reader` determinism lint: three settings knobs that shipped,
+resolved and were read by nobody had been found by hand in as many
+modules, so the fifth rule of `check-lints` finds them by machine — it
+enumerates the knobs from `core` itself, counts readers outside the
+settings layer, and treats a stale allowance as a failure so the
+inventory of deferred knobs cannot rot; it found fourteen, one of which
+`crates/vargas` now reads for real); before that the forty-ninth session
+(the canonical form falsified, designed and built: the pass read the source
 as well as the corpus and found that the field the whole envelope exists
 for — the hash of the value — was the hash of *nothing* on all but one
 producer, that `ChartFoundation` and the rest of the chart layer's
@@ -197,23 +204,28 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is a gate for knobs with no reader.** Three have now
-   been found in as many modules — `state.combustion_orbs` (which made
-   a chart founded on the SDK's own default profile fail, registry entry
-   23), `houses.module_overrides` (which quietly gave a KP reading
-   whole-sign houses) and `output.precision` — which is a pattern rather
-   than an accident. `cargo xtask check-lints` is where such a rule
-   lives: it already reads the source for four determinism rules the
-   compiler does not check, and "every settings knob has a reader
-   outside the settings layer" is the fifth.
+3. **The next task is the Python binding**, which Phase 4's own list
+   names and which the description-driven generator already has the
+   machinery for: the Node and Dart bindings come from `idl/api.json`
+   through the same emitters, and a third is the shape the toolchain was
+   chosen for (ADR-0007).
 
-   After that, Phase 4 holds the **Python binding** and a **JSON Schema
-   for the document** (`serial-and-the-envelope.md` §8), and the
-   **Indian lunisolar calendar** is still what `panchanga` needs for
-   adhika and kshaya months. Two of `serial`'s own open questions are
-   worth a look too: whether `chart` and `panchanga` should seal their
-   own envelopes rather than leaving the placeholder, and the dossier,
-   blob and layout rows the module catalogue lists.
+   After it, Phase 4 holds a **JSON Schema for the document**
+   (`serial-and-the-envelope.md` §8) and the **Indian lunisolar
+   calendar** `panchanga` still needs for adhika and kshaya months.
+
+   Two of `serial`'s open questions are worth a look too: whether
+   `chart` and `panchanga` should seal their own envelopes rather than
+   leaving `content_hash` a placeholder, and the dossier, blob and
+   layout rows the module catalogue lists.
+
+   Thirteen settings knobs are **deferred with a reason** and printed by
+   `cargo xtask check-lints` on every run — `dasha`, `jaimini` and
+   `strength`'s belong to Phase 5 modules, `provider.tier` to Phase 3's
+   built-in ephemeris, and `calendars.civil_calendar` and `.eras` gain a
+   reader when something builds a chart from a settings document alone.
+   Each is a small piece of work waiting for its module rather than a
+   thing to fix now.
 
    Phases 1 and 2 are closed; Phase 4 is open and under way, and Phase 3
    may run beside it.
@@ -969,6 +981,34 @@ partitioning the twelve with trikona, dusthana and upachaya cutting
 across them, and a house's lord taken from the sign its **middle** falls
 in, because under an unequal division a house can begin in one sign and
 be centred in another.
+
+The **`knob-has-a-reader` lint** closes the class of defect the last
+three modules kept turning up by hand. A settings knob that ships,
+resolves and is read by nobody is a bug whether or not anything crashes,
+and each of the three failed differently: `state.combustion_orbs`
+loudly, with a chart founded on the SDK's own default profile returning
+`UNSUPPORTED` (entry 23); `houses.module_overrides` quietly, giving a KP
+reading whole-sign houses where every shipped profile says Placidus; and
+`output.precision` silently, doing nothing at all. Three in three is a
+pattern.
+
+The rule enumerates the knobs from `core` itself — `Settings::knob_paths`,
+held to the settings document by its own test, so a group added to the
+document is watched without a second list to remember — and counts
+readers outside the settings layer, over the source with its whitespace
+collapsed, because a chain the formatter breaks across lines is still
+one access. It found **fourteen**.
+
+One was real and is fixed: `vargas.unattested_dn`. `Scheme::cyclic`
+named a convention it never asked for, and its own design page claimed
+the knob chose it. `Scheme::unattested` now matches on the reading and
+`Scheme::for_settings` reads the knob, so a convention added to the
+catalogue forces a decision here rather than being silently read as the
+cyclic one. The other thirteen are **deferred with a reason** at their
+own declaration, printed on every run, and an allowance that is no
+longer needed is itself a failure — so the inventory cannot rot. Every
+one of the three failure modes was proven red before the rule was
+trusted, as the other four were.
 
 `crates/serial` is the eighth, and the first whose pass had to read the
 **source** rather than the corpus. Nothing recorded can say whether the

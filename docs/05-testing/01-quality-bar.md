@@ -120,13 +120,37 @@ The counting allocator found that on its first run.
 | gate | what it proves | tool | where it runs |
 |---|---|---|---|
 | format and lint | `rustfmt` clean; `clippy` with `all` and `pedantic` as errors; in library crates no `unwrap`, `expect`, `panic`, `todo`, `dbg`, printing or slice indexing (workspace lints) | `cargo fmt --check`, `cargo clippy -D warnings` | fast check |
-| determinism lints | no unordered collection in a computation crate unless the file says why it is safe; no reads of the clock, the environment or the process in one; only the port, the boundary and the addon may hold unsafe code; the classification functions are `const fn`, which stable Rust cannot compute in floating point | `cargo xtask check-lints` | fast check |
+| determinism lints | no unordered collection in a computation crate unless the file says why it is safe; no reads of the clock, the environment or the process in one; only the port, the boundary and the addon may hold unsafe code; the classification functions are `const fn`, which stable Rust cannot compute in floating point; **every settings knob has a reader outside the settings layer**, or says at its declaration which module will read it | `cargo xtask check-lints` | fast check |
 | unsafe confinement | `#![forbid(unsafe_code)]` everywhere except `ffi`; every `unsafe` block in `ffi` carries a `SAFETY:` comment reviewed | lint and review | fast check |
 | documentation | every public item documented with a compiled example; no warnings from `cargo doc` | `cargo doc -D warnings` | fast check |
 | dependencies | licences on the allow list (`deny.toml`; copyleft and MPL denied everywhere), no oracle or ephemeris adapter in a publishable crate's graph, advisories none, duplicates justified, every dependency vetted | `cargo deny check`, `cargo-audit`, `cargo-vet` | fast check (deny), weekly (audit) |
 | containment | the workspace builds and passes its tests with the test provider only and no adapter present | a CI job (ADR-0019) | fast check once an adapter exists |
 | generated artefacts | regenerated output equals the committed output | `cargo xtask check-generated` | fast check |
 | gates proven red | every new gate was broken once and observed failing before it was trusted | recorded in the pull request | review |
+
+### Why a knob needs a reader
+
+A settings knob that ships, resolves and is read by nobody is a bug
+whether or not anything crashes, and three were found by hand in as many
+modules before the rule existed:
+
+| knob | how it failed |
+|---|---|
+| `state.combustion_orbs` | **loudly**: a chart founded on the SDK's own default profile returned `UNSUPPORTED` (`01-golden-vectors.md`, entry 23) |
+| `houses.module_overrides` | **quietly**: every shipped profile says `kp` takes Placidus, and the KP reading got whole-sign houses — not an error, the wrong chart |
+| `output.precision` | **silently**: the knob did nothing at all |
+
+Three in three is a pattern rather than an accident, so it is gated. The
+knob list comes from `core` itself (`Settings::knob_paths`, held to the
+settings document by its own test), so a group added to the document is
+watched without a second list to remember.
+
+A knob whose module is not written yet says so where it is declared,
+with a `lint: knob-has-a-reader` marker naming what will read it. The
+gate prints those, so a deferral is an inventory rather than a silence —
+and **an allowance that is no longer needed is itself a failure**, so
+the inventory cannot rot. Thirteen are deferred today, all to Phase 3
+and Phase 5 modules that do not exist.
 
 ## The rule behind the rules
 
