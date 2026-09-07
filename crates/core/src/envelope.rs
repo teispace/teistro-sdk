@@ -5,6 +5,10 @@
 //! choose, and every warning. The cache key a consumer uses is
 //! `(input_hash, settings_hash, calculation_version)`.
 
+use core::fmt::Write as _;
+
+use serde_json::Value;
+
 use core::fmt;
 use std::borrow::Cow;
 
@@ -15,18 +19,47 @@ use sha2::{Digest, Sha256};
 /// on `(input_hash, settings_hash, calculation_version)`.
 pub const CALCULATION_VERSION: u32 = 1;
 
+/// The decimals the canonical form writes a number to.
+///
+/// A double carries about seventeen significant decimal digits, and the
+/// SDK's quantities are degrees, days and scores under a million: twelve
+/// decimals is finer than a nanoarcsecond and coarser than the noise.
+pub const CANONICAL_DECIMALS: u8 = 12;
+
 /// The canonical JSON of a value: every object's keys in code-point
-/// order, no whitespace, so two builds and two bindings that agree on
-/// the value agree on the bytes and therefore on the hash (ADR-0022).
-/// The sort is explicit rather than relied on from the JSON layer's map,
-/// whose ordering changes with the `preserve_order` feature that any
-/// crate in a build may enable.
+/// order, no whitespace, and every number as a plain decimal — so two
+/// builds and two bindings that agree on the value agree on the bytes
+/// and therefore on the hash (ADR-0022).
+///
+/// Two things are explicit here rather than left to the JSON layer, and
+/// both were measured (`03-design/serial-measured.md`).
+///
+/// The **sort** is explicit because the JSON layer's map ordering
+/// changes with the `preserve_order` feature that any crate in a build
+/// may enable.
+///
+/// The **number grammar** is explicit because Rust's layer writes
+/// `1e-6` where JavaScript's writes `0.000001`: two bindings that agree
+/// about the number would disagree about the bytes. A number here is a
+/// decimal with an optional leading `-`, at least one digit before the
+/// point and up to [`CANONICAL_DECIMALS`] after it with trailing zeros
+/// removed — never an exponent, never a bare `.5`, never `-0`. A
+/// binding implementing that grammar needs no float printer of its own.
+///
+/// It is a **lossy** form, deliberately: two doubles differing below its
+/// resolution hash alike, which is what a caller asking "is this the
+/// same answer" means.
 #[must_use]
 pub fn canonical_json<T: serde::Serialize + ?Sized>(value: &T) -> String {
+    canonical_json_at(value, CANONICAL_DECIMALS)
+}
+
+/// The same, at a chosen number of decimals: what a **rendering** uses,
+/// which is never hashed.
+#[must_use]
+pub fn canonical_json_at<T: serde::Serialize + ?Sized>(value: &T, decimals: u8) -> String {
     serde_json::to_value(value)
-        .map(sort_keys)
-        .and_then(|value| serde_json::to_string(&value))
-        .unwrap_or_default()
+        .map_or_else(|_| String::new(), |value| write_canonical(&value, decimals))
 }
 
 /// The hash of a value's canonical JSON.
@@ -35,23 +68,108 @@ pub fn content_hash<T: serde::Serialize + ?Sized>(value: &T) -> Hash {
     Hash::of(canonical_json(value).as_bytes())
 }
 
-fn sort_keys(value: serde_json::Value) -> serde_json::Value {
+/// A value in the canonical form, at a given number of decimals.
+fn write_canonical(value: &Value, decimals: u8) -> String {
+    let mut out = String::new();
+    push_canonical(value, decimals, &mut out);
+    out
+}
+
+fn push_canonical(value: &Value, decimals: u8, out: &mut String) {
     match value {
-        serde_json::Value::Object(map) => {
-            let mut entries: Vec<(String, serde_json::Value)> = map.into_iter().collect();
-            entries.sort_by(|a, b| a.0.cmp(&b.0));
-            serde_json::Value::Object(
-                entries
-                    .into_iter()
-                    .map(|(k, v)| (k, sort_keys(v)))
-                    .collect(),
-            )
+        Value::Null => out.push_str("null"),
+        Value::Bool(true) => out.push_str("true"),
+        Value::Bool(false) => out.push_str("false"),
+        Value::Number(number) => out.push_str(&number_form(number, decimals)),
+        Value::String(text) => out.push_str(&string_form(text)),
+        Value::Array(items) => {
+            out.push('[');
+            for (index, item) in items.iter().enumerate() {
+                if index > 0 {
+                    out.push(',');
+                }
+                push_canonical(item, decimals, out);
+            }
+            out.push(']');
         }
-        serde_json::Value::Array(items) => {
-            serde_json::Value::Array(items.into_iter().map(sort_keys).collect())
+        Value::Object(fields) => {
+            // Code-point order, explicitly, because the JSON layer's map
+            // ordering changes with a feature any crate may enable.
+            let mut keys: Vec<&String> = fields.keys().collect();
+            keys.sort_unstable();
+            out.push('{');
+            for (index, key) in keys.into_iter().enumerate() {
+                if index > 0 {
+                    out.push(',');
+                }
+                out.push_str(&string_form(key));
+                out.push(':');
+                if let Some(nested) = fields.get(key) {
+                    push_canonical(nested, decimals, out);
+                }
+            }
+            out.push('}');
         }
-        other => other,
     }
+}
+
+/// A number in the grammar: a decimal, never an exponent, trailing zeros
+/// trimmed, and no negative nought.
+fn number_form(number: &serde_json::Number, decimals: u8) -> String {
+    if let Some(integer) = number.as_i64() {
+        return integer.to_string();
+    }
+    if let Some(integer) = number.as_u64() {
+        return integer.to_string();
+    }
+    number
+        .as_f64()
+        .map_or_else(|| String::from("0"), |double| decimal(double, decimals))
+}
+
+/// A double as a plain decimal.
+#[must_use]
+pub fn decimal(value: f64, decimals: u8) -> String {
+    if !value.is_finite() {
+        // JSON has no infinity and no NaN; a value that reached here is
+        // a caller's mistake and nought is the only representable
+        // answer. `Derived::at` and its like refuse such a value long
+        // before this.
+        return String::from("0");
+    }
+    let text = format!("{value:.*}", usize::from(decimals));
+    let trimmed = if text.contains('.') {
+        text.trim_end_matches('0').trim_end_matches('.')
+    } else {
+        text.as_str()
+    };
+    // `-0`, `-0.0` and the like are one value with one spelling.
+    if trimmed == "-0" || trimmed.is_empty() {
+        return String::from("0");
+    }
+    trimmed.to_string()
+}
+
+/// A string with the escapes JSON requires and no others, so two writers
+/// agree.
+fn string_form(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push('"');
+    for character in text.chars() {
+        match character {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            control if control < ' ' => {
+                let _ = write!(out, "\\u{:04x}", u32::from(control));
+            }
+            other => out.push(other),
+        }
+    }
+    out.push('"');
+    out
 }
 
 /// A semantic version.

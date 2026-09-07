@@ -14,12 +14,14 @@
 //! every module above it asks for a [`Placement`] rather than comparing
 //! longitudes to cusps itself.
 
+use serde::Serialize;
 use teistro_core::angle::difference_deg;
 use teistro_core::catalogue::HouseSystem;
 
 /// Whether a system's cusps are the boundaries of its houses or their
 /// middles.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reading {
     /// The cusps are the sandhi: a house runs from one cusp to the next,
     /// and its madhya is midway between them. Every system but Sripati.
@@ -36,7 +38,7 @@ pub enum Reading {
 /// The distinction is not cosmetic. Sripati and Porphyry are built on the
 /// *same cusps* and disagree about a graha's house half the time, because
 /// one reads them as middles and the other as boundaries.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Chalit {
     /// The chalit's own name, which is what a result reports.
     pub method: HouseSystem,
@@ -90,7 +92,7 @@ impl Chalit {
 /// Both are kept because both are asked for and neither can always be
 /// derived from the other: under an unequal division the madhya are not
 /// midway between the sandhi.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct Bhavas {
     /// The boundaries, in the chart's own zodiac, degrees.
     pub sandhi: [f64; 12],
@@ -183,7 +185,7 @@ impl Bhavas {
 /// 55 charts the four named chalits put a graha in a different bhava
 /// between 10% and 51% of the time, so a bhava number without its method
 /// is not a reproducible fact (`03-design/chart-bhava-chalit.md`).
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct Placement {
     /// The bhava, 1 to 12.
     pub bhava: u8,

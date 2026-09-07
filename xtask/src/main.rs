@@ -58,6 +58,9 @@
 //! - `houses` and `check-houses`: the falsification pass over the parts
 //!   of the recorded houses nothing else reads — the degeneracy flag,
 //!   the cusp signs, the midheaven and the shift counted both ways.
+//! - `serial` and `check-serial`: the falsification pass over the
+//!   canonical form — what a stamped value carries, whether the form is
+//!   canonical, and how a double is written.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -114,6 +117,7 @@ mod parity;
 mod platform;
 mod points;
 mod release;
+mod serial;
 mod site;
 mod state;
 mod time;
@@ -161,6 +165,8 @@ fn main() {
         Some("points") => points::generate(&repo_root()),
         Some("check-houses") => houses::check_generated(&repo_root()),
         Some("houses") => houses::generate(&repo_root()),
+        Some("check-serial") => serial::check_generated(&repo_root()),
+        Some("serial") => serial::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),

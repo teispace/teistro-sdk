@@ -209,8 +209,16 @@ Where it stands, 2026-09-07:
 | `state` | **built**: `crates/state`, 43 tests. Falsified first (`cargo xtask state`, held by `check-state`) over 837 recorded readings on 93 fixtures: the dignity ladder with moolatrikona tried above exaltation, the three friendships, combustion under two cited orb tables, the five ages and their alternation, wakefulness, the planetary war and its victor, and the boundary reported as a distance because the corpus brackets the engine's threshold rather than stating it. The same pass **refused** six avasthas, which the crate names as undecided rather than guessing |
 | `aspect` | **built**: `crates/aspect`, 54 tests. The first module of the phase the corpus **cannot check** — it records no aspect at all, which `cargo xtask aspect` established by searching every key of all 115 fixtures — so the pass measured each system's own invariants, the two systems against each other over 6696 ordered pairs, the node knob's cost, and the avasthas `state` had refused. The graha drishti, the Jaimini rashi drishti, the conjunction and the shared orb engine ship; the **sphuta drishti does not**, for want of a source (crux C45), so Drik Bala waits |
 | `points` | **built**: `crates/points`, 25 tests. Falsified first (`cargo xtask points`, held by `check-points`) over the corpus's own recorded answers: six of the eight rules reproduce it **exactly**, Gulika and Mandi were derived rather than proposed by trying all twenty-four candidate instants, and the three clock-driven lagnas turned out to be three right rules reading one wrong clock (entry 25). The **Varnada does not ship** — crux C22 met in the data |
-| `serial` JSON with the extended envelope | planned |
+| `serial` JSON with the extended envelope | **built**: `crates/serial`, 22 tests. Falsified first (`cargo xtask serial`, held by `check-serial`), and the first pass to read the **source** rather than the corpus — which found three defects nothing recorded could show: the content hash was the hash of *nothing* on all but one producer, `ChartFoundation` and the rest of the chart layer derived no `Serialize` so the SDK could not publish a chart, and Rust's JSON layer writes `1e-6` where JavaScript's writes `0.000001`. All three fixed; the canonical grammar has no exponent and lives in `core` beside `content_hash`. The dossier, blob and layout rows remain |
 | the Python binding | planned |
+
+Falsifying the canonical form showed a sixth: **read the source, not
+only the corpus.** Nothing recorded can say whether the SDK fills the
+fields it documents, whether its own values serialise, or whether two
+bindings would write a number the same way — and all three were wrong.
+The pass also found `output.precision` unread, the third such knob in as
+many modules, which is why a gate for knobs with no reader is the next
+task.
 
 Falsifying the houses showed a fifth: **when most of a recorded section
 already has a reader, the pass's subject is what does not.** Three of

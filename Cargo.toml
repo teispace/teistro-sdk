@@ -19,6 +19,7 @@ members = [
     "crates/aspect",
     "crates/points",
     "crates/houses",
+    "crates/serial",
     "crates/ephemeris-kit",
     "crates/scenario",
     "crates/intl",

@@ -1447,6 +1447,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-serial"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-aspect",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-houses",
+ "teistro-panchanga",
+ "teistro-points",
+ "teistro-port-ephemeris",
+ "teistro-state",
+ "teistro-vargas",
+]
+
+[[package]]
 name = "teistro-siddhanta"
 version = "0.0.0"
 dependencies = [
