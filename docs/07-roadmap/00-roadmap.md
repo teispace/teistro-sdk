@@ -206,9 +206,26 @@ Where it stands, 2026-09-07:
 | `houses` with the named variants | the geometry is in `chart::bhava`; the service over it waits on the chart layer's shape |
 | the Indian lunisolar calendar | **needed next by `panchanga`**: the amanta month is named from the new moon's solar sign, which the crate computes, but adhika and kshaya are the calendar's to decide |
 | `vargas` | **built**: `crates/vargas`, 41 tests. Falsified first (`cargo xtask vargas`, held by `check-vargas`): a divisional chart is a function of one longitude and the corpus records both, so each chart's table was derived from the corpus and the design's rule held to it — 19 530 placements over 93 fixtures and two zodiacs, nothing left over. One evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
-| `state`, `aspect`, `points` | planned; `state` is next and the corpus decides most of it |
+| `state` | **built**: `crates/state`, 43 tests. Falsified first (`cargo xtask state`, held by `check-state`) over 837 recorded readings on 93 fixtures: the dignity ladder with moolatrikona tried above exaltation, the three friendships, combustion under two cited orb tables, the five ages and their alternation, wakefulness, the planetary war and its victor, and the boundary reported as a distance because the corpus brackets the engine's threshold rather than stating it. The same pass **refused** six avasthas, which the crate names as undecided rather than guessing |
+| `aspect`, `points` | planned; `aspect` is next, and `state` and `strength` both wait on it by name |
 | `serial` JSON with the extended envelope | planned |
 | the Python binding | planned |
+
+Falsifying the planetary state found what a measurement is for in both
+directions. It settled two rules a reading of the texts gets wrong —
+moolatrikona has to be tried above exaltation, three grahas having a
+moolatrikona span inside their exaltation sign, and the five ages
+alternate, reading them forward everywhere being wrong on 359 of 837 —
+and it refused the rest: the deeptadi below its top three and three of
+the six lajjitadi are not a function of anything a founded chart holds,
+their definitions reading "or aspected by", so the crate reports them as
+undecided and names them. Two differences became registry entries 21 and
+22 (the deeply debilitated body the engine records as dreaming; the
+lagna's placeholder friendships), and building the crate found a third
+of a different kind: the SDK's own default profile named a combustion
+table the SDK had never shipped. Two cited tables now ship, parting on
+the deeper orb, and under the default profile no body is deeply combust
+(entry 23).
 
 Falsifying the divisional charts found three more corrections and one
 registry entry, and it is the sharpest measurement the corpus supports:

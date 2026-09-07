@@ -45,6 +45,9 @@
 //! - `vargas` and `check-vargas`: the falsification pass over the recorded
 //!   divisional charts, which derives each chart's table from the corpus
 //!   and holds the kernel's proposed rule to it.
+//! - `state` and `check-state`: the falsification pass over the recorded
+//!   planetary state — the dignities, the friendships, combustion, the
+//!   avasthas and the war — and what of it the corpus cannot settle.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -98,6 +101,7 @@ mod parity;
 mod platform;
 mod release;
 mod site;
+mod state;
 mod time;
 mod vargas;
 
@@ -135,6 +139,8 @@ fn main() {
         Some("panchanga") => panchanga::generate(&repo_root()),
         Some("check-vargas") => vargas::check_generated(&repo_root()),
         Some("vargas") => vargas::generate(&repo_root()),
+        Some("check-state") => state::check_generated(&repo_root()),
+        Some("state") => state::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),
@@ -188,7 +194,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

@@ -1478,6 +1478,19 @@ name = "teistro-spike-slice"
 version = "0.0.0"
 
 [[package]]
+name = "teistro-state"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-port-ephemeris",
+]
+
+[[package]]
 name = "teistro-test-allocator"
 version = "0.0.0"
 

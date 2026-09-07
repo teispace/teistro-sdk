@@ -187,6 +187,63 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/state`, what a graha *is* as opposed to where it is, and the
+  measurement that decided it first. 43 tests.
+
+  **Numbers:** the SDK computes a planetary state for the first time.
+  Nothing moved. One reading of the recording engine's changes by
+  design, and it is the shallower one: **no body is ever deeply combust
+  under the SDK's default profile.** Both shipped orb tables carry the
+  Surya Siddhanta's degrees of time as the outer orb and only `BPHS`
+  gives a deeper orb inside it; the text gives none, and the default
+  profile is the texts as read (ADR-0024). Over the corpus the same 66
+  of 837 readings burn, and the 36 the engine calls deeply combust come
+  back merely combust. Set `state.combustion_orbs` to `BPHS` for the
+  other reading; `conformance-baseline` already resolves to it.
+
+  `cargo xtask state` proposed a rule for every recorded state field and
+  measured it over **837 readings of nine grahas on 93 fixtures**,
+  before a line of the crate existed, writing
+  `03-design/state-tables-measured.md` (held by `check-state`). It
+  settled two rules that a reading of the texts alone gets wrong:
+
+  - **Moolatrikona is tried above exaltation.** Three grahas have a
+    moolatrikona span inside their exaltation sign, so taking exaltation
+    first is wrong on every reading in one.
+  - **The five ages alternate.** Six-degree fifths run forward in an odd
+    sign and backward in an even one; reading them forward everywhere is
+    wrong on 359 of the 837.
+
+  And it **refused** six avasthas rather than fitting them. The deeptadi
+  below its top three, and three of the six lajjitadi, are not a
+  function of anything a founded chart holds — combustion,
+  retrogradation, the war, the house, the navamsha, a conjunction and
+  the drishti were each tried and each falsified — because their
+  definitions read "or aspected by". `deeptadi` returns an `Option` and
+  `Lajjitadi::undecided` names the three on every reading. They wait on
+  `aspect`.
+
+  Two differences are asserted as differences and registered: the deeply
+  debilitated body the engine records as dreaming rather than asleep
+  (entry 21), and the lagna, which the engine gives a dignity and
+  placeholder friendships that do not even compound to what it reports,
+  and which this crate does not treat as a graha at all (entry 22).
+
+  Building it found that the SDK's **default profile named a combustion
+  table the SDK did not ship** — `parashari-classical` has set
+  `state.combustion_orbs` to `SURYA_SIDDHANTA` since ADR-0024 and only
+  `BPHS` was ever written, so a chart founded on the default profile
+  failed with `UNSUPPORTED`. Both tables now ship, the citation read
+  literally, and a test holds their six outer orbs to the same numbers
+  `astro`'s heliacal visibility reads from the same verses, so the two
+  copies cannot drift.
+
+  `boundary` reports the **distance** to the nearest sign, nakshatra and
+  pada edge and ships no threshold: the corpus brackets the engine's own
+  between 21 and 43 arcseconds, and a constant compiled into the library
+  could not answer "is this classification safe" for two providers of
+  different accuracy. The tolerance is the caller's to state.
+
 - `crates/vargas`, the divisional charts, and the measurement that
   decided them first. 41 tests.
 
