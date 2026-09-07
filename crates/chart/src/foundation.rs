@@ -14,6 +14,7 @@
 //! bhabhoga are not here even though the recording engine put them in its
 //! own foundation — each depends on a module that depends on this one.
 
+use serde::Serialize;
 use teistro_astro::completion::{Completed, Completion};
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::houses::{ChartFrame, houses_at};
@@ -41,7 +42,7 @@ use teistro_time::hora::{self, Hora};
 /// Moon's traversal of its nakshatra and the elapsed part of it, which
 /// the corpus settles to within 0.39 minutes over all 55 charts. They
 /// belong to `dasha`, the only module that needs them.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct BirthTiming {
     /// The ishtakaal: how far into the day the moment is, in ghati, pala
     /// and vipala, measured from the sunrise that opened **the chart's
@@ -64,7 +65,7 @@ use crate::zodiac::ChartZodiac;
 /// Both readings are kept and neither is recomputed: a module that wanted
 /// the other one and converted it itself would use a different ayanamsha
 /// than the chart did, the day someone changed the setting.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct GrahaPosition {
     /// Which graha.
     pub graha: Graha,
@@ -105,7 +106,7 @@ impl GrahaPosition {
 }
 
 /// One moment at one place, founded.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ChartFoundation {
     /// The instant.
     pub instant: JulianDay<Utc>,

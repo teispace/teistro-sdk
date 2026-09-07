@@ -1,0 +1,31 @@
+[package]
+name = "teistro-serial"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's canonical form: the seal, the number grammar two bindings agree on, and the chart document"
+readme = "README.md"
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[dependencies]
+teistro-aspect = { path = "../aspect" }
+teistro-chart = { path = "../chart" }
+teistro-core = { path = "../core" }
+teistro-houses = { path = "../houses" }
+teistro-panchanga = { path = "../panchanga" }
+teistro-points = { path = "../points" }
+teistro-state = { path = "../state" }
+teistro-vargas = { path = "../vargas" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+
+[lints]
+workspace = true

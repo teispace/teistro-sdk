@@ -38,8 +38,17 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-eighth session (the
-houses service falsified, designed and built: the pass found its subject
+**Last updated:** 2026-09-07, end of the forty-ninth session (the
+canonical form falsified, designed and built: the pass read the source
+as well as the corpus and found that the field the whole envelope exists
+for — the hash of the value — was the hash of *nothing* on all but one
+producer, that `ChartFoundation` and the rest of the chart layer's
+values derived no `Serialize` at all so the SDK could not publish a
+chart, and that Rust's JSON layer writes `1e-6` where JavaScript's
+writes `0.000001`, which is two hashes for one number; all three are
+fixed, and `output.precision` — the third shipped, populated, unread
+knob in as many modules — has a reader); before that the forty-eighth
+session (the houses service falsified, designed and built: the pass found its subject
 by looking for the parts of the recorded houses **nothing had read**,
 and the answer was the ones that matter for a service — the degeneracy
 flag, which disagrees with the SDK's own outcome in *both* directions
@@ -188,18 +197,26 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is `serial`**, the extended envelope Phase 4's own
-   list names: one JSON shape for every value the layer now computes —
-   a foundation, a panchanga day, a divisional chart, a planetary
-   state, a set of aspects, the derived points and the houses — with
-   the provenance each already carries. Every producer exists; what is
-   missing is the one document they serialise into and the schema a
-   consumer validates against.
+3. **The next task is a gate for knobs with no reader.** Three have now
+   been found in as many modules — `state.combustion_orbs` (which made
+   a chart founded on the SDK's own default profile fail, registry entry
+   23), `houses.module_overrides` (which quietly gave a KP reading
+   whole-sign houses) and `output.precision` — which is a pattern rather
+   than an accident. `cargo xtask check-lints` is where such a rule
+   lives: it already reads the source for four determinism rules the
+   compiler does not check, and "every settings knob has a reader
+   outside the settings layer" is the fifth.
+
+   After that, Phase 4 holds the **Python binding** and a **JSON Schema
+   for the document** (`serial-and-the-envelope.md` §8), and the
+   **Indian lunisolar calendar** is still what `panchanga` needs for
+   adhika and kshaya months. Two of `serial`'s own open questions are
+   worth a look too: whether `chart` and `panchanga` should seal their
+   own envelopes rather than leaving the placeholder, and the dossier,
+   blob and layout rows the module catalogue lists.
 
    Phases 1 and 2 are closed; Phase 4 is open and under way, and Phase 3
-   may run beside it. After `serial`, Phase 4 holds the Python binding,
-   and the **Indian lunisolar calendar** is still what `panchanga` needs
-   for adhika and kshaya months.
+   may run beside it.
 
    Two things earlier modules left behind, in the order they are wanted:
 
@@ -216,17 +233,24 @@ provider's DUT1).
      Nepal's national panchangam, the only evidence in the project that
      is not another implementation.
 
-   The pattern to keep, earned seven times: **falsify, then design, then
+   The pattern to keep, earned eight times: **falsify, then design, then
    build.** `cargo xtask chalit`, `panchanga`, `vargas`, `state`,
-   `aspect`, `points` and `houses` each proposed rules and measured them
-   before a line of the module existed, and between them they found
-   fourteen differences (registry entries 14 to 26, and the bhayat
-   correction) that would otherwise have been written into code as
-   facts. The vargas pass is
+   `aspect`, `points`, `houses` and `serial` each proposed rules and
+   measured them before a line of the module existed, and between them
+   they found fourteen differences (registry entries 14 to 26, and the
+   bhayat correction) that would otherwise have been written into code
+   as facts — and three defects in the SDK's own shape that no
+   comparison with the corpus could have shown. The vargas pass is
    the sharpest, because a divisional chart is a function of one
    longitude and the corpus records both: 19 530 placements decided the
    whole kernel outright. The state pass shows the other half of the
    pattern — it **refused** six avasthas rather than guessing.
+
+   The serial pass showed a sixth: **read the source, not only the
+   corpus.** Nothing recorded can say whether the SDK fills the fields it
+   documents, whether its own values serialise, or whether two bindings
+   would write a number the same way. All three were wrong, and all three
+   were found by measuring the SDK against itself.
 
    The houses pass showed a fifth: **when most of a section already has
    a reader, the pass's subject is what does not.** Three of the four
@@ -263,6 +287,7 @@ provider's DUT1).
    | `aspect` | which bodies reach which: the graha drishti, the Jaimini rashi drishti, the conjunction, and the orb engine `tajika` will take |
    | `points` | points that behave like bodies: the five the Sun casts, Gulika and Mandi off the day's eighths, the special lagnas and the Yogi points |
    | `houses` | which house under which reading: the system a module uses, the twelve bhavas with their lords and kinds, and the degeneracy outcome |
+   | `serial` | the canonical form: the seal that computes its own hash, a number grammar with no exponent, and the chart document |
    | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat, the drik and classical solar models |
    | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
    | `intl` | the locale engine, the CLI, the packs |
@@ -275,15 +300,15 @@ provider's DUT1).
    `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
    `check-intl`, `check-ffi`, `check-chalit`, `check-panchanga`,
    `check-vargas`, `check-state`, `check-aspect`, `check-points`,
-   `check-houses`, `check-lints`, `check-versions`. Needing another
-   toolchain, run by
+   `check-houses`, `check-serial`, `check-lints`, `check-versions`.
+   Needing another toolchain, run by
    hand and in `verify`: `check-c`, `check-node`, `check-dart`,
    `check-parity`, `check-package`, `check-site`. Also: `cargo xtask
    hashes` and `compare-hashes` (the determinism matrix), `bench` and
    `compare-bench` (instruction counts, Linux), `package` and `package
    stage` (what a release ships), `version X` (the one version), `chalit`,
-   `panchanga`, `vargas`, `state`, `aspect`, `points` and `houses` (the
-   seven falsification pages), `accuracy`,
+   `panchanga`, `vargas`, `state`, `aspect`, `points`, `houses` and
+   `serial` (the eight falsification pages), `accuracy`,
    `calendars bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
@@ -944,6 +969,44 @@ partitioning the twelve with trikona, dusthana and upachaya cutting
 across them, and a house's lord taken from the sign its **middle** falls
 in, because under an unequal division a house can begin in one sign and
 be centred in another.
+
+`crates/serial` is the eighth, and the first whose pass had to read the
+**source** rather than the corpus. Nothing recorded can say whether the
+SDK fills the fields it documents, whether its own values serialise, or
+whether two bindings would write a number the same way — and all three
+were wrong.
+
+**The content hash was the hash of nothing.** `Provenance` carries every
+field ADR-0020 asks for, and the one the envelope exists for — the hash
+of the value — is set to `Hash::of(&[])` by `Provenance::new` as a
+placeholder and was replaced by exactly one producer of three. A founded
+chart and a daily panchanga both went out claiming a hash of the empty
+string. That is a shape problem rather than a bug in a producer: the one
+field that cannot be filled until the value exists is the one everybody
+forgets, so `Sealed::new` is now the only constructor and it computes
+the hash.
+
+**The chart layer could not be serialised.** `ChartFoundation` — which
+every other Phase 4 value is computed from — along with `Bhavas`,
+`ChartDay`, `ChartZodiac`, `GrahaPosition` and `Placement` derived no
+`Serialize` at all. The SDK could not publish a chart. They do now, and
+`crates/serial/tests/document.rs` is the first thing that puts every
+Phase 4 value in one place.
+
+**Two bindings would have disagreed about a number.** Rust's JSON layer
+writes `1e-6` where JavaScript's writes `0.000001`: the same number,
+two byte strings, two hashes. So the canonical form's number grammar is
+now explicit and has **no exponent at all** — a decimal to twelve
+places, trailing zeros trimmed, no negative nought — and lives in `core`
+beside `content_hash`, because there is one canonical form in the SDK
+and not two. A binding implementing that grammar needs no float printer
+of its own.
+
+And `output.precision` has a reader. It governs the **rendering** and
+not the hash — a hash that moved with a display setting would be a
+worse cache key, and the settings hash already tells two precisions
+apart. That is the third shipped, populated, unread knob found in as
+many modules, which is why the next task is a gate for them.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

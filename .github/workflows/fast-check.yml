@@ -70,6 +70,8 @@ jobs:
         run: cargo xtask check-points
       - name: Houses page (the degeneracy flag, the cusp signs and the shift reproduce)
         run: cargo xtask check-houses
+      - name: Canonical form page (the seal, the number grammar and the form's invariants reproduce)
+        run: cargo xtask check-serial
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

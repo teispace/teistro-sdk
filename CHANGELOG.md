@@ -187,6 +187,56 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/serial`, one JSON document for a chart and one way of writing
+  it, and the measurement that decided it first. 22 tests.
+
+  **Numbers:** the canonical form's **bytes moved**, so a stored content
+  hash from an earlier build will not match. The form now writes every
+  number as a plain decimal to twelve places with trailing zeros
+  trimmed, where before it wrote whatever Rust's JSON layer produced —
+  `1e-6` where JavaScript's layer writes `0.000001`. The values are
+  unchanged; only the way they are written is. Two doubles differing
+  below the grammar's resolution now hash alike, deliberately: that is
+  what a caller asking "is this the same answer" means.
+
+  This was the first falsification pass to read the **source** rather
+  than the corpus, because nothing recorded can say whether the SDK
+  fills the fields it documents. Three things were wrong.
+
+  **The content hash was the hash of nothing.** `Provenance` carries
+  every field ADR-0020 asks for, and the one the envelope exists for is
+  set to `Hash::of(&[])` by `Provenance::new` as a placeholder and was
+  replaced by exactly one producer of three. A founded chart and a daily
+  panchanga both went out claiming a hash of the empty string. That is a
+  shape problem rather than a bug in a producer — the one field that
+  cannot be filled until the value exists is the one everybody forgets —
+  so `Sealed::new` is the only constructor and it computes the hash. A
+  stale one is not representable.
+
+  **The chart layer could not be serialised.** `ChartFoundation`, which
+  every other Phase 4 value is computed from, along with `Bhavas`,
+  `ChartDay`, `ChartZodiac`, `GrahaPosition`, `Placement`, `Chalit`,
+  `Reading`, `DayPart` and `BirthTiming`, derived no `Serialize` at all.
+  The SDK could not publish a chart. They do now.
+
+  **Two bindings would have disagreed about a number**, which is the
+  reason for the grammar above. A binding implementing it needs no float
+  printer of its own.
+
+  `output.precision` gets a reader — the third shipped, populated and
+  unread knob found in as many modules, after `state.combustion_orbs`
+  (registry entry 23) and `houses.module_overrides`. It governs the
+  **rendering** and not the hash: a hash that moved with a display
+  setting would be a worse cache key, and the settings hash already
+  tells two precisions apart.
+
+  The canonical grammar lives in `core` beside `content_hash`, because
+  there is one canonical form in the SDK and not two;
+  `core::envelope::canonical_json_at` is what a rendering uses.
+  `Document` holds every section the chart layer produces — foundation,
+  panchanga, vargas, state, aspects, points, houses — with everything
+  but the foundation optional, and the whole sealed once.
+
 - `crates/houses`, which house under which reading, and the measurement
   that decided it first. 26 tests.
 

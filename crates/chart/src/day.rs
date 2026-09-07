@@ -17,6 +17,7 @@
 //! module answers the inverse, "what arc holds *this instant*", which is
 //! the question a chart actually asks.
 
+use serde::Serialize;
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::solar::SolarModel;
 use teistro_core::error::Error;
@@ -31,7 +32,8 @@ use teistro_time::local_day::{LocalDay, local_day};
 /// it is the night of the day before, and [`ChartDay`] has already moved
 /// to that day by the time this is answered. Naming it so stops "does
 /// pre-sunrise count as night?" from being asked once per module.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DayPart {
     /// Between the day's sunrise and its sunset.
     Daylight,
@@ -54,7 +56,7 @@ impl DayPart {
 /// [`LocalDay`] already carries the arc, the vara, the polar state and
 /// the convention the arc was reckoned by; what this adds is the two
 /// things a day cannot know about an instant it does not have.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct ChartDay {
     /// The day, which may be the civil date before the instant's.
     pub day: LocalDay,
