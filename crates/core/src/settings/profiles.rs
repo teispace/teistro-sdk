@@ -321,9 +321,16 @@ fn western_tropical_default() -> Profile {
     }
 }
 
+/// The recording engine's defaults exactly, so that the corpus's charts
+/// reproduce (`05-testing/01-golden-vectors.md`).
 fn conformance_baseline() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.centre = Some(Centre::Topocentric);
+    // The engine has no basis knob and applies the nutated value.
+    // Measured: over the corpus's 55 charts the mean basis is up to
+    // 18.46 arcseconds from the value the engine recorded and the true
+    // basis is within 0.0086, two thousand times closer (entry 16).
+    patch.frame.ayanamsha_basis = Some(AyanamshaBasis::True);
     patch.houses.chalit_system = Some(HouseSystem::Vehlow);
     patch.day.polar_day_policy = Some(PolarDayPolicy::NearestEvent);
     patch.day.sunrise = Some(Sunrise::UpperLimbRefraction.into());
@@ -333,16 +340,27 @@ fn conformance_baseline() -> Profile {
     patch.calendars.civil_calendar = Some(Calendar::BikramSambat);
     Profile {
         id: ProfileId::new("conformance-baseline"),
-        version: 1,
+        // 2: the ayanamsha basis became `TRUE`, which is what the engine
+        // applies (entry 16 of the deliberate-difference registry).
+        version: 2,
         base: None,
         patch,
-        sources: vec![Citation::new(
-            "*",
-            Source::new(
-                "baseline-engine",
-                "docs/05-testing/01-golden-vectors.md, the baseline conventions",
+        sources: vec![
+            Citation::new(
+                "*",
+                Source::new(
+                    "baseline-engine",
+                    "docs/05-testing/01-golden-vectors.md, the baseline conventions",
+                ),
             ),
-        )],
+            Citation::new(
+                "frame.ayanamsha_basis",
+                Source::new(
+                    "baseline-engine",
+                    "measured: the recorded ayanamsha carries the nutation, 18.46\" against 0.0086\"",
+                ),
+            ),
+        ],
         mark: Mark::Verified,
     }
 }

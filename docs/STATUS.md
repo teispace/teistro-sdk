@@ -592,12 +592,16 @@ instant belongs to) and `bhava` (the twelve bhavas with their madhya, and
 a placement that carries its chalit), against all 55 recorded charts —
 1320 boundaries and middles to 1.7e-13°, every one of 495 placements, the
 107 shifted grahas right in both readings, and the day, the lagna's
-anchor, day-or-night and the ishtakaal on every comparable chart. Two
-findings came out of it: bhayat and bhabhoga are the Moon's nakshatra
-transit and not the day's part, which the design page had wrong and a
-test now asserts; and the engine's night is `24h` minus the daylight
-rather than sunset to sunrise, up to 1.80 minutes out, which is entry 15
-of the deliberate-difference registry. What remains of the
+anchor, day-or-night and the ishtakaal on every comparable chart. `chart::zodiac` holds the chart's one
+ayanamsha value, which the corpus settles: `sidereal = tropical -
+ayanamsha` closes to 1.1e-13° over 550 bodies with one value per chart.
+Three findings came out of building it: bhayat and bhabhoga are the
+Moon's nakshatra transit and not the day's part, which the design page had
+wrong and a test now asserts; the engine's night is `24h` minus the
+daylight rather than sunset to sunrise, up to 1.80 minutes out (entry 15);
+and the engine applies the nutated ayanamsha, 18.46 arcseconds from the
+mean one and 0.0086 from the true, so `conformance-baseline` sets
+`ayanamsha_basis = TRUE` (entry 16). What remains of the
 foundation is the positions, the lagna and its anchor, the birth timing
 and the provenance; then the panchanga day's own design page.
 
