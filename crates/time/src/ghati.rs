@@ -16,6 +16,9 @@ const MICROS_PER_DAY: i128 = 86_400_000_000;
 const MICROS_PER_VIPALA: i128 = 400_000;
 /// Vipalas in a ghati.
 const VIPALAS_PER_GHATI: u32 = 3600;
+
+/// Vipalas in an hour: two and a half ghatis of 3600.
+const VIPALAS_PER_HOUR: u32 = 9000;
 /// Vipalas in half a day of thirty ghatis.
 const VIPALAS_PER_HALF: i128 = 108_000;
 
@@ -48,6 +51,16 @@ impl GhatiPala {
     #[must_use]
     pub const fn total_vipalas(self) -> u32 {
         self.ghati as u32 * VIPALAS_PER_GHATI + self.pala as u32 * 60 + self.vipala as u32
+    }
+
+    /// The count as hours, which is what a rule stated in degrees an
+    /// hour reads it as.
+    ///
+    /// A vipala is two fifths of a second, so this is exact to that and
+    /// no finer — which is the resolution the count itself has.
+    #[must_use]
+    pub fn to_hours(self) -> f64 {
+        f64::from(self.total_vipalas()) / f64::from(VIPALAS_PER_HOUR)
     }
 
     /// A count from whole vipalas.

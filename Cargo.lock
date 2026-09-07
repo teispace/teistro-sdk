@@ -1392,6 +1392,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-points"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-port-ephemeris",
+]
+
+[[package]]
 name = "teistro-port-ephemeris"
 version = "0.0.0"
 dependencies = [
