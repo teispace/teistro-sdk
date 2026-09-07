@@ -38,14 +38,20 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-second session (Phase 4
+**Last updated:** 2026-09-07, end of the forty-third session (the
+panchanga day falsified, then designed: `cargo xtask panchanga` proposes
+a rule for each of the recorded daily panchanga's twenty-seven fields and
+measures it over all 55 days, and three of the rules it falsified became
+registry entries 17 to 19 before a line of the module existed;
+`03-design/panchanga-day.md` written from the result); before that the
+forty-second session (Phase 4
 opened: the bhava chalit falsification pass the roadmap asks for first —
 the four methods measured against each other over the 55 recorded charts,
 and the answer that they are not variants of one thing — the chart
 foundation's design page, whose crux is that the day a chart belongs to
 is not its civil date, and `crates/chart` with the two parts that page
-named as easy to get wrong, measured against all 55 recorded charts); before
-that the forty-first session (Phase 1
+named as easy to get wrong, measured against all 55 recorded charts);
+before that the forty-first session (Phase 1
 closed and its "Now" rewritten for the two phases that follow; GitHub
 Pages enabled, the registries deferred to the release; Q34
 decided and the defect it exposed fixed: the default profile patches the
@@ -139,20 +145,35 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is `docs/03-design/panchanga-day.md`**, then the
-   `panchanga` module. Phases 1 and 2 are closed; Phase 4 is open and
-   under way, and Phase 3 may run beside it. The evidence for doing the
-   page first: each of the four modules of `crates/chart` was designed
-   before it was written, and building each one corrected something —
-   two entries of the deliberate-difference registry, one wrong section
-   of a design page and one wrong setting in a shipped profile.
+3. **The next task is the `panchanga` crate**, to the design page
+   `docs/03-design/panchanga-day.md`. Phases 1 and 2 are closed; Phase 4
+   is open and under way, and Phase 3 may run beside it.
 
-   `panchanga_day` is the corpus's largest unread section: every tithi,
-   nakshatra, yoga and karana with its start and end instants, the
-   inauspicious periods, the choghadiya and hora sequences, Abhijit and
-   Brahma muhurta, the lunar month under both conventions, panchaka,
-   moonrise and moonset. `crates/chart` is what it builds on and
-   `astro::events` is where the boundary instants come from.
+   The page and the falsification pass under it are done: `cargo xtask
+   panchanga` proposes a rule for each of the recorded daily panchanga's
+   twenty-seven fields and measures it over all 55 days, writing
+   `03-design/panchanga-day-conventions.md`, which `check-panchanga`
+   holds. Read that page before the design page: every claim the design
+   makes points at a row of it.
+
+   To build: the limb kernel over `astro::events` (three crossing
+   searches for four limbs — the karana's 6° lattice gives the tithi's
+   12° one — over a window widened by 1.5 days so the first and last
+   spans carry their true bounds); `core::interval::Interval` with the
+   one divider every period uses; the periods (three kaalas, sixteen
+   choghadiya over `time::hora::lord_of`, twenty-four horas from
+   `time::hora`, thirty muhurtas with Abhijit and Brahma muhurta named);
+   the month, panchaka, the ayana and the disha shool; the muhurta yogas
+   as intervals; three new knobs (`panchanga.centre`,
+   `panchanga.moon_events`, `panchanga.muhurta_tables`); four new
+   catalogue kinds (`choghadiya`, `kaala`, `panchaka`, `muhurta_yoga`);
+   and the range API, which is the primary shape.
+
+   The evidence for designing before writing: each of the four modules of
+   `crates/chart` was designed first, and building each corrected
+   something — two registry entries, one wrong section of a design page
+   and one wrong setting in a shipped profile. The panchanga pass found
+   three more before a line of the module existed (entries 17 to 19).
 
 4. What is built, and what runs it:
 
@@ -173,15 +194,15 @@ provider's DUT1).
 
    Gates on every push (`fast-check`): `check-docs`, `check-fixtures`,
    `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
-   `check-intl`, `check-ffi`, `check-chalit`, `check-lints`,
-   `check-versions`. Needing another toolchain, run by hand and in
-   `verify`: `check-c`, `check-node`, `check-dart`, `check-parity`,
-   `check-package`, `check-site`. Also: `cargo xtask hashes` and
-   `compare-hashes` (the determinism matrix), `bench` and `compare-bench`
-   (instruction counts, Linux), `package` and `package stage` (what a
-   release ships), `version X` (the one version), `chalit` (the bhava
-   falsification page), `accuracy`, `calendars bs-fit`, `gen ffi|intl|
-   catalogue|calendars|time`.
+   `check-intl`, `check-ffi`, `check-chalit`, `check-panchanga`,
+   `check-lints`, `check-versions`. Needing another toolchain, run by
+   hand and in `verify`: `check-c`, `check-node`, `check-dart`,
+   `check-parity`, `check-package`, `check-site`. Also: `cargo xtask
+   hashes` and `compare-hashes` (the determinism matrix), `bench` and
+   `compare-bench` (instruction counts, Linux), `package` and `package
+   stage` (what a release ships), `version X` (the one version), `chalit`
+   and `panchanga` (the two falsification pages), `accuracy`, `calendars
+   bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
    (`teispace/teistro-conformance`, pinned to `v0.1.1`): clone with
@@ -604,7 +625,7 @@ the code, a falsification pass over the four Bhava-Chalit methods, and it
 is done (`03-design/chart-bhava-chalit.md`, by `cargo xtask chalit`, held
 by `check-chalit`): the four are not variants of one thing, so a house
 carries the method that produced it as a position carries its frame, and
-the house service returns the madhya as well as the sandhi. There is
+the house service returns the madhya as well as the sandhi. The
 foundation's design page is written
 (`03-design/chart-foundation.md`) and the two parts it named as easy to
 get wrong are built and measured: `crates/chart`'s `day` (the day an
@@ -626,13 +647,33 @@ assemble them into the value every module above a chart starts from, with
 the birth timing as a field and the whole stamped in an `Envelope`, so
 the foundation is complete (`crates/chart`, 37 tests).
 
-**The next task is `03-design/panchanga-day.md`, then the `panchanga`
-module.** `panchanga_day` is the corpus's largest unread section — every
-tithi, nakshatra, yoga and karana with its start and end instants, the
-inauspicious periods, the choghadiya and hora sequences, Abhijit and
-Brahma muhurta, the lunar month under both conventions, panchaka,
-moonrise and moonset. It builds on `crates/chart` and takes its boundary
-instants from `astro::events`.
+The panchanga day is designed and its conventions are measured.
+`panchanga_day` was the corpus's largest unread section — twenty-seven
+fields per day, none of which says how it was reckoned — so it was
+falsified before it was designed, the way the bhava chalit was: `cargo
+xtask panchanga` proposes a rule for every field, measures it over all
+55 recorded days and writes `03-design/panchanga-day-conventions.md`,
+which `check-panchanga` holds. The window is sunrise to the next sunrise
+and it is `time`'s own `LocalDay`; a limb is a span the corpus clips and
+the SDK carries whole as well; every period is one division of one of two
+arcs; the choghadiya is the hora's weekday walk, exactly, over 880 of
+them; Abhijit is the eighth muhurta of the daylight and void on
+Wednesdays; the catalogue's own attributes reproduce the engine's tables
+member for member. Three differences were found and registered (17: Brahma
+muhurta sized from the following night, a median 10 s out; 18: the Moon's
+rise and set taken over the civil day inside a sunrise-bounded section,
+24 of 108 outside it; 19: the tithi numbered one to thirty rather than
+within its paksha), and one limb the corpus cannot settle at all — the
+muhurta yogas, whose tables match no published one under any rotation.
+`03-design/panchanga-day.md` is the design written from all of it.
+
+**The next task is the `panchanga` crate**, to that page: the limb kernel
+over `astro::events` (three searches for four limbs, the karana's giving
+the tithi's), the divider on `core::interval::Interval`, the periods, the
+month, panchaka and the yogas as intervals, three new settings knobs
+(`panchanga.centre`, `panchanga.moon_events`, `panchanga.muhurta_tables`)
+and four new catalogue kinds (`choghadiya`, `kaala`, `panchaka`,
+`muhurta_yoga`).
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

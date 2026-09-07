@@ -187,6 +187,51 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- The daily panchanga falsified, then designed. `panchanga_day` is the
+  largest section of the conformance corpus and the only one nothing had
+  read: twenty-seven fields a day, none of which says how it was
+  reckoned. `cargo xtask panchanga` proposes a rule for every one of them
+  and measures it over all 55 recorded days, writing
+  `03-design/panchanga-day-conventions.md`; `check-panchanga` holds the
+  page, so its numbers are what this build produces.
+  `03-design/panchanga-day.md` is the design written from the result.
+
+  **Numbers:** none moved; this measures numbers that were already there
+  and designs a module that does not yet exist.
+
+  What holds, exactly, on every recorded day: the window is sunrise to
+  the next sunrise (all four limb lists begin and end at one instant, to
+  0 s); every period is an equal division of the daylight or of the night
+  (the eighths to 7e-9 of an eighth, the choghadiya and the horas to
+  0.04 ms); a choghadiya's lord is the hora's weekday walk, over 1320
+  horas and 880 choghadiya with no exceptions; Abhijit is the eighth
+  muhurta of the daylight and void on Wednesdays; the purnimanta month is
+  the amanta month plus one through the dark fortnight; panchaka's kind
+  is its nakshatra's; and the SDK's own catalogue reproduces the engine's
+  attribute tables — the tithi's paksha and class, the nakshatra's
+  muhurta nature, the yoga's auspiciousness, the karana's Vishti flag —
+  member for member.
+
+  What it falsified, each now a row of the deliberate-difference
+  registry. **Brahma muhurta is sized from the wrong night** (entry 17):
+  it ends before sunrise, so it belongs to the night that ends there, and
+  the engine sizes it from the night that follows the day — a median
+  10.0 s and at worst 27.6 s out. **The Moon's rise and set are the civil
+  day's** (entry 18): every other field is bounded by sunrise and these
+  two are the first at or after local midnight, so 24 of the 108 recorded
+  events fall outside the window the limbs occupy. **The tithi is
+  numbered through the month** (entry 19), one to thirty, where the SDK's
+  catalogue numbers it within its paksha, one to fifteen — not a
+  disagreement but two fields, and a harness that compares them without
+  saying which is comparing nothing.
+
+  And one limb the corpus cannot settle at all: the five muhurta yogas
+  fire 13 times on 12 days, which cannot derive a seven-by-twenty-seven
+  table, and the engine's positives match no published table under any
+  rotation of the weekday or the nakshatra index. The design ships them
+  as cited tables with confidence marks and reports them as intervals,
+  since the corpus's flags reduce to "some interval contains sunrise".
+
 - The foundation's birth timing and its stamp. The ishtakaal and the
   planetary hour are fields rather than calls, both counted over the arc
   of **the day the chart belongs to** — so a birth in the small hours is
