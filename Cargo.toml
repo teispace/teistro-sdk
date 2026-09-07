@@ -16,6 +16,7 @@ members = [
     "crates/panchanga",
     "crates/vargas",
     "crates/state",
+    "crates/aspect",
     "crates/ephemeris-kit",
     "crates/scenario",
     "crates/intl",

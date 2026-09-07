@@ -187,6 +187,74 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/aspect`, which bodies reach which, and the measurement that
+  decided it first. 54 tests.
+
+  **Numbers:** the SDK computes a drishti for the first time. Nothing
+  moved. `crates/state` moved one reading in the *other* direction: the
+  three lajjitadi it reported as undecided everywhere now answer
+  `Holds::No` with certainty where the tradition's own necessary
+  condition fails — 1301 of 1953 open questions closed, none of them a
+  state the recording engine records.
+
+  **The corpus records no aspect.** This is the first Phase 4 module it
+  cannot check, and the pass established that rather than assuming it,
+  by searching every key of all 115 fixture files for a name an aspect
+  could have been recorded under. So `cargo xtask aspect` measured what
+  it still could, and it was worth running:
+
+  - **It refused a claim the design had made.** Two grahas aspecting
+    each other fully need not be in the seventh from each other: 48 of
+    the 1020 sign pairs where they reach each other fully are not, and
+    they are two configurations. **Saturn three signs after Mars**
+    stands in Mars's fourth and holds Mars in its own tenth, both full,
+    on 7 of the 93 recorded charts. The other is Jupiter with itself
+    across a trine, which is arithmetic and not astrology — and is why
+    `Aspects::mutual` takes a pair of bodies rather than of positions.
+  - **The two systems are not variants of one thing.** Over 6696 ordered
+    pairs of bodies the graha drishti and the Jaimini rashi drishti
+    agree on 4053, and each sees relations the other does not. A rashi
+    drishti always looks back; a graha drishti almost never does.
+  - **Every recorded placement is in its whole-sign house**, whatever
+    bhava chalit its fixture's settings name (registry entry 24). So a
+    drishti counted from the sign and one counted from the recorded
+    house are the same relation over this corpus and part on any chart
+    whose houses come from cusps. The module counts from the sign.
+  - **A drishti is a step function**, so a relation carries the distance
+    from both ends to the sign edge that decides it and ships no
+    threshold: moving every body the engine flagged as near an edge
+    across it changes 52 of the 6696 relations. `Boundaries` moved down
+    into `teistro-core` for this, since `state` and `aspect` both want
+    it; `state::boundary` re-exports it and nothing above changed.
+
+  **The sphuta drishti does not ship.** The degree-based value Drik Bala
+  weighs has no construction written down anywhere in this project: the
+  research page records that one exists and never gives its terms, and
+  the corpus has no drishti value to fit one to. `aspect.drishti_table`
+  resolves `PARASHARA` and refuses anything else by name, the thirteen
+  values any construction must reproduce are published, and the question
+  is registered as crux C45. `Strength::virupas` is the *whole-sign*
+  value in the same unit, which is those thirteen values and not an
+  interpolation between them.
+
+  **A node's aspect beyond the seventh stays `NONE`**, the root's
+  reading, because nothing in the corpus prefers one. The knob's other
+  two readings make a node a special graha with a chosen pair of houses,
+  exactly as Mars, Jupiter and Saturn have fixed ones.
+
+  What the pass gave back to `crates/state` is the larger half. It
+  retried the three lajjitadi that module had refused, with a real
+  drishti, over the same 651 readings. No rule is exact — and none
+  misses a single recorded reading, while adding the aspect clause makes
+  every one of them worse. So the tradition's condition is *necessary*,
+  the recording engine applies something narrower, and whatever that is
+  it is not a drishti. `Lajjitadi` now carries three lists rather than
+  two and `Holds` names the three answers.
+
+  Every shipped profile is tested for naming a drishti table that
+  resolves, which is the `state` lesson (registry entry 23) turned into
+  a test rather than waited for.
+
 - `crates/state`, what a graha *is* as opposed to where it is, and the
   measurement that decided it first. 43 tests.
 

@@ -48,6 +48,10 @@
 //! - `state` and `check-state`: the falsification pass over the recorded
 //!   planetary state — the dignities, the friendships, combustion, the
 //!   avasthas and the war — and what of it the corpus cannot settle.
+//! - `aspect` and `check-aspect`: the falsification pass over the
+//!   drishti, which the corpus records nothing of, so it measures the
+//!   systems' own invariants, the systems against each other over the
+//!   recorded placements, and the avasthas the state pass refused.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -80,12 +84,14 @@
 )]
 
 mod accuracy;
+mod aspect;
 mod bench;
 mod binding;
 mod c_binding;
 mod calendars;
 mod catalogue;
 mod chalit;
+mod classical;
 mod consumer;
 mod dart_binding;
 mod ffi;
@@ -141,6 +147,8 @@ fn main() {
         Some("vargas") => vargas::generate(&repo_root()),
         Some("check-state") => state::check_generated(&repo_root()),
         Some("state") => state::generate(&repo_root()),
+        Some("check-aspect") => aspect::check_generated(&repo_root()),
+        Some("aspect") => aspect::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),

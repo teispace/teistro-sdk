@@ -126,6 +126,7 @@ pub fn state(foundation: &ChartFoundation, settings: &Settings) -> Result<Vec<Gr
             graha: position.graha,
             sign,
             house: position.house.bhava,
+            compound: friendship.compound,
             dignity: dignity::dignity(
                 position.graha,
                 sign,

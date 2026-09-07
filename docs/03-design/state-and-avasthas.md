@@ -181,6 +181,25 @@ value is not.
 When `aspect` lands, `cargo xtask state` is where the rules are proposed
 again, against the same 837 readings.
 
+**The three lajjitadi now answer `no` with certainty.** When `aspect`
+was built its pass retried every rule the tradition states, with a real
+graha drishti, over the same 651 readings
+(`aspect-drishti-measured.md` §7). None is exact — and every one of
+them **misses nothing**: an enemy's sign, a watery sign and a friend's
+sign each hold on every reading the engine records the state for, and on
+a good many it does not. Adding the aspect clause the definitions also
+carry made each rule worse, not better, which is evidence the recording
+engine does not compute these from a drishti at all.
+
+So the condition is necessary and something narrower is sufficient, and
+the module says exactly that. `Lajjitadi` carries three lists rather than
+two — holding, ruled out, undecided — and `Holds` names the three
+answers. Over the corpus that turns 1301 of 1953 open questions into a
+certain `no` and leaves 652 withheld, and it costs no aspect model: a
+sign and a compound friendship decide it, which this module already has.
+`crates/state/tests/baseline.rs` holds the guarantee that matters — no
+state the engine records is ever ruled out.
+
 ## 8. A boundary is a distance, not a flag
 
 The recording engine flags a body within a hair of a sign, nakshatra or
@@ -252,7 +271,10 @@ is at war with A, and exactly one of them wins.
 
 ## 12. Open questions
 
-- **The deeptadi and the three lajjitadi**, above. They need `aspect`.
+- **The deeptadi's lower six**, above. `cargo xtask aspect` retried them
+  with a real drishti and no rule is close
+  (`aspect-drishti-measured.md` §7), so what they need is a source and
+  not a module.
 - **The deep-debilitation orb.** A degree with the shadow grahas
   excluded, or something under 0.98° for everyone: the corpus cannot
   separate the two. The SDK takes the first because the nodes are

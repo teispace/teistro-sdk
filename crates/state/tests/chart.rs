@@ -26,6 +26,7 @@ use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut
 use teistro_core::settings::{OverridePolicy, Profile, Settings, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::test_provider::TestProvider;
+use teistro_state::avastha::{Holds, NARROWED_LAJJITADI};
 use teistro_state::{avastha, state};
 
 fn place() -> Place {
@@ -82,8 +83,22 @@ fn every_graha_of_the_foundation_gets_a_state() {
         assert!((found.motion.speed_deg_per_day - position.speed_deg_per_day).abs() < 1e-12);
         // A boundary distance is a fact whatever the body.
         assert!(found.boundaries.nearest_deg() >= 0.0);
-        // And the undecided lajjitadi are named on every one of them.
-        assert_eq!(found.lajjitadi.undecided.len(), 3);
+        // And the three narrowed lajjitadi are each ruled out or left
+        // undecided on every one of them, never asserted.
+        assert_eq!(
+            found.lajjitadi.ruled_out.len() + found.lajjitadi.undecided.len(),
+            NARROWED_LAJJITADI.len(),
+            "{:?}",
+            found.graha
+        );
+        for state in NARROWED_LAJJITADI {
+            assert!(
+                !found.lajjitadi.holding.contains(&state),
+                "{:?} {state:?} is never asserted",
+                found.graha
+            );
+            assert_ne!(found.lajjitadi.state(state), Holds::Yes);
+        }
     }
     println!(
         "{} grahas, {} at home, {} combust",

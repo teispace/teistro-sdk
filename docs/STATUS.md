@@ -38,8 +38,18 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-fifth session (the
-planetary state falsified, designed and built: `cargo xtask state`
+**Last updated:** 2026-09-07, end of the forty-sixth session (the
+drishti falsified, designed and built: the first Phase 4 module the
+corpus **cannot check** — it records no aspect at all, which
+`cargo xtask aspect` established by searching every key of all 115
+fixtures — so the pass measured each system's own invariants, the
+systems against each other over 6696 ordered pairs, and the avasthas
+the state pass refused; it refused a claim of its own (a mutual full
+aspect is not only the seventh: Mars and Saturn make it across the
+fourth and tenth), gave `crates/state` a necessary condition that turns
+1301 open questions into certain answers, and refused the sphuta
+drishti for want of a source, which is crux C45); before that the
+forty-fifth session (the planetary state falsified, designed and built: `cargo xtask state`
 proposed a rule for every recorded state field and measured it over 837
 readings — settling the order of the dignity ladder and the ages'
 alternation, and refusing six avasthas outright — `crates/state` is the
@@ -159,16 +169,18 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is `crates/aspect`**, over `chart`: graha drishti,
-   sphuta drishti, rashi drishti, the conjunction and the Tajika
-   aspects. Phases 1 and 2 are closed; Phase 4 is open and under way,
-   and Phase 3 may run beside it. Two modules are already waiting on
-   it by name: `crates/state` returns six avasthas as *undecided*
-   because their definitions read "or aspected by"
-   (`03-design/state-and-avasthas.md` §7), and `strength` cannot be
-   started without it. Falsify first, as the last four modules did —
-   the corpus records the aspects, so a pass over them can settle the
-   drishti table before the design page is written.
+3. **The next task is `crates/points`**, over `chart`: the special
+   lagnas, the upagrahas and the sphutas the corpus records under
+   `houses.special_lagnas`. Phases 1 and 2 are closed; Phase 4 is open
+   and under way, and Phase 3 may run beside it. It is the last of the
+   phase's modules whose inputs all exist, and unlike `aspect` the
+   corpus **does** record its answers, so the falsification pass has a
+   recorded target again.
+
+   `houses` is the other candidate: the geometry is already in
+   `chart::bhava` and `astro::houses`, and what is missing is the
+   service over them, which the roadmap says waits on the chart layer's
+   shape — that shape now exists.
 
    Two things earlier modules left behind, in the order they are wanted:
 
@@ -185,17 +197,24 @@ provider's DUT1).
      Nepal's national panchangam, the only evidence in the project that
      is not another implementation.
 
-   The pattern to keep, earned four times: **falsify, then design, then
-   build.** `cargo xtask chalit`, `panchanga`, `vargas` and `state` each
-   proposed rules and measured them against the corpus before a line of
-   the module existed, and between them they found eleven differences
-   (registry entries 14 to 23, and the bhayat correction) that would
+   The pattern to keep, earned five times: **falsify, then design, then
+   build.** `cargo xtask chalit`, `panchanga`, `vargas`, `state` and
+   `aspect` each proposed rules and measured them before a line of the
+   module existed, and between them they found twelve differences
+   (registry entries 14 to 24, and the bhayat correction) that would
    otherwise have been written into code as facts. The vargas pass is
    the sharpest, because a divisional chart is a function of one
    longitude and the corpus records both: 19 530 placements decided the
-   whole kernel outright. The state pass is the one that shows the
-   other half of the pattern — it **refused** six avasthas, which the
-   module now reports as undecided rather than guessing.
+   whole kernel outright. The state pass shows the other half of the
+   pattern — it **refused** six avasthas rather than guessing.
+
+   The aspect pass showed a third thing: **a pass is worth running even
+   where the corpus is silent.** It had no recorded answer at all, and
+   it still refused a claim the design had made (a mutual full aspect is
+   not only the seventh), measured how far apart two systems a reader
+   might conflate actually are, and turned 1301 of `state`'s 1953 open
+   questions into certain answers by finding a necessary condition where
+   no sufficient one exists.
 
 4. What is built, and what runs it:
 
@@ -209,6 +228,7 @@ provider's DUT1).
    | `panchanga` | the almanac of one day at one place: the limbs as spans, the periods as divisions of the arcs, the month, the omens and the Moon's and Sun's day |
    | `vargas` | the divisional charts: one evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
    | `state` | what a graha is: the dignity ladder, the three friendships, combustion under two cited orb tables, the ages, the war, the avasthas it can decide and the six it will not |
+   | `aspect` | which bodies reach which: the graha drishti, the Jaimini rashi drishti, the conjunction, and the orb engine `tajika` will take |
    | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat, the drik and classical solar models |
    | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
    | `intl` | the locale engine, the CLI, the packs |
@@ -220,13 +240,15 @@ provider's DUT1).
    Gates on every push (`fast-check`): `check-docs`, `check-fixtures`,
    `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
    `check-intl`, `check-ffi`, `check-chalit`, `check-panchanga`,
-   `check-vargas`, `check-state`, `check-lints`, `check-versions`. Needing another toolchain, run by
+   `check-vargas`, `check-state`, `check-aspect`, `check-lints`,
+   `check-versions`. Needing another toolchain, run by
    hand and in `verify`: `check-c`, `check-node`, `check-dart`,
    `check-parity`, `check-package`, `check-site`. Also: `cargo xtask
    hashes` and `compare-hashes` (the determinism matrix), `bench` and
    `compare-bench` (instruction counts, Linux), `package` and `package
    stage` (what a release ships), `version X` (the one version), `chalit`,
-   `panchanga`, `vargas` and `state` (the four falsification pages), `accuracy`,
+   `panchanga`, `vargas`, `state` and `aspect` (the five falsification
+   pages), `accuracy`,
    `calendars bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
@@ -754,6 +776,50 @@ profile no body is ever deeply combust, which is registry entry 23 and
 is stated in the crate's own documentation rather than hidden. The six
 outer orbs are the same numbers `astro`'s heliacal visibility reads, and
 a test now holds the two copies together.
+
+`crates/aspect` is the fifth, and the first the corpus cannot check at
+all. It records no aspect of any kind, which `cargo xtask aspect`
+established rather than assumed by searching every key of all 115
+fixture files for a name one could have been recorded under. That
+changed what a falsification pass could be, and it turned out to be
+worth running anyway.
+
+It **refused a claim the design had made**. The page proposed that two
+grahas aspecting each other fully must be in the seventh from each
+other; the measurement found 48 of the 1020 sign pairs where they reach
+each other fully are not, and named the two configurations. One is
+Jupiter with itself across a trine, which is arithmetic rather than
+astrology and is why the module's `mutual` takes a pair of *bodies*; the
+other is real and occurs on 7 of the 93 charts — **Saturn three signs
+after Mars** stands in Mars's fourth and holds Mars in its own tenth,
+and both aspects are full.
+
+It also measured how far apart the two drishti systems are, which is the
+bhava-chalit finding in another place: over 6696 ordered pairs of bodies
+the graha and rashi readings agree on 4053 and each sees relations the
+other does not, so a module cannot quietly offer one for the other. And
+it found that every one of the corpus's 837 recorded placements is in
+its **whole-sign** house whatever chalit its fixture names (registry
+entry 24), so a harness comparing "aspects the seventh house" against
+this corpus is comparing against a whole-sign reading.
+
+Two things it would not do. The **sphuta drishti** does not ship: the
+degree-based value Drik Bala weighs has no construction written down
+anywhere in this project, so the module refuses the table by name,
+publishes the thirteen values any construction must reproduce, and the
+question is registered as crux C45. And a **node's aspect** stays the
+root's `NONE`, because nothing in the corpus prefers a reading.
+
+What it gave back was larger than expected. `crates/state` had shipped
+three lajjitadi as undecided, saying they waited on `aspect`; the pass
+retried every rule the tradition states, with a real drishti, and none
+is exact — but **none misses a single recorded reading**, and adding the
+aspect clause makes each rule worse rather than better. So the
+condition is necessary, the engine applies something narrower, and it is
+not a drishti. `state` now answers `Holds::No` with certainty where the
+condition fails: **1301 of 1953 open questions closed**, with no aspect
+model needed to do it. `Boundaries` moved down into `teistro-core` on
+the way, because `aspect` wants the same fact about the same angle.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

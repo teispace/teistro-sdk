@@ -25,9 +25,14 @@
 //!   default profile names the Surya Siddhanta's, which gives one orb
 //!   per body and nothing inside it, so under it a body is combust or it
 //!   is not ([`burn`]).
-//! - **Six avasthas are not decidable yet**, and the crate reports
-//!   nothing where it cannot decide rather than a plausible guess. They
-//!   are the ones whose definitions read "or aspected by".
+//! - **Six avasthas are not decidable**, and the crate reports nothing
+//!   where it cannot decide rather than a plausible guess. They are the
+//!   ones whose definitions read "or aspected by". Three of them — the
+//!   lajjitadi — now carry a *necessary* condition measured over the
+//!   whole corpus, so the answer is [`Holds::No`] where that fails and
+//!   [`Holds::Undecided`] only where it holds: 1301 of 1953 questions
+//!   the module used to leave open are now answered
+//!   (`03-design/aspect-drishti-measured.md` §7).
 //!
 //! ```
 //! use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
@@ -53,7 +58,7 @@ pub mod burn;
 pub mod chart;
 pub mod dignity;
 
-pub use avastha::{AtWar, Lajjitadi, Placement, War};
+pub use avastha::{AtWar, Holds, Lajjitadi, Placement, War};
 pub use boundary::Boundaries;
 pub use burn::{Applied, Burning, Combustion, Orbs};
 pub use chart::{GrahaState, Motion, state};
