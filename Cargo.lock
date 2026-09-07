@@ -1272,6 +1272,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-chart"
+version = "0.0.0"
+dependencies = [
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-core",
+ "teistro-time",
+]
+
+[[package]]
 name = "teistro-core"
 version = "0.0.0"
 dependencies = [

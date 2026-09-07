@@ -12,6 +12,7 @@ members = [
     "crates/port-timezone",
     "crates/time",
     "crates/calendar",
+    "crates/chart",
     "crates/ephemeris-kit",
     "crates/scenario",
     "crates/intl",

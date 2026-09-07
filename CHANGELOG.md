@@ -187,6 +187,36 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/chart`, the first code of Phase 4: the two parts the design
+  named as easy to get wrong, both against all 55 recorded charts.
+
+  `chart::day` answers which day an instant belongs to. A panchanga day
+  runs sunrise to sunrise, so an instant before the civil date's sunrise
+  belongs to the day that began the morning before, and the vara, the
+  hora, the ishtakaal and the sunrise that anchors the lagna move back
+  with it. `time::local_day` answers "the arc of this date"; this is the
+  inverse. `DayPart` has two members and not three, because pre-sunrise
+  is the previous day's night. The type is `ChartDay` rather than the
+  design's `DayArc`, which `calendar::solar` already has for a different
+  thing.
+
+  `chart::bhava` turns cusps into bhavas. It is the only place that does,
+  and it keeps the madhya beside the sandhi because under an unequal
+  division the middles are not midway between the boundaries — Sripati's
+  madhya are Porphyry's cusps and cannot be recovered from Sripati's own.
+  A `Placement` carries the chalit that made it, how far through its
+  bhava the graha is and how far from the madhya.
+
+  **Numbers:** none moved; the corpus's `houses.bhava_chalit` section had
+  nothing to compare against until now, and now it does. The SDK's madhya
+  and sandhi reproduce the recorded ones over all 55 charts — 1320
+  compared, worst 1.7e-13° — every one of the 495 graha placements is the
+  recorded one, and the engine's own list of the 107 grahas its chalit
+  moves out of their whole-sign house is right in both readings. Sripati
+  against Vehlow comes to 21.8% of placements, which is what `cargo xtask
+  chalit` measures independently from the SDK's own cusps; the test
+  asserts that difference rather than avoiding it, because it is entry 14
+  of the deliberate-difference registry.
 - The chart foundation's design page
   (`03-design/chart-foundation.md`), Phase 4's first. It settles what
   every module above the chart starts from, and three things in it are
