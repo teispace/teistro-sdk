@@ -1,0 +1,25 @@
+[package]
+name = "teistro-houses"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's houses service: which system, which house under both readings, what kind of house, and whether the chart can be trusted"
+readme = "README.md"
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[dependencies]
+teistro-astro = { path = "../astro" }
+teistro-chart = { path = "../chart" }
+teistro-core = { path = "../core" }
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
+teistro-calendar = { path = "../calendar" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+
+[lints]
+workspace = true
