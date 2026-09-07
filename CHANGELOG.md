@@ -187,6 +187,29 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `ChartFoundation` and `Founder`: the value the three modules beneath
+  them were built for. One moment at one place, with the day it belongs
+  to, the zodiac it is measured in, the lagna and the sunrise that
+  anchors it, **both** divisions of the sky — the placement system and the
+  chalit, which are different questions — and every graha placed in each,
+  carrying both readings of its longitude and the method that placed it.
+  `Founder` is built once with a provider and a profile and founds as many
+  charts as are asked for, because batch is the primary shape; Ketu is
+  derived as Rahu's opposite point rather than requested, because no body
+  is Ketu.
+
+  **Numbers:** none. The test provider is analytic and nothing here is
+  compared with an ephemeris; what the tests assert is what only the
+  assembled value can show, and each is one of the design's own claims —
+  every graha stands in the same zodiac as the cusps it is placed
+  against, a placement's `through` and `from_madhya` describe the bhava
+  it names, the lagna falls in the first bhava of its own division, the
+  day holds the instant, Ketu is half a circle from Rahu with the same
+  speed and no distance, and founding a moment twice or in a batch gives
+  the same value field for field.
+
+  `Body::graha()` moved into the port that owns `Body`, where the
+  siddhanta provider had a private copy of the same mapping.
 - `chart::zodiac`, and the ayanamsha basis it found. A chart holds **one**
   ayanamsha value and measures the grahas and the cusps from it, so it
   asks a provider for a tropical frame and shifts what comes back rather

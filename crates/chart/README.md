@@ -1,15 +1,15 @@
 # `teistro-chart`
 
-Status: `built` (the day and the bhavas), 2026-09-07. The design is
+Status: `built`, 2026-09-07. The design is
 [`docs/03-design/chart-foundation.md`](../../docs/03-design/chart-foundation.md);
 the measurement behind the bhavas is
 [`docs/03-design/chart-bhava-chalit.md`](../../docs/03-design/chart-bhava-chalit.md).
 
-What every module above a chart starts from. Two of its parts are built,
-and they are the two the design named as easy to get wrong.
+What every module above a chart starts from.
 
 | module | what it settles |
 |---|---|
+| [`foundation`](src/foundation.rs) | the value itself: one moment at one place, with the day, the zodiac, the lagna and its anchor, both divisions of the sky and every graha placed in them. `Founder` is built once with a provider and a profile and founds as many charts as are asked for |
 | [`day`](src/day.rs) | the day an instant belongs to, which is **not** its civil date: a panchanga day runs sunrise to sunrise, so an instant before the civil date's sunrise belongs to the day that began the morning before, and the vara, the hora, the ishtakaal and the lagna's anchor move back with it |
 | [`zodiac`](src/zodiac.rs) | the zodiac a chart is computed in: **one** ayanamsha value for the grahas and the cusps alike, so the chart asks a provider for tropical positions and shifts them itself rather than comparing a graha in the provider's zodiac with a cusp in the SDK's |
 | [`bhava`](src/bhava.rs) | the twelve bhavas of a chart with their madhya as well as their sandhi, and where a graha falls between them — carrying the chalit that placed it, because the methods disagree |
@@ -73,8 +73,23 @@ which spreads thirty ghatis over the night; the SDK divides the night it
 actually has and is up to 3 palas from the engine. Entry 15 of the
 deliberate-difference registry.
 
+## What the foundation deliberately does not hold
+
+The corpus's own `foundation` section carries the arudha and navamsha
+lagnas, the upagrahas, and bhayat and bhabhoga. This one carries none of
+them, and the omission is the crate's organising rule: **the foundation
+holds what is needed to compute, never what is computed.** Each of those
+depends on a module that depends on the foundation — the navamsha lagna
+on the vargas, the arudha on a placement and its lord, bhayat and
+bhabhoga on the Moon's nakshatra transit — and the usual way that
+circularity gets broken is a second evaluator of the same rule.
+
+A field belongs here when more than one module above needs it and no
+module above can produce it.
+
 ## Still to come
 
-The foundation itself: the positions in both frames, the lagna and its
-anchor, the birth timing, and the provenance that stamps them. The design
-page settles all of it; `day` and `bhava` are what it is built from.
+The provenance stamp over the value, and the birth timing as a field
+rather than a call. `time::ghati` already computes the ishtakaal from the
+`ChartDay`, and `crates/chart/tests/baseline_day.rs` measures it against
+the corpus; what is missing is carrying it in the value.

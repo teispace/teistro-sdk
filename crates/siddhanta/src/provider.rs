@@ -13,7 +13,7 @@
 //! derivative of its places, and the capabilities say that too.
 
 use teistro_astro::{DeltaTModel, ut1_from_tt};
-use teistro_core::catalogue::{Ayanamsha, Graha};
+use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Latitude, Ut1};
 use teistro_port_ephemeris::{
     Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, Corrections, DiscPoint,
@@ -113,17 +113,14 @@ impl SiddhantaProvider {
 
     /// The trace of a body at a UT1 instant.
     fn trace(&self, body: Body, at: JulianDay<Ut1>) -> Option<Trace> {
+        if body == Body::MeanApogee {
+            return Some(self.model.moon_apogee_trace(at));
+        }
+        // The text has no true node and no outer planets, so a body the
+        // catalogue names is not always one this model can trace.
         let graha = match body {
-            Body::Sun => Graha::Sun,
-            Body::Moon => Graha::Moon,
-            Body::Mercury => Graha::Mercury,
-            Body::Venus => Graha::Venus,
-            Body::Mars => Graha::Mars,
-            Body::Jupiter => Graha::Jupiter,
-            Body::Saturn => Graha::Saturn,
-            Body::MeanNode => Graha::Rahu,
-            Body::MeanApogee => return Some(self.model.moon_apogee_trace(at)),
-            _ => return None,
+            Body::TrueNode | Body::Uranus | Body::Neptune | Body::Pluto => return None,
+            other => other.graha()?,
         };
         self.model.trace(graha, at).ok()
     }

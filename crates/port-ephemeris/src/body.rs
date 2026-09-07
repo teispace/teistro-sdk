@@ -102,6 +102,41 @@ impl Body {
         Body::ALL.get(usize::from(id)).copied()
     }
 
+    /// The graha a body is, where the catalogue has one.
+    ///
+    /// Both nodes are Rahu: which of them a chart uses is the
+    /// `frame.node` setting, and the answer to "what is this body" does
+    /// not depend on it. Ketu is not here because no body is Ketu — it is
+    /// Rahu's opposite point in the same frame, which the chart layer
+    /// derives (`05-testing/01-golden-vectors.md`, entry 6).
+    ///
+    /// ```
+    /// # use teistro_port_ephemeris::Body;
+    /// # use teistro_core::catalogue::Graha;
+    /// assert_eq!(Body::Sun.graha(), Some(Graha::Sun));
+    /// assert_eq!(Body::MeanNode.graha(), Some(Graha::Rahu));
+    /// assert_eq!(Body::TrueNode.graha(), Some(Graha::Rahu));
+    /// assert_eq!(Body::MeanApogee.graha(), None);
+    /// ```
+    #[must_use]
+    pub const fn graha(self) -> Option<teistro_core::catalogue::Graha> {
+        use teistro_core::catalogue::Graha;
+        Some(match self {
+            Body::Sun => Graha::Sun,
+            Body::Moon => Graha::Moon,
+            Body::Mercury => Graha::Mercury,
+            Body::Venus => Graha::Venus,
+            Body::Mars => Graha::Mars,
+            Body::Jupiter => Graha::Jupiter,
+            Body::Saturn => Graha::Saturn,
+            Body::Uranus => Graha::Uranus,
+            Body::Neptune => Graha::Neptune,
+            Body::Pluto => Graha::Pluto,
+            Body::MeanNode | Body::TrueNode => Graha::Rahu,
+            _ => return None,
+        })
+    }
+
     /// The upper-case key used in fixtures and bindings.
     #[must_use]
     pub const fn key(self) -> &'static str {
