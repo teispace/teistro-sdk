@@ -56,6 +56,8 @@ jobs:
         run: cargo xtask check-intl
       - name: FFI gate (the boundary crates reproduce the checked-in API description and C header)
         run: cargo xtask check-ffi
+      - name: Bhava chalit falsification page (the measured disagreement reproduces)
+        run: cargo xtask check-chalit
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

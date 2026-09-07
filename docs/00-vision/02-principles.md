@@ -48,6 +48,16 @@ Vashya matrices; Kalachakra sequences) and a profile selects. The baseline engin
 Bhava-Chalit was measured to be Vehlow while documented as Sripati; the SDK
 makes such a thing impossible by construction, because the key says which.
 
+That example is now measured rather than asserted, and it is the case for this
+principle rather than an illustration of it
+([`03-design/chart-bhava-chalit.md`](../03-design/chart-bhava-chalit.md)): over
+the 55 recorded charts, Vehlow reproduces the engine's own placements on all 55
+and Sripati on 20, while the label on every one of those charts reads
+`equal-house`, which is a third thing again. The four methods put a graha in a
+different house between 10% and 51% of the time depending on the pair — so a
+result that names a house without naming the method is not reproducible, and a
+silent school is not a small mistake.
+
 ## 5. Batch is the primary shape
 
 Grids of instants and bodies, lists of charts, ranges of days. Scalar calls are
