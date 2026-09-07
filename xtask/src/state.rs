@@ -27,24 +27,16 @@ use std::path::Path;
 use serde_json::Value;
 use teistro_core::catalogue::{Graha, Rashi};
 
+use crate::classical::{
+    FRIENDLY_HOUSES, GRAHAS, NODES, PER_SIGN, edge, in_own_sign, lord_of, natural, panchadha,
+    separation, sign_of, temporary,
+};
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, count, fill, table, verdict_of};
 
 const PAGE: &str = "docs/03-design/state-tables-measured.md";
 const CHARTS: &str = "fixtures/baseline/charts";
 const VARIANTS: &str = "fixtures/baseline/variants";
-
-/// The nine grahas the engine gives a state to, in its own order. The
-/// lagna is a body of the section too and is treated in §2.
-const GRAHAS: [&str; 9] = [
-    "SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN", "RAHU", "KETU",
-];
-
-/// The two shadow grahas, whose dignity the engine reduces (§2).
-const NODES: [&str; 2] = ["RAHU", "KETU"];
-
-/// A sign's degrees.
-const PER_SIGN: f64 = 30.0;
 
 // ── what the corpus records ────────────────────────────────────────────────
 
@@ -94,21 +86,6 @@ impl Reading {
     fn graha(&self) -> Option<Graha> {
         Graha::from_key(self.body)
     }
-}
-
-/// The sign a longitude falls in.
-#[expect(
-    clippy::cast_possible_truncation,
-    clippy::cast_sign_loss,
-    reason = "a normalised longitude over thirty is 0 to 11"
-)]
-fn sign_of(longitude: f64) -> u8 {
-    ((longitude.rem_euclid(360.0) / PER_SIGN) as u8).min(11)
-}
-
-/// The lord of a sign.
-fn lord_of(sign: u8) -> Option<Graha> {
-    Rashi::from_id(u16::from(sign)).map(|rashi| rashi.attributes().lord)
 }
 
 fn charts(root: &Path) -> Result<Vec<Chart>, String> {
@@ -213,76 +190,12 @@ fn text(value: &Value) -> String {
     value.as_str().unwrap_or_default().to_string()
 }
 
-/// How far a longitude is from the nearest boundary of a division.
-fn edge(longitude: f64, width: f64) -> f64 {
-    let inside = longitude.rem_euclid(width);
-    inside.min(width - inside)
-}
-
 /// Every reading, in order.
 fn readings(charts: &[Chart]) -> impl Iterator<Item = &Reading> {
     charts.iter().flat_map(|chart| chart.readings.iter())
 }
 
 // ── the proposed rules ─────────────────────────────────────────────────────
-
-/// Whether a body stands in its own sign, counting the lordship the
-/// catalogue gives.
-fn in_own_sign(graha: Graha, sign: u8) -> bool {
-    Rashi::from_id(u16::from(sign)).is_some_and(|rashi| {
-        graha.attributes().own.contains(&rashi) || lord_of(sign) == Some(graha)
-    })
-}
-
-/// The natural friendship a body has with the lord of a sign.
-///
-/// A body in its own sign is its own friend — the one addition the corpus
-/// forces on the catalogue's own table.
-fn natural(graha: Graha, sign: u8) -> &'static str {
-    let Some(lord) = lord_of(sign) else {
-        return "neutral";
-    };
-    if lord == graha {
-        return "friend";
-    }
-    let attributes = graha.attributes();
-    if attributes.friends.contains(&lord) {
-        "friend"
-    } else if attributes.enemies.contains(&lord) {
-        "enemy"
-    } else {
-        "neutral"
-    }
-}
-
-/// The houses from a body in which its dispositor is a temporary friend.
-const FRIENDLY_HOUSES: [u8; 6] = [2, 3, 4, 10, 11, 12];
-
-/// The temporary friendship a body has with its dispositor.
-fn temporary(graha: Graha, sign: u8, signs: &BTreeMap<String, u8>) -> Option<&'static str> {
-    let lord = lord_of(sign)?;
-    if lord == graha {
-        return Some("friend");
-    }
-    let at = signs.get(lord.key())?;
-    let distance = (at + 12 - sign) % 12 + 1;
-    Some(if FRIENDLY_HOUSES.contains(&distance) {
-        "friend"
-    } else {
-        "enemy"
-    })
-}
-
-/// The five-fold compound of the two friendships.
-fn panchadha(natural: &str, temporary: &str) -> &'static str {
-    match (natural, temporary) {
-        ("friend", "friend") => "GREAT_FRIEND",
-        ("neutral", "friend") => "FRIEND",
-        ("neutral", "enemy") => "ENEMY",
-        ("enemy", "enemy") => "GREAT_ENEMY",
-        _ => "NEUTRAL",
-    }
-}
 
 /// How near the exact debilitation degree a deep debilitation is,
 /// degrees.
@@ -991,12 +904,6 @@ fn wars(charts: &[Chart]) -> String {
     )
 }
 
-/// The angle between two longitudes, degrees.
-fn separation(first: f64, second: f64) -> f64 {
-    let apart = (first - second).abs().rem_euclid(360.0);
-    apart.min(360.0 - apart)
-}
-
 // ── 6 and 7. the avasthas ──────────────────────────────────────────────────
 
 /// What §§6 and 7 measure over the recorded avasthas.
@@ -1153,10 +1060,17 @@ fn avasthas(charts: &[Chart]) -> String {
          uncorrelated or anti-correlated. The same is true of kshudha,\n\
          trishita and mudita among the lajjitadi.\n\n\
          Those are the states whose classical definitions read \"or aspected\n\
-         by\", and the SDK has no aspect model yet. So the design reports the\n\
-         states it can decide and **nothing** where it cannot, rather than a\n\
-         plausible guess: a caller can tell an absent answer from a wrong one.\n\
-         When `aspect` lands, this pass is where the rules are proposed again.\n\n",
+         by\". So the design reports the states it can decide and **nothing**\n\
+         where it cannot, rather than a plausible guess: a caller can tell an\n\
+         absent answer from a wrong one.\n\n\
+         `cargo xtask aspect` proposed the rules again with a real drishti in\n\
+         hand (`aspect-drishti-measured.md` §7) and none of them is exact —\n\
+         adding the aspect clause makes every one of them worse, which is\n\
+         evidence the recording engine does not compute these from a drishti\n\
+         at all. What it did settle is a **necessary** condition for each of\n\
+         the three lajjitadi, missed by not one recorded reading, so the\n\
+         module now answers `no` with certainty where the condition fails and\n\
+         withholds only where it holds.\n\n",
     );
     out
 }

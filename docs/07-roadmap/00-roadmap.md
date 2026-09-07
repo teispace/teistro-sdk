@@ -207,9 +207,24 @@ Where it stands, 2026-09-07:
 | the Indian lunisolar calendar | **needed next by `panchanga`**: the amanta month is named from the new moon's solar sign, which the crate computes, but adhika and kshaya are the calendar's to decide |
 | `vargas` | **built**: `crates/vargas`, 41 tests. Falsified first (`cargo xtask vargas`, held by `check-vargas`): a divisional chart is a function of one longitude and the corpus records both, so each chart's table was derived from the corpus and the design's rule held to it — 19 530 placements over 93 fixtures and two zodiacs, nothing left over. One evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
 | `state` | **built**: `crates/state`, 43 tests. Falsified first (`cargo xtask state`, held by `check-state`) over 837 recorded readings on 93 fixtures: the dignity ladder with moolatrikona tried above exaltation, the three friendships, combustion under two cited orb tables, the five ages and their alternation, wakefulness, the planetary war and its victor, and the boundary reported as a distance because the corpus brackets the engine's threshold rather than stating it. The same pass **refused** six avasthas, which the crate names as undecided rather than guessing |
-| `aspect`, `points` | planned; `aspect` is next, and `state` and `strength` both wait on it by name |
+| `aspect` | **built**: `crates/aspect`, 54 tests. The first module of the phase the corpus **cannot check** — it records no aspect at all, which `cargo xtask aspect` established by searching every key of all 115 fixtures — so the pass measured each system's own invariants, the two systems against each other over 6696 ordered pairs, the node knob's cost, and the avasthas `state` had refused. The graha drishti, the Jaimini rashi drishti, the conjunction and the shared orb engine ship; the **sphuta drishti does not**, for want of a source (crux C45), so Drik Bala waits |
+| `points` | planned; `aspect` and `state` are done and the corpus records this one's answers |
 | `serial` JSON with the extended envelope | planned |
 | the Python binding | planned |
+
+Falsifying the drishti showed a third thing a pass is for. It had **no
+recorded answer to measure against** — the corpus carries no aspect of
+any kind — and it was worth running anyway: it refused a claim the
+design page had made (a mutual full aspect is not only the seventh;
+Mars and Saturn make one across the fourth and tenth, on 7 of the 93
+charts), measured that the two drishti systems agree on only 4053 of
+6696 ordered pairs so a module cannot conflate them, found that every
+recorded placement is whole-sign whatever chalit its fixture names
+(registry entry 24), and refused the sphuta drishti outright for want of
+a source (crux C45). It also closed most of what the state pass had left
+open, by finding a **necessary** condition for the three lajjitadi that
+misses no recorded reading: `crates/state` now answers 1301 of its 1953
+open questions with a certain no, and needs no aspect model to do it.
 
 Falsifying the planetary state found what a measurement is for in both
 directions. It settled two rules a reading of the texts gets wrong —

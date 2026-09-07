@@ -33,7 +33,7 @@ use teistro_core::catalogue::{
     AvasthaBaladi, AvasthaJagradadi, AvasthaLajjitadi, Dignity, Graha, Rashi, Relationship,
 };
 use teistro_core::quantity::Degrees;
-use teistro_state::avastha::{self, AtWar, Placement};
+use teistro_state::avastha::{self, AtWar, Holds, Placement};
 use teistro_state::boundary::Boundaries;
 use teistro_state::burn::{self, BPHS, Burning, SURYA_SIDDHANTA};
 use teistro_state::dignity::{self, Friendship};
@@ -132,6 +132,7 @@ fn build(name: String, bodies: &Value) -> Chart {
                 longitude.in_sign().to_degrees(),
                 friendship.compound,
             ),
+            compound: friendship.compound,
         });
     }
     Chart {
@@ -456,6 +457,58 @@ fn the_boundary_flags_fall_inside_the_bracket_the_corpus_gives() {
     assert!(flagged < clear, "the two never overlap");
     assert!((0.005..0.013).contains(&flagged.max(clear).min(clear)));
     assert_eq!(checked, 837 * 3);
+}
+
+/// No recorded lajjitadi is ever ruled out.
+///
+/// This is what makes the three-valued answer safe rather than merely
+/// convenient. `cargo xtask aspect` measured the tradition's plainest
+/// condition for each of the three against every recorded reading and
+/// none of them misses one (`03-design/aspect-drishti-measured.md` §7);
+/// this holds the crate to that. A rule that ruled out a state the
+/// engine records would be worse than saying nothing.
+#[test]
+fn a_state_the_engine_records_is_never_ruled_out() {
+    let mut checked = 0;
+    let mut ruled_out = 0;
+    let mut undecided = 0;
+    for chart in charts() {
+        for body in GRAHAS {
+            let graha = Graha::from_key(body).expect("a catalogued graha");
+            let recorded = &chart.bodies[body];
+            if recorded["avasthas"].is_null() {
+                continue;
+            }
+            let found = avastha::lajjitadi(chart.placement(graha), &chart.placements);
+            let theirs: Vec<&str> = recorded["avasthas"]["lajjitadi"]
+                .as_array()
+                .map(|list| list.iter().filter_map(Value::as_str).collect())
+                .unwrap_or_default();
+            for state in avastha::NARROWED_LAJJITADI {
+                match found.state(state) {
+                    Holds::No => {
+                        assert!(
+                            !theirs.contains(&state.key()),
+                            "{} {body}: {state:?} is recorded and would be ruled out",
+                            chart.name
+                        );
+                        ruled_out += 1;
+                    }
+                    Holds::Undecided => undecided += 1,
+                    Holds::Yes => panic!("{state:?} is never asserted"),
+                }
+                checked += 1;
+            }
+        }
+    }
+    println!("{checked} readings: {ruled_out} ruled out, {undecided} undecided");
+    assert_eq!(checked, 651 * 3, "three states over every recorded reading");
+    assert!(ruled_out > 0, "the condition rules something out");
+    assert_eq!(
+        ruled_out + undecided,
+        checked,
+        "every one is decided or withheld"
+    );
 }
 
 #[test]

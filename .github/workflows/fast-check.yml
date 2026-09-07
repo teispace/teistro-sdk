@@ -64,6 +64,8 @@ jobs:
         run: cargo xtask check-vargas
       - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
         run: cargo xtask check-state
+      - name: Drishti page (the aspect systems' invariants and their counts over the corpus reproduce)
+        run: cargo xtask check-aspect
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

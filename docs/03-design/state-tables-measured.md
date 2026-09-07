@@ -216,11 +216,19 @@ in the sign separates them — each was tried and each is uncorrelated
 or anti-correlated. The same is true of kshudha, trishita and mudita
 among the lajjitadi.
 
-Those are the states whose classical definitions read "or aspected by",
-and the SDK has no aspect model yet. So the design reports the states it
-can decide and **nothing** where it cannot, rather than a plausible
-guess: a caller can tell an absent answer from a wrong one. When
-`aspect` lands, this pass is where the rules are proposed again.
+Those are the states whose classical definitions read "or aspected by".
+So the design reports the states it can decide and **nothing** where it
+cannot, rather than a plausible guess: a caller can tell an absent
+answer from a wrong one.
+
+`cargo xtask aspect` proposed the rules again with a real drishti in
+hand (`aspect-drishti-measured.md` §7) and none of them is exact —
+adding the aspect clause makes every one of them worse, which is
+evidence the recording engine does not compute these from a drishti at
+all. What it did settle is a **necessary** condition for each of the
+three lajjitadi, missed by not one recorded reading, so the module now
+answers `no` with certainty where the condition fails and withholds only
+where it holds.
 
 ## 8. The boundary flags are one threshold
 

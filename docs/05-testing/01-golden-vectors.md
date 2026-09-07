@@ -332,3 +332,17 @@ explained rather than a failure or a silent adoption.
     `conformance-baseline` inherits from the root. Found 2026-09-07
     while building `crates/state`; asserted both ways by
     `crates/state/tests/baseline.rs`.
+
+24. The recorded house is the whole-sign house. Every fixture declares a
+    bhava chalit in its settings, and every one of the 837 recorded
+    `positions.bodies.*.house` values is nevertheless the whole-sign
+    house counted from the lagna's own sign — measured over all 93
+    fixtures that carry positions. So over this corpus a relation
+    counted from the sign and one counted from the recorded house are
+    the **same** relation and a harness cannot tell them apart, though
+    they part on any chart whose houses come from cusps. The SDK counts
+    a drishti from the sign, which is what the tradition's "the seventh
+    from it" means, and stamps the reading beside the answer. Found
+    2026-09-07 by `cargo xtask aspect`
+    (`03-design/aspect-drishti-measured.md` §4); asserted by
+    `crates/aspect/tests/corpus.rs`.

@@ -34,6 +34,7 @@
 //! ```
 
 pub mod angle;
+pub mod boundary;
 pub mod catalogue;
 pub mod envelope;
 pub mod error;

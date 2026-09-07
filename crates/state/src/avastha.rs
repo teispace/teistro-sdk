@@ -20,6 +20,7 @@
 use serde::Serialize;
 use teistro_core::catalogue::{
     AvasthaBaladi, AvasthaDeeptadi, AvasthaJagradadi, AvasthaLajjitadi, Dignity, Graha, Rashi,
+    Relationship, Tatwa,
 };
 
 /// How near two planets must be to be at war, degrees.
@@ -113,32 +114,113 @@ pub struct Placement {
     pub house: u8,
     /// Its dignity.
     pub dignity: Dignity,
+    /// How it stands to the lord of the sign it is in, compounded: what
+    /// "an enemy's sign" and "a friend's sign" mean.
+    pub compound: Relationship,
 }
 
-/// The lajjitadi a chart decides, and the ones it cannot.
+/// Whether a state holds, certainly does not, or cannot be decided.
+///
+/// The third is not a failure and not a "no". A caller that treats an
+/// undecided state as absent will be wrong about it; one that shows it
+/// as unknown will not.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Holds {
+    /// It holds.
+    Yes,
+    /// It does not, and the chart is enough to say so.
+    No,
+    /// Nothing the SDK can compute decides it.
+    Undecided,
+}
+
+/// The lajjitadi a chart decides, the ones it rules out, and the ones it
+/// cannot decide either way.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Lajjitadi {
-    /// The states that hold, of the three the SDK can decide.
+    /// The states that hold.
     pub holding: Vec<AvasthaLajjitadi>,
-    /// The states the SDK cannot decide, named so a caller knows the
-    /// list is short rather than empty.
-    pub undecided: &'static [AvasthaLajjitadi],
+    /// The states that **certainly do not** hold, because the
+    /// tradition's own necessary condition fails.
+    pub ruled_out: Vec<AvasthaLajjitadi>,
+    /// The states nothing decides: the necessary condition holds and
+    /// what narrows it further is not in the chart. Named so a caller
+    /// knows the list is short rather than empty.
+    pub undecided: Vec<AvasthaLajjitadi>,
 }
 
-/// The three the SDK cannot decide until `aspect` exists: each of their
-/// classical definitions reads "or aspected by".
-pub const UNDECIDED_LAJJITADI: [AvasthaLajjitadi; 3] = [
+impl Lajjitadi {
+    /// What the chart says about one state.
+    #[must_use]
+    pub fn state(&self, which: AvasthaLajjitadi) -> Holds {
+        if self.holding.contains(&which) {
+            Holds::Yes
+        } else if self.undecided.contains(&which) {
+            Holds::Undecided
+        } else {
+            Holds::No
+        }
+    }
+}
+
+/// The three whose classical definitions read "or aspected by", and
+/// which no reading the corpus carries separates.
+///
+/// They are not simply unknown. Each has a **necessary** condition the
+/// tradition states plainly — an enemy's sign, a watery sign, a friend's
+/// sign — and `cargo xtask aspect` measured every one of them against
+/// all 651 recorded readings: not one recorded state falls outside its
+/// condition, and each condition holds on a good many readings the
+/// engine does not record. So a body outside the condition certainly
+/// does not hold the state, and a body inside it is undecided
+/// (`03-design/aspect-drishti-measured.md` §7).
+///
+/// Adding the aspect clause the definitions also carry made every rule
+/// *worse*, which is evidence the recording engine does not compute
+/// these from a drishti at all — so this needs no aspect model and does
+/// not wait on one.
+pub const NARROWED_LAJJITADI: [AvasthaLajjitadi; 3] = [
     AvasthaLajjitadi::Kshudha,
     AvasthaLajjitadi::Trishita,
     AvasthaLajjitadi::Mudita,
 ];
 
-/// Which lajjitadi hold for a body, of the three the chart decides.
+/// Whether the tradition's necessary condition for one of the three
+/// holds, which is what makes it undecided rather than ruled out.
+#[must_use]
+pub fn may_hold(state: AvasthaLajjitadi, placement: Placement) -> bool {
+    match state {
+        // The hungry: in a sign whose lord it is at odds with.
+        AvasthaLajjitadi::Kshudha => matches!(
+            placement.compound,
+            Relationship::Enemy | Relationship::GreatEnemy
+        ),
+        // The thirsty: in a watery sign.
+        AvasthaLajjitadi::Trishita => placement.sign.attributes().element == Tatwa::Jala,
+        // The delighted: in a sign whose lord it is at ease with.
+        AvasthaLajjitadi::Mudita => matches!(
+            placement.compound,
+            Relationship::Friend | Relationship::GreatFriend
+        ),
+        // Everything else is decided outright, so nothing is withheld.
+        _ => false,
+    }
+}
+
+/// Which lajjitadi hold for a body, which certainly do not, and which
+/// the chart cannot decide.
+///
+/// Three are decided outright:
 ///
 /// - **Garvita**, the proud: exalted or in its moolatrikona.
 /// - **Lajjita**, the ashamed: in the fifth house sharing its sign with
 ///   the Sun, Mars, Saturn, Rahu or Ketu.
 /// - **Kshobhita**, the agitated: sharing its sign with the Sun.
+///
+/// The other three carry a necessary condition and no sufficient one
+/// ([`NARROWED_LAJJITADI`]), so each is either ruled out or undecided
+/// and never asserted.
 #[must_use]
 pub fn lajjitadi(placement: Placement, chart: &[Placement]) -> Lajjitadi {
     let mut holding = Vec::new();
@@ -157,9 +239,13 @@ pub fn lajjitadi(placement: Placement, chart: &[Placement]) -> Lajjitadi {
     if shares_with(Graha::Sun) {
         holding.push(AvasthaLajjitadi::Kshobhita);
     }
+    let (undecided, ruled_out) = NARROWED_LAJJITADI
+        .into_iter()
+        .partition(|state| may_hold(*state, placement));
     Lajjitadi {
         holding,
-        undecided: &UNDECIDED_LAJJITADI,
+        ruled_out,
+        undecided,
     }
 }
 
@@ -243,11 +329,12 @@ mod tests {
     )]
 
     use super::{
-        AtWar, FIGHTERS, Placement, UNDECIDED_LAJJITADI, age, deeptadi, lajjitadi, separation,
-        wakefulness, war,
+        AtWar, FIGHTERS, Holds, NARROWED_LAJJITADI, Placement, age, deeptadi, lajjitadi, may_hold,
+        separation, wakefulness, war,
     };
     use teistro_core::catalogue::{
         AvasthaBaladi, AvasthaDeeptadi, AvasthaJagradadi, AvasthaLajjitadi, Dignity, Graha, Rashi,
+        Relationship,
     };
 
     #[test]
@@ -328,12 +415,14 @@ mod tests {
             sign: Rashi::Leo,
             house: 5,
             dignity: Dignity::OwnSign,
+            compound: Relationship::GreatFriend,
         };
         let mars = Placement {
             graha: Graha::Mars,
             sign: Rashi::Leo,
             house: 5,
             dignity: Dignity::Neutral,
+            compound: Relationship::Neutral,
         };
         let chart = [sun, mars];
         // Mars shares the Sun's sign in the fifth: ashamed and agitated.
@@ -341,7 +430,13 @@ mod tests {
         assert!(found.holding.contains(&AvasthaLajjitadi::Kshobhita));
         assert!(found.holding.contains(&AvasthaLajjitadi::Lajjita));
         assert!(!found.holding.contains(&AvasthaLajjitadi::Garvita));
-        assert_eq!(found.undecided, &UNDECIDED_LAJJITADI);
+        // Mars in Leo is neutral to the Sun and Leo is not watery, so
+        // all three of the narrowed states are ruled out and none is
+        // left undecided.
+        assert!(found.undecided.is_empty(), "{found:?}");
+        assert_eq!(found.ruled_out, NARROWED_LAJJITADI.to_vec());
+        assert_eq!(found.state(AvasthaLajjitadi::Kshudha), Holds::No);
+        assert_eq!(found.state(AvasthaLajjitadi::Kshobhita), Holds::Yes);
         // The Sun does not agitate itself.
         assert!(
             !lajjitadi(sun, &chart)
@@ -354,11 +449,57 @@ mod tests {
             sign: Rashi::Cancer,
             house: 4,
             dignity: Dignity::Exalted,
+            compound: Relationship::GreatFriend,
         };
+        let proud = lajjitadi(jupiter, &[jupiter, sun]);
+        assert_eq!(proud.holding, vec![AvasthaLajjitadi::Garvita]);
+        // Cancer is watery and its lord is Jupiter's great friend, so
+        // two of the three are undecided and the hungry one is not.
         assert_eq!(
-            lajjitadi(jupiter, &[jupiter, sun]).holding,
-            vec![AvasthaLajjitadi::Garvita]
+            proud.undecided,
+            vec![AvasthaLajjitadi::Trishita, AvasthaLajjitadi::Mudita]
         );
+        assert_eq!(proud.ruled_out, vec![AvasthaLajjitadi::Kshudha]);
+        assert_eq!(proud.state(AvasthaLajjitadi::Trishita), Holds::Undecided);
+        assert_eq!(proud.state(AvasthaLajjitadi::Kshudha), Holds::No);
+    }
+
+    #[test]
+    fn a_necessary_condition_rules_a_state_out_and_never_asserts_one() {
+        let watery = Placement {
+            graha: Graha::Moon,
+            sign: Rashi::Scorpio,
+            house: 1,
+            dignity: Dignity::Debilitated,
+            compound: Relationship::Enemy,
+        };
+        assert!(
+            may_hold(AvasthaLajjitadi::Trishita, watery),
+            "a watery sign"
+        );
+        assert!(may_hold(AvasthaLajjitadi::Kshudha, watery), "an enemy's");
+        assert!(!may_hold(AvasthaLajjitadi::Mudita, watery));
+        // A state the chart decides outright is never withheld.
+        for state in [
+            AvasthaLajjitadi::Garvita,
+            AvasthaLajjitadi::Lajjita,
+            AvasthaLajjitadi::Kshobhita,
+        ] {
+            assert!(!may_hold(state, watery), "{state:?}");
+        }
+        // The three lists partition the family: every member appears
+        // exactly once.
+        let found = lajjitadi(watery, &[watery]);
+        let mut all = found.holding.clone();
+        all.extend(found.ruled_out.iter().copied());
+        all.extend(found.undecided.iter().copied());
+        for state in NARROWED_LAJJITADI {
+            assert_eq!(
+                all.iter().filter(|seen| **seen == state).count(),
+                1,
+                "{state:?}"
+            );
+        }
     }
 
     #[test]
