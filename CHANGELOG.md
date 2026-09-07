@@ -187,6 +187,64 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/points`, points that are not bodies but behave like them, and
+  the measurement that decided them first. 25 tests.
+
+  **Numbers:** the SDK computes an upagraha and a special lagna for the
+  first time. Nothing moved.
+
+  The corpus records these answers and every input they are made of, so
+  the pass is the sharpest kind the project can run: a formula
+  reproduces a recorded value or it does not. **Six of the eight rules
+  reproduce it exactly**, to the last bit of a double, over all 71
+  fixtures that carry them — the five upagrahas the Sun casts, and the
+  Yogi point with its Avayogi. The project's research page marks every
+  one of them "verify"; this is that verification.
+
+  - **The five the Sun casts are a chain**, not five offsets, and two of
+    its steps are reflections — so Dhuma, Indrachapa and Upaketu advance
+    with the Sun while Vyatipata and Parivesha retreat. Written as five
+    constants added to the Sun, two would carry the wrong sign and look
+    right; `solar::advances` states each direction and a test measures
+    it.
+  - **The Sree lagna is a fraction of a circle**, not of a sign. The
+    three rival readings are wrong by tens of degrees.
+  - **Gulika begins Saturn's eighth and Mandi ends it.** Two "verify"
+    marks stood over these — where inside the portion each is read, and
+    whether the names differ at all — and the pass answered both by
+    **deriving** rather than proposing: all twenty-four candidate
+    instants tried against every recorded value. They are two readings
+    of one portion, and it is start against end rather than the
+    start-against-middle the sources are usually said to divide over.
+    The eighth's index the catalogue already carried; a night birth
+    walks it five weekdays on.
+  - **The special lagnas start at the Sun *at birth***, not at sunrise
+    as most statements of the rule say.
+
+  One bracketed difference, and it identifies itself. The hora, ghati
+  and pranapada lagnas are exact on 46 of 71 and out on the rest by an
+  amount **proportional to each one's rate** — 0.82° at 30° an hour,
+  1.63° at 60°, 2.04° at 75°. Three rules wrong in proportion to their
+  rates are three *right* rules reading one wrong clock, and the pass
+  confirmed it: the three imply the same elapsed time as each other on
+  every fixture, and against that time all three are exact. The engine's
+  clock is at most 1.633 minutes from the ishtakaal recorded beside it
+  (registry entry 25); the SDK uses the ishtakaal it computes.
+
+  **The Varnada does not ship.** Every recorded value is a whole sign,
+  which is a fact about the field worth having; the received rule
+  reproduces 40 of 71 and no variant built from the same parts does
+  better. That is crux C22 — five published schools disagree — met in
+  the data. The catalogue keeps the `VARNADA_LAGNA` key for whoever
+  cites a school, as it keeps 38 other point rows that have no formula
+  because the corpus records none of them.
+
+  The two day-division points need the **ascendant at an instant that is
+  not the birth**, which is a sidereal time and a latitude rather than
+  an ephemeris — so the module takes it through an `Ascendant` trait and
+  stays testable without a provider. `GhatiPala::to_hours` was added to
+  `crates/time` for the elapsed time the lagnas read.
+
 - `crates/aspect`, which bodies reach which, and the measurement that
   decided it first. 54 tests.
 

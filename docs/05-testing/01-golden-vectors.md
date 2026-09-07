@@ -346,3 +346,20 @@ explained rather than a failure or a silent adoption.
     2026-09-07 by `cargo xtask aspect`
     (`03-design/aspect-drishti-measured.md` §4); asserted by
     `crates/aspect/tests/corpus.rs`.
+
+25. The clock the special lagnas read. The hora, ghati and pranapada
+    lagnas are one rule at three rates — the Sun **at birth** advanced
+    30°, 75° or 60° for each hour since sunrise, with the pranapada's
+    shift by the Sun's modality — and each reproduces the engine's value
+    exactly on 46 of the 71 fixtures that record them. On the other 25 it
+    is out by an amount **proportional to its own rate**: 0.82° at 30° an
+    hour, 1.63° at 60°, 2.04° at 75°. That proportionality is what
+    identifies the difference: on every fixture the three imply the same
+    elapsed time as each other to under a hundredth of a minute, and
+    against that time all three are exact, so the rules are right and one
+    clock is what differs. The engine's elapsed time is at most **1.633
+    minutes** from the ishtakaal the same fixture records. The SDK uses
+    the ishtakaal it computes, which is the one it can explain; a harness
+    allows for the bracket. Found 2026-09-07 by `cargo xtask points`
+    (`03-design/points-measured.md` §5); asserted by
+    `crates/points/tests/baseline.rs`.

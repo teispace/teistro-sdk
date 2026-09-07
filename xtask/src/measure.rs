@@ -81,6 +81,15 @@ impl Claim {
         }
     }
 
+    /// The same claim with something more said about how it was
+    /// measured, which a bare count cannot carry — how far out the
+    /// disagreements were, say.
+    #[must_use]
+    pub(crate) fn with_note(mut self, note: impl Into<String>) -> Claim {
+        self.measured = format!("{}; {}", self.measured, note.into());
+        self
+    }
+
     /// A claim whose measurement is stated rather than counted.
     pub(crate) fn stated(
         rule: impl Into<String>,

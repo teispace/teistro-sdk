@@ -38,8 +38,19 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-sixth session (the
-drishti falsified, designed and built: the first Phase 4 module the
+**Last updated:** 2026-09-07, end of the forty-seventh session (the
+derived points falsified, designed and built: the corpus records these
+answers, so the pass is the sharpest kind — six of the eight rules
+reproduce it **exactly**, the Sree lagna's fraction is settled against
+three rivals that are wrong by tens of degrees, Gulika and Mandi were
+**derived** rather than proposed by trying all twenty-four candidate
+instants (Gulika begins Saturn's eighth and Mandi ends it, which two
+"verify" marks in the research page had left open), the three
+clock-driven lagnas turned out to be three right rules reading one
+wrong clock, bracketed at 1.633 minutes as registry entry 25, and the
+Varnada is refused outright, which is crux C22 met in the data); before
+that the forty-sixth session (the drishti falsified, designed and
+built: the first Phase 4 module the
 corpus **cannot check** — it records no aspect at all, which
 `cargo xtask aspect` established by searching every key of all 115
 fixtures — so the pass measured each system's own invariants, the
@@ -169,18 +180,20 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is `crates/points`**, over `chart`: the special
-   lagnas, the upagrahas and the sphutas the corpus records under
-   `houses.special_lagnas`. Phases 1 and 2 are closed; Phase 4 is open
-   and under way, and Phase 3 may run beside it. It is the last of the
-   phase's modules whose inputs all exist, and unlike `aspect` the
-   corpus **does** record its answers, so the falsification pass has a
-   recorded target again.
+3. **The next task is `crates/houses`**, over `chart` and `astro`: the
+   service the roadmap asks for, which it says waits on the chart
+   layer's shape. That shape now exists, and so does everything under
+   it — `astro::houses` computes twenty-two systems, `chart::bhava`
+   makes bhavas of their cusps with the madhya beside the sandhi, and
+   `cargo xtask chalit` has already measured how far the four
+   Bhava-Chalit methods stand apart. What is missing is the layer that
+   chooses between them and answers "which house is this in" with the
+   method that produced the answer attached.
 
-   `houses` is the other candidate: the geometry is already in
-   `chart::bhava` and `astro::houses`, and what is missing is the
-   service over them, which the roadmap says waits on the chart layer's
-   shape — that shape now exists.
+   Phases 1 and 2 are closed; Phase 4 is open and under way, and Phase 3
+   may run beside it. After `houses`, Phase 4's own list holds `serial`
+   (the extended envelope) and the Python binding, and the Indian
+   lunisolar calendar is still what `panchanga` needs.
 
    Two things earlier modules left behind, in the order they are wanted:
 
@@ -197,16 +210,22 @@ provider's DUT1).
      Nepal's national panchangam, the only evidence in the project that
      is not another implementation.
 
-   The pattern to keep, earned five times: **falsify, then design, then
-   build.** `cargo xtask chalit`, `panchanga`, `vargas`, `state` and
-   `aspect` each proposed rules and measured them before a line of the
-   module existed, and between them they found twelve differences
-   (registry entries 14 to 24, and the bhayat correction) that would
-   otherwise have been written into code as facts. The vargas pass is
+   The pattern to keep, earned six times: **falsify, then design, then
+   build.** `cargo xtask chalit`, `panchanga`, `vargas`, `state`,
+   `aspect` and `points` each proposed rules and measured them before a
+   line of the module existed, and between them they found thirteen
+   differences (registry entries 14 to 25, and the bhayat correction)
+   that would otherwise have been written into code as facts. The vargas pass is
    the sharpest, because a divisional chart is a function of one
    longitude and the corpus records both: 19 530 placements decided the
    whole kernel outright. The state pass shows the other half of the
    pattern — it **refused** six avasthas rather than guessing.
+
+   The points pass showed a fourth: **derive rather than propose, where
+   the space of readings is small enough to enumerate.** Two "verify"
+   marks in the research page had stood over Gulika for a year; trying
+   all twenty-four candidate instants against every recorded value
+   settled both in one measurement.
 
    The aspect pass showed a third thing: **a pass is worth running even
    where the corpus is silent.** It had no recorded answer at all, and
@@ -229,6 +248,7 @@ provider's DUT1).
    | `vargas` | the divisional charts: one evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
    | `state` | what a graha is: the dignity ladder, the three friendships, combustion under two cited orb tables, the ages, the war, the avasthas it can decide and the six it will not |
    | `aspect` | which bodies reach which: the graha drishti, the Jaimini rashi drishti, the conjunction, and the orb engine `tajika` will take |
+   | `points` | points that behave like bodies: the five the Sun casts, Gulika and Mandi off the day's eighths, the special lagnas and the Yogi points |
    | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat, the drik and classical solar models |
    | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
    | `intl` | the locale engine, the CLI, the packs |
@@ -240,15 +260,15 @@ provider's DUT1).
    Gates on every push (`fast-check`): `check-docs`, `check-fixtures`,
    `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
    `check-intl`, `check-ffi`, `check-chalit`, `check-panchanga`,
-   `check-vargas`, `check-state`, `check-aspect`, `check-lints`,
-   `check-versions`. Needing another toolchain, run by
+   `check-vargas`, `check-state`, `check-aspect`, `check-points`,
+   `check-lints`, `check-versions`. Needing another toolchain, run by
    hand and in `verify`: `check-c`, `check-node`, `check-dart`,
    `check-parity`, `check-package`, `check-site`. Also: `cargo xtask
    hashes` and `compare-hashes` (the determinism matrix), `bench` and
    `compare-bench` (instruction counts, Linux), `package` and `package
    stage` (what a release ships), `version X` (the one version), `chalit`,
-   `panchanga`, `vargas`, `state` and `aspect` (the five falsification
-   pages), `accuracy`,
+   `panchanga`, `vargas`, `state`, `aspect` and `points` (the six
+   falsification pages), `accuracy`,
    `calendars bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
@@ -820,6 +840,52 @@ not a drishti. `state` now answers `Holds::No` with certainty where the
 condition fails: **1301 of 1953 open questions closed**, with no aspect
 model needed to do it. `Boundaries` moved down into `teistro-core` on
 the way, because `aspect` wants the same fact about the same angle.
+
+`crates/points` is the sixth, and the corpus records its answers, which
+makes the pass the sharpest kind the project can run. Every input to a
+derived point — the Sun, the Moon, the lagna, the sunrise and the time
+since it — is recorded beside the answer, so a formula reproduces a
+value or it does not.
+
+**Six of the eight rules reproduce it exactly**, to the last bit of a
+double, over all 71 fixtures that carry them: the five upagrahas the Sun
+casts, and the Yogi point with its Avayogi. The project's own research
+page marks every one of those "verify"; that is now verification and not
+a hope. The Sree lagna is the lagna advanced by the Moon's nakshatra
+fraction **of a circle**, which the pass settled against three rival
+readings that are wrong by tens of degrees.
+
+**Gulika and Mandi were derived rather than proposed.** Two "verify"
+marks stood over them — where inside Saturn's eighth of the arc the
+point is read, and whether the two names are one thing — and the pass
+answered both in one measurement by trying all twenty-four candidate
+instants against every recorded value: they are two readings of one
+portion, and it is **start against end** rather than the start-against-
+middle the sources are usually said to divide over. The eighth's own
+index the catalogue already carried, measured on all 55 days when
+`panchanga` was built; a night birth walks it five weekdays on, which is
+the walk the choghadiya take. The rule needs the ascendant at an instant
+that is not the birth, and because an ascendant is a sidereal time and a
+latitude rather than an ephemeris, the module takes it through a trait
+and stays testable without a provider.
+
+The one bracketed difference is a small, sharp finding. The hora, ghati
+and pranapada lagnas are one rule at three rates and each is exact on 46
+of the 71 — and out on the rest by an amount **proportional to its own
+rate**, 0.82° at 30° an hour against 2.04° at 75°. Three rules wrong in
+proportion to their rates are three right rules reading one wrong clock,
+and the pass confirmed it directly: the three imply the same elapsed
+time as each other on every fixture, and against that time all three are
+exact. The engine's clock is at most 1.633 minutes from the ishtakaal
+recorded beside it (registry entry 25).
+
+**The Varnada is refused.** Every recorded value is a whole sign, which
+is worth knowing; the received rule reproduces 40 of 71 and no variant
+the pass could build from the same parts does better. That is crux C22 —
+five published schools disagree — met in the data rather than argued
+about, and the module ships none. So do the catalogue's other 38 point
+rows, which have keys and no formulas because the corpus records none of
+them.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

@@ -208,9 +208,20 @@ Where it stands, 2026-09-07:
 | `vargas` | **built**: `crates/vargas`, 41 tests. Falsified first (`cargo xtask vargas`, held by `check-vargas`): a divisional chart is a function of one longitude and the corpus records both, so each chart's table was derived from the corpus and the design's rule held to it — 19 530 placements over 93 fixtures and two zodiacs, nothing left over. One evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
 | `state` | **built**: `crates/state`, 43 tests. Falsified first (`cargo xtask state`, held by `check-state`) over 837 recorded readings on 93 fixtures: the dignity ladder with moolatrikona tried above exaltation, the three friendships, combustion under two cited orb tables, the five ages and their alternation, wakefulness, the planetary war and its victor, and the boundary reported as a distance because the corpus brackets the engine's threshold rather than stating it. The same pass **refused** six avasthas, which the crate names as undecided rather than guessing |
 | `aspect` | **built**: `crates/aspect`, 54 tests. The first module of the phase the corpus **cannot check** — it records no aspect at all, which `cargo xtask aspect` established by searching every key of all 115 fixtures — so the pass measured each system's own invariants, the two systems against each other over 6696 ordered pairs, the node knob's cost, and the avasthas `state` had refused. The graha drishti, the Jaimini rashi drishti, the conjunction and the shared orb engine ship; the **sphuta drishti does not**, for want of a source (crux C45), so Drik Bala waits |
-| `points` | planned; `aspect` and `state` are done and the corpus records this one's answers |
+| `points` | **built**: `crates/points`, 25 tests. Falsified first (`cargo xtask points`, held by `check-points`) over the corpus's own recorded answers: six of the eight rules reproduce it **exactly**, Gulika and Mandi were derived rather than proposed by trying all twenty-four candidate instants, and the three clock-driven lagnas turned out to be three right rules reading one wrong clock (entry 25). The **Varnada does not ship** — crux C22 met in the data |
 | `serial` JSON with the extended envelope | planned |
 | the Python binding | planned |
+
+Falsifying the derived points showed a fourth: **derive rather than
+propose, where the space of readings is small enough to enumerate.** Two
+"verify" marks had stood over Gulika and Mandi — where inside Saturn's
+eighth each is read, and whether they differ at all — and trying all
+twenty-four candidate instants against every recorded value settled both
+at once: Gulika begins the portion, Mandi ends it. The same pass
+verified the five solar upagrahas and the two Yogi points exactly,
+settled the Sree lagna's fraction against three rivals, bracketed the
+clock the time-driven lagnas read (entry 25) and refused the Varnada
+outright, which is crux C22 met in the data.
 
 Falsifying the drishti showed a third thing a pass is for. It had **no
 recorded answer to measure against** — the corpus carries no aspect of

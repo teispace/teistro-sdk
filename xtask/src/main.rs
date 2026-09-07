@@ -52,6 +52,9 @@
 //!   drishti, which the corpus records nothing of, so it measures the
 //!   systems' own invariants, the systems against each other over the
 //!   recorded placements, and the avasthas the state pass refused.
+//! - `points` and `check-points`: the falsification pass over the
+//!   recorded upagrahas and special lagnas — the formulas the research
+//!   page marks "verify", verified or refused.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -105,6 +108,7 @@ mod package;
 mod panchanga;
 mod parity;
 mod platform;
+mod points;
 mod release;
 mod site;
 mod state;
@@ -149,6 +153,8 @@ fn main() {
         Some("state") => state::generate(&repo_root()),
         Some("check-aspect") => aspect::check_generated(&repo_root()),
         Some("aspect") => aspect::generate(&repo_root()),
+        Some("check-points") => points::check_generated(&repo_root()),
+        Some("points") => points::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),
