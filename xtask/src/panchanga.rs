@@ -32,6 +32,7 @@ use teistro_calendar::{CalendarSystem, FixedDay, Gregorian};
 use teistro_core::catalogue::{Graha, Karana, Nakshatra, Tithi, Vara, Yoga};
 
 use crate::generated::{Output, check, write};
+use crate::measure::{Claim, FILL, Verdict, fill, seconds, table, verdict_of, worst, wrapped};
 
 const PAGE: &str = "docs/03-design/panchanga-day-conventions.md";
 const CHARTS: &str = "fixtures/baseline/charts";
@@ -533,117 +534,12 @@ fn previous_sunset(foundation: &Value, sunrise: f64) -> Option<f64> {
         })
 }
 
-// ── claims ─────────────────────────────────────────────────────────────────
+// ── the panchanga's own measurements ───────────────────────────────────────
 
-/// What the corpus said about a proposed rule.
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Verdict {
-    /// The rule reproduces every day the corpus records.
-    Holds,
-    /// The corpus contradicts it.
-    Falsified,
-    /// The corpus holds no day that would tell the difference.
-    Untested,
-}
-
-impl Verdict {
-    /// How the page marks it.
-    const fn mark(self) -> &'static str {
-        match self {
-            Verdict::Holds => "**holds**",
-            Verdict::Falsified => "falsified",
-            Verdict::Untested => "untested",
-        }
-    }
-}
-
-/// One proposed rule and the measurement that decided it.
-struct Claim {
-    rule: String,
-    verdict: Verdict,
-    measured: String,
-}
-
-impl Claim {
-    /// A claim decided by whether a worst-case error in seconds is inside
-    /// a millisecond.
-    fn exact(rule: impl Into<String>, worst_seconds: f64) -> Claim {
-        Claim::within(rule, worst_seconds, EXACT_SECONDS)
-    }
-
-    /// A claim decided by whether a worst-case error in seconds is inside
-    /// a stated bound.
-    fn within(rule: impl Into<String>, worst_seconds: f64, bound: f64) -> Claim {
-        Claim {
-            rule: rule.into(),
-            verdict: verdict_of(worst_seconds.is_finite() && worst_seconds <= bound),
-            measured: format!("worst {}", seconds(worst_seconds)),
-        }
-    }
-
-    /// A claim decided by a count of comparisons that contradict it.
-    fn counted(rule: impl Into<String>, wrong: usize, of: usize) -> Claim {
-        Claim {
-            rule: rule.into(),
-            verdict: if of == 0 {
-                Verdict::Untested
-            } else {
-                verdict_of(wrong == 0)
-            },
-            measured: if of == 0 {
-                String::from("no day tests it")
-            } else {
-                format!("{wrong} of {of} disagree")
-            },
-        }
-    }
-
-    /// A claim whose measurement is stated rather than counted.
-    fn stated(rule: impl Into<String>, verdict: Verdict, measured: impl Into<String>) -> Claim {
-        Claim {
-            rule: rule.into(),
-            verdict,
-            measured: measured.into(),
-        }
-    }
-}
-
-const fn verdict_of(ok: bool) -> Verdict {
-    if ok {
-        Verdict::Holds
-    } else {
-        Verdict::Falsified
-    }
-}
-
-/// The claims as a table.
-fn table(claims: &[Claim]) -> String {
-    let mut out = String::from("| proposed rule | verdict | measured |\n|---|---|---|\n");
-    for claim in claims {
-        let _ = writeln!(
-            out,
-            "| {} | {} | {} |",
-            claim.rule,
-            claim.verdict.mark(),
-            claim.measured
-        );
-    }
-    out
-}
-
-/// A duration in seconds, written at the scale it is.
-fn seconds(value: f64) -> String {
-    if !value.is_finite() {
-        String::from("not a number")
-    } else if value == 0.0 {
-        String::from("0 s, exactly")
-    } else if value < 0.001 {
-        format!("{:.3} ms", value * 1000.0)
-    } else if value < 120.0 {
-        format!("{value:.3} s")
-    } else {
-        format!("{:.2} h", value / 3600.0)
-    }
+/// A claim decided by whether a worst-case error in seconds is inside a
+/// millisecond, which is what arithmetic against arithmetic leaves.
+fn exact(rule: impl Into<String>, worst_seconds: f64) -> Claim {
+    Claim::within(rule, worst_seconds, EXACT_SECONDS)
 }
 
 /// The worst absolute value of a set of day differences, in seconds.
@@ -651,11 +547,6 @@ fn worst_seconds(values: impl IntoIterator<Item = f64>) -> f64 {
     values
         .into_iter()
         .fold(0.0_f64, |worst, value| worst.max(value.abs() * SECONDS))
-}
-
-/// The greatest of a set of measurements.
-fn worst(values: impl IntoIterator<Item = f64>) -> f64 {
-    values.into_iter().fold(0.0_f64, f64::max)
 }
 
 /// The days whose arcs are real.
@@ -771,9 +662,9 @@ fn window(days: &[Day]) -> String {
     }
 
     let claims = [
-        Claim::exact("the four limb lists begin at one instant", starts_agree),
-        Claim::exact("that instant is the day's sunrise", starts_at_sunrise),
-        Claim::exact(
+        exact("the four limb lists begin at one instant", starts_agree),
+        exact("that instant is the day's sunrise", starts_at_sunrise),
+        exact(
             "the four limb lists end at one instant, which is therefore the next sunrise",
             ends_agree,
         ),
@@ -1051,15 +942,15 @@ fn divisions(days: &[Day]) -> String {
             verdict_of(eighth_error < 1e-6),
             format!("worst {eighth_error:.2e} of an eighth"),
         ),
-        Claim::exact(
+        exact(
             "the choghadiya are eight equal parts of the daylight and eight of the night",
             choghadiya_error,
         ),
-        Claim::exact(
+        exact(
             "the horas are twelve over the daylight and twelve over the night",
             proportional,
         ),
-        Claim::exact(
+        exact(
             "the horas are twenty-four equal parts of the whole window",
             equal,
         ),
@@ -1270,7 +1161,7 @@ fn muhurtas(days: &[Day]) -> String {
     let wednesdays = days.iter().filter(|day| day.weekday == WEDNESDAY).count();
 
     let claims = [
-        Claim::exact(
+        exact(
             "Abhijit is the eighth of the daylight's fifteen muhurtas",
             abhijit_error,
         ),
@@ -1279,11 +1170,11 @@ fn muhurtas(days: &[Day]) -> String {
             void_wrong,
             days.len(),
         ),
-        Claim::exact(
+        exact(
             "Brahma muhurta is the fourteenth muhurta of the night that ends at this sunrise",
             from_previous,
         ),
-        Claim::exact(
+        exact(
             "Brahma muhurta sits before this sunrise but is sized from the night after the day",
             from_coming,
         ),
@@ -1506,63 +1397,6 @@ fn yogas(days: &[Day]) -> String {
          it holds, and the engine's flag is that interval containing sunrise.\n\n",
     );
     out
-}
-
-/// The width the page's prose is filled to.
-const FILL: usize = 72;
-
-/// Refills the page's prose paragraphs.
-///
-/// Every measurement on this page is substituted into a sentence, and a
-/// number that is two digits wide today may be three tomorrow, so prose
-/// wrapped in the source drifts ragged as the corpus grows. Filling the
-/// finished page instead keeps it tidy whatever the numbers turn out to
-/// be. A block that is a heading, a table or a list is left exactly as it
-/// was written.
-fn fill(page: &str) -> String {
-    page.split("\n\n")
-        .map(|block| {
-            let prose = block.lines().all(|line| {
-                let line = line.trim_start();
-                !line.starts_with('|')
-                    && !line.starts_with('#')
-                    && !line.starts_with("- ")
-                    && !line.starts_with(|c: char| c.is_ascii_digit())
-            });
-            if prose {
-                wrapped(
-                    &block
-                        .split_whitespace()
-                        .map(str::to_string)
-                        .collect::<Vec<_>>(),
-                    FILL,
-                    " ",
-                )
-            } else {
-                block.to_string()
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("\n\n")
-}
-
-/// A list of findings, wrapped so the generated prose stays readable.
-fn wrapped(items: &[String], width: usize, separator: &str) -> String {
-    let mut lines: Vec<String> = Vec::new();
-    let mut line = String::new();
-    for item in items {
-        if !line.is_empty() && line.len() + separator.len() + item.len() > width {
-            lines.push(std::mem::take(&mut line));
-        }
-        if !line.is_empty() {
-            line.push_str(separator);
-        }
-        line.push_str(item);
-    }
-    if !line.is_empty() {
-        lines.push(line);
-    }
-    lines.join("\n")
 }
 
 // ── 9. the Moon's rise and set ─────────────────────────────────────────────
@@ -1835,8 +1669,8 @@ fn decides(days: &[Day]) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        DAY_STEP, KARANA_NEXT, NIGHT_START, NIGHT_STEP, Verdict, fill, local_midnight, seconds,
-        spread, vara_of, walk_lord, walk_vara, wrapped,
+        DAY_STEP, KARANA_NEXT, NIGHT_START, NIGHT_STEP, local_midnight, spread, vara_of, walk_lord,
+        walk_vara,
     };
     use teistro_core::catalogue::{Graha, Vara};
 
@@ -1870,21 +1704,6 @@ mod tests {
     }
 
     #[test]
-    fn a_verdict_says_what_it_is() {
-        assert_eq!(Verdict::Holds.mark(), "**holds**");
-        assert_eq!(Verdict::Falsified.mark(), "falsified");
-        assert_eq!(Verdict::Untested.mark(), "untested");
-    }
-
-    #[test]
-    fn a_duration_is_written_at_the_scale_it_is() {
-        assert_eq!(seconds(0.0), "0 s, exactly");
-        assert_eq!(seconds(0.000_5), "0.500 ms");
-        assert_eq!(seconds(12.5), "12.500 s");
-        assert_eq!(seconds(7200.0), "2.00 h");
-    }
-
-    #[test]
     fn a_spread_of_one_instant_is_nothing() {
         assert!(spread(&[1.0]).abs() < f64::EPSILON);
         assert!(spread(&[]).abs() < f64::EPSILON);
@@ -1903,29 +1722,6 @@ mod tests {
         // A date the calendar does not have is not an instant.
         assert!(local_midnight("2000-02-30", 0.0).is_nan());
         assert!(local_midnight("not a date", 0.0).is_nan());
-    }
-
-    #[test]
-    fn filling_leaves_tables_and_lists_alone() {
-        let page = "# A heading\n\nsome prose that is\nwrapped oddly\n\n                    | a | table |\n|---|---|\n| and | a row |\n\n                    1. a list item\n   and its continuation\n";
-        let filled = fill(page);
-        assert!(
-            filled.contains("some prose that is wrapped oddly"),
-            "{filled}"
-        );
-        assert!(filled.contains("| a | table |\n|---|---|"), "{filled}");
-        assert!(
-            filled.contains("1. a list item\n   and its continuation"),
-            "{filled}"
-        );
-    }
-
-    #[test]
-    fn wrapping_breaks_before_the_width_and_not_after() {
-        let items = ["alpha", "beta", "gamma"].map(str::to_string);
-        assert_eq!(wrapped(&items, 40, ", "), "alpha, beta, gamma");
-        assert_eq!(wrapped(&items, 12, ", "), "alpha, beta\ngamma");
-        assert_eq!(wrapped(&[], 12, ", "), "");
     }
 
     #[test]

@@ -1,9 +1,17 @@
 # The varga kernel
 
-Status: `draft`, 2026-09-04. The falsification pass for ADR-0017 on
-divisional charts. Implemented in Phase 4, before the dasha kernels: it
-has no seed, no balance and no recursion, and its test space (12 signs
-times N parts) is enumerable for every chart.
+Status: `built`, 2026-09-07; written 2026-09-04 as the falsification pass
+for ADR-0017 on divisional charts. Implemented in Phase 4 before the
+dasha kernels, because it has no seed, no balance and no recursion and
+its test space (12 signs times N parts) is enumerable for every chart.
+
+The verdict below was tested against the conformance corpus before the
+crate was written — 19 530 recorded placements over 93 fixtures and two
+zodiacs, derived independently of the SDK's own code and written to
+[`varga-tables-measured.md`](varga-tables-measured.md) by
+`cargo xtask vargas`, which `check-vargas` holds. It survived, and it
+corrected three things: §"Schema" and §"Named variants" below carry the
+corrections. Built as `crates/vargas`.
 
 ## Verdict
 
@@ -49,35 +57,44 @@ So the unified form is `(a·s + b·p + offset[classifier(s)]) mod 12`, and
 an explicit table subsumes it (any linear rule can be materialised).
 There is no second family, only two ways to populate one table.
 
-## Schema
+## Schema, as built
+
+The measurement moved one field. The design had `spans` beside `map` at
+the top of a definition, and **D30's two groups have different spans** —
+its odd signs are cut 5, 5, 8, 7, 5 degrees and its even signs the same
+widths reversed — so a chart cannot carry one span rule. Spans belong to
+the group:
 
 ```rust
-pub struct VargaDef {
-    pub id: VargaId,                 // D1..D300 or a named variant key
-    pub divisions: u16,              // N, 1..=300
-    pub spans: SpanRule,             // Equal | Explicit(Vec<Ratio>)   (sum to 30 degrees exactly)
-    pub map: VargaMap,
-    pub sources: Vec<Citation>,
-    pub confidence: Mark,
+pub struct Scheme {
+    pub varga: Option<Varga>,        // a catalogued chart, or an arbitrary D-N
+    pub divisions: u16,              // what the chart is called, 1..=300
+    pub classifier: Classifier,      // All | Parity | Modality | Element
+    pub groups: &'static [Group],    // one per classifier group
 }
 
-pub enum VargaMap {
-    Linear { a: SignMultiplier, b: u8, classifier: SignClassifier, offsets: Vec<u8> },
-    Explicit(Box<[[u8; 12]]>),       // [classifier group][part] or [sign][part]
+pub struct Group {
+    pub spans: Spans,                // Equal | Degrees(&[u8])  (sum to 30 exactly)
+    pub map: Map,                    // Step { base, step, offset } | Listed(&[u8])
 }
 
-pub enum SignMultiplier { Base /* a = 0: count from a fixed sign */, FromSign /* a = 1 */, Cyclic /* a = N: parivritti */ }
-pub enum SignClassifier { None, Parity, Modality, Element }
+pub enum SignBase { Fixed /* a = 0 */, Same /* a = 1 */, Cyclic /* a = N */ }
 ```
 
-Both variants compile at load into the same `[12][N]` table of sign
-indices; evaluation is `part_index(deg_in_sign, spans)` followed by one
-lookup. The part index is exact integer arithmetic on `Nas`
-(`exact-arithmetic.md`): the baseline engine computes it as
-`floor(deg / (30/N))` in floating point, and none of 30/7, 30/11, 30/27 or
-0.2 is representable, so a planet at a part boundary can land on either
-side depending on the platform. For D30's unequal spans the same rule
-applies against a cumulative span table in `Nas`.
+The second correction is a name. **`divisions` names the chart and is not
+always its part count**: D30 is called thirty and cuts a sign into five,
+and only equal spans make the two the same. `Group::parts` is what a
+caller counts with; `divisions` is what the chart is called and what the
+cyclic multiplier uses.
+
+Evaluation is `part_of(group, longitude, divisions)` followed by one
+lookup, and both compile to the same `[12][N]` table, which
+`teistro_vargas::table` materialises. The part index is exact integer
+arithmetic on `Nas` (`exact-arithmetic.md`): the baseline engine computes
+it as `floor(deg / (30/N))` in floating point, and none of 30/7, 30/11,
+30/27 or 0.2 is representable, so a planet at a part boundary can land on
+either side depending on the platform. For D30's unequal spans the same
+rule applies against a cumulative span table in `Nas`.
 
 ## Named variants as rows
 
@@ -89,6 +106,18 @@ applies against a cumulative span table in `Nas`.
 | Drekkana: Parashara, Jagannatha | two rows | T |
 | Navamsa: Kalachakra variant | a row | T |
 | count from the end of an even sign | a fifth parameter of uncertain definition (a third-party implementation marks its own as not matching reference software); registered, unimplemented | S |
+
+None of the variants is shipped yet: the twenty-one rows are the ones the
+corpus decides, and a variant with no source and no fixture would be a
+row nobody could check. Each arrives as a row of `SCHEMES` when a source
+for it is read, which costs nothing but the citation.
+
+**Vargottama is a property of a body, not of a graha.** The recording
+engine computes it for the grahas alone — 837 readings agree with the
+definition and no lagna is ever marked, though on two recorded charts the
+lagna's navamsha sign is its rashi sign. The SDK answers for whatever it
+is asked about, and the difference is entry 20 of the
+deliberate-difference registry.
 
 **Arbitrary D-N does not "fall out".** There is no classical rule for
 D37. Producing one requires a chosen convention (cyclic parivritti is the
@@ -110,13 +139,33 @@ profile's default, and the result carries it in provenance (ADR-0020).
 8. The part index is computed in integer arithmetic; the float path is
    unrepresentable in the type.
 
-## Tests and golden vectors
+## Tests and golden vectors, as built
 
-Exhaustive generation per chart (invariant 4); golden vectors from spike
-1 for all 21 baseline charts on the 55 exported charts
-(`fixtures/baseline/`, section `vargas`); boundary fixtures at every
-part boundary for D7, D11, D27, D150 and every D30 span edge; PyJHora
-cross-checks for D81, D108, D144 and the named hora variants once sourced.
+41 of them in `crates/vargas`, and none samples where the space is
+enumerable.
+
+- **The corpus, whole.** 19 530 recorded placements over 93 fixtures —
+  the 55 charts and the 38 variants that carry divisional sections —
+  compared for equality, not within a tolerance, because a varga is a
+  function of a longitude. Four of the fixtures are *tropical*, which
+  moves every longitude twenty-four degrees; a rule fitted to one zodiac
+  would not survive them.
+- **Every cell.** All 16 728 cells of the twenty-one shipped charts and
+  nine arbitrary ones, generated and compared with their rule
+  (invariant 4), plus the spans filling a sign (1), the group count (2),
+  every cell naming a sign (3), D1's identity (5), vargottama being
+  detectable uniformly (6) and a cyclic chart covering the signs evenly
+  (7).
+- **Every boundary.** Invariant 8, asserted in nanoarcseconds: the first
+  instant of every part of every chart lands in that part and the one
+  before it in the part before.
+- **The change search**, over the analytic test provider: the sign is
+  constant between two changes, the changes join up and are in order, a
+  finer chart changes more often, and the trimshamsha's changes land on
+  its own five-degree boundaries.
+
+Still to come: PyJHora cross-checks for D81, D108 and D144, and the named
+hora and drekkana variants once a source for each is read.
 
 ## Not covered here
 

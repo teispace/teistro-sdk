@@ -187,6 +187,75 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/vargas`, the divisional charts, and the measurement that
+  decided them first. 41 tests.
+
+  **Numbers:** the SDK computes a divisional chart for the first time.
+  Nothing moved; what it computes was decided before it was written.
+
+  A varga is the one thing in the SDK the corpus can settle **outright**.
+  Everything else is a comparison within a tolerance against another
+  implementation's numbers; a divisional chart is a function of one
+  sidereal longitude, and the corpus records the longitude *and* the
+  answer. So `cargo xtask vargas` derives each chart's table from the
+  corpus, independently of this crate, and holds the design's proposed
+  rule to it. It writes `03-design/varga-tables-measured.md`, which
+  `check-vargas` holds.
+
+  **The rule survived 19 530 recorded placements over 93 fixtures** — the
+  55 charts and the 38 variants that carry divisional sections — with
+  nothing left over and no cell pinned twice with different answers. Four
+  of the fixtures are *tropical*, which moves every longitude
+  twenty-four degrees and lands the bodies in different parts of
+  different signs, so the rules are not fitted to one zodiac.
+
+  One evaluator, twenty-one rows: sort the sign into a group, take the
+  part of the sign the longitude falls in, and either step through the
+  signs (`(a·rashi + step·part + offset) mod 12`, with `a` nought, one or
+  the chart's own number) or read the answer off a list. Eighteen step
+  and three list; there is no second family, only two ways to fill one
+  table. D5 and D30 send their five parts to the **same five signs** and
+  differ only in how wide the parts are.
+
+  Three corrections the measurement made to the design page:
+
+  - **The spans belong to the group, not to the chart.** D30's odd signs
+    are cut 5, 5, 8, 7, 5 degrees and its even signs the same widths
+    reversed, so one chart has two span rules. The page's schema had
+    `spans` above both and could not say it. The boundaries were read off
+    the corpus rather than assumed: each is bracketed by the last
+    placement giving the sign before it and the first giving the sign
+    after, and every one is settled by a single whole degree.
+  - **`divisions` names the chart and is not always its part count.**
+    D30 is called thirty and cuts a sign into five.
+  - **Vargottama is a property of a body, not of a graha.** The engine
+    computes it for the grahas alone — all 837 readings agree with the
+    definition and no lagna is ever marked, though on two recorded charts
+    the lagna's navamsha sign *is* its rashi sign. Entry 20 of the
+    deliberate-difference registry; the SDK answers for whatever it is
+    asked about.
+
+  The crate carries the kernel (`scheme`, `evaluate`), a whole chart of a
+  founded moment with the mixed `(grahas, lagna)` axis (`chart`), and the
+  varga change search (`change`), which uses `astro::events`'s lattice
+  where the parts are equal — twenty of the twenty-one charts and every
+  arbitrary D-N — and bisects on the sign for the one chart where they
+  are not. Arbitrary D-N takes the cyclic (parivritti) convention that
+  `vargas.unattested_dn` names, accepts 1 to 300 and refuses the rest by
+  name, and carries the convention in the value's own key.
+
+  The part index is integer arithmetic on the canonical angle (ADR-0016).
+  The engine computes it as `floor(deg / (30/N))` in floating point, and
+  none of 30/7, 30/11, 30/27 or 0.2 is representable, so a body exactly
+  on a part boundary can land either side of it depending on the
+  platform. The exhaustive test asserts every boundary of every part of
+  every chart in nanoarcseconds, along with the design's other seven
+  invariants over all 16 728 cells.
+
+  Also: `xtask`'s two falsification passes now share one `measure` module
+  — a claim, a verdict and a page that stays readable however wide the
+  numbers turn out to be — rather than each carrying a copy.
+
 - `crates/panchanga`, the daily panchanga built to the design the
   falsification pass produced. 59 tests.
 
