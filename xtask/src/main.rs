@@ -40,6 +40,8 @@
 //!   release's notes.
 //! - `chalit` and `check-chalit`: the falsification pass over the bhava
 //!   chalit methods, and the page it writes.
+//! - `panchanga` and `check-panchanga`: the falsification pass over the
+//!   recorded daily panchanga's conventions, and the page it writes.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -87,6 +89,7 @@ mod intl;
 mod lints;
 mod node_binding;
 mod package;
+mod panchanga;
 mod parity;
 mod platform;
 mod release;
@@ -123,6 +126,8 @@ fn main() {
         Some("check-lints") => lints::check(&repo_root()),
         Some("check-chalit") => chalit::check_generated(&repo_root()),
         Some("chalit") => chalit::generate(&repo_root()),
+        Some("check-panchanga") => panchanga::check_generated(&repo_root()),
+        Some("panchanga") => panchanga::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),
@@ -176,7 +181,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-chalit | chalit | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

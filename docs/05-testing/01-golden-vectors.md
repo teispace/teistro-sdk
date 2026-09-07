@@ -252,3 +252,36 @@ explained rather than a failure or a silent adoption.
     keeps the mean value, which is what the Lahiri definition states.
     Found 2026-09-07 by `crates/chart/tests/baseline_zodiac.rs`, the
     first time the SDK's ayanamsha was compared with this engine's.
+
+17. Brahma muhurta's night. Brahma muhurta is the fourteenth of the
+    fifteen muhurtas of a night and ends before sunrise, so the night it
+    divides is the one that *ends* at that sunrise. The engine places it
+    there and sizes it from the night that *follows* the day — the same
+    night its choghadiya divide. Measured over the 53 non-polar days of
+    the corpus: the difference is the change in the length of the
+    daylight from one day to the next, and it moves the start by a
+    median 10.0 seconds and at worst 27.6. The SDK sizes it from the
+    night it is in. Found 2026-09-07 by `cargo xtask panchanga`
+    (`03-design/panchanga-day-conventions.md`, §5).
+
+18. The Moon's rise and set in a daily panchanga. Every other field of
+    the recorded `panchanga_day` is bounded by sunrise; `moonrise_jd`
+    and `moonset_jd` are the first rise and set at or after the local
+    civil **midnight**. Measured over the 108 recorded events: 24 of
+    them fall outside the sunrise-to-sunrise window the limbs occupy,
+    and none falls before local midnight. The SDK reports the Moon's
+    events over the window the rest of the day uses; the new
+    `panchanga.moon_events` knob carries the engine's reading, and
+    `conformance-baseline` sets it. Under the SDK's window a day may
+    hold none, one or two of each, because a rise and the next are about
+    24 h 50 m apart. Found 2026-09-07 by `cargo xtask panchanga`
+    (`03-design/panchanga-day-conventions.md`, §9).
+
+19. The tithi's number. The engine numbers a tithi one to thirty through
+    the lunar month; the SDK's catalogue numbers it one to fifteen
+    within its paksha, which is how a tithi is named, and carries the
+    paksha beside it. Neither is wrong and they are not the same field:
+    a harness compares the SDK's `(paksha, number)` with the engine's
+    `number`, never the two numbers. Measured over all 109 recorded
+    tithi spans. Found 2026-09-07 by `cargo xtask panchanga`
+    (`03-design/panchanga-day-conventions.md`, §2).
