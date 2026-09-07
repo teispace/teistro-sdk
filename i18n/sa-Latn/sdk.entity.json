@@ -1588,5 +1588,113 @@
       "prose": "Siṃha",
       "iast": "Siṁha Yoni"
     }
+  },
+  "choghadiya": {
+    "UDVEG": {
+      "name": "Udvega",
+      "prose": "Udvega",
+      "iast": "Udvega"
+    },
+    "CHAR": {
+      "name": "Cara",
+      "prose": "Cara",
+      "iast": "Cara"
+    },
+    "LAABH": {
+      "name": "Lābha",
+      "prose": "Lābha",
+      "iast": "Lābha"
+    },
+    "AMRIT": {
+      "name": "Amṛta",
+      "prose": "Amṛta",
+      "iast": "Amṛta"
+    },
+    "KAAL": {
+      "name": "Kāla",
+      "prose": "Kāla",
+      "iast": "Kāla"
+    },
+    "SHUBHA": {
+      "name": "Śubha",
+      "prose": "Śubha",
+      "iast": "Śubha"
+    },
+    "ROG": {
+      "name": "Roga",
+      "prose": "Roga",
+      "iast": "Roga"
+    }
+  },
+  "kaala": {
+    "RAHU_KAALA": {
+      "name": "Rāhu Kāla",
+      "prose": "Rāhu Kāla",
+      "iast": "Rāhu Kāla"
+    },
+    "YAMAGHANDA": {
+      "name": "Yamagaṇḍa",
+      "prose": "Yamagaṇḍa",
+      "iast": "Yamagaṇḍa"
+    },
+    "GULIKA_KAALA": {
+      "name": "Gulika Kāla",
+      "prose": "Gulika Kāla",
+      "iast": "Gulika Kāla"
+    }
+  },
+  "panchaka": {
+    "MRITYU": {
+      "name": "Mṛtyu Pañcaka",
+      "prose": "Mṛtyu Pañcaka",
+      "iast": "Mṛtyu Pañcaka"
+    },
+    "AGNI": {
+      "name": "Agni Pañcaka",
+      "prose": "Agni Pañcaka",
+      "iast": "Agni Pañcaka"
+    },
+    "RAJA": {
+      "name": "Rāja Pañcaka",
+      "prose": "Rāja Pañcaka",
+      "iast": "Rāja Pañcaka"
+    },
+    "CHORA": {
+      "name": "Cora Pañcaka",
+      "prose": "Cora Pañcaka",
+      "iast": "Cora Pañcaka"
+    },
+    "ROGA": {
+      "name": "Roga Pañcaka",
+      "prose": "Roga Pañcaka",
+      "iast": "Roga Pañcaka"
+    }
+  },
+  "muhurta_yoga": {
+    "AMRIT_SIDDHI": {
+      "name": "Amṛta Siddhi",
+      "prose": "Amṛta Siddhi",
+      "iast": "Amṛta Siddhi"
+    },
+    "SARVARTHA_SIDDHI": {
+      "name": "Sarvārtha Siddhi",
+      "prose": "Sarvārtha Siddhi",
+      "iast": "Sarvārtha Siddhi"
+    },
+    "SIDDHA": {
+      "name": "Siddha",
+      "prose": "Siddha",
+      "iast": "Siddha"
+    },
+    "DWIPUSHKAR": {
+      "name": "Dvipuṣkara",
+      "prose": "Dvipuṣkara",
+      "iast": "Dvipuṣkara"
+    },
+    "TRIPUSHKAR": {
+      "name": "Tripuṣkara",
+      "prose": "Tripuṣkara",
+      "iast": "Tripuṣkara"
+    }
   }
 }

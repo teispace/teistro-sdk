@@ -108,6 +108,10 @@ export const Kind = Object.freeze({
   PointFamily: 'point_family',
   Star: 'star',
   StarClass: 'star_class',
+  Choghadiya: 'choghadiya',
+  Kaala: 'kaala',
+  Panchaka: 'panchaka',
+  MuhurtaYoga: 'muhurta_yoga',
 });
 
 /** Every Graha by name. */
@@ -1090,6 +1094,42 @@ export const StarClass = Object.freeze({
   Star: 'star_class.STAR',
   RadioSource: 'star_class.RADIO_SOURCE',
   Direction: 'star_class.DIRECTION',
+});
+
+/** Every Choghadiya by name. */
+export const Choghadiya = Object.freeze({
+  Udveg: 'choghadiya.UDVEG',
+  Char: 'choghadiya.CHAR',
+  Laabh: 'choghadiya.LAABH',
+  Amrit: 'choghadiya.AMRIT',
+  Kaal: 'choghadiya.KAAL',
+  Shubha: 'choghadiya.SHUBHA',
+  Rog: 'choghadiya.ROG',
+});
+
+/** Every Kaala by name. */
+export const Kaala = Object.freeze({
+  RahuKaala: 'kaala.RAHU_KAALA',
+  Yamaghanda: 'kaala.YAMAGHANDA',
+  GulikaKaala: 'kaala.GULIKA_KAALA',
+});
+
+/** Every Panchaka by name. */
+export const Panchaka = Object.freeze({
+  Mrityu: 'panchaka.MRITYU',
+  Agni: 'panchaka.AGNI',
+  Raja: 'panchaka.RAJA',
+  Chora: 'panchaka.CHORA',
+  Roga: 'panchaka.ROGA',
+});
+
+/** Every MuhurtaYoga by name. */
+export const MuhurtaYoga = Object.freeze({
+  AmritSiddhi: 'muhurta_yoga.AMRIT_SIDDHI',
+  SarvarthaSiddhi: 'muhurta_yoga.SARVARTHA_SIDDHI',
+  Siddha: 'muhurta_yoga.SIDDHA',
+  Dwipushkar: 'muhurta_yoga.DWIPUSHKAR',
+  Tripushkar: 'muhurta_yoga.TRIPUSHKAR',
 });
 
 /** Every Status by name. */

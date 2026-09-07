@@ -57,6 +57,10 @@ mod avastha_sayanadi;
 mod point_family;
 mod star;
 mod star_class;
+mod choghadiya;
+mod kaala;
+mod panchaka;
+mod muhurta_yoga;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -114,6 +118,10 @@ pub use avastha_sayanadi::*;
 pub use point_family::*;
 pub use star::*;
 pub use star_class::*;
+pub use choghadiya::*;
+pub use kaala::*;
+pub use panchaka::*;
+pub use muhurta_yoga::*;
 
 use crate::key::KeyId;
 
@@ -176,6 +184,10 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::PointFamily => PointFamily::from_key(key).map(PointFamily::key_id),
         Kind::Star => Star::from_key(key).map(Star::key_id),
         Kind::StarClass => StarClass::from_key(key).map(StarClass::key_id),
+        Kind::Choghadiya => Choghadiya::from_key(key).map(Choghadiya::key_id),
+        Kind::Kaala => Kaala::from_key(key).map(Kaala::key_id),
+        Kind::Panchaka => Panchaka::from_key(key).map(Panchaka::key_id),
+        Kind::MuhurtaYoga => MuhurtaYoga::from_key(key).map(MuhurtaYoga::key_id),
         _ => None,
     }
 }
@@ -239,6 +251,10 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::PointFamily => PointFamily::from_id(id.id()).map(PointFamily::key),
         Kind::Star => Star::from_id(id.id()).map(Star::key),
         Kind::StarClass => StarClass::from_id(id.id()).map(StarClass::key),
+        Kind::Choghadiya => Choghadiya::from_id(id.id()).map(Choghadiya::key),
+        Kind::Kaala => Kaala::from_id(id.id()).map(Kaala::key),
+        Kind::Panchaka => Panchaka::from_id(id.id()).map(Panchaka::key),
+        Kind::MuhurtaYoga => MuhurtaYoga::from_id(id.id()).map(MuhurtaYoga::key),
         _ => None,
     }
 }

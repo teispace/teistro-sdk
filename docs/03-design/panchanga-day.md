@@ -1,6 +1,6 @@
 # The panchanga day
 
-Status: `draft`, written 2026-09-07 from the falsification pass in
+Status: `built`, written 2026-09-07 from the falsification pass in
 [`panchanga-day-conventions.md`](panchanga-day-conventions.md), which
 measured every convention this page relies on against the 55 recorded
 days of the conformance corpus. Derives from
@@ -11,7 +11,8 @@ horas, the ghati), [`astro-events-and-crossings.md`](astro-events-and-crossings.
 [`core-types-and-catalogue.md`](core-types-and-catalogue.md) (the kinds
 and their attributes) and
 [`settings-and-profiles.md`](settings-and-profiles.md) (the knobs).
-`02-architecture/01-module-catalog.md` gives the module its row.
+`02-architecture/01-module-catalog.md` gives the module its row. Built as
+`crates/panchanga`; what §14 describes is what it exposes.
 
 ## 1. Purpose and scope
 
@@ -388,43 +389,40 @@ eighth are the weak ones) rather than to a fixture.
 ## 14. The API
 
 ```rust
-/// The almanac of one day at one place.
-pub fn panchanga(
-    date: &CalendarDate,
-    place: &Place,
-    provider: &dyn EphemerisProvider,
-    settings: &Resolved,
-) -> Result<Envelope<Panchanga>, Error>;
+/// The almanac over a provider, a solar model for the day's arcs, a
+/// calendar and a clock: the same collaborators the chart foundation
+/// takes, because it is the same day model underneath.
+pub struct Almanac<'a, P: EphemerisProvider + ?Sized> { /* ... */ }
 
-/// The almanac of the day an instant belongs to, which is not the day of
-/// its civil date before sunrise.
-pub fn panchanga_at(
-    instant: JulianDay<Utc>,
-    place: &Place,
-    provider: &dyn EphemerisProvider,
-    settings: &Resolved,
-) -> Result<Envelope<Panchanga>, Error>;
+impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
+    /// The almanac of one date at one place.
+    pub fn day(&self, date: &CalendarDate, place: &Place)
+        -> Result<Envelope<Panchanga>, Error>;
 
-/// A run of days at one place: the primary shape (principle 5).
-pub fn panchanga_between(
-    from: &CalendarDate,
-    to: &CalendarDate,
-    place: &Place,
-    provider: &dyn EphemerisProvider,
-    settings: &Resolved,
-) -> Result<Envelope<Vec<Panchanga>>, Error>;
+    /// The almanac of the day an instant belongs to, which before sunrise
+    /// is not the day of its civil date.
+    pub fn at(&self, instant: JulianDay<Utc>, place: &Place)
+        -> Result<Envelope<Panchanga>, Error>;
+
+    /// Every day in a range, both ends included: the primary shape.
+    pub fn between(&self, from: &CalendarDate, to: &CalendarDate, place: &Place)
+        -> Result<Envelope<Vec<Panchanga>>, Error>;
+}
 ```
 
 A month of days is the shape an application actually asks for, and it is
 much cheaper than thirty days computed separately: consecutive windows
-share a boundary, so day *n*'s next sunrise is day *n+1*'s sunrise, and
-one crossing search over the whole month replaces thirty overlapping
-ones. The single-day call is the convenience over the range, never the
-other way round.
+share a boundary, so day *n*'s next sunrise is day *n+1*'s sunrise. The
+single-day call is the convenience over the range, never the other way
+round, and `MOST_DAYS` is a year and a day — a caller asking for more is
+asking for a different shape and the refusal names the limit.
 
 `Panchanga` is a plain value — no interior mutability, no handle, no lazy
 field — `Clone`, serialisable whole, and equal field for field between two
-runs of the same inputs under the same settings.
+runs of the same inputs under the same settings. A date a caller writes
+carries no era numbers and one a calendar renders does, so the value's
+date is taken through the calendar and back: the same day asked for by
+date and reached from an instant are *equal*, not merely the same day.
 
 ```rust
 pub struct Panchanga {
@@ -433,14 +431,12 @@ pub struct Panchanga {
     /// What the spans are clipped to: the arc under `SUNRISE`, the civil
     /// day under `MIDNIGHT`.
     pub window: Interval,
-    pub tithi: Vec<Span<Tithi>>,
-    pub nakshatra: Vec<Span<Nakshatra>>,
-    pub yoga: Vec<Span<Yoga>>,
-    pub karana: Vec<Span<Karana>>,
-    /// The inauspicious eighths that the day has.
-    pub kaalas: Vec<Kaala>,
+    /// The four moving limbs, each a `Vec<Span<T>>`.
+    pub limbs: Limbs,
+    /// The inauspicious eighths the day has.
+    pub kaalas: Vec<Kaalas>,
     /// Eight of the daylight and eight of the night, when it has both.
-    pub choghadiya: Vec<Choghadiya>,
+    pub choghadiya: Vec<Part>,
     /// Twenty-four, from `time::hora`.
     pub horas: Vec<Hora>,
     /// Thirty divisions, with Abhijit and Brahma muhurta named.
@@ -448,16 +444,15 @@ pub struct Panchanga {
     pub month: LunarMonth,
     pub moon: MoonDay,
     pub sun: SunDay,
-    pub panchaka: Option<Span<Panchaka>>,
-    pub yogas: Vec<MuhurtaYoga>,
-    pub disha_shool: Direction,
+    /// Panchaka, the muhurta yogas and the disha shool.
+    pub omens: Omens,
 }
 ```
 
 with the accessors a reader actually wants — `tithi_at(instant)`,
-`hora_at(instant)`, `choghadiya_at(instant)`, `is_inauspicious(instant)`
-— so that "what is running now" is one call and not a linear scan the
-caller writes five times.
+`nakshatra_at`, `hora_at`, `choghadiya_at`, `is_inauspicious` — so that
+"what is running now" is one call and not a linear scan the caller writes
+five times.
 
 ## 15. Polar days, and absence reported as absence
 
@@ -500,20 +495,22 @@ numbers a tithi one to thirty through the lunar month, and the SDK's
 catalogue numbers it one to fifteen within its paksha, which is how a
 tithi is named. Both are right; they are not the same field.
 
-What is missing is four kinds:
+Four kinds were missing and are now shipped, each the usual way — a YAML
+file under `catalogue/`, `cargo xtask gen catalogue`, and
+`check-catalogue` holding the generated code to it — with names in all
+five locales:
 
-| kind | members | source |
-|---|---|---|
-| `choghadiya` | 7, each with its lord and whether it is auspicious | measured (conventions §4); classical |
-| `kaala` | 3, each with the eighth it takes per vara | measured (conventions §3); classical |
-| `panchaka` | 5, each with its nakshatra | measured (conventions §7); classical |
-| `muhurta_yoga` | 5 to start, each with its rule table | partly measured (conventions §8); needs rank-1 |
+| kind | number | members | mark |
+|---|---|---|---|
+| `choghadiya` | 58 | 7, each with its lord and whether it is auspicious | V, measured (conventions §4) |
+| `kaala` | 59 | 3, each with the eighth it takes per vara | V, measured (conventions §3) |
+| `panchaka` | 60 | 5, each with its nakshatra | V, measured (conventions §7) |
+| `muhurta_yoga` | 61 | 5 | T, except Tripushkar, whose classical rule the corpus bears out |
 
-and, when a citation exists for them, the thirty named muhurtas. Each
-arrives the usual way — a YAML file under `catalogue/`, `cargo xtask gen
-catalogue`, and `check-catalogue` holding the generated code to it — and
-each member carries its confidence mark, so a caller can see that a
-choghadiya's name is measured and a muhurta yoga's table is not.
+The marks are the point: a caller can see that a choghadiya's name is
+measured and a muhurta yoga's table is not. The thirty named muhurtas
+wait on a citation for the names and their order; the divisions ship
+now, numbered.
 
 ## 17. Localisation
 
@@ -544,28 +541,58 @@ thirty-day range under 3× a single day**, measured in instructions by
 
 ## 19. Tests
 
-| what | against |
-|---|---|
-| every limb span, member and boundary | `panchanga_day.{tithi,nakshatra,yoga,karana}` on all 55 days, at the corpus's declared tolerance (1e-5 day, 0.86 s), comparing the clipped bounds |
-| the true bounds of the first and last span | property: `whole ⊇ inside`, and `whole` matches the neighbouring day's span |
-| the three kaalas | `rahu_kaal`, `yamaghanda`, `gulika_kaal` on all 55 |
-| the choghadiya and their lords | `day_choghadiya`, `night_choghadiya`, all 880 |
-| the horas | `hora`, all 1320, and `crates/time`'s own hora fixtures |
-| Abhijit, Brahma muhurta | `abhijit`, `brahma_muhurta`, all 55, with Brahma muhurta asserted **different** by the registry's amount |
-| the lunar month | `lunar_month` on all 55, both conventions |
-| panchaka, the ayana, the disha shool | `panchaka`, `sun_sign.ayana`, `disha_shool`, all 55 |
-| the Moon's events | `moonrise_jd`, `moonset_jd` under `moon_events = CIVIL_DAY`, all 54 that have them |
-| the Sun's and Moon's signs | `sun_sign`, `moon_sign` and its transition, all 55 |
-| the frame | the daily spans against the natal block, asserting the 5 known disagreements as disagreements |
-| the tithi ends | the **rank-1** official corpus: 8 printed tithi end instants and 22 printed day arcs from Nepal's national panchanga committee |
-| a range equals its days | every day of a month computed both ways, field for field |
-| polar days | c028 and c029: the periods of the missing arc absent, `DayState` polar, no empty interval anywhere |
+The crate has 59 of them, in four files. What each can and cannot decide
+is the design's own division: the periods and the tables are arithmetic
+and are compared against the corpus exactly; the limb *instants* are
+positions over time and no provider inside this workspace has real
+positions, so they wait on the conformance harness over an adapter.
 
-The rank-1 rows are the ones that matter most and the ones there are
-fewest of: eight tithi ends read off a printed panchangam are the only
-evidence in the project that is not another implementation, and they are
-what says the boundary solver is right rather than merely agreeing with
-its neighbour.
+**`tests/baseline.rs`** — the corpus, computed from the arcs the corpus
+itself recorded:
+
+| what | against | measured |
+|---|---|---|
+| the three kaalas | `rahu_kaal`, `yamaghanda`, `gulika_kaal` | 159, worst 0.04 ms |
+| the choghadiya and their lords | both recorded sequences | 848, worst 0.04 ms |
+| the horas and their lords | `hora` | 1272, worst 0.04 ms |
+| Abhijit, and its Wednesday void | `abhijit` | 53, worst 0.04 ms |
+| Brahma muhurta | asserted **different** by the registry's amount | 52, median 10.02 s, worst 27.56 s |
+| the month relation | `lunar_month`, both conventions | 55 |
+| the classification of a real position | the recorded Sun and Moon at each birth instant, into all four limbs | 55 |
+| panchaka, the ayana, the disha shool | `panchaka`, `sun_sign.ayana`, `disha_shool` | 55, 9 panchakas |
+| the limbs' recorded attributes | the SDK's catalogue | 336 |
+| a lord names one choghadiya | both recorded sequences | 880 |
+
+Worst 0.04 ms is the last bit of a double near two and a half million,
+which is what arithmetic against arithmetic leaves.
+
+**`tests/kernel.rs`** — the limb kernel's own properties over the
+analytic test provider, which is the wrong sky at the right speed: the
+spans cover the window and are in order, consecutive members share one
+instant, every span carries both pairs of bounds, a tithi boundary is a
+karana boundary, a day inside a week is the same day to the solver's own
+tolerance, and every member is the one the integer path names.
+
+**`tests/almanac.rs`** — the assembled value: every period divides the
+arc of the day it is reported with, the window moves with
+`day.day_boundary` and the periods do not, `panchanga.moon_events` moves
+two fields and nothing else, a day reached from an instant inside it is
+the same value, a range is its days and shares their boundaries, and the
+stamp carries the profile and both hashes.
+
+**The modules' own tests** — the karana's chain over a whole month, the
+weekday walk against the Chaldean order, the eighths table on a Saturday
+and a Sunday, a half with no arc contributing no periods, Tripushkar
+needing all three of its conditions, a table the SDK does not ship
+refused by name.
+
+Still to come, with the harness: every limb span's instants against
+`panchanga_day.{tithi,nakshatra,yoga,karana}` at the corpus's declared
+tolerance (1e-5 day), the Moon's rise and set under `moon_events =
+CIVIL_DAY`, the Sun's and Moon's signs and their transitions, and the
+**rank-1** rows — eight printed tithi end instants and 22 printed day
+arcs from Nepal's national panchanga committee, which are the only
+evidence in the project that is not another implementation.
 
 ## 20. Open questions
 

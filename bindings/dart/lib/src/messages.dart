@@ -53,6 +53,20 @@ enum CharaKarakaKey {
   final String key;
 }
 
+enum ChoghadiyaKey {
+  udveg('choghadiya.UDVEG'),
+  char('choghadiya.CHAR'),
+  laabh('choghadiya.LAABH'),
+  amrit('choghadiya.AMRIT'),
+  kaal('choghadiya.KAAL'),
+  shubha('choghadiya.SHUBHA'),
+  rog('choghadiya.ROG');
+
+  const ChoghadiyaKey(this.key);
+
+  final String key;
+}
+
 enum DeityKey {
   ashwiniKumara('deity.ASHWINI_KUMARA'),
   yama('deity.YAMA'),
@@ -147,6 +161,16 @@ enum GrahaKey {
   final String key;
 }
 
+enum KaalaKey {
+  rahuKaala('kaala.RAHU_KAALA'),
+  yamaghanda('kaala.YAMAGHANDA'),
+  gulikaKaala('kaala.GULIKA_KAALA');
+
+  const KaalaKey(this.key);
+
+  final String key;
+}
+
 enum KaranaKey {
   bava('karana.BAVA'),
   balava('karana.BALAVA'),
@@ -161,6 +185,18 @@ enum KaranaKey {
   kimstughna('karana.KIMSTUGHNA');
 
   const KaranaKey(this.key);
+
+  final String key;
+}
+
+enum MuhurtaYogaKey {
+  amritSiddhi('muhurta_yoga.AMRIT_SIDDHI'),
+  sarvarthaSiddhi('muhurta_yoga.SARVARTHA_SIDDHI'),
+  siddha('muhurta_yoga.SIDDHA'),
+  dwipushkar('muhurta_yoga.DWIPUSHKAR'),
+  tripushkar('muhurta_yoga.TRIPUSHKAR');
+
+  const MuhurtaYogaKey(this.key);
 
   final String key;
 }
@@ -214,6 +250,18 @@ enum PakshaKey {
   krishna('paksha.KRISHNA');
 
   const PakshaKey(this.key);
+
+  final String key;
+}
+
+enum PanchakaKey {
+  mrityu('panchaka.MRITYU'),
+  agni('panchaka.AGNI'),
+  raja('panchaka.RAJA'),
+  chora('panchaka.CHORA'),
+  roga('panchaka.ROGA');
+
+  const PanchakaKey(this.key);
 
   final String key;
 }
@@ -769,6 +817,20 @@ final class MessagesSdkEntityCharaKaraka {
   EntityForms get putrakaraka => _r.entity('chara_karaka.PUTRAKARAKA');
 }
 
+final class MessagesSdkEntityChoghadiya {
+  const MessagesSdkEntityChoghadiya(this._r);
+
+  final Renderer _r;
+
+  EntityForms get amrit => _r.entity('choghadiya.AMRIT');
+  EntityForms get char => _r.entity('choghadiya.CHAR');
+  EntityForms get kaal => _r.entity('choghadiya.KAAL');
+  EntityForms get laabh => _r.entity('choghadiya.LAABH');
+  EntityForms get rog => _r.entity('choghadiya.ROG');
+  EntityForms get shubha => _r.entity('choghadiya.SHUBHA');
+  EntityForms get udveg => _r.entity('choghadiya.UDVEG');
+}
+
 final class MessagesSdkEntityDeity {
   const MessagesSdkEntityDeity(this._r);
 
@@ -863,6 +925,16 @@ final class MessagesSdkEntityGraha {
   EntityForms get venus => _r.entity('graha.VENUS');
 }
 
+final class MessagesSdkEntityKaala {
+  const MessagesSdkEntityKaala(this._r);
+
+  final Renderer _r;
+
+  EntityForms get gulikaKaala => _r.entity('kaala.GULIKA_KAALA');
+  EntityForms get rahuKaala => _r.entity('kaala.RAHU_KAALA');
+  EntityForms get yamaghanda => _r.entity('kaala.YAMAGHANDA');
+}
+
 final class MessagesSdkEntityKarana {
   const MessagesSdkEntityKarana(this._r);
 
@@ -879,6 +951,18 @@ final class MessagesSdkEntityKarana {
   EntityForms get taitila => _r.entity('karana.TAITILA');
   EntityForms get vanija => _r.entity('karana.VANIJA');
   EntityForms get vishti => _r.entity('karana.VISHTI');
+}
+
+final class MessagesSdkEntityMuhurtaYoga {
+  const MessagesSdkEntityMuhurtaYoga(this._r);
+
+  final Renderer _r;
+
+  EntityForms get amritSiddhi => _r.entity('muhurta_yoga.AMRIT_SIDDHI');
+  EntityForms get dwipushkar => _r.entity('muhurta_yoga.DWIPUSHKAR');
+  EntityForms get sarvarthaSiddhi => _r.entity('muhurta_yoga.SARVARTHA_SIDDHI');
+  EntityForms get siddha => _r.entity('muhurta_yoga.SIDDHA');
+  EntityForms get tripushkar => _r.entity('muhurta_yoga.TRIPUSHKAR');
 }
 
 final class MessagesSdkEntityNadi {
@@ -932,6 +1016,18 @@ final class MessagesSdkEntityPaksha {
 
   EntityForms get krishna => _r.entity('paksha.KRISHNA');
   EntityForms get shukla => _r.entity('paksha.SHUKLA');
+}
+
+final class MessagesSdkEntityPanchaka {
+  const MessagesSdkEntityPanchaka(this._r);
+
+  final Renderer _r;
+
+  EntityForms get agni => _r.entity('panchaka.AGNI');
+  EntityForms get chora => _r.entity('panchaka.CHORA');
+  EntityForms get mrityu => _r.entity('panchaka.MRITYU');
+  EntityForms get raja => _r.entity('panchaka.RAJA');
+  EntityForms get roga => _r.entity('panchaka.ROGA');
 }
 
 final class MessagesSdkEntityPoint {
@@ -1178,15 +1274,19 @@ final class MessagesSdkEntity {
   MessagesSdkEntityAvasthaBaladi get avasthaBaladi => MessagesSdkEntityAvasthaBaladi(_r);
   MessagesSdkEntityAyana get ayana => MessagesSdkEntityAyana(_r);
   MessagesSdkEntityCharaKaraka get charaKaraka => MessagesSdkEntityCharaKaraka(_r);
+  MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
   MessagesSdkEntityDeity get deity => MessagesSdkEntityDeity(_r);
   MessagesSdkEntityDignity get dignity => MessagesSdkEntityDignity(_r);
   MessagesSdkEntityEra get era => MessagesSdkEntityEra(_r);
   MessagesSdkEntityGana get gana => MessagesSdkEntityGana(_r);
   MessagesSdkEntityGraha get graha => MessagesSdkEntityGraha(_r);
+  MessagesSdkEntityKaala get kaala => MessagesSdkEntityKaala(_r);
   MessagesSdkEntityKarana get karana => MessagesSdkEntityKarana(_r);
+  MessagesSdkEntityMuhurtaYoga get muhurtaYoga => MessagesSdkEntityMuhurtaYoga(_r);
   MessagesSdkEntityNadi get nadi => MessagesSdkEntityNadi(_r);
   MessagesSdkEntityNakshatra get nakshatra => MessagesSdkEntityNakshatra(_r);
   MessagesSdkEntityPaksha get paksha => MessagesSdkEntityPaksha(_r);
+  MessagesSdkEntityPanchaka get panchaka => MessagesSdkEntityPanchaka(_r);
   MessagesSdkEntityPoint get point => MessagesSdkEntityPoint(_r);
   MessagesSdkEntityRashi get rashi => MessagesSdkEntityRashi(_r);
   MessagesSdkEntityRelationship get relationship => MessagesSdkEntityRelationship(_r);

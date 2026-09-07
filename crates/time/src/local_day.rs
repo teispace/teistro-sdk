@@ -95,6 +95,21 @@ impl fmt::Display for LocalDay {
     }
 }
 
+/// The instant a fixed day's local civil midnight falls at.
+///
+/// Two modules need it — the polar synthesis here, and the daily
+/// panchanga, whose window is the civil day under a midnight boundary and
+/// whose moonrise may be searched from one — so it is public rather than
+/// written twice.
+///
+/// # Errors
+///
+/// A fixed day outside the Julian day's range.
+pub fn local_midnight(clock: &dyn LocalClock, day: FixedDay) -> Result<JulianDay<Utc>, Error> {
+    let jd = day.jd_at_midnight()?;
+    Ok(JulianDay::try_new(jd.get() - clock.offset_at(jd).days())?)
+}
+
 /// The first day after `day` with a sunrise.
 fn first_arc_after(
     model: &dyn SolarModel,
@@ -246,12 +261,8 @@ fn synthesised(
         .with_hint("choose NEAREST_EVENT or CIVIL_MIDNIGHT to synthesise the day's bounds")),
         PolarDayPolicy::CivilMidnight => {
             // The civil day under the clock, as a day without a night.
-            let midnight = |d: FixedDay| -> Result<JulianDay<Utc>, Error> {
-                let jd = d.jd_at_midnight()?;
-                Ok(JulianDay::try_new(jd.get() - clock.offset_at(jd).days())?)
-            };
-            let start = midnight(day)?;
-            let end = midnight(day.plus_days(1))?;
+            let start = local_midnight(clock, day)?;
+            let end = local_midnight(clock, day.plus_days(1))?;
             Ok(Bounds {
                 sunrise: start,
                 sunset: end,

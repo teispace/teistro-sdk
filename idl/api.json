@@ -378,6 +378,30 @@
           "value": 57,
           "doc": "What kind of object a star-table member is.",
           "key": "star_class"
+        },
+        {
+          "name": "Choghadiya",
+          "value": 58,
+          "doc": "The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it.",
+          "key": "choghadiya"
+        },
+        {
+          "name": "Kaala",
+          "value": 59,
+          "doc": "The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.",
+          "key": "kaala"
+        },
+        {
+          "name": "Panchaka",
+          "value": 60,
+          "doc": "The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.",
+          "key": "panchaka"
+        },
+        {
+          "name": "MuhurtaYoga",
+          "value": 61,
+          "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).",
+          "key": "muhurta_yoga"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -5445,6 +5469,162 @@
           "value": 2,
           "doc": "A fixed direction on the sky without a body, such as a galactic pole",
           "key": "DIRECTION"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Choghadiya",
+      "doc": "The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. Members are the catalogue's ids; the full key id is `(TS_KIND_CHOGHADIYA << 16) | member`.",
+      "repr": "u16",
+      "kind": "choghadiya",
+      "values": [
+        {
+          "name": "Udveg",
+          "value": 0,
+          "doc": "Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with",
+          "key": "UDVEG"
+        },
+        {
+          "name": "Char",
+          "value": 1,
+          "doc": "Char, Venus's: movable, and so suited to travel",
+          "key": "CHAR"
+        },
+        {
+          "name": "Laabh",
+          "value": 2,
+          "doc": "Laabh, Mercury's: gain",
+          "key": "LAABH"
+        },
+        {
+          "name": "Amrit",
+          "value": 3,
+          "doc": "Amrit, the Moon's: nectar, the most auspicious",
+          "key": "AMRIT"
+        },
+        {
+          "name": "Kaal",
+          "value": 4,
+          "doc": "Kaal, Saturn's: loss",
+          "key": "KAAL"
+        },
+        {
+          "name": "Shubha",
+          "value": 5,
+          "doc": "Shubha, Jupiter's: auspicious",
+          "key": "SHUBHA"
+        },
+        {
+          "name": "Rog",
+          "value": 6,
+          "doc": "Rog, Mars's: illness",
+          "key": "ROG"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Kaala",
+      "doc": "The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. Members are the catalogue's ids; the full key id is `(TS_KIND_KAALA << 16) | member`.",
+      "repr": "u16",
+      "kind": "kaala",
+      "values": [
+        {
+          "name": "RahuKaala",
+          "value": 0,
+          "doc": "Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic.",
+          "key": "RAHU_KAALA"
+        },
+        {
+          "name": "Yamaghanda",
+          "value": 1,
+          "doc": "Yamaghanda. The third eighth counted backwards from the vara, modulo seven.",
+          "key": "YAMAGHANDA"
+        },
+        {
+          "name": "GulikaKaala",
+          "value": 2,
+          "doc": "Gulika kaala. The fifth eighth counted backwards from the vara, modulo seven.",
+          "key": "GULIKA_KAALA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Panchaka",
+      "doc": "The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.",
+      "repr": "u16",
+      "kind": "panchaka",
+      "values": [
+        {
+          "name": "Mrityu",
+          "value": 0,
+          "doc": "Mrityu panchaka, the Moon in Dhanishtha",
+          "key": "MRITYU"
+        },
+        {
+          "name": "Agni",
+          "value": 1,
+          "doc": "Agni panchaka, the Moon in Shatabhisha",
+          "key": "AGNI"
+        },
+        {
+          "name": "Raja",
+          "value": 2,
+          "doc": "Raja panchaka, the Moon in Purva Bhadrapada",
+          "key": "RAJA"
+        },
+        {
+          "name": "Chora",
+          "value": 3,
+          "doc": "Chora panchaka, the Moon in Uttara Bhadrapada",
+          "key": "CHORA"
+        },
+        {
+          "name": "Roga",
+          "value": 4,
+          "doc": "Roga panchaka, the Moon in Revati",
+          "key": "ROGA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "MuhurtaYoga",
+      "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.",
+      "repr": "u16",
+      "kind": "muhurta_yoga",
+      "values": [
+        {
+          "name": "AmritSiddhi",
+          "value": 0,
+          "doc": "Amrit Siddhi yoga: one vara and nakshatra pair each",
+          "key": "AMRIT_SIDDHI"
+        },
+        {
+          "name": "SarvarthaSiddhi",
+          "value": 1,
+          "doc": "Sarvartha Siddhi yoga: a set of nakshatras per vara",
+          "key": "SARVARTHA_SIDDHI"
+        },
+        {
+          "name": "Siddha",
+          "value": 2,
+          "doc": "Siddha yoga",
+          "key": "SIDDHA"
+        },
+        {
+          "name": "Dwipushkar",
+          "value": 3,
+          "doc": "Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings",
+          "key": "DWIPUSHKAR"
+        },
+        {
+          "name": "Tripushkar",
+          "value": 4,
+          "doc": "Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings",
+          "key": "TRIPUSHKAR"
         }
       ],
       "source": "catalogue/catalogue.json"

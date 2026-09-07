@@ -1,0 +1,30 @@
+kind: kaala
+number: 59
+version: 1
+doc: "The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week."
+attributes: { eighth_by_vara: "array<u8,7>" }
+members:
+  - key: RAHU_KAALA
+    id: 0
+    doc: "Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic."
+    attributes: { eighth_by_vara: [8, 2, 7, 5, 6, 4, 3] }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.rahu_kaal, measured on all 55 days"
+    mark: V
+  - key: YAMAGHANDA
+    id: 1
+    doc: "Yamaghanda. The third eighth counted backwards from the vara, modulo seven."
+    attributes: { eighth_by_vara: [5, 4, 3, 2, 1, 7, 6] }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.yamaghanda, measured on all 55 days"
+    mark: V
+  - key: GULIKA_KAALA
+    id: 2
+    doc: "Gulika kaala. The fifth eighth counted backwards from the vara, modulo seven."
+    attributes: { eighth_by_vara: [7, 6, 5, 4, 3, 2, 1] }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.gulika_kaal, measured on all 55 days"
+    mark: V

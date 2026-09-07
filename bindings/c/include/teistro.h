@@ -255,6 +255,22 @@ typedef enum ts_kind {
      * What kind of object a star-table member is.
      */
     TS_KIND_STAR_CLASS = 57,
+    /**
+     * The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it.
+     */
+    TS_KIND_CHOGHADIYA = 58,
+    /**
+     * The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.
+     */
+    TS_KIND_KAALA = 59,
+    /**
+     * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+     */
+    TS_KIND_PANCHAKA = 60,
+    /**
+     * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+     */
+    TS_KIND_MUHURTA_YOGA = 61,
 } ts_kind;
 
 /**
@@ -3744,6 +3760,118 @@ typedef enum ts_star_class {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_STAR_CLASS_UNKNOWN = -1,
 } ts_star_class;
+
+/**
+ * The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. Members are the catalogue's ids; the full key id is `(TS_KIND_CHOGHADIYA << 16) | member`.
+ */
+typedef enum ts_choghadiya {
+    /**
+     * Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with
+     */
+    TS_CHOGHADIYA_UDVEG = 0,
+    /**
+     * Char, Venus's: movable, and so suited to travel
+     */
+    TS_CHOGHADIYA_CHAR = 1,
+    /**
+     * Laabh, Mercury's: gain
+     */
+    TS_CHOGHADIYA_LAABH = 2,
+    /**
+     * Amrit, the Moon's: nectar, the most auspicious
+     */
+    TS_CHOGHADIYA_AMRIT = 3,
+    /**
+     * Kaal, Saturn's: loss
+     */
+    TS_CHOGHADIYA_KAAL = 4,
+    /**
+     * Shubha, Jupiter's: auspicious
+     */
+    TS_CHOGHADIYA_SHUBHA = 5,
+    /**
+     * Rog, Mars's: illness
+     */
+    TS_CHOGHADIYA_ROG = 6,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_CHOGHADIYA_UNKNOWN = -1,
+} ts_choghadiya;
+
+/**
+ * The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. Members are the catalogue's ids; the full key id is `(TS_KIND_KAALA << 16) | member`.
+ */
+typedef enum ts_kaala {
+    /**
+     * Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic.
+     */
+    TS_KAALA_RAHU_KAALA = 0,
+    /**
+     * Yamaghanda. The third eighth counted backwards from the vara, modulo seven.
+     */
+    TS_KAALA_YAMAGHANDA = 1,
+    /**
+     * Gulika kaala. The fifth eighth counted backwards from the vara, modulo seven.
+     */
+    TS_KAALA_GULIKA_KAALA = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_KAALA_UNKNOWN = -1,
+} ts_kaala;
+
+/**
+ * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+ */
+typedef enum ts_panchaka {
+    /**
+     * Mrityu panchaka, the Moon in Dhanishtha
+     */
+    TS_PANCHAKA_MRITYU = 0,
+    /**
+     * Agni panchaka, the Moon in Shatabhisha
+     */
+    TS_PANCHAKA_AGNI = 1,
+    /**
+     * Raja panchaka, the Moon in Purva Bhadrapada
+     */
+    TS_PANCHAKA_RAJA = 2,
+    /**
+     * Chora panchaka, the Moon in Uttara Bhadrapada
+     */
+    TS_PANCHAKA_CHORA = 3,
+    /**
+     * Roga panchaka, the Moon in Revati
+     */
+    TS_PANCHAKA_ROGA = 4,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_PANCHAKA_UNKNOWN = -1,
+} ts_panchaka;
+
+/**
+ * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
+ */
+typedef enum ts_muhurta_yoga {
+    /**
+     * Amrit Siddhi yoga: one vara and nakshatra pair each
+     */
+    TS_MUHURTA_YOGA_AMRIT_SIDDHI = 0,
+    /**
+     * Sarvartha Siddhi yoga: a set of nakshatras per vara
+     */
+    TS_MUHURTA_YOGA_SARVARTHA_SIDDHI = 1,
+    /**
+     * Siddha yoga
+     */
+    TS_MUHURTA_YOGA_SIDDHA = 2,
+    /**
+     * Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings
+     */
+    TS_MUHURTA_YOGA_DWIPUSHKAR = 3,
+    /**
+     * Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings
+     */
+    TS_MUHURTA_YOGA_TRIPUSHKAR = 4,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_MUHURTA_YOGA_UNKNOWN = -1,
+} ts_muhurta_yoga;
 
 /**
  * The status of a call, with the code it has at the C boundary.

@@ -120,9 +120,17 @@ pub enum Kind {
     Star = 56,
     /// What kind of object a star-table member is.
     StarClass = 57,
+    /// The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it.
+    Choghadiya = 58,
+    /// The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.
+    Kaala = 59,
+    /// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+    Panchaka = 60,
+    /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+    MuhurtaYoga = 61,
 }
 
-const BY_NAME: [(&str, Kind); 56] = [
+const BY_NAME: [(&str, Kind); 60] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_deeptadi", Kind::AvasthaDeeptadi),
@@ -137,6 +145,7 @@ const BY_NAME: [(&str, Kind); 56] = [
     ("calendar", Kind::Calendar),
     ("chara_karaka", Kind::CharaKaraka),
     ("chart_kind", Kind::ChartKind),
+    ("choghadiya", Kind::Choghadiya),
     ("dasha_family", Kind::DashaFamily),
     ("dasha_system", Kind::DashaSystem),
     ("degeneracy", Kind::Degeneracy),
@@ -149,15 +158,18 @@ const BY_NAME: [(&str, Kind); 56] = [
     ("graha", Kind::Graha),
     ("guna", Kind::Guna),
     ("house_system", Kind::HouseSystem),
+    ("kaala", Kind::Kaala),
     ("karana", Kind::Karana),
     ("koota", Kind::Koota),
     ("masa", Kind::Masa),
     ("modality", Kind::Modality),
     ("muhurta_nature", Kind::MuhurtaNature),
+    ("muhurta_yoga", Kind::MuhurtaYoga),
     ("nadi", Kind::Nadi),
     ("nakshatra", Kind::Nakshatra),
     ("nature", Kind::Nature),
     ("paksha", Kind::Paksha),
+    ("panchaka", Kind::Panchaka),
     ("parity", Kind::Parity),
     ("point", Kind::Point),
     ("point_family", Kind::PointFamily),
@@ -183,7 +195,7 @@ const BY_NAME: [(&str, Kind); 56] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 56] = [
+    pub const ALL: [Kind; 60] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -240,6 +252,10 @@ impl Kind {
         Kind::PointFamily,
         Kind::Star,
         Kind::StarClass,
+        Kind::Choghadiya,
+        Kind::Kaala,
+        Kind::Panchaka,
+        Kind::MuhurtaYoga,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -302,6 +318,10 @@ impl Kind {
             Kind::PointFamily => "point_family",
             Kind::Star => "star",
             Kind::StarClass => "star_class",
+            Kind::Choghadiya => "choghadiya",
+            Kind::Kaala => "kaala",
+            Kind::Panchaka => "panchaka",
+            Kind::MuhurtaYoga => "muhurta_yoga",
         }
     }
 
@@ -371,6 +391,10 @@ impl Kind {
             Kind::PointFamily => 8,
             Kind::Star => 128,
             Kind::StarClass => 3,
+            Kind::Choghadiya => 7,
+            Kind::Kaala => 3,
+            Kind::Panchaka => 5,
+            Kind::MuhurtaYoga => 5,
         }
     }
 
@@ -440,6 +464,10 @@ impl Kind {
             55 => Some(Kind::PointFamily),
             56 => Some(Kind::Star),
             57 => Some(Kind::StarClass),
+            58 => Some(Kind::Choghadiya),
+            59 => Some(Kind::Kaala),
+            60 => Some(Kind::Panchaka),
+            61 => Some(Kind::MuhurtaYoga),
             _ => None,
         }
     }

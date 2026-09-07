@@ -108,7 +108,11 @@ export type Kind =
   | 'avastha_sayanadi'
   | 'point_family'
   | 'star'
-  | 'star_class';
+  | 'star_class'
+  | 'choghadiya'
+  | 'kaala'
+  | 'panchaka'
+  | 'muhurta_yoga';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -332,6 +336,22 @@ export declare const Kind: {
    * What kind of object a star-table member is.
    */
   readonly StarClass: 'star_class';
+  /**
+   * The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it.
+   */
+  readonly Choghadiya: 'choghadiya';
+  /**
+   * The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.
+   */
+  readonly Kaala: 'kaala';
+  /**
+   * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+   */
+  readonly Panchaka: 'panchaka';
+  /**
+   * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+   */
+  readonly MuhurtaYoga: 'muhurta_yoga';
 };
 
 /**
@@ -4598,6 +4618,130 @@ export declare const StarClass: {
    * A fixed direction on the sky without a body, such as a galactic pole
    */
   readonly Direction: 'star_class.DIRECTION';
+};
+
+/**
+ * The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. Members are the catalogue's ids; the full key id is `(TS_KIND_CHOGHADIYA << 16) | member`.
+ */
+export type Choghadiya =
+  | 'choghadiya.UDVEG'
+  | 'choghadiya.CHAR'
+  | 'choghadiya.LAABH'
+  | 'choghadiya.AMRIT'
+  | 'choghadiya.KAAL'
+  | 'choghadiya.SHUBHA'
+  | 'choghadiya.ROG'
+  | 'unknown';
+
+/** Every Choghadiya by name; the values are the strings the union accepts. */
+export declare const Choghadiya: {
+  /**
+   * Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with
+   */
+  readonly Udveg: 'choghadiya.UDVEG';
+  /**
+   * Char, Venus's: movable, and so suited to travel
+   */
+  readonly Char: 'choghadiya.CHAR';
+  /**
+   * Laabh, Mercury's: gain
+   */
+  readonly Laabh: 'choghadiya.LAABH';
+  /**
+   * Amrit, the Moon's: nectar, the most auspicious
+   */
+  readonly Amrit: 'choghadiya.AMRIT';
+  /**
+   * Kaal, Saturn's: loss
+   */
+  readonly Kaal: 'choghadiya.KAAL';
+  /**
+   * Shubha, Jupiter's: auspicious
+   */
+  readonly Shubha: 'choghadiya.SHUBHA';
+  /**
+   * Rog, Mars's: illness
+   */
+  readonly Rog: 'choghadiya.ROG';
+};
+
+/**
+ * The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. Members are the catalogue's ids; the full key id is `(TS_KIND_KAALA << 16) | member`.
+ */
+export type Kaala = 'kaala.RAHU_KAALA' | 'kaala.YAMAGHANDA' | 'kaala.GULIKA_KAALA' | 'unknown';
+
+/** Every Kaala by name; the values are the strings the union accepts. */
+export declare const Kaala: {
+  /**
+   * Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic.
+   */
+  readonly RahuKaala: 'kaala.RAHU_KAALA';
+  /**
+   * Yamaghanda. The third eighth counted backwards from the vara, modulo seven.
+   */
+  readonly Yamaghanda: 'kaala.YAMAGHANDA';
+  /**
+   * Gulika kaala. The fifth eighth counted backwards from the vara, modulo seven.
+   */
+  readonly GulikaKaala: 'kaala.GULIKA_KAALA';
+};
+
+/**
+ * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+ */
+export type Panchaka = 'panchaka.MRITYU' | 'panchaka.AGNI' | 'panchaka.RAJA' | 'panchaka.CHORA' | 'panchaka.ROGA' | 'unknown';
+
+/** Every Panchaka by name; the values are the strings the union accepts. */
+export declare const Panchaka: {
+  /**
+   * Mrityu panchaka, the Moon in Dhanishtha
+   */
+  readonly Mrityu: 'panchaka.MRITYU';
+  /**
+   * Agni panchaka, the Moon in Shatabhisha
+   */
+  readonly Agni: 'panchaka.AGNI';
+  /**
+   * Raja panchaka, the Moon in Purva Bhadrapada
+   */
+  readonly Raja: 'panchaka.RAJA';
+  /**
+   * Chora panchaka, the Moon in Uttara Bhadrapada
+   */
+  readonly Chora: 'panchaka.CHORA';
+  /**
+   * Roga panchaka, the Moon in Revati
+   */
+  readonly Roga: 'panchaka.ROGA';
+};
+
+/**
+ * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
+ */
+export type MuhurtaYoga = 'muhurta_yoga.AMRIT_SIDDHI' | 'muhurta_yoga.SARVARTHA_SIDDHI' | 'muhurta_yoga.SIDDHA' | 'muhurta_yoga.DWIPUSHKAR' | 'muhurta_yoga.TRIPUSHKAR' | 'unknown';
+
+/** Every MuhurtaYoga by name; the values are the strings the union accepts. */
+export declare const MuhurtaYoga: {
+  /**
+   * Amrit Siddhi yoga: one vara and nakshatra pair each
+   */
+  readonly AmritSiddhi: 'muhurta_yoga.AMRIT_SIDDHI';
+  /**
+   * Sarvartha Siddhi yoga: a set of nakshatras per vara
+   */
+  readonly SarvarthaSiddhi: 'muhurta_yoga.SARVARTHA_SIDDHI';
+  /**
+   * Siddha yoga
+   */
+  readonly Siddha: 'muhurta_yoga.SIDDHA';
+  /**
+   * Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings
+   */
+  readonly Dwipushkar: 'muhurta_yoga.DWIPUSHKAR';
+  /**
+   * Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings
+   */
+  readonly Tripushkar: 'muhurta_yoga.TRIPUSHKAR';
 };
 
 /**

@@ -18991,6 +18991,466 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "choghadiya",
+      "number": 58,
+      "version": 1,
+      "doc": "The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it.",
+      "types": {},
+      "attributes": {
+        "lord": "key:graha",
+        "auspicious": "bool"
+      },
+      "members": [
+        {
+          "key": "UDVEG",
+          "id": 0,
+          "doc": "Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "SUN",
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.day_choghadiya, measured over 880 eighths"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CHAR",
+          "id": 1,
+          "doc": "Char, Venus's: movable, and so suited to travel",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "VENUS",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.day_choghadiya, measured over 880 eighths"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "LAABH",
+          "id": 2,
+          "doc": "Laabh, Mercury's: gain",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "MERCURY",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.day_choghadiya, measured over 880 eighths"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "AMRIT",
+          "id": 3,
+          "doc": "Amrit, the Moon's: nectar, the most auspicious",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "MOON",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.day_choghadiya, measured over 880 eighths"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KAAL",
+          "id": 4,
+          "doc": "Kaal, Saturn's: loss",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "SATURN",
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.day_choghadiya, measured over 880 eighths"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SHUBHA",
+          "id": 5,
+          "doc": "Shubha, Jupiter's: auspicious",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "JUPITER",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.day_choghadiya, measured over 880 eighths"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ROG",
+          "id": 6,
+          "doc": "Rog, Mars's: illness",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "MARS",
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.day_choghadiya, measured over 880 eighths"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "kaala",
+      "number": 59,
+      "version": 1,
+      "doc": "The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.",
+      "types": {},
+      "attributes": {
+        "eighth_by_vara": "array<u8,7>"
+      },
+      "members": [
+        {
+          "key": "RAHU_KAALA",
+          "id": 0,
+          "doc": "Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic.",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "eighth_by_vara": [
+              8,
+              2,
+              7,
+              5,
+              6,
+              4,
+              3
+            ]
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.rahu_kaal, measured on all 55 days"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "YAMAGHANDA",
+          "id": 1,
+          "doc": "Yamaghanda. The third eighth counted backwards from the vara, modulo seven.",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "eighth_by_vara": [
+              5,
+              4,
+              3,
+              2,
+              1,
+              7,
+              6
+            ]
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.yamaghanda, measured on all 55 days"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GULIKA_KAALA",
+          "id": 2,
+          "doc": "Gulika kaala. The fifth eighth counted backwards from the vara, modulo seven.",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "eighth_by_vara": [
+              7,
+              6,
+              5,
+              4,
+              3,
+              2,
+              1
+            ]
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.gulika_kaal, measured on all 55 days"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "panchaka",
+      "number": 60,
+      "version": 1,
+      "doc": "The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.",
+      "types": {},
+      "attributes": {
+        "nakshatra": "key:nakshatra"
+      },
+      "members": [
+        {
+          "key": "MRITYU",
+          "id": 0,
+          "doc": "Mrityu panchaka, the Moon in Dhanishtha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "nakshatra": "DHANISHTHA"
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "AGNI",
+          "id": 1,
+          "doc": "Agni panchaka, the Moon in Shatabhisha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "nakshatra": "SHATABHISHA"
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RAJA",
+          "id": 2,
+          "doc": "Raja panchaka, the Moon in Purva Bhadrapada",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "nakshatra": "PURVA_BHADRAPADA"
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CHORA",
+          "id": 3,
+          "doc": "Chora panchaka, the Moon in Uttara Bhadrapada",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "nakshatra": "UTTARA_BHADRAPADA"
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ROGA",
+          "id": 4,
+          "doc": "Roga panchaka, the Moon in Revati",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "nakshatra": "REVATI"
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "muhurta_yoga",
+      "number": 61,
+      "version": 1,
+      "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).",
+      "types": {},
+      "attributes": {
+        "auspicious": "bool"
+      },
+      "members": [
+        {
+          "key": "AMRIT_SIDDHI",
+          "id": 0,
+          "doc": "Amrit Siddhi yoga: one vara and nakshatra pair each",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.muhurta_yogas.amrit_siddhi"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SARVARTHA_SIDDHI",
+          "id": 1,
+          "doc": "Sarvartha Siddhi yoga: a set of nakshatras per vara",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.muhurta_yogas.sarvartha_siddhi"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SIDDHA",
+          "id": 2,
+          "doc": "Siddha yoga",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.muhurta_yogas.siddha"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "DWIPUSHKAR",
+          "id": 3,
+          "doc": "Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.muhurta_yogas.dwipushkar; no recorded day carries one"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "TRIPUSHKAR",
+          "id": 4,
+          "doc": "Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "panchanga_day.muhurta_yogas.tripushkar, measured: the classical rule reproduces the corpus's one instance with no false positives"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

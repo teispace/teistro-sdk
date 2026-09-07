@@ -1,0 +1,46 @@
+kind: muhurta_yoga
+number: 61
+version: 1
+doc: "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8)."
+attributes: { auspicious: bool }
+members:
+  - key: AMRIT_SIDDHI
+    id: 0
+    doc: "Amrit Siddhi yoga: one vara and nakshatra pair each"
+    attributes: { auspicious: true }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.muhurta_yogas.amrit_siddhi"
+    mark: T
+  - key: SARVARTHA_SIDDHI
+    id: 1
+    doc: "Sarvartha Siddhi yoga: a set of nakshatras per vara"
+    attributes: { auspicious: true }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.muhurta_yogas.sarvartha_siddhi"
+    mark: T
+  - key: SIDDHA
+    id: 2
+    doc: "Siddha yoga"
+    attributes: { auspicious: true }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.muhurta_yogas.siddha"
+    mark: T
+  - key: DWIPUSHKAR
+    id: 3
+    doc: "Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings"
+    attributes: { auspicious: false }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.muhurta_yogas.dwipushkar; no recorded day carries one"
+    mark: T
+  - key: TRIPUSHKAR
+    id: 4
+    doc: "Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings"
+    attributes: { auspicious: false }
+    sources:
+      - text: "baseline-engine"
+        ref: "panchanga_day.muhurta_yogas.tripushkar, measured: the classical rule reproduces the corpus's one instance with no false positives"
+    mark: V

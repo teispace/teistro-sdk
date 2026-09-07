@@ -187,6 +187,74 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/panchanga`, the daily panchanga built to the design the
+  falsification pass produced. 59 tests.
+
+  **Numbers:** the SDK computes a daily panchanga for the first time, so
+  nothing moved; what it computes is measured below.
+
+  `limb` finds the four moving limbs in **three** crossing searches, not
+  four: a karana is half a tithi, so the six-degree lattice's crossings
+  contain the twelve-degree one's. The window is widened by a day and a
+  half — longer than any tithi or nakshatra transit — so the first and
+  last spans carry the member's **own** bounds and not the window's,
+  which is the fact the corpus loses. One source serves all four: the
+  provider is asked for tropical longitudes and shifted by the ayanamsha
+  *at each instant*, because a fixed shift is two seconds of the Moon's
+  time out over a search window, wider than the tolerance the corpus
+  declares. The karana is named from its half-tithi of the lunar month
+  rather than from the previous karana, so a list that starts mid-month
+  is still right.
+
+  `period` divides two arcs and nothing else. The three inauspicious
+  eighths are a table; the sixteen choghadiya are the hora's weekday walk
+  over a seven-row table of names, which is `time::hora::lord_of` and not
+  a grid of fifty-six; the thirty muhurtas are fifteenths, with Abhijit
+  named and void on Wednesdays and Brahma muhurta sized from the night
+  that **ends** at sunrise. A period whose arc does not exist is absent:
+  on a polar day the lists are shorter, where the recording engine writes
+  twelve intervals of no length.
+
+  `omen` reports panchaka and the muhurta yogas as **intervals**. A flag
+  is what an interval reduces to — "some interval contains sunrise" — so
+  the interval is strictly more information and costs nothing, the spans
+  being already computed. `sky` reports the Moon's rises and sets as
+  lists, because a 24-hour window holds none, one or two of each.
+  `almanac` assembles and stamps, by date, by an instant's day, or by a
+  range, which is the primary shape.
+
+  New in `core`: `interval::Interval`, with the one divider every period
+  is — `divided`, `part`, `part_at`, `clipped_to`, `fraction_at` — half
+  open so that a sequence of parts is a partition and an instant belongs
+  to exactly one hora. It is in `core` rather than in the module that
+  needed it first because dashas, muhurta windows and transits are
+  intervals too.
+
+  New knobs: `panchanga.centre` (an almanac is geocentric wherever the
+  chart is), `panchanga.moon_events` and `panchanga.muhurta_tables`.
+  `conformance-baseline` becomes version 3, setting `moon_events =
+  CIVIL_DAY`. New catalogue kinds: `choghadiya`, `kaala`, `panchaka` and
+  `muhurta_yoga`, with names in all five locales. And `day.day_boundary`,
+  declared in Phase 1 and read by nothing, gets its first reader: it
+  moves the window the limbs are clipped to and moves no period, because
+  a choghadiya divides the daylight whatever the window is.
+
+  **Against the corpus**, computed from the arcs the corpus itself
+  recorded: 159 inauspicious eighths, 848 choghadiya with their lords,
+  1272 horas, 53 Abhijit muhurtas, 55 lunar months, 9 panchakas, the
+  ayana and the disha shool — every one within 0.04 milliseconds, which
+  is the last bit of a double near two and a half million. The
+  classification of a real position is checked against the Sun and Moon
+  recorded at all 55 birth instants, into all four limbs and their
+  attributes. Brahma muhurta is asserted **different** by the registry's
+  own amount: a median 10.02 seconds and at worst 27.56.
+
+  What is not yet tested is the limb *instants*: a tithi's boundary is a
+  position over time and no provider inside the workspace has real
+  positions. Those, and the rank-1 comparison against the eight printed
+  tithi ends of Nepal's national panchangam, wait on the conformance
+  harness over an adapter.
+
 - The daily panchanga falsified, then designed. `panchanga_day` is the
   largest section of the conformance corpus and the only one nothing had
   read: twenty-seven fields a day, none of which says how it was

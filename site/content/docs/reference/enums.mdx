@@ -66,6 +66,10 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_POINT_FAMILY` | 55 | What kind of derived point. |
 | `TS_KIND_STAR` | 56 | The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`). |
 | `TS_KIND_STAR_CLASS` | 57 | What kind of object a star-table member is. |
+| `TS_KIND_CHOGHADIYA` | 58 | The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. |
+| `TS_KIND_KAALA` | 59 | The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. |
+| `TS_KIND_PANCHAKA` | 60 | The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. |
+| `TS_KIND_MUHURTA_YOGA` | 61 | The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). |
 
 ## ts_graha
 
@@ -1213,6 +1217,54 @@ What kind of object a star-table member is. Members are the catalogue's ids; the
 | `TS_STAR_CLASS_STAR` | 0 | A star |
 | `TS_STAR_CLASS_RADIO_SOURCE` | 1 | A compact radio source, such as the galactic centre |
 | `TS_STAR_CLASS_DIRECTION` | 2 | A fixed direction on the sky without a body, such as a galactic pole |
+
+## ts_choghadiya
+
+The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. Members are the catalogue's ids; the full key id is `(TS_KIND_CHOGHADIYA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CHOGHADIYA_UDVEG` | 0 | Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with |
+| `TS_CHOGHADIYA_CHAR` | 1 | Char, Venus's: movable, and so suited to travel |
+| `TS_CHOGHADIYA_LAABH` | 2 | Laabh, Mercury's: gain |
+| `TS_CHOGHADIYA_AMRIT` | 3 | Amrit, the Moon's: nectar, the most auspicious |
+| `TS_CHOGHADIYA_KAAL` | 4 | Kaal, Saturn's: loss |
+| `TS_CHOGHADIYA_SHUBHA` | 5 | Shubha, Jupiter's: auspicious |
+| `TS_CHOGHADIYA_ROG` | 6 | Rog, Mars's: illness |
+
+## ts_kaala
+
+The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. Members are the catalogue's ids; the full key id is `(TS_KIND_KAALA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_KAALA_RAHU_KAALA` | 0 | Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic. |
+| `TS_KAALA_YAMAGHANDA` | 1 | Yamaghanda. The third eighth counted backwards from the vara, modulo seven. |
+| `TS_KAALA_GULIKA_KAALA` | 2 | Gulika kaala. The fifth eighth counted backwards from the vara, modulo seven. |
+
+## ts_panchaka
+
+The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_PANCHAKA_MRITYU` | 0 | Mrityu panchaka, the Moon in Dhanishtha |
+| `TS_PANCHAKA_AGNI` | 1 | Agni panchaka, the Moon in Shatabhisha |
+| `TS_PANCHAKA_RAJA` | 2 | Raja panchaka, the Moon in Purva Bhadrapada |
+| `TS_PANCHAKA_CHORA` | 3 | Chora panchaka, the Moon in Uttara Bhadrapada |
+| `TS_PANCHAKA_ROGA` | 4 | Roga panchaka, the Moon in Revati |
+
+## ts_muhurta_yoga
+
+The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MUHURTA_YOGA_AMRIT_SIDDHI` | 0 | Amrit Siddhi yoga: one vara and nakshatra pair each |
+| `TS_MUHURTA_YOGA_SARVARTHA_SIDDHI` | 1 | Sarvartha Siddhi yoga: a set of nakshatras per vara |
+| `TS_MUHURTA_YOGA_SIDDHA` | 2 | Siddha yoga |
+| `TS_MUHURTA_YOGA_DWIPUSHKAR` | 3 | Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings |
+| `TS_MUHURTA_YOGA_TRIPUSHKAR` | 4 | Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings |
 
 ## ts_status
 
