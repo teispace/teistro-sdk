@@ -72,6 +72,23 @@ held for a review, and only on a tag: a `workflow_dispatch` builds,
 stages and checks everything and publishes nothing, which is how the whole
 chain is rehearsed before a tag exists.
 
+## What is set up, and what is not
+
+GitHub Pages is enabled for the repository with GitHub Actions as its
+source (2026-09-07), so `docs` can publish on a tag. Nothing else is:
+the npm organisation, the pub.dev account and the publishing credential
+are deferred to the release itself, because nothing needs them before it
+and a credential that exists before it is needed is a credential nobody
+is watching. The names are held by nobody: the `@teistro` scope and
+`@teistro/sdk` on npm, and `teistro` on pub.dev, were all free when this
+was written.
+
+When the time comes, prefer npm's trusted publishing over a token: the
+`publish` job already asks for the `id-token: write` permission it needs,
+and a workflow that authenticates by who it is cannot leak a secret it
+does not hold. The `NODE_AUTH_TOKEN` in the workflow is the fallback for
+a registry that does not support it.
+
 ## Provenance
 
 npm packages are published with `--provenance`, which records in a public

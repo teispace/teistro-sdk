@@ -38,7 +38,9 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-first session (Q34
+**Last updated:** 2026-09-07, end of the forty-first session (Phase 1
+closed and its "Now" rewritten for the two phases that follow; GitHub
+Pages enabled, the registries deferred to the release; Q34
 decided and the defect it exposed fixed: the default profile patches the
 root rather than `nepali-default`, so it is the texts as read rather than
 those plus one engine's centre and one country's calendar; ADR-0024);
@@ -557,102 +559,56 @@ binding (ADR-0023).
 
 ## Now
 
-- Phase 2 has met its exit criteria (the project phase line above). Its
-  follow-ups stay listed: the visibility follow-ups (a photometric
-  criterion, the stars' heliacal search, the Moon's first crescent;
-  `astro-planetary-phenomena.md` §10); cusp speeds and house positions
-  when the chart layer needs them (Phase 4); the completion's centre,
-  corrections and equinox steps with the built-in ephemeris (Phase 3).
-- Phase 1's remaining deliverables, in the roadmap's order: the `intl`
-  engine and CLI exist (`crates/intl`, twenty-seventh session) with the
-  `en-Latn` and `ne-Deva-NP` sources gated by `check-intl`, and the
-  runtime API (`load_pack`, `set_override`, `report`; twenty-eighth
-  session) and the date functions (`:date`, `:time`, `:datetime`,
-  `:ghati`, `:duration` over `sdk.calendar`; twenty-ninth session);
-  and `migrate baseline` (thirtieth session: the baseline engine's name
-  tables into `sdk.entity`, `hi-Deva-IN` and `sa-Deva` created); and the
-  typed accessors in both bindings with the entity entry point
-  (thirty-fifth session: `bindings/node/lib/messages.js` with its
-  declarations and `bindings/dart/lib/src/messages.dart` from the same
-  model as the Rust ones, `ts_intl_entity` for an entity's forms); still
-  the twelve-hour clock with the day periods, transliteration with the
-  derived `sa-Latn` locale, and the XLIFF round trip (thirty-fifth
-  session); and the parts of the day as a locale's own
-  (`_meta.json`'s `dayPeriods`) with `:duration` over several units at
-  once (thirty-ninth session); still to come in it: the composite
-  provider's precedence with the bindings, abbreviated month names for
-  Nepali, the `zone` option, rich renderers per binding.
-  The `ffi` crate with the ABI conventions, the API description and its
-  first generator exist (thirty-first session: `crates/ffi` with
-  thirty-three entry points over contexts, keys, calendars, time, the
-  locale engine and positions; `crates/idl` with the model, the naming
-  and layout rules, the `TSRB` blob, the extractor and the C emitter;
-  `idl/api.json` and `bindings/c/include/teistro.h` by `cargo xtask gen
-  ffi`, gated by `check-ffi`; `03-design/ffi-abi-and-api-description.md`).
-  The Node binding's generated layers followed (thirty-second session:
-  `bindings/node/lib/`, the TypeScript surface, the catalogue's tables and
-  the result-blob decoders, all from the same description and gated by
-  `check-ffi`; `cargo xtask check-node` runs the decoders against blobs
-  the library produced and type-checks a consumer at maximum strictness).
-  The Node addon followed (thirty-third session: `bindings/node/native`
-  generated from the same description, `bindings/node/lib/index.js` the
-  hand-written layer over it, `cargo xtask check-node` building both and
-  running its tests), and a host-implemented ephemeris provider followed
-  (thirty-fourth session: `bindings/node/native/src/provider.rs`, the
-  hand-written port adapter). The Dart binding followed (thirty-fifth
-  session: `bindings/dart/lib/src/`, the `dart:ffi` declarations, the
-  value classes, the catalogue enums and the blob decoders from the same
-  description; `lib/teistro.dart` the hand-written layer; `cargo xtask
-  check-dart` analysing, format-checking and running thirty-three tests
-  against the real library, an ephemeris written in Dart among them; the
-  parity gate `cargo xtask check-parity` holding the two bindings to each
-  other over a hundred and three values, the build handshake, the typed
-  accessors and the branded quantities among them). Every engine finding
-  is closed (thirty-fifth session: the six fixed upstream, the fixtures
-  re-recorded under the engine's corrected profile, every bound
-  tightened; `05-testing/02-engine-findings.md`).
-  The packaging and the release matrix followed (thirty-sixth session:
-  one version in `[workspace.package]` held across both package manifests,
-  the five platform packages and the API description by `check-versions`
-  and moved by `cargo xtask version`; `cargo xtask package` building what
-  a platform ships and `package stage` merging the five into the two
-  packages published once; `check-package` installing all of it into
-  throwaway projects and running a consumer against each; the Node loader
-  finding its addon in the platform package npm chose and the Dart
-  package fetching and checking its library through `dart run
-  teistro:install`; the `verify` and `release` workflows;
-  `06-cicd/01-pipelines.md`, `02-build-matrix.md`,
-  `03-release-process.md`).
-  The documentation site followed (thirty-seventh session: Fumadocs in
-  `site/`, statically exported; `crates/idl/src/emit/mdx.rs` rendering one
-  page per entry point from the API description, grouped by the boundary's
-  own files, with the structs and the enums beside them; `gen ffi` writing
-  the tree and `check-ffi` holding it, strays included; `check-site`
-  building the site and checking that every generated page was rendered;
-  the `docs` workflow publishing to GitHub Pages on a tag;
-  `06-cicd/05-docs-deploy.md`).
-  The instruction-count benchmarks followed (thirty-eighth session:
-  `crates/scenario` holding the fixed scenario, lifted out of the hash
-  gate so both walk the same code with every digest unchanged; `cargo
-  xtask bench` counting it under callgrind and `compare-bench` failing
-  above 3% and reporting above 1%; the `benchmarks` workflow measuring the
-  pull request's base commit in the same job).
-  The conformance repository followed and closed the phase (fortieth
-  session: `teispace/teistro-conformance` v0.1.1 under CC0-1.0, every file
-  moved byte for byte, with the schemas and a validator of its own;
-  mounted here as a submodule pinned to a tag, with `check-fixtures`
-  refusing a checkout without it and every workflow bringing it). The site's own remainder is listed in
-  `06-cicd/05-docs-deploy.md`: versioned docs, Nepali, examples executed
-  from the pages, and the interactive wasm demo. The
-  cross-architecture hash matrix is built and has run (thirty-fifth
-  session: `cargo xtask hashes` and the `hash-matrix` workflow over Linux
-  x86-64, Linux aarch64 and macOS aarch64; the two architectures agree
-  bit for bit on all 100,236 values, which is the exit criterion, and the
-  macOS difference is the platform's maths library, measured and
-  published). The completion's
-  centre, corrections and equinox steps wait for the built-in ephemeris
-  (Phase 3). The memo's R3 stays open (a third source; the committee's
-  earlier years are not online).
+Phases 1 and 2 have both met their exit criteria; the phases open are 3,
+the built-in ephemeris, and 4, the chart layer, which the roadmap says
+may run beside each other. Nothing that was deliverable in a closed phase
+is outstanding; what each left behind is listed where it was deferred,
+and the session log below is the record of how each was built.
+
+**Phase 4 has nothing waiting on it.** `chart` is the root the rest of
+the layer hangs from (`02-architecture/01-module-catalog.md`), and every
+module it depends on is built: `core`, `astro`, `time`, `calendar`,
+`siddhanta` and the ephemeris port with the test provider and the
+Teimeris adapter. It is also the layer the corpus was recorded for: the
+115 fixtures carry `foundation`, `positions`, `houses`, `vargas`,
+`panchanga`, `panchanga_day` and `dashas`, and none of those sections has
+anything to compare against yet. The roadmap asks for one thing before
+the code: a short falsification pass over the four Bhava-Chalit methods.
+There is no design page for the chart foundation or the panchanga day,
+and this project writes the page first.
+
+**Phase 3 has nothing waiting on it either**, and is the larger piece of
+numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,
+three analytic tiers with size budgets, and the completion's centre,
+corrections and equinox steps, which Phase 2 deferred to it. Its exit —
+"a full chart computes with nothing but the SDK installed" — needs
+Phase 4 to have happened for "a full chart" to mean anything.
+
+Carried forward, each from the phase that deferred it:
+
+- Phase 2's visibility follow-ups: a photometric criterion, the stars'
+  heliacal search, the Moon's first crescent
+  (`03-design/astro-planetary-phenomena.md` §10); a settable atmosphere
+  for the rise and set solver (C34); cusp speeds and house positions,
+  which Phase 4 is what needs them.
+- Phase 1's deferrals: a Flutter plugin carrying the library into an
+  Android or iOS build (with the mobile targets, v1.x); a musl row in the
+  platform table; runners per binding emitting the conformance report
+  schema; versioned and Nepali documentation
+  (`06-cicd/05-docs-deploy.md`).
+- Teistro Intl's remainder: the composite provider's precedence with the
+  bindings, abbreviated month names for Nepali, the `zone` option, rich
+  renderers per binding (`03-design/intl-engine-and-packs.md` §13).
+- The memo's R3: a third source for the calendar, the committee's earlier
+  years not being online (`calendars/bikram-sambat.md`).
+
+**The registries are deliberately last.** GitHub Pages is enabled for the
+repository with Actions as its source (2026-09-07), so `docs` can publish
+on a tag. The npm organisation and the pub.dev account are not created
+and the publishing credential is not configured; the maintainer defers
+them to the release itself, and nothing needs them before it. The names
+are still free: the `@teistro` scope and `@teistro/sdk` on npm, `teistro`
+on pub.dev (checked 2026-09-07).
 
 ## Next
 
