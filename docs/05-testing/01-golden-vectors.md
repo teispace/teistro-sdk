@@ -240,3 +240,15 @@ explained rather than a failure or a silent adoption.
     (`crates/chart/tests/baseline_day.rs`, measured), and the SDK divides
     the night it actually has. Found 2026-09-07 while building the chart
     foundation.
+
+16. The ayanamsha's basis. The engine records and applies the **nutated**
+    ayanamsha, not the mean one; it has no knob for the choice. Measured
+    over the corpus's 55 charts: the SDK's mean Lahiri is up to 18.46
+    arcseconds from the value the engine recorded, and its true Lahiri is
+    within 0.0086 — two thousand times closer, and the difference is the
+    nutation in longitude, which reaches about 17 arcseconds. The
+    `conformance-baseline` profile therefore sets
+    `frame.ayanamsha_basis = TRUE` (version 2); the SDK's own default
+    keeps the mean value, which is what the Lahiri definition states.
+    Found 2026-09-07 by `crates/chart/tests/baseline_zodiac.rs`, the
+    first time the SDK's ayanamsha was compared with this engine's.

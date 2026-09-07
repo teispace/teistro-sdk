@@ -11,6 +11,7 @@ and they are the two the design named as easy to get wrong.
 | module | what it settles |
 |---|---|
 | [`day`](src/day.rs) | the day an instant belongs to, which is **not** its civil date: a panchanga day runs sunrise to sunrise, so an instant before the civil date's sunrise belongs to the day that began the morning before, and the vara, the hora, the ishtakaal and the lagna's anchor move back with it |
+| [`zodiac`](src/zodiac.rs) | the zodiac a chart is computed in: **one** ayanamsha value for the grahas and the cusps alike, so the chart asks a provider for tropical positions and shifts them itself rather than comparing a graha in the provider's zodiac with a cusp in the SDK's |
 | [`bhava`](src/bhava.rs) | the twelve bhavas of a chart with their madhya as well as their sandhi, and where a graha falls between them — carrying the chalit that placed it, because the methods disagree |
 
 ## Why a placement carries its method
@@ -37,6 +38,9 @@ compare against until now:
 | the arc, the lagna's anchor and day-or-night, over 50 comparable charts | all of them, 20 of them births before sunrise |
 | the ishtakaal under both reckonings | 100 readings, worst 3 pala — the engine's night is `24h − daylight` (entry 15) |
 | bhayat and bhabhoga against the Moon's nakshatra transit | 110 readings, worst 0.39 minutes |
+| the ayanamsha the engine applied | 55 values, worst 0.0086 arcseconds |
+| `sidereal = tropical - ayanamsha`, both readings recorded | 550 bodies, worst 1.1e-13° |
+| the lagna against the recorded ascendant | all 55, and its sign follows |
 | every graha's bhava | 495 placements, all of them |
 | the engine's own list of grahas the chalit moves | 107, right in both the chalit and the whole-sign reading |
 | Sripati against Vehlow | 21.8%, which is what `cargo xtask chalit` measures independently from the SDK's own cusps |
@@ -53,6 +57,14 @@ were the elapsed and total of the part the birth falls in. They are the
 duration of the *Moon's traversal of its nakshatra* and the elapsed part
 of it — which the corpus settles to within 0.39 minutes over all 55
 charts. They belong to `dasha`, and the page is corrected.
+
+**The engine applies the nutated ayanamsha.** Its mean Lahiri is up to
+18.46 arcseconds from what the engine recorded; its true Lahiri is within
+0.0086 — two thousand times closer, and the gap is the nutation in
+longitude. `conformance-baseline`, the profile whose job is to reproduce
+these charts, now sets `frame.ayanamsha_basis = TRUE`; the SDK's own
+default keeps the mean value, which is what the Lahiri definition states.
+Entry 16.
 
 **The engine's night is `24h − daylight`**, not sunset to the next
 sunrise: true of all 110 nights the corpus records, and up to 1.80

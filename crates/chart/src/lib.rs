@@ -16,6 +16,11 @@
 //!   civil date's sunrise belongs to the day that began the morning
 //!   before, and the vara, the hora, the ishtakaal and the lagna's anchor
 //!   move back with it.
+//! - [`zodiac`]: a chart has **one** ayanamsha, and the grahas and the
+//!   cusps are both measured from it. So the chart never asks a provider
+//!   for a sidereal frame: it asks for the tropical one and shifts,
+//!   because a placement that compared a graha in the provider's zodiac
+//!   with a cusp in the SDK's would be a coin toss near every boundary.
 //! - [`bhava`]: a house placement is **not** a number. Which chalit put a
 //!   graha in a bhava decides the answer between 10% and 51% of the time,
 //!   so a placement carries its method, and the bhavas carry their madhya
@@ -27,6 +32,8 @@
 
 pub mod bhava;
 pub mod day;
+pub mod zodiac;
 
 pub use bhava::{Bhavas, Chalit, Placement, Reading};
 pub use day::{ChartDay, DayPart};
+pub use zodiac::ChartZodiac;

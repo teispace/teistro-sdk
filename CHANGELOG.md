@@ -187,6 +187,28 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `chart::zodiac`, and the ayanamsha basis it found. A chart holds **one**
+  ayanamsha value and measures the grahas and the cusps from it, so it
+  asks a provider for a tropical frame and shifts what comes back rather
+  than letting the provider apply an ayanamsha of its own to the grahas
+  while the SDK applies one to the cusps — which would compare two
+  zodiacs at every bhava boundary. It also lets a custom ayanamsha work
+  at all, where the port's `Zodiac` has nowhere to put an epoch and a
+  value.
+
+  The corpus settles the design: over its 55 charts and 550 bodies,
+  `sidereal = tropical - ayanamsha` closes to 1.1e-13° with one value per
+  chart, and the recorded lagna is the recorded ascendant on every one.
+
+  **Numbers:** `conformance-baseline` moves, and nothing else. The
+  recording engine applies the **nutated** ayanamsha and has no knob for
+  it: the SDK's mean Lahiri is up to 18.46 arcseconds from the value the
+  engine recorded and its true Lahiri within 0.0086, two thousand times
+  closer, the difference being the nutation in longitude. The profile
+  whose job is to reproduce those charts now sets
+  `frame.ayanamsha_basis = TRUE` (version 2); the SDK's own default keeps
+  the mean value, which is what the Lahiri definition states. Entry 16 of
+  the deliberate-difference registry.
 - The chart day against the corpus, and two things it corrected. The day
   selection, the lagna's anchor, day-or-night and the ishtakaal now read
   the corpus's `foundation` section, which nothing had read before.

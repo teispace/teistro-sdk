@@ -1279,6 +1279,7 @@ dependencies = [
  "teistro-astro",
  "teistro-calendar",
  "teistro-core",
+ "teistro-port-ephemeris",
  "teistro-time",
 ]
 
