@@ -1,0 +1,23 @@
+[package]
+name = "teistro-chart"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's chart foundation: the day a chart belongs to, its bhavas with their madhya and sandhi, and where each graha falls in them"
+readme = "README.md"
+# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+publish = false
+
+[dependencies]
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-core = { path = "../core" }
+teistro-time = { path = "../time" }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

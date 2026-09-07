@@ -1,6 +1,8 @@
 # The chart foundation
 
-Status: `draft`, written 2026-09-07 as the first design of Phase 4, after
+Status: `draft`, written 2026-09-07 as the first design of Phase 4 and
+revised the same day when `crates/chart` built the first two of its
+modules against the corpus. After
 the bhava chalit falsification pass
 ([`chart-bhava-chalit.md`](chart-bhava-chalit.md)) which decided what a
 house placement has to carry. Derives from
@@ -79,17 +81,20 @@ those charts plausible-looking.
 The foundation needs the inverse — "what arc holds *this instant*" — and
 it is one step: take the civil date at the place, ask for its arc, and if
 the instant precedes that arc's sunrise, take the previous date's arc
-instead. The answer is a `DayArc`:
+instead. The answer is a `ChartDay` — not a `DayArc`, which
+`calendar::solar` already has for the sunrise-to-sunset pair, and which
+is a different thing:
 
 ```rust
-pub struct DayArc {
+pub struct ChartDay {
     /// The day the instant belongs to, which may be the civil date
-    /// before it.
+    /// before it. `LocalDay` already carries the arc, the vara, the
+    /// polar state and the convention it was reckoned by.
     pub day: LocalDay,
     /// Which part of the arc holds the instant.
     pub part: DayPart,
     /// How far through its part the instant is, 0 at the start and
-    /// 1 at the end.
+    /// approaching 1 at the end.
     pub elapsed: f64,
 }
 
@@ -320,10 +325,10 @@ that crosses a binding.
 
 | what | against |
 |---|---|
-| the day arc, including every pre-sunrise birth | the corpus's `foundation.panchanga_day` and `sunrise` blocks on all 55 charts |
+| the day arc, including every pre-sunrise birth | the corpus's `foundation.panchanga_day` and `sunrise` blocks on all 55 charts; the module's own tests cover the inversion against an exact six-to-six Sun |
 | the lagna and its anchor | `foundation.lagna` and `lagna_sunrise_jd`, all 55 |
-| the placements under each chalit | the corpus's `houses.bhava_chalit.planet_houses`, and the falsification pass's own numbers |
-| the madhya and sandhi | `bhava_madhya` and `bhava_sandhi`, all 55 |
+| the placements under each chalit | the corpus's `houses.bhava_chalit.planet_houses`, and the falsification pass's own numbers — **done**: all 495 placements, the 107 shifted grahas right in both systems, and Sripati against Vehlow at 21.8%, which is what the pass measured from the SDK's own cusps |
+| the madhya and sandhi | `bhava_madhya` and `bhava_sandhi`, all 55 — **done**: 1320 compared, worst 1.7e-13° |
 | positions in both frames | `positions.bodies`, all 55, within the corpus's tolerance band |
 | the birth timing | `foundation.birth_timing`, all 55, under the reckoning the fixture used |
 | the hora and abda lords | `foundation.hora_lord`, `abda_lord`, all 55 |
