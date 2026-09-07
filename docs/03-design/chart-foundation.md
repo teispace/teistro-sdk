@@ -222,11 +222,20 @@ of it is recomputed here:
 
 | fact | from |
 |---|---|
-| ishtakaal, in ghati and pala | `time::ghati` over the arc, under `day.ghati_reckoning` |
-| bhayat and bhabhoga | the elapsed and total of the part, in ghati-pala |
+| ishtakaal, in ghati and pala | `time::ghati` over the arc, under `day.ghati_reckoning`, measured from **the chart day's** sunrise — which for a birth before dawn is the previous morning's |
 | the hora lord | `time::hora::hora_at` under `day.hora_reckoning` |
 | the vara | the `LocalDay`'s, which is the arc's and not the civil date's |
 | the abda lord | the year lord of the arc's own year |
+
+**Bhayat and bhabhoga are not here, and the first draft of this page was
+wrong to put them here.** They read like the elapsed and total of the
+day's part and they are not: bhabhoga is the duration of the *Moon's
+traversal of its nakshatra* and bhayat the elapsed part of it at birth.
+The corpus settles it — over all 55 charts they reproduce
+`dashas.methods.temporal.nakshatra_span` to within 0.39 minutes, which is
+the ghati-pala rounding, and they are nowhere near the length of the
+night. So they belong to `dasha`, which is the only module that needs
+them, by the rule of §9.
 
 The corpus records ishtakaal twice, `civil` and `proportional`, because
 the recording engine computes both. The SDK computes the one

@@ -34,6 +34,9 @@ compare against until now:
 | what | result |
 |---|---|
 | the madhya and sandhi of all 55 charts | 1320 compared, worst 1.7e-13° |
+| the arc, the lagna's anchor and day-or-night, over 50 comparable charts | all of them, 20 of them births before sunrise |
+| the ishtakaal under both reckonings | 100 readings, worst 3 pala — the engine's night is `24h − daylight` (entry 15) |
+| bhayat and bhabhoga against the Moon's nakshatra transit | 110 readings, worst 0.39 minutes |
 | every graha's bhava | 495 placements, all of them |
 | the engine's own list of grahas the chalit moves | 107, right in both the chalit and the whole-sign reading |
 | Sripati against Vehlow | 21.8%, which is what `cargo xtask chalit` measures independently from the SDK's own cusps |
@@ -42,6 +45,21 @@ The comparison is against **Vehlow**, because that is what the recording
 engine computes whatever its label says — entry 14 of the
 deliberate-difference registry. The test asserts that difference rather
 than avoiding it.
+
+## Two things the corpus corrected
+
+**Bhayat and bhabhoga are not the day's part.** The design page said they
+were the elapsed and total of the part the birth falls in. They are the
+duration of the *Moon's traversal of its nakshatra* and the elapsed part
+of it — which the corpus settles to within 0.39 minutes over all 55
+charts. They belong to `dasha`, and the page is corrected.
+
+**The engine's night is `24h − daylight`**, not sunset to the next
+sunrise: true of all 110 nights the corpus records, and up to 1.80
+minutes from the real interval. It reaches the proportional ishtakaal,
+which spreads thirty ghatis over the night; the SDK divides the night it
+actually has and is up to 3 palas from the engine. Entry 15 of the
+deliberate-difference registry.
 
 ## Still to come
 

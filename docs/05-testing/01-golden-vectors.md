@@ -228,3 +228,15 @@ explained rather than a failure or a silent adoption.
     This is why `nepali-default` says `VEHLOW` where the engine's own
     documentation says Sripati. The same page measures how much the choice
     costs: between 10% and 51% of graha placements, depending on the pair.
+
+15. The night's length. The engine's `night_duration_hours` is `24h`
+    minus the daylight, not the interval from sunset to the next
+    sunrise. Measured over all 110 nights the corpus records: it is
+    `24 - daylight` in every one, and it differs from the real interval
+    by up to 1.80 minutes (c026's previous day). The two agree only when
+    consecutive days have equal daylight. It reaches the proportional
+    ishtakaal, which spreads thirty ghatis over the night: the SDK's
+    count is up to 3 palas from the engine's over the corpus
+    (`crates/chart/tests/baseline_day.rs`, measured), and the SDK divides
+    the night it actually has. Found 2026-09-07 while building the chart
+    foundation.

@@ -18,6 +18,7 @@ teistro-time = { path = "../time" }
 
 [dev-dependencies]
 serde_json = "1"
+teistro-time = { path = "../time" }
 
 [lints]
 workspace = true
