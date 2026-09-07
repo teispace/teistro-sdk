@@ -38,8 +38,16 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-seventh session (the
-derived points falsified, designed and built: the corpus records these
+**Last updated:** 2026-09-07, end of the forty-eighth session (the
+houses service falsified, designed and built: the pass found its subject
+by looking for the parts of the recorded houses **nothing had read**,
+and the answer was the ones that matter for a service — the degeneracy
+flag, which disagrees with the SDK's own outcome in *both* directions
+and is registry entry 26; the chalit's shift, counted the other way as
+well; and `houses.module_overrides`, a knob the root populates on every
+shipped profile and nothing had ever asked for); before that the
+forty-seventh session (the derived points falsified, designed and
+built: the corpus records these
 answers, so the pass is the sharpest kind — six of the eight rules
 reproduce it **exactly**, the Sree lagna's fraction is settled against
 three rivals that are wrong by tens of degrees, Gulika and Mandi were
@@ -180,20 +188,18 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is `crates/houses`**, over `chart` and `astro`: the
-   service the roadmap asks for, which it says waits on the chart
-   layer's shape. That shape now exists, and so does everything under
-   it — `astro::houses` computes twenty-two systems, `chart::bhava`
-   makes bhavas of their cusps with the madhya beside the sandhi, and
-   `cargo xtask chalit` has already measured how far the four
-   Bhava-Chalit methods stand apart. What is missing is the layer that
-   chooses between them and answers "which house is this in" with the
-   method that produced the answer attached.
+3. **The next task is `serial`**, the extended envelope Phase 4's own
+   list names: one JSON shape for every value the layer now computes —
+   a foundation, a panchanga day, a divisional chart, a planetary
+   state, a set of aspects, the derived points and the houses — with
+   the provenance each already carries. Every producer exists; what is
+   missing is the one document they serialise into and the schema a
+   consumer validates against.
 
    Phases 1 and 2 are closed; Phase 4 is open and under way, and Phase 3
-   may run beside it. After `houses`, Phase 4's own list holds `serial`
-   (the extended envelope) and the Python binding, and the Indian
-   lunisolar calendar is still what `panchanga` needs.
+   may run beside it. After `serial`, Phase 4 holds the Python binding,
+   and the **Indian lunisolar calendar** is still what `panchanga` needs
+   for adhika and kshaya months.
 
    Two things earlier modules left behind, in the order they are wanted:
 
@@ -210,16 +216,23 @@ provider's DUT1).
      Nepal's national panchangam, the only evidence in the project that
      is not another implementation.
 
-   The pattern to keep, earned six times: **falsify, then design, then
+   The pattern to keep, earned seven times: **falsify, then design, then
    build.** `cargo xtask chalit`, `panchanga`, `vargas`, `state`,
-   `aspect` and `points` each proposed rules and measured them before a
-   line of the module existed, and between them they found thirteen
-   differences (registry entries 14 to 25, and the bhayat correction)
-   that would otherwise have been written into code as facts. The vargas pass is
+   `aspect`, `points` and `houses` each proposed rules and measured them
+   before a line of the module existed, and between them they found
+   fourteen differences (registry entries 14 to 26, and the bhayat
+   correction) that would otherwise have been written into code as
+   facts. The vargas pass is
    the sharpest, because a divisional chart is a function of one
    longitude and the corpus records both: 19 530 placements decided the
    whole kernel outright. The state pass shows the other half of the
    pattern — it **refused** six avasthas rather than guessing.
+
+   The houses pass showed a fifth: **when most of a section already has
+   a reader, the pass's subject is what does not.** Three of the four
+   things it measured had never been compared with anything, and one of
+   the three — a boolean the engine records and the SDK answers with
+   three cases — turned out to disagree in both directions.
 
    The points pass showed a fourth: **derive rather than propose, where
    the space of readings is small enough to enumerate.** Two "verify"
@@ -249,6 +262,7 @@ provider's DUT1).
    | `state` | what a graha is: the dignity ladder, the three friendships, combustion under two cited orb tables, the ages, the war, the avasthas it can decide and the six it will not |
    | `aspect` | which bodies reach which: the graha drishti, the Jaimini rashi drishti, the conjunction, and the orb engine `tajika` will take |
    | `points` | points that behave like bodies: the five the Sun casts, Gulika and Mandi off the day's eighths, the special lagnas and the Yogi points |
+   | `houses` | which house under which reading: the system a module uses, the twelve bhavas with their lords and kinds, and the degeneracy outcome |
    | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat, the drik and classical solar models |
    | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
    | `intl` | the locale engine, the CLI, the packs |
@@ -261,14 +275,15 @@ provider's DUT1).
    `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
    `check-intl`, `check-ffi`, `check-chalit`, `check-panchanga`,
    `check-vargas`, `check-state`, `check-aspect`, `check-points`,
-   `check-lints`, `check-versions`. Needing another toolchain, run by
+   `check-houses`, `check-lints`, `check-versions`. Needing another
+   toolchain, run by
    hand and in `verify`: `check-c`, `check-node`, `check-dart`,
    `check-parity`, `check-package`, `check-site`. Also: `cargo xtask
    hashes` and `compare-hashes` (the determinism matrix), `bench` and
    `compare-bench` (instruction counts, Linux), `package` and `package
    stage` (what a release ships), `version X` (the one version), `chalit`,
-   `panchanga`, `vargas`, `state`, `aspect` and `points` (the six
-   falsification pages), `accuracy`,
+   `panchanga`, `vargas`, `state`, `aspect`, `points` and `houses` (the
+   seven falsification pages), `accuracy`,
    `calendars bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
@@ -886,6 +901,49 @@ five published schools disagree — met in the data rather than argued
 about, and the module ships none. So do the catalogue's other 38 point
 rows, which have keys and no formulas because the corpus records none of
 them.
+
+`crates/houses` is the seventh, and the one where the pass had to find
+its own subject. Most of `houses.*` already had a reader: `astro`
+compares all twenty-two systems' cusps, `chart` compares the chalit's
+madhya, sandhi and every placement, and `cargo xtask chalit` measured
+how far the four chalit methods stand apart. So the pass looked for what
+**nothing had read**, and the answer turned out to be the parts a
+service depends on.
+
+**A boolean cannot say what happened.** The engine records
+`is_degenerate`, one bit for "the chosen system had no solution here";
+the SDK's `astro::houses` returns an outcome with three cases. Nothing
+had ever compared them, and they disagree in *both* directions: the
+engine flags two charts under Placidus at 64.15° and 64.84°, **below**
+the polar circle of 66.56° where the SDK computes Placidus without
+trouble, and leaves one clear at 69.65°, **above** it, where the SDK
+cannot compute the system at all. They are not the same quantity read to
+different precision — they disagree about which charts are the difficult
+ones, and the engine's criterion is not a latitude threshold. Registry
+entry 26, and the reason the module reports an outcome and a policy
+rather than a flag.
+
+**The shift, counted the other way.** The engine lists the bodies the
+chalit moves out of their whole-sign house, and `chart`'s test checks
+every body it lists; nothing checked that the SDK lists no *others*. A
+rule that shifted one body too many would have passed. Both directions
+now hold, on the same 135 bodies over 75 fixtures.
+
+**A knob worse than unread.** `houses.module_overrides` says which
+system a named module uses — and the root *populates* it, so all five
+shipped profiles carry `kp → PLACIDUS` and nothing had ever asked. Under
+the default profile the rest of the chart is whole-sign, so a KP reading
+was quietly the wrong chart rather than an error. It is the same shape
+of gap as registry entry 23, failing more softly.
+
+The module is therefore a **service and not a second copy** of the
+geometry: one place to ask which system a module uses, both readings
+with the bodies that differ named, the outcome, and the classifications
+`strength` and `rules` will both want — kendra, panapara and apoklima
+partitioning the twelve with trikona, dusthana and upachaya cutting
+across them, and a house's lord taken from the sign its **middle** falls
+in, because under an unequal division a house can begin in one sign and
+be centred in another.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

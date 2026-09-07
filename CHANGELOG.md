@@ -187,6 +187,55 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `crates/houses`, which house under which reading, and the measurement
+  that decided it first. 26 tests.
+
+  **Numbers:** nothing moved. The geometry was already there — `astro`
+  computes twenty-two systems and `chart` makes bhavas of their cusps —
+  and this is the service over them, not a second copy.
+
+  The pass had to find its own subject. Most of the corpus's `houses`
+  section already had a reader, so it measured the parts that did not,
+  and those turned out to be the ones a service depends on.
+
+  **A boolean cannot say what happened.** The engine records
+  `is_degenerate` — one bit for "the chosen system had no solution
+  here" — and the SDK's `astro::houses` returns an outcome with three
+  cases. Nothing had ever compared them, and **they disagree in both
+  directions**: the engine flags two charts under Placidus at 64.15° and
+  64.84°, *below* the polar circle of 66.56° where the SDK computes
+  Placidus without trouble, and leaves one clear at 69.65°, *above* it,
+  where the SDK cannot compute the system at all. They are not the same
+  quantity read to different precision — they disagree about which
+  charts are the difficult ones. Registry entry 26, and the reason
+  `Houses` reports an outcome and a policy rather than a flag, and why a
+  degenerate chart is reported rather than refused.
+
+  **The shift, counted the other way.** The engine lists the bodies the
+  chalit moves out of their whole-sign house; `chart`'s test checks
+  every body it lists, and nothing checked that the SDK lists no
+  *others*. A rule that shifted one body too many would have passed.
+  Both directions now hold on the same 135 bodies over 75 fixtures.
+
+  **A knob worse than unread.** `houses.module_overrides` says which
+  system a named module uses, and the root *populates* it — all five
+  shipped profiles carry `kp → PLACIDUS` and nothing had ever asked.
+  Under the default profile the rest of a chart is whole-sign, so a KP
+  reading was quietly the wrong chart rather than an error: registry
+  entry 23's failure in a softer form. `system_for` is now the one place
+  that question is answered.
+
+  Two fields simply hold: `cusp_sign_index` is the sign each cusp's own
+  longitude falls in, exactly, on all 852, and the recorded midheaven is
+  the SDK's within 0.0022°.
+
+  The crate also ships the classifications `strength` and `rules` will
+  both want — kendra, panapara and apoklima **partitioning** the twelve,
+  with trikona, dusthana and upachaya cutting across them — and a
+  house's lord taken from the sign its **middle** falls in, because
+  under an unequal division a house can begin in one sign and be centred
+  in another.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

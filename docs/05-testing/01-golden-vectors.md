@@ -363,3 +363,21 @@ explained rather than a failure or a silent adoption.
     allows for the bracket. Found 2026-09-07 by `cargo xtask points`
     (`03-design/points-measured.md` §5); asserted by
     `crates/points/tests/baseline.rs`.
+
+26. The degeneracy flag against the outcome. `houses.selected.is_degenerate`
+    is one bit for "the chosen system had no solution here"; the SDK's
+    `astro::houses` returns an outcome with three cases — the system
+    computed as asked, another standing in for it, or one computed at a
+    clamped latitude — and nothing had ever compared them. **They
+    disagree in both directions.** The engine flags two charts under
+    Placidus at 64.15° and 64.84°, *below* the polar circle of 66.56°,
+    where the SDK computes Placidus without trouble; and leaves one
+    clear at 69.65°, *above* it, where the SDK cannot compute the system
+    at all and whole sign stood in. So the two are not the same quantity
+    read to different precision: they disagree about which charts are
+    the difficult ones, and the engine's criterion is not a latitude
+    threshold. A harness compares the flag with "the outcome was not
+    `DEFINED`" and allows those three charts, which
+    `crates/houses/tests/baseline.rs` asserts by name — the test fails
+    if a fourth appears or one of the three goes away. Found 2026-09-07
+    by `cargo xtask houses` (`03-design/houses-measured.md` §3).

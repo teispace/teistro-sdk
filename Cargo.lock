@@ -1336,6 +1336,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-houses"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-port-ephemeris",
+]
+
+[[package]]
 name = "teistro-idl"
 version = "0.0.0"
 dependencies = [

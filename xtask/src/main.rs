@@ -55,6 +55,9 @@
 //! - `points` and `check-points`: the falsification pass over the
 //!   recorded upagrahas and special lagnas — the formulas the research
 //!   page marks "verify", verified or refused.
+//! - `houses` and `check-houses`: the falsification pass over the parts
+//!   of the recorded houses nothing else reads — the degeneracy flag,
+//!   the cusp signs, the midheaven and the shift counted both ways.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -100,6 +103,7 @@ mod dart_binding;
 mod ffi;
 mod generated;
 mod hashes;
+mod houses;
 mod intl;
 mod lints;
 mod measure;
@@ -155,6 +159,8 @@ fn main() {
         Some("aspect") => aspect::generate(&repo_root()),
         Some("check-points") => points::check_generated(&repo_root()),
         Some("points") => points::generate(&repo_root()),
+        Some("check-houses") => houses::check_generated(&repo_root()),
+        Some("houses") => houses::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),
