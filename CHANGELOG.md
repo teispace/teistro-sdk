@@ -187,6 +187,53 @@ the astronomical numbers do not move. Nothing else computes yet.
 
 - Project founded: research, architecture, decisions, roadmap and the
   open-source scaffolding. See `docs/STATUS.md`.
+- `knob-has-a-reader`, the fifth determinism lint, and the one settings
+  knob it found that was really unread.
+
+  **Numbers:** none moved. `Scheme::cyclic` behaves exactly as it did;
+  what changed is that the convention is now asked for rather than
+  assumed.
+
+  A settings knob that ships, resolves and is read by nobody is a bug
+  whether or not anything crashes, and three had been found by hand in
+  as many modules: `state.combustion_orbs`, which made a chart founded
+  on the SDK's own default profile fail (registry entry 23);
+  `houses.module_overrides`, which quietly gave a KP reading whole-sign
+  houses where every shipped profile says Placidus; and
+  `output.precision`, which did nothing at all. Three in three is a
+  pattern rather than an accident, so `cargo xtask check-lints` now
+  finds them by machine.
+
+  The rule enumerates the knobs from `core` itself —
+  `Settings::knob_paths`, a new list held to the settings document by
+  its own test, so a group added to the document is watched without a
+  second list to remember — and counts readers outside the settings
+  layer over the source with its whitespace collapsed, because a chain
+  the formatter breaks across lines is still one access. It found
+  fourteen.
+
+  **One was real.** `crates/vargas`'s `Scheme::cyclic` named a
+  convention it never asked for, and the crate's own design page claimed
+  `vargas.unattested_dn` chose it. `Scheme::unattested(divisions,
+  convention)` now takes the reading and refuses one it has not been
+  taught by name, and `Scheme::for_settings` reads the knob — so a
+  convention added to the catalogue forces a decision rather than being
+  silently read as the cyclic one.
+
+  The other thirteen are **deferred with a reason** written at the
+  knob's own declaration and printed on every run: `dasha`, `jaimini`
+  and `strength`'s belong to Phase 5 modules, `provider.tier` to Phase
+  3's built-in ephemeris, `frame.siddhanta` and `frame.nakshatra_scheme`
+  to work each names, and `calendars.civil_calendar` and `.eras` gain a
+  reader when something builds a chart from a settings document alone.
+  **An allowance that is no longer needed is itself a failure**, so the
+  inventory cannot rot.
+
+  All three failure modes were proven red before the rule was trusted,
+  as the other four lints were: a knob with no reader and no marker, a
+  stale allowance on a knob that is read, and — through the core test —
+  a group renamed out of the list.
+
 - `crates/serial`, one JSON document for a chart and one way of writing
   it, and the measurement that decided it first. 22 tests.
 

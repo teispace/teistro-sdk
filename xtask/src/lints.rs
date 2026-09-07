@@ -4,8 +4,9 @@
 //! Each is a property of the source rather than of a run, so each is read
 //! off the source: an unordered collection whose iteration could reach an
 //! output, a read of the clock or the environment inside a computation,
-//! an `unsafe` allowance outside the two places that may have one, and
-//! the classification functions that must stay integer arithmetic.
+//! an `unsafe` allowance outside the two places that may have one, the
+//! classification functions that must stay integer arithmetic, and a
+//! settings knob that ships and resolves and is read by nobody.
 //!
 //! A line that must break a rule says so with a `lint:` marker naming the
 //! rule and the reason; the gate prints those, so an allowance is an
@@ -278,6 +279,126 @@ fn exact_classification(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Where the knobs are declared and where a patch is applied: a mention
+/// here is not a reader, because this is the layer whose job is to carry
+/// them.
+const SETTINGS_LAYER: [&str; 3] = [
+    "settings/mod.rs",
+    "settings/profiles.rs",
+    "settings/knobs.rs",
+];
+
+/// Every settings knob has a reader outside the settings layer.
+///
+/// A knob that ships, resolves and is read by nobody is a bug whether or
+/// not anything crashes, and three had been found by hand in as many
+/// modules before this rule existed: `state.combustion_orbs`, which made
+/// a chart founded on the SDK's own default profile fail
+/// (`05-testing/01-golden-vectors.md`, entry 23);
+/// `houses.module_overrides`, which quietly gave a KP reading whole-sign
+/// houses; and `output.precision`, which did nothing at all.
+///
+/// The knob list comes from `core` itself
+/// ([`teistro_core::settings::Settings::knob_paths`]), so a group added
+/// to the document is watched without a second list to remember.
+///
+/// A knob whose module is not written yet says so where it is declared,
+/// with a `lint: knob-has-a-reader` marker naming what will read it. The
+/// gate prints those, so a deferral is an inventory rather than a
+/// silence — **and an allowance that is no longer needed is itself a
+/// finding**, so the inventory cannot rot.
+fn knob_readers(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "knob-has-a-reader";
+    // A chain broken across lines by the formatter still reads as one
+    // access, so the search is over the text with its whitespace gone.
+    let mut haystacks: Vec<String> = Vec::new();
+    for directory in ["crates", "bindings", "xtask"] {
+        for path in sources(&root.join(directory)) {
+            let shown = path.display().to_string();
+            if SETTINGS_LAYER.iter().any(|layer| shown.ends_with(layer)) {
+                continue;
+            }
+            if let Ok(text) = std::fs::read_to_string(&path) {
+                haystacks.push(text.split_whitespace().collect());
+            }
+        }
+    }
+
+    let declarations = root.join("crates/core/src/settings/mod.rs");
+    let source = std::fs::read_to_string(&declarations).unwrap_or_default();
+    let shown = declarations
+        .strip_prefix(root)
+        .unwrap_or(&declarations)
+        .display()
+        .to_string();
+
+    for (group, knob) in teistro_core::settings::Settings::knob_paths() {
+        let access = format!(".{group}.{knob}");
+        let read = haystacks.iter().any(|text| text.contains(&access));
+        let (line, marker) = declaration_of(&source, knob);
+        match (read, marker) {
+            (false, None) => outcome.failures.push(Finding {
+                file: shown.clone(),
+                line,
+                text: format!(
+                    "`{group}.{knob}` has no reader; give it one, or say `lint: {RULE}` \
+                     where it is declared with what will read it"
+                ),
+                rule: RULE,
+            }),
+            (false, Some(reason)) => outcome.allowed.push(Finding {
+                file: shown.clone(),
+                line,
+                text: format!("{group}.{knob}: {reason}"),
+                rule: RULE,
+            }),
+            (true, Some(_)) => outcome.failures.push(Finding {
+                file: shown.clone(),
+                line,
+                text: format!(
+                    "`{group}.{knob}` is read now, so its `lint: {RULE}` allowance is stale \
+                     and should go"
+                ),
+                rule: RULE,
+            }),
+            (true, None) => {}
+        }
+    }
+}
+
+/// Where a knob is declared, and the reason its allowance gives if it
+/// has one.
+///
+/// The marker goes in the knob's own doc comment, so it is read by
+/// whoever reads the knob rather than living in a list elsewhere.
+fn declaration_of(source: &str, knob: &str) -> (usize, Option<String>) {
+    let wanted = format!("{knob}: ");
+    let mut reason: Option<String> = None;
+    for (index, line) in source.lines().enumerate() {
+        let trimmed = line.trim_start();
+        if let Some(rest) = trimmed.strip_prefix("/// lint: knob-has-a-reader") {
+            reason = Some(rest.trim_start_matches([' ', '—', '-']).trim().to_string());
+            continue;
+        }
+        if let Some(rest) = trimmed.strip_prefix("///") {
+            // A reason may run over several lines; it reads as one.
+            if let Some(started) = reason.as_mut() {
+                let rest = rest.trim();
+                if !rest.is_empty() {
+                    started.push(' ');
+                    started.push_str(rest);
+                }
+            }
+            continue;
+        }
+        if trimmed.starts_with(&wanted) {
+            return (index + 1, reason);
+        }
+        reason = None;
+    }
+    (0, None)
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -301,6 +422,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     );
     unsafe_inventory(root, &mut outcome);
     exact_classification(root, &mut outcome);
+    knob_readers(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -308,6 +430,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "ambient-input",
         "unsafe-inventory",
         "exact-classification",
+        "knob-has-a-reader",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
@@ -332,4 +455,55 @@ pub(crate) fn check(root: &Path) -> i32 {
         );
     }
     i32::from(!outcome.failures.is_empty())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::declaration_of;
+
+    /// The shape of a `group!` body, which is what the rule reads.
+    const SOURCE: &str = "group!(
+    Vargas, VargasPatch {
+        /// The convention for an unattested chart.
+        unattested_dn: UnattestedDn,
+        /// The bala scheme.
+        /// lint: knob-has-a-reader — `strength`, Phase 5.
+        bala_scheme: BalaScheme,
+        /// The eras.
+        /// lint: knob-has-a-reader — the first line,
+        /// and the second, which reads on.
+        eras: BTreeSet<Era>,
+    }
+);
+";
+
+    #[test]
+    fn a_knob_without_a_marker_has_no_reason() {
+        let (line, reason) = declaration_of(SOURCE, "unattested_dn");
+        assert_eq!(line, 4, "the line the knob is declared on");
+        assert_eq!(reason, None);
+    }
+
+    #[test]
+    fn a_marker_gives_its_reason_and_belongs_to_the_knob_below_it() {
+        let (line, reason) = declaration_of(SOURCE, "bala_scheme");
+        assert_eq!(line, 7);
+        assert_eq!(reason.as_deref(), Some("`strength`, Phase 5."));
+        // And it does not leak upwards to the knob before it.
+        assert_eq!(declaration_of(SOURCE, "unattested_dn").1, None);
+    }
+
+    #[test]
+    fn a_reason_may_run_over_several_lines_and_reads_as_one() {
+        let (_, reason) = declaration_of(SOURCE, "eras");
+        assert_eq!(
+            reason.as_deref(),
+            Some("the first line, and the second, which reads on.")
+        );
+    }
+
+    #[test]
+    fn a_knob_that_is_not_there_is_not_found() {
+        assert_eq!(declaration_of(SOURCE, "no_such_knob"), (0, None));
+    }
 }
