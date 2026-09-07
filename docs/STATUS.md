@@ -38,8 +38,15 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the forty-fourth session (the varga
-kernel falsified and built: a divisional chart is a function of one
+**Last updated:** 2026-09-07, end of the forty-fifth session (the
+planetary state falsified, designed and built: `cargo xtask state`
+proposed a rule for every recorded state field and measured it over 837
+readings — settling the order of the dignity ladder and the ages'
+alternation, and refusing six avasthas outright — `crates/state` is the
+page that came out of it, 43 tests, and the default profile turned out
+to name a combustion table the SDK had never shipped, which is now two
+cited tables and registry entry 23); before that the forty-fourth
+session (the varga kernel falsified and built: a divisional chart is a function of one
 longitude and the corpus records both, so `cargo xtask vargas` derives
 each chart's table from the corpus and holds the design to it — 19 530
 placements over two zodiacs, with nothing left over — and `crates/vargas`
@@ -152,14 +159,16 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is `crates/state`**, over `chart` and `vargas`:
-   dignities, relationships, combustion, retrogression, planetary war,
-   gandanta, the avasthas and marana karaka sthana. Phases 1 and 2 are
-   closed; Phase 4 is open and under way, and Phase 3 may run beside it.
-   The corpus decides most of it: `positions.bodies.*` records the
-   dignity, the moolatrikona flag, combustion, the distance from the Sun,
-   the three friendship views and four avastha families for all 55
-   charts.
+3. **The next task is `crates/aspect`**, over `chart`: graha drishti,
+   sphuta drishti, rashi drishti, the conjunction and the Tajika
+   aspects. Phases 1 and 2 are closed; Phase 4 is open and under way,
+   and Phase 3 may run beside it. Two modules are already waiting on
+   it by name: `crates/state` returns six avasthas as *undecided*
+   because their definitions read "or aspected by"
+   (`03-design/state-and-avasthas.md` §7), and `strength` cannot be
+   started without it. Falsify first, as the last four modules did —
+   the corpus records the aspects, so a pass over them can settle the
+   drishti table before the design page is written.
 
    Two things earlier modules left behind, in the order they are wanted:
 
@@ -176,15 +185,17 @@ provider's DUT1).
      Nepal's national panchangam, the only evidence in the project that
      is not another implementation.
 
-   The pattern to keep, earned three times: **falsify, then design, then
-   build.** `cargo xtask chalit`, `panchanga` and `vargas` each proposed
-   rules and measured them against the corpus before a line of the module
-   existed, and between them they found eight differences (registry
-   entries 14 to 20, and the bhayat correction) that would otherwise have
-   been written into code as facts. The vargas pass is the sharpest of
-   the three, because a divisional chart is a function of one longitude
-   and the corpus records both: 19 530 placements decided the whole
-   kernel outright.
+   The pattern to keep, earned four times: **falsify, then design, then
+   build.** `cargo xtask chalit`, `panchanga`, `vargas` and `state` each
+   proposed rules and measured them against the corpus before a line of
+   the module existed, and between them they found eleven differences
+   (registry entries 14 to 23, and the bhayat correction) that would
+   otherwise have been written into code as facts. The vargas pass is
+   the sharpest, because a divisional chart is a function of one
+   longitude and the corpus records both: 19 530 placements decided the
+   whole kernel outright. The state pass is the one that shows the
+   other half of the pattern — it **refused** six avasthas, which the
+   module now reports as undecided rather than guessing.
 
 4. What is built, and what runs it:
 
@@ -197,6 +208,7 @@ provider's DUT1).
    | `time`, `port-timezone` | the scales, Delta T, the zones, the ghati and the hora, the local day |
    | `panchanga` | the almanac of one day at one place: the limbs as spans, the periods as divisions of the arcs, the month, the omens and the Moon's and Sun's day |
    | `vargas` | the divisional charts: one evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
+   | `state` | what a graha is: the dignity ladder, the three friendships, combustion under two cited orb tables, the ages, the war, the avasthas it can decide and the six it will not |
    | `calendar` | Gregorian, Julian, mixed, ISO week, Bikram Sambat, the drik and classical solar models |
    | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
    | `intl` | the locale engine, the CLI, the packs |
@@ -208,13 +220,13 @@ provider's DUT1).
    Gates on every push (`fast-check`): `check-docs`, `check-fixtures`,
    `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`,
    `check-intl`, `check-ffi`, `check-chalit`, `check-panchanga`,
-   `check-vargas`, `check-lints`, `check-versions`. Needing another toolchain, run by
+   `check-vargas`, `check-state`, `check-lints`, `check-versions`. Needing another toolchain, run by
    hand and in `verify`: `check-c`, `check-node`, `check-dart`,
    `check-parity`, `check-package`, `check-site`. Also: `cargo xtask
    hashes` and `compare-hashes` (the determinism matrix), `bench` and
    `compare-bench` (instruction counts, Linux), `package` and `package
    stage` (what a release ships), `version X` (the one version), `chalit`,
-   `panchanga` and `vargas` (the three falsification pages), `accuracy`,
+   `panchanga`, `vargas` and `state` (the four falsification pages), `accuracy`,
    `calendars bs-fit`, `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
@@ -714,6 +726,34 @@ carries the kernel, a whole chart of a founded moment with the mixed
 axis, arbitrary D-N under the cyclic convention, and the varga change
 search, which uses a lattice where the parts are equal and bisection for
 the one chart where they are not.
+
+`crates/state` is the fourth, and the one where the falsification pass
+earned its keep by **refusing**. `cargo xtask state` measured a proposed
+rule for every recorded state field over 837 readings of nine grahas on
+93 fixtures, and settled two things a reading of the texts would have
+got wrong: moolatrikona has to be tried *above* exaltation, because
+three grahas have a moolatrikona span inside their exaltation sign; and
+the five ages alternate, running forward in an odd sign and backward in
+an even one, reading them forward everywhere being wrong on 359 of the
+837. It also found what the corpus cannot decide, by exhausting the
+hypotheses rather than guessing: the deeptadi below its top three, and
+three of the six lajjitadi, are not a function of anything a founded
+chart holds — their definitions read "or aspected by". The crate
+returns them as undecided and names them on every reading, which is the
+honest answer and the one a module above can act on.
+
+Building it turned up something the settings layer had been carrying
+unnoticed: the SDK's own **default profile named a combustion table the
+SDK did not ship**. `parashari-classical` sets `state.combustion_orbs`
+to `SURYA_SIDDHANTA`, cited to the text's own orbs "where it gives
+them", and the only table written was `BPHS`. The fix is the citation
+read literally — the Surya Siddhanta gives six orbs and nothing inside
+them, so `SURYA_SIDDHANTA` ships as those six alone and `BPHS` as the
+same six with the deeper orb the corpus brackets. Under the default
+profile no body is ever deeply combust, which is registry entry 23 and
+is stated in the crate's own documentation rather than hidden. The six
+outer orbs are the same numbers `astro`'s heliacal visibility reads, and
+a test now holds the two copies together.
 
 **Phase 3 has nothing waiting on it either**, and is the larger piece of
 numerical work: `tools/ephemgen`, VSOP87, ELP/MPP02, the fitted Pluto,

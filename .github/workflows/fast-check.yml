@@ -62,6 +62,8 @@ jobs:
         run: cargo xtask check-panchanga
       - name: Varga tables page (the recorded divisional charts' derived tables reproduce)
         run: cargo xtask check-vargas
+      - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
+        run: cargo xtask check-state
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

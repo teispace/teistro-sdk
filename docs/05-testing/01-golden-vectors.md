@@ -296,3 +296,39 @@ explained rather than a failure or a silent adoption.
     rather than defining it differently. The SDK computes it for whatever
     it is asked about. Found 2026-09-07 by `cargo xtask vargas`
     (`03-design/varga-tables-measured.md`, §5).
+
+21. The deeply debilitated body's wakefulness. The jagradadi run
+    awake, dreaming, asleep, and the dignity decides which: at home
+    awake, neutral or friendly dreaming, an enemy sign or debilitation
+    asleep. The engine records the three deeply debilitated bodies of
+    the corpus as **dreaming**, which is the state a merely debilitated
+    body gets — the deeper dignity falls through to the milder reading
+    rather than to the deeper one. Every other one of the 651 recorded
+    readings agrees with the ladder. The SDK reads a deep debilitation
+    as asleep, which is what the ladder says. Found 2026-09-07 by
+    `cargo xtask state` (`03-design/state-tables-measured.md`, §5) and
+    asserted as a difference by `crates/state/tests/baseline.rs`.
+
+22. The lagna's dignity and friendships. The engine gives the lagna a
+    row beside the grahas on all 93 fixtures: a dignity of neutral, a
+    natural friendship of neutral and a temporary friendship of friend
+    — which do not compound to what it then reports, since neutral and
+    friend compound to friend and it records neutral. They are
+    placeholders, not readings. The SDK computes no planetary state for
+    the lagna at all: it is not a graha, it disposits nothing and has no
+    relationship with the lord of the sign it falls in. Found
+    2026-09-07 by `cargo xtask state`
+    (`03-design/state-tables-measured.md`, §9).
+
+23. Deep combustion under the SDK's default profile. Both shipped orb
+    tables carry the Surya Siddhanta's degrees of time as the outer orb,
+    and only `BPHS` gives a deeper orb inside it; the text gives none,
+    and the default profile is the texts as read (ADR-0024), so it names
+    `SURYA_SIDDHANTA` and **no body is ever deeply combust under it**.
+    Over the corpus the difference is one-directional and shallow: the
+    same 66 of 837 readings burn, and the 36 the engine calls deeply
+    combust come back merely combust. A harness comparing deep
+    combustion sets `state.combustion_orbs` to `BPHS`, which
+    `conformance-baseline` inherits from the root. Found 2026-09-07
+    while building `crates/state`; asserted both ways by
+    `crates/state/tests/baseline.rs`.
