@@ -27,7 +27,7 @@
 //! assert!((found[0].from_exact_deg - 8.0).abs() < 1e-9);
 //! ```
 
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize};
 use teistro_core::error::Error;
 
 /// The widest orb the engine accepts, degrees. Past a right angle an
@@ -35,7 +35,7 @@ use teistro_core::error::Error;
 pub const WIDEST_ORB_DEG: f64 = 90.0;
 
 /// A body as this engine sees it: where it is and how fast it is going.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Moving {
     /// Longitude, degrees.
     pub longitude_deg: f64,
@@ -109,8 +109,60 @@ impl Angle {
     ];
 }
 
+impl<'de> Deserialize<'de> for Angle {
+    /// Reads an angle back by its **key**, and takes the degrees from
+    /// this build.
+    ///
+    /// An angle's key is a `&'static str` and no document can produce
+    /// one, so the value is looked up among the five rather than
+    /// rebuilt. That is the same rule the divisional schemes are read
+    /// under: a value whose identity is a shipped constant is read back
+    /// by finding the constant, never by owning its bytes.
+    ///
+    /// # Errors
+    ///
+    /// A key this build does not know, naming the five it does; and a
+    /// `degrees` that disagrees with the one the key names, which is a
+    /// document written under a different table rather than a typo.
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Angle, D::Error> {
+        /// The fields a document carries, as it carries them.
+        #[derive(Deserialize)]
+        struct Written {
+            key: String,
+            degrees: f64,
+        }
+        let written = Written::deserialize(deserializer)?;
+        let found = Angle::PTOLEMAIC
+            .iter()
+            .find(|angle| angle.key == written.key)
+            .copied()
+            .ok_or_else(|| {
+                let known = Angle::PTOLEMAIC
+                    .iter()
+                    .map(|angle| angle.key)
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                serde::de::Error::custom(format!(
+                    "unknown angle `{}`; this build knows {known}",
+                    written.key
+                ))
+            })?;
+        // Exact, and bit-for-bit: an angle's degrees are 0, 60, 90, 120
+        // or 180, and a document that writes one of them differently is
+        // a document from a build with a different table rather than a
+        // rounding difference.
+        if found.degrees.to_bits() != written.degrees.to_bits() {
+            return Err(serde::de::Error::custom(format!(
+                "the document puts {} at {}° and this build puts it at {}°",
+                written.key, written.degrees, found.degrees
+            )));
+        }
+        Ok(found)
+    }
+}
+
 /// One angle two bodies stand within an orb of.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Hit {
     /// Which angle.
     pub angle: Angle,
@@ -357,5 +409,35 @@ mod tests {
         // Nought is an orb, and the widest is too.
         assert!(hits(Moving::still(0.0), Moving::still(0.0), &[], 0.0).is_ok());
         assert!(hits(Moving::still(0.0), Moving::still(0.0), &[], WIDEST_ORB_DEG).is_ok());
+    }
+
+    #[test]
+    fn an_angle_reads_back_by_its_key_and_refuses_what_this_build_does_not_know() {
+        // `Angle` holds a `&'static str`, so it is read back by looking
+        // the constant up rather than by owning its bytes. No chart
+        // document carries one today — `Aspects` writes a drishti's
+        // strength, not a Ptolemaic angle — so nothing else exercises
+        // this reader, and a `Hit` is public enough for a consumer to
+        // read one.
+        for angle in Angle::PTOLEMAIC {
+            let written = serde_json::to_string(&angle).expect("it writes");
+            let read: Angle = serde_json::from_str(&written).expect("it reads back");
+            assert_eq!(read, angle);
+        }
+
+        let unknown = serde_json::from_str::<Angle>(r#"{"key":"SEMISQUARE","degrees":45}"#)
+            .expect_err("an angle this build does not know");
+        let said = unknown.to_string();
+        assert!(said.contains("SEMISQUARE"), "{said}");
+        assert!(
+            said.contains("CONJUNCTION"),
+            "it names the ones it knows: {said}"
+        );
+
+        // A key this build knows, at degrees it does not put it at: a
+        // document from a build with a different table, not a typo.
+        let moved = serde_json::from_str::<Angle>(r#"{"key":"TRINE","degrees":121}"#)
+            .expect_err("a trine that is not 120 degrees");
+        assert!(moved.to_string().contains("121"), "{moved}");
     }
 }

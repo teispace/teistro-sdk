@@ -17,7 +17,7 @@
 //! 550 bodies, `sidereal = tropical - ayanamsha` to the last bit, with one
 //! value per chart.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_astro::ayanamsha::{self, Basis};
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
@@ -43,7 +43,7 @@ const fn centre_of(centre: Centre) -> FrameCentre {
 
 /// The zodiac of one chart: what to ask the provider for, and how far to
 /// shift what comes back.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ChartZodiac {
     /// The frame to ask the provider for. Always tropical, so that the
     /// grahas and the cusps are shifted by the same value.

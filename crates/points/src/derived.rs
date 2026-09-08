@@ -7,7 +7,7 @@
 //! the distance to the boundary that decides its sign
 //! (`03-design/derived-points.md` §9).
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::angle::Nas;
 use teistro_core::boundary::Boundaries;
 use teistro_core::catalogue::{Point, Rashi};
@@ -15,7 +15,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::Degrees;
 
 /// Where a derived point stands.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Derived {
     /// Which point, by the catalogue's own key.
     pub point: Point,

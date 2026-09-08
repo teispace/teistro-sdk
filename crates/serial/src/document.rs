@@ -10,7 +10,7 @@
 //! the same provenance, and repeating it seven times would make the JSON
 //! larger than the values.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_aspect::Aspects;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::envelope::Provenance;
@@ -23,7 +23,7 @@ use teistro_vargas::chart::VargaChart;
 use crate::seal::Sealed;
 
 /// One chart, with whichever of the layer's readings were asked for.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Document {
     /// What every other section is computed from.
     pub foundation: ChartFoundation,
@@ -31,7 +31,12 @@ pub struct Document {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub panchanga: Option<Panchanga>,
     /// The divisional charts asked for.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    ///
+    /// `default` because the key is left out when there are none, and a
+    /// reader must take an absent key as "none were asked for" rather
+    /// than refuse the document. Serde does that for an `Option` on its
+    /// own; a `Vec` has to be told.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub vargas: Vec<VargaChart>,
     /// What each graha is, as opposed to where it is.
     #[serde(skip_serializing_if = "Option::is_none")]

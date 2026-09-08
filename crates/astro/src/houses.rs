@@ -28,7 +28,7 @@
 //! assert_eq!(placidus.cusps[0], placidus.angles.ascendant_deg);
 //! ```
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::catalogue::{Degeneracy, HouseSystem};
 use teistro_core::error::{Error, Status};
@@ -95,7 +95,7 @@ pub struct Angles {
 }
 
 /// What happened to a system undefined at the place.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Outcome {
     /// The system asked for, at the place asked for.

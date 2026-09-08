@@ -13,7 +13,7 @@
 //! bisecting on the sign index itself: correct, slower, and used for one
 //! chart out of twenty-one.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Longitudes, Search};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::Rashi;
@@ -36,7 +36,7 @@ pub const TOLERANCE_DAYS: f64 = 1e-7;
 const MOST_HALVINGS: u32 = 64;
 
 /// A body leaving one sign of a divisional chart for another.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Change {
     /// When it happened.
     pub at: JulianDay<Ut1>,

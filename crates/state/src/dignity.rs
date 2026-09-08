@@ -10,7 +10,7 @@
 //!   readings. The catalogue structurally cannot say it — a graha is in
 //!   none of its own three lists — so the rule lives here.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
 
 /// The signs from a body in which its dispositor is a temporary friend:
@@ -35,7 +35,7 @@ pub const fn is_shadow(graha: Graha) -> bool {
 }
 
 /// How a body stands to the lord of the sign it is in, three ways.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Friendship {
     /// The table's own reading.
     pub natural: Relationship,

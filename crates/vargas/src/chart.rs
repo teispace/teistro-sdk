@@ -8,7 +8,7 @@
 //! because of it. So it is a pair the caller sets, it rides on the
 //! request, and the value carries it back.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Graha, Rashi, Varga};
@@ -21,7 +21,7 @@ use crate::scheme::Scheme;
 /// Which chart the grahas are read in, and which the lagna is.
 ///
 /// Defaulting to the rashi for both, which is the plain chart.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Axis {
     /// The chart the grahas are placed in.
     pub grahas: Scheme,
@@ -65,7 +65,7 @@ impl Default for Axis {
 }
 
 /// Where one graha stands in a divisional chart.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GrahaPlacement {
     /// Which graha.
     pub graha: Graha,
@@ -74,7 +74,7 @@ pub struct GrahaPlacement {
 }
 
 /// One divisional chart of one founded moment.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VargaChart {
     /// Which chart, or which pair of them.
     pub axis: Axis,

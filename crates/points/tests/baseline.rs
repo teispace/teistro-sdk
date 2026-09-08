@@ -332,7 +332,14 @@ fn the_three_the_clock_drives_are_inside_the_bracket_the_pass_published() {
          against a bound of {CLOCK_BOUND_DEG:.4}°"
     );
     assert_eq!(checked, 71 * 3);
-    assert_eq!(exact, 138, "the pass counted forty-six of each");
+    // Forty-seven of each. The pass counted forty-six, and three more
+    // land exact now that the corpus's own JSON is read with a correctly
+    // rounded float parser (`serde_json`'s `float_roundtrip`, which
+    // `teistro-core` asks for): the fast path had been reading about one
+    // recorded number in fifteen a unit in the last place low, so a
+    // lagna that matched exactly was compared against a value that did
+    // not. Nothing the SDK computes moved.
+    assert_eq!(exact, 141, "forty-seven of each");
 }
 
 #[test]

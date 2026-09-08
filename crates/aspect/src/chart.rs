@@ -8,7 +8,7 @@
 //! `Vec`, because `rules` will ask "is this aspected by a malefic" once
 //! per predicate per chart and should not allocate to find out.
 
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize};
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::boundary::Boundaries;
@@ -21,7 +21,7 @@ use crate::drishti::{self, Strength};
 use crate::rashi;
 
 /// One body's gaze at another.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Drishti {
     /// The body looking.
     pub from: Graha,
@@ -63,7 +63,7 @@ impl Drishti {
 }
 
 /// Two bodies that look at each other.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Mutual {
     /// One of them.
     pub first: Graha,
@@ -86,7 +86,7 @@ impl Mutual {
 }
 
 /// Where a body stands, as this module needs it.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 struct Placed {
     graha: Graha,
     sign: Rashi,
@@ -103,6 +103,35 @@ pub struct Aspects {
     placed: Vec<Placed>,
     /// The drishti table the settings named.
     table: &'static str,
+}
+
+impl<'de> Deserialize<'de> for Aspects {
+    /// Reads the relations back, and the **table by its name**.
+    ///
+    /// The table is a `&'static str` that names one of the tables this
+    /// build ships, and no document can produce one, so it is looked up
+    /// rather than owned — the same rule [`crate::orb::Angle`] and a
+    /// divisional scheme are read under. [`crate::drishti::table`] is
+    /// the lookup, so the set of names lives in one place.
+    ///
+    /// # Errors
+    ///
+    /// A table this build does not ship, named.
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Aspects, D::Error> {
+        /// The fields a document carries, as it carries them.
+        #[derive(Deserialize)]
+        struct Written {
+            relations: Vec<Drishti>,
+            placed: Vec<Placed>,
+            table: String,
+        }
+        let written = Written::deserialize(deserializer)?;
+        Ok(Aspects {
+            relations: written.relations,
+            placed: written.placed,
+            table: crate::drishti::table(&written.table).map_err(serde::de::Error::custom)?,
+        })
+    }
 }
 
 impl Aspects {

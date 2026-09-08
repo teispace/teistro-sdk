@@ -20,13 +20,13 @@
 //! way: a classification within the longitude tolerance of a boundary is
 //! an edge case and not a failure.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::angle::Nas;
 
 /// How far a body stands from the nearest boundary of each division,
 /// degrees.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Boundaries {
     /// To the nearer edge of its sign.
     pub sign_deg: f64,

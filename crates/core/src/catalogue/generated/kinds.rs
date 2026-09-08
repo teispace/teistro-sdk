@@ -493,7 +493,7 @@ impl serde::Serialize for Kind {
 
 impl<'de> serde::Deserialize<'de> for Kind {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let name = <&str>::deserialize(deserializer)?;
-        Kind::from_name(name).ok_or_else(|| serde::de::Error::custom(crate::catalogue::UnknownKey::kind_name(name)))
+        let name = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        Kind::from_name(&name).ok_or_else(|| serde::de::Error::custom(crate::catalogue::UnknownKey::kind_name(&name)))
     }
 }

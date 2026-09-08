@@ -14,7 +14,26 @@ publish = false
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# `float_roundtrip` swaps `serde_json`'s fast float parser for a
+# correctly rounded one. The fast path is not: it lands a unit in the
+# last place low on about one number in fifteen of a real chart document,
+# so a document read back with it cannot reproduce its content hash
+# (`03-design/schema-measured.md` §9).
+#
+# `arbitrary_precision` fixes the same numbers and is the wrong tool: it
+# is incompatible with an internally tagged enum carrying a float —
+# serde buffers such a value, and the buffer writes a number as
+# `{"$serde_json::private::Number": ...}` — which breaks `DeltaTModel`,
+# `CalendarResolution`, `Outcome` and every other `#[serde(tag = ...)]`
+# the SDK has. `float_roundtrip` has no such cost, and fixes `from_str`
+# as well as a `Value`.
+#
+# The feature is global to a build, as `preserve_order` is; that one is
+# already on because `intl` asks for it, and `canonical_json` defends by
+# sorting keys itself rather than trusting the map. Here the defence is a
+# test: `canonical.rs`'s `a_value_reads_back_from_its_own_bytes` fails if
+# the feature is ever off.
+serde_json = { version = "1", features = ["float_roundtrip"] }
 sha2 = "0.11"
 
 [dev-dependencies]

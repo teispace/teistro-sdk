@@ -84,9 +84,9 @@ that is the whole difference between them.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the hora lagna advances 30° an hour from the Sun over the recorded ishtakaal | falsified | 25 of 71 disagree; worst 0.8163° |
-| the pranapada lagna advances 60° an hour from the Sun over the recorded ishtakaal | falsified | 25 of 71 disagree; worst 1.6326° |
-| the ghati lagna advances 75° an hour from the Sun over the recorded ishtakaal | falsified | 25 of 71 disagree; worst 2.0408° |
+| the hora lagna advances 30° an hour from the Sun over the recorded ishtakaal | falsified | 24 of 71 disagree; worst 0.8163° |
+| the pranapada lagna advances 60° an hour from the Sun over the recorded ishtakaal | falsified | 24 of 71 disagree; worst 1.6326° |
+| the ghati lagna advances 75° an hour from the Sun over the recorded ishtakaal | falsified | 24 of 71 disagree; worst 2.0408° |
 | the three are built on one elapsed time, not three | **holds** | 0 of 71 disagree |
 | and over that time every one of them is exact | **holds** | 0 of 213 disagree |
 
@@ -101,7 +101,7 @@ hundredth of a minute, and against that time each is exact.
 
 So the disagreement is one quantity and not three. The elapsed time the
 engine's points are built on differs from the ishtakaal the same fixture
-records by at most **1.633 minutes**, on 25 of 71 fixtures; on the rest
+records by at most **1.633 minutes**, on 24 of 71 fixtures; on the rest
 it agrees exactly.
 
 | fixture | the engine's elapsed time, less the ishtakaal it records |

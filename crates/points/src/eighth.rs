@@ -21,7 +21,7 @@
 //! and the latitude, so no ephemeris is involved and a test implements
 //! it in four lines.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Kaala, Point, Vara};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -63,7 +63,7 @@ where
 }
 
 /// Saturn's eighth of an arc: which part it is, and when it runs.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Portion {
     /// Which eighth, counted from one as an almanac prints it.
     pub eighth: u8,

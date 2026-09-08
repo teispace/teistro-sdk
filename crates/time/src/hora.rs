@@ -56,7 +56,7 @@ impl TryFrom<HoraReckoning> for Reckoning {
 }
 
 /// One hora of a day.
-#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Hora {
     /// The hora's number, 1 to 24 from sunrise.
     pub number: u8,

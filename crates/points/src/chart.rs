@@ -4,7 +4,7 @@
 //! with a Sun and nothing else can have the chain. This is the
 //! convenience over them, and the only part that needs a whole chart.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::{Graha, Point, PointFamily, Rashi, Vara};
 use teistro_core::error::Error;
@@ -16,7 +16,7 @@ use crate::lagna;
 use crate::solar;
 
 /// Every derived point the SDK can compute for one founded chart.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Points {
     found: Vec<Derived>,
 }

@@ -280,7 +280,7 @@ impl serde::Serialize for Ritu {
 
 impl<'de> serde::Deserialize<'de> for Ritu {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let key = <&str>::deserialize(deserializer)?;
-        Self::from_key(key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Ritu>(key)))
+        let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Ritu>(&key)))
     }
 }

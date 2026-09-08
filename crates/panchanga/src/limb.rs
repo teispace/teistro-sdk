@@ -26,7 +26,7 @@
 //! is about eleven degrees a day — so the spans are in order and the
 //! kernel says so rather than hoping.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_astro::ayanamsha::Basis;
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::events::{Longitudes, Search};
@@ -53,7 +53,7 @@ use crate::span::Span;
 pub const LONGEST_SPAN_DAYS: f64 = 1.5;
 
 /// The four moving limbs of one day.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Limbs {
     /// The tithis that touch the day.
     pub tithi: Vec<Span<Tithi>>,

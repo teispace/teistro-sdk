@@ -207,37 +207,44 @@ than the values.
   cannot give a string field its member list (93 of 98 string paths are
   catalogue members, whose lists only the description has). Two things
   come before the emitter, and both are below.
-- **Nothing in the layer reads back.** 65 types derive `Serialize` and
-  none derives `Deserialize`, so a stored document cannot be read into
-  the SDK that wrote it. When that reader is written it must not take
-  its numbers from `serde_json`'s default path, which is not correctly
-  rounded — it moves about one number in fifteen by a unit in the last
-  place, so a reader built on it cannot reproduce the hash it exists to
-  check.
+- **~~Nothing in the layer reads back.~~ Fixed.** 60 of the layer's 65
+  types now derive `Deserialize`, and the five that do not are the five
+  that cannot: a value whose identity is a shipped constant, holding a
+  `&'static` no document can produce — a divisional scheme's group
+  table, its `Map::Listed` of signs, an aspect angle's key, the drishti
+  table a chart was read under. Each has a reader written by hand, and
+  each reads the value back **by its identity**: the key or the
+  catalogued name is looked up in this build's own table, and what the
+  document says about that table is checked against it rather than
+  trusted. A document that names D9 and describes something else is
+  refused by name. That is stricter than a derive, and it is what a
+  stored chart wants — reading one under a build whose tables have moved
+  should be an error, not a quiet reinterpretation.
 
-  The three routes were measured, on `218.91170673806658`, with
-  `serde_json`'s `arbitrary_precision` feature on:
+  `canonical::from_hash_form` is the reader and `canonical::reads_back`
+  the question a caller can ask; `tests/document.rs` holds the gate this
+  page asked for — every sample validates and reads back equal, in
+  bytes, in value and in hash.
 
-  | route | correct |
-  |---|---|
-  | `from_str::<T>(text)` — what a bare derive does | **no** |
-  | `from_str::<Value>(text)` then `from_value::<T>(v)` | yes |
-  | `Value::as_f64` | yes |
+  What it turned on was **`serde_json`'s `float_roundtrip` feature**,
+  which `teistro-core` now asks for. The default float parser is a fast
+  path that is not correctly rounded: it read 84 of a chart document's
+  1518 numbers a unit in the last place low, and a reader on it cannot
+  reproduce the hash it exists to check. `arbitrary_precision` fixes the
+  same numbers and is the wrong tool — serde buffers an internally
+  tagged enum before writing it, and that buffer writes a number as
+  `{"$serde_json::private::Number": …}`, which breaks `DeltaTModel`,
+  `CalendarResolution`, `Outcome` and every other `#[serde(tag = …)]`
+  the SDK has; it also leaves `from_str` wrong, so a reader would have
+  had to go through a `Value`. The feature is global to a build, as
+  `preserve_order` is, and the defence is a test rather than a
+  declaration: `canonical.rs`'s `a_value_reads_back_from_its_own_bytes`
+  fails if it is ever off.
 
-  So the reader is `#[derive(Deserialize)]` on the layer's types, read
-  **through a `Value`** rather than straight from the text, with
-  `arbitrary_precision` on. The feature keeps a number as its own digits
-  until something asks for a double, and `as_f64` then defers to
-  `str::parse`; the derive's `visit_f64` never sees the digits and
-  cannot.
-
-  Two things that needs. The feature is **global to a build** — any
-  crate enabling it changes `serde_json` for every other — which is the
-  same hazard `canonical_json` already guards against for
-  `preserve_order` by sorting keys itself. Here the dependency runs the
-  other way: the reader is wrong if the feature is *off*, silently and
-  in the last place. That wants a gate, and `check-lints` is where such
-  a rule would live. This is the mirror of what the first pass found
+  Turning it on made three of the corpus's own comparisons exact that
+  had not been — `points`'s clock-driven lagnas went from 138 to 141 of
+  213 — because the fixtures are JSON too and had been read a unit in
+  the last place low. Nothing the SDK computes moved. This is the mirror of what the first pass found
   — `ChartFoundation` derived no `Serialize`, so a chart could not be
   published — and it is what makes the schema's natural gate, *every
   sample validates and reads back equal*, half unwritable today.

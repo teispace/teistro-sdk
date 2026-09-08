@@ -4,13 +4,13 @@
 
 use core::fmt;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Ayanamsha;
 
 use crate::error::ProviderError;
 
 /// Where a position is seen from.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[repr(u8)]
 pub enum Centre {
@@ -38,7 +38,7 @@ impl Centre {
 }
 
 /// The equinox and equator the coordinates refer to.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[repr(u8)]
 pub enum Equinox {
@@ -60,7 +60,7 @@ impl Equinox {
 }
 
 /// The coordinate system of a position.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[repr(u8)]
 pub enum Coordinates {
@@ -82,7 +82,7 @@ impl Coordinates {
 }
 
 /// Which zodiac longitudes are measured in.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Zodiac {
     /// From the equinox.
@@ -122,7 +122,7 @@ impl fmt::Display for Zodiac {
 }
 
 /// Which corrections a position includes.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[allow(
     clippy::struct_excessive_bools,
     reason = "four independent switches of a frame"
@@ -195,7 +195,7 @@ impl Corrections {
 /// assert_eq!(Frame::try_from_bits(frame.to_bits()), Ok(frame));
 /// assert_eq!(frame.key(), "GEOCENTRIC/OF_DATE/EQUATORIAL/SIDEREAL(LAHIRI)/APPARENT");
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Frame {
     /// Where the position is seen from.
     pub centre: Centre,

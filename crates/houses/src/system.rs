@@ -36,12 +36,12 @@
 //! );
 //! ```
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::HouseSystem;
 use teistro_core::settings::Settings;
 
 /// What a house system is being asked for.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Purpose {
     /// "Which house is this body in", which most of a chart asks.

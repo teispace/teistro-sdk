@@ -354,7 +354,7 @@ fn fixed_point(docs: &[Sample]) -> String {
         let _ = past;
     }
     format!(
-        "## 9. The grammar is a fixed point, and one parser cannot see it
+        "## 9. The grammar is a fixed point, and the parser had to be told
 
          The content hash rests on one invariant: a consumer that reads a
          stored document and hashes it again gets the producer's hash. The
@@ -371,24 +371,32 @@ fn fixed_point(docs: &[Sample]) -> String {
          same double, which is a fixed point by construction and still
          never an exponent.
 
-| sample | largest number | decimals resolved there | numbers | a correct parser moves | `serde_json` moves |
+| sample | largest number | decimals resolved there | numbers | a correct parser moves | this build's parser moves |
 |---|---|---|---|---|---|
 {rows}
-         The fifth column is the grammar's whole claim, and it is nought
-         everywhere: measured against a **correctly rounded** parser —
-         `str::parse`, JavaScript's `JSON.parse`, Python's `json` — every
-         number the form writes reads back as the very same double.
+         Both of the last two columns are nought, and the second only
+         because the build asks for it. `serde_json`'s **default** float
+         parser is a fast path that is not correctly rounded: it reads
+         `218.91170673806658` as the double one unit in the last place
+         below, and did that to 84 of these 1518 numbers — about one in
+         fifteen — until `teistro-core` turned on its `float_roundtrip`
+         feature. A reader on the fast path cannot reproduce the hash it
+         exists to check, however correct the grammar is.
 
-         The sixth is a separate finding, and it lands on the reader this
-         page says has to be written. **`serde_json`'s own number path is
-         not correctly rounded**: it reads `218.91170673806658` as the
-         double one unit in the last place below, and does that to about
-         one number in fifteen. A Rust consumer reading a Teistro document
-         through `serde_json::Value` therefore cannot reproduce its hash,
-         however correct the grammar is. The SDK's own reader has to parse
-         a number with `str::parse`, or with `serde_json`'s
-         `arbitrary_precision` which defers to it, rather than with the
-         default number path.
+         `arbitrary_precision` fixes the same numbers and is the wrong
+         tool: serde buffers an internally tagged enum before writing it,
+         and that buffer writes a number as
+         `{{\"$serde_json::private::Number\": ...}}`, which breaks
+         `DeltaTModel`, `CalendarResolution`, `Outcome` and every other
+         `#[serde(tag = ...)]` the SDK has. It also leaves `from_str`
+         wrong, so a reader would have had to go through a `Value`.
+         `float_roundtrip` has neither cost.
+
+         Turning it on made three of the corpus's own comparisons exact
+         that had not been: `points`'s clock-driven lagnas went from 138
+         to 141 of 213, because the fixtures are JSON too and had been
+         read a unit in the last place low. Nothing the SDK computes
+         moved.
 
          `serial-measured.md` asserted the fixed point and found it held,
          over the corpus's recorded documents — whose numbers are
@@ -655,22 +663,38 @@ fn round_trip(root: &Path) -> String {
         let _ = writeln!(rows, "| `{crate_name}` | {serialise} | {read_back} |");
     }
     format!(
-        "## 7. Nothing reads back\n\n\
-         A schema's most valuable consumer is the SDK itself: a stored\n\
-         document is worth validating precisely because something will try\n\
-         to read it later. Counting the derives over the layer's own\n\
-         source:\n\n\
-         | crate | types that serialise | types that read back |\n|---|---|---|\n{rows}\
-         | **total** | **{serialise_total}** | **{read_back_total}** |\n\n\
-         This is the same shape the previous pass found and the opposite\n\
-         end of it. `serial-measured.md` found that `ChartFoundation`\n\
-         derived no `Serialize`, so the SDK could not publish a chart; that\n\
-         was fixed, and the SDK can now publish one it cannot read.\n\n\
-         It matters for the schema rather than merely being untidy. The\n\
-         gate a schema wants is *every sample validates, and every sample\n\
-         reads back equal* — the second half of which cannot be written at\n\
-         all today, so a schema shipped now would be a claim nothing checks\n\
-         from the inside.\n\n",
+        "## 7. The layer reads back, and five types cannot
+
+         A schema's most valuable consumer is the SDK itself: a stored
+         document is worth validating precisely because something will try
+         to read it later. Counting the derives over the layer's own
+         source:
+
+| crate | types that serialise | types that read back |
+|---|---|---|
+{rows}\
+| **total** | **{serialise_total}** | **{read_back_total}** |
+
+         The five that do not derive it are the five that **cannot**, and
+         they are all one shape: a value whose identity is a shipped
+         constant, holding a `&'static` reference no document can produce
+         — a divisional scheme's group table, its `Map::Listed` of signs,
+         an aspect angle's key, the drishti table a chart was read under.
+         Each has a reader written by hand instead, and each reads the
+         value back **by its identity**: the key or the catalogued name is
+         looked up in this build's own table, and what the document says
+         about that table is checked against it rather than trusted. A
+         document that names D9 and describes something else is refused by
+         name.
+
+         That is stricter than a derive would have been, and it is the
+         property a stored chart wants: reading one under a build whose
+         tables have moved is an error rather than a quiet
+         reinterpretation.
+
+         `serial-measured.md` found the opposite end of this shape —
+         `ChartFoundation` derived no `Serialize`, so the SDK could not
+         publish a chart at all. It can now publish one and read it back.\n\n",
     )
 }
 
@@ -743,9 +767,9 @@ fn decides(
             measured: format!("{moved} of {counted} move under a correct parser"),
         },
         Claim {
-            rule: String::from("any JSON parser can reproduce a stored document's hash"),
+            rule: String::from("this build's parser reproduces a stored document's hash"),
             verdict: verdict_of(by_serde == 0),
-            measured: format!("`serde_json` moves {by_serde} of {counted}"),
+            measured: format!("it moves {by_serde} of {counted}"),
         },
     ];
     let falsified = claims
@@ -754,21 +778,22 @@ fn decides(
         .count();
     format!(
         "## 10. What this decides\n\n{}\n\n\
-         The measurement falsifies {} of the {} proposed rules. The first\n\
-         four say the same thing about **where** a schema comes from: the\n\
+         The measurement falsifies {} of the {} proposed rules. Those\n\
+         three say the same thing about **where** a schema comes from: the\n\
          description, beside the other four surfaces, and not a sample nor\n\
-         a derive macro over the Rust types. The description is the only\n\
-         place that has the member lists, and the only place that cannot\n\
-         disagree with what the bindings already say.\n\n\
-         The last two are about the bytes a schema would be describing,\n\
-         and they are why an emitter is not the next thing to write. The\n\
-         grammar now holds: every number the form writes reads back as the\n\
-         same double. But nothing in the layer derives `Deserialize`, so\n\
-         the schema's natural gate — every sample validates and reads\n\
-         back equal — still cannot be written; and when that reader is\n\
-         written it must not take its numbers from `serde_json`'s default\n\
-         path, which cannot reproduce the hash it is meant to check.\n\n\
-         The reader comes first, then the emitter.\n\n",
+         a derive macro over the Rust types. A sample cannot tell a count\n\
+         from a whole double, cannot give a string field its member list,\n\
+         and does not know that one enum in a document is spelled in a\n\
+         different case from the rest. The description knows all three,\n\
+         and it is the only place that cannot disagree with what the\n\
+         bindings already say.\n\n\
+         The other three held once the work this page asked for was done.\n\
+         The layer reads back, every number the form writes reads back as\n\
+         the same double, and this build's parser reproduces a stored\n\
+         document's hash — so the schema's natural gate, *every sample\n\
+         validates and reads back equal*, is written and passing\n\
+         (`crates/serial/tests/document.rs`).\n\n\
+         What is left is the emitter.\n\n",
         table(&claims),
         falsified,
         claims.len(),

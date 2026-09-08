@@ -856,7 +856,7 @@ impl serde::Serialize for Ayanamsha {
 
 impl<'de> serde::Deserialize<'de> for Ayanamsha {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let key = <&str>::deserialize(deserializer)?;
-        Self::from_key(key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Ayanamsha>(key)))
+        let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Ayanamsha>(&key)))
     }
 }

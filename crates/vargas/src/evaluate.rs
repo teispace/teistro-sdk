@@ -5,7 +5,7 @@
 //! by integer arithmetic on the canonical angle, and look up where that
 //! part sends a body.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::Rashi;
 
@@ -28,7 +28,7 @@ use crate::scheme::{Scheme, part_of, target};
 /// assert_eq!(placement.sign, Rashi::Cancer);
 /// assert!(!placement.keeps_its_sign());
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Placement {
     /// The sign the body stands in.
     pub rashi: Rashi,
