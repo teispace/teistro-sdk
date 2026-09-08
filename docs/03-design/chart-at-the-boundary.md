@@ -254,6 +254,19 @@ five rather than describing part of one.
 - **What `State` at the boundary is.** The description has a `State`, and
   it is the planetary one — retrograde, combust, gandanta — not the
   day's. The two names collide and the day's needs a different one.
+- **Which precession, and who chooses.** `Founder::new` takes a
+  `PrecessionModel`, the settings have no knob for one, and every caller
+  in the workspace names `Vondrak2011` by hand — five sites, and the
+  boundary would be the sixth. There is no `Default` impl, so the SDK
+  has a de facto default that nothing declares.
+
+  Two things, and only the first belongs to this page. **Name it once**:
+  `impl Default for PrecessionModel` giving Vondrak2011, so the five
+  sites and the boundary say `::default()` and the choice lives in one
+  place. Whether it should instead be a settings knob — as `time.delta_t`
+  is, and precession is the same kind of choice — is a larger question:
+  it moves the settings hash of every profile, so it is a decision with
+  a Numbers line rather than a tidy-up.
 - **Whether `ts_chart_found` should take a batch.** `Founder` has
   `found_one` and a batch form, and the boundary's whole shape elsewhere
   is one call per grid. A rectification pass wants a hundred charts and
