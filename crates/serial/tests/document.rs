@@ -34,7 +34,7 @@
 mod sample;
 
 use sample::{founded, whole};
-use teistro_core::envelope::Hash;
+use teistro_core::envelope::{Digits, Hash};
 use teistro_serial::canonical::{hash_of, to_hash_form, to_rendered};
 use teistro_serial::{Document, Sealed};
 use teistro_state::state;
@@ -118,24 +118,34 @@ fn the_canonical_form_of_a_real_document_is_canonical() {
     // bytes.
     assert_eq!(text, to_hash_form(&document), "stable");
 
-    // It is a **fixed point** — writing what it wrote gives the same
-    // bytes — only while every number is inside an `f64`'s resolution at
-    // twelve decimals. A chart document carries the instant it was cast
-    // for, and a Julian day is four orders of magnitude larger than a
-    // longitude: one unit in the last place is already about 5e-10, so
-    // the last three decimals the grammar writes are the expansion of a
-    // binary value rather than information, and they do not survive a
-    // parse. `03-design/schema-measured.md` §9 measures it, and the fix
-    // is a decision rather than a patch, because it moves the hash of
-    // every document.
-    let (bare, _) = founded();
-    let small = to_hash_form(&Document::of(bare.value));
-    let read_back: serde_json::Value = serde_json::from_str(&small).expect("it reads back");
-    assert_eq!(
-        to_hash_form(&read_back),
-        small,
-        "a fixed point while the numbers are small"
-    );
+    // It is a **fixed point**: every number it writes reads back as the
+    // very same double, so a consumer that stores a document and hashes
+    // it again gets the producer's hash. The grammar earned that by
+    // writing the shortest decimal that round-trips rather than a fixed
+    // twelve — at a Julian day's magnitude an `f64` resolves about nine,
+    // and the three extra were the expansion of a binary value rather
+    // than information (`03-design/schema-measured.md` §9).
+    //
+    // Measured against a **correctly rounded** parser, which is what
+    // `str::parse`, JavaScript's `JSON.parse` and Python's `json` all
+    // are. `serde_json`'s own number path is not one: it lands a unit in
+    // the last place low on about one number in fifteen, which is why
+    // this walks the text rather than a `serde_json::Value`.
+    let mut checked = 0;
+    for token in text.split(|c: char| !(c.is_ascii_digit() || c == '.' || c == '-')) {
+        let Ok(value) = token.parse::<f64>() else {
+            continue;
+        };
+        checked += 1;
+        let written = teistro_serial::canonical::decimal(value, Digits::Shortest);
+        let read: f64 = written.parse().expect("what the grammar wrote parses");
+        assert_eq!(
+            read.to_bits(),
+            value.to_bits(),
+            "{written} did not read back as itself"
+        );
+    }
+    assert!(checked > 100, "only {checked} numbers were checked");
 
     assert!(sorted(&parsed), "keys in code-point order at every depth");
 
@@ -144,7 +154,7 @@ fn the_canonical_form_of_a_real_document_is_canonical() {
     let mut numbers = 0;
     walk(&parsed, &mut |number| {
         numbers += 1;
-        let written = teistro_serial::canonical::decimal(number, 12);
+        let written = teistro_serial::canonical::decimal(number, Digits::Shortest);
         assert!(
             !written.contains('e') && !written.contains('E'),
             "{number} wrote as {written}"

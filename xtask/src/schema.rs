@@ -52,10 +52,22 @@ const SAMPLES: [(&str, &str); 3] = [
 ];
 
 /// One sample: its name, the document parsed, the canonical bytes the
-/// layer wrote, and the canonical bytes of what those parse to. The last
-/// two are written by the example, because only `teistro-serial` can
-/// write the form and this crate does not depend on it.
-type Sample = (&'static str, Value, String, String);
+/// layer wrote, and how its numbers fare through each parser. The counts
+/// are written by the example, because only `teistro-serial` can write
+/// the form and this crate does not depend on it.
+type Sample = (&'static str, Value, String, Parsers);
+
+/// What each parser does to a document's numbers.
+#[derive(Clone, Copy, Debug, Default)]
+struct Parsers {
+    /// How many numbers the document holds.
+    counted: usize,
+    /// How many a correctly rounded parser reads back as a different
+    /// double. Zero is the grammar's whole claim.
+    by_std: usize,
+    /// How many `serde_json`'s own number path does.
+    by_serde: usize,
+}
 
 // ── the sample documents ───────────────────────────────────────────────────
 
@@ -90,10 +102,25 @@ fn documents(root: &Path) -> Result<Vec<Sample>, String> {
             std::fs::read_to_string(&path).map_err(|err| format!("{}: {err}", path.display()))
         };
         let text = read(format!("{name}.json"))?;
-        let again = read(format!("{name}.again.json"))?;
+        let counts: Vec<usize> = read(format!("{name}.parsers.txt"))?
+            .split_whitespace()
+            .filter_map(|word| word.parse().ok())
+            .collect();
+        let [counted, by_std, by_serde] = counts[..] else {
+            return Err(format!("{name}.parsers.txt: expected three counts"));
+        };
         let value: Value =
             serde_json::from_str(&text).map_err(|err| format!("{name}.json: {err}"))?;
-        found.push((name, value, text, again));
+        found.push((
+            name,
+            value,
+            text,
+            Parsers {
+                counted,
+                by_std,
+                by_serde,
+            },
+        ));
     }
     Ok(found)
 }
@@ -144,7 +171,7 @@ fn paths(
 /// Every path of every sample, merged.
 fn merged(docs: &[Sample]) -> BTreeMap<String, (BTreeSet<&'static str>, BTreeSet<String>)> {
     let mut all = BTreeMap::new();
-    for (_, value, _, _) in docs {
+    for (_, value, ..) in docs {
         paths(value, "", &mut all);
     }
     all
@@ -312,59 +339,64 @@ fn resolved_decimals(value: f64) -> f64 {
 /// only a document assembled from the whole layer carries a Julian day.
 fn fixed_point(docs: &[Sample]) -> String {
     let mut rows = String::new();
-    for (name, value, text, again) in docs {
+    for (name, value, _, parsers) in docs {
         let mut worst = 0.0_f64;
         let mut past = 0;
         magnitudes(value, &mut worst, &mut past);
         let _ = writeln!(
             rows,
-            "| `{name}` | {worst:.0} | {:.0} | {past} | {} |",
+            "| `{name}` | {worst:.0} | {:.0} | {} | {} | {} |",
             resolved_decimals(worst),
-            if again == text {
-                "holds"
-            } else {
-                "**falsified**"
-            }
+            parsers.counted,
+            parsers.by_std,
+            parsers.by_serde
         );
+        let _ = past;
     }
     format!(
-        "## 9. The form is not a fixed point where the numbers are large
+        "## 9. The grammar is a fixed point, and one parser cannot see it
 
          The content hash rests on one invariant: a consumer that reads a
          stored document and hashes it again gets the producer's hash. The
-         grammar writes every number to {CANONICAL_DECIMALS} decimals,
-         which is inside an `f64`'s resolution for a longitude and outside
-         it for a Julian day — four orders of magnitude larger, where one
-         unit in the last place is already about 5e-10.
+         grammar used to write every number to {CANONICAL_DECIMALS}
+         decimals, which is inside an `f64`'s resolution for a longitude
+         and outside it for a Julian day — four orders of magnitude
+         larger, where one unit in the last place is already about 5e-10.
+         The three digits past the resolution were the decimal expansion
+         of a binary value rather than information, and they did not
+         survive a parse: `2460483.108666389249` was written, read, and
+         written again as `2460483.108666389715`.
 
-| sample | largest number | decimals resolved there | numbers written past it | writing it twice |
-|---|---|---|---|---|
+         It now writes the **shortest** decimal that reads back as the
+         same double, which is a fixed point by construction and still
+         never an exponent.
+
+| sample | largest number | decimals resolved there | numbers | a correct parser moves | `serde_json` moves |
+|---|---|---|---|---|---|
 {rows}
-         The three digits past the resolution are the decimal expansion of
-         a binary value, not information, and they do not survive a parse:
-         `2460483.108666389249` is written, read, and written again as
-         `2460483.108666389715`.
+         The fifth column is the grammar's whole claim, and it is nought
+         everywhere: measured against a **correctly rounded** parser —
+         `str::parse`, JavaScript's `JSON.parse`, Python's `json` — every
+         number the form writes reads back as the very same double.
 
-         Whether a given value survives is a coin toss, which is why the
-         smallest sample holding does not make it safe: a foundation alone
-         carries a handful of instants and happens to win every toss, and
-         a document with an almanac in it carries two hundred and loses.
-         The finding is not that a large document fails but that any
-         document may, and one that does is one whose stored hash a reader
-         cannot reproduce.
+         The sixth is a separate finding, and it lands on the reader this
+         page says has to be written. **`serde_json`'s own number path is
+         not correctly rounded**: it reads `218.91170673806658` as the
+         double one unit in the last place below, and does that to about
+         one number in fifteen. A Rust consumer reading a Teistro document
+         through `serde_json::Value` therefore cannot reproduce its hash,
+         however correct the grammar is. The SDK's own reader has to parse
+         a number with `str::parse`, or with `serde_json`'s
+         `arbitrary_precision` which defers to it, rather than with the
+         default number path.
 
-         `serial-measured.md` asserted this invariant and found it held,
+         `serial-measured.md` asserted the fixed point and found it held,
          over the corpus's recorded documents — whose numbers are
-         longitudes and speeds, all under 360. A chart document carries the
-         instant it was cast for, and that is where the grammar runs out.
+         longitudes and speeds, all under 360. A chart document carries
+         the instant it was cast for, and that is where a fixed count of
+         decimals ran out.
 
-         The fix is a decision rather than a patch, because it moves the
-         hash of every document: a shortest-round-trip decimal, which Rust
-         and JavaScript already agree on, rendered without an exponent as
-         this grammar already renders one. It belongs to the design page.
-
-"
-    )
+"    )
 }
 
 fn header(
@@ -555,7 +587,7 @@ fn strings(all: &BTreeMap<String, (BTreeSet<&'static str>, BTreeSet<String>)>) -
 
 fn optional(docs: &[Sample]) -> String {
     let mut seen: BTreeMap<String, usize> = BTreeMap::new();
-    for (_, value, _, _) in docs {
+    for (_, value, ..) in docs {
         let mut own = BTreeMap::new();
         paths(value, "", &mut own);
         for path in own.keys() {
@@ -673,10 +705,9 @@ fn decides(
         .iter()
         .map(|name| derives(root, name))
         .fold((0, 0), |(a, b), (c, d)| (a + c, b + d));
-    let moved = docs
-        .iter()
-        .filter(|(_, _, text, again)| text != again)
-        .count();
+    let moved: usize = docs.iter().map(|(_, _, _, parsers)| parsers.by_std).sum();
+    let by_serde: usize = docs.iter().map(|(_, _, _, parsers)| parsers.by_serde).sum();
+    let counted: usize = docs.iter().map(|(_, _, _, parsers)| parsers.counted).sum();
     let numeric = all
         .values()
         .filter(|(types, _)| types.contains("number") || types.contains("integer"))
@@ -707,9 +738,14 @@ fn decides(
             measured: format!("{} conventions declared", casings(root).len()),
         },
         Claim {
-            rule: String::from("the canonical form of a document is a fixed point"),
+            rule: String::from("every number the form writes reads back as the same double"),
             verdict: verdict_of(moved == 0),
-            measured: format!("{moved} of {} samples move when written twice", docs.len()),
+            measured: format!("{moved} of {counted} move under a correct parser"),
+        },
+        Claim {
+            rule: String::from("any JSON parser can reproduce a stored document's hash"),
+            verdict: verdict_of(by_serde == 0),
+            measured: format!("`serde_json` moves {by_serde} of {counted}"),
         },
     ];
     let falsified = claims
@@ -724,15 +760,15 @@ fn decides(
          a derive macro over the Rust types. The description is the only\n\
          place that has the member lists, and the only place that cannot\n\
          disagree with what the bindings already say.\n\n\
-         The fifth says something about **when**. A schema describes a\n\
-         document a consumer will store and read back, and two of the\n\
-         three samples do not survive being read back and written again,\n\
-         so the bytes a schema would describe are not yet stable. The\n\
-         round trip is the other half of that: until the layer's values\n\
-         derive `Deserialize`, the schema's natural gate — every sample\n\
-         validates and reads back equal — cannot be written at all.\n\n\
-         Both are the design page's questions rather than this pass's, and\n\
-         both come before an emitter.\n\n",
+         The last two are about the bytes a schema would be describing,\n\
+         and they are why an emitter is not the next thing to write. The\n\
+         grammar now holds: every number the form writes reads back as the\n\
+         same double. But nothing in the layer derives `Deserialize`, so\n\
+         the schema's natural gate — every sample validates and reads\n\
+         back equal — still cannot be written; and when that reader is\n\
+         written it must not take its numbers from `serde_json`'s default\n\
+         path, which cannot reproduce the hash it is meant to check.\n\n\
+         The reader comes first, then the emitter.\n\n",
         table(&claims),
         falsified,
         claims.len(),

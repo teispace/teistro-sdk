@@ -113,17 +113,42 @@ pub fn hash_of<T: Serialize>(value: &T) -> Hash;   // over the hash form
 ### The number grammar
 
 A number is written as a decimal with an optional leading `-`, at least
-one digit before the point, and up to **twelve** digits after it with
-trailing zeros removed — never an exponent, never a bare `.5`, never
-`-0`. Twelve is chosen because a double carries about seventeen
-significant decimal digits and the SDK's own quantities are degrees,
-days and scores whose magnitudes are under 10⁶: twelve decimals is
-finer than a nanoarcsecond and coarser than the noise.
+one digit before the point, and the **fewest** digits after it that
+still read back as the same double, trailing zeros removed — never an
+exponent, never a bare `.5`, never `-0`.
 
-This is a **lossy** form, and deliberately so. Two doubles that differ
-below the grammar's resolution hash alike, which is what a caller
-wanting "the same answer" means; a caller wanting bit equality has the
-double itself.
+The first version of this section wrote a fixed **twelve** decimals, and
+argued for twelve on the grounds that "the SDK's own quantities are
+degrees, days and scores whose magnitudes are under 10⁶". That premise
+is false: a Julian day is 2.46 × 10⁶, and a chart document carries the
+instant it was cast for. At that magnitude one unit in an `f64`'s last
+place is about 5 × 10⁻¹⁰, so twelve decimals wrote three digits that
+were the decimal expansion of a binary value rather than information —
+and they did not survive a parse. `2460483.108666389249` was written,
+read back, and written again as `2460483.108666389715`, so a consumer
+that stored a document and hashed it did not get the producer's hash.
+`schema-measured.md` §9 has the measurement.
+
+The form is therefore **exact** rather than lossy: two doubles that
+differ at all are written differently, and a value read back from the
+form writes the same bytes again. That fixed point is the property a
+content hash rests on.
+
+The lossiness it replaces was deliberate, so it is worth saying why it
+is not missed. It was meant to let two computations differing in the
+last place count as "the same answer" — but rounding never did that
+reliably (two values one ulp apart straddle a rounding boundary some of
+the time), and it is not this hash's question. **Would these compute the
+same** is the settings hash; **are these the same bytes** is the content
+hash. Conflating them cost the second its only guarantee. A caller
+comparing two computations for near-equality has the doubles themselves,
+and `cargo xtask hashes` compares them as bits across architectures.
+
+A binding needs no float printer of its own: Rust's `Display` for a
+double is already the shortest round-tripping form and never writes an
+exponent, and JavaScript's `toString` is the same shortest form outside
+1e-6 to 1e21, where it must be expanded to satisfy the no-exponent
+rule.
 
 ## 5. The document
 
@@ -184,11 +209,17 @@ than the values.
   come before the emitter, and both are below.
 - **Nothing in the layer reads back.** 65 types derive `Serialize` and
   none derives `Deserialize`, so a stored document cannot be read into
-  the SDK that wrote it. This is the mirror of what the first pass found
+  the SDK that wrote it. When that reader is written it must not take
+  its numbers from `serde_json`'s default path, which is not correctly
+  rounded — it moves about one number in fifteen by a unit in the last
+  place, so a reader built on it cannot reproduce the hash it exists to
+  check. `str::parse` is correct, and `arbitrary_precision` defers to
+  it. This is the mirror of what the first pass found
   — `ChartFoundation` derived no `Serialize`, so a chart could not be
   published — and it is what makes the schema's natural gate, *every
   sample validates and reads back equal*, half unwritable today.
-- **The form is not a fixed point once a document carries an instant.**
+- **~~The form is not a fixed point once a document carries an
+  instant.~~ Fixed.**
   The grammar writes twelve decimals, which is three past what an `f64`
   resolves at a Julian day's magnitude, so those digits are the decimal
   expansion of a binary value rather than information and do not survive
@@ -198,10 +229,13 @@ than the values.
   canonical form exists to guarantee. The first pass asserted the
   invariant and found it held over the corpus's recorded documents,
   whose numbers are all under 360; a chart document carries the instant
-  it was cast for. **The fix moves the hash of every document** — a
-  shortest-round-trip decimal, which Rust and JavaScript already agree
-  on, rendered without an exponent as this grammar already renders one —
-  so it is a decision and not a patch.
+  it was cast for. The form now writes the shortest decimal that reads
+  back as the same double, which is a fixed point by construction; §4
+  above has the grammar and why the lossiness it replaced is not missed.
+  Every content hash moved once and no computed value did, and the
+  canonical form's own pass now records the round trip as holding at 0
+  of 193 366 where it had recorded 22 188 falsified — a measurement that
+  had been taken and not read.
 - **Whether the producers should seal.** `chart` and `panchanga` return
   an `Envelope`; sealing at the boundary means the hash is right in the
   document but still empty on the envelope a Rust caller holds. Sealing
