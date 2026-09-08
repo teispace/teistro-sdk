@@ -49,10 +49,12 @@ pub(crate) fn check(root: &Path) -> i32 {
         c_consumer(root, &dist, &check, &platform, &version),
         node_consumer(root, &dist, &check, &platform),
         dart_consumer(root, &dist, &check, &platform, &version),
+        python_consumer(root, &dist, &check, &platform, &version),
     ];
     let failed = outcomes.iter().filter(|outcome| outcome.is_err()).count();
     println!(
-        "three packages installed and run for {}: {failed} failure(s)",
+        "{} packages installed and run for {}: {failed} failure(s)",
+        outcomes.len(),
         platform.name()
     );
     i32::from(failed != 0)
@@ -287,6 +289,83 @@ fn dart_consumer(
             .env_remove("TEISTRO_LIBRARY"),
         "the installed Dart package answers as the library does",
         "the installed Dart package did not answer",
+    )
+}
+
+// ── Python ─────────────────────────────────────────────────────────────────
+
+/// Installs the staged package into a throwaway virtual environment, has
+/// its own installer put the library where it looks, and runs a consumer
+/// that knows nothing but the published names.
+fn python_consumer(
+    root: &Path,
+    dist: &Path,
+    check: &Path,
+    platform: &Platform,
+    version: &str,
+) -> Result<(), ()> {
+    let python = std::env::var("PYTHON").unwrap_or_else(|_| String::from("python3"));
+    if !present(&python, "--version") {
+        println!("skip  the Python package: no `{python}` on this machine");
+        return Ok(());
+    }
+    let into = check.join("python");
+    fs::create_dir_all(&into).map_err(|err| println!("FAIL  {CHECK}/python: {err}"))?;
+    let staged = dist.join("pypi/teistro");
+
+    step(
+        Command::new(&python)
+            .args(["-m", "venv", ".venv"])
+            .current_dir(&into),
+        "",
+        "the Python environment could not be created",
+    )?;
+    let venv = into.join(".venv/bin");
+    step(
+        Command::new(venv.join("pip"))
+            .args(["install", "--disable-pip-version-check", "--quiet"])
+            .arg(&staged)
+            .current_dir(&into),
+        "",
+        "the Python package did not install",
+    )?;
+
+    let shared = platform.shared(LIBRARY_STEM);
+    let (stem, extension) = shared.rsplit_once('.').unwrap_or((shared.as_str(), "so"));
+    let archive = dist.join(format!(
+        "{stem}-{version}-{}.{extension}.gz",
+        platform.name()
+    ));
+    step(
+        Command::new(venv.join("teistro-install"))
+            .arg("--from")
+            .arg(&archive)
+            .current_dir(&into)
+            .env_remove("TEISTRO_LIBRARY"),
+        "",
+        "the Python installer did not install the library it was given",
+    )?;
+    let installed = into.join(format!(".teistro/{version}/{shared}"));
+    if !installed.is_file() {
+        println!(
+            "FAIL  the Python installer wrote no {}",
+            rel(root, &installed)
+        );
+        return Err(());
+    }
+
+    fs::copy(
+        root.join("bindings/python/packaging/consumer.py"),
+        into.join("consumer.py"),
+    )
+    .map_err(|err| println!("FAIL  the Python consumer did not copy: {err}"))?;
+    step(
+        Command::new(venv.join("python"))
+            .arg("consumer.py")
+            .current_dir(&into)
+            .env_remove("TEISTRO_LIBRARY"),
+        "the installed Python package answers as the library does",
+        "the installed Python package did not answer",
     )
 }
 

@@ -261,12 +261,16 @@ pub struct PositionColumnsC {
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ObliquityC {
     /// Mean obliquity, degrees.
+    /// `api: unit=deg range=[22,25] example=23.4392911`
     pub mean_deg: f64,
     /// True obliquity, degrees.
+    /// `api: unit=deg range=[22,25] example=23.4397911`
     pub true_deg: f64,
     /// Nutation in longitude, degrees.
+    /// `api: unit=deg range=[-0.006,0.006] example=-0.0038957`
     pub nutation_lon_deg: f64,
     /// Nutation in obliquity, degrees.
+    /// `api: unit=deg range=[-0.003,0.003] example=-0.0026876`
     pub nutation_obl_deg: f64,
 }
 
@@ -289,10 +293,13 @@ pub struct HorizonRequestC {
     /// The place.
     pub observer: ObserverC,
     /// The search begins here, UT1.
+    /// `api: unit=jd example=2451545.0`
     pub from_jd_ut1: f64,
     /// The search ends this many days later.
+    /// `api: unit=d range=(0,366] example=1`
     pub window_days: f64,
     /// The altitude of the disc point at the event, degrees.
+    /// `api: unit=deg range=[-90,90] example=-0.8333`
     pub altitude_deg: f64,
 }
 
@@ -315,18 +322,25 @@ pub struct CrossingRequestC {
     /// [`Body::id`] of the second body of a composite; else zero.
     pub second_body: u16,
     /// The first body's coefficient in a composite.
+    /// `api: unit=1 example=1`
     pub coefficient_a: f64,
     /// The second body's coefficient in a composite.
+    /// `api: unit=1 example=-1`
     pub coefficient_b: f64,
     /// The lattice's first line, degrees.
+    /// `api: unit=deg range=[0,360) example=0`
     pub origin_deg: f64,
     /// The lattice's spacing, degrees; zero for a single target.
+    /// `api: unit=deg range=[0,360) example=30`
     pub step_deg: f64,
     /// The window's start, UT1.
+    /// `api: unit=jd example=2451545.0`
     pub from_jd_ut1: f64,
     /// The window's end, UT1.
+    /// `api: unit=jd example=2451910.0`
     pub to_jd_ut1: f64,
     /// How closely each instant is placed, days.
+    /// `api: unit=d range=(0,1] example=0.0000115740741`
     pub tolerance_days: f64,
     /// The observer, read when `has_observer` is set.
     pub observer: ObserverC,
@@ -337,8 +351,10 @@ pub struct CrossingRequestC {
 #[derive(Clone, Copy, Debug, Default)]
 pub struct CrossingEventC {
     /// The instant, UT1.
+    /// `api: unit=jd example=2451545.0`
     pub jd_ut1: f64,
     /// The boundary reached, degrees.
+    /// `api: unit=deg range=[0,360) example=30`
     pub boundary_deg: f64,
     /// [`Direction::id`].
     pub direction: u8,
@@ -416,8 +432,10 @@ pub struct CapabilitiesC {
     /// The data version, NUL-terminated.
     pub data_version: *const c_char,
     /// Coverage start, UT1.
+    /// `api: unit=jd example=1721057.5`
     pub jd_min: f64,
     /// Coverage end, UT1.
+    /// `api: unit=jd example=2816787.5`
     pub jd_max: f64,
     /// The bodies as ids.
     /// `api: len=body_count enum=Body`

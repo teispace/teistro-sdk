@@ -16,7 +16,7 @@
 
 use std::fmt::Write;
 
-use crate::emit::{DocStyle, field_doc_with, line_comment};
+use crate::emit::{DocStyle, field_doc_with, line_comment, reserved};
 use crate::model::{
     Api, BlobSchema, EnumDef, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar,
     SectionKind, SectionSchema, StructDef, StructRole, TypeRef,
@@ -27,23 +27,12 @@ use crate::rules::{
     has_handshake, methods, pointee_struct, results, returned_scalar, returns_status, status_enum,
 };
 
-/// Dart's reserved words, which no identifier may be. The generator
-/// renames rather than emitting a file that will not parse (ADR-0007's
-/// second Dart defect: Diplomat emitted an enum member called `true`).
-const RESERVED: [&str; 24] = [
-    "true", "false", "null", "default", "new", "in", "is", "as", "do", "if", "for", "switch",
-    "this", "super", "var", "final", "const", "class", "enum", "void", "return", "with", "extends",
-    "assert",
-];
-
-/// A Dart identifier for a member or a field.
+/// A Dart identifier for a member or a field. A name that is one of
+/// Dart's reserved words ([`reserved::DART`]) is renamed rather than
+/// emitted into a file that will not parse (ADR-0007's second Dart
+/// defect: Diplomat emitted an enum member called `true`).
 fn identifier(name: &str) -> String {
-    let lower = camel(&snake(name));
-    if RESERVED.contains(&lower.as_str()) {
-        format!("{lower}Value")
-    } else {
-        lower
-    }
+    reserved::renamed(&camel(&snake(name)), reserved::DART, "Value")
 }
 
 fn doc(text: &str, indent: &str) -> String {

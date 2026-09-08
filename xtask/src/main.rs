@@ -116,10 +116,12 @@ mod panchanga;
 mod parity;
 mod platform;
 mod points;
+mod python_binding;
 mod release;
 mod serial;
 mod site;
 mod state;
+mod surface;
 mod time;
 mod vargas;
 
@@ -149,6 +151,7 @@ fn main() {
         Some("check-c") => c_binding::check(&repo_root()),
         Some("check-node") => node_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
+        Some("check-python") => python_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
         Some("check-lints") => lints::check(&repo_root()),
         Some("check-chalit") => chalit::check_generated(&repo_root()),
@@ -167,6 +170,8 @@ fn main() {
         Some("houses") => houses::generate(&repo_root()),
         Some("check-serial") => serial::check_generated(&repo_root()),
         Some("serial") => serial::generate(&repo_root()),
+        Some("check-surface") => surface::check_generated(&repo_root()),
+        Some("surface") => surface::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),
@@ -220,7 +225,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

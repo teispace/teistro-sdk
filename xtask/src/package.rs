@@ -418,7 +418,7 @@ pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
     }
 }
 
-/// Writes the merged manifest, the checksum list and both packages.
+/// Writes the merged manifest, the checksum list and every package.
 fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Result<Vec<String>> {
     let mut written = Vec::new();
     let manifest = dist.join("manifest.json");
@@ -431,6 +431,7 @@ fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::R
 
     written.push(stage_node(root, dist)?);
     written.push(stage_dart(root, dist, version, merged)?);
+    written.push(stage_python(root, dist, version, merged)?);
     Ok(written)
 }
 
@@ -506,6 +507,46 @@ fn stage_dart(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Re
     Ok(rel(root, &directory))
 }
 
+/// Stages the Python package: the sources as they are, and the digest
+/// table its installer holds a download to, written from what the matrix
+/// built.
+fn stage_python(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Result<String> {
+    let directory = dist.join("pypi").join("teistro");
+    if directory.exists() {
+        fs::remove_dir_all(&directory)?;
+    }
+    fs::create_dir_all(&directory)?;
+    let source = root.join("bindings/python");
+    copy_tree(&source.join("teistro"), &directory.join("teistro"))?;
+    copy_tree(&source.join("example"), &directory.join("example"))?;
+    for file in ["pyproject.toml", "README.md"] {
+        fs::copy(source.join(file), directory.join(file))?;
+    }
+    for legal in LEGAL {
+        fs::copy(root.join(legal), directory.join(legal))?;
+    }
+    fs::write(
+        directory.join("teistro/_prebuilt.py"),
+        python_prebuilt_table(root, version, merged),
+    )?;
+    Ok(rel(root, &directory))
+}
+
+/// The digests of every platform's library, as the release recorded them.
+fn digest_rows(merged: &Value, quote: char) -> Vec<String> {
+    let mut rows = Vec::new();
+    if let Some(platforms) = merged["platforms"].as_object() {
+        for (name, platform) in platforms {
+            rows.push(format!(
+                "  {quote}{name}{quote}: {quote}{}{quote},",
+                platform["library"]["sha256"].as_str().unwrap_or_default()
+            ));
+        }
+    }
+    rows.sort();
+    rows
+}
+
 /// The Dart file that says where a prebuilt library is and what it must
 /// hash to. The header is the checked-in file's, so that the two differ in
 /// the table alone and a reader can see what the release added.
@@ -518,19 +559,26 @@ fn prebuilt_table(root: &Path, version: &str, merged: &Value) -> String {
             "const String prebuiltVersion = '0.0.0';",
             &format!("const String prebuiltVersion = '{version}';"),
         );
-    let mut rows = Vec::new();
-    if let Some(platforms) = merged["platforms"].as_object() {
-        for (name, platform) in platforms {
-            rows.push(format!(
-                "  '{name}': '{}',",
-                platform["library"]["sha256"].as_str().unwrap_or_default()
-            ));
-        }
-    }
-    rows.sort();
     format!(
         "{head}const Map<String, String> prebuiltDigests = <String, String>{{\n{}\n}};\n",
-        rows.join("\n")
+        digest_rows(merged, '\'').join("\n")
+    )
+}
+
+/// The same table for Python, from the same manifest and the same
+/// checked-in header.
+fn python_prebuilt_table(root: &Path, version: &str, merged: &Value) -> String {
+    let checked_in = read(&root.join("bindings/python/teistro/_prebuilt.py"));
+    let head = checked_in
+        .split_once("PREBUILT_DIGESTS: Final[dict[str, str]]")
+        .map_or(checked_in.clone(), |(head, _)| head.to_string())
+        .replace(
+            "PREBUILT_VERSION: Final = \"0.0.0\"",
+            &format!("PREBUILT_VERSION: Final = \"{version}\""),
+        );
+    format!(
+        "{head}PREBUILT_DIGESTS: Final[dict[str, str]] = {{\n{}\n}}\n",
+        digest_rows(merged, '"').join("\n")
     )
 }
 

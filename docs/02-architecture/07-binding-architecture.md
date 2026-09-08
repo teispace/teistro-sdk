@@ -69,7 +69,7 @@ documentation, an example. What each binding emits:
 |---|---|---|---|---|
 | TypeScript (Node, wasm) | branded types (`Latitude`, `Longitude`, `Nas`, ...) with validating constructors; `place(lat, lon)` does not compile with the arguments swapped | discriminated unions with `readonly` fields and `as const` literals; exhaustive `switch` helpers | generated Valibot schemas (Zod adapter) on the `/schemas` subpath | doc comments on every member; `.d.ts` verified under `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax` by a consumer project in CI |
 | Dart and Flutter | extension types (zero cost) with validating factories | sealed classes, exhaustive `switch` | `assert` in debug plus factory validation | doc comments; typed intl accessors |
-| Python | `NewType` in generated `.pyi` stubs, `py.typed` | `Literal` unions, `TypedDict` parameters, `Enum` | optional Pydantic models generated from the same description | stubs give completion and type checking in every editor |
+| Python | branded `float` subclasses with validating constructors in the generated module, `py.typed`, no `.pyi` (`03-design/python-binding.md` §6) | `IntEnum` carrying the id and the key, `UNKNOWN` on a catalogue kind, `TypedDict` parameters | the brands' own range checks, and `struct_size` filled from `sizeof` | inline annotations give completion and type checking in every editor, and cannot drift from the module they are in |
 | Rust | the core newtypes themselves; typestate builders | `#[non_exhaustive]` enums | constructors | rustdoc with compiled examples |
 | Java | records with validating factories, `@JvmInline`-style value semantics where the target supports it | sealed interfaces, exhaustive `switch` | factories | Javadoc from the description |
 | C and C++ | typed enums, opaque handles, unit-suffixed field names; the C++ wrapper adds strong types | enums with an explicit unknown value | assertion-heavy debug build | the header is generated and documented per field |
@@ -131,8 +131,9 @@ copies them into its own string on the way out.
   default; host-language providers must be constructible in each worker.
 - wasm: single-threaded; a pool over Web Workers where SharedArrayBuffer
   is unavailable uses message passing of blobs.
-- Python: releases the GIL during native computation when the provider is
-  native; holds it when the provider is Python.
+- Python: `ctypes.CDLL` releases the GIL for the duration of every call
+  and a `CFUNCTYPE` callback re-acquires it, so this holds without the
+  binding arranging anything.
 - Dart: isolates with one context each.
 
 ## Loading and identity
@@ -156,7 +157,7 @@ copies them into its own string on the way out.
 |---|---|---|
 | Node | N-API (NAPI_VERSION 8), one addon per profile, ESM subpath exports per module family with `sideEffects: false`, TypeScript types generated | npm tarballs with prebuilds and a source fallback that respects npm 12 install-script gating |
 | wasm | wasm-bindgen or a hand C ABI over wasm exports with a JS glue generated from the IDL; per-profile binaries; browser-bundle gate | npm package; CommonJS and ESM; no Node built-ins on the browser path |
-| Python | ctypes or PyO3; `py.typed`; numpy interop optional | wheels per platform plus sdist |
+| Python | `ctypes` over the same shared library the release builds (PyO3 was rejected with the other per-ecosystem tools in ADR-0004); `py.typed`; a decoded column is a `memoryview`, which numpy wraps without copying, so numpy interop is free and not a dependency | a pure wheel and an sdist with `teistro-install`, which fetches and checks the library, as the Dart package does; per-platform wheels fill the same directory later |
 | Dart and Flutter | `dart:ffi` extension types; Flutter plugin builds the native library per platform with the profile from pubspec configuration; web through the wasm package | pub package and Flutter plugin |
 | Rust | the core crates directly (no FFI); the C ABI crate for other consumers | crates |
 | Java | FFM over the C header (Teimeris plan) | JAR with natives |

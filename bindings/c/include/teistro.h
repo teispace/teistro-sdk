@@ -4537,18 +4537,22 @@ struct ts_position_columns {
 struct ts_obliquity {
     /**
      * Mean obliquity, degrees.
+     * Unit: deg. Range: [22,25]. Example: 23.4392911.
      */
     double mean_deg;
     /**
      * True obliquity, degrees.
+     * Unit: deg. Range: [22,25]. Example: 23.4397911.
      */
     double true_deg;
     /**
      * Nutation in longitude, degrees.
+     * Unit: deg. Range: [-0.006,0.006]. Example: -0.0038957.
      */
     double nutation_lon_deg;
     /**
      * Nutation in obliquity, degrees.
+     * Unit: deg. Range: [-0.003,0.003]. Example: -0.0026876.
      */
     double nutation_obl_deg;
 };
@@ -4588,14 +4592,17 @@ struct ts_horizon_request {
     ts_observer observer;
     /**
      * The search begins here, UT1.
+     * Unit: jd. Example: 2451545.0.
      */
     double from_jd_ut1;
     /**
      * The search ends this many days later.
+     * Unit: d. Range: (0,366]. Example: 1.
      */
     double window_days;
     /**
      * The altitude of the disc point at the event, degrees.
+     * Unit: deg. Range: [-90,90]. Example: -0.8333.
      */
     double altitude_deg;
 };
@@ -4635,30 +4642,37 @@ struct ts_crossing_request {
     uint16_t second_body;
     /**
      * The first body's coefficient in a composite.
+     * Unit: 1. Example: 1.
      */
     double coefficient_a;
     /**
      * The second body's coefficient in a composite.
+     * Unit: 1. Example: -1.
      */
     double coefficient_b;
     /**
      * The lattice's first line, degrees.
+     * Unit: deg. Range: [0,360). Example: 0.
      */
     double origin_deg;
     /**
      * The lattice's spacing, degrees; zero for a single target.
+     * Unit: deg. Range: [0,360). Example: 30.
      */
     double step_deg;
     /**
      * The window's start, UT1.
+     * Unit: jd. Example: 2451545.0.
      */
     double from_jd_ut1;
     /**
      * The window's end, UT1.
+     * Unit: jd. Example: 2451910.0.
      */
     double to_jd_ut1;
     /**
      * How closely each instant is placed, days.
+     * Unit: d. Range: (0,1]. Example: 0.0000115740741.
      */
     double tolerance_days;
     /**
@@ -4673,10 +4687,12 @@ struct ts_crossing_request {
 struct ts_crossing_event {
     /**
      * The instant, UT1.
+     * Unit: jd. Example: 2451545.0.
      */
     double jd_ut1;
     /**
      * The boundary reached, degrees.
+     * Unit: deg. Range: [0,360). Example: 30.
      */
     double boundary_deg;
     /**
@@ -4759,10 +4775,12 @@ struct ts_capabilities {
     const char * data_version;
     /**
      * Coverage start, UT1.
+     * Unit: jd. Example: 1721057.5.
      */
     double jd_min;
     /**
      * Coverage end, UT1.
+     * Unit: jd. Example: 2816787.5.
      */
     double jd_max;
     /**

@@ -1,16 +1,17 @@
 //! The API description and everything rendered from it, generated from
 //! the boundary crates: `gen ffi` extracts `idl/api.json` and renders the
 //! C header, the Node binding's TypeScript surface, catalogue tables and
-//! blob decoders, the Dart binding's layer, and the documentation site's
-//! reference; `check-ffi` regenerates them all in memory and fails on any
-//! difference, so a new entry point, a changed field or a reworded doc
-//! comment can never leave a binding — or the reference — behind.
+//! blob decoders, the Dart binding's layer, the Python binding's `ctypes`
+//! layer, and the documentation site's reference; `check-ffi` regenerates
+//! them all in memory and fails on any difference, so a new entry point, a
+//! changed field or a reworded doc comment can never leave a binding — or
+//! the reference — behind.
 
 use std::io::Write as _;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use teistro_idl::emit::{c, dart, mdx, node, ts};
+use teistro_idl::emit::{c, dart, mdx, node, python, ts};
 use teistro_idl::sdk::describe;
 
 use crate::generated::{Output, check, prune, strays, write};
@@ -26,6 +27,9 @@ const NAPI_GLUE: &str = "bindings/node/native/src/generated.rs";
 const DART_CATALOGUE: &str = "bindings/dart/lib/src/catalogue.dart";
 const DART_FFI: &str = "bindings/dart/lib/src/ffi.dart";
 const DART_BLOB: &str = "bindings/dart/lib/src/blob.dart";
+const PYTHON_CATALOGUE: &str = "bindings/python/teistro/catalogue.py";
+const PYTHON_FFI: &str = "bindings/python/teistro/_ffi.py";
+const PYTHON_BLOB: &str = "bindings/python/teistro/_blob.py";
 /// Where the site's generated reference lives. Everything under it is
 /// written by this task, and anything else there is a stray.
 const REFERENCE: &str = "site/content/docs/reference";
@@ -88,6 +92,9 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(DART_CATALOGUE, dart::catalogue(&api)),
         Output::new(DART_FFI, dart::declarations(&api)),
         Output::new(DART_BLOB, dart::decoders(&api)),
+        Output::new(PYTHON_CATALOGUE, python::catalogue(&api)),
+        Output::new(PYTHON_FFI, python::declarations(&api)),
+        Output::new(PYTHON_BLOB, python::decoders(&api)),
         Output::new(
             NAPI_GLUE,
             // Formatted here rather than by `cargo fmt`, because napi's

@@ -54,10 +54,10 @@ A C obliquity.
 
 | field | type | what it carries |
 |---|---|---|
-| `mean_deg` | `double` | Mean obliquity, degrees. |
-| `true_deg` | `double` | True obliquity, degrees. |
-| `nutation_lon_deg` | `double` | Nutation in longitude, degrees. |
-| `nutation_obl_deg` | `double` | Nutation in obliquity, degrees. |
+| `mean_deg` | `double` | Mean obliquity, degrees. Unit `deg`. Range `[22,25]`. Example `23.4392911`. |
+| `true_deg` | `double` | True obliquity, degrees. Unit `deg`. Range `[22,25]`. Example `23.4397911`. |
+| `nutation_lon_deg` | `double` | Nutation in longitude, degrees. Unit `deg`. Range `[-0.006,0.006]`. Example `-0.0038957`. |
+| `nutation_obl_deg` | `double` | Nutation in obliquity, degrees. Unit `deg`. Range `[-0.003,0.003]`. Example `-0.0026876`. |
 
 ## ts_horizon_request
 
@@ -70,9 +70,9 @@ A C horizon-event request.
 | `disc` | `uint8_t` | `DiscPoint::id`. |
 | `refraction` | `uint8_t` | `Refraction::id`. |
 | `observer` | `ts_observer` | The place. |
-| `from_jd_ut1` | `double` | The search begins here, UT1. |
-| `window_days` | `double` | The search ends this many days later. |
-| `altitude_deg` | `double` | The altitude of the disc point at the event, degrees. |
+| `from_jd_ut1` | `double` | The search begins here, UT1. Unit `jd`. Example `2451545.0`. |
+| `window_days` | `double` | The search ends this many days later. Unit `d`. Range `(0,366]`. Example `1`. |
+| `altitude_deg` | `double` | The altitude of the disc point at the event, degrees. Unit `deg`. Range `[-90,90]`. Example `-0.8333`. |
 
 ## ts_crossing_request
 
@@ -85,13 +85,13 @@ A C crossings request.
 | `has_observer` | `uint8_t` | Whether `observer` is set. |
 | `first_body` | `uint16_t` | `Body::id` of the first body. |
 | `second_body` | `uint16_t` | `Body::id` of the second body of a composite; else zero. |
-| `coefficient_a` | `double` | The first body's coefficient in a composite. |
-| `coefficient_b` | `double` | The second body's coefficient in a composite. |
-| `origin_deg` | `double` | The lattice's first line, degrees. |
-| `step_deg` | `double` | The lattice's spacing, degrees; zero for a single target. |
-| `from_jd_ut1` | `double` | The window's start, UT1. |
-| `to_jd_ut1` | `double` | The window's end, UT1. |
-| `tolerance_days` | `double` | How closely each instant is placed, days. |
+| `coefficient_a` | `double` | The first body's coefficient in a composite. Unit `1`. Example `1`. |
+| `coefficient_b` | `double` | The second body's coefficient in a composite. Unit `1`. Example `-1`. |
+| `origin_deg` | `double` | The lattice's first line, degrees. Unit `deg`. Range `[0,360)`. Example `0`. |
+| `step_deg` | `double` | The lattice's spacing, degrees; zero for a single target. Unit `deg`. Range `[0,360)`. Example `30`. |
+| `from_jd_ut1` | `double` | The window's start, UT1. Unit `jd`. Example `2451545.0`. |
+| `to_jd_ut1` | `double` | The window's end, UT1. Unit `jd`. Example `2451910.0`. |
+| `tolerance_days` | `double` | How closely each instant is placed, days. Unit `d`. Range `(0,1]`. Example `0.0000115740741`. |
 | `observer` | `ts_observer` | The observer, read when `has_observer` is set. |
 
 ## ts_crossing_event
@@ -100,8 +100,8 @@ A C crossing event.
 
 | field | type | what it carries |
 |---|---|---|
-| `jd_ut1` | `double` | The instant, UT1. |
-| `boundary_deg` | `double` | The boundary reached, degrees. |
+| `jd_ut1` | `double` | The instant, UT1. Unit `jd`. Example `2451545.0`. |
+| `boundary_deg` | `double` | The boundary reached, degrees. Unit `deg`. Range `[0,360)`. Example `30`. |
 | `direction` | `uint8_t` | `Direction::id`. |
 
 ## ts_data_hash
@@ -129,8 +129,8 @@ C capabilities; every pointer is owned by the provider and valid for its lifetim
 | `name` | `const char *` | The name, NUL-terminated. |
 | `version` | `const char *` | The version, NUL-terminated. |
 | `data_version` | `const char *` | The data version, NUL-terminated. |
-| `jd_min` | `double` | Coverage start, UT1. |
-| `jd_max` | `double` | Coverage end, UT1. |
+| `jd_min` | `double` | Coverage start, UT1. Unit `jd`. Example `1721057.5`. |
+| `jd_max` | `double` | Coverage end, UT1. Unit `jd`. Example `2816787.5`. |
 | `bodies` | `const uint16_t *` | The bodies as ids. One of `ts_body`. |
 | `body_count` | `size_t` | How many. |
 | `native_frame_bits` | `uint32_t` | `Frame::to_bits` of the native frame. |

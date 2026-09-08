@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "teistro"
+version = "0.0.0"
+description = "The Teistro SDK for Python: an ephemeris-agnostic astrology engine over the C ABI, with the catalogue, the calendars, the time layer, the locale engine and the astronomy."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "Teispace" }]
+keywords = ["astrology", "jyotisha", "ephemeris", "panchanga", "calendar"]
+classifiers = [
+  "Private :: Do Not Upload",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "Typing :: Typed",
+]
+# No runtime dependencies, deliberately: `ctypes` and `hashlib` are in the
+# standard library, so the package loads the shared library the release
+# already builds and needs no compiler on the consumer's machine.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/teispace/teistro-sdk"
+Repository = "https://github.com/teispace/teistro-sdk"
+
+[project.scripts]
+teistro-install = "teistro._install:main"
+
+[tool.setuptools]
+packages = ["teistro"]
+
+[tool.setuptools.package-data]
+teistro = ["py.typed"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+files = ["teistro", "tests", "example", "parity.py"]
+# `ctypes` answers `Any` for a looked-up symbol and for a pointer's
+# contents, and the generated layer holds those in fields it declares as
+# `Any` deliberately. Everything a consumer touches is typed, which is
+# what the strict check is for.
+disallow_any_explicit = false

@@ -1,14 +1,19 @@
-//! The parity gate: one scenario through both bindings, and the two
-//! reports compared. It is the gate the architecture asks for, that the
-//! bindings are one SDK and not two
+//! The parity gate: one scenario through every binding, and the reports
+//! compared. It is the gate the architecture asks for, that the bindings
+//! are one SDK and not three
 //! (`02-architecture/07-binding-architecture.md`).
 //!
 //! Each runner (`bindings/node/parity.mjs`,
-//! `bindings/dart/bin/parity.dart`) walks the same scenario through its
-//! own ergonomic layer and prints `key<TAB>value` lines sorted by key.
-//! Nothing here says what a value should be: the point is that the two
-//! bindings agree with each other, so a fact written into this file could
-//! only weaken it.
+//! `bindings/dart/bin/parity.dart`, `bindings/python/parity.py`) walks the
+//! same scenario through its own ergonomic layer and prints
+//! `key<TAB>value` lines sorted by key. Nothing here says what a value
+//! should be: the point is that the bindings agree with **each other**, so
+//! a fact written into this file could only weaken it.
+//!
+//! Every report is compared against the first that ran, which is what
+//! makes the gate work on a machine with only some of the toolchains: two
+//! present are still compared, and a third joins without the others
+//! changing.
 //!
 //! Values are compared as text, except that two numbers are compared as
 //! numbers within a relative tolerance, because nine decimals is where
@@ -26,6 +31,7 @@ use crate::binding::{build, library, library_artefact, present};
 
 const NODE: &str = "bindings/node/parity.mjs";
 const DART: &str = "bindings/dart/bin/parity.dart";
+const PYTHON: &str = "bindings/python/parity.py";
 /// Where a number's last digit is allowed to differ. Both reports print
 /// nine decimals, so two languages rounding the same double can differ by
 /// one in that place and no more; the tolerance is absolute rather than
@@ -136,8 +142,13 @@ fn run(binding: &'static str, command: &mut Command) -> Option<Report> {
 pub(crate) fn check(root: &Path) -> i32 {
     let has_node = present("node", "--version");
     let has_dart = present("dart", "--version");
-    if !has_node && !has_dart {
-        eprintln!("neither `node` nor `dart` on this machine; the parity gate needs both");
+    let python = std::env::var("PYTHON").unwrap_or_else(|_| String::from("python3"));
+    let has_python = present(&python, "--version");
+    let ran = has_node || has_dart || has_python;
+    if !ran {
+        eprintln!(
+            "no `node`, `dart` or `{python}` on this machine; the parity gate needs two of them"
+        );
         return 0;
     }
     if library(root).is_err() {
@@ -174,18 +185,42 @@ pub(crate) fn check(root: &Path) -> i32 {
     } else {
         println!("skip  {DART}: no `dart` on this machine");
     }
+    if has_python {
+        let library = root.join("target/release").join(library_artefact());
+        reports.extend(run(
+            "Python",
+            Command::new(&python)
+                .arg("parity.py")
+                .env("TEISTRO_LIBRARY", &library)
+                .env("PYTHONPATH", root.join("bindings/python"))
+                .current_dir(root.join("bindings/python")),
+        ));
+    } else {
+        println!("skip  {PYTHON}: no `{python}` on this machine");
+    }
     if reports.len() < 2 {
         println!("skip  nothing to compare: {} report(s)", reports.len());
-        return i32::from(reports.is_empty() && (has_node || has_dart));
+        return i32::from(reports.is_empty() && ran);
     }
-    let differences = compare(&reports[0], &reports[1]);
+    // Every report against the first, so a machine with two toolchains
+    // still gates the pair it has and a third joins without the others
+    // changing.
+    let first = &reports[0];
+    let mut differences = 0;
+    for other in &reports[1..] {
+        let found = compare(first, other);
+        if found == 0 {
+            println!(
+                "ok    the {} and {} bindings agree on every one of {} values",
+                first.binding,
+                other.binding,
+                first.lines.len()
+            );
+        }
+        differences += found;
+    }
     if differences == 0 {
-        println!(
-            "ok    the {} and {} bindings agree on every one of {} values",
-            reports[0].binding,
-            reports[1].binding,
-            reports[0].lines.len()
-        );
+        println!("ok    {} bindings agree, value for value", reports.len());
         0
     } else {
         println!("FAIL  the bindings disagree on {differences} value(s)");
