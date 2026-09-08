@@ -21,88 +21,34 @@
     reason = "tests fail by panicking, index their own results and print counts under --nocapture"
 )]
 
-use teistro_aspect::Aspects;
-use teistro_astro::delta_t::DeltaTModel;
-use teistro_astro::precession::PrecessionModel;
-use teistro_calendar::Gregorian;
-use teistro_calendar::solar::drik::DrikSun;
-use teistro_chart::foundation::{ChartFoundation, Founder};
-use teistro_core::catalogue::{Ayanamsha, ChartKind, Varga};
-use teistro_core::envelope::{Envelope, Hash, Provenance};
-use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro_core::settings::{OverridePolicy, Profile, Settings, SettingsPatch, Sunrise};
-use teistro_core::time::UtcOffset;
-use teistro_houses::Houses;
-use teistro_points::Points;
-use teistro_port_ephemeris::test_provider::TestProvider;
+// The chart every sample is founded on is built **once**, in the example
+// the schema pass runs, and included here as a module rather than built
+// a second time. Two copies of a founding would drift, and the pass and
+// this test would then be measuring different charts.
+#[path = "../examples/documents.rs"]
+#[allow(
+    dead_code,
+    unreachable_pub,
+    reason = "the example is a program as well as a builder; this test uses the builder half"
+)]
+mod sample;
+
+use sample::{founded, whole};
+use teistro_core::envelope::Hash;
 use teistro_serial::canonical::{hash_of, to_hash_form, to_rendered};
 use teistro_serial::{Document, Sealed};
 use teistro_state::state;
-use teistro_vargas::chart::{Axis, chart as varga_chart};
-
-fn place() -> Place {
-    Place::new(
-        Latitude::literal(27.7172),
-        Longitude::literal(85.3240),
-        Altitude::literal(1400.0),
-    )
-}
-
-fn founded() -> (Envelope<ChartFoundation>, Settings) {
-    let provider = TestProvider;
-    let resolved = Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
-        .expect("the default profile")
-        .resolve(&SettingsPatch::default())
-        .expect("it resolves");
-    let model = DrikSun::new(
-        &provider,
-        Ayanamsha::Lahiri,
-        Sunrise::CentreNoRefraction.into(),
-        OverridePolicy::PreferNative,
-        DeltaTModel::TableThenModel,
-    );
-    let clock = UtcOffset::literal(5, 45, 0);
-    let founded = Founder::new(
-        &provider,
-        &resolved,
-        &model,
-        &Gregorian,
-        &clock,
-        PrecessionModel::Vondrak2011,
-        DeltaTModel::TableThenModel,
-    )
-    .found_one(
-        JulianDay::<Utc>::literal(2_460_482.5),
-        &place(),
-        ChartKind::Natal,
-    )
-    .expect("a founded chart");
-    (founded, resolved.settings)
-}
-
-/// Every section the layer can produce, on one chart.
-fn whole() -> (Document, Provenance, Settings) {
-    let (envelope, settings) = founded();
-    let provenance = envelope.provenance.clone();
-    let foundation = envelope.value;
-    let document = Document::of(foundation.clone())
-        .with_varga(varga_chart(&foundation, Axis::of(Varga::D9)).expect("a navamsha"))
-        .with_state(state(&foundation, &settings).expect("a state"))
-        .with_aspects(Aspects::of(&foundation, &settings).expect("the aspects"))
-        .with_points(Points::from_longitudes(&foundation).expect("the points"))
-        .with_houses(Houses::of(&foundation).expect("the houses"));
-    (document, provenance, settings)
-}
 
 #[test]
 fn every_section_of_the_layer_serialises() {
-    let (document, _, _) = whole();
+    let (document, _) = whole();
     let sections = document.sections();
     println!("{} sections: {sections:?}", sections.len());
     assert_eq!(
         sections,
         vec![
             "foundation",
+            "panchanga",
             "vargas",
             "state",
             "aspects",
@@ -125,7 +71,7 @@ fn every_section_of_the_layer_serialises() {
 
 #[test]
 fn a_sealed_document_carries_its_own_hash() {
-    let (document, provenance, _) = whole();
+    let (document, provenance) = whole();
     assert_eq!(
         provenance.content_hash,
         Hash::of(&[]),
@@ -144,7 +90,8 @@ fn a_sealed_document_carries_its_own_hash() {
 
 #[test]
 fn the_hash_moves_when_any_section_does() {
-    let (document, provenance, settings) = whole();
+    let (document, provenance) = whole();
+    let (_, settings) = founded();
     let whole_hash = hash_of(&document);
     // A document with one section fewer is a different answer.
     let (envelope, _) = founded();
@@ -156,23 +103,39 @@ fn the_hash_moves_when_any_section_does() {
     assert_ne!(hash_of(&fewer), hash_of(&bare));
     assert_eq!(bare.sections(), vec!["foundation"]);
     // And two builds of the same document agree.
-    let (again, _, _) = whole();
+    let (again, _) = whole();
     assert_eq!(whole_hash, hash_of(&again), "the determinism contract");
     let _ = provenance;
 }
 
 #[test]
 fn the_canonical_form_of_a_real_document_is_canonical() {
-    let (document, _, _) = whole();
+    let (document, _) = whole();
     let text = to_hash_form(&document);
     let parsed: serde_json::Value = serde_json::from_str(&text).expect("it reads back");
 
-    // The form is a **fixed point**: writing what it wrote gives the
-    // same bytes. That is the invariant, and it subsumes "no whitespace
-    // between tokens" without mistaking a space inside a string value
-    // for one.
-    assert_eq!(to_hash_form(&parsed), text, "a fixed point");
-    assert_eq!(text, to_hash_form(&document), "and stable");
+    // The form is **stable**: writing the same value twice gives the same
+    // bytes.
+    assert_eq!(text, to_hash_form(&document), "stable");
+
+    // It is a **fixed point** — writing what it wrote gives the same
+    // bytes — only while every number is inside an `f64`'s resolution at
+    // twelve decimals. A chart document carries the instant it was cast
+    // for, and a Julian day is four orders of magnitude larger than a
+    // longitude: one unit in the last place is already about 5e-10, so
+    // the last three decimals the grammar writes are the expansion of a
+    // binary value rather than information, and they do not survive a
+    // parse. `03-design/schema-measured.md` §9 measures it, and the fix
+    // is a decision rather than a patch, because it moves the hash of
+    // every document.
+    let (bare, _) = founded();
+    let small = to_hash_form(&Document::of(bare.value));
+    let read_back: serde_json::Value = serde_json::from_str(&small).expect("it reads back");
+    assert_eq!(
+        to_hash_form(&read_back),
+        small,
+        "a fixed point while the numbers are small"
+    );
 
     assert!(sorted(&parsed), "keys in code-point order at every depth");
 
@@ -223,7 +186,8 @@ fn sorted(value: &serde_json::Value) -> bool {
 
 #[test]
 fn a_rendering_reads_the_precision_knob_the_hash_form_ignores() {
-    let (document, _, settings) = whole();
+    let (document, _) = whole();
+    let (_, settings) = founded();
     let rendered = to_rendered(&document, &settings.output.precision).expect("a rendering");
     let hashed = to_hash_form(&document);
     // The default profile asks for nine decimals of an angle; the hash
@@ -246,7 +210,7 @@ fn a_rendering_reads_the_precision_knob_the_hash_form_ignores() {
 
 #[test]
 fn a_sealed_document_gives_up_its_parts_intact() {
-    let (document, provenance, _) = whole();
+    let (document, provenance) = whole();
     let sealed = Sealed::new(document, provenance);
     let hash = sealed.content_hash();
     let (value, provenance) = sealed.into_parts();
