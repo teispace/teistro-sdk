@@ -486,6 +486,9 @@ final class Day {
     required this.resolution,
     required this.computedMonth,
     required this.computedDay,
+    required this.stateKind,
+    required this.statePolarKind,
+    required this.statePolarPolicy,
     required this.conventionKind,
     required this.conventionValue,
   });
@@ -534,6 +537,15 @@ final class Day {
 
   /// The engine's day where it differs from the table's; zero otherwise.
   final int computedDay;
+
+  /// Whether the day had a sunrise at all.
+  final int stateKind;
+
+  /// Which polar state it was, when it had none; zero otherwise.
+  final int statePolarKind;
+
+  /// Which policy synthesised its bounds, when it had none; zero otherwise.
+  final int statePolarPolicy;
 
   /// Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.
   final int conventionKind;
@@ -838,8 +850,11 @@ Chart decodeChart(Uint8List bytes) {
       resolution: blob.data.getUint8(atDay.offset + 96),
       computedMonth: blob.data.getUint8(atDay.offset + 104),
       computedDay: blob.data.getUint8(atDay.offset + 112),
-      conventionKind: blob.data.getUint8(atDay.offset + 120),
-      conventionValue: blob.data.getFloat64(atDay.offset + 128, Endian.little),
+      stateKind: blob.data.getUint8(atDay.offset + 120),
+      statePolarKind: blob.data.getUint8(atDay.offset + 128),
+      statePolarPolicy: blob.data.getUint8(atDay.offset + 136),
+      conventionKind: blob.data.getUint8(atDay.offset + 144),
+      conventionValue: blob.data.getFloat64(atDay.offset + 152, Endian.little),
     ),
     ghati: blob.data.getUint8(atTiming.offset + 0),
     pala: blob.data.getUint8(atTiming.offset + 8),

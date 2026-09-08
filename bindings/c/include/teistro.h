@@ -4242,6 +4242,57 @@ typedef enum ts_hora_reckoning {
 } ts_hora_reckoning;
 
 /**
+ * Whether a day had a sunrise, and what was done when it had not.
+ *
+ * The kind half of a tagged enum: a polar day carries which polar
+ * state it was and which policy was applied, in `state_polar_kind` and
+ * `state_polar_policy` beside it, because a variant with a payload
+ * cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+ */
+typedef enum ts_day_state {
+    /**
+     * Sunrise and sunset occurred; the two fields beside this are zero.
+     */
+    TS_DAY_STATE_NORMAL = 0,
+    /**
+     * No horizon crossing, and the policy synthesised the bounds.
+     */
+    TS_DAY_STATE_POLAR = 1,
+} ts_day_state;
+
+/**
+ * Which polar state a day without a sunrise was in.
+ */
+typedef enum ts_polar_kind {
+    /**
+     * The Sun stayed up.
+     */
+    TS_POLAR_KIND_DAY = 0,
+    /**
+     * The Sun stayed down.
+     */
+    TS_POLAR_KIND_NIGHT = 1,
+} ts_polar_kind;
+
+/**
+ * What the settings say a day without a sunrise is.
+ */
+typedef enum ts_polar_day_policy {
+    /**
+     * An undefined state: the day has no bounds.
+     */
+    TS_POLAR_DAY_POLICY_UNDEFINED = 0,
+    /**
+     * The nearest rise or set stands in for the missing one.
+     */
+    TS_POLAR_DAY_POLICY_NEAREST_EVENT = 1,
+    /**
+     * Civil midnight stands in for it.
+     */
+    TS_POLAR_DAY_POLICY_CIVIL_MIDNIGHT = 2,
+} ts_polar_day_policy;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 typedef enum ts_scale {

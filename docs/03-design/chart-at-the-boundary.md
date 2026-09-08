@@ -247,26 +247,41 @@ five rather than describing part of one.
   and truthful, and no emitter needs a field whose type depends on
   another field.
 
-  **The rule, then**: a tagged enum crosses as `<name>_kind` and
-  `<name>_value`, and each binding's layer presents the union. It is
-  general, it needs no new machinery, and it is the same trade the frame
-  already makes.
+  **The rule, then**: a tagged enum crosses as a `<name>_kind` and as
+  many payload fields as its widest variant needs, each named
+  `<name>_<field>`, and each binding's layer presents the union. It
+  needs no new machinery, and it is the same trade the frame already
+  makes.
+
+  An earlier draft of this rule said `<name>_kind` and one
+  `<name>_value`, which writing the day section showed to be too narrow.
+  `DayState::Polar { kind, policy }` carries two, so the day crosses as
+  `state_kind`, `state_polar_kind` and `state_polar_policy` — a normal
+  day leaving the last two at nought. `SunriseConvention` really does
+  need only one, and `AyanamshaChoice::Custom { value_deg, rate }`
+  needs none at all, because a chart carries the ayanamsha it *applied*
+  and the settings hash pins what it was asked for: a result carries
+  what it computed, and the envelope carries what it was told.
 - **What `State` at the boundary is.** The description has a `State`, and
   it is the planetary one — retrograde, combust, gandanta — not the
   day's. The two names collide and the day's needs a different one.
 - **Which precession, and who chooses.** `Founder::new` takes a
-  `PrecessionModel`, the settings have no knob for one, and every caller
-  in the workspace names `Vondrak2011` by hand — five sites, and the
-  boundary would be the sixth. There is no `Default` impl, so the SDK
-  has a de facto default that nothing declares.
+  `PrecessionModel` and the settings have no knob for one, so the
+  boundary must pick.
 
-  Two things, and only the first belongs to this page. **Name it once**:
-  `impl Default for PrecessionModel` giving Vondrak2011, so the five
-  sites and the boundary say `::default()` and the choice lives in one
-  place. Whether it should instead be a settings knob — as `time.delta_t`
-  is, and precession is the same kind of choice — is a larger question:
-  it moves the settings hash of every profile, so it is a decision with
-  a Numbers line rather than a tidy-up.
+  It picks `PrecessionModel::default()`, which is Vondrak2011 —
+  `#[derive(Default)]` with `#[default]` on that variant and a doc
+  comment saying so. (An earlier draft of this page claimed the SDK had
+  a de facto default that nothing declared, on the strength of a grep
+  for `impl Default for` that cannot see a derive. It is declared, in
+  one place, and the five callers naming it explicitly are all tests,
+  where saying what you use is right.)
+
+  What remains open is whether it should be a **settings knob** at all,
+  as `time.delta_t` is — precession is the same kind of choice, and the
+  astro layer ships eleven models. That is a larger question than this
+  page: a new knob moves the settings hash of every profile, so it is a
+  decision with a Numbers line rather than a tidy-up.
 - **Whether `ts_chart_found` should take a batch.** `Founder` has
   `found_one` and a batch form, and the boundary's whole shape elsewhere
   is one call per grid. A rectification pass wants a hundred charts and

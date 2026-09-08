@@ -431,6 +431,15 @@ class Day:
     computed_day: int
     """The engine's day where it differs from the table's; zero otherwise."""
 
+    state_kind: int
+    """Whether the day had a sunrise at all."""
+
+    state_polar_kind: int
+    """Which polar state it was, when it had none; zero otherwise."""
+
+    state_polar_policy: int
+    """Which policy synthesised its bounds, when it had none; zero otherwise."""
+
     convention_kind: int
     """Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude."""
 
@@ -654,8 +663,11 @@ def decode_chart(raw: bytes) -> Chart:
             resolution=int(blob.fixed(at_day, 12, "B")),
             computed_month=int(blob.fixed(at_day, 13, "B")),
             computed_day=int(blob.fixed(at_day, 14, "B")),
-            convention_kind=int(blob.fixed(at_day, 15, "B")),
-            convention_value=blob.fixed(at_day, 16, "d"),
+            state_kind=int(blob.fixed(at_day, 15, "B")),
+            state_polar_kind=int(blob.fixed(at_day, 16, "B")),
+            state_polar_policy=int(blob.fixed(at_day, 17, "B")),
+            convention_kind=int(blob.fixed(at_day, 18, "B")),
+            convention_value=blob.fixed(at_day, 19, "d"),
         ),
         ghati=int(blob.fixed(at_timing, 0, "B")),
         pala=int(blob.fixed(at_timing, 1, "B")),

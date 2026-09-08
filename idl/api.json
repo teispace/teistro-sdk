@@ -6069,6 +6069,65 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsDayState",
+      "doc": "Whether a day had a sunrise, and what was done when it had not.\n\nThe kind half of a tagged enum: a polar day carries which polar\nstate it was and which policy was applied, in `state_polar_kind` and\n`state_polar_policy` beside it, because a variant with a payload\ncannot be an id (`03-design/chart-at-the-boundary.md` §8).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Normal",
+          "value": 0,
+          "doc": "Sunrise and sunset occurred; the two fields beside this are zero."
+        },
+        {
+          "name": "Polar",
+          "value": 1,
+          "doc": "No horizon crossing, and the policy synthesised the bounds."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsPolarKind",
+      "doc": "Which polar state a day without a sunrise was in.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Day",
+          "value": 0,
+          "doc": "The Sun stayed up."
+        },
+        {
+          "name": "Night",
+          "value": 1,
+          "doc": "The Sun stayed down."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsPolarDayPolicy",
+      "doc": "What the settings say a day without a sunrise is.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Undefined",
+          "value": 0,
+          "doc": "An undefined state: the day has no bounds."
+        },
+        {
+          "name": "NearestEvent",
+          "value": 1,
+          "doc": "The nearest rise or set stands in for the missing one."
+        },
+        {
+          "name": "CivilMidnight",
+          "value": 2,
+          "doc": "Civil midnight stands in for it."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsScale",
       "doc": "A time scale of the conversions; the first two ids are the port's.",
       "repr": "u32",
@@ -11298,6 +11357,24 @@
               "name": "computed_day",
               "scalar": "u8",
               "doc": "The engine's day where it differs from the table's; zero otherwise."
+            },
+            {
+              "name": "state_kind",
+              "scalar": "u8",
+              "doc": "Whether the day had a sunrise at all.",
+              "enum": "TsDayState"
+            },
+            {
+              "name": "state_polar_kind",
+              "scalar": "u8",
+              "doc": "Which polar state it was, when it had none; zero otherwise.",
+              "enum": "TsPolarKind"
+            },
+            {
+              "name": "state_polar_policy",
+              "scalar": "u8",
+              "doc": "Which policy synthesised its bounds, when it had none; zero otherwise.",
+              "enum": "TsPolarDayPolicy"
             },
             {
               "name": "convention_kind",

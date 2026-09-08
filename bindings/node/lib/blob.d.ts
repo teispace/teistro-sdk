@@ -345,6 +345,21 @@ export interface Day {
    */
   readonly computedDay: number;
   /**
+   * Whether the day had a sunrise at all.
+   * The value is a `DayState` id.
+   */
+  readonly stateKind: number;
+  /**
+   * Which polar state it was, when it had none; zero otherwise.
+   * The value is a `PolarKind` id.
+   */
+  readonly statePolarKind: number;
+  /**
+   * Which policy synthesised its bounds, when it had none; zero otherwise.
+   * The value is a `PolarDayPolicy` id.
+   */
+  readonly statePolarPolicy: number;
+  /**
    * Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.
    * The value is a `Sunrise` id.
    */
