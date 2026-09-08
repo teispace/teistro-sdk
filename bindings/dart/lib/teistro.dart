@@ -291,6 +291,37 @@ final class Context {
     );
   }
 
+  /// Founds a chart at an instant and a place.
+  ///
+  /// Everything but this is the context's settings, so two charts
+  /// founded under one context are comparable and the settings hash says
+  /// why. The clock is here because nothing else knows it: a chart's day
+  /// runs from a local sunrise and its date is a civil date, and a
+  /// longitude gives local *mean* time rather than a civil offset.
+  ///
+  /// A profile whose frame is topocentric needs a provider that answers
+  /// topocentric natively; the completion's centre step is Phase 3's
+  /// (`03-design/chart-at-the-boundary.md` §8).
+  Chart found({
+    required double instant,
+    required Observer place,
+    required int utcOffsetSeconds,
+    ChartKind kind = ChartKind.natal,
+  }) => decodeChart(
+    _guarded(
+      () => _inner.chartFound(
+        ChartRequest(
+          kind: kind,
+          instantJdUtc: instant,
+          latitudeDeg: place.latitudeDeg,
+          longitudeDeg: place.longitudeDeg,
+          altitudeM: place.altitudeM,
+          utcOffsetSeconds: utcOffsetSeconds,
+        ),
+      ),
+    ),
+  );
+
   /// Runs a call that may reach a provider written in Dart, and rethrows
   /// what the provider itself threw.
   ///

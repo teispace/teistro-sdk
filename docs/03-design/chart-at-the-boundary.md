@@ -66,6 +66,33 @@ description rather than twice. The `frame_bits` reuse is the load-bearing
 one: a binding already unpacks a frame, in a helper the three of them
 share, so `zodiac.request` costs a binding nothing new at all.
 
+## 3a. What a consumer must be able to change
+
+A dead end is a place where the SDK decided something a consumer might
+reasonably need to decide, and left no way to say otherwise. Three rules
+follow from that, and each has already caught something on this page.
+
+**Batch by default.** Every entry point that computes a value takes a
+grid, and a caller wanting one passes a grid of one. The first draft of
+`ts_chart_found` took a single instant while `Founder` had a batch form
+sitting unused — §8 has the correction. A convenience belongs in a
+binding's ergonomic layer, where `found(one)` and `foundMany(list)` can
+both stand over one crossing.
+
+**A choice the SDK makes is a knob, or it is named.** The precession
+model is chosen by the boundary because the settings have no knob for
+it, and eleven models ship. That is defensible only while the choice is
+*declared* — `PrecessionModel::default()` rather than a literal — and
+the open question in §8 is whether it should be a knob at all. The test
+for a dead end is: could a consumer want the other answer, and can they
+have it?
+
+**What was applied is reported.** A result carries the frame it was
+computed in, the steps applied, the method that placed each graha and
+the reckoning each ghati was counted under, because a consumer who
+cannot see what was chosen cannot tell whether to change it. That is why
+`readings` and `timing` are sections rather than settings echoes.
+
 ## 4. The foundation blob
 
 Sections in the order a reader wants them, using the three kinds the
@@ -282,6 +309,45 @@ five rather than describing part of one.
   astro layer ships eleven models. That is a larger question than this
   page: a new knob moves the settings hash of every profile, so it is a
   decision with a Numbers line rather than a tidy-up.
+- **A chart cannot be founded under `nepali-default`.** Founding one
+  through the Node layer refuses with *"frame completion step `centre`
+  is not implemented"*. The profile asks for `Centre::Topocentric`
+  (`profiles.rs`), the analytic provider answers geocentric, and
+  `completion.rs:333` refuses any request whose centre differs from the
+  provider's native one.
+
+  Nothing had tried it: every Rust test that founds a chart uses
+  `DEFAULT_PROFILE`, which is geocentric, so the first caller to ask for
+  the Nepali profile was a binding. Under the default profile a chart
+  founds and reads back exactly as it should.
+
+  **It is not an oversight, and that makes it worse.** Phase 2's exit
+  note says the step was *"deferred by decision: the completion's centre,
+  corrections and equinox steps to Phase 3, where the built-in ephemeris
+  needs them"*. So the astronomy layer closed knowing it, and Phase 3
+  owns it.
+
+  What no phase says is that **Phase 4's exit depends on it**. The exit
+  is the golden vectors reproduced in three bindings; all 55 recorded
+  charts are `topocentric: true`; and the corpus carries fixtures built
+  precisely to make the difference decide an outcome — c049 to c055 put
+  the Moon "at a pada edge where the geocentric Moon is still on the
+  other side, so the dasha lord or the pada depends on the frame". A
+  geocentric SDK cannot reproduce them.
+
+  The dependency is invisible today because nothing compares a *computed*
+  longitude against those charts: `crates/chart/tests/baseline_bhavas.rs`
+  reads the recorded `sidereal_longitude_deg` and checks the bhava it
+  falls in, so it tests the placement rule rather than the position. The
+  first thing to compare computed positions against the corpus will meet
+  this, and it will meet it as 495 wrong longitudes rather than as a
+  refusal.
+
+  Two consequences. **The examples** cannot show a chart under the
+  profile their five neighbours use, so a chart example either changes
+  profile or waits. **Phase 4 cannot exit before Phase 3 delivers the
+  centre step**, which is a cross-phase dependency neither phase records
+  and the roadmap should.
 - **The boundary seals and the producer does not.** `ts_chart_found`
   sets `content_hash` on the provenance before writing the blob, as
   `ts_positions` does, because `Founder` leaves the placeholder that
@@ -291,7 +357,30 @@ five rather than describing part of one.
   [`serial-and-the-envelope.md`](serial-and-the-envelope.md) §8's open
   question — "whether the producers should seal" — and this is the first
   place it stops being theoretical.
-- **Whether `ts_chart_found` should take a batch.** `Founder` has
-  `found_one` and a batch form, and the boundary's whole shape elsewhere
-  is one call per grid. A rectification pass wants a hundred charts and
-  would otherwise cross a hundred times.
+- **~~Whether `ts_chart_found` should take a batch.~~ It must, and this
+  page built the dead end it warned about.** `Founder::found(instants,
+  place, kind)` already exists — "founds many charts at one place,
+  sharing the settings and the solar model" — with one stamp over the
+  batch, one input hash over the whole request, and an
+  `empty_provenance` for a batch that founds nothing. It is complete,
+  and the first version of `ts_chart_found` exposed only `found_one`.
+
+  That is the shape the SDK exists to avoid. `ts_positions` takes a
+  **grid** for exactly this reason: a year of the sky is one crossing
+  rather than 366, and the provider's setup is paid once. A chart is the
+  same bargain and a stronger one, because the solar model and the
+  settings resolution are shared across the batch by the founder itself.
+  A rectification pass wants a hundred charts.
+
+  So the entry point takes `instants` and a count, as `PositionRequestC`
+  does, and the blob carries `chart_count` with every per-chart section
+  gaining a chart dimension — charts outermost, as the positions blob
+  puts instants outermost. What is per-*request* rather than per-chart —
+  the place, the model's description, the provenance — stays one to a
+  blob.
+
+  Each binding's ergonomic layer then offers both shapes over the one
+  entry point: `found(one)` for the common case and `foundMany(list)`
+  for the batch, exactly as a caller passing a single instant to
+  `positions` gets a one-row grid. **A convenience is a layer's job; a
+  dead end is not the boundary's right.**
