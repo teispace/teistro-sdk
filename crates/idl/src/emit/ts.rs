@@ -234,8 +234,11 @@ fn render_brands(out: &mut String, api: &Api) {
 #[must_use]
 pub fn blob_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
+    // Shared across every blob, so a shape declared by two of them is
+    // written once.
+    let mut shapes = BTreeSet::new();
     for schema in &api.blobs {
-        render_blob_types(&mut out, schema);
+        render_blob_types(&mut out, schema, &mut shapes);
     }
     out
 }
@@ -379,7 +382,49 @@ pub fn blob_type(schema: &BlobSchema) -> String {
     pascal(&schema.name)
 }
 
-fn render_blob_types(out: &mut String, schema: &BlobSchema) {
+/// A fixed section that names a shape, as an interface of its own.
+///
+/// Two blobs carrying the same section — a chart's day and a panchanga's
+/// — then share one type rather than repeating its fields in each
+/// (`03-design/chart-at-the-boundary.md` §8). A section without a shape
+/// stays inlined on the blob's own interface, as it always was.
+fn render_shape_types(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
+    for section in &schema.sections {
+        let (SectionKind::Fixed, Some(shape)) = (section.kind, section.shape.as_deref()) else {
+            continue;
+        };
+        if !shapes.insert(shape.to_string()) {
+            continue;
+        }
+        let _ = writeln!(
+            out,
+            "/**\n * {}\n */\nexport interface {} {{",
+            section.doc,
+            pascal(shape)
+        );
+        for field in section.fields.iter().filter(|f| f.name != "reserved") {
+            let linked = field
+                .enum_name
+                .as_deref()
+                .map(|e| format!("\nThe value is a `{}` id.", binding_type_name(e)))
+                .unwrap_or_default();
+            let _ = writeln!(
+                out,
+                "{}  readonly {}: {};",
+                block_comment(&format!("{}{linked}", field.doc), "  "),
+                camel(&field.name),
+                if field.scalar == Scalar::I64 || field.scalar == Scalar::U64 {
+                    "bigint"
+                } else {
+                    "number"
+                }
+            );
+        }
+        let _ = writeln!(out, "}}\n");
+    }
+}
+
+fn render_blob_types(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
     let name = blob_type(schema);
     for section in schema
         .sections
@@ -412,6 +457,7 @@ fn render_blob_types(out: &mut String, schema: &BlobSchema) {
             "  /** The number of rows every column holds. */\n  readonly length: number;\n}}\n"
         );
     }
+    render_shape_types(out, schema, shapes);
     let _ = writeln!(
         out,
         "/**\n * A decoded {name} blob.\n *\n * {}\n */\nexport interface {name} {{",
@@ -419,6 +465,16 @@ fn render_blob_types(out: &mut String, schema: &BlobSchema) {
     );
     for section in &schema.sections {
         match section.kind {
+            SectionKind::Fixed if section.shape.is_some() => {
+                let shape = section.shape.as_deref().unwrap_or_default();
+                let _ = writeln!(
+                    out,
+                    "{}  readonly {}: {};",
+                    block_comment(&section.doc, "  "),
+                    camel(&section.name),
+                    pascal(shape)
+                );
+            }
             SectionKind::Fixed => {
                 for field in section.fields.iter().filter(|f| f.name != "reserved") {
                     let linked = field
@@ -702,6 +758,25 @@ fn render_decoder(out: &mut String, schema: &BlobSchema) {
             s.id, s.name
         );
         match s.kind {
+            // A section that names a shape decodes into one object, so
+            // the fields a chart and a panchanga share are read the same
+            // way and named once.
+            SectionKind::Fixed if s.shape.is_some() => {
+                let _ = writeln!(out, "    out.{} = {{", camel(&s.name));
+                let mut slot = 0usize;
+                for f in &s.fields {
+                    if f.name != "reserved" {
+                        let _ = writeln!(
+                            out,
+                            "      {}: READERS.{}(blob.dv, at.offset + {slot}),",
+                            camel(&f.name),
+                            f.scalar.rust_name()
+                        );
+                    }
+                    slot += crate::blob::SLOT;
+                }
+                let _ = writeln!(out, "    }};");
+            }
             SectionKind::Fixed => {
                 let mut slot = 0usize;
                 for f in &s.fields {

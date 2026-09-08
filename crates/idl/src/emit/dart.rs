@@ -14,6 +14,7 @@
 //! `catalogue.dart` (the enums), `ffi.dart` (the declarations, the value
 //! classes and the context) and `blob.dart` (the decoders).
 
+use std::collections::BTreeSet;
 use std::fmt::Write;
 
 use crate::emit::{DocStyle, field_doc_with, line_comment, reserved};
@@ -1147,8 +1148,11 @@ pub fn decoders(api: &Api) -> String {
         "\n\nimport 'dart:convert';\nimport 'dart:typed_data';\n",
     );
     out.push_str(DECODER_PRELUDE);
+    // Shared across every blob, so a shape declared by two of them is
+    // written once.
+    let mut shapes = BTreeSet::new();
     for schema in &api.blobs {
-        render_decoder(&mut out, schema);
+        render_decoder(&mut out, schema, &mut shapes);
     }
     out
 }
@@ -1244,7 +1248,7 @@ final class _Blob {
 }
 ";
 
-fn render_decoder(out: &mut String, schema: &BlobSchema) {
+fn render_decoder(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
     let name = pascal(&schema.name);
     for section in schema
         .sections
@@ -1253,8 +1257,46 @@ fn render_decoder(out: &mut String, schema: &BlobSchema) {
     {
         render_column_class(out, &name, section);
     }
+    render_shape_classes(out, schema, shapes);
     render_decoded_class(out, &name, schema);
     render_decode_function(out, &name, schema);
+}
+
+/// A fixed section that names a shape, as a class of its own.
+///
+/// Two blobs carrying the same section — a chart's day and a
+/// panchanga's — then share one type rather than repeating its fields in
+/// each (`03-design/chart-at-the-boundary.md` §8). A section without a
+/// shape stays inlined on the blob's own class, as it always was.
+fn render_shape_classes(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
+    for section in &schema.sections {
+        let (SectionKind::Fixed, Some(shape)) = (section.kind, section.shape.as_deref()) else {
+            continue;
+        };
+        if !shapes.insert(shape.to_string()) {
+            continue;
+        }
+        let class = pascal(shape);
+        let _ = writeln!(
+            out,
+            "/// {}\nfinal class {class} {{\n  const {class}({{",
+            section.doc
+        );
+        for field in section.fields.iter().filter(|f| f.name != "reserved") {
+            let _ = writeln!(out, "    required this.{},", identifier(&field.name));
+        }
+        let _ = writeln!(out, "  }});\n");
+        for field in section.fields.iter().filter(|f| f.name != "reserved") {
+            let _ = writeln!(
+                out,
+                "{}  final {} {};\n",
+                doc(&field.doc, "  "),
+                dart_scalar(field.scalar),
+                identifier(&field.name)
+            );
+        }
+        let _ = writeln!(out, "}}\n");
+    }
 }
 
 /// A column section as its own class: one typed list per column.
@@ -1294,6 +1336,9 @@ fn render_decoded_class(out: &mut String, name: &str, schema: &BlobSchema) {
     );
     for section in &schema.sections {
         match section.kind {
+            SectionKind::Fixed if section.shape.is_some() => {
+                let _ = writeln!(out, "    required this.{},", identifier(&section.name));
+            }
             SectionKind::Fixed => {
                 for field in section.fields.iter().filter(|f| f.name != "reserved") {
                     let _ = writeln!(out, "    required this.{},", identifier(&field.name));
@@ -1307,6 +1352,16 @@ fn render_decoded_class(out: &mut String, name: &str, schema: &BlobSchema) {
     let _ = writeln!(out, "  }});\n");
     for section in &schema.sections {
         match section.kind {
+            SectionKind::Fixed if section.shape.is_some() => {
+                let shape = section.shape.as_deref().unwrap_or_default();
+                let _ = writeln!(
+                    out,
+                    "{}  final {} {};\n",
+                    doc(&section.doc, "  "),
+                    pascal(shape),
+                    identifier(&section.name)
+                );
+            }
             SectionKind::Fixed => {
                 for field in section.fields.iter().filter(|f| f.name != "reserved") {
                     // The scalar's own type, not `int`. Every fixed
@@ -1364,6 +1419,32 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
             section.id, section.name
         );
         match section.kind {
+            SectionKind::Fixed if section.shape.is_some() => {
+                let shape = section.shape.as_deref().unwrap_or_default();
+                let mut inner = vec![format!(
+                    "    {}: {}(",
+                    identifier(&section.name),
+                    pascal(shape)
+                )];
+                let mut slot = 0usize;
+                for field in &section.fields {
+                    if field.name != "reserved" {
+                        let endian = if field.scalar.width(8) == 1 {
+                            ""
+                        } else {
+                            ", Endian.little"
+                        };
+                        inner.push(format!(
+                            "      {}: blob.data.{}({at}.offset + {slot}{endian}),",
+                            identifier(&field.name),
+                            byte_data_getter(field.scalar)
+                        ));
+                    }
+                    slot += crate::blob::SLOT;
+                }
+                inner.push(String::from("    ),"));
+                arguments.push(inner.join("\n"));
+            }
             SectionKind::Fixed => {
                 let mut slot = 0usize;
                 for field in &section.fields {

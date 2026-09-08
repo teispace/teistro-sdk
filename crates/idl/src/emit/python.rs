@@ -29,6 +29,7 @@
 //! looks: `catalogue.py` (the enums), `_ffi.py` (the declarations, the
 //! value classes and the context) and `_blob.py` (the decoders).
 
+use std::collections::BTreeSet;
 use std::fmt::Write;
 
 use crate::emit::{DocStyle, field_doc_with, line_comment, reserved};
@@ -1506,8 +1507,11 @@ pub fn decoders(api: &Api) -> String {
     );
     out.push_str("import struct\nfrom dataclasses import dataclass\nfrom typing import Final\n\n");
     out.push_str(BLOB_READER);
+    // Shared across every blob, so a shape declared by two of them is
+    // written once.
+    let mut shapes = BTreeSet::new();
     for schema in &api.blobs {
-        render_decoder(&mut out, schema);
+        render_decoder(&mut out, schema, &mut shapes);
     }
     out
 }
@@ -1600,14 +1604,14 @@ class _Blob:
 
 "#;
 
-fn render_decoder(out: &mut String, schema: &BlobSchema) {
+fn render_decoder(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
     let name = pascal(&snake(&schema.name));
     for section in &schema.sections {
         if section.kind == SectionKind::Columns {
             render_column_class(out, &name, section);
         }
     }
-    render_decoded_class(out, &name, schema);
+    render_decoded_class(out, &name, schema, shapes);
     render_decode_function(out, &name, schema);
 }
 
@@ -1642,7 +1646,45 @@ fn render_column_class(out: &mut String, name: &str, section: &SectionSchema) {
     out.push_str("\n\n");
 }
 
-fn render_decoded_class(out: &mut String, name: &str, schema: &BlobSchema) {
+/// A fixed section that names a shape, as a dataclass of its own.
+///
+/// Two blobs carrying the same section — a chart's day and a panchanga's
+/// — then share one type rather than repeating its fields in each
+/// (`03-design/chart-at-the-boundary.md` §8). A section without a shape
+/// stays inlined on the blob's own dataclass, as it always was.
+fn render_shape_classes(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
+    // A fixed section that names a shape becomes a dataclass of its own,
+    // so two blobs carrying the same section share one type rather than
+    // repeating its fields (`03-design/chart-at-the-boundary.md` §8).
+    for section in &schema.sections {
+        let (SectionKind::Fixed, Some(shape)) = (section.kind, section.shape.as_deref()) else {
+            continue;
+        };
+        if !shapes.insert(shape.to_string()) {
+            continue;
+        }
+        let _ = writeln!(out, "@dataclass(frozen=True)\nclass {}:", pascal(shape));
+        out.push_str(&docstring(&section.doc, "    "));
+        for field in &section.fields {
+            let _ = writeln!(
+                out,
+                "\n    {}: {}",
+                identifier(&field.name),
+                python_scalar(field.scalar)
+            );
+            out.push_str(&docstring(&field.doc, "    "));
+        }
+        out.push('\n');
+    }
+}
+
+fn render_decoded_class(
+    out: &mut String,
+    name: &str,
+    schema: &BlobSchema,
+    shapes: &mut BTreeSet<String>,
+) {
+    render_shape_classes(out, schema, shapes);
     let _ = writeln!(out, "@dataclass(frozen=True)\nclass {name}:");
     out.push_str(&docstring(
         &format!("A decoded {name} blob.\n\n{}", schema.doc),
@@ -1650,6 +1692,16 @@ fn render_decoded_class(out: &mut String, name: &str, schema: &BlobSchema) {
     ));
     for section in &schema.sections {
         match section.kind {
+            SectionKind::Fixed if section.shape.is_some() => {
+                let shape = section.shape.as_deref().unwrap_or_default();
+                let _ = writeln!(
+                    out,
+                    "\n    {}: {}",
+                    identifier(&section.name),
+                    pascal(shape)
+                );
+                out.push_str(&docstring(&section.doc, "    "));
+            }
             SectionKind::Fixed => {
                 for field in &section.fields {
                     let _ = writeln!(
@@ -1677,6 +1729,35 @@ fn render_decoded_class(out: &mut String, name: &str, schema: &BlobSchema) {
         }
     }
     out.push_str("\n\n");
+}
+
+/// Constructing a shaped section: one call rather than a field per
+/// value, so the blob's dataclass carries one field for the shape.
+fn render_shaped_construction(out: &mut String, section: &SectionSchema, at: &str) {
+    let shape = section.shape.as_deref().unwrap_or_default();
+    let _ = writeln!(
+        out,
+        "        {}={}(",
+        identifier(&section.name),
+        pascal(shape)
+    );
+    for (slot, field) in section.fields.iter().enumerate() {
+        let read = format!(
+            "blob.fixed({at}, {slot}, \"{}\")",
+            format_code(field.scalar)
+        );
+        let _ = writeln!(
+            out,
+            "            {}={},",
+            identifier(&field.name),
+            if field.scalar.is_float() {
+                read
+            } else {
+                format!("int({read})")
+            }
+        );
+    }
+    let _ = writeln!(out, "        ),");
 }
 
 fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
@@ -1709,6 +1790,9 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
     for section in &schema.sections {
         let at = format!("at_{}", snake(&section.name));
         match section.kind {
+            SectionKind::Fixed if section.shape.is_some() => {
+                render_shaped_construction(out, section, &at);
+            }
             SectionKind::Fixed => {
                 for (slot, field) in section.fields.iter().enumerate() {
                     let read = format!(
