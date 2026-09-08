@@ -167,3 +167,353 @@ export interface IntlRender {
  */
 export declare function decodeIntlRender(bytes: Uint8Array): IntlRender;
 
+/**
+ * The `grahas` section of a Chart blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+ */
+export interface ChartGrahas {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its longitude in the chart's zodiac, degrees.
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * Its longitude in the tropical zodiac, degrees.
+   */
+  readonly tropicalDeg: Float64Array;
+  /**
+   * Its latitude, degrees.
+   */
+  readonly latitudeDeg: Float64Array;
+  /**
+   * Its distance in astronomical units; zero for a point that has none.
+   */
+  readonly distanceAu: Float64Array;
+  /**
+   * Its longitude speed, degrees per day; negative when retrograde.
+   */
+  readonly speedDegPerDay: Float64Array;
+  /**
+   * The bhava it stands in, 1 to 12.
+   */
+  readonly houseBhava: Uint8Array;
+  /**
+   * The house system that produced that bhava.
+   * The values are `HouseSystem` ids.
+   */
+  readonly houseMethod: Uint16Array;
+  /**
+   * How far through the bhava it stands, 0 to 1.
+   */
+  readonly houseThrough: Float64Array;
+  /**
+   * Its distance from the bhava's madhya, degrees.
+   */
+  readonly houseFromMadhyaDeg: Float64Array;
+  /**
+   * The bhava of the chart's chalit it stands in, 1 to 12.
+   */
+  readonly placementBhava: Uint8Array;
+  /**
+   * The house system that produced the chalit.
+   * The values are `HouseSystem` ids.
+   */
+  readonly placementMethod: Uint16Array;
+  /**
+   * How far through that bhava it stands, 0 to 1.
+   */
+  readonly placementThrough: Float64Array;
+  /**
+   * Its distance from that bhava's madhya, degrees.
+   */
+  readonly placementFromMadhyaDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `houses` section of a Chart blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The twelve bhavas for "which house is it in": one row per bhava, first to twelfth.
+ */
+export interface ChartHouses {
+  /**
+   * The bhava's centre, degrees.
+   */
+  readonly madhyaDeg: Float64Array;
+  /**
+   * The bhava's opening cusp, degrees.
+   */
+  readonly sandhiDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `chalit` section of a Chart blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The twelve bhavas of the chart's chalit, the same shape as `houses`.
+ */
+export interface ChartChalit {
+  /**
+   * The bhava's centre, degrees.
+   */
+  readonly madhyaDeg: Float64Array;
+  /**
+   * The bhava's opening cusp, degrees.
+   */
+  readonly sandhiDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The day the instant belongs to: its arc, its date and how it was reckoned.
+ */
+export interface Day {
+  /**
+   * The sunrise that opened the day, as a Julian day (UTC).
+   */
+  readonly sunrise: number;
+  /**
+   * The sunset that closed its daylight, as a Julian day (UTC).
+   */
+  readonly sunset: number;
+  /**
+   * The sunrise that closes it, as a Julian day (UTC).
+   */
+  readonly nextSunrise: number;
+  /**
+   * The weekday the day carries.
+   * The value is a `Vara` id.
+   */
+  readonly vara: number;
+  /**
+   * Which arc of the day the instant falls in.
+   * The value is a `DayPart` id.
+   */
+  readonly part: number;
+  /**
+   * How far through that arc the instant is, 0 to 1.
+   */
+  readonly elapsed: number;
+  /**
+   * The calendar the date is in.
+   * The value is a `Calendar` id.
+   */
+  readonly calendar: number;
+  /**
+   * The era the date's year is counted in.
+   * The value is a `Era` id.
+   */
+  readonly era: number;
+  /**
+   * The astronomical year; 1 BCE is 0.
+   */
+  readonly year: number;
+  /**
+   * The year as the era counts it.
+   */
+  readonly eraYear: number;
+  /**
+   * The month, 1 to 12 or 13.
+   */
+  readonly month: number;
+  /**
+   * The day of the month.
+   */
+  readonly dayOfMonth: number;
+  /**
+   * How the date was resolved.
+   * The value is a `Resolution` id.
+   */
+  readonly resolution: number;
+  /**
+   * The engine's month where it differs from the table's; zero otherwise.
+   */
+  readonly computedMonth: number;
+  /**
+   * The engine's day where it differs from the table's; zero otherwise.
+   */
+  readonly computedDay: number;
+  /**
+   * Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.
+   * The value is a `Sunrise` id.
+   */
+  readonly conventionKind: number;
+  /**
+   * The altitude in degrees when the convention is custom; zero otherwise.
+   */
+  readonly conventionValue: number;
+}
+
+/**
+ * A decoded Chart blob.
+ *
+ * A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.
+ */
+export interface Chart {
+  /**
+   * The instant the chart is cast for, as a Julian day (UTC).
+   */
+  readonly instant: number;
+  /**
+   * What kind of chart this is.
+   * The value is a `ChartKind` id.
+   */
+  readonly kind: number;
+  /**
+   * The lagna at the instant, in the chart's zodiac, degrees.
+   */
+  readonly lagnaDeg: number;
+  /**
+   * The lagna at the sunrise that opened the day, degrees.
+   */
+  readonly dayLagnaDeg: number;
+  /**
+   * The place's latitude, degrees north.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The place's altitude, metres.
+   */
+  readonly altitudeM: number;
+  /**
+   * How many rows the `grahas` section holds.
+   */
+  readonly grahaCount: number;
+  /**
+   * One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+   */
+  readonly grahas: ChartGrahas;
+  /**
+   * The system the houses were computed under.
+   * The value is a `HouseSystem` id.
+   */
+  readonly housesMethod: number;
+  /**
+   * The system its cusps came from.
+   * The value is a `HouseSystem` id.
+   */
+  readonly housesSource: number;
+  /**
+   * Which bound the houses are read against.
+   * The value is a `Reading` id.
+   */
+  readonly housesReading: number;
+  /**
+   * The system the chalit was computed under.
+   * The value is a `HouseSystem` id.
+   */
+  readonly chalitMethod: number;
+  /**
+   * The system its cusps came from.
+   * The value is a `HouseSystem` id.
+   */
+  readonly chalitSource: number;
+  /**
+   * Which bound the chalit is read against.
+   * The value is a `Reading` id.
+   */
+  readonly chalitReading: number;
+  /**
+   * The twelve bhavas for "which house is it in": one row per bhava, first to twelfth.
+   */
+  readonly houses: ChartHouses;
+  /**
+   * The twelve bhavas of the chart's chalit, the same shape as `houses`.
+   */
+  readonly chalit: ChartChalit;
+  /**
+   * The frame the positions were asked for, packed as the port packs it.
+   */
+  readonly frameBits: number;
+  /**
+   * The ayanamsha applied, degrees; zero for a tropical chart.
+   */
+  readonly offsetDeg: number;
+  /**
+   * 0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define.
+   */
+  readonly ayanamshaKind: number;
+  /**
+   * Which catalogued ayanamsha, when the kind is 1.
+   * The value is a `Ayanamsha` id.
+   */
+  readonly ayanamsha: number;
+  /**
+   * The day the instant belongs to: its arc, its date and how it was reckoned.
+   */
+  readonly day: Day;
+  /**
+   * The ishtakaal's ghatis since sunrise, 0 to 59.
+   */
+  readonly ghati: number;
+  /**
+   * Its palas, 0 to 59.
+   */
+  readonly pala: number;
+  /**
+   * Its vipalas, 0 to 59.
+   */
+  readonly vipala: number;
+  /**
+   * How the ghatis were measured.
+   * The value is a `GhatiReckoning` id.
+   */
+  readonly ghatiReckoning: number;
+  /**
+   * Which hora of the day holds the instant, 1 to 24.
+   */
+  readonly horaNumber: number;
+  /**
+   * The graha that rules it.
+   * The value is a `Graha` id.
+   */
+  readonly horaLord: number;
+  /**
+   * When that hora began, as a Julian day (UTC).
+   */
+  readonly horaStart: number;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly horaEnd: number;
+  /**
+   * How the horas were measured.
+   * The value is a `HoraReckoning` id.
+   */
+  readonly horaReckoning: number;
+  /**
+   * UTF-8 text: the solar model that reckoned the day, as it describes itself.
+   */
+  readonly model: string;
+  /**
+   * UTF-8 JSON: the completion steps applied, in order, each `{"name", "implementation"}`.
+   */
+  readonly steps: string;
+  /**
+   * UTF-8 JSON: the provenance envelope of the result, canonical.
+   */
+  readonly provenance: string;
+}
+
+/**
+ * Decodes a Chart blob. The columns are views over `bytes`, so the
+ * buffer must outlive the result; a blob of another layout version or
+ * another schema is a `TypeError`.
+ */
+export declare function decodeChart(bytes: Uint8Array): Chart;
+

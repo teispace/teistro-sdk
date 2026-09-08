@@ -106,10 +106,28 @@ Both take a request struct rather than a long argument list, as
 `ts_positions` does, so a field added later does not move an argument.
 Both answer a blob the caller frees with `ts_blob_free`.
 
-A request carries the instant or the date, the place, the chart kind, and
-nothing else: everything else is the context's settings, which is what
+A request carries the instant or the date, the place, the chart kind —
+and **the local clock**, which is the one thing a chart needs that no
+setting knows.
+
+That last is a correction to what this section first said. `Founder::new`
+takes seven things: a provider, the resolved settings, a solar model, a
+calendar, a clock, a precession model and a Delta T model. The context
+has the provider, the settings and Delta T; the model and the precession
+come from the settings. The clock does not come from anywhere. A chart's
+day is reckoned from a local sunrise and its date is a civil date, and a
+longitude gives local *mean* time rather than a civil offset, so the
+caller has to say. Everything else stays in the settings, which is what
 makes two calls under one context comparable and what the settings hash
 is for.
+
+The calendar has an answer already waiting for it. `calendars.civil_calendar`
+is one of the thirteen knobs `check-lints` reports as having no reader,
+and its own deferral says why: *"this gains a reader when `serial` or a
+binding builds a chart from a settings document alone."* That is this
+entry point. The knob is read here rather than the request naming a
+calendar, which is both the honest reading of the knob and one fewer
+field on the request.
 
 ## 6. Tests
 
@@ -236,6 +254,19 @@ five rather than describing part of one.
 - **What `State` at the boundary is.** The description has a `State`, and
   it is the planetary one — retrograde, combust, gandanta — not the
   day's. The two names collide and the day's needs a different one.
+- **Which precession, and who chooses.** `Founder::new` takes a
+  `PrecessionModel`, the settings have no knob for one, and every caller
+  in the workspace names `Vondrak2011` by hand — five sites, and the
+  boundary would be the sixth. There is no `Default` impl, so the SDK
+  has a de facto default that nothing declares.
+
+  Two things, and only the first belongs to this page. **Name it once**:
+  `impl Default for PrecessionModel` giving Vondrak2011, so the five
+  sites and the boundary say `::default()` and the choice lives in one
+  place. Whether it should instead be a settings knob — as `time.delta_t`
+  is, and precession is the same kind of choice — is a larger question:
+  it moves the settings hash of every profile, so it is a decision with
+  a Numbers line rather than a tidy-up.
 - **Whether `ts_chart_found` should take a batch.** `Founder` has
   `found_one` and a batch form, and the boundary's whole shape elsewhere
   is one call per grid. A rectification pass wants a hundred charts and

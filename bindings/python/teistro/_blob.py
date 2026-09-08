@@ -292,3 +292,383 @@ def decode_intl_render(raw: bytes) -> IntlRender:
     )
 
 
+@dataclass(frozen=True)
+class ChartGrahas:
+    """The `grahas` section of a Chart blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    longitude_deg: memoryview[float]
+    """Its longitude in the chart's zodiac, degrees."""
+
+    tropical_deg: memoryview[float]
+    """Its longitude in the tropical zodiac, degrees."""
+
+    latitude_deg: memoryview[float]
+    """Its latitude, degrees."""
+
+    distance_au: memoryview[float]
+    """Its distance in astronomical units; zero for a point that has none."""
+
+    speed_deg_per_day: memoryview[float]
+    """Its longitude speed, degrees per day; negative when retrograde."""
+
+    house_bhava: memoryview[int]
+    """The bhava it stands in, 1 to 12."""
+
+    house_method: memoryview[int]
+    """The house system that produced that bhava."""
+
+    house_through: memoryview[float]
+    """How far through the bhava it stands, 0 to 1."""
+
+    house_from_madhya_deg: memoryview[float]
+    """Its distance from the bhava's madhya, degrees."""
+
+    placement_bhava: memoryview[int]
+    """The bhava of the chart's chalit it stands in, 1 to 12."""
+
+    placement_method: memoryview[int]
+    """The house system that produced the chalit."""
+
+    placement_through: memoryview[float]
+    """How far through that bhava it stands, 0 to 1."""
+
+    placement_from_madhya_deg: memoryview[float]
+    """Its distance from that bhava's madhya, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartHouses:
+    """The `houses` section of a Chart blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The twelve bhavas for "which house is it in": one row per bhava, first to twelfth.
+    """
+
+    madhya_deg: memoryview[float]
+    """The bhava's centre, degrees."""
+
+    sandhi_deg: memoryview[float]
+    """The bhava's opening cusp, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartChalit:
+    """The `chalit` section of a Chart blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The twelve bhavas of the chart's chalit, the same shape as `houses`.
+    """
+
+    madhya_deg: memoryview[float]
+    """The bhava's centre, degrees."""
+
+    sandhi_deg: memoryview[float]
+    """The bhava's opening cusp, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class Day:
+    """The day the instant belongs to: its arc, its date and how it was reckoned."""
+
+    sunrise: float
+    """The sunrise that opened the day, as a Julian day (UTC)."""
+
+    sunset: float
+    """The sunset that closed its daylight, as a Julian day (UTC)."""
+
+    next_sunrise: float
+    """The sunrise that closes it, as a Julian day (UTC)."""
+
+    vara: int
+    """The weekday the day carries."""
+
+    part: int
+    """Which arc of the day the instant falls in."""
+
+    elapsed: float
+    """How far through that arc the instant is, 0 to 1."""
+
+    calendar: int
+    """The calendar the date is in."""
+
+    era: int
+    """The era the date's year is counted in."""
+
+    year: int
+    """The astronomical year; 1 BCE is 0."""
+
+    era_year: int
+    """The year as the era counts it."""
+
+    month: int
+    """The month, 1 to 12 or 13."""
+
+    day_of_month: int
+    """The day of the month."""
+
+    resolution: int
+    """How the date was resolved."""
+
+    computed_month: int
+    """The engine's month where it differs from the table's; zero otherwise."""
+
+    computed_day: int
+    """The engine's day where it differs from the table's; zero otherwise."""
+
+    convention_kind: int
+    """Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude."""
+
+    convention_value: float
+    """The altitude in degrees when the convention is custom; zero otherwise."""
+
+@dataclass(frozen=True)
+class Chart:
+    """A decoded Chart blob.
+
+    A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.
+    """
+
+    instant: float
+    """The instant the chart is cast for, as a Julian day (UTC)."""
+
+    kind: int
+    """What kind of chart this is."""
+
+    lagna_deg: float
+    """The lagna at the instant, in the chart's zodiac, degrees."""
+
+    day_lagna_deg: float
+    """The lagna at the sunrise that opened the day, degrees."""
+
+    latitude_deg: float
+    """The place's latitude, degrees north."""
+
+    longitude_deg: float
+    """The place's longitude, degrees east."""
+
+    altitude_m: float
+    """The place's altitude, metres."""
+
+    graha_count: int
+    """How many rows the `grahas` section holds."""
+
+    grahas: ChartGrahas
+    """One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer."""
+
+    houses_method: int
+    """The system the houses were computed under."""
+
+    houses_source: int
+    """The system its cusps came from."""
+
+    houses_reading: int
+    """Which bound the houses are read against."""
+
+    chalit_method: int
+    """The system the chalit was computed under."""
+
+    chalit_source: int
+    """The system its cusps came from."""
+
+    chalit_reading: int
+    """Which bound the chalit is read against."""
+
+    houses: ChartHouses
+    """The twelve bhavas for "which house is it in": one row per bhava, first to twelfth."""
+
+    chalit: ChartChalit
+    """The twelve bhavas of the chart's chalit, the same shape as `houses`."""
+
+    frame_bits: int
+    """The frame the positions were asked for, packed as the port packs it."""
+
+    offset_deg: float
+    """The ayanamsha applied, degrees; zero for a tropical chart."""
+
+    ayanamsha_kind: int
+    """0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define."""
+
+    ayanamsha: int
+    """Which catalogued ayanamsha, when the kind is 1."""
+
+    day: Day
+    """The day the instant belongs to: its arc, its date and how it was reckoned."""
+
+    ghati: int
+    """The ishtakaal's ghatis since sunrise, 0 to 59."""
+
+    pala: int
+    """Its palas, 0 to 59."""
+
+    vipala: int
+    """Its vipalas, 0 to 59."""
+
+    ghati_reckoning: int
+    """How the ghatis were measured."""
+
+    hora_number: int
+    """Which hora of the day holds the instant, 1 to 24."""
+
+    hora_lord: int
+    """The graha that rules it."""
+
+    hora_start: float
+    """When that hora began, as a Julian day (UTC)."""
+
+    hora_end: float
+    """When it ends, as a Julian day (UTC)."""
+
+    hora_reckoning: int
+    """How the horas were measured."""
+
+    model: str
+    """UTF-8 text: the solar model that reckoned the day, as it describes itself."""
+
+    steps: str
+    """UTF-8 JSON: the completion steps applied, in order, each `{"name", "implementation"}`."""
+
+    provenance: str
+    """UTF-8 JSON: the provenance envelope of the result, canonical."""
+
+
+def decode_chart(raw: bytes) -> Chart:
+    """Decodes a Chart blob.
+
+    The columns are views over `raw`, so the buffer must outlive the
+    result; a blob of another layout version or another schema is a
+    `BlobError`.
+    """
+    blob = _Blob(raw, 3, "chart")
+    at_summary = blob.section(1, "summary")
+    at_grahas = blob.section(2, "grahas")
+    at_readings = blob.section(3, "readings")
+    at_houses = blob.section(4, "houses")
+    at_chalit = blob.section(5, "chalit")
+    at_zodiac = blob.section(6, "zodiac")
+    at_day = blob.section(7, "day")
+    at_timing = blob.section(8, "timing")
+    at_model = blob.section(9, "model")
+    at_steps = blob.section(10, "steps")
+    at_provenance = blob.section(11, "provenance")
+    return Chart(
+        instant=blob.fixed(at_summary, 0, "d"),
+        kind=int(blob.fixed(at_summary, 1, "H")),
+        lagna_deg=blob.fixed(at_summary, 2, "d"),
+        day_lagna_deg=blob.fixed(at_summary, 3, "d"),
+        latitude_deg=blob.fixed(at_summary, 4, "d"),
+        longitude_deg=blob.fixed(at_summary, 5, "d"),
+        altitude_m=blob.fixed(at_summary, 6, "d"),
+        graha_count=int(blob.fixed(at_summary, 7, "I")),
+        grahas=ChartGrahas(
+            graha=blob.column(at_grahas, 0, 2, at_grahas.count).cast("H"),
+            longitude_deg=blob.column(
+                at_grahas, 1, 8, at_grahas.count
+            ).cast("d"),
+            tropical_deg=blob.column(
+                at_grahas, 2, 8, at_grahas.count
+            ).cast("d"),
+            latitude_deg=blob.column(
+                at_grahas, 3, 8, at_grahas.count
+            ).cast("d"),
+            distance_au=blob.column(
+                at_grahas, 4, 8, at_grahas.count
+            ).cast("d"),
+            speed_deg_per_day=blob.column(
+                at_grahas, 5, 8, at_grahas.count
+            ).cast("d"),
+            house_bhava=blob.column(
+                at_grahas, 6, 1, at_grahas.count
+            ).cast("B"),
+            house_method=blob.column(
+                at_grahas, 7, 2, at_grahas.count
+            ).cast("H"),
+            house_through=blob.column(
+                at_grahas, 8, 8, at_grahas.count
+            ).cast("d"),
+            house_from_madhya_deg=blob.column(
+                at_grahas, 9, 8, at_grahas.count
+            ).cast("d"),
+            placement_bhava=blob.column(
+                at_grahas, 10, 1, at_grahas.count
+            ).cast("B"),
+            placement_method=blob.column(
+                at_grahas, 11, 2, at_grahas.count
+            ).cast("H"),
+            placement_through=blob.column(
+                at_grahas, 12, 8, at_grahas.count
+            ).cast("d"),
+            placement_from_madhya_deg=blob.column(
+                at_grahas, 13, 8, at_grahas.count
+            ).cast("d"),
+            length=at_grahas.count,
+        ),
+        houses_method=int(blob.fixed(at_readings, 0, "H")),
+        houses_source=int(blob.fixed(at_readings, 1, "H")),
+        houses_reading=int(blob.fixed(at_readings, 2, "B")),
+        chalit_method=int(blob.fixed(at_readings, 3, "H")),
+        chalit_source=int(blob.fixed(at_readings, 4, "H")),
+        chalit_reading=int(blob.fixed(at_readings, 5, "B")),
+        houses=ChartHouses(
+            madhya_deg=blob.column(at_houses, 0, 8, at_houses.count).cast("d"),
+            sandhi_deg=blob.column(at_houses, 1, 8, at_houses.count).cast("d"),
+            length=at_houses.count,
+        ),
+        chalit=ChartChalit(
+            madhya_deg=blob.column(at_chalit, 0, 8, at_chalit.count).cast("d"),
+            sandhi_deg=blob.column(at_chalit, 1, 8, at_chalit.count).cast("d"),
+            length=at_chalit.count,
+        ),
+        frame_bits=int(blob.fixed(at_zodiac, 0, "I")),
+        offset_deg=blob.fixed(at_zodiac, 1, "d"),
+        ayanamsha_kind=int(blob.fixed(at_zodiac, 2, "B")),
+        ayanamsha=int(blob.fixed(at_zodiac, 3, "H")),
+        day=Day(
+            sunrise=blob.fixed(at_day, 0, "d"),
+            sunset=blob.fixed(at_day, 1, "d"),
+            next_sunrise=blob.fixed(at_day, 2, "d"),
+            vara=int(blob.fixed(at_day, 3, "H")),
+            part=int(blob.fixed(at_day, 4, "B")),
+            elapsed=blob.fixed(at_day, 5, "d"),
+            calendar=int(blob.fixed(at_day, 6, "H")),
+            era=int(blob.fixed(at_day, 7, "H")),
+            year=int(blob.fixed(at_day, 8, "i")),
+            era_year=int(blob.fixed(at_day, 9, "i")),
+            month=int(blob.fixed(at_day, 10, "B")),
+            day_of_month=int(blob.fixed(at_day, 11, "B")),
+            resolution=int(blob.fixed(at_day, 12, "B")),
+            computed_month=int(blob.fixed(at_day, 13, "B")),
+            computed_day=int(blob.fixed(at_day, 14, "B")),
+            convention_kind=int(blob.fixed(at_day, 15, "B")),
+            convention_value=blob.fixed(at_day, 16, "d"),
+        ),
+        ghati=int(blob.fixed(at_timing, 0, "B")),
+        pala=int(blob.fixed(at_timing, 1, "B")),
+        vipala=int(blob.fixed(at_timing, 2, "B")),
+        ghati_reckoning=int(blob.fixed(at_timing, 3, "B")),
+        hora_number=int(blob.fixed(at_timing, 4, "B")),
+        hora_lord=int(blob.fixed(at_timing, 5, "H")),
+        hora_start=blob.fixed(at_timing, 6, "d"),
+        hora_end=blob.fixed(at_timing, 7, "d"),
+        hora_reckoning=int(blob.fixed(at_timing, 8, "B")),
+        model=blob.text(at_model),
+        steps=blob.text(at_steps),
+        provenance=blob.text(at_provenance),
+    )
+
+

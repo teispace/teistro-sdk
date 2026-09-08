@@ -10968,6 +10968,429 @@
           "fields": []
         }
       ]
+    },
+    {
+      "name": "chart",
+      "id": 3,
+      "doc": "A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.",
+      "sections": [
+        {
+          "id": 1,
+          "name": "summary",
+          "doc": "The chart itself: when, where, what kind, and the two lagnas.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "instant",
+              "scalar": "f64",
+              "doc": "The instant the chart is cast for, as a Julian day (UTC)."
+            },
+            {
+              "name": "kind",
+              "scalar": "u16",
+              "doc": "What kind of chart this is.",
+              "enum": "ChartKind"
+            },
+            {
+              "name": "lagna_deg",
+              "scalar": "f64",
+              "doc": "The lagna at the instant, in the chart's zodiac, degrees."
+            },
+            {
+              "name": "day_lagna_deg",
+              "scalar": "f64",
+              "doc": "The lagna at the sunrise that opened the day, degrees."
+            },
+            {
+              "name": "latitude_deg",
+              "scalar": "f64",
+              "doc": "The place's latitude, degrees north."
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "The place's longitude, degrees east."
+            },
+            {
+              "name": "altitude_m",
+              "scalar": "f64",
+              "doc": "The place's altitude, metres."
+            },
+            {
+              "name": "graha_count",
+              "scalar": "u32",
+              "doc": "How many rows the `grahas` section holds."
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "grahas",
+          "doc": "One row per graha, in the catalogue's order. `house_*` is the bhava for \"which house is it in\"; `placement_*` is the chart's chalit, which is a different question and often a different answer.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Its longitude in the chart's zodiac, degrees."
+            },
+            {
+              "name": "tropical_deg",
+              "scalar": "f64",
+              "doc": "Its longitude in the tropical zodiac, degrees."
+            },
+            {
+              "name": "latitude_deg",
+              "scalar": "f64",
+              "doc": "Its latitude, degrees."
+            },
+            {
+              "name": "distance_au",
+              "scalar": "f64",
+              "doc": "Its distance in astronomical units; zero for a point that has none."
+            },
+            {
+              "name": "speed_deg_per_day",
+              "scalar": "f64",
+              "doc": "Its longitude speed, degrees per day; negative when retrograde."
+            },
+            {
+              "name": "house_bhava",
+              "scalar": "u8",
+              "doc": "The bhava it stands in, 1 to 12."
+            },
+            {
+              "name": "house_method",
+              "scalar": "u16",
+              "doc": "The house system that produced that bhava.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "house_through",
+              "scalar": "f64",
+              "doc": "How far through the bhava it stands, 0 to 1."
+            },
+            {
+              "name": "house_from_madhya_deg",
+              "scalar": "f64",
+              "doc": "Its distance from the bhava's madhya, degrees."
+            },
+            {
+              "name": "placement_bhava",
+              "scalar": "u8",
+              "doc": "The bhava of the chart's chalit it stands in, 1 to 12."
+            },
+            {
+              "name": "placement_method",
+              "scalar": "u16",
+              "doc": "The house system that produced the chalit.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "placement_through",
+              "scalar": "f64",
+              "doc": "How far through that bhava it stands, 0 to 1."
+            },
+            {
+              "name": "placement_from_madhya_deg",
+              "scalar": "f64",
+              "doc": "Its distance from that bhava's madhya, degrees."
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "readings",
+          "doc": "Which house system produced each set of bhavas, and which bound each is read against.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "houses_method",
+              "scalar": "u16",
+              "doc": "The system the houses were computed under.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "houses_source",
+              "scalar": "u16",
+              "doc": "The system its cusps came from.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "houses_reading",
+              "scalar": "u8",
+              "doc": "Which bound the houses are read against.",
+              "enum": "TsReading"
+            },
+            {
+              "name": "chalit_method",
+              "scalar": "u16",
+              "doc": "The system the chalit was computed under.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "chalit_source",
+              "scalar": "u16",
+              "doc": "The system its cusps came from.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "chalit_reading",
+              "scalar": "u8",
+              "doc": "Which bound the chalit is read against.",
+              "enum": "TsReading"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "houses",
+          "doc": "The twelve bhavas for \"which house is it in\": one row per bhava, first to twelfth.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "madhya_deg",
+              "scalar": "f64",
+              "doc": "The bhava's centre, degrees."
+            },
+            {
+              "name": "sandhi_deg",
+              "scalar": "f64",
+              "doc": "The bhava's opening cusp, degrees."
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "chalit",
+          "doc": "The twelve bhavas of the chart's chalit, the same shape as `houses`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "madhya_deg",
+              "scalar": "f64",
+              "doc": "The bhava's centre, degrees."
+            },
+            {
+              "name": "sandhi_deg",
+              "scalar": "f64",
+              "doc": "The bhava's opening cusp, degrees."
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "zodiac",
+          "doc": "The zodiac the chart is measured in.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "frame_bits",
+              "scalar": "u32",
+              "doc": "The frame the positions were asked for, packed as the port packs it."
+            },
+            {
+              "name": "offset_deg",
+              "scalar": "f64",
+              "doc": "The ayanamsha applied, degrees; zero for a tropical chart."
+            },
+            {
+              "name": "ayanamsha_kind",
+              "scalar": "u8",
+              "doc": "0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define."
+            },
+            {
+              "name": "ayanamsha",
+              "scalar": "u16",
+              "doc": "Which catalogued ayanamsha, when the kind is 1.",
+              "enum": "Ayanamsha"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "day",
+          "doc": "The day the instant belongs to: its arc, its date and how it was reckoned.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "sunrise",
+              "scalar": "f64",
+              "doc": "The sunrise that opened the day, as a Julian day (UTC)."
+            },
+            {
+              "name": "sunset",
+              "scalar": "f64",
+              "doc": "The sunset that closed its daylight, as a Julian day (UTC)."
+            },
+            {
+              "name": "next_sunrise",
+              "scalar": "f64",
+              "doc": "The sunrise that closes it, as a Julian day (UTC)."
+            },
+            {
+              "name": "vara",
+              "scalar": "u16",
+              "doc": "The weekday the day carries.",
+              "enum": "Vara"
+            },
+            {
+              "name": "part",
+              "scalar": "u8",
+              "doc": "Which arc of the day the instant falls in.",
+              "enum": "TsDayPart"
+            },
+            {
+              "name": "elapsed",
+              "scalar": "f64",
+              "doc": "How far through that arc the instant is, 0 to 1."
+            },
+            {
+              "name": "calendar",
+              "scalar": "u16",
+              "doc": "The calendar the date is in.",
+              "enum": "Calendar"
+            },
+            {
+              "name": "era",
+              "scalar": "u16",
+              "doc": "The era the date's year is counted in.",
+              "enum": "Era"
+            },
+            {
+              "name": "year",
+              "scalar": "i32",
+              "doc": "The astronomical year; 1 BCE is 0."
+            },
+            {
+              "name": "era_year",
+              "scalar": "i32",
+              "doc": "The year as the era counts it."
+            },
+            {
+              "name": "month",
+              "scalar": "u8",
+              "doc": "The month, 1 to 12 or 13."
+            },
+            {
+              "name": "day_of_month",
+              "scalar": "u8",
+              "doc": "The day of the month."
+            },
+            {
+              "name": "resolution",
+              "scalar": "u8",
+              "doc": "How the date was resolved.",
+              "enum": "TsResolution"
+            },
+            {
+              "name": "computed_month",
+              "scalar": "u8",
+              "doc": "The engine's month where it differs from the table's; zero otherwise."
+            },
+            {
+              "name": "computed_day",
+              "scalar": "u8",
+              "doc": "The engine's day where it differs from the table's; zero otherwise."
+            },
+            {
+              "name": "convention_kind",
+              "scalar": "u8",
+              "doc": "Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.",
+              "enum": "TsSunrise"
+            },
+            {
+              "name": "convention_value",
+              "scalar": "f64",
+              "doc": "The altitude in degrees when the convention is custom; zero otherwise."
+            }
+          ],
+          "shape": "day"
+        },
+        {
+          "id": 8,
+          "name": "timing",
+          "doc": "Where in its day the moment falls, in the reckonings the settings named.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "ghati",
+              "scalar": "u8",
+              "doc": "The ishtakaal's ghatis since sunrise, 0 to 59."
+            },
+            {
+              "name": "pala",
+              "scalar": "u8",
+              "doc": "Its palas, 0 to 59."
+            },
+            {
+              "name": "vipala",
+              "scalar": "u8",
+              "doc": "Its vipalas, 0 to 59."
+            },
+            {
+              "name": "ghati_reckoning",
+              "scalar": "u8",
+              "doc": "How the ghatis were measured.",
+              "enum": "TsGhatiReckoning"
+            },
+            {
+              "name": "hora_number",
+              "scalar": "u8",
+              "doc": "Which hora of the day holds the instant, 1 to 24."
+            },
+            {
+              "name": "hora_lord",
+              "scalar": "u16",
+              "doc": "The graha that rules it.",
+              "enum": "Graha"
+            },
+            {
+              "name": "hora_start",
+              "scalar": "f64",
+              "doc": "When that hora began, as a Julian day (UTC)."
+            },
+            {
+              "name": "hora_end",
+              "scalar": "f64",
+              "doc": "When it ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "hora_reckoning",
+              "scalar": "u8",
+              "doc": "How the horas were measured.",
+              "enum": "TsHoraReckoning"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "name": "model",
+          "doc": "UTF-8 text: the solar model that reckoned the day, as it describes itself.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 10,
+          "name": "steps",
+          "doc": "UTF-8 JSON: the completion steps applied, in order, each `{\"name\", \"implementation\"}`.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 11,
+          "name": "provenance",
+          "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
+          "kind": "bytes",
+          "fields": []
+        }
+      ]
     }
   ]
 }
