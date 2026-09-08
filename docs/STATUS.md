@@ -237,7 +237,8 @@ provider's DUT1).
    Every binding now ships **six worked examples** (`bindings/*/example/`,
    the same six scenarios in three languages, every file run by that
    binding's gate). Writing them was a falsification pass over the three
-   ergonomic layers, and what it found is recorded in
+   ergonomic layers; the nine gaps it found are in `CHANGELOG.md` and in
+   this file's session row, and the rule it earned is in
    `02-architecture/07-binding-architecture.md` under "Examples". Two
    things it left behind, both small and both worth doing before the next
    binding:
