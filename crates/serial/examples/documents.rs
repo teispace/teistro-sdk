@@ -164,6 +164,29 @@ pub fn samples() -> Vec<(&'static str, Document)> {
     ]
 }
 
+/// Every number in a canonical document, by scanning its text.
+///
+/// The text rather than a parsed value, because the parser is the thing
+/// under measurement here. The form has no whitespace and escapes a
+/// quote as `\"`, and none of the strings it writes — catalogue keys,
+/// member names, a model's description — carries one, so splitting on
+/// the quote alternates between outside a string and inside it.
+#[must_use]
+pub fn numbers(text: &str) -> Vec<f64> {
+    let mut found = Vec::new();
+    for (index, outside) in text.split('"').enumerate() {
+        if index % 2 == 1 {
+            continue;
+        }
+        for token in outside.split(|c: char| !(c.is_ascii_digit() || c == '.' || c == '-')) {
+            if let Ok(value) = token.parse::<f64>() {
+                found.push(value);
+            }
+        }
+    }
+    found
+}
+
 fn main() {
     let into = std::env::args().nth(1).unwrap_or_else(|| {
         panic!("usage: cargo run -p teistro-serial --example documents -- <directory>")
@@ -179,16 +202,39 @@ fn main() {
         // reads a stored document hashing it to the producer's hash. A
         // gate cannot check that without a second file, because only this
         // crate can write the form.
-        let parsed: serde_json::Value =
-            serde_json::from_str(&text).expect("the form reads back as JSON");
-        let again = to_hash_form(&parsed);
-        let round = directory.join(format!("{name}.again.json"));
-        std::fs::write(&round, &again).expect("the round trip is written");
+        // How the numbers fare through each of the two parsers, written
+        // beside the document because only this crate can write the
+        // form and a gate cannot recompute it.
+        //
+        // `str::parse` is correctly rounded, as JavaScript's
+        // `JSON.parse` and Python's `json` are; `serde_json`'s own
+        // number path is not, and lands a unit in the last place low
+        // often enough to matter.
+        let mut counted = 0_usize;
+        let mut by_std = 0_usize;
+        let mut by_serde = 0_usize;
+        for value in numbers(&text) {
+            counted += 1;
+            let written = to_hash_form(&value);
+            if written.parse::<f64>().map(f64::to_bits) != Ok(value.to_bits()) {
+                by_std += 1;
+            }
+
+            let serde_bits = serde_json::from_str::<f64>(&written)
+                .map(f64::to_bits)
+                .unwrap_or_default();
+            if serde_bits != value.to_bits() {
+                by_serde += 1;
+            }
+        }
+        let report = directory.join(format!("{name}.parsers.txt"));
+        std::fs::write(&report, format!("{counted} {by_std} {by_serde}\n"))
+            .expect("the parser report is written");
         println!(
-            "{} ({} bytes, {} on a round trip)",
+            "{} ({} bytes, {counted} numbers, {by_std} moved by a correct parser, \
+             {by_serde} by serde_json's)",
             path.display(),
             text.len(),
-            if again == text { "unchanged" } else { "MOVED" }
         );
     }
 }

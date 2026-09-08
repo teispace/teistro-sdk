@@ -33,7 +33,7 @@ Sections 3 and 4 decide it.
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-7 boolean, 38 integer, 6 null, 91 number, 98 string.
+7 boolean, 38 integer, 6 null, 93 number, 98 string.
 
 ## 3. A whole double is written as an integer
 
@@ -46,14 +46,16 @@ that really is a count.
 
 | numeric paths | integer in every sample | decimal somewhere | both, across samples |
 |---|---|---|---|
-| 128 | 37 | 90 | 1 |
+| 128 | 35 | 90 | 3 |
 
-The ambiguity is not theoretical. 1 path is written both ways within the
-same sample set:
+The ambiguity is not theoretical. 3 path iss written both ways within
+the same sample set:
 
 - `.foundation.grahas[].latitude_deg`
+- `.foundation.houses.madhya[]`
+- `.foundation.houses.sandhi[]`
 
-So a schema derived from the documents alone would type 37 paths on the
+So a schema derived from the documents alone would type 35 paths on the
 evidence of a sample that cannot tell a count from a round number. Some
 of them really are counts — a day of the month, a bhava — and some
 are doubles that happened to land on a whole value. Nothing in the JSON
@@ -157,68 +159,74 @@ the resolution of its own date. So a consumer reading one document meets
 both conventions, and a generated schema must take the spelling from
 each type rather than assume the majority's.
 
-## 9. The form is not a fixed point where the numbers are large
+## 9. The grammar is a fixed point, and one parser cannot see it
 
 The content hash rests on one invariant: a consumer that reads a stored
-document and hashes it again gets the producer's hash. The grammar
-writes every number to 12 decimals, which is inside an `f64`'s
+document and hashes it again gets the producer's hash. The grammar used
+to write every number to 12 decimals, which is inside an `f64`'s
 resolution for a longitude and outside it for a Julian day — four
 orders of magnitude larger, where one unit in the last place is already
-about 5e-10.
+about 5e-10. The three digits past the resolution were the decimal
+expansion of a binary value rather than information, and they did not
+survive a parse: `2460483.108666389249` was written, read, and written
+again as `2460483.108666389715`.
 
-| sample | largest number | decimals resolved there | numbers written past it | writing it twice |
-|---|---|---|---|---|
-| `whole` | 2460506 | 10 | 213 | **falsified** |
-| `day` | 2460506 | 10 | 213 | **falsified** |
-| `bare` | 2460483 | 10 | 6 | holds |
+It now writes the **shortest** decimal that reads back as the same
+double, which is a fixed point by construction and still never an
+exponent.
 
-The three digits past the resolution are the decimal expansion of a
-binary value, not information, and they do not survive a parse:
-`2460483.108666389249` is written, read, and written again as
-`2460483.108666389715`.
+| sample | largest number | decimals resolved there | numbers | a correct parser moves | `serde_json` moves |
+|---|---|---|---|---|---|
+| `whole` | 2460506 | 10 | 938 | 0 | 64 |
+| `day` | 2460506 | 10 | 409 | 0 | 13 |
+| `bare` | 2460483 | 10 | 171 | 0 | 7 |
 
-Whether a given value survives is a coin toss, which is why the smallest
-sample holding does not make it safe: a foundation alone carries a
-handful of instants and happens to win every toss, and a document with
-an almanac in it carries two hundred and loses. The finding is not that
-a large document fails but that any document may, and one that does is
-one whose stored hash a reader cannot reproduce.
+The fifth column is the grammar's whole claim, and it is nought
+everywhere: measured against a **correctly rounded** parser —
+`str::parse`, JavaScript's `JSON.parse`, Python's `json` — every
+number the form writes reads back as the very same double.
 
-`serial-measured.md` asserted this invariant and found it held, over the
-corpus's recorded documents — whose numbers are longitudes and speeds,
-all under 360. A chart document carries the instant it was cast for, and
-that is where the grammar runs out.
+The sixth is a separate finding, and it lands on the reader this page
+says has to be written. **`serde_json`'s own number path is not
+correctly rounded**: it reads `218.91170673806658` as the double one
+unit in the last place below, and does that to about one number in
+fifteen. A Rust consumer reading a Teistro document through
+`serde_json::Value` therefore cannot reproduce its hash, however correct
+the grammar is. The SDK's own reader has to parse a number with
+`str::parse`, or with `serde_json`'s `arbitrary_precision` which defers
+to it, rather than with the default number path.
 
-The fix is a decision rather than a patch, because it moves the hash of
-every document: a shortest-round-trip decimal, which Rust and JavaScript
-already agree on, rendered without an exponent as this grammar already
-renders one. It belongs to the design page.
+`serial-measured.md` asserted the fixed point and found it held, over
+the corpus's recorded documents — whose numbers are longitudes and
+speeds, all under 360. A chart document carries the instant it was cast
+for, and that is where a fixed count of decimals ran out.
 
 ## 10. What this decides
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the schema can be derived from the documents | falsified | 37 of 128 numeric paths are ambiguous |
+| the schema can be derived from the documents | falsified | 35 of 128 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
 | the layer's types read back, so a round trip can gate the schema | falsified | 0 types derive `Deserialize` |
 | one casing convention covers every enum in a document | falsified | 2 conventions declared |
-| the canonical form of a document is a fixed point | falsified | 2 of 3 samples move when written twice |
+| every number the form writes reads back as the same double | **holds** | 0 of 1518 move under a correct parser |
+| any JSON parser can reproduce a stored document's hash | falsified | `serde_json` moves 84 of 1518 |
 
-The measurement falsifies 5 of the 5 proposed rules. The first four say
+The measurement falsifies 5 of the 6 proposed rules. The first four say
 the same thing about **where** a schema comes from: the description,
 beside the other four surfaces, and not a sample nor a derive macro over
 the Rust types. The description is the only place that has the member
 lists, and the only place that cannot disagree with what the bindings
 already say.
 
-The fifth says something about **when**. A schema describes a document a
-consumer will store and read back, and two of the three samples do not
-survive being read back and written again, so the bytes a schema would
-describe are not yet stable. The round trip is the other half of that:
-until the layer's values derive `Deserialize`, the schema's natural gate
-— every sample validates and reads back equal — cannot be written at
-all.
+The last two are about the bytes a schema would be describing, and they
+are why an emitter is not the next thing to write. The grammar now
+holds: every number the form writes reads back as the same double. But
+nothing in the layer derives `Deserialize`, so the schema's natural gate
+— every sample validates and reads back equal — still cannot be
+written; and when that reader is written it must not take its numbers
+from `serde_json`'s default path, which cannot reproduce the hash it is
+meant to check.
 
-Both are the design page's questions rather than this pass's, and both
-come before an emitter.
+The reader comes first, then the emitter.
 

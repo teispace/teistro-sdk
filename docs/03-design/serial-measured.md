@@ -94,13 +94,13 @@ reads back as the same double, and so does JavaScript's — but the two
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every number of the corpus round-trips through the form | falsified | 22188 of 193 366 disagree |
+| every number of the corpus round-trips through the form | **holds** | 0 of 193 366 disagree |
 | the form never reaches for an exponent | **holds** | 0 of 193 366 do |
 | `output.precision` has a reader | **holds** | 0 of 1 disagree |
 
 Measured over the corpus's own numbers: every one round-trips, and
 0 of them are written with an exponent already; the widest
-form is 20 characters, `2447995.489583333489`.
+form is 38 characters, `-0.00000000000000000037731895548623034`.
 
 The form reaches for an exponent **below 10^?** and at or above
 10^?. That first threshold is the one that bites, and here is the

@@ -155,10 +155,14 @@ mod tests {
         let other = Sealed::new(vec![2.0_f64], provenance());
         assert_eq!(one.content_hash(), same.content_hash());
         assert_ne!(one.content_hash(), other.content_hash());
-        // And two values differing below the grammar's resolution are
-        // one answer, which is what the grammar is for.
+        // Two doubles that differ at all are two answers. The grammar
+        // used to round them together below twelve decimals, which made
+        // the form lossy on purpose — and not a fixed point, which is
+        // the property a content hash actually rests on. "Would these
+        // compute the same" is the **settings** hash's question; this
+        // one asks whether the bytes are the same bytes.
         let near = Sealed::new(vec![1.000_000_000_000_01_f64], provenance());
-        assert_eq!(one.content_hash(), near.content_hash());
+        assert_ne!(one.content_hash(), near.content_hash());
     }
 
     #[test]

@@ -19,12 +19,38 @@ use sha2::{Digest, Sha256};
 /// on `(input_hash, settings_hash, calculation_version)`.
 pub const CALCULATION_VERSION: u32 = 1;
 
-/// The decimals the canonical form writes a number to.
+/// The most decimals a **rendering** may ask a number to be written to.
 ///
 /// A double carries about seventeen significant decimal digits, and the
 /// SDK's quantities are degrees, days and scores under a million: twelve
 /// decimals is finer than a nanoarcsecond and coarser than the noise.
+///
+/// It is not what the **hash** form writes, which is
+/// [`Digits::Shortest`] — a fixed count is not a fixed point, and
+/// `03-design/schema-measured.md` §9 measured where it stops being one.
 pub const CANONICAL_DECIMALS: u8 = 12;
+
+/// How a number is written in the canonical form.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Digits {
+    /// The shortest decimal that reads back as the very same double.
+    ///
+    /// This is what the **hash** form writes, and it is the only choice
+    /// that makes the form a *fixed point*: writing what it wrote gives
+    /// the same bytes. A fixed count of decimals does not, because a
+    /// double's resolution depends on its magnitude — at a Julian day's
+    /// 2.46e6 one unit in the last place is already about 5e-10, so
+    /// twelve decimals writes three digits that are the expansion of a
+    /// binary value rather than information, and they do not survive a
+    /// parse. A consumer that stores a document and hashes it again
+    /// would not get the producer's hash, which is the one thing this
+    /// form exists to guarantee.
+    Shortest,
+    /// Rounded to this many decimals, trailing zeros removed.
+    ///
+    /// This is what a **rendering** writes, and it is never hashed.
+    Rounded(u8),
+}
 
 /// The canonical JSON of a value: every object's keys in code-point
 /// order, no whitespace, and every number as a plain decimal — so two
@@ -42,24 +68,36 @@ pub const CANONICAL_DECIMALS: u8 = 12;
 /// `1e-6` where JavaScript's writes `0.000001`: two bindings that agree
 /// about the number would disagree about the bytes. A number here is a
 /// decimal with an optional leading `-`, at least one digit before the
-/// point and up to [`CANONICAL_DECIMALS`] after it with trailing zeros
-/// removed — never an exponent, never a bare `.5`, never `-0`. A
-/// binding implementing that grammar needs no float printer of its own.
+/// point, and the fewest digits after it that still read back as the
+/// same double, with trailing zeros removed — never an exponent, never
+/// a bare `.5`, never `-0`. Rust's own `Display` for a double is exactly
+/// that shortest form and never writes an exponent; JavaScript's
+/// `toString` is the same shortest form but *does* write an exponent
+/// outside 1e-6 to 1e21, so a binding has to expand those two ranges and
+/// needs no float printer of its own beyond that.
 ///
-/// It is a **lossy** form, deliberately: two doubles differing below its
-/// resolution hash alike, which is what a caller asking "is this the
-/// same answer" means.
+/// It is **exact**: two doubles that differ at all are written
+/// differently, and a value read back from the form writes the same
+/// bytes again. A form that rounded would be lossy in a way that is
+/// worse than useless here — it would make the hash unreproducible by
+/// the consumer storing it (`03-design/schema-measured.md` §9).
 #[must_use]
 pub fn canonical_json<T: serde::Serialize + ?Sized>(value: &T) -> String {
-    canonical_json_at(value, CANONICAL_DECIMALS)
+    written(value, Digits::Shortest)
 }
 
 /// The same, at a chosen number of decimals: what a **rendering** uses,
 /// which is never hashed.
 #[must_use]
 pub fn canonical_json_at<T: serde::Serialize + ?Sized>(value: &T, decimals: u8) -> String {
+    written(value, Digits::Rounded(decimals))
+}
+
+/// The canonical bytes of a value with its numbers written one way or
+/// the other. Both entry points above are this with their own choice.
+fn written<T: serde::Serialize + ?Sized>(value: &T, digits: Digits) -> String {
     serde_json::to_value(value)
-        .map_or_else(|_| String::new(), |value| write_canonical(&value, decimals))
+        .map_or_else(|_| String::new(), |value| write_canonical(&value, digits))
 }
 
 /// The hash of a value's canonical JSON.
@@ -69,18 +107,18 @@ pub fn content_hash<T: serde::Serialize + ?Sized>(value: &T) -> Hash {
 }
 
 /// A value in the canonical form, at a given number of decimals.
-fn write_canonical(value: &Value, decimals: u8) -> String {
+fn write_canonical(value: &Value, digits: Digits) -> String {
     let mut out = String::new();
-    push_canonical(value, decimals, &mut out);
+    push_canonical(value, digits, &mut out);
     out
 }
 
-fn push_canonical(value: &Value, decimals: u8, out: &mut String) {
+fn push_canonical(value: &Value, digits: Digits, out: &mut String) {
     match value {
         Value::Null => out.push_str("null"),
         Value::Bool(true) => out.push_str("true"),
         Value::Bool(false) => out.push_str("false"),
-        Value::Number(number) => out.push_str(&number_form(number, decimals)),
+        Value::Number(number) => out.push_str(&number_form(number, digits)),
         Value::String(text) => out.push_str(&string_form(text)),
         Value::Array(items) => {
             out.push('[');
@@ -88,7 +126,7 @@ fn push_canonical(value: &Value, decimals: u8, out: &mut String) {
                 if index > 0 {
                     out.push(',');
                 }
-                push_canonical(item, decimals, out);
+                push_canonical(item, digits, out);
             }
             out.push(']');
         }
@@ -105,7 +143,7 @@ fn push_canonical(value: &Value, decimals: u8, out: &mut String) {
                 out.push_str(&string_form(key));
                 out.push(':');
                 if let Some(nested) = fields.get(key) {
-                    push_canonical(nested, decimals, out);
+                    push_canonical(nested, digits, out);
                 }
             }
             out.push('}');
@@ -115,7 +153,7 @@ fn push_canonical(value: &Value, decimals: u8, out: &mut String) {
 
 /// A number in the grammar: a decimal, never an exponent, trailing zeros
 /// trimmed, and no negative nought.
-fn number_form(number: &serde_json::Number, decimals: u8) -> String {
+fn number_form(number: &serde_json::Number, digits: Digits) -> String {
     if let Some(integer) = number.as_i64() {
         return integer.to_string();
     }
@@ -124,12 +162,12 @@ fn number_form(number: &serde_json::Number, decimals: u8) -> String {
     }
     number
         .as_f64()
-        .map_or_else(|| String::from("0"), |double| decimal(double, decimals))
+        .map_or_else(|| String::from("0"), |double| decimal(double, digits))
 }
 
 /// A double as a plain decimal.
 #[must_use]
-pub fn decimal(value: f64, decimals: u8) -> String {
+pub fn decimal(value: f64, digits: Digits) -> String {
     if !value.is_finite() {
         // JSON has no infinity and no NaN; a value that reached here is
         // a caller's mistake and nought is the only representable
@@ -137,7 +175,14 @@ pub fn decimal(value: f64, decimals: u8) -> String {
         // before this.
         return String::from("0");
     }
-    let text = format!("{value:.*}", usize::from(decimals));
+    let text = match digits {
+        // Rust's `Display` for a double is the shortest decimal that
+        // reads back as the same value, and it never writes an exponent,
+        // which is this grammar's other rule. Nothing to do but ask for
+        // it.
+        Digits::Shortest => format!("{value}"),
+        Digits::Rounded(decimals) => format!("{value:.*}", usize::from(decimals)),
+    };
     let trimmed = if text.contains('.') {
         text.trim_end_matches('0').trim_end_matches('.')
     } else {

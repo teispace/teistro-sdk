@@ -247,21 +247,49 @@ publish a document it cannot itself read. This is the mirror of the
 previous pass's finding that `ChartFoundation` could not be serialised
 at all.
 
-**A document that carries an instant does not hash the same twice.** The
-canonical grammar writes twelve decimals, which is three past what an
-`f64` resolves at a Julian day's magnitude, so those digits are the
-decimal expansion of a binary value rather than information and do not
-survive a parse: `2460483.108666389249` is written, read, and written
-again as `2460483.108666389715`. A consumer that stores a document and
-hashes it does not get the producer's hash — the one guarantee the
-canonical form exists for. Survival is a coin toss per value, so a small
-document holding does not make it safe. The earlier pass asserted this
-invariant and found it held over the corpus's recorded documents, whose
-numbers are all under 360; a chart carries the instant it was cast for.
-**No number has moved yet**: the fix — a shortest-round-trip decimal,
-which Rust and JavaScript already agree on, rendered without an exponent
-as the grammar already renders one — moves the hash of every document,
-so it is recorded as a decision rather than taken as a patch.
+**Numbers: every content hash moves. No computed value does.** The
+canonical form now writes each number as the **shortest** decimal that
+reads back as the same double, where it wrote a fixed twelve decimals
+before. Nothing the SDK computes has changed — the same longitudes, the
+same instants, to the last bit — but the bytes they are written as have,
+and `content_hash` is taken over those bytes. A hash recorded from an
+earlier build will not match one taken now. **The settings hash does not
+move**: no setting holds a number that twelve decimals could not write.
+
+The old form was not a fixed point, which is the one property a content
+hash rests on. Twelve decimals was chosen on the stated grounds that
+"the SDK's own quantities are degrees, days and scores whose magnitudes
+are under 10⁶", and that premise is false: a Julian day is 2.46 × 10⁶,
+and a chart document carries the instant it was cast for. At that
+magnitude one unit in an `f64`'s last place is about 5 × 10⁻¹⁰, so three
+of the twelve digits were the decimal expansion of a binary value rather
+than information, and a parse did not return them —
+`2460483.108666389249` was written, read, and written again as
+`2460483.108666389715`. A consumer that stored a document and hashed it
+did not get the producer's hash.
+
+The measurement was already there and had not been read: the canonical
+form's own pass had recorded "every number of the corpus round-trips
+through the form" as **falsified**, at 22 188 of 193 366, and the module
+shipped. It now holds at 0 of 193 366. What made it impossible to leave
+was the consequence rather than the count — the schema pass asked what a
+consumer would validate and found the bytes were not stable.
+
+The form is exact rather than lossy now. Two doubles that differ at all
+are written differently, where the old form rounded them together below
+its resolution. That lossiness was deliberate, and is not missed:
+rounding never delivered it reliably (two values one unit apart straddle
+a rounding boundary some of the time), and "would these compute the
+same" is the **settings** hash's question. The content hash asks whether
+the bytes are the same bytes.
+
+**A Rust consumer must not read a document through `serde_json`'s
+default number path.** It is not correctly rounded — it reads
+`218.91170673806658` as the double one unit in the last place below, and
+does that to about one number in fifteen — so a reader built on it
+cannot reproduce the hash it is meant to check, however correct the
+grammar is. `str::parse` is correct, as are JavaScript's `JSON.parse`
+and Python's `json`.
 
 **Numbers:** reading a Bikram Sambat date no longer allocates. The date
 itself is unchanged; what moved is that `CalendarResolution` borrows the
