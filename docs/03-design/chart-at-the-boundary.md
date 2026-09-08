@@ -176,11 +176,39 @@ five rather than describing part of one.
   additive to the model, and the five sections still to come — the
   vargas, the state, the aspects, the points, the houses — all carry a
   chart's identity and would each want the same day again.
-- **Whether the day's date needs its own section.** A `CalendarDate` has
-  a calendar, a year, a month, a day, an era and its year, and a
-  resolution — seven of the day section's twenty leaves. Once the day
-  is shared the date rides with it, so this only matters if something
-  wants a date without a day.
+- **~~Whether the day's date needs its own section.~~ It already has
+  one.** The boundary describes `TsCalendarDate` — calendar, era, year,
+  era year, month, day, resolution, and the two computed fields — and
+  `TsResolution` with it, because a date already crosses for
+  `ts_calendar_convert`. The day section's date is those nine fields
+  flattened, and every binding already decodes one.
+- **Two of the day's fields have no boundary form, and one of them is
+  the interesting kind.** Of the day's eighteen leaves, the date is
+  described, the place belongs to the summary (§3), the instants are
+  doubles, and `vara`, `calendar` and `era` are catalogued. Two are
+  neither:
+
+  | field | in the document | what it is |
+  |---|---|---|
+  | `state` | `{"state": "NORMAL"}` | a tagged enum, not described |
+  | `convention` | `{"kind": "NAMED", "which": "CENTRE_NO_REFRACTION"}` | a tagged enum **with a payload**, not described |
+
+  The second is the one that matters. A catalogued member crosses as a
+  `u16` id, which is what every enum field in a blob is today. A tagged
+  enum whose variant carries data cannot: `NAMED` carries a `which`, and
+  the family this belongs to has variants carrying a `f64` elsewhere in
+  the calendar crate (`MonthStartRule::Shifted { days }`). Two fields
+  side by side would encode today's shape and would be a lie the first
+  time a variant carried something else.
+
+  This is not a blocker for the two blobs — the conventions a chart can
+  be founded under are enumerable, so a `u16` over the *pairs* is honest
+  — but it is a decision, and it is the first tagged-with-payload value
+  the boundary has met. It wants its own answer before a section carries
+  one, rather than a flattening chosen in a hurry.
+- **What `State` at the boundary is.** The description has a `State`, and
+  it is the planetary one — retrograde, combust, gandanta — not the
+  day's. The two names collide and the day's needs a different one.
 - **Whether `ts_chart_found` should take a batch.** `Founder` has
   `found_one` and a batch form, and the boundary's whole shape elsewhere
   is one call per grid. A rectification pass wants a hundred charts and
