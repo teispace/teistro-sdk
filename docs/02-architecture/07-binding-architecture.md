@@ -100,6 +100,25 @@ a typed error. The reference encoder and decoder live in `teistro-idl`
 and are what a generated decoder is checked against. Decoders are fuzz
 targets.
 
+## Examples
+
+Every binding carries a directory of runnable programs its own gate runs,
+in the same order and covering the same scenarios, so that a reader can
+compare the three and a snippet cannot drift from the code:
+
+| example | what it settles |
+|---|---|
+| quickstart | the smallest thing that works |
+| birth chart | that the canonical frame is **tropical** and a Vedic chart asks for a sidereal one, which the SDK completes; a zone's own history; a body against the graha a chart names it |
+| panchanga | that every limb but the weekday is a function of two longitudes, so a binding computes an almanac from `positions` alone |
+| calendar | that a Bikram Sambat month length is asked for and never assumed, and that a returned date says whether the table or the engine decided it |
+| ephemeris | that a grid is one crossing rather than one per day, that a column is a view, and that the settings hash is the cache key |
+| your own ephemeris | the provider contract in full: one call per grid, refusing a frame so the SDK completes it, coverage checked before you are asked, and an exception that reaches the caller |
+
+The examples are the parity gate's counterpart for **documentation**: the
+gate holds the bindings to the same values, and running the same
+scenarios in each holds them to the same shape.
+
 ## Handles and memory
 
 A result the library allocates (a blob, an owned string) is freed by the

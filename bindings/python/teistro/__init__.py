@@ -492,7 +492,12 @@ class Context:
         return self.inner.calendar_convert(date, into)
 
     def weekday_of(self, date: CalendarDate) -> int:
-        """The weekday of a date, Sunday zero."""
+        """The weekday of a date as its ISO number: Monday `1`, Sunday `7`.
+
+        Not the catalogue's `Vara`, which counts from Sunday: a vara is
+        `weekday_of(day) % 7`, and the panchanga example does exactly
+        that.
+        """
         return self.inner.calendar_weekday(date)
 
     def month_length(self, calendar: Calendar, year: int, month: int) -> int:
@@ -613,11 +618,14 @@ class Context:
         self._host.raised = None
         try:
             return call()
-        except TeistroError:
+        except TeistroError as refusal:
             raised = self._host.raised
             if raised is None:
                 raise
-            raise raised from None
+            # The provider's own exception, with the boundary's refusal
+            # kept as its cause: a caller catches the type it wrote, and
+            # a traceback still shows what the port made of it.
+            raise raised from refusal
 
 
 class PositionGrid:

@@ -340,7 +340,7 @@ test('a provider that refuses a frame is completed by the SDK', () => {
   const provider = {
     name: 'equatorial-provider',
     bodies: [Body.Sun],
-    frame: equatorial,
+    nativeFrame: equatorial,
     positions(request) {
       asked.push(request.frameBits);
       // Nothing means "not in that frame"; the SDK asks again in ours.
@@ -378,11 +378,17 @@ test('a provider that fails says so in its own words', () => {
       throw new Error('no data for that instant');
     },
   };
+  // The provider's **own** error reaches the caller, not a summary of it:
+  // only a code crosses the C boundary, so the layer keeps the object it
+  // threw and puts it back. The boundary's refusal is kept as its cause,
+  // so nothing the library said is lost. The Dart and Python bindings
+  // surface a provider's failure the same way.
   assert.throws(
     () => new Context({ provider: throwing }).positions({ instants: [2451545.0], bodies: [Body.Sun] }),
     (error) => {
-      assert.equal(error.status, 'provider');
-      assert.equal(error.message, 'the ephemeris provider threw: no data for that instant');
+      assert.equal(error.message, 'no data for that instant');
+      assert.equal(error.status, undefined, 'the provider threw an Error, not a TeistroError');
+      assert.equal(error.cause?.status, 'provider', "the library's own refusal, kept as the cause");
       return true;
     },
   );
@@ -391,6 +397,23 @@ test('a provider that fails says so in its own words', () => {
   assert.throws(
     () => new Context({ provider: short }).positions({ instants: [2451545.0, 2451546.0], bodies: [Body.Sun] }),
     /returned 1 values in `lon` for 2 cells/u,
+  );
+
+  // A body the provider never declared is refused by the port, on the
+  // SDK's side of the boundary and before the provider is asked, so the
+  // sentence survives: it names the body and what the provider answers.
+  const onlySun = {
+    name: 'only-sun',
+    bodies: [Body.Sun],
+    positions: () => assert.fail('the provider must not be asked'),
+  };
+  assert.throws(
+    () => new Context({ provider: onlySun }).positions({ instants: [2451545.0], bodies: [Body.Mars] }),
+    (error) => {
+      assert.equal(error.status, 'unsupported');
+      assert.match(error.message, /MARS; it answers SUN/u);
+      return true;
+    },
   );
 
   // A provider is checked at the door, before a call can reach it.

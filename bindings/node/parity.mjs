@@ -153,7 +153,7 @@ put(
 );
 put(
   'message-bs-date',
-  ctx.messages.sdk.calendar.BIKRAM_SAMBAT.date.long({ day: 1, monthName: 'बैशाख', year: 2072 }),
+  ctx.messages.sdk.calendar.bikramSambat.date.long({ day: 1, monthName: 'बैशाख', year: 2072 }),
 );
 
 // ── Positions ──────────────────────────────────────────────────────────

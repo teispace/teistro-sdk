@@ -156,7 +156,6 @@ fn ts_plain(ty: &TypeRef, enum_name: Option<&str>) -> String {
 pub fn catalogue_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
     render_brands(&mut out, api);
-    let by_id = enums_in_blobs(api);
     let _ = writeln!(
         out,
         "/** The ABI these declarations were generated for; the addon must agree. */\nexport declare const ABI_VERSION: {};\n\n/** The SDK version these declarations were generated from; the addon must be the same build. */\nexport declare const SDK_VERSION: \"{}\";\n",
@@ -172,7 +171,7 @@ pub fn catalogue_declarations(api: &Api) -> String {
         );
     }
     for e in &api.enums {
-        render_enum_type(&mut out, e, by_id.contains(&e.name));
+        render_enum_type(&mut out, e);
     }
     out
 }
@@ -282,7 +281,7 @@ fn shown(s: &StructDef) -> bool {
             .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
 }
 
-fn render_enum_type(out: &mut String, e: &EnumDef, by_id: bool) {
+fn render_enum_type(out: &mut String, e: &EnumDef) {
     let name = binding_type_name(&e.name);
     let mut values: Vec<String> = e
         .values
@@ -327,12 +326,10 @@ fn render_enum_type(out: &mut String, e: &EnumDef, by_id: bool) {
         );
     }
     let _ = writeln!(out, "}};\n");
-    if by_id {
-        let _ = writeln!(
-            out,
-            "/**\n * Every {name} by the id a result blob's columns carry, so a column of\n * ids reads as members without decoding it eagerly.\n */\nexport declare const {name}ById: ReadonlyMap<number, {name}>;\n"
-        );
-    }
+    let _ = writeln!(
+        out,
+        "/**\n * Every {name} by the id the boundary carries, so a column of ids or a\n * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.\n */\nexport declare const {name}ById: ReadonlyMap<number, {name}>;\n"
+    );
 }
 
 fn render_interface(api: &Api, out: &mut String, s: &StructDef) {
@@ -540,7 +537,6 @@ pub fn tables(api: &Api) -> String {
         );
     }
     render_brand_constructors(&mut out, api);
-    let by_id = enums_in_blobs(api);
     for e in &api.enums {
         let name = binding_type_name(&e.name);
         let _ = writeln!(
@@ -556,41 +552,21 @@ pub fn tables(api: &Api) -> String {
             );
         }
         let _ = writeln!(out, "}});\n");
-        if by_id.contains(&e.name) {
+        let _ = writeln!(
+            out,
+            "/**\n * Every {name} by the id the boundary carries, so a column of ids or a\n * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.\n */\nexport const {name}ById = new Map(["
+        );
+        for v in &e.values {
             let _ = writeln!(
                 out,
-                "/**\n * Every {name} by the id a result blob's columns carry, so a column of\n * ids reads as members without decoding it eagerly.\n */\nexport const {name}ById = new Map(["
+                "  [{}, '{}'],",
+                v.value,
+                member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
             );
-            for v in &e.values {
-                let _ = writeln!(
-                    out,
-                    "  [{}, '{}'],",
-                    v.value,
-                    member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
-                );
-            }
-            let _ = writeln!(out, "]);\n");
         }
+        let _ = writeln!(out, "]);\n");
     }
     out
-}
-
-/// The enums a result blob's columns and fixed fields carry as ids.
-fn enums_in_blobs(api: &Api) -> Vec<String> {
-    let mut names = Vec::new();
-    for column in api
-        .blobs
-        .iter()
-        .flat_map(|b| b.sections.iter())
-        .flat_map(|s| s.fields.iter())
-    {
-        if let Some(name) = &column.enum_name {
-            if !names.contains(name) {
-                names.push(name.clone());
-            }
-        }
-    }
-    names
 }
 
 /// Renders `blob.js`: one decoder per schema, over the `TSRB` layout.

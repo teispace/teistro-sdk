@@ -54,71 +54,25 @@ from source needs none of it: `cargo build --release -p teistro-ffi`.
 
 ## Using it
 
-This is `example/teistro_example.dart`, which the gate runs:
+Six runnable programs live in [`example/`](example/), and
+`cargo xtask check-dart` runs every one, so none of them can drift from what
+the binding does. They are meant to be read in order — a quickstart, a
+birth chart, a panchanga, a calendar page, a year of the sky, and an
+ephemeris of your own — and [`example/README.md`](example/README.md) says
+what each is really teaching.
 
-```dart
-import 'package:teistro/messages.dart' as intl;
-import 'package:teistro/teistro.dart';
-
-void main() {
-  final teistro = Teistro.open();
-  print('Teistro ${teistro.version}, ABI ${teistro.abi}');
-
-  final ctx = teistro.context(
-    profile: 'nepali-default',
-    locale: 'ne-Deva-NP',
-    testProvider: true,
-  );
-
-  // 14 April 2015 is 1 Baisakh 2072 BS.
-  final bs = ctx.convert(
-    Calendar.gregorian.date(2015, 4, 14),
-    Calendar.bikramSambat,
-  );
-  print('${bs.year}-${bs.month}-${bs.day} ${bs.era?.key}');
-
-  // A Kathmandu birth time, with the metadata a stored chart keeps.
-  final resolved = ctx.resolve(
-    Calendar.gregorian.date(1986, 1, 1).at(hour: 0, minute: 20),
-    ianaZone('Asia/Kathmandu'),
-  );
-  print(
-    'JD ${resolved.instantJdUtc.toStringAsFixed(6)} UTC, '
-    '${resolved.offsetSeconds} s, tzdb ${resolved.tzdbVersion}',
-  );
-
-  // The Sun and the Moon at J2000, in the SDK's canonical frame.
-  final sky = ctx.positions(
-    instants: [2451545.0],
-    bodies: [Body.sun, Body.moon],
-  );
-  print('the Sun at ${sky.at(0, 0).longitude.toStringAsFixed(4)} degrees');
-
-  // A message in the context's locale, by its typed accessor, and an
-  // entity's name in that locale.
-  print(
-    ctx.messages.sdk.reason.grahaInBhava(
-      graha: intl.GrahaKey.jupiter,
-      bhava: 7,
-    ),
-  );
-  print('${ctx.entity('graha.SUN').name} ${ctx.entity('graha.SUN').glyph}');
-
-  ctx.dispose();
-}
+```sh
+cargo build --release -p teistro-ffi
+cd bindings/dart
+TEISTRO_LIBRARY=../../target/release/libteistro_ffi.dylib \
+dart run example/quickstart.dart
 ```
 
-`Teistro.open()` looks at `$TEISTRO_LIBRARY`, then beside the package,
-then in the workspace's `target/release` and `target/debug`, and finally
-asks the platform's loader; `Teistro.open(path: ...)` names one outright.
-It refuses a library that implements another ABI.
-
-A context frees its native memory when it is collected, so `dispose` is
-the explicit form rather than the only one (ADR-0007).
-
-The layer is thin on purpose. Anything it does not wrap is on the
-generated types: `teistro.library` is the declarations, `context.inner`
-the generated context, and every value class marshals itself.
+The one thing to know before writing anything real is in
+[`example/birth_chart.dart`](example/birth_chart.dart): **the canonical
+frame is tropical**, because that is what an ephemeris computes. A Vedic
+chart asks for a sidereal one and the SDK completes it, naming every step
+it applied.
 
 ## An ephemeris of your own
 

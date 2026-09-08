@@ -98,11 +98,16 @@ class AProviderWrittenInPython(WithLibrary):
         self.assertIn("straight-line", repr(provenance))
 
     def test_a_body_it_never_declared_is_refused_by_name(self) -> None:
+        # Refused by the port, on the SDK's side of the boundary, so the
+        # sentence survives into a `TeistroError` that names the body and
+        # what the provider does answer. The port spells a key in the
+        # upper case the catalogue uses.
         provider = StraightLine()
         with self.teistro.context(profile=PROFILE, provider=provider) as ctx:
-            with self.assertRaises(Exception) as caught:
+            with self.assertRaises(TeistroError) as caught:
                 ctx.positions(instants=[2451545.0], bodies=[Body.MARS])
-        self.assertIn("mars", str(caught.exception))
+        self.assertEqual(caught.exception.status, Status.UNSUPPORTED)
+        self.assertIn("MARS; it answers SUN", str(caught.exception))
         self.assertEqual(provider.asked, 0, "it was never asked")
 
     def test_an_instant_outside_its_coverage_is_refused(self) -> None:

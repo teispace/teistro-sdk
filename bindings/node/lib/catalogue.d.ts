@@ -355,6 +355,12 @@ export declare const Kind: {
 };
 
 /**
+ * Every Kind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const KindById: ReadonlyMap<number, Kind>;
+
+/**
  * The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`.
  */
 export type Graha =
@@ -425,6 +431,12 @@ export declare const Graha: {
 };
 
 /**
+ * Every Graha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GrahaById: ReadonlyMap<number, Graha>;
+
+/**
  * The twelve signs. Members are the catalogue's ids; the full key id is `(TS_KIND_RASHI << 16) | member`.
  */
 export type Rashi =
@@ -493,6 +505,12 @@ export declare const Rashi: {
    */
   readonly Pisces: 'rashi.PISCES';
 };
+
+/**
+ * Every Rashi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RashiById: ReadonlyMap<number, Rashi>;
 
 /**
  * The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.
@@ -638,6 +656,12 @@ export declare const Nakshatra: {
    */
   readonly Revati: 'nakshatra.REVATI';
 };
+
+/**
+ * Every Nakshatra by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const NakshatraById: ReadonlyMap<number, Nakshatra>;
 
 /**
  * The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
@@ -800,6 +824,12 @@ export declare const Tithi: {
 };
 
 /**
+ * Every Tithi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TithiById: ReadonlyMap<number, Tithi>;
+
+/**
  * The eleven karanas: seven movable, four fixed. Members are the catalogue's ids; the full key id is `(TS_KIND_KARANA << 16) | member`.
  */
 export type Karana =
@@ -863,6 +893,12 @@ export declare const Karana: {
    */
   readonly Kimstughna: 'karana.KIMSTUGHNA';
 };
+
+/**
+ * Every Karana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const KaranaById: ReadonlyMap<number, Karana>;
 
 /**
  * The twenty-seven nitya yogas of the Sun and Moon. Members are the catalogue's ids; the full key id is `(TS_KIND_YOGA << 16) | member`.
@@ -1010,6 +1046,12 @@ export declare const Yoga: {
 };
 
 /**
+ * Every Yoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const YogaById: ReadonlyMap<number, Yoga>;
+
+/**
  * The seven weekdays with their lords. Members are the catalogue's ids; the full key id is `(TS_KIND_VARA << 16) | member`.
  */
 export type Vara =
@@ -1053,6 +1095,12 @@ export declare const Vara: {
    */
   readonly Shanivara: 'vara.SHANIVARA';
 };
+
+/**
+ * Every Vara by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VaraById: ReadonlyMap<number, Vara>;
 
 /**
  * The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name. Members are the catalogue's ids; the full key id is `(TS_KIND_MASA << 16) | member`.
@@ -1125,6 +1173,12 @@ export declare const Masa: {
 };
 
 /**
+ * Every Masa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MasaById: ReadonlyMap<number, Masa>;
+
+/**
  * The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
  */
 export type Ritu =
@@ -1165,6 +1219,12 @@ export declare const Ritu: {
 };
 
 /**
+ * Every Ritu by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RituById: ReadonlyMap<number, Ritu>;
+
+/**
  * The two halves of the solar year. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANA << 16) | member`.
  */
 export type Ayana = 'ayana.UTTARAYANA' | 'ayana.DAKSHINAYANA' | 'unknown';
@@ -1182,6 +1242,12 @@ export declare const Ayana: {
 };
 
 /**
+ * Every Ayana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AyanaById: ReadonlyMap<number, Ayana>;
+
+/**
  * The two halves of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_PAKSHA << 16) | member`.
  */
 export type Paksha = 'paksha.SHUKLA' | 'paksha.KRISHNA' | 'unknown';
@@ -1197,6 +1263,12 @@ export declare const Paksha: {
    */
   readonly Krishna: 'paksha.KRISHNA';
 };
+
+/**
+ * Every Paksha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PakshaById: ReadonlyMap<number, Paksha>;
 
 /**
  * The sixty years of the Jovian cycle, in order. Members are the catalogue's ids; the full key id is `(TS_KIND_SAMVATSARA << 16) | member`.
@@ -1509,6 +1581,12 @@ export declare const Samvatsara: {
 };
 
 /**
+ * Every Samvatsara by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SamvatsaraById: ReadonlyMap<number, Samvatsara>;
+
+/**
  * The five elements. Members are the catalogue's ids; the full key id is `(TS_KIND_TATWA << 16) | member`.
  */
 export type Tatwa = 'tatwa.AGNI' | 'tatwa.PRITHVI' | 'tatwa.VAYU' | 'tatwa.JALA' | 'tatwa.AKASHA' | 'unknown';
@@ -1536,6 +1614,12 @@ export declare const Tatwa: {
    */
   readonly Akasha: 'tatwa.AKASHA';
 };
+
+/**
+ * Every Tatwa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TatwaById: ReadonlyMap<number, Tatwa>;
 
 /**
  * The varna classification of nakshatras and grahas. Members are the catalogue's ids; the full key id is `(TS_KIND_VARNA << 16) | member`.
@@ -1567,6 +1651,12 @@ export declare const Varna: {
 };
 
 /**
+ * Every Varna by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VarnaById: ReadonlyMap<number, Varna>;
+
+/**
  * The three ganas of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_GANA << 16) | member`.
  */
 export type Gana = 'gana.DEVA' | 'gana.MANUSHYA' | 'gana.RAKSHASA' | 'unknown';
@@ -1588,6 +1678,12 @@ export declare const Gana: {
 };
 
 /**
+ * Every Gana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GanaById: ReadonlyMap<number, Gana>;
+
+/**
  * The three nadis of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_NADI << 16) | member`.
  */
 export type Nadi = 'nadi.AADI' | 'nadi.MADHYA' | 'nadi.ANTYA' | 'unknown';
@@ -1607,6 +1703,12 @@ export declare const Nadi: {
    */
   readonly Antya: 'nadi.ANTYA';
 };
+
+/**
+ * Every Nadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const NadiById: ReadonlyMap<number, Nadi>;
 
 /**
  * The fourteen yoni animals of the nakshatras, each with its hostile pair. Members are the catalogue's ids; the full key id is `(TS_KIND_YONI << 16) | member`.
@@ -1687,6 +1789,12 @@ export declare const Yoni: {
    */
   readonly Lion: 'yoni.LION';
 };
+
+/**
+ * Every Yoni by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const YoniById: ReadonlyMap<number, Yoni>;
 
 /**
  * The deities the nakshatras, tithis and karanas are assigned to. Members are the catalogue's ids; the full key id is `(TS_KIND_DEITY << 16) | member`.
@@ -1884,6 +1992,12 @@ export declare const Deity: {
 };
 
 /**
+ * Every Deity by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DeityById: ReadonlyMap<number, Deity>;
+
+/**
  * The eleven levels of dignity. Members are the catalogue's ids; the full key id is `(TS_KIND_DIGNITY << 16) | member`.
  */
 export type Dignity =
@@ -1949,6 +2063,12 @@ export declare const Dignity: {
 };
 
 /**
+ * Every Dignity by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DignityById: ReadonlyMap<number, Dignity>;
+
+/**
  * The five-fold compound relationship. Members are the catalogue's ids; the full key id is `(TS_KIND_RELATIONSHIP << 16) | member`.
  */
 export type Relationship = 'relationship.GREAT_FRIEND' | 'relationship.FRIEND' | 'relationship.NEUTRAL' | 'relationship.ENEMY' | 'relationship.GREAT_ENEMY' | 'unknown';
@@ -1978,6 +2098,12 @@ export declare const Relationship: {
 };
 
 /**
+ * Every Relationship by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RelationshipById: ReadonlyMap<number, Relationship>;
+
+/**
  * The five age states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_BALADI << 16) | member`.
  */
 export type AvasthaBaladi = 'avastha_baladi.BALA' | 'avastha_baladi.KUMARA' | 'avastha_baladi.YUVA' | 'avastha_baladi.VRIDDHA' | 'avastha_baladi.MRITA' | 'unknown';
@@ -2005,6 +2131,12 @@ export declare const AvasthaBaladi: {
    */
   readonly Mrita: 'avastha_baladi.MRITA';
 };
+
+/**
+ * Every AvasthaBaladi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AvasthaBaladiById: ReadonlyMap<number, AvasthaBaladi>;
 
 /**
  * Conditions a body can be in. Members are the catalogue's ids; the full key id is `(TS_KIND_STATE << 16) | member`.
@@ -2075,6 +2207,12 @@ export declare const State: {
    */
   readonly Eclipsed: 'state.ECLIPSED';
 };
+
+/**
+ * Every State by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const StateById: ReadonlyMap<number, State>;
 
 /**
  * The catalogued ayanamshas; a custom one is a settings value, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
@@ -2322,6 +2460,12 @@ export declare const Ayanamsha: {
 };
 
 /**
+ * Every Ayanamsha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AyanamshaById: ReadonlyMap<number, Ayanamsha>;
+
+/**
  * The house systems; the cusp arithmetic lives in the astro layer. Members are the catalogue's ids; the full key id is `(TS_KIND_HOUSE_SYSTEM << 16) | member`.
  */
 export type HouseSystem =
@@ -2442,6 +2586,12 @@ export declare const HouseSystem: {
 };
 
 /**
+ * Every HouseSystem by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const HouseSystemById: ReadonlyMap<number, HouseSystem>;
+
+/**
  * The divisional charts the SDK ships; the kernel row of each lives in the vargas crate. Members are the catalogue's ids; the full key id is `(TS_KIND_VARGA << 16) | member`.
  */
 export type Varga =
@@ -2555,6 +2705,12 @@ export declare const Varga: {
    */
   readonly D150: 'varga.D150';
 };
+
+/**
+ * Every Varga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VargaById: ReadonlyMap<number, Varga>;
 
 /**
  * The dasha systems the catalogue names; each row of the kernel lives in the dasha crate, and only V rows are implemented. Members are the catalogue's ids; the full key id is `(TS_KIND_DASHA_SYSTEM << 16) | member`.
@@ -2767,6 +2923,12 @@ export declare const DashaSystem: {
 };
 
 /**
+ * Every DashaSystem by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DashaSystemById: ReadonlyMap<number, DashaSystem>;
+
+/**
  * The strength schemes; rows live in the strength kernel. Members are the catalogue's ids; the full key id is `(TS_KIND_BALA_SCHEME << 16) | member`.
  */
 export type BalaScheme = 'bala_scheme.PARASHARA' | 'bala_scheme.PARASHARA_EXTENDED' | 'unknown';
@@ -2782,6 +2944,12 @@ export declare const BalaScheme: {
    */
   readonly ParasharaExtended: 'bala_scheme.PARASHARA_EXTENDED';
 };
+
+/**
+ * Every BalaScheme by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BalaSchemeById: ReadonlyMap<number, BalaScheme>;
 
 /**
  * The Ashta Koota and the Dasha Koota extensions. Members are the catalogue's ids; the full key id is `(TS_KIND_KOOTA << 16) | member`.
@@ -2854,6 +3022,12 @@ export declare const Koota: {
 };
 
 /**
+ * Every Koota by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const KootaById: ReadonlyMap<number, Koota>;
+
+/**
  * The Jaimini significators, in rank order. Members are the catalogue's ids; the full key id is `(TS_KIND_CHARA_KARAKA << 16) | member`.
  */
 export type CharaKaraka =
@@ -2904,6 +3078,12 @@ export declare const CharaKaraka: {
 };
 
 /**
+ * Every CharaKaraka by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const CharaKarakaById: ReadonlyMap<number, CharaKaraka>;
+
+/**
  * What a chart is a chart of. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_KIND << 16) | member`.
  */
 export type ChartKind =
@@ -2947,6 +3127,12 @@ export declare const ChartKind: {
    */
   readonly Composite: 'chart_kind.COMPOSITE';
 };
+
+/**
+ * Every ChartKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChartKindById: ReadonlyMap<number, ChartKind>;
 
 /**
  * Derived points that behave like bodies; each has a formula in the module that owns it. Members are the catalogue's ids; the full key id is `(TS_KIND_POINT << 16) | member`.
@@ -3204,6 +3390,12 @@ export declare const Point: {
 };
 
 /**
+ * Every Point by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PointById: ReadonlyMap<number, Point>;
+
+/**
  * The seven muhurta natures of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_NATURE << 16) | member`.
  */
 export type MuhurtaNature =
@@ -3249,6 +3441,12 @@ export declare const MuhurtaNature: {
 };
 
 /**
+ * Every MuhurtaNature by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MuhurtaNatureById: ReadonlyMap<number, MuhurtaNature>;
+
+/**
  * Movable, fixed and dual signs. Members are the catalogue's ids; the full key id is `(TS_KIND_MODALITY << 16) | member`.
  */
 export type Modality = 'modality.CHARA' | 'modality.STHIRA' | 'modality.DWISWABHAVA' | 'unknown';
@@ -3268,6 +3466,12 @@ export declare const Modality: {
    */
   readonly Dwiswabhava: 'modality.DWISWABHAVA';
 };
+
+/**
+ * Every Modality by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ModalityById: ReadonlyMap<number, Modality>;
 
 /**
  * The natural benefic or malefic character of a graha. Members are the catalogue's ids; the full key id is `(TS_KIND_NATURE << 16) | member`.
@@ -3291,6 +3495,12 @@ export declare const Nature: {
 };
 
 /**
+ * Every Nature by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const NatureById: ReadonlyMap<number, Nature>;
+
+/**
  * The three gunas. Members are the catalogue's ids; the full key id is `(TS_KIND_GUNA << 16) | member`.
  */
 export type Guna = 'guna.SATTVA' | 'guna.RAJAS' | 'guna.TAMAS' | 'unknown';
@@ -3310,6 +3520,12 @@ export declare const Guna: {
    */
   readonly Tamas: 'guna.TAMAS';
 };
+
+/**
+ * Every Guna by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GunaById: ReadonlyMap<number, Guna>;
 
 /**
  * The eight directions. Members are the catalogue's ids; the full key id is `(TS_KIND_DIRECTION << 16) | member`.
@@ -3362,6 +3578,12 @@ export declare const Direction: {
 };
 
 /**
+ * Every Direction by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DirectionById: ReadonlyMap<number, Direction>;
+
+/**
  * Grammatical and classical gender. Members are the catalogue's ids; the full key id is `(TS_KIND_GENDER << 16) | member`.
  */
 export type Gender = 'gender.MALE' | 'gender.FEMALE' | 'gender.NEUTRAL' | 'unknown';
@@ -3381,6 +3603,12 @@ export declare const Gender: {
    */
   readonly Neutral: 'gender.NEUTRAL';
 };
+
+/**
+ * Every Gender by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GenderById: ReadonlyMap<number, Gender>;
 
 /**
  * The calendars the SDK ships. Members are the catalogue's ids; the full key id is `(TS_KIND_CALENDAR << 16) | member`.
@@ -3421,6 +3649,12 @@ export declare const Calendar: {
    */
   readonly IndianLunisolar: 'calendar.INDIAN_LUNISOLAR';
 };
+
+/**
+ * Every Calendar by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const CalendarById: ReadonlyMap<number, Calendar>;
 
 /**
  * The era numbers a date may carry. Members are the catalogue's ids; the full key id is `(TS_KIND_ERA << 16) | member`.
@@ -3478,6 +3712,12 @@ export declare const Era: {
 };
 
 /**
+ * Every Era by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const EraById: ReadonlyMap<number, Era>;
+
+/**
  * What kind of body a graha is. Members are the catalogue's ids; the full key id is `(TS_KIND_BODY_CLASS << 16) | member`.
  */
 export type BodyClass = 'body_class.LUMINARY' | 'body_class.PLANET' | 'body_class.NODE' | 'body_class.OUTER' | 'unknown';
@@ -3503,6 +3743,12 @@ export declare const BodyClass: {
 };
 
 /**
+ * Every BodyClass by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BodyClassById: ReadonlyMap<number, BodyClass>;
+
+/**
  * Odd and even signs. Members are the catalogue's ids; the full key id is `(TS_KIND_PARITY << 16) | member`.
  */
 export type Parity = 'parity.ODD' | 'parity.EVEN' | 'unknown';
@@ -3518,6 +3764,12 @@ export declare const Parity: {
    */
   readonly Even: 'parity.EVEN';
 };
+
+/**
+ * Every Parity by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ParityById: ReadonlyMap<number, Parity>;
 
 /**
  * How a sign rises: head first, back first, or both. Members are the catalogue's ids; the full key id is `(TS_KIND_RISING << 16) | member`.
@@ -3541,6 +3793,12 @@ export declare const Rising: {
 };
 
 /**
+ * Every Rising by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RisingById: ReadonlyMap<number, Rising>;
+
+/**
  * The sex of a nakshatra's yoni animal. Members are the catalogue's ids; the full key id is `(TS_KIND_SEX << 16) | member`.
  */
 export type Sex = 'sex.MALE' | 'sex.FEMALE' | 'unknown';
@@ -3556,6 +3814,12 @@ export declare const Sex: {
    */
   readonly Female: 'sex.FEMALE';
 };
+
+/**
+ * Every Sex by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SexById: ReadonlyMap<number, Sex>;
 
 /**
  * The five tithi classes. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI_CLASS << 16) | member`.
@@ -3587,6 +3851,12 @@ export declare const TithiClass: {
 };
 
 /**
+ * Every TithiClass by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TithiClassById: ReadonlyMap<number, TithiClass>;
+
+/**
  * The auspiciousness class of a nitya yoga. Members are the catalogue's ids; the full key id is `(TS_KIND_AUSPICIOUSNESS << 16) | member`.
  */
 export type Auspiciousness = 'auspiciousness.AUSPICIOUS' | 'auspiciousness.INAUSPICIOUS' | 'auspiciousness.MIXED' | 'auspiciousness.HIGHLY_INAUSPICIOUS' | 'unknown';
@@ -3612,6 +3882,12 @@ export declare const Auspiciousness: {
 };
 
 /**
+ * Every Auspiciousness by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AuspiciousnessById: ReadonlyMap<number, Auspiciousness>;
+
+/**
  * Whether a house system is undefined at some latitudes. Members are the catalogue's ids; the full key id is `(TS_KIND_DEGENERACY << 16) | member`.
  */
 export type Degeneracy = 'degeneracy.NONE' | 'degeneracy.POLAR_UNDEFINED' | 'unknown';
@@ -3627,6 +3903,12 @@ export declare const Degeneracy: {
    */
   readonly PolarUndefined: 'degeneracy.POLAR_UNDEFINED';
 };
+
+/**
+ * Every Degeneracy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DegeneracyById: ReadonlyMap<number, Degeneracy>;
 
 /**
  * How an ayanamsha is defined or used. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA_CATEGORY << 16) | member`.
@@ -3674,6 +3956,12 @@ export declare const AyanamshaCategory: {
 };
 
 /**
+ * Every AyanamshaCategory by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AyanamshaCategoryById: ReadonlyMap<number, AyanamshaCategory>;
+
+/**
  * Which kernel a dasha system runs on. Members are the catalogue's ids; the full key id is `(TS_KIND_DASHA_FAMILY << 16) | member`.
  */
 export type DashaFamily =
@@ -3714,6 +4002,12 @@ export declare const DashaFamily: {
 };
 
 /**
+ * Every DashaFamily by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DashaFamilyById: ReadonlyMap<number, DashaFamily>;
+
+/**
  * The three wakefulness states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_JAGRADADI << 16) | member`.
  */
 export type AvasthaJagradadi = 'avastha_jagradadi.JAGRAT' | 'avastha_jagradadi.SWAPNA' | 'avastha_jagradadi.SUSHUPTI' | 'unknown';
@@ -3733,6 +4027,12 @@ export declare const AvasthaJagradadi: {
    */
   readonly Sushupti: 'avastha_jagradadi.SUSHUPTI';
 };
+
+/**
+ * Every AvasthaJagradadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AvasthaJagradadiById: ReadonlyMap<number, AvasthaJagradadi>;
 
 /**
  * The nine Deeptadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_DEEPTADI << 16) | member`.
@@ -3790,6 +4090,12 @@ export declare const AvasthaDeeptadi: {
 };
 
 /**
+ * Every AvasthaDeeptadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AvasthaDeeptadiById: ReadonlyMap<number, AvasthaDeeptadi>;
+
+/**
  * The six Lajjitadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_LAJJITADI << 16) | member`.
  */
 export type AvasthaLajjitadi =
@@ -3828,6 +4134,12 @@ export declare const AvasthaLajjitadi: {
    */
   readonly Kshobhita: 'avastha_lajjitadi.KSHOBHITA';
 };
+
+/**
+ * Every AvasthaLajjitadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AvasthaLajjitadiById: ReadonlyMap<number, AvasthaLajjitadi>;
 
 /**
  * The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
@@ -3900,6 +4212,12 @@ export declare const AvasthaSayanadi: {
 };
 
 /**
+ * Every AvasthaSayanadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AvasthaSayanadiById: ReadonlyMap<number, AvasthaSayanadi>;
+
+/**
  * What kind of derived point. Members are the catalogue's ids; the full key id is `(TS_KIND_POINT_FAMILY << 16) | member`.
  */
 export type PointFamily =
@@ -3948,6 +4266,12 @@ export declare const PointFamily: {
    */
   readonly Midpoint: 'point_family.MIDPOINT';
 };
+
+/**
+ * Every PointFamily by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PointFamilyById: ReadonlyMap<number, PointFamily>;
 
 /**
  * The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_STAR << 16) | member`.
@@ -4600,6 +4924,12 @@ export declare const Star: {
 };
 
 /**
+ * Every Star by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const StarById: ReadonlyMap<number, Star>;
+
+/**
  * What kind of object a star-table member is. Members are the catalogue's ids; the full key id is `(TS_KIND_STAR_CLASS << 16) | member`.
  */
 export type StarClass = 'star_class.STAR' | 'star_class.RADIO_SOURCE' | 'star_class.DIRECTION' | 'unknown';
@@ -4619,6 +4949,12 @@ export declare const StarClass: {
    */
   readonly Direction: 'star_class.DIRECTION';
 };
+
+/**
+ * Every StarClass by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const StarClassById: ReadonlyMap<number, StarClass>;
 
 /**
  * The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. Members are the catalogue's ids; the full key id is `(TS_KIND_CHOGHADIYA << 16) | member`.
@@ -4666,6 +5002,12 @@ export declare const Choghadiya: {
 };
 
 /**
+ * Every Choghadiya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChoghadiyaById: ReadonlyMap<number, Choghadiya>;
+
+/**
  * The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. Members are the catalogue's ids; the full key id is `(TS_KIND_KAALA << 16) | member`.
  */
 export type Kaala = 'kaala.RAHU_KAALA' | 'kaala.YAMAGHANDA' | 'kaala.GULIKA_KAALA' | 'unknown';
@@ -4685,6 +5027,12 @@ export declare const Kaala: {
    */
   readonly GulikaKaala: 'kaala.GULIKA_KAALA';
 };
+
+/**
+ * Every Kaala by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const KaalaById: ReadonlyMap<number, Kaala>;
 
 /**
  * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
@@ -4716,6 +5064,12 @@ export declare const Panchaka: {
 };
 
 /**
+ * Every Panchaka by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PanchakaById: ReadonlyMap<number, Panchaka>;
+
+/**
  * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
  */
 export type MuhurtaYoga = 'muhurta_yoga.AMRIT_SIDDHI' | 'muhurta_yoga.SARVARTHA_SIDDHI' | 'muhurta_yoga.SIDDHA' | 'muhurta_yoga.DWIPUSHKAR' | 'muhurta_yoga.TRIPUSHKAR' | 'unknown';
@@ -4743,6 +5097,12 @@ export declare const MuhurtaYoga: {
    */
   readonly Tripushkar: 'muhurta_yoga.TRIPUSHKAR';
 };
+
+/**
+ * Every MuhurtaYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MuhurtaYogaById: ReadonlyMap<number, MuhurtaYoga>;
 
 /**
  * The status of a call, with the code it has at the C boundary.
@@ -4807,6 +5167,12 @@ export declare const Status: {
    */
   readonly Internal: 'internal';
 };
+
+/**
+ * Every Status by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const StatusById: ReadonlyMap<number, Status>;
 
 /**
  * The bodies the port knows: the ten classical bodies of modern
@@ -4892,8 +5258,8 @@ export declare const Body: {
 };
 
 /**
- * Every Body by the id a result blob's columns carry, so a column of
- * ids reads as members without decoding it eagerly.
+ * Every Body by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const BodyById: ReadonlyMap<number, Body>;
 
@@ -4915,8 +5281,8 @@ export declare const TimeScale: {
 };
 
 /**
- * Every TimeScale by the id a result blob's columns carry, so a column of
- * ids reads as members without decoding it eagerly.
+ * Every TimeScale by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const TimeScaleById: ReadonlyMap<number, TimeScale>;
 
@@ -4939,6 +5305,12 @@ export declare const DistanceUnit: {
 };
 
 /**
+ * Every DistanceUnit by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DistanceUnitById: ReadonlyMap<number, DistanceUnit>;
+
+/**
  * How a provider's speeds are defined.
  */
 export type SpeedModel = 'derivative' | 'rule';
@@ -4956,6 +5328,12 @@ export declare const SpeedModel: {
    */
   readonly Rule: 'rule';
 };
+
+/**
+ * Every SpeedModel by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SpeedModelById: ReadonlyMap<number, SpeedModel>;
 
 /**
  * Which astronomy a provider computes.
@@ -4977,6 +5355,12 @@ export declare const Astronomy: {
    */
   readonly Classical: 'classical';
 };
+
+/**
+ * Every Astronomy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AstronomyById: ReadonlyMap<number, Astronomy>;
 
 /**
  * Where a position is seen from.
@@ -5004,6 +5388,12 @@ export declare const Centre: {
 };
 
 /**
+ * Every Centre by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const CentreById: ReadonlyMap<number, Centre>;
+
+/**
  * The equinox and equator the coordinates refer to.
  */
 export type Equinox = 'of-date' | 'j2000';
@@ -5021,6 +5411,12 @@ export declare const Equinox: {
 };
 
 /**
+ * Every Equinox by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const EquinoxById: ReadonlyMap<number, Equinox>;
+
+/**
  * The coordinate system of a position.
  */
 export type Coordinates = 'ecliptic' | 'equatorial';
@@ -5036,6 +5432,12 @@ export declare const Coordinates: {
    */
   readonly Equatorial: 'equatorial';
 };
+
+/**
+ * Every Coordinates by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const CoordinatesById: ReadonlyMap<number, Coordinates>;
 
 /**
  * What a vtable function returns: `0` for success, and one of these for
@@ -5077,6 +5479,12 @@ export declare const ProviderCode: {
 };
 
 /**
+ * Every ProviderCode by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ProviderCodeById: ReadonlyMap<number, ProviderCode>;
+
+/**
  * How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
  */
 export type Resolution = 'defined' | 'tabular' | 'computed' | 'divergent';
@@ -5103,6 +5511,12 @@ export declare const Resolution: {
 };
 
 /**
+ * Every Resolution by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ResolutionById: ReadonlyMap<number, Resolution>;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 export type Scale = 'ut1' | 'tt' | 'utc';
@@ -5123,6 +5537,12 @@ export declare const Scale: {
    */
   readonly Utc: 'utc';
 };
+
+/**
+ * Every Scale by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ScaleById: ReadonlyMap<number, Scale>;
 
 /**
  * What a zone specification names.
@@ -5146,6 +5566,12 @@ export declare const ZoneKind: {
 };
 
 /**
+ * Every ZoneKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ZoneKindById: ReadonlyMap<number, ZoneKind>;
+
+/**
  * Where a resolution's offset came from.
  */
 export type ZoneSource = 'iana' | 'local-mean' | 'manual';
@@ -5165,6 +5591,12 @@ export declare const ZoneSource: {
    */
   readonly Manual: 'manual';
 };
+
+/**
+ * Every ZoneSource by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ZoneSourceById: ReadonlyMap<number, ZoneSource>;
 
 /**
  * Which rules produced the offset.
@@ -5188,6 +5620,12 @@ export declare const ZoneEra: {
 };
 
 /**
+ * Every ZoneEra by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ZoneEraById: ReadonlyMap<number, ZoneEra>;
+
+/**
  * What the daylight-saving policy did.
  */
 export type Dst = 'none' | 'gap' | 'overlap';
@@ -5209,6 +5647,12 @@ export declare const Dst: {
 };
 
 /**
+ * Every Dst by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DstById: ReadonlyMap<number, Dst>;
+
+/**
  * Which occurrence an overlap resolved to.
  */
 export type Chosen = 'earlier' | 'later';
@@ -5224,6 +5668,12 @@ export declare const Chosen: {
    */
   readonly Later: 'later';
 };
+
+/**
+ * Every Chosen by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChosenById: ReadonlyMap<number, Chosen>;
 
 /**
  * A warning of a resolution; `warnings` in the resolution is a bit set,
@@ -5260,6 +5710,12 @@ export declare const ZoneWarning: {
 };
 
 /**
+ * Every ZoneWarning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ZoneWarningById: ReadonlyMap<number, ZoneWarning>;
+
+/**
  * What produced a Delta T value.
  */
 export type DeltaTSource = 'table' | 'model' | 'leap-seconds' | 'custom';
@@ -5283,4 +5739,10 @@ export declare const DeltaTSource: {
    */
   readonly Custom: 'custom';
 };
+
+/**
+ * Every DeltaTSource by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DeltaTSourceById: ReadonlyMap<number, DeltaTSource>;
 

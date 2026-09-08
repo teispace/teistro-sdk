@@ -27,8 +27,11 @@ const FIXTURES: &str = "target/tsrb";
 /// `# expect:` must be reported, which is how the Python half of Phase
 /// 1's "a swapped latitude and longitude does not compile" is proved.
 const WRONG: &str = "typecheck/wrong.py";
-/// The README's example, run so the two cannot drift.
-const EXAMPLE: &str = "example/teistro_example.py";
+/// Where the examples live. **Every** file there is run, so a scenario
+/// added to the directory is gated by having been added — the failure a
+/// list in this file would eventually have is that someone writes an
+/// example and forgets to list it.
+const EXAMPLES: &str = "example";
 
 /// The interpreter to use: `PYTHON` when the environment names one, else
 /// `python3`.
@@ -112,6 +115,42 @@ fn wrong_usages(package: &Path, checker: &(String, Vec<String>)) -> Result<(), (
     Ok(())
 }
 
+/// Runs every example, in name order, and says how many.
+///
+/// An example is a program a reader is invited to copy, so it is held to
+/// the same bar as a test: it must run, against the library this build
+/// produced, and its output is shown when it does not.
+fn examples(package: &Path, python: &str, library: &Path) -> Result<(), ()> {
+    let directory = package.join(EXAMPLES);
+    let mut found: Vec<PathBuf> = std::fs::read_dir(&directory)
+        .map_err(|e| println!("FAIL  {PACKAGE}/{EXAMPLES}: {e}"))?
+        .flatten()
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|kind| kind == "py"))
+        .collect();
+    found.sort();
+    if found.is_empty() {
+        println!("FAIL  {PACKAGE}/{EXAMPLES} holds no examples");
+        return Err(());
+    }
+    for example in &found {
+        let name = example
+            .file_name()
+            .map_or_else(String::new, |name| name.to_string_lossy().to_string());
+        step(
+            Command::new(python)
+                .arg(example)
+                .env("TEISTRO_LIBRARY", library)
+                .env("PYTHONPATH", package)
+                .current_dir(package),
+            "",
+            &format!("{PACKAGE}/{EXAMPLES}/{name} did not run"),
+        )?;
+    }
+    println!("ok    {PACKAGE}/{EXAMPLES}: {} example(s) run", found.len());
+    Ok(())
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let python = interpreter();
     if !present(&python, "--version") {
@@ -136,17 +175,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{PACKAGE}/tests did not pass"),
             )
         })
-        .and_then(|()| {
-            step(
-                Command::new(&python)
-                    .arg(EXAMPLE)
-                    .env("TEISTRO_LIBRARY", &library)
-                    .env("PYTHONPATH", &package)
-                    .current_dir(&package),
-                &format!("{PACKAGE}/{EXAMPLE} runs"),
-                &format!("{PACKAGE}/{EXAMPLE} did not run"),
-            )
-        });
+        .and_then(|()| examples(&package, &python, &library));
     if outcome.is_err() {
         return 1;
     }

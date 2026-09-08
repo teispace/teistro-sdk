@@ -43,12 +43,10 @@ from ._ffi import (
     _ProviderVtableStruct,
     frame_canonical,
     frame_pack,
-    frame_unpack,
 )
 from .catalogue import (
     Astronomy,
     Body,
-    Centre,
     DistanceUnit,
     ProviderCode,
     SpeedModel,
@@ -99,6 +97,15 @@ class PositionAnswer:
     A column left out is zeroes, which is what a provider that computes no
     speeds means; `lon`, `lat`, `dist` and `status` must be as long as
     `PositionQuery.cell_count`.
+
+    **Answering at all asserts the answer is in the frame that was asked
+    for.** `frame_bits` left out means "the frame you asked for", not
+    "my own": a provider that computes in one frame must compare
+    `PositionQuery.frame_bits` with its own and return `None` instead,
+    and the SDK will then ask again in `EphemerisProvider.native_frame`
+    and complete the rest — applying the ayanamsha, shifting the zodiac,
+    and stamping each step it took. Answering the wrong frame silently is
+    the one mistake this class makes easy, so it is named here.
     """
 
     def __init__(
@@ -177,6 +184,11 @@ class EphemerisProvider:
         """The positions for a whole grid, or `None` for "not in that
         frame", in which case the SDK asks again in `native_frame` and
         completes the rest itself, stamping every step it applied.
+
+        Compare `query.frame_bits` with the frame you compute in before
+        answering: returning an answer says it is in the frame that was
+        asked for (`PositionAnswer`). `example/your_own_ephemeris.py`
+        does exactly that.
         """
         raise NotImplementedError
 
@@ -285,9 +297,6 @@ class HostProvider:
         self, request: _PositionRequestStruct, out: _PositionColumnsStruct
     ) -> int:
         query = self._read(request)
-        # The same checks the port runs before a native provider is asked,
-        # so a body, an observer or an instant a provider never declared is
-        # refused here rather than left for it to discover.
         refusal = self._validate(query)
         if refusal is not None:
             return refusal
@@ -298,12 +307,18 @@ class HostProvider:
         # Nothing means "not in that frame"; the SDK asks again in ours.
         if answer is None:
             return int(ProviderCode.UNSUPPORTED)
+        # Every column the provider supplied, not only the three it must:
+        # a speed column of the wrong length silently padded with zeroes
+        # is a wrong answer, and a wrong answer is worse than a refusal.
         for name, column in (
             ("lon", answer.lon),
             ("lat", answer.lat),
             ("dist", answer.dist),
+            ("lon_speed", answer.lon_speed),
+            ("lat_speed", answer.lat_speed),
+            ("dist_speed", answer.dist_speed),
         ):
-            if len(column) != cells:
+            if column is not None and len(column) != cells:
                 self.raised = ValueError(
                     f"the provider returned {len(column)} values in `{name}` "
                     f"for {cells} cells"
@@ -345,22 +360,16 @@ class HostProvider:
         )
 
     def _validate(self, query: PositionQuery) -> Optional[int]:
-        """What the port checks before any provider is asked."""
-        frame = frame_unpack(self._lib, query.frame_bits)
-        if frame.centre == Centre.TOPOCENTRIC and query.observer is None:
-            self.raised = ValueError("a topocentric frame needs an observer")
-            return int(ProviderCode.INVALID)
-        for body in query.bodies:
-            if body not in self.provider.bodies:
-                answers = ", ".join(b.key for b in self.provider.bodies)
-                self.raised = ValueError(
-                    f"the provider does not answer {body.key}; it answers {answers}"
-                )
-                return int(ProviderCode.UNSUPPORTED)
+        """What this side checks before the provider is asked.
+
+        Only the coverage span: a topocentric frame without an observer, a
+        body the provider never declared and an instant that is not a
+        number are all refused by the port itself, on the SDK's side of
+        the boundary, where the sentence survives into a `TeistroError`
+        that names what is missing. Checking them again here would be a
+        second copy of the same policy, saying it worse.
+        """
         for jd in query.jds:
-            if jd != jd or jd in (float("inf"), float("-inf")):
-                self.raised = ValueError(f"the instant {jd} is not a number")
-                return int(ProviderCode.INVALID)
             if jd < self.provider.jd_min or jd > self.provider.jd_max:
                 self.raised = ValueError(
                     f"the instant {jd} is outside the provider's coverage "

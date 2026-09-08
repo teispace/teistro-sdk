@@ -16,6 +16,9 @@ use crate::platform::Platform;
 
 const FIXTURES: &str = "target/tsrb";
 const TESTS: &str = "bindings/node/test/";
+/// Where the examples live. **Every** file there is run, so a scenario
+/// added to the directory is gated by having been added.
+const EXAMPLES: &str = "bindings/node/example";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
 /// Where the addon is loaded from: Node requires the `.node` suffix, so
 /// the cdylib Cargo builds is copied there.
@@ -68,6 +71,38 @@ fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     }
 }
 
+/// Runs every example, in name order, and says how many.
+///
+/// An example is a program a reader is invited to copy, so it is held to
+/// the same bar as a test: it must run against the addon this build
+/// produced.
+fn examples(root: &Path) -> Result<(), ()> {
+    let directory = root.join(EXAMPLES);
+    let mut found: Vec<PathBuf> = std::fs::read_dir(&directory)
+        .map_err(|e| println!("FAIL  {EXAMPLES}: {e}"))?
+        .flatten()
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|kind| kind == "mjs"))
+        .collect();
+    found.sort();
+    if found.is_empty() {
+        println!("FAIL  {EXAMPLES} holds no examples");
+        return Err(());
+    }
+    for example in &found {
+        let name = example
+            .file_name()
+            .map_or_else(String::new, |name| name.to_string_lossy().to_string());
+        step(
+            Command::new("node").arg(example).current_dir(root),
+            "",
+            &format!("{EXAMPLES}/{name} did not run"),
+        )?;
+    }
+    println!("ok    {EXAMPLES}: {} example(s) run", found.len());
+    Ok(())
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("node", "--version") {
         eprintln!("no `node` on this machine; the Node binding's tests need it");
@@ -88,6 +123,9 @@ pub(crate) fn check(root: &Path) -> i32 {
         )
     });
     if outcome.is_err() {
+        return 1;
+    }
+    if examples(root).is_err() {
         return 1;
     }
     let Some((tsc, args)) = typescript(root) else {

@@ -20,12 +20,12 @@ declare const r: Renderer;
 function scenario(): string {
   const bhava = m.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 });
   const welcome = m.sdk.reason.welcome();
-  const date = m.sdk.calendar.BIKRAM_SAMBAT.date.long({
+  const date = m.sdk.calendar.bikramSambat.date.long({
     day: 1,
     monthName: 'Baisakh',
     year: 2072,
   });
-  const sun: EntityForms = m.sdk.entity.graha.SUN();
+  const sun: EntityForms = m.sdk.entity.graha.sun();
   const key: MessageKey = 'sdk.reason.grahaInBhava';
   const rendered = r.render(key, { bhava: 7 });
   return `${bhava}${welcome}${date}${sun.name}${sun.short ?? ''}${rendered}`;
@@ -42,6 +42,6 @@ const missingParam = m.sdk.reason.grahaInBhava({ graha: 'graha.SUN' });
 // @ts-expect-error the accessors are read, never replaced
 m.sdk = {} as Messages['sdk'];
 // @ts-expect-error a form the locale may not carry is checked before use
-const unchecked: string = m.sdk.entity.graha.SUN().short;
+const unchecked: string = m.sdk.entity.graha.sun().short;
 
 export { missingParam, scenario, unchecked, wrongEntity, wrongKey, wrongParam };

@@ -156,10 +156,12 @@ export interface EphemerisProvider {
   readonly version?: string;
   /** What identifies its data; empty by default. */
   readonly dataVersion?: string;
-  /** The Julian days it covers; year 0 to year 3000 by default. */
-  readonly jdRange?: readonly [number, number];
+  /** The first Julian day it covers; year 0 by default. */
+  readonly jdMin?: number;
+  /** The last Julian day it covers; year 3000 by default. */
+  readonly jdMax?: number;
   /** The frame it returns natively; the canonical frame by default. */
-  readonly frame?: Frame;
+  readonly nativeFrame?: Frame;
   /** Whether it computes speeds; `true` by default. */
   readonly speeds?: boolean;
   /**

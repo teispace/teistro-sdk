@@ -114,6 +114,72 @@ export const Kind = Object.freeze({
   MuhurtaYoga: 'muhurta_yoga',
 });
 
+/**
+ * Every Kind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const KindById = new Map([
+  [1, 'graha'],
+  [2, 'rashi'],
+  [3, 'nakshatra'],
+  [4, 'tithi'],
+  [5, 'karana'],
+  [6, 'yoga'],
+  [7, 'vara'],
+  [8, 'masa'],
+  [9, 'ritu'],
+  [10, 'ayana'],
+  [11, 'paksha'],
+  [12, 'samvatsara'],
+  [13, 'tatwa'],
+  [14, 'varna'],
+  [15, 'gana'],
+  [16, 'nadi'],
+  [17, 'yoni'],
+  [18, 'deity'],
+  [19, 'dignity'],
+  [20, 'relationship'],
+  [21, 'avastha_baladi'],
+  [22, 'state'],
+  [23, 'ayanamsha'],
+  [24, 'house_system'],
+  [25, 'varga'],
+  [26, 'dasha_system'],
+  [27, 'bala_scheme'],
+  [28, 'koota'],
+  [29, 'chara_karaka'],
+  [30, 'chart_kind'],
+  [31, 'point'],
+  [33, 'muhurta_nature'],
+  [34, 'modality'],
+  [35, 'nature'],
+  [36, 'guna'],
+  [37, 'direction'],
+  [38, 'gender'],
+  [39, 'calendar'],
+  [40, 'era'],
+  [41, 'body_class'],
+  [42, 'parity'],
+  [43, 'rising'],
+  [44, 'sex'],
+  [45, 'tithi_class'],
+  [46, 'auspiciousness'],
+  [47, 'degeneracy'],
+  [49, 'ayanamsha_category'],
+  [50, 'dasha_family'],
+  [51, 'avastha_jagradadi'],
+  [52, 'avastha_deeptadi'],
+  [53, 'avastha_lajjitadi'],
+  [54, 'avastha_sayanadi'],
+  [55, 'point_family'],
+  [56, 'star'],
+  [57, 'star_class'],
+  [58, 'choghadiya'],
+  [59, 'kaala'],
+  [60, 'panchaka'],
+  [61, 'muhurta_yoga'],
+]);
+
 /** Every Graha by name. */
 export const Graha = Object.freeze({
   Sun: 'graha.SUN',
@@ -130,6 +196,25 @@ export const Graha = Object.freeze({
   Pluto: 'graha.PLUTO',
 });
 
+/**
+ * Every Graha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GrahaById = new Map([
+  [0, 'graha.SUN'],
+  [1, 'graha.MOON'],
+  [2, 'graha.MARS'],
+  [3, 'graha.MERCURY'],
+  [4, 'graha.JUPITER'],
+  [5, 'graha.VENUS'],
+  [6, 'graha.SATURN'],
+  [7, 'graha.RAHU'],
+  [8, 'graha.KETU'],
+  [9, 'graha.URANUS'],
+  [10, 'graha.NEPTUNE'],
+  [11, 'graha.PLUTO'],
+]);
+
 /** Every Rashi by name. */
 export const Rashi = Object.freeze({
   Aries: 'rashi.ARIES',
@@ -145,6 +230,25 @@ export const Rashi = Object.freeze({
   Aquarius: 'rashi.AQUARIUS',
   Pisces: 'rashi.PISCES',
 });
+
+/**
+ * Every Rashi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RashiById = new Map([
+  [0, 'rashi.ARIES'],
+  [1, 'rashi.TAURUS'],
+  [2, 'rashi.GEMINI'],
+  [3, 'rashi.CANCER'],
+  [4, 'rashi.LEO'],
+  [5, 'rashi.VIRGO'],
+  [6, 'rashi.LIBRA'],
+  [7, 'rashi.SCORPIO'],
+  [8, 'rashi.SAGITTARIUS'],
+  [9, 'rashi.CAPRICORN'],
+  [10, 'rashi.AQUARIUS'],
+  [11, 'rashi.PISCES'],
+]);
 
 /** Every Nakshatra by name. */
 export const Nakshatra = Object.freeze({
@@ -176,6 +280,40 @@ export const Nakshatra = Object.freeze({
   UttaraBhadrapada: 'nakshatra.UTTARA_BHADRAPADA',
   Revati: 'nakshatra.REVATI',
 });
+
+/**
+ * Every Nakshatra by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const NakshatraById = new Map([
+  [0, 'nakshatra.ASHWINI'],
+  [1, 'nakshatra.BHARANI'],
+  [2, 'nakshatra.KRITTIKA'],
+  [3, 'nakshatra.ROHINI'],
+  [4, 'nakshatra.MRIGASHIRA'],
+  [5, 'nakshatra.ARDRA'],
+  [6, 'nakshatra.PUNARVASU'],
+  [7, 'nakshatra.PUSHYA'],
+  [8, 'nakshatra.ASHLESHA'],
+  [9, 'nakshatra.MAGHA'],
+  [10, 'nakshatra.PURVA_PHALGUNI'],
+  [11, 'nakshatra.UTTARA_PHALGUNI'],
+  [12, 'nakshatra.HASTA'],
+  [13, 'nakshatra.CHITRA'],
+  [14, 'nakshatra.SWATI'],
+  [15, 'nakshatra.VISHAKHA'],
+  [16, 'nakshatra.ANURADHA'],
+  [17, 'nakshatra.JYESHTHA'],
+  [18, 'nakshatra.MULA'],
+  [19, 'nakshatra.PURVA_ASHADHA'],
+  [20, 'nakshatra.UTTARA_ASHADHA'],
+  [21, 'nakshatra.SHRAVANA'],
+  [22, 'nakshatra.DHANISHTHA'],
+  [23, 'nakshatra.SHATABHISHA'],
+  [24, 'nakshatra.PURVA_BHADRAPADA'],
+  [25, 'nakshatra.UTTARA_BHADRAPADA'],
+  [26, 'nakshatra.REVATI'],
+]);
 
 /** Every Tithi by name. */
 export const Tithi = Object.freeze({
@@ -211,6 +349,43 @@ export const Tithi = Object.freeze({
   Amavasya: 'tithi.AMAVASYA',
 });
 
+/**
+ * Every Tithi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TithiById = new Map([
+  [0, 'tithi.SHUKLA_PRATIPADA'],
+  [1, 'tithi.SHUKLA_DVITIYA'],
+  [2, 'tithi.SHUKLA_TRITIYA'],
+  [3, 'tithi.SHUKLA_CHATURTHI'],
+  [4, 'tithi.SHUKLA_PANCHAMI'],
+  [5, 'tithi.SHUKLA_SHASHTHI'],
+  [6, 'tithi.SHUKLA_SAPTAMI'],
+  [7, 'tithi.SHUKLA_ASHTAMI'],
+  [8, 'tithi.SHUKLA_NAVAMI'],
+  [9, 'tithi.SHUKLA_DASHAMI'],
+  [10, 'tithi.SHUKLA_EKADASHI'],
+  [11, 'tithi.SHUKLA_DWADASHI'],
+  [12, 'tithi.SHUKLA_TRAYODASHI'],
+  [13, 'tithi.SHUKLA_CHATURDASHI'],
+  [14, 'tithi.PURNIMA'],
+  [15, 'tithi.KRISHNA_PRATIPADA'],
+  [16, 'tithi.KRISHNA_DVITIYA'],
+  [17, 'tithi.KRISHNA_TRITIYA'],
+  [18, 'tithi.KRISHNA_CHATURTHI'],
+  [19, 'tithi.KRISHNA_PANCHAMI'],
+  [20, 'tithi.KRISHNA_SHASHTHI'],
+  [21, 'tithi.KRISHNA_SAPTAMI'],
+  [22, 'tithi.KRISHNA_ASHTAMI'],
+  [23, 'tithi.KRISHNA_NAVAMI'],
+  [24, 'tithi.KRISHNA_DASHAMI'],
+  [25, 'tithi.KRISHNA_EKADASHI'],
+  [26, 'tithi.KRISHNA_DWADASHI'],
+  [27, 'tithi.KRISHNA_TRAYODASHI'],
+  [28, 'tithi.KRISHNA_CHATURDASHI'],
+  [29, 'tithi.AMAVASYA'],
+]);
+
 /** Every Karana by name. */
 export const Karana = Object.freeze({
   Bava: 'karana.BAVA',
@@ -225,6 +400,24 @@ export const Karana = Object.freeze({
   Naga: 'karana.NAGA',
   Kimstughna: 'karana.KIMSTUGHNA',
 });
+
+/**
+ * Every Karana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const KaranaById = new Map([
+  [0, 'karana.BAVA'],
+  [1, 'karana.BALAVA'],
+  [2, 'karana.KAULAVA'],
+  [3, 'karana.TAITILA'],
+  [4, 'karana.GARIJA'],
+  [5, 'karana.VANIJA'],
+  [6, 'karana.VISHTI'],
+  [7, 'karana.SHAKUNI'],
+  [8, 'karana.CHATUSHPADA'],
+  [9, 'karana.NAGA'],
+  [10, 'karana.KIMSTUGHNA'],
+]);
 
 /** Every Yoga by name. */
 export const Yoga = Object.freeze({
@@ -257,6 +450,40 @@ export const Yoga = Object.freeze({
   Vaidhriti: 'yoga.VAIDHRITI',
 });
 
+/**
+ * Every Yoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const YogaById = new Map([
+  [0, 'yoga.VISHKAMBHA'],
+  [1, 'yoga.PRITI'],
+  [2, 'yoga.AYUSHMAN'],
+  [3, 'yoga.SAUBHAGYA'],
+  [4, 'yoga.SHOBHANA'],
+  [5, 'yoga.ATIGANDA'],
+  [6, 'yoga.SUKARMA'],
+  [7, 'yoga.DHRITI'],
+  [8, 'yoga.SHOOLA'],
+  [9, 'yoga.GANDA'],
+  [10, 'yoga.VRIDDHI'],
+  [11, 'yoga.DHRUVA'],
+  [12, 'yoga.VYAGHATA'],
+  [13, 'yoga.HARSHANA'],
+  [14, 'yoga.VAJRA'],
+  [15, 'yoga.SIDDHI'],
+  [16, 'yoga.VYATIPATA'],
+  [17, 'yoga.VARIYANA'],
+  [18, 'yoga.PARIGHA'],
+  [19, 'yoga.SHIVA'],
+  [20, 'yoga.SIDDHA'],
+  [21, 'yoga.SADHYA'],
+  [22, 'yoga.SHUBHA'],
+  [23, 'yoga.SHUKLA'],
+  [24, 'yoga.BRAHMA'],
+  [25, 'yoga.INDRA'],
+  [26, 'yoga.VAIDHRITI'],
+]);
+
 /** Every Vara by name. */
 export const Vara = Object.freeze({
   Ravivara: 'vara.RAVIVARA',
@@ -267,6 +494,20 @@ export const Vara = Object.freeze({
   Shukravara: 'vara.SHUKRAVARA',
   Shanivara: 'vara.SHANIVARA',
 });
+
+/**
+ * Every Vara by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VaraById = new Map([
+  [0, 'vara.RAVIVARA'],
+  [1, 'vara.SOMAVARA'],
+  [2, 'vara.MANGALAVARA'],
+  [3, 'vara.BUDHAVARA'],
+  [4, 'vara.GURUVARA'],
+  [5, 'vara.SHUKRAVARA'],
+  [6, 'vara.SHANIVARA'],
+]);
 
 /** Every Masa by name. */
 export const Masa = Object.freeze({
@@ -284,6 +525,25 @@ export const Masa = Object.freeze({
   Phalguna: 'masa.PHALGUNA',
 });
 
+/**
+ * Every Masa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MasaById = new Map([
+  [0, 'masa.CHAITRA'],
+  [1, 'masa.VAISHAKHA'],
+  [2, 'masa.JYESHTHA'],
+  [3, 'masa.ASHADHA'],
+  [4, 'masa.SHRAVANA'],
+  [5, 'masa.BHADRAPADA'],
+  [6, 'masa.ASHWINA'],
+  [7, 'masa.KARTIKA'],
+  [8, 'masa.MARGASHIRSHA'],
+  [9, 'masa.PAUSHA'],
+  [10, 'masa.MAGHA'],
+  [11, 'masa.PHALGUNA'],
+]);
+
 /** Every Ritu by name. */
 export const Ritu = Object.freeze({
   Vasanta: 'ritu.VASANTA',
@@ -294,17 +554,48 @@ export const Ritu = Object.freeze({
   Shishira: 'ritu.SHISHIRA',
 });
 
+/**
+ * Every Ritu by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RituById = new Map([
+  [0, 'ritu.VASANTA'],
+  [1, 'ritu.GRISHMA'],
+  [2, 'ritu.VARSHA'],
+  [3, 'ritu.SHARAD'],
+  [4, 'ritu.HEMANTA'],
+  [5, 'ritu.SHISHIRA'],
+]);
+
 /** Every Ayana by name. */
 export const Ayana = Object.freeze({
   Uttarayana: 'ayana.UTTARAYANA',
   Dakshinayana: 'ayana.DAKSHINAYANA',
 });
 
+/**
+ * Every Ayana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AyanaById = new Map([
+  [0, 'ayana.UTTARAYANA'],
+  [1, 'ayana.DAKSHINAYANA'],
+]);
+
 /** Every Paksha by name. */
 export const Paksha = Object.freeze({
   Shukla: 'paksha.SHUKLA',
   Krishna: 'paksha.KRISHNA',
 });
+
+/**
+ * Every Paksha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PakshaById = new Map([
+  [0, 'paksha.SHUKLA'],
+  [1, 'paksha.KRISHNA'],
+]);
 
 /** Every Samvatsara by name. */
 export const Samvatsara = Object.freeze({
@@ -370,6 +661,73 @@ export const Samvatsara = Object.freeze({
   Akshaya: 'samvatsara.AKSHAYA',
 });
 
+/**
+ * Every Samvatsara by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SamvatsaraById = new Map([
+  [0, 'samvatsara.PRABHAVA'],
+  [1, 'samvatsara.VIBHAVA'],
+  [2, 'samvatsara.SHUKLA'],
+  [3, 'samvatsara.PRAMODOOTA'],
+  [4, 'samvatsara.PRAJOTPATTI'],
+  [5, 'samvatsara.ANGIRAS'],
+  [6, 'samvatsara.SHRIMUKHA'],
+  [7, 'samvatsara.BHAVA'],
+  [8, 'samvatsara.YUVA'],
+  [9, 'samvatsara.DHAATA'],
+  [10, 'samvatsara.ISHVARA'],
+  [11, 'samvatsara.BAHUDHANYA'],
+  [12, 'samvatsara.PRAMATHI'],
+  [13, 'samvatsara.VIKRAMA'],
+  [14, 'samvatsara.VRISHA'],
+  [15, 'samvatsara.CHITRABHANU'],
+  [16, 'samvatsara.SUBHANU'],
+  [17, 'samvatsara.TAARANA'],
+  [18, 'samvatsara.PAARTHIVA'],
+  [19, 'samvatsara.VYAYA'],
+  [20, 'samvatsara.SARVAJIT'],
+  [21, 'samvatsara.SARVADHARI'],
+  [22, 'samvatsara.VIRODHI'],
+  [23, 'samvatsara.VIKRITA'],
+  [24, 'samvatsara.KHARA'],
+  [25, 'samvatsara.NANDANA'],
+  [26, 'samvatsara.VIJAYA'],
+  [27, 'samvatsara.JAYA'],
+  [28, 'samvatsara.MANMATHA'],
+  [29, 'samvatsara.DURMUKHI'],
+  [30, 'samvatsara.HEVILAMBI'],
+  [31, 'samvatsara.VILAMBI'],
+  [32, 'samvatsara.VIKARI'],
+  [33, 'samvatsara.SHARVARI'],
+  [34, 'samvatsara.PLAVA'],
+  [35, 'samvatsara.SHUBHAKRIT'],
+  [36, 'samvatsara.SHOBHAKRIT'],
+  [37, 'samvatsara.KRODHI'],
+  [38, 'samvatsara.VISHVAVASU'],
+  [39, 'samvatsara.PARABHAVA'],
+  [40, 'samvatsara.PLAVANGA'],
+  [41, 'samvatsara.KILAKA'],
+  [42, 'samvatsara.SAUMYA'],
+  [43, 'samvatsara.SADHARANA'],
+  [44, 'samvatsara.VIRODHIKRIT'],
+  [45, 'samvatsara.PARIDHAAVI'],
+  [46, 'samvatsara.PRAMADICHA'],
+  [47, 'samvatsara.ANANDA'],
+  [48, 'samvatsara.RAKSHASA'],
+  [49, 'samvatsara.NALA'],
+  [50, 'samvatsara.PINGALA'],
+  [51, 'samvatsara.KALAYUKTA'],
+  [52, 'samvatsara.SIDDHARTHI'],
+  [53, 'samvatsara.RAUDRA'],
+  [54, 'samvatsara.DURMATI'],
+  [55, 'samvatsara.DUNDUBHI'],
+  [56, 'samvatsara.RUDHIRODGARI'],
+  [57, 'samvatsara.RAKTAKSHI'],
+  [58, 'samvatsara.KRODHANA'],
+  [59, 'samvatsara.AKSHAYA'],
+]);
+
 /** Every Tatwa by name. */
 export const Tatwa = Object.freeze({
   Agni: 'tatwa.AGNI',
@@ -378,6 +736,18 @@ export const Tatwa = Object.freeze({
   Jala: 'tatwa.JALA',
   Akasha: 'tatwa.AKASHA',
 });
+
+/**
+ * Every Tatwa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TatwaById = new Map([
+  [0, 'tatwa.AGNI'],
+  [1, 'tatwa.PRITHVI'],
+  [2, 'tatwa.VAYU'],
+  [3, 'tatwa.JALA'],
+  [4, 'tatwa.AKASHA'],
+]);
 
 /** Every Varna by name. */
 export const Varna = Object.freeze({
@@ -388,6 +758,18 @@ export const Varna = Object.freeze({
   Mleccha: 'varna.MLECCHA',
 });
 
+/**
+ * Every Varna by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VarnaById = new Map([
+  [0, 'varna.BRAHMIN'],
+  [1, 'varna.KSHATRIYA'],
+  [2, 'varna.VAISHYA'],
+  [3, 'varna.SHUDRA'],
+  [4, 'varna.MLECCHA'],
+]);
+
 /** Every Gana by name. */
 export const Gana = Object.freeze({
   Deva: 'gana.DEVA',
@@ -395,12 +777,32 @@ export const Gana = Object.freeze({
   Rakshasa: 'gana.RAKSHASA',
 });
 
+/**
+ * Every Gana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GanaById = new Map([
+  [0, 'gana.DEVA'],
+  [1, 'gana.MANUSHYA'],
+  [2, 'gana.RAKSHASA'],
+]);
+
 /** Every Nadi by name. */
 export const Nadi = Object.freeze({
   Aadi: 'nadi.AADI',
   Madhya: 'nadi.MADHYA',
   Antya: 'nadi.ANTYA',
 });
+
+/**
+ * Every Nadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const NadiById = new Map([
+  [0, 'nadi.AADI'],
+  [1, 'nadi.MADHYA'],
+  [2, 'nadi.ANTYA'],
+]);
 
 /** Every Yoni by name. */
 export const Yoni = Object.freeze({
@@ -419,6 +821,27 @@ export const Yoni = Object.freeze({
   Mongoose: 'yoni.MONGOOSE',
   Lion: 'yoni.LION',
 });
+
+/**
+ * Every Yoni by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const YoniById = new Map([
+  [0, 'yoni.HORSE'],
+  [1, 'yoni.ELEPHANT'],
+  [2, 'yoni.GOAT'],
+  [3, 'yoni.SERPENT'],
+  [4, 'yoni.DOG'],
+  [5, 'yoni.CAT'],
+  [6, 'yoni.RAT'],
+  [7, 'yoni.COW'],
+  [8, 'yoni.BUFFALO'],
+  [9, 'yoni.TIGER'],
+  [10, 'yoni.DEER'],
+  [11, 'yoni.MONKEY'],
+  [12, 'yoni.MONGOOSE'],
+  [13, 'yoni.LION'],
+]);
 
 /** Every Deity by name. */
 export const Deity = Object.freeze({
@@ -461,6 +884,50 @@ export const Deity = Object.freeze({
   Shukra: 'deity.SHUKRA',
 });
 
+/**
+ * Every Deity by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DeityById = new Map([
+  [0, 'deity.ASHWINI_KUMARA'],
+  [1, 'deity.YAMA'],
+  [2, 'deity.AGNI'],
+  [3, 'deity.BRAHMA'],
+  [4, 'deity.SOMA'],
+  [5, 'deity.RUDRA'],
+  [6, 'deity.ADITI'],
+  [7, 'deity.BRIHASPATI'],
+  [8, 'deity.NAGA'],
+  [9, 'deity.PITRU'],
+  [10, 'deity.BHAGA'],
+  [11, 'deity.ARYAMAN'],
+  [12, 'deity.SAVITR'],
+  [13, 'deity.VISHVAKARMA'],
+  [14, 'deity.VAYU'],
+  [15, 'deity.INDRAGNI'],
+  [16, 'deity.MITRA'],
+  [17, 'deity.INDRA'],
+  [18, 'deity.NIRRITI'],
+  [19, 'deity.APAS'],
+  [20, 'deity.VISHVADEVA'],
+  [21, 'deity.VISHNU'],
+  [22, 'deity.VASU'],
+  [23, 'deity.VARUNA'],
+  [24, 'deity.AJA_EKAPADA'],
+  [25, 'deity.AHIRBUDHNYA'],
+  [26, 'deity.PUSHAN'],
+  [27, 'deity.VIDHATA'],
+  [28, 'deity.KARTIKEYA'],
+  [29, 'deity.SURYA'],
+  [30, 'deity.SHIVA'],
+  [31, 'deity.DURGA'],
+  [32, 'deity.KAMADEVA'],
+  [33, 'deity.CHANDRA'],
+  [34, 'deity.TVASHTA'],
+  [35, 'deity.SHANI'],
+  [36, 'deity.SHUKRA'],
+]);
+
 /** Every Dignity by name. */
 export const Dignity = Object.freeze({
   DeepExalted: 'dignity.DEEP_EXALTED',
@@ -476,6 +943,24 @@ export const Dignity = Object.freeze({
   DeepDebilitated: 'dignity.DEEP_DEBILITATED',
 });
 
+/**
+ * Every Dignity by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DignityById = new Map([
+  [0, 'dignity.DEEP_EXALTED'],
+  [1, 'dignity.EXALTED'],
+  [2, 'dignity.MOOLTRIKONA'],
+  [3, 'dignity.OWN_SIGN'],
+  [4, 'dignity.GREAT_FRIEND'],
+  [5, 'dignity.FRIEND'],
+  [6, 'dignity.NEUTRAL'],
+  [7, 'dignity.ENEMY'],
+  [8, 'dignity.GREAT_ENEMY'],
+  [9, 'dignity.DEBILITATED'],
+  [10, 'dignity.DEEP_DEBILITATED'],
+]);
+
 /** Every Relationship by name. */
 export const Relationship = Object.freeze({
   GreatFriend: 'relationship.GREAT_FRIEND',
@@ -485,6 +970,18 @@ export const Relationship = Object.freeze({
   GreatEnemy: 'relationship.GREAT_ENEMY',
 });
 
+/**
+ * Every Relationship by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RelationshipById = new Map([
+  [0, 'relationship.GREAT_FRIEND'],
+  [1, 'relationship.FRIEND'],
+  [2, 'relationship.NEUTRAL'],
+  [3, 'relationship.ENEMY'],
+  [4, 'relationship.GREAT_ENEMY'],
+]);
+
 /** Every AvasthaBaladi by name. */
 export const AvasthaBaladi = Object.freeze({
   Bala: 'avastha_baladi.BALA',
@@ -493,6 +990,18 @@ export const AvasthaBaladi = Object.freeze({
   Vriddha: 'avastha_baladi.VRIDDHA',
   Mrita: 'avastha_baladi.MRITA',
 });
+
+/**
+ * Every AvasthaBaladi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AvasthaBaladiById = new Map([
+  [0, 'avastha_baladi.BALA'],
+  [1, 'avastha_baladi.KUMARA'],
+  [2, 'avastha_baladi.YUVA'],
+  [3, 'avastha_baladi.VRIDDHA'],
+  [4, 'avastha_baladi.MRITA'],
+]);
 
 /** Every State by name. */
 export const State = Object.freeze({
@@ -509,6 +1018,25 @@ export const State = Object.freeze({
   MaranaKarakaSthana: 'state.MARANA_KARAKA_STHANA',
   Eclipsed: 'state.ECLIPSED',
 });
+
+/**
+ * Every State by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const StateById = new Map([
+  [0, 'state.RETROGRADE'],
+  [1, 'state.STATIONARY'],
+  [2, 'state.COMBUST'],
+  [3, 'state.PLANETARY_WAR'],
+  [4, 'state.GANDANTA'],
+  [5, 'state.SANDHI'],
+  [6, 'state.VARGOTTAMA'],
+  [7, 'state.PUSHKARA_NAVAMSA'],
+  [8, 'state.PUSHKARA_BHAGA'],
+  [9, 'state.MRITYU_BHAGA'],
+  [10, 'state.MARANA_KARAKA_STHANA'],
+  [11, 'state.ECLIPSED'],
+]);
 
 /** Every Ayanamsha by name. */
 export const Ayanamsha = Object.freeze({
@@ -561,6 +1089,60 @@ export const Ayanamsha = Object.freeze({
   LahiriIcrc: 'ayanamsha.LAHIRI_ICRC',
 });
 
+/**
+ * Every Ayanamsha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AyanamshaById = new Map([
+  [0, 'ayanamsha.FAGAN_BRADLEY'],
+  [1, 'ayanamsha.LAHIRI'],
+  [2, 'ayanamsha.DELUCE'],
+  [3, 'ayanamsha.RAMAN'],
+  [4, 'ayanamsha.USHASHASHI'],
+  [5, 'ayanamsha.KRISHNAMURTI'],
+  [6, 'ayanamsha.DJWHAL_KHUL'],
+  [7, 'ayanamsha.YUKTESHWAR'],
+  [8, 'ayanamsha.JN_BHASIN'],
+  [9, 'ayanamsha.BABYL_KUGLER1'],
+  [10, 'ayanamsha.BABYL_KUGLER2'],
+  [11, 'ayanamsha.BABYL_KUGLER3'],
+  [12, 'ayanamsha.BABYL_HUBER'],
+  [13, 'ayanamsha.BABYL_ETPSC'],
+  [14, 'ayanamsha.ALDEBARAN_15TAU'],
+  [15, 'ayanamsha.HIPPARCHOS'],
+  [16, 'ayanamsha.SASSANIAN'],
+  [17, 'ayanamsha.GALCENT_0SAG'],
+  [18, 'ayanamsha.J2000'],
+  [19, 'ayanamsha.J1900'],
+  [20, 'ayanamsha.B1950'],
+  [21, 'ayanamsha.SURYASIDDHANTA'],
+  [22, 'ayanamsha.SURYASIDDHANTA_MSUN'],
+  [23, 'ayanamsha.ARYABHATA'],
+  [24, 'ayanamsha.ARYABHATA_MSUN'],
+  [25, 'ayanamsha.SS_REVATI'],
+  [26, 'ayanamsha.SS_CITRA'],
+  [27, 'ayanamsha.TRUE_CHITRA'],
+  [28, 'ayanamsha.TRUE_REVATI'],
+  [29, 'ayanamsha.TRUE_PUSHYA'],
+  [30, 'ayanamsha.GALCENT_RGILBRAND'],
+  [31, 'ayanamsha.GALEQU_IAU1958'],
+  [32, 'ayanamsha.GALEQU_TRUE'],
+  [33, 'ayanamsha.GALEQU_MULA'],
+  [34, 'ayanamsha.GALALIGN_MARDYKS'],
+  [35, 'ayanamsha.TRUE_MULA'],
+  [36, 'ayanamsha.GALCENT_MULA_WILHELM'],
+  [37, 'ayanamsha.ARYABHATA_522'],
+  [38, 'ayanamsha.BABYL_BRITTON'],
+  [39, 'ayanamsha.TRUE_SHEORAN'],
+  [40, 'ayanamsha.GALCENT_COCHRANE'],
+  [41, 'ayanamsha.GALEQU_FIORENZA'],
+  [42, 'ayanamsha.VALENS_MOON'],
+  [43, 'ayanamsha.LAHIRI_1940'],
+  [44, 'ayanamsha.LAHIRI_VP285'],
+  [45, 'ayanamsha.KRISHNAMURTI_VP291'],
+  [46, 'ayanamsha.LAHIRI_ICRC'],
+]);
+
 /** Every HouseSystem by name. */
 export const HouseSystem = Object.freeze({
   WholeSign: 'house_system.WHOLE_SIGN',
@@ -587,6 +1169,35 @@ export const HouseSystem = Object.freeze({
   Apc: 'house_system.APC',
 });
 
+/**
+ * Every HouseSystem by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const HouseSystemById = new Map([
+  [0, 'house_system.WHOLE_SIGN'],
+  [1, 'house_system.PLACIDUS'],
+  [2, 'house_system.KOCH'],
+  [3, 'house_system.REGIOMONTANUS'],
+  [4, 'house_system.CAMPANUS'],
+  [5, 'house_system.EQUAL'],
+  [6, 'house_system.MERIDIAN'],
+  [7, 'house_system.ALCABITIUS'],
+  [8, 'house_system.PORPHYRY'],
+  [9, 'house_system.TOPOCENTRIC'],
+  [10, 'house_system.MORINUS'],
+  [11, 'house_system.SRIPATI'],
+  [12, 'house_system.EQUAL_MC'],
+  [13, 'house_system.EQUAL_ARIES'],
+  [14, 'house_system.VEHLOW'],
+  [15, 'house_system.CARTER'],
+  [16, 'house_system.HORIZON'],
+  [17, 'house_system.SUNSHINE'],
+  [18, 'house_system.PULLEN_SD'],
+  [19, 'house_system.PULLEN_SR'],
+  [20, 'house_system.KRUSINSKI'],
+  [21, 'house_system.APC'],
+]);
+
 /** Every Varga by name. */
 export const Varga = Object.freeze({
   D1: 'varga.D1',
@@ -611,6 +1222,34 @@ export const Varga = Object.freeze({
   D60: 'varga.D60',
   D150: 'varga.D150',
 });
+
+/**
+ * Every Varga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VargaById = new Map([
+  [0, 'varga.D1'],
+  [1, 'varga.D2'],
+  [2, 'varga.D3'],
+  [3, 'varga.D4'],
+  [4, 'varga.D5'],
+  [5, 'varga.D6'],
+  [6, 'varga.D7'],
+  [7, 'varga.D8'],
+  [8, 'varga.D9'],
+  [9, 'varga.D10'],
+  [10, 'varga.D11'],
+  [11, 'varga.D12'],
+  [12, 'varga.D16'],
+  [13, 'varga.D20'],
+  [14, 'varga.D24'],
+  [15, 'varga.D27'],
+  [16, 'varga.D30'],
+  [17, 'varga.D40'],
+  [18, 'varga.D45'],
+  [19, 'varga.D60'],
+  [20, 'varga.D150'],
+]);
 
 /** Every DashaSystem by name. */
 export const DashaSystem = Object.freeze({
@@ -656,11 +1295,67 @@ export const DashaSystem = Object.freeze({
   VarshaYogini: 'dasha_system.VARSHA_YOGINI',
 });
 
+/**
+ * Every DashaSystem by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DashaSystemById = new Map([
+  [0, 'dasha_system.VIMSHOTTARI'],
+  [1, 'dasha_system.ASHTOTTARI'],
+  [2, 'dasha_system.DWADASHOTTARI'],
+  [3, 'dasha_system.PANCHOTTARI'],
+  [4, 'dasha_system.SHATABDIKA'],
+  [5, 'dasha_system.CHATURASHITI_SAMA'],
+  [6, 'dasha_system.DWISAPTATI_SAMA'],
+  [7, 'dasha_system.YOGINI'],
+  [8, 'dasha_system.TRIBHAGI'],
+  [9, 'dasha_system.SHODASHOTTARI'],
+  [10, 'dasha_system.SHATTRIMSHA_SAMA'],
+  [11, 'dasha_system.SHASHTIHAYANI'],
+  [12, 'dasha_system.TITHI_ASHTOTTARI'],
+  [13, 'dasha_system.TITHI_YOGINI'],
+  [14, 'dasha_system.YOGA_VIMSHOTTARI'],
+  [15, 'dasha_system.KARANA_CHATURASHITI'],
+  [16, 'dasha_system.NAISARGIKA'],
+  [17, 'dasha_system.TARA'],
+  [18, 'dasha_system.KARAKA'],
+  [19, 'dasha_system.AAYU'],
+  [20, 'dasha_system.ASHTAKAVARGA'],
+  [21, 'dasha_system.PANCHASWARA'],
+  [22, 'dasha_system.CHARA'],
+  [23, 'dasha_system.NARAYANA'],
+  [24, 'dasha_system.PADANADHAMSA'],
+  [25, 'dasha_system.TRIKONA'],
+  [26, 'dasha_system.DRIG'],
+  [27, 'dasha_system.SHOOLA'],
+  [28, 'dasha_system.NIRYANA_SHOOLA'],
+  [29, 'dasha_system.MANDOOKA'],
+  [30, 'dasha_system.STHIRA'],
+  [31, 'dasha_system.SUDASA'],
+  [32, 'dasha_system.VARNADA'],
+  [33, 'dasha_system.YOGARDHA'],
+  [34, 'dasha_system.KALACHAKRA'],
+  [35, 'dasha_system.SUDARSHANA_CHAKRA'],
+  [36, 'dasha_system.PATYAYINI'],
+  [37, 'dasha_system.MUDDA'],
+  [38, 'dasha_system.VARSHA_NARAYANA'],
+  [39, 'dasha_system.VARSHA_YOGINI'],
+]);
+
 /** Every BalaScheme by name. */
 export const BalaScheme = Object.freeze({
   Parashara: 'bala_scheme.PARASHARA',
   ParasharaExtended: 'bala_scheme.PARASHARA_EXTENDED',
 });
+
+/**
+ * Every BalaScheme by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BalaSchemeById = new Map([
+  [0, 'bala_scheme.PARASHARA'],
+  [1, 'bala_scheme.PARASHARA_EXTENDED'],
+]);
 
 /** Every Koota by name. */
 export const Koota = Object.freeze({
@@ -678,6 +1373,25 @@ export const Koota = Object.freeze({
   Mahendra: 'koota.MAHENDRA',
 });
 
+/**
+ * Every Koota by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const KootaById = new Map([
+  [0, 'koota.VARNA'],
+  [1, 'koota.VASHYA'],
+  [2, 'koota.TARA'],
+  [3, 'koota.YONI'],
+  [4, 'koota.GRAHA_MAITRI'],
+  [5, 'koota.GANA'],
+  [6, 'koota.BHAKOOT'],
+  [7, 'koota.NADI'],
+  [8, 'koota.RAJJU'],
+  [9, 'koota.VEDHA'],
+  [10, 'koota.STREE_DEERGHA'],
+  [11, 'koota.MAHENDRA'],
+]);
+
 /** Every CharaKaraka by name. */
 export const CharaKaraka = Object.freeze({
   Atmakaraka: 'chara_karaka.ATMAKARAKA',
@@ -690,6 +1404,21 @@ export const CharaKaraka = Object.freeze({
   Pitrikaraka: 'chara_karaka.PITRIKARAKA',
 });
 
+/**
+ * Every CharaKaraka by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const CharaKarakaById = new Map([
+  [0, 'chara_karaka.ATMAKARAKA'],
+  [1, 'chara_karaka.AMATYAKARAKA'],
+  [2, 'chara_karaka.BHRATRIKARAKA'],
+  [3, 'chara_karaka.MATRIKARAKA'],
+  [4, 'chara_karaka.PUTRAKARAKA'],
+  [5, 'chara_karaka.GNATIKARAKA'],
+  [6, 'chara_karaka.DARAKARAKA'],
+  [7, 'chara_karaka.PITRIKARAKA'],
+]);
+
 /** Every ChartKind by name. */
 export const ChartKind = Object.freeze({
   Natal: 'chart_kind.NATAL',
@@ -700,6 +1429,20 @@ export const ChartKind = Object.freeze({
   Relocated: 'chart_kind.RELOCATED',
   Composite: 'chart_kind.COMPOSITE',
 });
+
+/**
+ * Every ChartKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChartKindById = new Map([
+  [0, 'chart_kind.NATAL'],
+  [1, 'chart_kind.TRANSIT'],
+  [2, 'chart_kind.EVENT'],
+  [3, 'chart_kind.PRASHNA'],
+  [4, 'chart_kind.RETURN'],
+  [5, 'chart_kind.RELOCATED'],
+  [6, 'chart_kind.COMPOSITE'],
+]);
 
 /** Every Point by name. */
 export const Point = Object.freeze({
@@ -754,6 +1497,62 @@ export const Point = Object.freeze({
   A12: 'point.A12',
 });
 
+/**
+ * Every Point by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PointById = new Map([
+  [0, 'point.LAGNA'],
+  [1, 'point.MC'],
+  [2, 'point.DESCENDANT'],
+  [3, 'point.IC'],
+  [4, 'point.BHAVA_LAGNA'],
+  [5, 'point.HORA_LAGNA'],
+  [6, 'point.GHATI_LAGNA'],
+  [7, 'point.VIGHATI_LAGNA'],
+  [8, 'point.VARNADA_LAGNA'],
+  [9, 'point.SREE_LAGNA'],
+  [10, 'point.INDU_LAGNA'],
+  [11, 'point.PRANAPADA_LAGNA'],
+  [12, 'point.DHUMA'],
+  [13, 'point.VYATIPATA'],
+  [14, 'point.PARIVESHA'],
+  [15, 'point.INDRACHAPA'],
+  [16, 'point.UPAKETU'],
+  [17, 'point.GULIKA'],
+  [18, 'point.MANDI'],
+  [19, 'point.KALA'],
+  [20, 'point.MRITYU'],
+  [21, 'point.ARDHAPRAHARA'],
+  [22, 'point.YAMAGHANTAKA'],
+  [23, 'point.BHRIGU_BINDU'],
+  [24, 'point.YOGI'],
+  [25, 'point.AVAYOGI'],
+  [26, 'point.SAHAYOGI'],
+  [27, 'point.TRISPHUTA'],
+  [28, 'point.CHATUSSPHUTA'],
+  [29, 'point.PANCHASPHUTA'],
+  [30, 'point.PRANA_SPHUTA'],
+  [31, 'point.DEHA_SPHUTA'],
+  [32, 'point.MRITYU_SPHUTA'],
+  [33, 'point.BEEJA_SPHUTA'],
+  [34, 'point.KSHETRA_SPHUTA'],
+  [35, 'point.KARAKAMSHA'],
+  [36, 'point.SWAMSHA'],
+  [37, 'point.A1'],
+  [38, 'point.A2'],
+  [39, 'point.A3'],
+  [40, 'point.A4'],
+  [41, 'point.A5'],
+  [42, 'point.A6'],
+  [43, 'point.A7'],
+  [44, 'point.A8'],
+  [45, 'point.A9'],
+  [46, 'point.A10'],
+  [47, 'point.A11'],
+  [48, 'point.A12'],
+]);
+
 /** Every MuhurtaNature by name. */
 export const MuhurtaNature = Object.freeze({
   Dhruva: 'muhurta_nature.DHRUVA',
@@ -765,12 +1564,36 @@ export const MuhurtaNature = Object.freeze({
   Tikshna: 'muhurta_nature.TIKSHNA',
 });
 
+/**
+ * Every MuhurtaNature by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MuhurtaNatureById = new Map([
+  [0, 'muhurta_nature.DHRUVA'],
+  [1, 'muhurta_nature.CHARA'],
+  [2, 'muhurta_nature.UGRA'],
+  [3, 'muhurta_nature.KSHIPRA'],
+  [4, 'muhurta_nature.MRIDU'],
+  [5, 'muhurta_nature.MISHRA'],
+  [6, 'muhurta_nature.TIKSHNA'],
+]);
+
 /** Every Modality by name. */
 export const Modality = Object.freeze({
   Chara: 'modality.CHARA',
   Sthira: 'modality.STHIRA',
   Dwiswabhava: 'modality.DWISWABHAVA',
 });
+
+/**
+ * Every Modality by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ModalityById = new Map([
+  [0, 'modality.CHARA'],
+  [1, 'modality.STHIRA'],
+  [2, 'modality.DWISWABHAVA'],
+]);
 
 /** Every Nature by name. */
 export const Nature = Object.freeze({
@@ -779,12 +1602,32 @@ export const Nature = Object.freeze({
   Neutral: 'nature.NEUTRAL',
 });
 
+/**
+ * Every Nature by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const NatureById = new Map([
+  [0, 'nature.BENEFIC'],
+  [1, 'nature.MALEFIC'],
+  [2, 'nature.NEUTRAL'],
+]);
+
 /** Every Guna by name. */
 export const Guna = Object.freeze({
   Sattva: 'guna.SATTVA',
   Rajas: 'guna.RAJAS',
   Tamas: 'guna.TAMAS',
 });
+
+/**
+ * Every Guna by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GunaById = new Map([
+  [0, 'guna.SATTVA'],
+  [1, 'guna.RAJAS'],
+  [2, 'guna.TAMAS'],
+]);
 
 /** Every Direction by name. */
 export const Direction = Object.freeze({
@@ -798,12 +1641,37 @@ export const Direction = Object.freeze({
   Southwest: 'direction.SOUTHWEST',
 });
 
+/**
+ * Every Direction by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DirectionById = new Map([
+  [0, 'direction.EAST'],
+  [1, 'direction.WEST'],
+  [2, 'direction.NORTH'],
+  [3, 'direction.SOUTH'],
+  [4, 'direction.NORTHEAST'],
+  [5, 'direction.NORTHWEST'],
+  [6, 'direction.SOUTHEAST'],
+  [7, 'direction.SOUTHWEST'],
+]);
+
 /** Every Gender by name. */
 export const Gender = Object.freeze({
   Male: 'gender.MALE',
   Female: 'gender.FEMALE',
   Neutral: 'gender.NEUTRAL',
 });
+
+/**
+ * Every Gender by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GenderById = new Map([
+  [0, 'gender.MALE'],
+  [1, 'gender.FEMALE'],
+  [2, 'gender.NEUTRAL'],
+]);
 
 /** Every Calendar by name. */
 export const Calendar = Object.freeze({
@@ -814,6 +1682,19 @@ export const Calendar = Object.freeze({
   BikramSambat: 'calendar.BIKRAM_SAMBAT',
   IndianLunisolar: 'calendar.INDIAN_LUNISOLAR',
 });
+
+/**
+ * Every Calendar by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const CalendarById = new Map([
+  [0, 'calendar.GREGORIAN'],
+  [1, 'calendar.JULIAN'],
+  [2, 'calendar.MIXED'],
+  [3, 'calendar.ISO_WEEK'],
+  [4, 'calendar.BIKRAM_SAMBAT'],
+  [5, 'calendar.INDIAN_LUNISOLAR'],
+]);
 
 /** Every Era by name. */
 export const Era = Object.freeze({
@@ -828,6 +1709,22 @@ export const Era = Object.freeze({
   BeforeCommonEra: 'era.BEFORE_COMMON_ERA',
 });
 
+/**
+ * Every Era by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const EraById = new Map([
+  [0, 'era.VIKRAMA'],
+  [1, 'era.SHAKA'],
+  [2, 'era.KALI'],
+  [3, 'era.NEPAL_SAMBAT'],
+  [4, 'era.BUDDHA'],
+  [5, 'era.KOLLAM'],
+  [6, 'era.BENGALI'],
+  [7, 'era.COMMON_ERA'],
+  [8, 'era.BEFORE_COMMON_ERA'],
+]);
+
 /** Every BodyClass by name. */
 export const BodyClass = Object.freeze({
   Luminary: 'body_class.LUMINARY',
@@ -836,11 +1733,31 @@ export const BodyClass = Object.freeze({
   Outer: 'body_class.OUTER',
 });
 
+/**
+ * Every BodyClass by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BodyClassById = new Map([
+  [0, 'body_class.LUMINARY'],
+  [1, 'body_class.PLANET'],
+  [2, 'body_class.NODE'],
+  [3, 'body_class.OUTER'],
+]);
+
 /** Every Parity by name. */
 export const Parity = Object.freeze({
   Odd: 'parity.ODD',
   Even: 'parity.EVEN',
 });
+
+/**
+ * Every Parity by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ParityById = new Map([
+  [0, 'parity.ODD'],
+  [1, 'parity.EVEN'],
+]);
 
 /** Every Rising by name. */
 export const Rising = Object.freeze({
@@ -849,11 +1766,30 @@ export const Rising = Object.freeze({
   Ubhayodaya: 'rising.UBHAYODAYA',
 });
 
+/**
+ * Every Rising by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RisingById = new Map([
+  [0, 'rising.SIRSHODAYA'],
+  [1, 'rising.PRISHTODAYA'],
+  [2, 'rising.UBHAYODAYA'],
+]);
+
 /** Every Sex by name. */
 export const Sex = Object.freeze({
   Male: 'sex.MALE',
   Female: 'sex.FEMALE',
 });
+
+/**
+ * Every Sex by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SexById = new Map([
+  [0, 'sex.MALE'],
+  [1, 'sex.FEMALE'],
+]);
 
 /** Every TithiClass by name. */
 export const TithiClass = Object.freeze({
@@ -864,6 +1800,18 @@ export const TithiClass = Object.freeze({
   Purna: 'tithi_class.PURNA',
 });
 
+/**
+ * Every TithiClass by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TithiClassById = new Map([
+  [0, 'tithi_class.NANDA'],
+  [1, 'tithi_class.BHADRA'],
+  [2, 'tithi_class.JAYA'],
+  [3, 'tithi_class.RIKTA'],
+  [4, 'tithi_class.PURNA'],
+]);
+
 /** Every Auspiciousness by name. */
 export const Auspiciousness = Object.freeze({
   Auspicious: 'auspiciousness.AUSPICIOUS',
@@ -872,11 +1820,31 @@ export const Auspiciousness = Object.freeze({
   HighlyInauspicious: 'auspiciousness.HIGHLY_INAUSPICIOUS',
 });
 
+/**
+ * Every Auspiciousness by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AuspiciousnessById = new Map([
+  [0, 'auspiciousness.AUSPICIOUS'],
+  [1, 'auspiciousness.INAUSPICIOUS'],
+  [2, 'auspiciousness.MIXED'],
+  [3, 'auspiciousness.HIGHLY_INAUSPICIOUS'],
+]);
+
 /** Every Degeneracy by name. */
 export const Degeneracy = Object.freeze({
   None: 'degeneracy.NONE',
   PolarUndefined: 'degeneracy.POLAR_UNDEFINED',
 });
+
+/**
+ * Every Degeneracy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DegeneracyById = new Map([
+  [0, 'degeneracy.NONE'],
+  [1, 'degeneracy.POLAR_UNDEFINED'],
+]);
 
 /** Every AyanamshaCategory by name. */
 export const AyanamshaCategory = Object.freeze({
@@ -889,6 +1857,20 @@ export const AyanamshaCategory = Object.freeze({
   Epoch: 'ayanamsha_category.EPOCH',
 });
 
+/**
+ * Every AyanamshaCategory by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AyanamshaCategoryById = new Map([
+  [0, 'ayanamsha_category.VEDIC_STANDARD'],
+  [1, 'ayanamsha_category.VEDIC_CLASSICAL'],
+  [2, 'ayanamsha_category.STAR_ANCHORED'],
+  [3, 'ayanamsha_category.WESTERN_SIDEREAL'],
+  [4, 'ayanamsha_category.GALACTIC'],
+  [5, 'ayanamsha_category.HISTORICAL'],
+  [6, 'ayanamsha_category.EPOCH'],
+]);
+
 /** Every DashaFamily by name. */
 export const DashaFamily = Object.freeze({
   Udu: 'dasha_family.UDU',
@@ -899,12 +1881,35 @@ export const DashaFamily = Object.freeze({
   Own: 'dasha_family.OWN',
 });
 
+/**
+ * Every DashaFamily by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DashaFamilyById = new Map([
+  [0, 'dasha_family.UDU'],
+  [1, 'dasha_family.RASHI'],
+  [2, 'dasha_family.KALACHAKRA'],
+  [3, 'dasha_family.SCALE'],
+  [4, 'dasha_family.COMPOSITION'],
+  [5, 'dasha_family.OWN'],
+]);
+
 /** Every AvasthaJagradadi by name. */
 export const AvasthaJagradadi = Object.freeze({
   Jagrat: 'avastha_jagradadi.JAGRAT',
   Swapna: 'avastha_jagradadi.SWAPNA',
   Sushupti: 'avastha_jagradadi.SUSHUPTI',
 });
+
+/**
+ * Every AvasthaJagradadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AvasthaJagradadiById = new Map([
+  [0, 'avastha_jagradadi.JAGRAT'],
+  [1, 'avastha_jagradadi.SWAPNA'],
+  [2, 'avastha_jagradadi.SUSHUPTI'],
+]);
 
 /** Every AvasthaDeeptadi by name. */
 export const AvasthaDeeptadi = Object.freeze({
@@ -919,6 +1924,22 @@ export const AvasthaDeeptadi = Object.freeze({
   Kopa: 'avastha_deeptadi.KOPA',
 });
 
+/**
+ * Every AvasthaDeeptadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AvasthaDeeptadiById = new Map([
+  [0, 'avastha_deeptadi.DEEPTA'],
+  [1, 'avastha_deeptadi.SWASTHA'],
+  [2, 'avastha_deeptadi.MUDITA'],
+  [3, 'avastha_deeptadi.SHANTA'],
+  [4, 'avastha_deeptadi.DINA'],
+  [5, 'avastha_deeptadi.DUKHI'],
+  [6, 'avastha_deeptadi.VIKALA'],
+  [7, 'avastha_deeptadi.KHALA'],
+  [8, 'avastha_deeptadi.KOPA'],
+]);
+
 /** Every AvasthaLajjitadi by name. */
 export const AvasthaLajjitadi = Object.freeze({
   Lajjita: 'avastha_lajjitadi.LAJJITA',
@@ -928,6 +1949,19 @@ export const AvasthaLajjitadi = Object.freeze({
   Mudita: 'avastha_lajjitadi.MUDITA',
   Kshobhita: 'avastha_lajjitadi.KSHOBHITA',
 });
+
+/**
+ * Every AvasthaLajjitadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AvasthaLajjitadiById = new Map([
+  [0, 'avastha_lajjitadi.LAJJITA'],
+  [1, 'avastha_lajjitadi.GARVITA'],
+  [2, 'avastha_lajjitadi.KSHUDHA'],
+  [3, 'avastha_lajjitadi.TRISHITA'],
+  [4, 'avastha_lajjitadi.MUDITA'],
+  [5, 'avastha_lajjitadi.KSHOBHITA'],
+]);
 
 /** Every AvasthaSayanadi by name. */
 export const AvasthaSayanadi = Object.freeze({
@@ -945,6 +1979,25 @@ export const AvasthaSayanadi = Object.freeze({
   Nidra: 'avastha_sayanadi.NIDRA',
 });
 
+/**
+ * Every AvasthaSayanadi by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AvasthaSayanadiById = new Map([
+  [0, 'avastha_sayanadi.SHAYANA'],
+  [1, 'avastha_sayanadi.UPAVESHANA'],
+  [2, 'avastha_sayanadi.NETRAPANI'],
+  [3, 'avastha_sayanadi.PRAKASHANA'],
+  [4, 'avastha_sayanadi.GAMANA'],
+  [5, 'avastha_sayanadi.AGAMANA'],
+  [6, 'avastha_sayanadi.SABHA'],
+  [7, 'avastha_sayanadi.AGAMA'],
+  [8, 'avastha_sayanadi.BHOJANA'],
+  [9, 'avastha_sayanadi.NRITYALIPSA'],
+  [10, 'avastha_sayanadi.KAUTUKA'],
+  [11, 'avastha_sayanadi.NIDRA'],
+]);
+
 /** Every PointFamily by name. */
 export const PointFamily = Object.freeze({
   Angle: 'point_family.ANGLE',
@@ -956,6 +2009,21 @@ export const PointFamily = Object.freeze({
   Jaimini: 'point_family.JAIMINI',
   Midpoint: 'point_family.MIDPOINT',
 });
+
+/**
+ * Every PointFamily by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PointFamilyById = new Map([
+  [0, 'point_family.ANGLE'],
+  [1, 'point_family.SPECIAL_LAGNA'],
+  [2, 'point_family.UPAGRAHA_SOLAR'],
+  [3, 'point_family.UPAGRAHA_DAY'],
+  [4, 'point_family.ARUDHA'],
+  [5, 'point_family.SPHUTA'],
+  [6, 'point_family.JAIMINI'],
+  [7, 'point_family.MIDPOINT'],
+]);
 
 /** Every Star by name. */
 export const Star = Object.freeze({
@@ -1089,12 +2157,157 @@ export const Star = Object.freeze({
   GalacticPoleIau1958: 'star.GALACTIC_POLE_IAU1958',
 });
 
+/**
+ * Every Star by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const StarById = new Map([
+  [0, 'star.SHERATAN'],
+  [1, 'star.BHARANI'],
+  [2, 'star.ALCYONE'],
+  [3, 'star.ALDEBARAN'],
+  [4, 'star.MEISSA'],
+  [5, 'star.BETELGEUSE'],
+  [6, 'star.POLLUX'],
+  [7, 'star.ASELLUS_AUSTRALIS'],
+  [8, 'star.ASHLESHA'],
+  [9, 'star.REGULUS'],
+  [10, 'star.ZOSMA'],
+  [11, 'star.DENEBOLA'],
+  [12, 'star.ALGORAB'],
+  [13, 'star.SPICA'],
+  [14, 'star.ARCTURUS'],
+  [15, 'star.ZUBENELGENUBI'],
+  [16, 'star.DSCHUBBA'],
+  [17, 'star.ANTARES'],
+  [18, 'star.SHAULA'],
+  [19, 'star.KAUS_MEDIA'],
+  [20, 'star.NUNKI'],
+  [21, 'star.VEGA'],
+  [22, 'star.ALTAIR'],
+  [23, 'star.ROTANEV'],
+  [24, 'star.HYDOR'],
+  [25, 'star.MARKAB'],
+  [26, 'star.ALGENIB'],
+  [27, 'star.REVATI'],
+  [28, 'star.ALPHERATZ'],
+  [29, 'star.CAPH'],
+  [30, 'star.ANKAA'],
+  [31, 'star.SCHEDAR'],
+  [32, 'star.DIPHDA'],
+  [33, 'star.MIRACH'],
+  [34, 'star.ACHERNAR'],
+  [35, 'star.ALMACH'],
+  [36, 'star.HAMAL'],
+  [37, 'star.POLARIS'],
+  [38, 'star.MENKAR'],
+  [39, 'star.ALGOL'],
+  [40, 'star.MIRFAK'],
+  [41, 'star.AIN'],
+  [42, 'star.CHAMUKUY'],
+  [43, 'star.RIGEL'],
+  [44, 'star.CAPELLA'],
+  [45, 'star.BELLATRIX'],
+  [46, 'star.ELNATH'],
+  [47, 'star.NIHAL'],
+  [48, 'star.MINTAKA'],
+  [49, 'star.ALNILAM'],
+  [50, 'star.ALNITAK'],
+  [51, 'star.SAIPH'],
+  [52, 'star.MENKALINAN'],
+  [53, 'star.CANOPUS'],
+  [54, 'star.ALHENA'],
+  [55, 'star.SIRIUS'],
+  [56, 'star.ADHARA'],
+  [57, 'star.WEZEN'],
+  [58, 'star.ALUDRA'],
+  [59, 'star.CASTOR'],
+  [60, 'star.PROCYON'],
+  [61, 'star.NAOS'],
+  [62, 'star.TUREIS'],
+  [63, 'star.AVIOR'],
+  [64, 'star.ALSEPHINA'],
+  [65, 'star.SUHAIL'],
+  [66, 'star.MIAPLACIDUS'],
+  [67, 'star.ASPIDISKE'],
+  [68, 'star.ALPHARD'],
+  [69, 'star.ALGIEBA'],
+  [70, 'star.MERAK'],
+  [71, 'star.DUBHE'],
+  [72, 'star.PHECDA'],
+  [73, 'star.ZANIAH'],
+  [74, 'star.ACRUX'],
+  [75, 'star.GACRUX'],
+  [76, 'star.MIMOSA'],
+  [77, 'star.ALIOTH'],
+  [78, 'star.VINDEMIATRIX'],
+  [79, 'star.MIZAR'],
+  [80, 'star.HEZE'],
+  [81, 'star.ALKAID'],
+  [82, 'star.HADAR'],
+  [83, 'star.THUBAN'],
+  [84, 'star.MENKENT'],
+  [85, 'star.SYRMA'],
+  [86, 'star.SEGINUS'],
+  [87, 'star.RIGIL_KENTAURUS'],
+  [88, 'star.IZAR'],
+  [89, 'star.ZUBENESCHAMALI'],
+  [90, 'star.ALPHECCA'],
+  [91, 'star.UNUKALHAI'],
+  [92, 'star.FANG'],
+  [93, 'star.YED_PRIOR'],
+  [94, 'star.KORNEPHOROS'],
+  [95, 'star.MARFIK'],
+  [96, 'star.ATRIA'],
+  [97, 'star.SABIK'],
+  [98, 'star.RASALGETHI'],
+  [99, 'star.RASALHAGUE'],
+  [100, 'star.SARGAS'],
+  [101, 'star.ALNASL'],
+  [102, 'star.KAUS_AUSTRALIS'],
+  [103, 'star.KAUS_BOREALIS'],
+  [104, 'star.SHELIAK'],
+  [105, 'star.ASCELLA'],
+  [106, 'star.ALBALDAH'],
+  [107, 'star.ALBIREO'],
+  [108, 'star.ALSHAIN'],
+  [109, 'star.ALGEDI'],
+  [110, 'star.SADR'],
+  [111, 'star.PEACOCK'],
+  [112, 'star.DENEB'],
+  [113, 'star.ALJANAH'],
+  [114, 'star.KITALPHA'],
+  [115, 'star.ALDERAMIN'],
+  [116, 'star.SADALSUUD'],
+  [117, 'star.ENIF'],
+  [118, 'star.SADALMELIK'],
+  [119, 'star.ALNAIR'],
+  [120, 'star.SADALBARI'],
+  [121, 'star.SKAT'],
+  [122, 'star.FOMALHAUT'],
+  [123, 'star.SCHEAT'],
+  [124, 'star.ERRAI'],
+  [125, 'star.SGR_A_STAR'],
+  [126, 'star.GALACTIC_POLE'],
+  [127, 'star.GALACTIC_POLE_IAU1958'],
+]);
+
 /** Every StarClass by name. */
 export const StarClass = Object.freeze({
   Star: 'star_class.STAR',
   RadioSource: 'star_class.RADIO_SOURCE',
   Direction: 'star_class.DIRECTION',
 });
+
+/**
+ * Every StarClass by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const StarClassById = new Map([
+  [0, 'star_class.STAR'],
+  [1, 'star_class.RADIO_SOURCE'],
+  [2, 'star_class.DIRECTION'],
+]);
 
 /** Every Choghadiya by name. */
 export const Choghadiya = Object.freeze({
@@ -1107,12 +2320,36 @@ export const Choghadiya = Object.freeze({
   Rog: 'choghadiya.ROG',
 });
 
+/**
+ * Every Choghadiya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChoghadiyaById = new Map([
+  [0, 'choghadiya.UDVEG'],
+  [1, 'choghadiya.CHAR'],
+  [2, 'choghadiya.LAABH'],
+  [3, 'choghadiya.AMRIT'],
+  [4, 'choghadiya.KAAL'],
+  [5, 'choghadiya.SHUBHA'],
+  [6, 'choghadiya.ROG'],
+]);
+
 /** Every Kaala by name. */
 export const Kaala = Object.freeze({
   RahuKaala: 'kaala.RAHU_KAALA',
   Yamaghanda: 'kaala.YAMAGHANDA',
   GulikaKaala: 'kaala.GULIKA_KAALA',
 });
+
+/**
+ * Every Kaala by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const KaalaById = new Map([
+  [0, 'kaala.RAHU_KAALA'],
+  [1, 'kaala.YAMAGHANDA'],
+  [2, 'kaala.GULIKA_KAALA'],
+]);
 
 /** Every Panchaka by name. */
 export const Panchaka = Object.freeze({
@@ -1123,6 +2360,18 @@ export const Panchaka = Object.freeze({
   Roga: 'panchaka.ROGA',
 });
 
+/**
+ * Every Panchaka by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PanchakaById = new Map([
+  [0, 'panchaka.MRITYU'],
+  [1, 'panchaka.AGNI'],
+  [2, 'panchaka.RAJA'],
+  [3, 'panchaka.CHORA'],
+  [4, 'panchaka.ROGA'],
+]);
+
 /** Every MuhurtaYoga by name. */
 export const MuhurtaYoga = Object.freeze({
   AmritSiddhi: 'muhurta_yoga.AMRIT_SIDDHI',
@@ -1131,6 +2380,18 @@ export const MuhurtaYoga = Object.freeze({
   Dwipushkar: 'muhurta_yoga.DWIPUSHKAR',
   Tripushkar: 'muhurta_yoga.TRIPUSHKAR',
 });
+
+/**
+ * Every MuhurtaYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MuhurtaYogaById = new Map([
+  [0, 'muhurta_yoga.AMRIT_SIDDHI'],
+  [1, 'muhurta_yoga.SARVARTHA_SIDDHI'],
+  [2, 'muhurta_yoga.SIDDHA'],
+  [3, 'muhurta_yoga.DWIPUSHKAR'],
+  [4, 'muhurta_yoga.TRIPUSHKAR'],
+]);
 
 /** Every Status by name. */
 export const Status = Object.freeze({
@@ -1146,6 +2407,24 @@ export const Status = Object.freeze({
   SchemaVersion: 'schema-version',
   Internal: 'internal',
 });
+
+/**
+ * Every Status by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const StatusById = new Map([
+  [0, 'ok'],
+  [-1, 'invalid-arg'],
+  [-2, 'out-of-range'],
+  [-3, 'capability'],
+  [-4, 'provider'],
+  [-5, 'not-converged'],
+  [-6, 'unsupported'],
+  [-7, 'pack'],
+  [-8, 'limit'],
+  [-9, 'schema-version'],
+  [-10, 'internal'],
+]);
 
 /** Every Body by name. */
 export const Body = Object.freeze({
@@ -1166,8 +2445,8 @@ export const Body = Object.freeze({
 });
 
 /**
- * Every Body by the id a result blob's columns carry, so a column of
- * ids reads as members without decoding it eagerly.
+ * Every Body by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const BodyById = new Map([
   [0, 'sun'],
@@ -1193,8 +2472,8 @@ export const TimeScale = Object.freeze({
 });
 
 /**
- * Every TimeScale by the id a result blob's columns carry, so a column of
- * ids reads as members without decoding it eagerly.
+ * Every TimeScale by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const TimeScaleById = new Map([
   [0, 'ut1'],
@@ -1207,17 +2486,44 @@ export const DistanceUnit = Object.freeze({
   MeanDistances: 'mean-distances',
 });
 
+/**
+ * Every DistanceUnit by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DistanceUnitById = new Map([
+  [0, 'astronomical-units'],
+  [1, 'mean-distances'],
+]);
+
 /** Every SpeedModel by name. */
 export const SpeedModel = Object.freeze({
   Derivative: 'derivative',
   Rule: 'rule',
 });
 
+/**
+ * Every SpeedModel by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SpeedModelById = new Map([
+  [0, 'derivative'],
+  [1, 'rule'],
+]);
+
 /** Every Astronomy by name. */
 export const Astronomy = Object.freeze({
   Modern: 'modern',
   Classical: 'classical',
 });
+
+/**
+ * Every Astronomy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AstronomyById = new Map([
+  [0, 'modern'],
+  [1, 'classical'],
+]);
 
 /** Every Centre by name. */
 export const Centre = Object.freeze({
@@ -1227,17 +2533,46 @@ export const Centre = Object.freeze({
   Barycentric: 'barycentric',
 });
 
+/**
+ * Every Centre by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const CentreById = new Map([
+  [0, 'geocentric'],
+  [1, 'topocentric'],
+  [2, 'heliocentric'],
+  [3, 'barycentric'],
+]);
+
 /** Every Equinox by name. */
 export const Equinox = Object.freeze({
   OfDate: 'of-date',
   J2000: 'j2000',
 });
 
+/**
+ * Every Equinox by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const EquinoxById = new Map([
+  [0, 'of-date'],
+  [1, 'j2000'],
+]);
+
 /** Every Coordinates by name. */
 export const Coordinates = Object.freeze({
   Ecliptic: 'ecliptic',
   Equatorial: 'equatorial',
 });
+
+/**
+ * Every Coordinates by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const CoordinatesById = new Map([
+  [0, 'ecliptic'],
+  [1, 'equatorial'],
+]);
 
 /** Every ProviderCode by name. */
 export const ProviderCode = Object.freeze({
@@ -1249,6 +2584,19 @@ export const ProviderCode = Object.freeze({
   Invalid: 'invalid',
 });
 
+/**
+ * Every ProviderCode by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ProviderCodeById = new Map([
+  [0, 'ok'],
+  [-1, 'unsupported'],
+  [-2, 'out-of-range'],
+  [-3, 'data-missing'],
+  [-4, 'refused'],
+  [-5, 'invalid'],
+]);
+
 /** Every Resolution by name. */
 export const Resolution = Object.freeze({
   Defined: 'defined',
@@ -1257,12 +2605,33 @@ export const Resolution = Object.freeze({
   Divergent: 'divergent',
 });
 
+/**
+ * Every Resolution by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ResolutionById = new Map([
+  [0, 'defined'],
+  [1, 'tabular'],
+  [2, 'computed'],
+  [3, 'divergent'],
+]);
+
 /** Every Scale by name. */
 export const Scale = Object.freeze({
   Ut1: 'ut1',
   Tt: 'tt',
   Utc: 'utc',
 });
+
+/**
+ * Every Scale by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ScaleById = new Map([
+  [0, 'ut1'],
+  [1, 'tt'],
+  [2, 'utc'],
+]);
 
 /** Every ZoneKind by name. */
 export const ZoneKind = Object.freeze({
@@ -1271,12 +2640,32 @@ export const ZoneKind = Object.freeze({
   LocalMean: 'local-mean',
 });
 
+/**
+ * Every ZoneKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ZoneKindById = new Map([
+  [0, 'iana'],
+  [1, 'fixed'],
+  [2, 'local-mean'],
+]);
+
 /** Every ZoneSource by name. */
 export const ZoneSource = Object.freeze({
   Iana: 'iana',
   LocalMean: 'local-mean',
   Manual: 'manual',
 });
+
+/**
+ * Every ZoneSource by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ZoneSourceById = new Map([
+  [0, 'iana'],
+  [1, 'local-mean'],
+  [2, 'manual'],
+]);
 
 /** Every ZoneEra by name. */
 export const ZoneEra = Object.freeze({
@@ -1285,6 +2674,16 @@ export const ZoneEra = Object.freeze({
   BeforeRules: 'before-rules',
 });
 
+/**
+ * Every ZoneEra by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ZoneEraById = new Map([
+  [0, 'current'],
+  [1, 'historical'],
+  [2, 'before-rules'],
+]);
+
 /** Every Dst by name. */
 export const Dst = Object.freeze({
   None: 'none',
@@ -1292,11 +2691,30 @@ export const Dst = Object.freeze({
   Overlap: 'overlap',
 });
 
+/**
+ * Every Dst by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DstById = new Map([
+  [0, 'none'],
+  [1, 'gap'],
+  [2, 'overlap'],
+]);
+
 /** Every Chosen by name. */
 export const Chosen = Object.freeze({
   Earlier: 'earlier',
   Later: 'later',
 });
+
+/**
+ * Every Chosen by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChosenById = new Map([
+  [0, 'earlier'],
+  [1, 'later'],
+]);
 
 /** Every ZoneWarning by name. */
 export const ZoneWarning = Object.freeze({
@@ -1308,6 +2726,19 @@ export const ZoneWarning = Object.freeze({
   TimeUnknownFallback: 'time-unknown-fallback',
 });
 
+/**
+ * Every ZoneWarning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ZoneWarningById = new Map([
+  [0, 'offset-differs-from-current-rules'],
+  [1, 'dst-ambiguous'],
+  [2, 'dst-gap-shifted'],
+  [3, 'leap-second-folded'],
+  [4, 'leap-table-expired'],
+  [5, 'time-unknown-fallback'],
+]);
+
 /** Every DeltaTSource by name. */
 export const DeltaTSource = Object.freeze({
   Table: 'table',
@@ -1315,4 +2746,15 @@ export const DeltaTSource = Object.freeze({
   LeapSeconds: 'leap-seconds',
   Custom: 'custom',
 });
+
+/**
+ * Every DeltaTSource by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DeltaTSourceById = new Map([
+  [0, 'table'],
+  [1, 'model'],
+  [2, 'leap-seconds'],
+  [3, 'custom'],
+]);
 

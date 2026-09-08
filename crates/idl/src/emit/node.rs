@@ -1075,14 +1075,35 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     for m in methods(api, opaque) {
         render_method(out, api, opaque, m, host);
     }
+    if let Some(free) = destructor(api, opaque) {
+        render_dispose(out, free);
+    }
     let _ = writeln!(out, "}}\n");
     if let Some(free) = destructor(api, opaque) {
+        // The handle is nulled by `dispose`, so `Drop` frees only what is
+        // still there. The freeing entry point ignores a null anyway; the
+        // check is here so a reader does not have to know that.
         let _ = writeln!(
             out,
-            "impl Drop for {name} {{\n    fn drop(&mut self) {{\n        // SAFETY: the handle came from the constructor and is dropped once.\n        {};\n    }}\n}}\n",
+            "impl Drop for {name} {{\n    fn drop(&mut self) {{\n        if self.handle.is_null() {{\n            return;\n        }}\n        // SAFETY: the handle came from the constructor and is dropped once.\n        {};\n    }}\n}}\n",
             call_expression(free, "self.handle")
         );
     }
+}
+
+/// The explicit release every binding ships beside its finaliser.
+///
+/// ADR-0007's fourth finding: a result that waits for the collector can
+/// exhaust memory, so a handle is freed when the caller says so and not
+/// only when the garbage collector gets to it. The handle is nulled
+/// rather than left dangling, and the boundary refuses a null handle with
+/// `INVALID_ARG`, so a call after `dispose` is a clean refusal.
+fn render_dispose(out: &mut String, free: &FunctionDef) {
+    let _ = writeln!(
+        out,
+        "\n    /// Frees the handle's native memory now, rather than when the\n    /// collector gets to it. Calling it twice is allowed, and a call on a\n    /// disposed handle is refused with `INVALID_ARG`.\n    #[napi]\n    pub fn dispose(&mut self) {{\n        if self.handle.is_null() {{\n            return;\n        }}\n        // SAFETY: the handle came from the constructor and is freed once;\n        // nulling it here is what makes that true.\n        {};\n        self.handle = std::ptr::null_mut();\n    }}",
+        call_expression(free, "self.handle")
+    );
 }
 
 fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str, host: bool) {

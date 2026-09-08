@@ -68,6 +68,15 @@ final class PositionQuery {
 /// The columns a provider answers with. A column left out is zeroes,
 /// which is what a provider that computes no speeds means; `lon`, `lat`,
 /// `dist` and `status` must be as long as [PositionQuery.cellCount].
+///
+/// **Answering at all asserts the answer is in the frame that was asked
+/// for.** [frameBits] left out means "the frame you asked for", not "my
+/// own": a provider that computes in one frame must compare
+/// [PositionQuery.frameBits] with its own and return `null` instead, and
+/// the SDK then asks again in [EphemerisProvider.nativeFrame] and
+/// completes the rest — applying the ayanamsha, shifting the zodiac, and
+/// stamping each step. Answering the wrong frame silently is the one
+/// mistake this class makes easy, so it is named here.
 final class PositionAnswer {
   const PositionAnswer({
     required this.lon,
@@ -334,9 +343,6 @@ final class HostProvider {
 
   int _answer(PositionRequestStruct request, PositionColumnsStruct out) {
     final query = _read(request);
-    // The same checks the port runs before a native provider is asked, so
-    // a body, an observer or an instant a provider never declared is
-    // refused here rather than left for it to discover.
     final refusal = _validate(query);
     if (refusal != null) return refusal;
     final cells = query.cellCount;
@@ -344,12 +350,18 @@ final class HostProvider {
     final answer = provider.positions(query);
     // Nothing means "not in that frame"; the SDK asks again in ours.
     if (answer == null) return ProviderCode.unsupported.id;
+    // Every column the provider supplied, not only the three it must:
+    // a speed column of the wrong length silently padded with zeroes is
+    // a wrong answer, and a wrong answer is worse than a refusal.
     for (final (name, column) in [
       ('lon', answer.lon),
       ('lat', answer.lat),
       ('dist', answer.dist),
+      ('lonSpeed', answer.lonSpeed),
+      ('latSpeed', answer.latSpeed),
+      ('distSpeed', answer.distSpeed),
     ]) {
-      if (column.length != cells) {
+      if (column != null && column.length != cells) {
         thrown = StateError(
           'the provider returned ${column.length} values in `$name` for '
           '$cells cells',
@@ -387,27 +399,16 @@ final class HostProvider {
     ],
   );
 
-  /// What the port checks before any provider is asked.
+  /// What this side checks before the provider is asked.
+  ///
+  /// Only the coverage span: a topocentric frame without an observer, a
+  /// body the provider never declared and an instant that is not a number
+  /// are all refused by the port itself, on the SDK's side of the
+  /// boundary, where the sentence survives into a [TeistroException] that
+  /// names what is missing. Checking them again here would be a second
+  /// copy of the same policy, saying it worse.
   int? _validate(PositionQuery query) {
-    final frame = frameUnpack(_lib, query.frameBits);
-    if (frame.centre == Centre.topocentric && query.observer == null) {
-      thrown = StateError('a topocentric frame needs an observer');
-      return ProviderCode.invalid.id;
-    }
-    for (final body in query.bodies) {
-      if (!provider.bodies.contains(body)) {
-        thrown = StateError(
-          'the provider does not answer ${body.key}; it answers '
-          '${provider.bodies.map((b) => b.key).join(', ')}',
-        );
-        return ProviderCode.unsupported.id;
-      }
-    }
     for (final jd in query.jds) {
-      if (!jd.isFinite) {
-        thrown = StateError('the instant $jd is not a number');
-        return ProviderCode.invalid.id;
-      }
       if (jd < provider.jdMin || jd > provider.jdMax) {
         thrown = StateError(
           'the instant $jd is outside the provider\'s coverage '
