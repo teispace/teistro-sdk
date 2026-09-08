@@ -201,11 +201,38 @@ five rather than describing part of one.
   side by side would encode today's shape and would be a lie the first
   time a variant carried something else.
 
-  This is not a blocker for the two blobs — the conventions a chart can
-  be founded under are enumerable, so a `u16` over the *pairs* is honest
-  — but it is a decision, and it is the first tagged-with-payload value
-  the boundary has met. It wants its own answer before a section carries
-  one, rather than a flattening chosen in a hurry.
+  Reading the type settles it, and rules out both flattenings. The
+  payload variant is not hypothetical, it is there today:
+
+  ```rust
+  pub enum SunriseConvention {
+      Named { which: Sunrise },
+      Custom { altitude_deg: f64 },
+  }
+  ```
+
+  So `kind` and `which` side by side is wrong **now**, not later — a
+  `Custom` convention has no `which` — and a `u16` over the pairs is
+  wrong too, because the pairs are not enumerable: an altitude is a
+  continuous double.
+
+  What is left is the shape a tagged union has always had at a C
+  boundary: **a `kind` id and one payload slot, read according to the
+  kind.** A fixed section already gives every field an eight-byte slot,
+  so the payload costs the wire format nothing new — `Named` puts a
+  `Sunrise` id in it and `Custom` an altitude.
+
+  And the boundary already has the precedent for what the layers do with
+  it. `frame_bits` is a packed `u32` that each ergonomic layer unpacks
+  into a `Frame`; a tagged enum is the same bargain, a scalar pair the
+  layer turns into its language's own union. The description stays flat
+  and truthful, and no emitter needs a field whose type depends on
+  another field.
+
+  **The rule, then**: a tagged enum crosses as `<name>_kind` and
+  `<name>_value`, and each binding's layer presents the union. It is
+  general, it needs no new machinery, and it is the same trade the frame
+  already makes.
 - **What `State` at the boundary is.** The description has a `State`, and
   it is the planetary one — retrograde, combust, gandanta — not the
   day's. The two names collide and the day's needs a different one.
