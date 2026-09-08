@@ -7,7 +7,7 @@ comes next, and what happened in each session.
 **Project phase:** Phase 1, Foundation, met its exit criteria on
 2026-09-06, and Phase 2, the astronomy layer, met its own on 2026-09-05.
 Phase 1's every criterion is held by a gate rather than by a claim
-(`07-roadmap/00-roadmap.md`): one scenario through both bindings value by
+(`07-roadmap/00-roadmap.md`): one scenario through every binding value by
 value, 100,236 values identical across two architectures, the conformance
 kit against the Teimeris adapter, a swapped latitude and longitude
 refused in all three languages, and all four packages installed into
@@ -38,7 +38,31 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-07, end of the fiftieth session (the
+**Last updated:** 2026-09-08, end of the fifty-first session (the Python
+binding, and the falsification pass that designed it. The pass is the
+first to measure the **API description** rather than the corpus, because
+a binding was what was being designed and the corpus records charts, not
+calling conventions. It counted what each emitter's renaming rule
+actually catches and found the three targets are caught in *different
+places* — Dart on a member the description calls `Return`, Python on
+`from`, a struct field and two parameters, TypeScript on nothing — so one
+shared word list would have found neither; it measured the struct sizes
+on both targets, because the C header asserts them at compile time and a
+`ctypes` declaration is simply trusted; and it found **eighteen
+floating-point boundary fields with no unit**, which every binding had
+been documenting as bare numbers and which are now named. The binding
+itself is `ctypes` over the same shared library the release already
+builds, so the package has no runtime dependency and needs no compiler:
+branded `float` subclasses instead of `NewType` stubs, `IntEnum`
+catalogues whose members are all truthy because `IntEnum` would otherwise
+make `Status.OK` falsy, `memoryview` columns numpy wraps without copying,
+and `CFUNCTYPE` trampolines that catch everything, because an exception
+escaping a `ctypes` callback returns zero and the port reads that as
+success. Two gates caught the same defect from opposite directions —
+`convert_time` took `TimeScale` where the boundary wants `Scale`, which
+mypy reported as a type error and the parity gate as three disagreeing
+values — and the parity gate now compares three reports rather than two);
+before that the fiftieth session (the
 `knob-has-a-reader` determinism lint: three settings knobs that shipped,
 resolved and were read by nobody had been found by hand in as many
 modules, so the fifth rule of `check-lints` finds them by machine — it
@@ -204,15 +228,21 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is the Python binding**, which Phase 4's own list
-   names and which the description-driven generator already has the
-   machinery for: the Node and Dart bindings come from `idl/api.json`
-   through the same emitters, and a third is the shape the toolchain was
-   chosen for (ADR-0007).
+3. **The next task is a JSON Schema for the chart document**
+   (`serial-and-the-envelope.md` §8), which a consumer validates against
+   and which `idl` already has the machinery for; after it, the **Indian
+   lunisolar calendar** `panchanga` still needs for adhika and kshaya
+   months.
 
-   After it, Phase 4 holds a **JSON Schema for the document**
-   (`serial-and-the-envelope.md` §8) and the **Indian lunisolar
-   calendar** `panchanga` still needs for adhika and kshaya months.
+   The Python binding is **built** (`bindings/python`, 69 tests,
+   `cargo xtask check-python`; the parity gate now compares three
+   bindings and they agree on all 103 values). Its falsification pass is
+   `cargo xtask surface`, held by `check-surface`, and it is the first to
+   measure the **API description** rather than the corpus, because a
+   binding is what was being designed. What it left behind: per-platform
+   wheels, which are a release change and not a binding change, and a
+   `numpy` extra, which wants a real workload to decide
+   (`03-design/python-binding.md` §14).
 
    Two of `serial`'s open questions are worth a look too: whether
    `chart` and `panchanga` should seal their own envelopes rather than
@@ -1095,8 +1125,12 @@ on pub.dev (checked 2026-09-07).
    binding, which wait on a serialisation of a rendered message's parts
    that both bindings can read; a musl row in the platform table; a
    Flutter plugin that carries the library into an Android or iOS build,
-   which belongs with the mobile targets; the wasm and Python bindings
-   from the same description.
+   which belongs with the mobile targets; the wasm binding from the same
+   description. The **Python binding is built** (`bindings/python`), so
+   the parity gate now compares three reports rather than two and the
+   packaging gate installs four packages rather than three; per-platform
+   wheels remain, and are a change to the release matrix rather than to
+   the binding.
 3. Spike 3's remaining consequences: the kit's corpus checks (positions
    against fixtures per tier) and the `sdk-only` cross-provider
    byte-identity check; the Teimeris adapter as the Teimeris package's
@@ -1174,3 +1208,4 @@ on pub.dev (checked 2026-09-07).
 | 2026-09-05 (sixteenth session) | `astro::houses`: the twenty-two catalogued house systems as one construction with the circles each picks, the auxiliary points, the sign-based systems in the zodiac in use, the four polar policies with the outcome reported. Within 4.8e-6° of Teimeris over 25 194 cusps and angles at ten latitudes (the adapter's `houses-table` binary), within 0.00021° of the baseline's 55 charts between 1800 and 2200. Design page `astro-house-systems.md`. Next: crossings and stations, the star table. |
 | 2026-09-05 (tenth session) | The Bikram Sambat computation engine: `crates/siddhanta` (the text by verse, exact mean places, the sine table, both equations, the four steps, motion, precession, declination, the day's arc; 54 ns for the Sun, bit-identical), the `astro` seed (the boundary solver), the `time` seed (offset histories, Nepal's rows) with `core::time`, and in `crates/calendar` the `SolarModel`, the sankranti finder, the month-start rules as cited rows, the engine, the fit report and the table regenerated for 1700 to 2500 BS with a CI gate. Measured: the text's Sun at Kathmandu under Nepal's clock with the Dharmasindhu's punya-kala rule reproduces 1490 of 1512 official month lengths (98.5 %), 116 of 126 years exactly, every year total and every New Year, no drift; the eleven residual boundaries lie within 25 minutes of the rule's boundary. Findings: the baseline's seven-hour epoch shift and 0.705 cutoff nearly cancel to the civil day; the two ayana sankrantis are the whole difference; exact trigonometry changes one boundary; the tradition's day count changes none. Next: `crates/time` proper, then the port promotion with the drik model. |
 | 2026-09-05 (ninth session) | `crates/calendar` built: the fixed day, Gregorian, Julian, mixed (1582, 1752, 1918) and ISO week with every day of −9999 to 9999 round-tripped and agreed with the `calendrical_calculations` oracle; Bikram Sambat over the baseline's table (1856 to 2457, official span stamped `Tabular`, the rest `Computed`) anchored on 13 April 1913; the source memo opened with the generator's findings (Surya Siddhanta at Kathmandu, Nepal's offset history, a fitted 0.705 cutoff, 87 % of month splits, drift within a day). Maintainer's mandate: compute Bikram Sambat from first principles for any year so Nepal's panchanga can use the SDK. Next: the Bikram Sambat engine (siddhanta Sun, drik through the port, rule rows, fit harness), then `crates/time`. |
+| 2026-09-08 (fifty-first session) | The Python binding, falsified, designed and built. The pass (`cargo xtask surface`, held by `check-surface`) is the first to measure the **API description** rather than the corpus: a binding was the thing being designed, and the corpus records charts and not calling conventions. It found `array_in` has no instance, so the emitter refuses that role rather than guessing at it; that the three targets' renaming rules fire in **different places** — Dart on the member `ChartKind::Return`, Python on `from` as a struct field and two parameters, TypeScript on nothing — so the word lists moved into one module (`teistro_idl::emit::reserved`) where they can be counted; that twelve of the twenty-five structs change size between targets and every one holds a pointer, a callback or a `size_t`, which is why the generated Python carries a table of both and a test asserts `ctypes.sizeof` against it; and **eighteen floating-point boundary fields with no unit**, now named, which reached the C header, the TypeScript surface, the Dart classes and the site's reference as bare numbers. The binding: `ctypes` over the same shared library (PyO3 was rejected with the other per-ecosystem tools in ADR-0004), no runtime dependency and no compiler; branded `float` subclasses rather than `NewType` stubs, because a subclass is both the distinct type a checker wants and the validating constructor `NewType` cannot have; `IntEnum` catalogues with `UNKNOWN` and a truthful `__bool__`, because `IntEnum` would otherwise make `Status.OK`, `Graha.SUN` and `Era.VIKRAMA` falsy; one copy of a result blob with zero-copy `memoryview` columns over it, which numpy wraps without copying; and `CFUNCTYPE` trampolines that catch everything, because an exception escaping a `ctypes` callback returns zero and the port reads that as success. 69 tests, the README's example run by the gate, six wrong usages a type checker must refuse, and the package strict-clean under mypy. Two gates caught one defect from opposite directions: `convert_time` took `TimeScale` where the boundary wants `Scale`, which mypy called a type error and the parity gate called three disagreeing values. `check-parity` now compares every binding present against the first, and the three agree on all 103. Next: a JSON Schema for the chart document. |

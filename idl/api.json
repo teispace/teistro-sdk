@@ -6965,7 +6965,11 @@
             "scalar": "f64"
           },
           "doc": "Mean obliquity, degrees.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[22,25]",
+            "example": "23.4392911"
+          }
         },
         {
           "name": "true_deg",
@@ -6974,7 +6978,11 @@
             "scalar": "f64"
           },
           "doc": "True obliquity, degrees.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[22,25]",
+            "example": "23.4397911"
+          }
         },
         {
           "name": "nutation_lon_deg",
@@ -6983,7 +6991,11 @@
             "scalar": "f64"
           },
           "doc": "Nutation in longitude, degrees.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[-0.006,0.006]",
+            "example": "-0.0038957"
+          }
         },
         {
           "name": "nutation_obl_deg",
@@ -6992,7 +7004,11 @@
             "scalar": "f64"
           },
           "doc": "Nutation in obliquity, degrees.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[-0.003,0.003]",
+            "example": "-0.0026876"
+          }
         }
       ],
       "source": "crates/port-ephemeris/src/vtable.rs"
@@ -7076,7 +7092,10 @@
             "scalar": "f64"
           },
           "doc": "The search begins here, UT1.",
-          "meta": {}
+          "meta": {
+            "unit": "jd",
+            "example": "2451545.0"
+          }
         },
         {
           "name": "window_days",
@@ -7085,7 +7104,11 @@
             "scalar": "f64"
           },
           "doc": "The search ends this many days later.",
-          "meta": {}
+          "meta": {
+            "unit": "d",
+            "range": "(0,366]",
+            "example": "1"
+          }
         },
         {
           "name": "altitude_deg",
@@ -7094,7 +7117,11 @@
             "scalar": "f64"
           },
           "doc": "The altitude of the disc point at the event, degrees.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[-90,90]",
+            "example": "-0.8333"
+          }
         }
       ],
       "source": "crates/port-ephemeris/src/vtable.rs"
@@ -7178,7 +7205,10 @@
             "scalar": "f64"
           },
           "doc": "The first body's coefficient in a composite.",
-          "meta": {}
+          "meta": {
+            "unit": "1",
+            "example": "1"
+          }
         },
         {
           "name": "coefficient_b",
@@ -7187,7 +7217,10 @@
             "scalar": "f64"
           },
           "doc": "The second body's coefficient in a composite.",
-          "meta": {}
+          "meta": {
+            "unit": "1",
+            "example": "-1"
+          }
         },
         {
           "name": "origin_deg",
@@ -7196,7 +7229,11 @@
             "scalar": "f64"
           },
           "doc": "The lattice's first line, degrees.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[0,360)",
+            "example": "0"
+          }
         },
         {
           "name": "step_deg",
@@ -7205,7 +7242,11 @@
             "scalar": "f64"
           },
           "doc": "The lattice's spacing, degrees; zero for a single target.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[0,360)",
+            "example": "30"
+          }
         },
         {
           "name": "from_jd_ut1",
@@ -7214,7 +7255,10 @@
             "scalar": "f64"
           },
           "doc": "The window's start, UT1.",
-          "meta": {}
+          "meta": {
+            "unit": "jd",
+            "example": "2451545.0"
+          }
         },
         {
           "name": "to_jd_ut1",
@@ -7223,7 +7267,10 @@
             "scalar": "f64"
           },
           "doc": "The window's end, UT1.",
-          "meta": {}
+          "meta": {
+            "unit": "jd",
+            "example": "2451910.0"
+          }
         },
         {
           "name": "tolerance_days",
@@ -7232,7 +7279,11 @@
             "scalar": "f64"
           },
           "doc": "How closely each instant is placed, days.",
-          "meta": {}
+          "meta": {
+            "unit": "d",
+            "range": "(0,1]",
+            "example": "0.0000115740741"
+          }
         },
         {
           "name": "observer",
@@ -7258,7 +7309,10 @@
             "scalar": "f64"
           },
           "doc": "The instant, UT1.",
-          "meta": {}
+          "meta": {
+            "unit": "jd",
+            "example": "2451545.0"
+          }
         },
         {
           "name": "boundary_deg",
@@ -7267,7 +7321,11 @@
             "scalar": "f64"
           },
           "doc": "The boundary reached, degrees.",
-          "meta": {}
+          "meta": {
+            "unit": "deg",
+            "range": "[0,360)",
+            "example": "30"
+          }
         },
         {
           "name": "direction",
@@ -7463,7 +7521,10 @@
             "scalar": "f64"
           },
           "doc": "Coverage start, UT1.",
-          "meta": {}
+          "meta": {
+            "unit": "jd",
+            "example": "1721057.5"
+          }
         },
         {
           "name": "jd_max",
@@ -7472,7 +7533,10 @@
             "scalar": "f64"
           },
           "doc": "Coverage end, UT1.",
-          "meta": {}
+          "meta": {
+            "unit": "jd",
+            "example": "2816787.5"
+          }
         },
         {
           "name": "bodies",

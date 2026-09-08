@@ -9,7 +9,7 @@
 #   gate     the tag is the version, and the version is releasable
 #   build    each platform builds its own artefacts and manifest
 #   stage    the manifests are merged and the two published packages staged
-#   publish  the GitHub release, then npm and pub.dev
+#   publish  the GitHub release, then npm, pub.dev and PyPI
 #
 # A dispatch runs everything except `publish`, which is how the whole
 # chain is rehearsed before a tag exists; only a tag publishes.
@@ -157,6 +157,9 @@ jobs:
           node-version: "20"
           registry-url: https://registry.npmjs.org
       - uses: dart-lang/setup-dart@v1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - uses: dtolnay/rust-toolchain@stable
       - name: The GitHub release, with the archives and their digests
@@ -183,3 +186,13 @@ jobs:
       - name: The Dart package
         run: dart pub publish --force
         working-directory: dist/pub/teistro
+
+      - name: The Python package
+        # Trusted publishing: PyPI takes the runner's OIDC token, as npm
+        # and pub.dev do, so no long-lived credential is stored here.
+        run: |
+          set -eu
+          python -m pip install --disable-pip-version-check build twine
+          python -m build --sdist --wheel --outdir ../../pypi-dist .
+          python -m twine upload --non-interactive ../../pypi-dist/*
+        working-directory: dist/pypi/teistro

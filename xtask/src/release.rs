@@ -33,6 +33,10 @@ pub(crate) const UNRELEASED: &str = "0.0.0";
 const WORKSPACE: &str = "Cargo.toml";
 const NODE_MANIFEST: &str = "bindings/node/package.json";
 const DART_MANIFEST: &str = "bindings/dart/pubspec.yaml";
+const PYTHON_MANIFEST: &str = "bindings/python/pyproject.toml";
+/// The Python installer's own table, which names the release it fetches
+/// from; the Dart one is [`PREBUILT`].
+const PYTHON_PREBUILT: &str = "bindings/python/teistro/_prebuilt.py";
 const API: &str = "idl/api.json";
 const PREBUILT: &str = "bindings/dart/lib/src/prebuilt.dart";
 const CHANGELOG: &str = "CHANGELOG.md";
@@ -113,6 +117,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         failures.extend(check_node(node, &wanted, released));
     }
     failures.extend(check_dart(root, &wanted, released));
+    failures.extend(check_python(root, &wanted, released));
     failures.extend(check_api(root, &wanted));
     failures.extend(check_changelog(root, &wanted, released));
 
@@ -120,7 +125,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         println!("FAIL  {failure}");
     }
     println!(
-        "one version, {wanted}, across four manifests and {} platform packages: {} failure(s)",
+        "one version, {wanted}, across five manifests and {} platform packages: {} failure(s)",
         PLATFORMS.len(),
         failures.len()
     );
@@ -340,6 +345,7 @@ pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
 
     set_node(root, wanted, released, &mut written);
     set_dart(root, wanted, released, &mut written);
+    set_python(root, wanted, released, &mut written);
 
     for path in &written {
         println!("wrote {path}");
@@ -359,12 +365,23 @@ fn set_node(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>
         return;
     };
     node.insert("version".to_string(), Value::String(wanted.to_string()));
-    if released {
-        node.shift_remove("private");
-    } else {
-        // Ordered where npm's own `init` puts it, after the description,
-        // so a reader meets the field before the rest of the manifest.
-        node.insert("private".to_string(), Value::Bool(true));
+    // Dropped wherever it stands and written back **beside the version**,
+    // so that moving to and from the unreleased version is the same edit
+    // in both directions and leaves the manifest as it found it. An
+    // `insert` alone appends, and a round trip would then reorder the
+    // file; the map is rebuilt instead, which is the only way to place a
+    // key in `serde_json`'s ordered map.
+    node.shift_remove("private");
+    if !released {
+        let mut ordered = Map::new();
+        for (key, value) in node {
+            let after_version = key == "version";
+            ordered.insert(key, value);
+            if after_version {
+                ordered.insert("private".to_string(), Value::Bool(true));
+            }
+        }
+        node = ordered;
     }
     let mut platforms = Map::new();
     for platform in PLATFORMS {
@@ -409,6 +426,78 @@ fn set_dart(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>
     let updated = line.replace(
         &table,
         format!("const String prebuiltVersion = '{wanted}';").as_str(),
+    );
+    write(&prebuilt, &updated, written, root);
+}
+
+/// The Python manifest: the version, whether it may be published, and the
+/// installer's own table, which names the release it fetches from.
+fn check_python(root: &Path, wanted: &str, released: bool) -> Vec<String> {
+    let mut failures = Vec::new();
+    let text = read(&root.join(PYTHON_MANIFEST));
+    let declared = text
+        .lines()
+        .find_map(|line| line.strip_prefix("version = "))
+        .map(|value| value.trim().trim_matches('"'));
+    if declared != Some(wanted) {
+        failures.push(format!(
+            "{PYTHON_MANIFEST} declares version {}, the workspace declares {wanted}",
+            declared.unwrap_or("nothing")
+        ));
+    }
+    // A classifier rather than a field of its own: PyPI reads it and
+    // refuses an upload that carries it, which is the same guard
+    // `private` gives npm and `publish_to: none` gives pub.dev.
+    let unpublishable = text.contains("\"Private :: Do Not Upload\"");
+    if released && unpublishable {
+        failures.push(format!(
+            "{PYTHON_MANIFEST} is classified `Private :: Do Not Upload` at version {wanted}; a released package is published"
+        ));
+    }
+    if !released && !unpublishable {
+        failures.push(format!(
+            "{PYTHON_MANIFEST} is not classified `Private :: Do Not Upload` at the unreleased version; nothing may be published from {UNRELEASED}"
+        ));
+    }
+    let prebuilt = root.join(PYTHON_PREBUILT);
+    if prebuilt.is_file() {
+        if !read(&prebuilt).contains(&format!("\"{wanted}\"")) {
+            failures.push(format!(
+                "{PYTHON_PREBUILT} does not name version {wanted}; run `cargo xtask version {wanted}`"
+            ));
+        }
+    } else {
+        failures.push(format!(
+            "{PYTHON_PREBUILT} is missing; the Python installer verifies a download against it"
+        ));
+    }
+    failures
+}
+
+/// The Python manifest: the version, the classifier that keeps an
+/// unreleased package off `PyPI`, and the installer's table.
+fn set_python(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>) {
+    const CLASSIFIER: &str = "  \"Private :: Do Not Upload\",\n";
+    let path = root.join(PYTHON_MANIFEST);
+    let text = read(&path);
+    let line = Regex::new(r#"(?m)^version = "[^"]*"$"#).expect("valid regex");
+    let updated = line.replace(&text, format!("version = \"{wanted}\"").as_str());
+    let mut updated = updated.replace(CLASSIFIER, "");
+    if !released {
+        updated = updated.replacen(
+            "classifiers = [\n",
+            &format!("classifiers = [\n{CLASSIFIER}"),
+            1,
+        );
+    }
+    write(&path, &updated, written, root);
+
+    let prebuilt = root.join(PYTHON_PREBUILT);
+    let table = read(&prebuilt);
+    let line = Regex::new(r#"(?m)^PREBUILT_VERSION: Final = "[^"]*"$"#).expect("valid regex");
+    let updated = line.replace(
+        &table,
+        format!("PREBUILT_VERSION: Final = \"{wanted}\"").as_str(),
     );
     write(&prebuilt, &updated, written, root);
 }

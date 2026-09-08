@@ -151,6 +151,18 @@ pub(crate) fn count(value: usize) -> String {
     out
 }
 
+/// A count with its noun, pluralised: `1 struct`, `25 structs`. A
+/// generated sentence has to read correctly whatever the corpus or the
+/// description turns out to hold, and a bare `(s)` reads correctly for
+/// neither.
+pub(crate) fn plural(value: usize, noun: &str) -> String {
+    if value == 1 {
+        format!("{value} {noun}")
+    } else {
+        format!("{} {noun}s", count(value))
+    }
+}
+
 /// The greatest of a set of measurements.
 pub(crate) fn worst(values: impl IntoIterator<Item = f64>) -> f64 {
     values.into_iter().fold(0.0_f64, f64::max)

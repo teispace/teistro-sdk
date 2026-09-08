@@ -178,18 +178,22 @@ final class PositionColumnsStruct extends ffi.Struct {
 /// A C obliquity.
 final class ObliquityStruct extends ffi.Struct {
   /// Mean obliquity, degrees.
+  /// Unit: deg. Range: [22,25]. Example: 23.4392911.
   @ffi.Double()
   external double meanDeg;
 
   /// True obliquity, degrees.
+  /// Unit: deg. Range: [22,25]. Example: 23.4397911.
   @ffi.Double()
   external double trueDeg;
 
   /// Nutation in longitude, degrees.
+  /// Unit: deg. Range: [-0.006,0.006]. Example: -0.0038957.
   @ffi.Double()
   external double nutationLonDeg;
 
   /// Nutation in obliquity, degrees.
+  /// Unit: deg. Range: [-0.003,0.003]. Example: -0.0026876.
   @ffi.Double()
   external double nutationOblDeg;
 
@@ -225,14 +229,17 @@ final class HorizonRequestStruct extends ffi.Struct {
   external ObserverStruct observer;
 
   /// The search begins here, UT1.
+  /// Unit: jd. Example: 2451545.0.
   @ffi.Double()
   external double fromJdUt1;
 
   /// The search ends this many days later.
+  /// Unit: d. Range: (0,366]. Example: 1.
   @ffi.Double()
   external double windowDays;
 
   /// The altitude of the disc point at the event, degrees.
+  /// Unit: deg. Range: [-90,90]. Example: -0.8333.
   @ffi.Double()
   external double altitudeDeg;
 
@@ -269,30 +276,37 @@ final class CrossingRequestStruct extends ffi.Struct {
   external int secondBody;
 
   /// The first body's coefficient in a composite.
+  /// Unit: 1. Example: 1.
   @ffi.Double()
   external double coefficientA;
 
   /// The second body's coefficient in a composite.
+  /// Unit: 1. Example: -1.
   @ffi.Double()
   external double coefficientB;
 
   /// The lattice's first line, degrees.
+  /// Unit: deg. Range: [0,360). Example: 0.
   @ffi.Double()
   external double originDeg;
 
   /// The lattice's spacing, degrees; zero for a single target.
+  /// Unit: deg. Range: [0,360). Example: 30.
   @ffi.Double()
   external double stepDeg;
 
   /// The window's start, UT1.
+  /// Unit: jd. Example: 2451545.0.
   @ffi.Double()
   external double fromJdUt1;
 
   /// The window's end, UT1.
+  /// Unit: jd. Example: 2451910.0.
   @ffi.Double()
   external double toJdUt1;
 
   /// How closely each instant is placed, days.
+  /// Unit: d. Range: (0,1]. Example: 0.0000115740741.
   @ffi.Double()
   external double toleranceDays;
 
@@ -304,10 +318,12 @@ final class CrossingRequestStruct extends ffi.Struct {
 /// A C crossing event.
 final class CrossingEventStruct extends ffi.Struct {
   /// The instant, UT1.
+  /// Unit: jd. Example: 2451545.0.
   @ffi.Double()
   external double jdUt1;
 
   /// The boundary reached, degrees.
+  /// Unit: deg. Range: [0,360). Example: 30.
   @ffi.Double()
   external double boundaryDeg;
 
@@ -380,10 +396,12 @@ final class CapabilitiesStruct extends ffi.Struct {
   external ffi.Pointer<ffi.Char> dataVersion;
 
   /// Coverage start, UT1.
+  /// Unit: jd. Example: 1721057.5.
   @ffi.Double()
   external double jdMin;
 
   /// Coverage end, UT1.
+  /// Unit: jd. Example: 2816787.5.
   @ffi.Double()
   external double jdMax;
 
@@ -1613,15 +1631,19 @@ final class Obliquity {
   const Obliquity({required this.meanDeg, required this.trueDeg, required this.nutationLonDeg, required this.nutationOblDeg});
 
   /// Mean obliquity, degrees.
+  /// Unit: deg. Range: [22,25]. Example: 23.4392911.
   final double meanDeg;
 
   /// True obliquity, degrees.
+  /// Unit: deg. Range: [22,25]. Example: 23.4397911.
   final double trueDeg;
 
   /// Nutation in longitude, degrees.
+  /// Unit: deg. Range: [-0.006,0.006]. Example: -0.0038957.
   final double nutationLonDeg;
 
   /// Nutation in obliquity, degrees.
+  /// Unit: deg. Range: [-0.003,0.003]. Example: -0.0026876.
   final double nutationOblDeg;
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -1671,12 +1693,15 @@ final class HorizonRequest {
   final Observer observer;
 
   /// The search begins here, UT1.
+  /// Unit: jd. Example: 2451545.0.
   final double fromJdUt1;
 
   /// The search ends this many days later.
+  /// Unit: d. Range: (0,366]. Example: 1.
   final double windowDays;
 
   /// The altitude of the disc point at the event, degrees.
+  /// Unit: deg. Range: [-90,90]. Example: -0.8333.
   final double altitudeDeg;
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -1735,24 +1760,31 @@ final class CrossingRequest {
   final int secondBody;
 
   /// The first body's coefficient in a composite.
+  /// Unit: 1. Example: 1.
   final double coefficientA;
 
   /// The second body's coefficient in a composite.
+  /// Unit: 1. Example: -1.
   final double coefficientB;
 
   /// The lattice's first line, degrees.
+  /// Unit: deg. Range: [0,360). Example: 0.
   final double originDeg;
 
   /// The lattice's spacing, degrees; zero for a single target.
+  /// Unit: deg. Range: [0,360). Example: 30.
   final double stepDeg;
 
   /// The window's start, UT1.
+  /// Unit: jd. Example: 2451545.0.
   final double fromJdUt1;
 
   /// The window's end, UT1.
+  /// Unit: jd. Example: 2451910.0.
   final double toJdUt1;
 
   /// How closely each instant is placed, days.
+  /// Unit: d. Range: (0,1]. Example: 0.0000115740741.
   final double toleranceDays;
 
   /// The observer, read when `has_observer` is set.
@@ -1809,9 +1841,11 @@ final class CrossingEvent {
   const CrossingEvent({required this.jdUt1, required this.boundaryDeg, required this.direction});
 
   /// The instant, UT1.
+  /// Unit: jd. Example: 2451545.0.
   final double jdUt1;
 
   /// The boundary reached, degrees.
+  /// Unit: deg. Range: [0,360). Example: 30.
   final double boundaryDeg;
 
   /// `Direction::id`.

@@ -912,12 +912,16 @@ impl PositionColumns {
 #[derive(Clone, Debug)]
 pub struct Obliquity {
     /// Mean obliquity, degrees.
+    /// Unit: deg. Range: [22,25]. Example: 23.4392911.
     pub mean_deg: f64,
     /// True obliquity, degrees.
+    /// Unit: deg. Range: [22,25]. Example: 23.4397911.
     pub true_deg: f64,
     /// Nutation in longitude, degrees.
+    /// Unit: deg. Range: [-0.006,0.006]. Example: -0.0038957.
     pub nutation_lon_deg: f64,
     /// Nutation in obliquity, degrees.
+    /// Unit: deg. Range: [-0.003,0.003]. Example: -0.0026876.
     pub nutation_obl_deg: f64,
 }
 
@@ -984,10 +988,13 @@ pub struct HorizonRequest {
     /// The place.
     pub observer: Observer,
     /// The search begins here, UT1.
+    /// Unit: jd. Example: 2451545.0.
     pub from_jd_ut1: f64,
     /// The search ends this many days later.
+    /// Unit: d. Range: (0,366]. Example: 1.
     pub window_days: f64,
     /// The altitude of the disc point at the event, degrees.
+    /// Unit: deg. Range: [-90,90]. Example: -0.8333.
     pub altitude_deg: f64,
 }
 
@@ -1072,18 +1079,25 @@ pub struct CrossingRequest {
     /// `Body::id` of the second body of a composite; else zero.
     pub second_body: u32,
     /// The first body's coefficient in a composite.
+    /// Unit: 1. Example: 1.
     pub coefficient_a: f64,
     /// The second body's coefficient in a composite.
+    /// Unit: 1. Example: -1.
     pub coefficient_b: f64,
     /// The lattice's first line, degrees.
+    /// Unit: deg. Range: [0,360). Example: 0.
     pub origin_deg: f64,
     /// The lattice's spacing, degrees; zero for a single target.
+    /// Unit: deg. Range: [0,360). Example: 30.
     pub step_deg: f64,
     /// The window's start, UT1.
+    /// Unit: jd. Example: 2451545.0.
     pub from_jd_ut1: f64,
     /// The window's end, UT1.
+    /// Unit: jd. Example: 2451910.0.
     pub to_jd_ut1: f64,
     /// How closely each instant is placed, days.
+    /// Unit: d. Range: (0,1]. Example: 0.0000115740741.
     pub tolerance_days: f64,
     /// The observer, read when `has_observer` is set.
     pub observer: Observer,
@@ -1180,8 +1194,10 @@ impl CrossingRequest {
 #[derive(Clone, Debug)]
 pub struct CrossingEvent {
     /// The instant, UT1.
+    /// Unit: jd. Example: 2451545.0.
     pub jd_ut1: f64,
     /// The boundary reached, degrees.
+    /// Unit: deg. Range: [0,360). Example: 30.
     pub boundary_deg: f64,
     /// `Direction::id`.
     pub direction: u32,

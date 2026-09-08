@@ -8,13 +8,20 @@
 //! - [`node`]: the Node addon's napi glue over the C ABI;
 //! - [`dart`]: the Dart binding's `dart:ffi` layer, its typed classes and
 //!   its decoders;
+//! - [`python`]: the Python binding's `ctypes` layer, its typed classes
+//!   and its decoders;
 //! - [`mdx`]: the documentation site's reference pages, one per entry
 //!   point.
+//!
+//! [`reserved`] holds each target's reserved words, so an emitter's
+//! renaming rule and the pass that measures it read one list.
 
 pub mod c;
 pub mod dart;
 pub mod mdx;
 pub mod node;
+pub mod python;
+pub mod reserved;
 pub mod ts;
 
 use std::fmt::Write;

@@ -302,6 +302,33 @@ regenerates them byte for byte on a machine with no Dart toolchain, and
 when it is collected, through the finaliser, so `dispose` is the explicit
 form rather than the only one.
 
+### The Python binding's generated layers
+
+Three files under `bindings/python/teistro/`, rendered from the same
+description, and one more from the intl generator
+(`03-design/python-binding.md`):
+
+| file | what it holds |
+|---|---|
+| `catalogue.py` | every enum as an `IntEnum` carrying the id the boundary uses and the key the packs and fixtures spell; a catalogued member gains `full_key` and an `UNKNOWN` member for a value from a newer library, and every member is truthy, because `IntEnum` would otherwise make the member with id zero — `Status.OK`, `Graha.SUN`, `Era.VIKRAMA` — falsy |
+| `_ffi.py` | the `ctypes` declarations that match the header name for name, the library class that sets every signature, a frozen dataclass per boundary struct that marshals itself, the branded quantities, the exception, and the context with a `weakref.finalize` over `ts_context_free`. It also carries the **struct sizes for both targets**, because `ctypes` has no compiler to assert them with and a wrong layout is a wrong number rather than an error |
+| `_blob.py` | one decoder per result blob over the `TSRB` layout, each column a read-only `memoryview` over the blob's own bytes, cast to the column's own format code at the call site so a type checker can follow it |
+
+Above them `bindings/python/teistro/__init__.py` is hand-written and thin,
+as the other two layers are.
+
+Three decisions are Python's own. `from` is a keyword there and a
+contextual word in Dart and TypeScript, so the emitter applies PEP 8's
+trailing underscore to the one struct field and the two parameters that
+carry it — and the member the Dart emitter has to rename cannot collide
+here, because a member is its catalogue key upper-cased and every Python
+keyword is lower-case (`03-design/binding-surface-measured.md` §2). A
+blob is copied **once** out of the library's memory before it is decoded,
+so a column that outlives the blob reads its own bytes rather than freed
+ones. And a callback catches everything, because an exception that escapes
+a `ctypes` callback prints a traceback and returns zero, which the port
+reads as success.
+
 ### Quantities that cannot be swapped
 
 A latitude and a longitude are both a `f64` at the boundary, and nothing
@@ -313,6 +340,7 @@ it a type of its own:
 |---|---|
 | TypeScript | `type Latitude = number & { readonly __brand: 'latitude' }`, with `latitude(27.7)` the only way to make one |
 | Dart | `extension type const Latitude._(double value) implements double`, zero cost at run time |
+| Python | `class Latitude(float)` with a validating `__new__`: a distinct nominal type to a checker, a float at run time, and the range check `NewType` could not carry |
 | C | the header's documentation and its range; C has no way to say more |
 
 The constructor checks the range the description states, so a latitude

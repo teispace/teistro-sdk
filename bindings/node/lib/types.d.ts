@@ -122,18 +122,30 @@ export interface PositionColumns {
 export interface Obliquity {
   /**
    * Mean obliquity, degrees.
+   * @unit deg
+   * @range [22,25]
+   * @example 23.4392911
    */
   readonly meanDeg: number;
   /**
    * True obliquity, degrees.
+   * @unit deg
+   * @range [22,25]
+   * @example 23.4397911
    */
   readonly trueDeg: number;
   /**
    * Nutation in longitude, degrees.
+   * @unit deg
+   * @range [-0.006,0.006]
+   * @example -0.0038957
    */
   readonly nutationLonDeg: number;
   /**
    * Nutation in obliquity, degrees.
+   * @unit deg
+   * @range [-0.003,0.003]
+   * @example -0.0026876
    */
   readonly nutationOblDeg: number;
 }
@@ -164,14 +176,22 @@ export interface HorizonRequest {
   readonly observer: Observer;
   /**
    * The search begins here, UT1.
+   * @unit jd
+   * @example 2451545.0
    */
   readonly fromJdUt1: number;
   /**
    * The search ends this many days later.
+   * @unit d
+   * @range (0,366]
+   * @example 1
    */
   readonly windowDays: number;
   /**
    * The altitude of the disc point at the event, degrees.
+   * @unit deg
+   * @range [-90,90]
+   * @example -0.8333
    */
   readonly altitudeDeg: number;
 }
@@ -202,30 +222,47 @@ export interface CrossingRequest {
   readonly secondBody: number;
   /**
    * The first body's coefficient in a composite.
+   * @unit 1
+   * @example 1
    */
   readonly coefficientA: number;
   /**
    * The second body's coefficient in a composite.
+   * @unit 1
+   * @example -1
    */
   readonly coefficientB: number;
   /**
    * The lattice's first line, degrees.
+   * @unit deg
+   * @range [0,360)
+   * @example 0
    */
   readonly originDeg: number;
   /**
    * The lattice's spacing, degrees; zero for a single target.
+   * @unit deg
+   * @range [0,360)
+   * @example 30
    */
   readonly stepDeg: number;
   /**
    * The window's start, UT1.
+   * @unit jd
+   * @example 2451545.0
    */
   readonly fromJdUt1: number;
   /**
    * The window's end, UT1.
+   * @unit jd
+   * @example 2451910.0
    */
   readonly toJdUt1: number;
   /**
    * How closely each instant is placed, days.
+   * @unit d
+   * @range (0,1]
+   * @example 0.0000115740741
    */
   readonly toleranceDays: number;
   /**
@@ -240,10 +277,15 @@ export interface CrossingRequest {
 export interface CrossingEvent {
   /**
    * The instant, UT1.
+   * @unit jd
+   * @example 2451545.0
    */
   readonly jdUt1: number;
   /**
    * The boundary reached, degrees.
+   * @unit deg
+   * @range [0,360)
+   * @example 30
    */
   readonly boundaryDeg: number;
   /**
@@ -313,10 +355,14 @@ export interface Capabilities {
   readonly dataVersion: string;
   /**
    * Coverage start, UT1.
+   * @unit jd
+   * @example 1721057.5
    */
   readonly jdMin: number;
   /**
    * Coverage end, UT1.
+   * @unit jd
+   * @example 2816787.5
    */
   readonly jdMax: number;
   /**

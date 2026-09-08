@@ -7,7 +7,9 @@
 use std::path::Path;
 
 use teistro_intl::derive::{derive, overrides_of};
-use teistro_intl::generate::{Model, RustPaths, dart, javascript, rust, typescript_declarations};
+use teistro_intl::generate::{
+    Model, RustPaths, dart, javascript, python, rust, typescript_declarations,
+};
 use teistro_intl::source::Tree;
 use teistro_intl::validate;
 
@@ -19,6 +21,7 @@ const MESSAGES: &str = "crates/intl/src/messages.rs";
 const NODE_MESSAGES: &str = "bindings/node/lib/messages.js";
 const NODE_MESSAGE_TYPES: &str = "bindings/node/lib/messages.d.ts";
 const DART_MESSAGES: &str = "bindings/dart/lib/src/messages.dart";
+const PYTHON_MESSAGES: &str = "bindings/python/teistro/messages.py";
 /// The locale derived from another by transliteration, and the one it is
 /// derived from (`03-design/intl-engine-and-packs.md`, §3).
 const DERIVED: (&str, &str) = ("sa-Deva", "sa-Latn");
@@ -55,6 +58,7 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(NODE_MESSAGES, javascript(&model)),
         Output::new(NODE_MESSAGE_TYPES, typescript_declarations(&model)),
         Output::new(DART_MESSAGES, dart(&model)),
+        Output::new(PYTHON_MESSAGES, python(&model)),
     ]);
     outputs
 }

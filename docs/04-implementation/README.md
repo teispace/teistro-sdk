@@ -83,7 +83,14 @@ teistro-sdk/
                                the decoders against blobs it produced, and an ephemeris written in Dart),
                                bin/parity.dart (its half of the parity report); `cargo xtask check-dart`
                                and `check-parity`
-    cpp/ wasm/ python/ teistro_flutter/ rust/ java/
+    python/                    present: teistro/ (the generated ctypes declarations, value classes, catalogue
+                               enums and blob decoders, and the hand-written ergonomic layer, port adapter and
+                               installer), tests/ (the surface end to end against the real library, the decoders
+                               against blobs it produced, an ephemeris written in Python, and every struct's
+                               size against what the interpreter lays out), typecheck/wrong.py (the usages a
+                               type checker must refuse), parity.py (its half of the parity report);
+                               `cargo xtask check-python` and `check-parity`
+    cpp/ wasm/ teistro_flutter/ rust/ java/
     shared/                    ergonomic code shared by node and wasm
   adapters/                    outside the workspace (ADR-0019), with their README
     ephemeris-teimeris/rust/   present: the port over Teimeris's Rust binding, its kit binary and the Bikram
@@ -91,7 +98,8 @@ teistro-sdk/
     ephemeris-sweph/rust/      present: the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
   xtask/                       repository tasks in Rust, `cargo xtask <task>`: check-docs, check-dco,
                                check-fixtures, check-catalogue, check-calendars, check-time, check-accuracy,
-                               check-intl, check-ffi, check-lints, check-c, check-node, check-dart, check-parity,
+                               check-intl, check-ffi, check-lints, check-c, check-node, check-dart, check-python,
+                               check-parity, check-surface,
                                hashes,
                                gen catalogue,
                                gen calendars,

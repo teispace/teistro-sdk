@@ -157,8 +157,36 @@ translator's own tools and come back: `teistro-intl export xliff` and
 `import xliff` round-trip every message and entity form as XLIFF 2.1. A
 latitude can no longer be passed where a longitude is wanted: the
 description says which quantity a number carries, TypeScript gets a
-branded type and Dart an extension type, and the constructor checks the
-range. **Numbers:** reading a Bikram Sambat date no longer allocates. The date
+branded type, Dart an extension type and Python a `float` subclass, and
+the constructor checks the range.
+
+**The Python binding computes for the first time** (`bindings/python`,
+generated `ctypes` declarations, value classes, catalogue enums and blob
+decoders with a hand-written layer above them): the same calls the Node
+and Dart bindings answer, from a package with **no runtime dependency**
+and nothing to compile, because it loads the shared library the release
+already builds. An ephemeris written in Python answers the SDK for the
+first time, through `CFUNCTYPE` trampolines that catch everything a
+provider raises, because an exception escaping a `ctypes` callback would
+otherwise return zero and the port would read that as success. A decoded
+positions column is a read-only `memoryview` over the blob's own bytes,
+which `numpy.asarray` wraps without copying, so numpy interop costs
+nothing and is not a dependency. The parity gate now walks its scenario
+through **three** ergonomic layers and compares 103 values from each.
+
+Every binding gained the eighteen units the boundary had been missing:
+`ObliquityC`, `HorizonRequestC`, `CrossingRequestC`, `CrossingEventC`
+and `CapabilitiesC` carried floating-point fields with no unit, range or
+example, so the C header, the TypeScript surface, the Dart classes and
+the documentation site all documented them as bare numbers. A
+falsification pass over the API description (`cargo xtask surface`, held
+by `check-surface`) found them, along with the parameter role no entry
+point uses — which the Python emitter refuses by name rather than
+guessing at — and the fact that each binding's reserved-word rule fires
+in a different place, so the three word lists moved into one module
+where they can be counted.
+
+**Numbers:** reading a Bikram Sambat date no longer allocates. The date
 itself is unchanged; what moved is that `CalendarResolution` borrows the
 authority and the edition of the table it came from rather than copying
 them, so the path every chart takes for every date it shows allocates
