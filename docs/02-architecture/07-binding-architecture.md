@@ -100,6 +100,34 @@ a typed error. The reference encoder and decoder live in `teistro-idl`
 and are what a generated decoder is checked against. Decoders are fuzz
 targets.
 
+## Examples
+
+Every binding carries a directory of runnable programs its own gate runs,
+in the same order and covering the same scenarios, so that a reader can
+compare the three and a snippet cannot drift from the code:
+
+| example | what it settles |
+|---|---|
+| quickstart | the smallest thing that works |
+| birth chart | that the canonical frame is **tropical** and a Vedic chart asks for a sidereal one, which the SDK completes; a zone's own history; a body against the graha a chart names it |
+| panchanga | that every limb but the weekday is a function of two longitudes, so a binding computes an almanac from `positions` alone |
+| calendar | that a Bikram Sambat month length is asked for and never assumed, and that a returned date says whether the table or the engine decided it |
+| ephemeris | that a grid is one crossing rather than one per day, that a column is a view, and that the settings hash is the cache key |
+| your own ephemeris | the provider contract in full: one call per grid, refusing a frame so the SDK completes it, a body you never declared refused before you are asked, and the exception you raised reaching the caller as itself |
+
+The examples are the parity gate's counterpart for **documentation**: the
+gate holds the bindings to the same **values**, and running the same
+scenarios in each holds them to the same **shape**. That distinction is
+not theoretical — the parity gate agreed on all 103 values while the
+first writing of these six programs found nine gaps it could not see: a
+binding missing `dispose`, another missing constructors for a date and a
+zone, a generated surface emitting an id table for two enums out of
+eighty-one, an accessor tree snake-cased in a language that cases it
+camel, and one adapter's provider-error contract differing from the other
+two's. **A surface is not finished until the program that uses it has
+been written in every binding**; the second and third copies are where
+the divergences show.
+
 ## Handles and memory
 
 A result the library allocates (a blob, an owned string) is freed by the
@@ -115,11 +143,20 @@ copies them into its own string on the way out.
 
 - Native providers pass a vtable pointer (see the ephemeris port page).
 - Host-language providers are wrapped: the ergonomic layer registers
-  trampolines (napi `ThreadsafeFunction` or synchronous callbacks on the
-  calling thread, PyO3 `Py<PyAny>` calls with the GIL, Dart
-  `NativeCallable.isolateLocal`) that receive grids as typed arrays and
-  return columnar buffers; errors thrown in the host become provider
-  errors in the core.
+  trampolines (napi callbacks on the calling thread, `ctypes`
+  `CFUNCTYPE` trampolines in Python, Dart `NativeCallable.isolateLocal`)
+  that receive grids as typed arrays and return columnar buffers.
+- What a request may ask of a provider is checked on **this** side of the
+  boundary, in `VtableProvider::positions`, and not in each binding: only
+  a code crosses back, so a refusal raised out in the binding would
+  arrive as a number with its words lost. Checked here, one sentence
+  reaches every binding — `the provider does not support MARS; it answers
+  SUN, MOON` — and no binding holds a copy of the policy.
+- An error the host provider raises becomes a provider error in the core
+  *and* is given back to its caller as **itself**: the binding keeps the
+  object for the length of the call and rethrows it, with the library's
+  own refusal attached as its cause where the language has one. A caller
+  catches the type it wrote, not a summary of it.
 - Locale packs are bytes; no callback is needed.
 
 ## Threading and async

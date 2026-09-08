@@ -739,6 +739,13 @@ impl EphemerisProvider for VtableProvider {
         let Some(positions_fn) = self.vtable.positions else {
             return Err(ProviderError::unsupported("positions"));
         };
+        // The same check a native provider makes of itself, made here on
+        // this side of the boundary. It has to be here: only a code
+        // crosses back, so a refusal raised out there arrives as a number
+        // and the sentence that would have named the body is lost. Made
+        // here, the words survive into every binding, and no binding has
+        // to keep its own copy of the policy.
+        crate::validate(&self.capabilities, request)?;
         let ids: Vec<u16> = request.bodies.iter().map(|b| b.id()).collect();
         let raw_request = PositionRequestC {
             struct_size: size_of_u32::<PositionRequestC>(),

@@ -186,6 +186,53 @@ guessing at — and the fact that each binding's reserved-word rule fires
 in a different place, so the three word lists moved into one module
 where they can be counted.
 
+**Every binding ships six worked examples** (`bindings/*/example/`), the
+same six scenarios in JavaScript, Dart and Python, each a program
+`cargo xtask check-{node,dart,python}` runs — every file in the
+directory, so a scenario added is a scenario gated. They are the
+quickstart, a Nepali birth record placed by sign, nakshatra and pada, the
+five limbs of a panchanga, a Bikram Sambat year as a calendar page, a
+year of the sky in one call, and an ephemeris of your own. Writing them
+was a falsification pass over the three ergonomic layers and it found
+nine gaps the parity gate could not: the parity gate compares values, and
+these were shapes. Node had no examples at all, no `dispose`, no date or
+zone constructors, no `jdCount`, and named the provider's coverage
+differently from the other two — and the `dispose` it gained then
+reported a call on a freed context as the boundary's bare `invalid
+argument`, where Dart and Python both name the context; all three now
+name it, and all three now gate it. `whenUnknown` promised in all three
+that a resolution "reports rather than guesses" a missing time of day,
+where in fact it **refuses** unless the profile sets
+`time.unknown_time`; the three docs now say what happens, the birth
+chart example shows all three policies, and Python's `context` takes a
+`settings` mapping like the other two rather than only a JSON string a
+caller had to serialise by hand. The Dart layer wrapped a provider's own
+exception in the library's; the Python layer's weekday docstring named
+the wrong day as one. Every enum in the TypeScript surface now carries
+its id table, not just the two that appear in blob columns.
+
+**A provider's refusal now reads the same in all three bindings.** The
+port's `validate` moved to the SDK's side of the boundary
+(`VtableProvider::positions`), which is where it had to be: only a code
+crosses back, so a refusal raised out in the binding arrived as a number
+and the sentence naming the body was lost, and each of the three
+bindings had grown its own copy of the policy to get the words back.
+Checked on this side, the words survive into every binding at once and
+no binding keeps a copy — a body the provider never declared is now
+`the provider does not support MARS; it answers SUN, MOON` in
+JavaScript, Dart and Python alike, with the status `unsupported` to match
+on. What a provider raises on its own side is now given back to its
+caller as itself, in all three: the `StateError`, the `RangeError` or the
+`FileNotFoundError` the provider wrote, with the library's own refusal
+kept as its cause where the language has one, rather than a summary of
+it. Coverage stays what the port always said it was — a per-cell
+`CellStatus::OutOfRange`, not a reason to refuse a batch — so a year
+whose last day runs past the ephemeris keeps the days it can compute; a
+binding that would rather refuse early does it in its own adapter and
+says so in its own language. Every column a provider supplies is now held
+to the cell count, not only the three it must supply, because a speed
+column of the wrong length silently padded with zeroes is a wrong answer.
+
 **Numbers:** reading a Bikram Sambat date no longer allocates. The date
 itself is unchanged; what moved is that `CalendarResolution` borrows the
 authority and the edition of the table it came from rather than copying

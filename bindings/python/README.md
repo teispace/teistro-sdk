@@ -54,50 +54,25 @@ bare name. Building from source needs none of it: `cargo build --release
 
 ## Using it
 
-This is `example/teistro_example.py`, which the gate runs:
+Six runnable programs live in [`example/`](example/), and
+`cargo xtask check-python` runs every one, so none of them can drift from what
+the binding does. They are meant to be read in order — a quickstart, a
+birth chart, a panchanga, a calendar page, a year of the sky, and an
+ephemeris of your own — and [`example/README.md`](example/README.md) says
+what each is really teaching.
 
-```python
-from teistro import Body, Calendar, Teistro, at, date, iana_zone, intl
-
-teistro = Teistro.open()
-print(f"Teistro {teistro.version}, ABI {teistro.abi}")
-
-with teistro.context(
-    profile="nepali-default", locale="ne-Deva-NP", test_provider=True
-) as ctx:
-    # 14 April 2015 is 1 Baisakh 2072 BS.
-    bs = ctx.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
-    era = bs.era.key if bs.era is not None else ""
-    print(f"{bs.year}-{bs.month}-{bs.day} {era}")
-
-    # A Kathmandu birth time, with the metadata a stored chart keeps.
-    resolved = ctx.resolve(
-        at(date(Calendar.GREGORIAN, 1986, 1, 1), hour=0, minute=20),
-        iana_zone("Asia/Kathmandu"),
-    )
-    print(
-        f"JD {resolved.instant_jd_utc:.6f} UTC, "
-        f"{resolved.offset_seconds} s, tzdb {resolved.tzdb_version}"
-    )
-
-    # The Sun and the Moon at J2000, in the SDK's canonical frame.
-    sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN, Body.MOON])
-    print(f"the Sun at {sky.at(0, 0).longitude:.4f} degrees")
-
-    # A message in the context's locale, by its typed accessor, and an
-    # entity's name in that locale.
-    print(ctx.messages.sdk.reason.graha_in_bhava(graha=intl.GrahaKey.JUPITER, bhava=7))
-    sun = ctx.entity("graha.SUN")
-    print(f"{sun.name} {sun.glyph}")
+```sh
+cargo build --release -p teistro-ffi
+cd bindings/python
+TEISTRO_LIBRARY=../../target/release/libteistro_ffi.dylib \
+PYTHONPATH=. python3 example/quickstart.py
 ```
 
-A context frees its native memory when it is collected, so `close()` is
-the explicit form rather than the only one (ADR-0007) and `with` is the
-idiomatic one.
-
-The layer is thin on purpose. Anything it does not wrap is on the
-generated types: `teistro.library` is the declarations, `context.inner`
-the generated context, and every value class marshals itself.
+The one thing to know before writing anything real is in
+[`example/birth_chart.py`](example/birth_chart.py): **the canonical
+frame is tropical**, because that is what an ephemeris computes. A Vedic
+chart asks for a sidereal one and the SDK completes it, naming every step
+it applied.
 
 ## Types
 

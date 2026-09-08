@@ -24,11 +24,11 @@ test('a message is spelled by its accessor, never by its key', () => {
 
   ctx.locale = 'en-Latn';
   assert.equal(
-    ctx.messages.sdk.calendar.BIKRAM_SAMBAT.date.long({ day: 1, monthName: 'Baisakh', year: 2072 }),
+    ctx.messages.sdk.calendar.bikramSambat.date.long({ day: 1, monthName: 'Baisakh', year: 2072 }),
     '1 Baisakh 2072 BS',
   );
   assert.equal(
-    ctx.messages.sdk.calendar.GREGORIAN.date.numeric({ day: 14, month: 4, year: 2015 }),
+    ctx.messages.sdk.calendar.gregorian.date.numeric({ day: 14, month: 4, year: 2015 }),
     '2015-04-14',
   );
 });
@@ -40,7 +40,7 @@ test("an entity's forms come from the locale, not from the caller", () => {
   assert.equal(sun.iast, 'Sūrya');
   assert.equal(sun.glyph, '☉');
   assert.equal(sun.gender, 'm');
-  assert.deepEqual(ctx.messages.sdk.entity.graha.SUN(), sun, 'the accessor reads the same forms');
+  assert.deepEqual(ctx.messages.sdk.entity.graha.sun(), sun, 'the accessor reads the same forms');
   assert.equal(Object.isFrozen(sun), true);
 
   ctx.locale = 'en-Latn';
@@ -81,7 +81,7 @@ test('the accessors are a tree over any renderer', () => {
     entity: (key) => entityForms({ name: key }),
   });
   assert.equal(tree.sdk.reason.welcome(), 'sdk.reason.welcome');
-  assert.equal(tree.sdk.entity.graha.KETU().name, 'graha.KETU');
+  assert.equal(tree.sdk.entity.graha.ketu().name, 'graha.KETU');
   tree.sdk.calendar.ghati.long({ ghati: 12, pala: 30 });
   assert.deepEqual(asked.at(-1), ['sdk.calendar.ghati.long', { ghati: 12, pala: 30 }]);
   assert.equal(entityForms('{"name":"x"}').iast, '', 'a form the locale lacks is empty');

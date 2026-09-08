@@ -162,17 +162,41 @@ export class TeistroError extends Error {
 }
 
 /**
- * Runs a call on the addon and rethrows its failure with everything the
- * library said. Only a code crosses the C boundary for a provider's own
- * failure, so when the library reports one the caught message — which
- * came from the provider, in this language — is the one kept.
+ * Runs a call on the addon and reports its failure the way this binding
+ * promises to: what your own code threw comes back as itself, and what
+ * the library refused comes back as a `TeistroError` with a status.
+ *
+ * Only a code crosses the C boundary, so a provider written in JavaScript
+ * would otherwise reach its caller as a number. `thrown` is the object it
+ * threw, kept on this side for the length of one call and put back here.
+ * The Dart and Python bindings do exactly this.
+ *
+ * @param {object|null} context the addon handle, for `lastError`
+ * @param {Function} call the call to make
+ * @param {{error: unknown}} [thrown] where this context's provider leaves
+ *   what it threw
  */
-function guarded(context, call) {
+function guarded(context, call, thrown) {
+  if (thrown) thrown.error = undefined;
   try {
     return call();
   } catch (cause) {
     const record = context?.lastError?.();
+    const own = thrown?.error;
+    if (own !== undefined) {
+      thrown.error = undefined;
+      // The boundary's refusal kept as the cause: the caller catches the
+      // type it wrote, and a stack trace still shows what the port made
+      // of it. `Error.cause` is the standard slot for exactly this.
+      if (own instanceof Error && own.cause === undefined && record) {
+        own.cause = new TeistroError(record);
+      }
+      throw own;
+    }
     if (!record) throw cause;
+    // A provider that failed inside the addon rather than in JavaScript —
+    // a column of the wrong length read by the native adapter — leaves
+    // its sentence in the caught message rather than in `thrown`.
     const fromProvider = record.status === 'provider' && cause?.message;
     throw new TeistroError(fromProvider ? { ...record, message: cause.message } : record);
   }
@@ -204,7 +228,11 @@ function clean(value) {
  * itself rather than a property of an object it does not own.
  */
 function describeProvider(provider) {
-  if (provider === undefined || provider === null) return [undefined, undefined];
+  // Where a provider written in JavaScript leaves what it threw, for the
+  // length of one call: only a code crosses the boundary, so without this
+  // the caller would get a summary of its error instead of the error.
+  const thrown = { error: undefined };
+  if (provider === undefined || provider === null) return [undefined, undefined, thrown];
   if (typeof provider.positions !== 'function') {
     throw new TypeError('provider: expected a `positions(request)` function');
   }
@@ -219,21 +247,63 @@ function describeProvider(provider) {
     bodies: provider.bodies,
     version: provider.version,
     dataVersion: provider.dataVersion,
-    jdMin: provider.jdRange?.[0],
-    jdMax: provider.jdRange?.[1],
-    nativeFrameBits: provider.frame === undefined ? undefined : native.framePack(clean(provider.frame)),
+    // Named as the Dart and Python bindings name them, so a provider
+    // author writing against one of the three reads the same words in
+    // all of them (ADR-0004: one API, not three).
+    jdMin: provider.jdMin,
+    jdMax: provider.jdMax,
+    nativeFrameBits:
+      provider.nativeFrame === undefined
+        ? undefined
+        : native.framePack(clean(provider.nativeFrame)),
     speeds: provider.speeds,
     deterministic: provider.deterministic,
   });
   // The callback answers with plain arrays; a column left out is zeroes,
   // which is what a provider that computes no speeds means.
-  const positions = (request) => {
+  // The coverage span, and only that: a topocentric frame without an
+  // observer, a body the provider never declared and an instant that is
+  // not a number are all refused by the port itself, on the SDK's side of
+  // the boundary, where the sentence survives into a `TeistroError` that
+  // names what is missing. The Dart and Python adapters keep exactly this
+  // much and no more.
+  const validate = (request) => {
+    const low = provider.jdMin ?? 1721057.5;
+    const high = provider.jdMax ?? 2816787.5;
+    for (const jd of request.jds) {
+      if (jd < low || jd > high) {
+        throw new RangeError(
+          `the instant ${jd} is outside the provider's coverage (${low} to ${high})`,
+        );
+      }
+    }
+  };
+  const answering = (request) => {
+    validate(request);
     const answer = provider.positions(request);
     // Nothing means "I cannot produce that frame"; the SDK then asks for
     // the provider's native frame and completes the rest itself.
+    //
+    // Answering at all asserts the answer is in the frame that was asked
+    // for: `frameBits` left out below means `request.frameBits`, not the
+    // provider's own. A provider that computes in one frame must compare
+    // `request.frameBits` with its own and return nothing instead —
+    // `example/your_own_ephemeris.mjs` does exactly that.
     if (answer === null || answer === undefined) return null;
     const cells = request.jds.length * request.bodies.length;
-    const column = (name) => Array.from(answer[name] ?? new Float64Array(cells));
+    // A column left out is zeroes, which is what a provider that computes
+    // no speeds means; a column of the wrong length is a mistake, and is
+    // said so here rather than read past its end further down.
+    const column = (name, fill = Float64Array) => {
+      const values = answer[name];
+      if (values === undefined || values === null) return Array.from(new fill(cells));
+      if (values.length !== cells) {
+        throw new RangeError(
+          `the provider returned ${values.length} values in \`${name}\` for ${cells} cells`,
+        );
+      }
+      return Array.from(values);
+    };
     return {
       frameBits: answer.frameBits ?? request.frameBits,
       lon: column('lon'),
@@ -242,11 +312,21 @@ function describeProvider(provider) {
       lonSpeed: column('lonSpeed'),
       latSpeed: column('latSpeed'),
       distSpeed: column('distSpeed'),
-      status: Array.from(answer.status ?? new Int32Array(cells)),
-      source: Array.from(answer.source ?? new Uint32Array(cells)),
+      status: column('status', Int32Array),
+      source: column('source', Uint32Array),
     };
   };
-  return [info, positions];
+  const positions = (request) => {
+    try {
+      return answering(request);
+    } catch (error) {
+      // Kept, and rethrown by `guarded` once the call has unwound: the
+      // addon can only answer the SDK with a code.
+      thrown.error = error;
+      throw error;
+    }
+  };
+  return [info, positions, thrown];
 }
 
 /** A finite number, or a `TypeError` naming the argument. */
@@ -306,6 +386,20 @@ export class Positions extends Decoded {
   }
 
   /** The bodies as the ids the blob carries, without a copy. */
+  /**
+   * How many instants the grid covers, which is the stride a caller
+   * needs to read a column: cell `i * bodyCount + j` is instant `i`,
+   * body `j`. The Dart binding names these the same way.
+   */
+  get jdCount() {
+    return this.decoded.jdCount;
+  }
+
+  /** How many bodies the grid covers. */
+  get bodyCount() {
+    return this.decoded.bodyCount;
+  }
+
   get bodyIds() {
     return this.decoded.bodies.body;
   }
@@ -403,6 +497,26 @@ export class Rendered extends Decoded {
 export class Context {
   #inner;
   #messages = null;
+  /** Where this context's own provider leaves what it threw. */
+  #thrown;
+  /** Whether `dispose` has already freed the handle. */
+  #disposed = false;
+
+  /**
+   * Runs a call on the addon, putting back whatever this context's
+   * provider threw. Every call can reach the provider — a chart asks for
+   * positions — so every call goes through here.
+   */
+  #call(run) {
+    // Said here rather than at the boundary: a call on a freed handle is
+    // refused there as `invalid argument`, which does not tell a reader
+    // that the context they disposed is the argument. The Dart and Python
+    // bindings name it the same way.
+    if (this.#disposed) {
+      throw new Error('this context was disposed; open another one');
+    }
+    return guarded(this.#inner, run, this.#thrown);
+  }
 
   /**
    * @param {object} [options]
@@ -418,7 +532,8 @@ export class Context {
    */
   constructor(options = {}) {
     const { profile, settings, locale, testProvider = false, provider } = options;
-    const [info, positions] = describeProvider(provider);
+    const [info, positions, thrown] = describeProvider(provider);
+    this.#thrown = thrown;
     this.#inner = guarded(null, () =>
       new native.Context(
         clean({
@@ -435,7 +550,7 @@ export class Context {
 
   /** The id of the profile the settings came from. */
   get profile() {
-    return guarded(this.#inner, () => this.#inner.profile());
+    return this.#call(() => this.#inner.profile());
   }
 
   /** The resolved settings, as their canonical document. */
@@ -448,27 +563,27 @@ export class Context {
    * settings hash is taken over and what a stored chart keeps.
    */
   get settingsJson() {
-    return guarded(this.#inner, () => this.#inner.settingsJson());
+    return this.#call(() => this.#inner.settingsJson());
   }
 
   /** The SHA-256 of the canonical settings, in hex; every result carries it. */
   get settingsHash() {
-    const hash = guarded(this.#inner, () => this.#inner.settingsHash());
+    const hash = this.#call(() => this.#inner.settingsHash());
     return Buffer.from(hash.bytes).toString('hex');
   }
 
   /** The locale every render resolves from. */
   get locale() {
-    return guarded(this.#inner, () => this.#inner.intlLocale());
+    return this.#call(() => this.#inner.intlLocale());
   }
 
   set locale(tag) {
-    guarded(this.#inner, () => this.#inner.intlSetLocale(tag));
+    this.#call(() => this.#inner.intlSetLocale(tag));
   }
 
   /** The SDK's canonical frame: apparent geocentric ecliptic of date, tropical. */
   canonicalFrame() {
-    return guarded(this.#inner, () => native.frameCanonical());
+    return this.#call(() => native.frameCanonical());
   }
 
   /**
@@ -485,7 +600,7 @@ export class Context {
    */
   positions(request) {
     const frame = request.frame ?? this.canonicalFrame();
-    const bytes = guarded(this.#inner, () =>
+    const bytes = this.#call(() =>
       this.#inner.positions(
         clean({
           scale: request.scale ?? 'ut1',
@@ -502,7 +617,7 @@ export class Context {
 
   /** Renders a message of the current locale with its parameters. */
   render(key, params) {
-    const bytes = guarded(this.#inner, () =>
+    const bytes = this.#call(() =>
       this.#inner.intlRender(key, params === undefined ? undefined : JSON.stringify(params)),
     );
     return new Rendered(bytes);
@@ -510,7 +625,7 @@ export class Context {
 
   /** Whether the current locale or its fallbacks have a message. */
   has(key) {
-    return guarded(this.#inner, () => this.#inner.intlHas(key)) === 1;
+    return this.#call(() => this.#inner.intlHas(key)) === 1;
   }
 
   /**
@@ -518,7 +633,7 @@ export class Context {
    * or Nepali term written in the other.
    */
   transliterate(text, from = 'deva', to = 'iast') {
-    return guarded(this.#inner, () => this.#inner.intlTransliterate(text, from, to));
+    return this.#call(() => this.#inner.intlTransliterate(text, from, to));
   }
 
   /**
@@ -527,7 +642,7 @@ export class Context {
    * locale gives it.
    */
   entity(key) {
-    return entityForms(guarded(this.#inner, () => this.#inner.intlEntity(key)));
+    return entityForms(this.#call(() => this.#inner.intlEntity(key)));
   }
 
   /**
@@ -550,69 +665,96 @@ export class Context {
 
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
   loadPack(bytes) {
-    return guarded(this.#inner, () => this.#inner.intlLoadPack(Buffer.from(bytes)));
+    return this.#call(() => this.#inner.intlLoadPack(Buffer.from(bytes)));
   }
 
   /** The date a fixed day falls on in a calendar. */
   dateOf(calendar, fixed) {
-    return guarded(this.#inner, () => this.#inner.calendarFromFixed(calendar, fixed));
+    return this.#call(() => this.#inner.calendarFromFixed(calendar, fixed));
   }
 
   /** The fixed day of a date. */
   fixedOf(date) {
-    return guarded(this.#inner, () => this.#inner.calendarToFixed(clean(date)));
+    return this.#call(() => this.#inner.calendarToFixed(clean(date)));
   }
 
   /** The same date in another calendar. */
   convert(date, into) {
-    return guarded(this.#inner, () => this.#inner.calendarConvert(clean(date), into));
+    return this.#call(() => this.#inner.calendarConvert(clean(date), into));
   }
 
   /** The weekday of a date, Monday `1` to Sunday `7`. */
   weekdayOf(date) {
-    return guarded(this.#inner, () => this.#inner.calendarWeekday(clean(date)));
+    return this.#call(() => this.#inner.calendarWeekday(clean(date)));
   }
 
   /** The length of a month. */
   monthLength(calendar, year, month) {
-    return guarded(this.#inner, () => this.#inner.calendarMonthLength(calendar, year, month));
+    return this.#call(() => this.#inner.calendarMonthLength(calendar, year, month));
   }
 
   /** Whether a year is a leap year. */
   isLeap(calendar, year) {
-    return guarded(this.#inner, () => this.#inner.calendarIsLeap(calendar, year)) === 1;
+    return this.#call(() => this.#inner.calendarIsLeap(calendar, year)) === 1;
   }
 
   /** A civil date and time in a zone, resolved to an instant with its metadata. */
   resolve(civil, zone) {
-    return guarded(this.#inner, () => this.#inner.timeResolve(clean(civil), clean(zone)));
+    return this.#call(() => this.#inner.timeResolve(clean(civil), clean(zone)));
   }
 
   /** The civil date and time of an instant in a zone. */
   civilOf(jdUtc, zone, calendar) {
-    return guarded(this.#inner, () =>
+    return this.#call(() =>
       this.#inner.timeCivil(finite(jdUtc, 'jdUtc'), clean(zone), calendar),
     );
   }
 
   /** Converts an instant between the time scales. */
   convertTime(jd, from, to) {
-    return guarded(this.#inner, () => this.#inner.timeConvert(finite(jd, 'jd'), from, to));
+    return this.#call(() => this.#inner.timeConvert(finite(jd, 'jd'), from, to));
   }
 
   /** Delta T at a UT1 instant, with what produced it. */
   deltaT(jdUt1) {
-    return guarded(this.#inner, () => this.#inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
+    return this.#call(() => this.#inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
   }
 
   /** The packed id of a catalogue key. */
   keyId(key) {
-    return guarded(this.#inner, () => this.#inner.keyParse(key));
+    return this.#call(() => this.#inner.keyParse(key));
   }
 
   /** The catalogue key of a packed id. */
   keyName(id) {
-    return guarded(this.#inner, () => this.#inner.keyName(id));
+    return this.#call(() => this.#inner.keyName(id));
+  }
+
+  /**
+   * Frees the context's native memory now, rather than when the collector
+   * gets to it.
+   *
+   * A context is finaliser-backed, so forgetting this leaks nothing in the
+   * end; but a service that builds one per request and waits for the
+   * collector can hold thousands at once (ADR-0007, finding 4). Calling it
+   * twice is allowed, and a call on a disposed context is refused with
+   * `INVALID_ARG` rather than crashing.
+   */
+  dispose() {
+    this.#disposed = true;
+    this.#inner.dispose();
+  }
+
+  /**
+   * The same, for `using` (explicit resource management), so a context can
+   * be scoped:
+   *
+   * ```js
+   * using ctx = new Context({ testProvider: true });
+   * ```
+   */
+  [Symbol.dispose]() {
+    this.dispose();
   }
 }
 
@@ -634,6 +776,78 @@ export const fixedOfJulianDay = (jd) => native.calendarFixedOfJd(finite(jd, 'jd'
 export const packFrame = (frame) => native.framePack(clean(frame));
 /** Reads packed frame bits back into their fields. */
 export const unpackFrame = (bits) => native.frameUnpack(bits);
+
+/**
+ * A date in a calendar, without naming the fields a call fills in.
+ *
+ * The era and the era year are what the call resolves them to, and the
+ * resolution is `defined`, which is what a date a caller states means.
+ * The Dart and Python bindings have the same helper, so the three read
+ * alike.
+ *
+ * @example date(Calendar.Gregorian, 2015, 4, 14)
+ */
+export const date = (calendar, year, month, day) => ({
+  calendar,
+  year,
+  eraYear: 0,
+  month,
+  day,
+  resolution: 'defined',
+  computedMonth: 0,
+  computedDay: 0,
+});
+
+/**
+ * A date at a time of day.
+ *
+ * @example at(date(Calendar.Gregorian, 1986, 1, 1), { hour: 0, minute: 20 })
+ */
+export const at = (day, { hour = 0, minute = 0, second = 0, nanos = 0 } = {}) => ({
+  date: day,
+  time: { hour, minute, second, hasTime: true, nanos },
+});
+
+/**
+ * A date whose time of day is unknown.
+ *
+ * Nothing guesses one. Unless the profile sets `time.unknown_time`, a
+ * resolution refuses it by name and the hint says what to choose; under
+ * `NOON` it resolves with `timeKnown` false and a
+ * `time-unknown-fallback` warning, and under `SUNRISE` it needs the
+ * place and a solar model.
+ *
+ * @example whenUnknown(date(Calendar.Gregorian, 1986, 1, 1))
+ */
+export const whenUnknown = (day) => ({
+  date: day,
+  time: { hour: 0, minute: 0, second: 0, hasTime: false, nanos: 0 },
+});
+
+/** A zone of the embedded database, by its IANA name. */
+export const ianaZone = (name) => ({
+  kind: 'iana',
+  offsetSeconds: 0,
+  longitudeDeg: 0,
+  zone: name,
+});
+
+/** A fixed offset from UTC, in seconds east. */
+export const fixedZone = (offsetSeconds) => ({
+  kind: 'fixed',
+  offsetSeconds,
+  longitudeDeg: 0,
+});
+
+/**
+ * Local mean time at a longitude east of Greenwich, which is what a chart
+ * from before the zone existed is cast in.
+ */
+export const localMeanZone = (longitudeDeg) => ({
+  kind: 'local-mean',
+  offsetSeconds: 0,
+  longitudeDeg,
+});
 
 export { decodeIntlRender, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';

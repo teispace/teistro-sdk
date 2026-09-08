@@ -341,7 +341,12 @@ fn ts_tree(out: &mut String, group: &Group, depth: usize, shape: TsShape) {
     } else {
         ("", "},")
     };
-    for (segment, node) in &group.children {
+    for (source, node) in &group.children {
+        // Camel case, as JavaScript names a property and as the Dart and
+        // Python surfaces already case theirs: a source segment written
+        // `BIKRAM_SAMBAT` reaches a consumer as `bikramSambat`, so the
+        // three bindings spell one accessor one way.
+        let segment = camel(&snake(source));
         match node {
             Node::Group(child) => {
                 let _ = writeln!(out, "{pad}{lead}{segment}: {{");

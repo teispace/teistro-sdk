@@ -315,6 +315,62 @@ class Positions(WithLibrary):
                 bare.positions(instants=[2451545.0], bodies=[Body.SUN])
             self.assertEqual(caught.exception.status, Status.CAPABILITY)
 
+    def test_a_birth_with_no_time_is_refused_or_reported_never_guessed(self) -> None:
+        day = date(Calendar.BIKRAM_SAMBAT, 2042, 9, 17)
+        zone = iana_zone("Asia/Kathmandu")
+
+        # No policy: refused by name, with the hint naming the choices.
+        with self.teistro.context(profile=PROFILE, test_provider=True) as strict:
+            with self.assertRaises(TeistroError) as caught:
+                strict.resolve(when_unknown(day), zone)
+            self.assertIn("has no time of day", caught.exception.message)
+            self.assertIn("NOON, MIDNIGHT or SUNRISE", caught.exception.hint or "")
+            self.assertEqual(caught.exception.field, "time")
+
+            # A known time on the same date resolves with the time known
+            # and no warning: this record sits on the day Nepal moved to
+            # +05:45.
+            exact = strict.resolve(at(day, hour=0, minute=20), zone)
+            self.assertTrue(exact.time_known)
+            self.assertEqual(exact.offset_seconds, 5 * 3600 + 45 * 60)
+            self.assertEqual(list(exact.warnings), [])
+
+        # NOON: answered, and said twice — the resolution reports the time
+        # as unknown *and* warns, so a stored chart cannot claim a time it
+        # never had. `settings` as a mapping is the shape the Node and
+        # Dart bindings take.
+        with self.teistro.context(
+            profile=PROFILE,
+            test_provider=True,
+            settings={"time": {"unknown_time": "NOON"}},
+        ) as noon:
+            resolved = noon.resolve(when_unknown(day), zone)
+            self.assertFalse(resolved.time_known)
+            self.assertIn(
+                "time-unknown-fallback", [w.key for w in resolved.warnings]
+            )
+
+    def test_settings_given_twice_is_refused(self) -> None:
+        with self.assertRaises(ValueError):
+            self.teistro.context(profile=PROFILE, settings={}, settings_json="{}")
+
+    def test_a_closed_context_says_so_and_closing_twice_is_allowed(self) -> None:
+        ctx = self.teistro.context(profile=PROFILE, test_provider=True)
+        self.assertTrue(ctx.profile)
+        ctx.close()
+        # Idempotent: a `with` block and an explicit call both run it.
+        ctx.close()
+        # Named here rather than at the boundary, which would only say
+        # `invalid argument` and not which argument. The Node and Dart
+        # bindings answer the same way.
+        for call in (
+            lambda: ctx.profile,
+            lambda: ctx.positions(instants=[2451545.0], bodies=[Body.SUN]),
+        ):
+            with self.assertRaises(TeistroError) as caught:
+                call()
+            self.assertIn("closed", str(caught.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

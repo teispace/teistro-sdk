@@ -291,26 +291,23 @@ final class Context {
     );
   }
 
-  /// Runs a call that may reach a provider written in Dart, and reports
-  /// what the provider said. Only a code crosses the C boundary, so the
-  /// failure the provider itself raised is the one kept.
+  /// Runs a call that may reach a provider written in Dart, and rethrows
+  /// what the provider itself threw.
+  ///
+  /// Only a code crosses the C boundary, so without this the provider's
+  /// own sentence would be lost and the caller would see the port's
+  /// summary of it instead. The original object is rethrown rather than
+  /// wrapped, so a caller catches the type it wrote — which is what the
+  /// Node and Python bindings do as well.
   T _guarded<T>(T Function() call) {
     _host?.thrown = null;
     try {
       return call();
-    } on TeistroException catch (failure) {
+    } on TeistroException {
       final thrown = _host?.thrown;
       if (thrown == null) rethrow;
       _host?.thrown = null;
-      throw TeistroException(
-        failure.status,
-        'the ephemeris provider failed: $thrown',
-        detail: failure.detail,
-        field: failure.field,
-        hint: failure.hint,
-        messageKey: failure.messageKey,
-        providerCode: failure.providerCode,
-      );
+      throw thrown;
     }
   }
 
@@ -606,8 +603,13 @@ extension CivilDateTimes on CalendarDate {
     ),
   );
 
-  /// This date with the time of day unknown, which a resolution reports
-  /// rather than guesses.
+  /// This date with its time of day unknown.
+  ///
+  /// Nothing guesses one. Unless the profile sets `time.unknown_time`, a
+  /// resolution refuses it by name and the hint says what to choose;
+  /// under `NOON` it resolves with [ZoneResolution.timeKnown] false and a
+  /// `time-unknown-fallback` warning, and under `SUNRISE` it needs the
+  /// place and a solar model.
   CivilDateTime get whenUnknown => CivilDateTime(
     date: this,
     time: const CivilTime(

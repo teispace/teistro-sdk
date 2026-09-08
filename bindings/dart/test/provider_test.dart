@@ -144,16 +144,18 @@ void main() {
       provider: _Throwing('no data for that instant'),
     );
     addTearDown(ctx.dispose);
+    // The provider's **own** error reaches the caller, not a wrapper
+    // around it: only a code crosses the C boundary, so the layer keeps
+    // what was thrown and rethrows the object itself. The Node and
+    // Python bindings surface the provider's error the same way.
     expect(
       () => ctx.positions(instants: [2451545.0], bodies: [Body.sun]),
       throwsA(
-        isA<TeistroException>()
-            .having((e) => e.status, 'status', Status.provider)
-            .having(
-              (e) => e.message,
-              'message',
-              contains('no data for that instant'),
-            ),
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('no data for that instant'),
+        ),
       ),
     );
   });
@@ -162,19 +164,34 @@ void main() {
       'declared', () {
     final ctx = teistro.context(provider: StraightLine(answers: [Body.sun]));
     addTearDown(ctx.dispose);
+    // Refused by the port, on the SDK's side of the boundary and before
+    // the provider is asked, so the sentence survives: it names the body
+    // that was asked for and the ones the provider does answer.
     expect(
       () => ctx.positions(instants: [2451545.0], bodies: [Body.sun, Body.mars]),
       throwsA(
-        isA<TeistroException>().having(
-          (e) => e.status,
-          'status',
-          anyOf(Status.unsupported, Status.capability),
-        ),
+        isA<TeistroException>()
+            .having((e) => e.status, 'status', Status.unsupported)
+            .having(
+              (e) => e.message,
+              'message',
+              // The port spells a body's key in the upper case the
+              // catalogue uses; `Body.mars.key` is the same key.
+              allOf(contains('MARS'), contains('it answers SUN')),
+            ),
       ),
     );
+    // An instant outside the coverage is refused the same way, and the
+    // refusal names the span rather than only the instant.
     expect(
       () => ctx.positions(instants: [1e9], bodies: [Body.sun]),
-      throwsA(isA<TeistroException>()),
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains("outside the provider's coverage"),
+        ),
+      ),
     );
   });
 
@@ -195,7 +212,7 @@ void main() {
     expect(
       () => ctx.positions(instants: [2451545.0, 2451546.0], bodies: [Body.sun]),
       throwsA(
-        isA<TeistroException>().having(
+        isA<StateError>().having(
           (e) => e.message,
           'message',
           contains('1 values in `lon` for 2 cells'),

@@ -403,8 +403,9 @@ adapter settles:
 |---|---|
 | the batch shape | one call per grid, never a loop: the request carries the instants, the bodies, the scale, the frame and the observer, and the answer one value per cell |
 | refusing a frame | answering with nothing is `UNSUPPORTED`, so the SDK asks again in the provider's native frame and completes the rest, every step stamped |
-| what a provider may be asked | the port's own `validate` runs before the callback, so a body, an instant or a frame it did not declare is refused by name rather than left for the callback to discover |
-| a failure's words | only a code crosses the C boundary, so the adapter keeps the sentence and the layer above reports it: `the ephemeris provider threw: no data for that instant` |
+| what a provider may be asked | the port's own `validate` runs on the SDK's side of the boundary, in `VtableProvider::positions`, so a body, an observer or a frame it did not declare is refused before the call crosses out — and the refusal keeps its words, because it never crossed: `the provider does not support MARS; it answers SUN, MOON`. No binding holds a copy of the policy |
+| a failure's words | only a code crosses back, so what a provider raised on its own side is kept there and put back by the layer: the caller catches the object it threw, not a summary of it, with the library's refusal kept as the cause where the language has one (Python's `__cause__`, JavaScript's `Error.cause`) |
+| coverage | an instant outside the declared span is a per-cell `CellStatus::OutOfRange`, not a reason to refuse the batch, so a year whose last day runs past the ephemeris keeps the days it can compute. A binding that would rather refuse early does it in its own adapter, and that refusal reads in its own language |
 
 In Dart (`bindings/dart/lib/src/host.dart`) the provider is a class
 extending `EphemerisProvider`, and the adapter binds it through

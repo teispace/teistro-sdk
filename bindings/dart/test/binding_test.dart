@@ -353,4 +353,76 @@ void main() {
       ),
     );
   });
+
+  test('a disposed context says so, and disposing twice is allowed', () {
+    final ctx = context();
+    expect(ctx.profile, isNotEmpty);
+    ctx.dispose();
+    // Idempotent: the finaliser and an explicit call both run it.
+    ctx.dispose();
+    // Named here rather than at the boundary, which would only say
+    // `invalid argument` and not which argument. The Node and Python
+    // bindings answer the same way.
+    expect(
+      () => ctx.profile,
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('disposed'),
+        ),
+      ),
+    );
+    expect(
+      () => ctx.positions(instants: [2451545.0], bodies: [Body.sun]),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('a birth with no time is refused, or reported, but never guessed', () {
+    final day = Calendar.bikramSambat.date(2042, 9, 17);
+    final zone = ianaZone('Asia/Kathmandu');
+
+    // No policy: refused by name, with the hint naming the three choices.
+    final strict = context(locale: null);
+    addTearDown(strict.dispose);
+    expect(
+      () => strict.resolve(day.whenUnknown, zone),
+      throwsA(
+        isA<TeistroException>()
+            .having((e) => e.message, 'message', contains('has no time of day'))
+            .having(
+              (e) => e.hint,
+              'hint',
+              contains('NOON, MIDNIGHT or SUNRISE'),
+            )
+            .having((e) => e.field, 'field', 'time'),
+      ),
+    );
+
+    // NOON: answered, and said twice — the resolution reports the time as
+    // unknown *and* warns, so a stored chart cannot claim a time it never
+    // had.
+    final noon = context(
+      locale: null,
+      settings: const {
+        'time': {'unknown_time': 'NOON'},
+      },
+    );
+    addTearDown(noon.dispose);
+    final resolved = noon.resolve(day.whenUnknown, zone);
+    expect(resolved.timeKnown, isFalse);
+    expect(
+      resolved.warnings.map((w) => w.key),
+      contains('time-unknown-fallback'),
+    );
+    expect(resolved.instantJdUtc.isFinite, isTrue);
+
+    // A known time on the same date resolves with the time known and no
+    // warning: this record sits on the day Nepal moved to +05:45.
+    final exact = strict.resolve(day.at(hour: 0, minute: 20), zone);
+    expect(exact.timeKnown, isTrue);
+    expect(exact.offsetSeconds, 5 * 3600 + 45 * 60);
+    expect(exact.warnings, isEmpty);
+  });
 }

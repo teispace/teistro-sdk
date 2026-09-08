@@ -236,8 +236,19 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
 
 /// Checks a request against a provider's capabilities before any work: a
 /// topocentric frame needs an observer, every body must be offered, every
-/// instant must be finite, a sidereal frame needs an ayanamsha the
-/// provider knows when it computes the zodiac itself.
+/// instant must be finite. Coverage is not checked, because an instant
+/// outside the declared span is a per-cell [`crate::CellStatus`] and not
+/// a reason to refuse the batch.
+///
+/// Every provider is held to this, whichever side of the boundary it is
+/// written on: a native one calls this itself, and a foreign one is
+/// checked by [`crate::VtableProvider`] before the call crosses out. That
+/// is what lets a refusal name what is missing — the check runs where the
+/// words survive, rather than in each binding, where only a code crosses
+/// back.
+///
+/// The order is the order a reader would ask in: what the frame needs,
+/// then what the provider answers, then what the instants are.
 ///
 /// # Errors
 ///
@@ -253,11 +264,27 @@ pub fn validate(
         ));
     }
     if let Some(body) = request.bodies.iter().find(|b| !capabilities.has_body(**b)) {
-        return Err(ProviderError::unsupported(format!("body {}", body.key())));
+        // Naming what it *does* answer turns a refusal into an
+        // instruction: the caller can see the catalogue key it meant.
+        let answers = capabilities
+            .bodies
+            .iter()
+            .map(|offered| offered.key())
+            .collect::<Vec<_>>()
+            .join(", ");
+        return Err(ProviderError::unsupported(format!(
+            "{}; it answers {answers}",
+            body.key()
+        )));
     }
     if let Some(jd) = request.jds.iter().find(|jd| !jd.is_finite()) {
         return Err(ProviderError::invalid(format!("non-finite instant {jd}")));
     }
+    // Coverage is deliberately not checked here. An instant outside the
+    // declared span is a *per-cell* outcome — `CellStatus::OutOfRange` —
+    // so a year-long grid whose last day runs past the ephemeris keeps
+    // the 364 days it can compute rather than losing all of them. A
+    // provider that would rather refuse the whole batch says so itself.
     Ok(())
 }
 

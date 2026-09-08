@@ -52,16 +52,31 @@ no platform package. Build the addon from source (`cargo build --release
 
 ## Using it
 
-```js
-import { Body, Calendar, Context } from '@teistro/sdk';
+Six runnable programs live in [`example/`](example/), and
+`cargo xtask check-node` runs every one, so none of them can drift from
+what the binding does. Start with
+[`example/quickstart.mjs`](example/quickstart.mjs):
 
-const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP' });
-const positions = ctx.positions({
-  instants: [2451545.0],
-  bodies: [Body.Sun, Body.Moon],
-});
-console.log(positions.at(0, 0).longitude, positions.provenance.settings_hash);
+```js
+import { Body, Calendar, Context, at, date, ianaZone } from '@teistro/sdk';
+
+const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP', testProvider: true });
+const bs = ctx.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
+const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
+console.log(bs.year, sky.at(0, 0).longitude, sky.provenance.settings_hash);
+ctx.dispose();
 ```
+
+Then read them in order — a birth chart, a panchanga, a calendar page, a
+year of the sky, and an ephemeris of your own. The one thing to know
+before writing anything real is in
+[`example/birth_chart.mjs`](example/birth_chart.mjs): **the canonical
+frame is tropical**, so a Vedic chart asks for a sidereal one and the SDK
+completes it.
+
+A context frees its native memory when it is collected, so `dispose()` is
+the explicit form rather than the only one (ADR-0007) — and `using ctx =
+new Context(...)` calls it for you.
 
 A context with no provider computes calendars, times and messages;
 positions need one, and `{ testProvider: true }` selects the SDK's

@@ -2877,10 +2877,27 @@ impl Context {
         self.check(status)?;
         Ok(take_blob(&mut out_blob))
     }
+
+    /// Frees the handle's native memory now, rather than when the
+    /// collector gets to it. Calling it twice is allowed, and a call on a
+    /// disposed handle is refused with `INVALID_ARG`.
+    #[napi]
+    pub fn dispose(&mut self) {
+        if self.handle.is_null() {
+            return;
+        }
+        // SAFETY: the handle came from the constructor and is freed once;
+        // nulling it here is what makes that true.
+        unsafe { ffi::context::ts_context_free(self.handle) };
+        self.handle = std::ptr::null_mut();
+    }
 }
 
 impl Drop for Context {
     fn drop(&mut self) {
+        if self.handle.is_null() {
+            return;
+        }
         // SAFETY: the handle came from the constructor and is dropped once.
         unsafe { ffi::context::ts_context_free(self.handle) };
     }

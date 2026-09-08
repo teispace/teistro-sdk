@@ -22,8 +22,9 @@ const PACKAGE: &str = "bindings/dart";
 /// "a swapped latitude and longitude does not compile" is proved.
 const WRONG: &str = "typecheck/wrong.dart";
 const FIXTURES: &str = "target/tsrb";
-/// The README's example, run so the two cannot drift.
-const EXAMPLE: &str = "example/teistro_example.dart";
+/// Where the examples live. **Every** file there is run, so a scenario
+/// added to the directory is gated by having been added.
+const EXAMPLES: &str = "example";
 
 /// Analyses the file of wrong usages and holds it to what it expects:
 /// every `// expect: <text>` line must be answered by an error carrying
@@ -75,6 +76,42 @@ fn wrong_usages(package: &Path) -> Result<(), ()> {
     Ok(())
 }
 
+/// Runs every example, in name order, and says how many.
+///
+/// An example is a program a reader is invited to copy, so it is held to
+/// the same bar as a test: it must run against the library this build
+/// produced.
+fn examples(package: &Path, library: &Path) -> Result<(), ()> {
+    let directory = package.join(EXAMPLES);
+    let mut found: Vec<std::path::PathBuf> = std::fs::read_dir(&directory)
+        .map_err(|e| println!("FAIL  {PACKAGE}/{EXAMPLES}: {e}"))?
+        .flatten()
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|kind| kind == "dart"))
+        .collect();
+    found.sort();
+    if found.is_empty() {
+        println!("FAIL  {PACKAGE}/{EXAMPLES} holds no examples");
+        return Err(());
+    }
+    for example in &found {
+        let name = example
+            .file_name()
+            .map_or_else(String::new, |name| name.to_string_lossy().to_string());
+        step(
+            Command::new("dart")
+                .arg("run")
+                .arg(example)
+                .env("TEISTRO_LIBRARY", library)
+                .current_dir(package),
+            "",
+            &format!("{PACKAGE}/{EXAMPLES}/{name} did not run"),
+        )?;
+    }
+    println!("ok    {PACKAGE}/{EXAMPLES}: {} example(s) run", found.len());
+    Ok(())
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("dart", "--version") {
         eprintln!("no `dart` on this machine; the Dart binding's tests need it");
@@ -114,16 +151,7 @@ pub(crate) fn check(root: &Path) -> i32 {
             )
         })
         .and_then(|()| wrong_usages(&package))
-        .and_then(|()| {
-            step(
-                Command::new("dart")
-                    .args(["run", EXAMPLE])
-                    .env("TEISTRO_LIBRARY", &library)
-                    .current_dir(&package),
-                &format!("{PACKAGE}/{EXAMPLE} runs"),
-                &format!("{PACKAGE}/{EXAMPLE} did not run"),
-            )
-        })
+        .and_then(|()| examples(&package, &library))
         .and_then(|()| {
             step(
                 Command::new("dart")

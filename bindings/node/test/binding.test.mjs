@@ -11,8 +11,12 @@ import {
   Body,
   Calendar,
   altitude,
+  at,
+  date,
+  ianaZone,
   latitude,
   longitude,
+  whenUnknown,
   Context,
   Era,
   Resolution,
@@ -29,6 +33,7 @@ import {
   sdkVersion,
   unpackFrame,
 } from '../lib/index.js';
+import * as catalogue from '../lib/catalogue.js';
 
 /** A context with the analytic test provider; every test builds its own. */
 function context(options = {}) {
@@ -340,7 +345,7 @@ test('a provider that refuses a frame is completed by the SDK', () => {
   const provider = {
     name: 'equatorial-provider',
     bodies: [Body.Sun],
-    frame: equatorial,
+    nativeFrame: equatorial,
     positions(request) {
       asked.push(request.frameBits);
       // Nothing means "not in that frame"; the SDK asks again in ours.
@@ -378,11 +383,17 @@ test('a provider that fails says so in its own words', () => {
       throw new Error('no data for that instant');
     },
   };
+  // The provider's **own** error reaches the caller, not a summary of it:
+  // only a code crosses the C boundary, so the layer keeps the object it
+  // threw and puts it back. The boundary's refusal is kept as its cause,
+  // so nothing the library said is lost. The Dart and Python bindings
+  // surface a provider's failure the same way.
   assert.throws(
     () => new Context({ provider: throwing }).positions({ instants: [2451545.0], bodies: [Body.Sun] }),
     (error) => {
-      assert.equal(error.status, 'provider');
-      assert.equal(error.message, 'the ephemeris provider threw: no data for that instant');
+      assert.equal(error.message, 'no data for that instant');
+      assert.equal(error.status, undefined, 'the provider threw an Error, not a TeistroError');
+      assert.equal(error.cause?.status, 'provider', "the library's own refusal, kept as the cause");
       return true;
     },
   );
@@ -391,6 +402,23 @@ test('a provider that fails says so in its own words', () => {
   assert.throws(
     () => new Context({ provider: short }).positions({ instants: [2451545.0, 2451546.0], bodies: [Body.Sun] }),
     /returned 1 values in `lon` for 2 cells/u,
+  );
+
+  // A body the provider never declared is refused by the port, on the
+  // SDK's side of the boundary and before the provider is asked, so the
+  // sentence survives: it names the body and what the provider answers.
+  const onlySun = {
+    name: 'only-sun',
+    bodies: [Body.Sun],
+    positions: () => assert.fail('the provider must not be asked'),
+  };
+  assert.throws(
+    () => new Context({ provider: onlySun }).positions({ instants: [2451545.0], bodies: [Body.Mars] }),
+    (error) => {
+      assert.equal(error.status, 'unsupported');
+      assert.match(error.message, /MARS; it answers SUN/u);
+      return true;
+    },
   );
 
   // A provider is checked at the door, before a call can reach it.
@@ -411,3 +439,92 @@ test('a provider answers only the bodies it declared', () => {
     (error) => error.status === 'unsupported' || error.status === 'capability',
   );
 });
+
+test('a disposed context says so, and disposing twice is allowed', () => {
+  const ctx = new Context({ testProvider: true });
+  assert.equal(typeof ctx.profile, 'string');
+  ctx.dispose();
+  // Idempotent, because a `using` scope and an explicit call both run it.
+  ctx.dispose();
+  // Named here rather than at the boundary, which would only say
+  // `invalid argument` and not which argument. The Dart and Python
+  // bindings answer the same way.
+  assert.throws(() => ctx.profile, /this context was disposed/u);
+  assert.throws(
+    () => ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] }),
+    /this context was disposed/u,
+  );
+});
+
+test('every catalogue enum has a complete id table', () => {
+  // The tables let a caller turn an id the boundary gave back — a cell's
+  // source, a decoded column, a key's low half — into the enum value it
+  // stands for. They are generated, so what is worth holding is that
+  // each one is *complete* and agrees with its own enum in both
+  // directions; a table missing a member fails silently at the one
+  // lookup that needs it.
+  const tables = Object.keys(catalogue).filter(
+    (name) => name.endsWith('ById') && catalogue[name] instanceof Map,
+  );
+  assert.ok(tables.length > 50, `expected the whole catalogue, got ${tables.length} tables`);
+  let entries = 0;
+  for (const name of tables) {
+    const base = name.slice(0, -'ById'.length);
+    const values = catalogue[base];
+    assert.ok(values, `${name} has no companion \`${base}\``);
+    const known = new Set(Object.values(values));
+    const mapped = new Set();
+    for (const [id, key] of catalogue[name]) {
+      entries += 1;
+      assert.equal(typeof id, 'number', `${name} is keyed by ${typeof id}, not an id`);
+      assert.ok(known.has(key), `${name}[${id}] is \`${key}\`, not a value of ${base}`);
+      mapped.add(key);
+    }
+    for (const key of known) {
+      assert.ok(mapped.has(key), `${base}.\`${key}\` is missing from ${name}`);
+    }
+  }
+  assert.equal(entries, 919, 'the catalogue has 919 members; every one is in a table');
+});
+
+test('a birth with no time is refused, or reported, but never guessed', () => {
+  const day = date(Calendar.BikramSambat, 2042, 9, 17);
+  const zone = ianaZone('Asia/Kathmandu');
+
+  // No policy: refused by name, with the hint naming the three choices.
+  const strict = new Context({ profile: 'nepali-default', testProvider: true });
+  assert.throws(
+    () => strict.resolve(whenUnknown(day), zone),
+    (error) => {
+      assert.match(error.message, /has no time of day/u);
+      assert.match(error.hint, /NOON, MIDNIGHT or SUNRISE/u);
+      assert.equal(error.field, 'time');
+      return true;
+    },
+  );
+  strict.dispose();
+
+  // NOON: answered, and said twice — the resolution reports the time as
+  // unknown *and* warns, so a stored chart cannot claim a time it never
+  // had.
+  const noon = new Context({
+    profile: 'nepali-default',
+    testProvider: true,
+    settings: { time: { unknown_time: 'NOON' } },
+  });
+  const resolved = noon.resolve(whenUnknown(day), zone);
+  assert.equal(resolved.timeKnown, false);
+  assert.ok(resolved.warnings.includes('time-unknown-fallback'), 'the fallback is warned about');
+  assert.ok(Number.isFinite(resolved.instantJdUtc));
+  noon.dispose();
+
+  // A known time on the same date resolves with the time known and no
+  // warning: this record sits on the day Nepal moved to +05:45.
+  const known = new Context({ profile: 'nepali-default', testProvider: true });
+  const exact = known.resolve(at(day, { hour: 0, minute: 20 }), zone);
+  assert.equal(exact.timeKnown, true);
+  assert.equal(exact.offsetSeconds, 5 * 3600 + 45 * 60);
+  assert.deepEqual(exact.warnings, []);
+  known.dispose();
+});
+

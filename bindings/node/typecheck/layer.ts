@@ -106,7 +106,8 @@ export { partialObserver, scenario, write, writeCell, wrongScale };
 const provider: EphemerisProvider = {
   name: 'my-engine',
   bodies: ['sun', 'moon'],
-  jdRange: [2451545, 2460000],
+  jdMin: 2451545,
+  jdMax: 2460000,
   positions(request) {
     const cells = request.jds.length * request.bodies.length;
     if (request.frameBits !== 0) return null;
