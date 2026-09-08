@@ -213,8 +213,31 @@ than the values.
   its numbers from `serde_json`'s default path, which is not correctly
   rounded — it moves about one number in fifteen by a unit in the last
   place, so a reader built on it cannot reproduce the hash it exists to
-  check. `str::parse` is correct, and `arbitrary_precision` defers to
-  it. This is the mirror of what the first pass found
+  check.
+
+  The three routes were measured, on `218.91170673806658`, with
+  `serde_json`'s `arbitrary_precision` feature on:
+
+  | route | correct |
+  |---|---|
+  | `from_str::<T>(text)` — what a bare derive does | **no** |
+  | `from_str::<Value>(text)` then `from_value::<T>(v)` | yes |
+  | `Value::as_f64` | yes |
+
+  So the reader is `#[derive(Deserialize)]` on the layer's types, read
+  **through a `Value`** rather than straight from the text, with
+  `arbitrary_precision` on. The feature keeps a number as its own digits
+  until something asks for a double, and `as_f64` then defers to
+  `str::parse`; the derive's `visit_f64` never sees the digits and
+  cannot.
+
+  Two things that needs. The feature is **global to a build** — any
+  crate enabling it changes `serde_json` for every other — which is the
+  same hazard `canonical_json` already guards against for
+  `preserve_order` by sorting keys itself. Here the dependency runs the
+  other way: the reader is wrong if the feature is *off*, silently and
+  in the last place. That wants a gate, and `check-lints` is where such
+  a rule would live. This is the mirror of what the first pass found
   — `ChartFoundation` derived no `Serialize`, so a chart could not be
   published — and it is what makes the schema's natural gate, *every
   sample validates and reads back equal*, half unwritable today.

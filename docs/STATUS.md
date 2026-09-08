@@ -250,9 +250,13 @@ provider's DUT1).
    The reader is what remains, and the pass answered its one design
    question before it is written: **`serde_json`'s default number path is
    not correctly rounded** (it moves about one number in fifteen by a
-   unit in the last place), so the reader must parse a number with
-   `str::parse` or through `arbitrary_precision`. `serial-and-the-envelope.md`
-   §8 carries all of it.
+   unit in the last place). The three routes were measured, and the one
+   that works is `#[derive(Deserialize)]` read **through a `Value`**
+   with `arbitrary_precision` on — a bare `from_str::<T>` is wrong even
+   with the feature, because the derive's `visit_f64` never sees the
+   digits. The feature is global to a build and the reader is silently
+   wrong if it is off, so it wants a `check-lints` rule.
+   `serial-and-the-envelope.md` §8 carries all of it.
 
    After those, the **Indian lunisolar calendar** `panchanga` still needs
    for adhika and kshaya months.
