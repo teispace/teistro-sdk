@@ -357,12 +357,41 @@ IntlRender decodeIntlRender(Uint8List bytes) {
   );
 }
 
-/// The `grahas` section of a Chart blob: one typed list per column, each a
+/// The `cast` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
-final class ChartGrahas {
-  const ChartGrahas({
+/// One row per chart, in the order the instants were asked for.
+final class ChartsCast {
+  const ChartsCast({
+    required this.instant,
+    required this.lagnaDeg,
+    required this.dayLagnaDeg,
+    required this.ayanamshaOffsetDeg,
+    required this.length,
+  });
+
+  /// The instant the chart is cast for, as a Julian day (UTC).
+  final Float64List instant;
+
+  /// The lagna at the instant, in the chart's zodiac, degrees.
+  final Float64List lagnaDeg;
+
+  /// The lagna at the sunrise that opened the day, degrees.
+  final Float64List dayLagnaDeg;
+
+  /// The ayanamsha applied at this instant, degrees; zero for a tropical chart.
+  final Float64List ayanamshaOffsetDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `grahas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+final class ChartsGrahas {
+  const ChartsGrahas({
     required this.graha,
     required this.longitudeDeg,
     required this.tropicalDeg,
@@ -426,12 +455,12 @@ final class ChartGrahas {
   final int length;
 }
 
-/// The `houses` section of a Chart blob: one typed list per column, each a
+/// The `houses` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// The twelve bhavas for "which house is it in": one row per bhava, first to twelfth.
-final class ChartHouses {
-  const ChartHouses({
+/// The twelve bhavas for "which house is it in", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.
+final class ChartsHouses {
+  const ChartsHouses({
     required this.madhyaDeg,
     required this.sandhiDeg,
     required this.length,
@@ -447,12 +476,12 @@ final class ChartHouses {
   final int length;
 }
 
-/// The `chalit` section of a Chart blob: one typed list per column, each a
+/// The `chalit` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// The twelve bhavas of the chart's chalit, the same shape as `houses`.
-final class ChartChalit {
-  const ChartChalit({
+/// The twelve bhavas of each chart's chalit, the same shape as `houses`.
+final class ChartsChalit {
+  const ChartsChalit({
     required this.madhyaDeg,
     required this.sandhiDeg,
     required this.length,
@@ -468,7 +497,59 @@ final class ChartChalit {
   final int length;
 }
 
-/// The day the instant belongs to: its arc, its date and how it was reckoned.
+/// The `timing` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Where in its day each moment falls, in the reckonings the settings named: one row per chart.
+final class ChartsTiming {
+  const ChartsTiming({
+    required this.ghati,
+    required this.pala,
+    required this.vipala,
+    required this.ghatiReckoning,
+    required this.horaNumber,
+    required this.horaLord,
+    required this.horaStart,
+    required this.horaEnd,
+    required this.horaReckoning,
+    required this.length,
+  });
+
+  /// The ishtakaal's ghatis since sunrise, 0 to 59.
+  final Uint8List ghati;
+
+  /// Its palas, 0 to 59.
+  final Uint8List pala;
+
+  /// Its vipalas, 0 to 59.
+  final Uint8List vipala;
+
+  /// How the ghatis were measured.
+  final Uint8List ghatiReckoning;
+
+  /// Which hora of the day holds the instant, 1 to 24.
+  final Uint8List horaNumber;
+
+  /// The graha that rules it.
+  final Uint16List horaLord;
+
+  /// When that hora began, as a Julian day (UTC).
+  final Float64List horaStart;
+
+  /// When it ends, as a Julian day (UTC).
+  final Float64List horaEnd;
+
+  /// How the horas were measured.
+  final Uint8List horaReckoning;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `day` section, wherever a blob carries it: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
 final class Day {
   const Day({
     required this.sunrise,
@@ -491,83 +572,85 @@ final class Day {
     required this.statePolarPolicy,
     required this.conventionKind,
     required this.conventionValue,
+    required this.length,
   });
 
   /// The sunrise that opened the day, as a Julian day (UTC).
-  final double sunrise;
+  final Float64List sunrise;
 
   /// The sunset that closed its daylight, as a Julian day (UTC).
-  final double sunset;
+  final Float64List sunset;
 
   /// The sunrise that closes it, as a Julian day (UTC).
-  final double nextSunrise;
+  final Float64List nextSunrise;
 
   /// The weekday the day carries.
-  final int vara;
+  final Uint16List vara;
 
   /// Which arc of the day the instant falls in.
-  final int part;
+  final Uint8List part;
 
   /// How far through that arc the instant is, 0 to 1.
-  final double elapsed;
+  final Float64List elapsed;
 
   /// The calendar the date is in.
-  final int calendar;
+  final Uint16List calendar;
 
   /// The era the date's year is counted in.
-  final int era;
+  final Uint16List era;
 
   /// The astronomical year; 1 BCE is 0.
-  final int year;
+  final Int32List year;
 
   /// The year as the era counts it.
-  final int eraYear;
+  final Int32List eraYear;
 
   /// The month, 1 to 12 or 13.
-  final int month;
+  final Uint8List month;
 
   /// The day of the month.
-  final int dayOfMonth;
+  final Uint8List dayOfMonth;
 
   /// How the date was resolved.
-  final int resolution;
+  final Uint8List resolution;
 
   /// The engine's month where it differs from the table's; zero otherwise.
-  final int computedMonth;
+  final Uint8List computedMonth;
 
   /// The engine's day where it differs from the table's; zero otherwise.
-  final int computedDay;
+  final Uint8List computedDay;
 
   /// Whether the day had a sunrise at all.
-  final int stateKind;
+  final Uint8List stateKind;
 
   /// Which polar state it was, when it had none; zero otherwise.
-  final int statePolarKind;
+  final Uint8List statePolarKind;
 
   /// Which policy synthesised its bounds, when it had none; zero otherwise.
-  final int statePolarPolicy;
+  final Uint8List statePolarPolicy;
 
   /// Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.
-  final int conventionKind;
+  final Uint8List conventionKind;
 
   /// The altitude in degrees when the convention is custom; zero otherwise.
-  final double conventionValue;
+  final Float64List conventionValue;
 
+  /// The number of rows every column holds.
+  final int length;
 }
 
-/// A decoded Chart blob.
+/// A decoded Charts blob.
 ///
-/// A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.
-final class Chart {
-  const Chart({
-    required this.instant,
+/// A batch of founded charts at one place: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing. Every per-chart section runs charts outermost, and a batch of one is the ordinary case.
+final class Charts {
+  const Charts({
     required this.kind,
-    required this.lagnaDeg,
-    required this.dayLagnaDeg,
+    required this.chartCount,
+    required this.grahaCount,
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.altitudeM,
-    required this.grahaCount,
+    required this.cast,
     required this.grahas,
     required this.housesMethod,
     required this.housesSource,
@@ -578,35 +661,23 @@ final class Chart {
     required this.houses,
     required this.chalit,
     required this.frameBits,
-    required this.offsetDeg,
     required this.ayanamshaKind,
     required this.ayanamsha,
     required this.day,
-    required this.ghati,
-    required this.pala,
-    required this.vipala,
-    required this.ghatiReckoning,
-    required this.horaNumber,
-    required this.horaLord,
-    required this.horaStart,
-    required this.horaEnd,
-    required this.horaReckoning,
+    required this.timing,
     required this.model,
     required this.steps,
     required this.provenance,
   });
 
-  /// The instant the chart is cast for, as a Julian day (UTC).
-  final double instant;
-
-  /// What kind of chart this is.
+  /// What kind of chart these are.
   final int kind;
 
-  /// The lagna at the instant, in the chart's zodiac, degrees.
-  final double lagnaDeg;
+  /// How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold.
+  final int chartCount;
 
-  /// The lagna at the sunrise that opened the day, degrees.
-  final double dayLagnaDeg;
+  /// How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows.
+  final int grahaCount;
 
   /// The place's latitude, degrees north.
   final double latitudeDeg;
@@ -617,11 +688,11 @@ final class Chart {
   /// The place's altitude, metres.
   final double altitudeM;
 
-  /// How many rows the `grahas` section holds.
-  final int grahaCount;
+  /// One row per chart, in the order the instants were asked for.
+  final ChartsCast cast;
 
-  /// One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
-  final ChartGrahas grahas;
+  /// One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+  final ChartsGrahas grahas;
 
   /// The system the houses were computed under.
   final int housesMethod;
@@ -641,17 +712,14 @@ final class Chart {
   /// Which bound the chalit is read against.
   final int chalitReading;
 
-  /// The twelve bhavas for "which house is it in": one row per bhava, first to twelfth.
-  final ChartHouses houses;
+  /// The twelve bhavas for "which house is it in", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.
+  final ChartsHouses houses;
 
-  /// The twelve bhavas of the chart's chalit, the same shape as `houses`.
-  final ChartChalit chalit;
+  /// The twelve bhavas of each chart's chalit, the same shape as `houses`.
+  final ChartsChalit chalit;
 
   /// The frame the positions were asked for, packed as the port packs it.
   final int frameBits;
-
-  /// The ayanamsha applied, degrees; zero for a tropical chart.
-  final double offsetDeg;
 
   /// 0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define.
   final int ayanamshaKind;
@@ -659,40 +727,16 @@ final class Chart {
   /// Which catalogued ayanamsha, when the kind is 1.
   final int ayanamsha;
 
-  /// The day the instant belongs to: its arc, its date and how it was reckoned.
+  /// The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
   final Day day;
 
-  /// The ishtakaal's ghatis since sunrise, 0 to 59.
-  final int ghati;
+  /// Where in its day each moment falls, in the reckonings the settings named: one row per chart.
+  final ChartsTiming timing;
 
-  /// Its palas, 0 to 59.
-  final int pala;
-
-  /// Its vipalas, 0 to 59.
-  final int vipala;
-
-  /// How the ghatis were measured.
-  final int ghatiReckoning;
-
-  /// Which hora of the day holds the instant, 1 to 24.
-  final int horaNumber;
-
-  /// The graha that rules it.
-  final int horaLord;
-
-  /// When that hora began, as a Julian day (UTC).
-  final double horaStart;
-
-  /// When it ends, as a Julian day (UTC).
-  final double horaEnd;
-
-  /// How the horas were measured.
-  final int horaReckoning;
-
-  /// UTF-8 text: the solar model that reckoned the day, as it describes itself.
+  /// UTF-8 text: the solar model that reckoned the days, as it describes itself.
   final String model;
 
-  /// UTF-8 JSON: the completion steps applied, in order, each `{"name", "implementation"}`.
+  /// UTF-8 JSON: an array of strings, the completion steps applied in order, each `name:Implementation`. The positions blob carries the same steps as objects and spells the implementation differently (`PASS_THROUGH` against `PassThrough`); which of the two every blob should use is an open question (`03-design/chart-at-the-boundary.md` §8).
   final String steps;
 
   /// UTF-8 JSON: the provenance envelope of the result, canonical.
@@ -700,32 +744,54 @@ final class Chart {
 
 }
 
-/// Decodes a Chart blob. The columns are views over `bytes`, so the
+/// Decodes a Charts blob. The columns are views over `bytes`, so the
 /// buffer must outlive the result; a blob of another layout version or
 /// another schema is a [FormatException].
-Chart decodeChart(Uint8List bytes) {
-  final blob = _Blob.open(bytes, 3, 'chart');
+Charts decodeCharts(Uint8List bytes) {
+  final blob = _Blob.open(bytes, 3, 'charts');
   final atSummary = blob.section(1, 'summary');
-  final atGrahas = blob.section(2, 'grahas');
-  final atReadings = blob.section(3, 'readings');
-  final atHouses = blob.section(4, 'houses');
-  final atChalit = blob.section(5, 'chalit');
-  final atZodiac = blob.section(6, 'zodiac');
-  final atDay = blob.section(7, 'day');
-  final atTiming = blob.section(8, 'timing');
-  final atModel = blob.section(9, 'model');
-  final atSteps = blob.section(10, 'steps');
-  final atProvenance = blob.section(11, 'provenance');
-  return Chart(
-    instant: blob.data.getFloat64(atSummary.offset + 0, Endian.little),
-    kind: blob.data.getUint16(atSummary.offset + 8, Endian.little),
-    lagnaDeg: blob.data.getFloat64(atSummary.offset + 16, Endian.little),
-    dayLagnaDeg: blob.data.getFloat64(atSummary.offset + 24, Endian.little),
-    latitudeDeg: blob.data.getFloat64(atSummary.offset + 32, Endian.little),
-    longitudeDeg: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
-    altitudeM: blob.data.getFloat64(atSummary.offset + 48, Endian.little),
-    grahaCount: blob.data.getUint32(atSummary.offset + 56, Endian.little),
-    grahas: ChartGrahas(
+  final atCast = blob.section(2, 'cast');
+  final atGrahas = blob.section(3, 'grahas');
+  final atReadings = blob.section(4, 'readings');
+  final atHouses = blob.section(5, 'houses');
+  final atChalit = blob.section(6, 'chalit');
+  final atZodiac = blob.section(7, 'zodiac');
+  final atDay = blob.section(8, 'day');
+  final atTiming = blob.section(9, 'timing');
+  final atModel = blob.section(10, 'model');
+  final atSteps = blob.section(11, 'steps');
+  final atProvenance = blob.section(12, 'provenance');
+  return Charts(
+    kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
+    chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
+    grahaCount: blob.data.getUint32(atSummary.offset + 16, Endian.little),
+    latitudeDeg: blob.data.getFloat64(atSummary.offset + 24, Endian.little),
+    longitudeDeg: blob.data.getFloat64(atSummary.offset + 32, Endian.little),
+    altitudeM: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
+    cast: ChartsCast(
+      instant: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 0),
+        blob.columnOffset(atCast, 0) + atCast.count * 8,
+      ),
+      lagnaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 1),
+        blob.columnOffset(atCast, 1) + atCast.count * 8,
+      ),
+      dayLagnaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 2),
+        blob.columnOffset(atCast, 2) + atCast.count * 8,
+      ),
+      ayanamshaOffsetDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 3),
+        blob.columnOffset(atCast, 3) + atCast.count * 8,
+      ),
+      length: atCast.count,
+    ),
+    grahas: ChartsGrahas(
       graha: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atGrahas, 0),
@@ -804,7 +870,7 @@ Chart decodeChart(Uint8List bytes) {
     chalitMethod: blob.data.getUint16(atReadings.offset + 24, Endian.little),
     chalitSource: blob.data.getUint16(atReadings.offset + 32, Endian.little),
     chalitReading: blob.data.getUint8(atReadings.offset + 40),
-    houses: ChartHouses(
+    houses: ChartsHouses(
       madhyaDeg: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atHouses, 0),
@@ -817,7 +883,7 @@ Chart decodeChart(Uint8List bytes) {
       ),
       length: atHouses.count,
     ),
-    chalit: ChartChalit(
+    chalit: ChartsChalit(
       madhyaDeg: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atChalit, 0),
@@ -831,40 +897,159 @@ Chart decodeChart(Uint8List bytes) {
       length: atChalit.count,
     ),
     frameBits: blob.data.getUint32(atZodiac.offset + 0, Endian.little),
-    offsetDeg: blob.data.getFloat64(atZodiac.offset + 8, Endian.little),
-    ayanamshaKind: blob.data.getUint8(atZodiac.offset + 16),
-    ayanamsha: blob.data.getUint16(atZodiac.offset + 24, Endian.little),
+    ayanamshaKind: blob.data.getUint8(atZodiac.offset + 8),
+    ayanamsha: blob.data.getUint16(atZodiac.offset + 16, Endian.little),
     day: Day(
-      sunrise: blob.data.getFloat64(atDay.offset + 0, Endian.little),
-      sunset: blob.data.getFloat64(atDay.offset + 8, Endian.little),
-      nextSunrise: blob.data.getFloat64(atDay.offset + 16, Endian.little),
-      vara: blob.data.getUint16(atDay.offset + 24, Endian.little),
-      part: blob.data.getUint8(atDay.offset + 32),
-      elapsed: blob.data.getFloat64(atDay.offset + 40, Endian.little),
-      calendar: blob.data.getUint16(atDay.offset + 48, Endian.little),
-      era: blob.data.getUint16(atDay.offset + 56, Endian.little),
-      year: blob.data.getInt32(atDay.offset + 64, Endian.little),
-      eraYear: blob.data.getInt32(atDay.offset + 72, Endian.little),
-      month: blob.data.getUint8(atDay.offset + 80),
-      dayOfMonth: blob.data.getUint8(atDay.offset + 88),
-      resolution: blob.data.getUint8(atDay.offset + 96),
-      computedMonth: blob.data.getUint8(atDay.offset + 104),
-      computedDay: blob.data.getUint8(atDay.offset + 112),
-      stateKind: blob.data.getUint8(atDay.offset + 120),
-      statePolarKind: blob.data.getUint8(atDay.offset + 128),
-      statePolarPolicy: blob.data.getUint8(atDay.offset + 136),
-      conventionKind: blob.data.getUint8(atDay.offset + 144),
-      conventionValue: blob.data.getFloat64(atDay.offset + 152, Endian.little),
+      sunrise: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 0),
+        blob.columnOffset(atDay, 0) + atDay.count * 8,
+      ),
+      sunset: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 1),
+        blob.columnOffset(atDay, 1) + atDay.count * 8,
+      ),
+      nextSunrise: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 2),
+        blob.columnOffset(atDay, 2) + atDay.count * 8,
+      ),
+      vara: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 3),
+        blob.columnOffset(atDay, 3) + atDay.count * 2,
+      ),
+      part: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 4),
+        blob.columnOffset(atDay, 4) + atDay.count * 1,
+      ),
+      elapsed: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 5),
+        blob.columnOffset(atDay, 5) + atDay.count * 8,
+      ),
+      calendar: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 6),
+        blob.columnOffset(atDay, 6) + atDay.count * 2,
+      ),
+      era: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 7),
+        blob.columnOffset(atDay, 7) + atDay.count * 2,
+      ),
+      year: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 8),
+        blob.columnOffset(atDay, 8) + atDay.count * 4,
+      ),
+      eraYear: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 9),
+        blob.columnOffset(atDay, 9) + atDay.count * 4,
+      ),
+      month: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 10),
+        blob.columnOffset(atDay, 10) + atDay.count * 1,
+      ),
+      dayOfMonth: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 11),
+        blob.columnOffset(atDay, 11) + atDay.count * 1,
+      ),
+      resolution: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 12),
+        blob.columnOffset(atDay, 12) + atDay.count * 1,
+      ),
+      computedMonth: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 13),
+        blob.columnOffset(atDay, 13) + atDay.count * 1,
+      ),
+      computedDay: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 14),
+        blob.columnOffset(atDay, 14) + atDay.count * 1,
+      ),
+      stateKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 15),
+        blob.columnOffset(atDay, 15) + atDay.count * 1,
+      ),
+      statePolarKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 16),
+        blob.columnOffset(atDay, 16) + atDay.count * 1,
+      ),
+      statePolarPolicy: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 17),
+        blob.columnOffset(atDay, 17) + atDay.count * 1,
+      ),
+      conventionKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 18),
+        blob.columnOffset(atDay, 18) + atDay.count * 1,
+      ),
+      conventionValue: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 19),
+        blob.columnOffset(atDay, 19) + atDay.count * 8,
+      ),
+      length: atDay.count,
     ),
-    ghati: blob.data.getUint8(atTiming.offset + 0),
-    pala: blob.data.getUint8(atTiming.offset + 8),
-    vipala: blob.data.getUint8(atTiming.offset + 16),
-    ghatiReckoning: blob.data.getUint8(atTiming.offset + 24),
-    horaNumber: blob.data.getUint8(atTiming.offset + 32),
-    horaLord: blob.data.getUint16(atTiming.offset + 40, Endian.little),
-    horaStart: blob.data.getFloat64(atTiming.offset + 48, Endian.little),
-    horaEnd: blob.data.getFloat64(atTiming.offset + 56, Endian.little),
-    horaReckoning: blob.data.getUint8(atTiming.offset + 64),
+    timing: ChartsTiming(
+      ghati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 0),
+        blob.columnOffset(atTiming, 0) + atTiming.count * 1,
+      ),
+      pala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 1),
+        blob.columnOffset(atTiming, 1) + atTiming.count * 1,
+      ),
+      vipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 2),
+        blob.columnOffset(atTiming, 2) + atTiming.count * 1,
+      ),
+      ghatiReckoning: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 3),
+        blob.columnOffset(atTiming, 3) + atTiming.count * 1,
+      ),
+      horaNumber: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 4),
+        blob.columnOffset(atTiming, 4) + atTiming.count * 1,
+      ),
+      horaLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 5),
+        blob.columnOffset(atTiming, 5) + atTiming.count * 2,
+      ),
+      horaStart: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 6),
+        blob.columnOffset(atTiming, 6) + atTiming.count * 8,
+      ),
+      horaEnd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 7),
+        blob.columnOffset(atTiming, 7) + atTiming.count * 8,
+      ),
+      horaReckoning: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTiming, 8),
+        blob.columnOffset(atTiming, 8) + atTiming.count * 1,
+      ),
+      length: atTiming.count,
+    ),
     model: blob.text(atModel),
     steps: blob.text(atSteps),
     provenance: blob.text(atProvenance),

@@ -5291,10 +5291,20 @@ struct ts_chart_request {
      */
     uint16_t reserved;
     /**
-     * The instant, as a Julian day on the UTC scale.
-     * Unit: jd. Example: 2460482.5.
+     * The instants, as Julian days on the UTC scale: one chart each.
+     *
+     * A grid, not a scalar, because the founder shares the settings and
+     * the solar model across a batch and a rectification pass wants a
+     * hundred charts (`03-design/chart-at-the-boundary.md` §3a). A
+     * caller wanting one passes a grid of one, as `ts_positions` takes
+     * a grid of one instant.
+     * Unit: jd. Points at `instant_count` elements.
      */
-    double instant_jd_utc;
+    const double * instants;
+    /**
+     * How many instants `instants` points at.
+     */
+    size_t instant_count;
     /**
      * The place's latitude, degrees north.
      * Unit: deg. Range: [-90,90]. Example: 27.7172.
@@ -5842,7 +5852,7 @@ int64_t ts_calendar_fixed_of_jd(double jd, double * out_fraction);
  *
  * A context without an ephemeris is `CAPABILITY`; a provider failure is
  * `PROVIDER` with the provider's own code in the last error.
- * The blob follows the `chart` schema of idl/api.json.
+ * The blob follows the `charts` schema of idl/api.json.
  * Safety: `context` must be a live handle; `request` valid for a read; `out_blob`
  * valid for a write.
  */
@@ -5991,7 +6001,7 @@ _Static_assert(sizeof(ts_context_options) == 32, "ts_context_options is 32 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 48, "ts_chart_request is 48 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 56, "ts_chart_request is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

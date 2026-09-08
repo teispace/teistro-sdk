@@ -141,7 +141,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 48,
+    "ts_chart_request": 56,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -526,7 +526,8 @@ class _ChartRequestStruct(ctypes.Structure):
         ("struct_size", ctypes.c_uint32),
         ("kind", ctypes.c_uint16),
         ("reserved", ctypes.c_uint16),
-        ("instant_jd_utc", ctypes.c_double),
+        ("instants", ctypes.POINTER(ctypes.c_double)),
+        ("instant_count", ctypes.c_size_t),
         ("latitude_deg", ctypes.c_double),
         ("longitude_deg", ctypes.c_double),
         ("altitude_m", ctypes.c_double),
@@ -1892,9 +1893,15 @@ class ChartRequest:
     Enum: ChartKind. Example: 0.
     """
 
-    instant_jd_utc: float
-    """The instant, as a Julian day on the UTC scale.
-    Unit: jd. Example: 2460482.5.
+    instants: Sequence[float]
+    """The instants, as Julian days on the UTC scale: one chart each.
+
+    A grid, not a scalar, because the founder shares the settings and
+    the solar model across a batch and a rectification pass wants a
+    hundred charts (`03-design/chart-at-the-boundary.md` §3a). A
+    caller wanting one passes a grid of one, as `ts_positions` takes
+    a grid of one instant.
+    Unit: jd.
     """
 
     latitude_deg: float
@@ -1927,7 +1934,12 @@ class ChartRequest:
         """
         raw.struct_size = ctypes.sizeof(_ChartRequestStruct)
         raw.kind = _c_value(self.kind)
-        raw.instant_jd_utc = _c_value(self.instant_jd_utc)
+        _instants = (ctypes.c_double * len(self.instants))(
+            *(_c_value(_v) for _v in self.instants)
+        )
+        owned.append(_instants)
+        raw.instants = ctypes.cast(_instants, ctypes.POINTER(ctypes.c_double))
+        raw.instant_count = len(self.instants)
         raw.latitude_deg = _c_value(self.latitude_deg)
         raw.longitude_deg = _c_value(self.longitude_deg)
         raw.altitude_m = _c_value(self.altitude_m)
@@ -1949,7 +1961,9 @@ class ChartRequest:
         """The value the library wrote into a C struct."""
         return cls(
             kind=ChartKind(raw.kind),
-            instant_jd_utc=float(raw.instant_jd_utc),
+            instants=[raw.instants[_i] for _i in range(raw.instant_count)]
+            if raw.instants
+            else [],
             latitude_deg=float(raw.latitude_deg),
             longitude_deg=float(raw.longitude_deg),
             altitude_m=float(raw.altitude_m),

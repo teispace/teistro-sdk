@@ -18,6 +18,7 @@ dart run example/birth_chart.dart
 | [`panchanga.dart`](panchanga.dart) | the five limbs of a day — tithi, vara, nakshatra, yoga, karana | every limb but the weekday is a function of two longitudes, so a binding can compute a whole almanac from `positions`. The karana is not a cycle of eleven, and the rule is the SDK's own |
 | [`calendar.dart`](calendar.dart) | a Bikram Sambat year and one month as a calendar page | month lengths are decided by the Sun and vary year to year, so they are asked for and never assumed; and every date says whether it came from the official table or the SDK's engine |
 | [`ephemeris.dart`](ephemeris.dart) | a year of the sky in one call | the grid is one crossing, not 366; a column is a typed-data view over the blob, not a copy; and the provenance's settings hash is the cache key |
+| [`rectification.dart`](rectification.dart) | a birth time known only to the hour, narrowed by lagna | `foundMany` founds a hundred candidate charts in **one crossing**, sharing the settings, the solar model and the day's sunrise; a chart is a view over the batch, not a copy; and `found(one)` is the same crossing unwrapped |
 | [`your_own_ephemeris.dart`](your_own_ephemeris.dart) | putting your own engine behind the SDK | the provider contract in full — one call per grid, refusing a frame so the SDK completes it, coverage checked before you are asked, and an exception that reaches the caller |
 
 ## What these examples do not do

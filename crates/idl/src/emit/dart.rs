@@ -1253,27 +1253,41 @@ fn render_decoder(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<S
     for section in schema
         .sections
         .iter()
-        .filter(|s| s.kind == SectionKind::Columns)
+        .filter(|s| s.kind == SectionKind::Columns && s.shape.is_none())
     {
         render_column_class(out, &name, section);
     }
-    render_shape_classes(out, schema, shapes);
+    render_shape_classes(out, &name, schema, shapes);
     render_decoded_class(out, &name, schema);
     render_decode_function(out, &name, schema);
 }
 
-/// A fixed section that names a shape, as a class of its own.
+/// A section that names a shape, as a class of its own.
 ///
 /// Two blobs carrying the same section — a chart's day and a
 /// panchanga's — then share one type rather than repeating its fields in
 /// each (`03-design/chart-at-the-boundary.md` §8). A section without a
 /// shape stays inlined on the blob's own class, as it always was.
-fn render_shape_classes(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
+///
+/// A column section shapes the same way, into the class
+/// [`render_column_class`] writes; which kind a shape is follows the
+/// section's own, and a shape used by two kinds is refused by the
+/// schema's own check rather than emitted twice.
+fn render_shape_classes(
+    out: &mut String,
+    blob: &str,
+    schema: &BlobSchema,
+    shapes: &mut BTreeSet<String>,
+) {
     for section in &schema.sections {
-        let (SectionKind::Fixed, Some(shape)) = (section.kind, section.shape.as_deref()) else {
+        let Some(shape) = section.shape.as_deref() else {
             continue;
         };
         if !shapes.insert(shape.to_string()) {
+            continue;
+        }
+        if section.kind == SectionKind::Columns {
+            render_column_class(out, blob, section);
             continue;
         }
         let class = pascal(shape);
@@ -1299,12 +1313,26 @@ fn render_shape_classes(out: &mut String, schema: &BlobSchema, shapes: &mut BTre
     }
 }
 
+/// The class a column section decodes into: the shape it names, so two
+/// blobs carrying it share one class, or a name of the blob's own.
+fn column_class(blob: &str, section: &SectionSchema) -> String {
+    section
+        .shape
+        .as_deref()
+        .map_or_else(|| format!("{blob}{}", pascal(&section.name)), pascal)
+}
+
 /// A column section as its own class: one typed list per column.
-fn render_column_class(out: &mut String, name: &str, section: &SectionSchema) {
-    let class = format!("{name}{}", pascal(&section.name));
+fn render_column_class(out: &mut String, blob: &str, section: &SectionSchema) {
+    let class = column_class(blob, section);
+    let whose = if section.shape.is_some() {
+        String::from("section, wherever a blob carries it")
+    } else {
+        format!("section of a {blob} blob")
+    };
     let _ = writeln!(
         out,
-        "/// The `{}` section of a {name} blob: one typed list per column, each a\n/// view over the blob's bytes rather than a copy.\n///\n/// {}\nfinal class {class} {{\n  const {class}({{",
+        "/// The `{}` {whose}: one typed list per column, each a\n/// view over the blob's bytes rather than a copy.\n///\n/// {}\nfinal class {class} {{\n  const {class}({{",
         section.name, section.doc
     );
     for column in &section.fields {
@@ -1384,9 +1412,9 @@ fn render_decoded_class(out: &mut String, name: &str, schema: &BlobSchema) {
             SectionKind::Columns => {
                 let _ = writeln!(
                     out,
-                    "{}  final {name}{} {};\n",
+                    "{}  final {} {};\n",
                     doc(&section.doc, "  "),
-                    pascal(&section.name),
+                    column_class(name, section),
                     identifier(&section.name)
                 );
             }
@@ -1476,9 +1504,9 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
                     ));
                 }
                 arguments.push(format!(
-                    "    {}: {name}{}(\n{}\n      length: {at}.count,\n    ),",
+                    "    {}: {}(\n{}\n      length: {at}.count,\n    ),",
                     identifier(&section.name),
-                    pascal(&section.name),
+                    column_class(name, section),
                     columns.join("\n")
                 ));
             }

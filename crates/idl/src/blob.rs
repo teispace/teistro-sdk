@@ -225,6 +225,115 @@ impl ColumnData<'_> {
     }
 }
 
+/// A column [`Writer::rows`] owns while it turns rows into columns.
+///
+/// [`ColumnData`] borrows, so transposing rows needs somewhere for the
+/// converted values to live until the section is written.
+enum OwnedColumn {
+    /// `u8` values.
+    U8(Vec<u8>),
+    /// `u16` values.
+    U16(Vec<u16>),
+    /// `u32` values.
+    U32(Vec<u32>),
+    /// `u64` values.
+    U64(Vec<u64>),
+    /// `i8` values.
+    I8(Vec<i8>),
+    /// `i16` values.
+    I16(Vec<i16>),
+    /// `i32` values.
+    I32(Vec<i32>),
+    /// `i64` values.
+    I64(Vec<i64>),
+    /// `f32` values.
+    F32(Vec<f32>),
+    /// `f64` values.
+    F64(Vec<f64>),
+}
+
+/// One field of every row, narrowed to an integer, or `None` for the
+/// first value that is a float where an integer was declared.
+fn integers(rows: &[Vec<FixedValue>], index: usize) -> Option<Vec<i128>> {
+    rows.iter()
+        .map(|row| match row.get(index) {
+            Some(FixedValue::Int(v)) => Some(i128::from(*v)),
+            Some(FixedValue::Uint(v)) => Some(i128::from(*v)),
+            Some(FixedValue::Float(_)) | None => None,
+        })
+        .collect()
+}
+
+/// One field of every row as floats, or `None` for the first value that
+/// is an integer where a float was declared.
+fn floats(rows: &[Vec<FixedValue>], index: usize) -> Option<Vec<f64>> {
+    rows.iter()
+        .map(|row| match row.get(index) {
+            Some(FixedValue::Float(v)) => Some(*v),
+            Some(FixedValue::Int(_) | FixedValue::Uint(_)) | None => None,
+        })
+        .collect()
+}
+
+/// Narrows every value of a column, or `None` if one will not fit.
+fn narrow<T, E>(values: Vec<i128>) -> Option<Vec<T>>
+where
+    T: TryFrom<i128, Error = E>,
+{
+    values.into_iter().map(|v| T::try_from(v).ok()).collect()
+}
+
+impl OwnedColumn {
+    /// Field `index` of every row as a column of `scalar`, or `None` if
+    /// a value is of the wrong family or outside the column's range.
+    fn of(scalar: Scalar, rows: &[Vec<FixedValue>], index: usize) -> Option<OwnedColumn> {
+        match scalar {
+            Scalar::U8 => narrow(integers(rows, index)?).map(OwnedColumn::U8),
+            Scalar::U16 => narrow(integers(rows, index)?).map(OwnedColumn::U16),
+            Scalar::U32 => narrow(integers(rows, index)?).map(OwnedColumn::U32),
+            Scalar::U64 => narrow(integers(rows, index)?).map(OwnedColumn::U64),
+            Scalar::I8 => narrow(integers(rows, index)?).map(OwnedColumn::I8),
+            Scalar::I16 => narrow(integers(rows, index)?).map(OwnedColumn::I16),
+            Scalar::I32 => narrow(integers(rows, index)?).map(OwnedColumn::I32),
+            Scalar::I64 => narrow(integers(rows, index)?).map(OwnedColumn::I64),
+            // The only lossy step, and the one the format itself asks
+            // for: an `f32` column stores single precision.
+            Scalar::F32 => Some(OwnedColumn::F32(
+                floats(rows, index)?
+                    .into_iter()
+                    .map(|v| {
+                        #[expect(
+                            clippy::cast_possible_truncation,
+                            reason = "an f32 column is single precision by declaration"
+                        )]
+                        let narrowed = v as f32;
+                        narrowed
+                    })
+                    .collect(),
+            )),
+            Scalar::F64 => Some(OwnedColumn::F64(floats(rows, index)?)),
+            // No `ColumnData` holds these, so no column section can:
+            // the schema's own scalars are wider than the format's.
+            Scalar::Usize | Scalar::Isize | Scalar::Bool => None,
+        }
+    }
+
+    fn borrow(&self) -> ColumnData<'_> {
+        match self {
+            OwnedColumn::U8(v) => ColumnData::U8(v),
+            OwnedColumn::U16(v) => ColumnData::U16(v),
+            OwnedColumn::U32(v) => ColumnData::U32(v),
+            OwnedColumn::U64(v) => ColumnData::U64(v),
+            OwnedColumn::I8(v) => ColumnData::I8(v),
+            OwnedColumn::I16(v) => ColumnData::I16(v),
+            OwnedColumn::I32(v) => ColumnData::I32(v),
+            OwnedColumn::I64(v) => ColumnData::I64(v),
+            OwnedColumn::F32(v) => ColumnData::F32(v),
+            OwnedColumn::F64(v) => ColumnData::F64(v),
+        }
+    }
+}
+
 /// The scalar a fixed field holds when a value is written: an integer or a
 /// float, checked against the schema.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -414,6 +523,56 @@ impl<'s> Writer<'s> {
         }
         self.end(index, start, rows);
         Ok(())
+    }
+
+    /// Writes a column section from rows of values: one `FixedValue`
+    /// per field in field order, which is the shape [`Writer::fixed`]
+    /// takes, repeated once per row.
+    ///
+    /// A section holding one row per chart is then written from the same
+    /// value function a one-row blob would pass to `fixed`, so a
+    /// section's field order lives in one place rather than in a struct
+    /// of vectors beside it. The values are narrowed to the scalar the
+    /// schema declares, so a value too wide for its column is refused
+    /// rather than wrapped.
+    ///
+    /// # Errors
+    ///
+    /// An unknown or repeated section, a row of the wrong length, a
+    /// value of the wrong family for its field, or one outside its
+    /// column's range.
+    pub fn rows(&mut self, name: &str, rows: &[Vec<FixedValue>]) -> Result<(), BlobError> {
+        // A read-only look-up rather than `begin`: `columns` below does
+        // the claiming, and claiming a section twice is an error.
+        let (_, section) = self
+            .schema
+            .section(name)
+            .ok_or_else(|| BlobError::UnknownSection(name.to_string()))?;
+        let fields: Vec<(String, Scalar)> = section
+            .fields
+            .iter()
+            .map(|f| (f.name.clone(), f.scalar))
+            .collect();
+        for (row_index, row) in rows.iter().enumerate() {
+            if row.len() != fields.len() {
+                return Err(BlobError::Shape(format!(
+                    "section `{name}` has {} fields, row {row_index} gives {}",
+                    fields.len(),
+                    row.len()
+                )));
+            }
+        }
+        let mut owned = Vec::with_capacity(fields.len());
+        for (index, (field, scalar)) in fields.iter().enumerate() {
+            let column = OwnedColumn::of(*scalar, rows, index).ok_or_else(|| BlobError::Type {
+                section: name.to_string(),
+                field: field.clone(),
+                expected: *scalar,
+            })?;
+            owned.push(column);
+        }
+        let borrowed: Vec<ColumnData<'_>> = owned.iter().map(OwnedColumn::borrow).collect();
+        self.columns(name, rows.len(), &borrowed)
     }
 
     /// Writes a bytes section.
@@ -721,6 +880,67 @@ mod tests {
                 SectionSchema::bytes(3, "text", ""),
             ],
         }
+    }
+
+    /// A column section written from rows reads back column by column.
+    ///
+    /// This is the path a per-chart section takes: the same value
+    /// function a one-row blob would give `fixed`, once per row, with
+    /// the writer transposing and narrowing. The scalars differ in
+    /// width, so a narrowing that ignored the schema would misplace
+    /// every value after the first column.
+    #[test]
+    fn a_column_section_written_from_rows_reads_back_by_column() {
+        let schema = schema();
+        let mut writer = Writer::new(&schema);
+        writer
+            .rows(
+                "rows",
+                &[
+                    vec![1.5.into(), 0_i64.into(), 7_u64.into()],
+                    vec![2.5.into(), (-1_i64).into(), 8_u64.into()],
+                    vec![3.5.into(), (-2_i64).into(), 9_u64.into()],
+                ],
+            )
+            .unwrap();
+        writer
+            .fixed("summary", &[0.0.into(), 3_u64.into(), 0_i64.into()])
+            .unwrap();
+        writer.bytes("text", b"").unwrap();
+        let bytes = writer.finish().unwrap();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        assert_eq!(reader.count("rows"), Some(3));
+        let lon = reader.column("rows", "lon").unwrap();
+        let status = reader.column("rows", "status").unwrap();
+        let body = reader.column("rows", "body").unwrap();
+        assert_eq!(lon[2].as_f64(), 3.5);
+        assert_eq!(status[1].as_i64(), -1);
+        assert_eq!(body[0].as_i64(), 7);
+    }
+
+    /// A value too wide for its column is refused, not wrapped.
+    ///
+    /// A fixed section stores every field in an eight-byte slot, so a
+    /// value that overflows its declared scalar is invisible there; a
+    /// column stores the scalar's own width, and truncating quietly
+    /// would put a wrong number in a blob that parses.
+    #[test]
+    fn a_value_wider_than_its_column_is_refused() {
+        let schema = schema();
+        let mut writer = Writer::new(&schema);
+        let over = u64::from(u16::MAX) + 1;
+        let too_wide = writer.rows("rows", &[vec![1.5.into(), 0_i64.into(), over.into()]]);
+        assert!(
+            matches!(too_wide, Err(BlobError::Type { ref field, .. }) if field == "body"),
+            "a u16 column refuses 65536, got {too_wide:?}"
+        );
+        // And a float where an integer was declared, which is the check
+        // `fixed` makes by family rather than by width.
+        let wrong_family = writer.rows("rows", &[vec![1.5.into(), 0_i64.into(), 9.0.into()]]);
+        assert!(
+            matches!(wrong_family, Err(BlobError::Type { ref field, .. }) if field == "body"),
+            "an integer column refuses a float, got {wrong_family:?}"
+        );
     }
 
     #[test]

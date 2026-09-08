@@ -233,6 +233,44 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**A founded chart crosses the boundary, and it crosses as a batch.**
+`ts_chart_found` takes a grid of instants and answers with one blob of
+charts founded at one place — the grahas placed under both readings, the
+twelve bhavas and the chart's chalit, the zodiac, the day and the birth
+timing. Every per-chart section runs **charts outermost**, as the
+positions blob puts instants outermost, and a batch of one is the
+ordinary case. The founder already had the batch form and it was sitting
+unused behind a single-instant entry point: the settings resolve once,
+the solar model is built once, and the day each instant belongs to is
+reckoned against the same sunrise, so a hundred candidate birth times
+cost one setup rather than a hundred. A rectification pass is what that
+is for, and each binding now ships one as a worked example — the same
+program in Node, Dart and Python, printing the same eighteen lagnas.
+
+Each binding's layer offers both shapes over the one crossing:
+`found(one)` answers a chart and `foundMany(list)` a batch, with the
+charts in it views over the blob's bytes rather than copies. A batch of
+none is an empty result rather than a refusal, so a caller who filtered a
+list to nothing does not special-case it. The Node binding's TypeScript
+surface had **no chart in it at all** — neither `found` nor the class it
+returned was declared, so the ergonomic layer's chart path was invisible
+to a type checker and its two byte-section accessors had never run; both
+double-decoded text the decoder had already decoded.
+
+**A section can name its shape when it is a column section, not only a
+fixed one**, which is what a chart's day becoming one row per chart
+required: the day a chart carries and the day a panchanga will carry stay
+**one** decoded type in each binding rather than two identical ones.
+`check_shapes` now refuses two sections that name one shape and disagree
+about its kind, its fields or their scalars, because the emitters render
+a shape once and would otherwise decode the second through the first
+one's type — silently, since both are valid blobs. `Writer::rows` writes
+a column section from rows of values, the shape a fixed section takes
+repeated, so a per-chart section reuses the one function that knows the
+field order; it narrows each value to the scalar the schema declares and
+**refuses** one too wide for its column rather than truncating it, which a
+fixed section's eight-byte slots cannot catch.
+
 **The chart document's shape is measured** (`cargo xtask schema` →
 `03-design/schema-measured.md`, gated by `check-schema`), which is the
 falsification pass a JSON Schema for it is designed from. The sample is

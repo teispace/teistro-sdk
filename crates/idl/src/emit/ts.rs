@@ -382,15 +382,20 @@ pub fn blob_type(schema: &BlobSchema) -> String {
     pascal(&schema.name)
 }
 
-/// A fixed section that names a shape, as an interface of its own.
+/// A section that names a shape, as an interface of its own.
 ///
 /// Two blobs carrying the same section — a chart's day and a panchanga's
 /// — then share one type rather than repeating its fields in each
 /// (`03-design/chart-at-the-boundary.md` §8). A section without a shape
 /// stays inlined on the blob's own interface, as it always was.
+///
+/// Both kinds shape: a fixed section becomes an interface of scalars, a
+/// column section one of typed arrays. Which it is follows the section's
+/// own kind, so a shape used by sections of two kinds is a schema fault
+/// rather than two types — `check_shapes` refuses it.
 fn render_shape_types(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
     for section in &schema.sections {
-        let (SectionKind::Fixed, Some(shape)) = (section.kind, section.shape.as_deref()) else {
+        let Some(shape) = section.shape.as_deref() else {
             continue;
         };
         if !shapes.insert(shape.to_string()) {
@@ -403,21 +408,34 @@ fn render_shape_types(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeS
             pascal(shape)
         );
         for field in section.fields.iter().filter(|f| f.name != "reserved") {
-            let linked = field
-                .enum_name
-                .as_deref()
-                .map(|e| format!("\nThe value is a `{}` id.", binding_type_name(e)))
-                .unwrap_or_default();
+            let linked = field.enum_name.as_deref().map(|e| {
+                if section.kind == SectionKind::Columns {
+                    format!("\nThe values are `{}` ids.", binding_type_name(e))
+                } else {
+                    format!("\nThe value is a `{}` id.", binding_type_name(e))
+                }
+            });
             let _ = writeln!(
                 out,
                 "{}  readonly {}: {};",
-                block_comment(&format!("{}{linked}", field.doc), "  "),
+                block_comment(
+                    &format!("{}{}", field.doc, linked.unwrap_or_default()),
+                    "  "
+                ),
                 camel(&field.name),
-                if field.scalar == Scalar::I64 || field.scalar == Scalar::U64 {
-                    "bigint"
+                if section.kind == SectionKind::Columns {
+                    typed_array(field.scalar).to_string()
+                } else if field.scalar == Scalar::I64 || field.scalar == Scalar::U64 {
+                    "bigint".to_string()
                 } else {
-                    "number"
+                    "number".to_string()
                 }
+            );
+        }
+        if section.kind == SectionKind::Columns {
+            let _ = writeln!(
+                out,
+                "  /** The number of rows every column holds. */\n  readonly length: number;"
             );
         }
         let _ = writeln!(out, "}}\n");
@@ -429,7 +447,7 @@ fn render_blob_types(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSe
     for section in schema
         .sections
         .iter()
-        .filter(|s| s.kind == SectionKind::Columns)
+        .filter(|s| s.kind == SectionKind::Columns && s.shape.is_none())
     {
         let _ = writeln!(
             out,
@@ -498,10 +516,13 @@ fn render_blob_types(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSe
             SectionKind::Columns => {
                 let _ = writeln!(
                     out,
-                    "{}  readonly {}: {name}{};",
+                    "{}  readonly {}: {};",
                     block_comment(&section.doc, "  "),
                     camel(&section.name),
-                    pascal(&section.name)
+                    section
+                        .shape
+                        .as_deref()
+                        .map_or_else(|| format!("{name}{}", pascal(&section.name)), pascal)
                 );
             }
             SectionKind::Bytes => {

@@ -9,10 +9,13 @@
 import type {
   Body,
   Calendar,
+  ChartKind,
   Graha,
+  HouseSystem,
   Scale,
   Status,
   TimeScale,
+  Vara,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -26,7 +29,11 @@ import type {
   ZoneResolution,
   ZoneSpec,
 } from './types.js';
-import type { IntlRender, Positions as DecodedPositions } from './blob.js';
+import type {
+  Charts as DecodedCharts,
+  IntlRender,
+  Positions as DecodedPositions,
+} from './blob.js';
 
 export * from './catalogue.js';
 export type * from './types.js';
@@ -105,6 +112,145 @@ export declare class Positions extends Decoded<DecodedPositions> {
   readonly provenance: Record<string, unknown>;
   /** One cell as a plain object; the columns stay where they are. */
   at(instant: number, body: number): Cell;
+}
+
+/** One graha of a chart, built on demand. */
+export interface PlacedGraha {
+  /** Which graha, by its catalogue key. */
+  readonly graha: Graha | 'unknown';
+  /** Its longitude in the chart's zodiac, degrees. */
+  readonly longitudeDeg: number;
+  /** Its tropical longitude, degrees. */
+  readonly tropicalDeg: number;
+  /** Its ecliptic latitude, degrees. */
+  readonly latitudeDeg: number;
+  /** Its distance, astronomical units. */
+  readonly distanceAu: number;
+  /** Its longitude speed, degrees per day. */
+  readonly speedDegPerDay: number;
+  /** Whether that speed is negative. */
+  readonly retrograde: boolean;
+  /** The bhava for "which house is it in". */
+  readonly house: Placement;
+  /** The bhava of the chart's chalit, which is a different question. */
+  readonly placement: Placement;
+}
+
+/** Where a graha sits in a set of bhavas. */
+export interface Placement {
+  /** The bhava, 1 to 12. */
+  readonly bhava: number;
+  /** The house system that produced it. */
+  readonly method: HouseSystem | 'unknown';
+  /** How far through the bhava it is, 0 to 1. */
+  readonly through: number;
+  /** Its distance from the bhava's centre, degrees. */
+  readonly fromMadhyaDeg: number;
+}
+
+/** One of the twelve bhavas. */
+export interface Bhava {
+  /** The bhava's centre, degrees. */
+  readonly madhyaDeg: number;
+  /** The bhava's opening cusp, degrees. */
+  readonly sandhiDeg: number;
+}
+
+/** The place a chart was founded at. */
+export interface ChartPlace {
+  /** Degrees north. */
+  readonly latitude: number;
+  /** Degrees east. */
+  readonly longitude: number;
+  /** Metres above the ellipsoid. */
+  readonly altitude: number;
+}
+
+/**
+ * A batch of founded charts at one place, decoded on first use and only
+ * once. The charts in it are views over those bytes rather than copies.
+ */
+export declare class Charts extends Decoded<DecodedCharts> {
+  /** How many charts the batch holds. */
+  readonly length: number;
+  /** What kind of chart these are. */
+  readonly kind: ChartKind | 'unknown';
+  /** The place they were all founded at. */
+  readonly place: ChartPlace;
+  /**
+   * The completion steps the SDK applied, in order, each
+   * `name:Implementation`. A positions result spells the same steps as
+   * objects; the asymmetry is a recorded open question.
+   */
+  readonly steps: readonly string[];
+  /** The solar model that reckoned the days, as it describes itself. */
+  readonly model: string;
+  /** Everything that reproduces this result (ADR-0020). */
+  readonly provenance: Record<string, unknown>;
+  /** One chart of the batch, by index. */
+  at(index: number): Chart;
+  /** Every chart, in the order the instants were asked for. */
+  [Symbol.iterator](): IterableIterator<Chart>;
+}
+
+/** One founded chart: a view over its batch, not a copy. */
+export declare class Chart {
+  /** The batch this chart belongs to. */
+  readonly batch: Charts;
+  /** Where in that batch it sits. */
+  readonly index: number;
+  /** The instant the chart is cast for, as a Julian day (UTC). */
+  readonly instant: number;
+  /** What kind of chart this is. */
+  readonly kind: ChartKind | 'unknown';
+  /** The place it was founded at. */
+  readonly place: ChartPlace;
+  /** The lagna at the instant, in the chart's zodiac, degrees. */
+  readonly lagnaDeg: number;
+  /** The lagna at the sunrise that opened the day, degrees. */
+  readonly dayLagnaDeg: number;
+  /** The ayanamsha applied at this instant, degrees; zero if tropical. */
+  readonly ayanamshaOffsetDeg: number;
+  /**
+   * The day the chart belongs to, which is not always its civil date:
+   * the values the blob carries, with `vara` named.
+   */
+  readonly day: Omit<{ [K in keyof DecodedCharts['day']]: number }, 'length' | 'vara'> & {
+    readonly vara: Vara | 'unknown';
+  };
+  /** Where in its day the moment falls, with `horaLord` named. */
+  readonly timing: Omit<
+    { [K in keyof DecodedCharts['timing']]: number },
+    'length' | 'horaLord'
+  > & { readonly horaLord: Graha | 'unknown' };
+  /** The grahas, in the catalogue's order, one object each. */
+  readonly grahas: readonly PlacedGraha[];
+  /** The twelve bhavas for "which house is it in", first to twelfth. */
+  readonly houses: readonly Bhava[];
+  /** The twelve bhavas of the chart's chalit. */
+  readonly chalit: readonly Bhava[];
+  /** The completion steps the SDK applied, in order. */
+  readonly steps: readonly string[];
+  /** The provenance envelope of the batch this chart came from. */
+  readonly provenance: Record<string, unknown>;
+}
+
+/** What `Context.found` needs to found one chart. */
+export interface ChartRequest {
+  /** The instant, as a Julian day (UTC). */
+  readonly instant: number;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** A chart kind; `ChartKind.Natal` by default. */
+  readonly kind?: ChartKind;
+}
+
+/** What `Context.foundMany` needs to found a batch at one place. */
+export interface ChartBatchRequest extends Omit<ChartRequest, 'instant'> {
+  /** The instants, as Julian days (UTC): one chart each. */
+  readonly instants: ArrayLike<number>;
 }
 
 /** A rendered message. */
@@ -251,6 +397,14 @@ export declare class Context {
   canonicalFrame(): Frame;
   /** Positions over a grid, completed into the frame asked for. */
   positions(request: PositionsRequest): Positions;
+  /** Founds a chart at an instant and a place. */
+  found(request: ChartRequest): Chart;
+  /**
+   * Founds a chart at each of many instants, at one place, in one
+   * crossing: the founder shares the settings and the solar model across
+   * the batch. A batch of none is an empty result rather than an error.
+   */
+  foundMany(request: ChartBatchRequest): Charts;
   /** Renders a message of the current locale with its parameters. */
   render(key: string, params?: Record<string, unknown>): Rendered;
   /** Text from one script into another (`deva`, `iast`). */

@@ -10,12 +10,12 @@ pub const POSITIONS: &str = "positions";
 /// The schema `ts_intl_render` fills.
 pub const INTL_RENDER: &str = "intl_render";
 /// The schema `ts_chart_found` fills.
-pub const CHART: &str = "chart";
+pub const CHARTS: &str = "charts";
 
 /// Every schema, in id order.
 #[must_use]
 pub fn schemas() -> Vec<BlobSchema> {
-    vec![positions(), intl_render(), chart()]
+    vec![positions(), intl_render(), charts()]
 }
 
 /// The name every section holding a day arc declares, so that two blobs
@@ -41,10 +41,10 @@ pub const DAY_SHAPE: &str = "day";
 /// a custom one.
 #[must_use]
 pub fn day_section(id: u32) -> SectionSchema {
-    SectionSchema::fixed(
+    SectionSchema::columns(
         id,
         "day",
-        "The day the instant belongs to: its arc, its date and how it was reckoned.",
+        "The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.",
         vec![
             ColumnDef::new(
                 "sunrise",
@@ -141,7 +141,7 @@ pub fn positions() -> BlobSchema {
         id: 1,
         doc: "Positions over a grid of instants and bodies, instants outermost: cell `i * body_count + j` is instant `i`, body `j`.".to_string(),
         sections: vec![
-            chart_summary_section(1),
+            positions_summary_section(1),
             SectionSchema::columns(
                 2,
                 "instants",
@@ -224,13 +224,13 @@ pub fn intl_render() -> BlobSchema {
     }
 }
 
-/// One row per graha, in the catalogue's order.
+/// One row per graha per chart, charts outermost.
 #[must_use]
 fn chart_grahas_section(id: u32) -> SectionSchema {
     SectionSchema::columns(
         id,
         "grahas",
-        "One row per graha, in the catalogue's order. `house_*` is the bhava for \"which house is it in\"; `placement_*` is the chart's chalit, which is a different question and often a different answer.",
+        "One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for \"which house is it in\"; `placement_*` is the chart's chalit, which is a different question and often a different answer.",
         vec![
             ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
             ColumnDef::new(
@@ -303,10 +303,10 @@ fn chart_grahas_section(id: u32) -> SectionSchema {
 /// Where in its day the moment falls, in the reckonings the settings named.
 #[must_use]
 fn chart_timing_section(id: u32) -> SectionSchema {
-    SectionSchema::fixed(
+    SectionSchema::columns(
         id,
         "timing",
-        "Where in its day the moment falls, in the reckonings the settings named.",
+        "Where in its day each moment falls, in the reckonings the settings named: one row per chart.",
         vec![
             ColumnDef::new(
                 "ghati",
@@ -343,9 +343,9 @@ fn chart_timing_section(id: u32) -> SectionSchema {
     )
 }
 
-/// The chart itself: when, where, what kind, and the two lagnas.
+/// The grid and the frame the positions are in.
 #[must_use]
-fn chart_summary_section(id: u32) -> SectionSchema {
+fn positions_summary_section(id: u32) -> SectionSchema {
     SectionSchema::fixed(
         id,
         "summary",
@@ -360,6 +360,45 @@ fn chart_summary_section(id: u32) -> SectionSchema {
             ColumnDef::new("body_count", Scalar::U32, "The number of bodies."),
             ColumnDef::new("scale", Scalar::U32, "The time scale of the instants.")
                 .of_enum("TimeScale"),
+        ],
+    )
+}
+
+/// One row per chart: what changes from instant to instant.
+///
+/// What a batch decides once — the place, the kind, the frame, the
+/// house systems, the solar model, the completion steps — is written
+/// once, in the sections around this one. What an instant decides is
+/// here. Named for the casting rather than for the chart, so the
+/// decoded type does not stutter (`ChartCast`, beside the positions
+/// blob's `PositionsCells`).
+#[must_use]
+fn chart_cast_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "cast",
+        "One row per chart, in the order the instants were asked for.",
+        vec![
+            ColumnDef::new(
+                "instant",
+                Scalar::F64,
+                "The instant the chart is cast for, as a Julian day (UTC).",
+            ),
+            ColumnDef::new(
+                "lagna_deg",
+                Scalar::F64,
+                "The lagna at the instant, in the chart's zodiac, degrees.",
+            ),
+            ColumnDef::new(
+                "day_lagna_deg",
+                Scalar::F64,
+                "The lagna at the sunrise that opened the day, degrees.",
+            ),
+            ColumnDef::new(
+                "ayanamsha_offset_deg",
+                Scalar::F64,
+                "The ayanamsha applied at this instant, degrees; zero for a tropical chart.",
+            ),
         ],
     )
 }
@@ -419,72 +458,70 @@ fn chart_readings_section(id: u32) -> SectionSchema {
 /// per chart — which is why a `columns` section is right for them and
 /// wrong for the rest (`03-design/chart-at-the-boundary.md` §2).
 #[must_use]
-pub fn chart() -> BlobSchema {
+pub fn charts() -> BlobSchema {
     BlobSchema {
-        name: CHART.to_string(),
+        name: CHARTS.to_string(),
         id: 3,
-        doc: "A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.".to_string(),
+        doc: "A batch of founded charts at one place: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing. Every per-chart section runs charts outermost, and a batch of one is the ordinary case.".to_string(),
         sections: vec![
             SectionSchema::fixed(
                 1,
                 "summary",
-                "The chart itself: when, where, what kind, and the two lagnas.",
+                "What the batch decided once: where, what kind, and how many of what.",
                 vec![
-                    ColumnDef::new("instant", Scalar::F64, "The instant the chart is cast for, as a Julian day (UTC)."),
-                    ColumnDef::new("kind", Scalar::U16, "What kind of chart this is.").of_enum("ChartKind"),
-                    ColumnDef::new("lagna_deg", Scalar::F64, "The lagna at the instant, in the chart's zodiac, degrees."),
-                    ColumnDef::new("day_lagna_deg", Scalar::F64, "The lagna at the sunrise that opened the day, degrees."),
+                    ColumnDef::new("kind", Scalar::U16, "What kind of chart these are.").of_enum("ChartKind"),
+                    ColumnDef::new("chart_count", Scalar::U32, "How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold."),
+                    ColumnDef::new("graha_count", Scalar::U32, "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."),
                     ColumnDef::new("latitude_deg", Scalar::F64, "The place's latitude, degrees north."),
                     ColumnDef::new("longitude_deg", Scalar::F64, "The place's longitude, degrees east."),
                     ColumnDef::new("altitude_m", Scalar::F64, "The place's altitude, metres."),
-                    ColumnDef::new("graha_count", Scalar::U32, "How many rows the `grahas` section holds."),
                 ],
             ),
-            chart_grahas_section(2),
-            chart_readings_section(3),
+            chart_cast_section(2),
+            chart_grahas_section(3),
+            chart_readings_section(4),
             SectionSchema::columns(
-                4,
+                5,
                 "houses",
-                "The twelve bhavas for \"which house is it in\": one row per bhava, first to twelfth.",
+                "The twelve bhavas for \"which house is it in\", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.",
                 vec![
                     ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
                     ColumnDef::new("sandhi_deg", Scalar::F64, "The bhava's opening cusp, degrees."),
                 ],
             ),
             SectionSchema::columns(
-                5,
+                6,
                 "chalit",
-                "The twelve bhavas of the chart's chalit, the same shape as `houses`.",
+                "The twelve bhavas of each chart's chalit, the same shape as `houses`.",
                 vec![
                     ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
                     ColumnDef::new("sandhi_deg", Scalar::F64, "The bhava's opening cusp, degrees."),
                 ],
             ),
             SectionSchema::fixed(
-                6,
+                7,
                 "zodiac",
-                "The zodiac the chart is measured in.",
+                "The zodiac the batch is measured in. The offset itself moves with the instant, so it is a column of `charts` rather than a field here.",
                 vec![
                     ColumnDef::new("frame_bits", Scalar::U32, "The frame the positions were asked for, packed as the port packs it."),
-                    ColumnDef::new("offset_deg", Scalar::F64, "The ayanamsha applied, degrees; zero for a tropical chart."),
                     ColumnDef::new("ayanamsha_kind", Scalar::U8, "0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define."),
                     ColumnDef::new("ayanamsha", Scalar::U16, "Which catalogued ayanamsha, when the kind is 1.").of_enum("Ayanamsha"),
                 ],
             ),
-            day_section(7).of_shape(DAY_SHAPE),
-            chart_timing_section(8),
-            SectionSchema::bytes(
-                9,
-                "model",
-                "UTF-8 text: the solar model that reckoned the day, as it describes itself.",
-            ),
+            day_section(8).of_shape(DAY_SHAPE),
+            chart_timing_section(9),
             SectionSchema::bytes(
                 10,
-                "steps",
-                "UTF-8 JSON: the completion steps applied, in order, each `{\"name\", \"implementation\"}`.",
+                "model",
+                "UTF-8 text: the solar model that reckoned the days, as it describes itself.",
             ),
             SectionSchema::bytes(
                 11,
+                "steps",
+                "UTF-8 JSON: an array of strings, the completion steps applied in order, each `name:Implementation`. The positions blob carries the same steps as objects and spells the implementation differently (`PASS_THROUGH` against `PassThrough`); which of the two every blob should use is an open question (`03-design/chart-at-the-boundary.md` §8).",
+            ),
+            SectionSchema::bytes(
+                12,
                 "provenance",
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
             ),
@@ -540,7 +577,7 @@ mod tests {
     /// double the surface (`03-design/chart-at-the-boundary.md` §8).
     #[test]
     fn the_day_section_declares_its_shape() {
-        let chart = schema(CHART).expect("the chart schema");
+        let chart = schema(CHARTS).expect("the charts schema");
         let (_, day) = chart.section("day").expect("a day section");
         assert_eq!(day.shape.as_deref(), Some(DAY_SHAPE));
     }

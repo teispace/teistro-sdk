@@ -27,15 +27,15 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Iterator, Mapping, Optional, Sequence
 
 from . import messages as intl
 from ._blob import (
     BlobError,
-    Chart,
+    Charts,
     IntlRender,
     Positions,
-    decode_chart,
+    decode_charts,
     decode_intl_render,
     decode_positions,
 )
@@ -95,6 +95,9 @@ from .catalogue import (
     Calendar,
     Centre,
     ChartKind,
+    Graha,
+    HouseSystem,
+    Vara,
     Coordinates,
     Era,
     Resolution,
@@ -108,11 +111,16 @@ __all__ = [
     "Altitude",
     "Ayanamsha",
     "BlobError",
+    "Bhava",
     "Body",
     "BuildInfo",
     "Calendar",
     "CalendarDate",
     "Centre",
+    "Chart",
+    "ChartBatch",
+    "ChartKind",
+    "Charts",
     "CivilDateTime",
     "CivilTime",
     "Context",
@@ -129,6 +137,8 @@ __all__ = [
     "Latitude",
     "Longitude",
     "Observer",
+    "PlacedGraha",
+    "Placement",
     "PositionAnswer",
     "PositionQuery",
     "Positions",
@@ -650,16 +660,39 @@ class Context:
         answers topocentric natively; the completion's centre step is
         Phase 3's (`03-design/chart-at-the-boundary.md` §8).
         """
+        return self.found_many(
+            instants=[instant],
+            place=place,
+            utc_offset_seconds=utc_offset_seconds,
+            kind=kind,
+        ).at(0)
+
+    def found_many(
+        self,
+        *,
+        instants: Sequence[float],
+        place: Observer,
+        utc_offset_seconds: int,
+        kind: ChartKind = ChartKind.NATAL,
+    ) -> ChartBatch:
+        """Founds a chart at each of many instants, at one place, in one
+        crossing.
+
+        The founder shares the settings and the solar model across the
+        batch, so a hundred instants cost one setup rather than a hundred
+        — which is what a rectification pass wants. A batch of none is an
+        empty result rather than an error.
+        """
         request = ChartRequest(
             kind=kind,
-            instant_jd_utc=instant,
+            instants=list(instants),
             latitude_deg=place.latitude_deg,
             longitude_deg=place.longitude_deg,
             altitude_m=place.altitude_m,
             utc_offset_seconds=utc_offset_seconds,
         )
-        return decode_chart(
-            self._through_provider(lambda: self.inner.chart_found(request))
+        return ChartBatch(
+            decode_charts(self._through_provider(lambda: self.inner.chart_found(request)))
         )
 
     def _through_provider(self, call: Any) -> Any:
@@ -683,6 +716,229 @@ class Context:
             # kept as its cause: a caller catches the type it wrote, and
             # a traceback still shows what the port made of it.
             raise raised from refusal
+
+@dataclass(frozen=True)
+class Placement:
+    """Where a graha sits in a set of bhavas."""
+
+    bhava: int
+    """The bhava, 1 to 12."""
+
+    method: HouseSystem
+    """The house system that produced it."""
+
+    through: float
+    """How far through the bhava it is, 0 to 1."""
+
+    from_madhya_deg: float
+    """Its distance from the bhava's centre, degrees."""
+
+
+@dataclass(frozen=True)
+class PlacedGraha:
+    """One graha of a chart, read out of the batch's columns."""
+
+    graha: Graha
+    """Which graha."""
+
+    longitude_deg: float
+    """Its longitude in the chart's zodiac, degrees."""
+
+    tropical_deg: float
+    """Its tropical longitude, degrees."""
+
+    latitude_deg: float
+    """Its ecliptic latitude, degrees."""
+
+    distance_au: float
+    """Its distance, astronomical units."""
+
+    speed_deg_per_day: float
+    """Its longitude speed, degrees per day."""
+
+    house: Placement
+    """The bhava for "which house is it in"."""
+
+    placement: Placement
+    """The bhava of the chart's chalit, which is a different question."""
+
+    @property
+    def retrograde(self) -> bool:
+        """Whether its longitude speed is negative."""
+        return self.speed_deg_per_day < 0
+
+
+@dataclass(frozen=True)
+class Bhava:
+    """One of the twelve bhavas."""
+
+    madhya_deg: float
+    """The bhava's centre, degrees."""
+
+    sandhi_deg: float
+    """The bhava's opening cusp, degrees."""
+
+
+class Chart:
+    """One founded chart: a view over its batch, not a copy.
+
+    Every property reads the batch's columns at this chart's index, so a
+    chart costs nothing until something is asked of it, and holding one
+    holds the whole blob rather than a copy of a slice of it.
+    """
+
+    def __init__(self, batch: "ChartBatch", index: int) -> None:
+        self.batch = batch
+        """The batch this chart belongs to."""
+        self.index = index
+        """Where in that batch it sits."""
+
+    @property
+    def instant(self) -> float:
+        """The instant the chart is cast for, as a Julian day (UTC)."""
+        return self.batch.decoded.cast.instant[self.index]
+
+    @property
+    def lagna_deg(self) -> float:
+        """The lagna at the instant, in the chart's zodiac, degrees."""
+        return self.batch.decoded.cast.lagna_deg[self.index]
+
+    @property
+    def day_lagna_deg(self) -> float:
+        """The lagna at the sunrise that opened the day, degrees."""
+        return self.batch.decoded.cast.day_lagna_deg[self.index]
+
+    @property
+    def ayanamsha_offset_deg(self) -> float:
+        """The ayanamsha applied at this instant, degrees; zero if tropical."""
+        return self.batch.decoded.cast.ayanamsha_offset_deg[self.index]
+
+    @property
+    def kind(self) -> ChartKind:
+        """What kind of chart this is."""
+        return self.batch.kind
+
+    @property
+    def vara(self) -> Vara:
+        """The weekday the chart's day carries."""
+        return Vara(self.batch.decoded.day.vara[self.index])
+
+    @property
+    def sunrise(self) -> float:
+        """The sunrise that opened the chart's day, as a Julian day (UTC)."""
+        return self.batch.decoded.day.sunrise[self.index]
+
+    @property
+    def hora_lord(self) -> Graha:
+        """The graha that rules the hora holding the instant."""
+        return Graha(self.batch.decoded.timing.hora_lord[self.index])
+
+    @property
+    def grahas(self) -> list[PlacedGraha]:
+        """The grahas, in the catalogue's order, one object each.
+
+        The columns underneath are views over the blob's bytes, charts
+        outermost; this reads this chart's stride out of them into the
+        shape an application wants, which is a row.
+        """
+        columns = self.batch.decoded.grahas
+        count = self.batch.decoded.graha_count
+        base = self.index * count
+        return [
+            PlacedGraha(
+                graha=Graha(columns.graha[i]),
+                longitude_deg=columns.longitude_deg[i],
+                tropical_deg=columns.tropical_deg[i],
+                latitude_deg=columns.latitude_deg[i],
+                distance_au=columns.distance_au[i],
+                speed_deg_per_day=columns.speed_deg_per_day[i],
+                house=Placement(
+                    bhava=columns.house_bhava[i],
+                    method=HouseSystem(columns.house_method[i]),
+                    through=columns.house_through[i],
+                    from_madhya_deg=columns.house_from_madhya_deg[i],
+                ),
+                placement=Placement(
+                    bhava=columns.placement_bhava[i],
+                    method=HouseSystem(columns.placement_method[i]),
+                    through=columns.placement_through[i],
+                    from_madhya_deg=columns.placement_from_madhya_deg[i],
+                ),
+            )
+            for i in range(base, base + count)
+        ]
+
+    @property
+    def houses(self) -> list[Bhava]:
+        """The twelve bhavas for "which house is it in", first to twelfth."""
+        return self._bhavas(self.batch.decoded.houses)
+
+    @property
+    def chalit(self) -> list[Bhava]:
+        """The twelve bhavas of the chart's chalit."""
+        return self._bhavas(self.batch.decoded.chalit)
+
+    def _bhavas(self, columns: Any) -> list[Bhava]:
+        base = self.index * 12
+        return [
+            Bhava(madhya_deg=columns.madhya_deg[i], sandhi_deg=columns.sandhi_deg[i])
+            for i in range(base, base + 12)
+        ]
+
+
+class ChartBatch:
+    """A batch of founded charts at one place, read one chart at a time."""
+
+    def __init__(self, decoded: Charts) -> None:
+        self.decoded = decoded
+        """The blob as its generated decoder read it."""
+
+    def __len__(self) -> int:
+        """How many charts the batch holds."""
+        return self.decoded.chart_count
+
+    def at(self, index: int) -> Chart:
+        """One chart of the batch, by index."""
+        if not 0 <= index < len(self):
+            raise IndexError(f"chart {index} is outside a batch of {len(self)}")
+        return Chart(self, index)
+
+    def __getitem__(self, index: int) -> Chart:
+        """The same as `at`, so a batch indexes as well as iterates."""
+        return self.at(index)
+
+    def __iter__(self) -> Iterator[Chart]:
+        """Every chart, in the order the instants were asked for."""
+        return (Chart(self, index) for index in range(len(self)))
+
+    @property
+    def kind(self) -> ChartKind:
+        """What kind of chart these are."""
+        return ChartKind(self.decoded.kind)
+
+    @property
+    def place(self) -> Observer:
+        """The place they were all founded at."""
+        return Observer(
+            latitude_deg=Latitude(self.decoded.latitude_deg),
+            longitude_deg=Longitude(self.decoded.longitude_deg),
+            altitude_m=Altitude(self.decoded.altitude_m),
+        )
+
+    @property
+    def model(self) -> str:
+        """The solar model that reckoned the days, as it describes itself."""
+        return self.decoded.model
+
+    @property
+    def steps_applied(self) -> Any:
+        """The completion steps the SDK applied, in order."""
+        return json.loads(self.decoded.steps)
+
+    @property
+    def provenance(self) -> str:
+        """The provenance envelope, as the canonical JSON it is stamped as."""
+        return self.decoded.provenance
 
 
 class PositionGrid:

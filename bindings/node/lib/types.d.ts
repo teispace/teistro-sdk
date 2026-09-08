@@ -609,11 +609,16 @@ export interface ChartRequest {
    */
   readonly kind: ChartKind;
   /**
-   * The instant, as a Julian day on the UTC scale.
+   * The instants, as Julian days on the UTC scale: one chart each.
+   *
+   * A grid, not a scalar, because the founder shares the settings and
+   * the solar model across a batch and a rectification pass wants a
+   * hundred charts (`03-design/chart-at-the-boundary.md` §3a). A
+   * caller wanting one passes a grid of one, as `ts_positions` takes
+   * a grid of one instant.
    * @unit jd
-   * @example 2460482.5
    */
-  readonly instantJdUtc: number;
+  readonly instants: Float64Array | readonly number[];
   /**
    * The place's latitude, degrees north.
    * @unit deg

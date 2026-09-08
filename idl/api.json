@@ -8493,16 +8493,29 @@
           "meta": {}
         },
         {
-          "name": "instant_jd_utc",
+          "name": "instants",
           "ty": {
-            "kind": "scalar",
-            "scalar": "f64"
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "f64"
+            },
+            "mutable": false
           },
-          "doc": "The instant, as a Julian day on the UTC scale.",
+          "doc": "The instants, as Julian days on the UTC scale: one chart each.\n\nA grid, not a scalar, because the founder shares the settings and\nthe solar model across a batch and a rectification pass wants a\nhundred charts (`03-design/chart-at-the-boundary.md` §3a). A\ncaller wanting one passes a grid of one, as `ts_positions` takes\na grid of one instant.",
           "meta": {
             "unit": "jd",
-            "example": "2460482.5"
+            "len": "instant_count"
           }
+        },
+        {
+          "name": "instant_count",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "doc": "How many instants `instants` points at.",
+          "meta": {}
         },
         {
           "name": "latitude_deg",
@@ -10301,7 +10314,7 @@
         "name": "Status"
       },
       "meta": {
-        "blob": "chart"
+        "blob": "charts"
       },
       "source": "crates/ffi/src/chart.rs"
     },
@@ -11194,36 +11207,31 @@
       ]
     },
     {
-      "name": "chart",
+      "name": "charts",
       "id": 3,
-      "doc": "A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.",
+      "doc": "A batch of founded charts at one place: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing. Every per-chart section runs charts outermost, and a batch of one is the ordinary case.",
       "sections": [
         {
           "id": 1,
           "name": "summary",
-          "doc": "The chart itself: when, where, what kind, and the two lagnas.",
+          "doc": "What the batch decided once: where, what kind, and how many of what.",
           "kind": "fixed",
           "fields": [
             {
-              "name": "instant",
-              "scalar": "f64",
-              "doc": "The instant the chart is cast for, as a Julian day (UTC)."
-            },
-            {
               "name": "kind",
               "scalar": "u16",
-              "doc": "What kind of chart this is.",
+              "doc": "What kind of chart these are.",
               "enum": "ChartKind"
             },
             {
-              "name": "lagna_deg",
-              "scalar": "f64",
-              "doc": "The lagna at the instant, in the chart's zodiac, degrees."
+              "name": "chart_count",
+              "scalar": "u32",
+              "doc": "How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold."
             },
             {
-              "name": "day_lagna_deg",
-              "scalar": "f64",
-              "doc": "The lagna at the sunrise that opened the day, degrees."
+              "name": "graha_count",
+              "scalar": "u32",
+              "doc": "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."
             },
             {
               "name": "latitude_deg",
@@ -11239,18 +11247,41 @@
               "name": "altitude_m",
               "scalar": "f64",
               "doc": "The place's altitude, metres."
-            },
-            {
-              "name": "graha_count",
-              "scalar": "u32",
-              "doc": "How many rows the `grahas` section holds."
             }
           ]
         },
         {
           "id": 2,
+          "name": "cast",
+          "doc": "One row per chart, in the order the instants were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "instant",
+              "scalar": "f64",
+              "doc": "The instant the chart is cast for, as a Julian day (UTC)."
+            },
+            {
+              "name": "lagna_deg",
+              "scalar": "f64",
+              "doc": "The lagna at the instant, in the chart's zodiac, degrees."
+            },
+            {
+              "name": "day_lagna_deg",
+              "scalar": "f64",
+              "doc": "The lagna at the sunrise that opened the day, degrees."
+            },
+            {
+              "name": "ayanamsha_offset_deg",
+              "scalar": "f64",
+              "doc": "The ayanamsha applied at this instant, degrees; zero for a tropical chart."
+            }
+          ]
+        },
+        {
+          "id": 3,
           "name": "grahas",
-          "doc": "One row per graha, in the catalogue's order. `house_*` is the bhava for \"which house is it in\"; `placement_*` is the chart's chalit, which is a different question and often a different answer.",
+          "doc": "One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for \"which house is it in\"; `placement_*` is the chart's chalit, which is a different question and often a different answer.",
           "kind": "columns",
           "fields": [
             {
@@ -11329,7 +11360,7 @@
           ]
         },
         {
-          "id": 3,
+          "id": 4,
           "name": "readings",
           "doc": "Which house system produced each set of bhavas, and which bound each is read against.",
           "kind": "fixed",
@@ -11373,27 +11404,9 @@
           ]
         },
         {
-          "id": 4,
-          "name": "houses",
-          "doc": "The twelve bhavas for \"which house is it in\": one row per bhava, first to twelfth.",
-          "kind": "columns",
-          "fields": [
-            {
-              "name": "madhya_deg",
-              "scalar": "f64",
-              "doc": "The bhava's centre, degrees."
-            },
-            {
-              "name": "sandhi_deg",
-              "scalar": "f64",
-              "doc": "The bhava's opening cusp, degrees."
-            }
-          ]
-        },
-        {
           "id": 5,
-          "name": "chalit",
-          "doc": "The twelve bhavas of the chart's chalit, the same shape as `houses`.",
+          "name": "houses",
+          "doc": "The twelve bhavas for \"which house is it in\", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.",
           "kind": "columns",
           "fields": [
             {
@@ -11410,19 +11423,32 @@
         },
         {
           "id": 6,
+          "name": "chalit",
+          "doc": "The twelve bhavas of each chart's chalit, the same shape as `houses`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "madhya_deg",
+              "scalar": "f64",
+              "doc": "The bhava's centre, degrees."
+            },
+            {
+              "name": "sandhi_deg",
+              "scalar": "f64",
+              "doc": "The bhava's opening cusp, degrees."
+            }
+          ]
+        },
+        {
+          "id": 7,
           "name": "zodiac",
-          "doc": "The zodiac the chart is measured in.",
+          "doc": "The zodiac the batch is measured in. The offset itself moves with the instant, so it is a column of `charts` rather than a field here.",
           "kind": "fixed",
           "fields": [
             {
               "name": "frame_bits",
               "scalar": "u32",
               "doc": "The frame the positions were asked for, packed as the port packs it."
-            },
-            {
-              "name": "offset_deg",
-              "scalar": "f64",
-              "doc": "The ayanamsha applied, degrees; zero for a tropical chart."
             },
             {
               "name": "ayanamsha_kind",
@@ -11438,10 +11464,10 @@
           ]
         },
         {
-          "id": 7,
+          "id": 8,
           "name": "day",
-          "doc": "The day the instant belongs to: its arc, its date and how it was reckoned.",
-          "kind": "fixed",
+          "doc": "The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.",
+          "kind": "columns",
           "fields": [
             {
               "name": "sunrise",
@@ -11556,10 +11582,10 @@
           "shape": "day"
         },
         {
-          "id": 8,
+          "id": 9,
           "name": "timing",
-          "doc": "Where in its day the moment falls, in the reckonings the settings named.",
-          "kind": "fixed",
+          "doc": "Where in its day each moment falls, in the reckonings the settings named: one row per chart.",
+          "kind": "columns",
           "fields": [
             {
               "name": "ghati",
@@ -11612,21 +11638,21 @@
           ]
         },
         {
-          "id": 9,
-          "name": "model",
-          "doc": "UTF-8 text: the solar model that reckoned the day, as it describes itself.",
-          "kind": "bytes",
-          "fields": []
-        },
-        {
           "id": 10,
-          "name": "steps",
-          "doc": "UTF-8 JSON: the completion steps applied, in order, each `{\"name\", \"implementation\"}`.",
+          "name": "model",
+          "doc": "UTF-8 text: the solar model that reckoned the days, as it describes itself.",
           "kind": "bytes",
           "fields": []
         },
         {
           "id": 11,
+          "name": "steps",
+          "doc": "UTF-8 JSON: an array of strings, the completion steps applied in order, each `name:Implementation`. The positions blob carries the same steps as objects and spells the implementation differently (`PASS_THROUGH` against `PassThrough`); which of the two every blob should use is an open question (`03-design/chart-at-the-boundary.md` §8).",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 12,
           "name": "provenance",
           "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
           "kind": "bytes",

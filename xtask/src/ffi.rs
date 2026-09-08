@@ -69,6 +69,12 @@ fn outputs(root: &Path) -> Vec<Output> {
         teistro_ffi::SDK_VERSION,
     )
     .unwrap_or_else(|e| panic!("the boundary does not describe: {e}"));
+    // A shape is one type in every binding, so two sections that name it
+    // must agree. They cannot be checked at the emitters, which render a
+    // shape once and would silently use whichever came first.
+    if let Err(complaint) = teistro_idl::model::check_shapes(&api.blobs) {
+        panic!("the blob schemas disagree: {complaint}");
+    }
     eprintln!(
         "described ABI {}: {} constants, {} enums, {} opaques, {} callbacks, {} structs, {} functions, {} blob schemas",
         api.abi_version,

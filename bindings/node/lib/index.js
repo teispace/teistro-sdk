@@ -25,8 +25,9 @@ import {
   HouseSystemById,
   SDK_VERSION,
   TimeScaleById,
+  VaraById,
 } from './catalogue.js';
-import { decodeChart, decodeIntlRender, decodePositions } from './blob.js';
+import { decodeCharts, decodeIntlRender, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -341,10 +342,20 @@ function finite(value, what) {
   return value;
 }
 
-/** The instants as the addon takes them: a plain array of doubles. */
-function instants(values, what) {
+/**
+ * The instants as the addon takes them: a plain array of doubles.
+ *
+ * `allowEmpty` is what separates a batch entry point from a grid one: a
+ * batch of none is a legitimate ask — a caller who filtered a list to
+ * nothing gets an empty result rather than a refusal — while an empty
+ * grid of instants to place bodies at is more likely a mistake. Which
+ * of the two `ts_positions` should be is an open question
+ * (`03-design/chart-at-the-boundary.md` §8); the boundary itself takes
+ * either.
+ */
+function instants(values, what, { allowEmpty = false } = {}) {
   const list = ArrayBuffer.isView(values) ? Array.from(values) : values;
-  if (!Array.isArray(list) || list.length === 0) {
+  if (!Array.isArray(list) || (!allowEmpty && list.length === 0)) {
     throw new TypeError(`${what}: expected a non-empty array of Julian days`);
   }
   return list.map((value, i) => finite(value, `${what}[${i}]`));
@@ -375,91 +386,220 @@ class Decoded {
 
 /** Positions over a grid, with the cells readable one at a time. */
 /**
- * A founded chart: where every graha stands, in which bhava under both
- * readings, in which zodiac, on which day, at what time of that day.
+ * One row of a decoded column section, as a plain object.
  *
- * The blob is decoded on first use and only once, so a chart that is
- * fetched and stored costs nothing until something reads it.
+ * The columns are typed-array views over the blob's bytes; this reads
+ * one index out of each into the shape an application wants, which is a
+ * row. Every column comes across, so a column added to a section needs
+ * no change here. The values that name a catalogue member stay ids —
+ * `Chart` names the ones a reader reaches for.
  */
-export class Chart extends Decoded {
+function row(columns, index) {
+  const out = {};
+  for (const [key, value] of Object.entries(columns)) {
+    if (key !== 'length') out[key] = value[index];
+  }
+  return out;
+}
+
+/**
+ * A batch of founded charts at one place: where every graha stands, in
+ * which bhava under both readings, in which zodiac, on which day, at
+ * what time of that day.
+ *
+ * The blob is decoded on first use and only once, so a batch that is
+ * fetched and stored costs nothing until something reads it, and the
+ * charts in it are views over those bytes rather than copies.
+ */
+export class Charts extends Decoded {
   constructor(bytes) {
-    super(bytes, decodeChart);
+    super(bytes, decodeCharts);
   }
 
-  /** The instant the chart is cast for, as a Julian day (UTC). */
-  get instant() {
-    return this.decoded.instant;
+  /** How many charts the batch holds. */
+  get length() {
+    return this.decoded.chartCount;
   }
 
-  /** What kind of chart this is. */
+  /** What kind of chart these are. */
   get kind() {
     return ChartKindById.get(this.decoded.kind) ?? 'unknown';
   }
 
+  /** The place they were all founded at. */
+  get place() {
+    const d = this.decoded;
+    return { latitude: d.latitudeDeg, longitude: d.longitudeDeg, altitude: d.altitudeM };
+  }
+
+  /**
+   * One chart of the batch, by index.
+   *
+   * @param {number} index 0 to `length - 1`
+   * @returns {Chart}
+   */
+  at(index) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.length) {
+      throw new RangeError(`chart ${index} is outside a batch of ${this.length}`);
+    }
+    return new Chart(this, index);
+  }
+
+  /** Every chart, in the order the instants were asked for. */
+  *[Symbol.iterator]() {
+    for (let i = 0; i < this.length; i += 1) yield this.at(i);
+  }
+
+  /** The steps the SDK applied, each `{ name, implementation }`. */
+  get steps() {
+    return JSON.parse(this.decoded.steps);
+  }
+
+  /** The solar model that reckoned the days, as it describes itself. */
+  get model() {
+    return this.decoded.model;
+  }
+
+  /** The provenance envelope: what computed these, and under what. */
+  get provenance() {
+    return JSON.parse(this.decoded.provenance);
+  }
+}
+
+/**
+ * One founded chart: a view over its batch, not a copy.
+ *
+ * A batch of one is the ordinary case, and `Context.found` hands back
+ * this rather than the batch around it.
+ */
+export class Chart {
+  #batch;
+  #index;
+
+  constructor(batch, index) {
+    this.#batch = batch;
+    this.#index = index;
+  }
+
+  /** The batch this chart belongs to. */
+  get batch() {
+    return this.#batch;
+  }
+
+  /** Where in that batch it sits. */
+  get index() {
+    return this.#index;
+  }
+
+  /** The instant the chart is cast for, as a Julian day (UTC). */
+  get instant() {
+    return this.#batch.decoded.cast.instant[this.#index];
+  }
+
+  /** What kind of chart this is. */
+  get kind() {
+    return this.#batch.kind;
+  }
+
+  /** The place it was founded at. */
+  get place() {
+    return this.#batch.place;
+  }
+
   /** The lagna at the instant, in the chart's zodiac, degrees. */
   get lagnaDeg() {
-    return this.decoded.lagnaDeg;
+    return this.#batch.decoded.cast.lagnaDeg[this.#index];
   }
 
   /** The lagna at the sunrise that opened the day, degrees. */
   get dayLagnaDeg() {
-    return this.decoded.dayLagnaDeg;
+    return this.#batch.decoded.cast.dayLagnaDeg[this.#index];
   }
 
-  /** The day the chart belongs to, which is not always its civil date. */
+  /** The ayanamsha applied at this instant, degrees; zero if tropical. */
+  get ayanamshaOffsetDeg() {
+    return this.#batch.decoded.cast.ayanamshaOffsetDeg[this.#index];
+  }
+
+  /**
+   * The day the chart belongs to, which is not always its civil date.
+   *
+   * `vara` is named; the rest are the values the blob carries.
+   */
   get day() {
-    return this.decoded.day;
+    const day = row(this.#batch.decoded.day, this.#index);
+    return { ...day, vara: VaraById.get(day.vara) ?? 'unknown' };
+  }
+
+  /** Where in its day the moment falls, and which hora holds it. */
+  get timing() {
+    const timing = row(this.#batch.decoded.timing, this.#index);
+    return { ...timing, horaLord: GrahaById.get(timing.horaLord) ?? 'unknown' };
   }
 
   /**
    * The grahas, in the catalogue's order, one object each.
    *
-   * The columns underneath are views over the blob's bytes; this reads
-   * them into the shape an application wants, which is a row.
+   * The columns underneath are views over the blob's bytes, charts
+   * outermost; this reads this chart's stride out of them into the shape
+   * an application wants, which is a row.
    */
   get grahas() {
-    const g = this.decoded.grahas;
-    return Array.from({ length: g.length }, (_, i) => ({
-      graha: GrahaById.get(g.graha[i]) ?? 'unknown',
-      longitudeDeg: g.longitudeDeg[i],
-      tropicalDeg: g.tropicalDeg[i],
-      latitudeDeg: g.latitudeDeg[i],
-      distanceAu: g.distanceAu[i],
-      speedDegPerDay: g.speedDegPerDay[i],
-      retrograde: g.speedDegPerDay[i] < 0,
-      house: {
-        bhava: g.houseBhava[i],
-        method: HouseSystemById.get(g.houseMethod[i]) ?? 'unknown',
-        through: g.houseThrough[i],
-        fromMadhyaDeg: g.houseFromMadhyaDeg[i],
-      },
-      placement: {
-        bhava: g.placementBhava[i],
-        method: HouseSystemById.get(g.placementMethod[i]) ?? 'unknown',
-        through: g.placementThrough[i],
-        fromMadhyaDeg: g.placementFromMadhyaDeg[i],
-      },
-    }));
+    const g = this.#batch.decoded.grahas;
+    const count = this.#batch.decoded.grahaCount;
+    const base = this.#index * count;
+    return Array.from({ length: count }, (_, j) => {
+      const i = base + j;
+      return {
+        graha: GrahaById.get(g.graha[i]) ?? 'unknown',
+        longitudeDeg: g.longitudeDeg[i],
+        tropicalDeg: g.tropicalDeg[i],
+        latitudeDeg: g.latitudeDeg[i],
+        distanceAu: g.distanceAu[i],
+        speedDegPerDay: g.speedDegPerDay[i],
+        retrograde: g.speedDegPerDay[i] < 0,
+        house: {
+          bhava: g.houseBhava[i],
+          method: HouseSystemById.get(g.houseMethod[i]) ?? 'unknown',
+          through: g.houseThrough[i],
+          fromMadhyaDeg: g.houseFromMadhyaDeg[i],
+        },
+        placement: {
+          bhava: g.placementBhava[i],
+          method: HouseSystemById.get(g.placementMethod[i]) ?? 'unknown',
+          through: g.placementThrough[i],
+          fromMadhyaDeg: g.placementFromMadhyaDeg[i],
+        },
+      };
+    });
   }
 
-  /** The twelve bhavas for "which house is it in". */
+  /** The twelve bhavas for "which house is it in", first to twelfth. */
   get houses() {
-    return this.decoded.houses;
+    return this.#bhavas(this.#batch.decoded.houses);
   }
 
   /** The twelve bhavas of the chart's chalit. */
   get chalit() {
-    return this.decoded.chalit;
+    return this.#bhavas(this.#batch.decoded.chalit);
+  }
+
+  #bhavas(columns) {
+    const base = this.#index * 12;
+    return Array.from({ length: 12 }, (_, j) => ({
+      madhyaDeg: columns.madhyaDeg[base + j],
+      sandhiDeg: columns.sandhiDeg[base + j],
+    }));
   }
 
   /** The steps the SDK applied, each `{ name, implementation }`. */
   get steps() {
-    return JSON.parse(new TextDecoder().decode(this.decoded.steps));
+    return this.#batch.steps;
   }
 
-  /** The provenance envelope: what computed this, and under what. */
+  /** The provenance envelope of the batch this chart came from. */
   get provenance() {
-    return JSON.parse(new TextDecoder().decode(this.decoded.provenance));
+    return this.#batch.provenance;
   }
 }
 
@@ -727,18 +867,44 @@ export class Context {
    * @returns {Chart}
    */
   found(request) {
+    return this.foundMany({
+      ...request,
+      instants: [finite(request.instant, 'instant')],
+    }).at(0);
+  }
+
+  /**
+   * Founds a chart at each of many instants, at one place, in one
+   * crossing.
+   *
+   * The founder shares the settings and the solar model across the
+   * batch, so a hundred instants cost one setup rather than a hundred —
+   * which is what a rectification pass wants. A batch of none is an
+   * empty result rather than an error.
+   *
+   * @param {object} request
+   * @param {ArrayLike<number>} request.instants the instants, as Julian
+   *   days (UTC): one chart each
+   * @param {object} request.place `{ latitude, longitude, altitude }` in
+   *   degrees and metres
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
+   * @returns {Charts}
+   */
+  foundMany(request) {
     const place = request.place ?? {};
     const bytes = this.#call(() =>
       this.#inner.chartFound({
         kind: request.kind ?? ChartKind.Natal,
-        instantJdUtc: finite(request.instant, 'instant'),
+        instants: instants(request.instants, 'instants', { allowEmpty: true }),
         latitudeDeg: finite(place.latitude, 'place.latitude'),
         longitudeDeg: finite(place.longitude, 'place.longitude'),
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
         utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
       }),
     );
-    return new Chart(bytes);
+    return new Charts(bytes);
   }
 
   /** Renders a message of the current locale with its parameters. */

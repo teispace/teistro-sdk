@@ -1639,9 +1639,15 @@ pub struct ChartRequest {
     /// What kind of chart to found.
     /// Enum: ChartKind. Example: 0.
     pub kind: String,
-    /// The instant, as a Julian day on the UTC scale.
-    /// Unit: jd. Example: 2460482.5.
-    pub instant_jd_utc: f64,
+    /// The instants, as Julian days on the UTC scale: one chart each.
+    ///
+    /// A grid, not a scalar, because the founder shares the settings and
+    /// the solar model across a batch and a rectification pass wants a
+    /// hundred charts (`03-design/chart-at-the-boundary.md` §3a). A
+    /// caller wanting one passes a grid of one, as `ts_positions` takes
+    /// a grid of one instant.
+    /// Unit: jd.
+    pub instants: Vec<f64>,
     /// The place's latitude, degrees north.
     /// Unit: deg. Range: [-90,90]. Example: 27.7172.
     pub latitude_deg: f64,
@@ -1661,7 +1667,7 @@ pub struct ChartRequest {
 /// pointers point into, alive for as long as this value is.
 pub struct HeldChartRequest {
     kind: u16,
-    instant_jd_utc: f64,
+    instants: Vec<f64>,
     latitude_deg: f64,
     longitude_deg: f64,
     altitude_m: f64,
@@ -1675,7 +1681,8 @@ impl HeldChartRequest {
             struct_size: core::mem::size_of::<ffi::chart::TsChartRequest>() as u32,
             kind: self.kind,
             reserved: Default::default(),
-            instant_jd_utc: self.instant_jd_utc,
+            instants: self.instants.as_ptr(),
+            instant_count: self.instants.len(),
             latitude_deg: self.latitude_deg,
             longitude_deg: self.longitude_deg,
             altitude_m: self.altitude_m,
@@ -1690,7 +1697,7 @@ impl ChartRequest {
     pub fn read(&self) -> Result<HeldChartRequest> {
         Ok(HeldChartRequest {
             kind: chart_kind_from_str(&self.kind)?,
-            instant_jd_utc: self.instant_jd_utc as f64,
+            instants: self.instants.iter().map(|v| *v as f64).collect(),
             latitude_deg: self.latitude_deg as f64,
             longitude_deg: self.longitude_deg as f64,
             altitude_m: self.altitude_m as f64,
@@ -1707,7 +1714,10 @@ impl ChartRequest {
     pub unsafe fn write(raw: &ffi::chart::TsChartRequest) -> Self {
         ChartRequest {
             kind: chart_kind_to_str(raw.kind),
-            instant_jd_utc: raw.instant_jd_utc as _,
+            instants: unsafe { slice_or_empty(raw.instants, raw.instant_count) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
             latitude_deg: raw.latitude_deg as _,
             longitude_deg: raw.longitude_deg as _,
             altitude_m: raw.altitude_m as _,

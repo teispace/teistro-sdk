@@ -75,9 +75,11 @@ follow from that, and each has already caught something on this page.
 **Batch by default.** Every entry point that computes a value takes a
 grid, and a caller wanting one passes a grid of one. The first draft of
 `ts_chart_found` took a single instant while `Founder` had a batch form
-sitting unused — §8 has the correction. A convenience belongs in a
-binding's ergonomic layer, where `found(one)` and `foundMany(list)` can
-both stand over one crossing.
+sitting unused — §8 has the correction, and it is built: the request
+carries `instants` and a count, the blob carries `chart_count`, and each
+binding's layer offers `found(one)` and `foundMany(list)` over the one
+crossing. A convenience belongs in a binding's ergonomic layer, not in a
+second entry point.
 
 **A choice the SDK makes is a knob, or it is named.** The precession
 model is chosen by the boundary because the settings have no knob for
@@ -95,30 +97,58 @@ cannot see what was chosen cannot tell whether to change it. That is why
 
 ## 4. The foundation blob
 
-Sections in the order a reader wants them, using the three kinds the
-description already has (`fixed`, `columns`, `bytes`):
+The blob is a **batch**: charts founded at one place, sharing settings, a
+solar model and a day reckoning. A batch of one is the ordinary case and
+the blob's counts say so. Sections in the order a reader wants them,
+using the three kinds the description already has (`fixed`, `columns`,
+`bytes`):
 
-| id | section | kind | fields |
-|---|---|---|---|
-| 1 | `summary` | fixed | `instant`, `kind`, `lagna_deg`, `day_lagna_deg`, `latitude_deg`, `longitude_deg`, `altitude_m`, `graha_count` |
-| 2 | `grahas` | columns | `graha`, `longitude_deg`, `latitude_deg`, `distance_au`, `speed_deg_per_day`, `tropical_deg`, and `house_*` and `placement_*` for each of `bhava`, `method`, `from_madhya_deg`, `through` |
-| 3 | `houses` | fixed + columns | the reading (`method`, `reading`, `source`) and twelve `madhya` and `sandhi` |
-| 4 | `chalit` | fixed + columns | the same shape, the chart's chalit |
-| 5 | `zodiac` | fixed | `ayanamsha`, `ayanamsha_kind`, `offset_deg`, `frame_bits` |
-| 6 | `day` | fixed | the arc, its date, its convention and its state — **the section the panchanga blob shares**, §8 |
-| 7 | `timing` | fixed | `ghati_reckoning`, `hora_reckoning`, the hora and the ishtakaal |
-| 8 | `model` | bytes | the solar model's description, which is free text |
-| 9 | `steps` | bytes | as `positions` writes them |
-| 10 | `provenance` | bytes | the envelope, as canonical JSON |
+| id | section | kind | rows | fields |
+|---|---|---|---|---|
+| 1 | `summary` | fixed | 1 | `kind`, `chart_count`, `graha_count`, `latitude_deg`, `longitude_deg`, `altitude_m` |
+| 2 | `cast` | columns | `chart_count` | `instant`, `lagna_deg`, `day_lagna_deg`, `ayanamsha_offset_deg` |
+| 3 | `grahas` | columns | `chart_count × graha_count` | `graha`, `longitude_deg`, `latitude_deg`, `distance_au`, `speed_deg_per_day`, `tropical_deg`, and `house_*` and `placement_*` for each of `bhava`, `method`, `from_madhya_deg`, `through` |
+| 4 | `readings` | fixed | 1 | which house system produced each set of bhavas, and which bound each is read against |
+| 5 | `houses` | columns | `chart_count × 12` | `madhya_deg`, `sandhi_deg` |
+| 6 | `chalit` | columns | `chart_count × 12` | the same shape, each chart's chalit |
+| 7 | `zodiac` | fixed | 1 | `frame_bits`, `ayanamsha_kind`, `ayanamsha` |
+| 8 | `day` | columns | `chart_count` | the arc, its date, its convention and its state — **the section the panchanga blob shares**, §8 |
+| 9 | `timing` | columns | `chart_count` | `ghati_reckoning`, `hora_reckoning`, the hora and the ishtakaal |
+| 10 | `model` | bytes | — | the solar model's description, which is free text |
+| 11 | `steps` | bytes | — | the completion steps, as JSON |
+| 12 | `provenance` | bytes | — | the envelope, as canonical JSON |
 
 `steps` and `provenance` are the same two sections `positions` ends with,
 and a binding decodes them with the code it already has.
 
-Section 6 is not this blob's alone. The panchanga's day is the same nine
-fields with the same values, measured field for field on the same chart,
-so it is declared once — a `fn day_section(id)` both blobs call — and
-carries a **shape name** so that the three bindings decode it into one
-type rather than two identical ones (§8).
+**Charts outermost**, as the positions blob puts instants outermost: row
+`i × graha_count + j` of `grahas` is chart `i`, graha `j`, and row
+`i × 12 + j` of `houses` is chart `i`, bhava `j`. One rule for every
+per-chart section, and the same rule the SDK already had.
+
+The split between `summary` and `cast` is the batch's own line. What a
+**request** decides — the place, the kind, how many of what — is written
+once, from the request, so a batch of none still says under what it
+founded none. What an **instant** decides is a row of `cast`. The
+ayanamsha offset moved there from `zodiac` when the blob became a batch:
+it precesses, so two instants a month apart do not share one.
+
+This corrects what §4 first said. The first table had `summary` carrying
+one chart's `instant` and two lagnas, `houses` and `chalit` as "fixed +
+columns" (a kind that does not exist — they are a shared `readings`
+section plus two column sections), and `day` and `timing` as fixed
+sections of one row. All three were the shape a one-chart entry point
+wants, and none survived the batch.
+
+Section 8 is not this blob's alone. The panchanga's day is the same
+eighteen fields with the same values, measured field for field on the
+same chart, so it is declared once — a `fn day_section(id)` both blobs
+call — and carries a **shape name** so that the three bindings decode it
+into one type rather than two identical ones (§8). Shaping now works for
+column sections as well as fixed ones, because that is what the day
+became; `check_shapes` refuses two sections that name one shape and
+disagree about it, since the emitters render a shape once and would
+otherwise silently decode the second through the first one's type.
 
 ## 5. The entry points
 
@@ -384,3 +414,67 @@ five rather than describing part of one.
   for the batch, exactly as a caller passing a single instant to
   `positions` gets a one-row grid. **A convenience is a layer's job; a
   dead end is not the boundary's right.**
+
+  **Built, and the building corrected the plan in four places.**
+
+  1. *The blob became a batch, not a batch of blobs.* The per-chart
+     sections are `cast`, `grahas`, `houses`, `chalit`, `day` and
+     `timing`; the per-request ones are `summary`, `readings`, `zodiac`,
+     `model`, `steps` and `provenance`. The ayanamsha offset was written
+     down as per-request and is not — it precesses — so it moved into
+     `cast`.
+  2. *Per-request fields are written from the request, not scraped from
+     the first chart.* Writing them from `charts[0]` reads the same for
+     every batch of one or more and is a lie for a batch of none, which
+     the founder explicitly supports (`empty_provenance`). `summary`
+     therefore takes the place and the kind as arguments. Three
+     sections — `readings`, `zodiac` and `model` — can only be learnt by
+     founding, so an empty batch writes them as zero and its envelope
+     carries the settings hash that would have produced them.
+  3. *`day` and `timing` became column sections*, which is what made
+     shaping a column section necessary: the day is shared with the
+     panchanga blob and had to stay one type in each binding.
+  4. *A columns section written from rows needed a writer of its own.*
+     A fixed section gives every field an eight-byte slot; a column
+     stores the scalar's own width. `Writer::rows` transposes rows of
+     `FixedValue` into typed columns and **refuses** a value too wide
+     for its column rather than truncating it, so `day_values` stays the
+     one place the day's field order lives.
+
+  The three ergonomic layers now offer `found(one)` and
+  `foundMany(list)` over the one crossing, and a batch of none is an
+  empty result in all three rather than an error.
+- **The two blobs spell a completion step differently.** A positions
+  result carries `steps` as objects — `{"name": "positions",
+  "implementation": "PASS_THROUGH"}`, serde's SCREAMING_SNAKE_CASE — and
+  a chart carries them as strings, `"positions:PassThrough"`, because
+  `Completed::step_keys` formats the variant with `{:?}`. Same steps,
+  two spellings and two shapes, in two blobs a caller may hold at once.
+
+  The chart cannot simply carry the objects: `ChartFoundation` derives
+  `Deserialize` and `Step` borrows a `&'static str` name, so the
+  structured form does not round-trip through the type a stored chart
+  uses. Making it a `String` name, or giving `Step` an owned form, is a
+  change to the astronomy layer's public type — small, but not one to
+  make at the tail of a boundary change. The schema now documents what
+  each blob actually carries; which of the two every blob should use is
+  the question left.
+- **An empty grid is refused for positions and accepted for charts.**
+  `foundMany([])` answers an empty batch, because a caller who filtered a
+  list to nothing should not have to special-case it, and the boundary
+  accepts an empty grid for both entry points. The Node layer's
+  `positions` still refuses one. The refusal predates the batch entry
+  point and may be right — an empty grid of instants to place bodies at
+  is more likely a slip than an ask — but two entry points behaving
+  differently on `[]` is a papercut, and choosing deliberately is better
+  than the asymmetry standing because nobody looked.
+- **The day's catalogued columns cross as ids, and only some are named.**
+  A chart's `day.vara` is a `u16` in the blob; the Node layer names it
+  and leaves the other seventeen columns as the numbers they are, which
+  is what the layer did before the batch. Naming them all by hand in
+  three bindings is the kind of table that drifts from the schema. The
+  emitters know which columns name an enum — `field.enum_name` is what
+  writes "The values are `Vara` ids" into the generated documentation —
+  so a generated map from section and column to enum name would let each
+  layer resolve them without a table of its own. Worth doing when a
+  second blob carries catalogued columns.
