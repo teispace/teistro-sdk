@@ -88,9 +88,10 @@ description already has (`fixed`, `columns`, `bytes`):
 and a binding decodes them with the code it already has.
 
 Section 6 is not this blob's alone. The panchanga's day is the same nine
-fields with the same values, measured field for field on the same chart
-(§8), so it is one section described once and referenced by both — which
-is a change to the description's model and the first thing to build.
+fields with the same values, measured field for field on the same chart,
+so it is declared once — a `fn day_section(id)` both blobs call — and
+carries a **shape name** so that the three bindings decode it into one
+type rather than two identical ones (§8).
 
 ## 5. The entry points
 
@@ -150,16 +151,28 @@ five rather than describing part of one.
   in either blob, about twenty leaves, and describing it twice is
   precisely what §3 argues against.
 
-  It cannot be shared today: `BlobSchema.sections` is a `Vec<SectionSchema>`
-  written inline, so a section belongs to one blob. Writing the same
-  twenty leaves into both blobs' entries in `idl/api.json` would put the
-  repetition in the artefact the whole project treats as canonical, and
-  every generated decoder and ergonomic layer would inherit it.
+  Sharing it splits into three questions, and reading
+  `crates/ffi/src/schemas.rs` settles two of them.
 
-  **The description needs a named section library**, and a blob's
-  sections become references into it. That is a change to the
-  description's own model rather than to a blob, and it is the first
-  thing to build here, because the five sections still to come — the
+  **The declaration is already shareable.** A blob schema is Rust data —
+  `positions()` returns a `BlobSchema` built from `SectionSchema::fixed`
+  and its like — so one `fn day_section(id: u32) -> SectionSchema` called
+  by both blobs is the whole of it. Nothing in the model is in the way.
+
+  **The serialised description repeating it is not repetition.** Each
+  blob's wire layout really does contain those fields, and `api.json`
+  describes wire layouts. A reader of the description should see what is
+  in the bytes.
+
+  **The generated decoders repeating it is the real cost.** Two
+  structurally identical sections become two decoded types in each of
+  three bindings — a `FoundationDay` and a `PanchangaDay` with the same
+  fields, and a caller who wants to render a day has to write it twice.
+  That is the wart worth removing, and the smallest thing that removes it
+  is a **shape name** on the section: `SectionSchema` gains an optional
+  `shape`, two sections that declare the same one are emitted as one
+  decoded type, and a section without one behaves exactly as today. It is
+  additive to the model, and the five sections still to come — the
   vargas, the state, the aspects, the points, the houses — all carry a
   chart's identity and would each want the same day again.
 - **Whether the day's date needs its own section.** A `CalendarDate` has
