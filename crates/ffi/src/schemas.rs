@@ -94,6 +94,24 @@ pub fn day_section(id: u32) -> SectionSchema {
                 "The engine's day where it differs from the table's; zero otherwise.",
             ),
             ColumnDef::new(
+                "state_kind",
+                Scalar::U8,
+                "Whether the day had a sunrise at all.",
+            )
+            .of_enum("TsDayState"),
+            ColumnDef::new(
+                "state_polar_kind",
+                Scalar::U8,
+                "Which polar state it was, when it had none; zero otherwise.",
+            )
+            .of_enum("TsPolarKind"),
+            ColumnDef::new(
+                "state_polar_policy",
+                Scalar::U8,
+                "Which policy synthesised its bounds, when it had none; zero otherwise.",
+            )
+            .of_enum("TsPolarDayPolicy"),
+            ColumnDef::new(
                 "convention_kind",
                 Scalar::U8,
                 "Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.",

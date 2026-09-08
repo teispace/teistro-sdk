@@ -277,8 +277,11 @@ export function decodeChart(bytes) {
       resolution: READERS.u8(blob.dv, at.offset + 96),
       computedMonth: READERS.u8(blob.dv, at.offset + 104),
       computedDay: READERS.u8(blob.dv, at.offset + 112),
-      conventionKind: READERS.u8(blob.dv, at.offset + 120),
-      conventionValue: READERS.f64(blob.dv, at.offset + 128),
+      stateKind: READERS.u8(blob.dv, at.offset + 120),
+      statePolarKind: READERS.u8(blob.dv, at.offset + 128),
+      statePolarPolicy: READERS.u8(blob.dv, at.offset + 136),
+      conventionKind: READERS.u8(blob.dv, at.offset + 144),
+      conventionValue: READERS.f64(blob.dv, at.offset + 152),
     };
   }
   {

@@ -2693,6 +2693,53 @@ export const HoraReckoningById = new Map([
   [1, 'equal'],
 ]);
 
+/** Every DayState by name. */
+export const DayState = Object.freeze({
+  Normal: 'normal',
+  Polar: 'polar',
+});
+
+/**
+ * Every DayState by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DayStateById = new Map([
+  [0, 'normal'],
+  [1, 'polar'],
+]);
+
+/** Every PolarKind by name. */
+export const PolarKind = Object.freeze({
+  Day: 'day',
+  Night: 'night',
+});
+
+/**
+ * Every PolarKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PolarKindById = new Map([
+  [0, 'day'],
+  [1, 'night'],
+]);
+
+/** Every PolarDayPolicy by name. */
+export const PolarDayPolicy = Object.freeze({
+  Undefined: 'undefined',
+  NearestEvent: 'nearest-event',
+  CivilMidnight: 'civil-midnight',
+});
+
+/**
+ * Every PolarDayPolicy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PolarDayPolicyById = new Map([
+  [0, 'undefined'],
+  [1, 'nearest-event'],
+  [2, 'civil-midnight'],
+]);
+
 /** Every Scale by name. */
 export const Scale = Object.freeze({
   Ut1: 'ut1',

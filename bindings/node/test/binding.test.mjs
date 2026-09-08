@@ -488,7 +488,7 @@ test('every catalogue enum has a complete id table', () => {
   // per-enum check above cannot see. It moves whenever the catalogue or
   // the boundary gains a member, which is a deliberate change: the
   // description's own page reports the same figure.
-  assert.equal(entries, 930, 'every member of every enum is in a table');
+  assert.equal(entries, 937, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

@@ -23,7 +23,8 @@
 
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
-use teistro_core::settings::{GhatiReckoning, HoraReckoning, Sunrise};
+use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
+use teistro_time::local_day::{DayState, PolarKind};
 
 /// Which bound of a bhava a placement was read against.
 #[repr(u8)]
@@ -144,6 +145,83 @@ impl TsHoraReckoning {
     }
 }
 
+/// Whether a day had a sunrise, and what was done when it had not.
+///
+/// The kind half of a tagged enum: a polar day carries which polar
+/// state it was and which policy was applied, in `state_polar_kind` and
+/// `state_polar_policy` beside it, because a variant with a payload
+/// cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsDayState {
+    /// Sunrise and sunset occurred; the two fields beside this are zero.
+    Normal = 0,
+    /// No horizon crossing, and the policy synthesised the bounds.
+    Polar = 1,
+}
+
+/// Which polar state a day without a sunrise was in.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsPolarKind {
+    /// The Sun stayed up.
+    Day = 0,
+    /// The Sun stayed down.
+    Night = 1,
+}
+
+impl From<PolarKind> for TsPolarKind {
+    fn from(kind: PolarKind) -> TsPolarKind {
+        match kind {
+            PolarKind::Day => TsPolarKind::Day,
+            PolarKind::Night => TsPolarKind::Night,
+        }
+    }
+}
+
+/// What the settings say a day without a sunrise is.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsPolarDayPolicy {
+    /// An undefined state: the day has no bounds.
+    Undefined = 0,
+    /// The nearest rise or set stands in for the missing one.
+    NearestEvent = 1,
+    /// Civil midnight stands in for it.
+    CivilMidnight = 2,
+}
+
+impl TsPolarDayPolicy {
+    /// The id this build gives a member, or `None` for one it does not
+    /// know — a member added to the knob since this was written, which
+    /// is refused by name rather than defaulted.
+    #[must_use]
+    pub fn of(policy: PolarDayPolicy) -> Option<TsPolarDayPolicy> {
+        match policy {
+            PolarDayPolicy::Undefined => Some(TsPolarDayPolicy::Undefined),
+            PolarDayPolicy::NearestEvent => Some(TsPolarDayPolicy::NearestEvent),
+            PolarDayPolicy::CivilMidnight => Some(TsPolarDayPolicy::CivilMidnight),
+            _ => None,
+        }
+    }
+}
+
+impl TsDayState {
+    /// A day's state split into the three scalars a blob carries: the
+    /// kind, and the polar kind and policy that only a polar day has.
+    #[must_use]
+    pub fn split(state: DayState) -> (TsDayState, u8, u8) {
+        match state {
+            DayState::Normal => (TsDayState::Normal, 0, 0),
+            DayState::Polar { kind, policy } => (
+                TsDayState::Polar,
+                TsPolarKind::from(kind) as u8,
+                TsPolarDayPolicy::of(policy).map_or(0, |p| p as u8),
+            ),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
@@ -151,10 +229,14 @@ mod tests {
         reason = "a test fails by panicking, and the message names the member with no id"
     )]
 
-    use super::{TsDayPart, TsGhatiReckoning, TsHoraReckoning, TsReading, TsSunrise};
+    use super::{
+        TsDayPart, TsDayState, TsGhatiReckoning, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind,
+        TsReading, TsSunrise,
+    };
     use teistro_chart::bhava::Reading;
     use teistro_chart::day::DayPart;
-    use teistro_core::settings::{GhatiReckoning, HoraReckoning, Sunrise};
+    use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
+    use teistro_time::local_day::{DayState, PolarKind};
 
     /// Every member of every knob crosses, and crosses to an id of its
     /// own.
@@ -195,6 +277,36 @@ mod tests {
             })
             .collect();
         assert_eq!(horas, vec![0, 1]);
+    }
+
+    /// A day's state splits into the three scalars a blob carries.
+    ///
+    /// `DayState::Polar` carries two payload fields, which is what made
+    /// the first version of §8's rule — a kind and one value — too
+    /// narrow. A normal day leaves both at nought, so a reader that
+    /// checks the kind first never looks at them.
+    #[test]
+    fn a_days_state_splits_into_a_kind_and_its_payload() {
+        assert_eq!(
+            TsDayState::split(DayState::Normal),
+            (TsDayState::Normal, 0, 0)
+        );
+        for kind in [PolarKind::Day, PolarKind::Night] {
+            for policy in PolarDayPolicy::ALL {
+                let (state, polar, applied) = TsDayState::split(DayState::Polar {
+                    kind,
+                    policy: *policy,
+                });
+                assert_eq!(state, TsDayState::Polar);
+                assert_eq!(polar, TsPolarKind::from(kind) as u8);
+                assert_eq!(
+                    applied,
+                    TsPolarDayPolicy::of(*policy)
+                        .unwrap_or_else(|| panic!("`{policy}` has no id at the boundary"))
+                        as u8
+                );
+            }
+        }
     }
 
     /// The two chart-layer enums cross exhaustively, so a variant added

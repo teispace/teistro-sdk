@@ -5642,6 +5642,84 @@ export declare const HoraReckoning: {
 export declare const HoraReckoningById: ReadonlyMap<number, HoraReckoning>;
 
 /**
+ * Whether a day had a sunrise, and what was done when it had not.
+ *
+ * The kind half of a tagged enum: a polar day carries which polar
+ * state it was and which policy was applied, in `state_polar_kind` and
+ * `state_polar_policy` beside it, because a variant with a payload
+ * cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+ */
+export type DayState = 'normal' | 'polar';
+
+/** Every DayState by name; the values are the strings the union accepts. */
+export declare const DayState: {
+  /**
+   * Sunrise and sunset occurred; the two fields beside this are zero.
+   */
+  readonly Normal: 'normal';
+  /**
+   * No horizon crossing, and the policy synthesised the bounds.
+   */
+  readonly Polar: 'polar';
+};
+
+/**
+ * Every DayState by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DayStateById: ReadonlyMap<number, DayState>;
+
+/**
+ * Which polar state a day without a sunrise was in.
+ */
+export type PolarKind = 'day' | 'night';
+
+/** Every PolarKind by name; the values are the strings the union accepts. */
+export declare const PolarKind: {
+  /**
+   * The Sun stayed up.
+   */
+  readonly Day: 'day';
+  /**
+   * The Sun stayed down.
+   */
+  readonly Night: 'night';
+};
+
+/**
+ * Every PolarKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PolarKindById: ReadonlyMap<number, PolarKind>;
+
+/**
+ * What the settings say a day without a sunrise is.
+ */
+export type PolarDayPolicy = 'undefined' | 'nearest-event' | 'civil-midnight';
+
+/** Every PolarDayPolicy by name; the values are the strings the union accepts. */
+export declare const PolarDayPolicy: {
+  /**
+   * An undefined state: the day has no bounds.
+   */
+  readonly Undefined: 'undefined';
+  /**
+   * The nearest rise or set stands in for the missing one.
+   */
+  readonly NearestEvent: 'nearest-event';
+  /**
+   * Civil midnight stands in for it.
+   */
+  readonly CivilMidnight: 'civil-midnight';
+};
+
+/**
+ * Every PolarDayPolicy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PolarDayPolicyById: ReadonlyMap<number, PolarDayPolicy>;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 export type Scale = 'ut1' | 'tt' | 'utc';
