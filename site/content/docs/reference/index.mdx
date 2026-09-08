@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 39 entry points over 25 structs and 87 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 40 entry points over 26 structs and 87 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -70,6 +70,12 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_calendar_weekday`](calendar/ts_calendar_weekday) | The weekday of a date as its ISO number: Monday is `1`, Sunday `7`. |
 | [`ts_calendar_jd_of_fixed`](calendar/ts_calendar_jd_of_fixed) | The Julian day at the UTC midnight that begins a fixed day (fixed day 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`). |
 | [`ts_calendar_fixed_of_jd`](calendar/ts_calendar_fixed_of_jd) | The fixed day a Julian day falls in, and, when `out_fraction` is not null, the fraction of that day elapsed since its midnight. |
+
+### Chart
+
+| entry point | what it does |
+|---|---|
+| [`ts_chart_found`](chart/ts_chart_found) | Founds a chart at an instant and a place and answers with its blob: where every graha stands, in which bhava under both readings, in which zodiac, on which day, at what time of that day. |
 
 ### Time
 

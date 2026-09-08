@@ -37,7 +37,7 @@ def _struct_of(c_name: str) -> type[ctypes.Structure]:
 
 class Sizes(unittest.TestCase):
     def test_every_struct_is_the_size_the_description_computed(self) -> None:
-        self.assertEqual(len(_ffi.SIZES), 25, "every boundary struct is in the table")
+        self.assertEqual(len(_ffi.SIZES), 26, "every boundary struct is in the table")
         for name, size in _ffi.SIZES.items():
             with self.subTest(struct=name):
                 self.assertEqual(
