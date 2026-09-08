@@ -29,6 +29,7 @@ import {
   sdkVersion,
   unpackFrame,
 } from '../lib/index.js';
+import * as catalogue from '../lib/catalogue.js';
 
 /** A context with the analytic test provider; every test builds its own. */
 function context(options = {}) {
@@ -450,3 +451,35 @@ test('a disposed context says so, and disposing twice is allowed', () => {
     /this context was disposed/u,
   );
 });
+
+test('every catalogue enum has a complete id table', () => {
+  // The tables let a caller turn an id the boundary gave back — a cell's
+  // source, a decoded column, a key's low half — into the enum value it
+  // stands for. They are generated, so what is worth holding is that
+  // each one is *complete* and agrees with its own enum in both
+  // directions; a table missing a member fails silently at the one
+  // lookup that needs it.
+  const tables = Object.keys(catalogue).filter(
+    (name) => name.endsWith('ById') && catalogue[name] instanceof Map,
+  );
+  assert.ok(tables.length > 50, `expected the whole catalogue, got ${tables.length} tables`);
+  let entries = 0;
+  for (const name of tables) {
+    const base = name.slice(0, -'ById'.length);
+    const values = catalogue[base];
+    assert.ok(values, `${name} has no companion \`${base}\``);
+    const known = new Set(Object.values(values));
+    const mapped = new Set();
+    for (const [id, key] of catalogue[name]) {
+      entries += 1;
+      assert.equal(typeof id, 'number', `${name} is keyed by ${typeof id}, not an id`);
+      assert.ok(known.has(key), `${name}[${id}] is \`${key}\`, not a value of ${base}`);
+      mapped.add(key);
+    }
+    for (const key of known) {
+      assert.ok(mapped.has(key), `${base}.\`${key}\` is missing from ${name}`);
+    }
+  }
+  assert.equal(entries, 919, 'the catalogue has 919 members; every one is in a table');
+});
+
