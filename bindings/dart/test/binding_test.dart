@@ -353,4 +353,29 @@ void main() {
       ),
     );
   });
+
+  test('a disposed context says so, and disposing twice is allowed', () {
+    final ctx = context();
+    expect(ctx.profile, isNotEmpty);
+    ctx.dispose();
+    // Idempotent: the finaliser and an explicit call both run it.
+    ctx.dispose();
+    // Named here rather than at the boundary, which would only say
+    // `invalid argument` and not which argument. The Node and Python
+    // bindings answer the same way.
+    expect(
+      () => ctx.profile,
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('disposed'),
+        ),
+      ),
+    );
+    expect(
+      () => ctx.positions(instants: [2451545.0], bodies: [Body.sun]),
+      throwsA(isA<StateError>()),
+    );
+  });
 }

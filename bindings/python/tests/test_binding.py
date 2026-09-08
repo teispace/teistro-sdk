@@ -315,6 +315,23 @@ class Positions(WithLibrary):
                 bare.positions(instants=[2451545.0], bodies=[Body.SUN])
             self.assertEqual(caught.exception.status, Status.CAPABILITY)
 
+    def test_a_closed_context_says_so_and_closing_twice_is_allowed(self) -> None:
+        ctx = self.teistro.context(profile=PROFILE, test_provider=True)
+        self.assertTrue(ctx.profile)
+        ctx.close()
+        # Idempotent: a `with` block and an explicit call both run it.
+        ctx.close()
+        # Named here rather than at the boundary, which would only say
+        # `invalid argument` and not which argument. The Node and Dart
+        # bindings answer the same way.
+        for call in (
+            lambda: ctx.profile,
+            lambda: ctx.positions(instants=[2451545.0], bodies=[Body.SUN]),
+        ):
+            with self.assertRaises(TeistroError) as caught:
+                call()
+            self.assertIn("closed", str(caught.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

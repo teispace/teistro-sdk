@@ -499,6 +499,8 @@ export class Context {
   #messages = null;
   /** Where this context's own provider leaves what it threw. */
   #thrown;
+  /** Whether `dispose` has already freed the handle. */
+  #disposed = false;
 
   /**
    * Runs a call on the addon, putting back whatever this context's
@@ -506,6 +508,13 @@ export class Context {
    * positions — so every call goes through here.
    */
   #call(run) {
+    // Said here rather than at the boundary: a call on a freed handle is
+    // refused there as `invalid argument`, which does not tell a reader
+    // that the context they disposed is the argument. The Dart and Python
+    // bindings name it the same way.
+    if (this.#disposed) {
+      throw new Error('this context was disposed; open another one');
+    }
     return guarded(this.#inner, run, this.#thrown);
   }
 
@@ -732,6 +741,7 @@ export class Context {
    * `INVALID_ARG` rather than crashing.
    */
   dispose() {
+    this.#disposed = true;
     this.#inner.dispose();
   }
 

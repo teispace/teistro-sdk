@@ -434,3 +434,19 @@ test('a provider answers only the bodies it declared', () => {
     (error) => error.status === 'unsupported' || error.status === 'capability',
   );
 });
+
+test('a disposed context says so, and disposing twice is allowed', () => {
+  const ctx = new Context({ testProvider: true });
+  assert.equal(typeof ctx.profile, 'string');
+  ctx.dispose();
+  // Idempotent, because a `using` scope and an explicit call both run it.
+  ctx.dispose();
+  // Named here rather than at the boundary, which would only say
+  // `invalid argument` and not which argument. The Dart and Python
+  // bindings answer the same way.
+  assert.throws(() => ctx.profile, /this context was disposed/u);
+  assert.throws(
+    () => ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] }),
+    /this context was disposed/u,
+  );
+});

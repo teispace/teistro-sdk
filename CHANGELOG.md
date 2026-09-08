@@ -197,7 +197,10 @@ was a falsification pass over the three ergonomic layers and it found
 nine gaps the parity gate could not: the parity gate compares values, and
 these were shapes. Node had no examples at all, no `dispose`, no date or
 zone constructors, no `jdCount`, and named the provider's coverage
-differently from the other two; the Dart layer wrapped a provider's own
+differently from the other two — and the `dispose` it gained then
+reported a call on a freed context as the boundary's bare `invalid
+argument`, where Dart and Python both name the context; all three now
+name it, and all three now gate it; the Dart layer wrapped a provider's own
 exception in the library's; the Python layer's weekday docstring named
 the wrong day as one. Every enum in the TypeScript surface now carries
 its id table, not just the two that appear in blob columns.
