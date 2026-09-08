@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -588,6 +588,61 @@ export interface CalendarDate {
    * The engine's day when the resolution is divergent, else zero.
    */
   readonly computedDay: number;
+}
+
+/**
+ * What a chart is founded on: when, where, what kind, and the clock its
+ * day is reckoned in.
+ *
+ * Everything else is the context's settings, which is what makes two
+ * calls under one context comparable and what the settings hash is for.
+ * The clock is here because nothing else knows it: a chart's day runs
+ * from a local sunrise and its date is a civil date, and a longitude
+ * gives local *mean* time rather than a civil offset
+ * (`03-design/chart-at-the-boundary.md` §5).
+ */
+export interface ChartRequest {
+  /**
+   * What kind of chart to found.
+   * @enum ChartKind
+   * @example 0
+   */
+  readonly kind: ChartKind;
+  /**
+   * The instant, as a Julian day on the UTC scale.
+   * @unit jd
+   * @example 2460482.5
+   */
+  readonly instantJdUtc: number;
+  /**
+   * The place's latitude, degrees north.
+   * @unit deg
+   * @range [-90,90]
+   * @example 27.7172
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east.
+   * @unit deg
+   * @range [-180,180]
+   * @example 85.324
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The place's altitude, metres above the ellipsoid.
+   * @unit m
+   * @range [-500,9000]
+   * @example 1400
+   */
+  readonly altitudeM: number;
+  /**
+   * The local clock's offset from UTC in seconds, east positive: the
+   * clock the day's date is read in.
+   * @unit s
+   * @range [-64800,64800]
+   * @example 20700
+   */
+  readonly utcOffsetSeconds: number;
 }
 
 /**

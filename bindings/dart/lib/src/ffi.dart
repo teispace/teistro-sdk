@@ -709,6 +709,61 @@ final class CalendarDateStruct extends ffi.Struct {
 
 }
 
+/// What a chart is founded on: when, where, what kind, and the clock its
+/// day is reckoned in.
+///
+/// Everything else is the context's settings, which is what makes two
+/// calls under one context comparable and what the settings hash is for.
+/// The clock is here because nothing else knows it: a chart's day runs
+/// from a local sunrise and its date is a civil date, and a longitude
+/// gives local *mean* time rather than a civil offset
+/// (`03-design/chart-at-the-boundary.md` §5).
+final class ChartRequestStruct extends ffi.Struct {
+  /// `sizeof(ts_chart_request)` as the caller compiled it.
+  @ffi.Uint32()
+  external int structSize;
+
+  /// What kind of chart to found.
+  /// Enum: ChartKind. Example: 0.
+  @ffi.Uint16()
+  external int kind;
+
+  /// Reserved; write zero.
+  @ffi.Uint16()
+  external int reserved;
+
+  /// The instant, as a Julian day on the UTC scale.
+  /// Unit: jd. Example: 2460482.5.
+  @ffi.Double()
+  external double instantJdUtc;
+
+  /// The place's latitude, degrees north.
+  /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+  @ffi.Double()
+  external double latitudeDeg;
+
+  /// The place's longitude, degrees east.
+  /// Unit: deg. Range: [-180,180]. Example: 85.324.
+  @ffi.Double()
+  external double longitudeDeg;
+
+  /// The place's altitude, metres above the ellipsoid.
+  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  @ffi.Double()
+  external double altitudeM;
+
+  /// The local clock's offset from UTC in seconds, east positive: the
+  /// clock the day's date is read in.
+  /// Unit: s. Range: [-64800,64800]. Example: 20700.
+  @ffi.Int32()
+  external int utcOffsetSeconds;
+
+  /// Reserved; write zero.
+  @ffi.Int32()
+  external int reservedTail;
+
+}
+
 /// A time of day, or none when the birth time is unknown.
 final class CivilTimeStruct extends ffi.Struct {
   /// `sizeof(ts_civil_time)` as the caller compiled it.
@@ -1037,6 +1092,8 @@ typedef TsCalendarJdOfFixedNative = ffi.Double Function(ffi.Int64);
 typedef TsCalendarJdOfFixedDart = double Function(int);
 typedef TsCalendarFixedOfJdNative = ffi.Int64 Function(ffi.Double, ffi.Pointer<ffi.Double>);
 typedef TsCalendarFixedOfJdDart = int Function(double, ffi.Pointer<ffi.Double>);
+typedef TsChartFoundNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
+typedef TsChartFoundDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsTimeResolveNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneSpecStruct>, ffi.Pointer<ZoneResolutionStruct>);
 typedef TsTimeResolveDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneSpecStruct>, ffi.Pointer<ZoneResolutionStruct>);
 typedef TsTimeCivilNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Double, ffi.Pointer<ZoneSpecStruct>, ffi.Uint16, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneResolutionStruct>);
@@ -1094,6 +1151,7 @@ final class TeistroLibrary {
         ts_calendar_weekday = library.lookupFunction<TsCalendarWeekdayNative, TsCalendarWeekdayDart>('ts_calendar_weekday'),
         ts_calendar_jd_of_fixed = library.lookupFunction<TsCalendarJdOfFixedNative, TsCalendarJdOfFixedDart>('ts_calendar_jd_of_fixed'),
         ts_calendar_fixed_of_jd = library.lookupFunction<TsCalendarFixedOfJdNative, TsCalendarFixedOfJdDart>('ts_calendar_fixed_of_jd'),
+        ts_chart_found = library.lookupFunction<TsChartFoundNative, TsChartFoundDart>('ts_chart_found'),
         ts_time_resolve = library.lookupFunction<TsTimeResolveNative, TsTimeResolveDart>('ts_time_resolve'),
         ts_time_civil = library.lookupFunction<TsTimeCivilNative, TsTimeCivilDart>('ts_time_civil'),
         ts_time_convert = library.lookupFunction<TsTimeConvertNative, TsTimeConvertDart>('ts_time_convert'),
@@ -1227,6 +1285,19 @@ final class TeistroLibrary {
   /// The fixed day a Julian day falls in, and, when `out_fraction` is not
   /// null, the fraction of that day elapsed since its midnight.
   final TsCalendarFixedOfJdDart ts_calendar_fixed_of_jd;
+
+  /// Founds a chart at an instant and a place and answers with its blob:
+  /// where every graha stands, in which bhava under both readings, in
+  /// which zodiac, on which day, at what time of that day.
+  ///
+  /// Everything but the request is the context's settings, so two calls
+  /// under one context are comparable and the settings hash says why. The
+  /// civil calendar the day's date is read in comes from
+  /// `calendars.civil_calendar`, which is what that knob was waiting for.
+  ///
+  /// A context without an ephemeris is `CAPABILITY`; a provider failure is
+  /// `PROVIDER` with the provider's own code in the last error.
+  final TsChartFoundDart ts_chart_found;
 
   /// Resolves a civil date-time in a zone to a UTC instant under the
   /// context's daylight-saving and unknown-time policies, with the metadata
@@ -2256,6 +2327,75 @@ final class CalendarDate {
       );
 }
 
+/// What a chart is founded on: when, where, what kind, and the clock its
+/// day is reckoned in.
+///
+/// Everything else is the context's settings, which is what makes two
+/// calls under one context comparable and what the settings hash is for.
+/// The clock is here because nothing else knows it: a chart's day runs
+/// from a local sunrise and its date is a civil date, and a longitude
+/// gives local *mean* time rather than a civil offset
+/// (`03-design/chart-at-the-boundary.md` §5).
+final class ChartRequest {
+  /// A ChartRequest with every field named.
+  const ChartRequest({required this.kind, required this.instantJdUtc, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds});
+
+  /// What kind of chart to found.
+  /// Enum: ChartKind. Example: 0.
+  final ChartKind kind;
+
+  /// The instant, as a Julian day on the UTC scale.
+  /// Unit: jd. Example: 2460482.5.
+  final double instantJdUtc;
+
+  /// The place's latitude, degrees north.
+  /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east.
+  /// Unit: deg. Range: [-180,180]. Example: 85.324.
+  final double longitudeDeg;
+
+  /// The place's altitude, metres above the ellipsoid.
+  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  final double altitudeM;
+
+  /// The local clock's offset from UTC in seconds, east positive: the
+  /// clock the day's date is read in.
+  /// Unit: s. Range: [-64800,64800]. Example: 20700.
+  final int utcOffsetSeconds;
+
+  /// Writes this value into a C struct the call takes by pointer.
+  /// Whatever the struct points at is allocated in `arena`, which frees it
+  /// when the call returns.
+  void write(ffi.Pointer<ChartRequestStruct> raw, ffi.Allocator arena) => writeInto(raw.ref, arena);
+
+  /// Writes this value into a struct, which may be one held inside
+  /// another rather than one of its own.
+  void writeInto(ChartRequestStruct raw, ffi.Allocator arena) {
+    raw.structSize = ffi.sizeOf<ChartRequestStruct>();
+    raw.kind = kind.id;
+    raw.instantJdUtc = instantJdUtc;
+    raw.latitudeDeg = latitudeDeg;
+    raw.longitudeDeg = longitudeDeg;
+    raw.altitudeM = altitudeM;
+    raw.utcOffsetSeconds = utcOffsetSeconds;
+  }
+
+  /// Reads the value a call filled in.
+  static ChartRequest read(ffi.Pointer<ChartRequestStruct> raw) => readFrom(raw.ref);
+
+  /// Reads a value out of a struct, which may be one held inside another.
+  static ChartRequest readFrom(ChartRequestStruct raw) => ChartRequest(
+        kind: ChartKind.byId(raw.kind),
+        instantJdUtc: raw.instantJdUtc,
+        latitudeDeg: raw.latitudeDeg,
+        longitudeDeg: raw.longitudeDeg,
+        altitudeM: raw.altitudeM,
+        utcOffsetSeconds: raw.utcOffsetSeconds,
+      );
+}
+
 /// A time of day, or none when the birth time is unknown.
 final class CivilTime {
   /// A CivilTime with every field named.
@@ -2892,6 +3032,29 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_calendar_weekday(_handle, rawdate, outWeekday);
         if (status != 0) _fail(status);
         return outWeekday.value;
+    });
+  }
+
+  /// Founds a chart at an instant and a place and answers with its blob:
+  /// where every graha stands, in which bhava under both readings, in
+  /// which zodiac, on which day, at what time of that day.
+  ///
+  /// Everything but the request is the context's settings, so two calls
+  /// under one context are comparable and the settings hash says why. The
+  /// civil calendar the day's date is read in comes from
+  /// `calendars.civil_calendar`, which is what that knob was waiting for.
+  ///
+  /// A context without an ephemeris is `CAPABILITY`; a provider failure is
+  /// `PROVIDER` with the provider's own code in the last error.
+  Uint8List chartFound(ChartRequest request) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequest = arena<ChartRequestStruct>();
+        request.write(rawrequest, arena);
+        final outBlob = arena<BlobStruct>();
+        final status = _lib.ts_chart_found(_handle, rawrequest, outBlob);
+        if (status != 0) _fail(status);
+        return _takeBlob(_lib, outBlob);
     });
   }
 

@@ -190,6 +190,13 @@ impl TsContext {
         &self.settings.settings
     }
 
+    /// The whole resolution, which the chart layer takes: the settings
+    /// with the profile they came from and what was applied to get them.
+    #[must_use]
+    pub const fn resolved(&self) -> &Resolved {
+        &self.settings
+    }
+
     /// The profile the settings came from.
     #[must_use]
     pub fn profile(&self) -> &str {

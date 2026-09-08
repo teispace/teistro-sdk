@@ -8458,6 +8458,117 @@
       "source": "crates/ffi/src/calendar.rs"
     },
     {
+      "name": "TsChartRequest",
+      "doc": "What a chart is founded on: when, where, what kind, and the clock its\nday is reckoned in.\n\nEverything else is the context's settings, which is what makes two\ncalls under one context comparable and what the settings hash is for.\nThe clock is here because nothing else knows it: a chart's day runs\nfrom a local sunrise and its date is a civil date, and a longitude\ngives local *mean* time rather than a civil offset\n(`03-design/chart-at-the-boundary.md` §5).",
+      "role": "object",
+      "fields": [
+        {
+          "name": "struct_size",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "doc": "`sizeof(ts_chart_request)` as the caller compiled it.",
+          "meta": {}
+        },
+        {
+          "name": "kind",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u16"
+          },
+          "doc": "What kind of chart to found.",
+          "meta": {
+            "example": "0",
+            "enum": "ChartKind"
+          }
+        },
+        {
+          "name": "reserved",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u16"
+          },
+          "doc": "Reserved; write zero.",
+          "meta": {}
+        },
+        {
+          "name": "instant_jd_utc",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The instant, as a Julian day on the UTC scale.",
+          "meta": {
+            "unit": "jd",
+            "example": "2460482.5"
+          }
+        },
+        {
+          "name": "latitude_deg",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The place's latitude, degrees north.",
+          "meta": {
+            "unit": "deg",
+            "range": "[-90,90]",
+            "example": "27.7172"
+          }
+        },
+        {
+          "name": "longitude_deg",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The place's longitude, degrees east.",
+          "meta": {
+            "unit": "deg",
+            "range": "[-180,180]",
+            "example": "85.324"
+          }
+        },
+        {
+          "name": "altitude_m",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The place's altitude, metres above the ellipsoid.",
+          "meta": {
+            "unit": "m",
+            "range": "[-500,9000]",
+            "example": "1400"
+          }
+        },
+        {
+          "name": "utc_offset_seconds",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "The local clock's offset from UTC in seconds, east positive: the\nclock the day's date is read in.",
+          "meta": {
+            "unit": "s",
+            "range": "[-64800,64800]",
+            "example": "20700"
+          }
+        },
+        {
+          "name": "reserved_tail",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "Reserved; write zero.",
+          "meta": {}
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsCivilTime",
       "doc": "A time of day, or none when the birth time is unknown.",
       "role": "object",
@@ -10139,6 +10250,60 @@
       },
       "meta": {},
       "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "ts_chart_found",
+      "doc": "Founds a chart at an instant and a place and answers with its blob:\nwhere every graha stands, in which bhava under both readings, in\nwhich zodiac, on which day, at what time of that day.\n\nEverything but the request is the context's settings, so two calls\nunder one context are comparable and the settings hash says why. The\ncivil calendar the day's date is read in comes from\n`calendars.civil_calendar`, which is what that knob was waiting for.\n\nA context without an ephemeris is `CAPABILITY`; a provider failure is\n`PROVIDER` with the provider's own code in the last error.",
+      "safety": "`context` must be a live handle; `request` valid for a read; `out_blob`\nvalid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsChartRequest"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "out_blob",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsBlob"
+            },
+            "mutable": true
+          },
+          "role": "blob_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {
+        "blob": "chart"
+      },
+      "source": "crates/ffi/src/chart.rs"
     },
     {
       "name": "ts_time_resolve",

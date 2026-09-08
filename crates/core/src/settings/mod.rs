@@ -317,10 +317,10 @@ group!(
     /// Calendars.
     Calendars, CalendarsPatch {
         /// The civil calendar of a request's dates.
-        /// lint: knob-has-a-reader — the chart layer takes a calendar by argument, so a caller
-        /// chooses one rather than asking the settings; this gains a reader
-        /// when `serial` or a binding builds a chart from a settings document
-        /// alone.
+        ///
+        /// Read by `ts_chart_found`, which is what the deferral this knob
+        /// carried was waiting for: "a binding builds a chart from a
+        /// settings document alone".
         civil_calendar: Calendar,
         /// The lunar month system.
         lunar_month: LunarMonth,

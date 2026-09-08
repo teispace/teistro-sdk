@@ -4474,6 +4474,7 @@ typedef struct ts_context_options ts_context_options;
 typedef struct ts_error ts_error;
 typedef struct ts_frame ts_frame;
 typedef struct ts_calendar_date ts_calendar_date;
+typedef struct ts_chart_request ts_chart_request;
 typedef struct ts_civil_time ts_civil_time;
 typedef struct ts_civil_date_time ts_civil_date_time;
 typedef struct ts_zone_spec ts_zone_spec;
@@ -5264,6 +5265,64 @@ struct ts_calendar_date {
 };
 
 /**
+ * What a chart is founded on: when, where, what kind, and the clock its
+ * day is reckoned in.
+ *
+ * Everything else is the context's settings, which is what makes two
+ * calls under one context comparable and what the settings hash is for.
+ * The clock is here because nothing else knows it: a chart's day runs
+ * from a local sunrise and its date is a civil date, and a longitude
+ * gives local *mean* time rather than a civil offset
+ * (`03-design/chart-at-the-boundary.md` §5).
+ * Set `struct_size` to `sizeof` before passing it; the library refuses a size it does not know.
+ */
+struct ts_chart_request {
+    /**
+     * `sizeof(ts_chart_request)` as the caller compiled it.
+     */
+    uint32_t struct_size;
+    /**
+     * What kind of chart to found.
+     * Enum: ts_chart_kind. Example: 0.
+     */
+    uint16_t kind;
+    /**
+     * Reserved; write zero.
+     */
+    uint16_t reserved;
+    /**
+     * The instant, as a Julian day on the UTC scale.
+     * Unit: jd. Example: 2460482.5.
+     */
+    double instant_jd_utc;
+    /**
+     * The place's latitude, degrees north.
+     * Unit: deg. Range: [-90,90]. Example: 27.7172.
+     */
+    double latitude_deg;
+    /**
+     * The place's longitude, degrees east.
+     * Unit: deg. Range: [-180,180]. Example: 85.324.
+     */
+    double longitude_deg;
+    /**
+     * The place's altitude, metres above the ellipsoid.
+     * Unit: m. Range: [-500,9000]. Example: 1400.
+     */
+    double altitude_m;
+    /**
+     * The local clock's offset from UTC in seconds, east positive: the
+     * clock the day's date is read in.
+     * Unit: s. Range: [-64800,64800]. Example: 20700.
+     */
+    int32_t utc_offset_seconds;
+    /**
+     * Reserved; write zero.
+     */
+    int32_t reserved_tail;
+};
+
+/**
  * A time of day, or none when the birth time is unknown.
  * Set `struct_size` to `sizeof` before passing it; the library refuses a size it does not know.
  */
@@ -5772,6 +5831,24 @@ double ts_calendar_jd_of_fixed(int64_t fixed);
 int64_t ts_calendar_fixed_of_jd(double jd, double * out_fraction);
 
 /**
+ * Founds a chart at an instant and a place and answers with its blob:
+ * where every graha stands, in which bhava under both readings, in
+ * which zodiac, on which day, at what time of that day.
+ *
+ * Everything but the request is the context's settings, so two calls
+ * under one context are comparable and the settings hash says why. The
+ * civil calendar the day's date is read in comes from
+ * `calendars.civil_calendar`, which is what that knob was waiting for.
+ *
+ * A context without an ephemeris is `CAPABILITY`; a provider failure is
+ * `PROVIDER` with the provider's own code in the last error.
+ * The blob follows the `chart` schema of idl/api.json.
+ * Safety: `context` must be a live handle; `request` valid for a read; `out_blob`
+ * valid for a write.
+ */
+ts_status ts_chart_found(const ts_context * context, const ts_chart_request * request, ts_blob * out_blob);
+
+/**
  * Resolves a civil date-time in a zone to a UTC instant under the
  * context's daylight-saving and unknown-time policies, with the metadata
  * a stored chart keeps. An unknown zone is `UNSUPPORTED` with the nearest
@@ -5914,6 +5991,7 @@ _Static_assert(sizeof(ts_context_options) == 32, "ts_context_options is 32 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 48, "ts_chart_request is 48 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

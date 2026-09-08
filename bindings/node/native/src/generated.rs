@@ -185,6 +185,36 @@ pub fn ayanamsha_to_str(value: u16) -> String {
     .to_string()
 }
 
+/// A `ChartKind` from the string `catalogue.js` names it by.
+pub fn chart_kind_from_str(value: &str) -> Result<u16> {
+    match value {
+        "chart_kind.NATAL" => Ok(0),
+        "chart_kind.TRANSIT" => Ok(1),
+        "chart_kind.EVENT" => Ok(2),
+        "chart_kind.PRASHNA" => Ok(3),
+        "chart_kind.RETURN" => Ok(4),
+        "chart_kind.RELOCATED" => Ok(5),
+        "chart_kind.COMPOSITE" => Ok(6),
+        other => Err(Error::from_reason(format!("`{other}` is not a ChartKind"))),
+    }
+}
+
+/// The string for a `ChartKind`; a value from a newer library is
+/// `unknown`.
+pub fn chart_kind_to_str(value: u16) -> String {
+    match value {
+        0 => "chart_kind.NATAL",
+        1 => "chart_kind.TRANSIT",
+        2 => "chart_kind.EVENT",
+        3 => "chart_kind.PRASHNA",
+        4 => "chart_kind.RETURN",
+        5 => "chart_kind.RELOCATED",
+        6 => "chart_kind.COMPOSITE",
+        _ => "unknown",
+    }
+    .to_string()
+}
+
 /// A `Calendar` from the string `catalogue.js` names it by.
 pub fn calendar_from_str(value: &str) -> Result<u16> {
     match value {
@@ -1594,6 +1624,98 @@ impl CalendarDate {
     }
 }
 
+/// What a chart is founded on: when, where, what kind, and the clock its
+/// day is reckoned in.
+///
+/// Everything else is the context's settings, which is what makes two
+/// calls under one context comparable and what the settings hash is for.
+/// The clock is here because nothing else knows it: a chart's day runs
+/// from a local sunrise and its date is a civil date, and a longitude
+/// gives local *mean* time rather than a civil offset
+/// (`03-design/chart-at-the-boundary.md` §5).
+#[napi(object)]
+#[derive(Clone, Debug)]
+pub struct ChartRequest {
+    /// What kind of chart to found.
+    /// Enum: ChartKind. Example: 0.
+    pub kind: String,
+    /// The instant, as a Julian day on the UTC scale.
+    /// Unit: jd. Example: 2460482.5.
+    pub instant_jd_utc: f64,
+    /// The place's latitude, degrees north.
+    /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+    pub latitude_deg: f64,
+    /// The place's longitude, degrees east.
+    /// Unit: deg. Range: [-180,180]. Example: 85.324.
+    pub longitude_deg: f64,
+    /// The place's altitude, metres above the ellipsoid.
+    /// Unit: m. Range: [-500,9000]. Example: 1400.
+    pub altitude_m: f64,
+    /// The local clock's offset from UTC in seconds, east positive: the
+    /// clock the day's date is read in.
+    /// Unit: s. Range: [-64800,64800]. Example: 20700.
+    pub utc_offset_seconds: i32,
+}
+
+/// What a `ChartRequest` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldChartRequest {
+    kind: u16,
+    instant_jd_utc: f64,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
+    utc_offset_seconds: i32,
+}
+
+impl HeldChartRequest {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> ffi::chart::TsChartRequest {
+        ffi::chart::TsChartRequest {
+            struct_size: core::mem::size_of::<ffi::chart::TsChartRequest>() as u32,
+            kind: self.kind,
+            reserved: Default::default(),
+            instant_jd_utc: self.instant_jd_utc,
+            latitude_deg: self.latitude_deg,
+            longitude_deg: self.longitude_deg,
+            altitude_m: self.altitude_m,
+            utc_offset_seconds: self.utc_offset_seconds,
+            reserved_tail: Default::default(),
+        }
+    }
+}
+
+impl ChartRequest {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldChartRequest> {
+        Ok(HeldChartRequest {
+            kind: chart_kind_from_str(&self.kind)?,
+            instant_jd_utc: self.instant_jd_utc as f64,
+            latitude_deg: self.latitude_deg as f64,
+            longitude_deg: self.longitude_deg as f64,
+            altitude_m: self.altitude_m as f64,
+            utc_offset_seconds: self.utc_offset_seconds as i32,
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &ffi::chart::TsChartRequest) -> Self {
+        ChartRequest {
+            kind: chart_kind_to_str(raw.kind),
+            instant_jd_utc: raw.instant_jd_utc as _,
+            latitude_deg: raw.latitude_deg as _,
+            longitude_deg: raw.longitude_deg as _,
+            altitude_m: raw.altitude_m as _,
+            utc_offset_seconds: raw.utc_offset_seconds as _,
+        }
+    }
+}
+
 /// A time of day, or none when the birth time is unknown.
 #[napi(object)]
 #[derive(Clone, Debug)]
@@ -2571,6 +2693,31 @@ impl Context {
         self.leave()?;
         self.check(status)?;
         Ok(out_weekday as _)
+    }
+
+    /// Founds a chart at an instant and a place and answers with its blob:
+    /// where every graha stands, in which bhava under both readings, in
+    /// which zodiac, on which day, at what time of that day.
+    ///
+    /// Everything but the request is the context's settings, so two calls
+    /// under one context are comparable and the settings hash says why. The
+    /// civil calendar the day's date is read in comes from
+    /// `calendars.civil_calendar`, which is what that knob was waiting for.
+    ///
+    /// A context without an ephemeris is `CAPABILITY`; a provider failure is
+    /// `PROVIDER` with the provider's own code in the last error.
+    #[napi]
+    pub fn chart_found(&self, env: Env, request: ChartRequest) -> Result<Buffer> {
+        let held_request = request.read()?;
+        let raw_request = held_request.as_c();
+        let request = &raw const raw_request;
+        let mut out_blob = ffi::blob::TsBlob::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe { ffi::chart::ts_chart_found(self.handle, request, &raw mut out_blob) };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_blob(&mut out_blob))
     }
 
     /// Resolves a civil date-time in a zone to a UTC instant under the

@@ -141,6 +141,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
+    "ts_chart_request": 48,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -169,6 +170,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
+    "ts_chart_request": 48,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -503,6 +505,33 @@ class _CalendarDateStruct(ctypes.Structure):
         ("computed_month", ctypes.c_uint8),
         ("computed_day", ctypes.c_uint8),
         ("reserved", ctypes.c_uint8 * 3),
+    ]
+
+
+class _ChartRequestStruct(ctypes.Structure):
+    """What a chart is founded on: when, where, what kind, and the clock its
+    day is reckoned in.
+
+    Everything else is the context's settings, which is what makes two
+    calls under one context comparable and what the settings hash is for.
+    The clock is here because nothing else knows it: a chart's day runs
+    from a local sunrise and its date is a civil date, and a longitude
+    gives local *mean* time rather than a civil offset
+    (`03-design/chart-at-the-boundary.md` §5).
+
+    The C layout, field for field. `ChartRequest` is the value class over it.
+    """
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("kind", ctypes.c_uint16),
+        ("reserved", ctypes.c_uint16),
+        ("instant_jd_utc", ctypes.c_double),
+        ("latitude_deg", ctypes.c_double),
+        ("longitude_deg", ctypes.c_double),
+        ("altitude_m", ctypes.c_double),
+        ("utc_offset_seconds", ctypes.c_int32),
+        ("reserved_tail", ctypes.c_int32),
     ]
 
 
@@ -1846,6 +1875,89 @@ class CalendarDate:
 
 
 @dataclass(frozen=True)
+class ChartRequest:
+    """What a chart is founded on: when, where, what kind, and the clock its
+    day is reckoned in.
+
+    Everything else is the context's settings, which is what makes two
+    calls under one context comparable and what the settings hash is for.
+    The clock is here because nothing else knows it: a chart's day runs
+    from a local sunrise and its date is a civil date, and a longitude
+    gives local *mean* time rather than a civil offset
+    (`03-design/chart-at-the-boundary.md` §5).
+    """
+
+    kind: ChartKind
+    """What kind of chart to found.
+    Enum: ChartKind. Example: 0.
+    """
+
+    instant_jd_utc: float
+    """The instant, as a Julian day on the UTC scale.
+    Unit: jd. Example: 2460482.5.
+    """
+
+    latitude_deg: float
+    """The place's latitude, degrees north.
+    Unit: deg. Range: [-90,90]. Example: 27.7172.
+    """
+
+    longitude_deg: float
+    """The place's longitude, degrees east.
+    Unit: deg. Range: [-180,180]. Example: 85.324.
+    """
+
+    altitude_m: float
+    """The place's altitude, metres above the ellipsoid.
+    Unit: m. Range: [-500,9000]. Example: 1400.
+    """
+
+    utc_offset_seconds: int
+    """The local clock's offset from UTC in seconds, east positive: the
+    clock the day's date is read in.
+    Unit: s. Range: [-64800,64800]. Example: 20700.
+    """
+
+    def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
+        """Writes this value into a C struct, which may be one held inside
+        another rather than one of its own.
+
+        Anything the struct points at is appended to `owned`, which the
+        caller keeps alive until the call has returned.
+        """
+        raw.struct_size = ctypes.sizeof(_ChartRequestStruct)
+        raw.kind = _c_value(self.kind)
+        raw.instant_jd_utc = _c_value(self.instant_jd_utc)
+        raw.latitude_deg = _c_value(self.latitude_deg)
+        raw.longitude_deg = _c_value(self.longitude_deg)
+        raw.altitude_m = _c_value(self.altitude_m)
+        raw.utc_offset_seconds = _c_value(self.utc_offset_seconds)
+
+    def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
+        """This value as a fresh C struct, ready to be passed by pointer."""
+        raw = _ChartRequestStruct()
+        self._into(raw, owned)
+        return raw
+
+    @classmethod
+    def _empty(cls) -> ChartRequest:
+        """The zero value, for a nested struct a caller left out."""
+        return cls._of(_ChartRequestStruct())
+
+    @classmethod
+    def _of(cls, raw: _ChartRequestStruct) -> ChartRequest:
+        """The value the library wrote into a C struct."""
+        return cls(
+            kind=ChartKind(raw.kind),
+            instant_jd_utc=float(raw.instant_jd_utc),
+            latitude_deg=float(raw.latitude_deg),
+            longitude_deg=float(raw.longitude_deg),
+            altitude_m=float(raw.altitude_m),
+            utc_offset_seconds=raw.utc_offset_seconds,
+        )
+
+
+@dataclass(frozen=True)
 class CivilTime:
     """A time of day, or none when the birth time is unknown."""
 
@@ -2544,6 +2656,13 @@ class TeistroLibrary:
             ctypes.POINTER(ctypes.c_double),
         ]
         self.ts_calendar_fixed_of_jd.restype = ctypes.c_int64
+        self.ts_chart_found: Any = library.ts_chart_found
+        self.ts_chart_found.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_ChartRequestStruct),
+            ctypes.POINTER(_BlobStruct),
+        ]
+        self.ts_chart_found.restype = ctypes.c_int32
         self.ts_time_resolve: Any = library.ts_time_resolve
         self.ts_time_resolve.argtypes = [
             ctypes.POINTER(_Context),
@@ -2915,6 +3034,33 @@ class TeistroContext:
         owned.clear()
         weekday = _out_weekday.value
         return weekday
+
+    def chart_found(self, request: ChartRequest) -> bytes:
+        """Founds a chart at an instant and a place and answers with its blob:
+        where every graha stands, in which bhava under both readings, in
+        which zodiac, on which day, at what time of that day.
+
+        Everything but the request is the context's settings, so two calls
+        under one context are comparable and the settings hash says why. The
+        civil calendar the day's date is read in comes from
+        `calendars.civil_calendar`, which is what that knob was waiting for.
+
+        A context without an ephemeris is `CAPABILITY`; a provider failure is
+        `PROVIDER` with the provider's own code in the last error.
+        """
+        owned: list[Any] = []
+        _request = request._to_c(owned)
+        _out_blob = _BlobStruct()
+        status = Status(self._lib.ts_chart_found(
+            self._raw,
+            ctypes.byref(_request),
+            ctypes.byref(_out_blob),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        blob = _take_blob(self._lib, _out_blob)
+        return blob
 
     def time_resolve(self, civil: CivilDateTime, zone: ZoneSpec) -> ZoneResolution:
         """Resolves a civil date-time in a zone to a UTC instant under the

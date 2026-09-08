@@ -9,6 +9,11 @@
 //! a ghati count means nothing without the reckoning that produced it
 //! and a chalit means nothing without the reading it was taken under.
 //!
+#![allow(
+    unsafe_code,
+    reason = "the C boundary: every block carries a SAFETY comment"
+)]
+//!
 //! Two of them mirror a Rust enum through an **exhaustive** match, which
 //! is what stops the two drifting: a variant added stops this crate
 //! compiling rather than silently mapping to whatever was first.
@@ -21,8 +26,23 @@
 //! over the knob's own `ALL`: adding a member fails it by name rather
 //! than shipping a wrong id.
 
+use teistro_astro::precession::PrecessionModel;
+use teistro_calendar::shipped;
+use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
+use teistro_chart::foundation::{ChartFoundation, Founder};
+use teistro_core::catalogue::{Ayanamsha, ChartKind};
+use teistro_core::envelope::{Provenance, content_hash};
+use teistro_core::error::{Error, Status};
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro_core::settings::AyanamshaChoice;
+use teistro_core::time::UtcOffset;
+use teistro_idl::blob::{ColumnData, FixedValue, Writer};
+
+use crate::blob::TsBlob;
+use crate::context::TsContext;
+use crate::support::{with_context, write_plain};
 use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
 use teistro_time::local_day::{DayState, PolarKind};
 
@@ -222,16 +242,410 @@ impl TsDayState {
     }
 }
 
+/// What a chart is founded on: when, where, what kind, and the clock its
+/// day is reckoned in.
+///
+/// Everything else is the context's settings, which is what makes two
+/// calls under one context comparable and what the settings hash is for.
+/// The clock is here because nothing else knows it: a chart's day runs
+/// from a local sunrise and its date is a civil date, and a longitude
+/// gives local *mean* time rather than a civil offset
+/// (`03-design/chart-at-the-boundary.md` §5).
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TsChartRequest {
+    /// `sizeof(ts_chart_request)` as the caller compiled it.
+    pub struct_size: u32,
+    /// What kind of chart to found.
+    /// `api: enum=ChartKind example=0`
+    pub kind: u16,
+    /// Reserved; write zero.
+    pub reserved: u16,
+    /// The instant, as a Julian day on the UTC scale.
+    /// `api: unit=jd example=2460482.5`
+    pub instant_jd_utc: f64,
+    /// The place's latitude, degrees north.
+    /// `api: unit=deg range=[-90,90] example=27.7172`
+    pub latitude_deg: f64,
+    /// The place's longitude, degrees east.
+    /// `api: unit=deg range=[-180,180] example=85.324`
+    pub longitude_deg: f64,
+    /// The place's altitude, metres above the ellipsoid.
+    /// `api: unit=m range=[-500,9000] example=1400`
+    pub altitude_m: f64,
+    /// The local clock's offset from UTC in seconds, east positive: the
+    /// clock the day's date is read in.
+    /// `api: unit=s range=[-64800,64800] example=20700`
+    pub utc_offset_seconds: i32,
+    /// Reserved; write zero.
+    pub reserved_tail: i32,
+}
+
+/// The day's seventeen-and-three values, in the order `day_section`
+/// declares them.
+///
+/// Declared once in `schemas::day_section` and filled once here, so the
+/// panchanga blob writes the same day the same way rather than a second
+/// copy of the same arithmetic
+/// (`03-design/chart-at-the-boundary.md` §8).
+#[must_use]
+pub fn day_values(day: &teistro_chart::day::ChartDay) -> Vec<FixedValue> {
+    let local = &day.day;
+    let (state, polar_kind, polar_policy) = TsDayState::split(local.state);
+    let (convention, convention_value) = match local.convention {
+        teistro_core::settings::SunriseConvention::Named { which } => (
+            TsSunrise::of(which).map_or(u64::from(u8::MAX), |s| s as u64),
+            0.0,
+        ),
+        // No id names a custom convention, so the sentinel says "read the
+        // altitude beside this" rather than naming a convention it is not.
+        teistro_core::settings::SunriseConvention::Custom { altitude_deg } => {
+            (u64::from(u8::MAX), altitude_deg)
+        }
+    };
+    let era = local.date.era;
+    vec![
+        local.sunrise.get().into(),
+        local.sunset.get().into(),
+        local.next_sunrise.get().into(),
+        u64::from(local.vara.id()).into(),
+        (TsDayPart::from(day.part) as u64).into(),
+        day.elapsed.into(),
+        u64::from(local.date.calendar.id()).into(),
+        era.map_or(u64::from(u16::MAX), |e| u64::from(e.era.id()))
+            .into(),
+        i64::from(local.date.year).into(),
+        i64::from(era.map_or(0, |e| e.year)).into(),
+        u64::from(local.date.month).into(),
+        u64::from(local.date.day).into(),
+        (resolution_id(&local.date.resolution)).into(),
+        u64::from(computed(&local.date.resolution).0).into(),
+        u64::from(computed(&local.date.resolution).1).into(),
+        (state as u64).into(),
+        u64::from(polar_kind).into(),
+        u64::from(polar_policy).into(),
+        convention.into(),
+        convention_value.into(),
+    ]
+}
+
+/// A resolution's id, as `TsResolution` numbers them.
+fn resolution_id(resolution: &teistro_core::envelope::CalendarResolution) -> u64 {
+    use teistro_core::envelope::CalendarResolution as R;
+    match resolution {
+        R::Defined => 0,
+        R::Tabular { .. } => 1,
+        R::Computed { .. } => 2,
+        R::Divergent { .. } => 3,
+    }
+}
+
+/// The engine's month and day where a divergent resolution reports them,
+/// and nought otherwise.
+fn computed(resolution: &teistro_core::envelope::CalendarResolution) -> (u8, u8) {
+    match resolution {
+        teistro_core::envelope::CalendarResolution::Divergent { computed, .. } => {
+            (computed.month, computed.day)
+        }
+        _ => (0, 0),
+    }
+}
+
+/// One vector per graha column: the writer takes slices, and a column
+/// is the unit the format stores.
+struct GrahaColumns {
+    ids: Vec<u16>,
+    longitudes: Vec<f64>,
+    tropicals: Vec<f64>,
+    latitudes: Vec<f64>,
+    distances: Vec<f64>,
+    speeds: Vec<f64>,
+    house_bhava: Vec<u8>,
+    house_method: Vec<u16>,
+    house_through: Vec<f64>,
+    house_from: Vec<f64>,
+    placed_bhava: Vec<u8>,
+    placed_method: Vec<u16>,
+    placed_through: Vec<f64>,
+    placed_from: Vec<f64>,
+}
+
+impl GrahaColumns {
+    /// The columns of a chart's grahas, in the schema's order.
+    fn of(grahas: &[teistro_chart::foundation::GrahaPosition]) -> GrahaColumns {
+        GrahaColumns {
+            ids: grahas.iter().map(|g| g.graha.id()).collect(),
+            longitudes: grahas.iter().map(|g| g.longitude_deg).collect(),
+            tropicals: grahas.iter().map(|g| g.tropical_deg).collect(),
+            latitudes: grahas.iter().map(|g| g.latitude_deg).collect(),
+            distances: grahas.iter().map(|g| g.distance_au).collect(),
+            speeds: grahas.iter().map(|g| g.speed_deg_per_day).collect(),
+            house_bhava: grahas.iter().map(|g| g.house.bhava).collect(),
+            house_method: grahas.iter().map(|g| g.house.method.id()).collect(),
+            house_through: grahas.iter().map(|g| g.house.through).collect(),
+            house_from: grahas.iter().map(|g| g.house.from_madhya_deg).collect(),
+            placed_bhava: grahas.iter().map(|g| g.placement.bhava).collect(),
+            placed_method: grahas.iter().map(|g| g.placement.method.id()).collect(),
+            placed_through: grahas.iter().map(|g| g.placement.through).collect(),
+            placed_from: grahas.iter().map(|g| g.placement.from_madhya_deg).collect(),
+        }
+    }
+}
+
+/// The chart's own values, in the order `summary` declares them.
+#[must_use]
+fn summary_values(foundation: &ChartFoundation, count: u32) -> Vec<FixedValue> {
+    vec![
+        foundation.instant.get().into(),
+        u64::from(foundation.kind.id()).into(),
+        foundation.lagna_deg.into(),
+        foundation.day_lagna_deg.into(),
+        foundation.place.latitude.get().into(),
+        foundation.place.longitude.get().into(),
+        foundation.place.altitude.get().into(),
+        u64::from(count).into(),
+    ]
+}
+
+/// The birth timing's values, in the order `timing` declares them.
+#[must_use]
+fn timing_values(timing: &teistro_chart::foundation::BirthTiming) -> Vec<FixedValue> {
+    vec![
+        u64::from(timing.ishtakaal.ghati).into(),
+        u64::from(timing.ishtakaal.pala).into(),
+        u64::from(timing.ishtakaal.vipala).into(),
+        TsGhatiReckoning::of(timing.ghati_reckoning)
+            .map_or(u64::from(u8::MAX), |g| g as u64)
+            .into(),
+        u64::from(timing.hora.number).into(),
+        u64::from(timing.hora.lord.id()).into(),
+        timing.hora.start.get().into(),
+        timing.hora.end.get().into(),
+        TsHoraReckoning::of(timing.hora_reckoning)
+            .map_or(u64::from(u8::MAX), |h| h as u64)
+            .into(),
+    ]
+}
+
+/// A founded chart as the blob its schema describes.
+///
+/// # Errors
+///
+/// Whatever the writer refuses: a section the schema does not have, or a
+/// column of the wrong length. Neither can happen for a value this crate
+/// built, so a failure here is a schema that has drifted from this
+/// function rather than a caller's mistake.
+pub fn encode(foundation: &ChartFoundation, provenance: &Provenance) -> Result<Vec<u8>, Error> {
+    let schema = crate::schemas::chart();
+    let mut writer = Writer::new(&schema);
+    let grahas = &foundation.grahas;
+    let count = u32::try_from(grahas.len()).unwrap_or(u32::MAX);
+    let columns = GrahaColumns::of(grahas);
+    let steps = serde_json::to_string(&foundation.steps).unwrap_or_else(|_| String::from("[]"));
+    let envelope = teistro_core::envelope::canonical_json(provenance);
+    let (ayanamsha_kind, ayanamsha) = match foundation.zodiac.ayanamsha {
+        None => (0_u64, 0_u64),
+        Some(teistro_core::settings::AyanamshaChoice::Catalogued { id }) => (1, u64::from(id.id())),
+        // A custom ayanamsha's coefficients are settings, and the
+        // settings hash pins them: a result carries what it applied.
+        Some(teistro_core::settings::AyanamshaChoice::Custom { .. }) => (2, 0),
+    };
+
+    let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
+        writer.fixed("summary", &summary_values(foundation, count))?;
+        writer.columns(
+            "grahas",
+            grahas.len(),
+            &[
+                ColumnData::U16(&columns.ids),
+                ColumnData::F64(&columns.longitudes),
+                ColumnData::F64(&columns.tropicals),
+                ColumnData::F64(&columns.latitudes),
+                ColumnData::F64(&columns.distances),
+                ColumnData::F64(&columns.speeds),
+                ColumnData::U8(&columns.house_bhava),
+                ColumnData::U16(&columns.house_method),
+                ColumnData::F64(&columns.house_through),
+                ColumnData::F64(&columns.house_from),
+                ColumnData::U8(&columns.placed_bhava),
+                ColumnData::U16(&columns.placed_method),
+                ColumnData::F64(&columns.placed_through),
+                ColumnData::F64(&columns.placed_from),
+            ],
+        )?;
+        writer.fixed(
+            "readings",
+            &[
+                u64::from(foundation.houses.chalit.method.id()).into(),
+                u64::from(foundation.houses.chalit.source.id()).into(),
+                (TsReading::from(foundation.houses.chalit.reading) as u64).into(),
+                u64::from(foundation.chalit.chalit.method.id()).into(),
+                u64::from(foundation.chalit.chalit.source.id()).into(),
+                (TsReading::from(foundation.chalit.chalit.reading) as u64).into(),
+            ],
+        )?;
+        writer.columns(
+            "houses",
+            12,
+            &[
+                ColumnData::F64(&foundation.houses.madhya),
+                ColumnData::F64(&foundation.houses.sandhi),
+            ],
+        )?;
+        writer.columns(
+            "chalit",
+            12,
+            &[
+                ColumnData::F64(&foundation.chalit.madhya),
+                ColumnData::F64(&foundation.chalit.sandhi),
+            ],
+        )?;
+        writer.fixed(
+            "zodiac",
+            &[
+                u64::from(foundation.zodiac.request.to_bits()).into(),
+                foundation.zodiac.offset_deg.into(),
+                ayanamsha_kind.into(),
+                ayanamsha.into(),
+            ],
+        )?;
+        writer.fixed("day", &day_values(&foundation.day))?;
+        writer.fixed("timing", &timing_values(&foundation.timing))?;
+        writer.bytes("model", foundation.day.day.model.as_bytes())?;
+        writer.bytes("steps", steps.as_bytes())?;
+        writer.bytes("provenance", envelope.as_bytes())?;
+        writer.finish()
+    };
+    write().map_err(|error| {
+        Error::new(
+            Status::Internal,
+            format!("the chart blob could not be written: {error}"),
+        )
+    })
+}
+
+/// Founds a chart at an instant and a place and answers with its blob:
+/// where every graha stands, in which bhava under both readings, in
+/// which zodiac, on which day, at what time of that day.
+///
+/// Everything but the request is the context's settings, so two calls
+/// under one context are comparable and the settings hash says why. The
+/// civil calendar the day's date is read in comes from
+/// `calendars.civil_calendar`, which is what that knob was waiting for.
+///
+/// A context without an ephemeris is `CAPABILITY`; a provider failure is
+/// `PROVIDER` with the provider's own code in the last error.
+///
+/// `api: blob=chart`
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request` valid for a read; `out_blob`
+/// valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_chart_found(
+    context: *const TsContext,
+    request: *const TsChartRequest,
+    out_blob: *mut TsBlob,
+) -> Status {
+    with_context(context, |ctx| {
+        if request.is_null() {
+            return Err(crate::support::null("request"));
+        }
+        // SAFETY: non-null; the caller promises a readable request.
+        let asked = unsafe { *request };
+        let provider = ctx.provider().ok_or_else(|| {
+            Error::new(
+                Status::Capability,
+                "the context has no ephemeris: pass a provider vtable to ts_context_new, or the TS_CONTEXT_TEST_PROVIDER flag for tests",
+            )
+            .with_field("provider")
+        })?;
+        let resolved = ctx.resolved();
+        let settings = &resolved.settings;
+        let place = Place::new(
+            Latitude::try_new(asked.latitude_deg)
+                .map_err(|e| Error::from(e).with_field("latitude_deg"))?,
+            Longitude::try_new(asked.longitude_deg)
+                .map_err(|e| Error::from(e).with_field("longitude_deg"))?,
+            Altitude::try_new(asked.altitude_m)
+                .map_err(|e| Error::from(e).with_field("altitude_m"))?,
+        );
+        let kind = ChartKind::from_id(asked.kind).ok_or_else(|| {
+            Error::new(
+                Status::InvalidArg,
+                format!("no chart kind with id {}", asked.kind),
+            )
+            .with_field("kind")
+        })?;
+        let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
+            .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
+        // The knob's own deferral said it "gains a reader when `serial`
+        // or a binding builds a chart from a settings document alone".
+        // This is that reader.
+        let calendar = shipped(settings.calendars.civil_calendar).ok_or_else(|| {
+            Error::new(
+                Status::Unsupported,
+                format!(
+                    "the SDK does not ship the `{}` calendar",
+                    settings.calendars.civil_calendar
+                ),
+            )
+            .with_field("calendars.civil_calendar")
+        })?;
+        let ayanamsha = match settings.frame.ayanamsha {
+            AyanamshaChoice::Catalogued { id } => id,
+            AyanamshaChoice::Custom { .. } => Ayanamsha::Lahiri,
+        };
+        let model = DrikSun::new(
+            provider,
+            ayanamsha,
+            settings.day.sunrise,
+            settings.provider.overrides,
+            ctx.delta_t(),
+        );
+        let founded = Founder::new(
+            provider,
+            resolved,
+            &model,
+            calendar,
+            &clock,
+            PrecessionModel::default(),
+            ctx.delta_t(),
+        )
+        .found_one(
+            JulianDay::<Utc>::literal(asked.instant_jd_utc),
+            &place,
+            kind,
+        )?;
+        let mut provenance = founded.provenance;
+        // The founder leaves the placeholder; the boundary fills it, as
+        // `ts_positions` does. Whether the producers should seal instead
+        // is `serial-and-the-envelope.md` §8's open question, and this is
+        // the first place it shows: a Rust caller's envelope still
+        // carries the placeholder where a binding's blob carries a hash.
+        provenance.content_hash = content_hash(&founded.value);
+        let encoded = encode(&founded.value, &provenance)?;
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
+    })
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
         clippy::panic,
-        reason = "a test fails by panicking, and the message names the member with no id"
+        clippy::expect_used,
+        clippy::indexing_slicing,
+        clippy::float_cmp,
+        clippy::cast_possible_wrap,
+        reason = "a test fails by panicking, indexes its own blob and compares the numbers it wrote"
     )]
 
     use super::{
-        TsDayPart, TsDayState, TsGhatiReckoning, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind,
-        TsReading, TsSunrise,
+        Altitude, Ayanamsha, ChartKind, DrikSun, Founder, JulianDay, Latitude, Longitude, Place,
+        PrecessionModel, Provenance, TsDayPart, TsDayState, TsGhatiReckoning, TsHoraReckoning,
+        TsPolarDayPolicy, TsPolarKind, TsReading, TsSunrise, Utc, UtcOffset, shipped,
     };
     use teistro_chart::bhava::Reading;
     use teistro_chart::day::DayPart;
@@ -277,6 +691,81 @@ mod tests {
             })
             .collect();
         assert_eq!(horas, vec![0, 1]);
+    }
+
+    /// A chart founded over the analytic test provider, with the
+    /// provenance the boundary would seal.
+    fn founded() -> (teistro_chart::foundation::ChartFoundation, Provenance) {
+        use teistro_core::envelope::content_hash;
+        use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+        use teistro_port_ephemeris::test_provider::TestProvider;
+
+        let provider = TestProvider;
+        let resolved = Profile::shipped(DEFAULT_PROFILE)
+            .expect("the default profile")
+            .resolve(&SettingsPatch::default())
+            .expect("it resolves");
+        let model = DrikSun::new(
+            &provider,
+            Ayanamsha::Lahiri,
+            resolved.settings.day.sunrise,
+            resolved.settings.provider.overrides,
+            teistro_astro::delta_t::DeltaTModel::TableThenModel,
+        );
+        let clock = UtcOffset::try_from_seconds(5 * 3600 + 45 * 60).expect("in range");
+        let calendar = shipped(resolved.settings.calendars.civil_calendar)
+            .expect("the profile's calendar ships");
+        let founded = Founder::new(
+            &provider,
+            &resolved,
+            &model,
+            calendar,
+            &clock,
+            PrecessionModel::default(),
+            teistro_astro::delta_t::DeltaTModel::TableThenModel,
+        )
+        .found_one(
+            JulianDay::<Utc>::literal(2_460_482.5),
+            &Place::new(
+                Latitude::literal(27.7172),
+                Longitude::literal(85.3240),
+                Altitude::literal(1400.0),
+            ),
+            ChartKind::Natal,
+        )
+        .expect("a founded chart");
+        let mut provenance = founded.provenance;
+        provenance.content_hash = content_hash(&founded.value);
+        (founded.value, provenance)
+    }
+
+    /// A founded chart crosses, and reads back as what was founded.
+    ///
+    /// The whole point of the module: a chart computed in Rust, written
+    /// to its blob and read out of it again, compared field by field
+    /// against the value. Nothing else checks that the encoder and the
+    /// schema agree — a column written in the wrong order would still
+    /// decode, into wrong numbers.
+    #[test]
+    fn a_founded_chart_round_trips_through_its_blob() {
+        use teistro_idl::blob::Reader;
+
+        let (foundation, provenance) = founded();
+        let bytes = super::encode(&foundation, &provenance).expect("it encodes");
+        let schema = crate::schemas::chart();
+        let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
+
+        let summary = reader.fixed("summary").expect("the summary");
+        assert_eq!(summary[0].as_f64(), foundation.instant.get());
+        assert_eq!(summary[2].as_f64(), foundation.lagna_deg);
+        assert_eq!(summary[7].as_i64(), foundation.grahas.len() as i64);
+
+        let day = reader.fixed("day").expect("the day");
+        assert_eq!(day[0].as_f64(), foundation.day.day.sunrise.get());
+        assert_eq!(day[3].as_i64(), i64::from(foundation.day.day.vara.id()));
+
+        let model = reader.bytes("model").expect("the model");
+        assert_eq!(model, foundation.day.day.model.as_bytes());
     }
 
     /// A day's state splits into the three scalars a blob carries.

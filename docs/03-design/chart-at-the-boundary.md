@@ -282,6 +282,15 @@ five rather than describing part of one.
   astro layer ships eleven models. That is a larger question than this
   page: a new knob moves the settings hash of every profile, so it is a
   decision with a Numbers line rather than a tidy-up.
+- **The boundary seals and the producer does not.** `ts_chart_found`
+  sets `content_hash` on the provenance before writing the blob, as
+  `ts_positions` does, because `Founder` leaves the placeholder that
+  `serial-measured.md` found. So a Rust caller holding an `Envelope` and
+  a binding caller holding the blob get **different hashes for the same
+  chart**. That is
+  [`serial-and-the-envelope.md`](serial-and-the-envelope.md) §8's open
+  question — "whether the producers should seal" — and this is the first
+  place it stops being theoretical.
 - **Whether `ts_chart_found` should take a batch.** `Founder` has
   `found_one` and a batch form, and the boundary's whole shape elsewhere
   is one call per grid. A rectification pass wants a hundred charts and
