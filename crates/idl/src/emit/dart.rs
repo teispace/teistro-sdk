@@ -1309,10 +1309,19 @@ fn render_decoded_class(out: &mut String, name: &str, schema: &BlobSchema) {
         match section.kind {
             SectionKind::Fixed => {
                 for field in section.fields.iter().filter(|f| f.name != "reserved") {
+                    // The scalar's own type, not `int`. Every fixed
+                    // field the SDK had when this was written was an
+                    // integer, so the declaration said so while the
+                    // reader below already dispatched on the scalar; a
+                    // fixed section carrying a double would have read it
+                    // correctly and failed to compile assigning it
+                    // (`03-design/chart-at-the-boundary.md` §4 has the
+                    // first such section).
                     let _ = writeln!(
                         out,
-                        "{}  final int {};\n",
+                        "{}  final {} {};\n",
                         doc(&field.doc, "  "),
+                        dart_scalar(field.scalar),
                         identifier(&field.name)
                     );
                 }
@@ -1405,4 +1414,68 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
         "  return {name}(\n{}\n  );\n}}\n",
         arguments.join("\n")
     );
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::*;
+    use crate::model::{Api, BlobSchema, ColumnDef, SectionSchema};
+
+    /// A blob whose fixed section carries a double, which nothing the SDK
+    /// ships did when this emitter was written.
+    fn api_with_a_float_in_a_fixed_section() -> Api {
+        let mut api = Api {
+            schema: String::from(crate::model::SCHEMA),
+            abi_version: 1,
+            sdk_version: String::from("0.0.0"),
+            prefix: String::from("ts_"),
+            sources: Vec::new(),
+            constants: Vec::new(),
+            enums: Vec::new(),
+            opaques: Vec::new(),
+            callbacks: Vec::new(),
+            structs: Vec::new(),
+            functions: Vec::new(),
+            blobs: Vec::new(),
+        };
+        api.blobs.push(BlobSchema {
+            name: String::from("probe"),
+            id: 99,
+            doc: String::from("A blob for the emitter's own test."),
+            sections: vec![SectionSchema::fixed(
+                1,
+                "summary",
+                "One integer and one double.",
+                vec![
+                    ColumnDef::new("count", Scalar::U32, "How many."),
+                    ColumnDef::new("lagna_deg", Scalar::F64, "A longitude in degrees."),
+                ],
+            )],
+        });
+        api
+    }
+
+    #[test]
+    fn a_double_in_a_fixed_section_is_declared_a_double() {
+        // The reader always dispatched on the scalar; the declaration
+        // said `int` for every fixed field, because every fixed field the
+        // SDK had was an integer. A double would have been read correctly
+        // and then failed to compile on assignment
+        // (`03-design/chart-at-the-boundary.md` §4 adds the first one).
+        let dart = decoders(&api_with_a_float_in_a_fixed_section());
+        assert!(
+            dart.contains("final double lagnaDeg;"),
+            "a double field is declared a double:\n{dart}"
+        );
+        assert!(
+            dart.contains("final int count;"),
+            "an integer stays an integer"
+        );
+        assert!(
+            dart.contains("getFloat64("),
+            "and the reader reads it as one"
+        );
+    }
 }

@@ -176,11 +176,66 @@ five rather than describing part of one.
   additive to the model, and the five sections still to come — the
   vargas, the state, the aspects, the points, the houses — all carry a
   chart's identity and would each want the same day again.
-- **Whether the day's date needs its own section.** A `CalendarDate` has
-  a calendar, a year, a month, a day, an era and its year, and a
-  resolution — seven of the day section's twenty leaves. Once the day
-  is shared the date rides with it, so this only matters if something
-  wants a date without a day.
+- **~~Whether the day's date needs its own section.~~ It already has
+  one.** The boundary describes `TsCalendarDate` — calendar, era, year,
+  era year, month, day, resolution, and the two computed fields — and
+  `TsResolution` with it, because a date already crosses for
+  `ts_calendar_convert`. The day section's date is those nine fields
+  flattened, and every binding already decodes one.
+- **Two of the day's fields have no boundary form, and one of them is
+  the interesting kind.** Of the day's eighteen leaves, the date is
+  described, the place belongs to the summary (§3), the instants are
+  doubles, and `vara`, `calendar` and `era` are catalogued. Two are
+  neither:
+
+  | field | in the document | what it is |
+  |---|---|---|
+  | `state` | `{"state": "NORMAL"}` | a tagged enum, not described |
+  | `convention` | `{"kind": "NAMED", "which": "CENTRE_NO_REFRACTION"}` | a tagged enum **with a payload**, not described |
+
+  The second is the one that matters. A catalogued member crosses as a
+  `u16` id, which is what every enum field in a blob is today. A tagged
+  enum whose variant carries data cannot: `NAMED` carries a `which`, and
+  the family this belongs to has variants carrying a `f64` elsewhere in
+  the calendar crate (`MonthStartRule::Shifted { days }`). Two fields
+  side by side would encode today's shape and would be a lie the first
+  time a variant carried something else.
+
+  Reading the type settles it, and rules out both flattenings. The
+  payload variant is not hypothetical, it is there today:
+
+  ```rust
+  pub enum SunriseConvention {
+      Named { which: Sunrise },
+      Custom { altitude_deg: f64 },
+  }
+  ```
+
+  So `kind` and `which` side by side is wrong **now**, not later — a
+  `Custom` convention has no `which` — and a `u16` over the pairs is
+  wrong too, because the pairs are not enumerable: an altitude is a
+  continuous double.
+
+  What is left is the shape a tagged union has always had at a C
+  boundary: **a `kind` id and one payload slot, read according to the
+  kind.** A fixed section already gives every field an eight-byte slot,
+  so the payload costs the wire format nothing new — `Named` puts a
+  `Sunrise` id in it and `Custom` an altitude.
+
+  And the boundary already has the precedent for what the layers do with
+  it. `frame_bits` is a packed `u32` that each ergonomic layer unpacks
+  into a `Frame`; a tagged enum is the same bargain, a scalar pair the
+  layer turns into its language's own union. The description stays flat
+  and truthful, and no emitter needs a field whose type depends on
+  another field.
+
+  **The rule, then**: a tagged enum crosses as `<name>_kind` and
+  `<name>_value`, and each binding's layer presents the union. It is
+  general, it needs no new machinery, and it is the same trade the frame
+  already makes.
+- **What `State` at the boundary is.** The description has a `State`, and
+  it is the planetary one — retrograde, combust, gandanta — not the
+  day's. The two names collide and the day's needs a different one.
 - **Whether `ts_chart_found` should take a batch.** `Founder` has
   `found_one` and a batch form, and the boundary's whole shape elsewhere
   is one call per grid. A rectification pass wants a hundred charts and
