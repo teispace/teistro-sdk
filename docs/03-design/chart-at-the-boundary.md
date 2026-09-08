@@ -78,7 +78,7 @@ description already has (`fixed`, `columns`, `bytes`):
 | 3 | `houses` | fixed + columns | the reading (`method`, `reading`, `source`) and twelve `madhya` and `sandhi` |
 | 4 | `chalit` | fixed + columns | the same shape, the chart's chalit |
 | 5 | `zodiac` | fixed | `ayanamsha`, `ayanamsha_kind`, `offset_deg`, `frame_bits` |
-| 6 | `day` | fixed | the arc, its date, its convention and its state |
+| 6 | `day` | fixed | the arc, its date, its convention and its state — **the section the panchanga blob shares**, §8 |
 | 7 | `timing` | fixed | `ghati_reckoning`, `hora_reckoning`, the hora and the ishtakaal |
 | 8 | `model` | bytes | the solar model's description, which is free text |
 | 9 | `steps` | bytes | as `positions` writes them |
@@ -86,6 +86,11 @@ description already has (`fixed`, `columns`, `bytes`):
 
 `steps` and `provenance` are the same two sections `positions` ends with,
 and a binding decodes them with the code it already has.
+
+Section 6 is not this blob's alone. The panchanga's day is the same nine
+fields with the same values, measured field for field on the same chart
+(§8), so it is one section described once and referenced by both — which
+is a change to the description's model and the first thing to build.
 
 ## 5. The entry points
 
@@ -137,15 +142,31 @@ five rather than describing part of one.
 
 ## 8. Open questions
 
+- **~~What the panchanga blob shares with this one.~~ Measured, and it
+  is the whole day.** `foundation.day.day` and `panchanga.day` are the
+  same nine fields — `convention`, `date`, `model`, `next_sunrise`,
+  `place`, `state`, `sunrise`, `sunset`, `vara` — with the same values,
+  field for field, on the same chart. That is the widest fixed section
+  in either blob, about twenty leaves, and describing it twice is
+  precisely what §3 argues against.
+
+  It cannot be shared today: `BlobSchema.sections` is a `Vec<SectionSchema>`
+  written inline, so a section belongs to one blob. Writing the same
+  twenty leaves into both blobs' entries in `idl/api.json` would put the
+  repetition in the artefact the whole project treats as canonical, and
+  every generated decoder and ergonomic layer would inherit it.
+
+  **The description needs a named section library**, and a blob's
+  sections become references into it. That is a change to the
+  description's own model rather than to a blob, and it is the first
+  thing to build here, because the five sections still to come — the
+  vargas, the state, the aspects, the points, the houses — all carry a
+  chart's identity and would each want the same day again.
 - **Whether the day's date needs its own section.** A `CalendarDate` has
   a calendar, a year, a month, a day, an era and its year, and a
-  resolution — seven fields inside `day`, which is already the widest
-  fixed section. It may want to be its own, and the panchanga blob wants
-  the same shape.
-- **What the panchanga blob shares with this one.** The day arc, the
-  date and the place are in both. Two blobs that describe the same day
-  twice would be exactly what §3 argues against; one shared section
-  described once is the answer, and where it lives is the question.
+  resolution — seven of the day section's twenty leaves. Once the day
+  is shared the date rides with it, so this only matters if something
+  wants a date without a day.
 - **Whether `ts_chart_found` should take a batch.** `Founder` has
   `found_one` and a batch form, and the boundary's whole shape elsewhere
   is one call per grid. A rectification pass wants a hundred charts and
