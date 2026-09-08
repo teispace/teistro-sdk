@@ -61,6 +61,10 @@
 //! - `serial` and `check-serial`: the falsification pass over the
 //!   canonical form — what a stamped value carries, whether the form is
 //!   canonical, and how a double is written.
+//! - `schema` and `check-schema`: the falsification pass over the chart
+//!   document's shape, which a JSON Schema for it is designed from —
+//!   which keys are required, what type each value has, which strings
+//!   come from the catalogue, and whether anything reads back.
 //! - `check-lints`: the determinism rules no compiler checks — unordered
 //!   iteration, ambient input, the `unsafe` inventory, exact
 //!   classification.
@@ -118,6 +122,7 @@ mod platform;
 mod points;
 mod python_binding;
 mod release;
+mod schema;
 mod serial;
 mod site;
 mod state;
@@ -168,6 +173,8 @@ fn main() {
         Some("points") => points::generate(&repo_root()),
         Some("check-houses") => houses::check_generated(&repo_root()),
         Some("houses") => houses::generate(&repo_root()),
+        Some("check-schema") => schema::check_generated(&repo_root()),
+        Some("schema") => schema::generate(&repo_root()),
         Some("check-serial") => serial::check_generated(&repo_root()),
         Some("serial") => serial::generate(&repo_root()),
         Some("check-surface") => surface::check_generated(&repo_root()),
@@ -225,7 +232,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

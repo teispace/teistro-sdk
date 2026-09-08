@@ -172,8 +172,36 @@ than the values.
 ## 8. Open questions
 
 - **A JSON Schema for the document**, which a consumer would validate
-  against and which `idl` already has machinery for. Deferred with the
-  dossier and the blob.
+  against. The falsification pass for it is
+  [`schema-measured.md`](schema-measured.md), and it settled where the
+  schema comes from: **the API description**, beside the C header, the
+  TypeScript surface, the Dart classes and the Python declarations, and
+  not a sample nor a derive macro over the Rust types. A sample cannot
+  tell a count from a whole double (37 of 128 numeric paths are an
+  integer in every document, and one field is written both ways), and it
+  cannot give a string field its member list (93 of 98 string paths are
+  catalogue members, whose lists only the description has). Two things
+  come before the emitter, and both are below.
+- **Nothing in the layer reads back.** 65 types derive `Serialize` and
+  none derives `Deserialize`, so a stored document cannot be read into
+  the SDK that wrote it. This is the mirror of what the first pass found
+  — `ChartFoundation` derived no `Serialize`, so a chart could not be
+  published — and it is what makes the schema's natural gate, *every
+  sample validates and reads back equal*, half unwritable today.
+- **The form is not a fixed point once a document carries an instant.**
+  The grammar writes twelve decimals, which is three past what an `f64`
+  resolves at a Julian day's magnitude, so those digits are the decimal
+  expansion of a binary value rather than information and do not survive
+  a parse: `2460483.108666389249` is written, read, and written again as
+  `2460483.108666389715`. A consumer that stores a document and hashes
+  it again does not get the producer's hash, which is the one thing the
+  canonical form exists to guarantee. The first pass asserted the
+  invariant and found it held over the corpus's recorded documents,
+  whose numbers are all under 360; a chart document carries the instant
+  it was cast for. **The fix moves the hash of every document** — a
+  shortest-round-trip decimal, which Rust and JavaScript already agree
+  on, rendered without an exponent as this grammar already renders one —
+  so it is a decision and not a patch.
 - **Whether the producers should seal.** `chart` and `panchanga` return
   an `Envelope`; sealing at the boundary means the hash is right in the
   document but still empty on the envelope a Rust caller holds. Sealing

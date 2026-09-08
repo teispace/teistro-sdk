@@ -233,6 +233,36 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**The chart document's shape is measured** (`cargo xtask schema` →
+`03-design/schema-measured.md`, gated by `check-schema`), which is the
+falsification pass a JSON Schema for it is designed from. The sample is
+built rather than recorded — three document shapes founded over the
+analytic provider — because a recorded one goes stale the first time a
+section gains a field. All five proposed rules were falsified, and three
+of them matter beyond the schema.
+
+**A stored chart cannot be read back.** 65 types across the chart layer
+derive `Serialize` and none derives `Deserialize`, so the SDK can
+publish a document it cannot itself read. This is the mirror of the
+previous pass's finding that `ChartFoundation` could not be serialised
+at all.
+
+**A document that carries an instant does not hash the same twice.** The
+canonical grammar writes twelve decimals, which is three past what an
+`f64` resolves at a Julian day's magnitude, so those digits are the
+decimal expansion of a binary value rather than information and do not
+survive a parse: `2460483.108666389249` is written, read, and written
+again as `2460483.108666389715`. A consumer that stores a document and
+hashes it does not get the producer's hash — the one guarantee the
+canonical form exists for. Survival is a coin toss per value, so a small
+document holding does not make it safe. The earlier pass asserted this
+invariant and found it held over the corpus's recorded documents, whose
+numbers are all under 360; a chart carries the instant it was cast for.
+**No number has moved yet**: the fix — a shortest-round-trip decimal,
+which Rust and JavaScript already agree on, rendered without an exponent
+as the grammar already renders one — moves the hash of every document,
+so it is recorded as a decision rather than taken as a patch.
+
 **Numbers:** reading a Bikram Sambat date no longer allocates. The date
 itself is unchanged; what moved is that `CalendarResolution` borrows the
 authority and the edition of the table it came from rather than copying
