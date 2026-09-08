@@ -7,7 +7,7 @@
 //! (`03-design/panchanga-day-conventions.md` §2). An almanac prints both
 //! facts, so this carries both.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 
@@ -28,7 +28,7 @@ use teistro_core::quantity::{JulianDay, Utc};
 /// assert_eq!(span.inside.from, window.from, "the printed row starts at sunrise");
 /// assert_eq!(span.inside.to, whole.to, "and ends where the tithi does");
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Span<T> {
     /// Which member ran.
     pub member: T,

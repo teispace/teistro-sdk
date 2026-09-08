@@ -25,7 +25,7 @@
 //! [`Combustion::orbs`] reports which orbs the answer was judged
 //! against, so a reading always carries its own provenance.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
@@ -42,7 +42,7 @@ pub const BPHS: &str = "BPHS";
 pub const SHIPPED: [&str; 2] = [SURYA_SIDDHANTA, BPHS];
 
 /// The orbs one reading was judged against, degrees.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Applied {
     /// Combust inside this.
     pub orb_deg: f64,
@@ -51,7 +51,7 @@ pub struct Applied {
 }
 
 /// One body's orbs, degrees.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Orbs {
     /// Which body burns at these distances.
     pub graha: Graha,
@@ -140,7 +140,7 @@ pub const BPHS_ORBS: [Orbs; 6] = [
 ];
 
 /// How badly the Sun burns a body.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Burning {
     /// Far enough from the Sun to be itself.
@@ -153,7 +153,7 @@ pub enum Burning {
 }
 
 /// What the Sun does to one body.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Combustion {
     /// How badly it burns.
     pub burning: Burning,

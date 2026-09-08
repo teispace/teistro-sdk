@@ -32,7 +32,7 @@
 //! assert_eq!(quarters(Graha::Sun, 1), Strength::None);
 //! ```
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::settings::NodeAspects;
@@ -54,7 +54,7 @@ pub const SHIPPED: [&str; 1] = [PARASHARA];
 
 /// How strongly a graha looks at a sign, in the quarters the tradition
 /// counts a drishti in.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Strength {
     /// No aspect at all.

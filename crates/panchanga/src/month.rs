@@ -16,12 +16,12 @@
 //! to the Indian lunisolar calendar; this module reads the month and does
 //! not decide it.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Masa, Paksha, Tithi};
 use teistro_core::settings::LunarMonth as Convention;
 
 /// The lunar month a day falls in, under both conventions.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LunarMonth {
     /// The month under the profile's own convention.
     pub month: Masa,

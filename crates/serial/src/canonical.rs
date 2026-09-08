@@ -59,6 +59,7 @@
 //! ```
 
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use teistro_core::envelope::{
     CANONICAL_DECIMALS, Digits, Hash, canonical_json, canonical_json_at, decimal as core_decimal,
 };
@@ -82,6 +83,45 @@ pub const MOST_DECIMALS: u8 = CANONICAL_DECIMALS;
 #[must_use]
 pub fn to_hash_form<T: Serialize + ?Sized>(value: &T) -> String {
     canonical_json(value)
+}
+
+/// A value read back from its canonical bytes.
+///
+/// Reading is worth only as much as its float parser. `serde_json`'s
+/// fast one is not correctly rounded — it lands a unit in the last place
+/// low on about one number in fifteen of a real chart document — so
+/// `teistro-core` asks for its `float_roundtrip` feature, and a document
+/// read here hashes to the hash it was stored under.
+/// `03-design/schema-measured.md` §9 measures it, and
+/// `a_value_reads_back_from_its_own_bytes` fails if the feature is ever
+/// off.
+///
+/// # Errors
+///
+/// `INVALID_ARG` naming what the text is not: bytes that are not JSON,
+/// or JSON that is not this value — a catalogue key this build does not
+/// know, a divisional scheme whose divisions disagree with the one it
+/// names, an aspect table this build does not ship.
+pub fn from_hash_form<T: DeserializeOwned>(text: &str) -> Result<T, Error> {
+    serde_json::from_str(text)
+        .map_err(|error| Error::invalid_arg(format!("the bytes are not this value: {error}")))
+}
+
+/// Whether a value survives being written and read back.
+///
+/// The property a content hash rests on, as a question a caller can ask
+/// rather than a claim the documentation makes: a stored document is
+/// worth a hash only if reading it gives the bytes it was hashed under.
+///
+/// # Errors
+///
+/// Whatever [`from_hash_form`] refuses the value's own bytes for, which
+/// is a value this build cannot read back — a fixture written by an
+/// older catalogue, say.
+pub fn reads_back<T: Serialize + DeserializeOwned>(value: &T) -> Result<bool, Error> {
+    let written = to_hash_form(value);
+    let read: T = from_hash_form(&written)?;
+    Ok(to_hash_form(&read) == written)
 }
 
 /// The hash of a value's canonical bytes.
@@ -146,7 +186,10 @@ mod tests {
         reason = "tests fail by panicking and index their own JSON literals"
     )]
 
-    use super::{Digits, MOST_DECIMALS, decimal, hash_of, to_hash_form, to_rendered, widest};
+    use super::{
+        Digits, MOST_DECIMALS, decimal, from_hash_form, hash_of, reads_back, to_hash_form,
+        to_rendered, widest,
+    };
     use serde_json::json;
     use teistro_core::settings::Precision;
 
@@ -292,5 +335,44 @@ mod tests {
         assert_ne!(hash_of(&json!(1.0)), hash_of(&json!(1.000_000_000_000_01)));
         // Two spellings of one double are still one answer.
         assert_eq!(hash_of(&json!(1.0)), hash_of(&json!(1.000_f64)));
+    }
+
+    #[test]
+    fn a_value_reads_back_from_its_own_bytes() {
+        // **The gate on `serde_json`'s `float_roundtrip` feature.** The
+        // feature is global to a build, so nothing in this crate can
+        // declare it; what this crate can do is fail when it is off.
+        //
+        // Without it `serde_json` parses a float with a fast path that is
+        // not correctly rounded, and lands a unit in the last place low
+        // on about one number in fifteen of a real chart document. Every
+        // hash taken from a stored document would then be wrong in the
+        // last place, silently, which is the one failure a content hash
+        // cannot survive.
+        //
+        // The number below is one the fast path gets wrong.
+        let text = "218.91170673806658";
+        let correct: f64 = text.parse().expect("std is correctly rounded");
+        let parsed: f64 = serde_json::from_str(text).expect("it parses");
+        assert_eq!(
+            parsed.to_bits(),
+            correct.to_bits(),
+            "`serde_json` is not reading floats correctly; is `float_roundtrip` off?"
+        );
+
+        // And the whole way round, on a value rather than a number.
+        let value = json!({"jd": 218.911_706_738_066_58_f64});
+        let written = to_hash_form(&value);
+        let read: serde_json::Value = from_hash_form(&written).expect("it reads back");
+        assert_eq!(to_hash_form(&read), written, "the bytes moved");
+        assert_eq!(hash_of(&read), hash_of(&value), "the hash moved");
+        assert!(reads_back(&value).expect("it reads back"));
+    }
+
+    #[test]
+    fn what_a_document_is_not_is_refused_by_name() {
+        let refusal = from_hash_form::<serde_json::Value>("not json at all")
+            .expect_err("bytes that are not JSON");
+        assert!(refusal.message.contains("not this value"), "{refusal}");
     }
 }

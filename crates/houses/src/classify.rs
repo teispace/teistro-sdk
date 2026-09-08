@@ -20,7 +20,7 @@
 //! assert_eq!(quadrant(13), None);
 //! ```
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 
 /// The houses of a chart.
@@ -48,7 +48,7 @@ pub const UPACHAYA: [u8; 4] = [3, 6, 10, 11];
 ///
 /// These three **partition** the twelve, which is why they are one enum
 /// and the overlapping classifications are predicates.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Quadrant {
     /// Angular: the 1st, 4th, 7th and 10th.

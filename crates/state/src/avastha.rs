@@ -17,7 +17,7 @@
 //! wrong one, and a wrong rule that reproduces a plausible-looking value
 //! is never discovered (`03-design/state-and-avasthas.md` §7).
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
     AvasthaBaladi, AvasthaDeeptadi, AvasthaJagradadi, AvasthaLajjitadi, Dignity, Graha, Rashi,
     Relationship, Tatwa,
@@ -124,7 +124,7 @@ pub struct Placement {
 /// The third is not a failure and not a "no". A caller that treats an
 /// undecided state as absent will be wrong about it; one that shows it
 /// as unknown will not.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Holds {
     /// It holds.
@@ -137,7 +137,7 @@ pub enum Holds {
 
 /// The lajjitadi a chart decides, the ones it rules out, and the ones it
 /// cannot decide either way.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Lajjitadi {
     /// The states that hold.
     pub holding: Vec<AvasthaLajjitadi>,
@@ -266,7 +266,7 @@ pub const fn deeptadi(dignity: Dignity) -> Option<AvasthaDeeptadi> {
 }
 
 /// Two planets at war, from the point of view of one of them.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct War {
     /// The other body.
     pub opponent: Graha,

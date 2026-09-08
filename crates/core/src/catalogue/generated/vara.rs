@@ -296,7 +296,7 @@ impl serde::Serialize for Vara {
 
 impl<'de> serde::Deserialize<'de> for Vara {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let key = <&str>::deserialize(deserializer)?;
-        Self::from_key(key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Vara>(key)))
+        let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Vara>(&key)))
     }
 }

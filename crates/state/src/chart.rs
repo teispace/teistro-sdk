@@ -5,7 +5,7 @@
 //! needs the dispositor's sign, the lajjitadi need who shares a sign, and
 //! a body cannot know it is at war on its own.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
@@ -21,7 +21,7 @@ use crate::burn::{self, Combustion};
 use crate::dignity::{self, Friendship};
 
 /// Which way a body is going, and how fast.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Motion {
     /// Whether it is going backwards through the zodiac.
     pub retrograde: bool,
@@ -30,7 +30,7 @@ pub struct Motion {
 }
 
 /// What one graha is, in one chart.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GrahaState {
     /// Which graha.
     pub graha: Graha,

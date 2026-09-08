@@ -16,7 +16,7 @@
 //! sometimes holds two and sometimes none. The lists say so; a single
 //! nullable field would not.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Ayana, Rashi};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -30,7 +30,7 @@ const FIRST_UTTARAYANA_SIGN: u16 = 9;
 const LAST_UTTARAYANA_SIGN: u16 = 2;
 
 /// What the Moon did in the day.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MoonDay {
     /// Every moonrise inside the window, in order.
     pub rises: Vec<JulianDay<Utc>>,
@@ -57,7 +57,7 @@ impl MoonDay {
 }
 
 /// What the Sun did in the day.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SunDay {
     /// The signs the Sun stood in; two only on a sankranti day.
     pub signs: Vec<Span<Rashi>>,

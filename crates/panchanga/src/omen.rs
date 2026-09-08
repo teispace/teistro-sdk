@@ -25,7 +25,7 @@
 //! So the tables ship as data with their own confidence marks, chosen by
 //! `panchanga.muhurta_tables`, and a yoga that fires says what made it.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
     Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Tithi, TithiClass, Vara,
 };
@@ -38,7 +38,7 @@ use crate::span::Span;
 pub const CLASSICAL: &str = "CLASSICAL";
 
 /// What made a muhurta yoga hold.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "cause", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum YogaCause {
     /// The vara and the nakshatra the Moon was in.
@@ -60,7 +60,7 @@ pub enum YogaCause {
 }
 
 /// A muhurta yoga that held, and for how long.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MuhurtaYoga {
     /// Which yoga.
     pub yoga: Kind,
@@ -71,7 +71,7 @@ pub struct MuhurtaYoga {
 }
 
 /// What a day is said to be.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Omens {
     /// Panchaka, while the Moon is in the last five nakshatras.
     pub panchaka: Vec<Span<Panchaka>>,

@@ -11,7 +11,7 @@
 //! days computed one at a time: consecutive windows share a boundary, so
 //! one crossing search over the month replaces thirty overlapping ones.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_astro::ayanamsha::Basis;
 use teistro_astro::completion::Completion;
 use teistro_astro::delta_t::DeltaTModel;
@@ -46,7 +46,7 @@ use crate::span::{self, Span};
 /// panchangas of the same inputs under the same settings are equal field
 /// for field, which is what the determinism contract asks of everything
 /// that crosses a binding.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Panchanga {
     /// The day, with its arc, its vara, its polar state and the sunrise
     /// convention it was reckoned under.
@@ -134,7 +134,7 @@ impl Panchanga {
 }
 
 /// What the almanac hashes as its input.
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct Input {
     date: String,
     latitude_deg: f64,
@@ -143,7 +143,7 @@ struct Input {
 }
 
 /// The same, for a range.
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct RangeInput {
     from: String,
     to: String,

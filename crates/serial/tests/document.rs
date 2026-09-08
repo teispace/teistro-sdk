@@ -35,7 +35,7 @@ mod sample;
 
 use sample::{founded, whole};
 use teistro_core::envelope::{Digits, Hash};
-use teistro_serial::canonical::{hash_of, to_hash_form, to_rendered};
+use teistro_serial::canonical::{from_hash_form, hash_of, reads_back, to_hash_form, to_rendered};
 use teistro_serial::{Document, Sealed};
 use teistro_state::state;
 
@@ -226,4 +226,53 @@ fn a_sealed_document_gives_up_its_parts_intact() {
     let (value, provenance) = sealed.into_parts();
     assert_eq!(provenance.content_hash, hash);
     assert_eq!(hash_of(&value), hash, "the hash still belongs to it");
+}
+
+#[test]
+fn every_document_reads_back_as_the_document_it_was() {
+    // The gate the schema pass said could not be written: *every sample
+    // validates and reads back equal*. Before the layer derived
+    // `Deserialize` there was nothing to read a stored chart into, so a
+    // hash on one was a claim nothing could check from the inside
+    // (`03-design/schema-measured.md` §7).
+    //
+    // Three shapes, because the interesting part is what is optional: a
+    // section left out is an absent key, and a reader has to take that
+    // as "not asked for" rather than refuse the document.
+    for (name, document) in sample::samples() {
+        let written = to_hash_form(&document);
+        let read: Document = from_hash_form(&written)
+            .unwrap_or_else(|error| panic!("{name} did not read back: {error}"));
+
+        // The bytes, which is what the hash is taken over.
+        assert_eq!(to_hash_form(&read), written, "{name}: the bytes moved");
+        // The value, which is stronger: nothing was dropped on the way.
+        assert_eq!(read, document, "{name}: the value moved");
+        // And the hash itself, which is the property a consumer relies on.
+        assert_eq!(hash_of(&read), hash_of(&document), "{name}: the hash moved");
+        assert!(reads_back(&document).expect("it reads back"), "{name}");
+        println!("{name}: {} bytes read back", written.len());
+    }
+}
+
+#[test]
+fn a_document_this_build_cannot_read_is_refused_by_name() {
+    // A stored document is worth reading only if what this build cannot
+    // reproduce is refused rather than quietly reinterpreted. The three
+    // hand-written readers each check one such thing, and each names it.
+    let (document, _) = sample::whole();
+    let written = to_hash_form(&document);
+
+    // A divisional scheme whose divisions disagree with the chart it
+    // names: D9 does not divide a sign eleven times in any build.
+    let wrong_divisions = written.replace(r#""divisions":9"#, r#""divisions":11"#);
+    assert_ne!(wrong_divisions, written, "the fixture has a D9 in it");
+    let refusal = from_hash_form::<Document>(&wrong_divisions).expect_err("a wrong D9");
+    assert!(refusal.message.contains("divides a sign"), "{refusal}");
+
+    // A catalogue key this build does not know.
+    let wrong_key = written.replace(r#""graha":"SUN""#, r#""graha":"SOL""#);
+    assert_ne!(wrong_key, written, "the fixture has a Sun in it");
+    let refusal = from_hash_form::<Document>(&wrong_key).expect_err("an unknown graha");
+    assert!(refusal.message.contains("SOL"), "{refusal}");
 }

@@ -27,7 +27,7 @@
 //!   make the two the same, and [`Group::parts`] is what a caller counts
 //!   with.
 
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Rashi, Varga};
 use teistro_core::error::{Error, Status};
@@ -45,7 +45,7 @@ pub const MOST_DIVISIONS: u16 = 300;
 const SIGNS: u16 = 12;
 
 /// How a sign is sorted into groups, each with its own rule.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Classifier {
     /// One group: every sign treated alike.
@@ -84,7 +84,7 @@ impl Classifier {
 }
 
 /// The multiplier a stepping rule puts on the sign.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SignBase {
     /// Count from a fixed sign, which the offset names: `a = 0`.
@@ -176,6 +176,65 @@ pub struct Scheme {
     pub classifier: Classifier,
     /// One rule per group, in group order.
     pub groups: &'static [Group],
+}
+
+impl<'de> Deserialize<'de> for Scheme {
+    /// Reads a scheme back from a document by its **identity**, and takes
+    /// the rule itself from this build.
+    ///
+    /// The groups are written into a document so a reader can see the
+    /// rule that was applied, and so the content hash moves when the rule
+    /// does. They are not read back: a group's map may name a
+    /// `&'static [u8]` of signs, and no document can produce one. That
+    /// costs nothing, because the hash is what catches a document written
+    /// under a different table — the groups are in the bytes it is taken
+    /// over.
+    ///
+    /// What is read is checked. A catalogued chart's divisions and
+    /// classifier must be the ones this build's catalogue gives it, so a
+    /// document that names D9 and describes something else is refused by
+    /// name rather than quietly read as D9.
+    ///
+    /// # Errors
+    ///
+    /// A `varga` this build does not catalogue, a `divisions` or
+    /// `classifier` that disagrees with it, or an unattested D-N whose
+    /// divisions are outside [`MOST_DIVISIONS`].
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Scheme, D::Error> {
+        /// The fields a document carries, as it carries them.
+        #[derive(Deserialize)]
+        struct Written {
+            varga: Option<Varga>,
+            divisions: u16,
+            classifier: Classifier,
+            /// Read and dropped; see the note above.
+            #[serde(default)]
+            groups: serde::de::IgnoredAny,
+        }
+        let written = Written::deserialize(deserializer)?;
+        let _ = written.groups;
+        let rebuilt = match written.varga {
+            Some(varga) => Scheme::of(varga),
+            // The only convention this crate implements. A document does
+            // not carry the one it was computed under — that is in the
+            // envelope's `applied_conventions` — so a second convention
+            // means reading it from there rather than assuming here.
+            None => Scheme::cyclic(written.divisions).map_err(serde::de::Error::custom)?,
+        };
+        if rebuilt.divisions != written.divisions {
+            return Err(serde::de::Error::custom(format!(
+                "the document says {:?} divides a sign {} times and this build says {}",
+                written.varga, written.divisions, rebuilt.divisions
+            )));
+        }
+        if rebuilt.classifier != written.classifier {
+            return Err(serde::de::Error::custom(format!(
+                "the document sorts {:?}'s signs by {:?} and this build sorts them by {:?}",
+                written.varga, written.classifier, rebuilt.classifier
+            )));
+        }
+        Ok(rebuilt)
+    }
 }
 
 /// A group whose parts are equal and whose rule steps.

@@ -601,7 +601,7 @@ impl serde::Serialize for Nakshatra {
 
 impl<'de> serde::Deserialize<'de> for Nakshatra {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let key = <&str>::deserialize(deserializer)?;
-        Self::from_key(key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Nakshatra>(key)))
+        let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Nakshatra>(&key)))
     }
 }

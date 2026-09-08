@@ -241,11 +241,45 @@ analytic provider — because a recorded one goes stale the first time a
 section gains a field. All five proposed rules were falsified, and three
 of them matter beyond the schema.
 
-**A stored chart cannot be read back.** 65 types across the chart layer
-derive `Serialize` and none derives `Deserialize`, so the SDK can
-publish a document it cannot itself read. This is the mirror of the
-previous pass's finding that `ChartFoundation` could not be serialised
-at all.
+**A stored chart reads back.** 60 of the chart layer's 65 types now
+derive `Deserialize`, and the five that do not are the five that cannot:
+a value whose identity is a shipped constant, holding a `&'static` no
+document can produce — a divisional scheme's group table, its listed
+signs, an aspect angle's key, the drishti table a chart was read under.
+Each has a reader written by hand that reads the value back **by its
+identity**, looking the constant up in this build's own table and
+checking what the document says about that table against it. A document
+that names D9 and describes something else is refused by name, which is
+stricter than a derive would have been and is what a stored chart wants.
+`canonical::from_hash_form` reads one and `canonical::reads_back` asks
+whether a value survives the trip; every sample document now validates
+and reads back equal, in bytes, in value and in hash.
+
+**The generated catalogue readers had never worked, and nothing had
+tried them.** All sixty used `<&str>::deserialize`, which needs a string
+borrowed from the input buffer, so a catalogue enum could be read from
+text and never through a `serde_json::Value`. They take a `Cow` now and
+are `DeserializeOwned`.
+
+**Numbers: none moved, and three comparisons got sharper.**
+`teistro-core` now asks for `serde_json`'s `float_roundtrip` feature.
+The default float parser is a fast path that is not correctly rounded —
+it read 84 of a chart document's 1518 numbers a unit in the last place
+low — and a reader on it cannot reproduce the hash it exists to check.
+Because the conformance corpus is JSON too, it had been read the same
+way: `points`'s clock-driven lagnas go from 138 to 141 exact of 213 now
+that the recorded values parse to the doubles they name. Nothing the SDK
+computes changed.
+
+`arbitrary_precision` fixes the same numbers and is the wrong tool.
+Serde buffers an internally tagged enum before writing it, and that
+buffer writes a number as `{"$serde_json::private::Number": …}`, which
+breaks `DeltaTModel`, `CalendarResolution`, `Outcome` and every other
+`#[serde(tag = …)]` the SDK has; it also leaves `from_str` wrong, so a
+reader would have had to go through a `Value` to be correct.
+`float_roundtrip` has neither cost. The feature is global to a build, as
+`preserve_order` already is, so the defence is a test rather than a
+declaration: one that fails if it is ever off.
 
 **Numbers: every content hash moves. No computed value does.** The
 canonical form now writes each number as the **shortest** decimal that

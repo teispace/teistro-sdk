@@ -33,13 +33,13 @@
 //! assert_eq!(sealed.content_hash(), sealed.provenance().content_hash);
 //! ```
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use teistro_core::envelope::{Envelope, Hash, Provenance};
 
 use crate::canonical;
 
 /// A value with a provenance whose content hash is the value's own.
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Sealed<T> {
     value: T,
     provenance: Provenance,
