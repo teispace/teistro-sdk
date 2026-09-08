@@ -1607,7 +1607,7 @@ class _Blob:
 fn render_decoder(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
     let name = pascal(&snake(&schema.name));
     for section in &schema.sections {
-        if section.kind == SectionKind::Columns {
+        if section.kind == SectionKind::Columns && section.shape.is_none() {
             render_column_class(out, &name, section);
         }
     }
@@ -1615,8 +1615,13 @@ fn render_decoder(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<S
     render_decode_function(out, &name, schema);
 }
 
+/// The dataclass a column section decodes into: the shape it names, so
+/// two blobs carrying it share one class, or a name of the blob's own.
 fn column_class(name: &str, section: &SectionSchema) -> String {
-    format!("{name}{}", pascal(&snake(&section.name)))
+    section.shape.as_deref().map_or_else(
+        || format!("{name}{}", pascal(&snake(&section.name))),
+        |shape| pascal(&snake(shape)),
+    )
 }
 
 fn render_column_class(out: &mut String, name: &str, section: &SectionSchema) {
@@ -1625,9 +1630,14 @@ fn render_column_class(out: &mut String, name: &str, section: &SectionSchema) {
         "@dataclass(frozen=True)\nclass {}:",
         column_class(name, section)
     );
+    let whose = if section.shape.is_some() {
+        String::from("section, wherever a blob carries it")
+    } else {
+        format!("section of a {name} blob")
+    };
     out.push_str(&docstring(
         &format!(
-            "The `{}` section of a {name} blob: one column per field, each a view\nover the blob's bytes rather than a copy.\n\n{}",
+            "The `{}` {whose}: one column per field, each a view\nover the blob's bytes rather than a copy.\n\n{}",
             section.name, section.doc
         ),
         "    ",
@@ -1646,21 +1656,32 @@ fn render_column_class(out: &mut String, name: &str, section: &SectionSchema) {
     out.push_str("\n\n");
 }
 
-/// A fixed section that names a shape, as a dataclass of its own.
+/// A section that names a shape, as a dataclass of its own.
 ///
 /// Two blobs carrying the same section — a chart's day and a panchanga's
 /// — then share one type rather than repeating its fields in each
 /// (`03-design/chart-at-the-boundary.md` §8). A section without a shape
 /// stays inlined on the blob's own dataclass, as it always was.
-fn render_shape_classes(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSet<String>) {
-    // A fixed section that names a shape becomes a dataclass of its own,
-    // so two blobs carrying the same section share one type rather than
-    // repeating its fields (`03-design/chart-at-the-boundary.md` §8).
+///
+/// A column section shapes the same way, into the dataclass
+/// [`render_column_class`] writes; which kind a shape is follows the
+/// section's own, and a shape used by two kinds is refused by the
+/// schema's own check rather than emitted twice.
+fn render_shape_classes(
+    out: &mut String,
+    blob: &str,
+    schema: &BlobSchema,
+    shapes: &mut BTreeSet<String>,
+) {
     for section in &schema.sections {
-        let (SectionKind::Fixed, Some(shape)) = (section.kind, section.shape.as_deref()) else {
+        let Some(shape) = section.shape.as_deref() else {
             continue;
         };
         if !shapes.insert(shape.to_string()) {
+            continue;
+        }
+        if section.kind == SectionKind::Columns {
+            render_column_class(out, blob, section);
             continue;
         }
         let _ = writeln!(out, "@dataclass(frozen=True)\nclass {}:", pascal(shape));
@@ -1684,7 +1705,7 @@ fn render_decoded_class(
     schema: &BlobSchema,
     shapes: &mut BTreeSet<String>,
 ) {
-    render_shape_classes(out, schema, shapes);
+    render_shape_classes(out, name, schema, shapes);
     let _ = writeln!(out, "@dataclass(frozen=True)\nclass {name}:");
     out.push_str(&docstring(
         &format!("A decoded {name} blob.\n\n{}", schema.doc),

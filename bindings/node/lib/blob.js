@@ -189,26 +189,34 @@ export function decodeIntlRender(bytes) {
 }
 
 /**
- * Decodes a Chart blob: A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.
+ * Decodes a Charts blob: A batch of founded charts at one place: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing. Every per-chart section runs charts outermost, and a batch of one is the ordinary case.
  *
  * @param {Uint8Array} bytes the blob the library returned
  */
-export function decodeChart(bytes) {
-  const blob = open(bytes, 3, 'chart');
+export function decodeCharts(bytes) {
+  const blob = open(bytes, 3, 'charts');
   const out = {};
   {
     const at = section(blob, 1, 'summary');
-    out.instant = READERS.f64(blob.dv, at.offset + 0);
-    out.kind = READERS.u16(blob.dv, at.offset + 8);
-    out.lagnaDeg = READERS.f64(blob.dv, at.offset + 16);
-    out.dayLagnaDeg = READERS.f64(blob.dv, at.offset + 24);
-    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 32);
-    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 40);
-    out.altitudeM = READERS.f64(blob.dv, at.offset + 48);
-    out.grahaCount = READERS.u32(blob.dv, at.offset + 56);
+    out.kind = READERS.u16(blob.dv, at.offset + 0);
+    out.chartCount = READERS.u32(blob.dv, at.offset + 8);
+    out.grahaCount = READERS.u32(blob.dv, at.offset + 16);
+    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 24);
+    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 32);
+    out.altitudeM = READERS.f64(blob.dv, at.offset + 40);
   }
   {
-    const at = section(blob, 2, 'grahas');
+    const at = section(blob, 2, 'cast');
+    out.cast = {
+      instant: column(blob, at, 0, 'f64', at.count),
+      lagnaDeg: column(blob, at, 1, 'f64', at.count),
+      dayLagnaDeg: column(blob, at, 2, 'f64', at.count),
+      ayanamshaOffsetDeg: column(blob, at, 3, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 3, 'grahas');
     out.grahas = {
       graha: column(blob, at, 0, 'u16', at.count),
       longitudeDeg: column(blob, at, 1, 'f64', at.count),
@@ -228,7 +236,7 @@ export function decodeChart(bytes) {
     };
   }
   {
-    const at = section(blob, 3, 'readings');
+    const at = section(blob, 4, 'readings');
     out.housesMethod = READERS.u16(blob.dv, at.offset + 0);
     out.housesSource = READERS.u16(blob.dv, at.offset + 8);
     out.housesReading = READERS.u8(blob.dv, at.offset + 16);
@@ -237,7 +245,7 @@ export function decodeChart(bytes) {
     out.chalitReading = READERS.u8(blob.dv, at.offset + 40);
   }
   {
-    const at = section(blob, 4, 'houses');
+    const at = section(blob, 5, 'houses');
     out.houses = {
       madhyaDeg: column(blob, at, 0, 'f64', at.count),
       sandhiDeg: column(blob, at, 1, 'f64', at.count),
@@ -245,7 +253,7 @@ export function decodeChart(bytes) {
     };
   }
   {
-    const at = section(blob, 5, 'chalit');
+    const at = section(blob, 6, 'chalit');
     out.chalit = {
       madhyaDeg: column(blob, at, 0, 'f64', at.count),
       sandhiDeg: column(blob, at, 1, 'f64', at.count),
@@ -253,59 +261,62 @@ export function decodeChart(bytes) {
     };
   }
   {
-    const at = section(blob, 6, 'zodiac');
+    const at = section(blob, 7, 'zodiac');
     out.frameBits = READERS.u32(blob.dv, at.offset + 0);
-    out.offsetDeg = READERS.f64(blob.dv, at.offset + 8);
-    out.ayanamshaKind = READERS.u8(blob.dv, at.offset + 16);
-    out.ayanamsha = READERS.u16(blob.dv, at.offset + 24);
+    out.ayanamshaKind = READERS.u8(blob.dv, at.offset + 8);
+    out.ayanamsha = READERS.u16(blob.dv, at.offset + 16);
   }
   {
-    const at = section(blob, 7, 'day');
+    const at = section(blob, 8, 'day');
     out.day = {
-      sunrise: READERS.f64(blob.dv, at.offset + 0),
-      sunset: READERS.f64(blob.dv, at.offset + 8),
-      nextSunrise: READERS.f64(blob.dv, at.offset + 16),
-      vara: READERS.u16(blob.dv, at.offset + 24),
-      part: READERS.u8(blob.dv, at.offset + 32),
-      elapsed: READERS.f64(blob.dv, at.offset + 40),
-      calendar: READERS.u16(blob.dv, at.offset + 48),
-      era: READERS.u16(blob.dv, at.offset + 56),
-      year: READERS.i32(blob.dv, at.offset + 64),
-      eraYear: READERS.i32(blob.dv, at.offset + 72),
-      month: READERS.u8(blob.dv, at.offset + 80),
-      dayOfMonth: READERS.u8(blob.dv, at.offset + 88),
-      resolution: READERS.u8(blob.dv, at.offset + 96),
-      computedMonth: READERS.u8(blob.dv, at.offset + 104),
-      computedDay: READERS.u8(blob.dv, at.offset + 112),
-      stateKind: READERS.u8(blob.dv, at.offset + 120),
-      statePolarKind: READERS.u8(blob.dv, at.offset + 128),
-      statePolarPolicy: READERS.u8(blob.dv, at.offset + 136),
-      conventionKind: READERS.u8(blob.dv, at.offset + 144),
-      conventionValue: READERS.f64(blob.dv, at.offset + 152),
+      sunrise: column(blob, at, 0, 'f64', at.count),
+      sunset: column(blob, at, 1, 'f64', at.count),
+      nextSunrise: column(blob, at, 2, 'f64', at.count),
+      vara: column(blob, at, 3, 'u16', at.count),
+      part: column(blob, at, 4, 'u8', at.count),
+      elapsed: column(blob, at, 5, 'f64', at.count),
+      calendar: column(blob, at, 6, 'u16', at.count),
+      era: column(blob, at, 7, 'u16', at.count),
+      year: column(blob, at, 8, 'i32', at.count),
+      eraYear: column(blob, at, 9, 'i32', at.count),
+      month: column(blob, at, 10, 'u8', at.count),
+      dayOfMonth: column(blob, at, 11, 'u8', at.count),
+      resolution: column(blob, at, 12, 'u8', at.count),
+      computedMonth: column(blob, at, 13, 'u8', at.count),
+      computedDay: column(blob, at, 14, 'u8', at.count),
+      stateKind: column(blob, at, 15, 'u8', at.count),
+      statePolarKind: column(blob, at, 16, 'u8', at.count),
+      statePolarPolicy: column(blob, at, 17, 'u8', at.count),
+      conventionKind: column(blob, at, 18, 'u8', at.count),
+      conventionValue: column(blob, at, 19, 'f64', at.count),
+      length: at.count,
     };
   }
   {
-    const at = section(blob, 8, 'timing');
-    out.ghati = READERS.u8(blob.dv, at.offset + 0);
-    out.pala = READERS.u8(blob.dv, at.offset + 8);
-    out.vipala = READERS.u8(blob.dv, at.offset + 16);
-    out.ghatiReckoning = READERS.u8(blob.dv, at.offset + 24);
-    out.horaNumber = READERS.u8(blob.dv, at.offset + 32);
-    out.horaLord = READERS.u16(blob.dv, at.offset + 40);
-    out.horaStart = READERS.f64(blob.dv, at.offset + 48);
-    out.horaEnd = READERS.f64(blob.dv, at.offset + 56);
-    out.horaReckoning = READERS.u8(blob.dv, at.offset + 64);
+    const at = section(blob, 9, 'timing');
+    out.timing = {
+      ghati: column(blob, at, 0, 'u8', at.count),
+      pala: column(blob, at, 1, 'u8', at.count),
+      vipala: column(blob, at, 2, 'u8', at.count),
+      ghatiReckoning: column(blob, at, 3, 'u8', at.count),
+      horaNumber: column(blob, at, 4, 'u8', at.count),
+      horaLord: column(blob, at, 5, 'u16', at.count),
+      horaStart: column(blob, at, 6, 'f64', at.count),
+      horaEnd: column(blob, at, 7, 'f64', at.count),
+      horaReckoning: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
   }
   {
-    const at = section(blob, 9, 'model');
+    const at = section(blob, 10, 'model');
     out.model = text(blob, at);
   }
   {
-    const at = section(blob, 10, 'steps');
+    const at = section(blob, 11, 'steps');
     out.steps = text(blob, at);
   }
   {
-    const at = section(blob, 11, 'provenance');
+    const at = section(blob, 12, 'provenance');
     out.provenance = text(blob, at);
   }
   return out;

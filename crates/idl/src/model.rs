@@ -3,6 +3,8 @@
 //! the file ships inside every package, is diffed in review and is gated
 //! by `cargo xtask check-ffi`.
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 
 /// The schema of the description file.
@@ -621,6 +623,74 @@ pub struct SectionSchema {
     pub shape: Option<String>,
 }
 
+/// Every shape a set of schemas declares, checked for agreement.
+///
+/// A shape is **one** type in every binding, so the sections that name
+/// it must be the same section: the same kind, the same fields in the
+/// same order, of the same scalars and naming the same enums. Two that
+/// differ would emit whichever the generator reached first and decode
+/// the other one wrongly — silently, since both are valid blobs.
+///
+/// # Errors
+///
+/// A sentence naming the shape, the two sections that disagree and what
+/// differs.
+pub fn check_shapes(schemas: &[BlobSchema]) -> Result<(), String> {
+    let mut seen: BTreeMap<&str, (&str, &SectionSchema)> = BTreeMap::new();
+    for schema in schemas {
+        for section in &schema.sections {
+            let Some(shape) = section.shape.as_deref() else {
+                continue;
+            };
+            let Some((first_blob, first)) = seen.insert(shape, (schema.name.as_str(), section))
+            else {
+                continue;
+            };
+            let where_ = format!(
+                "shape `{shape}`: `{first_blob}.{}` and `{}.{}`",
+                first.name, schema.name, section.name
+            );
+            if first.kind != section.kind {
+                return Err(format!(
+                    "{where_} are {:?} and {:?}; a shape is one kind",
+                    first.kind, section.kind
+                ));
+            }
+            if first.fields.len() != section.fields.len() {
+                return Err(format!(
+                    "{where_} have {} and {} fields; a shape is one set",
+                    first.fields.len(),
+                    section.fields.len()
+                ));
+            }
+            for (a, b) in first.fields.iter().zip(&section.fields) {
+                if a.name != b.name {
+                    return Err(format!(
+                        "{where_} order their fields differently: `{}` against `{}`",
+                        a.name, b.name
+                    ));
+                }
+                if a.scalar != b.scalar {
+                    return Err(format!(
+                        "{where_} disagree on `{}`: {:?} against {:?}",
+                        a.name, a.scalar, b.scalar
+                    ));
+                }
+                if a.enum_name != b.enum_name {
+                    return Err(format!(
+                        "{where_} disagree on what `{}` names: {:?} against {:?}",
+                        a.name, a.enum_name, b.enum_name
+                    ));
+                }
+            }
+            // The first declaration stays the one the emitters render,
+            // so put it back rather than the copy just checked.
+            seen.insert(shape, (first_blob, first));
+        }
+    }
+    Ok(())
+}
+
 impl SectionSchema {
     /// The field or column with a name.
     #[must_use]
@@ -717,9 +787,85 @@ impl SectionSchema {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        reason = "tests fail by panicking, and the message names the schema at fault"
+    )]
 
     use super::*;
+
+    /// A blob whose one section carries a shape.
+    fn blob_with_a_shape(id: u32, name: &str, section: SectionSchema) -> BlobSchema {
+        BlobSchema {
+            name: name.to_string(),
+            id,
+            doc: String::from("A blob for the check's own test."),
+            sections: vec![section],
+        }
+    }
+
+    /// Two sections that name one shape must be the same section.
+    ///
+    /// A shape is one type in every binding, and the emitters render it
+    /// from whichever declaration they meet first; a second that
+    /// differed would decode through the first one's type, silently and
+    /// wrongly. Nothing else catches that — both blobs are well formed.
+    #[test]
+    fn a_shape_two_sections_disagree_on_is_refused() {
+        let day = |scalar| {
+            SectionSchema::columns(
+                1,
+                "day",
+                "The day.",
+                vec![
+                    ColumnDef::new("sunrise", Scalar::F64, "When it opened."),
+                    ColumnDef::new("vara", scalar, "Which weekday."),
+                ],
+            )
+            .of_shape("day")
+        };
+        let agree = vec![
+            blob_with_a_shape(1, "chart", day(Scalar::U16)),
+            blob_with_a_shape(2, "panchanga", day(Scalar::U16)),
+        ];
+        assert!(check_shapes(&agree).is_ok());
+
+        let widths = vec![
+            blob_with_a_shape(1, "chart", day(Scalar::U16)),
+            blob_with_a_shape(2, "panchanga", day(Scalar::U8)),
+        ];
+        let complaint = check_shapes(&widths).expect_err("two widths, one shape");
+        assert!(
+            complaint.contains("`vara`") && complaint.contains("chart.day"),
+            "the complaint names the field and both sections: {complaint}"
+        );
+
+        // The same fields as a fixed section rather than a column one:
+        // one type name, two layouts, which is the other way to disagree.
+        let kinds = vec![
+            blob_with_a_shape(1, "chart", day(Scalar::U16)),
+            blob_with_a_shape(
+                2,
+                "panchanga",
+                SectionSchema::fixed(
+                    1,
+                    "day",
+                    "The day.",
+                    vec![
+                        ColumnDef::new("sunrise", Scalar::F64, "When it opened."),
+                        ColumnDef::new("vara", Scalar::U16, "Which weekday."),
+                    ],
+                )
+                .of_shape("day"),
+            ),
+        ];
+        let complaint = check_shapes(&kinds).expect_err("two kinds, one shape");
+        assert!(
+            complaint.contains("a shape is one kind"),
+            "the complaint says which rule broke: {complaint}"
+        );
+    }
 
     #[test]
     fn scalars_round_trip_their_spellings_and_widths() {

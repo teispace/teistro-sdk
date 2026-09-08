@@ -18,6 +18,7 @@ PYTHONPATH=. python3 example/birth_chart.py
 | [`panchanga.py`](panchanga.py) | the five limbs of a day — tithi, vara, nakshatra, yoga, karana | every limb but the weekday is a function of two longitudes, so a binding can compute a whole almanac from `positions`. The karana is not a cycle of eleven, and the rule is the SDK's own |
 | [`calendar.py`](calendar.py) | a Bikram Sambat year and one month as a calendar page | month lengths are decided by the Sun and vary year to year, so they are asked for and never assumed; and every date says whether it came from the official table or the SDK's engine |
 | [`ephemeris.py`](ephemeris.py) | a year of the sky in one call | the grid is one crossing, not 366; a column is a `memoryview` numpy wraps without copying; and the provenance's settings hash is the cache key |
+| [`rectification.py`](rectification.py) | a birth time known only to the hour, narrowed by lagna | `found_many` founds a hundred candidate charts in **one crossing**, sharing the settings, the solar model and the day's sunrise; a chart is a view over the batch, not a copy; and `found` is the same crossing unwrapped |
 | [`your_own_ephemeris.py`](your_own_ephemeris.py) | putting your own engine behind the SDK | the provider contract in full — one call per grid, refusing a frame so the SDK completes it, coverage checked before you are asked, and an exception that reaches the caller |
 
 ## What these examples do not do

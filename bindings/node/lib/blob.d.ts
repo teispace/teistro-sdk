@@ -168,12 +168,39 @@ export interface IntlRender {
 export declare function decodeIntlRender(bytes: Uint8Array): IntlRender;
 
 /**
- * The `grahas` section of a Chart blob: one typed array per column, each a
+ * The `cast` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+ * One row per chart, in the order the instants were asked for.
  */
-export interface ChartGrahas {
+export interface ChartsCast {
+  /**
+   * The instant the chart is cast for, as a Julian day (UTC).
+   */
+  readonly instant: Float64Array;
+  /**
+   * The lagna at the instant, in the chart's zodiac, degrees.
+   */
+  readonly lagnaDeg: Float64Array;
+  /**
+   * The lagna at the sunrise that opened the day, degrees.
+   */
+  readonly dayLagnaDeg: Float64Array;
+  /**
+   * The ayanamsha applied at this instant, degrees; zero for a tropical chart.
+   */
+  readonly ayanamshaOffsetDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `grahas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+ */
+export interface ChartsGrahas {
   /**
    * Which graha.
    * The values are `Graha` ids.
@@ -238,12 +265,12 @@ export interface ChartGrahas {
 }
 
 /**
- * The `houses` section of a Chart blob: one typed array per column, each a
+ * The `houses` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * The twelve bhavas for "which house is it in": one row per bhava, first to twelfth.
+ * The twelve bhavas for "which house is it in", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.
  */
-export interface ChartHouses {
+export interface ChartsHouses {
   /**
    * The bhava's centre, degrees.
    */
@@ -257,12 +284,12 @@ export interface ChartHouses {
 }
 
 /**
- * The `chalit` section of a Chart blob: one typed array per column, each a
+ * The `chalit` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * The twelve bhavas of the chart's chalit, the same shape as `houses`.
+ * The twelve bhavas of each chart's chalit, the same shape as `houses`.
  */
-export interface ChartChalit {
+export interface ChartsChalit {
   /**
    * The bhava's centre, degrees.
    */
@@ -276,123 +303,171 @@ export interface ChartChalit {
 }
 
 /**
- * The day the instant belongs to: its arc, its date and how it was reckoned.
+ * The `timing` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Where in its day each moment falls, in the reckonings the settings named: one row per chart.
+ */
+export interface ChartsTiming {
+  /**
+   * The ishtakaal's ghatis since sunrise, 0 to 59.
+   */
+  readonly ghati: Uint8Array;
+  /**
+   * Its palas, 0 to 59.
+   */
+  readonly pala: Uint8Array;
+  /**
+   * Its vipalas, 0 to 59.
+   */
+  readonly vipala: Uint8Array;
+  /**
+   * How the ghatis were measured.
+   * The values are `GhatiReckoning` ids.
+   */
+  readonly ghatiReckoning: Uint8Array;
+  /**
+   * Which hora of the day holds the instant, 1 to 24.
+   */
+  readonly horaNumber: Uint8Array;
+  /**
+   * The graha that rules it.
+   * The values are `Graha` ids.
+   */
+  readonly horaLord: Uint16Array;
+  /**
+   * When that hora began, as a Julian day (UTC).
+   */
+  readonly horaStart: Float64Array;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly horaEnd: Float64Array;
+  /**
+   * How the horas were measured.
+   * The values are `HoraReckoning` ids.
+   */
+  readonly horaReckoning: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
   /**
    * The sunrise that opened the day, as a Julian day (UTC).
    */
-  readonly sunrise: number;
+  readonly sunrise: Float64Array;
   /**
    * The sunset that closed its daylight, as a Julian day (UTC).
    */
-  readonly sunset: number;
+  readonly sunset: Float64Array;
   /**
    * The sunrise that closes it, as a Julian day (UTC).
    */
-  readonly nextSunrise: number;
+  readonly nextSunrise: Float64Array;
   /**
    * The weekday the day carries.
-   * The value is a `Vara` id.
+   * The values are `Vara` ids.
    */
-  readonly vara: number;
+  readonly vara: Uint16Array;
   /**
    * Which arc of the day the instant falls in.
-   * The value is a `DayPart` id.
+   * The values are `DayPart` ids.
    */
-  readonly part: number;
+  readonly part: Uint8Array;
   /**
    * How far through that arc the instant is, 0 to 1.
    */
-  readonly elapsed: number;
+  readonly elapsed: Float64Array;
   /**
    * The calendar the date is in.
-   * The value is a `Calendar` id.
+   * The values are `Calendar` ids.
    */
-  readonly calendar: number;
+  readonly calendar: Uint16Array;
   /**
    * The era the date's year is counted in.
-   * The value is a `Era` id.
+   * The values are `Era` ids.
    */
-  readonly era: number;
+  readonly era: Uint16Array;
   /**
    * The astronomical year; 1 BCE is 0.
    */
-  readonly year: number;
+  readonly year: Int32Array;
   /**
    * The year as the era counts it.
    */
-  readonly eraYear: number;
+  readonly eraYear: Int32Array;
   /**
    * The month, 1 to 12 or 13.
    */
-  readonly month: number;
+  readonly month: Uint8Array;
   /**
    * The day of the month.
    */
-  readonly dayOfMonth: number;
+  readonly dayOfMonth: Uint8Array;
   /**
    * How the date was resolved.
-   * The value is a `Resolution` id.
+   * The values are `Resolution` ids.
    */
-  readonly resolution: number;
+  readonly resolution: Uint8Array;
   /**
    * The engine's month where it differs from the table's; zero otherwise.
    */
-  readonly computedMonth: number;
+  readonly computedMonth: Uint8Array;
   /**
    * The engine's day where it differs from the table's; zero otherwise.
    */
-  readonly computedDay: number;
+  readonly computedDay: Uint8Array;
   /**
    * Whether the day had a sunrise at all.
-   * The value is a `DayState` id.
+   * The values are `DayState` ids.
    */
-  readonly stateKind: number;
+  readonly stateKind: Uint8Array;
   /**
    * Which polar state it was, when it had none; zero otherwise.
-   * The value is a `PolarKind` id.
+   * The values are `PolarKind` ids.
    */
-  readonly statePolarKind: number;
+  readonly statePolarKind: Uint8Array;
   /**
    * Which policy synthesised its bounds, when it had none; zero otherwise.
-   * The value is a `PolarDayPolicy` id.
+   * The values are `PolarDayPolicy` ids.
    */
-  readonly statePolarPolicy: number;
+  readonly statePolarPolicy: Uint8Array;
   /**
    * Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.
-   * The value is a `Sunrise` id.
+   * The values are `Sunrise` ids.
    */
-  readonly conventionKind: number;
+  readonly conventionKind: Uint8Array;
   /**
    * The altitude in degrees when the convention is custom; zero otherwise.
    */
-  readonly conventionValue: number;
+  readonly conventionValue: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
 }
 
 /**
- * A decoded Chart blob.
+ * A decoded Charts blob.
  *
- * A founded chart: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing.
+ * A batch of founded charts at one place: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing. Every per-chart section runs charts outermost, and a batch of one is the ordinary case.
  */
-export interface Chart {
+export interface Charts {
   /**
-   * The instant the chart is cast for, as a Julian day (UTC).
-   */
-  readonly instant: number;
-  /**
-   * What kind of chart this is.
+   * What kind of chart these are.
    * The value is a `ChartKind` id.
    */
   readonly kind: number;
   /**
-   * The lagna at the instant, in the chart's zodiac, degrees.
+   * How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold.
    */
-  readonly lagnaDeg: number;
+  readonly chartCount: number;
   /**
-   * The lagna at the sunrise that opened the day, degrees.
+   * How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows.
    */
-  readonly dayLagnaDeg: number;
+  readonly grahaCount: number;
   /**
    * The place's latitude, degrees north.
    */
@@ -406,13 +481,13 @@ export interface Chart {
    */
   readonly altitudeM: number;
   /**
-   * How many rows the `grahas` section holds.
+   * One row per chart, in the order the instants were asked for.
    */
-  readonly grahaCount: number;
+  readonly cast: ChartsCast;
   /**
-   * One row per graha, in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
+   * One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for "which house is it in"; `placement_*` is the chart's chalit, which is a different question and often a different answer.
    */
-  readonly grahas: ChartGrahas;
+  readonly grahas: ChartsGrahas;
   /**
    * The system the houses were computed under.
    * The value is a `HouseSystem` id.
@@ -444,21 +519,17 @@ export interface Chart {
    */
   readonly chalitReading: number;
   /**
-   * The twelve bhavas for "which house is it in": one row per bhava, first to twelfth.
+   * The twelve bhavas for "which house is it in", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.
    */
-  readonly houses: ChartHouses;
+  readonly houses: ChartsHouses;
   /**
-   * The twelve bhavas of the chart's chalit, the same shape as `houses`.
+   * The twelve bhavas of each chart's chalit, the same shape as `houses`.
    */
-  readonly chalit: ChartChalit;
+  readonly chalit: ChartsChalit;
   /**
    * The frame the positions were asked for, packed as the port packs it.
    */
   readonly frameBits: number;
-  /**
-   * The ayanamsha applied, degrees; zero for a tropical chart.
-   */
-  readonly offsetDeg: number;
   /**
    * 0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define.
    */
@@ -469,54 +540,19 @@ export interface Chart {
    */
   readonly ayanamsha: number;
   /**
-   * The day the instant belongs to: its arc, its date and how it was reckoned.
+   * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
    */
   readonly day: Day;
   /**
-   * The ishtakaal's ghatis since sunrise, 0 to 59.
+   * Where in its day each moment falls, in the reckonings the settings named: one row per chart.
    */
-  readonly ghati: number;
+  readonly timing: ChartsTiming;
   /**
-   * Its palas, 0 to 59.
-   */
-  readonly pala: number;
-  /**
-   * Its vipalas, 0 to 59.
-   */
-  readonly vipala: number;
-  /**
-   * How the ghatis were measured.
-   * The value is a `GhatiReckoning` id.
-   */
-  readonly ghatiReckoning: number;
-  /**
-   * Which hora of the day holds the instant, 1 to 24.
-   */
-  readonly horaNumber: number;
-  /**
-   * The graha that rules it.
-   * The value is a `Graha` id.
-   */
-  readonly horaLord: number;
-  /**
-   * When that hora began, as a Julian day (UTC).
-   */
-  readonly horaStart: number;
-  /**
-   * When it ends, as a Julian day (UTC).
-   */
-  readonly horaEnd: number;
-  /**
-   * How the horas were measured.
-   * The value is a `HoraReckoning` id.
-   */
-  readonly horaReckoning: number;
-  /**
-   * UTF-8 text: the solar model that reckoned the day, as it describes itself.
+   * UTF-8 text: the solar model that reckoned the days, as it describes itself.
    */
   readonly model: string;
   /**
-   * UTF-8 JSON: the completion steps applied, in order, each `{"name", "implementation"}`.
+   * UTF-8 JSON: an array of strings, the completion steps applied in order, each `name:Implementation`. The positions blob carries the same steps as objects and spells the implementation differently (`PASS_THROUGH` against `PassThrough`); which of the two every blob should use is an open question (`03-design/chart-at-the-boundary.md` §8).
    */
   readonly steps: string;
   /**
@@ -526,9 +562,9 @@ export interface Chart {
 }
 
 /**
- * Decodes a Chart blob. The columns are views over `bytes`, so the
+ * Decodes a Charts blob. The columns are views over `bytes`, so the
  * buffer must outlive the result; a blob of another layout version or
  * another schema is a `TypeError`.
  */
-export declare function decodeChart(bytes: Uint8Array): Chart;
+export declare function decodeCharts(bytes: Uint8Array): Charts;
 

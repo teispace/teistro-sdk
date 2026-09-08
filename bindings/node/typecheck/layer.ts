@@ -7,6 +7,9 @@ import type {
   Body,
   BuildInfo,
   Calendar,
+  Chart,
+  ChartBatchRequest,
+  Charts,
   Context,
   EphemerisProvider,
   PositionsRequest,
@@ -140,3 +143,33 @@ export {
   wrongAnswer,
   wrongBody,
 };
+
+/** The chart layer, typed: one chart and a batch of them. */
+function charts(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const one: Chart = ctx.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
+  const lagna: number = one.lagnaDeg;
+  const vara: string = one.day.vara;
+  const bhava: number = one.grahas[0]!.house.bhava;
+  const madhya: number = one.houses[0]!.madhyaDeg;
+
+  const request: ChartBatchRequest = {
+    instants: new Float64Array([2460482.5, 2460600.25]),
+    place,
+    utcOffsetSeconds: 20700,
+  };
+  const batch: Charts = ctx.foundMany(request);
+  const count: number = batch.length;
+  // Iterating a batch gives charts, and the same view `at` gives.
+  const first: Chart = batch.at(0);
+  const every: readonly Chart[] = [...batch];
+  // @ts-expect-error a batch is read, never rewritten
+  batch.length = 3;
+  // @ts-expect-error `instant` is the singular request's; a batch takes `instants`
+  ctx.foundMany({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
+  // @ts-expect-error a chart is a view; its index is not a number to set
+  first.index = 2;
+  return `${lagna} ${vara} ${bhava} ${madhya} ${count} ${every.length} ${first.instant}`;
+}
+
+void charts;

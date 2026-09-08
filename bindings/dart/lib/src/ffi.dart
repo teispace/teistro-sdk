@@ -732,10 +732,19 @@ final class ChartRequestStruct extends ffi.Struct {
   @ffi.Uint16()
   external int reserved;
 
-  /// The instant, as a Julian day on the UTC scale.
-  /// Unit: jd. Example: 2460482.5.
-  @ffi.Double()
-  external double instantJdUtc;
+  /// The instants, as Julian days on the UTC scale: one chart each.
+  ///
+  /// A grid, not a scalar, because the founder shares the settings and
+  /// the solar model across a batch and a rectification pass wants a
+  /// hundred charts (`03-design/chart-at-the-boundary.md` §3a). A
+  /// caller wanting one passes a grid of one, as `ts_positions` takes
+  /// a grid of one instant.
+  /// Unit: jd.
+  external ffi.Pointer<ffi.Double> instants;
+
+  /// How many instants `instants` points at.
+  @ffi.Size()
+  external int instantCount;
 
   /// The place's latitude, degrees north.
   /// Unit: deg. Range: [-90,90]. Example: 27.7172.
@@ -2338,15 +2347,21 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instantJdUtc, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
   final ChartKind kind;
 
-  /// The instant, as a Julian day on the UTC scale.
-  /// Unit: jd. Example: 2460482.5.
-  final double instantJdUtc;
+  /// The instants, as Julian days on the UTC scale: one chart each.
+  ///
+  /// A grid, not a scalar, because the founder shares the settings and
+  /// the solar model across a batch and a rectification pass wants a
+  /// hundred charts (`03-design/chart-at-the-boundary.md` §3a). A
+  /// caller wanting one passes a grid of one, as `ts_positions` takes
+  /// a grid of one instant.
+  /// Unit: jd.
+  final List<double> instants;
 
   /// The place's latitude, degrees north.
   /// Unit: deg. Range: [-90,90]. Example: 27.7172.
@@ -2375,7 +2390,12 @@ final class ChartRequest {
   void writeInto(ChartRequestStruct raw, ffi.Allocator arena) {
     raw.structSize = ffi.sizeOf<ChartRequestStruct>();
     raw.kind = kind.id;
-    raw.instantJdUtc = instantJdUtc;
+    final instantsBuffer = arena<ffi.Double>(instants.length);
+    for (var i = 0; i < instants.length; i++) {
+      instantsBuffer[i] = instants[i];
+    }
+    raw.instants = instantsBuffer;
+    raw.instantCount = instants.length;
     raw.latitudeDeg = latitudeDeg;
     raw.longitudeDeg = longitudeDeg;
     raw.altitudeM = altitudeM;
@@ -2388,7 +2408,9 @@ final class ChartRequest {
   /// Reads a value out of a struct, which may be one held inside another.
   static ChartRequest readFrom(ChartRequestStruct raw) => ChartRequest(
         kind: ChartKind.byId(raw.kind),
-        instantJdUtc: raw.instantJdUtc,
+        instants: [
+          for (var i = 0; i < raw.instantCount; i++) raw.instants[i],
+        ],
         latitudeDeg: raw.latitudeDeg,
         longitudeDeg: raw.longitudeDeg,
         altitudeM: raw.altitudeM,

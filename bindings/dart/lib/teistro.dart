@@ -307,12 +307,31 @@ final class Context {
     required Observer place,
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
-  }) => decodeChart(
+  }) => foundMany(
+    instants: <double>[instant],
+    place: place,
+    utcOffsetSeconds: utcOffsetSeconds,
+    kind: kind,
+  ).at(0);
+
+  /// Founds a chart at each of many instants, at one place, in one
+  /// crossing.
+  ///
+  /// The founder shares the settings and the solar model across the
+  /// batch, so a hundred instants cost one setup rather than a hundred —
+  /// which is what a rectification pass wants. A batch of none is an
+  /// empty result rather than an error.
+  Charts foundMany({
+    required List<double> instants,
+    required Observer place,
+    required int utcOffsetSeconds,
+    ChartKind kind = ChartKind.natal,
+  }) => decodeCharts(
     _guarded(
       () => _inner.chartFound(
         ChartRequest(
           kind: kind,
-          instantJdUtc: instant,
+          instants: instants,
           latitudeDeg: place.latitudeDeg,
           longitudeDeg: place.longitudeDeg,
           altitudeM: place.altitudeM,
@@ -752,3 +771,193 @@ extension RenderedMessage on IntlRender {
 /// A digest as the hex every binding prints.
 String _hex(Uint8List bytes) =>
     bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+
+/// Where a graha sits in a set of bhavas.
+final class Placement {
+  const Placement({
+    required this.bhava,
+    required this.method,
+    required this.through,
+    required this.fromMadhyaDeg,
+  });
+
+  /// The bhava, 1 to 12.
+  final int bhava;
+
+  /// The house system that produced it.
+  final HouseSystem method;
+
+  /// How far through the bhava it is, 0 to 1.
+  final double through;
+
+  /// Its distance from the bhava's centre, degrees.
+  final double fromMadhyaDeg;
+}
+
+/// One graha of a chart, read out of the batch's columns.
+final class PlacedGraha {
+  const PlacedGraha({
+    required this.graha,
+    required this.longitudeDeg,
+    required this.tropicalDeg,
+    required this.latitudeDeg,
+    required this.distanceAu,
+    required this.speedDegPerDay,
+    required this.house,
+    required this.placement,
+  });
+
+  /// Which graha.
+  final Graha graha;
+
+  /// Its longitude in the chart's zodiac, degrees.
+  final double longitudeDeg;
+
+  /// Its tropical longitude, degrees.
+  final double tropicalDeg;
+
+  /// Its ecliptic latitude, degrees.
+  final double latitudeDeg;
+
+  /// Its distance, astronomical units.
+  final double distanceAu;
+
+  /// Its longitude speed, degrees per day.
+  final double speedDegPerDay;
+
+  /// Whether that speed is negative.
+  bool get retrograde => speedDegPerDay < 0;
+
+  /// The bhava for "which house is it in".
+  final Placement house;
+
+  /// The bhava of the chart's chalit, which is a different question and
+  /// often a different answer.
+  final Placement placement;
+}
+
+/// One of the twelve bhavas.
+final class Bhava {
+  const Bhava({required this.madhyaDeg, required this.sandhiDeg});
+
+  /// The bhava's centre, degrees.
+  final double madhyaDeg;
+
+  /// The bhava's opening cusp, degrees.
+  final double sandhiDeg;
+}
+
+/// One founded chart: a view over its batch, not a copy.
+///
+/// Every getter reads the batch's columns at this chart's index, so a
+/// chart costs nothing until something is asked of it and holding one
+/// holds the whole blob rather than a copy of a slice of it.
+final class Chart {
+  const Chart(this.batch, this.index);
+
+  /// The batch this chart belongs to.
+  final Charts batch;
+
+  /// Where in that batch it sits.
+  final int index;
+
+  /// The instant the chart is cast for, as a Julian day (UTC).
+  double get instant => batch.cast.instant[index];
+
+  /// The lagna at the instant, in the chart's zodiac, degrees.
+  double get lagnaDeg => batch.cast.lagnaDeg[index];
+
+  /// The lagna at the sunrise that opened the day, degrees.
+  double get dayLagnaDeg => batch.cast.dayLagnaDeg[index];
+
+  /// The ayanamsha applied at this instant, degrees; zero if tropical.
+  double get ayanamshaOffsetDeg => batch.cast.ayanamshaOffsetDeg[index];
+
+  /// What kind of chart this is.
+  ChartKind get kind => ChartKind.byId(batch.kind);
+
+  /// The weekday the chart's day carries.
+  Vara get vara => Vara.byId(batch.day.vara[index]);
+
+  /// The sunrise that opened the chart's day, as a Julian day (UTC).
+  double get sunrise => batch.day.sunrise[index];
+
+  /// The graha that rules the hora holding the instant.
+  Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+
+  /// The grahas, in the catalogue's order, one object each.
+  ///
+  /// The columns underneath are views over the blob's bytes, charts
+  /// outermost; this reads this chart's stride out of them into the
+  /// shape an application wants, which is a row.
+  List<PlacedGraha> get grahas {
+    final g = batch.grahas;
+    final base = index * batch.grahaCount;
+    return List<PlacedGraha>.generate(batch.grahaCount, (j) {
+      final i = base + j;
+      return PlacedGraha(
+        graha: Graha.byId(g.graha[i]),
+        longitudeDeg: g.longitudeDeg[i],
+        tropicalDeg: g.tropicalDeg[i],
+        latitudeDeg: g.latitudeDeg[i],
+        distanceAu: g.distanceAu[i],
+        speedDegPerDay: g.speedDegPerDay[i],
+        house: Placement(
+          bhava: g.houseBhava[i],
+          method: HouseSystem.byId(g.houseMethod[i]),
+          through: g.houseThrough[i],
+          fromMadhyaDeg: g.houseFromMadhyaDeg[i],
+        ),
+        placement: Placement(
+          bhava: g.placementBhava[i],
+          method: HouseSystem.byId(g.placementMethod[i]),
+          through: g.placementThrough[i],
+          fromMadhyaDeg: g.placementFromMadhyaDeg[i],
+        ),
+      );
+    });
+  }
+
+  /// The twelve bhavas for "which house is it in", first to twelfth.
+  List<Bhava> get houses =>
+      _bhavas(batch.houses.madhyaDeg, batch.houses.sandhiDeg);
+
+  /// The twelve bhavas of the chart's chalit.
+  List<Bhava> get chalit =>
+      _bhavas(batch.chalit.madhyaDeg, batch.chalit.sandhiDeg);
+
+  List<Bhava> _bhavas(Float64List madhya, Float64List sandhi) {
+    final base = index * 12;
+    return List<Bhava>.generate(
+      12,
+      (j) => Bhava(madhyaDeg: madhya[base + j], sandhiDeg: sandhi[base + j]),
+    );
+  }
+}
+
+/// Reading a batch of founded charts one chart at a time.
+extension ChartsByIndex on Charts {
+  /// One chart of the batch, by index.
+  Chart at(int index) {
+    if (index < 0 || index >= chartCount) {
+      throw RangeError.index(index, this, 'index', null, chartCount);
+    }
+    return Chart(this, index);
+  }
+
+  /// The completion steps the SDK applied, in order, each
+  /// `name:Implementation`.
+  ///
+  /// The blob carries them as JSON text, as it carries the provenance
+  /// envelope; this is the parsed form the Node and Python bindings
+  /// hand back.
+  List<String> get stepsApplied =>
+      (jsonDecode(steps) as List<dynamic>).cast<String>();
+
+  /// Every chart, in the order the instants were asked for.
+  Iterable<Chart> get each sync* {
+    for (var i = 0; i < chartCount; i += 1) {
+      yield Chart(this, i);
+    }
+  }
+}
