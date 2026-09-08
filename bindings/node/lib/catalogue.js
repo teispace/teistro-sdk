@@ -2616,6 +2616,83 @@ export const ResolutionById = new Map([
   [3, 'divergent'],
 ]);
 
+/** Every Reading by name. */
+export const Reading = Object.freeze({
+  Sandhi: 'sandhi',
+  Madhya: 'madhya',
+});
+
+/**
+ * Every Reading by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ReadingById = new Map([
+  [0, 'sandhi'],
+  [1, 'madhya'],
+]);
+
+/** Every DayPart by name. */
+export const DayPart = Object.freeze({
+  Daylight: 'daylight',
+  Night: 'night',
+});
+
+/**
+ * Every DayPart by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DayPartById = new Map([
+  [0, 'daylight'],
+  [1, 'night'],
+]);
+
+/** Every Sunrise by name. */
+export const Sunrise = Object.freeze({
+  CentreNoRefraction: 'centre-no-refraction',
+  UpperLimbRefraction: 'upper-limb-refraction',
+  LowerLimbRefraction: 'lower-limb-refraction',
+});
+
+/**
+ * Every Sunrise by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SunriseById = new Map([
+  [0, 'centre-no-refraction'],
+  [1, 'upper-limb-refraction'],
+  [2, 'lower-limb-refraction'],
+]);
+
+/** Every GhatiReckoning by name. */
+export const GhatiReckoning = Object.freeze({
+  Civil: 'civil',
+  Proportional: 'proportional',
+});
+
+/**
+ * Every GhatiReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GhatiReckoningById = new Map([
+  [0, 'civil'],
+  [1, 'proportional'],
+]);
+
+/** Every HoraReckoning by name. */
+export const HoraReckoning = Object.freeze({
+  Proportional: 'proportional',
+  Equal: 'equal',
+});
+
+/**
+ * Every HoraReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const HoraReckoningById = new Map([
+  [0, 'proportional'],
+  [1, 'equal'],
+]);
+
 /** Every Scale by name. */
 export const Scale = Object.freeze({
   Ut1: 'ut1',

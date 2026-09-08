@@ -16,6 +16,7 @@
     "crates/ffi/src/keys.rs",
     "crates/ffi/src/frame.rs",
     "crates/ffi/src/calendar.rs",
+    "crates/ffi/src/chart.rs",
     "crates/ffi/src/time.rs",
     "crates/ffi/src/intl.rs",
     "crates/ffi/src/positions.rs"
@@ -5971,6 +5972,101 @@
         }
       ],
       "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "TsReading",
+      "doc": "Which bound of a bhava a placement was read against.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Sandhi",
+          "value": 0,
+          "doc": "From one sandhi to the next: the bhava as a span between cusps."
+        },
+        {
+          "name": "Madhya",
+          "value": 1,
+          "doc": "From one madhya to the next: the bhava as a span between centres."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsDayPart",
+      "doc": "Which arc of its day an instant falls in.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Daylight",
+          "value": 0,
+          "doc": "Between sunrise and sunset."
+        },
+        {
+          "name": "Night",
+          "value": 1,
+          "doc": "Between sunset and the next sunrise."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsSunrise",
+      "doc": "Which sunrise a day was reckoned from.\n\nThe named conventions only. A profile may ask for the centre of the\ndisc at a chosen altitude instead, which is a `Custom` convention;\na blob carries that as its altitude beside this, because a variant\nwith a payload cannot be an id (`03-design/chart-at-the-boundary.md`\n§8).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "CentreNoRefraction",
+          "value": 0,
+          "doc": "The centre of the disc on the geometric horizon."
+        },
+        {
+          "name": "UpperLimbRefraction",
+          "value": 1,
+          "doc": "The upper limb with refraction."
+        },
+        {
+          "name": "LowerLimbRefraction",
+          "value": 2,
+          "doc": "The lower limb with refraction."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsGhatiReckoning",
+      "doc": "How the sixty ghatis of a day are measured.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Civil",
+          "value": 0,
+          "doc": "Twenty-four minutes each, from sunrise."
+        },
+        {
+          "name": "Proportional",
+          "value": 1,
+          "doc": "Thirty over the actual daylight and thirty over the actual night."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsHoraReckoning",
+      "doc": "How the twenty-four horas of a day are measured.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Proportional",
+          "value": 0,
+          "doc": "Twelve over the daylight and twelve over the night."
+        },
+        {
+          "name": "Equal",
+          "value": 1,
+          "doc": "Twenty-four of sixty minutes, from sunrise."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
     },
     {
       "name": "TsScale",

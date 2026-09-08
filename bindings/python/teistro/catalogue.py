@@ -3357,6 +3357,66 @@ class Resolution(Member):
     """
 
 
+class Reading(Member):
+    """Which bound of a bhava a placement was read against."""
+
+    SANDHI = 0
+    """From one sandhi to the next: the bhava as a span between cusps."""
+
+    MADHYA = 1
+    """From one madhya to the next: the bhava as a span between centres."""
+
+
+class DayPart(Member):
+    """Which arc of its day an instant falls in."""
+
+    DAYLIGHT = 0
+    """Between sunrise and sunset."""
+
+    NIGHT = 1
+    """Between sunset and the next sunrise."""
+
+
+class Sunrise(Member):
+    """Which sunrise a day was reckoned from.
+
+    The named conventions only. A profile may ask for the centre of the
+    disc at a chosen altitude instead, which is a `Custom` convention;
+    a blob carries that as its altitude beside this, because a variant
+    with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
+    §8).
+    """
+
+    CENTRE_NO_REFRACTION = 0
+    """The centre of the disc on the geometric horizon."""
+
+    UPPER_LIMB_REFRACTION = 1
+    """The upper limb with refraction."""
+
+    LOWER_LIMB_REFRACTION = 2
+    """The lower limb with refraction."""
+
+
+class GhatiReckoning(Member):
+    """How the sixty ghatis of a day are measured."""
+
+    CIVIL = 0
+    """Twenty-four minutes each, from sunrise."""
+
+    PROPORTIONAL = 1
+    """Thirty over the actual daylight and thirty over the actual night."""
+
+
+class HoraReckoning(Member):
+    """How the twenty-four horas of a day are measured."""
+
+    PROPORTIONAL = 0
+    """Twelve over the daylight and twelve over the night."""
+
+    EQUAL = 1
+    """Twenty-four of sixty minutes, from sunrise."""
+
+
 class Scale(Member):
     """A time scale of the conversions; the first two ids are the port's."""
 
@@ -4569,6 +4629,27 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "tabular",
         2: "computed",
         3: "divergent",
+    },
+    "Reading": {
+        0: "sandhi",
+        1: "madhya",
+    },
+    "DayPart": {
+        0: "daylight",
+        1: "night",
+    },
+    "Sunrise": {
+        0: "centre-no-refraction",
+        1: "upper-limb-refraction",
+        2: "lower-limb-refraction",
+    },
+    "GhatiReckoning": {
+        0: "civil",
+        1: "proportional",
+    },
+    "HoraReckoning": {
+        0: "proportional",
+        1: "equal",
     },
     "Scale": {
         0: "ut1",

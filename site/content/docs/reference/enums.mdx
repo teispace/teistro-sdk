@@ -1417,6 +1417,54 @@ How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
 | `TS_RESOLUTION_COMPUTED` | 2 | Computed by the SDK's engine outside the table's range. |
 | `TS_RESOLUTION_DIVERGENT` | 3 | Inside the range and the table and the engine disagree; the table was followed and the engine's month and day are reported beside it. |
 
+## ts_reading
+
+Which bound of a bhava a placement was read against.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_READING_SANDHI` | 0 | From one sandhi to the next: the bhava as a span between cusps. |
+| `TS_READING_MADHYA` | 1 | From one madhya to the next: the bhava as a span between centres. |
+
+## ts_day_part
+
+Which arc of its day an instant falls in.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DAY_PART_DAYLIGHT` | 0 | Between sunrise and sunset. |
+| `TS_DAY_PART_NIGHT` | 1 | Between sunset and the next sunrise. |
+
+## ts_sunrise
+
+Which sunrise a day was reckoned from.
+
+The named conventions only. A profile may ask for the centre of the disc at a chosen altitude instead, which is a `Custom` convention; a blob carries that as its altitude beside this, because a variant with a payload cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SUNRISE_CENTRE_NO_REFRACTION` | 0 | The centre of the disc on the geometric horizon. |
+| `TS_SUNRISE_UPPER_LIMB_REFRACTION` | 1 | The upper limb with refraction. |
+| `TS_SUNRISE_LOWER_LIMB_REFRACTION` | 2 | The lower limb with refraction. |
+
+## ts_ghati_reckoning
+
+How the sixty ghatis of a day are measured.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_GHATI_RECKONING_CIVIL` | 0 | Twenty-four minutes each, from sunrise. |
+| `TS_GHATI_RECKONING_PROPORTIONAL` | 1 | Thirty over the actual daylight and thirty over the actual night. |
+
+## ts_hora_reckoning
+
+How the twenty-four horas of a day are measured.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_HORA_RECKONING_PROPORTIONAL` | 0 | Twelve over the daylight and twelve over the night. |
+| `TS_HORA_RECKONING_EQUAL` | 1 | Twenty-four of sixty minutes, from sunrise. |
+
 ## ts_scale
 
 A time scale of the conversions; the first two ids are the port's.

@@ -4134,6 +4134,184 @@ enum Resolution {
   }
 }
 
+/// Which bound of a bhava a placement was read against.
+enum Reading {
+  /// From one sandhi to the next: the bhava as a span between cusps.
+  sandhi(0, 'sandhi'),
+  /// From one madhya to the next: the bhava as a span between centres.
+  madhya(1, 'madhya');
+
+  const Reading(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Reading byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Reading'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Reading? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which arc of its day an instant falls in.
+enum DayPart {
+  /// Between sunrise and sunset.
+  daylight(0, 'daylight'),
+  /// Between sunset and the next sunrise.
+  night(1, 'night');
+
+  const DayPart(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DayPart byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DayPart'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DayPart? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which sunrise a day was reckoned from.
+///
+/// The named conventions only. A profile may ask for the centre of the
+/// disc at a chosen altitude instead, which is a `Custom` convention;
+/// a blob carries that as its altitude beside this, because a variant
+/// with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
+/// §8).
+enum Sunrise {
+  /// The centre of the disc on the geometric horizon.
+  centreNoRefraction(0, 'centre-no-refraction'),
+  /// The upper limb with refraction.
+  upperLimbRefraction(1, 'upper-limb-refraction'),
+  /// The lower limb with refraction.
+  lowerLimbRefraction(2, 'lower-limb-refraction');
+
+  const Sunrise(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Sunrise byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Sunrise'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Sunrise? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How the sixty ghatis of a day are measured.
+enum GhatiReckoning {
+  /// Twenty-four minutes each, from sunrise.
+  civil(0, 'civil'),
+  /// Thirty over the actual daylight and thirty over the actual night.
+  proportional(1, 'proportional');
+
+  const GhatiReckoning(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static GhatiReckoning byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a GhatiReckoning'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static GhatiReckoning? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How the twenty-four horas of a day are measured.
+enum HoraReckoning {
+  /// Twelve over the daylight and twelve over the night.
+  proportional(0, 'proportional'),
+  /// Twenty-four of sixty minutes, from sunrise.
+  equal(1, 'equal');
+
+  const HoraReckoning(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static HoraReckoning byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a HoraReckoning'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static HoraReckoning? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// A time scale of the conversions; the first two ids are the port's.
 enum Scale {
   /// Universal Time (UT1).

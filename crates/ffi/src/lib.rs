@@ -42,6 +42,7 @@
 
 pub mod blob;
 pub mod calendar;
+pub mod chart;
 pub mod context;
 pub mod frame;
 pub mod intl;
