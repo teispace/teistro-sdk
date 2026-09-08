@@ -106,10 +106,28 @@ Both take a request struct rather than a long argument list, as
 `ts_positions` does, so a field added later does not move an argument.
 Both answer a blob the caller frees with `ts_blob_free`.
 
-A request carries the instant or the date, the place, the chart kind, and
-nothing else: everything else is the context's settings, which is what
+A request carries the instant or the date, the place, the chart kind —
+and **the local clock**, which is the one thing a chart needs that no
+setting knows.
+
+That last is a correction to what this section first said. `Founder::new`
+takes seven things: a provider, the resolved settings, a solar model, a
+calendar, a clock, a precession model and a Delta T model. The context
+has the provider, the settings and Delta T; the model and the precession
+come from the settings. The clock does not come from anywhere. A chart's
+day is reckoned from a local sunrise and its date is a civil date, and a
+longitude gives local *mean* time rather than a civil offset, so the
+caller has to say. Everything else stays in the settings, which is what
 makes two calls under one context comparable and what the settings hash
 is for.
+
+The calendar has an answer already waiting for it. `calendars.civil_calendar`
+is one of the thirteen knobs `check-lints` reports as having no reader,
+and its own deferral says why: *"this gains a reader when `serial` or a
+binding builds a chart from a settings document alone."* That is this
+entry point. The knob is read here rather than the request naming a
+calendar, which is both the honest reading of the knob and one fewer
+field on the request.
 
 ## 6. Tests
 
