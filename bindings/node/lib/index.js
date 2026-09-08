@@ -19,10 +19,14 @@ import {
   ABI_VERSION,
   BodyById,
   CONTEXT_TEST_PROVIDER,
+  ChartKind,
+  ChartKindById,
+  GrahaById,
+  HouseSystemById,
   SDK_VERSION,
   TimeScaleById,
 } from './catalogue.js';
-import { decodeIntlRender, decodePositions } from './blob.js';
+import { decodeChart, decodeIntlRender, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -370,6 +374,95 @@ class Decoded {
 }
 
 /** Positions over a grid, with the cells readable one at a time. */
+/**
+ * A founded chart: where every graha stands, in which bhava under both
+ * readings, in which zodiac, on which day, at what time of that day.
+ *
+ * The blob is decoded on first use and only once, so a chart that is
+ * fetched and stored costs nothing until something reads it.
+ */
+export class Chart extends Decoded {
+  constructor(bytes) {
+    super(bytes, decodeChart);
+  }
+
+  /** The instant the chart is cast for, as a Julian day (UTC). */
+  get instant() {
+    return this.decoded.instant;
+  }
+
+  /** What kind of chart this is. */
+  get kind() {
+    return ChartKindById.get(this.decoded.kind) ?? 'unknown';
+  }
+
+  /** The lagna at the instant, in the chart's zodiac, degrees. */
+  get lagnaDeg() {
+    return this.decoded.lagnaDeg;
+  }
+
+  /** The lagna at the sunrise that opened the day, degrees. */
+  get dayLagnaDeg() {
+    return this.decoded.dayLagnaDeg;
+  }
+
+  /** The day the chart belongs to, which is not always its civil date. */
+  get day() {
+    return this.decoded.day;
+  }
+
+  /**
+   * The grahas, in the catalogue's order, one object each.
+   *
+   * The columns underneath are views over the blob's bytes; this reads
+   * them into the shape an application wants, which is a row.
+   */
+  get grahas() {
+    const g = this.decoded.grahas;
+    return Array.from({ length: g.length }, (_, i) => ({
+      graha: GrahaById.get(g.graha[i]) ?? 'unknown',
+      longitudeDeg: g.longitudeDeg[i],
+      tropicalDeg: g.tropicalDeg[i],
+      latitudeDeg: g.latitudeDeg[i],
+      distanceAu: g.distanceAu[i],
+      speedDegPerDay: g.speedDegPerDay[i],
+      retrograde: g.speedDegPerDay[i] < 0,
+      house: {
+        bhava: g.houseBhava[i],
+        method: HouseSystemById.get(g.houseMethod[i]) ?? 'unknown',
+        through: g.houseThrough[i],
+        fromMadhyaDeg: g.houseFromMadhyaDeg[i],
+      },
+      placement: {
+        bhava: g.placementBhava[i],
+        method: HouseSystemById.get(g.placementMethod[i]) ?? 'unknown',
+        through: g.placementThrough[i],
+        fromMadhyaDeg: g.placementFromMadhyaDeg[i],
+      },
+    }));
+  }
+
+  /** The twelve bhavas for "which house is it in". */
+  get houses() {
+    return this.decoded.houses;
+  }
+
+  /** The twelve bhavas of the chart's chalit. */
+  get chalit() {
+    return this.decoded.chalit;
+  }
+
+  /** The steps the SDK applied, each `{ name, implementation }`. */
+  get steps() {
+    return JSON.parse(new TextDecoder().decode(this.decoded.steps));
+  }
+
+  /** The provenance envelope: what computed this, and under what. */
+  get provenance() {
+    return JSON.parse(new TextDecoder().decode(this.decoded.provenance));
+  }
+}
+
 export class Positions extends Decoded {
   constructor(bytes) {
     super(bytes, decodePositions);
@@ -613,6 +706,39 @@ export class Context {
       ),
     );
     return new Positions(bytes);
+  }
+
+  /**
+   * Founds a chart at an instant and a place.
+   *
+   * Everything but this is the context's settings, so two charts founded
+   * under one context are comparable and the settings hash says why. The
+   * clock is here because nothing else knows it: a chart's day runs from
+   * a local sunrise and its date is a civil date, and a longitude gives
+   * local *mean* time rather than a civil offset.
+   *
+   * @param {object} request
+   * @param {number} request.instant the instant, as a Julian day (UTC)
+   * @param {object} request.place `{ latitude, longitude, altitude }` in
+   *   degrees and metres
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
+   * @returns {Chart}
+   */
+  found(request) {
+    const place = request.place ?? {};
+    const bytes = this.#call(() =>
+      this.#inner.chartFound({
+        kind: request.kind ?? ChartKind.Natal,
+        instantJdUtc: finite(request.instant, 'instant'),
+        latitudeDeg: finite(place.latitude, 'place.latitude'),
+        longitudeDeg: finite(place.longitude, 'place.longitude'),
+        altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+      }),
+    );
+    return new Chart(bytes);
   }
 
   /** Renders a message of the current locale with its parameters. */

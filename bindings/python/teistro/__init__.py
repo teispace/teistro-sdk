@@ -30,13 +30,22 @@ from types import TracebackType
 from typing import Any, Mapping, Optional, Sequence
 
 from . import messages as intl
-from ._blob import BlobError, IntlRender, Positions, decode_intl_render, decode_positions
+from ._blob import (
+    BlobError,
+    Chart,
+    IntlRender,
+    Positions,
+    decode_chart,
+    decode_intl_render,
+    decode_positions,
+)
 from ._ffi import (
     CONTEXT_TEST_PROVIDER,
     GENERATED_ABI_VERSION,
     GENERATED_SDK_VERSION,
     Altitude,
     CalendarDate,
+    ChartRequest,
     CivilDateTime,
     CivilTime,
     ContextOptions,
@@ -85,6 +94,7 @@ from .catalogue import (
     Body,
     Calendar,
     Centre,
+    ChartKind,
     Coordinates,
     Era,
     Resolution,
@@ -617,6 +627,39 @@ class Context:
         )
         return PositionGrid(
             decode_positions(self._through_provider(lambda: self.inner.positions(request)))
+        )
+
+    def found(
+        self,
+        *,
+        instant: float,
+        place: Observer,
+        utc_offset_seconds: int,
+        kind: ChartKind = ChartKind.NATAL,
+    ) -> Chart:
+        """Founds a chart at an instant and a place.
+
+        Everything but this is the context's settings, so two charts
+        founded under one context are comparable and the settings hash
+        says why. The clock is here because nothing else knows it: a
+        chart's day runs from a local sunrise and its date is a civil
+        date, and a longitude gives local *mean* time rather than a civil
+        offset.
+
+        A profile whose frame is topocentric needs a provider that
+        answers topocentric natively; the completion's centre step is
+        Phase 3's (`03-design/chart-at-the-boundary.md` §8).
+        """
+        request = ChartRequest(
+            kind=kind,
+            instant_jd_utc=instant,
+            latitude_deg=place.latitude_deg,
+            longitude_deg=place.longitude_deg,
+            altitude_m=place.altitude_m,
+            utc_offset_seconds=utc_offset_seconds,
+        )
+        return decode_chart(
+            self._through_provider(lambda: self.inner.chart_found(request))
         )
 
     def _through_provider(self, call: Any) -> Any:

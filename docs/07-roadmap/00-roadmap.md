@@ -196,6 +196,20 @@ within tolerance in three bindings on both providers (Teimeris and
 built-in `standard`, with the built-in differences within its published
 bound).
 
+**This exit depends on a Phase 3 deliverable**, which was not recorded
+until a chart first crossed the boundary (2026-09-08). All 55 recorded
+charts are `topocentric: true`, and the corpus carries fixtures built so
+that the frame decides an outcome — c049 to c055 place the Moon at a
+pada edge where the geocentric Moon is still on the other side, so the
+pada or the dasha lord depends on it. Phase 2 deferred the completion's
+**centre** step to Phase 3 by decision; until Phase 3 delivers it, a
+provider that does not answer topocentric natively cannot found a chart
+under a topocentric profile at all, and no computed longitude can be
+compared against those charts. The dependency is invisible in the tests
+today because `chart/tests/baseline_bhavas.rs` reads the recorded
+longitudes and checks the bhava they fall in, so it measures the
+placement rule rather than the position.
+
 Where it stands, 2026-09-07:
 
 | deliverable | state |
