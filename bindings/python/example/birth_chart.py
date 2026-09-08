@@ -36,9 +36,11 @@ from teistro import (
     Calendar,
     Context,
     Teistro,
+    TeistroError,
     at,
     date,
     iana_zone,
+    when_unknown,
 )
 from teistro.catalogue import Ayanamsha, Graha, Nakshatra, Rashi
 
@@ -191,6 +193,47 @@ def main() -> None:
         )
         print(f"steps applied  {steps}")
         print(f"settings hash  {ctx.settings_hash[:16]}…")
+
+    # ── A birth with no recorded time ─────────────────────────────────
+    # The commonest data problem in the field, and the SDK does **not**
+    # pick a time for you. `when_unknown` says the time is unknown; what
+    # happens next is the profile's `time.unknown_time` policy, and by
+    # default there is none, so the call is refused with a hint naming
+    # the choices.
+    print("")
+    no_time = when_unknown(birth_day)
+    for policy in (None, "NOON", "MIDNIGHT"):
+        settings = None if policy is None else {"time": {"unknown_time": policy}}
+        with teistro.context(
+            profile="nepali-default",
+            locale="ne-Deva-NP",
+            test_provider=True,
+            settings=settings,
+        ) as scoped:
+            label = (policy or "refuse").ljust(9)
+            try:
+                resolved = scoped.resolve(no_time, iana_zone("Asia/Kathmandu"))
+            except TeistroError as error:
+                print(f"{label} {error.message}")
+                print(f"{' ' * 10}hint: {error.hint}")
+            else:
+                # The warnings are catalogue members here rather than
+                # strings, so the key is what to print; it is the same
+                # word in every binding.
+                warnings = (
+                    ", ".join(w.key for w in resolved.warnings) or "(no warning)"
+                )
+                print(
+                    f"{label} JD {resolved.instant_jd_utc:.6f}"
+                    f"  time known {resolved.time_known}  {warnings}"
+                )
+    # MIDNIGHT is refused for a different reason, and it is this record's
+    # own: the clocks jumped at midnight on this very date, so 00:00
+    # never happened in Kathmandu. A chart cast on a guessed midnight
+    # would have been cast on a time that does not exist.
+    # NOON answers, and says so twice — `time_known` is false and the
+    # resolution carries a `time-unknown-fallback` warning — so a stored
+    # chart can never quietly claim a birth time it never had.
 
 
 if __name__ == "__main__":

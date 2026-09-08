@@ -320,6 +320,7 @@ class Teistro:
         self,
         *,
         profile: Optional[str] = None,
+        settings: Optional[Mapping[str, object]] = None,
         settings_json: Optional[str] = None,
         locale: Optional[str] = None,
         provider: Optional[EphemerisProvider] = None,
@@ -327,11 +328,24 @@ class Teistro:
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
 
+        `settings` is a patch over the profile, as a mapping — the shape
+        the Node and Dart bindings take, so one example reads in all
+        three. `settings_json` takes the same patch already serialised,
+        for a caller who has the document rather than the mapping; giving
+        both is refused rather than one silently winning.
+
         `provider` binds an ephemeris written in Python;
         `test_provider=True` selects the analytic one the SDK carries, and
         neither leaves the context without an ephemeris, so a request for
         positions is refused with `Status.CAPABILITY`.
         """
+        if settings is not None and settings_json is not None:
+            raise ValueError(
+                "settings and settings_json are the same patch twice; "
+                "give one of them"
+            )
+        if settings is not None:
+            settings_json = json.dumps(settings, separators=(",", ":"))
         host = None if provider is None else HostProvider(self.library, provider)
         options = ContextOptions(
             flags=CONTEXT_TEST_PROVIDER if test_provider else 0,
@@ -758,8 +772,14 @@ def at(
 
 
 def when_unknown(day: CalendarDate) -> CivilDateTime:
-    """A date with the time of day unknown, which a resolution reports
-    rather than guesses."""
+    """A date whose time of day is unknown.
+
+    Nothing guesses one. Unless the profile sets ``time.unknown_time``, a
+    resolution refuses it by name and the hint says what to choose; under
+    ``NOON`` it resolves with ``time_known`` false and a
+    ``time-unknown-fallback`` warning, and under ``SUNRISE`` it needs the
+    place and a solar model.
+    """
     return CivilDateTime(
         date=day,
         time=CivilTime(hour=0, minute=0, second=0, has_time=False, nanos=0),

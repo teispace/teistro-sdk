@@ -31,6 +31,7 @@ import {
   canonicalFrame,
   date,
   ianaZone,
+  whenUnknown,
 } from '../lib/index.js';
 
 // The grahas of a Vedic chart, each paired with the body an ephemeris
@@ -178,5 +179,39 @@ const sky = ctx.positions({
 const steps = sky.steps.map((step) => `${step.name}:${step.implementation}`).join(', ');
 console.log(`steps applied  ${steps}`);
 console.log(`settings hash  ${ctx.settingsHash.slice(0, 16)}…`);
-
 ctx.dispose();
+
+// ── A birth with no recorded time ──────────────────────────────────────
+// The commonest data problem in the field, and the SDK does **not** pick
+// a time for you. `whenUnknown` says the time is unknown; what happens
+// next is the profile's `time.unknown_time` policy, and by default there
+// is none, so the call is refused with a hint naming the choices.
+console.log('');
+const noTime = whenUnknown(birthDay);
+for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
+  const scoped = new Context({
+    profile: 'nepali-default',
+    locale: 'ne-Deva-NP',
+    testProvider: true,
+    settings: policy ? { time: { unknown_time: policy } } : undefined,
+  });
+  try {
+    const resolved = scoped.resolve(noTime, ianaZone('Asia/Kathmandu'));
+    console.log(
+      `${(policy ?? 'refuse').padEnd(9)} JD ${resolved.instantJdUtc.toFixed(6)}` +
+        `  time known ${resolved.timeKnown}` +
+        `  ${resolved.warnings.join(', ') || '(no warning)'}`,
+    );
+  } catch (error) {
+    console.log(`${(policy ?? 'refuse').padEnd(9)} ${error.message}`);
+    console.log(`${' '.repeat(10)}hint: ${error.hint}`);
+  }
+  scoped.dispose();
+}
+// MIDNIGHT is refused for a different reason, and it is this record's own:
+// the clocks jumped at midnight on this very date, so 00:00 never
+// happened in Kathmandu. A chart cast on a guessed midnight would have
+// been cast on a time that does not exist.
+// NOON answers, and says so twice — `timeKnown` is false and the
+// resolution carries a `time-unknown-fallback` warning — so a stored
+// chart can never quietly claim a birth time it never had.

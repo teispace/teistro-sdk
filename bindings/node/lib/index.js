@@ -809,8 +809,15 @@ export const at = (day, { hour = 0, minute = 0, second = 0, nanos = 0 } = {}) =>
 });
 
 /**
- * A date with the time of day unknown, which a resolution reports rather
- * than guesses.
+ * A date whose time of day is unknown.
+ *
+ * Nothing guesses one. Unless the profile sets `time.unknown_time`, a
+ * resolution refuses it by name and the hint says what to choose; under
+ * `NOON` it resolves with `timeKnown` false and a
+ * `time-unknown-fallback` warning, and under `SUNRISE` it needs the
+ * place and a solar model.
+ *
+ * @example whenUnknown(date(Calendar.Gregorian, 1986, 1, 1))
  */
 export const whenUnknown = (day) => ({
   date: day,

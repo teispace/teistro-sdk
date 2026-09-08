@@ -183,8 +183,54 @@ void main() {
       .join(', ');
   print('steps applied  $steps');
   print('settings hash  ${ctx.settingsHash.substring(0, 16)}…');
-
   ctx.dispose();
+
+  // ── A birth with no recorded time ──────────────────────────────────
+  // The commonest data problem in the field, and the SDK does **not**
+  // pick a time for you. `whenUnknown` says the time is unknown; what
+  // happens next is the profile's `time.unknown_time` policy, and by
+  // default there is none, so the call is refused with a hint naming
+  // the choices.
+  print('');
+  final noTime = birthDay.whenUnknown;
+  for (final policy in [null, 'NOON', 'MIDNIGHT']) {
+    final scoped = teistro.context(
+      profile: 'nepali-default',
+      locale: 'ne-Deva-NP',
+      testProvider: true,
+      settings:
+          policy == null
+              ? null
+              : {
+                'time': {'unknown_time': policy},
+              },
+    );
+    final label = (policy ?? 'refuse').padRight(9);
+    try {
+      final resolved = scoped.resolve(noTime, ianaZone('Asia/Kathmandu'));
+      // The warnings are catalogue members here rather than strings, so
+      // the key is what to print; it is the same word in every binding.
+      final warnings =
+          resolved.warnings.isEmpty
+              ? '(no warning)'
+              : resolved.warnings.map((w) => w.key).join(', ');
+      print(
+        '$label JD ${resolved.instantJdUtc.toStringAsFixed(6)}'
+        '  time known ${resolved.timeKnown}  $warnings',
+      );
+    } on TeistroException catch (error) {
+      print('$label ${error.message}');
+      print('${' ' * 10}hint: ${error.hint}');
+    }
+    scoped.dispose();
+  }
+  // MIDNIGHT is refused for a different reason, and it is this record's
+  // own: the clocks jumped at midnight on this very date, so 00:00 never
+  // happened in Kathmandu. A chart cast on a guessed midnight would have
+  // been cast on a time that does not exist.
+  // NOON answers, and says so twice — `timeKnown` is false and the
+  // resolution carries a `time-unknown-fallback` warning — so a stored
+  // chart can never quietly claim a birth time it never had.
 }
 
 String _two(int value) => value.toString().padLeft(2, '0');

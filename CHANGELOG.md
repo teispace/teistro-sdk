@@ -200,7 +200,13 @@ zone constructors, no `jdCount`, and named the provider's coverage
 differently from the other two — and the `dispose` it gained then
 reported a call on a freed context as the boundary's bare `invalid
 argument`, where Dart and Python both name the context; all three now
-name it, and all three now gate it; the Dart layer wrapped a provider's own
+name it, and all three now gate it. `whenUnknown` promised in all three
+that a resolution "reports rather than guesses" a missing time of day,
+where in fact it **refuses** unless the profile sets
+`time.unknown_time`; the three docs now say what happens, the birth
+chart example shows all three policies, and Python's `context` takes a
+`settings` mapping like the other two rather than only a JSON string a
+caller had to serialise by hand. The Dart layer wrapped a provider's own
 exception in the library's; the Python layer's weekday docstring named
 the wrong day as one. Every enum in the TypeScript surface now carries
 its id table, not just the two that appear in blob columns.

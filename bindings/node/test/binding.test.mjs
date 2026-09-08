@@ -11,8 +11,12 @@ import {
   Body,
   Calendar,
   altitude,
+  at,
+  date,
+  ianaZone,
   latitude,
   longitude,
+  whenUnknown,
   Context,
   Era,
   Resolution,
@@ -481,5 +485,46 @@ test('every catalogue enum has a complete id table', () => {
     }
   }
   assert.equal(entries, 919, 'the catalogue has 919 members; every one is in a table');
+});
+
+test('a birth with no time is refused, or reported, but never guessed', () => {
+  const day = date(Calendar.BikramSambat, 2042, 9, 17);
+  const zone = ianaZone('Asia/Kathmandu');
+
+  // No policy: refused by name, with the hint naming the three choices.
+  const strict = new Context({ profile: 'nepali-default', testProvider: true });
+  assert.throws(
+    () => strict.resolve(whenUnknown(day), zone),
+    (error) => {
+      assert.match(error.message, /has no time of day/u);
+      assert.match(error.hint, /NOON, MIDNIGHT or SUNRISE/u);
+      assert.equal(error.field, 'time');
+      return true;
+    },
+  );
+  strict.dispose();
+
+  // NOON: answered, and said twice — the resolution reports the time as
+  // unknown *and* warns, so a stored chart cannot claim a time it never
+  // had.
+  const noon = new Context({
+    profile: 'nepali-default',
+    testProvider: true,
+    settings: { time: { unknown_time: 'NOON' } },
+  });
+  const resolved = noon.resolve(whenUnknown(day), zone);
+  assert.equal(resolved.timeKnown, false);
+  assert.ok(resolved.warnings.includes('time-unknown-fallback'), 'the fallback is warned about');
+  assert.ok(Number.isFinite(resolved.instantJdUtc));
+  noon.dispose();
+
+  // A known time on the same date resolves with the time known and no
+  // warning: this record sits on the day Nepal moved to +05:45.
+  const known = new Context({ profile: 'nepali-default', testProvider: true });
+  const exact = known.resolve(at(day, { hour: 0, minute: 20 }), zone);
+  assert.equal(exact.timeKnown, true);
+  assert.equal(exact.offsetSeconds, 5 * 3600 + 45 * 60);
+  assert.deepEqual(exact.warnings, []);
+  known.dispose();
 });
 
