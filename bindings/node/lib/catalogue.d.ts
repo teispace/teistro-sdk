@@ -5517,6 +5517,131 @@ export declare const Resolution: {
 export declare const ResolutionById: ReadonlyMap<number, Resolution>;
 
 /**
+ * Which bound of a bhava a placement was read against.
+ */
+export type Reading = 'sandhi' | 'madhya';
+
+/** Every Reading by name; the values are the strings the union accepts. */
+export declare const Reading: {
+  /**
+   * From one sandhi to the next: the bhava as a span between cusps.
+   */
+  readonly Sandhi: 'sandhi';
+  /**
+   * From one madhya to the next: the bhava as a span between centres.
+   */
+  readonly Madhya: 'madhya';
+};
+
+/**
+ * Every Reading by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ReadingById: ReadonlyMap<number, Reading>;
+
+/**
+ * Which arc of its day an instant falls in.
+ */
+export type DayPart = 'daylight' | 'night';
+
+/** Every DayPart by name; the values are the strings the union accepts. */
+export declare const DayPart: {
+  /**
+   * Between sunrise and sunset.
+   */
+  readonly Daylight: 'daylight';
+  /**
+   * Between sunset and the next sunrise.
+   */
+  readonly Night: 'night';
+};
+
+/**
+ * Every DayPart by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DayPartById: ReadonlyMap<number, DayPart>;
+
+/**
+ * Which sunrise a day was reckoned from.
+ *
+ * The named conventions only. A profile may ask for the centre of the
+ * disc at a chosen altitude instead, which is a `Custom` convention;
+ * a blob carries that as its altitude beside this, because a variant
+ * with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
+ * §8).
+ */
+export type Sunrise = 'centre-no-refraction' | 'upper-limb-refraction' | 'lower-limb-refraction';
+
+/** Every Sunrise by name; the values are the strings the union accepts. */
+export declare const Sunrise: {
+  /**
+   * The centre of the disc on the geometric horizon.
+   */
+  readonly CentreNoRefraction: 'centre-no-refraction';
+  /**
+   * The upper limb with refraction.
+   */
+  readonly UpperLimbRefraction: 'upper-limb-refraction';
+  /**
+   * The lower limb with refraction.
+   */
+  readonly LowerLimbRefraction: 'lower-limb-refraction';
+};
+
+/**
+ * Every Sunrise by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SunriseById: ReadonlyMap<number, Sunrise>;
+
+/**
+ * How the sixty ghatis of a day are measured.
+ */
+export type GhatiReckoning = 'civil' | 'proportional';
+
+/** Every GhatiReckoning by name; the values are the strings the union accepts. */
+export declare const GhatiReckoning: {
+  /**
+   * Twenty-four minutes each, from sunrise.
+   */
+  readonly Civil: 'civil';
+  /**
+   * Thirty over the actual daylight and thirty over the actual night.
+   */
+  readonly Proportional: 'proportional';
+};
+
+/**
+ * Every GhatiReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GhatiReckoningById: ReadonlyMap<number, GhatiReckoning>;
+
+/**
+ * How the twenty-four horas of a day are measured.
+ */
+export type HoraReckoning = 'proportional' | 'equal';
+
+/** Every HoraReckoning by name; the values are the strings the union accepts. */
+export declare const HoraReckoning: {
+  /**
+   * Twelve over the daylight and twelve over the night.
+   */
+  readonly Proportional: 'proportional';
+  /**
+   * Twenty-four of sixty minutes, from sunrise.
+   */
+  readonly Equal: 'equal';
+};
+
+/**
+ * Every HoraReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const HoraReckoningById: ReadonlyMap<number, HoraReckoning>;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 export type Scale = 'ut1' | 'tt' | 'utc';

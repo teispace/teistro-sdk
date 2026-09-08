@@ -7,9 +7,9 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 2 exported constants, 79 enums of 919 members in
+The description carries 2 exported constants, 84 enums of 930 members in
 all, 1 opaque handle type, 8 callback types, 25 structs, 39 entry points
-and 2 result-blob schemas, extracted from 15 source files. A binding's
+and 2 result-blob schemas, extracted from 16 source files. A binding's
 mechanical layer is a rule per **role**, not a rule per entry point,
 which is why a third binding costs what it costs.
 
@@ -67,18 +67,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1216 | 1 | 0 | 0 | 0 |
+| Dart | 1227 | 1 | 0 | 0 | 0 |
 | TypeScript | 297 | 0 | 0 | 0 | 0 |
-| Python | 1216 | 0 | 1 | 2 | 0 |
+| Python | 1227 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1216 looked at |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1227 looked at |
 | no identifier the TypeScript emitter writes is a reserved word there | **holds** | 0 caught and renamed, 0 left; 297 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1216 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1216 disagree |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1227 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1227 disagree |
 | renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 297 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1216 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1227 disagree |
 
 What Dart renames:
 
