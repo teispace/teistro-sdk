@@ -118,7 +118,8 @@ is for.
   value — the same shape `check-ffi`'s blob fixtures already use.
 - **The three bindings agree**, in `check-parity`, on every field of a
   founded chart and a panchanga day. The gate compares 103 values today;
-  a foundation adds about 70 and a day about 60.
+  a foundation adds 72 distinct paths and a panchanga 85, of which 18 are
+  the day the two share — so 139 new values, and 224 in all.
 - **The golden vectors reproduce in three bindings**, which is Phase 4's
   exit condition and the reason for the work.
 - **The examples show a chart**, which is what a reader will actually
@@ -147,9 +148,9 @@ five rather than describing part of one.
   is the whole day.** `foundation.day.day` and `panchanga.day` are the
   same nine fields — `convention`, `date`, `model`, `next_sunrise`,
   `place`, `state`, `sunrise`, `sunset`, `vara` — with the same values,
-  field for field, on the same chart. That is the widest fixed section
-  in either blob, about twenty leaves, and describing it twice is
-  precisely what §3 argues against.
+  field for field, on the same chart. They are **18 of the panchanga's
+  85 distinct paths** and the widest fixed section in either blob, and
+  describing them twice is precisely what §3 argues against.
 
   Sharing it splits into three questions, and reading
   `crates/ffi/src/schemas.rs` settles two of them.
