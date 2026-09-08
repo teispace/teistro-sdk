@@ -605,6 +605,20 @@ pub struct SectionSchema {
     /// empty for bytes.
     #[serde(default)]
     pub fields: Vec<ColumnDef>,
+    /// The name of the **shape** this section has, when it is one two
+    /// blobs share.
+    ///
+    /// A chart's day and a panchanga's day are the same eighteen fields
+    /// with the same values, so they are declared once and carry the
+    /// same shape name. A binding then decodes both into **one** type
+    /// rather than two identical ones, and a caller who renders a day
+    /// writes it once (`03-design/chart-at-the-boundary.md` §8).
+    ///
+    /// `None` is the ordinary case: the section is this blob's alone and
+    /// its decoded type is named for the blob and the section, as it
+    /// always was.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shape: Option<String>,
 }
 
 impl SectionSchema {
@@ -659,6 +673,7 @@ impl SectionSchema {
             doc: doc.to_string(),
             kind: SectionKind::Fixed,
             fields,
+            shape: None,
         }
     }
 
@@ -671,6 +686,7 @@ impl SectionSchema {
             doc: doc.to_string(),
             kind: SectionKind::Columns,
             fields,
+            shape: None,
         }
     }
 
@@ -683,7 +699,19 @@ impl SectionSchema {
             doc: doc.to_string(),
             kind: SectionKind::Bytes,
             fields: Vec::new(),
+            shape: None,
         }
+    }
+
+    /// The same section, named as a **shape** two blobs share.
+    ///
+    /// Declaring the section once is a function call; this is what makes
+    /// the two decode into one type rather than two identical ones
+    /// (`03-design/chart-at-the-boundary.md` §8).
+    #[must_use]
+    pub fn of_shape(mut self, shape: &str) -> SectionSchema {
+        self.shape = Some(shape.to_string());
+        self
     }
 }
 

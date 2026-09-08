@@ -28,13 +28,12 @@
 //!     name: "demo".into(),
 //!     id: 7,
 //!     doc: "a demonstration".into(),
-//!     sections: vec![SectionSchema {
-//!         id: 1,
-//!         name: "rows".into(),
-//!         doc: "two columns".into(),
-//!         kind: SectionKind::Columns,
-//!         fields: vec![ColumnDef::new("x", Scalar::F64, "abscissa"), ColumnDef::new("n", Scalar::U8, "count")],
-//!     }],
+//!     sections: vec![SectionSchema::columns(
+//!         1,
+//!         "rows",
+//!         "two columns",
+//!         vec![ColumnDef::new("x", Scalar::F64, "abscissa"), ColumnDef::new("n", Scalar::U8, "count")],
+//!     )],
 //! };
 //! let mut writer = Writer::new(&schema);
 //! writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])]).expect("the schema's columns");
