@@ -113,6 +113,15 @@ pub fn from_hash_form<T: DeserializeOwned>(text: &str) -> Result<T, Error> {
 /// rather than a claim the documentation makes: a stored document is
 /// worth a hash only if reading it gives the bytes it was hashed under.
 ///
+/// **This is the check for a document from another build.** Reading is
+/// deliberately permissive about a key this build has never heard of —
+/// a newer one may write a section this one does not know, and refusing
+/// the whole document for it would make a chart unreadable by every
+/// version but its own. What the reader drops, the bytes report: a
+/// document with a key this build ignores writes back without it, so
+/// this answers `false` and the content hash does not match. Permissive
+/// to read, exact to hash.
+///
 /// # Errors
 ///
 /// Whatever [`from_hash_form`] refuses the value's own bytes for, which
@@ -187,7 +196,7 @@ mod tests {
     )]
 
     use super::{
-        Digits, MOST_DECIMALS, decimal, from_hash_form, hash_of, reads_back, to_hash_form,
+        Digits, Hash, MOST_DECIMALS, decimal, from_hash_form, hash_of, reads_back, to_hash_form,
         to_rendered, widest,
     };
     use serde_json::json;
@@ -374,5 +383,30 @@ mod tests {
         let refusal = from_hash_form::<serde_json::Value>("not json at all")
             .expect_err("bytes that are not JSON");
         assert!(refusal.message.contains("not this value"), "{refusal}");
+    }
+
+    #[test]
+    fn a_key_this_build_does_not_know_is_read_past_and_caught_by_the_hash() {
+        // A document from a newer build carries what this one has never
+        // heard of. Refusing it outright would make a chart unreadable by
+        // every version but its own; reading it and pretending nothing
+        // was lost would be worse. So the key is read past, and the bytes
+        // say so.
+        let value = json!({"a": 1.5});
+        let written = to_hash_form(&value);
+        let from_the_future = written.replacen('{', r#"{"b_from_a_newer_build":2,"#, 1);
+
+        let read: serde_json::Value =
+            from_hash_form(&from_the_future).expect("a newer document still reads");
+        assert_ne!(
+            to_hash_form(&read),
+            from_the_future,
+            "what was dropped has to show in the bytes"
+        );
+        assert_ne!(
+            hash_of(&read),
+            Hash::of(from_the_future.as_bytes()),
+            "and therefore in the hash"
+        );
     }
 }

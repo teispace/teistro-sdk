@@ -270,9 +270,37 @@ fn a_document_this_build_cannot_read_is_refused_by_name() {
     let refusal = from_hash_form::<Document>(&wrong_divisions).expect_err("a wrong D9");
     assert!(refusal.message.contains("divides a sign"), "{refusal}");
 
+    // A divisional scheme that sorts its signs differently from the way
+    // this build sorts that chart's.
+    let wrong_classifier = written.replace(r#""classifier":"ALL""#, r#""classifier":"PARITY""#);
+    assert_ne!(
+        wrong_classifier, written,
+        "the fixture has a classifier in it"
+    );
+    let refusal = from_hash_form::<Document>(&wrong_classifier).expect_err("a wrong classifier");
+    assert!(refusal.message.contains("sorts"), "{refusal}");
+
+    // A drishti table this build does not ship.
+    let wrong_table = written.replace(r#""table":"PARASHARA""#, r#""table":"MADE_UP""#);
+    assert_ne!(wrong_table, written, "the fixture names its drishti table");
+    let refusal = from_hash_form::<Document>(&wrong_table).expect_err("an unknown table");
+    assert!(refusal.message.contains("MADE_UP"), "{refusal}");
+
     // A catalogue key this build does not know.
     let wrong_key = written.replace(r#""graha":"SUN""#, r#""graha":"SOL""#);
     assert_ne!(wrong_key, written, "the fixture has a Sun in it");
     let refusal = from_hash_form::<Document>(&wrong_key).expect_err("an unknown graha");
     assert!(refusal.message.contains("SOL"), "{refusal}");
+
+    // And what is *not* refused: a section a newer build wrote and this
+    // one has never heard of. Refusing it would make a chart unreadable
+    // by every version but its own; what the reader drops, the bytes
+    // report, so `reads_back` is false and the hash does not match.
+    let from_the_future = written.replacen('{', r#"{"a_section_from_a_newer_build":1,"#, 1);
+    let read: Document = from_hash_form(&from_the_future).expect("a newer document still reads");
+    assert_ne!(
+        to_hash_form(&read),
+        from_the_future,
+        "what was dropped has to show in the bytes"
+    );
 }

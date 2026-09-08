@@ -97,9 +97,9 @@ latitude.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| rahu kaal, yamaghanda and gulika are each one eighth of the daylight | **holds** | worst 6.66e-9 of an eighth |
-| the choghadiya are eight equal parts of the daylight and eight of the night | **holds** | worst 0.040 ms |
-| the horas are twelve over the daylight and twelve over the night | **holds** | worst 0.040 ms |
+| rahu kaal, yamaghanda and gulika are each one eighth of the daylight | **holds** | worst 4.55e-9 of an eighth |
+| the choghadiya are eight equal parts of the daylight and eight of the night | **holds** | worst 0 s, exactly |
+| the horas are twelve over the daylight and twelve over the night | **holds** | worst 0 s, exactly |
 | the horas are twenty-four equal parts of the whole window | falsified | worst 9.83 h |
 
 The equal hora — twenty-four sixty-minute hours from sunrise — is out
@@ -171,7 +171,7 @@ Wednesdays and every one is recorded void, while every one of the other
 | Abhijit is the eighth of the daylight's fifteen muhurtas | **holds** | worst 0.040 ms |
 | Abhijit is void on a Wednesday and effective on every other day | **holds** | 0 of 55 disagree |
 | Brahma muhurta is the fourteenth muhurta of the night that ends at this sunrise | falsified | worst 27.563 s |
-| Brahma muhurta sits before this sunrise but is sized from the night after the day | **holds** | worst 0.040 ms |
+| Brahma muhurta sits before this sunrise but is sized from the night after the day | **holds** | worst 0 s, exactly |
 
 Brahma muhurta ends before sunrise, so the night it belongs to is the
 night that *ends* at that sunrise. The engine puts it there and sizes it

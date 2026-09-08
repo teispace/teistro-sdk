@@ -410,4 +410,34 @@ mod tests {
         assert!(hits(Moving::still(0.0), Moving::still(0.0), &[], 0.0).is_ok());
         assert!(hits(Moving::still(0.0), Moving::still(0.0), &[], WIDEST_ORB_DEG).is_ok());
     }
+
+    #[test]
+    fn an_angle_reads_back_by_its_key_and_refuses_what_this_build_does_not_know() {
+        // `Angle` holds a `&'static str`, so it is read back by looking
+        // the constant up rather than by owning its bytes. No chart
+        // document carries one today — `Aspects` writes a drishti's
+        // strength, not a Ptolemaic angle — so nothing else exercises
+        // this reader, and a `Hit` is public enough for a consumer to
+        // read one.
+        for angle in Angle::PTOLEMAIC {
+            let written = serde_json::to_string(&angle).expect("it writes");
+            let read: Angle = serde_json::from_str(&written).expect("it reads back");
+            assert_eq!(read, angle);
+        }
+
+        let unknown = serde_json::from_str::<Angle>(r#"{"key":"SEMISQUARE","degrees":45}"#)
+            .expect_err("an angle this build does not know");
+        let said = unknown.to_string();
+        assert!(said.contains("SEMISQUARE"), "{said}");
+        assert!(
+            said.contains("CONJUNCTION"),
+            "it names the ones it knows: {said}"
+        );
+
+        // A key this build knows, at degrees it does not put it at: a
+        // document from a build with a different table, not a typo.
+        let moved = serde_json::from_str::<Angle>(r#"{"key":"TRINE","degrees":121}"#)
+            .expect_err("a trine that is not 120 degrees");
+        assert!(moved.to_string().contains("121"), "{moved}");
+    }
 }

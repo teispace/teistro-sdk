@@ -267,9 +267,22 @@ The default float parser is a fast path that is not correctly rounded —
 it read 84 of a chart document's 1518 numbers a unit in the last place
 low — and a reader on it cannot reproduce the hash it exists to check.
 Because the conformance corpus is JSON too, it had been read the same
-way: `points`'s clock-driven lagnas go from 138 to 141 exact of 213 now
-that the recorded values parse to the doubles they name. Nothing the SDK
-computes changed.
+way, and several comparisons against it were measuring the parser rather
+than the SDK. Nothing the SDK computes changed; what moved is how
+closely it is now seen to agree:
+
+| claim | before | now |
+|---|---|---|
+| the choghadiya are eight equal parts of the daylight and eight of the night | worst 0.040 ms | **0 s, exactly** |
+| the horas are twelve over the daylight and twelve over the night | worst 0.040 ms | **0 s, exactly** |
+| Brahma muhurta is sized from the night after the day | worst 0.040 ms | **0 s, exactly** |
+| rahu kaal, yamaghanda and gulika are each one eighth of the daylight | worst 6.66e-9 | 4.55e-9 |
+| the three clock-driven lagnas against the recorded ishtakaal | 25 of 71 disagree | 24 of 71 |
+
+Three claims that had held to within a twenty-fifth of a millisecond
+hold **exactly**. The SDK's arithmetic was right all along and the
+fixture it was compared against had been read a unit in the last place
+low.
 
 `arbitrary_precision` fixes the same numbers and is the wrong tool.
 Serde buffers an internally tagged enum before writing it, and that
