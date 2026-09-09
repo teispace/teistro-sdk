@@ -78,6 +78,8 @@ jobs:
         run: cargo xtask check-almanac
       - name: Lunisolar month page (the sankranti count that decides adhika and kshaya, over a millennium)
         run: cargo xtask check-lunisolar
+      - name: Topocentric centre page (the parallax, the aberration and the points that take neither, over six recorded pairs)
+        run: cargo xtask check-topocentric
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

@@ -163,6 +163,45 @@ pub(crate) fn plural(value: usize, noun: &str) -> String {
     }
 }
 
+/// A small count in words, as generated prose reads it: `nine readings`
+/// rather than `9 readings`. Above twelve the digits are clearer.
+pub(crate) fn spelled(value: usize) -> String {
+    const WORDS: [&str; 13] = [
+        "no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+        "eleven", "twelve",
+    ];
+    WORDS
+        .get(value)
+        .map_or_else(|| count(value), |word| (*word).to_string())
+}
+
+/// A count of occasions: `once`, `twice`, `nine times`.
+pub(crate) fn times(value: usize) -> String {
+    match value {
+        1 => String::from("once"),
+        2 => String::from("twice"),
+        other => format!("{} times", spelled(other)),
+    }
+}
+
+/// A decimal written with a space every three digits after the point,
+/// the house style for a long constant.
+pub(crate) fn spaced(value: f64, places: usize) -> String {
+    let written = format!("{value:.places$}");
+    let Some((whole, fraction)) = written.split_once('.') else {
+        return written;
+    };
+    let mut out = String::from(whole);
+    out.push('.');
+    for (index, digit) in fraction.chars().enumerate() {
+        if index > 0 && index % 3 == 0 {
+            out.push(' ');
+        }
+        out.push(digit);
+    }
+    out
+}
+
 /// The greatest of a set of measurements.
 pub(crate) fn worst(values: impl IntoIterator<Item = f64>) -> f64 {
     values.into_iter().fold(0.0_f64, f64::max)
