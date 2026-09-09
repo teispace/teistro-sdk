@@ -268,6 +268,21 @@ does. The one recorded day where the text and the recording disagree is
 nineteen minutes from a new moon — the eclipse conjunction of 8 April
 2024, with the text's instant and the recording's on either side of it.
 
+**And the pass answers the design's central question before the design
+asks it.** A lunisolar date's *day* is the tithi running at sunrise, and
+a tithi runs twenty-three to twenty-six hours — so it can catch two
+sunrises or none. Over 365 234 sunrises at Ujjain the day repeats **one
+day in forty-four** and is skipped **one in twenty-six**, so
+`(year, month, day)` is not a key: it names two days sometimes and none
+at others. A Hindu lunisolar date needs **two** flags — which of a
+repeated pair a day is, and whether its month is the adhika one — and
+`CalendarDate` carries neither. The calendar therefore cannot be another
+`CalendarSystem` without either extending a value that crosses the
+boundary and reaches three bindings, or giving `day` a different meaning
+and saying plainly that the result is not the date a panchangam prints.
+The measurement does not decide which; it establishes that the question
+cannot be dodged.
+
 **Kshaya is measured and not tested**, and the page says so rather than
 implying otherwise: the corpus records none, so nothing holds the rule to
 an authority. What can be said is that its frequency is what the

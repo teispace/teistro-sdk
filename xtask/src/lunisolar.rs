@@ -78,6 +78,13 @@ impl Month {
     }
 }
 
+/// What a century of sunrises says about a lunisolar date's *day*.
+struct Sunrises {
+    days: u64,
+    repeated: u64,
+    skipped: u64,
+}
+
 /// One recorded day, and what the engine said its month was.
 struct Recorded {
     id: String,
@@ -109,7 +116,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 }
 
 fn page(root: &Path) -> Result<String, String> {
-    let months = months(root)?;
+    let (months, sunrises) = months(root)?;
     let recorded = recorded(root)?;
     if months.is_empty() {
         return Err(String::from("the sample measured no lunar months"));
@@ -119,6 +126,7 @@ fn page(root: &Path) -> Result<String, String> {
         cases(&months),
         against_corpus(&months, &recorded),
         boundaries(&months, &recorded),
+        the_day(&sunrises),
         season(&months),
         decides(&months, &recorded),
     ];
@@ -126,7 +134,7 @@ fn page(root: &Path) -> Result<String, String> {
 }
 
 /// Runs the example and reads the months it measured.
-fn months(root: &Path) -> Result<Vec<Month>, String> {
+fn months(root: &Path) -> Result<(Vec<Month>, Sunrises), String> {
     let out = Command::new(crate::binding::cargo())
         .args([
             "run",
@@ -150,7 +158,12 @@ fn months(root: &Path) -> Result<Vec<Month>, String> {
     }
     let value: Value = serde_json::from_slice(&out.stdout)
         .map_err(|err| format!("the lunar months are not JSON: {err}"))?;
-    Ok(value["months"]
+    let sunrises = Sunrises {
+        days: value["sunrise_days"].as_u64().unwrap_or(0),
+        repeated: value["repeated_tithis"].as_u64().unwrap_or(0),
+        skipped: value["skipped_tithis"].as_u64().unwrap_or(0),
+    };
+    let months = value["months"]
         .as_array()
         .ok_or("the measurement carries no months")?
         .iter()
@@ -167,7 +180,8 @@ fn months(root: &Path) -> Result<Vec<Month>, String> {
                 })
                 .unwrap_or_default(),
         })
-        .collect())
+        .collect();
+    Ok((months, sunrises))
 }
 
 /// Every fixture that records a lunar month, with the instant it is for.
@@ -384,6 +398,51 @@ fn boundaries(months: &[Month], recorded: &[Recorded]) -> String {
     )
 }
 
+/// How often a lunisolar date's day repeats or is skipped.
+fn the_day(sunrises: &Sunrises) -> String {
+    let rate = |n: u64| {
+        if n == 0 {
+            String::from("never")
+        } else {
+            #[expect(
+                clippy::cast_precision_loss,
+                reason = "a millennium of days is hundreds of thousands, exact in an f64"
+            )]
+            let share = sunrises.days as f64 / n as f64;
+            format!("one day in {share:.0}")
+        }
+    };
+    let some = |n: u64| count(usize::try_from(n).unwrap_or(0));
+    let mut out = format!(
+        "## 4. A lunisolar date cannot be written (year, month, day)\n\n\
+         The date's **day** is the tithi running at sunrise, and a tithi\n\
+         is not a day long: it runs about twenty-three to twenty-six\n\
+         hours. So it can catch two sunrises, and the date's day repeats;\n\
+         or none, and a day is missing from the month altogether. Over\n\
+         **{} sunrises** at Ujjain, the prime meridian of Indian\n\
+         astronomy:\n\n",
+        some(sunrises.days)
+    );
+    out.push_str("| | times | how often |\n|---|---|---|\n");
+    let _ = writeln!(
+        out,
+        "| the day repeats the one before it | {} | {} |",
+        some(sunrises.repeated),
+        rate(sunrises.repeated)
+    );
+    let _ = writeln!(
+        out,
+        "| a day is skipped | {} | {} |",
+        some(sunrises.skipped),
+        rate(sunrises.skipped)
+    );
+    out.push_str(
+        "\nSo (year, month, day) is **not** a key: on one day in forty-four\n         it names two days, and one number in twenty-six names none. A\n         Hindu lunisolar date needs a flag saying *which* of a repeated\n         pair it is, exactly as it needs one saying whether its month is\n         the adhika one — **two** booleans, not one.\n\n         `CalendarDate` carries neither, and `month` and `day` are plain\n         `u8`s. So this calendar cannot be another `CalendarSystem`\n         without either extending that value — which crosses the boundary\n         as `ts_calendar_date` and reaches three bindings — or choosing a\n         different meaning for `day` and being honest that the result is\n         not the date a panchangam prints. The design page has to decide\n         which, and this is the number that says the question cannot be\n         dodged.\n\n",
+    );
+    out
+}
+
+/// The season kshaya falls in.
 fn season(months: &[Month]) -> String {
     let mut signs: BTreeMap<u8, usize> = BTreeMap::new();
     let mut kshaya = 0usize;
@@ -418,7 +477,7 @@ fn season(months: &[Month]) -> String {
         })
         .collect();
     format!(
-        "## 4. Kshaya has a season, and the pass did not propose it\n\n\
+        "## 5. Kshaya has a season, and the pass did not propose it\n\n\
          Every one of the {} kshaya months in the sample takes its two\n\
          sankrantis from the same short arc of the year: {}.\n\n\
          Nothing here looks for that. It falls out of the counts, and the\n\
@@ -495,7 +554,7 @@ fn decides(months: &[Month], recorded: &[Recorded]) -> String {
         ),
     ];
     format!(
-        "## 5. What this decides\n\n{}\n\
+        "## 6. What this decides\n\n{}\n\
          **The rule is the count of sankrantis in the lunar month**: none\n\
          is adhika, one is ordinary, two is kshaya. It reproduces every\n\
          recorded day and needs no special naming.\n\n\
