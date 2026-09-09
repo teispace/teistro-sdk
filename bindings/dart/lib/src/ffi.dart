@@ -382,8 +382,16 @@ final class CapabilitiesStruct extends ffi.Struct {
   @ffi.Uint8()
   external int astronomy;
 
+  /// Whether the engine describes its own operations, so a consumer
+  /// can reach what this port does not name. One of the two bytes
+  /// this struct reserved, spent rather than a new field appended, so
+  /// that its size and every offset in it are unchanged and an adapter
+  /// built against the old header still binds.
+  @ffi.Uint8()
+  external int native;
+
   /// Reserved, zero.
-  @ffi.Array(2)
+  @ffi.Array(1)
   external ffi.Array<ffi.Uint8> reserved;
 
   /// The name, NUL-terminated.

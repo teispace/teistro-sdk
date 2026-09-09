@@ -126,6 +126,7 @@ C capabilities; every pointer is owned by the provider and valid for its lifetim
 | `distance_unit` | `uint8_t` | `DistanceUnit::id`. |
 | `speed_model` | `uint8_t` | `SpeedModel::id`. |
 | `astronomy` | `uint8_t` | `Astronomy::id`. |
+| `native` | `uint8_t` | Whether the engine describes its own operations, so a consumer can reach what this port does not name. One of the two bytes this struct reserved, spent rather than a new field appended, so that its size and every offset in it are unchanged and an adapter built against the old header still binds. |
 | `name` | `const char *` | The name, NUL-terminated. |
 | `version` | `const char *` | The version, NUL-terminated. |
 | `data_version` | `const char *` | The data version, NUL-terminated. |
