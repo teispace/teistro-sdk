@@ -46,13 +46,14 @@ rows:
     area: position completion
     target: "1e-6″ when fed identical geometric vectors"
     page: 03-design/ephemeris-port-and-adapters.md
-    evidence: "the coordinate and zodiac steps; the centre, corrections and equinox steps wait for the built-in ephemeris (Phase 3)"
+    evidence: "the coordinate, zodiac and topocentric-centre steps; the corrections and equinox steps, and a heliocentric or barycentric centre, wait for the built-in ephemeris (Phase 3)"
     by_hand: "the kit's completion checks: through the native obliquity 2.0e-10″ from the engine's own ecliptic output, through the SDK's obliquity and nutation 3.9e-4″ (Teimeris and the Swiss Ephemeris, 2026-09-05)"
   - id: topocentric
     area: topocentric correction
     target: "1e-6″"
-    page: 03-design/ephemeris-port-and-adapters.md
-    evidence: "not built: the completion's centre step is Phase 3's; a topocentric request is answered by a provider that can, as Teimeris does for the baseline's panchanga transitions"
+    page: 03-design/astro-timescales-and-frames.md
+    evidence: "`baseline_topocentric.rs` over the six charts the corpus records from both centres, which give the step a recorded input as well as a recorded answer; the nine readings it falsified, including the one this section's design page had carried since Phase 2, are in `03-design/topocentric-measured.md` (held by `cargo xtask check-topocentric`)"
+    by_hand: "what the Moon keeps is 0.084″, three parts in a hundred thousand of a step of forty arcminutes; the candidates are the recording engine's own bookkeeping for the Moon's light time and the two rates the corpus does not record, and this corpus cannot tell them apart (2026-09-09)"
   - id: transforms
     area: coordinate transforms
     target: exact to rounding

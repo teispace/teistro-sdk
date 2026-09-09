@@ -4,12 +4,14 @@
 //! stamped on the result (`docs/03-design/ephemeris-port-and-adapters.md`,
 //! §5; ADR-0013).
 //!
-//! Two differences are completed today: coordinates (equatorial to
-//! ecliptic and back, through the obliquity) and the zodiac (tropical to
-//! sidereal, through an ayanamsha). Any other difference between the
-//! provider's native frame and the request (centre, equinox, corrections)
-//! is refused with the step named; light time, aberration, deflection,
-//! nutation, precession and topocentric parallax arrive in Phase 2.
+//! Three differences are completed today: the centre (geocentric to
+//! topocentric, through [`crate::topocentric`]), coordinates (equatorial
+//! to ecliptic and back, through the obliquity) and the zodiac (tropical
+//! to sidereal, through an ayanamsha). The differences that remain — a
+//! heliocentric or barycentric centre, the equinox, and the corrections
+//! that turn a geometric position into an apparent one — are refused
+//! with the step named, and arrive with the built-in ephemeris, which is
+//! the first provider that returns a geometric J2000 frame.
 
 use core::fmt;
 
@@ -19,15 +21,16 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, Coordinates, EphemerisProvider, Obliquity, Overrides,
+    Body, Capabilities, Cell, Centre, Coordinates, EphemerisProvider, Frame, Obliquity, Overrides,
     PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
 use crate::ayanamsha;
 use crate::delta_t::DeltaTModel;
 use crate::precession::PrecessionModel;
-use crate::scale::tt_of;
+use crate::scale::{tt_of, ut1_from_tt};
 use crate::sky::{self, Apparent, ApparentPositions, Spherical};
+use crate::topocentric::Station;
 
 /// Who computed a step.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -233,6 +236,37 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }
     }
 
+    /// The UT1 and the TT instant of a request's instant, whichever it
+    /// was given in: the station's place needs the Earth's rotation,
+    /// which is UT1, and the sky around it needs TT.
+    fn both_scales(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        steps: &mut Vec<Step>,
+    ) -> Result<(JulianDay<Ut1>, JulianDay<Tt>), CompletionError> {
+        let (ut1, tt) = match scale {
+            TimeScale::Ut1 => {
+                let ut1 = JulianDay::try_new(jd).map_err(Error::from)?;
+                let (tt, _) = tt_of(ut1, self.delta_t)?;
+                (ut1, tt)
+            }
+            TimeScale::Tt => {
+                let tt = JulianDay::try_new(jd).map_err(Error::from)?;
+                let (ut1, _) = ut1_from_tt(tt, self.delta_t)?;
+                (ut1, tt)
+            }
+        };
+        push_once(
+            steps,
+            Step {
+                name: "delta-t",
+                implementation: Implementation::Sdk,
+            },
+        );
+        Ok((ut1, tt))
+    }
+
     /// The provider's capabilities, as read at construction.
     #[must_use]
     pub const fn capabilities(&self) -> &Capabilities {
@@ -304,6 +338,18 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     pub fn positions(&self, request: &PositionRequest<'_>) -> Result<Completed, CompletionError> {
         let native = self.capabilities.native_frame;
         let wanted = request.frame;
+        // A property of the request rather than of any provider, so it is
+        // answered here and answered the same way under every policy.
+        if wanted.centre == Centre::Topocentric && request.observer.is_none() {
+            return Err(CompletionError::Sdk {
+                error: Error::new(
+                    teistro_core::error::Status::InvalidArg,
+                    "a topocentric frame needs the place the observer stands at",
+                )
+                .with_field("observer")
+                .with_hint("build the request with `PositionRequest::from_place`"),
+            });
+        }
         if wanted == native {
             let columns = self.provider.positions(request)?;
             return Ok(Completed {
@@ -316,22 +362,26 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }
         // A provider that can produce the frame natively answers itself;
         // one that refuses with `Unsupported` is asked for its native frame
-        // and completed.
-        match self.provider.positions(request) {
-            Ok(columns) => {
-                return Ok(Completed {
-                    columns,
-                    steps: vec![Step {
-                        name: "positions",
-                        implementation: Implementation::Native,
-                    }],
-                });
+        // and completed. Under `sdk-only` it is not asked at all: a
+        // provider that answers a whole frame has done several of the
+        // steps itself, and the policy is that the SDK's own routines do
+        // them (ADR-0013). Until the centre step there was nothing a
+        // shipped adapter would have answered here, so this changes what
+        // `sdk-only` means for the first time.
+        if self.policy != OverridePolicy::SdkOnly {
+            match self.provider.positions(request) {
+                Ok(columns) => {
+                    return Ok(Completed {
+                        columns,
+                        steps: vec![Step {
+                            name: "positions",
+                            implementation: Implementation::Native,
+                        }],
+                    });
+                }
+                Err(ProviderError::Unsupported { .. }) => {}
+                Err(error) => return Err(error.into()),
             }
-            Err(ProviderError::Unsupported { .. }) => {}
-            Err(error) => return Err(error.into()),
-        }
-        if wanted.centre != native.centre {
-            return Err(CompletionError::Unsupported { step: "centre" });
         }
         if wanted.equinox != native.equinox {
             return Err(CompletionError::Unsupported { step: "equinox" });
@@ -347,6 +397,12 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }];
         let native_request = request.in_frame(native);
         let mut columns = self.provider.positions(&native_request)?;
+        // The centre first, in the frame the provider answered in: the
+        // step is a displacement in space, and a rotation or a zodiac
+        // shift afterwards carries it as it carries everything else.
+        if wanted.centre != native.centre {
+            self.recentre(&mut columns, request, native, &mut steps)?;
+        }
         // The zodiac is a shift of ecliptic longitude, so it is applied
         // while the columns are ecliptic: before a rotation out of the
         // ecliptic, after a rotation into it. A rotation to the equator
@@ -377,6 +433,81 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }
         columns.frame = wanted;
         Ok(Completed { columns, steps })
+    }
+
+    /// The columns as seen from the request's place rather than from the
+    /// centre of the Earth, which is what a chart cast for a place asks
+    /// for and what every recorded chart in the conformance corpus is
+    /// (`docs/03-design/topocentric-measured.md`).
+    ///
+    /// Only geocentric to topocentric is done. A heliocentric or
+    /// barycentric centre is a different question — it needs the Earth's
+    /// own place in the solar system rather than the observer's on the
+    /// Earth — and is refused by the same name, as is a sidereal native
+    /// frame, whose longitudes are not the ecliptic's.
+    fn recentre(
+        &self,
+        columns: &mut PositionColumns,
+        request: &PositionRequest<'_>,
+        native: Frame,
+        steps: &mut Vec<Step>,
+    ) -> Result<(), CompletionError> {
+        if native.centre != Centre::Geocentric || request.frame.centre != Centre::Topocentric {
+            return Err(CompletionError::Unsupported { step: "centre" });
+        }
+        if native.zodiac != Zodiac::Tropical {
+            return Err(CompletionError::Unsupported {
+                step: "sidereal-topocentric",
+            });
+        }
+        // The provider was asked for the topocentric frame above and could
+        // not give it — or was not asked, because the policy is
+        // `sdk-only` — so the SDK's own routine is the only implementation
+        // left, and `native-only` refuses it.
+        if self.policy == OverridePolicy::NativeOnly {
+            return Err(CompletionError::PolicyRefused {
+                step: "centre",
+                policy: self.policy,
+            });
+        }
+        // `positions` refuses a topocentric request with no place before
+        // any of this, so a request that reaches here carries one.
+        let Some(place) = request.observer else {
+            return Err(CompletionError::Unsupported { step: "centre" });
+        };
+        for (jd_index, jd) in request.jds.iter().enumerate() {
+            let (ut1, tt) = self.both_scales(*jd, request.scale, steps)?;
+            let mut station = Station::at(place, ut1, tt);
+            if native.coordinates == Coordinates::Ecliptic {
+                // The station is built in the equator of date; the columns
+                // are ecliptic, so it is turned once rather than every
+                // cell being turned twice.
+                let obliquity = self.obliquity(*jd, request.scale, steps)?;
+                station = station.in_ecliptic(if native.corrections.nutation {
+                    obliquity.true_deg
+                } else {
+                    obliquity.mean_deg
+                });
+            }
+            for (body_index, body) in request.bodies.iter().enumerate() {
+                let Some(cell) = columns.at(jd_index, body_index) else {
+                    continue;
+                };
+                columns.set_at(
+                    jd_index,
+                    body_index,
+                    station.seen(cell, *body, native.corrections, request.speeds),
+                );
+            }
+        }
+        push_once(
+            steps,
+            Step {
+                name: "centre",
+                implementation: Implementation::Sdk,
+            },
+        );
+        Ok(())
     }
 
     /// Rotates every cell between the ecliptic and the equator with the
@@ -663,6 +794,146 @@ mod tests {
             .unwrap();
         assert!((apparent.ra_deg - done.columns.at(0, 0).unwrap().lon).abs() < 1e-12);
         assert!((apparent.distance_au - 1.0).abs() < 1e-12);
+    }
+
+    /// A provider that answers whatever frame it is asked for, by
+    /// stamping the frame on the canonical cells. Nothing shipped does
+    /// this — the two adapters answer their native frame and refuse the
+    /// rest — but it is the case the `sdk-only` policy is about.
+    #[derive(Debug)]
+    struct Obliging;
+
+    impl EphemerisProvider for Obliging {
+        fn capabilities(&self) -> Capabilities {
+            Capabilities {
+                overrides: Overrides::TOPOCENTRIC,
+                ..TestProvider.capabilities()
+            }
+        }
+
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
+            let mut columns = TestProvider.positions(&request.in_frame(Frame::CANONICAL))?;
+            columns.frame = request.frame;
+            Ok(columns)
+        }
+    }
+
+    fn kathmandu() -> teistro_core::quantity::Place {
+        teistro_core::quantity::Place::try_from_degrees(27.7172, 85.324, 1_400.0).unwrap()
+    }
+
+    #[test]
+    fn the_centre_step_displaces_a_body_and_leaves_a_direction_alone() {
+        let completion = completion(OverridePolicy::PreferNative);
+        let jds = [2_460_000.5];
+        let bodies = [Body::Moon, Body::MeanNode];
+        let from_centre = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
+        let from_place = from_centre.from_place(kathmandu());
+        let centre = completion.positions(&from_centre).unwrap();
+        let place = completion.positions(&from_place).unwrap();
+        assert!(
+            place
+                .steps
+                .iter()
+                .any(|s| s.name == "centre" && s.implementation == Implementation::Sdk),
+            "{:?}",
+            place.step_keys()
+        );
+        assert_eq!(place.columns.frame.centre, Centre::Topocentric);
+        // The test provider stands every body one astronomical unit off,
+        // so what moves is the solar parallax and the station's own
+        // aberration together.
+        let moved = difference_deg(
+            place.columns.at(0, 0).unwrap().lon,
+            centre.columns.at(0, 0).unwrap().lon,
+        )
+        .abs()
+            * 3_600.0;
+        assert!((0.5..30.0).contains(&moved), "the body moved {moved}″");
+        assert_eq!(
+            place.columns.at(0, 1),
+            centre.columns.at(0, 1),
+            "a direction was displaced"
+        );
+        // The step composes with the others: the same request in
+        // equatorial coordinates and a sidereal zodiac still names it.
+        let turned = from_place.in_frame(
+            Frame::CANONICAL
+                .with_centre(Centre::Topocentric)
+                .with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
+        );
+        let done = completion.positions(&turned).unwrap();
+        assert!(done.step_keys().contains(&String::from("centre:Sdk")));
+        assert!(done.step_keys().contains(&String::from("zodiac-shift:Sdk")));
+    }
+
+    #[test]
+    fn the_centre_step_refuses_what_it_cannot_do_and_says_which() {
+        let completion = completion(OverridePolicy::PreferNative);
+        let jds = [2_460_000.5];
+        let bodies = [Body::Sun];
+        let placeless = PositionRequest::new(
+            &jds,
+            TimeScale::Ut1,
+            &bodies,
+            Frame::CANONICAL.with_centre(Centre::Topocentric),
+        );
+        let refusal = completion.positions(&placeless).unwrap_err();
+        let error: Error = refusal.into();
+        assert_eq!(error.field(), Some("observer"));
+        assert!(error.to_string().contains("observer stands"));
+        // A centre this step is not about is refused by the same name.
+        for centre in [Centre::Heliocentric, Centre::Barycentric] {
+            let elsewhere = placeless.in_frame(Frame::CANONICAL.with_centre(centre));
+            assert_eq!(
+                completion.positions(&elsewhere).err(),
+                Some(CompletionError::Unsupported { step: "centre" }),
+                "{centre:?}"
+            );
+        }
+        // `native-only` refuses the SDK's own routine, which is the only
+        // one left once the provider has said no.
+        let native_only = self::completion(OverridePolicy::NativeOnly);
+        let placed = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL)
+            .from_place(kathmandu());
+        assert!(matches!(
+            native_only.positions(&placed).unwrap_err(),
+            CompletionError::PolicyRefused { step: "centre", .. }
+        ));
+    }
+
+    #[test]
+    fn sdk_only_does_not_let_a_provider_answer_a_frame_it_declares() {
+        static OBLIGING: Obliging = Obliging;
+        let jds = [2_460_000.5];
+        let bodies = [Body::Moon];
+        let placed = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL)
+            .from_place(kathmandu());
+        // Under `prefer-native` the provider answers and nothing is
+        // completed; under `sdk-only` it is not even asked.
+        let native = Completion::new(
+            &OBLIGING,
+            OverridePolicy::PreferNative,
+            DeltaTModel::TableThenModel,
+        );
+        let done = native.positions(&placed).unwrap();
+        assert_eq!(done.step_keys(), vec!["positions:Native"]);
+        let sdk = Completion::new(
+            &OBLIGING,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let done = sdk.positions(&placed).unwrap();
+        assert!(done.step_keys().contains(&String::from("centre:Sdk")));
+        // A frame that needs nothing still passes through under either.
+        let plain = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
+        assert_eq!(
+            sdk.positions(&plain).unwrap().step_keys(),
+            vec!["positions:PassThrough"]
+        );
     }
 
     #[test]

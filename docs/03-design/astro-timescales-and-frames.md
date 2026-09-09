@@ -1,8 +1,10 @@
 # Astronomy: time scales and frames
 
 Status: `draft`, written 2026-09-05 when the precession models were
-built for the ayanamsha catalogue; the completion steps still to come
-(equinox, centre, corrections) are designed here and say so. Derives
+built for the ayanamsha catalogue and revised 2026-09-09 when the
+topocentric centre was built; the completion steps still to come
+(equinox, the centre of a heliocentric or barycentric frame,
+corrections) are designed here and say so. Derives
 from `01-research/platform/13-astronomy-layer.md` (the time scale,
 precession, nutation, frame and completion rows with their conformance
 targets), `02-architecture/02-ephemeris-port.md` and
@@ -19,8 +21,9 @@ one frame natively and the completion turns it into the one a caller
 asks for, step by step, each step stamped with who did it. This page
 settles the models behind those steps: the time scales the astronomy
 runs in, precession as a catalogue of models, nutation, the obliquity,
-the frame bias, and the steps that remain (equinox, centre, corrections)
-so that a J2000 geometric provider (a JPL kernel, the built-in ephemeris)
+the frame bias, the topocentric centre as built, and the steps that
+remain (equinox, corrections, a heliocentric or barycentric centre) so
+that a J2000 geometric provider (a JPL kernel, the built-in ephemeris)
 completes to the canonical apparent frame of date.
 
 ## 2. Inputs, settings and ports
@@ -95,10 +98,11 @@ that J2000 mean positions precess without it.
 §5). Built: coordinates (the rotation between the ecliptic and the
 equator through the obliquity record or the provider's), the zodiac
 (the sidereal shift through the provider's ayanamsha or the SDK's
-catalogue, applied while the columns are ecliptic). Designed, for a
-J2000 geometric provider:
+catalogue, applied while the columns are ecliptic), and the **centre**
+from geocentric to topocentric (`astro::topocentric`, designed from
+`topocentric-measured.md`). Designed, for a J2000 geometric provider:
 
-1. *centre*: barycentric or heliocentric to geocentric by subtracting
+1. *centre*, barycentric or heliocentric to geocentric by subtracting
    the Earth's barycentric position (ERFA's `epv00`, or the provider's
    Earth), with the light-time iteration (the position at `t − d/c`,
    two or three passes to convergence);
@@ -108,9 +112,30 @@ J2000 geometric provider:
    (`TRUE`, no aberration) as the `frame.positions` knob;
 3. *equinox*: J2000 to of date by the precession matrix of the model in
    force and the nutation matrix (IAU 2000B or 2000A), the frame bias
-   first when the native frame is ICRS;
-4. *topocentric*: the observer's geocentric position (WGS84) and the
-   parallax, for `frame.centre = TOPOCENTRIC`.
+   first when the native frame is ICRS.
+
+**The topocentric centre**, built. The four things it takes, and the
+order they happen in, are what `topocentric-measured.md` settled against
+the six charts the corpus records from both centres; the reading this
+page carried until then — "the observer's geocentric position (WGS84)
+and the parallax" — is the one that pass falsified.
+
+| step | what | why it is not optional |
+|---|---|---|
+| the station | `pvtob` on WGS84 at the place's own height, turned by Greenwich apparent sidereal time (`sky::observer`) | a sphere costs 3.9″ and sea level 0.75″, against a bound of 0.0036″ |
+| the natural direction | the annual aberration taken off the provider's apparent direction, the Earth's barycentric velocity from `epv00` carried to the frame of date (`sky::earth_at`) | displacing a direction the Earth's motion has already turned displaces it wrongly by that much of itself: a third of an arcsecond on the Moon |
+| the light time | the body carried over the time the station saves by standing nearer, along its barycentric path | another third of an arcsecond on the Moon; with the step above it and not without |
+| the displacement | the station's position subtracted, the velocity with it | the step itself: 39′ of longitude and 5.5°/day of speed on the Moon |
+| the aberration | put back with the observer's whole velocity, the Earth's and the station's, its own rate from the station's centripetal acceleration | a third of an arcsecond on **every** body whatever its distance, and two arcseconds a day of speed |
+| a direction | left exactly where it was ([`Body::is_placed`]) | a displaced node would sit 43′ off the ecliptic; the corpus records zero to 1e-15° in all 174 rows |
+
+A body that is somewhere comes back within 0.0004″ of the recording
+engine and the Moon within 0.084″, which is three parts in a hundred
+thousand of the step (`crates/astro/tests/baseline_topocentric.rs`).
+What remains on the Moon is stated on the measured page rather than
+rounded away. A heliocentric or barycentric centre is a different
+question and is refused by the same name, as is a sidereal native frame,
+whose longitudes are not the ecliptic's.
 
 Each is stamped as the steps built so far are, and the kit's
 `completion_native` and `completion_sdk` checks grow a row each.
@@ -119,8 +144,10 @@ Each is stamped as the steps built so far are, and the kit's
 
 Rust: `precession::{PrecessionModel, matrix, to_date, to_j2000, between,
 mean_obliquity_rad, mean_obliquity_deg, equatorial_to_ecliptic,
-ecliptic_to_equatorial}`; `iau::{p06, ltp, vector}` for the ported
-routines; `sky::obliquity`; `Completion::with_precession`. C ABI and
+ecliptic_to_equatorial}`; `iau::{p06, ltp, vector, earth}` for the ported
+routines; `sky::{obliquity, observer, earth_at}`;
+`topocentric::Station::{at, in_ecliptic, seen}`;
+`Completion::with_precession`. C ABI and
 bindings: the frame is already the port's; a precession model knob is
 a settings field when it arrives, never a positional argument.
 
@@ -128,7 +155,9 @@ a settings field when it arrives, never a positional argument.
 
 | situation | outcome |
 |---|---|
-| a completion step not built (equinox, centre, corrections) | `UNSUPPORTED`, naming the step, with the hint to ask the provider for a frame it returns natively |
+| a completion step not built (equinox, corrections, a centre other than geocentric to topocentric) | `UNSUPPORTED`, naming the step, with the hint to ask the provider for a frame it returns natively |
+| a topocentric frame with no observer | `INVALID_ARG` on `observer`, with the hint to build the request with `PositionRequest::from_place`; answered before any provider is asked, so the message is the same under every policy |
+| a topocentric request under `native-only` over a provider that cannot | `PolicyRefused` naming `centre`: the provider has had its chance and the SDK's own routine is the only one left |
 | a native-only policy over a provider without the override | `PolicyRefused`, naming the step and the policy |
 | an instant far outside a model's validity | the value is computed and the provenance names the model; the Delta T uncertainty grows with the distance (`time-and-timezone.md`) |
 
@@ -149,6 +178,12 @@ a settings field when it arrives, never a positional argument.
   apart over a century.
 - Every model the identity at J2000.0, orthogonal, round-tripping, and
   1.396° of general precession over a century.
+- The topocentric centre against the six charts the corpus records
+  from **both** centres (`baseline_topocentric.rs`): 0.0004″ on every
+  body but the Moon, 0.084″ on the Moon, over 54 comparisons; the nodes
+  identical to the last bit of a double. The nine readings that
+  falsification tried are in `topocentric-measured.md`, held by `cargo
+  xtask check-topocentric`.
 - The ayanamsha catalogue against Teimeris over 1044 rows
   (`astro-ayanamsha-catalogue.md`, §8), which exercises the Vondrák
   matrices and obliquity at epochs from −700 to 2500.
@@ -165,9 +200,10 @@ None.
    arrives with the first consumer who needs another model (JPL Horizons
    compatibility, or a historical reconstruction), each model ported and
    held to Teimeris.
-2. **The remaining completion steps** (centre, corrections, equinox,
-   topocentric) arrive with the built-in ephemeris (Phase 3), which is
-   the first provider that returns a geometric J2000 frame; the kit's
+2. **The remaining completion steps** (a heliocentric or barycentric
+   centre, corrections, equinox) arrive with the built-in ephemeris
+   (Phase 3), which is the first provider that returns a geometric J2000
+   frame; the kit's
    two completion checks then compare the SDK's chain with an engine's
    apparent output at 1e-6″ when fed identical geometric vectors.
 3. **IAU 2000A.** Ported when the star table needs it; until then the

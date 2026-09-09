@@ -114,6 +114,12 @@ pub struct Observer {
     pub position_au: Vector3,
     /// Its velocity, astronomical units a day.
     pub velocity_au_per_day: Vector3,
+    /// Its acceleration, astronomical units a day squared. A station on
+    /// a turning Earth is always accelerating towards the axis, and the
+    /// aberration its velocity causes turns with it: two arcseconds a
+    /// day, which is what a topocentric speed would be wrong by if this
+    /// were left out.
+    pub acceleration_au_per_day2: Vector3,
 }
 
 /// The observer at a place and an instant ([`Observer`]), from ERFA's
@@ -150,9 +156,68 @@ pub fn observer(place: Place, ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> Observe
         0.0,
         theta,
     );
+    let position_au = pv[0].map(|m| m / iau::DAU);
+    let turn = iau::earth::ROTATION_RATE * iau::DAYSEC;
     Observer {
-        position_au: pv[0].map(|m| m / iau::DAU),
+        position_au,
         velocity_au_per_day: pv[1].map(|m| m * iau::DAYSEC / iau::DAU),
+        // The rotation is rigid, so the acceleration is the centripetal
+        // one about the polar axis and needs no differencing.
+        acceleration_au_per_day2: [
+            -turn * turn * position_au[0],
+            -turn * turn * position_au[1],
+            0.0,
+        ],
+    }
+}
+
+/// Where the Earth is and how fast, as the aberration needs it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct EarthAt {
+    /// The Earth's barycentric velocity in the true equator and equinox
+    /// of date, astronomical units a day: the velocity the annual
+    /// aberration is computed from.
+    pub velocity_au_per_day: Vector3,
+    /// The Sun's distance from the Earth, astronomical units, which the
+    /// aberration's own gravitational term is divided by.
+    pub sun_distance_au: f64,
+}
+
+/// The Earth's barycentric velocity and the Sun's distance at an
+/// instant.
+///
+/// `eraEpv00` answers in the celestial frame, so the IAU 2006
+/// bias-precession matrix and the IAU 2000B nutation matrix carry it to
+/// the frame the positions it is used with are in. It is the velocity
+/// the annual aberration is computed from: the completion's topocentric
+/// step takes that aberration off a provider's apparent direction before
+/// displacing it and puts it back after, which is worth a third of an
+/// arcsecond on the Moon and nothing on anything else
+/// (`docs/03-design/topocentric-measured.md`, §2).
+///
+/// ```
+/// use teistro_astro::sky::earth_at;
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let at = earth_at(JulianDay::<Tt>::literal(2_451_545.0));
+/// // The Earth travels about 0.0172 astronomical units a day, and stood
+/// // 0.983 astronomical units from the Sun at perihelion in 2000.
+/// let speed = at.velocity_au_per_day.iter().map(|c| c * c).sum::<f64>().sqrt();
+/// assert!((speed - 0.0172).abs() < 3e-4, "{speed}");
+/// assert!((at.sun_distance_au - 0.9833).abs() < 1e-3, "{}", at.sun_distance_au);
+/// ```
+#[must_use]
+pub fn earth_at(tt: JulianDay<Tt>) -> EarthAt {
+    let (date1, date2) = tt.split();
+    let state = iau::epv00::epv00(date1, date2);
+    let nutation = iau::nut00b(date1, date2);
+    let to_of_date = iau::vector::rxr(
+        &iau::apparent::numat(iau::obl06(date1, date2), nutation.dpsi, nutation.deps),
+        &iau::p06::pmat06(date1, date2),
+    );
+    EarthAt {
+        velocity_au_per_day: iau::vector::rxp(&to_of_date, &state.barycentric.velocity),
+        sun_distance_au: iau::vector::pm(&state.heliocentric.position),
     }
 }
 

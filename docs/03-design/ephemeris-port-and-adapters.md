@@ -173,7 +173,13 @@ native frame and completes the difference:
   asks for: the provider's own centre, equinox and corrections with
   equatorial coordinates in the tropical zodiac, so an engine answers in
   the apparent frame and a classical text in its own;
-- centre, equinox and corrections: refused in the spike; Phase 2's
+- the centre, geocentric to topocentric: built
+  (`astro::topocentric`, designed from `topocentric-measured.md`), the
+  station on WGS84 at the place's own height with the annual aberration
+  taken off and put back around the displacement and the light time it
+  saves, applied to every body that is somewhere and to no point that is
+  a direction; a heliocentric or barycentric centre, the equinox and the
+  corrections are still refused with the step named, and Phase 2's
   `astro-timescales-and-frames.md` supplies light time, aberration,
   deflection, nutation and precession so that a J2000 geometric provider
   (a JPL kernel, the built-in ephemeris) completes to the canonical

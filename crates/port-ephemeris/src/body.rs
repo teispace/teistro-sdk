@@ -102,6 +102,34 @@ impl Body {
         Body::ALL.get(usize::from(id)).copied()
     }
 
+    /// Whether the body is somewhere: a place in space the light comes
+    /// from, so that moving the observer moves it.
+    ///
+    /// The nodes and the mean apogee are not. They are directions on the
+    /// Moon's orbit computed from its elements — the node is where the
+    /// orbit crosses the ecliptic, and nothing sits there — and a
+    /// provider that answers a distance beside one is answering with a
+    /// nominal figure, the mean lunar distance, not a measurement. No
+    /// observer sees such a point displaced, which the conformance corpus
+    /// records to the last bit of a double under both centres and to
+    /// 1e-15° of ecliptic latitude in every chart cast from a place
+    /// (`03-design/topocentric-measured.md`, §4). The osculating apogee
+    /// **is** somewhere: it is a point on the orbit at the orbit's own
+    /// distance, and the corpus records none of them either way.
+    ///
+    /// ```
+    /// # use teistro_port_ephemeris::Body;
+    /// assert!(Body::Moon.is_placed());
+    /// assert!(!Body::MeanNode.is_placed());
+    /// assert!(!Body::TrueNode.is_placed());
+    /// assert!(!Body::MeanApogee.is_placed());
+    /// assert!(Body::OsculatingApogee.is_placed());
+    /// ```
+    #[must_use]
+    pub const fn is_placed(self) -> bool {
+        !matches!(self, Body::MeanNode | Body::TrueNode | Body::MeanApogee)
+    }
+
     /// The graha a body is, where the catalogue has one.
     ///
     /// Both nodes are Rahu: which of them a chart uses is the
