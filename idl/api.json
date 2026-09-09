@@ -7699,6 +7699,17 @@
           "meta": {}
         },
         {
+          "name": "native",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Whether the engine describes its own operations, so a consumer\ncan reach what this port does not name. One of the two bytes\nthis struct reserved, spent rather than a new field appended, so\nthat its size and every offset in it are unchanged and an adapter\nbuilt against the old header still binds.",
+          "meta": {
+            "flag": true
+          }
+        },
+        {
           "name": "reserved",
           "ty": {
             "kind": "array",
@@ -7706,7 +7717,7 @@
               "kind": "scalar",
               "scalar": "u8"
             },
-            "len": 2
+            "len": 1
           },
           "doc": "Reserved, zero.",
           "meta": {}

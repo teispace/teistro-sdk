@@ -342,6 +342,14 @@ export interface Capabilities {
    */
   readonly astronomy: number;
   /**
+   * Whether the engine describes its own operations, so a consumer
+   * can reach what this port does not name. One of the two bytes
+   * this struct reserved, spent rather than a new field appended, so
+   * that its size and every offset in it are unchanged and an adapter
+   * built against the old header still binds.
+   */
+  readonly native: boolean;
+  /**
    * The name, NUL-terminated.
    */
   readonly name: string;

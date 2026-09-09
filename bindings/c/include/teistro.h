@@ -4967,9 +4967,17 @@ struct ts_capabilities {
      */
     uint8_t astronomy;
     /**
+     * Whether the engine describes its own operations, so a consumer
+     * can reach what this port does not name. One of the two bytes
+     * this struct reserved, spent rather than a new field appended, so
+     * that its size and every offset in it are unchanged and an adapter
+     * built against the old header still binds. Non-zero for true, zero for false.
+     */
+    uint8_t native;
+    /**
      * Reserved, zero.
      */
-    uint8_t reserved[2];
+    uint8_t reserved[1];
     /**
      * The name, NUL-terminated.
      */
