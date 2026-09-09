@@ -61,6 +61,7 @@ pub mod scale;
 pub mod sky;
 pub mod solve;
 pub mod stars;
+pub mod topocentric;
 pub mod visibility;
 
 #[rustfmt::skip]
@@ -71,6 +72,8 @@ pub use delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
 pub use rise_set::{DayEvents, HorizonEvent, Method, Outcome};
 pub use scale::{tt_from_ut1, tt_of, ut1_from_tt};
 pub use sky::{
-    Apparent, ApparentPositions, Spherical, equation_of_time_seconds, obliquity, sidereal_time_deg,
+    Apparent, ApparentPositions, EarthAt, Observer, Spherical, earth_at, equation_of_time_seconds,
+    obliquity, observer, sidereal_time_deg,
 };
 pub use solve::{Caps, Crossing, SolveError, first_zero, next_crossing, refine};
+pub use topocentric::Station;
