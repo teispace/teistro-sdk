@@ -161,6 +161,20 @@ narrows it through the shared solver's `first_zero`, and says so
 (`Method::Scanned`). Every loop has a cap; an unmet cap is
 `NOT_CONVERGED` naming the event, the body, the place and the instant.
 
+The scan's cap is **sized from the span it is asked to search**, with
+four hundred steps as a floor. It was a constant four hundred, described
+in its own comment as "a day of ten-minute steps" though four hundred of
+them is two and three-quarter days — so a caller searching a longer
+window met the constant rather than the horizon. A polar day's
+*synthesised* arc is such a window: the panchanga's moonrise search over
+one refused with `NOT_CONVERGED` at both solstices at 69.65°N, which
+[`panchanga-at-the-boundary-measured.md`](panchanga-at-the-boundary-measured.md)
+§4 records. A Moon that does not rise is an answer and a step budget is
+not, and the distinction matters because the caller above cannot tell
+them apart: `Ok(None)` means "it did not cross", `Err` means "ask again
+differently". Sizing the cap from the span changes only calls that
+previously failed, so no number moved.
+
 **The day** (`Solver::day`). The rise inside the day that begins at a
 local mean midnight, then the set that follows that rise (the day's arc,
 which past the polar circles may end after the next civil midnight, as

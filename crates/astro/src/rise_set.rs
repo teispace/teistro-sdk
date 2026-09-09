@@ -53,11 +53,41 @@ pub const TOLERANCE_DAYS: f64 = 1e-7;
 /// The scan step of the fallback search, days: ten minutes, so that a
 /// body above the horizon for a quarter of an hour is still seen.
 const SCAN_STEP_DAYS: f64 = 1.0 / 144.0;
-/// The scan's caps: a day of ten-minute steps, and the shared bisection.
-const SCAN_CAPS: Caps = Caps {
-    bracket_steps: 400,
-    refinements: 64,
-};
+/// The fewest bracket steps the scan will take, whatever the span: two
+/// and three-quarter days of ten-minute steps.
+const LEAST_SCAN_STEPS: u32 = 400;
+/// The shared bisection's cap, which the span does not change.
+const SCAN_REFINEMENTS: u32 = 64;
+
+/// The scan's caps for a span, in days.
+///
+/// A cap exists to stop a runaway, not to bound the search: a caller that
+/// asks for a longer span means it. This was a constant 400 — described
+/// as "a day of ten-minute steps", though 400 of them is two and
+/// three-quarter days — and a polar day's **synthesised** arc is longer
+/// than that, so the scan met the constant rather than the horizon and
+/// refused with `NOT_CONVERGED`. A Moon that does not rise at 69.65°N is
+/// an answer; a step budget is not. Measured by
+/// `panchanga-at-the-boundary-measured.md`, which could not reach a polar
+/// day at all until this was sized from the span.
+#[must_use]
+fn scan_caps(span_days: f64) -> Caps {
+    let needed = if span_days.is_finite() && span_days > 0.0 {
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "a span is finite and positive here, and saturates rather than wraps"
+        )]
+        let steps = (span_days / SCAN_STEP_DAYS).ceil() as u32;
+        steps
+    } else {
+        0
+    };
+    Caps {
+        bracket_steps: needed.saturating_add(2).max(LEAST_SCAN_STEPS),
+        refinements: SCAN_REFINEMENTS,
+    }
+}
 /// Passes of the iteration before the scan takes over.
 const MAX_ITERATIONS: u32 = 12;
 /// Below this value of the altitude's rate factor (cos δ cos φ sin H) the
@@ -481,7 +511,7 @@ impl<'a> Solver<'a> {
             SCAN_STEP_DAYS,
             upward,
             TOLERANCE_DAYS,
-            SCAN_CAPS,
+            scan_caps(end - start),
         )
         .map_err(|error| match error {
             SolveError::Evaluation(inner) => inner,

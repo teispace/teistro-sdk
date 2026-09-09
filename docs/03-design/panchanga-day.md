@@ -612,6 +612,20 @@ evidence in the project that is not another implementation.
   `frame.centre` — makes a chart and its almanac agree at the cost of an
   almanac that no published one matches. The current answer is the one
   the corpus supports.
+- **Whether a synthesised polar arc should carry sixty-two tithis.**
+  Under `polar_day_policy = NEAREST_EVENT` a day at 69.65°N in midsummer
+  is bounded by the nearest real sunrise and sunset, which can be a
+  fortnight apart. Everything then follows correctly and absurdly: the
+  divisions stay fixed (twenty-four horas, each fourteen hours long) and
+  the crossings multiply — sixty-two tithis, a hundred and twenty-two
+  karanas, forty moonrises in one "day"
+  ([`panchanga-at-the-boundary-measured.md`](panchanga-at-the-boundary-measured.md)
+  §1). Nothing is wrong with any single number; what is doubtful is that
+  an almanac row is the right shape for the answer. The alternative is
+  that a polar day is a different question from the one `Almanac::day`
+  answers, and should be refused or reported as a span rather than a
+  day. The measurement makes the choice visible; a source, or a rank-1
+  polar panchangam, would settle it.
 - **The vara under `day_boundary = MIDNIGHT`.** The window moves; the
   vara of a day is still the civil date's, and the horas still start at
   sunrise. Nothing measures this, because the recording engine has no
