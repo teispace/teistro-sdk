@@ -32,6 +32,7 @@ use std::path::Path;
 
 use serde_json::Value;
 use teistro_calendar::CalendarDate;
+use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Calendar, Choghadiya, Kaala, Masa, Nakshatra, Tithi, Vara, Yoga};
 use teistro_core::interval::Interval;
@@ -452,7 +453,16 @@ fn the_month_relation_is_the_recorded_one() {
             .unwrap_or_else(|| panic!("{}: {amanta_key}", id(chart)));
         let amanta = Masa::from_id(u16::try_from(index).unwrap()).expect("a masa");
         let at_sunrise = tithi_at_sunrise(chart);
-        let ours = teistro_panchanga::month::of(amanta, at_sunrise, LunarMonth::Purnimanta);
+        // The subject here is the relation between the two conventions,
+        // not the mark: whether the month is adhika is the calendar's,
+        // and `check-lunisolar` holds it to all fifty-five recorded days
+        // (`03-design/calendar-indian-lunisolar-measured.md` §2).
+        let ours = teistro_panchanga::month::of(
+            amanta,
+            at_sunrise,
+            LunarMonth::Purnimanta,
+            MonthKind::Nija,
+        );
         let theirs = recorded["key"].as_str().unwrap_or_default();
         assert_eq!(
             months[usize::from(u8::try_from(ours.purnimanta.id()).unwrap())],

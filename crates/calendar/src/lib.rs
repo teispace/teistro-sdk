@@ -20,6 +20,7 @@ pub mod fixed;
 pub mod gregorian;
 pub mod iso_week;
 pub mod julian;
+pub mod lunisolar;
 pub mod mixed;
 pub mod solar;
 

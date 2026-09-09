@@ -233,6 +233,28 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**A lunar month now carries its mark.** `crates/calendar` gains a
+`lunisolar` module — a `LunarModel` trait beside `SolarModel`, a
+three-way `MonthKind`, `kind_of` for a span whose bounds a caller already
+knows, and `month_at` for one that does not — and `panchanga`'s
+`LunarMonth` carries the kind beside the name. The rule is the one
+`03-design/calendar-indian-lunisolar.md` designs and the measurement
+holds: none, one or two sankrantis in the month.
+
+A `LunarModel` of its own rather than a method on `SolarModel`, because a
+solar calendar needs no Moon and five implementations of that trait —
+three of them test doubles — would have to grow one for nothing. The two
+must answer in the same sky, which no type can enforce, so the functions
+take them together and say so.
+
+**`panchanga` finds the month's bounds once** where it used to find its
+opening new moon and throw the search away. `limb::lunar_month_span`
+returns both new moons, `limb::masa_at` names the month from the Sun at
+the first, and the kind comes from the sankrantis between them — one
+crossing search serving the name and the mark instead of two serving one
+each. It applies the rule over **its own** sky rather than the text's,
+because the month it marks is the one it named.
+
 **The rule that decides adhika and kshaya is measured** (`cargo xtask
 lunisolar` → `03-design/calendar-indian-lunisolar-measured.md`, gated by
 `check-lunisolar`). `panchanga` names the lunar month and cannot mark it,

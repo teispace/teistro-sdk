@@ -17,6 +17,7 @@
 //! not decide it.
 
 use serde::{Deserialize, Serialize};
+use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Masa, Paksha, Tithi};
 use teistro_core::settings::LunarMonth as Convention;
 
@@ -33,6 +34,15 @@ pub struct LunarMonth {
     pub purnimanta: Masa,
     /// Which fortnight the day opens in.
     pub paksha: Paksha,
+    /// Whether the month is ordinary, intercalary or omitted.
+    ///
+    /// The month's **name** needs no rule of its own for the intercalary
+    /// case: the Sun stands in the same sign at an adhika month's new
+    /// moon as at the following nija month's, so `amanta` names both
+    /// (`03-design/calendar-indian-lunisolar.md` §4). This is the mark
+    /// beside the name, and the calendar decides it from the count of
+    /// sankrantis in the month.
+    pub kind: MonthKind,
 }
 
 impl LunarMonth {
@@ -52,7 +62,7 @@ impl LunarMonth {
 /// in, which the lunisolar calendar decides; this turns it into both
 /// readings and the paksha.
 #[must_use]
-pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention) -> LunarMonth {
+pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention, kind: MonthKind) -> LunarMonth {
     let paksha = at_sunrise.attributes().paksha;
     let purnimanta = if matches!(paksha, Paksha::Krishna) {
         next(amanta)
@@ -68,6 +78,7 @@ pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention) -> LunarMonth
         amanta,
         purnimanta,
         paksha,
+        kind,
     }
 }
 
@@ -82,20 +93,30 @@ fn next(month: Masa) -> Masa {
 mod tests {
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 
-    use super::{next, of};
+    use super::{MonthKind, next, of};
     use teistro_core::catalogue::{Masa, Paksha, Tithi};
     use teistro_core::settings::LunarMonth as Convention;
 
     #[test]
     fn the_purnimanta_month_runs_ahead_through_the_dark_fortnight() {
         // The bright fortnight: both conventions name the same month.
-        let bright = of(Masa::Chaitra, Tithi::ShuklaPratipada, Convention::Amanta);
+        let bright = of(
+            Masa::Chaitra,
+            Tithi::ShuklaPratipada,
+            Convention::Amanta,
+            MonthKind::Nija,
+        );
         assert_eq!(bright.amanta, Masa::Chaitra);
         assert_eq!(bright.purnimanta, Masa::Chaitra);
         assert_eq!(bright.paksha, Paksha::Shukla);
 
         // The dark one: the purnimanta month is already the next.
-        let dark = of(Masa::Chaitra, Tithi::KrishnaPratipada, Convention::Amanta);
+        let dark = of(
+            Masa::Chaitra,
+            Tithi::KrishnaPratipada,
+            Convention::Amanta,
+            MonthKind::Nija,
+        );
         assert_eq!(dark.amanta, Masa::Chaitra);
         assert_eq!(dark.purnimanta, Masa::Vaishakha);
         assert_eq!(dark.paksha, Paksha::Krishna);
@@ -105,7 +126,12 @@ mod tests {
 
     #[test]
     fn the_convention_decides_which_month_the_value_leads_with() {
-        let dark = of(Masa::Chaitra, Tithi::KrishnaAshtami, Convention::Purnimanta);
+        let dark = of(
+            Masa::Chaitra,
+            Tithi::KrishnaAshtami,
+            Convention::Purnimanta,
+            MonthKind::Nija,
+        );
         assert_eq!(dark.month, Masa::Vaishakha);
         assert_eq!(dark.convention, Convention::Purnimanta);
         assert_eq!(dark.under(Convention::Amanta), Masa::Chaitra);
@@ -119,6 +145,7 @@ mod tests {
             Masa::Phalguna,
             Tithi::KrishnaChaturdashi,
             Convention::Amanta,
+            MonthKind::Nija,
         );
         assert_eq!(turn.purnimanta, Masa::Chaitra);
     }
