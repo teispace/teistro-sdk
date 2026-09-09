@@ -281,9 +281,16 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is the Indian lunisolar calendar itself** — the
-   design page and the module — now that the rule it applies is measured
-   ([`calendar-indian-lunisolar-measured.md`](03-design/calendar-indian-lunisolar-measured.md)).
+3. **The next task is the lunisolar month module**, which
+   [`calendar-indian-lunisolar.md`](03-design/calendar-indian-lunisolar.md)
+   now designs: a `LunarModel` trait beside `SolarModel`, a `MonthKind`
+   of three, and `month_at(sun, moon, at)`. Then `panchanga`'s
+   `month::of` gains the kind, and the mark crosses the boundary with
+   the panchanga blob's `days` section.
+
+   The page is deliberately about **the mark and not dates**, which is
+   what lets `panchanga` be finished without a boundary change nobody
+   has argued for.
 
    What the measurement settles before a line is written: the rule is
    the **count of sankrantis in the lunar month** (none adhika, one
