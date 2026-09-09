@@ -46,12 +46,18 @@
 //! | [`apparent::ld`], [`apparent::ldsun`] | `eraLd`, `eraLdsun` | the light deflection by a body and by the Sun |
 //! | [`apparent::ab`] | `eraAb` | the stellar aberration |
 //! | [`apparent::numat`] | `eraNumat` | the nutation matrix |
+//! | [`earth::Ellipsoid::parameters`] | `eraEform` | the reference ellipsoids' equatorial radius and flattening |
+//! | [`earth::gd2gc`], [`earth::gd2gce`] | `eraGd2gc`, `eraGd2gce` | geodetic coordinates to a geocentric vector |
+//! | [`earth::sp00`] | `eraSp00` | the TIO locator s′ |
+//! | [`earth::pom00`] | `eraPom00` | the polar motion matrix |
+//! | [`earth::pvtob`] | `eraPvtob` | the position and velocity of a terrestrial observing station |
 //! | [`ltp::ltpeps`] | none | the long-term general precession and obliquity series of Vondrák, Capitaine and Wallace (2011), equations 10 and Table 5, which ERFA does not carry; checked at J2000.0 against the IAU 2006 obliquity and over a millennium either side |
 //!
 //! Nothing here reads a clock or allocates; every function is a pure
 //! computation on its arguments.
 
 pub mod apparent;
+pub mod earth;
 pub mod epv00;
 pub mod ltp;
 pub mod nut00b;
