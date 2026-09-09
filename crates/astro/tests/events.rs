@@ -17,6 +17,7 @@ use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::events::{Direction, Lattice, Quantity, Search, StationKind, stations};
 use teistro_astro::{Completion, events::Longitudes};
 use teistro_core::angle::{difference_deg, normalise_deg};
+use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
@@ -194,4 +195,185 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
     for (a, b) in single.iter().zip(from_lattice) {
         assert!((a.instant.get() - b.instant.get()).abs() < 1e-7);
     }
+}
+
+/// A source that counts the requests made of it and forwards them, so a
+/// test can say how many round trips a search made as well as what it
+/// answered.
+struct Counted<'a, S: Longitudes + ?Sized> {
+    inner: &'a S,
+    requests: std::sync::atomic::AtomicUsize,
+}
+
+impl<'a, S: Longitudes + ?Sized> Counted<'a, S> {
+    fn new(inner: &'a S) -> Counted<'a, S> {
+        Counted {
+            inner,
+            requests: std::sync::atomic::AtomicUsize::new(0),
+        }
+    }
+
+    fn requests(&self) -> usize {
+        self.requests.load(std::sync::atomic::Ordering::Relaxed)
+    }
+}
+
+impl<S: Longitudes + ?Sized> Longitudes for Counted<'_, S> {
+    fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+        self.requests
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.inner.longitude_and_speed(body, ut1)
+    }
+
+    fn longitude_and_speed_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: JulianDay<Ut1>,
+    ) -> Result<[(f64, f64); 2], Error> {
+        self.requests
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.inner.longitude_and_speed_pair(bodies, ut1)
+    }
+
+    fn longitudes_and_speeds(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<(f64, f64)>,
+    ) -> Result<(), Error> {
+        self.requests
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.inner.longitudes_and_speeds(body, ut1, out)
+    }
+
+    fn longitudes_and_speeds_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<[(f64, f64); 2]>,
+    ) -> Result<(), Error> {
+        self.requests
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.inner.longitudes_and_speeds_pair(bodies, ut1, out)
+    }
+
+    fn describe(&self) -> String {
+        self.inner.describe()
+    }
+}
+
+/// The grid answers what the walk answered, to the bit.
+///
+/// A scan asks for its instants a grid at a time (A1b of
+/// `07-roadmap/02-plan-performance-and-passthrough.md`), and a chunk of
+/// one is the walk it replaced. Every crossing must be identical — not
+/// close, identical — because the instants are the same instants and the
+/// values are the same values, so the brackets handed to the refinement
+/// are the same brackets. Anything less would move every instant the SDK
+/// publishes with nothing to say so.
+///
+/// The looping planet is the hard case on purpose: it crosses a boundary
+/// forward, back and forward again, so the scan meets rising and falling
+/// brackets and lines met more than once.
+#[test]
+fn a_scan_that_asks_for_a_grid_answers_what_the_walk_answered_to_the_bit() {
+    let provider = Looping;
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let from = JulianDay::<Ut1>::literal(J2000);
+    let to = JulianDay::<Ut1>::literal(J2000 + 400.0);
+
+    for quantity in [
+        Quantity::Longitude(Body::Mars),
+        Quantity::Speed(Body::Mars),
+        // A composite, which reads a pair at each instant. The looping
+        // provider answers for one body, so the pair is that body twice
+        // and the combination is its own longitude — which is the point:
+        // it is the *pair* path being exercised, not the arithmetic.
+        Quantity::Composite {
+            a: 2.0,
+            first: Body::Mars,
+            b: -1.0,
+            second: Body::Mars,
+        },
+    ] {
+        for lattice in [Lattice::SIGNS, Lattice::single(60.0)] {
+            let walked = Counted::new(&longitudes);
+            let walk = Search::new(&walked, quantity, lattice)
+                .with_chunk(1)
+                .between(from, to)
+                .unwrap();
+            for chunk in [2usize, 7, 64, 512, 100_000] {
+                let gridded = Counted::new(&longitudes);
+                let grid = Search::new(&gridded, quantity, lattice)
+                    .with_chunk(chunk)
+                    .between(from, to)
+                    .unwrap();
+                assert_eq!(
+                    grid.len(),
+                    walk.len(),
+                    "{quantity:?} chunk {chunk}: the same crossings"
+                );
+                for (grid, walk) in grid.iter().zip(&walk) {
+                    assert_eq!(
+                        grid.instant.get().to_bits(),
+                        walk.instant.get().to_bits(),
+                        "{quantity:?} chunk {chunk}: {} against {}",
+                        grid.instant.get(),
+                        walk.instant.get()
+                    );
+                    assert_eq!(grid.boundary_deg, walk.boundary_deg);
+                    assert_eq!(grid.direction, walk.direction);
+                    assert_eq!(grid.evaluations, walk.evaluations);
+                }
+                assert!(
+                    gridded.requests() < walked.requests(),
+                    "{quantity:?} chunk {chunk}: {} requests against the walk's {}",
+                    gridded.requests(),
+                    walked.requests()
+                );
+            }
+        }
+    }
+}
+
+/// What the grid actually saves, on the numbers rather than in principle.
+///
+/// The scan over four hundred days at a one-day step is 401 instants. As
+/// a walk that is 401 round trips; as one grid it is one, and the
+/// refinements — which cannot be asked for in advance, since each step
+/// is chosen from the answer to the last — are what remains.
+#[test]
+fn the_grid_turns_a_scans_round_trips_into_one() {
+    let provider = Looping;
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let from = JulianDay::<Ut1>::literal(J2000);
+    let to = JulianDay::<Ut1>::literal(J2000 + 400.0);
+    let quantity = Quantity::Longitude(Body::Mars);
+
+    let walked = Counted::new(&longitudes);
+    let walk = Search::new(&walked, quantity, Lattice::SIGNS)
+        .with_chunk(1)
+        .between(from, to)
+        .unwrap();
+    let refinements: u32 = walk.iter().map(|event| event.evaluations).sum();
+
+    let gridded = Counted::new(&longitudes);
+    Search::new(&gridded, quantity, Lattice::SIGNS)
+        .between(from, to)
+        .unwrap();
+
+    // The walk asks once per sample and once per refinement step.
+    assert_eq!(walked.requests(), 401 + refinements as usize);
+    // The grid asks once for all 401, and the refinements are unchanged.
+    assert_eq!(gridded.requests(), 1 + refinements as usize);
 }

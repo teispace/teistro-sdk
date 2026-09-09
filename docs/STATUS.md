@@ -346,7 +346,23 @@ provider's DUT1).
    determinism digest is the same to the bit, with the span bounds
    themselves moving at most 2.8 ms (the Sun) and 0.04 ms (the Moon)
    against a tolerance of 8.6. `limb::signs_within` lets a caller name
-   another reach. **The next part is A1b.**
+   another reach.
+
+   **A1b is built.** A scan knows every instant it will visit before it
+   visits the first, so `events::Search::between` asks for them a grid
+   at a time; only the ITP refinement stays serial, since each of its
+   steps is chosen from the answer to the last. `Longitudes` grew
+   `longitudes_and_speeds` and `longitudes_and_speeds_pair` beside the
+   pair method it already had, defaulting to the walk and overridden by
+   `FrameLongitudes` with one `positions` request; the chunk is
+   `Search::with_chunk`, default 512, a memory bound rather than a waste
+   bound. An almanac day fell from **841 calls to 665** and fifty days
+   from 41 492 to 32 692; a four-hundred-day ingress search's 401 round
+   trips became **1**. This one is **bit-identical**, held by
+   `astro/tests/events.rs` over a retrograde planet at five chunk sizes
+   comparing `to_bits()`. Cumulatively A1a and A1b take an almanac day
+   from 1228 calls to 665 and fifty days from 60 631 to 32 692.
+   **The next part is A1c**, hoisting what a range's days share.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an

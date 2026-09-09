@@ -33,10 +33,10 @@ its own cost.
 | charts | 2 | 146 | 160 | 88 | 8 | 1.10 | 73.0 |
 | charts | 10 | 730 | 800 | 296 | 8 | 1.10 | 73.0 |
 | charts | 50 | 3434 | 3784 | 1336 | 8 | 1.10 | 68.7 |
-| almanac | 1 | 841 | 1069 | 952 | 2 | 1.27 | 841.0 |
-| almanac | 2 | 1665 | 2119 | 1723 | 2 | 1.27 | 832.5 |
-| almanac | 10 | 8453 | 10 800 | 8239 | 2 | 1.28 | 845.3 |
-| almanac | 50 | 41 492 | 52 714 | 39 675 | 2 | 1.27 | 829.8 |
+| almanac | 1 | 665 | 1069 | 952 | 66 | 1.61 | 665.0 |
+| almanac | 2 | 1313 | 2119 | 1723 | 66 | 1.61 | 656.5 |
+| almanac | 10 | 6693 | 10 800 | 8239 | 66 | 1.61 | 669.3 |
+| almanac | 50 | 32 692 | 52 714 | 39 675 | 66 | 1.61 | 653.8 |
 | sunrise | 1 | 18 | 18 | 18 | 1 | 1.00 | 18.0 |
 
 Read the first row and the last of each operation together. A
@@ -44,23 +44,23 @@ grid of positions is **one call** whether it holds one instant or
 50: that is what the port was shaped for, and it is the control
 everything else is compared with. A batch of 50 charts is 3434 calls
 — 69 per chart, the same as one chart costs on its own — and a
-range of 50 almanac days is 41 492, or 830 a day. Neither is a batch
+range of 50 almanac days is 32 692, or 654 a day. Neither is a batch
 in any sense the ephemeris can see. They are loops that share a
 provenance stamp.
 
 ## 3. The calls are cells, not grids
 
 The widest call a batch of charts makes is 8 cells — the grahas of one
-chart, asked for once — and the widest an almanac makes is 2.
+chart, asked for once — and the widest an almanac makes is 66.
 Everything else is one instant and one or two bodies. The mean width is
-1.10 for charts and 1.27 for an almanac: the SDK asks its ephemeris for
+1.10 for charts and 1.61 for an almanac: the SDK asks its ephemeris for
 **one cell at a time**, tens of thousands of times, through a port whose
 one required operation takes a grid.
 
 One sunrise is worth naming on its own: 18 calls, every one of them a
 single cell, none of them a repeat. Meeus's iteration answers it, and it
 is serial by construction — each instant is computed from the sample
-before it, so there is no grid to ask for. A day's 830 calls are **not**
+before it, so there is no grid to ask for. A day's 654 calls are **not**
 made of searches like it: an attribution of every one of them to its
 caller (recorded in
 [`../07-roadmap/02-plan-performance-and-passthrough.md`](../07-roadmap/02-plan-performance-and-passthrough.md),
@@ -118,8 +118,8 @@ might wrap.
 |---|---|---|
 | a batch of positions is one call whatever its size | **holds** | 1 call for 50 instants, 150 cells wide |
 | a batch of charts is one call whatever its size | falsified | 3434 calls for 50, 69 per item |
-| a batch of almanac is one call whatever its size | falsified | 41 492 calls for 50, 830 per item |
-| the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 1.27; the widest either makes is 8 and 2 |
+| a batch of almanac is one call whatever its size | falsified | 32 692 calls for 50, 654 per item |
+| the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 1.61; the widest either makes is 8 and 66 |
 | a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 24.7% of 50 almanac days are cells already fetched |
 | a consumer can reach what their engine offers beyond the port | falsified | the port names 8; Teimeris names 177; 0 of the difference is reachable through the SDK |
 
