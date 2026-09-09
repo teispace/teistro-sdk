@@ -332,6 +332,7 @@ def main() -> None:
             put(f"day-{i}-purnimanta", almanac_day.month.purnimanta.full_key)
             put(f"day-{i}-paksha", almanac_day.month.paksha.full_key)
             put(f"day-{i}-convention", almanac_day.month.convention.key)
+            put(f"day-{i}-month-kind", almanac_day.month.kind.key)
             put(f"day-{i}-ayana", almanac_day.ayana.full_key)
             put(f"day-{i}-disha-shool", almanac_day.disha_shool.full_key)
             # An absent value must be absent in all three, not nought in

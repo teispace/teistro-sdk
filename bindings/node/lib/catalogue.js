@@ -2927,3 +2927,20 @@ export const YogaCauseById = new Map([
   [1, 'vara-tithi-nakshatra'],
 ]);
 
+/** Every MonthKind by name. */
+export const MonthKind = Object.freeze({
+  Nija: 'nija',
+  Adhika: 'adhika',
+  Kshaya: 'kshaya',
+});
+
+/**
+ * Every MonthKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MonthKindById = new Map([
+  [0, 'nija'],
+  [1, 'adhika'],
+  [2, 'kshaya'],
+]);
+

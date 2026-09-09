@@ -67,6 +67,7 @@ from .catalogue import (
     Masa,
     Member,
     Modality,
+    MonthKind,
     MoonEvent,
     MuhurtaNature,
     MuhurtaYoga,

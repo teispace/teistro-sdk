@@ -658,6 +658,7 @@ fn panchanga_days_section(id: u32) -> SectionSchema {
         ColumnDef::new("amanta", Scalar::U16, "The amanta month: new moon to new moon.").of_enum("Masa"),
         ColumnDef::new("purnimanta", Scalar::U16, "The purnimanta month: full moon to full moon.").of_enum("Masa"),
         ColumnDef::new("paksha", Scalar::U16, "The fortnight the day opens in.").of_enum("Paksha"),
+        ColumnDef::new("month_kind", Scalar::U8, "Whether the month is ordinary, intercalary or omitted. The month's *name* needs no case for the intercalary one — the Sun stands in the same sign at an adhika month's new moon as at the following nija month's, so `month` names both — and this is the mark beside it.").of_enum("TsMonthKind"),
         ColumnDef::new("ayana", Scalar::U16, "Which half of the year the day falls in.").of_enum("Ayana"),
         ColumnDef::new("disha_shool", Scalar::U16, "The direction not to travel in, which is the vara's.").of_enum("Direction"),
         ColumnDef::new("has_sankranti", Scalar::U8, "1 when the Sun entered a new sign inside the day, 0 otherwise."),

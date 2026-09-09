@@ -294,6 +294,7 @@ for (const day of week) {
   put(`day-${i}-purnimanta`, day.month.purnimanta);
   put(`day-${i}-paksha`, day.month.paksha);
   put(`day-${i}-convention`, day.month.convention);
+  put(`day-${i}-month-kind`, day.month.kind);
   put(`day-${i}-ayana`, day.ayana);
   put(`day-${i}-disha-shool`, day.dishaShool);
   // An absent value must be absent in all three, not nought in one.

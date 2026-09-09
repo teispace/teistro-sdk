@@ -233,6 +233,19 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**The mark crosses the boundary.** The panchanga blob's `days` section
+gains a `month_kind` column, the three ergonomic layers expose it as
+`month.kind` on a day, and `check-parity` compares it: **597** values
+across three bindings where it compared 594.
+
+`TsMonthKind` converts **exhaustively**, unlike the three settings knobs
+this module also carries. A knob is `#[non_exhaustive]` on purpose, so a
+match on one needs a wildcard and a member added later would cross as
+whatever came first — which is why `TsSunrise` and its kin convert
+fallibly and are guarded by a test over the knob's own `ALL`. `MonthKind`
+is the calendar's own and closed, so a kind added there stops this crate
+compiling instead. The stronger guard where it is available.
+
 **A lunar month now carries its mark.** `crates/calendar` gains a
 `lunisolar` module — a `LunarModel` trait beside `SolarModel`, a
 three-way `MonthKind`, `kind_of` for a span whose bounds a caller already

@@ -4829,3 +4829,45 @@ enum YogaCause {
   }
 }
 
+/// Whether a lunar month is ordinary, intercalary or omitted.
+///
+/// The Indian lunisolar calendar decides it from the count of sankrantis
+/// between the month's two new moons — none is adhika, one ordinary, two
+/// kshaya (`03-design/calendar-indian-lunisolar.md` §2). An exhaustive
+/// match, so a kind added to the calendar breaks this build rather than
+/// silently crossing as whatever came first.
+enum MonthKind {
+  /// One sankranti: the ordinary month.
+  nija(0, 'nija'),
+  /// None: intercalary, and the name repeats.
+  adhika(1, 'adhika'),
+  /// Two: the next name is skipped this year.
+  kshaya(2, 'kshaya');
+
+  const MonthKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static MonthKind byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a MonthKind'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static MonthKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
