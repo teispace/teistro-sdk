@@ -390,9 +390,13 @@ five rather than describing part of one.
   astro layer ships eleven models. That is a larger question than this
   page: a new knob moves the settings hash of every profile, so it is a
   decision with a Numbers line rather than a tidy-up.
-- **A chart cannot be founded under `nepali-default`.** Founding one
-  through the Node layer refuses with *"frame completion step `centre`
-  is not implemented"*. The profile asks for `Centre::Topocentric`
+- **~~A chart cannot be founded under `nepali-default`.~~ Closed
+  2026-09-09: the completion's centre step is built
+  ([`topocentric-measured.md`](topocentric-measured.md)), so the
+  topocentric profiles found charts over any provider and the
+  cross-phase dependency this entry named is discharged. What follows is
+  the finding as it stood.** Founding one through the Node layer refused
+  with *"frame completion step `centre` is not implemented"*. The profile asks for `Centre::Topocentric`
   (`profiles.rs`), the analytic provider answers geocentric, and
   `completion.rs:333` refuses any request whose centre differs from the
   provider's native one.
@@ -429,6 +433,14 @@ five rather than describing part of one.
   profile or waits. **Phase 4 cannot exit before Phase 3 delivers the
   centre step**, which is a cross-phase dependency neither phase records
   and the roadmap should.
+
+  What settled it: the step turned out to be separable from the rest of
+  Phase 3 — it needs the observer's position and the body's geocentric
+  one and nothing of the built-in ephemeris — so it was built where it
+  was needed. The rectification examples now run under `nepali-default`,
+  the parity gate compares the chart that profile founds rather than the
+  refusal, and `crates/chart/tests/foundation.rs` founds a chart under
+  every shipped profile the analytic provider has bodies for.
 - **The boundary seals and the producer does not.** `ts_chart_found`
   sets `content_hash` on the provenance before writing the blob, as
   `ts_positions` does, because `Founder` leaves the placeholder that

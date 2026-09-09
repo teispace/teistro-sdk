@@ -187,21 +187,29 @@ put('provenance-profile', positions.provenance.profile);
 put('provenance-settings-hash', positions.provenance.settings_hash);
 put('provenance-provider-frame', positions.provenance.provider.frame);
 
-// ── A chart and an almanac, under a geocentric profile ─────────────────
+// ── The chart the topocentric profile founds ───────────────────────────
 // The scenario above runs under `nepali-default`, whose frame is
-// **topocentric**, and a chart cannot be founded under it at all: the
-// completion's centre step is Phase 3's, so the provider is asked for a
-// frame it does not answer. That refusal is itself worth comparing —
-// the three bindings must fail the same way — and everything after it
-// needs a second context on the SDK's own default profile, which is
-// geocentric.
-try {
-  ctx.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
-  put('chart-under-topocentric', 'founded');
-} catch (error) {
-  put('chart-under-topocentric', error.status);
-}
+// **topocentric** — inherited from the baseline engine, and what every
+// recorded chart in the corpus is. Until the completion's centre step
+// this could not found a chart at all, and the refusal was what the three
+// bindings compared. Now the chart itself is, which is the stronger
+// comparison: the step runs per body, per instant, inside the library, so
+// three bindings agreeing on its output is three bindings agreeing on the
+// whole of it.
+const placed = ctx.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
+put('chart-under-topocentric', 'founded');
+put('topocentric-steps', placed.batch.steps.join(','));
+put('topocentric-lagna', placed.lagnaDeg);
+placed.grahas.forEach((graha, j) => {
+  put(`topocentric-graha-${j}`, graha.graha);
+  put(`topocentric-graha-${j}-lon`, graha.longitudeDeg);
+  put(`topocentric-graha-${j}-lat`, graha.latitudeDeg);
+  put(`topocentric-graha-${j}-speed`, graha.speedDegPerDay);
+});
 
+// ── A chart and an almanac, under a geocentric profile ─────────────────
+// Everything after this runs on the SDK's own default profile, which is
+// geocentric, so that the two centres are both exercised.
 const geo = new Context({ profile: 'parashari-classical', locale: 'ne-Deva-NP', testProvider: true });
 put('geo-profile', geo.profile);
 put('geo-settings-hash', geo.settingsHash);

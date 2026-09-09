@@ -204,25 +204,40 @@ void main() {
     (positions.provenanceOf['provider']! as Map<String, Object?>)['frame'],
   );
 
-  // ── A chart and an almanac, under a geocentric profile ───────────────
+  // ── The chart the topocentric profile founds ─────────────────────────
   // The scenario above runs under `nepali-default`, whose frame is
-  // **topocentric**, and a chart cannot be founded under it at all: the
-  // completion's centre step is Phase 3's, so the provider is asked for
-  // a frame it does not answer. That refusal is itself worth comparing —
-  // the three bindings must fail the same way — and everything after it
-  // needs a second context on the SDK's own default profile, which is
-  // geocentric.
+  // **topocentric** — inherited from the baseline engine, and what every
+  // recorded chart in the corpus is. Until the completion's centre step
+  // this could not found a chart at all, and the refusal was what the
+  // three bindings compared. Now the chart itself is, which is the
+  // stronger comparison: the step runs per body, per instant, inside the
+  // library, so three bindings agreeing on its output is three bindings
+  // agreeing on the whole of it.
   final place = Observer(
     latitudeDeg: Latitude(27.7172),
     longitudeDeg: Longitude(85.324),
     altitudeM: Altitude(1400),
   );
-  try {
-    ctx.found(instant: 2451545, place: place, utcOffsetSeconds: 20700);
-    put('chart-under-topocentric', 'founded');
-  } on TeistroException catch (error) {
-    put('chart-under-topocentric', error.status.key);
+  final placed = ctx.found(
+    instant: 2451545,
+    place: place,
+    utcOffsetSeconds: 20700,
+  );
+  put('chart-under-topocentric', 'founded');
+  put('topocentric-steps', placed.batch.stepsApplied.join(','));
+  put('topocentric-lagna', placed.lagnaDeg);
+  var j = 0;
+  for (final graha in placed.grahas) {
+    put('topocentric-graha-$j', graha.graha.fullKey);
+    put('topocentric-graha-$j-lon', graha.longitudeDeg);
+    put('topocentric-graha-$j-lat', graha.latitudeDeg);
+    put('topocentric-graha-$j-speed', graha.speedDegPerDay);
+    j += 1;
   }
+
+  // ── A chart and an almanac, under a geocentric profile ───────────────
+  // Everything after this runs on the SDK's own default profile, which is
+  // geocentric, so that the two centres are both exercised.
 
   final geo = teistro.context(
     profile: 'parashari-classical',

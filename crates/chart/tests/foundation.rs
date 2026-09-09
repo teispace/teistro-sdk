@@ -432,3 +432,96 @@ fn a_foundation_is_stamped_with_what_produced_it() {
 fn settings_of() -> teistro_core::settings::Settings {
     resolved().settings
 }
+
+#[test]
+fn every_shipped_profile_founds_a_chart_from_a_place() {
+    // Two of the five shipped profiles are topocentric, which is what
+    // `nepali-default` inherited from the baseline engine. Until the
+    // completion's centre step they could not found a chart at all: the
+    // provider was asked for a frame it does not answer, and the refusal
+    // reached the consumer as a capability error on a profile the SDK
+    // ships (`03-design/topocentric-measured.md`).
+    let provider = TestProvider;
+    let mut made = 0_usize;
+    let mut from_a_place = 0_usize;
+    for id in teistro_core::settings::SHIPPED_PROFILES {
+        let resolved = Profile::shipped(id)
+            .unwrap_or_else(|| panic!("the shipped profile {id}"))
+            .resolve(&SettingsPatch::default())
+            .unwrap_or_else(|e| panic!("{id}: {e}"));
+        let placed = resolved.settings.frame.centre == teistro_core::settings::Centre::Topocentric;
+        let model = DrikSun::new(
+            &provider,
+            Ayanamsha::Lahiri,
+            Sunrise::CentreNoRefraction.into(),
+            OverridePolicy::PreferNative,
+            DeltaTModel::TableThenModel,
+        );
+        let clock = UtcOffset::literal(5, 45, 0);
+        let founder = Founder::new(
+            &provider,
+            &resolved,
+            &model,
+            &Gregorian,
+            &clock,
+            PrecessionModel::Vondrak2011,
+            DeltaTModel::TableThenModel,
+        );
+        let outcome = match founder.found_one(
+            JulianDay::<Utc>::literal(INSTANTS[2]),
+            &place(),
+            ChartKind::Natal,
+        ) {
+            Ok(chart) => chart,
+            // The analytic test provider answers eight bodies and no true
+            // node, so `kp-default` cannot be founded over it. That is a
+            // provider's coverage and not the centre's doing, and the
+            // difference is the point: the refusal must name a body.
+            Err(error) => {
+                let said = error.to_string();
+                assert!(
+                    said.contains("NODE") || said.contains("does not support"),
+                    "{id}: {said}"
+                );
+                assert!(
+                    !said.contains("centre") && !said.contains("TOPOCENTRIC"),
+                    "{id} was refused for its centre: {said}"
+                );
+                continue;
+            }
+        };
+        made += 1;
+        let chart = &outcome.value;
+        // Every body the settings ask the provider for, and Ketu, which
+        // no provider answers because it is Rahu's opposite point.
+        assert_eq!(
+            chart.grahas.len(),
+            bodies_of(&resolved.settings).len() + 1,
+            "{id}"
+        );
+        // A chart cast from a place says so in the frame it stamps, and
+        // the step that put it there is one of the steps it lists.
+        let frame = &outcome.provenance.provider.frame;
+        assert_eq!(
+            frame.contains("TOPOCENTRIC"),
+            placed,
+            "{id}: the frame is {frame}"
+        );
+        assert_eq!(
+            chart.steps.iter().any(|step| step.starts_with("centre:")),
+            placed,
+            "{id}: the steps are {:?}",
+            chart.steps
+        );
+        from_a_place += usize::from(placed);
+    }
+    // Three of the five shipped profiles found a chart over this
+    // provider and two of the three are cast from a place; the other two
+    // ask for the true node, which the analytic provider does not answer.
+    // Before the centre step none of the placed ones could be founded at
+    // all.
+    assert!(
+        made >= 3 && from_a_place >= 2,
+        "{made} profiles founded, {from_a_place} of them from a place"
+    );
+}

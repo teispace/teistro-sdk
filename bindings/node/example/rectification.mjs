@@ -18,8 +18,14 @@
 
 import { Calendar, ChartKind, Context, Graha, RashiById, at, date, ianaZone } from '../lib/index.js';
 
+// `nepali-default` is what a Nepali birth record is cast under, and its
+// frame is **topocentric**: the chart is seen from the hill the record
+// was written on rather than from the centre of the Earth. The
+// completion does that step itself over any provider
+// (`03-design/topocentric-measured.md`), so the analytic one below is
+// enough, and `steps applied` below names it.
 const ctx = new Context({
-  profile: 'parashari-classical',
+  profile: 'nepali-default',
   locale: 'ne-Deva-NP',
   testProvider: true,
 });
