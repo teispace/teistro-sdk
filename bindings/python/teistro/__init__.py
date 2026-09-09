@@ -100,6 +100,7 @@ from .catalogue import (
     Centre,
     ChartKind,
     Choghadiya,
+    DayPart,
     Direction,
     Graha,
     HouseSystem,
@@ -894,6 +895,21 @@ class Chart:
     def ayanamsha_offset_deg(self) -> float:
         """The ayanamsha applied at this instant, degrees; zero if tropical."""
         return self.batch.decoded.cast.ayanamsha_offset_deg[self.index]
+
+    @property
+    def day_part(self) -> DayPart:
+        """Which arc of its day the instant falls in.
+
+        This and `day_elapsed` belong to the **instant**, not to the day,
+        so they are the chart's rather than the day section's — which is
+        what the panchanga blob's arrival settled.
+        """
+        return DayPart(self.batch.decoded.cast.day_part[self.index])
+
+    @property
+    def day_elapsed(self) -> float:
+        """How far through that arc the instant is, 0 to 1."""
+        return self.batch.decoded.cast.day_elapsed[self.index]
 
     @property
     def kind(self) -> ChartKind:

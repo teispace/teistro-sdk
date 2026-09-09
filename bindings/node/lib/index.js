@@ -22,6 +22,7 @@ import {
   CONTEXT_TEST_PROVIDER,
   CalendarById,
   ChartKind,
+  DayPartById,
   ChartKindById,
   ChoghadiyaById,
   DirectionById,
@@ -534,6 +535,22 @@ export class Chart {
   /** The ayanamsha applied at this instant, degrees; zero if tropical. */
   get ayanamshaOffsetDeg() {
     return this.#batch.decoded.cast.ayanamshaOffsetDeg[this.#index];
+  }
+
+  /**
+   * Which arc of its day the instant falls in.
+   *
+   * This and `dayElapsed` belong to the **instant**, not to the day, so
+   * they are the chart's rather than `day`'s — which is what the
+   * panchanga blob's arrival settled.
+   */
+  get dayPart() {
+    return DayPartById.get(this.#batch.decoded.cast.dayPart[this.#index]) ?? 'unknown';
+  }
+
+  /** How far through that arc the instant is, 0 to 1. */
+  get dayElapsed() {
+    return this.#batch.decoded.cast.dayElapsed[this.#index];
   }
 
   /**

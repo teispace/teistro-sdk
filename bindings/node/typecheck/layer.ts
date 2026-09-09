@@ -155,6 +155,9 @@ function charts(): string {
   const lagna: number = one.lagnaDeg;
   const vara: string = one.day.vara;
   const bhava: number = one.grahas[0]!.house.bhava;
+  // `dayPart` and `dayElapsed` belong to the instant, not to the day.
+  const part: string = one.dayPart;
+  const elapsed: number = one.dayElapsed;
   const madhya: number = one.houses[0]!.madhyaDeg;
 
   const request: ChartBatchRequest = {
@@ -173,7 +176,7 @@ function charts(): string {
   ctx.foundMany({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error a chart is a view; its index is not a number to set
   first.index = 2;
-  return `${lagna} ${vara} ${bhava} ${madhya} ${count} ${every.length} ${first.instant}`;
+  return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${count} ${every.length} ${first.instant}`;
 }
 
 void charts;

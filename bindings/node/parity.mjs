@@ -156,6 +156,8 @@ put(
   ctx.messages.sdk.calendar.bikramSambat.date.long({ day: 1, monthName: 'बैशाख', year: 2072 }),
 );
 
+const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+
 // ── Positions ──────────────────────────────────────────────────────────
 const frame = canonicalFrame();
 put('frame-centre', frame.centre);
@@ -184,6 +186,174 @@ put('provenance-fnv', fnv(positions.decoded.provenance));
 put('provenance-profile', positions.provenance.profile);
 put('provenance-settings-hash', positions.provenance.settings_hash);
 put('provenance-provider-frame', positions.provenance.provider.frame);
+
+// ── A chart and an almanac, under a geocentric profile ─────────────────
+// The scenario above runs under `nepali-default`, whose frame is
+// **topocentric**, and a chart cannot be founded under it at all: the
+// completion's centre step is Phase 3's, so the provider is asked for a
+// frame it does not answer. That refusal is itself worth comparing —
+// the three bindings must fail the same way — and everything after it
+// needs a second context on the SDK's own default profile, which is
+// geocentric.
+try {
+  ctx.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
+  put('chart-under-topocentric', 'founded');
+} catch (error) {
+  put('chart-under-topocentric', error.status);
+}
+
+const geo = new Context({ profile: 'parashari-classical', locale: 'ne-Deva-NP', testProvider: true });
+put('geo-profile', geo.profile);
+put('geo-settings-hash', geo.settingsHash);
+
+// ── Charts ─────────────────────────────────────────────────────────────
+// Two instants, so a per-chart section that ran charts-outermost the
+// wrong way round shows up as the second chart's values in the first's
+// place rather than as nothing at all.
+const charts = geo.foundMany({
+  instants: [2460482.5, 2460600.25],
+  place,
+  utcOffsetSeconds: 20700,
+});
+put('chart-count', charts.length);
+put('chart-kind', charts.kind);
+put('chart-place-lat', charts.place.latitude);
+put('chart-place-lon', charts.place.longitude);
+put('chart-model-fnv', fnv(charts.model));
+put('chart-steps', charts.steps.join(','));
+put('chart-provenance-fnv', fnv(charts.decoded.provenance));
+put('chart-provenance-profile', charts.provenance.profile);
+put('chart-graha-count', charts.decoded.grahaCount);
+
+for (const chart of charts) {
+  const i = chart.index;
+  put(`chart-${i}-instant`, chart.instant);
+  put(`chart-${i}-lagna`, chart.lagnaDeg);
+  put(`chart-${i}-day-lagna`, chart.dayLagnaDeg);
+  put(`chart-${i}-ayanamsha`, chart.ayanamshaOffsetDeg);
+  put(`chart-${i}-day-part`, chart.dayPart);
+  put(`chart-${i}-day-elapsed`, chart.dayElapsed);
+  put(`chart-${i}-vara`, chart.day.vara);
+  put(`chart-${i}-sunrise`, chart.day.sunrise);
+  put(`chart-${i}-sunset`, chart.day.sunset);
+  put(`chart-${i}-date`, `${chart.day.year}-${chart.day.month}-${chart.day.dayOfMonth}`);
+  put(`chart-${i}-ghati`, chart.timing.ghati);
+  put(`chart-${i}-pala`, chart.timing.pala);
+  put(`chart-${i}-vipala`, chart.timing.vipala);
+  put(`chart-${i}-hora-number`, chart.timing.horaNumber);
+  put(`chart-${i}-hora-lord`, chart.timing.horaLord);
+  chart.grahas.forEach((graha, j) => {
+    put(`chart-${i}-graha-${j}`, graha.graha);
+    put(`chart-${i}-graha-${j}-lon`, graha.longitudeDeg);
+    put(`chart-${i}-graha-${j}-lat`, graha.latitudeDeg);
+    put(`chart-${i}-graha-${j}-speed`, graha.speedDegPerDay);
+    put(`chart-${i}-graha-${j}-retro`, graha.retrograde);
+    put(`chart-${i}-graha-${j}-house`, graha.house.bhava);
+    put(`chart-${i}-graha-${j}-house-method`, graha.house.method);
+    put(`chart-${i}-graha-${j}-placement`, graha.placement.bhava);
+  });
+  chart.houses.forEach((bhava, k) => {
+    put(`chart-${i}-house-${k}-madhya`, bhava.madhyaDeg);
+    put(`chart-${i}-house-${k}-sandhi`, bhava.sandhiDeg);
+  });
+  chart.chalit.forEach((bhava, k) => {
+    put(`chart-${i}-chalit-${k}-madhya`, bhava.madhyaDeg);
+  });
+}
+// `found` is the batch of one unwrapped, and must agree with the batch.
+const single = geo.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
+put('chart-single-lagna', single.lagnaDeg);
+put('chart-single-agrees', single.lagnaDeg === charts.at(0).lagnaDeg);
+
+// ── An almanac ─────────────────────────────────────────────────────────
+// Three days, because a day's lists are ragged and two consecutive days
+// with the same counts would not exercise the offsets.
+const week = geo.almanac({
+  from: gregorian(2024, 6, 17),
+  to: gregorian(2024, 6, 19),
+  place,
+  utcOffsetSeconds: 20700,
+});
+put('almanac-days', week.length);
+put('almanac-calendar', week.calendar);
+put('almanac-place-lat', week.place.latitude);
+put('almanac-model-fnv', fnv(week.model));
+put('almanac-provenance-fnv', fnv(week.decoded.provenance));
+
+for (const day of week) {
+  const i = day.index;
+  put(`day-${i}-vara`, day.day.vara);
+  put(`day-${i}-sunrise`, day.day.sunrise);
+  put(`day-${i}-sunset`, day.day.sunset);
+  put(`day-${i}-next-sunrise`, day.day.nextSunrise);
+  put(`day-${i}-date`, `${day.day.year}-${day.day.month}-${day.day.dayOfMonth}`);
+  put(`day-${i}-window-from`, day.window.from);
+  put(`day-${i}-window-to`, day.window.to);
+  put(`day-${i}-month`, day.month.month);
+  put(`day-${i}-amanta`, day.month.amanta);
+  put(`day-${i}-purnimanta`, day.month.purnimanta);
+  put(`day-${i}-paksha`, day.month.paksha);
+  put(`day-${i}-convention`, day.month.convention);
+  put(`day-${i}-ayana`, day.ayana);
+  put(`day-${i}-disha-shool`, day.dishaShool);
+  // An absent value must be absent in all three, not nought in one.
+  put(`day-${i}-sankranti`, day.sankranti === null ? 'none' : number(day.sankranti));
+  put(`day-${i}-abhijit`, day.abhijit === null ? 'none' : number(day.abhijit.from));
+  put(`day-${i}-abhijit-effective`, day.abhijit === null ? 'none' : day.abhijit.effective);
+  put(`day-${i}-brahma`, day.brahma === null ? 'none' : number(day.brahma.from));
+  // The counts are what the ragged layout turns on: if a binding's
+  // prefix sum were off by a day, these would still agree and the spans
+  // below would not.
+  put(`day-${i}-tithi-count`, day.tithi.length);
+  put(`day-${i}-nakshatra-count`, day.nakshatra.length);
+  put(`day-${i}-yoga-count`, day.yoga.length);
+  put(`day-${i}-karana-count`, day.karana.length);
+  put(`day-${i}-kaala-count`, day.kaalas.length);
+  put(`day-${i}-choghadiya-count`, day.choghadiya.length);
+  put(`day-${i}-hora-count`, day.horas.length);
+  put(`day-${i}-muhurta-count`, day.muhurtas.length);
+  put(`day-${i}-moon-event-count`, day.moonEvents.length);
+  put(`day-${i}-panchaka-count`, day.panchaka.length);
+  put(`day-${i}-moon-sign-count`, day.moonSigns.length);
+  put(`day-${i}-sun-sign-count`, day.sunSigns.length);
+  put(`day-${i}-muhurta-yoga-count`, day.muhurtaYogas.length);
+  for (const [limb, spans] of [
+    ['tithi', day.tithi],
+    ['nakshatra', day.nakshatra],
+    ['yoga', day.yoga],
+    ['karana', day.karana],
+  ]) {
+    spans.forEach((span, j) => {
+      put(`day-${i}-${limb}-${j}`, span.member);
+      put(`day-${i}-${limb}-${j}-whole-from`, span.whole.from);
+      put(`day-${i}-${limb}-${j}-inside-to`, span.inside.to);
+    });
+  }
+  day.kaalas.forEach((kaala, j) => {
+    put(`day-${i}-kaala-${j}`, kaala.kaala);
+    put(`day-${i}-kaala-${j}-from`, kaala.from);
+  });
+  put(`day-${i}-hora-0-lord`, day.horas[0].lord);
+  put(`day-${i}-hora-0-start`, day.horas[0].start);
+  put(`day-${i}-hora-23-lord`, day.horas[day.horas.length - 1].lord);
+  put(`day-${i}-choghadiya-0`, day.choghadiya[0].choghadiya);
+  put(`day-${i}-choghadiya-0-daytime`, day.choghadiya[0].daytime);
+  put(`day-${i}-muhurta-0-from`, day.muhurtas[0].from);
+  put(`day-${i}-muhurta-last-daylight`, day.muhurtas[day.muhurtas.length - 1].daylight);
+  day.moonEvents.forEach((event, j) => {
+    put(`day-${i}-moon-${j}-kind`, event.kind);
+    put(`day-${i}-moon-${j}-instant`, event.instant);
+  });
+  day.muhurtaYogas.forEach((held, j) => {
+    put(`day-${i}-yoga-held-${j}`, held.yoga);
+    put(`day-${i}-yoga-held-${j}-cause`, held.because.kind);
+    put(`day-${i}-yoga-held-${j}-tithi`, held.because.tithi ?? 'none');
+  });
+}
+// `almanacDay` is the range of one unwrapped, and must agree.
+const oneDay = geo.almanacDay({ date: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700 });
+put('almanac-single-agrees', oneDay.day.sunrise === week.at(0).day.sunrise);
+geo.dispose();
 
 for (const key of [...report.keys()].sort()) {
   process.stdout.write(`${key}\t${report.get(key)}\n`);
