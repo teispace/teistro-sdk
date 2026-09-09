@@ -24,8 +24,32 @@
     reason = "an example fails by panicking and reports what it measured"
 )]
 
-use teistro_core::quantity::{JulianDay, Ut1};
+use teistro_calendar::fixed::FixedDay;
+use teistro_calendar::solar::SolarModel;
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
 use teistro_siddhanta::{Parameters, SuryaSiddhanta, Trig};
+
+/// Ujjain, the prime meridian of Indian astronomy and the place the
+/// tradition reckons its day from.
+fn ujjain() -> Place {
+    Place::new(
+        Latitude::literal(23.1765),
+        Longitude::literal(75.7885),
+        Altitude::literal(494.0),
+    )
+}
+
+/// The tithi running at an instant, 0 to 29: the elongation in
+/// twelfth-parts of the circle.
+fn tithi_at(model: &SuryaSiddhanta, jd: f64) -> u8 {
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "an elongation over twelve is 0 to 29"
+    )]
+    let index = (elongation(model, jd) / 12.0) as u8;
+    index.min(29)
+}
 
 /// A synodic month, days: the mean interval between new moons.
 const SYNODIC_DAYS: f64 = 29.530_588_9;
@@ -157,10 +181,45 @@ fn main() {
         }));
     }
 
+    // The tithi at each sunrise over the span, which is what a lunisolar
+    // date's *day* is. A tithi runs about 23 to 26 hours, so it can span
+    // two sunrises or none: the first repeats a date's day and the second
+    // skips one, and how often each happens decides whether the date can
+    // be written without a flag for it.
+    let mut sunrise_tithis = Vec::new();
+    let (mut repeated, mut skipped, mut days) = (0u32, 0u32, 0u32);
+    let place = ujjain();
+    let mut previous: Option<u8> = None;
+    let mut fixed = FixedDay::from_jd(JulianDay::literal(from_jd)).0;
+    let last = FixedDay::from_jd(JulianDay::literal(to_jd)).0;
+    while fixed < last {
+        if let Ok(light) = SolarModel::day_light(&model, fixed, &place)
+            && let Some(arc) = light.arc()
+        {
+            let tithi = tithi_at(&model, arc.sunrise.get());
+            days += 1;
+            if let Some(before) = previous {
+                if tithi == before {
+                    repeated += 1;
+                } else if u32::from((tithi + 30 - before) % 30) > 1 {
+                    skipped += 1;
+                }
+            }
+            previous = Some(tithi);
+            if sunrise_tithis.len() < 64 {
+                sunrise_tithis.push(tithi);
+            }
+        }
+        fixed = fixed.plus_days(1);
+    }
+
     println!(
         "{}",
         serde_json::to_string(&serde_json::json!({
             "model": model.describe(),
+            "sunrise_days": days,
+            "repeated_tithis": repeated,
+            "skipped_tithis": skipped,
             "from_jd": from_jd,
             "to_jd": to_jd,
             "months": months,

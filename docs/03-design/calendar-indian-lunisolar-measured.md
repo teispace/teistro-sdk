@@ -83,7 +83,34 @@ told which is which. **Adhika and kshaya are the text's to give**;
 not — that wants drik values, and comparing them wants the conformance
 harness over an adapter that Phase 1 deferred.
 
-## 4. Kshaya has a season, and the pass did not propose it
+## 4. A lunisolar date cannot be written (year, month, day)
+
+The date's **day** is the tithi running at sunrise, and a tithi is not a
+day long: it runs about twenty-three to twenty-six hours. So it can
+catch two sunrises, and the date's day repeats; or none, and a day is
+missing from the month altogether. Over **365 234 sunrises** at Ujjain,
+the prime meridian of Indian astronomy:
+
+| | times | how often |
+|---|---|---|
+| the day repeats the one before it | 8384 | one day in 44 |
+| a day is skipped | 14 190 | one day in 26 |
+
+So (year, month, day) is **not** a key: on one day in forty-four it
+names two days, and one number in twenty-six names none. A Hindu
+lunisolar date needs a flag saying *which* of a repeated pair it is,
+exactly as it needs one saying whether its month is the adhika one —
+**two** booleans, not one.
+
+`CalendarDate` carries neither, and `month` and `day` are plain `u8`s.
+So this calendar cannot be another `CalendarSystem` without either
+extending that value — which crosses the boundary as
+`ts_calendar_date` and reaches three bindings — or choosing a
+different meaning for `day` and being honest that the result is not the
+date a panchangam prints. The design page has to decide which, and this
+is the number that says the question cannot be dodged.
+
+## 5. Kshaya has a season, and the pass did not propose it
 
 Every one of the 19 kshaya months in the sample takes its two sankrantis
 from the same short arc of the year: Vrishchika (4), Dhanu (16), Makara
@@ -96,7 +123,7 @@ inside one lunar month. A rule that produced a kshaya month in, say,
 Karka would be wrong on astronomy the calendar never states, and this is
 the check that would catch it.
 
-## 5. What this decides
+## 6. What this decides
 
 | proposed rule | verdict | measured |
 |---|---|---|

@@ -294,6 +294,16 @@ provider's DUT1).
    it cannot settle is kshaya against an authority, because the corpus
    records none.
 
+   **The page also poses the question the design has to answer.** A
+   lunisolar date's day is the tithi at sunrise, which repeats one day
+   in forty-four and is skipped one in twenty-six, so
+   `(year, month, day)` is not a key and a date needs **two** flags —
+   the repeated day and the adhika month. `CalendarDate` carries
+   neither. Either it gains them, which crosses the boundary as
+   `ts_calendar_date` and reaches three bindings, or `day` means
+   something other than the tithi and the calendar says plainly that its
+   date is not the one a panchangam prints.
+
    Phase 4's boundary work is done and gated: `ts_positions`,
    `ts_chart_found` and `ts_panchanga_days` all cross, three bindings
    offer `found`/`foundMany` and `almanac`/`almanacDay` over them, each
