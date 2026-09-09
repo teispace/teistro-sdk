@@ -253,13 +253,23 @@ a cache of nothing is a cache that does nothing:
 The share answered from memory rises with the batch, which is §4's
 finding read from the other side.
 
-**Still to do: the knob.** A Rust consumer wraps their own provider. A
-binding consumer cannot — they hand the SDK a vtable and the SDK boxes
-it — so `provider.cache_cells` becomes a settings knob read where the
-SDK owns the chain, which is `TsContext::build`. One knob and not two:
-zero is off, any other number is the capacity, so there is no pair of
-settings that can contradict each other. That is what makes the memo
-reachable from every binding rather than from Rust alone.
+**The knob — built.** A Rust consumer wraps their own provider. A
+binding consumer cannot: they hand the SDK a vtable and the SDK owns the
+box, so nothing but the boundary can put a cache under it.
+`provider.cache_cells` is read in `TsContext::build`, which is that
+place. One knob and not two — nought is off, any other number is the
+capacity — so no pair of settings can disagree about whether the memo
+exists. `DEFAULT_CACHE_CELLS` is declared in `core::settings`, beside
+the knob a consumer sets, and the port's own default *is* that constant:
+one number, one place.
+
+Two things had to exist for it. `EphemerisProvider` is now implemented
+for `Box<P>` as it already was for `&P`, without which nothing could
+wrap what a binding consumer hands the SDK — a cache, a counter or an
+adapter of their own would have been reachable from Rust and from
+nowhere else. And the memo reports the inner provider's capabilities
+unchanged, so a context that wraps and a context that does not stamp
+their values identically.
 
 ### A3. Parallelism, as a knob, without a pool
 
@@ -413,9 +423,9 @@ the emitted code is verified in its own language.
    665), anchor the grid so a crossing does not depend on the window
    (A1b′ — *done*, 665 to 681, and the repeat share of a fifty-day
    range from 24.7% to 60.2%).
-4. **A2** the batch memo (*done* — a fifty-day range 33 270 calls to
-   21 663, 55.7% answered from memory) and its `provider.cache_cells`
-   knob, which the anchoring moved ahead of A1c.
+4. **A2** the batch memo and its `provider.cache_cells` knob — *done*, a
+   fifty-day range 33 270 calls to 21 663, 55.7% answered from memory;
+   the anchoring moved it ahead of A1c.
 5. **A1c** hoist what a range shares, for the arithmetic a memo cannot
    save.
 6. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,

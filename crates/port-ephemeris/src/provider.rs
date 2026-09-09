@@ -234,6 +234,54 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
     }
 }
 
+/// A boxed provider is a provider.
+///
+/// The boundary owns its provider behind a `Box<dyn EphemerisProvider>`
+/// (`ffi::TsContext`), so without this nothing could wrap what a binding
+/// consumer hands the SDK — a cache, a counter or an adapter of their own
+/// would be reachable from Rust and from nowhere else.
+impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
+    fn capabilities(&self) -> Capabilities {
+        (**self).capabilities()
+    }
+
+    fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+        (**self).positions(request)
+    }
+
+    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
+        (**self).obliquity(jd, scale)
+    }
+
+    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
+        (**self).delta_t_seconds(jd_ut1)
+    }
+
+    fn ayanamsha_deg(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        ayanamsha: Ayanamsha,
+    ) -> Result<f64, ProviderError> {
+        (**self).ayanamsha_deg(jd, scale, ayanamsha)
+    }
+
+    fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
+        (**self).dut1_seconds(jd_utc)
+    }
+
+    fn horizon_event(
+        &self,
+        request: &HorizonRequest,
+    ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
+        (**self).horizon_event(request)
+    }
+
+    fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
+        (**self).crossings(request)
+    }
+}
+
 /// Checks a request against a provider's capabilities before any work: a
 /// topocentric frame needs an observer, every body must be offered, every
 /// instant must be finite. Coverage is not checked, because an instant

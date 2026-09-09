@@ -397,12 +397,19 @@ provider's DUT1).
    Cumulatively an almanac day is 1228 calls → 616 and fifty days
    60 631 → 21 663.
 
-   **The next step is A2's knob.** A Rust consumer wraps their own
-   provider; a binding consumer hands the SDK a vtable and cannot, so
-   `provider.cache_cells` becomes a settings knob read in
-   `TsContext::build`, where the SDK owns the chain. One knob rather than
-   two — zero is off, any other number is the capacity — so no pair of
-   settings can contradict each other. Then A1c.
+   **The knob is built too.** A binding consumer hands the SDK a vtable
+   and cannot wrap it, so `provider.cache_cells` is read in
+   `TsContext::build`, where the SDK owns the box. One knob rather than
+   two — nought is off, any other number is the capacity — so no pair of
+   settings can disagree about whether the memo exists.
+   `DEFAULT_CACHE_CELLS` lives in `core::settings` beside the knob and
+   the port's default *is* that constant, so there is one number in one
+   place. `EphemerisProvider` is now implemented for `Box<P>` as it
+   already was for `&P`, without which nothing could wrap what a binding
+   consumer supplies.
+
+   **The next step is A1c**, hoisting what a range's days share, for the
+   arithmetic above the ephemeris that a memo does not save.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an

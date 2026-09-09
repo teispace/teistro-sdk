@@ -78,6 +78,7 @@ every shipped profile. The v1 inventory:
 | calendar | `eras` | set of `EraKey` | which era numbers a date carries |
 | provider | `overrides` | enum | `PREFER_NATIVE`, `SDK_ONLY`, `NATIVE_ONLY` (ADR-0013) |
 | provider | `tier` | enum | `COMPACT`, `STANDARD`, `FULL`, `REFERENCE` for the built-in ephemeris |
+| provider | `cache_cells` | u32 | how many ephemeris cells a context remembers so a batch asks for each once; nought is off, 65 536 by default, honoured only over a provider that declares `deterministic` (`batch-and-parallelism-measured.md`) |
 | output | `precision` | per field family | the rounding contract (`exact-arithmetic.md`) |
 
 A module that adds a knob adds a row here, a default to every shipped

@@ -22,7 +22,9 @@ use teistro_core::settings::{
 };
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
-use teistro_port_ephemeris::{EphemerisProvider, ProviderVtable, TestProvider, VtableProvider};
+use teistro_port_ephemeris::{
+    CachingProvider, EphemerisProvider, ProviderVtable, TestProvider, VtableProvider,
+};
 
 use crate::TS_CONTEXT_TEST_PROVIDER;
 use crate::strings::{TsHash, TsStr, TsString};
@@ -175,6 +177,7 @@ impl TsContext {
                 .map_err(|e| unknown_locale(&intl, tag, &e.to_string()))?;
         }
         let delta_t = DeltaTModel::from_knob(settings.settings.time.delta_t).unwrap_or_default();
+        let provider = remembering(provider, settings.settings.provider.cache_cells);
         Ok(TsContext {
             settings,
             provider,
@@ -286,6 +289,31 @@ pub(crate) fn unknown_locale(intl: &Intl, tag: &str, detail: &str) -> Error {
             "`{tag}` is not loaded; the locales are {}",
             known.join(", ")
         ))
+}
+
+/// The provider a context will use, wrapped in a memo when the settings
+/// ask for one.
+///
+/// This is where `provider.cache_cells` is read, and it has to be here: a
+/// Rust caller wraps their own provider, but a binding caller hands the
+/// SDK a vtable and the SDK owns the box, so nothing but the boundary can
+/// put a cache under it. Nought is off, and so is a provider that does
+/// not declare `deterministic` — [`CachingProvider`] refuses to cache one
+/// rather than being wrong about it, and reports the inner provider's
+/// capabilities unchanged either way, so no provenance stamp can tell
+/// the memo is there.
+fn remembering(
+    provider: Option<Box<dyn EphemerisProvider>>,
+    cells: u32,
+) -> Option<Box<dyn EphemerisProvider>> {
+    let inner = provider?;
+    if cells == 0 {
+        return Some(inner);
+    }
+    Some(Box::new(CachingProvider::with_capacity(
+        inner,
+        cells as usize,
+    )))
 }
 
 /// Creates a context. `options` may be null for every default; `provider`
@@ -497,4 +525,83 @@ pub unsafe extern "C" fn ts_context_settings_hash(
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_hash, "out_hash", ctx.settings().hash().into()) }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::panic,
+        clippy::unwrap_used,
+        clippy::expect_used,
+        reason = "tests fail by panicking"
+    )]
+
+    use super::{TsContext, remembering};
+    use teistro_core::settings::DEFAULT_CACHE_CELLS;
+    use teistro_port_ephemeris::{
+        Body, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale,
+    };
+
+    /// The knob's default is the port's default, in one place.
+    #[test]
+    fn the_shipped_profile_remembers_what_a_range_needs() {
+        let context = TsContext::build(None, None, None, None).expect("the default profile");
+        assert_eq!(
+            context.settings().provider.cache_cells,
+            DEFAULT_CACHE_CELLS,
+            "the root profile takes the measured capacity"
+        );
+    }
+
+    /// A caller can turn the memo off, and size it, through the settings a
+    /// binding already passes as JSON.
+    #[test]
+    fn the_knob_is_reachable_from_a_settings_patch() {
+        for cells in [0u32, 1, 4096] {
+            let patch = format!(r#"{{"provider":{{"cache_cells":{cells}}}}}"#);
+            let context =
+                TsContext::build(None, Some(&patch), None, None).expect("the patch applies");
+            assert_eq!(context.settings().provider.cache_cells, cells);
+        }
+    }
+
+    /// Nought is off: the provider the context holds is the one it was
+    /// given.
+    #[test]
+    fn a_capacity_of_nothing_wraps_nothing() {
+        let plain = remembering(Some(Box::new(TestProvider::new())), 0).expect("a provider");
+        let jds = [2_451_545.0];
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+        // Whether or not it is wrapped, it answers; what this pins is that
+        // the identity a provenance stamp reads is unchanged.
+        assert!(plain.positions(&request).is_ok());
+        assert_eq!(
+            plain.capabilities().identity.name,
+            TestProvider::new().capabilities().identity.name
+        );
+    }
+
+    /// A memo under the boundary answers the second batch without asking,
+    /// and still reports the provider it wraps rather than itself.
+    #[test]
+    fn a_capacity_puts_a_memo_under_the_boundary() {
+        let cached = remembering(Some(Box::new(TestProvider::new())), 64).expect("a provider");
+        let jds = [2_451_545.0, 2_451_546.0];
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+        let first = cached.positions(&request).expect("it answers");
+        let second = cached.positions(&request).expect("and answers again");
+        assert_eq!(first, second, "the same answer, cell for cell");
+        assert_eq!(
+            cached.capabilities().identity.name,
+            TestProvider::new().capabilities().identity.name,
+            "the stamp cannot tell the memo is there"
+        );
+    }
+
+    /// Without a provider there is nothing to wrap, whatever the knob says.
+    #[test]
+    fn no_provider_is_still_no_provider() {
+        assert!(remembering(None, DEFAULT_CACHE_CELLS).is_none());
+        assert!(remembering(None, 0).is_none());
+    }
 }
