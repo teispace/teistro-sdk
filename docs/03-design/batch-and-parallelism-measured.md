@@ -57,14 +57,16 @@ Everything else is one instant and one or two bodies. The mean width is
 **one cell at a time**, tens of thousands of times, through a port whose
 one required operation takes a grid.
 
-One sunrise is where it comes from and is worth naming on its own:
-18 calls, every one of them a single cell, none of them a repeat.
-The horizon solver is thrifty in **count** — it brackets and
-bisects rather than scanning blindly — and pathological in
-**width**, because each step of the bracket is a separate round
-trip where the whole bracket is known in advance and could be one.
-A day's limbs are made of searches like it, which is what turns 18
-calls into 1213 a day.
+One sunrise is worth naming on its own: 18 calls, every one of them a
+single cell, none of them a repeat. Meeus's iteration answers it, and it
+is serial by construction — each instant is computed from the sample
+before it, so there is no grid to ask for. A day's 1213 calls are
+**not** made of searches like it: an attribution of every one of them to
+its caller (recorded in
+[`../07-roadmap/02-plan-performance-and-passthrough.md`](../07-roadmap/02-plan-performance-and-passthrough.md),
+A1) found 44% of them in the Moon's sign search, which reaches forty
+days either side of the day because the constant that sizes it was
+chosen for the Sun. The dominant cost is a window, not a round trip.
 
 ## 4. How much of the work is asked for twice
 

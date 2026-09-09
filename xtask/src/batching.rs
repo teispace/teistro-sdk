@@ -334,15 +334,17 @@ fn text(
     );
     let _ = writeln!(
         out,
-        "One sunrise is where it comes from and is worth naming on its own:\n\
-         {} calls, every one of them a single cell, none of them a repeat.\n\
-         The horizon solver is thrifty in **count** — it brackets and\n\
-         bisects rather than scanning blindly — and pathological in\n\
-         **width**, because each step of the bracket is a separate round\n\
-         trip where the whole bracket is known in advance and could be one.\n\
-         A day's limbs are made of searches like it, which is what turns {}\n\
-         calls into {} a day.\n",
-        count(usize::try_from(sunrise.calls).unwrap_or_default()),
+        "One sunrise is worth naming on its own: {} calls, every one of\n\
+         them a single cell, none of them a repeat. Meeus's iteration\n\
+         answers it, and it is serial by construction — each instant is\n\
+         computed from the sample before it, so there is no grid to ask\n\
+         for. A day's {} calls are **not** made of searches like it: an\n\
+         attribution of every one of them to its caller (recorded in\n\
+         [`../07-roadmap/02-plan-performance-and-passthrough.md`](../07-roadmap/02-plan-performance-and-passthrough.md),\n\
+         A1) found 44% of them in the Moon's sign search, which reaches\n\
+         forty days either side of the day because the constant that\n\
+         sizes it was chosen for the Sun. The dominant cost is a window,\n\
+         not a round trip.\n",
         count(usize::try_from(sunrise.calls).unwrap_or_default()),
         rounded(almanac.per_item())
     );

@@ -316,11 +316,26 @@ provider's DUT1).
    width of 1.1 cells through a port whose one required operation takes a
    grid. The repeat share rises with the batch, 22.5% within one chart to
    64.7% across fifty, which can only come from sharing between the
-   items. The order of the fixes is the finding: **grid the searches,
-   then memo the batch, then spend threads** — threads first would
-   parallelise redundant work. `Capabilities::deterministic` is declared
-   by both adapters and read by nothing; it is the memo's correctness
-   gate and now has its reader.
+   items. The order of the fixes is the finding: **fix the arithmetic
+   first, spend hardware last** — threads first would parallelise
+   redundant work. `Capabilities::deterministic` is declared by both
+   adapters and read by nothing; it is the memo's correctness gate and
+   now has its reader.
+
+   Attributing every one of an almanac day's 1228 calls to the code that
+   makes them then **corrected A1 before a line of it was written**
+   (the plan, §A1). A sunrise costs 4 calls, not 18, and all four are
+   Meeus's iteration, which is serial and has no grid to ask for; the
+   scan the plan meant to grid does not run at all at a temperate
+   latitude. What does run is a **window**: to report which signs the
+   Moon stood in during one day, the SDK searches eighty-one days of
+   sign crossings — 44% of the day's calls — because the constant that
+   sizes the reach was chosen for the Sun, which takes a month to cross
+   a sign where the Moon takes 2.3 days. So A1 is now three parts in
+   order: the reach follows the body, the uniform scan is gridded, and a
+   range hoists what its days share. The first moves published instants
+   within the search's own tolerance (1e-7 of a day), so it lands with
+   the golden vectors and the hash matrix regenerated beside it.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an

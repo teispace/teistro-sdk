@@ -36,22 +36,94 @@ numbers are counts and therefore gated (`check-batching`). **The order is
 the point**: threads would multiply redundant work rather than reduce it,
 so the arithmetic is fixed first and the hardware spent last.
 
-### A1. Widen the searches into grids
+### A1. Size a search by what it is searching for, then grid what is left
 
-*The finding:* one sunrise costs 18 provider calls, every one a single
-cell, none a repeat. The horizon solver brackets and bisects — thrifty in
-count — but each bracket step is its own round trip when the whole
-bracket is known before the first one.
+*Corrected 2026-09-09, before a line of it was written.* The step as
+first planned read: "one sunrise costs 18 provider calls … seventeen
+round trips in eighteen become one". Attributing an almanac day's calls
+to the code that makes them falsified all three of its premises, and the
+correction is worth more than the original.
 
-*The change:* the bracket scan asks for its instants as **one grid**;
-only the bisection stays serial, because each of its steps depends on the
-last. Same instants, same answers, bit-identical; seventeen round trips
-in eighteen become one.
+*What the attribution found.* One almanac day (Kathmandu, 2024-04-01,
+the analytic provider) makes 1228 provider calls. Recorded by a probe
+that captured the caller of every one of them:
 
-*Where:* `astro::rise_set` first (it is the pattern), then
-`astro::solve`'s crossing search, which every panchanga limb is built on.
+| calls | share | what asks |
+|---:|---:|---|
+| 543 | 44% | `limb::signs` for the **Moon**, over a window of ±40 days |
+| 344 | 28% | `Almanac::moon`: the Moon's rise and set |
+| 101 | 8% | `limb::signs` for the **Sun**, over the same ±40 days |
+| 72 | 6% | the Sun's rise and set, twice (the day, and the night before it) |
+| 32 | 3% | `find_sankranti` |
+| 136 | 11% | the lunar month's span, the masa, and the four limbs |
 
-*Gate:* the counts on the measured page, which fall when this lands.
+The premises that fell:
+
+1. **A sunrise does not cost 18 calls.** It costs **4**, and all four
+   are Meeus's iteration, which is serial by construction: each instant
+   is computed from the sample before it, so there is no grid to ask
+   for. A whole `day()` — a rise, a set and a midday reading — costs 9.
+   The 18 on the measured page is `SolarModel::day_light`, which is two
+   solvers and a second day.
+2. **The scan the plan meant to grid does not run** at a temperate
+   latitude. It is the fallback for when the iteration will not settle.
+   At 69.65°N it does run, and there it costs 146 calls an event — so
+   gridding it is worth doing, for the places where it is reached.
+3. **The dominant cost is not a round trip at all. It is a window.**
+
+*The finding, stated plainly.* To report which signs the Moon stood in
+during **one day**, the SDK searches **eighty-one days** of sign
+crossings and finds about thirty-five of them, when the day can touch at
+most two. The constant that sizes it says why:
+
+> `const SIGN_SEARCH_DAYS: f64 = 40.0;`
+> "The Sun takes a month to cross a sign and the Moon two and a half
+> days … Forty days covers the Sun."
+
+Forty days *does* cover the Sun, and the same helper serves both bodies,
+so the Moon is searched at the Sun's reach — a body that crosses a sign
+every 2.3 days, looked for over ±40. Nothing is wrong with the answer;
+the search is simply sized for the slowest thing that uses it.
+
+*The change, in three parts, in this order:*
+
+**A1a. The reach follows the body.** `events::greatest_rate` already
+tables how fast a body can move, because the search's *step* is sized
+from it. Its companion is how slowly a body can move, which is what
+sizes the search's *reach*: 31.5 days for the Sun at aphelion, 2.8 for
+the Moon at apogee, undefined for anything that can retrograde — which
+is where today's constant and its documented truncation stay, because a
+retrograde body's dwell in a sign has no bound a table can give. The
+Moon's 543 calls become about 28. A caller who wants a wider reach asks
+for one: `signs_within(…, reach_days)` beside `signs`, defaults
+resolved, no dead end.
+
+**A1b. Grid the uniform scan.** `events::Search::between` walks its
+window in fixed steps and samples once per step — 276 of the day's calls
+— and every instant it will ask for is known before the first one. It
+asks for them as one grid, in chunks, and only the ITP refinement stays
+serial. This is the original A1, moved to where the scan actually is.
+
+**A1c. Hoist what a range shares.** The searches above reach ±40 days
+around each day; consecutive days in a range therefore search almost the
+same window, which is why 50 almanac days cost 50 × 1213 and why the
+repeat share *rises* with the batch. A range computes its shared
+crossings once and slices them per day. This is the change that turns a
+batch into a batch, and it wants A1a first so that what is hoisted is
+small.
+
+*What it costs.* A1a and A1b both move where a scan's samples fall, so
+the crossing instants they refine to move within the search's own
+tolerance — up to 1e-7 of a day, ten milliseconds, far inside every
+tolerance the corpus declares and every one the SDK publishes. That is
+still a change to the last bits of a published value, so it lands with
+the golden vectors and the hash matrix regenerated in the same commit,
+and the page says by how much each moved rather than that nothing did.
+
+*Gate:* the almanac and chart rows of
+`03-design/batch-and-parallelism-measured.md`, whose counts fall when
+each part lands; and a test that the sign spans a day reports are the
+same spans, to the tolerance, at either reach.
 
 ### A2. A memo across a batch, gated on the provider's own declaration
 
@@ -221,7 +293,9 @@ the emitted code is verified in its own language.
 1. **A0** the measurement and this plan — *done*, `check-batching`.
 2. **B0** the passthrough measured: what the port reaches of an engine,
    counted rather than asserted — part of the same pass.
-3. **A1** grid the searches.
+3. **A1** size each search by what it searches for (A1a), grid the
+   uniform scan (A1b), hoist what a range shares (A1c). The golden
+   vectors and the hash matrix move with A1a.
 4. **A2** the batch memo and `provider.cache`.
 5. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
    Rust surface.
