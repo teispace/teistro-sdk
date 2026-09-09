@@ -38,9 +38,11 @@ use teistro_core::settings::{
 };
 use teistro_core::time::UtcOffset;
 use teistro_panchanga::Almanac;
+use teistro_port_ephemeris::caching::DEFAULT_CAPACITY;
 use teistro_port_ephemeris::test_provider::TestProvider;
 use teistro_port_ephemeris::{
-    Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, ProviderCalls, TimeScale,
+    Body, CacheStats, CachingProvider, CountingProvider, EphemerisProvider, Frame, PositionRequest,
+    ProviderCalls, TimeScale,
 };
 
 /// Kathmandu, where the corpus's own charts are.
@@ -69,8 +71,26 @@ fn resolved() -> Resolved {
         .expect("it resolves")
 }
 
-fn counted() -> CountingProvider<TestProvider> {
-    CountingProvider::new(TestProvider).watching_repeats()
+/// The provider every measurement is made through: a counter, so what
+/// reached the ephemeris is visible, inside a cache, so the memo can be
+/// switched on and off without changing a type. A capacity of nothing is
+/// a cache that does nothing, which is how the uncached arm is measured
+/// — the same code path, one number apart.
+type Measured = CachingProvider<CountingProvider<TestProvider>>;
+
+fn counted() -> Measured {
+    cached(false)
+}
+
+fn cached(memo: bool) -> Measured {
+    let counter = CountingProvider::new(TestProvider).watching_repeats();
+    let capacity = if memo { DEFAULT_CAPACITY } else { 0 };
+    CachingProvider::with_capacity(counter, capacity)
+}
+
+/// What reached the ephemeris under a measured provider.
+fn reached(provider: &Measured) -> ProviderCalls {
+    provider.inner().calls()
 }
 
 fn tally(calls: ProviderCalls) -> serde_json::Value {
@@ -92,9 +112,7 @@ fn tally(calls: ProviderCalls) -> serde_json::Value {
 /// The solar model the chart and almanac layers are founded on. The same
 /// three settings every time: it is the provider underneath that is
 /// being measured, not the model.
-fn sun_model(
-    provider: &CountingProvider<TestProvider>,
-) -> DrikSun<'_, CountingProvider<TestProvider>> {
+fn sun_model(provider: &Measured) -> DrikSun<'_, Measured> {
     DrikSun::new(
         provider,
         Ayanamsha::Lahiri,
@@ -124,7 +142,7 @@ fn positions_grid(measurements: &mut Vec<serde_json::Value>) {
             "operation": "positions",
             "size": size,
             "unit": "instant",
-            "calls": tally(provider.calls()),
+            "calls": tally(reached(&provider)),
         }));
     }
 }
@@ -157,7 +175,7 @@ fn chart_batches(measurements: &mut Vec<serde_json::Value>) {
             "operation": "charts",
             "size": size,
             "unit": "chart",
-            "calls": tally(provider.calls()),
+            "calls": tally(reached(&provider)),
         }));
     }
 }
@@ -191,7 +209,7 @@ fn almanac_ranges(measurements: &mut Vec<serde_json::Value>) {
             "operation": "almanac",
             "size": size,
             "unit": "day",
-            "calls": tally(provider.calls()),
+            "calls": tally(reached(&provider)),
         }));
     }
 }
@@ -211,8 +229,59 @@ fn one_sunrise(measurements: &mut Vec<serde_json::Value>) {
         "size": 1,
         "unit": "day",
         "found": found,
-        "calls": tally(provider.calls()),
+        "calls": tally(reached(&provider)),
     }));
+}
+
+/// What a memo saves: the same batches, the cache off and on.
+///
+/// The cache is sound only over a provider that answers identical
+/// requests with identical bits, which the port has always asked every
+/// provider to declare and nothing read until now. Both arms run the
+/// same code through the same types; only the capacity differs, so what
+/// separates the numbers is the memo and nothing else.
+fn memo(measurements: &mut Vec<serde_json::Value>) {
+    for size in SIZES {
+        for memo in [false, true] {
+            let provider = cached(memo);
+            let stats = run_almanac(&provider, size);
+            measurements.push(serde_json::json!({
+                "operation": "almanac",
+                "size": size,
+                "unit": "day",
+                "memo": memo,
+                "caching": provider.caching(),
+                "hit_share": stats.hit_share(),
+                "calls": tally(reached(&provider)),
+            }));
+        }
+    }
+}
+
+/// One range of almanac days through a provider, and what its cache did.
+fn run_almanac(provider: &Measured, size: usize) -> CacheStats {
+    let resolved = resolved();
+    let model = sun_model(provider);
+    let clock = clock();
+    let almanac = Almanac::new(
+        provider,
+        &resolved,
+        &model,
+        &Gregorian,
+        &clock,
+        PrecessionModel::default(),
+        DeltaTModel::TableThenModel,
+    );
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 4, 1);
+    let last = Gregorian
+        .fixed_of(&from)
+        .expect("a date the calendar has")
+        .plus_days(i64::try_from(size).unwrap_or(1) - 1);
+    let to = Gregorian.date_of(last).expect("a date the calendar has");
+    almanac
+        .between(&from, &to, &place())
+        .expect("an almanac for every day");
+    provider.stats()
 }
 
 /// What the port reaches of a provider: the other half of the same
@@ -238,11 +307,14 @@ fn main() {
     chart_batches(&mut measurements);
     almanac_ranges(&mut measurements);
     one_sunrise(&mut measurements);
+    let mut memos = Vec::new();
+    memo(&mut memos);
 
     println!(
         "{}",
         serde_json::to_string_pretty(&serde_json::json!({
             "measurements": measurements,
+            "memo": memos,
             "reach": reach(),
         }))
         .expect("the measurements serialise")

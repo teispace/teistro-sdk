@@ -94,7 +94,28 @@ adapters and read by nothing. It has a reader now, and it is the right
 one — the cache is correct exactly when that flag is true, and refuses
 to exist when it is not.
 
-## 5. What is reachable at all
+## 5. What the memo actually saves
+
+[`CachingProvider`](../../crates/port-ephemeris/src/caching.rs) over the
+same batches, the cache off and on. Both arms run the same code through
+the same types — a cache of nothing is a cache that does nothing —
+so what separates the numbers is the memo and nothing else, and the
+answers are identical cell for cell.
+
+| days | calls | cells | calls, cached | cells, cached | answered from memory |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 681 | 1092 | 616 | 906 | 17.0% |
+| 2 | 1349 | 2179 | 1031 | 1359 | 37.6% |
+| 10 | 6817 | 11 056 | 4509 | 5187 | 53.1% |
+| 50 | 33 270 | 53 935 | 21 663 | 23 888 | 55.7% |
+
+The share answered from memory **rises with the batch** — 17.0% for a
+single day, 55.7% across 50 — which is the same finding as §4 read
+from the other side, and the reason the memo is worth more than a cache
+of one call's own repeats. A range of 50 days asks the ephemeris for 23
+888 cells instead of 53 935, in 21 663 calls instead of 33 270.
+
+## 6. What is reachable at all
 
 The other half of the same question. A batch that asks well is
 still limited to what it may ask for, and the port names 8 operations: `positions` and seven declared
@@ -112,7 +133,7 @@ run. It was counted from `core/include/teimeris/*.h` on 2026-09-09 and
 is a floor, since the same is true of every other engine an adapter
 might wrap.
 
-## 6. What this pass decides
+## 7. What this pass decides
 
 | proposed rule | verdict | measured |
 |---|---|---|
@@ -121,11 +142,13 @@ might wrap.
 | a batch of almanac is one call whatever its size | falsified | 33 270 calls for 50, 665 per item |
 | the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 1.62; the widest either makes is 8 and 67 |
 | a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 60.2% of 50 almanac days are cells already fetched |
+| a memo answers a repeated cell without touching the engine | **holds** | 55.7% of a range of 50 days is answered from memory: 23 888 cells instead of 53 935 |
 | a consumer can reach what their engine offers beyond the port | falsified | the port names 8; Teimeris names 177; 0 of the difference is reachable through the SDK |
 
-five of the six claims are falsified, and they are falsified in an order
-that matters. Threads would multiply the work rather than reduce it
-while two thirds of a chart batch's calls are repeats and seventeen of
-every eighteen round trips are avoidable width; the design that follows
-fixes the arithmetic first and spends hardware last.
+five of the seven claims are falsified, and they are falsified in an
+order that matters. Threads would multiply the work rather than reduce
+it while more than half of a range's cells are asked for twice; the
+design fixes the arithmetic first and spends hardware last, and the
+numbers on this page move as each step of it lands
+([`../07-roadmap/02-plan-performance-and-passthrough.md`](../07-roadmap/02-plan-performance-and-passthrough.md)).
 
