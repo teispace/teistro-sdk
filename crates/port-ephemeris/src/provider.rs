@@ -190,6 +190,54 @@ pub trait EphemerisProvider: Send + Sync {
         let _ = request;
         Err(ProviderError::unsupported("crossings"))
     }
+
+    /// What the engine says it offers beyond this port, as the engine
+    /// wrote it: a JSON manifest of its own operations
+    /// ([`crate::native`]).
+    ///
+    /// The SDK does not keep a list of an engine's operations, so an
+    /// operation the engine gains after the SDK ships is callable the
+    /// day it appears in this. A provider that offers none says so by
+    /// leaving this alone.
+    ///
+    /// # Errors
+    ///
+    /// `Unsupported` when the provider offers no native operations, or
+    /// the engine's own failure to describe itself.
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        Err(ProviderError::unsupported("native_manifest"))
+    }
+
+    /// Calls one of the engine's own operations by the name its manifest
+    /// gives, with arguments as a JSON object keyed by parameter name,
+    /// answering with the engine's own JSON.
+    ///
+    /// The marshalling belongs to the adapter, generated from the
+    /// engine's manifest, because a typed C call per function is what
+    /// keeps a double in a floating-point register. The SDK relays.
+    ///
+    /// # Errors
+    ///
+    /// `Unsupported` when the provider offers no native operations, and
+    /// otherwise whatever the adapter says: an unknown function, an
+    /// argument it cannot marshal, or the engine's own failure.
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        let _ = (function, arguments_json);
+        Err(ProviderError::unsupported("native_call"))
+    }
+
+    /// The engine's own operations, when it offers any.
+    ///
+    /// `None` rather than a handle that fails on every call, so that a
+    /// caller asks once instead of discovering it per operation.
+    fn native(&self) -> Option<crate::native::Native<'_>>
+    where
+        Self: Sized,
+    {
+        self.capabilities()
+            .native
+            .then(|| crate::native::Native::new(self))
+    }
 }
 
 impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
@@ -231,6 +279,13 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
         (**self).crossings(request)
+    }
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        (**self).native_manifest()
+    }
+
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        (**self).native_call(function, arguments_json)
     }
 }
 
@@ -279,6 +334,13 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
         (**self).crossings(request)
+    }
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        (**self).native_manifest()
+    }
+
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        (**self).native_call(function, arguments_json)
     }
 }
 

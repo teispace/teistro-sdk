@@ -288,6 +288,9 @@ impl Host {
             overrides: Overrides::NONE,
             ayanamshas: Vec::<Ayanamsha>::new(),
             deterministic: info.deterministic.unwrap_or(true),
+            // A provider written in JavaScript describes no engine of its
+            // own yet; the host surface for it arrives with B2.
+            native: false,
         };
         Ok(Host {
             exported: Exported::new(JsProvider {

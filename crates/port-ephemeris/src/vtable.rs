@@ -423,8 +423,15 @@ pub struct CapabilitiesC {
     pub speed_model: u8,
     /// [`Astronomy::id`].
     pub astronomy: u8,
+    /// Whether the engine describes its own operations, so a consumer
+    /// can reach what this port does not name. One of the two bytes
+    /// this struct reserved, spent rather than a new field appended, so
+    /// that its size and every offset in it are unchanged and an adapter
+    /// built against the old header still binds.
+    /// `api: flag`
+    pub native: u8,
     /// Reserved, zero.
-    pub reserved: [u8; 2],
+    pub reserved: [u8; 1],
     /// The name, NUL-terminated.
     pub name: *const c_char,
     /// The version, NUL-terminated.
@@ -640,7 +647,8 @@ impl VtableProvider {
             distance_unit: 0,
             speed_model: 0,
             astronomy: 0,
-            reserved: [0; 2],
+            native: 0,
+            reserved: [0; 1],
             name: ptr::null(),
             version: ptr::null(),
             data_version: ptr::null(),
@@ -727,6 +735,7 @@ unsafe fn capabilities_from_c(raw: &CapabilitiesC) -> Result<Capabilities, Provi
         overrides: Overrides::from_bits(raw.overrides),
         ayanamshas,
         deterministic: raw.deterministic != 0,
+        native: raw.native != 0,
     })
 }
 
@@ -1079,7 +1088,8 @@ unsafe extern "C" fn capabilities_trampoline<P: EphemerisProvider>(
         distance_unit: caps.distance_unit.id(),
         speed_model: caps.speed_model.id(),
         astronomy: caps.astronomy.id(),
-        reserved: [0; 2],
+        native: u8::from(caps.native),
+        reserved: [0; 1],
         name: this.name.as_ptr(),
         version: this.version.as_ptr(),
         data_version: this.data_version.as_ptr(),

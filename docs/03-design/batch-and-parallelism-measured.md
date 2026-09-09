@@ -122,10 +122,18 @@ still limited to what it may ask for, and the port names 8 operations: `position
 overrides. Teimeris's public header names
 177. The difference — its eclipses, its stars
 and orbits, its own calendar grids and chart blobs, its scans —
-is unreachable through this SDK, so a consumer who wants any of it
-must open a second handle to the same engine and manage it
-themselves. That is a dead end of the kind
-`no-dead-ends` forbids, and it is the largest one in the project.
+was unreachable through this SDK, and a consumer who wanted any
+of it had to open a second handle to the same engine: the largest
+dead end in the project.
+
+**The route is built** — the port's `native_manifest` and
+`native_call`, and `port_ephemeris::Native` over them. The SDK holds no
+list of an engine's operations. It reads the manifest the engine ships
+and relays a call by the name that manifest gives, so an operation the
+engine gains *after* the SDK ships is callable the day it appears. The
+count below is what the measured provider declares, which is why it
+moves when an engine does and not when the SDK does; the number for
+Teimeris arrives with its adapter's own manifest.
 
 The count of Teimeris's operations is recorded rather than computed: the
 engine is not in this workspace, so this pass cannot count it on every
@@ -143,9 +151,9 @@ might wrap.
 | the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 2.75; the widest either makes is 8 and 67 |
 | a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 60.2% of 50 almanac days are cells already fetched |
 | a memo answers a repeated cell without touching the engine | **holds** | 55.7% of a range of 50 days is answered from memory: 23 888 cells instead of 53 935 |
-| a consumer can reach what their engine offers beyond the port | falsified | the port names 8; Teimeris names 177; 0 of the difference is reachable through the SDK |
+| a consumer can reach what their engine offers beyond the port | **holds** | the port names 8 and an engine's own manifest is read through it; the provider measured here declares 2 beyond them |
 
-five of the seven claims are falsified, and they are falsified in an
+four of the seven claims are falsified, and they are falsified in an
 order that matters. Threads would multiply the work rather than reduce
 it while more than half of a range's cells are asked for twice; the
 design fixes the arithmetic first and spends hardware last, and the

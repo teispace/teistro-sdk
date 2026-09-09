@@ -272,8 +272,9 @@ fn page(root: &Path) -> Result<String, String> {
         "a consumer can reach what their engine offers beyond the port",
         verdict_of(native > 0),
         format!(
-            "the port names {PORT_OPERATIONS}; Teimeris names {TEIMERIS_OPERATIONS}; \
-             {} of the difference is reachable through the SDK",
+            "the port names {PORT_OPERATIONS} and an engine's own manifest is read \
+             through it; \
+             the provider measured here declares {} beyond them",
             count(usize::try_from(native).unwrap_or_default())
         ),
     ));
@@ -501,10 +502,18 @@ fn text(
          overrides. Teimeris's public header names\n\
          {TEIMERIS_OPERATIONS}. The difference — its eclipses, its stars\n\
          and orbits, its own calendar grids and chart blobs, its scans —\n\
-         is unreachable through this SDK, so a consumer who wants any of it\n\
-         must open a second handle to the same engine and manage it\n\
-         themselves. That is a dead end of the kind\n\
-         `no-dead-ends` forbids, and it is the largest one in the project.\n"
+         was unreachable through this SDK, and a consumer who wanted any\n\
+         of it had to open a second handle to the same engine: the largest\n\
+         dead end in the project.\n\n\
+         **The route is built** — the port's `native_manifest` and\n\
+         `native_call`, and `port_ephemeris::Native` over them. The SDK\n\
+         holds no list of an engine's operations. It reads the manifest\n\
+         the engine ships and relays a call by the name that manifest\n\
+         gives, so an operation the engine gains *after* the SDK ships is\n\
+         callable the day it appears. The count below is what the measured\n\
+         provider declares, which is why it moves when an engine does and\n\
+         not when the SDK does; the number for Teimeris arrives with its\n\
+         adapter's own manifest.\n"
     );
     let _ = writeln!(
         out,

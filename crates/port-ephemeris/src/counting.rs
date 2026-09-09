@@ -286,6 +286,14 @@ impl<P: EphemerisProvider> EphemerisProvider for CountingProvider<P> {
         self.crossings.fetch_add(1, Ordering::Relaxed);
         self.inner.crossings(request)
     }
+
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        self.inner.native_manifest()
+    }
+
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        self.inner.native_call(function, arguments_json)
+    }
 }
 
 #[cfg(test)]

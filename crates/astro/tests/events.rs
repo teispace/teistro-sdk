@@ -71,6 +71,7 @@ impl EphemerisProvider for Looping {
             overrides: Overrides::NONE,
             ayanamshas: Vec::new(),
             deterministic: true,
+            native: false,
         }
     }
 

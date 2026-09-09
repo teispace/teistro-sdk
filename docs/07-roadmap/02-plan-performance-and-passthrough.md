@@ -359,19 +359,66 @@ updated later and gains new functions, they must be callable from the SDK
 **without the SDK being updated**. Not a port method per operation — a
 direct link.
 
-### B1. Why this is achievable rather than aspirational
+### B1. The route, built
 
-Teimeris already describes itself. `tools/idl/teimeris.idl` is 13 472
-lines of machine-readable JSON, extracted from its own headers by its own
-tooling, and it is what every Teimeris binding is generated from. It
-carries every function's signature **and a role for every parameter** —
-`handle`, `value`, `struct_in`, `scalar_out`, `struct_out`, `array_in`
-with its `array_len`, `array_out` with its `array_cap`, `string_in` —
-which is the same role vocabulary this SDK's own IDL uses, arrived at
-independently.
+*The SDK's side is done; an engine's side is its adapter's.*
 
-A role vocabulary is exactly what a generic dispatcher needs. The engine
-is not opaque; it is documented in a form a machine can read.
+**What crosses.** Two methods on the port, both optional overrides like
+every other: `native_manifest()` answers with the manifest the engine
+ships, as the engine wrote it, and `native_call(function,
+arguments_json)` relays a call by the name that manifest gives.
+`Capabilities::native` declares that they are there, so a caller asks
+once rather than finding out by a failing call — carried across the C
+boundary in **one of the two bytes `CapabilitiesC` had reserved**, so
+the struct's size and every offset in it are unchanged and an adapter
+built against the old header still binds.
+
+**What the SDK knows about an engine: nothing.** It holds no list of
+operations. `port_ephemeris::Native` reads the manifest into
+`NativeManifest`/`NativeFunction`/`NativeParam`/`Role` and relays; a
+function that appears in an engine's manifest is callable the day it
+appears, with no SDK release. That is the maintainer's requirement
+stated exactly, and it is why the manifest is the engine's document
+rather than the SDK's.
+
+**`Role::Other` is the requirement at the level of the vocabulary.** An
+engine that gains a role this SDK has never heard of must still describe
+itself to a consumer who can read it. One unknown word must not take a
+whole manifest down with it, so an unrecognised role is kept as the
+engine spelled it, and is treated as a caller's to supply — so the
+function stays callable rather than becoming unreachable.
+
+**Why JSON.** Not for speed: it is the path for what the port does *not*
+cover, so it is never the hot loop, and everything the SDK does in anger
+goes through the eight typed operations. The alternative is a binary
+encoding the SDK would have to understand, which is exactly the
+knowledge that must not live here for the requirement above to hold.
+
+**Where the marshalling lives, and why not here.** In the adapter,
+generated from the engine's own manifest at build time. That is the
+safety argument, not a convenience: 82 of Teimeris's parameters are
+doubles passed by value across 54 of its 161 functions, and eight more
+return one. Doubles do not travel in the same registers as integers on
+any platform this SDK ships to, so a dispatcher that treated every
+argument as a machine word would read the right number of bytes from the
+wrong register and be wrong **silently**. A generated dispatcher writes
+a real, typed C call per function and cannot make that mistake. The
+SDK's side never sees a register.
+
+**Held by tests without an engine present.** The test provider ships a
+two-function manifest — one input role, one array-and-out-role — so the
+whole path runs with nothing installed: the manifest parses, the
+supplied parameters are the in roles and not the out ones, a call
+answers, an unknown function is refused by name, a manifest that is not
+JSON is a refusal and not a panic, and an unknown role parses and stays
+callable. And because the cache, the counter, a borrow and a box all
+stand between a consumer and their engine, each forwards the two
+methods, with a test that says so: a wrapper that swallowed them would
+quietly close the door this opens.
+
+*What remains for the engine:* the Teimeris adapter generates its
+dispatcher from `tools/idl/teimeris.idl` and answers these two methods.
+The count on the measured page moves when it does.
 
 ### B2. The shape
 
@@ -393,7 +440,8 @@ mechanism.
 
 Calling a C function chosen at runtime needs its ABI, and **doubles do
 not travel in the same registers as integers** on any platform the SDK
-ships. 82 of Teimeris's functions take doubles by value, so a uniform
+ships. 82 of Teimeris's parameters are doubles passed by value, across
+54 of its 161 functions, and eight more return one, so a uniform
 word-sized dispatcher is wrong and would be wrong silently.
 
 Two ways, and the plan takes both in order:
@@ -481,8 +529,8 @@ the emitted code is verified in its own language.
 6. **A1c** hoist what a range shares — *deferred*: the anchoring and the
    memo took its ephemeris ground, and what is left is arithmetic this
    page cannot gate.
-7. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
-   Rust surface.
+7. **B1** the manifest, the port's two methods and the Rust surface —
+   *done*; the adapter's generated dispatch is the engine's side.
 8. **B2** the dynamic proxy in the three bindings.
 9. **A3** `compute.parallelism` with the threshold measured.
 10. **B3** `libffi` dispatch behind a feature.
