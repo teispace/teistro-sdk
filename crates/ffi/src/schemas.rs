@@ -12,10 +12,13 @@ pub const INTL_RENDER: &str = "intl_render";
 /// The schema `ts_chart_found` fills.
 pub const CHARTS: &str = "charts";
 
+/// The panchanga blob's name.
+pub const PANCHANGA: &str = "panchanga";
+
 /// Every schema, in id order.
 #[must_use]
 pub fn schemas() -> Vec<BlobSchema> {
-    vec![positions(), intl_render(), charts()]
+    vec![positions(), intl_render(), charts(), panchanga()]
 }
 
 /// The name every section holding a day arc declares, so that two blobs
@@ -33,6 +36,15 @@ pub const DAY_SHAPE: &str = "day";
 /// The place is **not** here. A chart has one place and its summary
 /// carries it; repeating it inside the day would be the same repetition
 /// in a smaller box.
+///
+/// Neither are the two fields that belong to an **instant** rather than
+/// to the day. `part` — which arc the instant falls in — and `elapsed`
+/// — how far through that arc it is — were here while a chart was the
+/// only blob carrying a day, and a panchanga cannot fill them: its day
+/// has no single instant. They live in the chart's `cast` section, with
+/// the other things an instant decides. The design page had said all
+/// along that the shared section is **eighteen** fields; it was twenty
+/// until the panchanga asked for it.
 ///
 /// Two fields are a tagged enum split into a kind and a payload, which
 /// is how a variant carrying data crosses a boundary that has only
@@ -62,17 +74,6 @@ pub fn day_section(id: u32) -> SectionSchema {
                 "The sunrise that closes it, as a Julian day (UTC).",
             ),
             ColumnDef::new("vara", Scalar::U16, "The weekday the day carries.").of_enum("Vara"),
-            ColumnDef::new(
-                "part",
-                Scalar::U8,
-                "Which arc of the day the instant falls in.",
-            )
-            .of_enum("TsDayPart"),
-            ColumnDef::new(
-                "elapsed",
-                Scalar::F64,
-                "How far through that arc the instant is, 0 to 1.",
-            ),
             ColumnDef::new("calendar", Scalar::U16, "The calendar the date is in.")
                 .of_enum("Calendar"),
             ColumnDef::new("era", Scalar::U16, "The era the date's year is counted in.")
@@ -399,6 +400,17 @@ fn chart_cast_section(id: u32) -> SectionSchema {
                 Scalar::F64,
                 "The ayanamsha applied at this instant, degrees; zero for a tropical chart.",
             ),
+            ColumnDef::new(
+                "day_part",
+                Scalar::U8,
+                "Which arc of its day the instant falls in.",
+            )
+            .of_enum("TsDayPart"),
+            ColumnDef::new(
+                "day_elapsed",
+                Scalar::F64,
+                "How far through that arc the instant is, 0 to 1.",
+            ),
         ],
     )
 }
@@ -522,6 +534,347 @@ pub fn charts() -> BlobSchema {
             ),
             SectionSchema::bytes(
                 12,
+                "provenance",
+                "UTF-8 JSON: the provenance envelope of the result, canonical.",
+            ),
+        ],
+    }
+}
+
+/// A list of spans of one catalogue's members, clipped to a day.
+///
+/// Seven of the panchanga's lists are this shape — the four moving limbs,
+/// panchaka, and the signs the Moon and the Sun stood in — so the five
+/// columns are declared once here.
+///
+/// They deliberately do **not** carry a `shape` name. A shape makes two
+/// sections decode to one type, which is right when they are the same
+/// section in two blobs (a chart's day and a panchanga's) and wrong here:
+/// a span of tithis and a span of nakshatras have the same structure and
+/// different meanings, and one type for both would let a caller pass
+/// either where the other is wanted. The repetition worth removing is in
+/// the declaration, which this removes; the distinction worth keeping is
+/// in the type, which this keeps.
+#[must_use]
+fn span_section(id: u32, name: &str, doc: &str, member: &str, enum_name: &str) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        name,
+        doc,
+        vec![
+            ColumnDef::new("member", Scalar::U16, member).of_enum(enum_name),
+            ColumnDef::new(
+                "whole_from",
+                Scalar::F64,
+                "When the member itself began, as a Julian day (UTC), whether or not that is inside the day.",
+            ),
+            ColumnDef::new(
+                "whole_to",
+                Scalar::F64,
+                "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.",
+            ),
+            ColumnDef::new(
+                "inside_from",
+                Scalar::F64,
+                "Where the part inside the day begins: what an almanac row prints.",
+            ),
+            ColumnDef::new(
+                "inside_to",
+                Scalar::F64,
+                "Where the part inside the day ends.",
+            ),
+        ],
+    )
+}
+
+/// An instant a day's rows are bounded by, as a column pair.
+#[must_use]
+fn interval_columns(from: &str, to: &str, what: &str) -> Vec<ColumnDef> {
+    vec![
+        ColumnDef::new(
+            from,
+            Scalar::F64,
+            &format!("When {what} begins, as a Julian day (UTC)."),
+        ),
+        ColumnDef::new(
+            to,
+            Scalar::F64,
+            &format!("When {what} ends, as a Julian day (UTC)."),
+        ),
+    ]
+}
+
+/// How many rows of each ragged section belong to each day.
+///
+/// A day's lists are ragged and the measurement says by how much: ten of
+/// the fifteen vary, and a rectangular layout wastes 78.1% of its rows
+/// once one polar day joins a batch, because that day sets the stride for
+/// every other (`03-design/panchanga-at-the-boundary-measured.md` §2). So
+/// every list is concatenated across the batch and this says where each
+/// day's share of it is — the same rule for all thirteen sections, since
+/// two layouts in one blob is two things for a reader to learn and the
+/// five fixed lists lose nothing by it.
+#[must_use]
+fn panchanga_counts_section(id: u32) -> SectionSchema {
+    let count = |name: &str, of: &str| {
+        ColumnDef::new(
+            name,
+            Scalar::U32,
+            &format!("How many rows of `{of}` belong to this day."),
+        )
+    };
+    SectionSchema::columns(
+        id,
+        "counts",
+        "How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off.",
+        vec![
+            count("tithi", "tithi"),
+            count("nakshatra", "nakshatra"),
+            count("yoga", "yoga"),
+            count("karana", "karana"),
+            count("panchaka", "panchaka"),
+            count("moon_signs", "moon_signs"),
+            count("sun_signs", "sun_signs"),
+            count("kaalas", "kaalas"),
+            count("choghadiya", "choghadiya"),
+            count("horas", "horas"),
+            count("muhurtas", "muhurtas"),
+            count("moon_events", "moon_events"),
+            count("muhurta_yogas", "muhurta_yogas"),
+        ],
+    )
+}
+
+/// What each day is, beside the day it belongs to.
+#[must_use]
+fn panchanga_days_section(id: u32) -> SectionSchema {
+    let mut fields = interval_columns(
+        "window_from",
+        "window_to",
+        "the window the day's spans are clipped to",
+    );
+    fields.extend([
+        ColumnDef::new("month", Scalar::U16, "The lunar month under the profile's own convention.").of_enum("Masa"),
+        ColumnDef::new("amanta", Scalar::U16, "The amanta month: new moon to new moon.").of_enum("Masa"),
+        ColumnDef::new("purnimanta", Scalar::U16, "The purnimanta month: full moon to full moon.").of_enum("Masa"),
+        ColumnDef::new("paksha", Scalar::U16, "The fortnight the day opens in.").of_enum("Paksha"),
+        ColumnDef::new("ayana", Scalar::U16, "Which half of the year the day falls in.").of_enum("Ayana"),
+        ColumnDef::new("disha_shool", Scalar::U16, "The direction not to travel in, which is the vara's.").of_enum("Direction"),
+        ColumnDef::new("has_sankranti", Scalar::U8, "1 when the Sun entered a new sign inside the day, 0 otherwise."),
+        ColumnDef::new("sankranti", Scalar::F64, "When it did, as a Julian day (UTC); zero when it did not, which `has_sankranti` is what distinguishes from midnight."),
+        ColumnDef::new("has_abhijit", Scalar::U8, "1 when the day has an Abhijit muhurta, 0 on a day with no daylight."),
+    ]);
+    fields.extend(interval_columns("abhijit_from", "abhijit_to", "Abhijit"));
+    fields.extend([
+        ColumnDef::new(
+            "abhijit_effective",
+            Scalar::U8,
+            "1 when Abhijit is effective, which it is on every day but a Wednesday.",
+        ),
+        ColumnDef::new(
+            "has_brahma",
+            Scalar::U8,
+            "1 when the night that ends at this day's sunrise is known, 0 in the polar case.",
+        ),
+    ]);
+    fields.extend(interval_columns(
+        "brahma_from",
+        "brahma_to",
+        "Brahma muhurta",
+    ));
+    fields.extend(interval_columns(
+        "moon_window_from",
+        "moon_window_to",
+        "the window the Moon's rises and sets were looked for in",
+    ));
+    SectionSchema::columns(
+        id,
+        "days",
+        "One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought.",
+        fields,
+    )
+}
+
+/// The `kaalas` section: one of the panchanga's ragged lists.
+#[must_use]
+fn panchanga_kaalas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "kaalas",
+        "The inauspicious eighths of the daylight each day has.",
+        {
+            let mut fields =
+                vec![ColumnDef::new("kaala", Scalar::U16, "Which one.").of_enum("Kaala")];
+            fields.extend(interval_columns("from", "to", "it"));
+            fields
+        },
+    )
+}
+
+/// The `choghadiya` section: one of the panchanga's ragged lists.
+#[must_use]
+fn panchanga_choghadiya_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "choghadiya",
+        "Eight choghadiya of the daylight and eight of the night, when the day has both.",
+        {
+            let mut fields = vec![
+                ColumnDef::new("choghadiya", Scalar::U16, "Which choghadiya.")
+                    .of_enum("Choghadiya"),
+                ColumnDef::new("lord", Scalar::U16, "The graha that rules it.").of_enum("Graha"),
+            ];
+            fields.extend(interval_columns("from", "to", "it"));
+            fields.push(ColumnDef::new(
+                "daytime",
+                Scalar::U8,
+                "1 when it is one of the eight of the daylight, 0 for one of the night.",
+            ));
+            fields
+        },
+    )
+}
+
+/// The `horas` section: one of the panchanga's ragged lists.
+#[must_use]
+fn panchanga_horas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "horas",
+        "The twenty-four horas of each day, from sunrise.",
+        vec![
+            ColumnDef::new(
+                "number",
+                Scalar::U8,
+                "The hora's number, 1 to 24 from sunrise.",
+            ),
+            ColumnDef::new("lord", Scalar::U16, "The graha that rules it.").of_enum("Graha"),
+            ColumnDef::new(
+                "start",
+                Scalar::F64,
+                "When it begins, as a Julian day (UTC).",
+            ),
+            ColumnDef::new("end", Scalar::F64, "When it ends, as a Julian day (UTC)."),
+        ],
+    )
+}
+
+/// The `muhurtas` section: one of the panchanga's ragged lists.
+#[must_use]
+fn panchanga_muhurtas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "muhurtas",
+        "The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.",
+        {
+            let mut fields = interval_columns("from", "to", "it");
+            fields.push(ColumnDef::new(
+                "daylight",
+                Scalar::U8,
+                "1 when it is one of the fifteen of the daylight, 0 for one of the night.",
+            ));
+            fields
+        },
+    )
+}
+
+/// The `moon_events` section: one of the panchanga's ragged lists.
+#[must_use]
+fn panchanga_moon_events_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "moon_events",
+        "Every moonrise and moonset inside each day's moon window, in order.",
+        vec![
+            ColumnDef::new("kind", Scalar::U8, "Whether the Moon rose or set.")
+                .of_enum("TsMoonEvent"),
+            ColumnDef::new("instant", Scalar::F64, "When, as a Julian day (UTC)."),
+        ],
+    )
+}
+
+/// The `muhurta_yogas` section: one of the panchanga's ragged lists.
+#[must_use]
+fn panchanga_muhurta_yogas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "muhurta_yogas",
+        "The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero.",
+        {
+            let mut fields =
+                vec![ColumnDef::new("yoga", Scalar::U16, "Which yoga.").of_enum("MuhurtaYoga")];
+            fields.extend(interval_columns("from", "to", "it"));
+            fields.extend([
+                ColumnDef::new("because_kind", Scalar::U8, "What made it hold.")
+                    .of_enum("TsYogaCause"),
+                ColumnDef::new(
+                    "because_vara",
+                    Scalar::U16,
+                    "The vara that makes it; every cause has one.",
+                )
+                .of_enum("Vara"),
+                ColumnDef::new(
+                    "because_tithi",
+                    Scalar::U16,
+                    "The tithi that makes it, when the cause has one; zero otherwise.",
+                )
+                .of_enum("Tithi"),
+                ColumnDef::new(
+                    "because_nakshatra",
+                    Scalar::U16,
+                    "The nakshatra that makes it; every cause has one.",
+                )
+                .of_enum("Nakshatra"),
+            ]);
+            fields
+        },
+    )
+}
+
+/// A batch of almanacs: one day at one place, many times over.
+#[must_use]
+pub fn panchanga() -> BlobSchema {
+    BlobSchema {
+        name: PANCHANGA.to_string(),
+        id: 4,
+        doc: "A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.".to_string(),
+        sections: vec![
+            SectionSchema::fixed(
+                1,
+                "summary",
+                "What the batch decided once: where, in which calendar, and how many days.",
+                vec![
+                    ColumnDef::new("day_count", Scalar::U32, "How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold."),
+                    ColumnDef::new("latitude_deg", Scalar::F64, "The place's latitude, degrees north."),
+                    ColumnDef::new("longitude_deg", Scalar::F64, "The place's longitude, degrees east."),
+                    ColumnDef::new("altitude_m", Scalar::F64, "The place's altitude, metres."),
+                    ColumnDef::new("calendar", Scalar::U16, "The civil calendar the days' dates are read in.").of_enum("Calendar"),
+                    ColumnDef::new("lunar_month", Scalar::U8, "Which lunar-month convention `days.month` leads with.").of_enum("TsLunarMonth"),
+                ],
+            ),
+            panchanga_days_section(2),
+            panchanga_counts_section(3),
+            day_section(4).of_shape(DAY_SHAPE),
+            span_section(5, "tithi", "The tithis that touch each day.", "Which tithi ran.", "Tithi"),
+            span_section(6, "nakshatra", "The nakshatras the Moon was in.", "Which nakshatra the Moon was in.", "Nakshatra"),
+            span_section(7, "yoga", "The nitya yogas.", "Which nitya yoga ran.", "Yoga"),
+            span_section(8, "karana", "The karanas; half-tithis, so there are three or four on an ordinary day.", "Which karana ran.", "Karana"),
+            span_section(9, "panchaka", "Panchaka, while the Moon is in the last five nakshatras.", "Which panchaka held.", "Panchaka"),
+            span_section(10, "moon_signs", "The signs the Moon stood in, with when it entered and left each.", "Which sign the Moon was in.", "Rashi"),
+            span_section(11, "sun_signs", "The signs the Sun stood in; two only on a sankranti day.", "Which sign the Sun was in.", "Rashi"),
+            panchanga_kaalas_section(12),
+            panchanga_choghadiya_section(13),
+            panchanga_horas_section(14),
+            panchanga_muhurtas_section(15),
+            panchanga_moon_events_section(16),
+            panchanga_muhurta_yogas_section(17),
+            SectionSchema::bytes(
+                18,
+                "model",
+                "UTF-8 text: the solar model that reckoned the days, as it describes itself.",
+            ),
+            SectionSchema::bytes(
+                19,
                 "provenance",
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
             ),

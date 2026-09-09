@@ -27,16 +27,18 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Iterator, Mapping, Optional, Sequence
+from typing import Any, Generic, Iterator, Mapping, Optional, Sequence, TypeVar
 
 from . import messages as intl
 from ._blob import (
     BlobError,
     Charts,
     IntlRender,
+    Panchanga,
     Positions,
     decode_charts,
     decode_intl_render,
+    decode_panchanga,
     decode_positions,
 )
 from ._ffi import (
@@ -57,6 +59,7 @@ from ._ffi import (
     Latitude,
     Longitude,
     Observer,
+    PanchangaRequest,
     PositionRequest,
     TeistroContext,
     TeistroError,
@@ -90,14 +93,28 @@ from ._install import (
 )
 from ._prebuilt import PREBUILT_VERSION
 from .catalogue import (
+    Ayana,
     Ayanamsha,
     Body,
     Calendar,
     Centre,
     ChartKind,
+    Choghadiya,
+    Direction,
     Graha,
     HouseSystem,
+    Kaala,
+    Karana,
+    LunarMonth,
+    Masa,
+    MuhurtaYoga,
+    Nakshatra,
+    Paksha,
+    Panchaka,
+    Rashi,
+    Tithi,
     Vara,
+    Yoga,
     Coordinates,
     Era,
     Resolution,
@@ -111,6 +128,9 @@ __all__ = [
     "Altitude",
     "Ayanamsha",
     "BlobError",
+    "Abhijit",
+    "Almanac",
+    "AlmanacDay",
     "Bhava",
     "Body",
     "BuildInfo",
@@ -136,12 +156,21 @@ __all__ = [
     "IntlRender",
     "Latitude",
     "Longitude",
+    "ChoghadiyaPeriod",
+    "HeldYoga",
+    "Hora",
+    "Interval",
+    "KaalaPeriod",
+    "MoonEvent",
+    "Month",
+    "Muhurta",
     "Observer",
     "PlacedGraha",
     "Placement",
     "PositionAnswer",
     "PositionQuery",
     "Positions",
+    "Span",
     "Resolution",
     "Scale",
     "Status",
@@ -170,6 +199,9 @@ __all__ = [
 #: The environment variable that names the shared library, which wins over
 #: every other place it is looked for.
 PATH_VARIABLE = "TEISTRO_LIBRARY"
+
+#: The member a span carries, which differs per limb.
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
@@ -695,6 +727,56 @@ class Context:
             decode_charts(self._through_provider(lambda: self.inner.chart_found(request)))
         )
 
+    def almanac(
+        self,
+        *,
+        from_date: CalendarDate,
+        to_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+    ) -> Almanac:
+        """The almanac of every day in a range, at one place.
+
+        A **range** rather than a list of dates, because consecutive days
+        share a boundary — day *n*'s next sunrise is day *n+1*'s sunrise
+        — so a month of days costs much less than thirty days computed
+        separately. A range holding more than a year and a day is refused
+        by name.
+        """
+        request = PanchangaRequest(
+            calendar=from_date.calendar,
+            from_year=from_date.year,
+            from_month=from_date.month,
+            from_day=from_date.day,
+            to_year=to_date.year,
+            to_month=to_date.month,
+            to_day=to_date.day,
+            latitude_deg=place.latitude_deg,
+            longitude_deg=place.longitude_deg,
+            altitude_m=place.altitude_m,
+            utc_offset_seconds=utc_offset_seconds,
+        )
+        return Almanac(
+            decode_panchanga(
+                self._through_provider(lambda: self.inner.panchanga_days(request))
+            )
+        )
+
+    def almanac_day(
+        self,
+        *,
+        date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+    ) -> AlmanacDay:
+        """The almanac of one day, which is the range of one unwrapped."""
+        return self.almanac(
+            from_date=date,
+            to_date=date,
+            place=place,
+            utc_offset_seconds=utc_offset_seconds,
+        ).at(0)
+
     def _through_provider(self, call: Any) -> Any:
         """Runs a call that may reach a provider written in Python, and
         re-raises what the provider raised.
@@ -934,6 +1016,444 @@ class ChartBatch:
     def steps_applied(self) -> Any:
         """The completion steps the SDK applied, in order."""
         return json.loads(self.decoded.steps)
+
+    @property
+    def provenance(self) -> str:
+        """The provenance envelope, as the canonical JSON it is stamped as."""
+        return self.decoded.provenance
+
+@dataclass(frozen=True)
+class Interval:
+    """A span of time, as every almanac row carries one."""
+
+    from_jd: float
+    """When it begins, as a Julian day (UTC)."""
+
+    to_jd: float
+    """When it ends."""
+
+
+@dataclass(frozen=True)
+class Span(Generic[T]):
+    """One member of a limb, with its own bounds and the clipped ones."""
+
+    member: T
+    """Which member ran."""
+
+    whole: Interval
+    """When the member itself began and ended, inside the day or not."""
+
+    inside: Interval
+    """The part inside the day: what an almanac row prints."""
+
+
+@dataclass(frozen=True)
+class Month:
+    """The lunar month a day falls in, under both conventions."""
+
+    month: Masa
+    """The month under the profile's own convention."""
+
+    amanta: Masa
+    """The amanta month: new moon to new moon."""
+
+    purnimanta: Masa
+    """The purnimanta month: full moon to full moon."""
+
+    paksha: Paksha
+    """Which fortnight the day opens in."""
+
+    convention: LunarMonth
+    """Which convention `month` leads with."""
+
+
+@dataclass(frozen=True)
+class KaalaPeriod:
+    """One inauspicious eighth of the daylight."""
+
+    kaala: Kaala
+    """Which one."""
+
+    at: Interval
+    """When it runs."""
+
+
+@dataclass(frozen=True)
+class ChoghadiyaPeriod:
+    """One choghadiya, of the daylight or of the night."""
+
+    choghadiya: Choghadiya
+    """Which choghadiya."""
+
+    lord: Graha
+    """The graha that rules it."""
+
+    at: Interval
+    """When it runs."""
+
+    daytime: bool
+    """Whether it is one of the eight of the daylight."""
+
+
+@dataclass(frozen=True)
+class Hora:
+    """One hora, from sunrise."""
+
+    number: int
+    """Its number, 1 to 24."""
+
+    lord: Graha
+    """The graha that rules it."""
+
+    start: float
+    """When it begins, as a Julian day (UTC)."""
+
+    end: float
+    """When it ends."""
+
+
+@dataclass(frozen=True)
+class Muhurta:
+    """One of the thirty muhurtas."""
+
+    at: Interval
+    """When it runs."""
+
+    daylight: bool
+    """Whether it is one of the fifteen of the daylight."""
+
+
+@dataclass(frozen=True)
+class MoonEvent:
+    """A moonrise or a moonset."""
+
+    rise: bool
+    """True for a rise, false for a set."""
+
+    instant: float
+    """When, as a Julian day (UTC)."""
+
+
+@dataclass(frozen=True)
+class HeldYoga:
+    """A muhurta yoga that held, and what made it hold."""
+
+    yoga: MuhurtaYoga
+    """Which yoga."""
+
+    at: Interval
+    """While it held, clipped to the day."""
+
+    vara: Vara
+    """The vara that makes it; every cause has one."""
+
+    tithi: Optional[Tithi]
+    """The tithi that makes it, or `None` when the cause has none."""
+
+    nakshatra: Nakshatra
+    """The nakshatra that makes it."""
+
+
+@dataclass(frozen=True)
+class Abhijit:
+    """Abhijit, with whether it is effective."""
+
+    at: Interval
+    """When it runs."""
+
+    effective: bool
+    """True on every day but a Wednesday."""
+
+
+class AlmanacDay:
+    """One day of an almanac: a view over its batch, not a copy."""
+
+    def __init__(self, batch: "Almanac", index: int) -> None:
+        self.batch = batch
+        """The batch this day belongs to."""
+        self.index = index
+        """Where in that batch it sits."""
+
+    @property
+    def vara(self) -> Vara:
+        """The weekday the day carries."""
+        return Vara(self.batch.decoded.day.vara[self.index])
+
+    @property
+    def sunrise(self) -> float:
+        """The sunrise that opened the day, as a Julian day (UTC)."""
+        return self.batch.decoded.day.sunrise[self.index]
+
+    @property
+    def sunset(self) -> float:
+        """The sunset that closed its daylight."""
+        return self.batch.decoded.day.sunset[self.index]
+
+    @property
+    def window(self) -> Interval:
+        """What the spans are clipped to."""
+        days = self.batch.decoded.days
+        return Interval(days.window_from[self.index], days.window_to[self.index])
+
+    @property
+    def month(self) -> Month:
+        """The lunar month, under both conventions."""
+        days = self.batch.decoded.days
+        return Month(
+            month=Masa(days.month[self.index]),
+            amanta=Masa(days.amanta[self.index]),
+            purnimanta=Masa(days.purnimanta[self.index]),
+            paksha=Paksha(days.paksha[self.index]),
+            convention=LunarMonth(self.batch.decoded.lunar_month),
+        )
+
+    @property
+    def ayana(self) -> Ayana:
+        """Which half of the year the day falls in."""
+        return Ayana(self.batch.decoded.days.ayana[self.index])
+
+    @property
+    def disha_shool(self) -> Direction:
+        """The direction not to travel in, which is the vara's."""
+        return Direction(self.batch.decoded.days.disha_shool[self.index])
+
+    @property
+    def sankranti(self) -> Optional[float]:
+        """When the Sun entered a new sign inside the day, or `None`."""
+        days = self.batch.decoded.days
+        if not days.has_sankranti[self.index]:
+            return None
+        return days.sankranti[self.index]
+
+    @property
+    def abhijit(self) -> Optional[Abhijit]:
+        """Abhijit; `None` on a day with no daylight."""
+        days = self.batch.decoded.days
+        if not days.has_abhijit[self.index]:
+            return None
+        return Abhijit(
+            at=Interval(days.abhijit_from[self.index], days.abhijit_to[self.index]),
+            effective=bool(days.abhijit_effective[self.index]),
+        )
+
+    @property
+    def brahma(self) -> Optional[Interval]:
+        """Brahma muhurta; `None` when the night before is not known."""
+        days = self.batch.decoded.days
+        if not days.has_brahma[self.index]:
+            return None
+        return Interval(days.brahma_from[self.index], days.brahma_to[self.index])
+
+    @property
+    def tithi(self) -> list[Span[Tithi]]:
+        """The tithis that touch the day."""
+        return self._spans("tithi", self.batch.decoded.tithi, Tithi)
+
+    @property
+    def nakshatra(self) -> list[Span[Nakshatra]]:
+        """The nakshatras the Moon was in."""
+        return self._spans("nakshatra", self.batch.decoded.nakshatra, Nakshatra)
+
+    @property
+    def yoga(self) -> list[Span[Yoga]]:
+        """The nitya yogas."""
+        return self._spans("yoga", self.batch.decoded.yoga, Yoga)
+
+    @property
+    def karana(self) -> list[Span[Karana]]:
+        """The karanas: half-tithis, so three or four on an ordinary day."""
+        return self._spans("karana", self.batch.decoded.karana, Karana)
+
+    @property
+    def panchaka(self) -> list[Span[Panchaka]]:
+        """Panchaka, while the Moon is in the last five nakshatras."""
+        return self._spans("panchaka", self.batch.decoded.panchaka, Panchaka)
+
+    @property
+    def moon_signs(self) -> list[Span[Rashi]]:
+        """The signs the Moon stood in."""
+        return self._spans("moon_signs", self.batch.decoded.moon_signs, Rashi)
+
+    @property
+    def sun_signs(self) -> list[Span[Rashi]]:
+        """The signs the Sun stood in; two only on a sankranti day."""
+        return self._spans("sun_signs", self.batch.decoded.sun_signs, Rashi)
+
+    @property
+    def kaalas(self) -> list[KaalaPeriod]:
+        """The inauspicious eighths of the daylight."""
+        columns = self.batch.decoded.kaalas
+        return self._rows(
+            "kaalas",
+            lambda i: KaalaPeriod(
+                kaala=Kaala(columns.kaala[i]),
+                at=Interval(columns.from_[i], columns.to[i]),
+            ),
+        )
+
+    @property
+    def choghadiya(self) -> list[ChoghadiyaPeriod]:
+        """Eight choghadiya of the daylight and eight of the night."""
+        columns = self.batch.decoded.choghadiya
+        return self._rows(
+            "choghadiya",
+            lambda i: ChoghadiyaPeriod(
+                choghadiya=Choghadiya(columns.choghadiya[i]),
+                lord=Graha(columns.lord[i]),
+                at=Interval(columns.from_[i], columns.to[i]),
+                daytime=bool(columns.daytime[i]),
+            ),
+        )
+
+    @property
+    def horas(self) -> list[Hora]:
+        """The twenty-four horas, from sunrise."""
+        columns = self.batch.decoded.horas
+        return self._rows(
+            "horas",
+            lambda i: Hora(
+                number=columns.number[i],
+                lord=Graha(columns.lord[i]),
+                start=columns.start[i],
+                end=columns.end[i],
+            ),
+        )
+
+    @property
+    def muhurtas(self) -> list[Muhurta]:
+        """The thirty muhurtas: fifteen of the daylight, then of the night."""
+        columns = self.batch.decoded.muhurtas
+        return self._rows(
+            "muhurtas",
+            lambda i: Muhurta(
+                at=Interval(columns.from_[i], columns.to[i]),
+                daylight=bool(columns.daylight[i]),
+            ),
+        )
+
+    @property
+    def moon_events(self) -> list[MoonEvent]:
+        """Every moonrise and moonset inside the day's moon window."""
+        columns = self.batch.decoded.moon_events
+        return self._rows(
+            "moon_events",
+            lambda i: MoonEvent(
+                rise=columns.kind[i] == 0, instant=columns.instant[i]
+            ),
+        )
+
+    @property
+    def muhurta_yogas(self) -> list[HeldYoga]:
+        """The muhurta yogas that held, with what made each hold."""
+        columns = self.batch.decoded.muhurta_yogas
+        return self._rows(
+            "muhurta_yogas",
+            lambda i: HeldYoga(
+                yoga=MuhurtaYoga(columns.yoga[i]),
+                at=Interval(columns.from_[i], columns.to[i]),
+                vara=Vara(columns.because_vara[i]),
+                # A VARA_NAKSHATRA cause has no tithi, and the blob leaves
+                # the column at nought rather than at a tithi that did not
+                # make it.
+                tithi=None
+                if columns.because_kind[i] == 0
+                else Tithi(columns.because_tithi[i]),
+                nakshatra=Nakshatra(columns.because_nakshatra[i]),
+            ),
+        )
+
+    def _rows(self, list_name: str, build: Any) -> list[Any]:
+        start, end = self.batch.range(list_name, self.index)
+        return [build(i) for i in range(start, end)]
+
+    def _spans(self, list_name: str, columns: Any, member: Any) -> list[Any]:
+        return self._rows(
+            list_name,
+            lambda i: Span(
+                member=member(columns.member[i]),
+                whole=Interval(columns.whole_from[i], columns.whole_to[i]),
+                inside=Interval(columns.inside_from[i], columns.inside_to[i]),
+            ),
+        )
+
+
+class Almanac:
+    """A batch of daily panchangas at one place, read one day at a time.
+
+    Every per-day list is concatenated across the batch, so a day's rows
+    are found by adding up every earlier day's count. That sum is done
+    **once**, when the batch is built, rather than per access: the
+    alternative is quadratic over a year of days, which is the shape an
+    almanac is actually asked for.
+    """
+
+    def __init__(self, decoded: Panchanga) -> None:
+        self.decoded = decoded
+        """The blob as its generated decoder read it."""
+        counts = decoded.counts
+        self._starts: dict[str, list[int]] = {}
+        for name in (
+            "tithi",
+            "nakshatra",
+            "yoga",
+            "karana",
+            "panchaka",
+            "moon_signs",
+            "sun_signs",
+            "kaalas",
+            "choghadiya",
+            "horas",
+            "muhurtas",
+            "moon_events",
+            "muhurta_yogas",
+        ):
+            column = getattr(counts, name)
+            starts = [0] * (len(column) + 1)
+            for i, count in enumerate(column):
+                starts[i + 1] = starts[i] + count
+            self._starts[name] = starts
+
+    def __len__(self) -> int:
+        """How many days the batch holds."""
+        return self.decoded.day_count
+
+    def at(self, index: int) -> AlmanacDay:
+        """One day of the batch, by index."""
+        if not 0 <= index < len(self):
+            raise IndexError(f"day {index} is outside a batch of {len(self)}")
+        return AlmanacDay(self, index)
+
+    def __getitem__(self, index: int) -> AlmanacDay:
+        """The same as `at`, so a batch indexes as well as iterates."""
+        return self.at(index)
+
+    def __iter__(self) -> Iterator[AlmanacDay]:
+        """Every day, in the order the range runs."""
+        return (AlmanacDay(self, index) for index in range(len(self)))
+
+    def range(self, list_name: str, index: int) -> tuple[int, int]:
+        """Where day `index`'s rows of a per-day list begin and end."""
+        starts = self._starts[list_name]
+        return starts[index], starts[index + 1]
+
+    @property
+    def place(self) -> Observer:
+        """The place they were all founded at."""
+        return Observer(
+            latitude_deg=Latitude(self.decoded.latitude_deg),
+            longitude_deg=Longitude(self.decoded.longitude_deg),
+            altitude_m=Altitude(self.decoded.altitude_m),
+        )
+
+    @property
+    def calendar(self) -> Calendar:
+        """The civil calendar the days' dates are read in."""
+        return Calendar(self.decoded.calendar)
+
+    @property
+    def model(self) -> str:
+        """The solar model that reckoned the days, as it describes itself."""
+        return self.decoded.model
 
     @property
     def provenance(self) -> str:

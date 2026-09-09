@@ -4,6 +4,8 @@
 // application. Every `@ts-expect-error` is a proof, as in `consumer.ts`.
 
 import type {
+  Almanac,
+  AlmanacDay,
   Body,
   BuildInfo,
   Calendar,
@@ -16,6 +18,7 @@ import type {
   Scale,
 } from '../lib/index.js';
 import { altitude, latitude, longitude } from '../lib/catalogue.js';
+import type { CalendarDate } from '../lib/index.js';
 
 declare const build: BuildInfo;
 declare function refuse(info: BuildInfo, named: boolean): string | null;
@@ -31,6 +34,7 @@ function handshake(): string {
 }
 
 declare const ctx: Context;
+declare const someDate: CalendarDate;
 
 /** The whole scenario, typed. */
 function scenario(): string {
@@ -173,3 +177,32 @@ function charts(): string {
 }
 
 void charts;
+
+/** The almanac layer, typed: a range of days and one of them. */
+function almanac(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const from: CalendarDate = someDate;
+  const to: CalendarDate = someDate;
+  const batch: Almanac = ctx.almanac({ from, to, place, utcOffsetSeconds: 20700 });
+  const days: number = batch.length;
+  const day: AlmanacDay = batch.at(0);
+  const vara: string = day.day.vara;
+  const tithi: string = day.tithi[0]!.member;
+  const until: number = day.tithi[0]!.inside.to;
+  const lord: string = day.horas[0]!.lord;
+  const daylight: boolean = day.muhurtas[0]!.daylight;
+  // An absent value is null, never a sentinel, and the checker knows it.
+  const sankranti: number | null = day.sankranti;
+  const effective: boolean = day.abhijit?.effective ?? false;
+  const every: readonly AlmanacDay[] = [...batch];
+  const one: AlmanacDay = ctx.almanacDay({ date: from, place, utcOffsetSeconds: 20700 });
+  // @ts-expect-error an absent sankranti is null, so it is not a number
+  const wrong: number = day.sankranti;
+  // @ts-expect-error a range needs both ends; `date` is the single-day shape
+  ctx.almanac({ date: from, place, utcOffsetSeconds: 20700 });
+  // @ts-expect-error a batch is read, never rewritten
+  batch.length = 3;
+  return `${days} ${vara} ${tithi} ${until} ${lord} ${daylight} ${sankranti} ${effective} ${every.length} ${one.index} ${wrong}`;
+}
+
+void almanac;

@@ -1047,6 +1047,84 @@ final class IntlLoadedStruct extends ffi.Struct {
 
 }
 
+/// What to found an almanac over: a range of dates at one place.
+///
+/// A **range**, not a grid of dates, because that is the shape the
+/// almanac itself leads with and the one that is cheaper than its parts:
+/// consecutive windows share a boundary, so day *n*'s next sunrise is day
+/// *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting
+/// one day passes a range of one.
+final class PanchangaRequestStruct extends ffi.Struct {
+  /// `sizeof(ts_panchanga_request)` as the caller compiled it.
+  @ffi.Uint32()
+  external int structSize;
+
+  /// The calendar the range's dates are written in.
+  /// Enum: Calendar. Example: 0.
+  @ffi.Uint16()
+  external int calendar;
+
+  /// Reserved; write zero.
+  @ffi.Uint16()
+  external int reserved;
+
+  /// The first day's astronomical year.
+  /// Example: 2026.
+  @ffi.Int32()
+  external int fromYear;
+
+  /// The first day's month, 1-based.
+  /// Range: [1,13]. Example: 9.
+  @ffi.Uint8()
+  external int fromMonth;
+
+  /// The first day's day of the month, 1-based.
+  /// Range: [1,32]. Example: 1.
+  @ffi.Uint8()
+  external int fromDay;
+
+  /// The last day's month, 1-based.
+  /// Range: [1,13]. Example: 9.
+  @ffi.Uint8()
+  external int toMonth;
+
+  /// The last day's day of the month, 1-based.
+  /// Range: [1,32]. Example: 30.
+  @ffi.Uint8()
+  external int toDay;
+
+  /// The last day's astronomical year.
+  /// Example: 2026.
+  @ffi.Int32()
+  external int toYear;
+
+  /// The place's latitude, degrees north.
+  /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+  @ffi.Double()
+  external double latitudeDeg;
+
+  /// The place's longitude, degrees east.
+  /// Unit: deg. Range: [-180,180]. Example: 85.324.
+  @ffi.Double()
+  external double longitudeDeg;
+
+  /// The place's altitude, metres above the ellipsoid.
+  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  @ffi.Double()
+  external double altitudeM;
+
+  /// The local clock's offset from UTC in seconds, east positive: the
+  /// clock the days' dates are read in.
+  /// Unit: s. Range: [-64800,64800]. Example: 20700.
+  @ffi.Int32()
+  external int utcOffsetSeconds;
+
+  /// Reserved; write zero.
+  @ffi.Int32()
+  external int reservedTail;
+
+}
+
 typedef TsAbiVersionNative = ffi.Uint32 Function();
 typedef TsAbiVersionDart = int Function();
 typedef TsSdkVersionNative = ffi.Pointer<ffi.Char> Function();
@@ -1127,6 +1205,8 @@ typedef TsIntlRenderNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointe
 typedef TsIntlRenderDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsPositionsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<PositionRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsPositionsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PositionRequestStruct>, ffi.Pointer<BlobStruct>);
+typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
+typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 
 /// The C surface, every entry point looked up once when the library
 /// opens rather than on each call.
@@ -1172,7 +1252,8 @@ final class TeistroLibrary {
         ts_intl_transliterate = library.lookupFunction<TsIntlTransliterateNative, TsIntlTransliterateDart>('ts_intl_transliterate'),
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
-        ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions');
+        ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
+        ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days');
 
   /// The open library, for a finaliser that needs its symbols.
   final ffi.DynamicLibrary library;
@@ -1380,6 +1461,25 @@ final class TeistroLibrary {
   /// context without an ephemeris is `CAPABILITY`; a provider failure is
   /// `PROVIDER` with the provider's own code in the last error.
   final TsPositionsDart ts_positions;
+
+  /// Founds the almanac of every day in a range at one place and answers
+  /// with its blob: the four moving limbs, the periods, the lunar month,
+  /// what the Moon and the Sun did, and what each day is said to be.
+  ///
+  /// A **range** rather than a grid, because consecutive windows share a
+  /// boundary — day *n*'s next sunrise is day *n+1*'s sunrise — so a month
+  /// of days is much cheaper than thirty days computed separately. A caller
+  /// wanting one day passes a range of one. A range holding more than a
+  /// year and a day is `OUT_OF_RANGE` naming the limit.
+  ///
+  /// Everything but the request is the context's settings, so two calls
+  /// under one context are comparable and the settings hash says why.
+  ///
+  /// A context without an ephemeris is `CAPABILITY`; a provider failure is
+  /// `PROVIDER` with the provider's own code in the last error. A polar day
+  /// under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
+  /// policies that would synthesise one.
+  final TsPanchangaDaysDart ts_panchanga_days;
 
 }
 
@@ -2852,6 +2952,103 @@ final class IntlLoaded {
       );
 }
 
+/// What to found an almanac over: a range of dates at one place.
+///
+/// A **range**, not a grid of dates, because that is the shape the
+/// almanac itself leads with and the one that is cheaper than its parts:
+/// consecutive windows share a boundary, so day *n*'s next sunrise is day
+/// *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting
+/// one day passes a range of one.
+final class PanchangaRequest {
+  /// A PanchangaRequest with every field named.
+  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds});
+
+  /// The calendar the range's dates are written in.
+  /// Enum: Calendar. Example: 0.
+  final Calendar calendar;
+
+  /// The first day's astronomical year.
+  /// Example: 2026.
+  final int fromYear;
+
+  /// The first day's month, 1-based.
+  /// Range: [1,13]. Example: 9.
+  final int fromMonth;
+
+  /// The first day's day of the month, 1-based.
+  /// Range: [1,32]. Example: 1.
+  final int fromDay;
+
+  /// The last day's month, 1-based.
+  /// Range: [1,13]. Example: 9.
+  final int toMonth;
+
+  /// The last day's day of the month, 1-based.
+  /// Range: [1,32]. Example: 30.
+  final int toDay;
+
+  /// The last day's astronomical year.
+  /// Example: 2026.
+  final int toYear;
+
+  /// The place's latitude, degrees north.
+  /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east.
+  /// Unit: deg. Range: [-180,180]. Example: 85.324.
+  final double longitudeDeg;
+
+  /// The place's altitude, metres above the ellipsoid.
+  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  final double altitudeM;
+
+  /// The local clock's offset from UTC in seconds, east positive: the
+  /// clock the days' dates are read in.
+  /// Unit: s. Range: [-64800,64800]. Example: 20700.
+  final int utcOffsetSeconds;
+
+  /// Writes this value into a C struct the call takes by pointer.
+  /// Whatever the struct points at is allocated in `arena`, which frees it
+  /// when the call returns.
+  void write(ffi.Pointer<PanchangaRequestStruct> raw, ffi.Allocator arena) => writeInto(raw.ref, arena);
+
+  /// Writes this value into a struct, which may be one held inside
+  /// another rather than one of its own.
+  void writeInto(PanchangaRequestStruct raw, ffi.Allocator arena) {
+    raw.structSize = ffi.sizeOf<PanchangaRequestStruct>();
+    raw.calendar = calendar.id;
+    raw.fromYear = fromYear;
+    raw.fromMonth = fromMonth;
+    raw.fromDay = fromDay;
+    raw.toMonth = toMonth;
+    raw.toDay = toDay;
+    raw.toYear = toYear;
+    raw.latitudeDeg = latitudeDeg;
+    raw.longitudeDeg = longitudeDeg;
+    raw.altitudeM = altitudeM;
+    raw.utcOffsetSeconds = utcOffsetSeconds;
+  }
+
+  /// Reads the value a call filled in.
+  static PanchangaRequest read(ffi.Pointer<PanchangaRequestStruct> raw) => readFrom(raw.ref);
+
+  /// Reads a value out of a struct, which may be one held inside another.
+  static PanchangaRequest readFrom(PanchangaRequestStruct raw) => PanchangaRequest(
+        calendar: Calendar.byId(raw.calendar),
+        fromYear: raw.fromYear,
+        fromMonth: raw.fromMonth,
+        fromDay: raw.fromDay,
+        toMonth: raw.toMonth,
+        toDay: raw.toDay,
+        toYear: raw.toYear,
+        latitudeDeg: raw.latitudeDeg,
+        longitudeDeg: raw.longitudeDeg,
+        altitudeM: raw.altitudeM,
+        utcOffsetSeconds: raw.utcOffsetSeconds,
+      );
+}
+
 /// An opaque context: settings, a provider, the locale engine, the last
 /// error. Used by one thread at a time.
 final class TeistroContext implements ffi.Finalizable {
@@ -3267,6 +3464,35 @@ final class TeistroContext implements ffi.Finalizable {
         request.write(rawrequest, arena);
         final outBlob = arena<BlobStruct>();
         final status = _lib.ts_positions(_handle, rawrequest, outBlob);
+        if (status != 0) _fail(status);
+        return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// Founds the almanac of every day in a range at one place and answers
+  /// with its blob: the four moving limbs, the periods, the lunar month,
+  /// what the Moon and the Sun did, and what each day is said to be.
+  ///
+  /// A **range** rather than a grid, because consecutive windows share a
+  /// boundary — day *n*'s next sunrise is day *n+1*'s sunrise — so a month
+  /// of days is much cheaper than thirty days computed separately. A caller
+  /// wanting one day passes a range of one. A range holding more than a
+  /// year and a day is `OUT_OF_RANGE` naming the limit.
+  ///
+  /// Everything but the request is the context's settings, so two calls
+  /// under one context are comparable and the settings hash says why.
+  ///
+  /// A context without an ephemeris is `CAPABILITY`; a provider failure is
+  /// `PROVIDER` with the provider's own code in the last error. A polar day
+  /// under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
+  /// policies that would synthesise one.
+  Uint8List panchangaDays(PanchangaRequest request) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequest = arena<PanchangaRequestStruct>();
+        request.write(rawrequest, arena);
+        final outBlob = arena<BlobStruct>();
+        final status = _lib.ts_panchanga_days(_handle, rawrequest, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
     });

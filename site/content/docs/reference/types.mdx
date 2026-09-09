@@ -356,3 +356,23 @@ What a loaded pack or bundle carried.
 | `locale` | `const char *` | The locale; lent until the next call on the context. |
 | `sha256` | `const char *` | The file's SHA-256 as sixty-four hex digits; lent until the next call on the context. |
 
+## ts_panchanga_request
+
+What to found an almanac over: a range of dates at one place.
+
+A **range**, not a grid of dates, because that is the shape the almanac itself leads with and the one that is cheaper than its parts: consecutive windows share a boundary, so day *n*'s next sunrise is day *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting one day passes a range of one.
+
+| field | type | what it carries |
+|---|---|---|
+| `calendar` | `uint16_t` | The calendar the range's dates are written in. One of `ts_calendar`. Example `0`. |
+| `from_year` | `int32_t` | The first day's astronomical year. Example `2026`. |
+| `from_month` | `uint8_t` | The first day's month, 1-based. Range `[1,13]`. Example `9`. |
+| `from_day` | `uint8_t` | The first day's day of the month, 1-based. Range `[1,32]`. Example `1`. |
+| `to_month` | `uint8_t` | The last day's month, 1-based. Range `[1,13]`. Example `9`. |
+| `to_day` | `uint8_t` | The last day's day of the month, 1-based. Range `[1,32]`. Example `30`. |
+| `to_year` | `int32_t` | The last day's astronomical year. Example `2026`. |
+| `latitude_deg` | `double` | The place's latitude, degrees north. Unit `deg`. Range `[-90,90]`. Example `27.7172`. |
+| `longitude_deg` | `double` | The place's longitude, degrees east. Unit `deg`. Range `[-180,180]`. Example `85.324`. |
+| `altitude_m` | `double` | The place's altitude, metres above the ellipsoid. Unit `m`. Range `[-500,9000]`. Example `1400`. |
+| `utc_offset_seconds` | `int32_t` | The local clock's offset from UTC in seconds, east positive: the clock the days' dates are read in. Unit `s`. Range `[-64800,64800]`. Example `20700`. |
+

@@ -18,6 +18,7 @@ node example/birth_chart.mjs
 | [`calendar.mjs`](calendar.mjs) | a Bikram Sambat year and one month as a calendar page | month lengths are decided by the Sun and vary year to year, so they are asked for and never assumed; and every date says whether it came from the official table or the SDK's engine |
 | [`ephemeris.mjs`](ephemeris.mjs) | a year of the sky in one call | the grid is one crossing, not 366; a column is a `Float64Array` over the blob, not an array of objects; and the provenance's settings hash is the cache key |
 | [`rectification.mjs`](rectification.mjs) | a birth time known only to the hour, narrowed by lagna | `foundMany` founds a hundred candidate charts in **one crossing**, sharing the settings, the solar model and the day's sunrise; a chart is a view over the batch, not a copy; and `found(one)` is the same crossing unwrapped |
+| [`almanac.mjs`](almanac.mjs) | a week's panchangam: the five limbs of each day, and its periods | a limb is a **span**, not a name — most days have two tithis, and the SDK gives both with the instant each gives way; a span carries its own bounds as well as the clipped ones; and a value a day may not have is `null`, never a sentinel |
 | [`your_own_ephemeris.mjs`](your_own_ephemeris.mjs) | putting your own engine behind the SDK | the provider contract in full — one call per grid, refusing a frame so the SDK completes it, coverage checked before you are asked, and an exception that reaches the caller |
 
 ## What these examples do not do

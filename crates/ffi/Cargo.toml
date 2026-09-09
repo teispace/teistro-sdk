@@ -24,6 +24,7 @@ teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
 teistro-idl = { path = "../idl", default-features = false }
 teistro-intl = { path = "../intl", default-features = false }
+teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-time = { path = "../time" }
 

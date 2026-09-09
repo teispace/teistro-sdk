@@ -2882,3 +2882,48 @@ export const DeltaTSourceById = new Map([
   [3, 'custom'],
 ]);
 
+/** Every LunarMonth by name. */
+export const LunarMonth = Object.freeze({
+  Amanta: 'amanta',
+  Purnimanta: 'purnimanta',
+});
+
+/**
+ * Every LunarMonth by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const LunarMonthById = new Map([
+  [0, 'amanta'],
+  [1, 'purnimanta'],
+]);
+
+/** Every MoonEvent by name. */
+export const MoonEvent = Object.freeze({
+  Rise: 'rise',
+  Set: 'set',
+});
+
+/**
+ * Every MoonEvent by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MoonEventById = new Map([
+  [0, 'rise'],
+  [1, 'set'],
+]);
+
+/** Every YogaCause by name. */
+export const YogaCause = Object.freeze({
+  VaraNakshatra: 'vara-nakshatra',
+  VaraTithiNakshatra: 'vara-tithi-nakshatra',
+});
+
+/**
+ * Every YogaCause by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const YogaCauseById = new Map([
+  [0, 'vara-nakshatra'],
+  [1, 'vara-tithi-nakshatra'],
+]);
+

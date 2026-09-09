@@ -312,6 +312,12 @@ class ChartsCast:
     ayanamsha_offset_deg: memoryview[float]
     """The ayanamsha applied at this instant, degrees; zero for a tropical chart."""
 
+    day_part: memoryview[int]
+    """Which arc of its day the instant falls in."""
+
+    day_elapsed: memoryview[float]
+    """How far through that arc the instant is, 0 to 1."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -464,12 +470,6 @@ class Day:
 
     vara: memoryview[int]
     """The weekday the day carries."""
-
-    part: memoryview[int]
-    """Which arc of the day the instant falls in."""
-
-    elapsed: memoryview[float]
-    """How far through that arc the instant is, 0 to 1."""
 
     calendar: memoryview[int]
     """The calendar the date is in."""
@@ -631,6 +631,8 @@ def decode_charts(raw: bytes) -> Charts:
             ayanamsha_offset_deg=blob.column(
                 at_cast, 3, 8, at_cast.count
             ).cast("d"),
+            day_part=blob.column(at_cast, 4, 1, at_cast.count).cast("B"),
+            day_elapsed=blob.column(at_cast, 5, 8, at_cast.count).cast("d"),
             length=at_cast.count,
         ),
         grahas=ChartsGrahas(
@@ -700,27 +702,25 @@ def decode_charts(raw: bytes) -> Charts:
             sunset=blob.column(at_day, 1, 8, at_day.count).cast("d"),
             next_sunrise=blob.column(at_day, 2, 8, at_day.count).cast("d"),
             vara=blob.column(at_day, 3, 2, at_day.count).cast("H"),
-            part=blob.column(at_day, 4, 1, at_day.count).cast("B"),
-            elapsed=blob.column(at_day, 5, 8, at_day.count).cast("d"),
-            calendar=blob.column(at_day, 6, 2, at_day.count).cast("H"),
-            era=blob.column(at_day, 7, 2, at_day.count).cast("H"),
-            year=blob.column(at_day, 8, 4, at_day.count).cast("i"),
-            era_year=blob.column(at_day, 9, 4, at_day.count).cast("i"),
-            month=blob.column(at_day, 10, 1, at_day.count).cast("B"),
-            day_of_month=blob.column(at_day, 11, 1, at_day.count).cast("B"),
-            resolution=blob.column(at_day, 12, 1, at_day.count).cast("B"),
-            computed_month=blob.column(at_day, 13, 1, at_day.count).cast("B"),
-            computed_day=blob.column(at_day, 14, 1, at_day.count).cast("B"),
-            state_kind=blob.column(at_day, 15, 1, at_day.count).cast("B"),
+            calendar=blob.column(at_day, 4, 2, at_day.count).cast("H"),
+            era=blob.column(at_day, 5, 2, at_day.count).cast("H"),
+            year=blob.column(at_day, 6, 4, at_day.count).cast("i"),
+            era_year=blob.column(at_day, 7, 4, at_day.count).cast("i"),
+            month=blob.column(at_day, 8, 1, at_day.count).cast("B"),
+            day_of_month=blob.column(at_day, 9, 1, at_day.count).cast("B"),
+            resolution=blob.column(at_day, 10, 1, at_day.count).cast("B"),
+            computed_month=blob.column(at_day, 11, 1, at_day.count).cast("B"),
+            computed_day=blob.column(at_day, 12, 1, at_day.count).cast("B"),
+            state_kind=blob.column(at_day, 13, 1, at_day.count).cast("B"),
             state_polar_kind=blob.column(
-                at_day, 16, 1, at_day.count
+                at_day, 14, 1, at_day.count
             ).cast("B"),
             state_polar_policy=blob.column(
-                at_day, 17, 1, at_day.count
+                at_day, 15, 1, at_day.count
             ).cast("B"),
-            convention_kind=blob.column(at_day, 18, 1, at_day.count).cast("B"),
+            convention_kind=blob.column(at_day, 16, 1, at_day.count).cast("B"),
             convention_value=blob.column(
-                at_day, 19, 8, at_day.count
+                at_day, 17, 8, at_day.count
             ).cast("d"),
             length=at_day.count,
         ),
@@ -744,6 +744,819 @@ def decode_charts(raw: bytes) -> Charts:
         ),
         model=blob.text(at_model),
         steps=blob.text(at_steps),
+        provenance=blob.text(at_provenance),
+    )
+
+
+@dataclass(frozen=True)
+class PanchangaDays:
+    """The `days` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought.
+    """
+
+    window_from: memoryview[float]
+    """When the window the day's spans are clipped to begins, as a Julian day (UTC)."""
+
+    window_to: memoryview[float]
+    """When the window the day's spans are clipped to ends, as a Julian day (UTC)."""
+
+    month: memoryview[int]
+    """The lunar month under the profile's own convention."""
+
+    amanta: memoryview[int]
+    """The amanta month: new moon to new moon."""
+
+    purnimanta: memoryview[int]
+    """The purnimanta month: full moon to full moon."""
+
+    paksha: memoryview[int]
+    """The fortnight the day opens in."""
+
+    ayana: memoryview[int]
+    """Which half of the year the day falls in."""
+
+    disha_shool: memoryview[int]
+    """The direction not to travel in, which is the vara's."""
+
+    has_sankranti: memoryview[int]
+    """1 when the Sun entered a new sign inside the day, 0 otherwise."""
+
+    sankranti: memoryview[float]
+    """When it did, as a Julian day (UTC); zero when it did not, which `has_sankranti` is what distinguishes from midnight."""
+
+    has_abhijit: memoryview[int]
+    """1 when the day has an Abhijit muhurta, 0 on a day with no daylight."""
+
+    abhijit_from: memoryview[float]
+    """When Abhijit begins, as a Julian day (UTC)."""
+
+    abhijit_to: memoryview[float]
+    """When Abhijit ends, as a Julian day (UTC)."""
+
+    abhijit_effective: memoryview[int]
+    """1 when Abhijit is effective, which it is on every day but a Wednesday."""
+
+    has_brahma: memoryview[int]
+    """1 when the night that ends at this day's sunrise is known, 0 in the polar case."""
+
+    brahma_from: memoryview[float]
+    """When Brahma muhurta begins, as a Julian day (UTC)."""
+
+    brahma_to: memoryview[float]
+    """When Brahma muhurta ends, as a Julian day (UTC)."""
+
+    moon_window_from: memoryview[float]
+    """When the window the Moon's rises and sets were looked for in begins, as a Julian day (UTC)."""
+
+    moon_window_to: memoryview[float]
+    """When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaCounts:
+    """The `counts` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off.
+    """
+
+    tithi: memoryview[int]
+    """How many rows of `tithi` belong to this day."""
+
+    nakshatra: memoryview[int]
+    """How many rows of `nakshatra` belong to this day."""
+
+    yoga: memoryview[int]
+    """How many rows of `yoga` belong to this day."""
+
+    karana: memoryview[int]
+    """How many rows of `karana` belong to this day."""
+
+    panchaka: memoryview[int]
+    """How many rows of `panchaka` belong to this day."""
+
+    moon_signs: memoryview[int]
+    """How many rows of `moon_signs` belong to this day."""
+
+    sun_signs: memoryview[int]
+    """How many rows of `sun_signs` belong to this day."""
+
+    kaalas: memoryview[int]
+    """How many rows of `kaalas` belong to this day."""
+
+    choghadiya: memoryview[int]
+    """How many rows of `choghadiya` belong to this day."""
+
+    horas: memoryview[int]
+    """How many rows of `horas` belong to this day."""
+
+    muhurtas: memoryview[int]
+    """How many rows of `muhurtas` belong to this day."""
+
+    moon_events: memoryview[int]
+    """How many rows of `moon_events` belong to this day."""
+
+    muhurta_yogas: memoryview[int]
+    """How many rows of `muhurta_yogas` belong to this day."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaTithi:
+    """The `tithi` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The tithis that touch each day.
+    """
+
+    member: memoryview[int]
+    """Which tithi ran."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaNakshatra:
+    """The `nakshatra` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The nakshatras the Moon was in.
+    """
+
+    member: memoryview[int]
+    """Which nakshatra the Moon was in."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaYoga:
+    """The `yoga` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The nitya yogas.
+    """
+
+    member: memoryview[int]
+    """Which nitya yoga ran."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaKarana:
+    """The `karana` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The karanas; half-tithis, so there are three or four on an ordinary day.
+    """
+
+    member: memoryview[int]
+    """Which karana ran."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaPanchaka:
+    """The `panchaka` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Panchaka, while the Moon is in the last five nakshatras.
+    """
+
+    member: memoryview[int]
+    """Which panchaka held."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaMoonSigns:
+    """The `moon_signs` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The signs the Moon stood in, with when it entered and left each.
+    """
+
+    member: memoryview[int]
+    """Which sign the Moon was in."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaSunSigns:
+    """The `sun_signs` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The signs the Sun stood in; two only on a sankranti day.
+    """
+
+    member: memoryview[int]
+    """Which sign the Sun was in."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaKaalas:
+    """The `kaalas` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The inauspicious eighths of the daylight each day has.
+    """
+
+    kaala: memoryview[int]
+    """Which one."""
+
+    from_: memoryview[float]
+    """When it begins, as a Julian day (UTC)."""
+
+    to: memoryview[float]
+    """When it ends, as a Julian day (UTC)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaChoghadiya:
+    """The `choghadiya` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Eight choghadiya of the daylight and eight of the night, when the day has both.
+    """
+
+    choghadiya: memoryview[int]
+    """Which choghadiya."""
+
+    lord: memoryview[int]
+    """The graha that rules it."""
+
+    from_: memoryview[float]
+    """When it begins, as a Julian day (UTC)."""
+
+    to: memoryview[float]
+    """When it ends, as a Julian day (UTC)."""
+
+    daytime: memoryview[int]
+    """1 when it is one of the eight of the daylight, 0 for one of the night."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaHoras:
+    """The `horas` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The twenty-four horas of each day, from sunrise.
+    """
+
+    number: memoryview[int]
+    """The hora's number, 1 to 24 from sunrise."""
+
+    lord: memoryview[int]
+    """The graha that rules it."""
+
+    start: memoryview[float]
+    """When it begins, as a Julian day (UTC)."""
+
+    end: memoryview[float]
+    """When it ends, as a Julian day (UTC)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaMuhurtas:
+    """The `muhurtas` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.
+    """
+
+    from_: memoryview[float]
+    """When it begins, as a Julian day (UTC)."""
+
+    to: memoryview[float]
+    """When it ends, as a Julian day (UTC)."""
+
+    daylight: memoryview[int]
+    """1 when it is one of the fifteen of the daylight, 0 for one of the night."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaMoonEvents:
+    """The `moon_events` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every moonrise and moonset inside each day's moon window, in order.
+    """
+
+    kind: memoryview[int]
+    """Whether the Moon rose or set."""
+
+    instant: memoryview[float]
+    """When, as a Julian day (UTC)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaMuhurtaYogas:
+    """The `muhurta_yogas` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero.
+    """
+
+    yoga: memoryview[int]
+    """Which yoga."""
+
+    from_: memoryview[float]
+    """When it begins, as a Julian day (UTC)."""
+
+    to: memoryview[float]
+    """When it ends, as a Julian day (UTC)."""
+
+    because_kind: memoryview[int]
+    """What made it hold."""
+
+    because_vara: memoryview[int]
+    """The vara that makes it; every cause has one."""
+
+    because_tithi: memoryview[int]
+    """The tithi that makes it, when the cause has one; zero otherwise."""
+
+    because_nakshatra: memoryview[int]
+    """The nakshatra that makes it; every cause has one."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class Panchanga:
+    """A decoded Panchanga blob.
+
+    A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
+    """
+
+    day_count: int
+    """How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold."""
+
+    latitude_deg: float
+    """The place's latitude, degrees north."""
+
+    longitude_deg: float
+    """The place's longitude, degrees east."""
+
+    altitude_m: float
+    """The place's altitude, metres."""
+
+    calendar: int
+    """The civil calendar the days' dates are read in."""
+
+    lunar_month: int
+    """Which lunar-month convention `days.month` leads with."""
+
+    days: PanchangaDays
+    """One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought."""
+
+    counts: PanchangaCounts
+    """How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off."""
+
+    day: Day
+    """The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid."""
+
+    tithi: PanchangaTithi
+    """The tithis that touch each day."""
+
+    nakshatra: PanchangaNakshatra
+    """The nakshatras the Moon was in."""
+
+    yoga: PanchangaYoga
+    """The nitya yogas."""
+
+    karana: PanchangaKarana
+    """The karanas; half-tithis, so there are three or four on an ordinary day."""
+
+    panchaka: PanchangaPanchaka
+    """Panchaka, while the Moon is in the last five nakshatras."""
+
+    moon_signs: PanchangaMoonSigns
+    """The signs the Moon stood in, with when it entered and left each."""
+
+    sun_signs: PanchangaSunSigns
+    """The signs the Sun stood in; two only on a sankranti day."""
+
+    kaalas: PanchangaKaalas
+    """The inauspicious eighths of the daylight each day has."""
+
+    choghadiya: PanchangaChoghadiya
+    """Eight choghadiya of the daylight and eight of the night, when the day has both."""
+
+    horas: PanchangaHoras
+    """The twenty-four horas of each day, from sunrise."""
+
+    muhurtas: PanchangaMuhurtas
+    """The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here."""
+
+    moon_events: PanchangaMoonEvents
+    """Every moonrise and moonset inside each day's moon window, in order."""
+
+    muhurta_yogas: PanchangaMuhurtaYogas
+    """The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero."""
+
+    model: str
+    """UTF-8 text: the solar model that reckoned the days, as it describes itself."""
+
+    provenance: str
+    """UTF-8 JSON: the provenance envelope of the result, canonical."""
+
+
+def decode_panchanga(raw: bytes) -> Panchanga:
+    """Decodes a Panchanga blob.
+
+    The columns are views over `raw`, so the buffer must outlive the
+    result; a blob of another layout version or another schema is a
+    `BlobError`.
+    """
+    blob = _Blob(raw, 4, "panchanga")
+    at_summary = blob.section(1, "summary")
+    at_days = blob.section(2, "days")
+    at_counts = blob.section(3, "counts")
+    at_day = blob.section(4, "day")
+    at_tithi = blob.section(5, "tithi")
+    at_nakshatra = blob.section(6, "nakshatra")
+    at_yoga = blob.section(7, "yoga")
+    at_karana = blob.section(8, "karana")
+    at_panchaka = blob.section(9, "panchaka")
+    at_moon_signs = blob.section(10, "moon_signs")
+    at_sun_signs = blob.section(11, "sun_signs")
+    at_kaalas = blob.section(12, "kaalas")
+    at_choghadiya = blob.section(13, "choghadiya")
+    at_horas = blob.section(14, "horas")
+    at_muhurtas = blob.section(15, "muhurtas")
+    at_moon_events = blob.section(16, "moon_events")
+    at_muhurta_yogas = blob.section(17, "muhurta_yogas")
+    at_model = blob.section(18, "model")
+    at_provenance = blob.section(19, "provenance")
+    return Panchanga(
+        day_count=int(blob.fixed(at_summary, 0, "I")),
+        latitude_deg=blob.fixed(at_summary, 1, "d"),
+        longitude_deg=blob.fixed(at_summary, 2, "d"),
+        altitude_m=blob.fixed(at_summary, 3, "d"),
+        calendar=int(blob.fixed(at_summary, 4, "H")),
+        lunar_month=int(blob.fixed(at_summary, 5, "B")),
+        days=PanchangaDays(
+            window_from=blob.column(at_days, 0, 8, at_days.count).cast("d"),
+            window_to=blob.column(at_days, 1, 8, at_days.count).cast("d"),
+            month=blob.column(at_days, 2, 2, at_days.count).cast("H"),
+            amanta=blob.column(at_days, 3, 2, at_days.count).cast("H"),
+            purnimanta=blob.column(at_days, 4, 2, at_days.count).cast("H"),
+            paksha=blob.column(at_days, 5, 2, at_days.count).cast("H"),
+            ayana=blob.column(at_days, 6, 2, at_days.count).cast("H"),
+            disha_shool=blob.column(at_days, 7, 2, at_days.count).cast("H"),
+            has_sankranti=blob.column(at_days, 8, 1, at_days.count).cast("B"),
+            sankranti=blob.column(at_days, 9, 8, at_days.count).cast("d"),
+            has_abhijit=blob.column(at_days, 10, 1, at_days.count).cast("B"),
+            abhijit_from=blob.column(at_days, 11, 8, at_days.count).cast("d"),
+            abhijit_to=blob.column(at_days, 12, 8, at_days.count).cast("d"),
+            abhijit_effective=blob.column(
+                at_days, 13, 1, at_days.count
+            ).cast("B"),
+            has_brahma=blob.column(at_days, 14, 1, at_days.count).cast("B"),
+            brahma_from=blob.column(at_days, 15, 8, at_days.count).cast("d"),
+            brahma_to=blob.column(at_days, 16, 8, at_days.count).cast("d"),
+            moon_window_from=blob.column(
+                at_days, 17, 8, at_days.count
+            ).cast("d"),
+            moon_window_to=blob.column(
+                at_days, 18, 8, at_days.count
+            ).cast("d"),
+            length=at_days.count,
+        ),
+        counts=PanchangaCounts(
+            tithi=blob.column(at_counts, 0, 4, at_counts.count).cast("I"),
+            nakshatra=blob.column(at_counts, 1, 4, at_counts.count).cast("I"),
+            yoga=blob.column(at_counts, 2, 4, at_counts.count).cast("I"),
+            karana=blob.column(at_counts, 3, 4, at_counts.count).cast("I"),
+            panchaka=blob.column(at_counts, 4, 4, at_counts.count).cast("I"),
+            moon_signs=blob.column(at_counts, 5, 4, at_counts.count).cast("I"),
+            sun_signs=blob.column(at_counts, 6, 4, at_counts.count).cast("I"),
+            kaalas=blob.column(at_counts, 7, 4, at_counts.count).cast("I"),
+            choghadiya=blob.column(at_counts, 8, 4, at_counts.count).cast("I"),
+            horas=blob.column(at_counts, 9, 4, at_counts.count).cast("I"),
+            muhurtas=blob.column(at_counts, 10, 4, at_counts.count).cast("I"),
+            moon_events=blob.column(
+                at_counts, 11, 4, at_counts.count
+            ).cast("I"),
+            muhurta_yogas=blob.column(
+                at_counts, 12, 4, at_counts.count
+            ).cast("I"),
+            length=at_counts.count,
+        ),
+        day=Day(
+            sunrise=blob.column(at_day, 0, 8, at_day.count).cast("d"),
+            sunset=blob.column(at_day, 1, 8, at_day.count).cast("d"),
+            next_sunrise=blob.column(at_day, 2, 8, at_day.count).cast("d"),
+            vara=blob.column(at_day, 3, 2, at_day.count).cast("H"),
+            calendar=blob.column(at_day, 4, 2, at_day.count).cast("H"),
+            era=blob.column(at_day, 5, 2, at_day.count).cast("H"),
+            year=blob.column(at_day, 6, 4, at_day.count).cast("i"),
+            era_year=blob.column(at_day, 7, 4, at_day.count).cast("i"),
+            month=blob.column(at_day, 8, 1, at_day.count).cast("B"),
+            day_of_month=blob.column(at_day, 9, 1, at_day.count).cast("B"),
+            resolution=blob.column(at_day, 10, 1, at_day.count).cast("B"),
+            computed_month=blob.column(at_day, 11, 1, at_day.count).cast("B"),
+            computed_day=blob.column(at_day, 12, 1, at_day.count).cast("B"),
+            state_kind=blob.column(at_day, 13, 1, at_day.count).cast("B"),
+            state_polar_kind=blob.column(
+                at_day, 14, 1, at_day.count
+            ).cast("B"),
+            state_polar_policy=blob.column(
+                at_day, 15, 1, at_day.count
+            ).cast("B"),
+            convention_kind=blob.column(at_day, 16, 1, at_day.count).cast("B"),
+            convention_value=blob.column(
+                at_day, 17, 8, at_day.count
+            ).cast("d"),
+            length=at_day.count,
+        ),
+        tithi=PanchangaTithi(
+            member=blob.column(at_tithi, 0, 2, at_tithi.count).cast("H"),
+            whole_from=blob.column(at_tithi, 1, 8, at_tithi.count).cast("d"),
+            whole_to=blob.column(at_tithi, 2, 8, at_tithi.count).cast("d"),
+            inside_from=blob.column(at_tithi, 3, 8, at_tithi.count).cast("d"),
+            inside_to=blob.column(at_tithi, 4, 8, at_tithi.count).cast("d"),
+            length=at_tithi.count,
+        ),
+        nakshatra=PanchangaNakshatra(
+            member=blob.column(
+                at_nakshatra, 0, 2, at_nakshatra.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_nakshatra, 1, 8, at_nakshatra.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_nakshatra, 2, 8, at_nakshatra.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_nakshatra, 3, 8, at_nakshatra.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_nakshatra, 4, 8, at_nakshatra.count
+            ).cast("d"),
+            length=at_nakshatra.count,
+        ),
+        yoga=PanchangaYoga(
+            member=blob.column(at_yoga, 0, 2, at_yoga.count).cast("H"),
+            whole_from=blob.column(at_yoga, 1, 8, at_yoga.count).cast("d"),
+            whole_to=blob.column(at_yoga, 2, 8, at_yoga.count).cast("d"),
+            inside_from=blob.column(at_yoga, 3, 8, at_yoga.count).cast("d"),
+            inside_to=blob.column(at_yoga, 4, 8, at_yoga.count).cast("d"),
+            length=at_yoga.count,
+        ),
+        karana=PanchangaKarana(
+            member=blob.column(at_karana, 0, 2, at_karana.count).cast("H"),
+            whole_from=blob.column(at_karana, 1, 8, at_karana.count).cast("d"),
+            whole_to=blob.column(at_karana, 2, 8, at_karana.count).cast("d"),
+            inside_from=blob.column(
+                at_karana, 3, 8, at_karana.count
+            ).cast("d"),
+            inside_to=blob.column(at_karana, 4, 8, at_karana.count).cast("d"),
+            length=at_karana.count,
+        ),
+        panchaka=PanchangaPanchaka(
+            member=blob.column(at_panchaka, 0, 2, at_panchaka.count).cast("H"),
+            whole_from=blob.column(
+                at_panchaka, 1, 8, at_panchaka.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_panchaka, 2, 8, at_panchaka.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_panchaka, 3, 8, at_panchaka.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_panchaka, 4, 8, at_panchaka.count
+            ).cast("d"),
+            length=at_panchaka.count,
+        ),
+        moon_signs=PanchangaMoonSigns(
+            member=blob.column(
+                at_moon_signs, 0, 2, at_moon_signs.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_moon_signs, 1, 8, at_moon_signs.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_moon_signs, 2, 8, at_moon_signs.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_moon_signs, 3, 8, at_moon_signs.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_moon_signs, 4, 8, at_moon_signs.count
+            ).cast("d"),
+            length=at_moon_signs.count,
+        ),
+        sun_signs=PanchangaSunSigns(
+            member=blob.column(
+                at_sun_signs, 0, 2, at_sun_signs.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_sun_signs, 1, 8, at_sun_signs.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_sun_signs, 2, 8, at_sun_signs.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_sun_signs, 3, 8, at_sun_signs.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_sun_signs, 4, 8, at_sun_signs.count
+            ).cast("d"),
+            length=at_sun_signs.count,
+        ),
+        kaalas=PanchangaKaalas(
+            kaala=blob.column(at_kaalas, 0, 2, at_kaalas.count).cast("H"),
+            from_=blob.column(at_kaalas, 1, 8, at_kaalas.count).cast("d"),
+            to=blob.column(at_kaalas, 2, 8, at_kaalas.count).cast("d"),
+            length=at_kaalas.count,
+        ),
+        choghadiya=PanchangaChoghadiya(
+            choghadiya=blob.column(
+                at_choghadiya, 0, 2, at_choghadiya.count
+            ).cast("H"),
+            lord=blob.column(
+                at_choghadiya, 1, 2, at_choghadiya.count
+            ).cast("H"),
+            from_=blob.column(
+                at_choghadiya, 2, 8, at_choghadiya.count
+            ).cast("d"),
+            to=blob.column(at_choghadiya, 3, 8, at_choghadiya.count).cast("d"),
+            daytime=blob.column(
+                at_choghadiya, 4, 1, at_choghadiya.count
+            ).cast("B"),
+            length=at_choghadiya.count,
+        ),
+        horas=PanchangaHoras(
+            number=blob.column(at_horas, 0, 1, at_horas.count).cast("B"),
+            lord=blob.column(at_horas, 1, 2, at_horas.count).cast("H"),
+            start=blob.column(at_horas, 2, 8, at_horas.count).cast("d"),
+            end=blob.column(at_horas, 3, 8, at_horas.count).cast("d"),
+            length=at_horas.count,
+        ),
+        muhurtas=PanchangaMuhurtas(
+            from_=blob.column(at_muhurtas, 0, 8, at_muhurtas.count).cast("d"),
+            to=blob.column(at_muhurtas, 1, 8, at_muhurtas.count).cast("d"),
+            daylight=blob.column(
+                at_muhurtas, 2, 1, at_muhurtas.count
+            ).cast("B"),
+            length=at_muhurtas.count,
+        ),
+        moon_events=PanchangaMoonEvents(
+            kind=blob.column(
+                at_moon_events, 0, 1, at_moon_events.count
+            ).cast("B"),
+            instant=blob.column(
+                at_moon_events, 1, 8, at_moon_events.count
+            ).cast("d"),
+            length=at_moon_events.count,
+        ),
+        muhurta_yogas=PanchangaMuhurtaYogas(
+            yoga=blob.column(
+                at_muhurta_yogas, 0, 2, at_muhurta_yogas.count
+            ).cast("H"),
+            from_=blob.column(
+                at_muhurta_yogas, 1, 8, at_muhurta_yogas.count
+            ).cast("d"),
+            to=blob.column(
+                at_muhurta_yogas, 2, 8, at_muhurta_yogas.count
+            ).cast("d"),
+            because_kind=blob.column(
+                at_muhurta_yogas, 3, 1, at_muhurta_yogas.count
+            ).cast("B"),
+            because_vara=blob.column(
+                at_muhurta_yogas, 4, 2, at_muhurta_yogas.count
+            ).cast("H"),
+            because_tithi=blob.column(
+                at_muhurta_yogas, 5, 2, at_muhurta_yogas.count
+            ).cast("H"),
+            because_nakshatra=blob.column(
+                at_muhurta_yogas, 6, 2, at_muhurta_yogas.count
+            ).cast("H"),
+            length=at_muhurta_yogas.count,
+        ),
+        model=blob.text(at_model),
         provenance=blob.text(at_provenance),
     )
 

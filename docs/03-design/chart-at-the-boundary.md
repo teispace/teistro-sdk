@@ -150,6 +150,57 @@ became; `check_shapes` refuses two sections that name one shape and
 disagree about it, since the emitters render a shape once and would
 otherwise silently decode the second through the first one's type.
 
+## 4a. The panchanga blob
+
+A day's lists are **ragged**, which is the one thing a chart blob never
+had to decide, and
+[`panchanga-at-the-boundary-measured.md`](panchanga-at-the-boundary-measured.md)
+measured it rather than supposing: ten of the fifteen vary, and a
+rectangular layout wastes 78.1% of its rows once one polar day joins a
+batch, because that day sets the stride for every other. So every list is
+concatenated across the batch and a `counts` section says how many rows
+are each day's — **one rule for all thirteen**, including the five whose
+length never moved, because two layouts in one blob is two things for a
+reader to learn and the fixed ones lose nothing by it.
+
+| id | section | kind | rows | fields |
+|---|---|---|---|---|
+| 1 | `summary` | fixed | 1 | `day_count`, the place, the calendar, the lunar-month convention |
+| 2 | `days` | columns | `day_count` | the window, the month under both conventions, the paksha, the ayana, the disha shool, and the three values a day may not have |
+| 3 | `counts` | columns | `day_count` | thirteen counts: how many rows of each per-day section are this day's |
+| 4 | `day` | columns | `day_count` | **the section a chart shares**, under the same shape name |
+| 5–11 | `tithi`, `nakshatra`, `yoga`, `karana`, `panchaka`, `moon_signs`, `sun_signs` | columns | ragged | a span each: the member, its own bounds, and the clipped ones |
+| 12–17 | `kaalas`, `choghadiya`, `horas`, `muhurtas`, `moon_events`, `muhurta_yogas` | columns | ragged | the periods, and what held |
+| 18–19 | `model`, `provenance` | bytes | — | as every blob ends |
+
+Three things it settles that the chart blob did not have to.
+
+**A value a day may not have crosses as a presence flag beside it.** The
+sankranti, Abhijit and Brahma muhurta are each an `Option`, and a blob
+has no such thing: every column has a value in every row. A sentinel
+cannot serve, because an absent Abhijit and an Abhijit at Julian day zero
+are both nought and a reader cannot tell them apart. So `has_abhijit`
+sits beside `abhijit_from` and `abhijit_to`, which is the rule §8's
+tagged enums already follow.
+
+**Two lists that answer one question in two halves become one section
+with a discriminant.** The fifteen muhurtas of the daylight and the
+fifteen of the night are one `muhurtas` section with a `daylight` column;
+the moonrises and the moonsets are one `moon_events` section with a
+`kind`. Two sections of one column each would be two counts, two offsets
+and two decoded types for what a reader thinks of as one list.
+
+**The seven span lists do *not* share a shape**, and this is the first
+place the shape rule needed a boundary. A shape makes two sections decode
+to **one** type, which is right when they are the same section in two
+blobs — a chart's day and a panchanga's — and wrong here: a span of
+tithis and a span of nakshatras have the same structure and different
+meanings, and one type for both would let a caller pass either where the
+other is wanted. The repetition worth removing is in the *declaration*,
+which a `span_section(…)` helper removes; the distinction worth keeping
+is in the *type*, which seven sections keep. **A shape is for sameness of
+meaning, not similarity of structure.**
+
 ## 5. The entry points
 
 ```c
@@ -478,3 +529,35 @@ five rather than describing part of one.
   so a generated map from section and column to enum name would let each
   layer resolve them without a table of its own. Worth doing when a
   second blob carries catalogued columns.
+- **~~What the panchanga blob shares with this one.~~ Built, and the
+  sharing cost a correction.** The `day` section really is one section in
+  two blobs, decoding to one type in each binding — the shape mechanism
+  doing exactly what it was built for. But it carried **twenty** fields
+  while this page had said all along that a chart's day and a
+  panchanga's are the same **eighteen**, and the two extra were the
+  reason: `part` — which arc of the day the instant falls in — and
+  `elapsed` — how far through that arc it is. Both belong to an
+  **instant**, not to a day. A chart has one and a panchanga day has
+  none, so a panchanga could only have filled them with a lie.
+
+  Nothing had noticed because a chart was the only blob carrying a day,
+  and a field that is wrong for a reader who does not exist reads as
+  right. They now sit in the chart's `cast` section with the other things
+  an instant decides, and the shared section is the eighteen it always
+  claimed to be. The page's own count was the evidence, unread for two
+  sessions.
+- **`has` covers messages and not entities.** A binding's `has(key)`
+  answers whether the locale or its fallbacks hold a *message*; there is
+  no non-throwing way to ask the same of an **entity**. The almanac
+  example needs one, because a pack names most of the catalogue and not
+  all of it, so all three bindings catch the refusal instead. Catching an
+  exception to ask a question is the shape of a missing accessor.
+- **Two catalogue kinds have no name in any locale.** `masa` and
+  `direction` are absent from all five entity packs the SDK ships
+  (`i18n/*/sdk.entity.json` carry 25 or 26 kinds and not these), so an
+  almanac cannot print the lunar month or the disha shool in the
+  reader's language — the two things a panchanga page leads with. The
+  examples fall back to the key and say so. Filling them is content
+  rather than code, and content in this project needs a source: twelve
+  masa names and the directions, in Devanagari and in IAST, from a text
+  rather than from a guess.

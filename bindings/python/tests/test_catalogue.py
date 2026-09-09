@@ -30,8 +30,8 @@ def every_enum() -> list[type[catalogue.Member]]:
 
 class TheCatalogue(unittest.TestCase):
     def test_there_are_as_many_enums_as_the_description_carries(self) -> None:
-        self.assertEqual(len(every_enum()), 87)
-        self.assertEqual(sum(len(list(found)) for found in every_enum()), 937 + 59)
+        self.assertEqual(len(every_enum()), 90)
+        self.assertEqual(sum(len(list(found)) for found in every_enum()), 943 + 59)
 
     def test_every_member_is_an_int_with_a_key(self) -> None:
         for found in every_enum():

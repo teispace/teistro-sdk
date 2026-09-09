@@ -367,6 +367,8 @@ final class ChartsCast {
     required this.lagnaDeg,
     required this.dayLagnaDeg,
     required this.ayanamshaOffsetDeg,
+    required this.dayPart,
+    required this.dayElapsed,
     required this.length,
   });
 
@@ -381,6 +383,12 @@ final class ChartsCast {
 
   /// The ayanamsha applied at this instant, degrees; zero for a tropical chart.
   final Float64List ayanamshaOffsetDeg;
+
+  /// Which arc of its day the instant falls in.
+  final Uint8List dayPart;
+
+  /// How far through that arc the instant is, 0 to 1.
+  final Float64List dayElapsed;
 
   /// The number of rows every column holds.
   final int length;
@@ -556,8 +564,6 @@ final class Day {
     required this.sunset,
     required this.nextSunrise,
     required this.vara,
-    required this.part,
-    required this.elapsed,
     required this.calendar,
     required this.era,
     required this.year,
@@ -586,12 +592,6 @@ final class Day {
 
   /// The weekday the day carries.
   final Uint16List vara;
-
-  /// Which arc of the day the instant falls in.
-  final Uint8List part;
-
-  /// How far through that arc the instant is, 0 to 1.
-  final Float64List elapsed;
 
   /// The calendar the date is in.
   final Uint16List calendar;
@@ -789,6 +789,16 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atCast, 3),
         blob.columnOffset(atCast, 3) + atCast.count * 8,
       ),
+      dayPart: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 4),
+        blob.columnOffset(atCast, 4) + atCast.count * 1,
+      ),
+      dayElapsed: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 5),
+        blob.columnOffset(atCast, 5) + atCast.count * 8,
+      ),
       length: atCast.count,
     ),
     grahas: ChartsGrahas(
@@ -920,85 +930,75 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atDay, 3),
         blob.columnOffset(atDay, 3) + atDay.count * 2,
       ),
-      part: Uint8List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDay, 4),
-        blob.columnOffset(atDay, 4) + atDay.count * 1,
-      ),
-      elapsed: Float64List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDay, 5),
-        blob.columnOffset(atDay, 5) + atDay.count * 8,
-      ),
       calendar: Uint16List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDay, 6),
-        blob.columnOffset(atDay, 6) + atDay.count * 2,
+        blob.columnOffset(atDay, 4),
+        blob.columnOffset(atDay, 4) + atDay.count * 2,
       ),
       era: Uint16List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDay, 7),
-        blob.columnOffset(atDay, 7) + atDay.count * 2,
+        blob.columnOffset(atDay, 5),
+        blob.columnOffset(atDay, 5) + atDay.count * 2,
       ),
       year: Int32List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDay, 8),
-        blob.columnOffset(atDay, 8) + atDay.count * 4,
+        blob.columnOffset(atDay, 6),
+        blob.columnOffset(atDay, 6) + atDay.count * 4,
       ),
       eraYear: Int32List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDay, 9),
-        blob.columnOffset(atDay, 9) + atDay.count * 4,
+        blob.columnOffset(atDay, 7),
+        blob.columnOffset(atDay, 7) + atDay.count * 4,
       ),
       month: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 8),
+        blob.columnOffset(atDay, 8) + atDay.count * 1,
+      ),
+      dayOfMonth: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 9),
+        blob.columnOffset(atDay, 9) + atDay.count * 1,
+      ),
+      resolution: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDay, 10),
         blob.columnOffset(atDay, 10) + atDay.count * 1,
       ),
-      dayOfMonth: Uint8List.sublistView(
+      computedMonth: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDay, 11),
         blob.columnOffset(atDay, 11) + atDay.count * 1,
       ),
-      resolution: Uint8List.sublistView(
+      computedDay: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDay, 12),
         blob.columnOffset(atDay, 12) + atDay.count * 1,
       ),
-      computedMonth: Uint8List.sublistView(
+      stateKind: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDay, 13),
         blob.columnOffset(atDay, 13) + atDay.count * 1,
       ),
-      computedDay: Uint8List.sublistView(
+      statePolarKind: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDay, 14),
         blob.columnOffset(atDay, 14) + atDay.count * 1,
       ),
-      stateKind: Uint8List.sublistView(
+      statePolarPolicy: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDay, 15),
         blob.columnOffset(atDay, 15) + atDay.count * 1,
       ),
-      statePolarKind: Uint8List.sublistView(
+      conventionKind: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDay, 16),
         blob.columnOffset(atDay, 16) + atDay.count * 1,
       ),
-      statePolarPolicy: Uint8List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDay, 17),
-        blob.columnOffset(atDay, 17) + atDay.count * 1,
-      ),
-      conventionKind: Uint8List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDay, 18),
-        blob.columnOffset(atDay, 18) + atDay.count * 1,
-      ),
       conventionValue: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDay, 19),
-        blob.columnOffset(atDay, 19) + atDay.count * 8,
+        blob.columnOffset(atDay, 17),
+        blob.columnOffset(atDay, 17) + atDay.count * 8,
       ),
       length: atDay.count,
     ),
@@ -1052,6 +1052,1299 @@ Charts decodeCharts(Uint8List bytes) {
     ),
     model: blob.text(atModel),
     steps: blob.text(atSteps),
+    provenance: blob.text(atProvenance),
+  );
+}
+
+/// The `days` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought.
+final class PanchangaDays {
+  const PanchangaDays({
+    required this.windowFrom,
+    required this.windowTo,
+    required this.month,
+    required this.amanta,
+    required this.purnimanta,
+    required this.paksha,
+    required this.ayana,
+    required this.dishaShool,
+    required this.hasSankranti,
+    required this.sankranti,
+    required this.hasAbhijit,
+    required this.abhijitFrom,
+    required this.abhijitTo,
+    required this.abhijitEffective,
+    required this.hasBrahma,
+    required this.brahmaFrom,
+    required this.brahmaTo,
+    required this.moonWindowFrom,
+    required this.moonWindowTo,
+    required this.length,
+  });
+
+  /// When the window the day's spans are clipped to begins, as a Julian day (UTC).
+  final Float64List windowFrom;
+
+  /// When the window the day's spans are clipped to ends, as a Julian day (UTC).
+  final Float64List windowTo;
+
+  /// The lunar month under the profile's own convention.
+  final Uint16List month;
+
+  /// The amanta month: new moon to new moon.
+  final Uint16List amanta;
+
+  /// The purnimanta month: full moon to full moon.
+  final Uint16List purnimanta;
+
+  /// The fortnight the day opens in.
+  final Uint16List paksha;
+
+  /// Which half of the year the day falls in.
+  final Uint16List ayana;
+
+  /// The direction not to travel in, which is the vara's.
+  final Uint16List dishaShool;
+
+  /// 1 when the Sun entered a new sign inside the day, 0 otherwise.
+  final Uint8List hasSankranti;
+
+  /// When it did, as a Julian day (UTC); zero when it did not, which `has_sankranti` is what distinguishes from midnight.
+  final Float64List sankranti;
+
+  /// 1 when the day has an Abhijit muhurta, 0 on a day with no daylight.
+  final Uint8List hasAbhijit;
+
+  /// When Abhijit begins, as a Julian day (UTC).
+  final Float64List abhijitFrom;
+
+  /// When Abhijit ends, as a Julian day (UTC).
+  final Float64List abhijitTo;
+
+  /// 1 when Abhijit is effective, which it is on every day but a Wednesday.
+  final Uint8List abhijitEffective;
+
+  /// 1 when the night that ends at this day's sunrise is known, 0 in the polar case.
+  final Uint8List hasBrahma;
+
+  /// When Brahma muhurta begins, as a Julian day (UTC).
+  final Float64List brahmaFrom;
+
+  /// When Brahma muhurta ends, as a Julian day (UTC).
+  final Float64List brahmaTo;
+
+  /// When the window the Moon's rises and sets were looked for in begins, as a Julian day (UTC).
+  final Float64List moonWindowFrom;
+
+  /// When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC).
+  final Float64List moonWindowTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `counts` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off.
+final class PanchangaCounts {
+  const PanchangaCounts({
+    required this.tithi,
+    required this.nakshatra,
+    required this.yoga,
+    required this.karana,
+    required this.panchaka,
+    required this.moonSigns,
+    required this.sunSigns,
+    required this.kaalas,
+    required this.choghadiya,
+    required this.horas,
+    required this.muhurtas,
+    required this.moonEvents,
+    required this.muhurtaYogas,
+    required this.length,
+  });
+
+  /// How many rows of `tithi` belong to this day.
+  final Uint32List tithi;
+
+  /// How many rows of `nakshatra` belong to this day.
+  final Uint32List nakshatra;
+
+  /// How many rows of `yoga` belong to this day.
+  final Uint32List yoga;
+
+  /// How many rows of `karana` belong to this day.
+  final Uint32List karana;
+
+  /// How many rows of `panchaka` belong to this day.
+  final Uint32List panchaka;
+
+  /// How many rows of `moon_signs` belong to this day.
+  final Uint32List moonSigns;
+
+  /// How many rows of `sun_signs` belong to this day.
+  final Uint32List sunSigns;
+
+  /// How many rows of `kaalas` belong to this day.
+  final Uint32List kaalas;
+
+  /// How many rows of `choghadiya` belong to this day.
+  final Uint32List choghadiya;
+
+  /// How many rows of `horas` belong to this day.
+  final Uint32List horas;
+
+  /// How many rows of `muhurtas` belong to this day.
+  final Uint32List muhurtas;
+
+  /// How many rows of `moon_events` belong to this day.
+  final Uint32List moonEvents;
+
+  /// How many rows of `muhurta_yogas` belong to this day.
+  final Uint32List muhurtaYogas;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `tithi` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The tithis that touch each day.
+final class PanchangaTithi {
+  const PanchangaTithi({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.length,
+  });
+
+  /// Which tithi ran.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `nakshatra` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The nakshatras the Moon was in.
+final class PanchangaNakshatra {
+  const PanchangaNakshatra({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.length,
+  });
+
+  /// Which nakshatra the Moon was in.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `yoga` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The nitya yogas.
+final class PanchangaYoga {
+  const PanchangaYoga({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.length,
+  });
+
+  /// Which nitya yoga ran.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `karana` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The karanas; half-tithis, so there are three or four on an ordinary day.
+final class PanchangaKarana {
+  const PanchangaKarana({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.length,
+  });
+
+  /// Which karana ran.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `panchaka` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Panchaka, while the Moon is in the last five nakshatras.
+final class PanchangaPanchaka {
+  const PanchangaPanchaka({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.length,
+  });
+
+  /// Which panchaka held.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `moon_signs` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The signs the Moon stood in, with when it entered and left each.
+final class PanchangaMoonSigns {
+  const PanchangaMoonSigns({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.length,
+  });
+
+  /// Which sign the Moon was in.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `sun_signs` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The signs the Sun stood in; two only on a sankranti day.
+final class PanchangaSunSigns {
+  const PanchangaSunSigns({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.length,
+  });
+
+  /// Which sign the Sun was in.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `kaalas` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The inauspicious eighths of the daylight each day has.
+final class PanchangaKaalas {
+  const PanchangaKaalas({
+    required this.kaala,
+    required this.from,
+    required this.to,
+    required this.length,
+  });
+
+  /// Which one.
+  final Uint16List kaala;
+
+  /// When it begins, as a Julian day (UTC).
+  final Float64List from;
+
+  /// When it ends, as a Julian day (UTC).
+  final Float64List to;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `choghadiya` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Eight choghadiya of the daylight and eight of the night, when the day has both.
+final class PanchangaChoghadiya {
+  const PanchangaChoghadiya({
+    required this.choghadiya,
+    required this.lord,
+    required this.from,
+    required this.to,
+    required this.daytime,
+    required this.length,
+  });
+
+  /// Which choghadiya.
+  final Uint16List choghadiya;
+
+  /// The graha that rules it.
+  final Uint16List lord;
+
+  /// When it begins, as a Julian day (UTC).
+  final Float64List from;
+
+  /// When it ends, as a Julian day (UTC).
+  final Float64List to;
+
+  /// 1 when it is one of the eight of the daylight, 0 for one of the night.
+  final Uint8List daytime;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `horas` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The twenty-four horas of each day, from sunrise.
+final class PanchangaHoras {
+  const PanchangaHoras({
+    required this.number,
+    required this.lord,
+    required this.start,
+    required this.end,
+    required this.length,
+  });
+
+  /// The hora's number, 1 to 24 from sunrise.
+  final Uint8List number;
+
+  /// The graha that rules it.
+  final Uint16List lord;
+
+  /// When it begins, as a Julian day (UTC).
+  final Float64List start;
+
+  /// When it ends, as a Julian day (UTC).
+  final Float64List end;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `muhurtas` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.
+final class PanchangaMuhurtas {
+  const PanchangaMuhurtas({
+    required this.from,
+    required this.to,
+    required this.daylight,
+    required this.length,
+  });
+
+  /// When it begins, as a Julian day (UTC).
+  final Float64List from;
+
+  /// When it ends, as a Julian day (UTC).
+  final Float64List to;
+
+  /// 1 when it is one of the fifteen of the daylight, 0 for one of the night.
+  final Uint8List daylight;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `moon_events` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every moonrise and moonset inside each day's moon window, in order.
+final class PanchangaMoonEvents {
+  const PanchangaMoonEvents({
+    required this.kind,
+    required this.instant,
+    required this.length,
+  });
+
+  /// Whether the Moon rose or set.
+  final Uint8List kind;
+
+  /// When, as a Julian day (UTC).
+  final Float64List instant;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `muhurta_yogas` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero.
+final class PanchangaMuhurtaYogas {
+  const PanchangaMuhurtaYogas({
+    required this.yoga,
+    required this.from,
+    required this.to,
+    required this.becauseKind,
+    required this.becauseVara,
+    required this.becauseTithi,
+    required this.becauseNakshatra,
+    required this.length,
+  });
+
+  /// Which yoga.
+  final Uint16List yoga;
+
+  /// When it begins, as a Julian day (UTC).
+  final Float64List from;
+
+  /// When it ends, as a Julian day (UTC).
+  final Float64List to;
+
+  /// What made it hold.
+  final Uint8List becauseKind;
+
+  /// The vara that makes it; every cause has one.
+  final Uint16List becauseVara;
+
+  /// The tithi that makes it, when the cause has one; zero otherwise.
+  final Uint16List becauseTithi;
+
+  /// The nakshatra that makes it; every cause has one.
+  final Uint16List becauseNakshatra;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// A decoded Panchanga blob.
+///
+/// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
+final class Panchanga {
+  const Panchanga({
+    required this.dayCount,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.altitudeM,
+    required this.calendar,
+    required this.lunarMonth,
+    required this.days,
+    required this.counts,
+    required this.day,
+    required this.tithi,
+    required this.nakshatra,
+    required this.yoga,
+    required this.karana,
+    required this.panchaka,
+    required this.moonSigns,
+    required this.sunSigns,
+    required this.kaalas,
+    required this.choghadiya,
+    required this.horas,
+    required this.muhurtas,
+    required this.moonEvents,
+    required this.muhurtaYogas,
+    required this.model,
+    required this.provenance,
+  });
+
+  /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
+  final int dayCount;
+
+  /// The place's latitude, degrees north.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east.
+  final double longitudeDeg;
+
+  /// The place's altitude, metres.
+  final double altitudeM;
+
+  /// The civil calendar the days' dates are read in.
+  final int calendar;
+
+  /// Which lunar-month convention `days.month` leads with.
+  final int lunarMonth;
+
+  /// One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought.
+  final PanchangaDays days;
+
+  /// How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off.
+  final PanchangaCounts counts;
+
+  /// The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
+  final Day day;
+
+  /// The tithis that touch each day.
+  final PanchangaTithi tithi;
+
+  /// The nakshatras the Moon was in.
+  final PanchangaNakshatra nakshatra;
+
+  /// The nitya yogas.
+  final PanchangaYoga yoga;
+
+  /// The karanas; half-tithis, so there are three or four on an ordinary day.
+  final PanchangaKarana karana;
+
+  /// Panchaka, while the Moon is in the last five nakshatras.
+  final PanchangaPanchaka panchaka;
+
+  /// The signs the Moon stood in, with when it entered and left each.
+  final PanchangaMoonSigns moonSigns;
+
+  /// The signs the Sun stood in; two only on a sankranti day.
+  final PanchangaSunSigns sunSigns;
+
+  /// The inauspicious eighths of the daylight each day has.
+  final PanchangaKaalas kaalas;
+
+  /// Eight choghadiya of the daylight and eight of the night, when the day has both.
+  final PanchangaChoghadiya choghadiya;
+
+  /// The twenty-four horas of each day, from sunrise.
+  final PanchangaHoras horas;
+
+  /// The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.
+  final PanchangaMuhurtas muhurtas;
+
+  /// Every moonrise and moonset inside each day's moon window, in order.
+  final PanchangaMoonEvents moonEvents;
+
+  /// The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero.
+  final PanchangaMuhurtaYogas muhurtaYogas;
+
+  /// UTF-8 text: the solar model that reckoned the days, as it describes itself.
+  final String model;
+
+  /// UTF-8 JSON: the provenance envelope of the result, canonical.
+  final String provenance;
+
+}
+
+/// Decodes a Panchanga blob. The columns are views over `bytes`, so the
+/// buffer must outlive the result; a blob of another layout version or
+/// another schema is a [FormatException].
+Panchanga decodePanchanga(Uint8List bytes) {
+  final blob = _Blob.open(bytes, 4, 'panchanga');
+  final atSummary = blob.section(1, 'summary');
+  final atDays = blob.section(2, 'days');
+  final atCounts = blob.section(3, 'counts');
+  final atDay = blob.section(4, 'day');
+  final atTithi = blob.section(5, 'tithi');
+  final atNakshatra = blob.section(6, 'nakshatra');
+  final atYoga = blob.section(7, 'yoga');
+  final atKarana = blob.section(8, 'karana');
+  final atPanchaka = blob.section(9, 'panchaka');
+  final atMoonSigns = blob.section(10, 'moon_signs');
+  final atSunSigns = blob.section(11, 'sun_signs');
+  final atKaalas = blob.section(12, 'kaalas');
+  final atChoghadiya = blob.section(13, 'choghadiya');
+  final atHoras = blob.section(14, 'horas');
+  final atMuhurtas = blob.section(15, 'muhurtas');
+  final atMoonEvents = blob.section(16, 'moon_events');
+  final atMuhurtaYogas = blob.section(17, 'muhurta_yogas');
+  final atModel = blob.section(18, 'model');
+  final atProvenance = blob.section(19, 'provenance');
+  return Panchanga(
+    dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
+    latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
+    longitudeDeg: blob.data.getFloat64(atSummary.offset + 16, Endian.little),
+    altitudeM: blob.data.getFloat64(atSummary.offset + 24, Endian.little),
+    calendar: blob.data.getUint16(atSummary.offset + 32, Endian.little),
+    lunarMonth: blob.data.getUint8(atSummary.offset + 40),
+    days: PanchangaDays(
+      windowFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 0),
+        blob.columnOffset(atDays, 0) + atDays.count * 8,
+      ),
+      windowTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 1),
+        blob.columnOffset(atDays, 1) + atDays.count * 8,
+      ),
+      month: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 2),
+        blob.columnOffset(atDays, 2) + atDays.count * 2,
+      ),
+      amanta: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 3),
+        blob.columnOffset(atDays, 3) + atDays.count * 2,
+      ),
+      purnimanta: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 4),
+        blob.columnOffset(atDays, 4) + atDays.count * 2,
+      ),
+      paksha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 5),
+        blob.columnOffset(atDays, 5) + atDays.count * 2,
+      ),
+      ayana: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 6),
+        blob.columnOffset(atDays, 6) + atDays.count * 2,
+      ),
+      dishaShool: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 7),
+        blob.columnOffset(atDays, 7) + atDays.count * 2,
+      ),
+      hasSankranti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 8),
+        blob.columnOffset(atDays, 8) + atDays.count * 1,
+      ),
+      sankranti: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 9),
+        blob.columnOffset(atDays, 9) + atDays.count * 8,
+      ),
+      hasAbhijit: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 10),
+        blob.columnOffset(atDays, 10) + atDays.count * 1,
+      ),
+      abhijitFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 11),
+        blob.columnOffset(atDays, 11) + atDays.count * 8,
+      ),
+      abhijitTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 12),
+        blob.columnOffset(atDays, 12) + atDays.count * 8,
+      ),
+      abhijitEffective: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 13),
+        blob.columnOffset(atDays, 13) + atDays.count * 1,
+      ),
+      hasBrahma: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 14),
+        blob.columnOffset(atDays, 14) + atDays.count * 1,
+      ),
+      brahmaFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 15),
+        blob.columnOffset(atDays, 15) + atDays.count * 8,
+      ),
+      brahmaTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 16),
+        blob.columnOffset(atDays, 16) + atDays.count * 8,
+      ),
+      moonWindowFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 17),
+        blob.columnOffset(atDays, 17) + atDays.count * 8,
+      ),
+      moonWindowTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 18),
+        blob.columnOffset(atDays, 18) + atDays.count * 8,
+      ),
+      length: atDays.count,
+    ),
+    counts: PanchangaCounts(
+      tithi: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 0),
+        blob.columnOffset(atCounts, 0) + atCounts.count * 4,
+      ),
+      nakshatra: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 1),
+        blob.columnOffset(atCounts, 1) + atCounts.count * 4,
+      ),
+      yoga: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 2),
+        blob.columnOffset(atCounts, 2) + atCounts.count * 4,
+      ),
+      karana: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 3),
+        blob.columnOffset(atCounts, 3) + atCounts.count * 4,
+      ),
+      panchaka: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 4),
+        blob.columnOffset(atCounts, 4) + atCounts.count * 4,
+      ),
+      moonSigns: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 5),
+        blob.columnOffset(atCounts, 5) + atCounts.count * 4,
+      ),
+      sunSigns: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 6),
+        blob.columnOffset(atCounts, 6) + atCounts.count * 4,
+      ),
+      kaalas: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 7),
+        blob.columnOffset(atCounts, 7) + atCounts.count * 4,
+      ),
+      choghadiya: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 8),
+        blob.columnOffset(atCounts, 8) + atCounts.count * 4,
+      ),
+      horas: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 9),
+        blob.columnOffset(atCounts, 9) + atCounts.count * 4,
+      ),
+      muhurtas: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 10),
+        blob.columnOffset(atCounts, 10) + atCounts.count * 4,
+      ),
+      moonEvents: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 11),
+        blob.columnOffset(atCounts, 11) + atCounts.count * 4,
+      ),
+      muhurtaYogas: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCounts, 12),
+        blob.columnOffset(atCounts, 12) + atCounts.count * 4,
+      ),
+      length: atCounts.count,
+    ),
+    day: Day(
+      sunrise: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 0),
+        blob.columnOffset(atDay, 0) + atDay.count * 8,
+      ),
+      sunset: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 1),
+        blob.columnOffset(atDay, 1) + atDay.count * 8,
+      ),
+      nextSunrise: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 2),
+        blob.columnOffset(atDay, 2) + atDay.count * 8,
+      ),
+      vara: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 3),
+        blob.columnOffset(atDay, 3) + atDay.count * 2,
+      ),
+      calendar: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 4),
+        blob.columnOffset(atDay, 4) + atDay.count * 2,
+      ),
+      era: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 5),
+        blob.columnOffset(atDay, 5) + atDay.count * 2,
+      ),
+      year: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 6),
+        blob.columnOffset(atDay, 6) + atDay.count * 4,
+      ),
+      eraYear: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 7),
+        blob.columnOffset(atDay, 7) + atDay.count * 4,
+      ),
+      month: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 8),
+        blob.columnOffset(atDay, 8) + atDay.count * 1,
+      ),
+      dayOfMonth: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 9),
+        blob.columnOffset(atDay, 9) + atDay.count * 1,
+      ),
+      resolution: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 10),
+        blob.columnOffset(atDay, 10) + atDay.count * 1,
+      ),
+      computedMonth: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 11),
+        blob.columnOffset(atDay, 11) + atDay.count * 1,
+      ),
+      computedDay: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 12),
+        blob.columnOffset(atDay, 12) + atDay.count * 1,
+      ),
+      stateKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 13),
+        blob.columnOffset(atDay, 13) + atDay.count * 1,
+      ),
+      statePolarKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 14),
+        blob.columnOffset(atDay, 14) + atDay.count * 1,
+      ),
+      statePolarPolicy: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 15),
+        blob.columnOffset(atDay, 15) + atDay.count * 1,
+      ),
+      conventionKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 16),
+        blob.columnOffset(atDay, 16) + atDay.count * 1,
+      ),
+      conventionValue: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 17),
+        blob.columnOffset(atDay, 17) + atDay.count * 8,
+      ),
+      length: atDay.count,
+    ),
+    tithi: PanchangaTithi(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 0),
+        blob.columnOffset(atTithi, 0) + atTithi.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 1),
+        blob.columnOffset(atTithi, 1) + atTithi.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 2),
+        blob.columnOffset(atTithi, 2) + atTithi.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 3),
+        blob.columnOffset(atTithi, 3) + atTithi.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 4),
+        blob.columnOffset(atTithi, 4) + atTithi.count * 8,
+      ),
+      length: atTithi.count,
+    ),
+    nakshatra: PanchangaNakshatra(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 0),
+        blob.columnOffset(atNakshatra, 0) + atNakshatra.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 1),
+        blob.columnOffset(atNakshatra, 1) + atNakshatra.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 2),
+        blob.columnOffset(atNakshatra, 2) + atNakshatra.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 3),
+        blob.columnOffset(atNakshatra, 3) + atNakshatra.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 4),
+        blob.columnOffset(atNakshatra, 4) + atNakshatra.count * 8,
+      ),
+      length: atNakshatra.count,
+    ),
+    yoga: PanchangaYoga(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 0),
+        blob.columnOffset(atYoga, 0) + atYoga.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 1),
+        blob.columnOffset(atYoga, 1) + atYoga.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 2),
+        blob.columnOffset(atYoga, 2) + atYoga.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 3),
+        blob.columnOffset(atYoga, 3) + atYoga.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 4),
+        blob.columnOffset(atYoga, 4) + atYoga.count * 8,
+      ),
+      length: atYoga.count,
+    ),
+    karana: PanchangaKarana(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 0),
+        blob.columnOffset(atKarana, 0) + atKarana.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 1),
+        blob.columnOffset(atKarana, 1) + atKarana.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 2),
+        blob.columnOffset(atKarana, 2) + atKarana.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 3),
+        blob.columnOffset(atKarana, 3) + atKarana.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 4),
+        blob.columnOffset(atKarana, 4) + atKarana.count * 8,
+      ),
+      length: atKarana.count,
+    ),
+    panchaka: PanchangaPanchaka(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 0),
+        blob.columnOffset(atPanchaka, 0) + atPanchaka.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 1),
+        blob.columnOffset(atPanchaka, 1) + atPanchaka.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 2),
+        blob.columnOffset(atPanchaka, 2) + atPanchaka.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 3),
+        blob.columnOffset(atPanchaka, 3) + atPanchaka.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 4),
+        blob.columnOffset(atPanchaka, 4) + atPanchaka.count * 8,
+      ),
+      length: atPanchaka.count,
+    ),
+    moonSigns: PanchangaMoonSigns(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 0),
+        blob.columnOffset(atMoonSigns, 0) + atMoonSigns.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 1),
+        blob.columnOffset(atMoonSigns, 1) + atMoonSigns.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 2),
+        blob.columnOffset(atMoonSigns, 2) + atMoonSigns.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 3),
+        blob.columnOffset(atMoonSigns, 3) + atMoonSigns.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 4),
+        blob.columnOffset(atMoonSigns, 4) + atMoonSigns.count * 8,
+      ),
+      length: atMoonSigns.count,
+    ),
+    sunSigns: PanchangaSunSigns(
+      member: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 0),
+        blob.columnOffset(atSunSigns, 0) + atSunSigns.count * 2,
+      ),
+      wholeFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 1),
+        blob.columnOffset(atSunSigns, 1) + atSunSigns.count * 8,
+      ),
+      wholeTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 2),
+        blob.columnOffset(atSunSigns, 2) + atSunSigns.count * 8,
+      ),
+      insideFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 3),
+        blob.columnOffset(atSunSigns, 3) + atSunSigns.count * 8,
+      ),
+      insideTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 4),
+        blob.columnOffset(atSunSigns, 4) + atSunSigns.count * 8,
+      ),
+      length: atSunSigns.count,
+    ),
+    kaalas: PanchangaKaalas(
+      kaala: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKaalas, 0),
+        blob.columnOffset(atKaalas, 0) + atKaalas.count * 2,
+      ),
+      from: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKaalas, 1),
+        blob.columnOffset(atKaalas, 1) + atKaalas.count * 8,
+      ),
+      to: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKaalas, 2),
+        blob.columnOffset(atKaalas, 2) + atKaalas.count * 8,
+      ),
+      length: atKaalas.count,
+    ),
+    choghadiya: PanchangaChoghadiya(
+      choghadiya: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChoghadiya, 0),
+        blob.columnOffset(atChoghadiya, 0) + atChoghadiya.count * 2,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChoghadiya, 1),
+        blob.columnOffset(atChoghadiya, 1) + atChoghadiya.count * 2,
+      ),
+      from: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChoghadiya, 2),
+        blob.columnOffset(atChoghadiya, 2) + atChoghadiya.count * 8,
+      ),
+      to: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChoghadiya, 3),
+        blob.columnOffset(atChoghadiya, 3) + atChoghadiya.count * 8,
+      ),
+      daytime: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atChoghadiya, 4),
+        blob.columnOffset(atChoghadiya, 4) + atChoghadiya.count * 1,
+      ),
+      length: atChoghadiya.count,
+    ),
+    horas: PanchangaHoras(
+      number: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHoras, 0),
+        blob.columnOffset(atHoras, 0) + atHoras.count * 1,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHoras, 1),
+        blob.columnOffset(atHoras, 1) + atHoras.count * 2,
+      ),
+      start: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHoras, 2),
+        blob.columnOffset(atHoras, 2) + atHoras.count * 8,
+      ),
+      end: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHoras, 3),
+        blob.columnOffset(atHoras, 3) + atHoras.count * 8,
+      ),
+      length: atHoras.count,
+    ),
+    muhurtas: PanchangaMuhurtas(
+      from: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtas, 0),
+        blob.columnOffset(atMuhurtas, 0) + atMuhurtas.count * 8,
+      ),
+      to: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtas, 1),
+        blob.columnOffset(atMuhurtas, 1) + atMuhurtas.count * 8,
+      ),
+      daylight: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtas, 2),
+        blob.columnOffset(atMuhurtas, 2) + atMuhurtas.count * 1,
+      ),
+      length: atMuhurtas.count,
+    ),
+    moonEvents: PanchangaMoonEvents(
+      kind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonEvents, 0),
+        blob.columnOffset(atMoonEvents, 0) + atMoonEvents.count * 1,
+      ),
+      instant: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonEvents, 1),
+        blob.columnOffset(atMoonEvents, 1) + atMoonEvents.count * 8,
+      ),
+      length: atMoonEvents.count,
+    ),
+    muhurtaYogas: PanchangaMuhurtaYogas(
+      yoga: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtaYogas, 0),
+        blob.columnOffset(atMuhurtaYogas, 0) + atMuhurtaYogas.count * 2,
+      ),
+      from: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtaYogas, 1),
+        blob.columnOffset(atMuhurtaYogas, 1) + atMuhurtaYogas.count * 8,
+      ),
+      to: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtaYogas, 2),
+        blob.columnOffset(atMuhurtaYogas, 2) + atMuhurtaYogas.count * 8,
+      ),
+      becauseKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtaYogas, 3),
+        blob.columnOffset(atMuhurtaYogas, 3) + atMuhurtaYogas.count * 1,
+      ),
+      becauseVara: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtaYogas, 4),
+        blob.columnOffset(atMuhurtaYogas, 4) + atMuhurtaYogas.count * 2,
+      ),
+      becauseTithi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtaYogas, 5),
+        blob.columnOffset(atMuhurtaYogas, 5) + atMuhurtaYogas.count * 2,
+      ),
+      becauseNakshatra: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMuhurtaYogas, 6),
+        blob.columnOffset(atMuhurtaYogas, 6) + atMuhurtaYogas.count * 2,
+      ),
+      length: atMuhurtaYogas.count,
+    ),
+    model: blob.text(atModel),
     provenance: blob.text(atProvenance),
   );
 }

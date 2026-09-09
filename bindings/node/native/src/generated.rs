@@ -2319,6 +2319,131 @@ impl IntlLoaded {
     }
 }
 
+/// What to found an almanac over: a range of dates at one place.
+///
+/// A **range**, not a grid of dates, because that is the shape the
+/// almanac itself leads with and the one that is cheaper than its parts:
+/// consecutive windows share a boundary, so day *n*'s next sunrise is day
+/// *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting
+/// one day passes a range of one.
+#[napi(object)]
+#[derive(Clone, Debug)]
+pub struct PanchangaRequest {
+    /// The calendar the range's dates are written in.
+    /// Enum: Calendar. Example: 0.
+    pub calendar: String,
+    /// The first day's astronomical year.
+    /// Example: 2026.
+    pub from_year: i32,
+    /// The first day's month, 1-based.
+    /// Range: [1,13]. Example: 9.
+    pub from_month: u32,
+    /// The first day's day of the month, 1-based.
+    /// Range: [1,32]. Example: 1.
+    pub from_day: u32,
+    /// The last day's month, 1-based.
+    /// Range: [1,13]. Example: 9.
+    pub to_month: u32,
+    /// The last day's day of the month, 1-based.
+    /// Range: [1,32]. Example: 30.
+    pub to_day: u32,
+    /// The last day's astronomical year.
+    /// Example: 2026.
+    pub to_year: i32,
+    /// The place's latitude, degrees north.
+    /// Unit: deg. Range: [-90,90]. Example: 27.7172.
+    pub latitude_deg: f64,
+    /// The place's longitude, degrees east.
+    /// Unit: deg. Range: [-180,180]. Example: 85.324.
+    pub longitude_deg: f64,
+    /// The place's altitude, metres above the ellipsoid.
+    /// Unit: m. Range: [-500,9000]. Example: 1400.
+    pub altitude_m: f64,
+    /// The local clock's offset from UTC in seconds, east positive: the
+    /// clock the days' dates are read in.
+    /// Unit: s. Range: [-64800,64800]. Example: 20700.
+    pub utc_offset_seconds: i32,
+}
+
+/// What a `PanchangaRequest` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldPanchangaRequest {
+    calendar: u16,
+    from_year: i32,
+    from_month: u8,
+    from_day: u8,
+    to_month: u8,
+    to_day: u8,
+    to_year: i32,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
+    utc_offset_seconds: i32,
+}
+
+impl HeldPanchangaRequest {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> ffi::panchanga::TsPanchangaRequest {
+        ffi::panchanga::TsPanchangaRequest {
+            struct_size: core::mem::size_of::<ffi::panchanga::TsPanchangaRequest>() as u32,
+            calendar: self.calendar,
+            reserved: Default::default(),
+            from_year: self.from_year,
+            from_month: self.from_month,
+            from_day: self.from_day,
+            to_month: self.to_month,
+            to_day: self.to_day,
+            to_year: self.to_year,
+            latitude_deg: self.latitude_deg,
+            longitude_deg: self.longitude_deg,
+            altitude_m: self.altitude_m,
+            utc_offset_seconds: self.utc_offset_seconds,
+            reserved_tail: Default::default(),
+        }
+    }
+}
+
+impl PanchangaRequest {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldPanchangaRequest> {
+        Ok(HeldPanchangaRequest {
+            calendar: calendar_from_str(&self.calendar)?,
+            from_year: self.from_year as i32,
+            from_month: self.from_month as u8,
+            from_day: self.from_day as u8,
+            to_month: self.to_month as u8,
+            to_day: self.to_day as u8,
+            to_year: self.to_year as i32,
+            latitude_deg: self.latitude_deg as f64,
+            longitude_deg: self.longitude_deg as f64,
+            altitude_m: self.altitude_m as f64,
+            utc_offset_seconds: self.utc_offset_seconds as i32,
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &ffi::panchanga::TsPanchangaRequest) -> Self {
+        PanchangaRequest {
+            calendar: calendar_to_str(raw.calendar),
+            from_year: raw.from_year as _,
+            from_month: raw.from_month as _,
+            from_day: raw.from_day as _,
+            to_month: raw.to_month as _,
+            to_day: raw.to_day as _,
+            to_year: raw.to_year as _,
+            latitude_deg: raw.latitude_deg as _,
+            longitude_deg: raw.longitude_deg as _,
+            altitude_m: raw.altitude_m as _,
+            utc_offset_seconds: raw.utc_offset_seconds as _,
+        }
+    }
+}
+
 /// The outcome of the last call on a context, as the ergonomic layer
 /// rethrows it: the status by name and by code, the provider's own code,
 /// and the message, detail, field, hint and message key the library gave.
@@ -3030,6 +3155,38 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
             unsafe { ffi::positions::ts_positions(self.handle, request, &raw mut out_blob) };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_blob(&mut out_blob))
+    }
+
+    /// Founds the almanac of every day in a range at one place and answers
+    /// with its blob: the four moving limbs, the periods, the lunar month,
+    /// what the Moon and the Sun did, and what each day is said to be.
+    ///
+    /// A **range** rather than a grid, because consecutive windows share a
+    /// boundary — day *n*'s next sunrise is day *n+1*'s sunrise — so a month
+    /// of days is much cheaper than thirty days computed separately. A caller
+    /// wanting one day passes a range of one. A range holding more than a
+    /// year and a day is `OUT_OF_RANGE` naming the limit.
+    ///
+    /// Everything but the request is the context's settings, so two calls
+    /// under one context are comparable and the settings hash says why.
+    ///
+    /// A context without an ephemeris is `CAPABILITY`; a provider failure is
+    /// `PROVIDER` with the provider's own code in the last error. A polar day
+    /// under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
+    /// policies that would synthesise one.
+    #[napi]
+    pub fn panchanga_days(&self, env: Env, request: PanchangaRequest) -> Result<Buffer> {
+        let held_request = request.read()?;
+        let raw_request = held_request.as_c();
+        let request = &raw const raw_request;
+        let mut out_blob = ffi::blob::TsBlob::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status =
+            unsafe { ffi::panchanga::ts_panchanga_days(self.handle, request, &raw mut out_blob) };
         self.leave()?;
         self.check(status)?;
         Ok(take_blob(&mut out_blob))

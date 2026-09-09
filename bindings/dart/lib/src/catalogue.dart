@@ -4717,3 +4717,115 @@ enum DeltaTSource {
   }
 }
 
+/// Which lunar-month convention a day's month leads with.
+enum LunarMonth {
+  /// New moon to new moon.
+  amanta(0, 'amanta'),
+  /// Full moon to full moon.
+  purnimanta(1, 'purnimanta');
+
+  const LunarMonth(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static LunarMonth byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a LunarMonth'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static LunarMonth? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Whether the Moon rose or set.
+///
+/// The two lists are one section with this to tell them apart, as the
+/// muhurtas' `daylight` and the choghadiya's `daytime` do: a day's moon
+/// events are one question asked twice, and two sections of one column
+/// each would be two counts, two offsets and two types for it.
+enum MoonEvent {
+  /// The Moon crossed the horizon upward.
+  rise(0, 'rise'),
+  /// The Moon crossed it downward.
+  set(1, 'set');
+
+  const MoonEvent(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static MoonEvent byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a MoonEvent'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static MoonEvent? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What made a muhurta yoga hold: the kind half of a tagged enum.
+///
+/// The payload fields sit beside it, as many as the widest variant needs
+/// (`03-design/chart-at-the-boundary.md` §8). Both variants carry a vara
+/// and a nakshatra; only the second carries a tithi, and the first leaves
+/// `because_tithi` at zero.
+enum YogaCause {
+  /// The vara and the nakshatra the Moon was in.
+  varaNakshatra(0, 'vara-nakshatra'),
+  /// The vara, the tithi's class and the nakshatra's number of feet.
+  varaTithiNakshatra(1, 'vara-tithi-nakshatra');
+
+  const YogaCause(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static YogaCause byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a YogaCause'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static YogaCause? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
