@@ -6028,3 +6028,36 @@ export declare const YogaCause: {
  */
 export declare const YogaCauseById: ReadonlyMap<number, YogaCause>;
 
+/**
+ * Whether a lunar month is ordinary, intercalary or omitted.
+ *
+ * The Indian lunisolar calendar decides it from the count of sankrantis
+ * between the month's two new moons — none is adhika, one ordinary, two
+ * kshaya (`03-design/calendar-indian-lunisolar.md` §2). An exhaustive
+ * match, so a kind added to the calendar breaks this build rather than
+ * silently crossing as whatever came first.
+ */
+export type MonthKind = 'nija' | 'adhika' | 'kshaya';
+
+/** Every MonthKind by name; the values are the strings the union accepts. */
+export declare const MonthKind: {
+  /**
+   * One sankranti: the ordinary month.
+   */
+  readonly Nija: 'nija';
+  /**
+   * None: intercalary, and the name repeats.
+   */
+  readonly Adhika: 'adhika';
+  /**
+   * Two: the next name is skipped this year.
+   */
+  readonly Kshaya: 'kshaya';
+};
+
+/**
+ * Every MonthKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MonthKindById: ReadonlyMap<number, MonthKind>;
+

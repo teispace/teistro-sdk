@@ -1068,6 +1068,7 @@ final class PanchangaDays {
     required this.amanta,
     required this.purnimanta,
     required this.paksha,
+    required this.monthKind,
     required this.ayana,
     required this.dishaShool,
     required this.hasSankranti,
@@ -1101,6 +1102,9 @@ final class PanchangaDays {
 
   /// The fortnight the day opens in.
   final Uint16List paksha;
+
+  /// Whether the month is ordinary, intercalary or omitted. The month's *name* needs no case for the intercalary one — the Sun stands in the same sign at an adhika month's new moon as at the following nija month's, so `month` names both — and this is the mark beside it.
+  final Uint8List monthKind;
 
   /// Which half of the year the day falls in.
   final Uint16List ayana;
@@ -1782,70 +1786,75 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atDays, 5),
         blob.columnOffset(atDays, 5) + atDays.count * 2,
       ),
-      ayana: Uint16List.sublistView(
+      monthKind: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 6),
-        blob.columnOffset(atDays, 6) + atDays.count * 2,
+        blob.columnOffset(atDays, 6) + atDays.count * 1,
       ),
-      dishaShool: Uint16List.sublistView(
+      ayana: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 7),
         blob.columnOffset(atDays, 7) + atDays.count * 2,
       ),
-      hasSankranti: Uint8List.sublistView(
+      dishaShool: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 8),
-        blob.columnOffset(atDays, 8) + atDays.count * 1,
+        blob.columnOffset(atDays, 8) + atDays.count * 2,
+      ),
+      hasSankranti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 9),
+        blob.columnOffset(atDays, 9) + atDays.count * 1,
       ),
       sankranti: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDays, 9),
-        blob.columnOffset(atDays, 9) + atDays.count * 8,
+        blob.columnOffset(atDays, 10),
+        blob.columnOffset(atDays, 10) + atDays.count * 8,
       ),
       hasAbhijit: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDays, 10),
-        blob.columnOffset(atDays, 10) + atDays.count * 1,
+        blob.columnOffset(atDays, 11),
+        blob.columnOffset(atDays, 11) + atDays.count * 1,
       ),
       abhijitFrom: Float64List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDays, 11),
-        blob.columnOffset(atDays, 11) + atDays.count * 8,
-      ),
-      abhijitTo: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 12),
         blob.columnOffset(atDays, 12) + atDays.count * 8,
       ),
-      abhijitEffective: Uint8List.sublistView(
+      abhijitTo: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 13),
-        blob.columnOffset(atDays, 13) + atDays.count * 1,
+        blob.columnOffset(atDays, 13) + atDays.count * 8,
       ),
-      hasBrahma: Uint8List.sublistView(
+      abhijitEffective: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 14),
         blob.columnOffset(atDays, 14) + atDays.count * 1,
       ),
-      brahmaFrom: Float64List.sublistView(
+      hasBrahma: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 15),
-        blob.columnOffset(atDays, 15) + atDays.count * 8,
+        blob.columnOffset(atDays, 15) + atDays.count * 1,
       ),
-      brahmaTo: Float64List.sublistView(
+      brahmaFrom: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 16),
         blob.columnOffset(atDays, 16) + atDays.count * 8,
       ),
-      moonWindowFrom: Float64List.sublistView(
+      brahmaTo: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 17),
         blob.columnOffset(atDays, 17) + atDays.count * 8,
       ),
-      moonWindowTo: Float64List.sublistView(
+      moonWindowFrom: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 18),
         blob.columnOffset(atDays, 18) + atDays.count * 8,
+      ),
+      moonWindowTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 19),
+        blob.columnOffset(atDays, 19) + atDays.count * 8,
       ),
       length: atDays.count,
     ),

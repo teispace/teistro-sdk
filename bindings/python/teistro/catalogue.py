@@ -3615,6 +3615,26 @@ class YogaCause(Member):
     """The vara, the tithi's class and the nakshatra's number of feet."""
 
 
+class MonthKind(Member):
+    """Whether a lunar month is ordinary, intercalary or omitted.
+
+    The Indian lunisolar calendar decides it from the count of sankrantis
+    between the month's two new moons — none is adhika, one ordinary, two
+    kshaya (`03-design/calendar-indian-lunisolar.md` §2). An exhaustive
+    match, so a kind added to the calendar breaks this build rather than
+    silently crossing as whatever came first.
+    """
+
+    NIJA = 0
+    """One sankranti: the ordinary month."""
+
+    ADHIKA = 1
+    """None: intercalary, and the name repeats."""
+
+    KSHAYA = 2
+    """Two: the next name is skipped this year."""
+
+
 # The key of every member, by enum and id, and the kind of every
 # catalogued enum. The two bases above read them; nothing else should.
 _KEYS: dict[str, dict[int, str]] = {
@@ -4799,6 +4819,11 @@ _KEYS: dict[str, dict[int, str]] = {
     "YogaCause": {
         0: "vara-nakshatra",
         1: "vara-tithi-nakshatra",
+    },
+    "MonthKind": {
+        0: "nija",
+        1: "adhika",
+        2: "kshaya",
     },
 }
 

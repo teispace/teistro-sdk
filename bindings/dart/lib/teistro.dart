@@ -1051,6 +1051,7 @@ final class Month {
     required this.purnimanta,
     required this.paksha,
     required this.convention,
+    required this.kind,
   });
 
   /// The month under the profile's own convention.
@@ -1067,6 +1068,13 @@ final class Month {
 
   /// Which convention [month] leads with.
   final LunarMonth convention;
+
+  /// Whether the month is ordinary, intercalary or omitted.
+  ///
+  /// The name above needs no case for the intercalary one — an adhika
+  /// month and the nija month after it take the same name — so this is
+  /// the mark beside the name.
+  final MonthKind kind;
 }
 
 /// One inauspicious eighth of the daylight.
@@ -1294,6 +1302,7 @@ final class AlmanacDay {
       purnimanta: Masa.byId(d.purnimanta[index]),
       paksha: Paksha.byId(d.paksha[index]),
       convention: LunarMonth.byId(batch.decoded.lunarMonth),
+      kind: MonthKind.byId(d.monthKind[index]),
     );
   }
 

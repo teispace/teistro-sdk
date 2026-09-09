@@ -28,6 +28,7 @@
 
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
+use teistro_calendar::lunisolar::MonthKind;
 use teistro_calendar::shipped;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_core::catalogue::{Ayanamsha, Calendar};
@@ -99,6 +100,34 @@ pub enum TsYogaCause {
     VaraTithiNakshatra = 1,
 }
 
+/// Whether a lunar month is ordinary, intercalary or omitted.
+///
+/// The Indian lunisolar calendar decides it from the count of sankrantis
+/// between the month's two new moons — none is adhika, one ordinary, two
+/// kshaya (`03-design/calendar-indian-lunisolar.md` §2). An exhaustive
+/// match, so a kind added to the calendar breaks this build rather than
+/// silently crossing as whatever came first.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsMonthKind {
+    /// One sankranti: the ordinary month.
+    Nija = 0,
+    /// None: intercalary, and the name repeats.
+    Adhika = 1,
+    /// Two: the next name is skipped this year.
+    Kshaya = 2,
+}
+
+impl From<MonthKind> for TsMonthKind {
+    fn from(kind: MonthKind) -> TsMonthKind {
+        match kind {
+            MonthKind::Nija => TsMonthKind::Nija,
+            MonthKind::Adhika => TsMonthKind::Adhika,
+            MonthKind::Kshaya => TsMonthKind::Kshaya,
+        }
+    }
+}
+
 /// What to found an almanac over: a range of dates at one place.
 ///
 /// A **range**, not a grid of dates, because that is the shape the
@@ -160,6 +189,7 @@ fn day_row(day: &Panchanga) -> Vec<FixedValue> {
         u64::from(day.month.amanta.id()).into(),
         u64::from(day.month.purnimanta.id()).into(),
         u64::from(day.month.paksha.id()).into(),
+        (TsMonthKind::from(day.month.kind) as u64).into(),
         u64::from(day.sun.ayana.id()).into(),
         u64::from(day.omens.disha_shool.id()).into(),
         flag(day.sun.sankranti.is_some()),
@@ -810,6 +840,23 @@ mod tests {
             })
             .collect();
         assert_eq!(ids, vec![0, 1], "one id each, in order");
+    }
+
+    /// Every kind the calendar has crosses, and to an id of its own.
+    ///
+    /// `MonthKind` is the calendar's and exhaustive, so a kind added
+    /// there stops this crate compiling rather than crossing as whatever
+    /// came first — which is the guard the settings knobs cannot have
+    /// (`chart.rs`) and this one can.
+    #[test]
+    fn every_month_kind_crosses_to_an_id_of_its_own() {
+        use teistro_calendar::lunisolar::MonthKind;
+
+        let ids: Vec<u8> = [MonthKind::Nija, MonthKind::Adhika, MonthKind::Kshaya]
+            .into_iter()
+            .map(|kind| super::TsMonthKind::from(kind) as u8)
+            .collect();
+        assert_eq!(ids, vec![0, 1, 2], "one id each, in order");
     }
 
     /// The two boundary-owned enums number from nought and do not

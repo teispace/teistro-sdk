@@ -4503,6 +4503,30 @@ typedef enum ts_yoga_cause {
 } ts_yoga_cause;
 
 /**
+ * Whether a lunar month is ordinary, intercalary or omitted.
+ *
+ * The Indian lunisolar calendar decides it from the count of sankrantis
+ * between the month's two new moons — none is adhika, one ordinary, two
+ * kshaya (`03-design/calendar-indian-lunisolar.md` §2). An exhaustive
+ * match, so a kind added to the calendar breaks this build rather than
+ * silently crossing as whatever came first.
+ */
+typedef enum ts_month_kind {
+    /**
+     * One sankranti: the ordinary month.
+     */
+    TS_MONTH_KIND_NIJA = 0,
+    /**
+     * None: intercalary, and the name repeats.
+     */
+    TS_MONTH_KIND_ADHIKA = 1,
+    /**
+     * Two: the next name is skipped this year.
+     */
+    TS_MONTH_KIND_KSHAYA = 2,
+} ts_month_kind;
+
+/**
  * An opaque context: settings, a provider, the locale engine, the last
  * error. Used by one thread at a time.
  */

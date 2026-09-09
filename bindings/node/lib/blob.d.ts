@@ -604,6 +604,11 @@ export interface PanchangaDays {
    */
   readonly paksha: Uint16Array;
   /**
+   * Whether the month is ordinary, intercalary or omitted. The month's *name* needs no case for the intercalary one — the Sun stands in the same sign at an adhika month's new moon as at the following nija month's, so `month` names both — and this is the mark beside it.
+   * The values are `MonthKind` ids.
+   */
+  readonly monthKind: Uint8Array;
+  /**
    * Which half of the year the day falls in.
    * The values are `Ayana` ids.
    */

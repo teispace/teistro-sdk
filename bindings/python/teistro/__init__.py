@@ -108,6 +108,7 @@ from .catalogue import (
     Karana,
     LunarMonth,
     Masa,
+    MonthKind,
     MuhurtaYoga,
     Nakshatra,
     Paksha,
@@ -1082,6 +1083,14 @@ class Month:
     convention: LunarMonth
     """Which convention `month` leads with."""
 
+    kind: MonthKind
+    """Whether the month is ordinary, intercalary or omitted.
+
+    The name above needs no case for the intercalary one — an adhika
+    month and the nija month after it take the same name — so this is the
+    mark beside the name.
+    """
+
 
 @dataclass(frozen=True)
 class KaalaPeriod:
@@ -1221,6 +1230,7 @@ class AlmanacDay:
             purnimanta=Masa(days.purnimanta[self.index]),
             paksha=Paksha(days.paksha[self.index]),
             convention=LunarMonth(self.batch.decoded.lunar_month),
+            kind=MonthKind(days.month_kind[self.index]),
         )
 
     @property

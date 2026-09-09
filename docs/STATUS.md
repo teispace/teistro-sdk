@@ -289,14 +289,12 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is the mark crossing the boundary.** The calendar
-   decides it and `panchanga`'s `LunarMonth` carries it; what it does
-   not yet do is reach a consumer. The panchanga blob's `days` section
-   gains a `month_kind` column, the three ergonomic layers expose it on
-   a day, and `check-parity` compares it — the same path the rest of
-   that blob took.
+3. **The Indian lunisolar calendar is discharged** — measured,
+   designed, built, crossed and compared — so the next task is whatever
+   the roadmap lists next for Phase 4. `check-parity` compares 597
+   values across the three bindings.
 
-   After it, the remaining Phase 4 work is what the roadmap lists;
+   The remaining Phase 4 work is what the roadmap lists;
    [`calendar-indian-lunisolar.md`](03-design/calendar-indian-lunisolar.md)
    §6 records what a full lunisolar `CalendarSystem` would need and why
    nothing needs it yet.

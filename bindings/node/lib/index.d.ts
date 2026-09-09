@@ -20,6 +20,7 @@ import type {
   Karana,
   LunarMonth,
   Masa,
+  MonthKind,
   MuhurtaYoga,
   Nakshatra,
   Paksha,
@@ -288,6 +289,13 @@ export interface Month {
   readonly paksha: Paksha | 'unknown';
   /** Which convention `month` leads with. */
   readonly convention: LunarMonth | 'unknown';
+  /**
+   * Whether the month is ordinary, intercalary or omitted. The name
+   * above needs no case for the intercalary one — an adhika month and
+   * the nija month after it take the same name — so this is the mark
+   * beside the name.
+   */
+  readonly kind: MonthKind | 'unknown';
 }
 
 /** One inauspicious eighth of the daylight. */

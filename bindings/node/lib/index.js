@@ -32,6 +32,7 @@ import {
   KaranaById,
   LunarMonthById,
   MasaById,
+  MonthKindById,
   MuhurtaYogaById,
   NakshatraById,
   PakshaById,
@@ -773,6 +774,10 @@ export class AlmanacDay {
       purnimanta: MasaById.get(d.purnimanta[i]) ?? 'unknown',
       paksha: PakshaById.get(d.paksha[i]) ?? 'unknown',
       convention: LunarMonthById.get(this.#batch.decoded.lunarMonth) ?? 'unknown',
+      // Whether this month is the intercalary one. The *name* above
+      // needs no case for it — an adhika month and the nija month after
+      // it take the same name — so this is the mark beside the name.
+      kind: MonthKindById.get(d.monthKind[i]) ?? 'unknown',
     };
   }
 
