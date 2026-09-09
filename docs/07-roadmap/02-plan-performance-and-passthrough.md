@@ -87,16 +87,31 @@ the search is simply sized for the slowest thing that uses it.
 
 *The change, in three parts, in this order:*
 
-**A1a. The reach follows the body.** `events::greatest_rate` already
-tables how fast a body can move, because the search's *step* is sized
-from it. Its companion is how slowly a body can move, which is what
-sizes the search's *reach*: 31.5 days for the Sun at aphelion, 2.8 for
-the Moon at apogee, undefined for anything that can retrograde — which
-is where today's constant and its documented truncation stay, because a
-retrograde body's dwell in a sign has no bound a table can give. The
-Moon's 543 calls become about 28. A caller who wants a wider reach asks
-for one: `signs_within(…, reach_days)` beside `signs`, defaults
-resolved, no dead end.
+**A1a. The reach follows the body — built.** `events::greatest_rate`
+already tables how fast a body can move, because the search's *step* is
+sized from it. Its companion is `events::least_rate`, how slowly a body
+can move, which is what sizes the search's *reach*:
+`events::longest_dwell_days(quantity, lattice)` turns the two into the
+longest a value can stand between two lattice lines. Thirty degrees at
+the Sun's slowest is **31.579 days**, at the Moon's **2.564**, and
+`None` for anything that can retrograde — a body that turns can cross a
+line and come back, so nothing bounds its dwell, and there today's
+constant stays as a *cap* (`SIGN_SEARCH_CAP_DAYS`) with its documented
+truncation. A caller who wants another reach asks for one:
+`limb::signs_within(…, reach_days)` beside `limb::signs`, `None`
+resolving to the body's own, and a reach that is not a positive number
+of days refused by name.
+
+*Measured, on the gated page:* an almanac day fell from **1228 calls to
+841** and fifty days from **60 631 to 41 492** — a third of the work,
+gone, for a rule that was already implied by a table the search half
+used. Charts are untouched, because a chart does not read a sign span.
+
+The elongation's least rate falls out of the same table (the Moon's
+least less the Sun's greatest, 10.75°/day), which bounds the slowest
+tithi at 1.12 days and so *derives* `limb::LONGEST_SPAN_DAYS`, until now
+a hand-chosen 1.5. Left as it is, and now covered by a test that says
+why it is enough.
 
 **A1b. Grid the uniform scan.** `events::Search::between` walks its
 window in fixed steps and samples once per step — 276 of the day's calls
@@ -112,13 +127,25 @@ crossings once and slices them per day. This is the change that turns a
 batch into a batch, and it wants A1a first so that what is hoisted is
 small.
 
-*What it costs.* A1a and A1b both move where a scan's samples fall, so
-the crossing instants they refine to move within the search's own
-tolerance — up to 1e-7 of a day, ten milliseconds, far inside every
-tolerance the corpus declares and every one the SDK publishes. That is
-still a change to the last bits of a published value, so it lands with
-the golden vectors and the hash matrix regenerated in the same commit,
-and the page says by how much each moved rather than that nothing did.
+*What it costs, measured rather than feared.* A1a and A1b both move
+where a scan's samples fall, so the crossing instants they refine to are
+handed a different bracket and land elsewhere inside the search's
+tolerance. Asked how far, for A1a: the Sun's span bounds moved at most
+**2.8 milliseconds** and the Moon's **0.04**, against a tolerance of
+8.6. Nothing that is published moved at all — every generated page
+regenerates identically, and the determinism digest over the fixed
+scenario is the same to the bit before and after. So no golden vector
+and no hash needed regenerating, and the test that watches this prints
+both numbers rather than asserting that nothing happened
+(`crates/panchanga/tests/kernel.rs`,
+`the_signs_a_day_touches_are_the_same_however_far_the_search_reached`).
+
+One thing that measurement also says: the determinism digest has
+sections for the calendar, the astronomy, the houses and the classical
+model, and **none for the panchanga**, so it could not have caught a
+change here. That is a gap in the matrix rather than a licence, and it
+is worth a section of its own before A1c moves the same instants
+further.
 
 *Gate:* the almanac and chart rows of
 `03-design/batch-and-parallelism-measured.md`, whose counts fall when
@@ -293,9 +320,9 @@ the emitted code is verified in its own language.
 1. **A0** the measurement and this plan — *done*, `check-batching`.
 2. **B0** the passthrough measured: what the port reaches of an engine,
    counted rather than asserted — part of the same pass.
-3. **A1** size each search by what it searches for (A1a), grid the
-   uniform scan (A1b), hoist what a range shares (A1c). The golden
-   vectors and the hash matrix move with A1a.
+3. **A1** size each search by what it searches for (A1a — *done*, an
+   almanac day 1228 calls to 841), grid the uniform scan (A1b), hoist
+   what a range shares (A1c).
 4. **A2** the batch memo and `provider.cache`.
 5. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
    Rust surface.

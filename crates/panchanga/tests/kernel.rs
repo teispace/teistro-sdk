@@ -32,7 +32,9 @@ use teistro_astro::precession::PrecessionModel;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::interval::Interval;
 use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
-use teistro_panchanga::limb::{self, LONGEST_SPAN_DAYS, Zodiac};
+use teistro_panchanga::limb::{
+    self, LONGEST_SPAN_DAYS, SIGN_SEARCH_CAP_DAYS as SIGN_SEARCH_CAP, Zodiac,
+};
 use teistro_panchanga::span::Span;
 use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
 
@@ -283,10 +285,84 @@ fn the_signs_a_body_stood_in_cover_the_window() {
     for body in [Body::Sun, Body::Moon] {
         let signs = limb::signs(&source, body, window(), zodiac()).expect("the provider answers");
         // A solar sign is a month long, so the bound is the sign search's
-        // own widening rather than a limb's.
-        holds_together(&signs, window(), 40.0, "sign");
+        // own reach rather than a limb's — and that reach now follows the
+        // body, so this is two and a half days for the Moon.
+        holds_together(&signs, window(), limb::sign_reach_days(body), "sign");
         // The Sun crosses a sign in a month and the Moon in two and a
         // half days, so neither manages more than two in a day.
         assert!((1..=2).contains(&signs.len()), "{body:?}: {}", signs.len());
+    }
+}
+
+#[test]
+fn the_signs_a_day_touches_are_the_same_however_far_the_search_reached() {
+    // The reach follows the body: the Moon is searched over its own two
+    // and a half days where it used to be searched over the Sun's forty
+    // (`07-roadmap/02-plan-performance-and-passthrough.md`, A1a). What
+    // must not change is the answer — the spans a day touches, and which
+    // sign each is. What does change is the last bits of their bounds,
+    // because a narrower window puts the scan's samples elsewhere and so
+    // hands the refinement a different bracket; the difference is inside
+    // the solver's own tolerance and this says so rather than hoping.
+    let provider = TestProvider::new();
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let source = source(&completion);
+    for body in [Body::Sun, Body::Moon] {
+        let mut furthest = 0.0_f64;
+        let near = limb::signs(&source, body, window(), zodiac()).expect("the provider answers");
+        let far = limb::signs_within(&source, body, window(), zodiac(), Some(SIGN_SEARCH_CAP))
+            .expect("the provider answers");
+        assert_eq!(
+            near.len(),
+            far.len(),
+            "{body:?}: the same number of spans touch the day"
+        );
+        for (near, far) in near.iter().zip(&far) {
+            assert_eq!(near.member, far.member, "{body:?}: the same sign");
+            for (a, b, what) in [
+                (near.whole.from, far.whole.from, "the span opens"),
+                (near.whole.to, far.whole.to, "the span closes"),
+                (near.inside.from, far.inside.from, "the day's part opens"),
+                (near.inside.to, far.inside.to, "and closes"),
+            ] {
+                let apart = (a.get() - b.get()).abs();
+                furthest = furthest.max(apart);
+                assert!(
+                    apart < SOLVER_TOLERANCE_DAYS,
+                    "{body:?}: {what} {apart} days apart, over the tolerance"
+                );
+            }
+        }
+        println!(
+            "{body:?}: searched to {:.3} days instead of {SIGN_SEARCH_CAP:.1}, \
+             bounds moved at most {furthest:.3e} days ({:.3e} seconds)",
+            limb::sign_reach_days(body),
+            furthest * 86_400.0
+        );
+    }
+}
+
+#[test]
+fn a_reach_that_is_not_a_number_of_days_is_refused() {
+    let provider = TestProvider::new();
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let source = source(&completion);
+    for bad in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+        let refused = limb::signs_within(&source, Body::Moon, window(), zodiac(), Some(bad));
+        let error = refused.expect_err("a reach must be a positive number of days");
+        assert_eq!(error.status, teistro_core::error::Status::InvalidArg);
+        assert_eq!(
+            error.field(),
+            Some("reach_days"),
+            "the refusal names the argument"
+        );
     }
 }
