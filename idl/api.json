@@ -20,7 +20,8 @@
     "crates/ffi/src/time.rs",
     "crates/ffi/src/intl.rs",
     "crates/ffi/src/positions.rs",
-    "crates/ffi/src/panchanga.rs"
+    "crates/ffi/src/panchanga.rs",
+    "crates/ffi/src/ephemeris.rs"
   ],
   "constants": [
     {
@@ -11339,6 +11340,108 @@
         "blob": "panchanga"
       },
       "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_ephemeris_manifest",
+      "doc": "What the context's engine says it offers beyond this library's own\noperations: its manifest, as the engine wrote it.\n\nThe document names each operation, its parameters and the role of\neach — which of them a caller supplies and which the engine fills.\nRead it once and cache it against the engine's version; it changes\nwhen the engine does and not when this library does.\n\n`CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the\nengine describes nothing of its own.",
+      "safety": "`context` must be a live handle; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/ephemeris.rs"
+    },
+    {
+      "name": "ts_ephemeris_call",
+      "doc": "Calls one of the engine's own operations by the name its manifest\ngives.\n\n`arguments_json` is a JSON object keyed by the parameter names the\nmanifest names, holding the ones it marks as a caller's to supply.\nThe answer is the engine's own JSON, unread by this library.\n\n`CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the\nengine describes nothing of its own or names no such operation, and\n`PROVIDER` when the engine itself refuses.",
+      "safety": "`context` must be a live handle; `function` and `arguments_json` must\nbe NUL-terminated; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "function",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "arguments_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/ephemeris.rs"
     }
   ],
   "blobs": [

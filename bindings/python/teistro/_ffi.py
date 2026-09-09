@@ -2929,6 +2929,20 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_panchanga_days.restype = ctypes.c_int32
+        self.ts_ephemeris_manifest: Any = library.ts_ephemeris_manifest
+        self.ts_ephemeris_manifest.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_ephemeris_manifest.restype = ctypes.c_int32
+        self.ts_ephemeris_call: Any = library.ts_ephemeris_call
+        self.ts_ephemeris_call.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_ephemeris_call.restype = ctypes.c_int32
 
 
 class TeistroContext:
@@ -3523,6 +3537,58 @@ class TeistroContext:
         owned.clear()
         blob = _take_blob(self._lib, _out_blob)
         return blob
+
+    def ephemeris_manifest(self) -> str:
+        """What the context's engine says it offers beyond this library's own
+        operations: its manifest, as the engine wrote it.
+
+        The document names each operation, its parameters and the role of
+        each — which of them a caller supplies and which the engine fills.
+        Read it once and cache it against the engine's version; it changes
+        when the engine does and not when this library does.
+
+        `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+        engine describes nothing of its own.
+        """
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_ephemeris_manifest(
+            self._raw,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def ephemeris_call(self, function: str, arguments_json: str) -> str:
+        """Calls one of the engine's own operations by the name its manifest
+        gives.
+
+        `arguments_json` is a JSON object keyed by the parameter names the
+        manifest names, holding the ones it marks as a caller's to supply.
+        The answer is the engine's own JSON, unread by this library.
+
+        `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+        engine describes nothing of its own or names no such operation, and
+        `PROVIDER` when the engine itself refuses.
+        """
+        owned: list[Any] = []
+        _function = function.encode("utf-8")
+        owned.append(_function)
+        _arguments_json = arguments_json.encode("utf-8")
+        owned.append(_arguments_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_ephemeris_call(
+            self._raw,
+            _function,
+            _arguments_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
 
 
 def _free_context(lib: TeistroLibrary, handle: Any) -> None:

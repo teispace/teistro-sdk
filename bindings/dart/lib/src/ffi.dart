@@ -1215,6 +1215,10 @@ typedef TsPositionsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer
 typedef TsPositionsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PositionRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
+typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
+typedef TsEphemerisManifestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
+typedef TsEphemerisCallNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsEphemerisCallDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 
 /// The C surface, every entry point looked up once when the library
 /// opens rather than on each call.
@@ -1261,7 +1265,9 @@ final class TeistroLibrary {
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
-        ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days');
+        ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
+        ts_ephemeris_manifest = library.lookupFunction<TsEphemerisManifestNative, TsEphemerisManifestDart>('ts_ephemeris_manifest'),
+        ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call');
 
   /// The open library, for a finaliser that needs its symbols.
   final ffi.DynamicLibrary library;
@@ -1488,6 +1494,30 @@ final class TeistroLibrary {
   /// under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
   /// policies that would synthesise one.
   final TsPanchangaDaysDart ts_panchanga_days;
+
+  /// What the context's engine says it offers beyond this library's own
+  /// operations: its manifest, as the engine wrote it.
+  ///
+  /// The document names each operation, its parameters and the role of
+  /// each — which of them a caller supplies and which the engine fills.
+  /// Read it once and cache it against the engine's version; it changes
+  /// when the engine does and not when this library does.
+  ///
+  /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+  /// engine describes nothing of its own.
+  final TsEphemerisManifestDart ts_ephemeris_manifest;
+
+  /// Calls one of the engine's own operations by the name its manifest
+  /// gives.
+  ///
+  /// `arguments_json` is a JSON object keyed by the parameter names the
+  /// manifest names, holding the ones it marks as a caller's to supply.
+  /// The answer is the engine's own JSON, unread by this library.
+  ///
+  /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+  /// engine describes nothing of its own or names no such operation, and
+  /// `PROVIDER` when the engine itself refuses.
+  final TsEphemerisCallDart ts_ephemeris_call;
 
 }
 
@@ -3503,6 +3533,48 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_panchanga_days(_handle, rawrequest, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// What the context's engine says it offers beyond this library's own
+  /// operations: its manifest, as the engine wrote it.
+  ///
+  /// The document names each operation, its parameters and the role of
+  /// each — which of them a caller supplies and which the engine fills.
+  /// Read it once and cache it against the engine's version; it changes
+  /// when the engine does and not when this library does.
+  ///
+  /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+  /// engine describes nothing of its own.
+  String ephemerisManifest() {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_ephemeris_manifest(_handle, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Calls one of the engine's own operations by the name its manifest
+  /// gives.
+  ///
+  /// `arguments_json` is a JSON object keyed by the parameter names the
+  /// manifest names, holding the ones it marks as a caller's to supply.
+  /// The answer is the engine's own JSON, unread by this library.
+  ///
+  /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+  /// engine describes nothing of its own or names no such operation, and
+  /// `PROVIDER` when the engine itself refuses.
+  String ephemerisCall(String function, String argumentsJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawfunction = function.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final rawargumentsJson = argumentsJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_ephemeris_call(_handle, rawfunction, rawargumentsJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

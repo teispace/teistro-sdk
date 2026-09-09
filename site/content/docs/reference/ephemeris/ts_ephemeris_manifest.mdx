@@ -1,0 +1,55 @@
+---
+title: ts_ephemeris_manifest
+description: "What the context's engine says it offers beyond this library's own operations: its manifest, as the engine wrote it."
+---
+
+What the context's engine says it offers beyond this library's own operations: its manifest, as the engine wrote it.
+
+The document names each operation, its parameters and the role of each — which of them a caller supplies and which the engine fills. Read it once and cache it against the engine's version; it changes when the engine does and not when this library does.
+
+`CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the engine describes nothing of its own.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_ephemeris_manifest(const ts_context * context, ts_string * out_json);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.ephemeris_manifest(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.ephemerisManifest(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/ephemeris.rs`.

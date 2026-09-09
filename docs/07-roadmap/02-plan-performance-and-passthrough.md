@@ -420,21 +420,42 @@ quietly close the door this opens.
 dispatcher from `tools/idl/teimeris.idl` and answers these two methods.
 The count on the measured page moves when it does.
 
-### B2. The shape
+### B2. The two entry points, and a proxy in each language
 
-Three entry points, and no per-function code anywhere in the SDK.
+**The boundary — built.** `ts_ephemeris_manifest` answers with the
+manifest the context's engine ships, and `ts_ephemeris_call(function,
+arguments_json)` relays a call by the name that manifest gives. Two
+entry points and no more, because the SDK holds no list of an engine's
+operations: neither signature mentions any engine, which is what lets an
+operation added after this library ships be callable through it.
 
-| entry point | answers |
-|---|---|
-| `ts_ephemeris_describe` | the engine's manifest, as JSON: every operation, its parameters and their roles |
-| `ts_ephemeris_call` | one operation by **name**, arguments as JSON, result as JSON |
-| `ts_ephemeris_manifest_version` | what the manifest was extracted from, for the stamp |
+`CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+engine describes nothing of its own — naming the engine, so the message
+says which one — and `PROVIDER` when the engine itself refuses.
 
-The SDK holds no list of engine operations. It holds a *dispatcher* that
-reads the manifest the engine ships and marshals by role. A function
-added to the engine appears in the engine's manifest and is callable the
-same day, with no SDK release — which is the requirement, stated as a
-mechanism.
+*What the architecture paid back.* Adding one module to the boundary put
+both functions into the C header, the Dart `dart:ffi` declarations, the
+Python `ctypes` declarations, the Node napi glue and the generated
+reference **without any of them being edited**. One description,
+generated bindings.
+
+*And a hole it found on the way.* The description is extracted from a
+hand-written list of sources (`teistro_idl::sdk::SOURCES`). A module of
+the `ffi` crate that holds entry points and is not on that list compiles,
+exports its symbols, and **no binding has ever heard of it** — the first
+version of this change was exactly that, and nothing said so. Nothing
+compared the list against the crate, which is `gate-has-a-runner` a
+third time, so `boundary-is-described` now does: every `ffi` module with
+a `#[unsafe(no_mangle)]` entry point is on the list, or says at the top
+of itself why not.
+
+**The proxy — next.** Each binding has a hand-written ergonomic layer
+over its generated declarations, and that is where
+`call("tm_eclipse_when", …)` becomes `engine.tm_eclipse_when(…)`:
+`__getattr__` in Python, a `Proxy` in Node, and Dart's `noSuchMethod`,
+each over the same two entry points, each reading the manifest for what
+a caller supplies. A binding that added a *list* of operations would
+undo the whole point, so none of them may.
 
 ### B3. The one hard part, stated plainly
 
@@ -531,7 +552,8 @@ the emitted code is verified in its own language.
    page cannot gate.
 7. **B1** the manifest, the port's two methods and the Rust surface —
    *done*; the adapter's generated dispatch is the engine's side.
-8. **B2** the dynamic proxy in the three bindings.
+8. **B2** the two entry points — *done* — and the dynamic proxy in the
+   three bindings.
 9. **A3** `compute.parallelism` with the threshold measured.
 10. **B3** `libffi` dispatch behind a feature.
 11. **C1** the `check-names` rule.
