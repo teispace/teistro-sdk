@@ -289,10 +289,31 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The Indian lunisolar calendar is discharged** — measured,
-   designed, built, crossed and compared — so the next task is whatever
-   the roadmap lists next for Phase 4. `check-parity` compares 597
-   values across the three bindings.
+3. **The next task is the completion's `centre` step**, and it is worth
+   saying why it can be done now.
+
+   Every Phase 4 deliverable is built. What is not met is Phase 4's
+   **exit** — the golden vectors reproduced in three bindings — and the
+   one thing blocking it is that all 55 recorded charts are
+   `topocentric: true` while `completion.rs` refuses any request whose
+   centre differs from the provider's native one. Two shipped profiles
+   (`nepali-default`, `kp-default`) cannot found a chart at all, which
+   is why both new examples had to change profile and why the parity
+   gate records the refusal as a compared value.
+
+   `astro-timescales-and-frames.md` §4 already designs the step — the
+   observer's WGS84 geocentric position and the parallax — and §7
+   deferred it to Phase 3 on the grounds that the built-in ephemeris
+   "is the first provider that returns a geometric J2000 frame". That
+   is a statement about which provider **needs** the steps, not a
+   dependency: topocentric parallax needs the observer's position and
+   the body's geocentric position and distance, and nothing of Phase
+   3's. So the centre step is separable from the rest of that phase,
+   and doing it alone unblocks Phase 4's exit and the two profiles.
+
+   The astro layer's bar for a ported routine is ERFA 2.0.1 with a
+   provenance table and reference tests at 1e-15, so this wants a
+   session of its own rather than the tail of one.
 
    The remaining Phase 4 work is what the roadmap lists;
    [`calendar-indian-lunisolar.md`](03-design/calendar-indian-lunisolar.md)
