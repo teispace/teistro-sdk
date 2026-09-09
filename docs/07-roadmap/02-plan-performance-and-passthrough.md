@@ -170,18 +170,68 @@ overlap between neighbouring days was always there; before this it was
 invisible to anything that could exploit it. That is what makes A1c and
 A2 possible, and it is worth having for its own sake besides.
 
-**A1c. Hoist what a range shares.** Consecutive days in a range search
-almost the same window, which is why 50 almanac days cost 50 × a day and
-why the repeat share rises with the batch. A range computes its shared
-crossings once and slices them per day.
+**A1d. Grid the horizon scan — built, and the attribution found it.**
+With the memo in place I re-attributed a fifty-day range's remaining
+21 663 calls before designing A1c, and A1c was not what they were:
 
-*Reordered by the measurement above.* With the grid anchored, **A2's
-memo captures 60.2% of a fifty-day range without restructuring
-anything**, where A1c needs `Almanac::between` rebuilt around a shared
-search. The memo is the cheaper and safer of the two and now reaches
-most of the same work, so **A2 comes first** and A1c follows for what a
-memo cannot reach: the arithmetic above the ephemeris, which a cache
-does not save.
+| calls | share | what asks |
+|---:|---:|---|
+| 14 032 | 65% | `rise_set::Solver::scan` — the fallback scan |
+| 4 275 | 20% | `Solver::iterate` — Meeus's iteration |
+| 1 902 | 9% | the lattice searches' refinements |
+| 842 | 4% | `find_sankranti` |
+
+**Eighty-five per cent of everything left was the horizon solver, and
+two thirds of it was a scan that A1's first draft had recorded as not
+running at a temperate latitude.** It runs, and this is why:
+`almanac::events` collects every rise in a window by searching from the
+last one it found, and the search that ends the loop has no event to
+find. Proving that costs a walk of the whole remaining window at
+ten-minute steps — a hundred and forty-four round trips — and it happens
+**twice a day, every day**, once for the rises and once for the sets.
+
+*The change.* `solve::first_zero_gridded` beside `first_zero`: the scan
+produces its instants by the walk's own recurrence and asks for them a
+chunk at a time, while the narrowing stays serial. `ApparentPositions`
+grows `apparent_many` beside `apparent`, defaulting to the walk and
+overridden by `Completion` with one `positions` request, exactly as
+`Longitudes` did for the lattice searches. `Solver::with_chunk` names the
+chunk and `solve::SCAN_CHUNK` is 32.
+
+Thirty-two rather than the whole window because a bracket scan **stops
+at the first sign change**, unlike a lattice search which visits every
+instant between its ends. So a chunk can be asked for and not used, and
+the waste is at most one chunk less one. Thirty-two is sized from what
+the scan is for: a rise the iteration could not settle is found within a
+few steps of where it left off, and an absence — the case that dominates
+— walks the whole window, where thirty-two turns a hundred and
+forty-four round trips into five.
+
+*Measured.* An almanac day fell from **681 calls to 395** and a fifty-day
+range from 33 270 to **19 632**; with the memo, a day is **333** and
+fifty days **8 174**. The cells are unchanged, because the same readings
+are being asked for in fewer requests.
+
+*Bit-identical*, and the test says so with `to_bits()` over the grazing
+star at 69.6°N where the scan is reached, across four event kinds and
+five chunk sizes with a chunk of one as the walk it replaced. The one
+thing that does differ is the **count of readings taken**, which may
+exceed the walk's by up to a chunk less one, because a chunk can carry
+instants past the one that brackets the crossing; the test bounds it
+rather than pretending otherwise, and no output carries that count.
+
+**A1c. Hoist what a range shares — deferred, and the measurement says
+why.** A1c was to have a range compute its shared searches once. Two
+things since have taken its ground. The anchored grid made neighbouring
+days ask for the *same instants*, and the memo then answered them
+without asking twice: a fifty-day range now fetches 23 888 cells against
+a union of 21 446 distinct ones, so the ephemeris work is already within
+11% of the least it could be. What A1c would still save is **arithmetic
+above the ephemeris** — walking the same scan and refining the same
+crossing once per day rather than once — which this page cannot gate,
+because it counts calls and not seconds by its own §1 argument. It waits
+for a countable measure or for A3, whose threads address the same
+arithmetic more directly.
 
 *What it costs, measured rather than feared.* A1a and A1b both move
 where a scan's samples fall, so the crossing instants they refine to are
@@ -426,14 +476,17 @@ the emitted code is verified in its own language.
 4. **A2** the batch memo and its `provider.cache_cells` knob — *done*, a
    fifty-day range 33 270 calls to 21 663, 55.7% answered from memory;
    the anchoring moved it ahead of A1c.
-5. **A1c** hoist what a range shares, for the arithmetic a memo cannot
-   save.
-6. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
+5. **A1d** grid the horizon scan — *done*, a fifty-day range 21 663
+   calls to 8 174, which the attribution found rather than the plan.
+6. **A1c** hoist what a range shares — *deferred*: the anchoring and the
+   memo took its ephemeris ground, and what is left is arithmetic this
+   page cannot gate.
+7. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
    Rust surface.
-7. **B2** the dynamic proxy in the three bindings.
-8. **A3** `compute.parallelism` with the threshold measured.
-9. **B3** `libffi` dispatch behind a feature.
-10. **C1** the `check-names` rule.
+8. **B2** the dynamic proxy in the three bindings.
+9. **A3** `compute.parallelism` with the threshold measured.
+10. **B3** `libffi` dispatch behind a feature.
+11. **C1** the `check-names` rule.
 
 Each step regenerates the measured page, so the numbers move in public
 and a regression is a failed gate rather than a memory.

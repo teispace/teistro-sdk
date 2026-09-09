@@ -646,26 +646,33 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
             .with_zodiac(Zodiac::Tropical);
         let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame).without_speeds();
         let done = self.positions(&request)?;
-        let cell = done
-            .columns
-            .at(0, 0)
-            .ok_or_else(|| Error::internal("a one-cell grid has a cell"))?;
-        if !cell.is_ok() {
-            return Err(Error::new(
-                teistro_core::error::Status::Provider,
-                format!(
-                    "{} at {ut1}: the provider answered {:?}",
-                    body.key(),
-                    cell.status
-                ),
-            )
-            .with_field("jd"));
+        apparent_cell(&done, 0, body, ut1)
+    }
+
+    fn apparent_many(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<Apparent>,
+    ) -> Result<(), Error> {
+        out.clear();
+        if ut1.is_empty() {
+            return Ok(());
         }
-        Ok(Apparent {
-            ra_deg: cell.lon,
-            dec_deg: cell.lat,
-            distance_au: cell.dist,
-        })
+        let jds: Vec<f64> = ut1.iter().map(|at| at.get()).collect();
+        let bodies = [body];
+        let frame = self
+            .capabilities
+            .native_frame
+            .with_coordinates(Coordinates::Equatorial)
+            .with_zodiac(Zodiac::Tropical);
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame).without_speeds();
+        let done = self.positions(&request)?;
+        out.reserve(ut1.len());
+        for (row, at) in ut1.iter().enumerate() {
+            out.push(apparent_cell(&done, row, body, *at)?);
+        }
+        Ok(())
     }
 
     fn describe(&self) -> String {
@@ -675,6 +682,36 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
             self.policy.key()
         )
     }
+}
+
+/// One row of a completed grid as an apparent position, or the
+/// provider's refusal for that cell.
+fn apparent_cell(
+    done: &Completed,
+    row: usize,
+    body: Body,
+    ut1: JulianDay<Ut1>,
+) -> Result<Apparent, Error> {
+    let cell = done
+        .columns
+        .at(row, 0)
+        .ok_or_else(|| Error::internal("a grid has a cell for every instant"))?;
+    if !cell.is_ok() {
+        return Err(Error::new(
+            teistro_core::error::Status::Provider,
+            format!(
+                "{} at {ut1}: the provider answered {:?}",
+                body.key(),
+                cell.status
+            ),
+        )
+        .with_field("jd"));
+    }
+    Ok(Apparent {
+        ra_deg: cell.lon,
+        dec_deg: cell.lat,
+        distance_au: cell.dist,
+    })
 }
 
 /// Rotates one cell's coordinates; speeds are rotated by a central

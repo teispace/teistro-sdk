@@ -408,8 +408,32 @@ provider's DUT1).
    already was for `&P`, without which nothing could wrap what a binding
    consumer supplies.
 
-   **The next step is A1c**, hoisting what a range's days share, for the
-   arithmetic above the ephemeris that a memo does not save.
+   **A1d is built, and the attribution found it rather than the plan.**
+   Re-attributing a fifty-day range's remaining 21 663 calls before
+   designing A1c showed that **85% of them were the horizon solver** and
+   two thirds were its *fallback scan* — which A1's first draft had
+   recorded as not running at a temperate latitude. It runs because
+   `almanac::events` collects every rise in a window by searching on from
+   the last, and the search that ends the loop has no event to find:
+   proving that walks the whole remaining window at ten-minute steps,
+   twice a day, every day. `solve::first_zero_gridded` now asks for the
+   scan's instants a chunk at a time (`Solver::with_chunk`,
+   `SCAN_CHUNK` = 32) while the narrowing stays serial, and
+   `ApparentPositions::apparent_many` is `Longitudes`' grid one axis
+   over. An almanac day fell 681 → **395** calls and fifty days
+   33 270 → **19 632**; with the memo, **333** a day and **8 174** for
+   fifty. Bit-identical, held by `to_bits()` over the grazing star at
+   69.6°N across four event kinds and five chunk sizes.
+
+   Cumulatively an almanac day is **1228 calls → 333** and fifty days
+   **60 631 → 8 174**, with every generated page unchanged throughout.
+
+   **A1c is deferred and the plan says why**: the anchoring and the memo
+   took its ephemeris ground — a fifty-day range now fetches 23 888 cells
+   against a union of 21 446 — so what it would still save is arithmetic
+   the measured page cannot gate, since it counts calls and not seconds.
+   **The next step is B1**, the engine manifest and generated dispatch,
+   which is the maintainer's must-have and the largest dead end left.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an
