@@ -143,13 +143,45 @@ planet — three quantities, two lattices, five chunk sizes — comparing
 `to_bits()` and the evaluation counts, and every generated page
 regenerates unchanged.
 
-**A1c. Hoist what a range shares.** The searches above reach ±40 days
-around each day; consecutive days in a range therefore search almost the
-same window, which is why 50 almanac days cost 50 × 1213 and why the
-repeat share *rises* with the batch. A range computes its shared
-crossings once and slices them per day. This is the change that turns a
-batch into a batch, and it wants A1a first so that what is hoisted is
-small.
+**A1b′. A crossing is a property of the crossing, not of the question —
+built, and it was a defect.** Building A1c asked a question first: is a
+crossing found in a range-wide search the crossing a per-day search
+would have found? Measured, no. The scan stepped from the caller's own
+`from`, so where its samples fell — and so which bracket the refinement
+was handed — depended on where the window started. The same sign
+ingress came back **up to 2.2 milliseconds apart** from windows offset
+by a fraction of a day, and only four of fifteen comparisons agreed to
+the bit.
+
+Samples are now aligned to `SCAN_ANCHOR_JD` (J2000.0) and computed as
+`anchor + k × step` by multiplication rather than by accumulating steps,
+so a narrower window's samples are a **subset** of a wider one's and any
+two windows that both contain a crossing bracket it identically. The
+ends of the scan are lattice points rather than the caller's instants,
+so a bracket may reach outside the window; a crossing found out there is
+real but not this window's, and is dropped rather than reported.
+
+*What it cost, and what it bought.* An almanac day rose from 665 calls
+to **681**, 2.4%, which is the extra sample at each end. In exchange the
+distinct cells of a fifty-day range fell from 39 675 to **21 446** and
+the repeat share rose from 24.7% to **60.2%** — because consecutive days
+now ask for *the same instants* rather than nearby different ones. The
+overlap between neighbouring days was always there; before this it was
+invisible to anything that could exploit it. That is what makes A1c and
+A2 possible, and it is worth having for its own sake besides.
+
+**A1c. Hoist what a range shares.** Consecutive days in a range search
+almost the same window, which is why 50 almanac days cost 50 × a day and
+why the repeat share rises with the batch. A range computes its shared
+crossings once and slices them per day.
+
+*Reordered by the measurement above.* With the grid anchored, **A2's
+memo captures 60.2% of a fifty-day range without restructuring
+anything**, where A1c needs `Almanac::between` rebuilt around a shared
+search. The memo is the cheaper and safer of the two and now reaches
+most of the same work, so **A2 comes first** and A1c follows for what a
+memo cannot reach: the arithmetic above the ephemeris, which a cache
+does not save.
 
 *What it costs, measured rather than feared.* A1a and A1b both move
 where a scan's samples fall, so the crossing instants they refine to are
@@ -346,14 +378,19 @@ the emitted code is verified in its own language.
    counted rather than asserted — part of the same pass.
 3. **A1** size each search by what it searches for (A1a — *done*, 1228
    calls a day to 841), grid the uniform scan (A1b — *done*, 841 to
-   665), hoist what a range shares (A1c).
-4. **A2** the batch memo and `provider.cache`.
-5. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
+   665), anchor the grid so a crossing does not depend on the window
+   (A1b′ — *done*, 665 to 681, and the repeat share of a fifty-day
+   range from 24.7% to 60.2%).
+4. **A2** the batch memo and `provider.cache`, which the anchoring moved
+   ahead of A1c.
+5. **A1c** hoist what a range shares, for the arithmetic a memo cannot
+   save.
+6. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
    Rust surface.
-6. **B2** the dynamic proxy in the three bindings.
-7. **A3** `compute.parallelism` with the threshold measured.
-8. **B3** `libffi` dispatch behind a feature.
-9. **C1** the `check-names` rule.
+7. **B2** the dynamic proxy in the three bindings.
+8. **A3** `compute.parallelism` with the threshold measured.
+9. **B3** `libffi` dispatch behind a feature.
+10. **C1** the `check-names` rule.
 
 Each step regenerates the measured page, so the numbers move in public
 and a regression is a failed gate rather than a memory.

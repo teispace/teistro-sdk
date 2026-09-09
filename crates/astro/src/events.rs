@@ -352,6 +352,21 @@ pub fn value_of<S: Longitudes + ?Sized>(
 }
 
 /// The quantity at an instant, as the search reads it.
+/// The index of the last anchored sample at or before an instant.
+///
+/// `floor` rather than `round`, so the window's first bracket always
+/// contains its start.
+fn grid_index(at: f64, step: f64) -> f64 {
+    ((at - SCAN_ANCHOR_JD) / step).floor()
+}
+
+/// The anchored sample at an index: `anchor + k × step`, by
+/// multiplication, so the same index is the same instant to the last bit
+/// whatever window reached it.
+fn grid_instant(index: f64, step: f64) -> f64 {
+    step.mul_add(index, SCAN_ANCHOR_JD)
+}
+
 /// The quantity at every instant, in the order asked: [`evaluate`] over
 /// a grid, written into `out`.
 ///
@@ -639,6 +654,27 @@ impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
     }
 }
 
+/// The epoch a scan's samples are aligned to: J2000.0.
+///
+/// A scan used to step from the caller's own `from`, so where its
+/// samples fell — and therefore which bracket the refinement was handed
+/// — depended on where the question started. Two callers asking about
+/// the same crossing from different windows got answers up to two
+/// milliseconds apart, and a crossing's instant was a property of the
+/// question as much as of the sky.
+///
+/// Aligning every sample to one epoch makes a narrower window's samples
+/// a **subset** of a wider one's, so any two windows that both contain a
+/// crossing bracket it identically and refine it to the same bits. That
+/// is worth having on its own, and it is what lets a range search once
+/// and slice the answer per day (`07-roadmap/02-plan-performance-and-passthrough.md`,
+/// A1c) without the slices disagreeing with the searches they replace.
+///
+/// Samples are `anchor + k × step` for a whole `k`, computed by
+/// multiplication rather than by accumulating steps, so the same `k`
+/// gives the same instant to the last bit however the scan reached it.
+pub const SCAN_ANCHOR_JD: f64 = 2_451_545.0;
+
 /// How many of a scan's instants are asked for in one grid by default.
 ///
 /// The scan visits every instant between its ends, so every sample it
@@ -799,14 +835,25 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         // The quantity unwrapped along the samples, so a lattice line is a
         // level on a continuous curve.
         let mut previous: Option<(f64, f64, f64)> = None;
-        let mut cursor = from.get();
+        // The samples are the anchored lattice's, from the last one at or
+        // before the window to the first one at or after it, so that every
+        // bracket is a whole step and two windows that both hold a
+        // crossing hand the refinement the same one. Each is computed from
+        // its own index rather than by adding a step to the last, because
+        // an accumulated sum depends on where it started and a product
+        // does not.
+        let mut index = grid_index(from.get(), step);
         let mut samples = 0u32;
+        let mut done = false;
         loop {
             instants.clear();
-            if previous.is_none() {
-                instants.push(JulianDay::literal(cursor));
-            }
-            while instants.len() < self.chunk && cursor < to.get() {
+            while instants.len() < self.chunk {
+                let at = grid_instant(index, step);
+                instants.push(JulianDay::literal(at));
+                if at >= to.get() {
+                    done = true;
+                    break;
+                }
                 if samples >= SAMPLE_CAP {
                     return Err(Error::new(
                         Status::NotConverged,
@@ -814,8 +861,7 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                     ));
                 }
                 samples += 1;
-                cursor = (cursor + step).min(to.get());
-                instants.push(JulianDay::literal(cursor));
+                index += 1.0;
             }
             if instants.is_empty() {
                 break;
@@ -877,10 +923,15 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                 }
                 previous = Some((t_hi, raw_hi, unwrapped_hi));
             }
-            if cursor >= to.get() {
+            if done {
                 break;
             }
         }
+        // A bracket may reach outside the window at either end, since the
+        // ends are lattice points rather than the caller's own instants.
+        // A crossing found out there is a real crossing and not this
+        // window's, so it is dropped rather than reported.
+        events.retain(|event| event.instant.get() >= from.get() && event.instant.get() <= to.get());
         Ok(events)
     }
 
