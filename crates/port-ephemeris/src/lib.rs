@@ -39,6 +39,7 @@
 //! ```
 
 pub mod body;
+pub mod caching;
 pub mod capabilities;
 pub mod columns;
 pub mod counting;
@@ -52,6 +53,7 @@ pub mod test_provider;
 pub mod vtable;
 
 pub use body::{Body, TimeScale};
+pub use caching::{CacheStats, CachingProvider};
 pub use capabilities::{
     Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
 };

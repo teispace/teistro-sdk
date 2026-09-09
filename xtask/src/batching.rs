@@ -95,7 +95,18 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 }
 
 /// Runs the example and reads what it measured.
-fn measurements(root: &Path) -> Result<(Vec<Measured>, Value), String> {
+/// One almanac range measured with the memo off and on.
+#[derive(Clone, Copy, Debug)]
+struct Memo {
+    size: u64,
+    calls: u64,
+    cells: u64,
+    cached_calls: u64,
+    cached_cells: u64,
+    hit_share: f64,
+}
+
+fn measurements(root: &Path) -> Result<(Vec<Measured>, Vec<Memo>, Value), String> {
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let output = Command::new(cargo)
         .args([
@@ -136,7 +147,29 @@ fn measurements(root: &Path) -> Result<(Vec<Measured>, Value), String> {
             }
         })
         .collect();
-    Ok((rows, value["reach"].clone()))
+    let mut memos: Vec<Memo> = Vec::new();
+    for row in value["memo"].as_array().map_or(&[][..], Vec::as_slice) {
+        let size = row["size"].as_u64().unwrap_or(0);
+        let made = row["calls"]["positions"].as_u64().unwrap_or(0);
+        let asked = row["calls"]["cells"].as_u64().unwrap_or(0);
+        if row["memo"].as_bool().unwrap_or(false) {
+            if let Some(memo) = memos.iter_mut().find(|memo| memo.size == size) {
+                memo.cached_calls = made;
+                memo.cached_cells = asked;
+                memo.hit_share = row["hit_share"].as_f64().unwrap_or(0.0);
+            }
+        } else {
+            memos.push(Memo {
+                size,
+                calls: made,
+                cells: asked,
+                cached_calls: 0,
+                cached_cells: 0,
+                hit_share: 0.0,
+            });
+        }
+    }
+    Ok((rows, memos, value["reach"].clone()))
 }
 
 /// The rows of one operation, in size order.
@@ -169,7 +202,7 @@ fn share(value: f64) -> String {
 }
 
 fn page(root: &Path) -> Result<String, String> {
-    let (rows, reach) = measurements(root)?;
+    let (rows, memos, reach) = measurements(root)?;
     let positions = largest(&rows, "positions").ok_or("the example measures a positions grid")?;
     let charts = largest(&rows, "charts").ok_or("the example measures a batch of charts")?;
     let almanac = largest(&rows, "almanac").ok_or("the example measures a range of days")?;
@@ -221,6 +254,19 @@ fn page(root: &Path) -> Result<String, String> {
             count(usize::try_from(almanac.size).unwrap_or_default())
         ),
     ));
+    if let Some(largest) = memos.last() {
+        claims.push(Claim::stated(
+            "a memo answers a repeated cell without touching the engine",
+            verdict_of(largest.hit_share > 0.5 && largest.cached_cells < largest.cells),
+            format!(
+                "{} of a range of {} days is answered from memory: {} cells instead of {}",
+                share(largest.hit_share),
+                count(usize::try_from(largest.size).unwrap_or_default()),
+                count(usize::try_from(largest.cached_cells).unwrap_or_default()),
+                count(usize::try_from(largest.cells).unwrap_or_default())
+            ),
+        ));
+    }
     let native = reach["native_operations"].as_u64().unwrap_or(0);
     claims.push(Claim::stated(
         "a consumer can reach what their engine offers beyond the port",
@@ -233,7 +279,7 @@ fn page(root: &Path) -> Result<String, String> {
     ));
 
     Ok(fill(&text(
-        &rows, &claims, positions, charts, almanac, sunrise,
+        &rows, &memos, &claims, positions, charts, almanac, sunrise,
     )))
 }
 
@@ -243,6 +289,7 @@ fn page(root: &Path) -> Result<String, String> {
 )]
 fn text(
     rows: &[Measured],
+    memos: &[Memo],
     claims: &[Claim],
     positions: &Measured,
     charts: &Measured,
@@ -401,7 +448,53 @@ fn text(
 
     let _ = writeln!(
         out,
-        "## 5. What is reachable at all\n\n\
+        "## 5. What the memo actually saves\n\n\
+         [`CachingProvider`](../../crates/port-ephemeris/src/caching.rs)\n\
+         over the same batches, the cache off and on. Both arms run the\n\
+         same code through the same types — a cache of nothing is a cache\n\
+         that does nothing — so what separates the numbers is the memo and\n\
+         nothing else, and the answers are identical cell for cell.\n"
+    );
+    let mut saved = String::from(
+        "| days | calls | cells | calls, cached | cells, cached | answered from memory |\n\
+         |---:|---:|---:|---:|---:|---:|\n",
+    );
+    for memo in memos {
+        let _ = writeln!(
+            saved,
+            "| {} | {} | {} | {} | {} | {} |",
+            count(usize::try_from(memo.size).unwrap_or_default()),
+            count(usize::try_from(memo.calls).unwrap_or_default()),
+            count(usize::try_from(memo.cells).unwrap_or_default()),
+            count(usize::try_from(memo.cached_calls).unwrap_or_default()),
+            count(usize::try_from(memo.cached_cells).unwrap_or_default()),
+            share(memo.hit_share)
+        );
+    }
+    let _ = writeln!(out, "{saved}");
+    if let (Some(first), Some(last)) = (memos.first(), memos.last()) {
+        let _ = writeln!(
+            out,
+            "The share answered from memory **rises with the batch** — {}\n\
+             for a single day, {} across {} — which is the same finding as\n\
+             §4 read from the other side, and the reason the memo is worth\n\
+             more than a cache of one call's own repeats. A range of {}\n\
+             days asks the ephemeris for {} cells instead of {}, in {}\n\
+             calls instead of {}.\n",
+            share(first.hit_share),
+            share(last.hit_share),
+            count(usize::try_from(last.size).unwrap_or_default()),
+            count(usize::try_from(last.size).unwrap_or_default()),
+            count(usize::try_from(last.cached_cells).unwrap_or_default()),
+            count(usize::try_from(last.cells).unwrap_or_default()),
+            count(usize::try_from(last.cached_calls).unwrap_or_default()),
+            count(usize::try_from(last.calls).unwrap_or_default())
+        );
+    }
+
+    let _ = writeln!(
+        out,
+        "## 6. What is reachable at all\n\n\
          The other half of the same question. A batch that asks well is\n\
          still limited to what it may ask for, and the port names \
          {PORT_OPERATIONS} operations: `positions` and seven declared\n\
@@ -422,16 +515,16 @@ fn text(
          the same is true of every other engine an adapter might wrap.\n"
     );
 
-    let _ = writeln!(out, "## 6. What this pass decides\n");
+    let _ = writeln!(out, "## 7. What this pass decides\n");
     let _ = writeln!(out, "{}", table(claims));
     let _ = writeln!(
         out,
         "{} of the {} claims are falsified, and they are falsified in an\n\
          order that matters. Threads would multiply the work rather than\n\
-         reduce it while two thirds of a chart batch's calls are repeats\n\
-         and seventeen of every eighteen round trips are avoidable width;\n\
-         the design that follows fixes the arithmetic first and spends\n\
-         hardware last.\n",
+         reduce it while more than half of a range's cells are asked for\n\
+         twice; the design fixes the arithmetic first and spends hardware\n\
+         last, and the numbers on this page move as each step of it lands\n\
+         ([`../07-roadmap/02-plan-performance-and-passthrough.md`](../07-roadmap/02-plan-performance-and-passthrough.md)).\n",
         spelled(
             claims
                 .iter()

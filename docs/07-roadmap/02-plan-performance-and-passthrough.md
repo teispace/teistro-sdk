@@ -210,24 +210,56 @@ same spans, to the tolerance, at either reach.
 
 ### A2. A memo across a batch, gated on the provider's own declaration
 
-*The finding:* the repeat share **rises with the batch** — 22.5% within
-one chart, 64.7% across fifty. That growth can only come from sharing
-between the items, which is what a batch exists to exploit.
+*Built as the mechanism; the settings knob follows.*
 
-*The change:* one memo, scoped to a single call, keyed by (instant, body,
-frame). Not a global cache: a batch's memo dies with the batch, so
-nothing outlives a request and no consumer is surprised by a stale sky.
+**What it is.** `port_ephemeris::CachingProvider<P>` wraps any provider,
+including a borrowed one, and answers a cell it has already been asked
+for from memory. A request is not all-or-nothing: the cells it already
+holds are kept, and it asks the provider for **the instants that lack a
+cell by the bodies missing at any of them** — one grid however scattered
+the gaps are, over-asking only where a body was already known at an
+instant another body was not. That is the shape a batch actually makes,
+now that the scan's samples are anchored: consecutive days ask for the
+same instants and differ at the ends.
 
-*The correctness argument, which is already in the port:*
-`Capabilities::deterministic` — "whether identical requests give
-identical bits" — is declared by both shipped adapters and **read by
-nothing**. The memo is sound exactly when that flag is true, and must
-refuse to exist when it is false. The flag finally has its reader, and it
-is the right one.
+**What makes it sound.** A memo answers a repeat with the first answer,
+so it is right exactly when the provider would have answered the same
+again. The port has always asked every provider to declare that —
+`Capabilities::deterministic` — and nothing read it. This reads it: a
+provider that does not declare it is wrapped but **not cached**, and
+`caching()` says which happened rather than leaving a caller to assume.
 
-*The knob:* `provider.cache` — `Auto` (memo when the provider declares
-determinism), `Off`, `On` (refused with the reason when the provider does
-not declare it). Reported in provenance, as everything applied is.
+**What it must not change.** The capabilities it reports are the inner
+provider's, unchanged, name and all: they reach the provenance stamp of
+every value the SDK produces, and the point of a cache is that nothing
+downstream can tell it is there.
+
+**What it costs.** One `BTreeMap` behind one lock, bounded by a capacity
+the caller chooses (65 536 cells by default, about six megabytes). Past
+the bound it stops admitting and keeps serving what it holds, so memory
+is a number someone chose rather than a function of how long the batch
+ran. A `BTreeMap` rather than a `HashMap` because the determinism lints
+forbid unordered iteration in a computation crate and a cache that
+iterates in a defined order needs no exception.
+
+*Measured*, on the gated page, both arms through the same types because
+a cache of nothing is a cache that does nothing:
+
+| days | calls | cached | cells | cached | from memory |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 681 | 616 | 1092 | 906 | 17.0% |
+| 50 | 33 270 | **21 663** | 53 935 | **23 888** | **55.7%** |
+
+The share answered from memory rises with the batch, which is §4's
+finding read from the other side.
+
+**Still to do: the knob.** A Rust consumer wraps their own provider. A
+binding consumer cannot — they hand the SDK a vtable and the SDK boxes
+it — so `provider.cache_cells` becomes a settings knob read where the
+SDK owns the chain, which is `TsContext::build`. One knob and not two:
+zero is off, any other number is the capacity, so there is no pair of
+settings that can contradict each other. That is what makes the memo
+reachable from every binding rather than from Rust alone.
 
 ### A3. Parallelism, as a knob, without a pool
 
@@ -381,8 +413,9 @@ the emitted code is verified in its own language.
    665), anchor the grid so a crossing does not depend on the window
    (A1b′ — *done*, 665 to 681, and the repeat share of a fifty-day
    range from 24.7% to 60.2%).
-4. **A2** the batch memo and `provider.cache`, which the anchoring moved
-   ahead of A1c.
+4. **A2** the batch memo (*done* — a fifty-day range 33 270 calls to
+   21 663, 55.7% answered from memory) and its `provider.cache_cells`
+   knob, which the anchoring moved ahead of A1c.
 5. **A1c** hoist what a range shares, for the arithmetic a memo cannot
    save.
 6. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,

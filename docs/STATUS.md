@@ -379,9 +379,30 @@ provider's DUT1).
 
    Cumulatively an almanac day is 1228 calls → 681 and fifty days
    60 631 → 33 270, with the determinism digest unchanged to the bit
-   throughout. **The next step is A2**, the batch memo, which the
-   anchoring moved ahead of A1c: it now reaches 60.2% of a fifty-day
-   range without restructuring anything.
+   throughout.
+
+   **A2's memo is built.** `port_ephemeris::CachingProvider<P>` wraps any
+   provider, including a borrowed one, and answers a cell it already
+   holds from memory; a request is not all-or-nothing, so it asks for the
+   instants that lack a cell by the bodies missing at any of them — one
+   grid however scattered the gaps. It is sound because it reads
+   `Capabilities::deterministic`, which the port has always asked
+   providers to declare and nothing read: a provider that does not
+   declare it is wrapped but **not cached**, and `caching()` says which.
+   The capabilities it reports are the inner provider's unchanged,
+   because they reach every provenance stamp and a cache must be
+   invisible. A fifty-day range falls from 33 270 calls to **21 663** and
+   from 53 935 cells to **23 888**, 55.7% answered from memory.
+
+   Cumulatively an almanac day is 1228 calls → 616 and fifty days
+   60 631 → 21 663.
+
+   **The next step is A2's knob.** A Rust consumer wraps their own
+   provider; a binding consumer hands the SDK a vtable and cannot, so
+   `provider.cache_cells` becomes a settings knob read in
+   `TsContext::build`, where the SDK owns the chain. One knob rather than
+   two — zero is off, any other number is the capacity — so no pair of
+   settings can contradict each other. Then A1c.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an
