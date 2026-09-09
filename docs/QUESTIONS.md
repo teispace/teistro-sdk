@@ -59,6 +59,55 @@ Recommendation: create `security@` and `conduct@` mailboxes on the
 Teispace domain and add them to `SECURITY.md` and `CODE_OF_CONDUCT.md`;
 until then the GitHub channels stand.
 
+## Q35. An MCP server, so an agent can compute rather than guess: `deferred`
+
+Raised by the maintainer 2026-09-09 and **deferred by them to the end of
+the plan**, to be discussed before anything is built. Recorded now so the
+analysis is not repeated.
+
+*Why it fits here rather than being a fashion.* Three things the SDK
+already has:
+
+1. **It would be a sixth emitter, not a new product.** The binding
+   architecture is a C ABI, an extracted API description and generators
+   (ADR-0004); five emitters exist. `idl/api.json` already carries per
+   field a `unit`, a `brand`, a `range` and an `example`, and per
+   function a documented purpose — which is a tool's JSON Schema with
+   its description, minus the transformation. The eighteen boundary
+   fields that gained units for the Python binding are the same fields
+   that would make a tool self-describing.
+2. **The provenance envelope is the differentiator.** A model asked for
+   a nakshatra answers with no ayanamsha named: the ambiguity that makes
+   this domain hard is the part a model silently drops. Every value the
+   SDK returns is stamped with the settings hash, the input hash, the
+   profile, the provider, the calculation and catalogue versions, the
+   time and calendar resolutions and any classical deviation (ADR-0020).
+   A tool that returns *that* is auditable and reproducible.
+3. **It composes with the engine passthrough.** B1 and B2 of
+   `02-plan-performance-and-passthrough.md` build a dispatcher over an
+   engine's self-describing manifest; tool discovery over a manifest is
+   the same mechanism, so an agent could reach the engine's own
+   operations without a second design.
+
+*The two hard parts, so they are not discovered late.* Several of the 41
+functions are lifetime plumbing — `ts_context_new`, `ts_string_free`,
+`ts_blob_free`, `ts_context_last_error` — and must never become tools, so
+which functions are agent-callable belongs in the **description** as a
+`meta` flag rather than as a list inside an emitter, which would be a
+second list to forget. And the settings tree cannot become tool
+parameters: the shape to weigh is a `profile` plus a settings patch
+object, with a separate tool that lists and explains the knobs, which the
+SDK can generate because `Settings::knob_paths` is already gated against
+the settings document.
+
+*What to settle when it is discussed:* where it runs (a local stdio
+binary, a hosted service, or an embeddable surface both wrap); what the
+tools cover first (compute alone is available today from Phase 4,
+interpretation needs Phase 6, passthrough needs B1–B3); and whether the
+generator lands early — because a generated surface grows itself as the
+SDK grows — with only the packaged, signed, install-checked server in
+Phase 9.
+
 ## Decisions log
 
 Decisions are recorded in the table above with the date; the reasoning is

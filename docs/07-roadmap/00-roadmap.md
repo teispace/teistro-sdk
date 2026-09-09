@@ -412,6 +412,14 @@ streaming) and the `reference` tier if it did not land in Phase 3
 Hijri, Hebrew, Persian), the remaining dasha rows as their citations
 close, festival rule packs, Swift and Kotlin bindings if needed.
 
+## Deferred, to be discussed before it is placed
+
+**An MCP server**, so an agent computes with the SDK rather than guessing
+at the domain — raised 2026-09-09 and deferred by the maintainer to the
+end of the plan. The analysis, why it is cheap here, the two hard parts
+and what has to be settled are in `QUESTIONS.md`, Q35. It is not placed
+in a phase until that discussion happens.
+
 ## v2
 
 Other traditions, the component-model wasm package, whatever the ecosystem
