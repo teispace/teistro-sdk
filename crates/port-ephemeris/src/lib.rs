@@ -41,6 +41,7 @@
 pub mod body;
 pub mod capabilities;
 pub mod columns;
+pub mod counting;
 pub mod crossing;
 pub mod error;
 pub mod frame;
@@ -55,6 +56,7 @@ pub use capabilities::{
     Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
 };
 pub use columns::{Cell, CellStatus, EphemerisKind, PositionColumns, Source};
+pub use counting::{CountingProvider, ProviderCalls};
 pub use crossing::{CrossingRequest, Direction, Event as CrossingEvent, Lattice, Quantity};
 pub use error::ProviderError;
 pub use frame::{Centre, Coordinates, Corrections, Equinox, Frame, Zodiac};

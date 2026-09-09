@@ -8,6 +8,12 @@
 //! classification functions that must stay integer arithmetic, and a
 //! settings knob that ships and resolves and is read by nobody.
 //!
+//! Two of them are properties of the repository rather than of a crate,
+//! and are here for the same reason: a workflow file that GitHub cannot
+//! parse, and a gate that is declared and that no workflow runs. Neither
+//! is compiled by anything, and both silence other gates when they
+//! break.
+//!
 //! A line that must break a rule says so with a `lint:` marker naming the
 //! rule and the reason; the gate prints those, so an allowance is an
 //! inventory rather than a silence.
@@ -399,6 +405,119 @@ fn declaration_of(source: &str, knob: &str) -> (usize, Option<String>) {
     (0, None)
 }
 
+/// The workflow files, sorted: the only source in the repository that
+/// GitHub parses and rustc does not, and the only place a gate is
+/// actually run.
+fn workflows(root: &Path) -> Vec<PathBuf> {
+    let dir = root.join(".github").join("workflows");
+    let mut out = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(&dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path
+                .extension()
+                .is_some_and(|extension| extension == "yml" || extension == "yaml")
+            {
+                out.push(path);
+            }
+        }
+    }
+    out.sort();
+    out
+}
+
+/// The gate a workflow line runs, if it runs one. The name is taken as a
+/// whole word rather than as a substring, because `check-doc` is a
+/// prefix of `check-docs`: a substring test would let a renamed gate
+/// pass while nothing ran it, which is the failure the rule exists for.
+fn gate_run_by(line: &str) -> Option<&str> {
+    let rest = line.split_once("cargo xtask ")?.1;
+    rest.split([' ', '"', '\''])
+        .next()
+        .filter(|name| name.starts_with("check-"))
+}
+
+/// The gate an arm of `xtask`'s entry point declares.
+fn gate_declared_by(line: &str) -> Option<&str> {
+    let rest = line.trim_start().strip_prefix("Some(\"")?;
+    let name = rest.split_once('"')?.0;
+    name.starts_with("check-").then_some(name)
+}
+
+/// Every workflow file parses.
+///
+/// A step name with an unquoted colon, a slipped indent, a duplicated
+/// key: GitHub answers a file it cannot read by failing the run in zero
+/// seconds, without starting a single step and without naming what is
+/// wrong. A suite of thirty gates then stops running, and the only sign
+/// of it is a red tick that says nothing. Nothing but a parse catches
+/// that before the push, and rustc never reads these files.
+fn workflows_parse(root: &Path, outcome: &mut Outcome) {
+    for path in workflows(root) {
+        let shown = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        if let Err(error) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&text) {
+            outcome.failures.push(Finding {
+                file: shown,
+                line: error.location().map_or(0, |place| place.line()),
+                text: error.to_string(),
+                rule: "workflow-parses",
+            });
+        }
+    }
+}
+
+/// Every gate is run by a workflow.
+///
+/// This is `knob-has-a-reader` one level up. A pass that regenerates a
+/// page in memory and fails on any difference holds that page only for
+/// as long as something runs it; declared and unwired, it is a gate the
+/// documentation claims and the repository does not have. A gate meant
+/// to be run by hand says so on its arm, so the exception is an
+/// inventory rather than a silence.
+fn gate_runners(root: &Path, outcome: &mut Outcome) {
+    let mut wired: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+    for path in workflows(root) {
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        for line in text.lines() {
+            if let Some(name) = gate_run_by(line) {
+                wired.insert(name.to_owned());
+            }
+        }
+    }
+    let entry = root.join("xtask").join("src").join("main.rs");
+    let Ok(text) = std::fs::read_to_string(&entry) else {
+        return;
+    };
+    for (number, line) in text.lines().enumerate() {
+        let Some(name) = gate_declared_by(line) else {
+            continue;
+        };
+        if wired.contains(name) {
+            continue;
+        }
+        let finding = Finding {
+            file: "xtask/src/main.rs".to_owned(),
+            line: number + 1,
+            text: format!("`cargo xtask {name}` is declared and no workflow runs it"),
+            rule: "gate-has-a-runner",
+        };
+        if excused(line, "gate-has-a-runner") {
+            outcome.allowed.push(finding);
+        } else {
+            outcome.failures.push(finding);
+        }
+    }
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -423,6 +542,8 @@ pub(crate) fn check(root: &Path) -> i32 {
     unsafe_inventory(root, &mut outcome);
     exact_classification(root, &mut outcome);
     knob_readers(root, &mut outcome);
+    workflows_parse(root, &mut outcome);
+    gate_runners(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -431,6 +552,8 @@ pub(crate) fn check(root: &Path) -> i32 {
         "unsafe-inventory",
         "exact-classification",
         "knob-has-a-reader",
+        "workflow-parses",
+        "gate-has-a-runner",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
@@ -459,7 +582,7 @@ pub(crate) fn check(root: &Path) -> i32 {
 
 #[cfg(test)]
 mod tests {
-    use super::declaration_of;
+    use super::{declaration_of, gate_declared_by, gate_run_by};
 
     /// The shape of a `group!` body, which is what the rule reads.
     const SOURCE: &str = "group!(
@@ -505,5 +628,57 @@ mod tests {
     #[test]
     fn a_knob_that_is_not_there_is_not_found() {
         assert_eq!(declaration_of(SOURCE, "no_such_knob"), (0, None));
+    }
+
+    #[test]
+    fn a_run_line_names_the_gate_it_runs() {
+        assert_eq!(
+            gate_run_by("        run: cargo xtask check-batching"),
+            Some("check-batching")
+        );
+        // With its arguments, and quoted, as the DCO and tag gates are run.
+        assert_eq!(
+            gate_run_by(r#"        run: cargo xtask check-tag "${GITHUB_REF_NAME}""#),
+            Some("check-tag")
+        );
+    }
+
+    #[test]
+    fn a_gate_is_matched_as_a_whole_word() {
+        // `check-doc` is a prefix of `check-docs`: a substring test would
+        // call it wired, which is the whole failure the rule exists for.
+        assert_eq!(
+            gate_run_by("        run: cargo xtask check-docs"),
+            Some("check-docs")
+        );
+        assert_ne!(
+            gate_run_by("        run: cargo xtask check-docs"),
+            Some("check-doc")
+        );
+    }
+
+    #[test]
+    fn a_line_that_runs_no_gate_names_none() {
+        assert_eq!(gate_run_by("        run: cargo xtask gen ffi"), None);
+        assert_eq!(gate_run_by("        run: cargo test --workspace"), None);
+    }
+
+    #[test]
+    fn an_arm_names_the_gate_it_declares() {
+        assert_eq!(
+            gate_declared_by(
+                "        Some(\"check-surface\") => surface::check_generated(&repo_root()),"
+            ),
+            Some("check-surface")
+        );
+    }
+
+    #[test]
+    fn an_arm_that_is_not_a_gate_declares_none() {
+        assert_eq!(
+            gate_declared_by("        Some(\"surface\") => surface::generate(&repo_root()),"),
+            None
+        );
+        assert_eq!(gate_declared_by("    let name = Some(\"check-x\");"), None);
     }
 }

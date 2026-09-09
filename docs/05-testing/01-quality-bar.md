@@ -120,7 +120,7 @@ The counting allocator found that on its first run.
 | gate | what it proves | tool | where it runs |
 |---|---|---|---|
 | format and lint | `rustfmt` clean; `clippy` with `all` and `pedantic` as errors; in library crates no `unwrap`, `expect`, `panic`, `todo`, `dbg`, printing or slice indexing (workspace lints) | `cargo fmt --check`, `cargo clippy -D warnings` | fast check |
-| determinism lints | no unordered collection in a computation crate unless the file says why it is safe; no reads of the clock, the environment or the process in one; only the port, the boundary and the addon may hold unsafe code; the classification functions are `const fn`, which stable Rust cannot compute in floating point; **every settings knob has a reader outside the settings layer**, or says at its declaration which module will read it | `cargo xtask check-lints` | fast check |
+| determinism lints | no unordered collection in a computation crate unless the file says why it is safe; no reads of the clock, the environment or the process in one; only the port, the boundary and the addon may hold unsafe code; the classification functions are `const fn`, which stable Rust cannot compute in floating point; **every settings knob has a reader outside the settings layer**, or says at its declaration which module will read it; **every workflow file parses**; **every gate is run by a workflow**, or says on its arm that it is run by hand | `cargo xtask check-lints` | fast check |
 | unsafe confinement | `#![forbid(unsafe_code)]` everywhere except `ffi`; every `unsafe` block in `ffi` carries a `SAFETY:` comment reviewed | lint and review | fast check |
 | documentation | every public item documented with a compiled example; no warnings from `cargo doc` | `cargo doc -D warnings` | fast check |
 | dependencies | licences on the allow list (`deny.toml`; copyleft and MPL denied everywhere), no oracle or ephemeris adapter in a publishable crate's graph, advisories none, duplicates justified, every dependency vetted | `cargo deny check`, `cargo-audit`, `cargo-vet` | fast check (deny), weekly (audit) |
@@ -149,8 +149,29 @@ A knob whose module is not written yet says so where it is declared,
 with a `lint: knob-has-a-reader` marker naming what will read it. The
 gate prints those, so a deferral is an inventory rather than a silence —
 and **an allowance that is no longer needed is itself a failure**, so
-the inventory cannot rot. Thirteen are deferred today, all to Phase 3
+the inventory cannot rot. Twelve are deferred today, all to Phase 3
 and Phase 5 modules that do not exist.
+
+### A gate nothing runs
+
+The same argument holds one level up, and cost a run to learn. A gate
+regenerates a page in memory and fails on any difference; it holds that
+page for exactly as long as something runs it. `check-surface` was
+declared in `xtask`, named in this document and named on the page it
+was said to hold — and no workflow ran it, so
+`03-design/binding-surface-measured.md` had been ungated since it was
+written. Nothing compared the list of gates against the list of things
+that run them, which is `knob-has-a-reader` with the knob one level up,
+so `gate-has-a-runner` now does. A gate meant to be run by hand says so
+on its arm and appears in the inventory.
+
+Its neighbour is smaller and sharper. GitHub answers a workflow file it
+cannot parse by failing the run **in zero seconds**, without starting a
+step and without naming what is wrong: a step name with an unquoted
+colon in it stopped all thirty gates in the fast check at once, and the
+only sign was a red tick. Nothing in the repository parses those files —
+`rustc` never reads them — so `workflow-parses` does, in the pass that
+they themselves run.
 
 ## The rule behind the rules
 

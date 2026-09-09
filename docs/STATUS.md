@@ -301,38 +301,50 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is the conformance harness that compares computed
-   positions against the corpus**, and the thing that used to block it
-   no longer does.
+3. **The next task is step A1 of
+   [`07-roadmap/02-plan-performance-and-passthrough.md`](07-roadmap/02-plan-performance-and-passthrough.md)**,
+   and the plan is the thing to read before anything else in this file.
 
-   The completion's `centre` step is built
-   ([`topocentric-measured.md`](03-design/topocentric-measured.md),
-   `astro::topocentric`). Every Phase 4 deliverable is built and the
-   cross-phase dependency the roadmap recorded is discharged: all 55
-   recorded charts are `topocentric: true`, and the SDK now produces a
-   topocentric position over **any** provider rather than only over one
-   that answers the frame natively. The shipped profiles that could not
-   found a chart at all now do; the rectification examples run under
-   `nepali-default` as a Nepali birth record should; and `check-parity`
-   compares the chart that profile founds — 635 values across three
-   bindings, where it compared 594 before and 103 two sessions ago.
+   The maintainer set a standing brief on 2026-09-09 with two halves,
+   and a falsification pass measured where the SDK stands against both
+   (`03-design/batch-and-parallelism-measured.md`, gated by
+   `check-batching`).
 
-   What the step is, since it is not what this project's own design page
-   said it was: a displacement **and** an aberration, on the direction
-   the light came from rather than on the apparent one, with the body
-   carried over the light time the station saves. The measured page has
-   the nine readings it falsified and the two things it leaves open —
-   0.084″ on the Moon that nothing constructible accounts for, and a
-   velocity transform the corpus cannot decide because it records a
-   longitude speed and neither of the other two rates.
+   **Efficiency.** `positions` is a true batch — one ephemeris call
+   whether it holds one instant or fifty — and **everything built on it
+   is a loop**: 69 calls per chart, 1 213 per almanac day, at a mean call
+   width of 1.1 cells through a port whose one required operation takes a
+   grid. The repeat share rises with the batch, 22.5% within one chart to
+   64.7% across fifty, which can only come from sharing between the
+   items. The order of the fixes is the finding: **grid the searches,
+   then memo the batch, then spend threads** — threads first would
+   parallelise redundant work. `Capabilities::deterministic` is declared
+   by both adapters and read by nothing; it is the memo's correctness
+   gate and now has its reader.
 
-   What remains for Phase 4's **exit** is the comparison itself: nothing
-   yet compares a *computed* longitude against the 55 charts.
-   `crates/chart/tests/baseline_bhavas.rs` reads the recorded
-   `sidereal_longitude_deg` and checks the bhava it falls in, so it
-   tests the placement rule rather than the position. That comparison
-   needs the Teimeris adapter, so it is the conformance harness's work,
-   and it is what will decide whether the 0.084″ matters.
+   **Reach.** The port names eight operations; Teimeris's public header
+   names 161 functions, 57 structs and 40 enums, so a consumer wanting an
+   eclipse or a star must open a second handle to the same engine. The
+   requirement is stricter than a passthrough: an operation the engine
+   gains *after* the SDK ships must be callable without an SDK release.
+   That is achievable because Teimeris already describes itself —
+   `tools/idl/teimeris.idl`, 13 472 lines extracted from its own headers,
+   carrying every signature **and a role for every parameter**, the same
+   role vocabulary this SDK's own IDL uses. The SDK will hold no list of
+   engine operations, only a dispatcher over the manifest the engine
+   ships. The plan's §B3 records the one hard part so it is not
+   rediscovered: doubles do not travel in the same registers as integers,
+   and 82 Teimeris functions take doubles by value, so a uniform
+   word-sized dispatcher is wrong silently.
+
+   Everything the maintainer and I settle mid-flight goes into that plan
+   before it goes into code, so a compaction or a new session loses
+   nothing.
+
+   The conformance harness — comparing a **computed** longitude against
+   the 55 recorded charts, which is Phase 4's remaining exit work and
+   what decides whether the topocentric step's 0.084″ on the Moon
+   matters — is unblocked and waits behind these.
 
    **The page also poses the question the design has to answer.** A
    lunisolar date's day is the tithi at sunrise, which repeats one day
