@@ -255,8 +255,8 @@ an application that shows one usually has a reader who wants the other.
 The intercalation is not settled here. The corpus marks two adhika months
 and no kshaya month, which shows the field is computed and does not test
 the rule that computes it. Adhika and kshaya belong to
-`calendar-indian-lunisolar.md`; this module reads the month from that
-calendar and does not decide it.
+[`calendar-indian-lunisolar.md`](calendar-indian-lunisolar.md); this
+module reads the month from that calendar and does not decide it.
 
 The rule that calendar will apply is now measured
 ([`calendar-indian-lunisolar-measured.md`](calendar-indian-lunisolar-measured.md)):
