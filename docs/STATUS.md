@@ -284,17 +284,20 @@ provider's DUT1).
    The JSON Schema emitter waits behind it, and deliberately. The schema
    comes from the API description (`schema-measured.md` settles that:
    not a sample, which cannot tell a count from a whole double nor give
-   a string field its member list), and the description holds 25 structs
+   a string field its member list), and the description holds 27 structs
    — all C-boundary types, none of the chart document's. A schema
    emitted now would describe a fragment. It is worth writing when the
-   description holds a whole document.
+   description holds a whole document. The two blobs now built do not
+   change that: they describe wire layouts, not the Rust value tree a
+   stored document is.
 
    After both, the **Indian lunisolar calendar** `panchanga` still needs
    for adhika and kshaya months.
 
-   Every binding now ships **six worked examples** (`bindings/*/example/`,
-   the same six scenarios in three languages, every file run by that
-   binding's gate). Writing them was a falsification pass over the three
+   Every binding now ships **eight worked examples**
+   (`bindings/*/example/`, the same eight scenarios in three languages,
+   every file run by that binding's gate — the six the fifty-second
+   session wrote, plus a rectification pass and a week's panchangam). Writing them was a falsification pass over the three
    ergonomic layers; the nine gaps it found are in `CHANGELOG.md` and in
    this file's session row, and the rule it earned is in
    `02-architecture/07-binding-architecture.md` under "Examples". Two
