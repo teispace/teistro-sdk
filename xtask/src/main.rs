@@ -64,6 +64,11 @@
 //! - `lunisolar` and `check-lunisolar`: the falsification pass over the
 //!   Indian lunisolar month, which the calendar that decides adhika and
 //!   kshaya is designed from.
+//! - `topocentric` and `check-topocentric`: the falsification pass over
+//!   the topocentric centre, which the completion's `centre` step is
+//!   designed from — the observer's displacement, the aberration its own
+//!   motion adds, the ellipsoid it stands on and the points that take
+//!   neither.
 //! - `almanac` and `check-almanac`: the falsification pass over the
 //!   shape of a batch of almanacs, which the panchanga blob's layout is
 //!   designed from.
@@ -136,6 +141,7 @@ mod site;
 mod state;
 mod surface;
 mod time;
+mod topocentric;
 mod vargas;
 
 use std::env;
@@ -183,6 +189,8 @@ fn main() {
         Some("houses") => houses::generate(&repo_root()),
         Some("check-almanac") => almanac::check_generated(&repo_root()),
         Some("check-lunisolar") => lunisolar::check_generated(&repo_root()),
+        Some("check-topocentric") => topocentric::check_generated(&repo_root()),
+        Some("topocentric") => topocentric::generate(&repo_root()),
         Some("lunisolar") => lunisolar::generate(&repo_root()),
         Some("almanac") => almanac::generate(&repo_root()),
         Some("check-schema") => schema::check_generated(&repo_root()),
@@ -244,7 +252,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-almanac | almanac | check-lunisolar | lunisolar | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-almanac | almanac | check-lunisolar | lunisolar | check-topocentric | topocentric | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }
