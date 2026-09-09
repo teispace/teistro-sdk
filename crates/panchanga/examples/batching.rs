@@ -290,6 +290,15 @@ fn run_almanac(provider: &Measured, size: usize) -> CacheStats {
 /// more, and what it names beyond them is unreachable through the SDK.
 fn reach() -> serde_json::Value {
     let provider = TestProvider;
+    // What the engine names beyond the port, reached through the port
+    // rather than around it: the manifest the provider ships, read
+    // through `Native`. The SDK holds no list of these — it counts what
+    // the engine declares, so this number moves when the engine does and
+    // not when the SDK does.
+    let native = provider
+        .native()
+        .and_then(|native| native.manifest().ok())
+        .map_or(0, |manifest| manifest.len());
     serde_json::json!({
         "port_operations": PORT_OPERATIONS,
         "declared_overrides": provider
@@ -297,7 +306,7 @@ fn reach() -> serde_json::Value {
             .overrides
             .names()
             .len(),
-        "native_operations": 0,
+        "native_operations": native,
     })
 }
 

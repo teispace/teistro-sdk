@@ -358,6 +358,14 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
         self.inner.crossings(request)
     }
+
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        self.inner.native_manifest()
+    }
+
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        self.inner.native_call(function, arguments_json)
+    }
 }
 
 /// The instants and bodies a request still needs: the instants that lack
@@ -655,5 +663,50 @@ mod tests {
             cached.capabilities().describe(),
             plain.capabilities().describe()
         );
+    }
+}
+
+#[cfg(test)]
+mod native_tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::indexing_slicing,
+        reason = "tests fail by panicking and index their own fixtures"
+    )]
+
+    use super::*;
+    use crate::counting::CountingProvider;
+    use crate::test_provider::TestProvider;
+
+    /// A wrapper must not swallow what it wraps.
+    ///
+    /// The cache and the counter both stand between a consumer and their
+    /// engine. If either dropped the engine's own operations, wrapping a
+    /// provider — which the boundary now does from settings — would
+    /// quietly close the door this whole passthrough opens.
+    #[test]
+    fn a_wrapped_provider_keeps_its_engines_own_operations() {
+        let stacked = CachingProvider::new(CountingProvider::new(TestProvider::new()));
+        assert!(stacked.capabilities().native, "declared through both");
+        let native = stacked.native().expect("reachable through both");
+        assert_eq!(native.manifest().unwrap().engine, "test-provider");
+        let answer = native
+            .call("tp_echo", &serde_json::json!({ "value": 2.5 }))
+            .unwrap();
+        assert_eq!(answer["value"], 2.5);
+    }
+
+    /// And through a borrow and a box, which is how the boundary holds one.
+    #[test]
+    fn a_borrowed_and_a_boxed_provider_keep_them_too() {
+        let provider = TestProvider::new();
+        let borrowed = &provider;
+        assert_eq!(
+            borrowed.native_call("tp_echo", r#"{"value":1}"#).unwrap(),
+            provider.native_call("tp_echo", r#"{"value":1}"#).unwrap()
+        );
+        let boxed: Box<dyn EphemerisProvider> = Box::new(TestProvider::new());
+        assert!(boxed.native_manifest().is_ok());
     }
 }

@@ -351,6 +351,13 @@ pub struct Capabilities {
     pub ayanamshas: Vec<Ayanamsha>,
     /// Whether identical requests give identical bits.
     pub deterministic: bool,
+    /// Whether the engine describes its own operations, so that a
+    /// consumer can reach what this port does not name
+    /// ([`crate::native`]).
+    ///
+    /// Declared rather than discovered, so a caller asks once instead of
+    /// finding out by a failing call.
+    pub native: bool,
 }
 
 impl Capabilities {
@@ -492,6 +499,7 @@ mod tests {
             overrides: Overrides::AYANAMSHA,
             ayanamshas: vec![Ayanamsha::Lahiri],
             deterministic: false,
+            native: false,
         };
         assert!(capabilities.covers(5.0) && !capabilities.covers(11.0));
         assert!(capabilities.has_body(Body::Sun) && !capabilities.has_body(Body::Moon));

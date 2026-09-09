@@ -197,6 +197,8 @@ impl EphemerisProvider for SiddhantaProvider {
                 .with(Overrides::RISE_SET),
             ayanamshas: vec![Ayanamsha::Suryasiddhanta],
             deterministic: true,
+            // A classical model has no engine of its own to describe.
+            native: false,
         }
     }
 

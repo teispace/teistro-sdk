@@ -47,6 +47,7 @@ pub mod crossing;
 pub mod error;
 pub mod frame;
 pub mod horizon;
+pub mod native;
 pub mod provider;
 pub mod sefile;
 pub mod test_provider;
@@ -63,6 +64,7 @@ pub use crossing::{CrossingRequest, Direction, Event as CrossingEvent, Lattice, 
 pub use error::ProviderError;
 pub use frame::{Centre, Coordinates, Corrections, Equinox, Frame, Zodiac};
 pub use horizon::{DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Refraction};
+pub use native::{Native, NativeFunction, NativeManifest, NativeParam, Role};
 pub use provider::{EphemerisProvider, PositionRequest, validate};
 pub use test_provider::TestProvider;
 pub use vtable::{

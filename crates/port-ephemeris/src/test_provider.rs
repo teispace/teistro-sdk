@@ -143,6 +143,40 @@ impl TestProvider {
     }
 }
 
+/// What this provider says it offers beyond the port, in the shape a
+/// real engine's manifest has.
+///
+/// Two functions and no more. It is not pretending to be an engine: it
+/// is the smallest thing that exercises the whole passthrough — a
+/// manifest that parses, a function with an input role and one with an
+/// output role, a name that is not in the manifest, and an argument of
+/// the wrong shape — so the path can be tested with no engine present,
+/// which is what this provider is for.
+const NATIVE_MANIFEST: &str = r#"{
+  "engine": "test-provider",
+  "version": "1",
+  "functions": [
+    {
+      "name": "tp_echo",
+      "doc": "Answers with the value it was given, so a caller can prove the relay works.",
+      "returns": "object",
+      "params": [
+        { "name": "value", "role": "value", "kind": "double", "doc": "Any number." }
+      ]
+    },
+    {
+      "name": "tp_sum",
+      "doc": "Adds an array, which exercises the array roles a real manifest carries.",
+      "returns": "object",
+      "params": [
+        { "name": "values", "role": "array_in", "kind": "double *" },
+        { "name": "count", "role": "array_len", "kind": "size_t" },
+        { "name": "total", "role": "scalar_out", "kind": "double *" }
+      ]
+    }
+  ]
+}"#;
+
 impl EphemerisProvider for TestProvider {
     fn capabilities(&self) -> Capabilities {
         Capabilities {
@@ -163,6 +197,39 @@ impl EphemerisProvider for TestProvider {
             overrides: Overrides::NONE,
             ayanamshas: Vec::new(),
             deterministic: true,
+            native: true,
+        }
+    }
+
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        Ok(String::from(NATIVE_MANIFEST))
+    }
+
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        // What a generated adapter does per function, by hand for two:
+        // read the arguments the manifest named, do the work, answer with
+        // the out roles. The SDK never sees any of it.
+        let arguments: serde_json::Value = serde_json::from_str(arguments_json)
+            .map_err(|err| ProviderError::invalid(format!("the arguments do not parse: {err}")))?;
+        match function {
+            "tp_echo" => {
+                let value = arguments
+                    .get("value")
+                    .and_then(serde_json::Value::as_f64)
+                    .ok_or_else(|| ProviderError::invalid("tp_echo wants `value`, a number"))?;
+                Ok(serde_json::json!({ "value": value }).to_string())
+            }
+            "tp_sum" => {
+                let values = arguments
+                    .get("values")
+                    .and_then(serde_json::Value::as_array)
+                    .ok_or_else(|| ProviderError::invalid("tp_sum wants `values`, an array"))?;
+                let total: f64 = values.iter().filter_map(serde_json::Value::as_f64).sum();
+                Ok(serde_json::json!({ "total": total, "count": values.len() }).to_string())
+            }
+            other => Err(ProviderError::unsupported(format!(
+                "this engine names no function `{other}`"
+            ))),
         }
     }
 

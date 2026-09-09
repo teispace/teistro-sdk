@@ -432,8 +432,27 @@ provider's DUT1).
    took its ephemeris ground — a fifty-day range now fetches 23 888 cells
    against a union of 21 446 — so what it would still save is arithmetic
    the measured page cannot gate, since it counts calls and not seconds.
-   **The next step is B1**, the engine manifest and generated dispatch,
-   which is the maintainer's must-have and the largest dead end left.
+   **B1's route is built.** The port gained two optional methods —
+   `native_manifest()` for the manifest the engine ships and
+   `native_call(function, arguments_json)` to relay a call by the name
+   that manifest gives — with `Capabilities::native` declaring them, in
+   one of the two bytes `CapabilitiesC` had reserved, so the struct's
+   size and offsets are unchanged and an adapter built against the old
+   header still binds. `port_ephemeris::Native` reads the manifest into
+   typed values. **The SDK holds no list of an engine's operations**, so
+   a function the engine gains after the SDK ships is callable the day it
+   appears; `Role::Other` keeps an unrecognised role rather than failing
+   the whole manifest, and treats it as a caller's to supply so the
+   function stays callable. The test provider ships a two-function
+   manifest so the path is held by tests with no engine present, and the
+   cache, the counter, a borrow and a box each forward the methods with a
+   test that says so.
+
+   The measured page's oldest falsified claim — *a consumer can reach
+   what their engine offers beyond the port* — now **holds**.
+
+   **The next step is B2**, the dynamic proxy in the three bindings, and
+   then the Teimeris adapter's own generated dispatch.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an
@@ -447,7 +466,8 @@ provider's DUT1).
    engine operations, only a dispatcher over the manifest the engine
    ships. The plan's §B3 records the one hard part so it is not
    rediscovered: doubles do not travel in the same registers as integers,
-   and 82 Teimeris functions take doubles by value, so a uniform
+   and 82 Teimeris parameters are doubles passed by value across 54 of
+   its functions, with eight more returning one, so a uniform
    word-sized dispatcher is wrong silently.
 
    Everything the maintainer and I settle mid-flight goes into that plan
