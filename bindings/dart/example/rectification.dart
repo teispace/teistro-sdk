@@ -22,12 +22,14 @@ String _two(int value) => value.toString().padLeft(2, '0');
 
 void main() {
   final teistro = Teistro.open();
-  // The default profile, whose frame is geocentric. A topocentric
-  // profile — `nepali-default` among them — needs a provider that
-  // answers topocentric natively until the completion's centre step
-  // lands (`03-design/chart-at-the-boundary.md` §8).
+  // `nepali-default` is what a Nepali birth record is cast under, and
+  // its frame is **topocentric**: the chart is seen from the hill the
+  // record was written on rather than from the centre of the Earth. The
+  // completion does that step itself over any provider
+  // (`03-design/topocentric-measured.md`), so the analytic one below is
+  // enough, and the steps printed at the end name it.
   final ctx = teistro.context(
-    profile: 'parashari-classical',
+    profile: 'nepali-default',
     locale: 'ne-Deva-NP',
     testProvider: true,
   );

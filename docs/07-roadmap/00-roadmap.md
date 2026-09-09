@@ -196,19 +196,26 @@ within tolerance in three bindings on both providers (Teimeris and
 built-in `standard`, with the built-in differences within its published
 bound).
 
-**This exit depends on a Phase 3 deliverable**, which was not recorded
-until a chart first crossed the boundary (2026-09-08). All 55 recorded
-charts are `topocentric: true`, and the corpus carries fixtures built so
-that the frame decides an outcome — c049 to c055 place the Moon at a
-pada edge where the geocentric Moon is still on the other side, so the
-pada or the dasha lord depends on it. Phase 2 deferred the completion's
-**centre** step to Phase 3 by decision; until Phase 3 delivers it, a
-provider that does not answer topocentric natively cannot found a chart
-under a topocentric profile at all, and no computed longitude can be
-compared against those charts. The dependency is invisible in the tests
-today because `chart/tests/baseline_bhavas.rs` reads the recorded
-longitudes and checks the bhava they fall in, so it measures the
-placement rule rather than the position.
+**This exit depended on a Phase 3 deliverable**, which was not recorded
+until a chart first crossed the boundary (2026-09-08), and the
+dependency was **discharged on 2026-09-09**. All 55 recorded charts are
+`topocentric: true`, and the corpus carries fixtures built so that the
+frame decides an outcome — c049 to c055 place the Moon at a pada edge
+where the geocentric Moon is still on the other side, so the pada or the
+dasha lord depends on it. Phase 2 deferred the completion's **centre**
+step to Phase 3 by decision, and the deferral's reason turned out to name
+which provider *needs* the steps rather than what they depend on: the
+topocentric centre needs the observer's position and the body's
+geocentric one and nothing of the built-in ephemeris, so it was
+separable and was built where it was needed
+(`03-design/topocentric-measured.md`, `astro::topocentric`). The SDK now
+produces a topocentric position over any provider. What the exit still
+waits on is the comparison itself: nothing yet compares a *computed*
+longitude against those charts, because
+`chart/tests/baseline_bhavas.rs` reads the recorded longitudes and
+checks the bhava they fall in, so it measures the placement rule rather
+than the position. That comparison needs an adapter, so it is the
+conformance harness's work.
 
 Where it stands, 2026-09-07:
 
@@ -218,7 +225,8 @@ Where it stands, 2026-09-07:
 | `chart` foundation | **built**: `crates/chart`, 37 tests. `day` (the day an instant belongs to, which is not its civil date), `zodiac` (one ayanamsha for the grahas and the cusps alike), `bhava` (the twelve bhavas with their madhya as well as their sandhi) and `foundation` (the value, stamped). Design: `03-design/chart-foundation.md` |
 | the panchanga day | **built**: `crates/panchanga`, 59 tests. The falsification pass first (`cargo xtask panchanga`, held by `check-panchanga`), then the design page, then the crate — the limbs as spans with both pairs of bounds, one divider on two arcs, the choghadiya as the hora's walk, the yogas as intervals; three new knobs and four new catalogue kinds. Every period, the month, panchaka, the ayana and the disha shool reproduce the corpus exactly; the limb *instants* wait on the conformance harness, which needs an adapter |
 | `houses` with the named variants | **built**: `crates/houses`, 26 tests. Falsified first (`cargo xtask houses`, held by `check-houses`), and the pass had to find its own subject: most of the recorded section already had a reader, so it measured the parts that did not. The degeneracy flag disagrees with the SDK's outcome in **both directions** (entry 26), the chalit's shift now holds counted either way, and `houses.module_overrides` — populated by the root on every shipped profile — finally has a reader |
-| the Indian lunisolar calendar | **built**: `crates/calendar::lunisolar`, 5 tests, and the mark crosses to all three bindings (597 parity values). Measured first (`cargo xtask lunisolar`, held by `check-lunisolar`) over 12 368 lunar months of a millennium, computed from the Surya Siddhanta's own Sun and Moon so the calendar takes no ephemeris. The rule is the count of sankrantis in the month — none adhika, one ordinary, two kshaya — and it reproduces the corpus's marking on all fifty-five recorded days. Two things the measurement corrected: an adhika month needs **no** naming rule of its own, because the Sun stands in the same sign at its new moon as at the following nija month's, so `panchanga` gained the mark and changed nothing else; and the classification is robust where the *month of an instant* is not, the one disagreement being nineteen minutes from the eclipse new moon of 8 April 2024. The design (`03-design/calendar-indian-lunisolar.md`) is deliberately **the mark and not dates**: a lunisolar date's day repeats one day in forty-four and is skipped one in twenty-six, so it needs two flags `CalendarDate` does not carry, and §6 records what a full `CalendarSystem` would cost and why nothing needs it yet. Kshaya is **measured and not tested** — the corpus records none |
+| the Indian lunisolar calendar | **built**: `crates/calendar::lunisolar`, 5 tests, and the mark crosses to all three bindings (635 parity values). Measured first (`cargo xtask lunisolar`, held by `check-lunisolar`) over 12 368 lunar months of a millennium, computed from the Surya Siddhanta's own Sun and Moon so the calendar takes no ephemeris. The rule is the count of sankrantis in the month — none adhika, one ordinary, two kshaya — and it reproduces the corpus's marking on all fifty-five recorded days. Two things the measurement corrected: an adhika month needs **no** naming rule of its own, because the Sun stands in the same sign at its new moon as at the following nija month's, so `panchanga` gained the mark and changed nothing else; and the classification is robust where the *month of an instant* is not, the one disagreement being nineteen minutes from the eclipse new moon of 8 April 2024. The design (`03-design/calendar-indian-lunisolar.md`) is deliberately **the mark and not dates**: a lunisolar date's day repeats one day in forty-four and is skipped one in twenty-six, so it needs two flags `CalendarDate` does not carry, and §6 records what a full `CalendarSystem` would cost and why nothing needs it yet. Kshaya is **measured and not tested** — the corpus records none |
+| the completion's topocentric centre (Phase 2's deferral, delivered here) | **built**: `astro::topocentric`, six unit tests and `baseline_topocentric.rs` over the corpus's six charts recorded from both centres — 0.00035″ on every body but the Moon, 0.084″ on the Moon, over 54 comparisons. Measured first (`cargo xtask topocentric`, held by `check-topocentric`), and the pass falsified the reading `03-design/astro-timescales-and-frames.md` had carried since Phase 2: a displacement alone leaves a third of an arcsecond on **every** body, on Saturn as much as on the Moon, because the station's own motion aberrates the light it receives. Two further terms are each worth another third on the Moon and only together — the displacement belongs on the direction the light came from, and the body must be carried over the light time the station saves. The lunar nodes take none of it, which is now `Body::is_placed`. Five ERFA routines ported for it (`eform`, `gd2gc`, `gd2gce`, `sp00`, `pom00`, `pvtob`) with the reference values of ERFA's own test program. What it leaves open is stated: 0.084″ on the Moon, and a velocity transform this corpus cannot decide |
 | `vargas` | **built**: `crates/vargas`, 41 tests. Falsified first (`cargo xtask vargas`, held by `check-vargas`): a divisional chart is a function of one longitude and the corpus records both, so each chart's table was derived from the corpus and the design's rule held to it — 19 530 placements over 93 fixtures and two zodiacs, nothing left over. One evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
 | `state` | **built**: `crates/state`, 43 tests. Falsified first (`cargo xtask state`, held by `check-state`) over 837 recorded readings on 93 fixtures: the dignity ladder with moolatrikona tried above exaltation, the three friendships, combustion under two cited orb tables, the five ages and their alternation, wakefulness, the planetary war and its victor, and the boundary reported as a distance because the corpus brackets the engine's threshold rather than stating it. The same pass **refused** six avasthas, which the crate names as undecided rather than guessing |
 | `aspect` | **built**: `crates/aspect`, 54 tests. The first module of the phase the corpus **cannot check** — it records no aspect at all, which `cargo xtask aspect` established by searching every key of all 115 fixtures — so the pass measured each system's own invariants, the two systems against each other over 6696 ordered pairs, the node knob's cost, and the avasthas `state` had refused. The graha drishti, the Jaimini rashi drishti, the conjunction and the shared orb engine ship; the **sphuta drishti does not**, for want of a source (crux C45), so Drik Bala waits |

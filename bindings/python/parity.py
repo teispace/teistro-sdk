@@ -209,24 +209,33 @@ def main() -> None:
     put("provenance-settings-hash", sky.provenance_of["settings_hash"])
     put("provenance-provider-frame", sky.provenance_of["provider"]["frame"])
 
-    # ── A chart and an almanac, under a geocentric profile ────────────
+    # ── The chart the topocentric profile founds ──────────────────────
     # The scenario above runs under `nepali-default`, whose frame is
-    # **topocentric**, and a chart cannot be founded under it at all: the
-    # completion's centre step is Phase 3's, so the provider is asked for
-    # a frame it does not answer. That refusal is itself worth comparing
-    # — the three bindings must fail the same way — and everything after
-    # it needs a second context on the SDK's own default profile, which
-    # is geocentric.
+    # **topocentric** — inherited from the baseline engine, and what
+    # every recorded chart in the corpus is. Until the completion's
+    # centre step this could not found a chart at all, and the refusal
+    # was what the three bindings compared. Now the chart itself is,
+    # which is the stronger comparison: the step runs per body, per
+    # instant, inside the library, so three bindings agreeing on its
+    # output is three bindings agreeing on the whole of it.
     place = Observer(
         latitude_deg=Latitude(27.7172),
         longitude_deg=Longitude(85.324),
         altitude_m=Altitude(1400),
     )
-    try:
-        ctx.found(instant=2451545, place=place, utc_offset_seconds=20700)
-        put("chart-under-topocentric", "founded")
-    except TeistroError as error:
-        put("chart-under-topocentric", error.status.key)
+    placed = ctx.found(instant=2451545, place=place, utc_offset_seconds=20700)
+    put("chart-under-topocentric", "founded")
+    put("topocentric-steps", ",".join(placed.batch.steps_applied))
+    put("topocentric-lagna", placed.lagna_deg)
+    for j, graha in enumerate(placed.grahas):
+        put(f"topocentric-graha-{j}", graha.graha.full_key)
+        put(f"topocentric-graha-{j}-lon", graha.longitude_deg)
+        put(f"topocentric-graha-{j}-lat", graha.latitude_deg)
+        put(f"topocentric-graha-{j}-speed", graha.speed_deg_per_day)
+
+    # ── A chart and an almanac, under a geocentric profile ────────────
+    # Everything after this runs on the SDK's own default profile, which
+    # is geocentric, so that the two centres are both exercised.
 
     with teistro.context(
         profile="parashari-classical", locale="ne-Deva-NP", test_provider=True

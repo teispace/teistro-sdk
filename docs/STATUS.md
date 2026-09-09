@@ -19,10 +19,11 @@ Phase 2 met its exit criteria
 on 2026-09-05: the accuracy document (`05-testing/ACCURACY.md`,
 generated and gated) shows every built `astro` row within its target
 against Teimeris, and houses compute for all twenty-two systems and
-sunrise for a Nepali place without a provider override. Two of its
-deliverables are deferred by decision: the completion's centre,
-corrections and equinox steps to Phase 3, where the built-in ephemeris
-needs them, and eclipses to v1.x. Phase 1, Foundation, remains open:
+sunrise for a Nepali place without a provider override. Of the
+deliverables it deferred, **the completion's centre step was built on
+2026-09-09** — it turned out to need nothing of Phase 3 — and the
+corrections and equinox steps, and a heliocentric or barycentric centre,
+still wait for the built-in ephemeris; eclipses wait for v1.x. Phase 1, Foundation, remains open:
 `core`, the ports, `time`, `calendar`, the test provider, the Teimeris
 adapter, the conformance kit, the `intl` engine and CLI, and the `ffi`
 crate with the API description and the C header (its first generator)
@@ -38,7 +39,18 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-09, end of the sixty-third session (the Indian
+**Last updated:** 2026-09-09, end of the sixty-fourth session (the
+completion's topocentric centre, measured and then built. The design
+page's own description of the step — "the observer's geocentric position
+(WGS84) and the parallax" — is falsified by a residual that does not
+shrink with distance: a third of an arcsecond on Saturn, whose whole
+parallax is under an arcsecond, because the station's own motion
+aberrates the light it receives. Two further terms are each worth
+another third on the Moon and nothing on anything else, and only
+together. The lunar nodes take none of it, because a direction is not a
+place. The two shipped profiles that could not found a chart now do, and
+`check-parity` compares 635 values where it compared 594); before that
+the sixty-third session (the Indian
 lunisolar calendar designed and its month built. The page Phase 2 named
 and nothing wrote is written from the measurement, and its scope is the
 finding: **the mark and not dates**, because a lunisolar date's day
@@ -289,45 +301,38 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is the completion's `centre` step**, and it is worth
-   saying why it can be done now.
+3. **The next task is the conformance harness that compares computed
+   positions against the corpus**, and the thing that used to block it
+   no longer does.
 
-   Every Phase 4 deliverable is built. What is not met is Phase 4's
-   **exit** — the golden vectors reproduced in three bindings — and the
-   one thing blocking it is that all 55 recorded charts are
-   `topocentric: true` while `completion.rs` refuses any request whose
-   centre differs from the provider's native one. Two shipped profiles
-   (`nepali-default`, `kp-default`) cannot found a chart at all, which
-   is why both new examples had to change profile and why the parity
-   gate records the refusal as a compared value.
+   The completion's `centre` step is built
+   ([`topocentric-measured.md`](03-design/topocentric-measured.md),
+   `astro::topocentric`). Every Phase 4 deliverable is built and the
+   cross-phase dependency the roadmap recorded is discharged: all 55
+   recorded charts are `topocentric: true`, and the SDK now produces a
+   topocentric position over **any** provider rather than only over one
+   that answers the frame natively. The shipped profiles that could not
+   found a chart at all now do; the rectification examples run under
+   `nepali-default` as a Nepali birth record should; and `check-parity`
+   compares the chart that profile founds — 635 values across three
+   bindings, where it compared 594 before and 103 two sessions ago.
 
-   `astro-timescales-and-frames.md` §4 already designs the step — the
-   observer's WGS84 geocentric position and the parallax — and §7
-   deferred it to Phase 3 on the grounds that the built-in ephemeris
-   "is the first provider that returns a geometric J2000 frame". That
-   is a statement about which provider **needs** the steps, not a
-   dependency: topocentric parallax needs the observer's position and
-   the body's geocentric position and distance, and nothing of Phase
-   3's. So the centre step is separable from the rest of that phase,
-   and doing it alone unblocks Phase 4's exit and the two profiles.
+   What the step is, since it is not what this project's own design page
+   said it was: a displacement **and** an aberration, on the direction
+   the light came from rather than on the apparent one, with the body
+   carried over the light time the station saves. The measured page has
+   the nine readings it falsified and the two things it leaves open —
+   0.084″ on the Moon that nothing constructible accounts for, and a
+   velocity transform the corpus cannot decide because it records a
+   longitude speed and neither of the other two rates.
 
-   The astro layer's bar for a ported routine is ERFA 2.0.1 with a
-   provenance table and reference tests at 1e-15, so this wants a
-   session of its own rather than the tail of one.
-
-   The remaining Phase 4 work is what the roadmap lists;
-   [`calendar-indian-lunisolar.md`](03-design/calendar-indian-lunisolar.md)
-   §6 records what a full lunisolar `CalendarSystem` would need and why
-   nothing needs it yet.
-
-   What the measurement settles before a line is written: the rule is
-   the **count of sankrantis in the lunar month** (none adhika, one
-   ordinary, two kshaya); it needs only the Surya Siddhanta's own Sun
-   and Moon, so the calendar takes no ephemeris; an adhika month needs
-   no naming rule of its own; and `panchanga`'s existing
-   `limb::amanta_month` is already right and wants only the mark. What
-   it cannot settle is kshaya against an authority, because the corpus
-   records none.
+   What remains for Phase 4's **exit** is the comparison itself: nothing
+   yet compares a *computed* longitude against the 55 charts.
+   `crates/chart/tests/baseline_bhavas.rs` reads the recorded
+   `sidereal_longitude_deg` and checks the bhava it falls in, so it
+   tests the placement rule rather than the position. That comparison
+   needs the Teimeris adapter, so it is the conformance harness's work,
+   and it is what will decide whether the 0.084″ matters.
 
    **The page also poses the question the design has to answer.** A
    lunisolar date's day is the tithi at sunrise, which repeats one day
@@ -342,13 +347,15 @@ provider's DUT1).
    Phase 4's boundary work is done and gated: `ts_positions`,
    `ts_chart_found` and `ts_panchanga_days` all cross, three bindings
    offer `found`/`foundMany` and `almanac`/`almanacDay` over them, each
-   ships eight worked examples, and **`check-parity` compares 594 values
-   across the three** where it compared 103 a session ago.
+   ships eight worked examples, and **`check-parity` compares 635 values
+   across the three** where it compared 103 three sessions ago.
 
-   Note the cross-phase dependency the roadmap records: **Phase 4 cannot
-   exit before Phase 3 delivers the completion's centre step**, because
-   all 55 recorded charts are topocentric and the examples had to change
-   profile to run.
+   The cross-phase dependency the roadmap recorded — **Phase 4 cannot
+   exit before Phase 3 delivers the completion's centre step** — is
+   discharged: the step turned out to be separable from the rest of
+   Phase 3, because it needs the observer's position and the body's
+   geocentric one and nothing of the built-in ephemeris, so it was built
+   where it was needed rather than where it was scheduled.
 
    The JSON Schema emitter waits behind it, and deliberately. The schema
    comes from the API description (`schema-measured.md` settles that:
@@ -1362,6 +1369,7 @@ on pub.dev (checked 2026-09-07).
 | 2026-09-05 (sixteenth session) | `astro::houses`: the twenty-two catalogued house systems as one construction with the circles each picks, the auxiliary points, the sign-based systems in the zodiac in use, the four polar policies with the outcome reported. Within 4.8e-6° of Teimeris over 25 194 cusps and angles at ten latitudes (the adapter's `houses-table` binary), within 0.00021° of the baseline's 55 charts between 1800 and 2200. Design page `astro-house-systems.md`. Next: crossings and stations, the star table. |
 | 2026-09-05 (tenth session) | The Bikram Sambat computation engine: `crates/siddhanta` (the text by verse, exact mean places, the sine table, both equations, the four steps, motion, precession, declination, the day's arc; 54 ns for the Sun, bit-identical), the `astro` seed (the boundary solver), the `time` seed (offset histories, Nepal's rows) with `core::time`, and in `crates/calendar` the `SolarModel`, the sankranti finder, the month-start rules as cited rows, the engine, the fit report and the table regenerated for 1700 to 2500 BS with a CI gate. Measured: the text's Sun at Kathmandu under Nepal's clock with the Dharmasindhu's punya-kala rule reproduces 1490 of 1512 official month lengths (98.5 %), 116 of 126 years exactly, every year total and every New Year, no drift; the eleven residual boundaries lie within 25 minutes of the rule's boundary. Findings: the baseline's seven-hour epoch shift and 0.705 cutoff nearly cancel to the civil day; the two ayana sankrantis are the whole difference; exact trigonometry changes one boundary; the tradition's day count changes none. Next: `crates/time` proper, then the port promotion with the drik model. |
 | 2026-09-05 (ninth session) | `crates/calendar` built: the fixed day, Gregorian, Julian, mixed (1582, 1752, 1918) and ISO week with every day of −9999 to 9999 round-tripped and agreed with the `calendrical_calculations` oracle; Bikram Sambat over the baseline's table (1856 to 2457, official span stamped `Tabular`, the rest `Computed`) anchored on 13 April 1913; the source memo opened with the generator's findings (Surya Siddhanta at Kathmandu, Nepal's offset history, a fitted 0.705 cutoff, 87 % of month splits, drift within a day). Maintainer's mandate: compute Bikram Sambat from first principles for any year so Nepal's panchanga can use the SDK. Next: the Bikram Sambat engine (siddhanta Sun, drik through the port, rule rows, fit harness), then `crates/time`. |
+| 2026-09-09 (sixty-fourth session) | The completion's **topocentric centre**, measured and then built, and the cross-phase dependency that blocked Phase 4's exit discharged along the way. The corpus records six charts **twice** — from the centre of the Earth and from the place they were cast for, with every other setting equal — so for once a completion step had a recorded *before* as well as an after, and a proposed reading of it was right or wrong rather than close. `cargo xtask topocentric` (held by `check-topocentric`) tried nine readings against those pairs. **The one this project's own design page had carried since Phase 2 is the one that failed.** "The observer's geocentric position (WGS84) and the parallax" leaves a third of an arcsecond on **every** body — on Saturn, whose whole parallax is under an arcsecond, as much as on the Moon, whose parallax is forty arcminutes. A residual that does not shrink with distance is not a displacement gone wrong; the station is moving four hundred metres a second and the light it receives arrives aberrated by its own velocity, one and a half parts in a million whatever the distance. With that in, every planet comes inside a thousandth of an arcsecond and the Moon becomes the only body that can decide anything further. It says two more terms are needed, each worth another third of an arcsecond and **only together** — put in one at a time they make the answer worse: the displacement belongs on the direction the light actually came from rather than on the apparent one the Earth's motion has already turned by twenty arcseconds, and the body must be carried over the light time the station saves by standing an Earth radius nearer. Two simplifications a reader would call harmless are falsified by the same six pairs: a sphere costs 3.9″ and sea level 0.75″ against a bound of 0.0036″. **The lunar nodes take none of it**: in the pairs they are identical under both centres to the last bit of a double, and in all 174 recorded node rows — the true node included — their latitude is zero to 1e-15°, where a displaced point at that distance would sit 43′ off the ecliptic. A point defined as a direction on the Moon's orbit is not anywhere, which is now `Body::is_placed` on the port. What the pass leaves open it states rather than rounds away: 0.084″ on the Moon that nothing it could construct accounts for, and a velocity transform this corpus cannot decide at all, because it records a longitude speed and neither of the other two rates while both enter the answer. Built: five ERFA routines for the Earth an observer stands on (`eform`, `gd2gc`, `gd2gce`, `sp00`, `pom00`, `pvtob`) with the reference values of ERFA's own test program; `sky::observer` and `sky::earth_at`; `astro::topocentric::Station`, which transforms a cell's position, distance and all three rates analytically, because the step changes the Moon's longitude speed by 5.5°/day and a step that moved positions and left speeds alone would be wrong by more than it corrected. Held to the corpus at **0.00035″ on every body but the Moon** over 54 comparisons (`baseline_topocentric.rs`). Two things fell out of touching that path: **`sdk-only` now means what it says** — a provider is no longer asked for the whole frame first, because a provider that answers a whole frame has done several of the completion's steps itself — and a topocentric request with no observer is refused before any provider is asked, so the message names the field under every policy. The consequences: the shipped profiles that could not found a chart now do, the rectification examples run under `nepali-default` as a Nepali birth record should, and `check-parity` compares the chart that profile founds — **635 values across three bindings**, where it compared 594. Next: the conformance harness that compares a *computed* longitude against the 55 charts, which is what will decide whether the 0.084″ matters. |
 | 2026-09-09 (sixty-third session) | The Indian lunisolar calendar designed and its month built. The design page Phase 2 named and nothing wrote is now written, from the measurement rather than from a textbook, and its scope is the finding: it is **the mark and not dates**. `panchanga` needs to know whether a month is adhika; a full `CalendarSystem` needs a date shape the SDK does not have, because a lunisolar date's day is the tithi at sunrise, which repeats one day in forty-four and is skipped one in twenty-six — so `(year, month, day)` is not a key and a date wants two flags `CalendarDate` does not carry. Separating them is what let `panchanga` be finished without a boundary change nobody has argued for. The module: a `LunarModel` trait beside `SolarModel` (its own, because a solar calendar needs no Moon and three of that trait's five implementations are test doubles), a three-way `MonthKind`, `kind_of` for a span whose bounds a caller has and `month_at` for one it does not. `panchanga`'s `LunarMonth` carries the kind beside the name, and finding it made the existing code better rather than longer: `limb` used to find the month's opening new moon and throw the search away, and now `lunar_month_span` returns both bounds while `masa_at` names from the first — one crossing search serving the name and the mark where there were two serving one each. Five module tests hold the rule at the two recorded adhika months, the shared name of an adhika month and the nija one after it, a contiguous year, a kshaya month where the measurement says one is, and that a month boundary really is a new moon. Next: the mark crosses the boundary with the panchanga blob's `days` section, then the three bindings and parity. |
 | 2026-09-09 (sixty-second session) | The rule that decides **adhika** and **kshaya**, measured (`cargo xtask lunisolar` → `03-design/calendar-indian-lunisolar-measured.md`, gated by `check-lunisolar`). `panchanga` names the lunar month and cannot mark it; this is the pass the calendar that will mark it is designed from. The first thing it had to establish is that **the corpus cannot settle it alone**: it records `is_adhika` on every day — the *answer* — and none of the inputs, neither the new moon that opened the month nor the sankranti that named it, so unlike the panchanga's conventions this cannot be arithmetic over recorded numbers. It computes the sky from the **Surya Siddhanta**, as the Bikram Sambat engine does, so the calendar needs no ephemeris — which is what the tradition did. Over **12 368 lunar months of a millennium**: 388 hold no sankranti (adhika, one every 2.58 years against the classical seven in nineteen), 11 961 hold one, 19 hold two (kshaya, one in some fifty years). That count is the rule, and it reproduces the corpus's marking on **all fifty-five** days including the two marked adhika. Two things the measurement corrected. **An adhika month needs no naming rule of its own** — the usual formulation is that it takes the following month's name, but the Sun stands in the same sign at both new moons, so the existing rule gives both the same name unaided; August 1947 is Shravana twice over. And **the classification is robust where the month of an instant is not**: the one recorded day where text and recording disagree is nineteen minutes from the eclipse new moon of 8 April 2024, with the two conjunctions on either side of it. **Kshaya is measured and not tested** and the page says so: the corpus records none, so nothing holds the rule to an authority — what can be said is that its frequency matches the astronomy and that all nineteen fall between Vrishchika and Kumbha, the perihelion window, which the pass did not look for. Next: the design page and the calendar module the rule goes into, then wiring it through `panchanga`. |
 | 2026-09-09 (sixty-first session) | The parity gate over the two new blobs: **594 values compared across three bindings**, where it compared 103. All 103 came from `positions`, so until now "the bindings agree" meant something for one entry point, and the chart and almanac examples agreed only because a person had compared their output by eye. The scenario needed a second context to say it at all: the gate runs under `nepali-default`, whose frame is **topocentric**, and a chart cannot be founded under it — the completion's centre step is Phase 3's. That refusal is now a compared value of its own (`chart-under-topocentric`), so the three must fail the same way and not merely succeed the same way, and everything after it runs on a second context under the geocentric default. Two instants and three days, deliberately: a per-chart section laid out charts-outermost the wrong way round shows as the second chart's values in the first's place rather than as nothing, and two consecutive days with the same list counts would not exercise the ragged offsets. **The gate found a gap on its first run.** When `part` and `elapsed` moved out of the shared day section into the chart's `cast` last session — they belong to an instant, not a day — the columns were added and *no layer surfaced them*: Node had nothing, Dart and Python could only reach them by indexing the raw column. All three now expose `dayPart`/`dayElapsed` on a chart and the runners read the accessor. mypy caught a second thing the eye would not: the new loops shadowed names bound earlier in `main`, which strict mode refuses. Next: the JSON Schema emitter is still blocked on the description holding no document type; after it, adhika and kshaya months. |
