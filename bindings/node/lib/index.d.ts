@@ -7,15 +7,29 @@
 // decode on first use, and the error.
 
 import type {
+  Ayana,
   Body,
   Calendar,
   ChartKind,
+  Choghadiya,
+  Direction,
   Graha,
   HouseSystem,
+  Kaala,
+  Karana,
+  LunarMonth,
+  Masa,
+  MuhurtaYoga,
+  Nakshatra,
+  Paksha,
+  Panchaka,
+  Rashi,
   Scale,
   Status,
+  Tithi,
   TimeScale,
   Vara,
+  Yoga,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -32,6 +46,7 @@ import type {
 import type {
   Charts as DecodedCharts,
   IntlRender,
+  Panchanga as DecodedAlmanac,
   Positions as DecodedPositions,
 } from './blob.js';
 
@@ -235,6 +250,201 @@ export declare class Chart {
   readonly provenance: Record<string, unknown>;
 }
 
+/** A span of time, as every almanac row carries one. */
+export interface Interval {
+  /** When it begins, as a Julian day (UTC). */
+  readonly from: number;
+  /** When it ends. */
+  readonly to: number;
+}
+
+/** One member of a limb, with its own bounds and the clipped ones. */
+export interface Span<T> {
+  /** Which member ran. */
+  readonly member: T | 'unknown';
+  /** When the member itself began and ended, inside the day or not. */
+  readonly whole: Interval;
+  /** The part inside the day: what an almanac row prints. */
+  readonly inside: Interval;
+}
+
+/** The lunar month a day falls in, under both conventions. */
+export interface Month {
+  /** The month under the profile's own convention. */
+  readonly month: Masa | 'unknown';
+  /** The amanta month: new moon to new moon. */
+  readonly amanta: Masa | 'unknown';
+  /** The purnimanta month: full moon to full moon. */
+  readonly purnimanta: Masa | 'unknown';
+  /** Which fortnight the day opens in. */
+  readonly paksha: Paksha | 'unknown';
+  /** Which convention `month` leads with. */
+  readonly convention: LunarMonth | 'unknown';
+}
+
+/** One inauspicious eighth of the daylight. */
+export interface KaalaPeriod extends Interval {
+  /** Which one. */
+  readonly kaala: Kaala | 'unknown';
+}
+
+/** One choghadiya, of the daylight or of the night. */
+export interface ChoghadiyaPeriod extends Interval {
+  /** Which choghadiya. */
+  readonly choghadiya: Choghadiya | 'unknown';
+  /** The graha that rules it. */
+  readonly lord: Graha | 'unknown';
+  /** Whether it is one of the eight of the daylight. */
+  readonly daytime: boolean;
+}
+
+/** One hora, from sunrise. */
+export interface Hora {
+  /** Its number, 1 to 24. */
+  readonly number: number;
+  /** The graha that rules it. */
+  readonly lord: Graha | 'unknown';
+  /** When it begins, as a Julian day (UTC). */
+  readonly start: number;
+  /** When it ends. */
+  readonly end: number;
+}
+
+/** One of the thirty muhurtas. */
+export interface Muhurta extends Interval {
+  /** Whether it is one of the fifteen of the daylight. */
+  readonly daylight: boolean;
+}
+
+/** A moonrise or a moonset. */
+export interface MoonEvent {
+  /** Which it was. */
+  readonly kind: 'rise' | 'set';
+  /** When, as a Julian day (UTC). */
+  readonly instant: number;
+}
+
+/** A muhurta yoga that held, and what made it hold. */
+export interface HeldYoga extends Interval {
+  /** Which yoga. */
+  readonly yoga: MuhurtaYoga | 'unknown';
+  /** What made it, so a reader can see why. */
+  readonly because: {
+    /** Which cause it is. */
+    readonly kind: 'vara-nakshatra' | 'vara-tithi-nakshatra';
+    /** The vara that makes it; every cause has one. */
+    readonly vara: Vara | 'unknown';
+    /** The tithi, when the cause has one; `null` otherwise. */
+    readonly tithi: Tithi | 'unknown' | null;
+    /** The nakshatra that makes it. */
+    readonly nakshatra: Nakshatra | 'unknown';
+  };
+}
+
+/** Abhijit, with whether it is effective. */
+export interface Abhijit extends Interval {
+  /** True on every day but a Wednesday. */
+  readonly effective: boolean;
+}
+
+/**
+ * A batch of daily panchangas at one place, decoded on first use and only
+ * once. Each day is a view over those bytes rather than a copy.
+ */
+export declare class Almanac extends Decoded<DecodedAlmanac> {
+  /** How many days the batch holds. */
+  readonly length: number;
+  /** The place they were all founded at. */
+  readonly place: ChartPlace;
+  /** The civil calendar the days' dates are read in. */
+  readonly calendar: Calendar | 'unknown';
+  /** The solar model that reckoned the days, as it describes itself. */
+  readonly model: string;
+  /** Everything that reproduces this result (ADR-0020). */
+  readonly provenance: Record<string, unknown>;
+  /** One day of the batch, by index. */
+  at(index: number): AlmanacDay;
+  /** Every day, in the order the range runs. */
+  [Symbol.iterator](): IterableIterator<AlmanacDay>;
+  /** Where day `index`'s rows of a per-day list begin and end. */
+  range(list: string, index: number): [number, number];
+}
+
+/** One day of an almanac: a view over its batch, not a copy. */
+export declare class AlmanacDay {
+  /** The batch this day belongs to. */
+  readonly batch: Almanac;
+  /** Where in that batch it sits. */
+  readonly index: number;
+  /**
+   * The day itself — the same eighteen fields a chart's day carries,
+   * decoded into the same type, with `vara` named.
+   */
+  readonly day: Omit<{ [K in keyof DecodedAlmanac['day']]: number }, 'length' | 'vara'> & {
+    readonly vara: Vara | 'unknown';
+  };
+  /** What the spans are clipped to. */
+  readonly window: Interval;
+  /** The lunar month, under both conventions. */
+  readonly month: Month;
+  /** Which half of the year the day falls in. */
+  readonly ayana: Ayana | 'unknown';
+  /** The direction not to travel in. */
+  readonly dishaShool: Direction | 'unknown';
+  /** When the Sun entered a new sign inside the day, or `null`. */
+  readonly sankranti: number | null;
+  /** Abhijit; `null` on a day with no daylight. */
+  readonly abhijit: Abhijit | null;
+  /** Brahma muhurta; `null` when the night before is not known. */
+  readonly brahma: Interval | null;
+  /** The tithis that touch the day. */
+  readonly tithi: readonly Span<Tithi>[];
+  /** The nakshatras the Moon was in. */
+  readonly nakshatra: readonly Span<Nakshatra>[];
+  /** The nitya yogas. */
+  readonly yoga: readonly Span<Yoga>[];
+  /** The karanas: half-tithis. */
+  readonly karana: readonly Span<Karana>[];
+  /** Panchaka, while the Moon is in the last five nakshatras. */
+  readonly panchaka: readonly Span<Panchaka>[];
+  /** The signs the Moon stood in. */
+  readonly moonSigns: readonly Span<Rashi>[];
+  /** The signs the Sun stood in. */
+  readonly sunSigns: readonly Span<Rashi>[];
+  /** The inauspicious eighths of the daylight. */
+  readonly kaalas: readonly KaalaPeriod[];
+  /** Eight choghadiya of the daylight and eight of the night. */
+  readonly choghadiya: readonly ChoghadiyaPeriod[];
+  /** The twenty-four horas, from sunrise. */
+  readonly horas: readonly Hora[];
+  /** The thirty muhurtas. */
+  readonly muhurtas: readonly Muhurta[];
+  /** Every moonrise and moonset inside the day's moon window. */
+  readonly moonEvents: readonly MoonEvent[];
+  /** The muhurta yogas that held. */
+  readonly muhurtaYogas: readonly HeldYoga[];
+  /** The provenance envelope of the batch this day came from. */
+  readonly provenance: Record<string, unknown>;
+}
+
+/** What `Context.almanac` needs: a range of days at one place. */
+export interface AlmanacRequest {
+  /** The first day. */
+  readonly from: CalendarDate;
+  /** The last day, both ends included. */
+  readonly to: CalendarDate;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+}
+
+/** What `Context.almanacDay` needs: one day at one place. */
+export interface AlmanacDayRequest extends Omit<AlmanacRequest, 'from' | 'to'> {
+  /** The day. */
+  readonly date: CalendarDate;
+}
+
 /** What `Context.found` needs to found one chart. */
 export interface ChartRequest {
   /** The instant, as a Julian day (UTC). */
@@ -399,6 +609,14 @@ export declare class Context {
   positions(request: PositionsRequest): Positions;
   /** Founds a chart at an instant and a place. */
   found(request: ChartRequest): Chart;
+  /**
+   * The almanac of every day in a range, at one place: consecutive days
+   * share a boundary, so a month costs much less than thirty days
+   * computed separately.
+   */
+  almanac(request: AlmanacRequest): Almanac;
+  /** The almanac of one day, which is the range of one unwrapped. */
+  almanacDay(request: AlmanacDayRequest): AlmanacDay;
   /**
    * Founds a chart at each of many instants, at one place, in one
    * crossing: the founder shares the settings and the solar model across

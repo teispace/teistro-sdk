@@ -3573,6 +3573,48 @@ class DeltaTSource(Member):
     """Supplied by the consumer."""
 
 
+class LunarMonth(Member):
+    """Which lunar-month convention a day's month leads with."""
+
+    AMANTA = 0
+    """New moon to new moon."""
+
+    PURNIMANTA = 1
+    """Full moon to full moon."""
+
+
+class MoonEvent(Member):
+    """Whether the Moon rose or set.
+
+    The two lists are one section with this to tell them apart, as the
+    muhurtas' `daylight` and the choghadiya's `daytime` do: a day's moon
+    events are one question asked twice, and two sections of one column
+    each would be two counts, two offsets and two types for it.
+    """
+
+    RISE = 0
+    """The Moon crossed the horizon upward."""
+
+    SET = 1
+    """The Moon crossed it downward."""
+
+
+class YogaCause(Member):
+    """What made a muhurta yoga hold: the kind half of a tagged enum.
+
+    The payload fields sit beside it, as many as the widest variant needs
+    (`03-design/chart-at-the-boundary.md` §8). Both variants carry a vara
+    and a nakshatra; only the second carries a tithi, and the first leaves
+    `because_tithi` at zero.
+    """
+
+    VARA_NAKSHATRA = 0
+    """The vara and the nakshatra the Moon was in."""
+
+    VARA_TITHI_NAKSHATRA = 1
+    """The vara, the tithi's class and the nakshatra's number of feet."""
+
+
 # The key of every member, by enum and id, and the kind of every
 # catalogued enum. The two bases above read them; nothing else should.
 _KEYS: dict[str, dict[int, str]] = {
@@ -4745,6 +4787,18 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "model",
         2: "leap-seconds",
         3: "custom",
+    },
+    "LunarMonth": {
+        0: "amanta",
+        1: "purnimanta",
+    },
+    "MoonEvent": {
+        0: "rise",
+        1: "set",
+    },
+    "YogaCause": {
+        0: "vara-nakshatra",
+        1: "vara-tithi-nakshatra",
     },
 }
 

@@ -1,0 +1,62 @@
+---
+title: ts_panchanga_days
+description: "Founds the almanac of every day in a range at one place and answers with its blob: the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what each day is said to be."
+---
+
+Founds the almanac of every day in a range at one place and answers with its blob: the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what each day is said to be.
+
+A **range** rather than a grid, because consecutive windows share a boundary — day *n*'s next sunrise is day *n+1*'s sunrise — so a month of days is much cheaper than thirty days computed separately. A caller wanting one day passes a range of one. A range holding more than a year and a day is `OUT_OF_RANGE` naming the limit.
+
+Everything but the request is the context's settings, so two calls under one context are comparable and the settings hash says why.
+
+A context without an ephemeris is `CAPABILITY`; a provider failure is `PROVIDER` with the provider's own code in the last error. A polar day under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the policies that would synthesise one.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_panchanga_days(const ts_context * context, const ts_panchanga_request * request, ts_blob * out_blob);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.panchanga_days(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.panchangaDays(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request` | `const ts_panchanga_request *` | a struct read | — |
+| `out_blob` | `ts_blob *` | receives a blob | — |
+
+## What it hands back
+
+`blob`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## The result blob
+
+The call fills a blob following the `panchanga` schema, which the binding's generated decoder reads. The schema is in `idl/api.json`, and every binding decodes it from the blob's own bytes rather than copying them.
+
+## Safety
+
+`context` must be a live handle; `request` valid for a read; `out_blob` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

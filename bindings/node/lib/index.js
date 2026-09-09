@@ -17,17 +17,32 @@ import { fileURLToPath } from 'node:url';
 
 import {
   ABI_VERSION,
+  AyanaById,
   BodyById,
   CONTEXT_TEST_PROVIDER,
+  CalendarById,
   ChartKind,
   ChartKindById,
+  ChoghadiyaById,
+  DirectionById,
   GrahaById,
   HouseSystemById,
+  KaalaById,
+  KaranaById,
+  LunarMonthById,
+  MasaById,
+  MuhurtaYogaById,
+  NakshatraById,
+  PakshaById,
+  PanchakaById,
+  RashiById,
   SDK_VERSION,
+  TithiById,
   TimeScaleById,
   VaraById,
+  YogaById,
 } from './catalogue.js';
-import { decodeCharts, decodeIntlRender, decodePositions } from './blob.js';
+import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -603,6 +618,307 @@ export class Chart {
   }
 }
 
+/**
+ * A batch of daily panchangas at one place, decoded on first use and
+ * only once.
+ *
+ * Every per-day list is concatenated across the batch, so a day's rows
+ * are found by adding up every earlier day's count. That sum is done
+ * once, on first use, rather than per access: the alternative is
+ * quadratic over a year of days, which is the shape an almanac is
+ * actually asked for.
+ */
+export class Almanac extends Decoded {
+  #starts = null;
+
+  constructor(bytes) {
+    super(bytes, decodePanchanga);
+  }
+
+  /** How many days the batch holds. */
+  get length() {
+    return this.decoded.dayCount;
+  }
+
+  /** The place they were all founded at. */
+  get place() {
+    const d = this.decoded;
+    return { latitude: d.latitudeDeg, longitude: d.longitudeDeg, altitude: d.altitudeM };
+  }
+
+  /** The civil calendar the days' dates are read in. */
+  get calendar() {
+    return CalendarById.get(this.decoded.calendar) ?? 'unknown';
+  }
+
+  /** The solar model that reckoned the days, as it describes itself. */
+  get model() {
+    return this.decoded.model;
+  }
+
+  /** The provenance envelope: what computed these, and under what. */
+  get provenance() {
+    return JSON.parse(this.decoded.provenance);
+  }
+
+  /**
+   * One day of the batch, by index.
+   *
+   * @param {number} index 0 to `length - 1`
+   * @returns {AlmanacDay}
+   */
+  at(index) {
+    if (!Number.isInteger(index) || index < 0 || index >= this.length) {
+      throw new RangeError(`day ${index} is outside a batch of ${this.length}`);
+    }
+    return new AlmanacDay(this, index);
+  }
+
+  /** Every day, in the order the range runs. */
+  *[Symbol.iterator]() {
+    for (let i = 0; i < this.length; i += 1) yield this.at(i);
+  }
+
+  /**
+   * Where day `index`'s rows of a per-day list begin and end.
+   *
+   * @param {string} list a column of the `counts` section
+   * @param {number} index the day
+   * @returns {[number, number]}
+   */
+  range(list, index) {
+    this.#starts ??= prefixSums(this.decoded.counts);
+    const starts = this.#starts[list];
+    return [starts[index], starts[index + 1]];
+  }
+}
+
+/** The running totals of every count column, computed once. */
+function prefixSums(counts) {
+  const out = {};
+  for (const [name, column] of Object.entries(counts)) {
+    if (name === 'length') continue;
+    const starts = new Uint32Array(column.length + 1);
+    for (let i = 0; i < column.length; i += 1) starts[i + 1] = starts[i] + column[i];
+    out[name] = starts;
+  }
+  return out;
+}
+
+/**
+ * One day of an almanac: a view over its batch, not a copy.
+ *
+ * The lists are built on demand from the blob's columns, so a day costs
+ * nothing until something is asked of it.
+ */
+export class AlmanacDay {
+  #batch;
+  #index;
+
+  constructor(batch, index) {
+    this.#batch = batch;
+    this.#index = index;
+  }
+
+  /** The batch this day belongs to. */
+  get batch() {
+    return this.#batch;
+  }
+
+  /** Where in that batch it sits. */
+  get index() {
+    return this.#index;
+  }
+
+  /**
+   * The day itself: its arc, its date and how it was reckoned — the
+   * same eighteen fields a chart's day carries, decoded into the same
+   * type.
+   */
+  get day() {
+    const day = row(this.#batch.decoded.day, this.#index);
+    return { ...day, vara: VaraById.get(day.vara) ?? 'unknown' };
+  }
+
+  /** What the spans are clipped to. */
+  get window() {
+    const d = this.#batch.decoded.days;
+    return { from: d.windowFrom[this.#index], to: d.windowTo[this.#index] };
+  }
+
+  /** The lunar month, under both conventions, and the fortnight. */
+  get month() {
+    const d = this.#batch.decoded.days;
+    const i = this.#index;
+    return {
+      month: MasaById.get(d.month[i]) ?? 'unknown',
+      amanta: MasaById.get(d.amanta[i]) ?? 'unknown',
+      purnimanta: MasaById.get(d.purnimanta[i]) ?? 'unknown',
+      paksha: PakshaById.get(d.paksha[i]) ?? 'unknown',
+      convention: LunarMonthById.get(this.#batch.decoded.lunarMonth) ?? 'unknown',
+    };
+  }
+
+  /** Which half of the year the day falls in. */
+  get ayana() {
+    return AyanaById.get(this.#batch.decoded.days.ayana[this.#index]) ?? 'unknown';
+  }
+
+  /** The direction not to travel in, which is the vara's. */
+  get dishaShool() {
+    return DirectionById.get(this.#batch.decoded.days.dishaShool[this.#index]) ?? 'unknown';
+  }
+
+  /** When the Sun entered a new sign inside the day, or `null`. */
+  get sankranti() {
+    const d = this.#batch.decoded.days;
+    return d.hasSankranti[this.#index] ? d.sankranti[this.#index] : null;
+  }
+
+  /** Abhijit, and whether it is effective; `null` on a day with no daylight. */
+  get abhijit() {
+    const d = this.#batch.decoded.days;
+    const i = this.#index;
+    if (!d.hasAbhijit[i]) return null;
+    return {
+      from: d.abhijitFrom[i],
+      to: d.abhijitTo[i],
+      effective: d.abhijitEffective[i] === 1,
+    };
+  }
+
+  /** Brahma muhurta, or `null` when the night before is not known. */
+  get brahma() {
+    const d = this.#batch.decoded.days;
+    const i = this.#index;
+    return d.hasBrahma[i] ? { from: d.brahmaFrom[i], to: d.brahmaTo[i] } : null;
+  }
+
+  /** The tithis that touch the day. */
+  get tithi() {
+    return this.#spans('tithi', TithiById);
+  }
+
+  /** The nakshatras the Moon was in. */
+  get nakshatra() {
+    return this.#spans('nakshatra', NakshatraById);
+  }
+
+  /** The nitya yogas. */
+  get yoga() {
+    return this.#spans('yoga', YogaById);
+  }
+
+  /** The karanas: half-tithis, so three or four on an ordinary day. */
+  get karana() {
+    return this.#spans('karana', KaranaById);
+  }
+
+  /** Panchaka, while the Moon is in the last five nakshatras. */
+  get panchaka() {
+    return this.#spans('panchaka', PanchakaById);
+  }
+
+  /** The signs the Moon stood in. */
+  get moonSigns() {
+    return this.#spans('moonSigns', RashiById);
+  }
+
+  /** The signs the Sun stood in; two only on a sankranti day. */
+  get sunSigns() {
+    return this.#spans('sunSigns', RashiById);
+  }
+
+  /** The inauspicious eighths of the daylight. */
+  get kaalas() {
+    const c = this.#batch.decoded.kaalas;
+    return this.#rows('kaalas', (i) => ({
+      kaala: KaalaById.get(c.kaala[i]) ?? 'unknown',
+      from: c.from[i],
+      to: c.to[i],
+    }));
+  }
+
+  /** Eight choghadiya of the daylight and eight of the night. */
+  get choghadiya() {
+    const c = this.#batch.decoded.choghadiya;
+    return this.#rows('choghadiya', (i) => ({
+      choghadiya: ChoghadiyaById.get(c.choghadiya[i]) ?? 'unknown',
+      lord: GrahaById.get(c.lord[i]) ?? 'unknown',
+      from: c.from[i],
+      to: c.to[i],
+      daytime: c.daytime[i] === 1,
+    }));
+  }
+
+  /** The twenty-four horas, from sunrise. */
+  get horas() {
+    const c = this.#batch.decoded.horas;
+    return this.#rows('horas', (i) => ({
+      number: c.number[i],
+      lord: GrahaById.get(c.lord[i]) ?? 'unknown',
+      start: c.start[i],
+      end: c.end[i],
+    }));
+  }
+
+  /** The thirty muhurtas: fifteen of the daylight, then fifteen of the night. */
+  get muhurtas() {
+    const c = this.#batch.decoded.muhurtas;
+    return this.#rows('muhurtas', (i) => ({
+      from: c.from[i],
+      to: c.to[i],
+      daylight: c.daylight[i] === 1,
+    }));
+  }
+
+  /** Every moonrise and moonset inside the day's moon window. */
+  get moonEvents() {
+    const c = this.#batch.decoded.moonEvents;
+    return this.#rows('moonEvents', (i) => ({
+      kind: c.kind[i] === 0 ? 'rise' : 'set',
+      instant: c.instant[i],
+    }));
+  }
+
+  /** The muhurta yogas that held, with what made each hold. */
+  get muhurtaYogas() {
+    const c = this.#batch.decoded.muhurtaYogas;
+    return this.#rows('muhurtaYogas', (i) => ({
+      yoga: MuhurtaYogaById.get(c.yoga[i]) ?? 'unknown',
+      from: c.from[i],
+      to: c.to[i],
+      because: {
+        kind: c.becauseKind[i] === 0 ? 'vara-nakshatra' : 'vara-tithi-nakshatra',
+        vara: VaraById.get(c.becauseVara[i]) ?? 'unknown',
+        // A `vara-nakshatra` cause has no tithi, and the blob leaves the
+        // column at nought rather than at a tithi that did not make it.
+        tithi: c.becauseKind[i] === 0 ? null : (TithiById.get(c.becauseTithi[i]) ?? 'unknown'),
+        nakshatra: NakshatraById.get(c.becauseNakshatra[i]) ?? 'unknown',
+      },
+    }));
+  }
+
+  /** The completion steps and the settings, as the batch stamped them. */
+  get provenance() {
+    return this.#batch.provenance;
+  }
+
+  #rows(list, build) {
+    const [from, to] = this.#batch.range(list, this.#index);
+    return Array.from({ length: to - from }, (_, k) => build(from + k));
+  }
+
+  #spans(list, names) {
+    const c = this.#batch.decoded[list];
+    return this.#rows(list, (i) => ({
+      member: names.get(c.member[i]) ?? 'unknown',
+      whole: { from: c.wholeFrom[i], to: c.wholeTo[i] },
+      inside: { from: c.insideFrom[i], to: c.insideTo[i] },
+    }));
+  }
+}
+
 export class Positions extends Decoded {
   constructor(bytes) {
     super(bytes, decodePositions);
@@ -905,6 +1221,59 @@ export class Context {
       }),
     );
     return new Charts(bytes);
+  }
+
+  /**
+   * The almanac of every day in a range, at one place.
+   *
+   * A **range** rather than a list of dates, because consecutive days
+   * share a boundary — day *n*'s next sunrise is day *n+1*'s sunrise —
+   * so a month of days costs much less than thirty days computed
+   * separately. A range holding more than a year and a day is refused
+   * by name.
+   *
+   * @param {object} request
+   * @param {object} request.from the first day, as `date(...)` builds one
+   * @param {object} request.to the last day, both ends included
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @returns {Almanac}
+   */
+  almanac(request) {
+    const place = request.place ?? {};
+    const from = request.from ?? {};
+    const to = request.to ?? from;
+    const bytes = this.#call(() =>
+      this.#inner.panchangaDays({
+        calendar: from.calendar,
+        fromYear: finite(from.year, 'from.year'),
+        fromMonth: finite(from.month, 'from.month'),
+        fromDay: finite(from.day, 'from.day'),
+        toYear: finite(to.year, 'to.year'),
+        toMonth: finite(to.month, 'to.month'),
+        toDay: finite(to.day, 'to.day'),
+        latitudeDeg: finite(place.latitude, 'place.latitude'),
+        longitudeDeg: finite(place.longitude, 'place.longitude'),
+        altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+      }),
+    );
+    return new Almanac(bytes);
+  }
+
+  /**
+   * The almanac of one day, which is the range of one unwrapped.
+   *
+   * @param {object} request
+   * @param {object} request.date the day, as `date(...)` builds one
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @returns {AlmanacDay}
+   */
+  almanacDay(request) {
+    return this.almanac({ ...request, from: request.date, to: request.date }).at(0);
   }
 
   /** Renders a message of the current locale with its parameters. */

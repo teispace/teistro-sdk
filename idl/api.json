@@ -19,7 +19,8 @@
     "crates/ffi/src/chart.rs",
     "crates/ffi/src/time.rs",
     "crates/ffi/src/intl.rs",
-    "crates/ffi/src/positions.rs"
+    "crates/ffi/src/positions.rs",
+    "crates/ffi/src/panchanga.rs"
   ],
   "constants": [
     {
@@ -6325,6 +6326,60 @@
         }
       ],
       "source": "crates/ffi/src/time.rs"
+    },
+    {
+      "name": "TsLunarMonth",
+      "doc": "Which lunar-month convention a day's month leads with.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Amanta",
+          "value": 0,
+          "doc": "New moon to new moon."
+        },
+        {
+          "name": "Purnimanta",
+          "value": 1,
+          "doc": "Full moon to full moon."
+        }
+      ],
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TsMoonEvent",
+      "doc": "Whether the Moon rose or set.\n\nThe two lists are one section with this to tell them apart, as the\nmuhurtas' `daylight` and the choghadiya's `daytime` do: a day's moon\nevents are one question asked twice, and two sections of one column\neach would be two counts, two offsets and two types for it.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Rise",
+          "value": 0,
+          "doc": "The Moon crossed the horizon upward."
+        },
+        {
+          "name": "Set",
+          "value": 1,
+          "doc": "The Moon crossed it downward."
+        }
+      ],
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TsYogaCause",
+      "doc": "What made a muhurta yoga hold: the kind half of a tagged enum.\n\nThe payload fields sit beside it, as many as the widest variant needs\n(`03-design/chart-at-the-boundary.md` §8). Both variants carry a vara\nand a nakshatra; only the second carries a tithi, and the first leaves\n`because_tithi` at zero.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "VaraNakshatra",
+          "value": 0,
+          "doc": "The vara and the nakshatra the Moon was in."
+        },
+        {
+          "name": "VaraTithiNakshatra",
+          "value": 1,
+          "doc": "The vara, the tithi's class and the nakshatra's number of feet."
+        }
+      ],
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "opaques": [
@@ -9258,6 +9313,175 @@
         }
       ],
       "source": "crates/ffi/src/intl.rs"
+    },
+    {
+      "name": "TsPanchangaRequest",
+      "doc": "What to found an almanac over: a range of dates at one place.\n\nA **range**, not a grid of dates, because that is the shape the\nalmanac itself leads with and the one that is cheaper than its parts:\nconsecutive windows share a boundary, so day *n*'s next sunrise is day\n*n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting\none day passes a range of one.",
+      "role": "object",
+      "fields": [
+        {
+          "name": "struct_size",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "doc": "`sizeof(ts_panchanga_request)` as the caller compiled it.",
+          "meta": {}
+        },
+        {
+          "name": "calendar",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u16"
+          },
+          "doc": "The calendar the range's dates are written in.",
+          "meta": {
+            "example": "0",
+            "enum": "Calendar"
+          }
+        },
+        {
+          "name": "reserved",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u16"
+          },
+          "doc": "Reserved; write zero.",
+          "meta": {}
+        },
+        {
+          "name": "from_year",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "The first day's astronomical year.",
+          "meta": {
+            "example": "2026"
+          }
+        },
+        {
+          "name": "from_month",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The first day's month, 1-based.",
+          "meta": {
+            "range": "[1,13]",
+            "example": "9"
+          }
+        },
+        {
+          "name": "from_day",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The first day's day of the month, 1-based.",
+          "meta": {
+            "range": "[1,32]",
+            "example": "1"
+          }
+        },
+        {
+          "name": "to_month",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The last day's month, 1-based.",
+          "meta": {
+            "range": "[1,13]",
+            "example": "9"
+          }
+        },
+        {
+          "name": "to_day",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The last day's day of the month, 1-based.",
+          "meta": {
+            "range": "[1,32]",
+            "example": "30"
+          }
+        },
+        {
+          "name": "to_year",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "The last day's astronomical year.",
+          "meta": {
+            "example": "2026"
+          }
+        },
+        {
+          "name": "latitude_deg",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The place's latitude, degrees north.",
+          "meta": {
+            "unit": "deg",
+            "range": "[-90,90]",
+            "example": "27.7172"
+          }
+        },
+        {
+          "name": "longitude_deg",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The place's longitude, degrees east.",
+          "meta": {
+            "unit": "deg",
+            "range": "[-180,180]",
+            "example": "85.324"
+          }
+        },
+        {
+          "name": "altitude_m",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The place's altitude, metres above the ellipsoid.",
+          "meta": {
+            "unit": "m",
+            "range": "[-500,9000]",
+            "example": "1400"
+          }
+        },
+        {
+          "name": "utc_offset_seconds",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "The local clock's offset from UTC in seconds, east positive: the\nclock the days' dates are read in.",
+          "meta": {
+            "unit": "s",
+            "range": "[-64800,64800]",
+            "example": "20700"
+          }
+        },
+        {
+          "name": "reserved_tail",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "Reserved; write zero.",
+          "meta": {}
+        }
+      ],
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "functions": [
@@ -11027,6 +11251,60 @@
         "blob": "positions"
       },
       "source": "crates/ffi/src/positions.rs"
+    },
+    {
+      "name": "ts_panchanga_days",
+      "doc": "Founds the almanac of every day in a range at one place and answers\nwith its blob: the four moving limbs, the periods, the lunar month,\nwhat the Moon and the Sun did, and what each day is said to be.\n\nA **range** rather than a grid, because consecutive windows share a\nboundary — day *n*'s next sunrise is day *n+1*'s sunrise — so a month\nof days is much cheaper than thirty days computed separately. A caller\nwanting one day passes a range of one. A range holding more than a\nyear and a day is `OUT_OF_RANGE` naming the limit.\n\nEverything but the request is the context's settings, so two calls\nunder one context are comparable and the settings hash says why.\n\nA context without an ephemeris is `CAPABILITY`; a provider failure is\n`PROVIDER` with the provider's own code in the last error. A polar day\nunder `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the\npolicies that would synthesise one.",
+      "safety": "`context` must be a live handle; `request` valid for a read; `out_blob`\nvalid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsPanchangaRequest"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "out_blob",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsBlob"
+            },
+            "mutable": true
+          },
+          "role": "blob_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {
+        "blob": "panchanga"
+      },
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "blobs": [
@@ -11275,6 +11553,17 @@
               "name": "ayanamsha_offset_deg",
               "scalar": "f64",
               "doc": "The ayanamsha applied at this instant, degrees; zero for a tropical chart."
+            },
+            {
+              "name": "day_part",
+              "scalar": "u8",
+              "doc": "Which arc of its day the instant falls in.",
+              "enum": "TsDayPart"
+            },
+            {
+              "name": "day_elapsed",
+              "scalar": "f64",
+              "doc": "How far through that arc the instant is, 0 to 1."
             }
           ]
         },
@@ -11491,17 +11780,6 @@
               "enum": "Vara"
             },
             {
-              "name": "part",
-              "scalar": "u8",
-              "doc": "Which arc of the day the instant falls in.",
-              "enum": "TsDayPart"
-            },
-            {
-              "name": "elapsed",
-              "scalar": "f64",
-              "doc": "How far through that arc the instant is, 0 to 1."
-            },
-            {
               "name": "calendar",
               "scalar": "u16",
               "doc": "The calendar the date is in.",
@@ -11653,6 +11931,772 @@
         },
         {
           "id": 12,
+          "name": "provenance",
+          "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
+          "kind": "bytes",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "name": "panchanga",
+      "id": 4,
+      "doc": "A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.",
+      "sections": [
+        {
+          "id": 1,
+          "name": "summary",
+          "doc": "What the batch decided once: where, in which calendar, and how many days.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "day_count",
+              "scalar": "u32",
+              "doc": "How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold."
+            },
+            {
+              "name": "latitude_deg",
+              "scalar": "f64",
+              "doc": "The place's latitude, degrees north."
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "The place's longitude, degrees east."
+            },
+            {
+              "name": "altitude_m",
+              "scalar": "f64",
+              "doc": "The place's altitude, metres."
+            },
+            {
+              "name": "calendar",
+              "scalar": "u16",
+              "doc": "The civil calendar the days' dates are read in.",
+              "enum": "Calendar"
+            },
+            {
+              "name": "lunar_month",
+              "scalar": "u8",
+              "doc": "Which lunar-month convention `days.month` leads with.",
+              "enum": "TsLunarMonth"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "days",
+          "doc": "One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "window_from",
+              "scalar": "f64",
+              "doc": "When the window the day's spans are clipped to begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "window_to",
+              "scalar": "f64",
+              "doc": "When the window the day's spans are clipped to ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "month",
+              "scalar": "u16",
+              "doc": "The lunar month under the profile's own convention.",
+              "enum": "Masa"
+            },
+            {
+              "name": "amanta",
+              "scalar": "u16",
+              "doc": "The amanta month: new moon to new moon.",
+              "enum": "Masa"
+            },
+            {
+              "name": "purnimanta",
+              "scalar": "u16",
+              "doc": "The purnimanta month: full moon to full moon.",
+              "enum": "Masa"
+            },
+            {
+              "name": "paksha",
+              "scalar": "u16",
+              "doc": "The fortnight the day opens in.",
+              "enum": "Paksha"
+            },
+            {
+              "name": "ayana",
+              "scalar": "u16",
+              "doc": "Which half of the year the day falls in.",
+              "enum": "Ayana"
+            },
+            {
+              "name": "disha_shool",
+              "scalar": "u16",
+              "doc": "The direction not to travel in, which is the vara's.",
+              "enum": "Direction"
+            },
+            {
+              "name": "has_sankranti",
+              "scalar": "u8",
+              "doc": "1 when the Sun entered a new sign inside the day, 0 otherwise."
+            },
+            {
+              "name": "sankranti",
+              "scalar": "f64",
+              "doc": "When it did, as a Julian day (UTC); zero when it did not, which `has_sankranti` is what distinguishes from midnight."
+            },
+            {
+              "name": "has_abhijit",
+              "scalar": "u8",
+              "doc": "1 when the day has an Abhijit muhurta, 0 on a day with no daylight."
+            },
+            {
+              "name": "abhijit_from",
+              "scalar": "f64",
+              "doc": "When Abhijit begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "abhijit_to",
+              "scalar": "f64",
+              "doc": "When Abhijit ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "abhijit_effective",
+              "scalar": "u8",
+              "doc": "1 when Abhijit is effective, which it is on every day but a Wednesday."
+            },
+            {
+              "name": "has_brahma",
+              "scalar": "u8",
+              "doc": "1 when the night that ends at this day's sunrise is known, 0 in the polar case."
+            },
+            {
+              "name": "brahma_from",
+              "scalar": "f64",
+              "doc": "When Brahma muhurta begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "brahma_to",
+              "scalar": "f64",
+              "doc": "When Brahma muhurta ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "moon_window_from",
+              "scalar": "f64",
+              "doc": "When the window the Moon's rises and sets were looked for in begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "moon_window_to",
+              "scalar": "f64",
+              "doc": "When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC)."
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "counts",
+          "doc": "How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "tithi",
+              "scalar": "u32",
+              "doc": "How many rows of `tithi` belong to this day."
+            },
+            {
+              "name": "nakshatra",
+              "scalar": "u32",
+              "doc": "How many rows of `nakshatra` belong to this day."
+            },
+            {
+              "name": "yoga",
+              "scalar": "u32",
+              "doc": "How many rows of `yoga` belong to this day."
+            },
+            {
+              "name": "karana",
+              "scalar": "u32",
+              "doc": "How many rows of `karana` belong to this day."
+            },
+            {
+              "name": "panchaka",
+              "scalar": "u32",
+              "doc": "How many rows of `panchaka` belong to this day."
+            },
+            {
+              "name": "moon_signs",
+              "scalar": "u32",
+              "doc": "How many rows of `moon_signs` belong to this day."
+            },
+            {
+              "name": "sun_signs",
+              "scalar": "u32",
+              "doc": "How many rows of `sun_signs` belong to this day."
+            },
+            {
+              "name": "kaalas",
+              "scalar": "u32",
+              "doc": "How many rows of `kaalas` belong to this day."
+            },
+            {
+              "name": "choghadiya",
+              "scalar": "u32",
+              "doc": "How many rows of `choghadiya` belong to this day."
+            },
+            {
+              "name": "horas",
+              "scalar": "u32",
+              "doc": "How many rows of `horas` belong to this day."
+            },
+            {
+              "name": "muhurtas",
+              "scalar": "u32",
+              "doc": "How many rows of `muhurtas` belong to this day."
+            },
+            {
+              "name": "moon_events",
+              "scalar": "u32",
+              "doc": "How many rows of `moon_events` belong to this day."
+            },
+            {
+              "name": "muhurta_yogas",
+              "scalar": "u32",
+              "doc": "How many rows of `muhurta_yogas` belong to this day."
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "day",
+          "doc": "The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "sunrise",
+              "scalar": "f64",
+              "doc": "The sunrise that opened the day, as a Julian day (UTC)."
+            },
+            {
+              "name": "sunset",
+              "scalar": "f64",
+              "doc": "The sunset that closed its daylight, as a Julian day (UTC)."
+            },
+            {
+              "name": "next_sunrise",
+              "scalar": "f64",
+              "doc": "The sunrise that closes it, as a Julian day (UTC)."
+            },
+            {
+              "name": "vara",
+              "scalar": "u16",
+              "doc": "The weekday the day carries.",
+              "enum": "Vara"
+            },
+            {
+              "name": "calendar",
+              "scalar": "u16",
+              "doc": "The calendar the date is in.",
+              "enum": "Calendar"
+            },
+            {
+              "name": "era",
+              "scalar": "u16",
+              "doc": "The era the date's year is counted in.",
+              "enum": "Era"
+            },
+            {
+              "name": "year",
+              "scalar": "i32",
+              "doc": "The astronomical year; 1 BCE is 0."
+            },
+            {
+              "name": "era_year",
+              "scalar": "i32",
+              "doc": "The year as the era counts it."
+            },
+            {
+              "name": "month",
+              "scalar": "u8",
+              "doc": "The month, 1 to 12 or 13."
+            },
+            {
+              "name": "day_of_month",
+              "scalar": "u8",
+              "doc": "The day of the month."
+            },
+            {
+              "name": "resolution",
+              "scalar": "u8",
+              "doc": "How the date was resolved.",
+              "enum": "TsResolution"
+            },
+            {
+              "name": "computed_month",
+              "scalar": "u8",
+              "doc": "The engine's month where it differs from the table's; zero otherwise."
+            },
+            {
+              "name": "computed_day",
+              "scalar": "u8",
+              "doc": "The engine's day where it differs from the table's; zero otherwise."
+            },
+            {
+              "name": "state_kind",
+              "scalar": "u8",
+              "doc": "Whether the day had a sunrise at all.",
+              "enum": "TsDayState"
+            },
+            {
+              "name": "state_polar_kind",
+              "scalar": "u8",
+              "doc": "Which polar state it was, when it had none; zero otherwise.",
+              "enum": "TsPolarKind"
+            },
+            {
+              "name": "state_polar_policy",
+              "scalar": "u8",
+              "doc": "Which policy synthesised its bounds, when it had none; zero otherwise.",
+              "enum": "TsPolarDayPolicy"
+            },
+            {
+              "name": "convention_kind",
+              "scalar": "u8",
+              "doc": "Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.",
+              "enum": "TsSunrise"
+            },
+            {
+              "name": "convention_value",
+              "scalar": "f64",
+              "doc": "The altitude in degrees when the convention is custom; zero otherwise."
+            }
+          ],
+          "shape": "day"
+        },
+        {
+          "id": 5,
+          "name": "tithi",
+          "doc": "The tithis that touch each day.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Which tithi ran.",
+              "enum": "Tithi"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "nakshatra",
+          "doc": "The nakshatras the Moon was in.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Which nakshatra the Moon was in.",
+              "enum": "Nakshatra"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "yoga",
+          "doc": "The nitya yogas.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Which nitya yoga ran.",
+              "enum": "Yoga"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "name": "karana",
+          "doc": "The karanas; half-tithis, so there are three or four on an ordinary day.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Which karana ran.",
+              "enum": "Karana"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "name": "panchaka",
+          "doc": "Panchaka, while the Moon is in the last five nakshatras.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Which panchaka held.",
+              "enum": "Panchaka"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "name": "moon_signs",
+          "doc": "The signs the Moon stood in, with when it entered and left each.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Which sign the Moon was in.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "name": "sun_signs",
+          "doc": "The signs the Sun stood in; two only on a sankranti day.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Which sign the Sun was in.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "name": "kaalas",
+          "doc": "The inauspicious eighths of the daylight each day has.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "kaala",
+              "scalar": "u16",
+              "doc": "Which one.",
+              "enum": "Kaala"
+            },
+            {
+              "name": "from",
+              "scalar": "f64",
+              "doc": "When it begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "to",
+              "scalar": "f64",
+              "doc": "When it ends, as a Julian day (UTC)."
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "name": "choghadiya",
+          "doc": "Eight choghadiya of the daylight and eight of the night, when the day has both.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "choghadiya",
+              "scalar": "u16",
+              "doc": "Which choghadiya.",
+              "enum": "Choghadiya"
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "The graha that rules it.",
+              "enum": "Graha"
+            },
+            {
+              "name": "from",
+              "scalar": "f64",
+              "doc": "When it begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "to",
+              "scalar": "f64",
+              "doc": "When it ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "daytime",
+              "scalar": "u8",
+              "doc": "1 when it is one of the eight of the daylight, 0 for one of the night."
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "name": "horas",
+          "doc": "The twenty-four horas of each day, from sunrise.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "number",
+              "scalar": "u8",
+              "doc": "The hora's number, 1 to 24 from sunrise."
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "The graha that rules it.",
+              "enum": "Graha"
+            },
+            {
+              "name": "start",
+              "scalar": "f64",
+              "doc": "When it begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "end",
+              "scalar": "f64",
+              "doc": "When it ends, as a Julian day (UTC)."
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "name": "muhurtas",
+          "doc": "The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "from",
+              "scalar": "f64",
+              "doc": "When it begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "to",
+              "scalar": "f64",
+              "doc": "When it ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "daylight",
+              "scalar": "u8",
+              "doc": "1 when it is one of the fifteen of the daylight, 0 for one of the night."
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "name": "moon_events",
+          "doc": "Every moonrise and moonset inside each day's moon window, in order.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "kind",
+              "scalar": "u8",
+              "doc": "Whether the Moon rose or set.",
+              "enum": "TsMoonEvent"
+            },
+            {
+              "name": "instant",
+              "scalar": "f64",
+              "doc": "When, as a Julian day (UTC)."
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "name": "muhurta_yogas",
+          "doc": "The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "yoga",
+              "scalar": "u16",
+              "doc": "Which yoga.",
+              "enum": "MuhurtaYoga"
+            },
+            {
+              "name": "from",
+              "scalar": "f64",
+              "doc": "When it begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "to",
+              "scalar": "f64",
+              "doc": "When it ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "because_kind",
+              "scalar": "u8",
+              "doc": "What made it hold.",
+              "enum": "TsYogaCause"
+            },
+            {
+              "name": "because_vara",
+              "scalar": "u16",
+              "doc": "The vara that makes it; every cause has one.",
+              "enum": "Vara"
+            },
+            {
+              "name": "because_tithi",
+              "scalar": "u16",
+              "doc": "The tithi that makes it, when the cause has one; zero otherwise.",
+              "enum": "Tithi"
+            },
+            {
+              "name": "because_nakshatra",
+              "scalar": "u16",
+              "doc": "The nakshatra that makes it; every cause has one.",
+              "enum": "Nakshatra"
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "model",
+          "doc": "UTF-8 text: the solar model that reckoned the days, as it describes itself.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 19,
           "name": "provenance",
           "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
           "kind": "bytes",

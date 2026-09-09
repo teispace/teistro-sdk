@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 40 entry points over 26 structs and 87 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 41 entry points over 27 structs and 90 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -104,6 +104,12 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 |---|---|
 | [`ts_positions`](positions/ts_positions) | Positions over a grid of instants and bodies in the requested frame: the provider answers in the frame it can, the SDK completes the rest under the profile's override policy, and every step is stamped. |
 
+### Panchanga
+
+| entry point | what it does |
+|---|---|
+| [`ts_panchanga_days`](panchanga/ts_panchanga_days) | Founds the almanac of every day in a range at one place and answers with its blob: the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what each day is said to be. |
+
 ## The rules every entry point follows
 
 - Every struct begins with `struct_size`, which the caller sets to `sizeof` before the call: a library built from a newer description can tell how much of the struct the caller knows about.
@@ -129,3 +135,4 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/time.rs`
 - `crates/ffi/src/intl.rs`
 - `crates/ffi/src/positions.rs`
+- `crates/ffi/src/panchanga.rs`

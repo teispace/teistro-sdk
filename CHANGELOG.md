@@ -233,6 +233,56 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**A daily panchanga crosses the boundary, as a batch of days.**
+`ts_panchanga_days` takes a **range** — not a list of dates, because
+consecutive days share a boundary, so day *n*'s next sunrise is day
+*n+1*'s sunrise and a month costs much less than thirty days computed
+separately — and answers with one blob holding the four moving limbs, the
+periods, the lunar month under both conventions, what the Moon and the
+Sun did, and what each day is said to be. Every per-day list is
+concatenated across the batch with a `counts` section saying how many
+rows are each day's, which is the layout the measurement settled: one
+rule for all thirteen, including the five whose length never moved.
+
+Three things it decides that a chart blob never had to. **A value a day
+may not have crosses as a presence flag beside it** — an absent Abhijit
+and an Abhijit at Julian day zero are both nought, so no sentinel can
+serve. **Two lists answering one question in two halves become one
+section with a discriminant**: the muhurtas of the daylight and of the
+night, the moonrises and the moonsets. And **the seven span lists do not
+share a shape**, which is the first place that rule needed a boundary: a
+shape makes two sections decode to one type, which is right for the same
+section in two blobs and wrong for a span of tithis and a span of
+nakshatras — same structure, different meanings, and one type for both
+would let a caller pass either where the other is wanted. A shape is for
+sameness of meaning, not similarity of structure.
+
+**The shared day section carried two fields that were never a day's.**
+`day_section` held `part` — which arc of the day an instant falls in —
+and `elapsed` — how far through that arc it is. Both belong to an
+**instant**: a chart has one and a panchanga day has none, so the
+panchanga could only have filled them with a lie. The design page had
+said all along that a chart's day and a panchanga's are the same
+*eighteen* fields while the section held twenty, and nothing noticed
+because a chart was the only blob carrying a day — a field that is wrong
+for a reader who does not exist reads as right. They now sit in the
+chart's `cast` section with the other things an instant decides.
+
+All three bindings gained `almanac(range)` and `almanacDay(one)` over the
+one crossing, with each day a view over its batch and its ragged lists
+resolved by a prefix sum done **once** when the batch is decoded, rather
+than per access — the alternative is quadratic over the year of days an
+almanac is actually asked for. Each ships a week's panchangam as a worked
+example, and the three print byte-identical pages.
+
+Two gaps the examples found and the SDK now records rather than papers
+over: a binding's `has(key)` answers for a *message* and there is no
+non-throwing way to ask the same of an **entity**, so all three examples
+catch a refusal to do it; and **`masa` and `direction` have no name in
+any of the five entity packs**, so an almanac cannot print the lunar
+month or the disha shool in the reader's language — the two things a
+panchanga page leads with.
+
 **The shape of a batch of almanacs is measured** (`cargo xtask almanac`
 → `03-design/panchanga-at-the-boundary-measured.md`, gated by
 `check-almanac`), which is the falsification pass the panchanga blob's

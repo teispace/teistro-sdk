@@ -63,9 +63,11 @@ from .catalogue import (
     Karana,
     Kind,
     Koota,
+    LunarMonth,
     Masa,
     Member,
     Modality,
+    MoonEvent,
     MuhurtaNature,
     MuhurtaYoga,
     Nadi,
@@ -102,6 +104,7 @@ from .catalogue import (
     Varga,
     Varna,
     Yoga,
+    YogaCause,
     Yoni,
     ZoneEra,
     ZoneKind,
@@ -149,6 +152,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_time_conversion": 56,
     "ts_delta_t": 32,
     "ts_intl_loaded": 32,
+    "ts_panchanga_request": 56,
 }
 
 _SIZES_32: Final[dict[str, int]] = {
@@ -178,6 +182,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_time_conversion": 56,
     "ts_delta_t": 32,
     "ts_intl_loaded": 24,
+    "ts_panchanga_request": 56,
 }
 
 # The size the C compiler gives every boundary struct on this target, as
@@ -659,6 +664,36 @@ class _IntlLoadedStruct(ctypes.Structure):
         ("reserved", ctypes.c_uint32),
         ("locale", ctypes.c_char_p),
         ("sha256", ctypes.c_char_p),
+    ]
+
+
+class _PanchangaRequestStruct(ctypes.Structure):
+    """What to found an almanac over: a range of dates at one place.
+
+    A **range**, not a grid of dates, because that is the shape the
+    almanac itself leads with and the one that is cheaper than its parts:
+    consecutive windows share a boundary, so day *n*'s next sunrise is day
+    *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting
+    one day passes a range of one.
+
+    The C layout, field for field. `PanchangaRequest` is the value class over it.
+    """
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("calendar", ctypes.c_uint16),
+        ("reserved", ctypes.c_uint16),
+        ("from_year", ctypes.c_int32),
+        ("from_month", ctypes.c_uint8),
+        ("from_day", ctypes.c_uint8),
+        ("to_month", ctypes.c_uint8),
+        ("to_day", ctypes.c_uint8),
+        ("to_year", ctypes.c_int32),
+        ("latitude_deg", ctypes.c_double),
+        ("longitude_deg", ctypes.c_double),
+        ("altitude_m", ctypes.c_double),
+        ("utc_offset_seconds", ctypes.c_int32),
+        ("reserved_tail", ctypes.c_int32),
     ]
 
 
@@ -2480,6 +2515,122 @@ class IntlLoaded:
         )
 
 
+@dataclass(frozen=True)
+class PanchangaRequest:
+    """What to found an almanac over: a range of dates at one place.
+
+    A **range**, not a grid of dates, because that is the shape the
+    almanac itself leads with and the one that is cheaper than its parts:
+    consecutive windows share a boundary, so day *n*'s next sunrise is day
+    *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting
+    one day passes a range of one.
+    """
+
+    calendar: Calendar
+    """The calendar the range's dates are written in.
+    Enum: Calendar. Example: 0.
+    """
+
+    from_year: int
+    """The first day's astronomical year.
+    Example: 2026.
+    """
+
+    from_month: int
+    """The first day's month, 1-based.
+    Range: [1,13]. Example: 9.
+    """
+
+    from_day: int
+    """The first day's day of the month, 1-based.
+    Range: [1,32]. Example: 1.
+    """
+
+    to_month: int
+    """The last day's month, 1-based.
+    Range: [1,13]. Example: 9.
+    """
+
+    to_day: int
+    """The last day's day of the month, 1-based.
+    Range: [1,32]. Example: 30.
+    """
+
+    to_year: int
+    """The last day's astronomical year.
+    Example: 2026.
+    """
+
+    latitude_deg: float
+    """The place's latitude, degrees north.
+    Unit: deg. Range: [-90,90]. Example: 27.7172.
+    """
+
+    longitude_deg: float
+    """The place's longitude, degrees east.
+    Unit: deg. Range: [-180,180]. Example: 85.324.
+    """
+
+    altitude_m: float
+    """The place's altitude, metres above the ellipsoid.
+    Unit: m. Range: [-500,9000]. Example: 1400.
+    """
+
+    utc_offset_seconds: int
+    """The local clock's offset from UTC in seconds, east positive: the
+    clock the days' dates are read in.
+    Unit: s. Range: [-64800,64800]. Example: 20700.
+    """
+
+    def _into(self, raw: _PanchangaRequestStruct, owned: list[Any]) -> None:
+        """Writes this value into a C struct, which may be one held inside
+        another rather than one of its own.
+
+        Anything the struct points at is appended to `owned`, which the
+        caller keeps alive until the call has returned.
+        """
+        raw.struct_size = ctypes.sizeof(_PanchangaRequestStruct)
+        raw.calendar = _c_value(self.calendar)
+        raw.from_year = _c_value(self.from_year)
+        raw.from_month = _c_value(self.from_month)
+        raw.from_day = _c_value(self.from_day)
+        raw.to_month = _c_value(self.to_month)
+        raw.to_day = _c_value(self.to_day)
+        raw.to_year = _c_value(self.to_year)
+        raw.latitude_deg = _c_value(self.latitude_deg)
+        raw.longitude_deg = _c_value(self.longitude_deg)
+        raw.altitude_m = _c_value(self.altitude_m)
+        raw.utc_offset_seconds = _c_value(self.utc_offset_seconds)
+
+    def _to_c(self, owned: list[Any]) -> _PanchangaRequestStruct:
+        """This value as a fresh C struct, ready to be passed by pointer."""
+        raw = _PanchangaRequestStruct()
+        self._into(raw, owned)
+        return raw
+
+    @classmethod
+    def _empty(cls) -> PanchangaRequest:
+        """The zero value, for a nested struct a caller left out."""
+        return cls._of(_PanchangaRequestStruct())
+
+    @classmethod
+    def _of(cls, raw: _PanchangaRequestStruct) -> PanchangaRequest:
+        """The value the library wrote into a C struct."""
+        return cls(
+            calendar=Calendar(raw.calendar),
+            from_year=raw.from_year,
+            from_month=raw.from_month,
+            from_day=raw.from_day,
+            to_month=raw.to_month,
+            to_day=raw.to_day,
+            to_year=raw.to_year,
+            latitude_deg=float(raw.latitude_deg),
+            longitude_deg=float(raw.longitude_deg),
+            altitude_m=float(raw.altitude_m),
+            utc_offset_seconds=raw.utc_offset_seconds,
+        )
+
+
 class CalendarFixedOfJdResult(NamedTuple):
     """What `ts_calendar_fixed_of_jd` hands back."""
 
@@ -2769,6 +2920,13 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_positions.restype = ctypes.c_int32
+        self.ts_panchanga_days: Any = library.ts_panchanga_days
+        self.ts_panchanga_days.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_PanchangaRequestStruct),
+            ctypes.POINTER(_BlobStruct),
+        ]
+        self.ts_panchanga_days.restype = ctypes.c_int32
 
 
 class TeistroContext:
@@ -3321,6 +3479,39 @@ class TeistroContext:
         _request = request._to_c(owned)
         _out_blob = _BlobStruct()
         status = Status(self._lib.ts_positions(
+            self._raw,
+            ctypes.byref(_request),
+            ctypes.byref(_out_blob),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        blob = _take_blob(self._lib, _out_blob)
+        return blob
+
+    def panchanga_days(self, request: PanchangaRequest) -> bytes:
+        """Founds the almanac of every day in a range at one place and answers
+        with its blob: the four moving limbs, the periods, the lunar month,
+        what the Moon and the Sun did, and what each day is said to be.
+
+        A **range** rather than a grid, because consecutive windows share a
+        boundary — day *n*'s next sunrise is day *n+1*'s sunrise — so a month
+        of days is much cheaper than thirty days computed separately. A caller
+        wanting one day passes a range of one. A range holding more than a
+        year and a day is `OUT_OF_RANGE` naming the limit.
+
+        Everything but the request is the context's settings, so two calls
+        under one context are comparable and the settings hash says why.
+
+        A context without an ephemeris is `CAPABILITY`; a provider failure is
+        `PROVIDER` with the provider's own code in the last error. A polar day
+        under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
+        policies that would synthesise one.
+        """
+        owned: list[Any] = []
+        _request = request._to_c(owned)
+        _out_blob = _BlobStruct()
+        status = Status(self._lib.ts_panchanga_days(
             self._raw,
             ctypes.byref(_request),
             ctypes.byref(_out_blob),

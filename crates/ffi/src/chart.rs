@@ -297,8 +297,7 @@ pub struct TsChartRequest {
 /// copy of the same arithmetic
 /// (`03-design/chart-at-the-boundary.md` §8).
 #[must_use]
-pub fn day_values(day: &teistro_chart::day::ChartDay) -> Vec<FixedValue> {
-    let local = &day.day;
+pub fn day_values(local: &teistro_time::local_day::LocalDay) -> Vec<FixedValue> {
     let (state, polar_kind, polar_policy) = TsDayState::split(local.state);
     let (convention, convention_value) = match local.convention {
         teistro_core::settings::SunriseConvention::Named { which } => (
@@ -317,8 +316,6 @@ pub fn day_values(day: &teistro_chart::day::ChartDay) -> Vec<FixedValue> {
         local.sunset.get().into(),
         local.next_sunrise.get().into(),
         u64::from(local.vara.id()).into(),
-        (TsDayPart::from(day.part) as u64).into(),
-        day.elapsed.into(),
         u64::from(local.date.calendar.id()).into(),
         era.map_or(u64::from(u16::MAX), |e| u64::from(e.era.id()))
             .into(),
@@ -438,6 +435,8 @@ fn chart_rows(charts: &[ChartFoundation]) -> Vec<Vec<FixedValue>> {
                 chart.lagna_deg.into(),
                 chart.day_lagna_deg.into(),
                 chart.zodiac.offset_deg.into(),
+                (TsDayPart::from(chart.day.part) as u64).into(),
+                chart.day.elapsed.into(),
             ]
         })
         .collect()
@@ -582,7 +581,7 @@ pub fn encode(
     let columns = GrahaColumns::of(charts);
     let (house_madhya, house_sandhi) = bhava_columns(charts, |c| &c.houses);
     let (chalit_madhya, chalit_sandhi) = bhava_columns(charts, |c| &c.chalit);
-    let day_rows: Vec<Vec<FixedValue>> = charts.iter().map(|c| day_values(&c.day)).collect();
+    let day_rows: Vec<Vec<FixedValue>> = charts.iter().map(|c| day_values(&c.day.day)).collect();
     let timing_rows: Vec<Vec<FixedValue>> =
         charts.iter().map(|c| timing_values(&c.timing)).collect();
     let once = BatchOnce::of(charts.first());

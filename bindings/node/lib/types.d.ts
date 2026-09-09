@@ -920,6 +920,87 @@ export interface IntlLoaded {
 }
 
 /**
+ * What to found an almanac over: a range of dates at one place.
+ *
+ * A **range**, not a grid of dates, because that is the shape the
+ * almanac itself leads with and the one that is cheaper than its parts:
+ * consecutive windows share a boundary, so day *n*'s next sunrise is day
+ * *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting
+ * one day passes a range of one.
+ */
+export interface PanchangaRequest {
+  /**
+   * The calendar the range's dates are written in.
+   * @enum Calendar
+   * @example 0
+   */
+  readonly calendar: Calendar;
+  /**
+   * The first day's astronomical year.
+   * @example 2026
+   */
+  readonly fromYear: number;
+  /**
+   * The first day's month, 1-based.
+   * @range [1,13]
+   * @example 9
+   */
+  readonly fromMonth: number;
+  /**
+   * The first day's day of the month, 1-based.
+   * @range [1,32]
+   * @example 1
+   */
+  readonly fromDay: number;
+  /**
+   * The last day's month, 1-based.
+   * @range [1,13]
+   * @example 9
+   */
+  readonly toMonth: number;
+  /**
+   * The last day's day of the month, 1-based.
+   * @range [1,32]
+   * @example 30
+   */
+  readonly toDay: number;
+  /**
+   * The last day's astronomical year.
+   * @example 2026
+   */
+  readonly toYear: number;
+  /**
+   * The place's latitude, degrees north.
+   * @unit deg
+   * @range [-90,90]
+   * @example 27.7172
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east.
+   * @unit deg
+   * @range [-180,180]
+   * @example 85.324
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The place's altitude, metres above the ellipsoid.
+   * @unit m
+   * @range [-500,9000]
+   * @example 1400
+   */
+  readonly altitudeM: number;
+  /**
+   * The local clock's offset from UTC in seconds, east positive: the
+   * clock the days' dates are read in.
+   * @unit s
+   * @range [-64800,64800]
+   * @example 20700
+   */
+  readonly utcOffsetSeconds: number;
+}
+
+/**
  * A failed call. `status` is the stable code's name and `code` its
  * number, the same in every binding; `field`, `hint` and `messageKey`
  * are present when the library named them.

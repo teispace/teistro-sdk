@@ -47,6 +47,7 @@ pub mod context;
 pub mod frame;
 pub mod intl;
 pub mod keys;
+pub mod panchanga;
 pub mod positions;
 pub mod schemas;
 pub mod strings;

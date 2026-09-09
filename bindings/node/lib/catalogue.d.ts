@@ -5949,3 +5949,82 @@ export declare const DeltaTSource: {
  */
 export declare const DeltaTSourceById: ReadonlyMap<number, DeltaTSource>;
 
+/**
+ * Which lunar-month convention a day's month leads with.
+ */
+export type LunarMonth = 'amanta' | 'purnimanta';
+
+/** Every LunarMonth by name; the values are the strings the union accepts. */
+export declare const LunarMonth: {
+  /**
+   * New moon to new moon.
+   */
+  readonly Amanta: 'amanta';
+  /**
+   * Full moon to full moon.
+   */
+  readonly Purnimanta: 'purnimanta';
+};
+
+/**
+ * Every LunarMonth by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const LunarMonthById: ReadonlyMap<number, LunarMonth>;
+
+/**
+ * Whether the Moon rose or set.
+ *
+ * The two lists are one section with this to tell them apart, as the
+ * muhurtas' `daylight` and the choghadiya's `daytime` do: a day's moon
+ * events are one question asked twice, and two sections of one column
+ * each would be two counts, two offsets and two types for it.
+ */
+export type MoonEvent = 'rise' | 'set';
+
+/** Every MoonEvent by name; the values are the strings the union accepts. */
+export declare const MoonEvent: {
+  /**
+   * The Moon crossed the horizon upward.
+   */
+  readonly Rise: 'rise';
+  /**
+   * The Moon crossed it downward.
+   */
+  readonly Set: 'set';
+};
+
+/**
+ * Every MoonEvent by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MoonEventById: ReadonlyMap<number, MoonEvent>;
+
+/**
+ * What made a muhurta yoga hold: the kind half of a tagged enum.
+ *
+ * The payload fields sit beside it, as many as the widest variant needs
+ * (`03-design/chart-at-the-boundary.md` §8). Both variants carry a vara
+ * and a nakshatra; only the second carries a tithi, and the first leaves
+ * `because_tithi` at zero.
+ */
+export type YogaCause = 'vara-nakshatra' | 'vara-tithi-nakshatra';
+
+/** Every YogaCause by name; the values are the strings the union accepts. */
+export declare const YogaCause: {
+  /**
+   * The vara and the nakshatra the Moon was in.
+   */
+  readonly VaraNakshatra: 'vara-nakshatra';
+  /**
+   * The vara, the tithi's class and the nakshatra's number of feet.
+   */
+  readonly VaraTithiNakshatra: 'vara-tithi-nakshatra';
+};
+
+/**
+ * Every YogaCause by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const YogaCauseById: ReadonlyMap<number, YogaCause>;
+

@@ -1578,3 +1578,34 @@ What produced a Delta T value.
 | `TS_DELTA_T_SOURCE_LEAP_SECONDS` | 2 | Through the leap-second table: TT less UTC, exact. |
 | `TS_DELTA_T_SOURCE_CUSTOM` | 3 | Supplied by the consumer. |
 
+## ts_lunar_month
+
+Which lunar-month convention a day's month leads with.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_LUNAR_MONTH_AMANTA` | 0 | New moon to new moon. |
+| `TS_LUNAR_MONTH_PURNIMANTA` | 1 | Full moon to full moon. |
+
+## ts_moon_event
+
+Whether the Moon rose or set.
+
+The two lists are one section with this to tell them apart, as the muhurtas' `daylight` and the choghadiya's `daytime` do: a day's moon events are one question asked twice, and two sections of one column each would be two counts, two offsets and two types for it.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MOON_EVENT_RISE` | 0 | The Moon crossed the horizon upward. |
+| `TS_MOON_EVENT_SET` | 1 | The Moon crossed it downward. |
+
+## ts_yoga_cause
+
+What made a muhurta yoga hold: the kind half of a tagged enum.
+
+The payload fields sit beside it, as many as the widest variant needs (`03-design/chart-at-the-boundary.md` §8). Both variants carry a vara and a nakshatra; only the second carries a tithi, and the first leaves `because_tithi` at zero.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_YOGA_CAUSE_VARA_NAKSHATRA` | 0 | The vara and the nakshatra the Moon was in. |
+| `TS_YOGA_CAUSE_VARA_TITHI_NAKSHATRA` | 1 | The vara, the tithi's class and the nakshatra's number of feet. |
+

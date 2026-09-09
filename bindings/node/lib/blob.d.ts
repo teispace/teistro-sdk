@@ -190,6 +190,15 @@ export interface ChartsCast {
    * The ayanamsha applied at this instant, degrees; zero for a tropical chart.
    */
   readonly ayanamshaOffsetDeg: Float64Array;
+  /**
+   * Which arc of its day the instant falls in.
+   * The values are `DayPart` ids.
+   */
+  readonly dayPart: Uint8Array;
+  /**
+   * How far through that arc the instant is, 0 to 1.
+   */
+  readonly dayElapsed: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -373,15 +382,6 @@ export interface Day {
    * The values are `Vara` ids.
    */
   readonly vara: Uint16Array;
-  /**
-   * Which arc of the day the instant falls in.
-   * The values are `DayPart` ids.
-   */
-  readonly part: Uint8Array;
-  /**
-   * How far through that arc the instant is, 0 to 1.
-   */
-  readonly elapsed: Float64Array;
   /**
    * The calendar the date is in.
    * The values are `Calendar` ids.
@@ -567,4 +567,669 @@ export interface Charts {
  * another schema is a `TypeError`.
  */
 export declare function decodeCharts(bytes: Uint8Array): Charts;
+
+/**
+ * The `days` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought.
+ */
+export interface PanchangaDays {
+  /**
+   * When the window the day's spans are clipped to begins, as a Julian day (UTC).
+   */
+  readonly windowFrom: Float64Array;
+  /**
+   * When the window the day's spans are clipped to ends, as a Julian day (UTC).
+   */
+  readonly windowTo: Float64Array;
+  /**
+   * The lunar month under the profile's own convention.
+   * The values are `Masa` ids.
+   */
+  readonly month: Uint16Array;
+  /**
+   * The amanta month: new moon to new moon.
+   * The values are `Masa` ids.
+   */
+  readonly amanta: Uint16Array;
+  /**
+   * The purnimanta month: full moon to full moon.
+   * The values are `Masa` ids.
+   */
+  readonly purnimanta: Uint16Array;
+  /**
+   * The fortnight the day opens in.
+   * The values are `Paksha` ids.
+   */
+  readonly paksha: Uint16Array;
+  /**
+   * Which half of the year the day falls in.
+   * The values are `Ayana` ids.
+   */
+  readonly ayana: Uint16Array;
+  /**
+   * The direction not to travel in, which is the vara's.
+   * The values are `Direction` ids.
+   */
+  readonly dishaShool: Uint16Array;
+  /**
+   * 1 when the Sun entered a new sign inside the day, 0 otherwise.
+   */
+  readonly hasSankranti: Uint8Array;
+  /**
+   * When it did, as a Julian day (UTC); zero when it did not, which `has_sankranti` is what distinguishes from midnight.
+   */
+  readonly sankranti: Float64Array;
+  /**
+   * 1 when the day has an Abhijit muhurta, 0 on a day with no daylight.
+   */
+  readonly hasAbhijit: Uint8Array;
+  /**
+   * When Abhijit begins, as a Julian day (UTC).
+   */
+  readonly abhijitFrom: Float64Array;
+  /**
+   * When Abhijit ends, as a Julian day (UTC).
+   */
+  readonly abhijitTo: Float64Array;
+  /**
+   * 1 when Abhijit is effective, which it is on every day but a Wednesday.
+   */
+  readonly abhijitEffective: Uint8Array;
+  /**
+   * 1 when the night that ends at this day's sunrise is known, 0 in the polar case.
+   */
+  readonly hasBrahma: Uint8Array;
+  /**
+   * When Brahma muhurta begins, as a Julian day (UTC).
+   */
+  readonly brahmaFrom: Float64Array;
+  /**
+   * When Brahma muhurta ends, as a Julian day (UTC).
+   */
+  readonly brahmaTo: Float64Array;
+  /**
+   * When the window the Moon's rises and sets were looked for in begins, as a Julian day (UTC).
+   */
+  readonly moonWindowFrom: Float64Array;
+  /**
+   * When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC).
+   */
+  readonly moonWindowTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `counts` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off.
+ */
+export interface PanchangaCounts {
+  /**
+   * How many rows of `tithi` belong to this day.
+   */
+  readonly tithi: Uint32Array;
+  /**
+   * How many rows of `nakshatra` belong to this day.
+   */
+  readonly nakshatra: Uint32Array;
+  /**
+   * How many rows of `yoga` belong to this day.
+   */
+  readonly yoga: Uint32Array;
+  /**
+   * How many rows of `karana` belong to this day.
+   */
+  readonly karana: Uint32Array;
+  /**
+   * How many rows of `panchaka` belong to this day.
+   */
+  readonly panchaka: Uint32Array;
+  /**
+   * How many rows of `moon_signs` belong to this day.
+   */
+  readonly moonSigns: Uint32Array;
+  /**
+   * How many rows of `sun_signs` belong to this day.
+   */
+  readonly sunSigns: Uint32Array;
+  /**
+   * How many rows of `kaalas` belong to this day.
+   */
+  readonly kaalas: Uint32Array;
+  /**
+   * How many rows of `choghadiya` belong to this day.
+   */
+  readonly choghadiya: Uint32Array;
+  /**
+   * How many rows of `horas` belong to this day.
+   */
+  readonly horas: Uint32Array;
+  /**
+   * How many rows of `muhurtas` belong to this day.
+   */
+  readonly muhurtas: Uint32Array;
+  /**
+   * How many rows of `moon_events` belong to this day.
+   */
+  readonly moonEvents: Uint32Array;
+  /**
+   * How many rows of `muhurta_yogas` belong to this day.
+   */
+  readonly muhurtaYogas: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `tithi` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The tithis that touch each day.
+ */
+export interface PanchangaTithi {
+  /**
+   * Which tithi ran.
+   * The values are `Tithi` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `nakshatra` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The nakshatras the Moon was in.
+ */
+export interface PanchangaNakshatra {
+  /**
+   * Which nakshatra the Moon was in.
+   * The values are `Nakshatra` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `yoga` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The nitya yogas.
+ */
+export interface PanchangaYoga {
+  /**
+   * Which nitya yoga ran.
+   * The values are `Yoga` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `karana` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The karanas; half-tithis, so there are three or four on an ordinary day.
+ */
+export interface PanchangaKarana {
+  /**
+   * Which karana ran.
+   * The values are `Karana` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `panchaka` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Panchaka, while the Moon is in the last five nakshatras.
+ */
+export interface PanchangaPanchaka {
+  /**
+   * Which panchaka held.
+   * The values are `Panchaka` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `moon_signs` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The signs the Moon stood in, with when it entered and left each.
+ */
+export interface PanchangaMoonSigns {
+  /**
+   * Which sign the Moon was in.
+   * The values are `Rashi` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `sun_signs` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The signs the Sun stood in; two only on a sankranti day.
+ */
+export interface PanchangaSunSigns {
+  /**
+   * Which sign the Sun was in.
+   * The values are `Rashi` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `kaalas` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The inauspicious eighths of the daylight each day has.
+ */
+export interface PanchangaKaalas {
+  /**
+   * Which one.
+   * The values are `Kaala` ids.
+   */
+  readonly kaala: Uint16Array;
+  /**
+   * When it begins, as a Julian day (UTC).
+   */
+  readonly from: Float64Array;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly to: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `choghadiya` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Eight choghadiya of the daylight and eight of the night, when the day has both.
+ */
+export interface PanchangaChoghadiya {
+  /**
+   * Which choghadiya.
+   * The values are `Choghadiya` ids.
+   */
+  readonly choghadiya: Uint16Array;
+  /**
+   * The graha that rules it.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * When it begins, as a Julian day (UTC).
+   */
+  readonly from: Float64Array;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly to: Float64Array;
+  /**
+   * 1 when it is one of the eight of the daylight, 0 for one of the night.
+   */
+  readonly daytime: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `horas` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The twenty-four horas of each day, from sunrise.
+ */
+export interface PanchangaHoras {
+  /**
+   * The hora's number, 1 to 24 from sunrise.
+   */
+  readonly number: Uint8Array;
+  /**
+   * The graha that rules it.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * When it begins, as a Julian day (UTC).
+   */
+  readonly start: Float64Array;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly end: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `muhurtas` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.
+ */
+export interface PanchangaMuhurtas {
+  /**
+   * When it begins, as a Julian day (UTC).
+   */
+  readonly from: Float64Array;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly to: Float64Array;
+  /**
+   * 1 when it is one of the fifteen of the daylight, 0 for one of the night.
+   */
+  readonly daylight: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `moon_events` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every moonrise and moonset inside each day's moon window, in order.
+ */
+export interface PanchangaMoonEvents {
+  /**
+   * Whether the Moon rose or set.
+   * The values are `MoonEvent` ids.
+   */
+  readonly kind: Uint8Array;
+  /**
+   * When, as a Julian day (UTC).
+   */
+  readonly instant: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `muhurta_yogas` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero.
+ */
+export interface PanchangaMuhurtaYogas {
+  /**
+   * Which yoga.
+   * The values are `MuhurtaYoga` ids.
+   */
+  readonly yoga: Uint16Array;
+  /**
+   * When it begins, as a Julian day (UTC).
+   */
+  readonly from: Float64Array;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly to: Float64Array;
+  /**
+   * What made it hold.
+   * The values are `YogaCause` ids.
+   */
+  readonly becauseKind: Uint8Array;
+  /**
+   * The vara that makes it; every cause has one.
+   * The values are `Vara` ids.
+   */
+  readonly becauseVara: Uint16Array;
+  /**
+   * The tithi that makes it, when the cause has one; zero otherwise.
+   * The values are `Tithi` ids.
+   */
+  readonly becauseTithi: Uint16Array;
+  /**
+   * The nakshatra that makes it; every cause has one.
+   * The values are `Nakshatra` ids.
+   */
+  readonly becauseNakshatra: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * A decoded Panchanga blob.
+ *
+ * A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
+ */
+export interface Panchanga {
+  /**
+   * How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
+   */
+  readonly dayCount: number;
+  /**
+   * The place's latitude, degrees north.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The place's altitude, metres.
+   */
+  readonly altitudeM: number;
+  /**
+   * The civil calendar the days' dates are read in.
+   * The value is a `Calendar` id.
+   */
+  readonly calendar: number;
+  /**
+   * Which lunar-month convention `days.month` leads with.
+   * The value is a `LunarMonth` id.
+   */
+  readonly lunarMonth: number;
+  /**
+   * One row per day: what the day is, beside the `day` section's account of the day it belongs to. Three values a day may not have — the sankranti, Abhijit and Brahma muhurta — carry a presence flag beside them rather than a sentinel, because an absent instant and midnight are both nought.
+   */
+  readonly days: PanchangaDays;
+  /**
+   * How many rows of each per-day section belong to each day, in the order the days run. A day's rows begin where the sum of every earlier day's count leaves off.
+   */
+  readonly counts: PanchangaCounts;
+  /**
+   * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
+   */
+  readonly day: Day;
+  /**
+   * The tithis that touch each day.
+   */
+  readonly tithi: PanchangaTithi;
+  /**
+   * The nakshatras the Moon was in.
+   */
+  readonly nakshatra: PanchangaNakshatra;
+  /**
+   * The nitya yogas.
+   */
+  readonly yoga: PanchangaYoga;
+  /**
+   * The karanas; half-tithis, so there are three or four on an ordinary day.
+   */
+  readonly karana: PanchangaKarana;
+  /**
+   * Panchaka, while the Moon is in the last five nakshatras.
+   */
+  readonly panchaka: PanchangaPanchaka;
+  /**
+   * The signs the Moon stood in, with when it entered and left each.
+   */
+  readonly moonSigns: PanchangaMoonSigns;
+  /**
+   * The signs the Sun stood in; two only on a sankranti day.
+   */
+  readonly sunSigns: PanchangaSunSigns;
+  /**
+   * The inauspicious eighths of the daylight each day has.
+   */
+  readonly kaalas: PanchangaKaalas;
+  /**
+   * Eight choghadiya of the daylight and eight of the night, when the day has both.
+   */
+  readonly choghadiya: PanchangaChoghadiya;
+  /**
+   * The twenty-four horas of each day, from sunrise.
+   */
+  readonly horas: PanchangaHoras;
+  /**
+   * The thirty muhurtas of each day: fifteen of the daylight and fifteen of the night that follows it, in order. Abhijit and Brahma muhurta are named in `days` rather than repeated here.
+   */
+  readonly muhurtas: PanchangaMuhurtas;
+  /**
+   * Every moonrise and moonset inside each day's moon window, in order.
+   */
+  readonly moonEvents: PanchangaMoonEvents;
+  /**
+   * The muhurta yogas that held, with what made each hold. `because_*` is a tagged enum split into a kind and the payload fields of its widest variant, so a `VARA_NAKSHATRA` cause leaves `because_tithi` at zero.
+   */
+  readonly muhurtaYogas: PanchangaMuhurtaYogas;
+  /**
+   * UTF-8 text: the solar model that reckoned the days, as it describes itself.
+   */
+  readonly model: string;
+  /**
+   * UTF-8 JSON: the provenance envelope of the result, canonical.
+   */
+  readonly provenance: string;
+}
+
+/**
+ * Decodes a Panchanga blob. The columns are views over `bytes`, so the
+ * buffer must outlive the result; a blob of another layout version or
+ * another schema is a `TypeError`.
+ */
+export declare function decodePanchanga(bytes: Uint8Array): Panchanga;
 

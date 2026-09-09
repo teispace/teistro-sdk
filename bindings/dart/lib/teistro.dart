@@ -341,6 +341,52 @@ final class Context {
     ),
   );
 
+  /// The almanac of every day in a range, at one place.
+  ///
+  /// A **range** rather than a list of dates, because consecutive days
+  /// share a boundary — day *n*'s next sunrise is day *n+1*'s sunrise —
+  /// so a month of days costs much less than thirty days computed
+  /// separately. A range holding more than a year and a day is refused
+  /// by name.
+  Almanac almanac({
+    required CalendarDate from,
+    required CalendarDate to,
+    required Observer place,
+    required int utcOffsetSeconds,
+  }) => Almanac(
+    decodePanchanga(
+      _guarded(
+        () => _inner.panchangaDays(
+          PanchangaRequest(
+            calendar: from.calendar,
+            fromYear: from.year,
+            fromMonth: from.month,
+            fromDay: from.day,
+            toYear: to.year,
+            toMonth: to.month,
+            toDay: to.day,
+            latitudeDeg: place.latitudeDeg,
+            longitudeDeg: place.longitudeDeg,
+            altitudeM: place.altitudeM,
+            utcOffsetSeconds: utcOffsetSeconds,
+          ),
+        ),
+      ),
+    ),
+  );
+
+  /// The almanac of one day, which is the range of one unwrapped.
+  AlmanacDay almanacDay({
+    required CalendarDate date,
+    required Observer place,
+    required int utcOffsetSeconds,
+  }) => almanac(
+    from: date,
+    to: date,
+    place: place,
+    utcOffsetSeconds: utcOffsetSeconds,
+  ).at(0);
+
   /// Runs a call that may reach a provider written in Dart, and rethrows
   /// what the provider itself threw.
   ///
@@ -960,4 +1006,513 @@ extension ChartsByIndex on Charts {
       yield Chart(this, i);
     }
   }
+}
+
+/// A span of time, as every almanac row carries one.
+final class Interval {
+  const Interval({required this.from, required this.to});
+
+  /// When it begins, as a Julian day (UTC).
+  final double from;
+
+  /// When it ends.
+  final double to;
+}
+
+/// One member of a limb, with its own bounds and the clipped ones.
+final class Span<T> {
+  const Span({required this.member, required this.whole, required this.inside});
+
+  /// Which member ran.
+  final T member;
+
+  /// When the member itself began and ended, inside the day or not.
+  final Interval whole;
+
+  /// The part inside the day: what an almanac row prints.
+  final Interval inside;
+}
+
+/// The lunar month a day falls in, under both conventions.
+final class Month {
+  const Month({
+    required this.month,
+    required this.amanta,
+    required this.purnimanta,
+    required this.paksha,
+    required this.convention,
+  });
+
+  /// The month under the profile's own convention.
+  final Masa month;
+
+  /// The amanta month: new moon to new moon.
+  final Masa amanta;
+
+  /// The purnimanta month: full moon to full moon.
+  final Masa purnimanta;
+
+  /// Which fortnight the day opens in.
+  final Paksha paksha;
+
+  /// Which convention [month] leads with.
+  final LunarMonth convention;
+}
+
+/// One inauspicious eighth of the daylight.
+final class KaalaPeriod {
+  const KaalaPeriod({required this.kaala, required this.at});
+
+  /// Which one.
+  final Kaala kaala;
+
+  /// When it runs.
+  final Interval at;
+}
+
+/// One choghadiya, of the daylight or of the night.
+final class ChoghadiyaPeriod {
+  const ChoghadiyaPeriod({
+    required this.choghadiya,
+    required this.lord,
+    required this.at,
+    required this.daytime,
+  });
+
+  /// Which choghadiya.
+  final Choghadiya choghadiya;
+
+  /// The graha that rules it.
+  final Graha lord;
+
+  /// When it runs.
+  final Interval at;
+
+  /// Whether it is one of the eight of the daylight.
+  final bool daytime;
+}
+
+/// One hora, from sunrise.
+final class Hora {
+  const Hora({
+    required this.number,
+    required this.lord,
+    required this.start,
+    required this.end,
+  });
+
+  /// Its number, 1 to 24.
+  final int number;
+
+  /// The graha that rules it.
+  final Graha lord;
+
+  /// When it begins, as a Julian day (UTC).
+  final double start;
+
+  /// When it ends.
+  final double end;
+}
+
+/// One of the thirty muhurtas.
+final class Muhurta {
+  const Muhurta({required this.at, required this.daylight});
+
+  /// When it runs.
+  final Interval at;
+
+  /// Whether it is one of the fifteen of the daylight.
+  final bool daylight;
+}
+
+/// A moonrise or a moonset.
+final class MoonEvent {
+  const MoonEvent({required this.rise, required this.instant});
+
+  /// True for a rise, false for a set.
+  final bool rise;
+
+  /// When, as a Julian day (UTC).
+  final double instant;
+}
+
+/// A muhurta yoga that held, and what made it hold.
+final class HeldYoga {
+  const HeldYoga({
+    required this.yoga,
+    required this.at,
+    required this.vara,
+    required this.tithi,
+    required this.nakshatra,
+  });
+
+  /// Which yoga.
+  final MuhurtaYoga yoga;
+
+  /// While it held, clipped to the day.
+  final Interval at;
+
+  /// The vara that makes it; every cause has one.
+  final Vara vara;
+
+  /// The tithi that makes it, or `null` when the cause has none.
+  final Tithi? tithi;
+
+  /// The nakshatra that makes it.
+  final Nakshatra nakshatra;
+}
+
+/// Abhijit, with whether it is effective.
+final class Abhijit {
+  const Abhijit({required this.at, required this.effective});
+
+  /// When it runs.
+  final Interval at;
+
+  /// True on every day but a Wednesday.
+  final bool effective;
+}
+
+/// A batch of daily panchangas at one place.
+///
+/// Every per-day list is concatenated across the batch, so a day's rows
+/// are found by adding up every earlier day's count. That sum is done
+/// **once**, when the batch is built, rather than per access: the
+/// alternative is quadratic over a year of days, which is the shape an
+/// almanac is actually asked for.
+final class Almanac {
+  Almanac(this.decoded) : _starts = _prefixSums(decoded.counts);
+
+  /// The blob as its generated decoder read it.
+  final Panchanga decoded;
+  final Map<String, Uint32List> _starts;
+
+  /// How many days the batch holds.
+  int get length => decoded.dayCount;
+
+  /// The place they were all founded at.
+  Observer get place => Observer(
+    latitudeDeg: Latitude(decoded.latitudeDeg),
+    longitudeDeg: Longitude(decoded.longitudeDeg),
+    altitudeM: Altitude(decoded.altitudeM),
+  );
+
+  /// The civil calendar the days' dates are read in.
+  Calendar get calendar => Calendar.byId(decoded.calendar);
+
+  /// The solar model that reckoned the days, as it describes itself.
+  String get model => decoded.model;
+
+  /// One day of the batch, by index.
+  AlmanacDay at(int index) {
+    if (index < 0 || index >= length) {
+      throw RangeError.index(index, this, 'index', null, length);
+    }
+    return AlmanacDay(this, index);
+  }
+
+  /// Every day, in the order the range runs.
+  Iterable<AlmanacDay> get each sync* {
+    for (var i = 0; i < length; i += 1) {
+      yield AlmanacDay(this, i);
+    }
+  }
+
+  /// Where day [index]'s rows of a per-day list begin and end.
+  (int, int) range(String list, int index) {
+    final starts = _starts[list] ?? Uint32List(length + 1);
+    return (starts[index], starts[index + 1]);
+  }
+
+  static Map<String, Uint32List> _prefixSums(PanchangaCounts counts) {
+    final columns = <String, List<int>>{
+      'tithi': counts.tithi,
+      'nakshatra': counts.nakshatra,
+      'yoga': counts.yoga,
+      'karana': counts.karana,
+      'panchaka': counts.panchaka,
+      'moonSigns': counts.moonSigns,
+      'sunSigns': counts.sunSigns,
+      'kaalas': counts.kaalas,
+      'choghadiya': counts.choghadiya,
+      'horas': counts.horas,
+      'muhurtas': counts.muhurtas,
+      'moonEvents': counts.moonEvents,
+      'muhurtaYogas': counts.muhurtaYogas,
+    };
+    return columns.map((name, column) {
+      final starts = Uint32List(column.length + 1);
+      for (var i = 0; i < column.length; i += 1) {
+        starts[i + 1] = starts[i] + column[i];
+      }
+      return MapEntry(name, starts);
+    });
+  }
+}
+
+/// One day of an almanac: a view over its batch, not a copy.
+final class AlmanacDay {
+  const AlmanacDay(this.batch, this.index);
+
+  /// The batch this day belongs to.
+  final Almanac batch;
+
+  /// Where in that batch it sits.
+  final int index;
+
+  /// The weekday the day carries.
+  Vara get vara => Vara.byId(batch.decoded.day.vara[index]);
+
+  /// The sunrise that opened the day, as a Julian day (UTC).
+  double get sunrise => batch.decoded.day.sunrise[index];
+
+  /// The sunset that closed its daylight.
+  double get sunset => batch.decoded.day.sunset[index];
+
+  /// What the spans are clipped to.
+  Interval get window => Interval(
+    from: batch.decoded.days.windowFrom[index],
+    to: batch.decoded.days.windowTo[index],
+  );
+
+  /// The lunar month, under both conventions.
+  Month get month {
+    final d = batch.decoded.days;
+    return Month(
+      month: Masa.byId(d.month[index]),
+      amanta: Masa.byId(d.amanta[index]),
+      purnimanta: Masa.byId(d.purnimanta[index]),
+      paksha: Paksha.byId(d.paksha[index]),
+      convention: LunarMonth.byId(batch.decoded.lunarMonth),
+    );
+  }
+
+  /// Which half of the year the day falls in.
+  Ayana get ayana => Ayana.byId(batch.decoded.days.ayana[index]);
+
+  /// The direction not to travel in, which is the vara's.
+  Direction get dishaShool =>
+      Direction.byId(batch.decoded.days.dishaShool[index]);
+
+  /// When the Sun entered a new sign inside the day, or `null`.
+  double? get sankranti =>
+      batch.decoded.days.hasSankranti[index] == 1
+          ? batch.decoded.days.sankranti[index]
+          : null;
+
+  /// Abhijit; `null` on a day with no daylight.
+  Abhijit? get abhijit {
+    final d = batch.decoded.days;
+    if (d.hasAbhijit[index] != 1) return null;
+    return Abhijit(
+      at: Interval(from: d.abhijitFrom[index], to: d.abhijitTo[index]),
+      effective: d.abhijitEffective[index] == 1,
+    );
+  }
+
+  /// Brahma muhurta; `null` when the night before is not known.
+  Interval? get brahma {
+    final d = batch.decoded.days;
+    return d.hasBrahma[index] == 1
+        ? Interval(from: d.brahmaFrom[index], to: d.brahmaTo[index])
+        : null;
+  }
+
+  /// The tithis that touch the day.
+  List<Span<Tithi>> get tithi {
+    final c = batch.decoded.tithi;
+    return _spans(
+      'tithi',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      Tithi.byId,
+    );
+  }
+
+  /// The nakshatras the Moon was in.
+  List<Span<Nakshatra>> get nakshatra {
+    final c = batch.decoded.nakshatra;
+    return _spans(
+      'nakshatra',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      Nakshatra.byId,
+    );
+  }
+
+  /// The nitya yogas.
+  List<Span<Yoga>> get yoga {
+    final c = batch.decoded.yoga;
+    return _spans(
+      'yoga',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      Yoga.byId,
+    );
+  }
+
+  /// The karanas: half-tithis, so three or four on an ordinary day.
+  List<Span<Karana>> get karana {
+    final c = batch.decoded.karana;
+    return _spans(
+      'karana',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      Karana.byId,
+    );
+  }
+
+  /// Panchaka, while the Moon is in the last five nakshatras.
+  List<Span<Panchaka>> get panchaka {
+    final c = batch.decoded.panchaka;
+    return _spans(
+      'panchaka',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      Panchaka.byId,
+    );
+  }
+
+  /// The signs the Moon stood in.
+  List<Span<Rashi>> get moonSigns {
+    final c = batch.decoded.moonSigns;
+    return _spans(
+      'moonSigns',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      Rashi.byId,
+    );
+  }
+
+  /// The signs the Sun stood in; two only on a sankranti day.
+  List<Span<Rashi>> get sunSigns {
+    final c = batch.decoded.sunSigns;
+    return _spans(
+      'sunSigns',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      Rashi.byId,
+    );
+  }
+
+  /// The inauspicious eighths of the daylight.
+  List<KaalaPeriod> get kaalas {
+    final c = batch.decoded.kaalas;
+    return _rows(
+      'kaalas',
+      (i) => KaalaPeriod(
+        kaala: Kaala.byId(c.kaala[i]),
+        at: Interval(from: c.from[i], to: c.to[i]),
+      ),
+    );
+  }
+
+  /// Eight choghadiya of the daylight and eight of the night.
+  List<ChoghadiyaPeriod> get choghadiya {
+    final c = batch.decoded.choghadiya;
+    return _rows(
+      'choghadiya',
+      (i) => ChoghadiyaPeriod(
+        choghadiya: Choghadiya.byId(c.choghadiya[i]),
+        lord: Graha.byId(c.lord[i]),
+        at: Interval(from: c.from[i], to: c.to[i]),
+        daytime: c.daytime[i] == 1,
+      ),
+    );
+  }
+
+  /// The twenty-four horas, from sunrise.
+  List<Hora> get horas {
+    final c = batch.decoded.horas;
+    return _rows(
+      'horas',
+      (i) => Hora(
+        number: c.number[i],
+        lord: Graha.byId(c.lord[i]),
+        start: c.start[i],
+        end: c.end[i],
+      ),
+    );
+  }
+
+  /// The thirty muhurtas: fifteen of the daylight, then fifteen of the night.
+  List<Muhurta> get muhurtas {
+    final c = batch.decoded.muhurtas;
+    return _rows(
+      'muhurtas',
+      (i) => Muhurta(
+        at: Interval(from: c.from[i], to: c.to[i]),
+        daylight: c.daylight[i] == 1,
+      ),
+    );
+  }
+
+  /// Every moonrise and moonset inside the day's moon window.
+  List<MoonEvent> get moonEvents {
+    final c = batch.decoded.moonEvents;
+    return _rows(
+      'moonEvents',
+      (i) => MoonEvent(rise: c.kind[i] == 0, instant: c.instant[i]),
+    );
+  }
+
+  /// The muhurta yogas that held, with what made each hold.
+  List<HeldYoga> get muhurtaYogas {
+    final c = batch.decoded.muhurtaYogas;
+    return _rows(
+      'muhurtaYogas',
+      (i) => HeldYoga(
+        yoga: MuhurtaYoga.byId(c.yoga[i]),
+        at: Interval(from: c.from[i], to: c.to[i]),
+        vara: Vara.byId(c.becauseVara[i]),
+        // A `VARA_NAKSHATRA` cause has no tithi, and the blob leaves the
+        // column at nought rather than at a tithi that did not make it.
+        tithi: c.becauseKind[i] == 0 ? null : Tithi.byId(c.becauseTithi[i]),
+        nakshatra: Nakshatra.byId(c.becauseNakshatra[i]),
+      ),
+    );
+  }
+
+  List<T> _rows<T>(String list, T Function(int) build) {
+    final (from, to) = batch.range(list, index);
+    return List<T>.generate(to - from, (k) => build(from + k));
+  }
+
+  List<Span<T>> _spans<T>(
+    String list,
+    Uint16List member,
+    Float64List wholeFrom,
+    Float64List wholeTo,
+    Float64List insideFrom,
+    Float64List insideTo,
+    T Function(int) byId,
+  ) => _rows(
+    list,
+    (i) => Span<T>(
+      member: byId(member[i]),
+      whole: Interval(from: wholeFrom[i], to: wholeTo[i]),
+      inside: Interval(from: insideFrom[i], to: insideTo[i]),
+    ),
+  );
 }

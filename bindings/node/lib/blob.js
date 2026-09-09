@@ -212,6 +212,8 @@ export function decodeCharts(bytes) {
       lagnaDeg: column(blob, at, 1, 'f64', at.count),
       dayLagnaDeg: column(blob, at, 2, 'f64', at.count),
       ayanamshaOffsetDeg: column(blob, at, 3, 'f64', at.count),
+      dayPart: column(blob, at, 4, 'u8', at.count),
+      dayElapsed: column(blob, at, 5, 'f64', at.count),
       length: at.count,
     };
   }
@@ -273,22 +275,20 @@ export function decodeCharts(bytes) {
       sunset: column(blob, at, 1, 'f64', at.count),
       nextSunrise: column(blob, at, 2, 'f64', at.count),
       vara: column(blob, at, 3, 'u16', at.count),
-      part: column(blob, at, 4, 'u8', at.count),
-      elapsed: column(blob, at, 5, 'f64', at.count),
-      calendar: column(blob, at, 6, 'u16', at.count),
-      era: column(blob, at, 7, 'u16', at.count),
-      year: column(blob, at, 8, 'i32', at.count),
-      eraYear: column(blob, at, 9, 'i32', at.count),
-      month: column(blob, at, 10, 'u8', at.count),
-      dayOfMonth: column(blob, at, 11, 'u8', at.count),
-      resolution: column(blob, at, 12, 'u8', at.count),
-      computedMonth: column(blob, at, 13, 'u8', at.count),
-      computedDay: column(blob, at, 14, 'u8', at.count),
-      stateKind: column(blob, at, 15, 'u8', at.count),
-      statePolarKind: column(blob, at, 16, 'u8', at.count),
-      statePolarPolicy: column(blob, at, 17, 'u8', at.count),
-      conventionKind: column(blob, at, 18, 'u8', at.count),
-      conventionValue: column(blob, at, 19, 'f64', at.count),
+      calendar: column(blob, at, 4, 'u16', at.count),
+      era: column(blob, at, 5, 'u16', at.count),
+      year: column(blob, at, 6, 'i32', at.count),
+      eraYear: column(blob, at, 7, 'i32', at.count),
+      month: column(blob, at, 8, 'u8', at.count),
+      dayOfMonth: column(blob, at, 9, 'u8', at.count),
+      resolution: column(blob, at, 10, 'u8', at.count),
+      computedMonth: column(blob, at, 11, 'u8', at.count),
+      computedDay: column(blob, at, 12, 'u8', at.count),
+      stateKind: column(blob, at, 13, 'u8', at.count),
+      statePolarKind: column(blob, at, 14, 'u8', at.count),
+      statePolarPolicy: column(blob, at, 15, 'u8', at.count),
+      conventionKind: column(blob, at, 16, 'u8', at.count),
+      conventionValue: column(blob, at, 17, 'f64', at.count),
       length: at.count,
     };
   }
@@ -317,6 +317,239 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 12, 'provenance');
+    out.provenance = text(blob, at);
+  }
+  return out;
+}
+
+/**
+ * Decodes a Panchanga blob: A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
+ *
+ * @param {Uint8Array} bytes the blob the library returned
+ */
+export function decodePanchanga(bytes) {
+  const blob = open(bytes, 4, 'panchanga');
+  const out = {};
+  {
+    const at = section(blob, 1, 'summary');
+    out.dayCount = READERS.u32(blob.dv, at.offset + 0);
+    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 8);
+    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 16);
+    out.altitudeM = READERS.f64(blob.dv, at.offset + 24);
+    out.calendar = READERS.u16(blob.dv, at.offset + 32);
+    out.lunarMonth = READERS.u8(blob.dv, at.offset + 40);
+  }
+  {
+    const at = section(blob, 2, 'days');
+    out.days = {
+      windowFrom: column(blob, at, 0, 'f64', at.count),
+      windowTo: column(blob, at, 1, 'f64', at.count),
+      month: column(blob, at, 2, 'u16', at.count),
+      amanta: column(blob, at, 3, 'u16', at.count),
+      purnimanta: column(blob, at, 4, 'u16', at.count),
+      paksha: column(blob, at, 5, 'u16', at.count),
+      ayana: column(blob, at, 6, 'u16', at.count),
+      dishaShool: column(blob, at, 7, 'u16', at.count),
+      hasSankranti: column(blob, at, 8, 'u8', at.count),
+      sankranti: column(blob, at, 9, 'f64', at.count),
+      hasAbhijit: column(blob, at, 10, 'u8', at.count),
+      abhijitFrom: column(blob, at, 11, 'f64', at.count),
+      abhijitTo: column(blob, at, 12, 'f64', at.count),
+      abhijitEffective: column(blob, at, 13, 'u8', at.count),
+      hasBrahma: column(blob, at, 14, 'u8', at.count),
+      brahmaFrom: column(blob, at, 15, 'f64', at.count),
+      brahmaTo: column(blob, at, 16, 'f64', at.count),
+      moonWindowFrom: column(blob, at, 17, 'f64', at.count),
+      moonWindowTo: column(blob, at, 18, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 3, 'counts');
+    out.counts = {
+      tithi: column(blob, at, 0, 'u32', at.count),
+      nakshatra: column(blob, at, 1, 'u32', at.count),
+      yoga: column(blob, at, 2, 'u32', at.count),
+      karana: column(blob, at, 3, 'u32', at.count),
+      panchaka: column(blob, at, 4, 'u32', at.count),
+      moonSigns: column(blob, at, 5, 'u32', at.count),
+      sunSigns: column(blob, at, 6, 'u32', at.count),
+      kaalas: column(blob, at, 7, 'u32', at.count),
+      choghadiya: column(blob, at, 8, 'u32', at.count),
+      horas: column(blob, at, 9, 'u32', at.count),
+      muhurtas: column(blob, at, 10, 'u32', at.count),
+      moonEvents: column(blob, at, 11, 'u32', at.count),
+      muhurtaYogas: column(blob, at, 12, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 4, 'day');
+    out.day = {
+      sunrise: column(blob, at, 0, 'f64', at.count),
+      sunset: column(blob, at, 1, 'f64', at.count),
+      nextSunrise: column(blob, at, 2, 'f64', at.count),
+      vara: column(blob, at, 3, 'u16', at.count),
+      calendar: column(blob, at, 4, 'u16', at.count),
+      era: column(blob, at, 5, 'u16', at.count),
+      year: column(blob, at, 6, 'i32', at.count),
+      eraYear: column(blob, at, 7, 'i32', at.count),
+      month: column(blob, at, 8, 'u8', at.count),
+      dayOfMonth: column(blob, at, 9, 'u8', at.count),
+      resolution: column(blob, at, 10, 'u8', at.count),
+      computedMonth: column(blob, at, 11, 'u8', at.count),
+      computedDay: column(blob, at, 12, 'u8', at.count),
+      stateKind: column(blob, at, 13, 'u8', at.count),
+      statePolarKind: column(blob, at, 14, 'u8', at.count),
+      statePolarPolicy: column(blob, at, 15, 'u8', at.count),
+      conventionKind: column(blob, at, 16, 'u8', at.count),
+      conventionValue: column(blob, at, 17, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 5, 'tithi');
+    out.tithi = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 6, 'nakshatra');
+    out.nakshatra = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 7, 'yoga');
+    out.yoga = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 8, 'karana');
+    out.karana = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 9, 'panchaka');
+    out.panchaka = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 10, 'moon_signs');
+    out.moonSigns = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 11, 'sun_signs');
+    out.sunSigns = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 12, 'kaalas');
+    out.kaalas = {
+      kaala: column(blob, at, 0, 'u16', at.count),
+      from: column(blob, at, 1, 'f64', at.count),
+      to: column(blob, at, 2, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 13, 'choghadiya');
+    out.choghadiya = {
+      choghadiya: column(blob, at, 0, 'u16', at.count),
+      lord: column(blob, at, 1, 'u16', at.count),
+      from: column(blob, at, 2, 'f64', at.count),
+      to: column(blob, at, 3, 'f64', at.count),
+      daytime: column(blob, at, 4, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 14, 'horas');
+    out.horas = {
+      number: column(blob, at, 0, 'u8', at.count),
+      lord: column(blob, at, 1, 'u16', at.count),
+      start: column(blob, at, 2, 'f64', at.count),
+      end: column(blob, at, 3, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 15, 'muhurtas');
+    out.muhurtas = {
+      from: column(blob, at, 0, 'f64', at.count),
+      to: column(blob, at, 1, 'f64', at.count),
+      daylight: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 16, 'moon_events');
+    out.moonEvents = {
+      kind: column(blob, at, 0, 'u8', at.count),
+      instant: column(blob, at, 1, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 17, 'muhurta_yogas');
+    out.muhurtaYogas = {
+      yoga: column(blob, at, 0, 'u16', at.count),
+      from: column(blob, at, 1, 'f64', at.count),
+      to: column(blob, at, 2, 'f64', at.count),
+      becauseKind: column(blob, at, 3, 'u8', at.count),
+      becauseVara: column(blob, at, 4, 'u16', at.count),
+      becauseTithi: column(blob, at, 5, 'u16', at.count),
+      becauseNakshatra: column(blob, at, 6, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 18, 'model');
+    out.model = text(blob, at);
+  }
+  {
+    const at = section(blob, 19, 'provenance');
     out.provenance = text(blob, at);
   }
   return out;

@@ -1332,6 +1332,7 @@ dependencies = [
  "teistro-core",
  "teistro-idl",
  "teistro-intl",
+ "teistro-panchanga",
  "teistro-port-ephemeris",
  "teistro-time",
 ]
