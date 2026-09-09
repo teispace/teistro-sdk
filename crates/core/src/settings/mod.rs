@@ -116,6 +116,16 @@ pub struct Precision {
     pub score_decimals: u8,
 }
 
+/// How many ephemeris cells a context remembers by default.
+///
+/// A fifty-day almanac range asks for 53 935 cells of which 21 446 are
+/// distinct (`03-design/batch-and-parallelism-measured.md`), so this
+/// holds such a range whole with room over; a cell and its key are about
+/// a hundred bytes, which puts it at roughly six megabytes. The port's
+/// own default is this number — one value, in the place a consumer sets
+/// it.
+pub const DEFAULT_CACHE_CELLS: u32 = 65_536;
+
 macro_rules! group {
     ($(#[$m:meta])* $name:ident, $patch:ident { $( $(#[$fm:meta])* $field:ident : $ty:ty ),+ $(,)? }) => {
         $(#[$m])*
@@ -340,6 +350,22 @@ group!(
         /// lint: knob-has-a-reader — Phase 3's built-in ephemeris, which is what has tiers to choose
         /// between; a provider a caller supplies declares its own.
         tier: Tier,
+        /// How many ephemeris cells a context remembers, so that a batch
+        /// asks for each of them once.
+        ///
+        /// Nought is off. Any other number is the capacity, and past it
+        /// the memo stops admitting and keeps serving what it holds, so
+        /// the memory is a number chosen here rather than a function of
+        /// how long a batch ran. One knob and not two, so that no pair of
+        /// settings can disagree about whether the memo exists.
+        ///
+        /// It is honoured only over a provider that declares
+        /// `deterministic`: a memo answers a repeat with the first
+        /// answer, which is right exactly when the provider would have
+        /// answered the same again.
+        /// [`DEFAULT_CACHE_CELLS`] is what a fifty-day almanac range
+        /// needs, measured (`03-design/batch-and-parallelism-measured.md`).
+        cache_cells: u32,
     }
 );
 

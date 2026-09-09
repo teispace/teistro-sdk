@@ -71,11 +71,10 @@ use crate::provider::{EphemerisProvider, PositionRequest};
 
 /// How many cells a cache holds before it stops admitting, by default.
 ///
-/// A fifty-day almanac range asks for 53 935 cells of which 21 446 are
-/// distinct, so this holds such a range whole with room over. A cell and
-/// its key are about a hundred bytes, which puts the bound at roughly six
-/// megabytes.
-pub const DEFAULT_CAPACITY: usize = 65_536;
+/// The settings knob `provider.cache_cells` is the same number, and it is
+/// declared there rather than here because that is where a consumer sets
+/// it; this is the one place that reads it as a capacity.
+pub const DEFAULT_CAPACITY: usize = teistro_core::settings::DEFAULT_CACHE_CELLS as usize;
 
 /// Everything that decides a cell's value, so that two requests share an
 /// answer exactly when they are asking the same question.

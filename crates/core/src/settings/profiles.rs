@@ -176,6 +176,7 @@ pub fn root() -> Settings {
         provider: Provider {
             overrides: OverridePolicy::PreferNative,
             tier: Tier::Standard,
+            cache_cells: crate::settings::DEFAULT_CACHE_CELLS,
         },
         output: Output {
             precision: Precision {
