@@ -217,6 +217,18 @@ checks the bhava they fall in, so it measures the placement rule rather
 than the position. That comparison needs an adapter, so it is the
 conformance harness's work.
 
+**A standing brief runs across the remaining phases**, set 2026-09-09 and
+planned in
+[`02-plan-performance-and-passthrough.md`](02-plan-performance-and-passthrough.md):
+the SDK must let a consumer reach and configure everything — including
+calling an engine's own operations directly, and including operations the
+engine gains *after* the SDK ships — and must be efficient by design
+rather than optimised later. Both halves are measured
+(`03-design/batch-and-parallelism-measured.md`): the port reaches eight
+of Teimeris's 161 operations, and every batch above `positions` is a loop
+at 69 to 1 213 ephemeris calls an item. The work is sequenced in that
+plan and its steps are tracked in `STATUS.md`.
+
 Where it stands, 2026-09-07:
 
 | deliverable | state |
