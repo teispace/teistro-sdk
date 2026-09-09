@@ -233,6 +233,37 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**The shape of a batch of almanacs is measured** (`cargo xtask almanac`
+→ `03-design/panchanga-at-the-boundary-measured.md`, gated by
+`check-almanac`), which is the falsification pass the panchanga blob's
+layout is designed from. A chart needed no such pass: its per-chart
+sections have a stride the blob states once. A day's do not, and the 450
+days the pass founds at three latitudes split its fifteen lists cleanly
+in two — a split the names do not suggest. **Every fixed list is a
+division of an arc** (twenty-four horas, fifteen muhurtas of the daylight
+and fifteen of the night, sixteen choghadiya, three kaalas) and **every
+ragged one a crossing inside the window** (a tithi boundary, a moonrise,
+the Moon entering a sign). A division's count is a convention, so a polar
+day whose synthesised arc runs for a fortnight still has twenty-four
+horas — each of them fourteen hours long — while its crossings multiply
+to sixty-two tithis and a hundred and twenty-two karanas. That decides
+the layout: a rectangular one wastes 10.4% of its rows over ordinary days
+and **78.1%** once a single polar day joins the batch, because one such
+day sets the stride for every other.
+
+**A Moon that does not rise is an answer; a step budget is not.** The
+horizon scan's bracket cap was a constant four hundred, described in its
+own comment as "a day of ten-minute steps" though four hundred of them is
+two and three-quarter days. A polar day's synthesised arc is longer, so
+the panchanga's moonrise search over one met the constant rather than the
+horizon and refused with `NOT_CONVERGED` — at both solstices at 69.65°N,
+which is every polar range the pass asks for. The cap is now sized from
+the span the scan is asked to search, with four hundred as a floor. It
+changes only calls that previously failed, so no number moved; until it
+was fixed the SDK could not produce a polar day at that latitude at all,
+and the five fixed lists looked fixed because nothing had asked them a
+hard question.
+
 **A founded chart crosses the boundary, and it crosses as a batch.**
 `ts_chart_found` takes a grid of instants and answers with one blob of
 charts founded at one place — the grahas placed under both readings, the
