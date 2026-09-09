@@ -181,6 +181,28 @@ impl<S: Longitudes + ?Sized> Sidereal<'_, S> {
     }
 }
 
+impl<S: Longitudes + ?Sized> Sidereal<'_, S> {
+    /// Shifts a grid of tropical readings into the zodiac, instant by
+    /// instant.
+    ///
+    /// The ayanamsha is read **at each instant** rather than once for
+    /// the window (the module's third rule), so the shift is a walk
+    /// however the readings arrived; what the grid saved is the
+    /// ephemeris calls under them, which is the expensive half.
+    fn shift<T: Copy>(
+        &self,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut [T],
+        apply: impl Fn(T, f64, f64) -> T,
+    ) -> Result<(), Error> {
+        for (value, at) in out.iter_mut().zip(ut1) {
+            let (offset, rate) = self.offset(*at)?;
+            *value = apply(*value, offset, rate);
+        }
+        Ok(())
+    }
+}
+
 impl<S: Longitudes + ?Sized> Longitudes for Sidereal<'_, S> {
     fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
         let (longitude, speed) = self.tropical.longitude_and_speed(body, ut1)?;
@@ -196,6 +218,30 @@ impl<S: Longitudes + ?Sized> Longitudes for Sidereal<'_, S> {
         let pair = self.tropical.longitude_and_speed_pair(bodies, ut1)?;
         let (offset, rate) = self.offset(ut1)?;
         Ok(pair.map(|(longitude, speed)| ((longitude - offset).rem_euclid(360.0), speed - rate)))
+    }
+
+    fn longitudes_and_speeds(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<(f64, f64)>,
+    ) -> Result<(), Error> {
+        self.tropical.longitudes_and_speeds(body, ut1, out)?;
+        self.shift(ut1, out, |value, offset, rate| {
+            ((value.0 - offset).rem_euclid(360.0), value.1 - rate)
+        })
+    }
+
+    fn longitudes_and_speeds_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<[(f64, f64); 2]>,
+    ) -> Result<(), Error> {
+        self.tropical.longitudes_and_speeds_pair(bodies, ut1, out)?;
+        self.shift(ut1, out, |pair, offset, rate| {
+            pair.map(|(longitude, speed)| ((longitude - offset).rem_euclid(360.0), speed - rate))
+        })
     }
 
     fn describe(&self) -> String {

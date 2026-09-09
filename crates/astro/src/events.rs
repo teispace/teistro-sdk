@@ -89,6 +89,64 @@ pub trait Longitudes: Send + Sync {
         ])
     }
 
+    /// A body's longitude and rate at **many instants at once**, written
+    /// into `out` in the order asked.
+    ///
+    /// The companion of [`Longitudes::longitude_and_speed_pair`], one
+    /// axis over. A search's scan knows every instant it will visit
+    /// before it visits the first, and an ephemeris call is the
+    /// expensive thing in this library, so a source that can answer a
+    /// grid in one request does so here; the default reads them one at
+    /// a time, as every source did before this existed.
+    ///
+    /// **The contract an override takes on:** the grid answers what the
+    /// walk would have answered, value for value, to the bit. A source
+    /// whose grid disagreed with its own scalar reading would move
+    /// every instant the SDK publishes and nothing would say so, which
+    /// is why `tests/events.rs` holds both against each other.
+    ///
+    /// `out` is cleared first, and is a buffer rather than a return so
+    /// that a search reuses one allocation across its chunks.
+    ///
+    /// # Errors
+    ///
+    /// An instant or a body the source cannot answer for.
+    fn longitudes_and_speeds(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<(f64, f64)>,
+    ) -> Result<(), Error> {
+        out.clear();
+        out.reserve(ut1.len());
+        for at in ut1 {
+            out.push(self.longitude_and_speed(body, *at)?);
+        }
+        Ok(())
+    }
+
+    /// Two bodies' longitudes and rates at many instants at once: what a
+    /// composite quantity's scan needs. As
+    /// [`Longitudes::longitudes_and_speeds`], and under the same
+    /// contract.
+    ///
+    /// # Errors
+    ///
+    /// An instant or a body the source cannot answer for.
+    fn longitudes_and_speeds_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<[(f64, f64); 2]>,
+    ) -> Result<(), Error> {
+        out.clear();
+        out.reserve(ut1.len());
+        for at in ut1 {
+            out.push(self.longitude_and_speed_pair(bodies, *at)?);
+        }
+        Ok(())
+    }
+
     /// The source's name for provenance stamps.
     fn describe(&self) -> String;
 }
@@ -153,8 +211,14 @@ impl<P: EphemerisProvider + ?Sized> FrameLongitudes<'_, P> {
 impl<P: EphemerisProvider + ?Sized> FrameLongitudes<'_, P> {
     /// One request for the bodies at the instant, completed in the frame.
     fn request(&self, bodies: &[Body], ut1: JulianDay<Ut1>) -> Result<Completed, Error> {
-        let jds = [ut1.get()];
-        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, bodies, self.frame);
+        self.grid(bodies, &[ut1.get()])
+    }
+
+    /// One request for the bodies at every instant: the shape the port
+    /// was built for, and the reason a scan asks for its samples at
+    /// once rather than one round trip at a time.
+    fn grid(&self, bodies: &[Body], jds: &[f64]) -> Result<Completed, Error> {
+        let mut request = PositionRequest::new(jds, TimeScale::Ut1, bodies, self.frame);
         request.observer = self.observer;
         Ok(self.completion.positions(&request)?)
     }
@@ -163,13 +227,14 @@ impl<P: EphemerisProvider + ?Sized> FrameLongitudes<'_, P> {
 /// The longitude and rate in one completed cell, or the refusal it holds.
 fn reading(
     done: &Completed,
+    row: usize,
     index: usize,
     body: Body,
     ut1: JulianDay<Ut1>,
 ) -> Result<(f64, f64), Error> {
     let cell = done
         .columns
-        .at(0, index)
+        .at(row, index)
         .ok_or_else(|| Error::new(Status::Provider, format!("no cell for {}", body.key())))?;
     if !cell.is_ok() {
         return Err(Error::new(
@@ -183,7 +248,7 @@ fn reading(
 impl<P: EphemerisProvider + ?Sized> Longitudes for FrameLongitudes<'_, P> {
     fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
         let done = self.request(&[body], ut1)?;
-        reading(&done, 0, body, ut1)
+        reading(&done, 0, 0, body, ut1)
     }
 
     fn longitude_and_speed_pair(
@@ -194,9 +259,51 @@ impl<P: EphemerisProvider + ?Sized> Longitudes for FrameLongitudes<'_, P> {
         let done = self.request(&bodies, ut1)?;
         let [first, second] = bodies;
         Ok([
-            reading(&done, 0, first, ut1)?,
-            reading(&done, 1, second, ut1)?,
+            reading(&done, 0, 0, first, ut1)?,
+            reading(&done, 0, 1, second, ut1)?,
         ])
+    }
+
+    fn longitudes_and_speeds(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<(f64, f64)>,
+    ) -> Result<(), Error> {
+        out.clear();
+        if ut1.is_empty() {
+            return Ok(());
+        }
+        let jds: Vec<f64> = ut1.iter().map(|at| at.get()).collect();
+        let done = self.grid(&[body], &jds)?;
+        out.reserve(ut1.len());
+        for (row, at) in ut1.iter().enumerate() {
+            out.push(reading(&done, row, 0, body, *at)?);
+        }
+        Ok(())
+    }
+
+    fn longitudes_and_speeds_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<[(f64, f64); 2]>,
+    ) -> Result<(), Error> {
+        out.clear();
+        if ut1.is_empty() {
+            return Ok(());
+        }
+        let jds: Vec<f64> = ut1.iter().map(|at| at.get()).collect();
+        let done = self.grid(&bodies, &jds)?;
+        let [first, second] = bodies;
+        out.reserve(ut1.len());
+        for (row, at) in ut1.iter().enumerate() {
+            out.push([
+                reading(&done, row, 0, first, *at)?,
+                reading(&done, row, 1, second, *at)?,
+            ]);
+        }
+        Ok(())
     }
 
     fn describe(&self) -> String {
@@ -245,6 +352,59 @@ pub fn value_of<S: Longitudes + ?Sized>(
 }
 
 /// The quantity at an instant, as the search reads it.
+/// The quantity at every instant, in the order asked: [`evaluate`] over
+/// a grid, written into `out`.
+///
+/// One request where the walk made one per instant. The values are the
+/// walk's own — the same source, the same instants, combined the same
+/// way — so a scan that reads them here answers exactly what a scan
+/// that read them one at a time answered.
+fn evaluate_many<S: Longitudes + ?Sized>(
+    quantity: Quantity,
+    source: &S,
+    ut1: &[JulianDay<Ut1>],
+    out: &mut Vec<f64>,
+    singles: &mut Vec<(f64, f64)>,
+    pairs: &mut Vec<[(f64, f64); 2]>,
+) -> Result<(), Error> {
+    out.clear();
+    out.reserve(ut1.len());
+    match quantity {
+        Quantity::Longitude(body) => {
+            source.longitudes_and_speeds(body, ut1, singles)?;
+            out.extend(singles.iter().map(|(longitude, _)| *longitude));
+        }
+        Quantity::Speed(body) => {
+            source.longitudes_and_speeds(body, ut1, singles)?;
+            out.extend(singles.iter().map(|(_, speed)| *speed));
+        }
+        Quantity::Composite {
+            a,
+            first,
+            b,
+            second,
+        } => {
+            source.longitudes_and_speeds_pair([first, second], ut1, pairs)?;
+            out.extend(
+                pairs
+                    .iter()
+                    .map(|[(x, _), (y, _)]| normalise_deg(a * x + b * y)),
+            );
+        }
+    }
+    if out.len() != ut1.len() {
+        return Err(Error::new(
+            Status::Provider,
+            format!(
+                "a source answered {} of {} instants asked for as a grid",
+                out.len(),
+                ut1.len()
+            ),
+        ));
+    }
+    Ok(())
+}
+
 fn evaluate<S: Longitudes + ?Sized>(
     quantity: Quantity,
     source: &S,
@@ -479,6 +639,17 @@ impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
     }
 }
 
+/// How many of a scan's instants are asked for in one grid by default.
+///
+/// The scan visits every instant between its ends, so every sample it
+/// asks for is one it needs and a chunk wastes nothing; the cap is
+/// there for memory alone, since a search over a millennium at a
+/// half-day step is three quarters of a million instants. Five hundred
+/// and twelve holds a two-year ingress search or a century of solar
+/// sign changes in one request, and keeps the buffer under thirty
+/// kilobytes.
+pub const SCAN_CHUNK: usize = 512;
+
 /// A search for the crossings of a quantity over a lattice.
 pub struct Search<'s, S: Longitudes + ?Sized> {
     source: &'s S,
@@ -487,6 +658,7 @@ pub struct Search<'s, S: Longitudes + ?Sized> {
     tolerance_days: f64,
     step_days: Option<f64>,
     caps: Caps,
+    chunk: usize,
 }
 
 impl<S: Longitudes + ?Sized> fmt::Debug for Search<'_, S> {
@@ -513,7 +685,19 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
             tolerance_days: TOLERANCE_DAYS,
             step_days: None,
             caps: Caps::DEFAULT,
+            chunk: SCAN_CHUNK,
         }
+    }
+
+    /// How many of the scan's instants to ask for in one grid.
+    ///
+    /// The default is [`SCAN_CHUNK`]. One is the walk this replaced —
+    /// every instant its own round trip — which is what the grid is
+    /// held against in the tests. Zero is read as one.
+    #[must_use]
+    pub const fn with_chunk(mut self, instants: usize) -> Self {
+        self.chunk = if instants == 0 { 1 } else { instants };
+        self
     }
 
     /// The tolerance an instant is found to, days.
@@ -598,68 +782,104 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         let step = self.step_days();
         let wraps = self.quantity.wraps();
         let mut events = Vec::new();
-        let sample = |t: f64| -> Result<f64, Error> {
-            evaluate(self.quantity, self.source, JulianDay::literal(t))
-        };
+
+        // The scan visits every instant between the ends, and knows all
+        // of them before it asks for the first, so it asks for them a
+        // grid at a time. Only the refinement below stays serial: each
+        // of its steps is chosen from the answer to the last, so there
+        // is nothing to ask for in advance. The instants are produced by
+        // the walk's own recurrence — each from the one before it, and
+        // the last clamped to the end — so a grid asks for exactly what
+        // the walk asked for, and the values it reads are the values the
+        // walk read.
+        let mut instants: Vec<JulianDay<Ut1>> = Vec::with_capacity(self.chunk);
+        let mut values: Vec<f64> = Vec::with_capacity(self.chunk);
+        let (mut singles, mut pairs) = (Vec::new(), Vec::new());
+
         // The quantity unwrapped along the samples, so a lattice line is a
         // level on a continuous curve.
-        let mut t_lo = from.get();
-        let mut raw_lo = sample(t_lo)?;
-        let mut unwrapped_lo = raw_lo;
+        let mut previous: Option<(f64, f64, f64)> = None;
+        let mut cursor = from.get();
         let mut samples = 0u32;
-        while t_lo < to.get() {
-            if samples >= SAMPLE_CAP {
-                return Err(Error::new(
-                    Status::NotConverged,
-                    format!("the crossing search took more than {SAMPLE_CAP} samples"),
-                ));
+        loop {
+            instants.clear();
+            if previous.is_none() {
+                instants.push(JulianDay::literal(cursor));
             }
-            samples += 1;
-            let t_hi = (t_lo + step).min(to.get());
-            let raw_hi = sample(t_hi)?;
-            let delta = if wraps {
-                difference_deg(raw_hi, raw_lo)
-            } else {
-                raw_hi - raw_lo
-            };
-            let unwrapped_hi = unwrapped_lo + delta;
-            if delta != 0.0 {
-                for k in lines_between(&self.lattice, unwrapped_lo, unwrapped_hi) {
-                    let line = line_deg(&self.lattice, k);
-                    let rising = delta > 0.0;
-                    // The signed distance to the line along the unwrapped
-                    // curve, negative before it, so the bracket has the shape
-                    // the solver expects. The curve is unwrapped exactly as
-                    // the samples were, so the bracket's ends carry the
-                    // values the lattice test saw and a line met at a sample
-                    // still brackets.
-                    let gap = |t: f64| -> Result<f64, Error> {
-                        let value = evaluate(self.quantity, self.source, JulianDay::literal(t))?;
-                        let advance = if wraps {
-                            difference_deg(value, raw_lo)
-                        } else {
-                            value - raw_lo
-                        };
-                        let distance = unwrapped_lo + advance - line;
-                        Ok(if rising { distance } else { -distance })
-                    };
-                    let refined = refine(gap, t_lo, t_hi, self.tolerance_days, self.caps)
-                        .map_err(solve_error)?;
-                    events.push(Event {
-                        instant: JulianDay::literal(refined.instant),
-                        boundary_deg: if wraps { normalise_deg(line) } else { line },
-                        direction: if rising {
-                            Direction::Rising
-                        } else {
-                            Direction::Falling
-                        },
-                        evaluations: refined.evaluations,
-                    });
+            while instants.len() < self.chunk && cursor < to.get() {
+                if samples >= SAMPLE_CAP {
+                    return Err(Error::new(
+                        Status::NotConverged,
+                        format!("the crossing search took more than {SAMPLE_CAP} samples"),
+                    ));
                 }
+                samples += 1;
+                cursor = (cursor + step).min(to.get());
+                instants.push(JulianDay::literal(cursor));
             }
-            t_lo = t_hi;
-            raw_lo = raw_hi;
-            unwrapped_lo = unwrapped_hi;
+            if instants.is_empty() {
+                break;
+            }
+            evaluate_many(
+                self.quantity,
+                self.source,
+                &instants,
+                &mut values,
+                &mut singles,
+                &mut pairs,
+            )?;
+            for (at, raw_hi) in instants.iter().zip(values.iter().copied()) {
+                let Some((t_lo, raw_lo, unwrapped_lo)) = previous else {
+                    previous = Some((at.get(), raw_hi, raw_hi));
+                    continue;
+                };
+                let t_hi = at.get();
+                let delta = if wraps {
+                    difference_deg(raw_hi, raw_lo)
+                } else {
+                    raw_hi - raw_lo
+                };
+                let unwrapped_hi = unwrapped_lo + delta;
+                if delta != 0.0 {
+                    for k in lines_between(&self.lattice, unwrapped_lo, unwrapped_hi) {
+                        let line = line_deg(&self.lattice, k);
+                        let rising = delta > 0.0;
+                        // The signed distance to the line along the unwrapped
+                        // curve, negative before it, so the bracket has the shape
+                        // the solver expects. The curve is unwrapped exactly as
+                        // the samples were, so the bracket's ends carry the
+                        // values the lattice test saw and a line met at a sample
+                        // still brackets.
+                        let gap = |t: f64| -> Result<f64, Error> {
+                            let value =
+                                evaluate(self.quantity, self.source, JulianDay::literal(t))?;
+                            let advance = if wraps {
+                                difference_deg(value, raw_lo)
+                            } else {
+                                value - raw_lo
+                            };
+                            let distance = unwrapped_lo + advance - line;
+                            Ok(if rising { distance } else { -distance })
+                        };
+                        let refined = refine(gap, t_lo, t_hi, self.tolerance_days, self.caps)
+                            .map_err(solve_error)?;
+                        events.push(Event {
+                            instant: JulianDay::literal(refined.instant),
+                            boundary_deg: if wraps { normalise_deg(line) } else { line },
+                            direction: if rising {
+                                Direction::Rising
+                            } else {
+                                Direction::Falling
+                            },
+                            evaluations: refined.evaluations,
+                        });
+                    }
+                }
+                previous = Some((t_hi, raw_hi, unwrapped_hi));
+            }
+            if cursor >= to.get() {
+                break;
+            }
         }
         Ok(events)
     }

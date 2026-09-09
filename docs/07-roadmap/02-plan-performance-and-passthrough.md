@@ -113,11 +113,35 @@ tithi at 1.12 days and so *derives* `limb::LONGEST_SPAN_DAYS`, until now
 a hand-chosen 1.5. Left as it is, and now covered by a test that says
 why it is enough.
 
-**A1b. Grid the uniform scan.** `events::Search::between` walks its
-window in fixed steps and samples once per step — 276 of the day's calls
-— and every instant it will ask for is known before the first one. It
-asks for them as one grid, in chunks, and only the ITP refinement stays
-serial. This is the original A1, moved to where the scan actually is.
+**A1b. Grid the uniform scan — built.** `events::Search::between` walked
+its window in fixed steps, one round trip a step, when every instant it
+would ask for was known before it asked for the first. The scan now
+produces its instants by the same recurrence and asks for them a **grid**
+at a time; only the ITP refinement stays serial, because each of its
+steps is chosen from the answer to the last and so cannot be asked for
+in advance.
+
+`Longitudes` grows the grid beside the pair method it already had —
+`longitudes_and_speeds` and `longitudes_and_speeds_pair`, defaulting to
+the walk, overridden by `FrameLongitudes` with one `positions` request
+and forwarded by the panchanga's `Sidereal` shift. The chunk is
+`Search::with_chunk`, defaulting to `SCAN_CHUNK` = 512 instants, which
+is a **memory** bound and not a waste bound: the scan visits every
+instant between its ends, so every sample in a chunk is one it needs.
+
+*Measured:* an almanac day fell from **841 calls to 665**, and fifty days
+from 41 492 to 32 692. The widest call rose from 2 cells to 66, which is
+the grid becoming visible; the **cells are unchanged**, because the same
+work is being asked for in fewer requests. Over a four-hundred-day
+ingress search the scan's 401 round trips became **1**.
+
+*And this one is bit-identical*, not merely inside a tolerance: the
+instants are the same instants and the values the same values, so the
+brackets handed to the refinement are the same brackets.
+`tests/events.rs` holds the grid against the walk over a retrograde
+planet — three quantities, two lattices, five chunk sizes — comparing
+`to_bits()` and the evaluation counts, and every generated page
+regenerates unchanged.
 
 **A1c. Hoist what a range shares.** The searches above reach ±40 days
 around each day; consecutive days in a range therefore search almost the
@@ -320,9 +344,9 @@ the emitted code is verified in its own language.
 1. **A0** the measurement and this plan — *done*, `check-batching`.
 2. **B0** the passthrough measured: what the port reaches of an engine,
    counted rather than asserted — part of the same pass.
-3. **A1** size each search by what it searches for (A1a — *done*, an
-   almanac day 1228 calls to 841), grid the uniform scan (A1b), hoist
-   what a range shares (A1c).
+3. **A1** size each search by what it searches for (A1a — *done*, 1228
+   calls a day to 841), grid the uniform scan (A1b — *done*, 841 to
+   665), hoist what a range shares (A1c).
 4. **A2** the batch memo and `provider.cache`.
 5. **B1** the manifest, `ts_ephemeris_describe`, generated dispatch,
    Rust surface.
