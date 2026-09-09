@@ -35,7 +35,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Valgrind
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends valgrind
+        # Only the Ubuntu archive, not every list the runner image has
+        # added. A third-party repository the job does not use (Chrome's,
+        # in the run that prompted this) can serve a mismatched index and
+        # fail `apt-get update` for everyone; `SourceParts=/dev/null`
+        # ignores `sources.list.d` so an unrelated mirror cannot stop a
+        # benchmark.
+        run: |
+          sudo apt-get update -qq -o Dir::Etc::SourceParts=/dev/null \
+            -o APT::Get::List-Cleanup=0
+          sudo apt-get install -y --no-install-recommends valgrind
 
       - name: What this branch costs
         run: cargo xtask bench head.tsv | tee head.txt
