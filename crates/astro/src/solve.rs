@@ -257,7 +257,7 @@ fn narrow<E>(
 /// A non-positive or non-finite step or tolerance, an evaluation error,
 /// or a bracket that does not narrow within the cap.
 pub fn first_zero<E>(
-    mut f: impl FnMut(f64) -> Result<f64, E>,
+    f: impl FnMut(f64) -> Result<f64, E>,
     from: f64,
     to: f64,
     step: f64,
@@ -265,41 +265,201 @@ pub fn first_zero<E>(
     tolerance: f64,
     caps: Caps,
 ) -> Result<Option<Crossing>, SolveError<E>> {
+    // One kernel, two front doors: a walk is a grid of one, so this is
+    // [`first_zero_gridded`] with the chunk at one rather than a second
+    // copy of the same loop.
+    let f = core::cell::RefCell::new(f);
+    let scan = Scan::new(from, to, step, upward, tolerance)
+        .with_caps(caps)
+        .with_chunk(1);
+    first_zero_gridded(
+        |instants, out| {
+            out.clear();
+            out.reserve(instants.len());
+            for at in instants {
+                out.push((f.borrow_mut())(*at)?);
+            }
+            Ok(())
+        },
+        |at| (f.borrow_mut())(at),
+        &scan,
+    )
+}
+
+/// How many of a bracket scan's instants are asked for in one grid by
+/// default.
+///
+/// Unlike a lattice search, a bracket scan **stops at the first sign
+/// change**, so a chunk can be asked for and not used: the waste is at
+/// most one chunk less one. Thirty-two is sized from what the scan is
+/// for. A rise or a set the iteration could not settle is found within a
+/// few steps of where the iteration left it; an *absence* — the case
+/// that dominates, because proving a window holds no more events is what
+/// the almanac's event loop does twice a day — walks the whole window
+/// and finds nothing, and there thirty-two turns a hundred and forty-four
+/// round trips into five.
+pub const SCAN_CHUNK: usize = 32;
+
+/// Where a bracket scan looks, and how it walks.
+///
+/// The kernel took seven positional numbers and would have grown to nine
+/// when the grid arrived; this is them, named. A caller writes what it
+/// means and takes the defaults for the rest.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, Scan};
+///
+/// // From here to a day on, ten-minute steps, the upward crossing.
+/// let scan = Scan::new(0.0, 1.0, 1.0 / 144.0, true, 1e-7).with_chunk(64);
+/// assert_eq!(scan.chunk, 64);
+/// assert_eq!(scan.caps, Caps::DEFAULT);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Scan {
+    /// Where the walk starts.
+    pub from: f64,
+    /// Where it stops.
+    pub to: f64,
+    /// The step it takes.
+    pub step: f64,
+    /// Whether the crossing wanted goes upward: negative to non-negative.
+    pub upward: bool,
+    /// The tolerance the crossing is narrowed to.
+    pub tolerance: f64,
+    /// The caps on the walk and the narrowing.
+    pub caps: Caps,
+    /// How many instants to ask for at once; one is a walk.
+    pub chunk: usize,
+}
+
+impl Scan {
+    /// A scan with the default caps and chunk.
+    #[must_use]
+    pub const fn new(from: f64, to: f64, step: f64, upward: bool, tolerance: f64) -> Scan {
+        Scan {
+            from,
+            to,
+            step,
+            upward,
+            tolerance,
+            caps: Caps::DEFAULT,
+            chunk: SCAN_CHUNK,
+        }
+    }
+
+    /// The caps instead of the default.
+    #[must_use]
+    pub const fn with_caps(mut self, caps: Caps) -> Scan {
+        self.caps = caps;
+        self
+    }
+
+    /// How many instants to ask for at once. Zero is read as one.
+    #[must_use]
+    pub const fn with_chunk(mut self, instants: usize) -> Scan {
+        self.chunk = if instants == 0 { 1 } else { instants };
+        self
+    }
+}
+
+/// [`first_zero`] over a source that can answer many instants at once.
+///
+/// The scan walks its window in fixed steps and knows every instant it
+/// will visit before it visits the first, so it asks for them a grid at
+/// a time; only the narrowing stays serial, because each of its steps is
+/// chosen from the answer to the last. The instants are produced by the
+/// walk's own recurrence, so the grid asks for exactly what the walk
+/// asked for and the values it reads are the values the walk read: the
+/// crossing is the same crossing, to the bit.
+///
+/// `sample` is given a slice of instants and writes their values into
+/// the buffer in the order asked; `refine_at` reads one instant, for the
+/// narrowing, which cannot be asked for in advance.
+///
+/// # Errors
+///
+/// As [`first_zero`], and `Argument` when a source answers a different
+/// number of instants from the number it was asked for.
+pub fn first_zero_gridded<E>(
+    mut sample: impl FnMut(&[f64], &mut Vec<f64>) -> Result<(), E>,
+    mut refine_at: impl FnMut(f64) -> Result<f64, E>,
+    scan: &Scan,
+) -> Result<Option<Crossing>, SolveError<E>> {
+    let Scan {
+        from,
+        to,
+        step,
+        upward,
+        tolerance,
+        caps,
+        chunk,
+    } = *scan;
     for (name, value) in [("step", step), ("tolerance", tolerance)] {
         if !(value.is_finite() && value > 0.0) {
             return Err(SolveError::Argument { name, value });
         }
     }
+    let chunk = chunk.max(1);
+    let sign = |value: f64| if upward { value } else { -value };
     let mut evaluations = 0u32;
-    // The signed quantity, negated for a downward crossing so the bracket
-    // is always negative at its start.
-    let mut evaluate = |t: f64| -> Result<f64, SolveError<E>> {
-        evaluations += 1;
-        f(t).map(|v| if upward { v } else { -v })
-            .map_err(SolveError::Evaluation)
-    };
-    let mut lo = from;
-    let mut g_lo = evaluate(lo)?;
+    let mut instants: Vec<f64> = Vec::with_capacity(chunk);
+    let mut values: Vec<f64> = Vec::with_capacity(chunk);
+
+    let mut previous: Option<(f64, f64)> = None;
+    let mut cursor = from;
     let mut steps = 0u32;
-    while lo < to {
-        if steps >= caps.bracket_steps {
-            return Err(SolveError::NotBracketed { steps, last: lo });
+    loop {
+        instants.clear();
+        if previous.is_none() {
+            instants.push(cursor);
         }
-        steps += 1;
-        let hi = (lo + step).min(to);
-        let g_hi = evaluate(hi)?;
-        if g_lo < 0.0 && g_hi >= 0.0 {
-            let bracket = Bracket {
-                lo,
-                f_lo: g_lo,
-                hi,
-                f_hi: g_hi,
+        while instants.len() < chunk && cursor < to {
+            if steps >= caps.bracket_steps {
+                return Err(SolveError::NotBracketed {
+                    steps,
+                    last: cursor,
+                });
+            }
+            steps += 1;
+            cursor = (cursor + step).min(to);
+            instants.push(cursor);
+        }
+        if instants.is_empty() {
+            break;
+        }
+        sample(&instants, &mut values).map_err(SolveError::Evaluation)?;
+        if values.len() != instants.len() {
+            return Err(SolveError::Argument {
+                name: "grid",
+                value: f64::from(u32::try_from(values.len()).unwrap_or(u32::MAX)),
+            });
+        }
+        for (at, raw) in instants.iter().copied().zip(values.iter().copied()) {
+            evaluations += 1;
+            let g_hi = sign(raw);
+            let Some((lo, g_lo)) = previous else {
+                previous = Some((at, g_hi));
+                continue;
             };
-            let narrowed = narrow(&mut evaluate, bracket, tolerance, caps)?;
-            return Ok(Some(crossing(narrowed, evaluations)));
+            if g_lo < 0.0 && g_hi >= 0.0 {
+                let bracket = Bracket {
+                    lo,
+                    f_lo: g_lo,
+                    hi: at,
+                    f_hi: g_hi,
+                };
+                let mut narrowing = |t: f64| -> Result<f64, SolveError<E>> {
+                    evaluations += 1;
+                    refine_at(t).map(sign).map_err(SolveError::Evaluation)
+                };
+                let narrowed = narrow(&mut narrowing, bracket, tolerance, caps)?;
+                return Ok(Some(crossing(narrowed, evaluations)));
+            }
+            previous = Some((at, g_hi));
         }
-        lo = hi;
-        g_lo = g_hi;
+        if cursor >= to {
+            break;
+        }
     }
     Ok(None)
 }

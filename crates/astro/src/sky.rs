@@ -273,6 +273,42 @@ pub trait ApparentPositions: Send + Sync {
     /// An instant the source cannot answer for.
     fn apparent(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error>;
 
+    /// The body's apparent position at **many instants at once**, written
+    /// into `out` in the order asked.
+    ///
+    /// A horizon search's scan walks its window in fixed steps and knows
+    /// every instant it will visit before it visits the first, so a
+    /// source that can answer a grid in one request does so here; the
+    /// default reads them one at a time, as every source did before this
+    /// existed.
+    ///
+    /// **The contract an override takes on** is the one
+    /// [`crate::events::Longitudes::longitudes_and_speeds`] takes: the
+    /// grid answers what the walk would have answered, value for value,
+    /// to the bit. A source whose grid disagreed with its own scalar
+    /// reading would move every rise and set the SDK publishes and
+    /// nothing would say so.
+    ///
+    /// `out` is cleared first, and is a buffer rather than a return so
+    /// that a scan reuses one allocation across its chunks.
+    ///
+    /// # Errors
+    ///
+    /// An instant the source cannot answer for.
+    fn apparent_many(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<Apparent>,
+    ) -> Result<(), Error> {
+        out.clear();
+        out.reserve(ut1.len());
+        for at in ut1 {
+            out.push(self.apparent(body, *at)?);
+        }
+        Ok(())
+    }
+
     /// The source's name for provenance stamps.
     fn describe(&self) -> String;
 }
@@ -284,6 +320,14 @@ impl<S: ApparentPositions + ?Sized> ApparentPositions for &S {
 
     fn describe(&self) -> String {
         (**self).describe()
+    }
+    fn apparent_many(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<Apparent>,
+    ) -> Result<(), Error> {
+        (**self).apparent_many(body, ut1, out)
     }
 }
 

@@ -32,8 +32,8 @@ use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, Refract
 use crate::delta_t::DeltaTModel;
 use crate::iau::{DEG2RAD, RAD2DEG};
 use crate::scale::tt_of;
-use crate::sky::{ApparentPositions, sidereal_time_deg};
-use crate::solve::{Caps, SolveError, first_zero};
+use crate::sky::{Apparent, ApparentPositions, sidereal_time_deg};
+use crate::solve::{Caps, SCAN_CHUNK, Scan, SolveError, first_zero_gridded};
 
 /// The standard refraction at the horizon, arcminutes: the value the
 /// almanacs reckon rising and setting by (*Astronomical Almanac*,
@@ -283,6 +283,7 @@ pub struct Solver<'a> {
     place: Place,
     horizon: Horizon,
     delta_t: DeltaTModel,
+    chunk: usize,
 }
 
 impl fmt::Debug for Solver<'_> {
@@ -306,7 +307,19 @@ impl<'a> Solver<'a> {
             place,
             horizon,
             delta_t,
+            chunk: SCAN_CHUNK,
         }
+    }
+
+    /// How many of the scan's instants to ask the source for at once.
+    ///
+    /// The default is [`crate::solve::SCAN_CHUNK`]. One is the walk this
+    /// replaced — every instant its own round trip — which is what the
+    /// grid is held against in the tests. Zero is read as one.
+    #[must_use]
+    pub const fn with_chunk(mut self, instants: usize) -> Solver<'a> {
+        self.chunk = if instants == 0 { 1 } else { instants };
+        self
     }
 
     /// The convention.
@@ -340,10 +353,38 @@ impl<'a> Solver<'a> {
     }
 
     /// The sky at an instant: altitude, target, hour angle, declination.
+    /// The sky at many instants at once, in the solver's own terms.
+    ///
+    /// One request where the walk made one per instant. The readings are
+    /// the walk's own — the same source, the same instants — so a scan
+    /// that reads them here answers exactly what a scan that read them
+    /// one at a time answered.
+    fn samples(&self, instants: &[f64], evaluations: &mut u32) -> Result<Vec<Sample>, Error> {
+        let ut1: Vec<JulianDay<Ut1>> = instants
+            .iter()
+            .map(|t| JulianDay::<Ut1>::literal(*t))
+            .collect();
+        let mut apparent = Vec::with_capacity(ut1.len());
+        self.sky.apparent_many(self.body, &ut1, &mut apparent)?;
+        *evaluations += u32::try_from(ut1.len()).unwrap_or(u32::MAX);
+        ut1.iter()
+            .zip(&apparent)
+            .map(|(at, apparent)| self.reading(*at, apparent))
+            .collect()
+    }
+
     fn sample(&self, t: f64, evaluations: &mut u32) -> Result<Sample, Error> {
         let ut1 = JulianDay::<Ut1>::try_new(t)?;
         *evaluations += 1;
         let apparent = self.sky.apparent(self.body, ut1)?;
+        self.reading(ut1, &apparent)
+    }
+
+    /// One apparent position read as the solver reads it: the altitude
+    /// above the horizon, the altitude the event is at, the hour angle
+    /// and the declination. Shared by the walk and the grid so that
+    /// neither can drift from the other.
+    fn reading(&self, ut1: JulianDay<Ut1>, apparent: &Apparent) -> Result<Sample, Error> {
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         let sidereal = sidereal_time_deg(ut1, tt, self.place.longitude);
         let hour_angle_deg = difference_deg(sidereal, apparent.ra_deg);
@@ -492,28 +533,41 @@ impl<'a> Solver<'a> {
         end: f64,
         evaluations: u32,
     ) -> Result<Option<HorizonEvent>, Error> {
-        let mut count = evaluations;
-        let quantity = |t: f64| -> Result<f64, Error> {
-            let sample = self.sample(t, &mut count)?;
-            Ok(match kind {
+        let quantity = |sample: &Sample| -> f64 {
+            match kind {
                 HorizonEventKind::Rise | HorizonEventKind::Set => {
                     sample.altitude_deg - sample.target_deg
                 }
                 HorizonEventKind::Transit => sample.hour_angle_deg,
                 HorizonEventKind::Antitransit => difference_deg(sample.hour_angle_deg, 180.0),
-            })
+            }
+        };
+        // The scan's instants are known before the first is asked for, so
+        // they are asked for a grid at a time; only the narrowing stays
+        // serial. This is where the SDK's remaining ephemeris calls were:
+        // the almanac's event loop proves a window holds no more rises by
+        // scanning the whole of it, twice a day
+        // (`07-roadmap/02-plan-performance-and-passthrough.md`, A1d).
+        let counted = core::cell::Cell::new(evaluations);
+        let grid = |instants: &[f64], out: &mut Vec<f64>| -> Result<(), Error> {
+            let mut used = counted.get();
+            let samples = self.samples(instants, &mut used)?;
+            counted.set(used);
+            out.clear();
+            out.extend(samples.iter().map(&quantity));
+            Ok(())
+        };
+        let one = |t: f64| -> Result<f64, Error> {
+            let mut used = counted.get();
+            let sample = self.sample(t, &mut used)?;
+            counted.set(used);
+            Ok(quantity(&sample))
         };
         let upward = kind != HorizonEventKind::Set;
-        let crossing = first_zero(
-            quantity,
-            start,
-            end,
-            SCAN_STEP_DAYS,
-            upward,
-            TOLERANCE_DAYS,
-            scan_caps(end - start),
-        )
-        .map_err(|error| match error {
+        let scan = Scan::new(start, end, SCAN_STEP_DAYS, upward, TOLERANCE_DAYS)
+            .with_caps(scan_caps(end - start))
+            .with_chunk(self.chunk);
+        let crossing = first_zero_gridded(grid, one, &scan).map_err(|error| match error {
             SolveError::Evaluation(inner) => inner,
             other => Error::new(
                 Status::NotConverged,
@@ -525,6 +579,7 @@ impl<'a> Solver<'a> {
                 ),
             ),
         })?;
+        let count = counted.get();
         Ok(match crossing {
             Some(found) => Some(HorizonEvent {
                 instant: JulianDay::try_new(found.instant)?,
@@ -811,5 +866,98 @@ mod tests {
         let upper = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun);
         assert!((lower - upper - 2.0 * sun.semidiameter_deg).abs() < 1e-12);
         assert_eq!(radius_km(Body::MeanApogee), 0.0);
+    }
+
+    /// The gridded scan answers what the walk answered, to the bit.
+    ///
+    /// The scan asks for its instants a chunk at a time (A1d of
+    /// `07-roadmap/02-plan-performance-and-passthrough.md`), and a chunk
+    /// of one is the walk it replaced. The instants are the same
+    /// instants and the values the same values, so the bracket handed to
+    /// the narrowing is the same bracket and the crossing is the same
+    /// crossing — not close, identical.
+    #[test]
+    fn a_gridded_scan_answers_what_the_walk_answered_to_the_bit() {
+        let star = FixedStar { dec_deg: 20.35 };
+        let from = JulianDay::<Ut1>::literal(2_451_545.0);
+        for kind in [
+            HorizonEventKind::Rise,
+            HorizonEventKind::Set,
+            HorizonEventKind::Transit,
+            HorizonEventKind::Antitransit,
+        ] {
+            let walked = Solver::new(
+                &star,
+                Body::MeanNode,
+                place(69.6, 18.9),
+                Horizon::CENTRE_NO_REFRACTION,
+                DeltaTModel::TableThenModel,
+            )
+            .with_chunk(1)
+            .scan(kind, from.get(), from.get() + 1.0, 0)
+            .unwrap()
+            .unwrap();
+            for chunk in [2usize, 7, 32, 144, 10_000] {
+                let gridded = Solver::new(
+                    &star,
+                    Body::MeanNode,
+                    place(69.6, 18.9),
+                    Horizon::CENTRE_NO_REFRACTION,
+                    DeltaTModel::TableThenModel,
+                )
+                .with_chunk(chunk)
+                .scan(kind, from.get(), from.get() + 1.0, 0)
+                .unwrap()
+                .unwrap();
+                assert_eq!(
+                    gridded.instant.get().to_bits(),
+                    walked.instant.get().to_bits(),
+                    "{kind} chunk {chunk}: {} against {}",
+                    gridded.instant,
+                    walked.instant
+                );
+                assert_eq!(gridded.method, walked.method);
+                // A chunk may carry instants past the one that brackets
+                // the crossing, which the walk would never have asked
+                // for, so the readings taken can exceed the walk's by up
+                // to a chunk less one. What must not differ is the
+                // answer, and it does not.
+                let extra = gridded.evaluations.saturating_sub(walked.evaluations);
+                assert!(
+                    gridded.evaluations >= walked.evaluations
+                        && usize::try_from(extra).unwrap_or(usize::MAX) < chunk,
+                    "{kind} chunk {chunk}: {} readings against the walk's {}",
+                    gridded.evaluations,
+                    walked.evaluations
+                );
+            }
+        }
+    }
+
+    /// An absence costs a walk of the whole window, which is what the
+    /// almanac's event loop does twice a day; the grid is what makes it
+    /// affordable.
+    #[test]
+    fn proving_an_absence_walks_the_window_and_the_grid_carries_it() {
+        // A star that never rises at this latitude: the scan finds
+        // nothing and has to look everywhere to say so.
+        let star = FixedStar { dec_deg: -80.0 };
+        let from = JulianDay::<Ut1>::literal(2_451_545.0);
+        let solver = |chunk: usize| {
+            Solver::new(
+                &star,
+                Body::MeanNode,
+                place(69.6, 18.9),
+                Horizon::CENTRE_NO_REFRACTION,
+                DeltaTModel::TableThenModel,
+            )
+            .with_chunk(chunk)
+        };
+        for chunk in [1usize, 32, 10_000] {
+            let absent = solver(chunk)
+                .scan(HorizonEventKind::Rise, from.get(), from.get() + 1.0, 0)
+                .unwrap();
+            assert!(absent.is_none(), "chunk {chunk}: it never rises");
+        }
     }
 }

@@ -75,5 +75,7 @@ pub use sky::{
     Apparent, ApparentPositions, EarthAt, Observer, Spherical, earth_at, equation_of_time_seconds,
     obliquity, observer, sidereal_time_deg,
 };
-pub use solve::{Caps, Crossing, SolveError, first_zero, next_crossing, refine};
+pub use solve::{
+    Caps, Crossing, Scan, SolveError, first_zero, first_zero_gridded, next_crossing, refine,
+};
 pub use topocentric::Station;
