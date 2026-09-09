@@ -360,9 +360,28 @@ provider's DUT1).
    from 41 492 to 32 692; a four-hundred-day ingress search's 401 round
    trips became **1**. This one is **bit-identical**, held by
    `astro/tests/events.rs` over a retrograde planet at five chunk sizes
-   comparing `to_bits()`. Cumulatively A1a and A1b take an almanac day
-   from 1228 calls to 665 and fifty days from 60 631 to 32 692.
-   **The next part is A1c**, hoisting what a range's days share.
+   comparing `to_bits()`.
+
+   **A1b′ is built, and it was a defect.** Starting A1c asked whether a
+   crossing found in a range-wide search is the one a per-day search
+   would have found. It was not: the scan stepped from the caller's own
+   `from`, so the same sign ingress came back **up to 2.2 ms apart**
+   from windows offset by a fraction of a day, and only four of fifteen
+   comparisons agreed to the bit. A crossing's instant was a property of
+   the question as much as of the sky. Samples are now aligned to
+   `SCAN_ANCHOR_JD` (J2000.0) and computed as `anchor + k × step` by
+   multiplication, so a narrow window's samples are a subset of a wide
+   one's; a bracket may reach outside the window, and a crossing found
+   there is dropped rather than reported. A day rose 665 → **681** calls
+   (the extra end samples) and in exchange a fifty-day range's distinct
+   cells fell 39 675 → **21 446**, its repeat share 24.7% → **60.2%**,
+   because consecutive days now ask for *the same instants*.
+
+   Cumulatively an almanac day is 1228 calls → 681 and fifty days
+   60 631 → 33 270, with the determinism digest unchanged to the bit
+   throughout. **The next step is A2**, the batch memo, which the
+   anchoring moved ahead of A1c: it now reaches 60.2% of a fifty-day
+   range without restructuring anything.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an

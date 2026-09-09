@@ -377,3 +377,130 @@ fn the_grid_turns_a_scans_round_trips_into_one() {
     // The grid asks once for all 401, and the refinements are unchanged.
     assert_eq!(gridded.requests(), 1 + refinements as usize);
 }
+
+/// A crossing is a property of the crossing, not of the question.
+///
+/// The scan used to step from the caller's own `from`, so where its
+/// samples fell — and so which bracket the refinement was handed —
+/// depended on where the window started. Measured before this was fixed:
+/// the same sign ingress came back up to 2.2 milliseconds apart from
+/// windows offset by a fraction of a day, and only four of fifteen
+/// comparisons agreed to the bit.
+///
+/// Samples are aligned to `events::SCAN_ANCHOR_JD` now, so a narrower window's
+/// samples are a subset of a wider one's and any two windows that both
+/// contain a crossing bracket it identically. That is worth having on its
+/// own, and it is what lets a range search once and slice the answer per
+/// day without the slices disagreeing with the searches they replace.
+#[test]
+fn the_same_crossing_answers_the_same_from_any_window() {
+    let provider = Looping;
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+
+    for quantity in [
+        Quantity::Longitude(Body::Mars),
+        Quantity::Composite {
+            a: 2.0,
+            first: Body::Mars,
+            b: -1.0,
+            second: Body::Mars,
+        },
+    ] {
+        let wide = Search::new(&longitudes, quantity, Lattice::SIGNS)
+            .between(
+                JulianDay::<Ut1>::literal(J2000),
+                JulianDay::<Ut1>::literal(J2000 + 400.0),
+            )
+            .unwrap();
+        assert!(!wide.is_empty());
+        let mut compared = 0usize;
+        // Windows that begin and end at every kind of awkward place: on a
+        // sample, a fraction of a step past one, and just short of the
+        // next.
+        for offset in [0.0_f64, 0.1, 0.25, 0.5, 0.7, 0.999] {
+            let narrow = Search::new(&longitudes, quantity, Lattice::SIGNS)
+                .between(
+                    JulianDay::<Ut1>::literal(J2000 + 20.0 + offset),
+                    JulianDay::<Ut1>::literal(J2000 + 380.0 + offset),
+                )
+                .unwrap();
+            assert!(!narrow.is_empty(), "offset {offset}");
+            for near in &narrow {
+                let far = wide
+                    .iter()
+                    .find(|far| (far.instant.get() - near.instant.get()).abs() < 0.5)
+                    .unwrap_or_else(|| {
+                        panic!("offset {offset}: {} is in neither", near.instant.get())
+                    });
+                assert_eq!(
+                    near.instant.get().to_bits(),
+                    far.instant.get().to_bits(),
+                    "offset {offset}: {} against {}",
+                    near.instant.get(),
+                    far.instant.get()
+                );
+                assert_eq!(near.boundary_deg, far.boundary_deg);
+                assert_eq!(near.direction, far.direction);
+                assert_eq!(near.evaluations, far.evaluations);
+                compared += 1;
+            }
+        }
+        assert!(compared >= 30, "{quantity:?}: only {compared} compared");
+    }
+}
+
+/// Every crossing a window reports is inside it.
+///
+/// The scan's ends are lattice points rather than the caller's own
+/// instants, so a bracket reaches outside the window at either end and
+/// may hold a crossing that is real but not this window's.
+#[test]
+fn a_window_reports_only_the_crossings_inside_it() {
+    let provider = Looping;
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let quantity = Quantity::Longitude(Body::Mars);
+
+    // A window that begins and ends between samples, so both end brackets
+    // reach outside it.
+    let from = JulianDay::<Ut1>::literal(J2000 + 25.5);
+    let to = JulianDay::<Ut1>::literal(J2000 + 200.5);
+    let events = Search::new(&longitudes, quantity, Lattice::SIGNS)
+        .between(from, to)
+        .unwrap();
+    assert!(!events.is_empty());
+    for event in &events {
+        assert!(
+            event.instant.get() >= from.get() && event.instant.get() <= to.get(),
+            "{} is outside [{}, {}]",
+            event.instant.get(),
+            from.get(),
+            to.get()
+        );
+    }
+    // And nothing inside was lost: the same crossings the wide search saw
+    // in that span.
+    let wide = Search::new(&longitudes, quantity, Lattice::SIGNS)
+        .between(
+            JulianDay::<Ut1>::literal(J2000),
+            JulianDay::<Ut1>::literal(J2000 + 400.0),
+        )
+        .unwrap();
+    let inside: Vec<_> = wide
+        .iter()
+        .filter(|e| e.instant.get() >= from.get() && e.instant.get() <= to.get())
+        .collect();
+    assert_eq!(events.len(), inside.len());
+    for (near, far) in events.iter().zip(inside) {
+        assert_eq!(near.instant.get().to_bits(), far.instant.get().to_bits());
+    }
+}
