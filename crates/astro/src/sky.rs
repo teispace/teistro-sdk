@@ -5,10 +5,11 @@
 
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Longitude, Tt, Ut1};
+use teistro_core::quantity::{JulianDay, Longitude, Place, Tt, Ut1};
 use teistro_port_ephemeris::{Body, Obliquity};
 
 use crate::delta_t::{DeltaTModel, delta_t};
+use crate::iau::vector::Vector3;
 use crate::iau::{self, DEG2RAD, RAD2DEG};
 use crate::scale::tt_from_ut1;
 
@@ -88,7 +89,7 @@ pub fn local_mean_midnight(at: JulianDay<Ut1>, longitude: Longitude) -> JulianDa
 ///
 /// ```
 /// use teistro_astro::sky::sidereal_time_deg;
-/// use teistro_core::quantity::{JulianDay, Longitude, Tt, Ut1};
+/// use teistro_core::quantity::{JulianDay, Longitude, Place, Tt, Ut1};
 ///
 /// // ERFA's reference instant, 2006-01-15 21:24:37.5 UTC as UT1 and TT alike.
 /// let ut1 = JulianDay::<Ut1>::literal(2_400_000.5 + 53_736.0);
@@ -101,6 +102,58 @@ pub fn local_mean_midnight(at: JulianDay<Ut1>, longitude: Longitude) -> JulianDa
 #[must_use]
 pub fn sidereal_time_deg(ut1: JulianDay<Ut1>, tt: JulianDay<Tt>, longitude: Longitude) -> f64 {
     normalise_deg(greenwich_sidereal_time_deg(ut1, tt) + longitude.get())
+}
+
+/// Where an observer stands and how fast the Earth's rotation carries
+/// them, in the frame the sky's own positions are in: the true equator
+/// and equinox of date, astronomical units and astronomical units a day,
+/// measured from the centre of the Earth.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Observer {
+    /// The station's geocentric position, astronomical units.
+    pub position_au: Vector3,
+    /// Its velocity, astronomical units a day.
+    pub velocity_au_per_day: Vector3,
+}
+
+/// The observer at a place and an instant ([`Observer`]), from ERFA's
+/// station routine on the WGS84 ellipsoid with Greenwich apparent
+/// sidereal time for the rotation angle, so the answer is in the same
+/// true equator and equinox of date as the positions it is subtracted
+/// from.
+///
+/// The pole's coordinates and the TIO locator are passed as zero: the
+/// SDK holds no Earth orientation parameters, and polar motion moves a
+/// station by under fifteen metres, which turns the Moon's direction by
+/// eight milliarcseconds and a planet's by less than a microarcsecond.
+/// A consumer who has them can call [`iau::earth::pvtob`] with them.
+///
+/// ```
+/// use teistro_astro::sky::observer;
+/// use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+///
+/// let place = Place::try_from_degrees(27.7172, 85.324, 1_400.0).expect("Kathmandu");
+/// let at = observer(place, JulianDay::<Ut1>::J2000, JulianDay::<Tt>::literal(2_451_545.0));
+/// // A station stands about an Earth radius out, 4.3e-5 astronomical units.
+/// let radius = at.position_au.iter().map(|c| c * c).sum::<f64>().sqrt();
+/// assert!((radius - 4.26e-5).abs() < 2e-7, "{radius}");
+/// ```
+#[must_use]
+pub fn observer(place: Place, ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> Observer {
+    let theta = greenwich_sidereal_time_deg(ut1, tt) * DEG2RAD;
+    let pv = iau::earth::pvtob(
+        place.longitude.get() * DEG2RAD,
+        place.latitude.get() * DEG2RAD,
+        place.altitude.get(),
+        0.0,
+        0.0,
+        0.0,
+        theta,
+    );
+    Observer {
+        position_au: pv[0].map(|m| m / iau::DAU),
+        velocity_au_per_day: pv[1].map(|m| m * iau::DAYSEC / iau::DAU),
+    }
 }
 
 /// Rotates ecliptic longitude and latitude to right ascension and
