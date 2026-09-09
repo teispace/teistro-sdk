@@ -16,7 +16,7 @@ and reads the source for what the values cannot say about themselves.
 
 The sample is built rather than recorded, by `cargo run -p
 teistro-serial --example documents`: 3 documents over the analytic test
-provider, 237 distinct paths between them. A recorded sample would go
+provider, 238 distinct paths between them. A recorded sample would go
 stale the first time a section gained a field and the pass would not
 notice.
 
@@ -28,12 +28,12 @@ Sections 3 and 4 decide it.
 
 | sample | what it holds | sections | paths |
 |---|---|---|---|
-| `whole` | every section the layer can produce | 7 | 237 |
-| `day` | a foundation and the almanac of its day | 2 | 155 |
+| `whole` | every section the layer can produce | 7 | 238 |
+| `day` | a foundation and the almanac of its day | 2 | 156 |
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-7 boolean, 38 integer, 6 null, 93 number, 98 string.
+7 boolean, 38 integer, 6 null, 93 number, 99 string.
 
 ## 3. A whole double is written as an integer
 
@@ -68,9 +68,9 @@ the schema comes from.
 
 | string paths | drawn from the catalogue | free text |
 |---|---|---|
-| 98 | 93 | 5 |
+| 99 | 94 | 5 |
 
-A schema would constrain each of those 93 with an `enum`, and it cannot
+A schema would constrain each of those 94 with an `enum`, and it cannot
 get the members from the documents: the widest of them shows 12 values,
 where the catalogue's own list is longer for every one. A sample proves
 a member exists; it never proves a member does not.
@@ -90,7 +90,7 @@ samples:
 
 | paths in every sample | paths in some | top-level sections |
 |---|---|---|
-| 72 | 165 | 7 |
+| 72 | 166 | 7 |
 
 The top-level sections of the widest document are `aspects`,
 `foundation`, `houses`, `panchanga`, `points`, `state`, `vargas`. Only
@@ -155,11 +155,11 @@ chart at all. It can now publish one and read it back.
 
 A schema's `enum` has to spell a member the way the document really
 writes it. Counting `rename_all` over the layer and the crates it holds
-values from, 35 types declare one:
+values from, 36 types declare one:
 
 | convention | types |
 |---|---|
-| `SCREAMING_SNAKE_CASE` | 32 |
+| `SCREAMING_SNAKE_CASE` | 33 |
 | `lowercase` | 3 |
 
 The minority is not unreached: `CalendarResolution` is one of them, and

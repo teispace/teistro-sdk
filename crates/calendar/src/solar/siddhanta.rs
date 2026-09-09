@@ -8,6 +8,7 @@ use teistro_core::time::LocalMeanTime;
 use teistro_siddhanta::SuryaSiddhanta;
 
 use crate::fixed::FixedDay;
+use crate::lunisolar::LunarModel;
 use crate::solar::{DayArc, DayLight, SolarModel};
 
 impl SolarModel for SuryaSiddhanta {
@@ -41,6 +42,20 @@ impl SolarModel for SuryaSiddhanta {
         // The text's sunrise: the centre of the disc on the geometric
         // horizon, without refraction (III.42 to 43).
         Sunrise::CentreNoRefraction.into()
+    }
+}
+
+/// The text's Moon, for the lunisolar month.
+///
+/// The same model answers both, which is what [`crate::lunisolar::month_at`]
+/// asks for: a month bounded by one sky and named by another would be
+/// neither calendar's.
+impl LunarModel for SuryaSiddhanta {
+    fn elongation_deg(&self, jd_ut: f64) -> Result<f64, Error> {
+        let at = teistro_core::quantity::JulianDay::<teistro_core::quantity::Ut1>::literal(jd_ut);
+        let sun = SuryaSiddhanta::sun(self, at).longitude.get();
+        let moon = SuryaSiddhanta::moon(self, at).longitude.get();
+        Ok((moon - sun).rem_euclid(360.0))
     }
 }
 

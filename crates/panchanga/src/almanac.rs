@@ -445,8 +445,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// and the purnimanta one that follows from the tithi the day opens
     /// in.
     ///
-    /// Whether the month is intercalary is the Indian lunisolar
-    /// calendar's to decide; the name is right either way.
+    /// Whether the month is intercalary the Indian lunisolar calendar
+    /// decides, from the count of sankrantis between the month's two new
+    /// moons (`03-design/calendar-indian-lunisolar.md` §2). The **name**
+    /// is right either way and needs no case for the intercalary month:
+    /// the Sun stands in the same sign at an adhika month's new moon as
+    /// at the following nija month's, so `amanta_month` names both.
+    ///
+    /// The rule runs over **this** almanac's sky rather than the text's,
+    /// because the month it marks is the one this almanac named.
     fn month<S: teistro_astro::events::Longitudes + ?Sized>(
         &self,
         longitudes: &S,
@@ -458,11 +465,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             .first()
             .map(|span| span.member)
             .ok_or_else(|| Error::internal("a day with no tithi"))?;
-        let amanta = limb::amanta_month(longitudes, window, self.zodiac(window.from)?)?;
+        let zodiac = self.zodiac(window.from)?;
+        let span = limb::lunar_month_span(longitudes, window, zodiac)?;
+        let amanta = limb::masa_at(longitudes, span.from, zodiac)?;
+        let kind = teistro_calendar::lunisolar::kind_of(self.model, span.from, span.to)?;
         Ok(month::of(
             amanta,
             at_sunrise,
             self.settings().calendars.lunar_month,
+            kind,
         ))
     }
 

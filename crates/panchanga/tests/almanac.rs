@@ -89,6 +89,32 @@ fn day() -> Panchanga {
     })
 }
 
+/// The month carries its kind, and an ordinary day's is ordinary.
+///
+/// The mark itself — that a month with no sankranti is the one the
+/// corpus calls adhika — is held by `check-lunisolar` over all
+/// fifty-five recorded days, because it needs a sky the crate's own
+/// tests do not build. What this holds is that the almanac **carries**
+/// what the calendar decided, which nothing else would notice if it
+/// stopped doing.
+#[test]
+fn the_month_carries_its_kind() {
+    use teistro_calendar::lunisolar::MonthKind;
+    use teistro_core::catalogue::Masa;
+    use teistro_core::settings::LunarMonth;
+
+    let day = day();
+    assert_eq!(
+        day.month.kind,
+        MonthKind::Nija,
+        "21 June 2024 is an ordinary month"
+    );
+    // And the mark sits beside the name rather than replacing it: an
+    // ordinary month names itself under both conventions as before.
+    assert_eq!(day.month.amanta, Masa::Jyeshtha);
+    assert_eq!(day.month.under(LunarMonth::Amanta), day.month.amanta);
+}
+
 #[test]
 fn a_day_is_assembled_whole() {
     let day = day();

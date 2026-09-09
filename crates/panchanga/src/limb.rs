@@ -36,7 +36,7 @@ use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Karana, Masa, Nakshatra, Rashi, Tithi, Yoga};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
-use teistro_core::quantity::{JulianDay, Ut1};
+use teistro_core::quantity::{JulianDay, Ut1, Utc};
 use teistro_core::settings::AyanamshaChoice;
 use teistro_port_ephemeris::{Body, Lattice, Quantity};
 
@@ -475,6 +475,27 @@ pub fn amanta_month<S: Longitudes + ?Sized>(
     window: Interval,
     zodiac: Zodiac,
 ) -> Result<Masa, Error> {
+    let span = lunar_month_span(tropical, window, zodiac)?;
+    masa_at(tropical, span.from, zodiac)
+}
+
+/// The new moons that bound the lunar month a window falls in.
+///
+/// The month's name comes from the Sun at its opening new moon
+/// ([`masa_at`]) and its **kind** from the sankrantis between the two
+/// ([`teistro_calendar::lunisolar::kind_of`]), so both want this and it
+/// is found once.
+///
+/// # Errors
+///
+/// The source's own refusal, or a window with no new moon in the
+/// thirty-one days before it, which cannot happen for a real sky and is
+/// reported as `NOT_CONVERGED` naming the window.
+pub fn lunar_month_span<S: Longitudes + ?Sized>(
+    tropical: &S,
+    window: Interval,
+    zodiac: Zodiac,
+) -> Result<Interval, Error> {
     let source = Sidereal {
         tropical,
         ayanamsha: zodiac.ayanamsha,
@@ -482,11 +503,12 @@ pub fn amanta_month<S: Longitudes + ?Sized>(
         precession: zodiac.precession,
         delta_t: zodiac.delta_t,
     };
-    let from = JulianDay::<Ut1>::literal(window.from.get() - SYNODIC_SEARCH_DAYS);
-    let to = JulianDay::<Ut1>::literal(window.from.get());
-    let events =
-        Search::new(&source, Quantity::ELONGATION, Lattice::single(0.0)).between(from, to)?;
-    let new_moon = events.last().map(|event| event.instant).ok_or_else(|| {
+    let lattice = Lattice::single(0.0);
+    let before = Search::new(&source, Quantity::ELONGATION, lattice).between(
+        JulianDay::<Ut1>::literal(window.from.get() - SYNODIC_SEARCH_DAYS),
+        JulianDay::<Ut1>::literal(window.from.get()),
+    )?;
+    let opened = before.last().map(|event| event.instant).ok_or_else(|| {
         Error::new(
             Status::NotConverged,
             format!(
@@ -495,7 +517,45 @@ pub fn amanta_month<S: Longitudes + ?Sized>(
             ),
         )
     })?;
-    let sun = teistro_astro::events::value_of(Quantity::Longitude(Body::Sun), &source, new_moon)?;
+    let after = Search::new(&source, Quantity::ELONGATION, lattice).between(
+        JulianDay::<Ut1>::literal(opened.get() + 1.0),
+        JulianDay::<Ut1>::literal(opened.get() + SYNODIC_SEARCH_DAYS),
+    )?;
+    let closed = after.first().map(|event| event.instant).ok_or_else(|| {
+        Error::new(
+            Status::NotConverged,
+            format!("no new moon in the {SYNODIC_SEARCH_DAYS} days after {opened}"),
+        )
+    })?;
+    Interval::new(
+        JulianDay::try_new(opened.get())?,
+        JulianDay::try_new(closed.get())?,
+    )
+}
+
+/// The lunar month the Sun's sign at an instant names.
+///
+/// # Errors
+///
+/// The source's own refusal, or a sign no masa claims, which the
+/// catalogue makes impossible.
+pub fn masa_at<S: Longitudes + ?Sized>(
+    tropical: &S,
+    at: JulianDay<Utc>,
+    zodiac: Zodiac,
+) -> Result<Masa, Error> {
+    let source = Sidereal {
+        tropical,
+        ayanamsha: zodiac.ayanamsha,
+        basis: zodiac.basis,
+        precession: zodiac.precession,
+        delta_t: zodiac.delta_t,
+    };
+    let sun = teistro_astro::events::value_of(
+        Quantity::Longitude(Body::Sun),
+        &source,
+        JulianDay::<Ut1>::literal(at.get()),
+    )?;
     let sign = Nas::try_from_degrees(sun)?.sign();
     Masa::ALL
         .iter()
