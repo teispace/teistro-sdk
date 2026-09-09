@@ -919,6 +919,16 @@ final class Chart {
   /// The ayanamsha applied at this instant, degrees; zero if tropical.
   double get ayanamshaOffsetDeg => batch.cast.ayanamshaOffsetDeg[index];
 
+  /// Which arc of its day the instant falls in.
+  ///
+  /// This and [dayElapsed] belong to the **instant**, not to the day, so
+  /// they are the chart's rather than the day section's — which is what
+  /// the panchanga blob's arrival settled.
+  DayPart get dayPart => DayPart.byId(batch.cast.dayPart[index]);
+
+  /// How far through that arc the instant is, 0 to 1.
+  double get dayElapsed => batch.cast.dayElapsed[index];
+
   /// What kind of chart this is.
   ChartKind get kind => ChartKind.byId(batch.kind);
 

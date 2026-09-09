@@ -233,6 +233,34 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**The parity gate now compares 594 values across the three bindings,
+where it compared 103.** All 103 came from `positions`; the chart and the
+almanac add 491, and until they did, "the bindings agree" meant something
+for one entry point and the chart and almanac examples agreed only
+because a person had compared their output by eye.
+
+The scenario needed a second context to say it. The gate runs under
+`nepali-default`, whose frame is **topocentric**, and a chart cannot be
+founded under it at all — the completion's centre step is Phase 3's. That
+refusal is now a compared value in its own right (`chart-under-topocentric`),
+so the three bindings must fail the same way and not merely succeed the
+same way; everything after it runs on a second context under the SDK's
+own geocentric default.
+
+Two instants and three days, deliberately. A per-chart section laid out
+charts-outermost the wrong way round shows up as the second chart's
+values in the first's place rather than as nothing at all, and a day's
+lists are ragged — two consecutive days with the same counts would not
+exercise the offsets at all.
+
+**The gate found a gap on its first run.** When `part` and `elapsed` moved
+out of the shared day section into the chart's `cast` — they belong to an
+instant, not to a day — the columns were added and **no layer surfaced
+them**. Node had nothing at all; Dart and Python could only reach them by
+indexing the raw column. All three now expose `dayPart` and `dayElapsed`
+on a chart, which is where they belong, and the runners read the accessor
+rather than the column.
+
 **A daily panchanga crosses the boundary, as a batch of days.**
 `ts_panchanga_days` takes a **range** — not a list of dates, because
 consecutive days share a boundary, so day *n*'s next sunrise is day

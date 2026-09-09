@@ -12,6 +12,7 @@ import type {
   Calendar,
   ChartKind,
   Choghadiya,
+  DayPart,
   Direction,
   Graha,
   HouseSystem,
@@ -226,6 +227,13 @@ export declare class Chart {
   readonly dayLagnaDeg: number;
   /** The ayanamsha applied at this instant, degrees; zero if tropical. */
   readonly ayanamshaOffsetDeg: number;
+  /**
+   * Which arc of its day the instant falls in. This and `dayElapsed`
+   * belong to the instant, not to the day.
+   */
+  readonly dayPart: DayPart | 'unknown';
+  /** How far through that arc the instant is, 0 to 1. */
+  readonly dayElapsed: number;
   /**
    * The day the chart belongs to, which is not always its civil date:
    * the values the blob carries, with `vara` named.
