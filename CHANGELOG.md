@@ -233,6 +233,50 @@ says so in its own language. Every column a provider supplies is now held
 to the cell count, not only the three it must supply, because a speed
 column of the wrong length silently padded with zeroes is a wrong answer.
 
+**The rule that decides adhika and kshaya is measured** (`cargo xtask
+lunisolar` → `03-design/calendar-indian-lunisolar-measured.md`, gated by
+`check-lunisolar`). `panchanga` names the lunar month and cannot mark it,
+and no other module could either; this is the falsification pass the
+calendar that will mark it is designed from.
+
+**The corpus cannot settle it alone**, which is the first thing the pass
+had to establish. It records `is_adhika` on every day — the *answer* —
+and none of the inputs: not the new moon that opened the month, nor the
+sankranti that named it. So unlike the panchanga's conventions, which are
+arithmetic over recorded numbers, this has to compute the sky. It
+computes it from the **Surya Siddhanta**, as the Bikram Sambat engine
+does, so the calendar needs no ephemeris — which is also what the
+tradition itself did.
+
+Over **12 368 lunar months of a millennium**: 388 hold no sankranti
+(adhika, one every 2.58 years against the classical seven in nineteen),
+11 961 hold one, and 19 hold two (kshaya, one in some fifty years). The
+rule is that count, and it reproduces the corpus's marking on **all
+fifty-five** recorded days, including the two marked adhika — Delhi in
+August 1947 and Fairbanks in June 2015.
+
+Two things the measurement settled that reasoning had got wrong.
+**An adhika month needs no naming rule of its own.** The usual
+formulation is that it takes the following month's name, because it has
+no sankranti to be named by; in fact the Sun stands in the same sign at
+its new moon as at the following nija month's, so the existing rule gives
+both the same name unaided — August 1947 is Shravana twice over. And
+**the classification is robust where the month of an instant is not**:
+whether a sankranti falls inside a 29.5-day window barely moves when a
+boundary shifts by half an hour, but which month a moment belongs to
+does. The one recorded day where the text and the recording disagree is
+nineteen minutes from a new moon — the eclipse conjunction of 8 April
+2024, with the text's instant and the recording's on either side of it.
+
+**Kshaya is measured and not tested**, and the page says so rather than
+implying otherwise: the corpus records none, so nothing holds the rule to
+an authority. What can be said is that its frequency is what the
+astronomy predicts and that every one of the nineteen falls between
+Vrishchika and Kumbha — the perihelion window where the Sun moves fast
+enough to cross two sign boundaries inside one lunar month. Nothing in
+the pass looks for that; it falls out of the counts, and a rule producing
+a kshaya month in Karka would fail it.
+
 **The parity gate now compares 594 values across the three bindings,
 where it compared 103.** All 103 came from `positions`; the chart and the
 almanac add 491, and until they did, "the bindings agree" meant something

@@ -258,6 +258,20 @@ the rule that computes it. Adhika and kshaya belong to
 `calendar-indian-lunisolar.md`; this module reads the month from that
 calendar and does not decide it.
 
+The rule that calendar will apply is now measured
+([`calendar-indian-lunisolar-measured.md`](calendar-indian-lunisolar-measured.md)):
+**the count of sankrantis in the lunar month** — none is adhika, one is
+ordinary, two is kshaya — which reproduces the marking on all fifty-five
+recorded days. Two things the measurement settles for this module in
+particular. The naming here needs **no** change: an adhika month has no
+sankranti to be named by, and yet the Sun stands in the same sign at its
+new moon as at the following nija month's, so `limb::amanta_month` gives
+both the same name without a rule of its own. And the classification is
+robust where the *month of an instant* is not — a boundary that moves by
+half an hour almost never changes whether a sankranti falls inside a
+29.5-day window, but it can change which month a moment minutes from a
+new moon belongs to.
+
 ## 9. Panchaka, the ayana and the disha shool
 
 - **Panchaka** runs while the Moon is in the last five nakshatras, and its
