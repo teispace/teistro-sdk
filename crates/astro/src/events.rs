@@ -308,6 +308,82 @@ pub fn greatest_rate(body: Body) -> f64 {
     }
 }
 
+/// The least speed of longitude a body ever has, degrees a day, with a
+/// margin the other way from [`greatest_rate`]'s: the Sun at aphelion,
+/// the Moon at apogee, the mean node's and the mean apogee's steady
+/// drift.
+///
+/// `None` for a body whose longitude can **turn**. A retrograding body
+/// passes through zero speed and may cross a line and come back, so how
+/// long it can stand between two lines has no bound a table can give;
+/// a caller that needs one for such a body has to say what it will
+/// accept. The mean node is here although it moves backwards: it never
+/// turns, so its dwell is bounded like any other steady motion.
+#[must_use]
+pub fn least_rate(body: Body) -> Option<f64> {
+    match body {
+        Body::Sun => Some(0.95),
+        Body::Moon => Some(11.7),
+        Body::MeanNode => Some(0.052),
+        Body::MeanApogee => Some(0.110),
+        // Every planet stations, the true node and the osculating
+        // apogee swing, and a body the port adds later is unknown.
+        _ => None,
+    }
+}
+
+/// The least rate a quantity advances at, degrees a day, or `None` when
+/// it can stand still or turn.
+///
+/// A composite is bounded term by term: a term with a positive
+/// coefficient is slowest at its body's least rate, and one with a
+/// negative coefficient is most negative at its body's *greatest*, which
+/// is a bound whether that body turns or not. The tithi's elongation is
+/// the case that matters — the Moon's least less the Sun's greatest, ten
+/// and a half degrees a day.
+#[must_use]
+pub fn quantity_least_rate(quantity: Quantity) -> Option<f64> {
+    match quantity {
+        Quantity::Longitude(body) => least_rate(body),
+        // A speed's own rate of change is not in this table.
+        Quantity::Speed(_) => None,
+        Quantity::Composite {
+            a,
+            first,
+            b,
+            second,
+        } => {
+            let slowest = |coefficient: f64, body: Body| -> Option<f64> {
+                if coefficient > 0.0 {
+                    least_rate(body).map(|rate| coefficient * rate)
+                } else {
+                    Some(coefficient * greatest_rate(body))
+                }
+            };
+            let total = slowest(a, first)? + slowest(b, second)?;
+            (total > 0.0).then_some(total)
+        }
+    }
+}
+
+/// The longest a quantity can stand between two lines of a lattice,
+/// days: the lattice's spacing at the quantity's least rate.
+///
+/// The companion of the rule that sizes a search's *step*. The step is
+/// sized by how fast the quantity can move, so that no line is passed
+/// twice between two samples; this is sized by how slowly it can move,
+/// so that a caller searching `[from - dwell, to + dwell]` sees every
+/// span touching `[from, to]` with both its own bounds rather than the
+/// window's.
+///
+/// `None` when the quantity can stand still or turn
+/// ([`quantity_least_rate`]); such a caller chooses a reach and lives
+/// with the truncation past it.
+#[must_use]
+pub fn longest_dwell_days(quantity: Quantity, lattice: &Lattice) -> Option<f64> {
+    quantity_least_rate(quantity).map(|rate| spacing_deg(lattice) / rate)
+}
+
 /// Which way a station turns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -464,6 +540,26 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
             let rate = quantity_rate_deg_per_day(self.quantity);
             (spacing_deg(&self.lattice) / rate * 0.5).min(STEP_CAP_DAYS)
         })
+    }
+
+    /// The longest a value can stand between two lattice lines, days:
+    /// the lattice's spacing at the quantity's least rate.
+    ///
+    /// This is [`Search::step_days`]'s companion, and it answers the
+    /// other question a caller has about a window. The step is sized by
+    /// how *fast* the quantity can move, so that no line is passed twice
+    /// between two samples; the reach is sized by how *slowly* it can
+    /// move, so that a span already running when the window opens is
+    /// found rather than truncated. A caller that searches `[from -
+    /// reach, to + reach]` sees every span that touches `[from, to]`
+    /// with both its own bounds.
+    ///
+    /// `None` when the quantity can stand still or turn, whose dwell no
+    /// table bounds ([`quantity_least_rate`]); such a caller chooses a
+    /// reach and lives with the truncation past it.
+    #[must_use]
+    pub fn longest_dwell_days(&self) -> Option<f64> {
+        longest_dwell_days(self.quantity, &self.lattice)
     }
 
     fn check(&self) -> Result<(), Error> {
@@ -708,6 +804,7 @@ mod tests {
     #![allow(
         clippy::panic,
         clippy::unwrap_used,
+        clippy::expect_used,
         clippy::float_cmp,
         clippy::indexing_slicing,
         reason = "tests fail by panicking, compare chosen constants and read small lists"
@@ -930,6 +1027,79 @@ mod tests {
         assert_eq!(
             search.next_within(J2000, 0.0).unwrap_err().field(),
             Some("window_days")
+        );
+    }
+
+    #[test]
+    fn a_body_that_never_turns_has_a_least_rate_and_one_that_can_does_not() {
+        assert!(super::least_rate(Body::Sun).is_some());
+        assert!(super::least_rate(Body::Moon).is_some());
+        assert!(
+            super::least_rate(Body::MeanNode).is_some(),
+            "it moves backwards, but it never turns"
+        );
+        for turns in [Body::Mercury, Body::Mars, Body::Pluto, Body::TrueNode] {
+            assert!(super::least_rate(turns).is_none(), "{turns:?}");
+        }
+    }
+
+    #[test]
+    fn the_least_rate_is_under_the_greatest_for_every_body_that_has_one() {
+        for body in [Body::Sun, Body::Moon, Body::MeanNode, Body::MeanApogee] {
+            let least = super::least_rate(body).expect("a body that never turns");
+            assert!(
+                least > 0.0 && least < super::greatest_rate(body),
+                "{body:?}: {least}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_sign_takes_the_sun_a_month_and_the_moon_two_and_a_half_days() {
+        let sun = super::longest_dwell_days(Quantity::Longitude(Body::Sun), &Lattice::SIGNS)
+            .expect("the Sun never turns");
+        let moon = super::longest_dwell_days(Quantity::Longitude(Body::Moon), &Lattice::SIGNS)
+            .expect("the Moon never turns");
+        assert!((31.0..32.0).contains(&sun), "{sun}");
+        assert!((2.5..2.7).contains(&moon), "{moon}");
+        assert!(
+            super::longest_dwell_days(Quantity::Longitude(Body::Mars), &Lattice::SIGNS).is_none(),
+            "Mars stations, so nothing bounds its dwell"
+        );
+    }
+
+    #[test]
+    fn the_elongations_least_rate_is_the_moons_less_the_suns() {
+        // The tithi's quantity: twelve degrees of the Moon less the Sun.
+        // Its slowest is the Moon at apogee against the Sun at perihelion,
+        // and the panchanga's own constant for the longest a limb runs
+        // (a day and a half) has to cover the dwell that follows from it.
+        let elongation = Quantity::Composite {
+            a: 1.0,
+            first: Body::Moon,
+            b: -1.0,
+            second: Body::Sun,
+        };
+        let rate = super::quantity_least_rate(elongation).expect("neither turns");
+        assert!((10.0..11.0).contains(&rate), "{rate}");
+        let dwell = super::longest_dwell_days(elongation, &Lattice::TITHIS).expect("neither turns");
+        assert!(
+            dwell < 1.5,
+            "a day and a half covers the slowest tithi: {dwell}"
+        );
+    }
+
+    #[test]
+    fn a_composite_with_a_body_that_turns_has_no_least_rate() {
+        assert!(
+            super::quantity_least_rate(Quantity::Composite {
+                a: 1.0,
+                first: Body::Mars,
+                b: -1.0,
+                second: Body::Sun,
+            })
+            .is_none(),
+            "the term with the positive coefficient can stand still"
         );
     }
 }

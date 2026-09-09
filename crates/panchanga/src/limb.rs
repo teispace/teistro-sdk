@@ -395,6 +395,27 @@ pub fn signs<S: Longitudes + ?Sized>(
     window: Interval,
     zodiac: Zodiac,
 ) -> Result<Vec<Span<Rashi>>, Error> {
+    signs_within(tropical, body, window, zodiac, None)
+}
+
+/// The signs a body stood in over a window, reaching a chosen distance
+/// either side of it.
+///
+/// [`signs`] with the reach named. `None` takes the default of
+/// [`sign_reach_days`]; a caller that wants a slow body's true span, or
+/// that knows its own bound, gives one in days.
+///
+/// # Errors
+///
+/// As [`signs`], plus `INVALID_ARG` for a reach that is not a positive
+/// finite number of days.
+pub fn signs_within<S: Longitudes + ?Sized>(
+    tropical: &S,
+    body: Body,
+    window: Interval,
+    zodiac: Zodiac,
+    reach_days: Option<f64>,
+) -> Result<Vec<Span<Rashi>>, Error> {
     let source = Sidereal {
         tropical,
         ayanamsha: zodiac.ayanamsha,
@@ -403,12 +424,23 @@ pub fn signs<S: Longitudes + ?Sized>(
         delta_t: zodiac.delta_t,
     };
     let quantity = Quantity::Longitude(body);
-    let from = JulianDay::<Ut1>::literal(window.from.get() - SIGN_SEARCH_DAYS);
-    let to = JulianDay::<Ut1>::literal(window.to.get() + SIGN_SEARCH_DAYS);
-    let events = Search::new(&source, quantity, Lattice::SIGNS).between(from, to)?;
+    let search = Search::new(&source, quantity, Lattice::SIGNS);
+    let reach = match reach_days {
+        Some(given) if given.is_finite() && given > 0.0 => given,
+        Some(given) => {
+            return Err(Error::invalid_arg(format!(
+                "a sign search reaches a positive number of days either side, not {given}"
+            ))
+            .with_field("reach_days"));
+        }
+        None => sign_reach_days(body),
+    };
+    let from = JulianDay::<Ut1>::literal(window.from.get() - reach);
+    let to = JulianDay::<Ut1>::literal(window.to.get() + reach);
+    let events = search.between(from, to)?;
     let found: Vec<f64> = events.iter().map(|event| event.instant.get()).collect();
     let mut out = Vec::new();
-    let edges = sign_edges(&found, window);
+    let edges = sign_edges(&found, window, reach);
     for pair in edges.windows(2) {
         let (Some(start), Some(end)) = (pair.first(), pair.get(1)) else {
             continue;
@@ -427,19 +459,44 @@ pub fn signs<S: Longitudes + ?Sized>(
     Ok(out)
 }
 
-/// How far either side of a window a sign search reaches.
+/// The furthest either side of a window a sign search reaches by
+/// default, days.
 ///
-/// The Sun takes a month to cross a sign and the Moon two and a half
-/// days, so a body's sign can begin well before the window and end well
-/// after it. Forty days covers the Sun; beyond that the span's own bounds
-/// are reported as the search's edge, which is honest rather than wrong,
-/// and no caller of a daily almanac needs a solar sign's exact start.
-const SIGN_SEARCH_DAYS: f64 = 40.0;
+/// A ceiling rather than a reach. A body that can retrograde has no
+/// bound on how long it may stand in one sign — it can cross the line
+/// and come back — so for those this is the distance searched and the
+/// span's own bounds past it are reported as the search's edge, which is
+/// honest rather than wrong; no caller of a daily almanac needs an outer
+/// planet's exact ingress. A body that never turns is searched at its
+/// own reach instead ([`sign_reach_days`]), which for every such body is
+/// nearer than this.
+pub const SIGN_SEARCH_CAP_DAYS: f64 = 40.0;
+
+/// How far either side of a window a sign search reaches for a body.
+///
+/// The longest that body can stand in one sign, from its least rate of
+/// longitude — thirty degrees at the Sun's slowest is thirty-one and a
+/// half days, at the Moon's slowest two and a half — capped at
+/// [`SIGN_SEARCH_CAP_DAYS`], which is also the answer for a body whose
+/// dwell has no bound.
+///
+/// This was one constant for every body, sized for the Sun, and the Moon
+/// was searched at the Sun's reach: eighty-one days of crossings to name
+/// the two signs a day can touch, which measured **44% of an almanac
+/// day's ephemeris calls**
+/// (`07-roadmap/02-plan-performance-and-passthrough.md`, A1).
+#[must_use]
+pub fn sign_reach_days(body: Body) -> f64 {
+    teistro_astro::events::longest_dwell_days(Quantity::Longitude(body), &Lattice::SIGNS)
+        .map_or(SIGN_SEARCH_CAP_DAYS, |dwell| {
+            dwell.min(SIGN_SEARCH_CAP_DAYS)
+        })
+}
 
 /// The instants bounding the sign spans that touch a window.
-fn sign_edges(boundaries: &[f64], window: Interval) -> Vec<f64> {
-    let first = window.from.get() - SIGN_SEARCH_DAYS;
-    let last = window.to.get() + SIGN_SEARCH_DAYS;
+fn sign_edges(boundaries: &[f64], window: Interval, reach: f64) -> Vec<f64> {
+    let first = window.from.get() - reach;
+    let last = window.to.get() + reach;
     let mut edges = Vec::with_capacity(boundaries.len() + 2);
     edges.push(first);
     edges.extend(
@@ -608,9 +665,13 @@ mod tests {
         reason = "tests fail by panicking and index their own fixtures"
     )]
 
-    use super::{LONGEST_SPAN_DAYS, Limb, edges, karana_of};
+    use super::{
+        LONGEST_SPAN_DAYS, Limb, SIGN_SEARCH_CAP_DAYS, edges, karana_of, sign_edges,
+        sign_reach_days,
+    };
     use teistro_core::catalogue::Karana;
     use teistro_core::interval::Interval;
+    use teistro_port_ephemeris::Body;
 
     #[test]
     fn the_month_opens_with_kimstughna_and_closes_with_naga() {
@@ -673,5 +734,61 @@ mod tests {
         assert_eq!(Limb::Yoga.divisions(), 27);
         assert!((Limb::Tithi.lattice().step_deg - 12.0).abs() < f64::EPSILON);
         assert!((Limb::Karana.lattice().step_deg - 6.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn the_sign_reach_follows_the_body() {
+        // Thirty degrees at the body's slowest. The Sun's month in a sign
+        // is what the one constant was sized for; the Moon's two and a
+        // half days is what it was costing.
+        let sun = sign_reach_days(Body::Sun);
+        let moon = sign_reach_days(Body::Moon);
+        assert!(
+            (31.0..32.0).contains(&sun),
+            "the Sun stands in a sign about a month: {sun}"
+        );
+        assert!(
+            (2.5..2.7).contains(&moon),
+            "the Moon two and a half days: {moon}"
+        );
+        assert!(
+            moon * 12.0 < sun,
+            "which is more than twelve times nearer: {sun} against {moon}"
+        );
+    }
+
+    #[test]
+    fn a_body_that_can_turn_is_searched_to_the_cap() {
+        // A retrograding body can cross a line and come back, so nothing
+        // bounds its dwell and the cap and its truncation stand.
+        for body in [Body::Mars, Body::Saturn, Body::TrueNode] {
+            assert!(
+                (sign_reach_days(body) - SIGN_SEARCH_CAP_DAYS).abs() < f64::EPSILON,
+                "{body:?}"
+            );
+        }
+        // The mean node never turns, so it is bounded — and the bound is
+        // a year and a half, which the cap then brings back to itself.
+        assert!(
+            (sign_reach_days(Body::MeanNode) - SIGN_SEARCH_CAP_DAYS).abs() < f64::EPSILON,
+            "capped, not unbounded"
+        );
+    }
+
+    #[test]
+    fn the_sign_edges_close_at_the_reach_they_were_searched_to() {
+        let window = Interval::literal(100.0, 101.0);
+        // One crossing inside the reach either side, and one far outside.
+        let found = [98.0, 100.4, 110.0];
+        assert_eq!(
+            sign_edges(&found, window, 2.5),
+            vec![97.5, 98.0, 100.4, 103.5],
+            "the sentinels sit at the reach and the far crossing is dropped"
+        );
+        // The same crossings, searched to forty days, keep the far one.
+        assert_eq!(
+            sign_edges(&found, window, SIGN_SEARCH_CAP_DAYS),
+            vec![60.0, 98.0, 100.4, 110.0, 141.0]
+        );
     }
 }

@@ -333,9 +333,20 @@ provider's DUT1).
    sizes the reach was chosen for the Sun, which takes a month to cross
    a sign where the Moon takes 2.3 days. So A1 is now three parts in
    order: the reach follows the body, the uniform scan is gridded, and a
-   range hoists what its days share. The first moves published instants
-   within the search's own tolerance (1e-7 of a day), so it lands with
-   the golden vectors and the hash matrix regenerated beside it.
+   range hoists what its days share.
+
+   **A1a is built.** `events::least_rate` is `greatest_rate`'s
+   companion, `longest_dwell_days` turns the pair into the longest a
+   value can stand between two lattice lines, and the sign search asks
+   for that instead of a constant: 31.579 days for the Sun, 2.564 for
+   the Moon, and the old constant kept as a cap for bodies that can
+   retrograde, whose dwell nothing bounds. An almanac day fell from
+   **1228 calls to 841** and fifty days from 60 631 to 41 492. Nothing
+   published moved: every generated page regenerates identically and the
+   determinism digest is the same to the bit, with the span bounds
+   themselves moving at most 2.8 ms (the Sun) and 0.04 ms (the Moon)
+   against a tolerance of 8.6. `limb::signs_within` lets a caller name
+   another reach. **The next part is A1b.**
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an
