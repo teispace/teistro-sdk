@@ -3192,6 +3192,65 @@ impl Context {
         Ok(take_blob(&mut out_blob))
     }
 
+    /// What the context's engine says it offers beyond this library's own
+    /// operations: its manifest, as the engine wrote it.
+    ///
+    /// The document names each operation, its parameters and the role of
+    /// each — which of them a caller supplies and which the engine fills.
+    /// Read it once and cache it against the engine's version; it changes
+    /// when the engine does and not when this library does.
+    ///
+    /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+    /// engine describes nothing of its own.
+    #[napi]
+    pub fn ephemeris_manifest(&self, env: Env) -> Result<String> {
+        let mut out_json = ffi::strings::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status =
+            unsafe { ffi::ephemeris::ts_ephemeris_manifest(self.handle, &raw mut out_json) };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// Calls one of the engine's own operations by the name its manifest
+    /// gives.
+    ///
+    /// `arguments_json` is a JSON object keyed by the parameter names the
+    /// manifest names, holding the ones it marks as a caller's to supply.
+    /// The answer is the engine's own JSON, unread by this library.
+    ///
+    /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
+    /// engine describes nothing of its own or names no such operation, and
+    /// `PROVIDER` when the engine itself refuses.
+    #[napi]
+    pub fn ephemeris_call(
+        &self,
+        env: Env,
+        function: String,
+        arguments_json: String,
+    ) -> Result<String> {
+        let function =
+            std::ffi::CString::new(function).map_err(|e| Error::from_reason(e.to_string()))?;
+        let arguments_json = std::ffi::CString::new(arguments_json)
+            .map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::strings::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::ephemeris::ts_ephemeris_call(
+                self.handle,
+                function.as_ptr(),
+                arguments_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Frees the handle's native memory now, rather than when the
     /// collector gets to it. Calling it twice is allowed, and a call on a
     /// disposed handle is refused with `INVALID_ARG`.

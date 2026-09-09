@@ -518,6 +518,60 @@ fn gate_runners(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Every boundary module the description is read from.
+///
+/// The API description is extracted from a hand-written list of sources
+/// ([`teistro_idl::sdk::SOURCES`]), and the C header and all three
+/// bindings are generated from that description. A module of the `ffi`
+/// crate that holds entry points and is **not** on that list is
+/// therefore invisible: it compiles, it exports its symbols, and no
+/// binding has ever heard of it. Nothing compared the list against the
+/// crate, which is `gate-has-a-runner` a third time — an artefact that
+/// exists and nothing reads — so this does.
+///
+/// A module with no `#[unsafe(no_mangle)]` entry point has nothing to
+/// describe and is not expected on the list.
+fn boundary_sources(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "boundary-is-described";
+    let listed: std::collections::BTreeSet<&str> =
+        teistro_idl::sdk::SOURCES.iter().copied().collect();
+    for path in sources(&root.join("crates/ffi/src")) {
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        if !text.contains("#[unsafe(no_mangle)]") {
+            continue;
+        }
+        let shown = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string()
+            .replace('\\', "/");
+        if listed.contains(shown.as_str()) {
+            continue;
+        }
+        let excused = text
+            .lines()
+            .take_while(|line| line.starts_with("//!") || line.trim().is_empty())
+            .any(|line| line.contains(&format!("lint: {RULE}")));
+        let finding = Finding {
+            file: shown,
+            line: 1,
+            text: String::from(
+                "holds entry points and is not in `teistro_idl::sdk::SOURCES`, \
+                 so no binding has heard of them",
+            ),
+            rule: RULE,
+        };
+        if excused {
+            outcome.allowed.push(finding);
+        } else {
+            outcome.failures.push(finding);
+        }
+    }
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -542,6 +596,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     unsafe_inventory(root, &mut outcome);
     exact_classification(root, &mut outcome);
     knob_readers(root, &mut outcome);
+    boundary_sources(root, &mut outcome);
     workflows_parse(root, &mut outcome);
     gate_runners(root, &mut outcome);
 
@@ -552,6 +607,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "unsafe-inventory",
         "exact-classification",
         "knob-has-a-reader",
+        "boundary-is-described",
         "workflow-parses",
         "gate-has-a-runner",
     ] {

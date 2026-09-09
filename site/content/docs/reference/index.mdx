@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 41 entry points over 27 structs and 91 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 43 entry points over 27 structs and 91 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -110,6 +110,13 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 |---|---|
 | [`ts_panchanga_days`](panchanga/ts_panchanga_days) | Founds the almanac of every day in a range at one place and answers with its blob: the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what each day is said to be. |
 
+### Ephemeris
+
+| entry point | what it does |
+|---|---|
+| [`ts_ephemeris_manifest`](ephemeris/ts_ephemeris_manifest) | What the context's engine says it offers beyond this library's own operations: its manifest, as the engine wrote it. |
+| [`ts_ephemeris_call`](ephemeris/ts_ephemeris_call) | Calls one of the engine's own operations by the name its manifest gives. |
+
 ## The rules every entry point follows
 
 - Every struct begins with `struct_size`, which the caller sets to `sizeof` before the call: a library built from a newer description can tell how much of the struct the caller knows about.
@@ -136,3 +143,4 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/intl.rs`
 - `crates/ffi/src/positions.rs`
 - `crates/ffi/src/panchanga.rs`
+- `crates/ffi/src/ephemeris.rs`

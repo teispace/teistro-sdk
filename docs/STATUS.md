@@ -451,8 +451,22 @@ provider's DUT1).
    The measured page's oldest falsified claim — *a consumer can reach
    what their engine offers beyond the port* — now **holds**.
 
-   **The next step is B2**, the dynamic proxy in the three bindings, and
-   then the Teimeris adapter's own generated dispatch.
+   **B2's boundary is built.** `ts_ephemeris_manifest` and
+   `ts_ephemeris_call` cross the C ABI; adding one module to the boundary
+   put both into the C header, the Dart and Python declarations, the Node
+   napi glue and the generated reference **without any of them being
+   edited**. On the way it found a third instance of the same class of
+   hole: a module of the `ffi` crate that holds entry points and is not
+   in `teistro_idl::sdk::SOURCES` compiles, exports its symbols, and no
+   binding has heard of it — the first version of this change was exactly
+   that. `boundary-is-described` is the rule that now catches it, and it
+   was proved by unregistering the module and watching it fail.
+
+   **The next step is B2's proxy** — `__getattr__` in Python, a `Proxy`
+   in Node, `noSuchMethod` in Dart, each over those two entry points, so
+   that `call("tm_eclipse_when", …)` reads as `engine.tm_eclipse_when(…)`.
+   A binding that added a *list* of operations would undo the point, so
+   none may. Then the Teimeris adapter's own generated dispatch.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an
