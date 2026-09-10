@@ -209,13 +209,29 @@ topocentric centre needs the observer's position and the body's
 geocentric one and nothing of the built-in ephemeris, so it was
 separable and was built where it was needed
 (`03-design/topocentric-measured.md`, `astro::topocentric`). The SDK now
-produces a topocentric position over any provider. What the exit still
-waits on is the comparison itself: nothing yet compares a *computed*
-longitude against those charts, because
-`chart/tests/baseline_bhavas.rs` reads the recorded longitudes and
-checks the bhava they fall in, so it measures the placement rule rather
-than the position. That comparison needs an adapter, so it is the
-conformance harness's work.
+produces a topocentric position over any provider. **The exit is met.** What it
+waited on was the comparison itself — nothing compared a *computed*
+longitude against those charts, because `chart/tests/baseline_bhavas.rs`
+reads the recorded longitudes and checks which bhava they fall in, which
+measures the placement rule and not the position, and a computed one
+needs an adapter. That comparison is
+`adapters/ephemeris-teimeris/rust/tests/baseline_positions.rs`: for each
+of the 55 charts it takes the instant and the place the fixture records,
+asks the SDK for every graha through the Teimeris adapter in the frame
+the fixture was recorded in, and compares longitude, latitude, speed and
+distance with what was recorded. **605 positions, every one exact** —
+worst sidereal longitude, tropical longitude, latitude and distance
+0.000000, worst speed 0.000026″/day on Pluto. The topocentric step's
+open 0.084″ on the Moon is therefore below what this corpus can see.
+
+Two things the harness had to read rather than assume, both of which
+read as agreement when got wrong. The `outer` block records
+`"frame": "geocentric"` while the chart is topocentric, so those three
+are a second request from a second centre; compared in the chart's frame
+they differ by exactly the parallax, 8.79″ over the distance in
+astronomical units. And a comparison that runs on nothing prints exactly
+like perfect agreement, so every count is asserted as well as every
+bound.
 
 **A standing brief runs across the remaining phases**, set 2026-09-09 and
 planned in

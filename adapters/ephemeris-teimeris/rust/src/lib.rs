@@ -282,6 +282,12 @@ impl TeimerisProvider {
                 .with(Overrides::RISE_SET),
             ayanamshas,
             deterministic: true,
+            // Teimeris describes 161 functions of its own in
+            // `tools/idl/teimeris.idl`, and answering the port's
+            // `native_manifest` and `native_call` from it is this
+            // adapter's remaining work; until it does, it must not claim
+            // the route.
+            ..Capabilities::default()
         };
         Ok(TeimerisProvider {
             context: Mutex::new(context),

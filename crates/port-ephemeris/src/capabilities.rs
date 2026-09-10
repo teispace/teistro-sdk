@@ -327,6 +327,19 @@ impl Astronomy {
 }
 
 /// What a provider declares about itself.
+/// Adapters live outside this workspace (ADR-0019) and construct this,
+/// so every field the port adds is a breaking change to code CI never
+/// builds — `Capabilities::native` was exactly that, and the Teimeris
+/// adapter stopped compiling with nothing to say so. `Default` is what
+/// makes the next one additive: an adapter writes what it knows and ends
+/// with `..Capabilities::default()`, and a field added later takes its
+/// default there rather than a compile error.
+///
+/// The default is the least an adapter can claim — no bodies, no
+/// overrides, the canonical frame, not deterministic — so a field
+/// forgotten is a capability *not* claimed, which the SDK answers by
+/// doing the work itself rather than by trusting an adapter that never
+/// said it could.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Capabilities {
     /// Who.
@@ -358,6 +371,33 @@ pub struct Capabilities {
     /// Declared rather than discovered, so a caller asks once instead of
     /// finding out by a failing call.
     pub native: bool,
+}
+
+impl Default for Capabilities {
+    fn default() -> Capabilities {
+        Capabilities {
+            identity: Identity {
+                name: String::from("unnamed"),
+                version: String::new(),
+                data_version: String::new(),
+                tier: None,
+                data_hashes: Vec::new(),
+            },
+            // The widest range the SDK's own time layer covers, so a
+            // provider that does not say is not silently narrowed.
+            jd_range: (f64::NEG_INFINITY, f64::INFINITY),
+            bodies: Vec::new(),
+            native_frame: Frame::CANONICAL,
+            astronomy: Astronomy::Modern,
+            speeds: false,
+            speed_model: SpeedModel::Derivative,
+            distance_unit: DistanceUnit::AstronomicalUnits,
+            overrides: Overrides::NONE,
+            ayanamshas: Vec::new(),
+            deterministic: false,
+            native: false,
+        }
+    }
 }
 
 impl Capabilities {
