@@ -149,6 +149,7 @@ mod surface;
 mod time;
 mod topocentric;
 mod vargas;
+mod vsop;
 
 use std::env;
 use std::fs;
@@ -195,6 +196,7 @@ fn main() {
         Some("houses") => houses::generate(&repo_root()),
         Some("check-absence") => absence::check_generated(&repo_root()),
         Some("absence") => absence::generate(&repo_root()),
+        Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-almanac") => almanac::check_generated(&repo_root()),
         Some("check-lunisolar") => lunisolar::check_generated(&repo_root()),
         Some("check-topocentric") => topocentric::check_generated(&repo_root()),
@@ -262,7 +264,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-absence | absence | check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-almanac | almanac | check-lunisolar | lunisolar | check-topocentric | topocentric | check-batching | batching | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-absence | absence | vsop [DIR] | check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-almanac | almanac | check-lunisolar | lunisolar | check-topocentric | topocentric | check-batching | batching | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }
