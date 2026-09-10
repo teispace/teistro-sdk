@@ -31,6 +31,7 @@ and links its ADR. Status key: `open`, `decided`, `deferred`.
 | Q21 | Teistro Intl for consumer applications | yes, the same engine, CLI and typed accessors | ADR-0010 |
 | Q22 | eclipses and the full star catalogue | v1.x; anchor stars and yogataras in v1.0 | ADR-0013 |
 | Q23 | provider override policy default | `prefer-native`, with `sdk-only` selectable, both gated | ADR-0013 |
+| Q24 | contact for conduct and security reports | `support@teispace.com` for both, with GitHub's private channel kept beside it | `SECURITY.md`, `CODE_OF_CONDUCT.md` |
 | Q25 | tooling language | everything we author is Rust: repository tasks as `cargo xtask`, consumer tools as Rust binaries, generators in Rust; no Python, `just` or shell scripts; only the docs site, the bindings' own-language layers and workflow YAML are not Rust | ADR-0014 |
 | Q26 | exact classification and periods | `f64` astronomy stays; angles as canonical nanoarcsecond integers; classification by exact integer arithmetic with half-open boundaries; dasha spans as exact rationals; classify from what is serialised | ADR-0016 |
 | Q27 | kernel and table | one kernel per family, systems as cited rows, falsified before code, whole-table invariants, a lazy dasha cursor; a system needing its own code is a kernel defect | ADR-0017, `03-design/` |
@@ -48,16 +49,18 @@ large-scale, professional, open-source, market-ready product from the
 first commit. Confirmed 2026-09-04: every API and signature in every
 binding is type safe, offers suggestions, and is robust (Q33).
 
-## Q24. Contact addresses for conduct and security reports: `open`
+## Q24. Contact addresses for conduct and security reports: `decided`
 
-The code of conduct and the security policy currently direct reports to
-GitHub's private channels (private vulnerability reporting; the
-maintainers via the repository). A dedicated address (for example a
-Teispace conduct or security mailbox) would be the usual practice.
+**support@teispace.com**, for both, given by the maintainer on
+2026-09-10. One address rather than a `security@` and a `conduct@`: two
+mailboxes only help when different people read them, and here they would
+not, while a reporter who has to choose between them may choose wrongly
+and a report may sit unread.
 
-Recommendation: create `security@` and `conduct@` mailboxes on the
-Teispace domain and add them to `SECURITY.md` and `CODE_OF_CONDUCT.md`;
-until then the GitHub channels stand.
+`SECURITY.md` and `CODE_OF_CONDUCT.md` name it, and both keep GitHub's
+private channel beside it — a reporter who would rather stay on GitHub,
+or who does not want to write from an identifiable address, should not
+have to.
 
 ## Q35. An MCP server, so an agent can compute rather than guess: `deferred`
 
