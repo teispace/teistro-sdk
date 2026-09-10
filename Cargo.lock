@@ -1310,6 +1310,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-ephemeris-builtin"
+version = "0.0.0"
+
+[[package]]
 name = "teistro-ephemeris-kit"
 version = "0.0.0"
 dependencies = [
@@ -1835,6 +1839,7 @@ dependencies = [
  "teistro-astro",
  "teistro-calendar",
  "teistro-core",
+ "teistro-ephemeris-builtin",
  "teistro-ffi",
  "teistro-idl",
  "teistro-intl",

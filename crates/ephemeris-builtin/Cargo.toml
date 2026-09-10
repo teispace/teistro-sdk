@@ -1,0 +1,28 @@
+[package]
+name = "teistro-ephemeris-builtin"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's built-in analytic ephemeris: the published planetary and lunar series, so a chart computes with no data files, no network and no licence beyond the SDK's own"
+readme = "README.md"
+keywords = ["astrology", "ephemeris", "vsop87", "astronomy"]
+categories = ["science", "aerospace"]
+# The name is held on crates.io — a 0.0.0 placeholder published
+# 2026-09-10 — and this crate publishes for real at the first
+# release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[features]
+# Reading the published source files is the generator's job, not the
+# shipped crate's: a consumer receives truncated tables and never a
+# parser for a 5.7 MB text file. `cargo xtask vsop` and the adapter's
+# floor measurement turn it on; nothing else does.
+ingest = []
+
+[dev-dependencies]
+
+[lints]
+workspace = true

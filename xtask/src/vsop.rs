@@ -72,64 +72,21 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
+use teistro_ephemeris_builtin::ingest::{BODIES, BodySeries, load};
+use teistro_ephemeris_builtin::series::{J2000, millennia};
+
 use crate::generated::{Output, write};
 use crate::measure::{Claim, count, fill, spelled, table, verdict_of};
 
 const PAGE: &str = "docs/03-design/builtin-ephemeris-measured.md";
 
-/// Julian days in the millennium VSOP87's time argument counts.
-const DAYS_PER_MILLENNIUM: f64 = 365_250.0;
-
-/// The epoch the time argument is measured from.
-const J2000: f64 = 2_451_545.0;
+/// The engine-derived record of what the theory itself costs, emitted by
+/// `teistro-ephemeris-teimeris-vsop-floor`. The number, not the code that
+/// produced it: the page reads this and needs no engine to regenerate.
+const FLOOR: &str = "fixtures/teimeris/vsop87-floor.json";
 
 /// Radians to arcseconds.
 const ARCSEC_PER_RAD: f64 = 206_264.806_247_096_36;
-
-/// A term of a coordinate's series: `A·cos(B + C·t)`, scaled by `t^power`.
-#[derive(Clone, Copy, Debug)]
-struct Term {
-    amplitude: f64,
-    phase: f64,
-    frequency: f64,
-    power: u8,
-}
-
-impl Term {
-    /// The term's contribution at a time in Julian millennia from J2000.
-    fn at(self, t: f64) -> f64 {
-        self.amplitude * (self.phase + self.frequency * t).cos() * t.powi(i32::from(self.power))
-    }
-}
-
-/// One body's three coordinate series, each already flattened across the
-/// powers of `t`, because a term carries its own power.
-#[derive(Clone, Debug, Default)]
-struct BodySeries {
-    /// X, Y and Z, in the heliocentric ecliptic frame of J2000.
-    coordinates: [Vec<Term>; 3],
-}
-
-impl BodySeries {
-    fn terms(&self) -> usize {
-        self.coordinates.iter().map(Vec::len).sum()
-    }
-}
-
-/// The eight bodies VSOP87A carries, in the order the files index them.
-/// Every one is loaded and every one is shipped, the Earth included: it
-/// is subtracted from the other seven and it is what the Sun is computed
-/// from.
-const BODIES: [(&str, &str); 8] = [
-    ("Mercury", "mer"),
-    ("Venus", "ven"),
-    ("Earth", "ear"),
-    ("Mars", "mar"),
-    ("Jupiter", "jup"),
-    ("Saturn", "sat"),
-    ("Uranus", "ura"),
-    ("Neptune", "nep"),
-];
 
 /// What the sweep reports an error for. The Earth is not among them:
 /// its geocentric direction is the zero vector, which is not a reading.
@@ -165,61 +122,6 @@ fn bucket_of(amplitude: f64) -> usize {
         .iter()
         .position(|&threshold| magnitude >= threshold)
         .unwrap_or(THRESHOLDS.len() - 1)
-}
-
-/// Parses one VSOP87 file by the columns its own documentation fixes
-/// (`1x,4i1,i5,12i3,f15.11,2f18.11,f14.11,f20.11`), taking the amplitude,
-/// the phase and the frequency and ignoring the equivalent sine and
-/// cosine pair, which the file also carries.
-///
-/// The columns are fixed rather than split on whitespace because the
-/// twelve mean-longitude multipliers are `i3` fields that touch when one
-/// of them reaches `-10`.
-fn parse(text: &str) -> Result<BodySeries, String> {
-    let mut series = BodySeries::default();
-    for (number, line) in text.lines().enumerate() {
-        if line.trim_start().starts_with("VSOP87") {
-            continue;
-        }
-        if line.len() < 131 {
-            return Err(format!(
-                "line {} is {} bytes, too short",
-                number + 1,
-                line.len()
-            ));
-        }
-        let coordinate = line[3..4]
-            .parse::<usize>()
-            .map_err(|err| format!("line {}: coordinate: {err}", number + 1))?;
-        let power = line[4..5]
-            .parse::<u8>()
-            .map_err(|err| format!("line {}: power: {err}", number + 1))?;
-        let number_at = |range: std::ops::Range<usize>, what: &str| {
-            line[range]
-                .trim()
-                .parse::<f64>()
-                .map_err(|err| format!("line {}: {what}: {err}", number + 1))
-        };
-        let amplitude = number_at(79..97, "amplitude")?;
-        let phase = number_at(97..111, "phase")?;
-        let frequency = number_at(111..131, "frequency")?;
-        let index = coordinate
-            .checked_sub(1)
-            .filter(|index| *index < 3)
-            .ok_or_else(|| {
-                format!(
-                    "line {}: coordinate {coordinate} is not 1, 2 or 3",
-                    number + 1
-                )
-            })?;
-        series.coordinates[index].push(Term {
-            amplitude,
-            phase,
-            frequency,
-            power,
-        });
-    }
-    Ok(series)
 }
 
 /// Every body's coordinates at one instant, at every threshold at once:
@@ -303,7 +205,7 @@ fn sweep(
     let mut samples = 0usize;
     let mut jd = from;
     while jd <= to {
-        let t = (jd - J2000) / DAYS_PER_MILLENNIUM;
+        let t = millennia(jd);
         let earth = coordinates_at(&series["Earth"], t);
         for row in &mut rows {
             let body = if row.body == "Sun" {
@@ -368,19 +270,26 @@ fn source_dir(argument: Option<&str>) -> Result<PathBuf, String> {
         })
 }
 
-/// Reads every body's series from the source directory.
-fn load(dir: &Path) -> Result<BTreeMap<&'static str, BodySeries>, String> {
-    let mut out = BTreeMap::new();
-    for (name, suffix) in BODIES {
-        let path = dir.join(format!("VSOP87A.{suffix}"));
-        let text = std::fs::read_to_string(&path)
-            .map_err(|err| format!("cannot read {}: {err}", path.display()))?;
-        out.insert(
-            name,
-            parse(&text).map_err(|err| format!("{}: {err}", path.display()))?,
-        );
-    }
-    Ok(out)
+/// One body's row of the recorded floor.
+#[derive(Debug, serde::Deserialize)]
+struct FloorRow {
+    body: String,
+    scatter_arcsec: f64,
+    worst_arcsec: f64,
+    radius_relative: f64,
+    at_1800_arcsec: f64,
+    at_2100_arcsec: f64,
+    at_2400_arcsec: f64,
+}
+
+/// The recorded floor table.
+#[derive(Debug, serde::Deserialize)]
+struct Floor {
+    frame: String,
+    step_days: f64,
+    samples: usize,
+    engine_profile: String,
+    rows: Vec<FloorRow>,
 }
 
 /// Runs the sweep and writes the page.
@@ -392,17 +301,20 @@ pub(crate) fn generate(root: &Path, argument: Option<&str>) -> i32 {
             return 1;
         }
     };
-    let series = match load(&dir) {
+    let series = match load(&dir).map_err(|e| e.to_string()) {
         Ok(series) => series,
         Err(message) => {
             eprintln!("{message}");
             return 1;
         }
     };
-    write(root, &[Output::new(PAGE, page(&series))])
+    let floor = std::fs::read_to_string(root.join(FLOOR))
+        .ok()
+        .and_then(|text| serde_json::from_str::<Floor>(&text).ok());
+    write(root, &[Output::new(PAGE, page(&series, floor.as_ref()))])
 }
 
-fn page(series: &BTreeMap<&'static str, BodySeries>) -> String {
+fn page(series: &BTreeMap<&'static str, BodySeries>, floor: Option<&Floor>) -> String {
     // Thirty days over the tier's own range: dense enough that no body
     // slips a whole synodic cycle between samples, cheap enough to run.
     const FROM: f64 = 2_378_497.0; // 1800-01-01
@@ -478,32 +390,91 @@ fn page(series: &BTreeMap<&'static str, BodySeries>) -> String {
         let _ = writeln!(out, " {terms} | {} |", bytes_of(terms * BYTES_PER_TERM));
     }
 
+    if let Some(floor) = floor {
+        let _ = writeln!(out, "\n## The theory's own floor\n");
+        let _ = writeln!(
+            out,
+            "Every figure above is truncation against the whole theory, so the last row is zero by construction. This is what the whole theory itself costs, measured against Teimeris in the frame VSOP87 is stated in — `{}` — at {} instants {:.0} days apart, on the engine's `{}` profile. Recorded by `teistro-ephemeris-teimeris-vsop-floor` into `{FLOOR}`; the number, not the code that produced it.\n",
+            floor.frame,
+            count(floor.samples),
+            floor.step_days,
+            floor.engine_profile
+        );
+        let _ = writeln!(
+            out,
+            "| body | scatter ″ | worst ″ | radius (relative) | 1800 ″ | 2100 ″ | 2400 ″ |"
+        );
+        let _ = writeln!(out, "|---|---:|---:|---:|---:|---:|---:|");
+        for row in &floor.rows {
+            let _ = writeln!(
+                out,
+                "| {} | {} | {} | {:.1e} | {} | {} | {} |",
+                row.body,
+                arcsec(row.scatter_arcsec),
+                arcsec(row.worst_arcsec),
+                row.radius_relative,
+                arcsec(row.at_1800_arcsec),
+                arcsec(row.at_2100_arcsec),
+                arcsec(row.at_2400_arcsec),
+            );
+        }
+        let worst_inner = floor
+            .rows
+            .iter()
+            .filter(|row| !matches!(row.body.as_str(), "Uranus" | "Neptune"))
+            .map(|row| row.worst_arcsec)
+            .fold(0.0_f64, f64::max);
+        let worst_outer = floor
+            .rows
+            .iter()
+            .filter(|row| matches!(row.body.as_str(), "Uranus" | "Neptune"))
+            .map(|row| row.worst_arcsec)
+            .fold(0.0_f64, f64::max);
+        let _ = writeln!(
+            out,
+            "\nVSOP87's own documentation states a precision of one arcsecond for every planet over this span, and a relative precision per body that puts Neptune near a tenth of an arcsecond. **Measured against a modern ephemeris it does not hold for the outer two.** Mercury to Saturn stay inside {} arcseconds; Uranus and Neptune reach {}.\n",
+            arcsec(worst_inner),
+            arcsec(worst_outer)
+        );
+        let _ = writeln!(
+            out,
+            "The two diagnostics say what kind of difference it is. The heliocentric **radius** agrees to about one part in ten million for the six inner bodies and to one part in a hundred thousand for Uranus, so the orbit is not what disagrees — the body sits at a different place along it. And the **trend** grows from 1800 towards 2400 for every body rather than staying flat, which is a fit drifting from its epoch and not a rotation between frames. VSOP87 was fitted to DE200, published in 1981; the engine answers from a modern one.\n"
+        );
+        let _ = writeln!(
+            out,
+            "**This falsifies part of the plan.** `standard` claims one arcsecond for the planets, and no truncation can deliver that for Uranus or Neptune: the theory is the limit, not the table. Either `standard` states a bound per body, or the outer planets come from the `reference` tier's refit, which ADR-0021 already sizes at 0.02 arcseconds for them. The choice belongs in the design page; what this page establishes is that the single-number claim is not available.\n"
+        );
+    }
+
     let _ = writeln!(out, "\n## What the claims measure to\n");
-    let claims = claims_from(&rows, series);
+    let claims = claims_from(&rows, series, floor);
     let _ = writeln!(out, "{}", table(&claims));
 
-    let _ = writeln!(out, "\n## What this does not measure, and why it matters\n");
+    let _ = writeln!(out, "\n## What this does not measure\n");
+    if floor.is_none() {
+        let _ = writeln!(
+            out,
+            "**The theory's own floor.** The last column of the sweep is the whole theory compared against itself, so it reads zero by construction, while VSOP87's departure from reality is not zero. Until `fixtures/teimeris/vsop87-floor.json` is recorded, no threshold on the ladder can be chosen: a truncation far under the floor is paying bytes for nothing, and this page cannot see which one that is.\n"
+        );
+    } else {
+        let _ = writeln!(
+            out,
+            "**Which threshold `standard` should take** is now decidable and is not decided here. The floor above says what the theory costs; the sweep says what each truncation costs; the design page picks the pair. What this page refuses to do is pick it in passing.\n"
+        );
+    }
     let _ = writeln!(
         out,
-        "**This is truncation error, not accuracy.** The last column is the whole theory compared against itself, so it reads zero by construction. VSOP87's own departure from reality is not zero: its authors put it near an arcsecond for the inner planets over the span this sweep covers. So the total error a consumer sees is this table's figure **plus** a theory floor this pass cannot see, and at the tight end of the ladder the two are of the same order.\n"
+        "**The Moon.** ELP/MPP02 is a separate ingestion, and the research page says the tiers are chosen by Moon accuracy first, because nakshatra and tithi boundaries are what a consumer feels. Every figure here is planets only, and every tier boundary is provisional until the Moon is measured beside them.\n"
     );
     let _ = writeln!(
         out,
-        "That has a consequence for the tiers. `standard` reaching {} at a threshold of 3e-8 is buying precision below the floor: the threshold above it is a third of the size and still inside the arcsecond the theory itself can promise. **Which of them is the right `standard` cannot be decided from this page.** It needs the floor measured against Teimeris, which is the next pass. Choosing now would be doing by intuition the thing this pass exists to prevent.\n",
-        arcsec(
-            rows.iter()
-                .map(|row| row.worst_arcsec[7])
-                .fold(0.0_f64, f64::max)
-        )
+        "**Any range but 1800 to 2400**, which is `standard`'s own span. The trend column shows the disagreement growing towards 2400 for every body, so a tier claiming a wider range has to be swept over that range rather than inheriting these figures.\n"
     );
     let _ = writeln!(
         out,
-        "**The Moon is not here.** ELP/MPP02 is a separate ingestion, and the research page says the tiers are chosen by Moon accuracy first, because nakshatra and tithi boundaries are what a consumer feels. Every figure above is planets only, and the tier boundaries are provisional until the Moon is measured beside them.\n"
+        "**Pluto, the nodes and the apogees**, which have no VSOP87 series at all: Pluto is fitted from a public-domain kernel and the rest are mean elements (ADR-0021).\n"
     );
-    let _ = writeln!(
-        out,
-        "**The range is 1800 to 2400**, which is `standard`'s own span. VSOP87 is published as valid far wider and its error grows towards the edges, so a tier claiming a wider range has to be swept over that range rather than inheriting this one's figures.\n"
-    );
+
     fill(&out)
 }
 
@@ -530,7 +501,11 @@ fn size_at(series: &BTreeMap<&'static str, BodySeries>, threshold: f64) -> usize
         * BYTES_PER_TERM
 }
 
-fn claims_from(rows: &[Row], series: &BTreeMap<&'static str, BodySeries>) -> Vec<Claim> {
+fn claims_from(
+    rows: &[Row],
+    series: &BTreeMap<&'static str, BodySeries>,
+    floor: Option<&Floor>,
+) -> Vec<Claim> {
     let mut claims = Vec::new();
     for (name, bound, budget, budget_text) in [
         (
@@ -568,6 +543,29 @@ fn claims_from(rows: &[Row], series: &BTreeMap<&'static str, BodySeries>) -> Vec
         verdict_of(whole <= 4 * 1024 * 1024),
         bytes_of(whole),
     ));
+    // Every claim above is about the table. This one is about what a
+    // consumer receives, which is the table's error and the theory's
+    // together, and it is the one that fails.
+    if let Some(floor) = floor {
+        let worst = floor
+            .rows
+            .iter()
+            .map(|row| row.worst_arcsec)
+            .fold(0.0_f64, f64::max);
+        let body = floor
+            .rows
+            .iter()
+            .max_by(|a, b| a.worst_arcsec.total_cmp(&b.worst_arcsec))
+            .map_or("a planet", |row| row.body.as_str());
+        claims.push(Claim::stated(
+            "`standard` holds 1 arcsecond for **every** planet, the theory included",
+            verdict_of(worst <= 1.0),
+            format!(
+                "{body} is {} arcseconds from the engine with every term kept",
+                arcsec(worst)
+            ),
+        ));
+    }
     claims
 }
 
@@ -601,6 +599,8 @@ fn bytes_of(value: usize) -> String {
 
 #[cfg(test)]
 mod tests {
+    use teistro_ephemeris_builtin::series::Term;
+
     use super::*;
 
     /// Every term at or above a threshold, summed the obvious way.
@@ -698,39 +698,6 @@ mod tests {
         assert!(
             (separation_arcsec(x, [2.0, 0.0, 0.0])).abs() < 1e-9,
             "twice as far is the same direction"
-        );
-    }
-
-    /// The parser reads the columns its documentation fixes. The check
-    /// is the file's own redundancy: it carries `S` and `K` beside `A`,
-    /// and `A` is `hypot(S, K)`, so a column read off by one is caught by
-    /// arithmetic rather than by eye.
-    #[test]
-    fn the_parser_reads_the_documented_columns() {
-        let line = " 1310    1  0  0  1  0  0  0  0  0  0  0  0  0 -0.00001522262     \
-                    0.99982928833     0.99982928844 1.75348568475    6283.07584999140 ";
-        let text = format!(" VSOP87 VERSION A1    EARTH     VARIABLE 1 (XYZ)\n{line}");
-        let series = parse(&text).expect("the line is well formed");
-        assert_eq!(series.coordinates[0].len(), 1, "one X term");
-        let term = series.coordinates[0][0];
-        let sine = -0.000_015_222_62_f64;
-        let cosine = 0.999_829_288_33_f64;
-        assert!(
-            (term.amplitude - sine.hypot(cosine)).abs() < 1e-11,
-            "the amplitude column is A = hypot(S, K): {} against {}",
-            term.amplitude,
-            sine.hypot(cosine)
-        );
-        assert!((term.phase - 1.753_485_684_75).abs() < 1e-11);
-        assert!((term.frequency - 6_283.075_849_991_40).abs() < 1e-9);
-        assert_eq!(term.power, 0);
-    }
-
-    #[test]
-    fn a_short_line_is_an_error_and_not_a_silent_skip() {
-        assert!(
-            parse(" 1310    1  0  0").is_err(),
-            "a truncated line is refused"
         );
     }
 }

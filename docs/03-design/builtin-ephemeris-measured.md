@@ -36,6 +36,51 @@ is common to the whole chart.
 | 1e-10 | 5.7e-6 | 0.001 | 2.8e-5 | 1.4e-5 | 1.4e-6 | 5.9e-7 | 3.3e-7 | 1.9e-7 | 36164 | 848 KB |
 | 0 (whole theory) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 39198 | 919 KB |
 
+## The theory's own floor
+
+Every figure above is truncation against the whole theory, so the last
+row is zero by construction. This is what the whole theory itself costs,
+measured against Teimeris in the frame VSOP87 is stated in —
+`HELIOCENTRIC/J2000/ECLIPTIC/TROPICAL/GEOMETRIC` — at 5479 instants 40
+days apart, on the engine's `compatible` profile. Recorded by
+`teistro-ephemeris-teimeris-vsop-floor` into
+`fixtures/teimeris/vsop87-floor.json`; the number, not the code that
+produced it.
+
+| body | scatter ″ | worst ″ | radius (relative) | 1800 ″ | 2100 ″ | 2400 ″ |
+|---|---:|---:|---:|---:|---:|---:|
+| Mercury | 0.248 | 0.373 | 2.8e-7 | 0.027 | 0.094 | 0.373 |
+| Venus | 0.064 | 0.128 | 3.0e-8 | 0.127 | 0.055 | 0.034 |
+| Mars | 0.833 | 1.07 | 3.8e-7 | 0.008 | 0.028 | 0.839 |
+| Jupiter | 0.432 | 0.835 | 2.8e-7 | 0.200 | 0.422 | 0.696 |
+| Saturn | 0.440 | 0.767 | 3.8e-7 | 0.142 | 0.346 | 0.762 |
+| Uranus | 3.68 | 4.73 | 9.6e-6 | 0.780 | 0.033 | 4.08 |
+| Neptune | 3.99 | 6.57 | 2.5e-6 | 2.05 | 2.30 | 6.57 |
+
+VSOP87's own documentation states a precision of one arcsecond for every
+planet over this span, and a relative precision per body that puts
+Neptune near a tenth of an arcsecond. **Measured against a modern
+ephemeris it does not hold for the outer two.** Mercury to Saturn stay
+inside 1.07 arcseconds; Uranus and Neptune reach 6.57.
+
+The two diagnostics say what kind of difference it is. The heliocentric
+**radius** agrees to about one part in ten million for the six inner
+bodies and to one part in a hundred thousand for Uranus, so the orbit is
+not what disagrees — the body sits at a different place along it. And
+the **trend** grows from 1800 towards 2400 for every body rather than
+staying flat, which is a fit drifting from its epoch and not a rotation
+between frames. VSOP87 was fitted to DE200, published in 1981; the
+engine answers from a modern one.
+
+**This falsifies part of the plan.** `standard` claims one arcsecond for
+the planets, and no truncation can deliver that for Uranus or Neptune:
+the theory is the limit, not the table. Either `standard` states a bound
+per body, or the outer planets come from the `reference` tier's refit,
+which ADR-0021 already sizes at 0.02 arcseconds for them. The choice
+belongs in the design page; what this page establishes is that the
+single-number claim is not available.
+
+
 ## What the claims measure to
 
 | proposed rule | verdict | measured |
@@ -43,34 +88,28 @@ is common to the whole chart.
 | `compact` holds 1 arcminute in tens of KB | **holds** | 59 KB at threshold 3e-6 |
 | `standard` holds 1 arcsecond in a few hundred KB | **holds** | 372 KB at threshold 3e-8 |
 | `full` is a few MB | **holds** | 919 KB |
+| `standard` holds 1 arcsecond for **every** planet, the theory included | falsified | Neptune is 6.57 arcseconds from the engine with every term kept |
 
 
-## What this does not measure, and why it matters
+## What this does not measure
 
-**This is truncation error, not accuracy.** The last column is the whole
-theory compared against itself, so it reads zero by construction.
-VSOP87's own departure from reality is not zero: its authors put it near
-an arcsecond for the inner planets over the span this sweep covers. So
-the total error a consumer sees is this table's figure **plus** a theory
-floor this pass cannot see, and at the tight end of the ladder the two
-are of the same order.
+**Which threshold `standard` should take** is now decidable and is not
+decided here. The floor above says what the theory costs; the sweep says
+what each truncation costs; the design page picks the pair. What this
+page refuses to do is pick it in passing.
 
-That has a consequence for the tiers. `standard` reaching 0.561 at a
-threshold of 3e-8 is buying precision below the floor: the threshold
-above it is a third of the size and still inside the arcsecond the
-theory itself can promise. **Which of them is the right `standard`
-cannot be decided from this page.** It needs the floor measured against
-Teimeris, which is the next pass. Choosing now would be doing by
-intuition the thing this pass exists to prevent.
+**The Moon.** ELP/MPP02 is a separate ingestion, and the research page
+says the tiers are chosen by Moon accuracy first, because nakshatra and
+tithi boundaries are what a consumer feels. Every figure here is planets
+only, and every tier boundary is provisional until the Moon is measured
+beside them.
 
-**The Moon is not here.** ELP/MPP02 is a separate ingestion, and the
-research page says the tiers are chosen by Moon accuracy first, because
-nakshatra and tithi boundaries are what a consumer feels. Every figure
-above is planets only, and the tier boundaries are provisional until the
-Moon is measured beside them.
+**Any range but 1800 to 2400**, which is `standard`'s own span. The
+trend column shows the disagreement growing towards 2400 for every body,
+so a tier claiming a wider range has to be swept over that range rather
+than inheriting these figures.
 
-**The range is 1800 to 2400**, which is `standard`'s own span. VSOP87 is
-published as valid far wider and its error grows towards the edges, so a
-tier claiming a wider range has to be swept over that range rather than
-inheriting this one's figures.
+**Pluto, the nodes and the apogees**, which have no VSOP87 series at
+all: Pluto is fitted from a public-domain kernel and the rest are mean
+elements (ADR-0021).
 
