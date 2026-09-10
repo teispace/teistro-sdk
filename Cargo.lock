@@ -1313,7 +1313,9 @@ dependencies = [
 name = "teistro-ephemeris-builtin"
 version = "0.0.0"
 dependencies = [
+ "teistro-astro",
  "teistro-core",
+ "teistro-ephemeris-kit",
  "teistro-port-ephemeris",
 ]
 

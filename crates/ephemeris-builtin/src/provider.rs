@@ -25,6 +25,19 @@
 //! whether a planet is called retrograde — and the baseline engine
 //! detected retrogression that way, which was a defect.
 //!
+//! # The time scale is honoured, not assumed
+//!
+//! The theories are stated in dynamical time, and a request may be in
+//! UT1 — the scale of civil time, which is where a birth instant comes
+//! from. The completion passes the scale through rather than converting
+//! it, so a provider that ignored it would be seventy seconds wrong
+//! today and minutes wrong at the edges of the span. The Moon moves
+//! 0.01 degrees in seventy seconds, which is twenty seconds of tithi.
+//!
+//! The conversion uses the SDK's own Delta T rather than a second copy
+//! of it, because two tables of the same quantity are two tables that
+//! can disagree.
+//!
 //! # The Moon carries its bija
 //!
 //! ELP2000-82B is fitted to DE200/LE200 and drifts against a modern
@@ -34,11 +47,15 @@
 //! capabilities, and [`Builtin::without_bija`] turns it off for a
 //! consumer who wants the theory exactly as its authors published it.
 
+use teistro_astro::DeltaTModel;
+use teistro_astro::scale::tt_of;
+use teistro_core::quantity::{JulianDay, Ut1};
 use teistro_core::settings::Tier;
 use teistro_port_ephemeris::{
     Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, Corrections,
     DistanceUnit, EphemerisKind, EphemerisProvider, Equinox, Frame, Identity, Overrides,
-    PositionColumns, PositionRequest, ProviderError, Source, SpeedModel, Zodiac, validate,
+    PositionColumns, PositionRequest, ProviderError, Source, SpeedModel, TimeScale, Zodiac,
+    validate,
 };
 
 use crate::elp;
@@ -102,13 +119,46 @@ const BODIES: [Body; 12] = [
 pub struct Builtin {
     /// Whether the Moon's mean longitude carries ADR-0027's correction.
     bija: bool,
+    /// Which Delta T model turns a UT1 request into the dynamical time
+    /// the theories are stated in.
+    delta_t: DeltaTModel,
 }
 
 impl Builtin {
     /// The provider as it should normally be used, with the bija applied.
     #[must_use]
     pub const fn new() -> Builtin {
-        Builtin { bija: true }
+        Builtin {
+            bija: true,
+            delta_t: DeltaTModel::TableThenModel,
+        }
+    }
+
+    /// The same provider under another Delta T model, for a consumer who
+    /// pins one (ADR-0020 counts it in the calculation version).
+    #[must_use]
+    pub const fn with_delta_t(mut self, model: DeltaTModel) -> Builtin {
+        self.delta_t = model;
+        self
+    }
+
+    /// The instant the theories want, from the instant the request gives.
+    ///
+    /// A UT1 request is civil time and the series are dynamical, so the
+    /// difference is Delta T — about seventy seconds now and minutes at
+    /// the ends of the span. Ignoring it would move the Moon by twenty
+    /// seconds of tithi.
+    fn dynamical(self, jd: f64, scale: TimeScale) -> Result<f64, ProviderError> {
+        match scale {
+            TimeScale::Tt => Ok(jd),
+            TimeScale::Ut1 => {
+                let instant = JulianDay::<Ut1>::try_new(jd)
+                    .map_err(|error| ProviderError::invalid(error.to_string()))?;
+                let (tt, _) = tt_of(instant, self.delta_t)
+                    .map_err(|error| ProviderError::invalid(error.to_string()))?;
+                Ok(tt.get())
+            }
+        }
     }
 
     /// The theory as its authors published it, with no correction.
@@ -117,7 +167,10 @@ impl Builtin {
     /// measurement that decided the correction was worth making.
     #[must_use]
     pub const fn without_bija() -> Builtin {
-        Builtin { bija: false }
+        Builtin {
+            bija: false,
+            delta_t: DeltaTModel::TableThenModel,
+        }
     }
 
     /// Which tier is compiled in.
@@ -144,34 +197,35 @@ impl Builtin {
         Some((position, rate))
     }
 
-    /// The Moon's geocentric position and rate, in astronomical units.
+    /// The Moon's geocentric position and rate, in astronomical units
+    /// and astronomical units per day.
     ///
-    /// The rate is a central difference of the theory rather than its
-    /// derivative, and the reason is stated rather than hidden: ELP's
-    /// argument is rebuilt per term from five polynomial coefficients and
-    /// its analytic derivative is a second evaluator to keep in step with
-    /// the first. The step is a day, over which the Moon's longitude rate
-    /// is smooth to far better than the theory's own error, and the
-    /// station problem that makes a difference wrong for a planet does not
-    /// arise: the Moon never turns retrograde.
+    /// Analytic, like the planets'. It began as a half-day central
+    /// difference with a stated reason, and the provider kit measured
+    /// what that reason cost: 0.036 degrees a day against a bound of
+    /// 0.002, because a difference over any step long enough to be well
+    /// conditioned returns an average rate and the Moon's own rate swings
+    /// by a third across a month. The reason was true and the trade was
+    /// not, which is the kind of thing a kit is for.
     fn moon(self, jd: f64) -> ([f64; 3], [f64; 3]) {
-        const STEP: f64 = 0.5;
-        let at = |jd: f64| {
-            let km = elp::position_from(&tables::MOON_MAIN, &tables::MOON_PERTURBATIONS, jd);
-            let mut au = [km[0] / KM_PER_AU, km[1] / KM_PER_AU, km[2] / KM_PER_AU];
-            if self.bija {
-                au = rotate_about_pole(au, self.bija_radians(jd));
-            }
-            au
-        };
-        let here = at(jd);
-        let before = at(jd - STEP);
-        let after = at(jd + STEP);
-        let mut rate = [0.0; 3];
-        for ((slot, after), before) in rate.iter_mut().zip(after).zip(before) {
-            *slot = (after - before) / (2.0 * STEP);
+        let (km, km_per_day) =
+            elp::position_and_rate_from(&tables::MOON_MAIN, &tables::MOON_PERTURBATIONS, jd);
+        let mut position = [km[0] / KM_PER_AU, km[1] / KM_PER_AU, km[2] / KM_PER_AU];
+        let mut rate = [
+            km_per_day[0] / KM_PER_AU,
+            km_per_day[1] / KM_PER_AU,
+            km_per_day[2] / KM_PER_AU,
+        ];
+        if self.bija {
+            // A rotation about the pole, applied to both. The bija's own
+            // rate is arcseconds a century — a hundred-millionth of the
+            // Moon's — so the rotation is taken as constant across the
+            // instant, which costs the rate far less than the bound.
+            let angle = self.bija_radians(jd);
+            position = rotate_about_pole(position, angle);
+            rate = rotate_about_pole(rate, angle);
         }
-        (here, rate)
+        (position, rate)
     }
 
     /// The bija at an instant, in radians of longitude.
@@ -351,11 +405,13 @@ impl EphemerisProvider for Builtin {
         };
         let mut columns = PositionColumns::new(request.jds.len(), request.bodies.len(), frame);
         for (jd_index, jd) in request.jds.iter().enumerate() {
-            // The Earth is subtracted from every planet, so it is
+            // The scale is converted once an instant, not once a body.
+            let dynamical = self.dynamical(*jd, request.scale)?;
+            // The Earth is subtracted from every planet, so it too is
             // computed once an instant rather than once a body.
             let earth = capabilities
                 .covers(*jd)
-                .then(|| Builtin::heliocentric("Earth", *jd))
+                .then(|| Builtin::heliocentric("Earth", dynamical))
                 .flatten();
             for (body_index, body) in request.bodies.iter().enumerate() {
                 let cell = match (earth, body) {
@@ -366,11 +422,11 @@ impl EphemerisProvider for Builtin {
                         source,
                     ),
                     (Some(_), Body::Moon) => {
-                        let (position, rate) = self.moon(*jd);
+                        let (position, rate) = self.moon(dynamical);
                         to_cell(position, rate, source)
                     }
                     (Some(_), Body::MeanNode | Body::MeanApogee) => {
-                        let arguments = elp::Arguments::at(*jd);
+                        let arguments = elp::Arguments::at(dynamical);
                         let coefficients = if *body == Body::MeanNode {
                             arguments.w3
                         } else {
@@ -385,7 +441,7 @@ impl EphemerisProvider for Builtin {
                         // The mean longitudes are of date; the direction
                         // reaches J2000 by the path the Moon's own
                         // position takes.
-                        let rotated = elp::to_j2000(on_the_ecliptic(longitude), *jd);
+                        let rotated = elp::to_j2000(on_the_ecliptic(longitude), dynamical);
                         direction_cell(rotated[1].atan2(rotated[0]), rate, source)
                     }
                     (Some(_), Body::TrueNode) => {
@@ -393,13 +449,13 @@ impl EphemerisProvider for Builtin {
                         // a month, so a difference over a day is well
                         // conditioned and there is no station to fall in.
                         const STEP: f64 = 0.5;
-                        let (position, velocity) = self.moon(*jd);
+                        let (position, velocity) = self.moon(dynamical);
                         let at = |jd: f64| {
                             let (p, v) = self.moon(jd);
                             true_node_longitude(p, v)
                         };
-                        let before = at(*jd - STEP);
-                        let after = at(*jd + STEP);
+                        let before = at(dynamical - STEP);
+                        let after = at(dynamical + STEP);
                         let mut moved = after - before;
                         while moved > std::f64::consts::PI {
                             moved -= std::f64::consts::TAU;
@@ -414,7 +470,7 @@ impl EphemerisProvider for Builtin {
                         )
                     }
                     (Some((earth_position, earth_rate)), other) => series_name(*other)
-                        .and_then(|name| Builtin::heliocentric(name, *jd))
+                        .and_then(|name| Builtin::heliocentric(name, dynamical))
                         .map_or(Cell::failed(CellStatus::UnsupportedBody), |(p, r)| {
                             let mut position = [0.0; 3];
                             let mut rate = [0.0; 3];
