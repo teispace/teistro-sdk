@@ -21,6 +21,8 @@
 
 pub mod elp;
 pub mod series;
+#[rustfmt::skip]
+pub mod tables;
 
 #[cfg(feature = "ingest")]
 pub mod ingest;

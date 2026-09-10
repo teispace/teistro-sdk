@@ -16,10 +16,25 @@ categories = ["science", "aerospace"]
 publish = false
 
 [features]
+default = ["standard"]
+
+# The three tiers of ADR-0008, with the bounds ADR-0027 fixed. Exactly
+# one belongs in a binary: a consumer who takes `compact` should pay for
+# `compact`, which is the whole point of having a tier on a platform that
+# counts kilobytes.
+#
+# `compact` is one arcminute in about 80 KB, for wasm and mobile.
+# `standard` is the default: an arcsecond of truncation in about 500 KB.
+# `full` is the theories as published, for research and for the second
+# oracle the astronomy layer's own tests use.
+compact = []
+standard = []
+full = []
+
 # Reading the published source files is the generator's job, not the
 # shipped crate's: a consumer receives truncated tables and never a
-# parser for a 5.7 MB text file. `cargo xtask vsop` and the adapter's
-# floor measurement turn it on; nothing else does.
+# parser for 8 MB of text. `cargo xtask vsop`, `ephemgen` and the
+# adapter's floor measurements turn it on; nothing else does.
 ingest = []
 
 [dev-dependencies]

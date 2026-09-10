@@ -1,0 +1,587 @@
+//! `ephemgen`: the generator that turns the published series into the
+//! tables the built-in ephemeris ships.
+//!
+//! Phase 3's measurements are done and they chose the shape (ADR-0027).
+//! This is the build step: read VSOP87A and ELP2000-82B, truncate each
+//! to what a tier needs, and emit Rust tables with their provenance
+//! embedded.
+//!
+//! # The thresholds are derived, not chosen
+//!
+//! A generator that hardcoded `3e-8` would be carrying a number whose
+//! reason lived in a page it never reads, and the two would drift. So
+//! the rule is stated here and the numbers fall out of it:
+//!
+//! **For each tier, take the loosest threshold on the ladder whose worst
+//! truncation error is inside the tier's target**, and never tighten
+//! past the point where the theory's own error dominates — a term whose
+//! removal moves the answer by a tenth of what the theory is already
+//! wrong by is a term that costs bytes and buys nothing.
+//!
+//! The targets are ADR-0027's, per body group, because the single
+//! numbers the plan began with were false of the Moon and of the outer
+//! planets alike.
+//!
+//! # Why Rust literals and not a blob
+//!
+//! `include_bytes!` would be smaller in the repository and quicker to
+//! compile, and it would need `f64::from_le_bytes` on every access or a
+//! transmute. The workspace forbids `unsafe_code`, and the evaluator is
+//! the hot path of every chart, so the tables are `&'static [Term]`
+//! literals: no decode, no endianness question, and a diff that a
+//! reviewer can read.
+//!
+//! `cargo xtask ephemgen <vsop-dir> <elp-dir>` writes the tables.
+
+use std::collections::BTreeMap;
+use std::fmt::Write as _;
+use std::path::{Path, PathBuf};
+
+use teistro_ephemeris_builtin::elp::ingest::{Theory, load as load_elp};
+use teistro_ephemeris_builtin::ingest::{BODIES, BodySeries, load as load_vsop};
+
+use crate::generated::{Output, write};
+
+/// Where the tables go.
+const TABLES: &str = "crates/ephemeris-builtin/src/tables";
+
+/// The amplitude ladder for the planets, in astronomical units.
+const VSOP_LADDER: [f64; 8] = [1e-5, 3e-6, 1e-6, 3e-7, 1e-7, 3e-8, 1e-8, 0.0];
+
+/// The amplitude ladder for the Moon, in the coordinate's own unit —
+/// arcseconds for longitude and latitude, kilometres for distance, which
+/// is the knob the published reader itself takes.
+const ELP_LADDER: [f64; 7] = [1.0, 0.3, 0.1, 0.03, 0.01, 0.001, 0.0];
+
+/// One tier: what it targets, per body group.
+struct Tier {
+    /// The cargo feature and module name.
+    name: &'static str,
+    /// What a planet's truncation may cost, in arcseconds.
+    planet_target_arcsec: f64,
+    /// What the Moon's truncation may cost, in arcseconds.
+    moon_target_arcsec: f64,
+    /// What the tier is for, in one line, for the generated header.
+    purpose: &'static str,
+}
+
+/// The three tiers of ADR-0008, with ADR-0027's targets.
+const TIERS: [Tier; 3] = [
+    Tier {
+        name: "compact",
+        planet_target_arcsec: 60.0,
+        moon_target_arcsec: 30.0,
+        purpose: "wasm and mobile, where every kilobyte is paid for; one arcminute",
+    },
+    Tier {
+        name: "standard",
+        planet_target_arcsec: 1.0,
+        moon_target_arcsec: 1.0,
+        purpose: "the default: production charts with no provider installed",
+    },
+    Tier {
+        name: "full",
+        planet_target_arcsec: 0.0,
+        moon_target_arcsec: 0.0,
+        purpose: "research, and the second oracle for the astronomy layer's own tests",
+    },
+];
+
+/// Radians to arcseconds.
+const ARCSEC_PER_RAD: f64 = 206_264.806_247_096_36;
+
+/// The worst geocentric angular error a planet threshold costs, over a
+/// grid, measured against the whole theory exactly as the sweep does.
+fn planet_error(series: &BTreeMap<&'static str, BodySeries>, threshold: f64) -> f64 {
+    const FROM: f64 = 2_378_497.0;
+    const TO: f64 = 2_597_641.0;
+    const STEP: f64 = 40.0;
+    let earth = &series["Earth"];
+    let mut worst: f64 = 0.0;
+    let mut jd = FROM;
+    while jd <= TO {
+        let t = teistro_ephemeris_builtin::series::millennia(jd);
+        let earth_exact = earth.at(t, 0.0);
+        let earth_cut = earth.at(t, threshold);
+        for (name, _) in BODIES {
+            if name == "Earth" {
+                // What the Earth's series gives geocentrically is the
+                // Sun, reversed.
+                worst = worst.max(separation(
+                    [-earth_exact[0], -earth_exact[1], -earth_exact[2]],
+                    [-earth_cut[0], -earth_cut[1], -earth_cut[2]],
+                ));
+                continue;
+            }
+            let body = &series[name];
+            let exact = body.at(t, 0.0);
+            let cut = body.at(t, threshold);
+            worst = worst.max(separation(
+                [
+                    exact[0] - earth_exact[0],
+                    exact[1] - earth_exact[1],
+                    exact[2] - earth_exact[2],
+                ],
+                [
+                    cut[0] - earth_cut[0],
+                    cut[1] - earth_cut[1],
+                    cut[2] - earth_cut[2],
+                ],
+            ));
+        }
+        jd += STEP;
+    }
+    worst
+}
+
+/// The worst angular error a Moon threshold costs against the whole
+/// theory.
+fn moon_error(theory: &Theory, threshold: f64) -> f64 {
+    use teistro_ephemeris_builtin::elp::ingest::position;
+    const FROM: f64 = 2_378_497.0;
+    const TO: f64 = 2_597_641.0;
+    const STEP: f64 = 7.0;
+    let mut worst: f64 = 0.0;
+    let mut jd = FROM;
+    while jd <= TO {
+        worst = worst.max(separation(
+            position(theory, jd, 0.0),
+            position(theory, jd, threshold),
+        ));
+        jd += STEP;
+    }
+    worst
+}
+
+/// The angle between two vectors, in arcseconds.
+fn separation(a: [f64; 3], b: [f64; 3]) -> f64 {
+    let cross = [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ];
+    let length = cross.iter().map(|c| c * c).sum::<f64>().sqrt();
+    let dot: f64 = a.iter().zip(b).map(|(x, y)| x * y).sum();
+    length.atan2(dot) * ARCSEC_PER_RAD
+}
+
+/// A ladder with each rung's measured error, computed once.
+///
+/// The error of a rung does not depend on which tier is asking, and
+/// measuring it inside the tier loop cost three passes over the whole
+/// series for every rung to produce the same numbers each time.
+struct Ladder {
+    rungs: Vec<(f64, f64)>,
+}
+
+impl Ladder {
+    fn measure(thresholds: &[f64], error: impl Fn(f64) -> f64) -> Ladder {
+        Ladder {
+            rungs: thresholds
+                .iter()
+                .map(|threshold| (*threshold, error(*threshold)))
+                .collect(),
+        }
+    }
+
+    /// The loosest rung whose error is inside the target.
+    ///
+    /// A target of zero means the whole theory, which is the last rung —
+    /// and for the Moon that rung provably buys nothing over the one
+    /// before it. It is shipped at `full` anyway, because `full` means
+    /// the theory as its authors published it and a tier that quietly
+    /// dropped terms would be a different claim.
+    fn choose(&self, target: f64) -> (f64, f64) {
+        let last = self.rungs.last().copied().unwrap_or((0.0, 0.0));
+        if target <= 0.0 {
+            return last;
+        }
+        self.rungs
+            .iter()
+            .find(|(_, measured)| *measured <= target)
+            .copied()
+            .unwrap_or(last)
+    }
+}
+
+/// Renders one `Term` literal.
+fn term_literal(amplitude: f64, phase: f64, frequency: f64, power: u8) -> String {
+    format!("t({amplitude:?},{phase:?},{frequency:?},{power})")
+}
+
+/// A slice of `i8` as a Rust array literal.
+fn multipliers(values: &[i8]) -> String {
+    let inner: Vec<String> = values.iter().map(i8::to_string).collect();
+    format!("[{}]", inner.join(","))
+}
+
+/// A slice of `f64` as a Rust array literal, round-tripping exactly.
+fn coefficients(values: &[f64]) -> String {
+    let inner: Vec<String> = values.iter().map(|value| format!("{value:?}")).collect();
+    format!("[{}]", inner.join(","))
+}
+
+/// The planets' table for one tier.
+fn planet_table(series: &BTreeMap<&'static str, BodySeries>, threshold: f64) -> (String, usize) {
+    let mut out = String::new();
+    let mut terms = 0usize;
+    let _ = writeln!(
+        out,
+        "/// VSOP87A, truncated at {threshold:e} astronomical units.\n\
+         ///\n\
+         /// Heliocentric rectangular coordinates in the ecliptic and equinox\n\
+         /// of J2000, from Bretagnon and Francou (1988), CDS catalogue VI/81.\n\
+         /// Generated by `cargo xtask ephemgen`; do not edit.\n\
+         ///\n\
+         /// `static` rather than `const`: a `const` array is a value that is\n\
+         /// copied into every place it is used, and this one has thousands of\n\
+         /// terms in it.\n\
+         pub static PLANETS: Planets = ["
+    );
+    for (name, _) in BODIES {
+        let body = &series[name];
+        let _ = writeln!(out, "    (\"{name}\", [");
+        for coordinate in &body.coordinates {
+            let kept: Vec<String> = coordinate
+                .iter()
+                .filter(|term| term.amplitude.abs() >= threshold)
+                .map(|term| term_literal(term.amplitude, term.phase, term.frequency, term.power))
+                .collect();
+            terms += kept.len();
+            let _ = writeln!(out, "        &[{}],", kept.join(","));
+        }
+        let _ = writeln!(out, "    ]),");
+    }
+    let _ = writeln!(out, "];");
+    (out, terms)
+}
+
+/// The Moon's table for one tier.
+fn moon_table(theory: &Theory, threshold: f64) -> (String, usize) {
+    let mut out = String::new();
+    let main: Vec<String> = theory
+        .main
+        .iter()
+        .filter(|(_, term)| {
+            term.coefficients
+                .first()
+                .is_some_and(|leading| leading.abs() >= threshold)
+        })
+        .map(|(file, term)| {
+            format!(
+                "({file},MainTerm::new({},{}))",
+                multipliers(&term.multipliers),
+                coefficients(&term.coefficients)
+            )
+        })
+        .collect();
+    let perturbations: Vec<String> = theory
+        .perturbations
+        .iter()
+        .filter(|(_, term)| term.amplitude >= threshold)
+        .map(|(file, term)| {
+            format!(
+                "({file},PerturbationTerm::new({},{:?},{:?}))",
+                multipliers(&term.multipliers),
+                term.phase_deg,
+                term.amplitude
+            )
+        })
+        .collect();
+    let terms = main.len() + perturbations.len();
+    let _ = writeln!(
+        out,
+        "/// ELP2000-82B, truncated at {threshold} in each coordinate's own\n\
+         /// unit — arcseconds for longitude and latitude, kilometres for\n\
+         /// distance — which is the knob the published reader itself takes.\n\
+         ///\n\
+         /// Chapront-Touze and Chapront (1988), CDS catalogue VI/79.\n\
+         /// Generated by `cargo xtask ephemgen`; do not edit.\n\
+         /// `static` rather than `const`, so the table exists once.\n\
+         pub static MOON_MAIN: [(u8, MainTerm); {}] = [{}];\n",
+        main.len(),
+        main.join(",")
+    );
+    let _ = writeln!(
+        out,
+        "/// The Moon's perturbation terms at the same threshold.\n\
+         pub static MOON_PERTURBATIONS: [(u8, PerturbationTerm); {}] = [{}];",
+        perturbations.len(),
+        perturbations.join(",")
+    );
+    (out, terms)
+}
+
+/// Positions this tier's tables must reproduce, computed here from the
+/// truncated series and checked in the crate's own tests.
+///
+/// A generator that mangled a literal — a sign, a digit, an exponent —
+/// would produce a table that still compiles and still looks like a
+/// table. These are what catch that, and they are computed from the
+/// source rather than from the emitted text, so a test that passes says
+/// the emitted text means what the source meant.
+fn checkpoints(
+    series: &BTreeMap<&'static str, BodySeries>,
+    theory: &Theory,
+    planet_threshold: f64,
+    moon_threshold: f64,
+) -> String {
+    use teistro_ephemeris_builtin::elp::ingest::position;
+    use teistro_ephemeris_builtin::series::millennia;
+
+    const INSTANTS: [f64; 3] = [2_378_497.0, 2_451_545.0, 2_597_641.0];
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "/// Instants and the values this tier's tables must reproduce:\n\
+         /// the Julian day, then Mars and the Earth heliocentrically in\n\
+         /// astronomical units, then the Moon geocentrically in kilometres.\n\
+         ///\n\
+         /// Computed by the generator from the truncated series, so a test\n\
+         /// that reproduces them says the emitted literals mean what the\n\
+         /// published series meant.\n\
+         pub static CHECKPOINTS: [Checkpoint; {}] = [",
+        INSTANTS.len()
+    );
+    for jd in INSTANTS {
+        let t = millennia(jd);
+        let mars = series["Mars"].at(t, planet_threshold);
+        let earth = series["Earth"].at(t, planet_threshold);
+        let moon = position(theory, jd, moon_threshold);
+        let _ = writeln!(
+            out,
+            "    ({jd:?}, {}, {}, {}),",
+            coefficients(&mars),
+            coefficients(&earth),
+            coefficients(&moon)
+        );
+    }
+    let _ = writeln!(out, "];");
+    out
+}
+
+/// What one tier came out as, for the manifest.
+struct Emitted {
+    tier: &'static str,
+    planet_threshold: f64,
+    planet_error: f64,
+    planet_terms: usize,
+    moon_threshold: f64,
+    moon_error: f64,
+    moon_terms: usize,
+    bytes: usize,
+    source_bytes: usize,
+}
+
+/// Reads both sources and writes every tier's table and the manifest.
+pub(crate) fn generate(root: &Path, vsop: Option<&str>, elp: Option<&str>) -> i32 {
+    let Some(vsop_dir) = vsop
+        .map(PathBuf::from)
+        .or_else(|| std::env::var_os("TEISTRO_VSOP87_DIR").map(PathBuf::from))
+    else {
+        eprintln!("usage: cargo xtask ephemgen <vsop87-dir> <elp-dir>");
+        return 1;
+    };
+    let Some(elp_dir) = elp
+        .map(PathBuf::from)
+        .or_else(|| std::env::var_os("TEISTRO_ELP_DIR").map(PathBuf::from))
+    else {
+        eprintln!("usage: cargo xtask ephemgen <vsop87-dir> <elp-dir>");
+        return 1;
+    };
+    let series = match load_vsop(&vsop_dir) {
+        Ok(series) => series,
+        Err(error) => {
+            eprintln!("{error}");
+            return 1;
+        }
+    };
+    let theory = match load_elp(&elp_dir) {
+        Ok(theory) => theory,
+        Err(error) => {
+            eprintln!("{error}");
+            return 1;
+        }
+    };
+
+    let planets_ladder =
+        Ladder::measure(&VSOP_LADDER, |threshold| planet_error(&series, threshold));
+    let moon_ladder = Ladder::measure(&ELP_LADDER, |threshold| moon_error(&theory, threshold));
+
+    let mut outputs = Vec::new();
+    let mut emitted = Vec::new();
+    for tier in TIERS {
+        let (planet_threshold, planet_error_value) =
+            planets_ladder.choose(tier.planet_target_arcsec);
+        let (moon_threshold, moon_error_value) = moon_ladder.choose(tier.moon_target_arcsec);
+        let planets_label = if planet_threshold == 0.0 {
+            "the whole theory".to_string()
+        } else {
+            format!("threshold {planet_threshold:e} au")
+        };
+        let moon_label = if moon_threshold == 0.0 {
+            "the whole theory".to_string()
+        } else {
+            format!("threshold {moon_threshold}")
+        };
+        let (planets, planet_terms) = planet_table(&series, planet_threshold);
+        let (moon, moon_terms) = moon_table(&theory, moon_threshold);
+        let checkpoints = checkpoints(&series, &theory, planet_threshold, moon_threshold);
+        let text = format!(
+            "//! The `{}` tier: {}.\n\
+             //!\n\
+             //! Generated by `cargo xtask ephemgen`. Do not edit.\n\
+             //!\n\
+             //! The thresholds are not chosen here. `ephemgen` takes the\n\
+             //! loosest rung of each ladder whose worst truncation error is\n\
+             //! inside this tier's target, so the number below is a\n\
+             //! consequence of the target and the measurement rather than a\n\
+             //! constant somebody picked.\n\
+             //!\n\
+             //! - planets: {planets_label}, worst {planet_error_value:.4} arcsec, {planet_terms} terms\n\
+             //! - Moon: {moon_label}, worst {moon_error_value:.4} arcsec, {moon_terms} terms\n\
+             \n\
+             #![allow(\n    \
+             clippy::unreadable_literal,\n    \
+             clippy::excessive_precision,\n    \
+             clippy::approx_constant,\n    \
+             reason = \"generated tables: the digits are the publication's\"\n\
+             )]\n\
+             \n\
+             use crate::elp::{{MainTerm, PerturbationTerm}};\n\
+             use crate::series::Term;\n\
+             \n\
+             /// Every body's three coordinate series, by name.\n\
+             pub type Planets = [(&'static str, [&'static [Term]; 3]); 8];\n\
+             \n\
+             /// An instant and what this tier's tables must give at it:\n\
+             /// Mars and the Earth heliocentrically, then the Moon.\n\
+             pub type Checkpoint = (f64, [f64; 3], [f64; 3], [f64; 3]);\n\
+             \n\
+             /// A planetary term, abbreviated so the table stays readable.\n\
+             const fn t(amplitude: f64, phase: f64, frequency: f64, power: u8) -> Term {{\n    \
+             Term::new(amplitude, phase, frequency, power)\n\
+             }}\n\
+             \n{planets}\n{moon}\n{checkpoints}\n",
+            tier.name, tier.purpose
+        );
+        // The size that matters is what the data costs in a binary, not
+        // what the source costs in the repository: a term is three
+        // `f64` and a power for a planet, and eleven multipliers with
+        // two `f64` for the Moon.
+        let bytes = planet_terms * 32 + moon_terms * 32;
+        let source_bytes = text.len();
+        outputs.push(Output::new(format!("{TABLES}/{}.rs", tier.name), text));
+        emitted.push(Emitted {
+            tier: tier.name,
+            planet_threshold,
+            planet_error: planet_error_value,
+            planet_terms,
+            moon_threshold,
+            moon_error: moon_error_value,
+            moon_terms,
+            bytes,
+            source_bytes,
+        });
+    }
+
+    outputs.push(Output::new(format!("{TABLES}/mod.rs"), module(&emitted)));
+    write(root, &outputs)
+}
+
+/// A byte count as kilobytes; a table is far below the range an `f64`
+/// represents exactly.
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "a table's size is kilobytes, decades below 2^53"
+)]
+fn kilobytes(bytes: usize) -> f64 {
+    bytes as f64 / 1024.0
+}
+
+/// The module that selects a tier by cargo feature.
+fn module(emitted: &[Emitted]) -> String {
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "//! The generated coefficient tables, one module per tier.\n\
+         //!\n\
+         //! Generated by `cargo xtask ephemgen`. Do not edit.\n\
+         //!\n\
+         //! A tier is a cargo feature, and exactly one is in the binary: a\n\
+         //! consumer who takes `compact` pays for `compact`, which is what\n\
+         //! makes the tier mean anything on a platform that counts\n\
+         //! kilobytes.\n\
+         //!\n\
+         //! | tier | planets | Moon | data | source |\n\
+         //! |---|---|---|---:|---:|"
+    );
+    for tier in emitted {
+        let _ = writeln!(
+            out,
+            "//! | `{}` | {}, {:.4}″, {} terms | {}, {:.4}″, {} terms | {:.0} KB | {:.0} KB |",
+            tier.tier,
+            if tier.planet_threshold == 0.0 {
+                "whole theory".to_string()
+            } else {
+                format!("{:e} au", tier.planet_threshold)
+            },
+            tier.planet_error,
+            tier.planet_terms,
+            if tier.moon_threshold == 0.0 {
+                "whole theory".to_string()
+            } else {
+                format!("{}", tier.moon_threshold)
+            },
+            tier.moon_error,
+            tier.moon_terms,
+            kilobytes(tier.bytes),
+            kilobytes(tier.source_bytes)
+        );
+    }
+    let _ = writeln!(out);
+    // Cargo features are additive: anything that depends on this crate
+    // can turn one on and nothing can turn one off, so the tiers cannot
+    // be mutually exclusive without breaking a consumer who takes two
+    // dependencies that each want a different one. The richest tier
+    // enabled wins instead, which makes every combination build and
+    // makes `--all-features` mean `full` rather than an error.
+    let names: Vec<&str> = emitted.iter().map(|tier| tier.tier).collect();
+    for (index, tier) in emitted.iter().enumerate() {
+        let richer: Vec<String> = names
+            .iter()
+            .skip(index + 1)
+            .map(|name| format!("not(feature = \"{name}\")"))
+            .collect();
+        let condition = if richer.is_empty() {
+            format!("feature = \"{}\"", tier.tier)
+        } else {
+            format!("all(feature = \"{}\", {})", tier.tier, richer.join(", "))
+        };
+        // `rustfmt` would otherwise rewrite tens of thousands of
+        // literals one to a line, which is how a generated file in this
+        // repository has been silently reformatted before. The skip goes
+        // on the module declaration, as `crates/calendar` does it.
+        let _ = writeln!(out, "#[cfg({condition})]");
+        let _ = writeln!(out, "#[rustfmt::skip]");
+        let _ = writeln!(out, "mod {};", tier.tier);
+        let _ = writeln!(out, "#[cfg({condition})]");
+        let _ = writeln!(out, "pub use {}::*;", tier.tier);
+        let _ = writeln!(out);
+    }
+    let _ = writeln!(
+        out,
+        "/// The tier these tables came from, for provenance: a chart says\n\
+         /// which tier computed it, and a cached one says which tier it was\n\
+         /// cached from (ADR-0020).\n\
+         pub const TIER: &str = {{\n    \
+         #[cfg(feature = \"full\")]\n    \
+         {{ \"full\" }}\n    \
+         #[cfg(all(feature = \"standard\", not(feature = \"full\")))]\n    \
+         {{ \"standard\" }}\n    \
+         #[cfg(all(feature = \"compact\", not(feature = \"standard\"), not(feature = \"full\")))]\n    \
+         {{ \"compact\" }}\n\
+         }};"
+    );
+    out
+}
