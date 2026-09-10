@@ -20,6 +20,7 @@
 //! for one in a wasm binary would be the opposite of the point.
 
 pub mod elp;
+pub mod provider;
 pub mod series;
 #[rustfmt::skip]
 pub mod tables;

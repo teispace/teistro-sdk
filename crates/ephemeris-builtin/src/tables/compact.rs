@@ -97,6 +97,25 @@ pub static MOON_MAIN: [(u8, MainTerm); 153] = [(1,MainTerm::new([0,0,0,2],[-411.
 /// The Moon's perturbation terms at the same threshold.
 pub static MOON_PERTURBATIONS: [(u8, PerturbationTerm); 7] = [(4,PerturbationTerm::new([1,0,0,0,-1,0,0,0,0,0,0],0.00094,7.06304)),(5,PerturbationTerm::new([1,0,0,0,0,0,0,0,0,0,0],180.00071,8.04508)),(10,PerturbationTerm::new([0,0,2,0,-2,0,0,0,2,-1,0],180.11977,1.14307)),(10,PerturbationTerm::new([0,18,-16,0,0,0,0,0,0,-1,0],26.54261,14.24883)),(12,PerturbationTerm::new([0,0,2,0,-2,0,0,0,2,-1,0],90.11969,1.0587)),(17,PerturbationTerm::new([0,0,1,0,0,0,0,1,0,0,0],275.13226,1.37497)),(19,PerturbationTerm::new([0,0,0,0,0,0,0,0,1,0,0],0.0,1.6768))];
 
+/// The bija: a quadratic correction to the Moon's mean longitude,
+/// in arcseconds, against Julian centuries from J2000.
+///
+/// ELP2000-82B's constants are fitted to DE200/LE200, and a lunar
+/// theory ages through the tidal acceleration its source ephemeris
+/// assumed — a term in the square of the time. These three numbers
+/// remove it. The tradition has the device and the name already
+/// (ADR-0027).
+///
+/// **Provenance.** Fitted over 1900 to 2100 against the reference
+/// named in the manifest, and scored on spans it never saw:
+/// 0.261 arcsec where fitted, 1800 to 2400 to 3.00 arcsec and 1700 to 2500 to 4.46 arcsec. Refitting is a
+/// calculation-version change under ADR-0020. A consumer who wants
+/// the theory as its authors published it turns it off.
+pub const MOON_BIJA_ARCSEC: [f64; 3] = [-0.1179182049433601, -0.38871910705571483, -0.9520031770099446];
+
+/// The span the bija was fitted over, for provenance.
+pub const MOON_BIJA_FITTED_OVER: &str = "1900 to 2100";
+
 /// Instants and the values this tier's tables must reproduce:
 /// the Julian day, then Mars and the Earth heliocentrically in
 /// astronomical units, then the Moon geocentrically in kilometres.

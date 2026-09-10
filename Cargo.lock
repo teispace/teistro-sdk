@@ -1312,6 +1312,10 @@ dependencies = [
 [[package]]
 name = "teistro-ephemeris-builtin"
 version = "0.0.0"
+dependencies = [
+ "teistro-core",
+ "teistro-port-ephemeris",
+]
 
 [[package]]
 name = "teistro-ephemeris-kit"

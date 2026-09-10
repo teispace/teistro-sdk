@@ -51,6 +51,40 @@ impl Term {
         // `powi` is exact for one, which the great majority of terms are.
         self.amplitude * f64::cos(self.phase + self.frequency * t) * t.powi(i32::from(self.power))
     }
+
+    /// The term's rate of change at `t`, per Julian millennium.
+    ///
+    /// Analytic, not a difference of two evaluations. A finite
+    /// difference of a periodic series loses digits exactly where the
+    /// answer matters — at a station, where the rate passes through
+    /// zero and its sign decides whether a planet is called retrograde.
+    /// The baseline engine detected retrogression that way and it was a
+    /// defect; this avoids it by construction.
+    ///
+    /// Differentiating `A·cos(B + C·t)·t^p` gives
+    /// `A·(p·t^(p-1)·cos(B + C·t) − C·t^p·sin(B + C·t))`.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::series::Term;
+    ///
+    /// // A constant term does not move.
+    /// assert!(Term::new(2.0, 0.0, 0.0, 0).rate_at(1.0).abs() < 1e-15);
+    /// // A term linear in time moves at its amplitude.
+    /// assert!((Term::new(3.0, 0.0, 0.0, 1).rate_at(2.0) - 3.0).abs() < 1e-15);
+    /// ```
+    #[must_use]
+    pub fn rate_at(self, t: f64) -> f64 {
+        let angle = self.phase + self.frequency * t;
+        let (sin, cos) = angle.sin_cos();
+        let power = i32::from(self.power);
+        let from_power = if self.power == 0 {
+            0.0
+        } else {
+            f64::from(self.power) * t.powi(power - 1) * cos
+        };
+        let from_phase = self.frequency * t.powi(power) * sin;
+        self.amplitude * (from_power - from_phase)
+    }
 }
 
 /// The sum of a coordinate's terms at `t`, in Julian millennia from
@@ -71,6 +105,12 @@ impl Term {
 #[must_use]
 pub fn sum(terms: &[Term], t: f64) -> f64 {
     terms.iter().map(|term| term.at(t)).sum()
+}
+
+/// The sum of a coordinate's rates at `t`, per Julian millennium.
+#[must_use]
+pub fn rate(terms: &[Term], t: f64) -> f64 {
+    terms.iter().map(|term| term.rate_at(t)).sum()
 }
 
 /// Julian days in the millennium the time argument counts.
@@ -159,5 +199,53 @@ mod tests {
     #[test]
     fn a_sum_of_nothing_is_nothing() {
         assert!(sum(&[], 1.0).abs() < 1e-15);
+    }
+}
+
+#[cfg(test)]
+mod rate_tests {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    /// The analytic rate must agree with a central difference wherever a
+    /// difference is well conditioned. Where it is not — at a station —
+    /// is exactly why the rate is analytic, so the check runs away from
+    /// one and the reason is the point.
+    #[test]
+    fn the_analytic_rate_agrees_with_a_central_difference() {
+        let terms = [
+            Term::new(1.5, 0.3, 6283.0, 0),
+            Term::new(0.02, 1.1, 12566.0, 1),
+            Term::new(0.001, 2.4, 529.0, 2),
+        ];
+        for t in [-1.2, -0.3, 0.4, 1.7] {
+            let h = 1e-6;
+            let difference = (sum(&terms, t + h) - sum(&terms, t - h)) / (2.0 * h);
+            let analytic = rate(&terms, t);
+            assert!(
+                (analytic - difference).abs() < 1e-4 * analytic.abs().max(1.0),
+                "at t={t}: analytic {analytic} against difference {difference}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_powered_term_carries_both_halves_of_the_product_rule() {
+        // t·cos(t) differentiates to cos(t) − t·sin(t); at t = 0 that is 1.
+        let term = Term::new(1.0, 0.0, 1.0, 1);
+        assert!((term.rate_at(0.0) - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn a_constant_term_has_no_rate() {
+        for t in [-2.0, 0.0, 3.0] {
+            assert!(Term::new(7.0, 0.5, 0.0, 0).rate_at(t).abs() < 1e-15);
+        }
+    }
+
+    #[test]
+    fn an_empty_series_has_no_rate() {
+        assert!(rate(&[], 1.0).abs() < 1e-15);
     }
 }
