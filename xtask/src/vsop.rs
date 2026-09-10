@@ -73,7 +73,7 @@ use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use teistro_ephemeris_builtin::ingest::{BODIES, BodySeries, load};
-use teistro_ephemeris_builtin::series::{J2000, millennia};
+use teistro_ephemeris_builtin::series::millennia;
 
 use crate::generated::{Output, write};
 use crate::measure::{Claim, count, fill, spelled, table, verdict_of};
@@ -83,7 +83,14 @@ const PAGE: &str = "docs/03-design/builtin-ephemeris-measured.md";
 /// The engine-derived record of what the theory itself costs, emitted by
 /// `teistro-ephemeris-teimeris-vsop-floor`. The number, not the code that
 /// produced it: the page reads this and needs no engine to regenerate.
-const FLOOR: &str = "fixtures/teimeris/vsop87-floor.json";
+///
+/// It sits beside the crate it informs rather than in `fixtures/`, which
+/// is the pinned conformance submodule. The distinction is what each is
+/// for: `fixtures/teimeris/*.json` are **oracles the SDK is tested
+/// against**, while this is a measurement *about a third-party theory*
+/// that no test asserts on — design input, like
+/// `crates/calendar/data/bikram-sambat-fit.json`.
+const FLOOR: &str = "crates/ephemeris-builtin/data/vsop87-floor.json";
 
 /// Radians to arcseconds.
 const ARCSEC_PER_RAD: f64 = 206_264.806_247_096_36;
@@ -391,6 +398,20 @@ fn page(series: &BTreeMap<&'static str, BodySeries>, floor: Option<&Floor>) -> S
     }
 
     if let Some(floor) = floor {
+        out.push_str(&floor_section(floor));
+    }
+    out.push_str(&limits_section(floor.is_some()));
+
+    let _ = writeln!(out, "\n## What the claims measure to\n");
+    let claims = claims_from(&rows, series, floor);
+    let _ = writeln!(out, "{}", table(&claims));
+    fill(&out)
+}
+
+/// The section that says what the whole theory itself costs.
+fn floor_section(floor: &Floor) -> String {
+    let mut out = String::new();
+    {
         let _ = writeln!(out, "\n## The theory's own floor\n");
         let _ = writeln!(
             out,
@@ -446,20 +467,22 @@ fn page(series: &BTreeMap<&'static str, BodySeries>, floor: Option<&Floor>) -> S
         );
     }
 
-    let _ = writeln!(out, "\n## What the claims measure to\n");
-    let claims = claims_from(&rows, series, floor);
-    let _ = writeln!(out, "{}", table(&claims));
+    out
+}
 
+/// The section that says what the page cannot see.
+fn limits_section(has_floor: bool) -> String {
+    let mut out = String::new();
     let _ = writeln!(out, "\n## What this does not measure\n");
-    if floor.is_none() {
+    if has_floor {
         let _ = writeln!(
             out,
-            "**The theory's own floor.** The last column of the sweep is the whole theory compared against itself, so it reads zero by construction, while VSOP87's departure from reality is not zero. Until `fixtures/teimeris/vsop87-floor.json` is recorded, no threshold on the ladder can be chosen: a truncation far under the floor is paying bytes for nothing, and this page cannot see which one that is.\n"
+            "**Which threshold `standard` should take** is now decidable and is not decided here. The floor above says what the theory costs; the sweep says what each truncation costs; the design page picks the pair. What this page refuses to do is pick it in passing.\n"
         );
     } else {
         let _ = writeln!(
             out,
-            "**Which threshold `standard` should take** is now decidable and is not decided here. The floor above says what the theory costs; the sweep says what each truncation costs; the design page picks the pair. What this page refuses to do is pick it in passing.\n"
+            "**The theory's own floor.** The last column of the sweep is the whole theory compared against itself, so it reads zero by construction, while VSOP87's departure from reality is not zero. Until `{FLOOR}` is recorded, no threshold on the ladder can be chosen: a truncation far under the floor is paying bytes for nothing, and this page cannot see which one that is.\n"
         );
     }
     let _ = writeln!(
@@ -475,7 +498,7 @@ fn page(series: &BTreeMap<&'static str, BodySeries>, floor: Option<&Floor>) -> S
         "**Pluto, the nodes and the apogees**, which have no VSOP87 series at all: Pluto is fitted from a public-domain kernel and the rest are mean elements (ADR-0021).\n"
     );
 
-    fill(&out)
+    out
 }
 
 /// Which threshold first meets a bound for every body, if any does.

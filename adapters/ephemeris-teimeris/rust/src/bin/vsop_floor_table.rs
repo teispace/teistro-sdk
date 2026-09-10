@@ -38,7 +38,7 @@
 //! ```text
 //! TEISTRO_VSOP87_DIR=... TEIMERIS_LIB_DIR=... \
 //!   cargo run --release --bin teistro-ephemeris-teimeris-vsop-floor \
-//!   > ../../../fixtures/teimeris/vsop87-floor.json
+//!   > ../../../crates/ephemeris-builtin/data/vsop87-floor.json
 //! ```
 //!
 //! The number, the tool and its version, never the code that produced
