@@ -480,6 +480,25 @@ provider's DUT1).
    (tests, maximum strictness) and `check-dart` (45 tests, analyse,
    format) all pass.
 
+   **C1 is done.** `Body::key` and the catalogue's `Graha::key` both
+   spell `"SUN"`, and nothing checked they matched. They are not merged —
+   a `Body` is what an ephemeris computes and a `Graha` what a chart
+   reads, and the port has two nodes where the catalogue has one Rahu —
+   so the **overlap** is gated, using the pairing `Body::graha` already
+   owns rather than a third list. The exceptions are pinned too: the two
+   nodes, the two apogees, and Ketu as the one graha no body is.
+
+   The audit that went with it found the port and the catalogue each
+   hold a `Direction`, one a crossing's and one a compass point. Every
+   binding emits one declaration per item into one namespace, so a
+   collision is a compile error in Dart and TypeScript and a silent
+   shadow in Python. The extractor already refused that for enums,
+   structs, opaques, callbacks and functions — unsaid, so two tests now
+   say it — but not for blobs, which is one word in the chain that
+   existed. The first version of this change added a *second* checker
+   beside it, which is the fault the step is about; reading the existing
+   check first is the lesson.
+
    **The next step is the Teimeris adapter's own generated dispatch**,
    which is the engine's side of the route, and then A3.
 

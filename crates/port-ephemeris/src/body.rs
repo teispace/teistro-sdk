@@ -315,4 +315,69 @@ mod tests {
             "\"MEAN_APOGEE\""
         );
     }
+
+    /// A name is spelled in one place, or the two places agree.
+    ///
+    /// `Body::key` writes `"SUN"` and the generated catalogue's
+    /// `Graha::key` writes it too, and until this nothing checked that
+    /// they still matched. They are not merged because they are
+    /// genuinely different vocabularies — a `Body` is something an
+    /// ephemeris computes and a `Graha` is something a chart reads, and
+    /// the port has two nodes where the catalogue has one Rahu — so what
+    /// is gated is the **overlap**, and the pairing is the one
+    /// [`Body::graha`] already owns rather than a third list to keep.
+    #[test]
+    fn a_body_that_is_a_graha_spells_it_the_way_the_catalogue_does() {
+        use teistro_core::catalogue::Graha;
+
+        let mut checked = 0;
+        for body in Body::ALL {
+            let Some(graha) = body.graha() else { continue };
+            if matches!(body, Body::MeanNode | Body::TrueNode) {
+                // Both nodes are Rahu, and which of them a chart uses is
+                // a setting: the port must keep its own spelling to say
+                // which this is, so these two are the deliberate
+                // exception rather than a disagreement.
+                assert_eq!(graha, Graha::Rahu);
+                assert_ne!(body.key(), graha.key());
+                continue;
+            }
+            assert_eq!(
+                body.key(),
+                graha.key(),
+                "{body:?} and {graha:?} are the same thing spelled twice"
+            );
+            checked += 1;
+        }
+        assert_eq!(checked, 10, "every graha a body is, and no fewer");
+    }
+
+    /// The exceptions are exactly the ones named, so a new body or a new
+    /// graha cannot quietly join them.
+    #[test]
+    fn only_the_nodes_and_the_apogees_are_outside_the_catalogues_names() {
+        use teistro_core::catalogue::Graha;
+
+        let outside: Vec<Body> = Body::ALL
+            .iter()
+            .copied()
+            .filter(|body| body.graha().is_none())
+            .collect();
+        assert_eq!(
+            outside,
+            vec![Body::MeanApogee, Body::OsculatingApogee],
+            "an apogee is not a graha; anything else here is a name that \
+             wants a decision"
+        );
+        // And Ketu is the one graha no body is, because it is derived
+        // rather than computed.
+        let reached: std::collections::BTreeSet<Graha> =
+            Body::ALL.iter().filter_map(|body| body.graha()).collect();
+        let missing: Vec<Graha> = Graha::ALL
+            .iter()
+            .copied()
+            .filter(|graha| !reached.contains(graha))
+            .collect();
+        assert_eq!(missing, vec![Graha::Ketu]);
+    }
 }
