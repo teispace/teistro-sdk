@@ -122,6 +122,92 @@ DE200-fitted theory should give. Everything after it is the fit ageing
 the tidal acceleration its source ephemeris assumed, and an error there
 grows with the square of the time.
 
+## The three ways out, priced
+
+The theory is 19.4″ over the span `standard` claims, and that is 44
+seconds of tithi against a budget of one. There are three ways out and
+all three are now measured rather than argued.
+
+### Correct the theory's mean longitude
+
+The drift is not noise. A lunar theory ages mainly through the tidal
+acceleration its source ephemeris assumed, which enters the mean
+longitude as a term in the **square** of the time — so if that is what
+the difference is, a polynomial of two or three coefficients removes
+most of it. The tradition has the same idea and the same name for it: a
+*bija*, a seed correction that re-anchors an old theory to the present
+sky, which this SDK already computes for the Surya Siddhanta.
+
+| degree | cost | before | after | as tithi |
+|---:|---:|---:|---:|---:|
+| 1 | 16 bytes | 19.40″ | 8.48″ | 19.1 s |
+| 2 | 24 bytes | 19.40″ | 3.20″ | 7.2 s |
+| 3 | 32 bytes | 19.40″ | 3.24″ | 7.3 s |
+| 4 | 40 bytes | 19.40″ | 3.23″ | 7.3 s |
+
+**It saturates at the square**, which is the physics rather than a
+coincidence: degree three and four buy nothing over degree two, so what
+the polynomial is removing is the tidal term and not a curve fitted to
+noise. 24 bytes take the Moon from 19.40″ to 3.20″ — 44 seconds of
+tithi to 7.2 — over six centuries. What remains is the periodic part
+of the difference, which no polynomial can reach.
+
+The best of them is degree 2 at 3.20″.
+
+### Replace the theory with a fitted table
+
+ADR-0021 names a Chebyshev refit from a modern kernel as the `reference`
+tier. It has an arithmetic problem the ADR does not price: **an analytic
+theory costs the same whatever span it is asked for, and a fitted table
+costs one block per interval.** The Moon circles in 27 days where
+Jupiter takes twelve years, so the Moon is where that bites.
+
+| interval | coefficients | worst | size over 1800 to 2400 |
+|---:|---:|---:|---:|
+| 4 days | 8 | 0.0003″ | 10.03 MB |
+| 4 days | 10 | under 0.0001″ | 12.54 MB |
+| 4 days | 12 | under 0.0001″ | 15.05 MB |
+| 4 days | 14 | under 0.0001″ | 17.56 MB |
+| 4 days | 16 | under 0.0001″ | 20.06 MB |
+| 4 days | 20 | under 0.0001″ | 25.08 MB |
+| 8 days | 8 | 0.0735″ | 5.02 MB |
+| 8 days | 10 | 0.0020″ | 6.27 MB |
+| 8 days | 12 | under 0.0001″ | 7.52 MB |
+| 8 days | 14 | under 0.0001″ | 8.78 MB |
+| 8 days | 16 | under 0.0001″ | 10.03 MB |
+| 8 days | 20 | under 0.0001″ | 12.54 MB |
+| 16 days | 8 | 24.2632″ | 2.51 MB |
+| 16 days | 10 | 1.4941″ | 3.13 MB |
+| 16 days | 12 | 0.1339″ | 3.76 MB |
+| 16 days | 14 | 0.0114″ | 4.39 MB |
+| 16 days | 16 | 0.0009″ | 5.02 MB |
+| 16 days | 20 | under 0.0001″ | 6.27 MB |
+| 32 days | 8 | 3323.4305″ | 1.25 MB |
+| 32 days | 10 | 614.7278″ | 1.57 MB |
+| 32 days | 12 | 122.4968″ | 1.88 MB |
+| 32 days | 14 | 32.1237″ | 2.19 MB |
+| 32 days | 16 | 8.2514″ | 2.51 MB |
+| 32 days | 20 | 0.5152″ | 3.14 MB |
+
+**The cheapest fit that reaches the second-accurate budget is 3.76 MB**
+— 16-day blocks of 12 coefficients at 0.134″. ADR-0021 budgets about
+1 MB for *every* body at this tier; the Moon alone is several times
+that, so it is the ADR's ladder that has to move and not the
+measurement.
+
+The error is the fit's **representation** error against the theory it is
+fitted to, which is what a table designer chooses. It is deliberately
+not accuracy against an ephemeris: how smooth the Moon is, and so how
+well a polynomial catches it, is the same question whichever modern
+source it comes from.
+
+### Narrow what `standard` claims
+
+The span table above is this route's price list. The theory holds under
+four seconds of tithi over 1900 to 2100 and under eight over 1850 to
+2150, so a tier that claims three centuries rather than six needs
+nothing built at all — it needs the claim to say so.
+
 ## What the claims measure to
 
 | proposed rule | verdict | measured |

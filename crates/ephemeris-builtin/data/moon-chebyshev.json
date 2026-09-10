@@ -1,0 +1,176 @@
+{
+  "source": "ELP2000-82B, every term, as the function being represented",
+  "from_jd": 2378497.0,
+  "to_jd": 2597641.0,
+  "note": "representation error of the fit, not accuracy against an ephemeris: a sizing study",
+  "rows": [
+    {
+      "interval_days": 4.0,
+      "coefficients": 8,
+      "worst_arcsec": 0.00030582903378283675,
+      "intervals_over_span": 54786,
+      "bytes": 10518912
+    },
+    {
+      "interval_days": 4.0,
+      "coefficients": 10,
+      "worst_arcsec": 0.000017959538413664088,
+      "intervals_over_span": 54786,
+      "bytes": 13148640
+    },
+    {
+      "interval_days": 4.0,
+      "coefficients": 12,
+      "worst_arcsec": 0.00001531416333844339,
+      "intervals_over_span": 54786,
+      "bytes": 15778368
+    },
+    {
+      "interval_days": 4.0,
+      "coefficients": 14,
+      "worst_arcsec": 0.000011720407287098717,
+      "intervals_over_span": 54786,
+      "bytes": 18408096
+    },
+    {
+      "interval_days": 4.0,
+      "coefficients": 16,
+      "worst_arcsec": 0.000013741098340151051,
+      "intervals_over_span": 54786,
+      "bytes": 21037824
+    },
+    {
+      "interval_days": 4.0,
+      "coefficients": 20,
+      "worst_arcsec": 0.000012674151391166052,
+      "intervals_over_span": 54786,
+      "bytes": 26297280
+    },
+    {
+      "interval_days": 8.0,
+      "coefficients": 8,
+      "worst_arcsec": 0.07353978055529059,
+      "intervals_over_span": 27393,
+      "bytes": 5259456
+    },
+    {
+      "interval_days": 8.0,
+      "coefficients": 10,
+      "worst_arcsec": 0.0019638103915939017,
+      "intervals_over_span": 27393,
+      "bytes": 6574320
+    },
+    {
+      "interval_days": 8.0,
+      "coefficients": 12,
+      "worst_arcsec": 0.00006388002084697563,
+      "intervals_over_span": 27393,
+      "bytes": 7889184
+    },
+    {
+      "interval_days": 8.0,
+      "coefficients": 14,
+      "worst_arcsec": 0.000010542871537070886,
+      "intervals_over_span": 27393,
+      "bytes": 9204048
+    },
+    {
+      "interval_days": 8.0,
+      "coefficients": 16,
+      "worst_arcsec": 0.000012425167963857743,
+      "intervals_over_span": 27393,
+      "bytes": 10518912
+    },
+    {
+      "interval_days": 8.0,
+      "coefficients": 20,
+      "worst_arcsec": 0.0000135712441309886,
+      "intervals_over_span": 27393,
+      "bytes": 13148640
+    },
+    {
+      "interval_days": 16.0,
+      "coefficients": 8,
+      "worst_arcsec": 24.263206720784368,
+      "intervals_over_span": 13697,
+      "bytes": 2629824
+    },
+    {
+      "interval_days": 16.0,
+      "coefficients": 10,
+      "worst_arcsec": 1.4940719949872583,
+      "intervals_over_span": 13697,
+      "bytes": 3287280
+    },
+    {
+      "interval_days": 16.0,
+      "coefficients": 12,
+      "worst_arcsec": 0.1338811360003546,
+      "intervals_over_span": 13697,
+      "bytes": 3944736
+    },
+    {
+      "interval_days": 16.0,
+      "coefficients": 14,
+      "worst_arcsec": 0.011415496070277628,
+      "intervals_over_span": 13697,
+      "bytes": 4602192
+    },
+    {
+      "interval_days": 16.0,
+      "coefficients": 16,
+      "worst_arcsec": 0.0008803073487954262,
+      "intervals_over_span": 13697,
+      "bytes": 5259648
+    },
+    {
+      "interval_days": 16.0,
+      "coefficients": 20,
+      "worst_arcsec": 0.00001950853952613433,
+      "intervals_over_span": 13697,
+      "bytes": 6574560
+    },
+    {
+      "interval_days": 32.0,
+      "coefficients": 8,
+      "worst_arcsec": 3323.43047184698,
+      "intervals_over_span": 6849,
+      "bytes": 1315008
+    },
+    {
+      "interval_days": 32.0,
+      "coefficients": 10,
+      "worst_arcsec": 614.7277946148922,
+      "intervals_over_span": 6849,
+      "bytes": 1643760
+    },
+    {
+      "interval_days": 32.0,
+      "coefficients": 12,
+      "worst_arcsec": 122.49678492969977,
+      "intervals_over_span": 6849,
+      "bytes": 1972512
+    },
+    {
+      "interval_days": 32.0,
+      "coefficients": 14,
+      "worst_arcsec": 32.1237139126786,
+      "intervals_over_span": 6849,
+      "bytes": 2301264
+    },
+    {
+      "interval_days": 32.0,
+      "coefficients": 16,
+      "worst_arcsec": 8.251421361122835,
+      "intervals_over_span": 6849,
+      "bytes": 2630016
+    },
+    {
+      "interval_days": 32.0,
+      "coefficients": 20,
+      "worst_arcsec": 0.5151696878360549,
+      "intervals_over_span": 6849,
+      "bytes": 3287520
+    }
+  ]
+}

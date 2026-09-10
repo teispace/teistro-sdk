@@ -107,6 +107,81 @@ struct Row {
     at_2400_arcsec: f64,
 }
 
+/// Solves a small symmetric system by Gaussian elimination with partial
+/// pivoting. Used for the least-squares normal equations of a low-degree
+/// polynomial, where the matrix is at most five by five.
+fn solve(mut a: Vec<Vec<f64>>, mut b: Vec<f64>) -> Option<Vec<f64>> {
+    let n = b.len();
+    for column in 0..n {
+        let pivot = (column..n).max_by(|x, y| {
+            a[*x][column]
+                .abs()
+                .total_cmp(&a[*y][column].abs())
+        })?;
+        a.swap(column, pivot);
+        b.swap(column, pivot);
+        let head = a[column][column];
+        if head.abs() < 1e-30 {
+            return None;
+        }
+        for row in (column + 1)..n {
+            let factor = a[row][column] / head;
+            for k in column..n {
+                a[row][k] -= factor * a[column][k];
+            }
+            b[row] -= factor * b[column];
+        }
+    }
+    let mut out = vec![0.0; n];
+    for row in (0..n).rev() {
+        let mut total = b[row];
+        for k in (row + 1)..n {
+            total -= a[row][k] * out[k];
+        }
+        out[row] = total / a[row][row];
+    }
+    Some(out)
+}
+
+/// Least squares fit of a polynomial in `x` to `y`.
+fn polynomial(xs: &[f64], ys: &[f64], degree: usize) -> Option<Vec<f64>> {
+    let terms = degree + 1;
+    let mut a = vec![vec![0.0; terms]; terms];
+    let mut b = vec![0.0; terms];
+    for (x, y) in xs.iter().zip(ys) {
+        let powers: Vec<f64> = (0..terms).map(|k| x.powi(k as i32)).collect();
+        for (row, power) in powers.iter().enumerate() {
+            for (column, other) in powers.iter().enumerate() {
+                a[row][column] += power * other;
+            }
+            b[row] += power * y;
+        }
+    }
+    solve(a, b)
+}
+
+/// What a polynomial correction to the Moon's mean longitude would buy.
+///
+/// The drift the span sweep found is not noise: it is a fit ageing, and a
+/// lunar theory ages mainly through the tidal acceleration its source
+/// ephemeris assumed, which enters the mean longitude as a term in the
+/// square of the time. If that is what the difference is, a correction of
+/// two or three coefficients removes most of it — for tens of bytes
+/// rather than the megabytes a fitted table costs.
+///
+/// The tradition has the same idea and the same name for it: a *bija*
+/// correction, a small seed adjustment that re-anchors an old theory to
+/// the present sky.
+#[derive(Debug, Serialize)]
+struct Correction {
+    degree: usize,
+    coefficients_arcsec: Vec<f64>,
+    worst_before_arcsec: f64,
+    worst_after_arcsec: f64,
+    worst_after_tithi_seconds: f64,
+    bytes: usize,
+}
+
 /// One span, measured with every term kept.
 ///
 /// The span sweep is the finding: truncation converges long before the
@@ -137,6 +212,7 @@ struct Table {
     tithi_seconds_per_arcsec: f64,
     rows: Vec<Row>,
     spans: Vec<Span>,
+    corrections: Vec<Correction>,
 }
 
 /// How many terms survive a threshold, and what they cost in a table.
@@ -275,6 +351,77 @@ fn main() -> ExitCode {
         });
     }
 
+    // What a polynomial correction to the longitude would buy, over the
+    // span `standard` claims.
+    let mut corrections = Vec::new();
+    {
+        let sample_jds: Vec<f64> = (0..)
+            .map(|index| 3.0_f64.mul_add(f64::from(index), 2_378_497.0))
+            .take_while(|jd| *jd <= 2_597_641.0)
+            .collect();
+        let sample_request = PositionRequest::new(&sample_jds, TimeScale::Tt, &bodies, frame);
+        let sample_answered = provider
+            .positions(&sample_request)
+            .expect("the engine in the isolated frame");
+        let mut centuries = Vec::with_capacity(sample_jds.len());
+        let mut differences = Vec::with_capacity(sample_jds.len());
+        let mut engines = Vec::with_capacity(sample_jds.len());
+        let mut theories = Vec::with_capacity(sample_jds.len());
+        for (index, jd) in sample_jds.iter().enumerate() {
+            let cell = sample_answered.at(index, 0).expect("a cell");
+            let (theory_direction, _) = unit(position(&theory, *jd, 0.0));
+            // The signed difference in ecliptic longitude, in arcseconds.
+            let theory_longitude = theory_direction[1].atan2(theory_direction[0]).to_degrees();
+            let mut delta = cell.lon - theory_longitude;
+            while delta > 180.0 {
+                delta -= 360.0;
+            }
+            while delta < -180.0 {
+                delta += 360.0;
+            }
+            centuries.push((jd - 2_451_545.0) / 36_525.0);
+            differences.push(delta * 3_600.0);
+            engines.push(direction_of(cell.lon, cell.lat));
+            theories.push(theory_direction);
+        }
+        let before = engines
+            .iter()
+            .zip(&theories)
+            .map(|(engine, theory)| separation_arcsec(*theory, *engine))
+            .fold(0.0_f64, f64::max);
+        for degree in [1usize, 2, 3, 4] {
+            let Some(coefficients) = polynomial(&centuries, &differences, degree) else {
+                continue;
+            };
+            let mut worst_after: f64 = 0.0;
+            for ((century, engine), theory) in centuries.iter().zip(&engines).zip(&theories) {
+                let correction_arcsec: f64 = coefficients
+                    .iter()
+                    .enumerate()
+                    .map(|(k, c)| c * century.powi(k as i32))
+                    .sum();
+                // Rotate the theory's direction about the pole by the
+                // correction, which is what adjusting a mean longitude does.
+                let angle = (correction_arcsec / 3_600.0).to_radians();
+                let (sin, cos) = angle.sin_cos();
+                let corrected = [
+                    theory[0] * cos - theory[1] * sin,
+                    theory[0] * sin + theory[1] * cos,
+                    theory[2],
+                ];
+                worst_after = worst_after.max(separation_arcsec(corrected, *engine));
+            }
+            corrections.push(Correction {
+                degree,
+                coefficients_arcsec: coefficients.clone(),
+                worst_before_arcsec: before,
+                worst_after_arcsec: worst_after,
+                worst_after_tithi_seconds: worst_after * TITHI_SECONDS_PER_ARCSEC,
+                bytes: coefficients.len() * 8,
+            });
+        }
+    }
+
     let table = Table {
         source: "ELP2000-82B, CDS catalogue VI/79 (Chapront-Touze and Chapront 1988), every file",
         frame: "GEOCENTRIC/J2000/ECLIPTIC/TROPICAL/GEOMETRIC",
@@ -287,6 +434,7 @@ fn main() -> ExitCode {
         tithi_seconds_per_arcsec: TITHI_SECONDS_PER_ARCSEC,
         rows,
         spans,
+        corrections,
     };
     println!(
         "{}",

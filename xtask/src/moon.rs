@@ -144,6 +144,16 @@ struct MoonRow {
     worst_arcsec: f64,
 }
 
+/// One degree of the fitted correction.
+#[derive(Debug, serde::Deserialize)]
+struct MoonCorrection {
+    degree: usize,
+    worst_before_arcsec: f64,
+    worst_after_arcsec: f64,
+    worst_after_tithi_seconds: f64,
+    bytes: usize,
+}
+
 /// The recorded lunar measurement.
 #[derive(Debug, serde::Deserialize)]
 struct MoonFloor {
@@ -151,24 +161,47 @@ struct MoonFloor {
     whole_theory_terms: usize,
     rows: Vec<MoonRow>,
     spans: Vec<MoonSpan>,
+    #[serde(default)]
+    corrections: Vec<MoonCorrection>,
 }
+
+/// One row of the Chebyshev sizing study.
+#[derive(Debug, serde::Deserialize)]
+struct FitRow {
+    interval_days: f64,
+    coefficients: usize,
+    worst_arcsec: f64,
+    bytes: usize,
+}
+
+/// The Chebyshev sizing study.
+#[derive(Debug, serde::Deserialize)]
+struct FitRecord {
+    rows: Vec<FitRow>,
+}
+
+/// Where the Chebyshev sizing study is recorded.
+const FIT: &str = "crates/ephemeris-builtin/data/moon-chebyshev.json";
 
 /// Writes the page.
 pub(crate) fn generate(root: &Path) -> i32 {
     let moon = std::fs::read_to_string(root.join(MOON_FLOOR))
         .ok()
         .and_then(|text| serde_json::from_str::<MoonFloor>(&text).ok());
+    let fitted = std::fs::read_to_string(root.join(FIT))
+        .ok()
+        .and_then(|text| serde_json::from_str::<FitRecord>(&text).ok());
     write(
         root,
         &[Output::new(
             PAGE,
-            page(solar_error_arcsec(root), moon.as_ref()),
+            page(solar_error_arcsec(root), moon.as_ref(), fitted.as_ref()),
         )],
     )
 }
 
 /// The page, as the sections it is made of.
-fn page(solar_arcsec: Option<f64>, moon: Option<&MoonFloor>) -> String {
+fn page(solar_arcsec: Option<f64>, moon: Option<&MoonFloor>, fitted: Option<&FitRecord>) -> String {
     let (sensitivity, worst) = sensitivity_section();
     let mut out = String::new();
     out.push_str(&opening());
@@ -178,6 +211,7 @@ fn page(solar_arcsec: Option<f64>, moon: Option<&MoonFloor>) -> String {
     out.push_str(&finding_section(solar_arcsec));
     if let Some(moon) = moon {
         out.push_str(&measured_section(moon));
+        out.push_str(&routes_section(moon, fitted));
     }
     out.push_str(&claims_section(worst, moon));
     out.push_str(&limits_section(moon.is_some()));
@@ -382,6 +416,123 @@ fn finding_section(solar_arcsec: Option<f64>) -> String {
     let _ = writeln!(
         out,
         "Whether the Moon inherits that drift is **not known and must not be assumed either way**. A tenth of the planets' worst would still be inside the second-accurate budget; a half of it would not. The measurement is the one the planets had — the whole theory against the engine in the isolated frame — and the harness for it exists.\n"
+    );
+    out
+}
+
+/// The three ways out, each with its measured price.
+fn routes_section(moon: &MoonFloor, fitted: Option<&FitRecord>) -> String {
+    let mut out = String::new();
+    let _ = writeln!(out, "## The three ways out, priced\n");
+    let _ = writeln!(
+        out,
+        "The theory is 19.4″ over the span `standard` claims, and that is 44 seconds of tithi against a budget of one. There are three ways out and all three are now measured rather than argued.\n"
+    );
+
+    let _ = writeln!(out, "### Correct the theory's mean longitude\n");
+    let _ = writeln!(
+        out,
+        "The drift is not noise. A lunar theory ages mainly through the tidal acceleration its source ephemeris assumed, which enters the mean longitude as a term in the **square** of the time — so if that is what the difference is, a polynomial of two or three coefficients removes most of it. The tradition has the same idea and the same name for it: a *bija*, a seed correction that re-anchors an old theory to the present sky, which this SDK already computes for the Surya Siddhanta.\n"
+    );
+    let _ = writeln!(out, "| degree | cost | before | after | as tithi |");
+    let _ = writeln!(out, "|---:|---:|---:|---:|---:|");
+    for correction in &moon.corrections {
+        let _ = writeln!(
+            out,
+            "| {} | {} bytes | {:.2}″ | {:.2}″ | {:.1} s |",
+            correction.degree,
+            correction.bytes,
+            correction.worst_before_arcsec,
+            correction.worst_after_arcsec,
+            correction.worst_after_tithi_seconds
+        );
+    }
+    let best = moon
+        .corrections
+        .iter()
+        .min_by(|a, b| a.worst_after_arcsec.total_cmp(&b.worst_after_arcsec));
+    if let Some(best) = best {
+        let quadratic = moon.corrections.iter().find(|c| c.degree == 2);
+        if let Some(quadratic) = quadratic {
+            let _ = writeln!(
+                out,
+                "\n**It saturates at the square**, which is the physics rather than a coincidence: degree three and four buy nothing over degree two, so what the polynomial is removing is the tidal term and not a curve fitted to noise. {} bytes take the Moon from {:.2}″ to {:.2}″ — {:.0} seconds of tithi to {:.1} — over six centuries. What remains is the periodic part of the difference, which no polynomial can reach.\n",
+                quadratic.bytes,
+                quadratic.worst_before_arcsec,
+                quadratic.worst_after_arcsec,
+                quadratic.worst_before_arcsec * 2.25,
+                quadratic.worst_after_tithi_seconds
+            );
+        }
+        let _ = writeln!(
+            out,
+            "The best of them is degree {} at {:.2}″.\n",
+            best.degree, best.worst_after_arcsec
+        );
+    }
+
+    out.push_str(&fitted_route(fitted));
+
+    let _ = writeln!(out, "### Narrow what `standard` claims\n");
+    let _ = writeln!(
+        out,
+        "The span table above is this route's price list. The theory holds under four seconds of tithi over 1900 to 2100 and under eight over 1850 to 2150, so a tier that claims three centuries rather than six needs nothing built at all — it needs the claim to say so.\n"
+    );
+    out
+}
+
+/// The route that replaces the theory with a fitted table.
+fn fitted_route(fitted: Option<&FitRecord>) -> String {
+    let mut out = String::new();
+    let Some(fitted) = fitted else {
+        return out;
+    };
+    let _ = writeln!(out, "### Replace the theory with a fitted table\n");
+    let _ = writeln!(
+        out,
+        "ADR-0021 names a Chebyshev refit from a modern kernel as the `reference` tier. It has an arithmetic problem the ADR does not price: **an analytic theory costs the same whatever span it is asked for, and a fitted table costs one block per interval.** The Moon circles in 27 days where Jupiter takes twelve years, so the Moon is where that bites.\n"
+    );
+    let _ = writeln!(
+        out,
+        "| interval | coefficients | worst | size over 1800 to 2400 |"
+    );
+    let _ = writeln!(out, "|---:|---:|---:|---:|");
+    for row in &fitted.rows {
+        let _ = writeln!(
+            out,
+            "| {:.0} days | {} | {} | {} |",
+            row.interval_days,
+            row.coefficients,
+            if row.worst_arcsec < 0.0001 {
+                "under 0.0001″".to_string()
+            } else {
+                format!("{:.4}″", row.worst_arcsec)
+            },
+            if row.bytes >= 1024 * 1024 {
+                format!("{:.2} MB", kilobytes(row.bytes) / 1024.0)
+            } else {
+                format!("{:.0} KB", kilobytes(row.bytes))
+            }
+        );
+    }
+    let cheapest = fitted
+        .rows
+        .iter()
+        .filter(|row| row.worst_arcsec <= 0.445)
+        .min_by_key(|row| row.bytes);
+    if let Some(row) = cheapest {
+        let _ = writeln!(
+            out,
+            "\n**The cheapest fit that reaches the second-accurate budget is {:.2} MB** — {:.0}-day blocks of {} coefficients at {:.3}″. ADR-0021 budgets about 1 MB for *every* body at this tier; the Moon alone is several times that, so it is the ADR's ladder that has to move and not the measurement.\n",
+            kilobytes(row.bytes) / 1024.0,
+            row.interval_days,
+            row.coefficients,
+            row.worst_arcsec
+        );
+    }
+    let _ = writeln!(
+        out,
+        "The error is the fit's **representation** error against the theory it is fitted to, which is what a table designer chooses. It is deliberately not accuracy against an ephemeris: how smooth the Moon is, and so how well a polynomial catches it, is the same question whichever modern source it comes from.\n"
     );
     out
 }

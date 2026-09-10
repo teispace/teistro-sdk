@@ -152,5 +152,57 @@
       "worst_tithi_seconds": 66.89930628693931,
       "radius_relative": 9.573335489022711e-6
     }
+  ],
+  "corrections": [
+    {
+      "degree": 1,
+      "coefficients_arcsec": [
+        -2.017830284494976,
+        -2.254072340666872
+      ],
+      "worst_before_arcsec": 19.397764189801883,
+      "worst_after_arcsec": 8.478089930356536,
+      "worst_after_tithi_seconds": 19.06974304859952,
+      "bytes": 16
+    },
+    {
+      "degree": 2,
+      "coefficients_arcsec": [
+        -0.1426741296784546,
+        -0.3789418549876826,
+        -0.9375909126797658
+      ],
+      "worst_before_arcsec": 19.397764189801883,
+      "worst_after_arcsec": 3.1993200434306344,
+      "worst_after_tithi_seconds": 7.196221278569375,
+      "bytes": 24
+    },
+    {
+      "degree": 3,
+      "coefficients_arcsec": [
+        -0.12099635762529823,
+        -0.3907667491198112,
+        -0.9523715245143649,
+        0.004927005505592167
+      ],
+      "worst_before_arcsec": 19.397764189801883,
+      "worst_after_arcsec": 3.2442407932871817,
+      "worst_after_tithi_seconds": 7.297261390711562,
+      "bytes": 32
+    },
+    {
+      "degree": 4,
+      "coefficients_arcsec": [
+        -0.12126246198200961,
+        -0.404062993939351,
+        -0.9503768611812915,
+        0.009580774016181263,
+        -0.001163473981828837
+      ],
+      "worst_before_arcsec": 19.397764189801883,
+      "worst_after_arcsec": 3.2262597971365974,
+      "worst_after_tithi_seconds": 7.2568167883109975,
+      "bytes": 40
+    }
   ]
 }
