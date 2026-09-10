@@ -326,73 +326,61 @@ nowhere else. And the memo reports the inner provider's capabilities
 unchanged, so a context that wraps and a context that does not stamp
 their values identically.
 
-### A3. Parallelism — measured first, and the measurement changed it
+### A3. Parallelism — closed by measurement, and not built
 
-*Corrected 2026-09-10, before a line of it was written.* A3 was to spend
-threads on a batch through `std::thread::scope`, chunking by index so the
-answers stay bit-identical. The chunking is still right. What was wrong
-was the assumption underneath it: that threads over a batch would
-overlap the work.
+*Two measurements, taken before any of it was written, closed it.*
 
-**The engine says otherwise about itself.** A `teimeris::Context` is
-`Send` and deliberately **not** `Sync`, and the binding says why: *"N
-contexts may be used concurrently from N threads with no locking — which
-is a statement about N contexts, not about one shared between them. A
-context mutates its caches on every call."* So the shipped adapter holds
-`Mutex<Context>`, and **every ephemeris call the SDK makes takes one
-lock**.
+**First: how much of a batch a thread could overlap.** A
+`teimeris::Context` is `Send` and deliberately **not** `Sync`, and the
+engine says why: *"N contexts may be used concurrently from N threads
+with no locking — which is a statement about N contexts, not about one
+shared between them. A context mutates its caches on every call."* So
+the adapter holds `Mutex<Context>` and every ephemeris call queues.
+Measured over a year of the Moon's sign ingresses through the real
+engine, **46–48% of the work is inside that lock** and 52–54% is the
+SDK's own arithmetic
+(`adapters/ephemeris-teimeris/rust/tests/parallelism_probe.rs`).
 
-*Measured* (`adapters/ephemeris-teimeris/rust/tests/parallelism_probe.rs`,
-a year of the Moon's sign ingresses through the real engine, 160
-crossings and 1077 provider calls):
+Threads over one provider overlap only the second: **1.7× at four
+threads, 2.2× at any number of cores.** That is the ceiling of the
+design this step assumed.
 
-| | share |
+**Second: what the way out costs.** The engine's own rule points at a
+provider per thread, so the question became what a second context costs
+(`tests/context_cost.rs`):
+
+| | |
 |---|---:|
-| inside the engine, behind its lock | **46–48%** |
-| the SDK's own arithmetic outside it | 52–54% |
+| opening one engine context | **43.8 ms** |
+| one `positions` call, three cells | 2.25 µs |
+| **a context is worth** | **19 491 calls** |
+| the largest batch this project measures | **8 174 calls** |
 
-Threads over a batch that shares one provider can overlap **only the
-second row**. Amdahl on 46% serialised: 1.7× at four threads, and **2.2×
-however many cores are given**. That is the ceiling of the design A3
-assumed, and no amount of hardware moves it.
+A fifty-day almanac with the memo makes 8 174 provider calls in total.
+**A thread that opened its own context would pay more for it than the
+whole batch costs** — and four threads would pay three of them, 131 ms,
+to save at most half of a batch that runs in about 160. Provider per
+thread loses for any single batch, and it is not close.
 
-**So the shape is not threads over one provider. It is a provider per
-thread** — which is what the engine's own rule says, and what would
-overlap both rows. That is a port question before it is a threading
-one: the SDK is handed *a* provider, and nothing in the port says how to
-get another. It wants either a provider that can be cloned per thread or
-a factory the consumer supplies, and both are a change to what an
-adapter must offer rather than a change to a loop.
+**So the step is closed rather than blocked, and nothing is built.** The
+shape that does win is a pool of contexts that outlives many batches,
+and that is the **consumer's** to keep rather than the SDK's to make —
+and it needs nothing from the SDK, because it already works: build N
+providers, build N almanacs or founders on them, and run them on N
+threads. The SDK is `Send + Sync` throughout and has never stood in the
+way of that.
 
-*What has to be settled before it is built:*
+What the SDK would add by threading a *single* batch internally is at
+most 2.2×, at the cost of a knob, a thread pool's worth of lifetime
+questions, and a memo that is either per-thread or contended — and the
+counts on the measured page would stop being deterministic the moment a
+shared memo is read from more than one thread, which would cost the
+project a gate to buy a fraction of a factor. That is a bad trade and
+the numbers say so.
 
-1. **How the SDK gets N providers.** A `Clone` bound would exclude every
-   adapter that owns a handle, which is all of them. A factory
-   (`fn provider(&self) -> Result<Box<dyn EphemerisProvider>>`) is
-   another optional override in the port's own idiom, declared in
-   `Capabilities` like the rest, and an adapter that cannot make a second
-   one says so and is run on one thread.
-2. **What a thread costs against what it saves.** A `teimeris::Context`
-   opens ephemeris files; N of them is N times that memory and that
-   setup. The threshold is a measurement over the real adapter and not a
-   guess.
-3. **What stays gate-able.** A timing belongs to the machine, so the
-   measured page cannot hold one. What it can hold is that the answers
-   are bit-identical whatever the thread count, and that the *counts* are
-   unchanged — and the counts are only deterministic if the memo is
-   per-thread or the measurement runs single-threaded, which is itself a
-   thing to decide rather than discover.
-
-Until those are settled this stays unbuilt, and the plan says so rather
-than shipping a knob that buys 1.7× at four threads and calls it
-parallelism.
-
-### A4. The order, and the number to beat
-
-A chart batch of fifty costs 3 434 calls today. A2 alone removes about
-two thirds of them; A1 removes most of what remains; A3 divides what is
-left by the cores. The page is regenerated at each step and the number
-moves in public.
+*If this is ever revisited*, the test asserts the threshold: it fails if
+a context ever becomes cheap enough to be worth fewer calls than the
+largest measured batch.
 
 ## Part B — the engine passthrough
 
@@ -651,9 +639,10 @@ the emitted code is verified in its own language.
    *done*; the adapter's generated dispatch is the engine's side.
 8. **B2** the two entry points and the proxy in all three bindings —
    *done*.
-9. **A3** parallelism — *measured, not built*: threads over one provider
-   cap at 2.2× because 46% of a batch is behind the engine's own lock, so
-   the shape is a provider per thread and that is a port question first.
+9. **A3** parallelism — *closed, not built*: threads over one provider
+   cap at 2.2×, and a provider per thread costs 43.8 ms against a batch
+   of 8 174 calls, so a pool that outlives many batches is the shape and
+   it is the consumer's, which the SDK already allows.
 10. **B3** `libffi` dispatch behind a feature.
 11. **C1** one spelling per name — *done*.
 

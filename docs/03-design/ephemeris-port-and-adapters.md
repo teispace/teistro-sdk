@@ -258,6 +258,50 @@ native obliquity and 1102 µs with the SDK's; the Swiss library 2234 µs
 directly, 2248 µs and 2260 µs through the trait and the vtable, 2604 µs
 and 2565 µs completed.
 
+### Threads: one provider per thread, and the SDK stays out of it
+
+A provider is `Send + Sync`, so the SDK never stops a caller threading
+its own work. What a caller should thread, and what the SDK deliberately
+does **not** do for them, is a measurement rather than a preference.
+
+An engine's context is usually not shareable. Teimeris says so directly
+— *"N contexts may be used concurrently from N threads with no locking,
+which is a statement about N contexts, not about one shared between
+them"* — so its adapter holds `Mutex<Context>` and every call queues.
+Measured over a year of the Moon's sign ingresses, **46–48% of a batch
+is inside that lock** and the rest is the SDK's arithmetic, so threads
+that share one provider can overlap only the rest: 1.7× at four threads
+and 2.2× at any number of cores.
+
+The way out is a context each, and its price decides everything:
+**opening one costs 43.8 ms, which is 19 491 `positions` calls, and the
+largest batch this project measures is 8 174**. A thread that opened its
+own context for one batch would pay more for it than the batch costs.
+
+So the shape that wins is a **pool of providers that outlives many
+batches**, and it belongs to the caller, who knows how long their process
+lives and how many cores they mean to spend:
+
+```rust
+// One provider, one almanac, one thread — as many as you have work for.
+std::thread::scope(|scope| {
+    for (provider, range) in providers.iter().zip(ranges) {
+        scope.spawn(move || {
+            let model = DrikSun::new(provider, /* … */);
+            let almanac = Almanac::new(provider, /* … */);
+            almanac.between(range.from, range.to, &place)
+        });
+    }
+});
+```
+
+Nothing in the SDK has to change for that, and nothing in the SDK does
+it for you. Threading a single batch internally would buy at most 2.2×
+and cost a knob, a memo that is either per-thread or contended, and the
+determinism of the counts the measured page gates — a bad trade, and the
+numbers rather than the taste say so
+(`07-roadmap/02-plan-performance-and-passthrough.md`, A3).
+
 ## 9. Tests and the conformance kit
 
 The kit (`crates/ephemeris-kit`) runs the same eighteen checks against
