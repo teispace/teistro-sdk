@@ -739,6 +739,14 @@ fn infer_roles(api: &mut Api) {
 
 /// Every `enum=` names an enum, every `blob=` a schema, every blob-out
 /// function a schema, and every name is unique.
+///
+/// Unique across **every** kind of item, not within each: a binding
+/// emits one declaration per item into one namespace, so an enum and a
+/// blob of one name collide there — a compile error in Dart and
+/// TypeScript, and in Python the later one silently wins and the earlier
+/// becomes unreachable. The port and the catalogue each hold concepts a
+/// name could collide over: a `Direction` is a crossing's in one and a
+/// compass point in the other.
 fn check_links(api: &Api) -> Result<(), ExtractError> {
     let mut names = BTreeSet::new();
     for name in api
@@ -748,6 +756,7 @@ fn check_links(api: &Api) -> Result<(), ExtractError> {
         .chain(api.structs.iter().map(|s| s.name.as_str()))
         .chain(api.opaques.iter().map(|o| o.name.as_str()))
         .chain(api.callbacks.iter().map(|c| c.name.as_str()))
+        .chain(api.blobs.iter().map(|b| b.name.as_str()))
     {
         if !names.insert(name) {
             return Err(ExtractError::new(name, "defined twice across the sources"));
@@ -1060,5 +1069,62 @@ pub extern "C" fn ts_abi_version() -> u32 { TS_ABI_VERSION }
                 .detail
                 .contains("blob")
         );
+    }
+
+    /// Two items of one name are refused where the author is.
+    ///
+    /// An enum and a struct of one name were already refused; this says
+    /// so, because nothing had, and the rule is what lets the port and
+    /// the catalogue each keep a `Direction` — a crossing's in one and a
+    /// compass point in the other — without one shadowing the other in
+    /// every binding.
+    #[test]
+    fn two_items_of_one_name_are_refused() {
+        let collision = Source {
+            relative: "a.rs".into(),
+            text: r#"
+/// `api: constant`
+pub const TS_ABI_VERSION: u32 = 1;
+
+/// A direction a crossing goes.
+#[repr(u32)]
+pub enum Direction { Rising = 0, Falling = 1 }
+
+/// A direction on the ground, which is a different thing.
+#[repr(C)]
+pub struct Direction { /// The bearing.
+pub bearing_deg: f64 }
+
+#[unsafe(no_mangle)] pub extern "C" fn ts_x() -> u32 { 0 }
+"#
+            .into(),
+        };
+        let refused = extract(&[collision], &inputs()).unwrap_err();
+        assert_eq!(refused.where_, "Direction");
+        assert!(
+            refused.detail.contains("defined twice"),
+            "{}",
+            refused.detail
+        );
+    }
+
+    /// And one name used once is not.
+    #[test]
+    fn one_item_of_each_name_extracts() {
+        let fine = Source {
+            relative: "a.rs".into(),
+            text: r#"
+/// `api: constant`
+pub const TS_ABI_VERSION: u32 = 1;
+
+/// A direction a crossing goes.
+#[repr(u32)]
+pub enum Direction { Rising = 0, Falling = 1 }
+
+#[unsafe(no_mangle)] pub extern "C" fn ts_x() -> u32 { 0 }
+"#
+            .into(),
+        };
+        assert!(extract(&[fine], &inputs()).is_ok());
     }
 }

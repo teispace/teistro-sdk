@@ -541,16 +541,37 @@ must produce the same JSON for the same call.
 
 ## Part C — what the same brief also asks for
 
-### C1. One spelling per name
+### C1. One spelling per name — built
 
-A name should be spelled in one place. The known live instance:
-`Body::key()` hand-writes `"SUN"` while the generated catalogue's
-`Graha::Sun` also spells it, and nothing checks that they agree. They are
-genuinely different vocabularies — the port's `MEAN_NODE` and
-`TRUE_NODE` are both the catalogue's `RAHU` — so the fix is not to merge
-them but to **gate the overlap**: every `Body` that maps to a `Graha`
-must spell the same key. A `check-names` rule, in the same family as
-`knob-has-a-reader`.
+*The known instance, gated.* `Body::key` writes `"SUN"` and the
+generated catalogue's `Graha::key` writes it too, and nothing checked
+that they still matched. They are **not merged**, because they are
+genuinely different vocabularies: a `Body` is something an ephemeris
+computes and a `Graha` is something a chart reads, and the port has two
+nodes where the catalogue has one Rahu. What is gated is the overlap —
+ten names — and the pairing is the one `Body::graha` **already owns**
+rather than a third list to keep in step. Two tests: every body that is
+a graha spells it the catalogue's way, and the exceptions are exactly
+the two nodes (both Rahu, so the port must keep its own spelling to say
+which) and the two apogees (not grahas), with Ketu the one graha no body
+is because it is derived rather than computed. A new body or a new graha
+cannot quietly join them.
+
+*And the audit the same brief asked for.* Looking for other names spelled
+twice turned up one thing worth having: the port and the catalogue each
+hold a **`Direction`** — a crossing's in one, a compass point in the
+other. Every binding is generated from the API description and emits one
+declaration per item into **one namespace**, so two items of a name
+collide there: a compile error in Dart and TypeScript, and in Python the
+later one silently wins and the earlier becomes unreachable.
+
+The extractor already refused that for enums, structs, opaques,
+callbacks and functions — and nothing said so, so now two tests do. It
+did **not** cover blobs, which is one word in the chain that already
+existed. Worth recording how that went: the first version of this change
+added a *second* duplicate-name checker beside the one already there,
+which is the very fault the step is about. Reading the existing check
+before writing a new one is the whole lesson.
 
 ### C2. Generated code in other languages
 
@@ -590,7 +611,7 @@ the emitted code is verified in its own language.
    *done*.
 9. **A3** `compute.parallelism` with the threshold measured.
 10. **B3** `libffi` dispatch behind a feature.
-11. **C1** the `check-names` rule.
+11. **C1** one spelling per name — *done*.
 
 Each step regenerates the measured page, so the numbers move in public
 and a regression is a failed gate rather than a memory.
