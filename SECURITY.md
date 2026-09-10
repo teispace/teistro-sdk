@@ -2,11 +2,13 @@
 
 ## Reporting a vulnerability
 
-Please do not open a public issue for a security problem. Report it
-privately through GitHub's private vulnerability reporting for this
-repository (Security tab, "Report a vulnerability"). The maintainers
-acknowledge reports within three working days and aim to publish a fix
-within ninety days, sooner for anything exploitable.
+Please do not open a public issue for a security problem. Report it to
+**support@teispace.com**, or privately through GitHub's private
+vulnerability reporting for this repository (Security tab, "Report a
+vulnerability") if you would rather the report stayed on GitHub. Either
+reaches the maintainers. They acknowledge reports within three working
+days and aim to publish a fix within ninety days, sooner for anything
+exploitable.
 
 The SDK performs no I/O of its own; its attack surface is its API inputs,
 consumer-supplied providers (callbacks) and data packs. Reports about any

@@ -9,7 +9,7 @@ description = "The Teistro SDK for Python: an ephemeris-agnostic astrology engin
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
-authors = [{ name = "Teispace" }]
+authors = [{ name = "Teispace", email = "support@teispace.com" }]
 keywords = ["astrology", "jyotisha", "ephemeris", "panchanga", "calendar"]
 classifiers = [
   "Private :: Do Not Upload",
