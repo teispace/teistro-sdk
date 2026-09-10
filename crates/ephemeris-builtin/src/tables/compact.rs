@@ -33,6 +33,46 @@ const fn t(amplitude: f64, phase: f64, frequency: f64, power: u8) -> Term {
     Term::new(amplitude, phase, frequency, power)
 }
 
+/// Which tier these tables are.
+pub const TIER_NAME: &str = "compact";
+
+/// The amplitude below which a planetary term was dropped, in
+/// astronomical units. Zero keeps the whole theory.
+pub const PLANET_THRESHOLD_AU: f64 = 3e-6;
+
+/// The worst the truncation costs a planet's geocentric direction
+/// over 1800 to 2400, in arcseconds, measured by the generator.
+///
+/// This is what the **table** costs, not what a chart is wrong by:
+/// the theory's own error against a modern ephemeris is separate
+/// and larger, and is published in
+/// `03-design/builtin-ephemeris-measured.md`.
+pub const PLANET_TRUNCATION_ARCSEC: f64 = 21.272914954334453;
+
+/// How many planetary terms this tier keeps.
+pub const PLANET_TERMS: usize = 2503;
+
+/// The amplitude below which a lunar term was dropped, in each
+/// coordinate's own unit.
+pub const MOON_THRESHOLD: f64 = 1.0;
+
+/// The worst the truncation costs the Moon's direction over 1800
+/// to 2400, in arcseconds.
+pub const MOON_TRUNCATION_ARCSEC: f64 = 18.089460404508007;
+
+/// How many lunar terms this tier keeps, of both kinds.
+pub const MOON_TERMS: usize = 160;
+
+/// What the coefficients cost in a binary: a planetary term is
+/// three `f64` and a power, and a lunar one its multipliers and
+/// two `f64`.
+pub const DATA_BYTES: usize = 85216;
+
+/// What this tier is allowed to cost. The crate's tests hold
+/// [`DATA_BYTES`] to it, so a tier that grew past its budget
+/// fails rather than ships.
+pub const BUDGET_BYTES: usize = 131072;
+
 /// VSOP87A, truncated at 3e-6 astronomical units.
 ///
 /// Heliocentric rectangular coordinates in the ecliptic and equinox
