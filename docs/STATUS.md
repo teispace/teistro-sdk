@@ -307,8 +307,18 @@ provider's DUT1).
    [ADR-0021](08-decisions/adr-0021-reference-ephemeris-path.md)). It is
    the largest unstarted piece and the one that lets a full chart
    compute with nothing but the SDK installed. It has no plan page yet,
-   and writing one — the way `02-plan-…` was written, from a
-   falsification pass rather than from an intention — is its first step.
+   Its first measurements are done and three of them falsified the plan
+   they were measuring, which is what the passes are for. The truncation
+   curve holds every size claim; the theory floor does not — VSOP87's
+   Uranus and Neptune drift 4.7″ and 6.6″ against a modern ephemeris
+   because they were fitted to DE200 in 1981, and no truncation mends
+   that. The Moon's chosen theory turned out to be unobtainable, and the
+   one that can be had misses by 19.4″ over the span `standard` claims.
+   ADR-0027 settles it: a quadratic bija of twenty-four bytes takes the
+   Moon to 3.0″ over six centuries and 0.26″ over the two it is fitted
+   to, where a fitted table would have cost 3.76 MB. The pages are
+   `03-design/builtin-ephemeris-measured.md` and
+   `03-design/lunar-accuracy-measured.md`.
 
    [`07-roadmap/02-plan-performance-and-passthrough.md`](07-roadmap/02-plan-performance-and-passthrough.md)
    is finished: every step is built, or closed by a measurement that
