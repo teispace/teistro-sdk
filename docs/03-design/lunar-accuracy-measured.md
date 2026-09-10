@@ -83,6 +83,45 @@ inside the second-accurate budget; a half of it would not. The
 measurement is the one the planets had — the whole theory against the
 engine in the isolated frame — and the harness for it exists.
 
+## What ELP2000-82B actually costs
+
+Measured against the engine in the frame the theory is stated in —
+geocentric, ecliptic, J2000, geometric — on the engine's `compatible`
+profile. The whole theory is 37 872 terms.
+
+**Truncation is not what limits it.** The ladder converges long before
+the terms run out, so the Moon is cheap and the theory is the whole
+cost:
+
+| threshold | terms | table | worst |
+|---:|---:|---:|---:|
+| 1 | 160 | 9 KB | 31.67″ |
+| 0.3 | 268 | 14 KB | 23.47″ |
+| 0.1 | 416 | 21 KB | 21.34″ |
+| 0.03 | 722 | 33 KB | 19.68″ |
+| 0.01 | 1139 | 49 KB | 19.29″ |
+| 0.001 | 3410 | 123 KB | 19.29″ |
+| 0 (whole theory) | 37 872 | 1084 KB | 19.29″ |
+
+**What limits it is distance from its own epoch.** Every row below keeps
+every term:
+
+| span | worst | as tithi boundary | radius | verdict |
+|---|---:|---:|---:|---|
+| 1980 to 2020 | 0.254″ | 0.57 s | 1.3e-7 | **second-accurate** |
+| 1900 to 2100 | 1.685″ | 3.79 s | 5.7e-7 | minute-accurate |
+| 1850 to 2150 | 3.310″ | 7.45 s | 1.1e-6 | minute-accurate |
+| 1800 to 2400 | 19.398″ | 43.63 s | 6.2e-6 | minute-accurate |
+| 1700 to 2500 | 29.742″ | 66.90 s | 9.6e-6 | neither |
+
+The first row is the check that the port is faithful rather than the
+finding: at the theory's own epoch it agrees with a modern ephemeris to
+a quarter of an arcsecond, which is what a correct reading of a
+DE200-fitted theory should give. Everything after it is the fit ageing
+— and it ages fast, because a lunar theory's mean longitude carries
+the tidal acceleration its source ephemeris assumed, and an error there
+grows with the square of the time.
+
 ## What the claims measure to
 
 | proposed rule | verdict | measured |
@@ -90,13 +129,16 @@ engine in the isolated frame — and the harness for it exists.
 | the Moon decides the tiers, not the planets | **holds** | one arcsecond of Moon is 2.25 s of tithi; one arcsecond of a planet is a position nobody times |
 | a second-accurate panchanga is reachable with an analytic theory | **holds** | ELP/MPP02's published 2.4 m is 0.003 s |
 | the chosen theory can be obtained | falsified | ELP/MPP02 is published at an address that no longer serves it, was never captured by the archive, and reaches the public only through copyleft re-implementations that ADR-0019 refuses |
+| `standard` holds 2 arcseconds for the Moon over 1800 to 2400 | falsified | ELP2000-82B, every term kept, is 19.40″ — 44 s of tithi |
+| the Moon's table is a cost worth optimising | falsified | the theory's own accuracy is reached at 49 KB; the remaining 36 733 terms buy nothing |
 
 
 ## What this does not measure
 
-**What ELP2000-82B actually costs.** Its accuracy against a modern
-ephemeris is the next measurement, and the floor harness already exists:
-it is the same comparison the planets had, in the same isolated frame.
+**What a better lunar source would cost.** ELP/MPP02 cannot be had; what
+remains is the `reference` tier's refit from a modern kernel, or
+`ephemeris-de` reading one directly, and neither is sized here. That is
+the next decision, and it is an ADR rather than a build step.
 
 **The rate distribution.** The table uses the slowest the quantity ever
 moves, which is the worst case and is what a bound needs. A typical

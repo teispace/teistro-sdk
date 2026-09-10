@@ -19,6 +19,7 @@
 //! tables; it has no use for a parser of a 5.7 MB text file, and paying
 //! for one in a wasm binary would be the opposite of the point.
 
+pub mod elp;
 pub mod series;
 
 #[cfg(feature = "ingest")]

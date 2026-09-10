@@ -1,0 +1,156 @@
+{
+  "source": "ELP2000-82B, CDS catalogue VI/79 (Chapront-Touze and Chapront 1988), every file",
+  "frame": "GEOCENTRIC/J2000/ECLIPTIC/TROPICAL/GEOMETRIC",
+  "from_jd": 2378497.0,
+  "to_jd": 2597641.0,
+  "step_days": 7.0,
+  "samples": 31307,
+  "engine_profile": "compatible",
+  "whole_theory_terms": 37872,
+  "tithi_seconds_per_arcsec": 2.2492970946579196,
+  "rows": [
+    {
+      "threshold": 1.0,
+      "terms": 160,
+      "bytes": 9369,
+      "mean_arcsec": 5.626245619873158,
+      "scatter_arcsec": 26.04664511467672,
+      "worst_arcsec": 31.672890734549878,
+      "worst_tithi_seconds": 71.24174110864078,
+      "radius_relative": 0.00004660053826051406,
+      "at_1800_arcsec": 4.649049113825605,
+      "at_2100_arcsec": 7.423241713285977,
+      "at_2400_arcsec": 16.26370231486728
+    },
+    {
+      "threshold": 0.3,
+      "terms": 268,
+      "bytes": 14826,
+      "mean_arcsec": 4.673178534592729,
+      "scatter_arcsec": 18.792978544941825,
+      "worst_arcsec": 23.466157079534554,
+      "worst_tithi_seconds": 52.78235894178344,
+      "radius_relative": 0.000017846759207741506,
+      "at_1800_arcsec": 2.8132377314093056,
+      "at_2100_arcsec": 3.079869054243686,
+      "at_2400_arcsec": 15.135699717705965
+    },
+    {
+      "threshold": 0.1,
+      "terms": 416,
+      "bytes": 21660,
+      "mean_arcsec": 4.375861410981232,
+      "scatter_arcsec": 16.966802463015398,
+      "worst_arcsec": 21.34266387399663,
+      "worst_tithi_seconds": 48.00599184404116,
+      "radius_relative": 0.000011429996023734617,
+      "at_1800_arcsec": 2.8936019909828152,
+      "at_2100_arcsec": 2.411123551345764,
+      "at_2400_arcsec": 16.094790044454772
+    },
+    {
+      "threshold": 0.03,
+      "terms": 722,
+      "bytes": 33948,
+      "mean_arcsec": 4.290838375000668,
+      "scatter_arcsec": 15.386049116639189,
+      "worst_arcsec": 19.676887491639857,
+      "worst_tithi_seconds": 44.259165866856286,
+      "radius_relative": 7.73963828474442e-6,
+      "at_1800_arcsec": 2.980356503388105,
+      "at_2100_arcsec": 1.7711724701049099,
+      "at_2400_arcsec": 15.674261442443202
+    },
+    {
+      "threshold": 0.01,
+      "terms": 1139,
+      "bytes": 50289,
+      "mean_arcsec": 4.26794485470579,
+      "scatter_arcsec": 15.020979459869967,
+      "worst_arcsec": 19.288924314575755,
+      "worst_tithi_seconds": 43.38652141985175,
+      "radius_relative": 6.499651429998416e-6,
+      "at_1800_arcsec": 2.996948638018806,
+      "at_2100_arcsec": 1.5715636607471077,
+      "at_2400_arcsec": 15.631784173091344
+    },
+    {
+      "threshold": 0.001,
+      "terms": 3410,
+      "bytes": 125895,
+      "mean_arcsec": 4.27078528004797,
+      "scatter_arcsec": 15.022564342430648,
+      "worst_arcsec": 19.29334962247862,
+      "worst_tithi_seconds": 43.396475252060625,
+      "radius_relative": 6.2134294189849675e-6,
+      "at_1800_arcsec": 3.0140230917819,
+      "at_2100_arcsec": 1.5316822427808554,
+      "at_2400_arcsec": 15.572873351506791
+    },
+    {
+      "threshold": 0.0,
+      "terms": 37872,
+      "bytes": 1109829,
+      "mean_arcsec": 4.270856802911652,
+      "scatter_arcsec": 15.022730923950718,
+      "worst_arcsec": 19.29358772686237,
+      "worst_tithi_seconds": 43.39701081955923,
+      "radius_relative": 6.234995817481038e-6,
+      "at_1800_arcsec": 3.0099454093707343,
+      "at_2100_arcsec": 1.5457252578205662,
+      "at_2400_arcsec": 15.57395622404112
+    }
+  ],
+  "spans": [
+    {
+      "label": "1980 to 2020",
+      "from_jd": 2444240.0,
+      "to_jd": 2458850.0,
+      "samples": 4871,
+      "worst_arcsec": 0.25445035781834807,
+      "mean_arcsec": 0.13214678181295494,
+      "worst_tithi_seconds": 0.5723344505754784,
+      "radius_relative": 1.3390846426796e-7
+    },
+    {
+      "label": "1900 to 2100",
+      "from_jd": 2415021.0,
+      "to_jd": 2488070.0,
+      "samples": 24350,
+      "worst_arcsec": 1.6852639388749935,
+      "mean_arcsec": 0.4349325067539176,
+      "worst_tithi_seconds": 3.7906592814432845,
+      "radius_relative": 5.679484911844169e-7
+    },
+    {
+      "label": "1850 to 2150",
+      "from_jd": 2396759.0,
+      "to_jd": 2506332.0,
+      "samples": 36525,
+      "worst_arcsec": 3.3104608804187663,
+      "mean_arcsec": 0.8331819377926178,
+      "worst_tithi_seconds": 7.44621004030463,
+      "radius_relative": 1.1201780811254622e-6
+    },
+    {
+      "label": "1800 to 2400",
+      "from_jd": 2378497.0,
+      "to_jd": 2597641.0,
+      "samples": 73049,
+      "worst_arcsec": 19.397764189801883,
+      "mean_arcsec": 4.270865931660751,
+      "worst_tithi_seconds": 43.63133463498081,
+      "radius_relative": 6.225508780948875e-6
+    },
+    {
+      "label": "1700 to 2500",
+      "from_jd": 2342338.0,
+      "to_jd": 2634166.0,
+      "samples": 97277,
+      "worst_arcsec": 29.7423165867351,
+      "mean_arcsec": 6.477147558463975,
+      "worst_tithi_seconds": 66.89930628693931,
+      "radius_relative": 9.573335489022711e-6
+    }
+  ]
+}
