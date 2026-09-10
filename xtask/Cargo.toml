@@ -9,6 +9,7 @@ publish = false
 description = "Repository tasks for Teistro SDK: gates, generators, release steps"
 
 [dependencies]
+teistro-ephemeris-builtin = { path = "../crates/ephemeris-builtin", features = ["ingest"] }
 flate2 = "1"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
