@@ -1,8 +1,13 @@
 # Roadmap
 
 Status: `draft`, revised 2026-09-04 after the day's decisions, again
-for ADR-0016 to ADR-0023, and on 2026-09-05 to record Phase 2's exit
-(`STATUS.md`, twenty-sixth session); it was revised for ADR-0016 to ADR-0023 (exact arithmetic, kernels, containment, the
+for ADR-0016 to ADR-0023, on 2026-09-05 to record Phase 2's exit
+(`STATUS.md`, twenty-sixth session), and on **2026-09-10 for ADR-0025 and
+ADR-0026**: v1.0 now ships the whole feature universe rather than
+baseline parity — Western and Hellenistic move out of v1.x into Phase 7 —
+and chart geometry moves out of Phase 9 into Phase 4 with an optional
+first-party SVG renderer in Phase 6. The evidence for both is
+`01-research/competitive-analysis/02-developer-market.md`; it was revised for ADR-0016 to ADR-0023 (exact arithmetic, kernels, containment, the
 reference ephemeris path, the conformance repository, type safety). Team: the
 maintainer and this assistant (Q14); the repository is public, so CI
 minutes are not a constraint. Phases are ordered by dependency and each
@@ -187,9 +192,11 @@ are within budget.
 Bhava-Chalit variants (a short falsification pass over the four methods
 first), `vargas` as the single table-driven evaluator with every
 baseline chart as a row, `state`, `aspect`, `points`, the Indian lunisolar
-calendar, `panchanga` day with all limbs and timings, `serial` JSON with
-the extended envelope, Python binding, the baseline engine golden vectors
-for all of it.
+calendar, `panchanga` day with all limbs and timings, `geometry` as a
+layout registry of cited rows (North Indian, South Indian, East Indian,
+Bengali, the Nepali lotus and the Western wheel, each a row a consumer
+can add to — ADR-0026), `serial` JSON with the extended envelope, Python
+binding, the baseline engine golden vectors for all of it.
 
 Exit: the baseline engine's foundation and daily panchanga golden vectors reproduced
 within tolerance in three bindings on both providers (Teimeris and
@@ -372,22 +379,42 @@ the yoga and dosha packs are exported from the baseline engine (Q6
 settled: Teispace owns it) and re-validated against the stricter schema;
 the seven detectors the baseline engine wrote as code become rules;
 `teistro rule-doc` renders every rule to prose; `interpret` with narrative
-plans for the eight composers; `teistro-intl migrate baseline` bringing
-the four-language name tables and interpretation records into `i18n/`;
-Rust crates published.
+plans for the eight composers; `render-svg`, the optional first-party
+renderer above the core, turning Phase 4's geometry plus a theme record
+into a deterministic SVG string in every binding (ADR-0026);
+`teistro-intl migrate baseline` bringing the four-language name tables
+and interpretation records into `i18n/`; Rust crates published.
 
 Exit: 624 rules evaluate identically to the baseline engine on the regression set with
 positive and negative charts per rule; composed text matches the baseline engine byte
 for byte in four languages on the snapshot set; native review sign-off
 recorded for `ne` and `hi`.
 
-## Phase 7: Techniques
+## Phase 7: Techniques and traditions
 
 `jaimini`, `kp`, `tajika`, `gochar` with hit lists and Sade Sati, `muhurta`
 search with blackouts and event rules, festival rule-pack hooks.
 
-Exit: baseline golden vectors for each; the muhurta regression ranking
-matches; the KP profile enforces the KP ayanamsha.
+Then the two traditions ADR-0025 moved into v1, which are profiles over
+the same machinery rather than new mechanisms:
+
+- **`western`** — the tropical frame as a first-class peer of the sidereal
+  one, Ptolemaic aspects with pluggable orb models, midpoints, Arabic
+  parts, secondary and tertiary progressions, solar arc directions, solar
+  and lunar returns, synastry, composite and Davison, declinations and
+  parallels, harmonics.
+- **`hellenistic`** — sect, terms and faces, dignity scores and almutens,
+  lots, zodiacal releasing, annual profections, firdaria, decennials,
+  horary considerations. Its time lords register in the same time-lord
+  registry as the dashas, which is what proves that registry is
+  tradition-neutral rather than nakshatra-shaped.
+
+Exit: baseline golden vectors for each Vedic technique; the muhurta
+regression ranking matches; the KP profile enforces the KP ayanamsha; the
+`western` and `hellenistic` modules reproduce their own recorded fixtures,
+whose oracle is not Teimeris and has to be sourced first (the largest new
+unknown in the plan, tracked as a crux); and every Western and Hellenistic
+rule carries a citation under ADR-0018 exactly as a Vedic one does.
 
 ## Phase 8: Applications
 
@@ -420,13 +447,16 @@ no answer moved except the documented fixes; `packages/` is deleted.
 
 ## v1.x
 
-Western foundations and Hellenistic time lords (designed in Phase 0 and
-kept honest by the chart model), eclipses and the full star catalogue in
-`astro`, `ephemeris-de` (the JPL DE file reader with range-request
-streaming) and the `reference` tier if it did not land in Phase 3
-(ADR-0021), additional calendars (Nepal Sambat, Saka, regional solar,
-Hijri, Hebrew, Persian), the remaining dasha rows as their citations
-close, festival rule packs, Swift and Kotlin bindings if needed.
+Eclipses and the full star catalogue in `astro`, `ephemeris-de` (the JPL
+DE file reader with range-request streaming) and the `reference` tier if
+it did not land in Phase 3 (ADR-0021), additional calendars (Nepal
+Sambat, Saka, regional solar, Hijri, Hebrew, Persian), the remaining
+dasha rows as their citations close, festival rule packs, Uranian points
+and dials, platform-native drawing above the geometry contract, Swift and
+Kotlin bindings if needed.
+
+Western foundations and Hellenistic time lords **left this list on
+2026-09-10** and are Phase 7 (ADR-0025).
 
 ## Deferred, to be discussed before it is placed
 
@@ -449,10 +479,10 @@ asks for.
 | M1 first parity computation in two bindings with typed intl | 1 | parity gate |
 | M2 astronomy layer conformant | 2 | accuracy document |
 | M3 built-in ephemeris at three tiers | 3 | conformance kit, size gates |
-| M4 foundation and panchanga golden | 4 | conformance run |
+| M4 foundation, panchanga and chart geometry golden | 4 | conformance run |
 | M5 strengths and dashas golden | 5 | conformance run |
-| M6 rules and text parity, corpus migrated | 6 | rule and snapshot gates |
-| M7 techniques golden | 7 | conformance run |
+| M6 rules and text parity, corpus migrated, renderer deterministic | 6 | rule, snapshot and SVG-determinism gates |
+| M7 techniques golden, and Western and Hellenistic on their own fixtures | 7 | conformance run |
 | M8 applications golden | 8 | conformance run |
 | M9 release candidate | 9 | full verify, install checks, parity checklist |
 | M10 v1.0 and baseline migration | release | production golden vectors |

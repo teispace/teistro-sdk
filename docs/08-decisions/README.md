@@ -11,7 +11,7 @@ to `accepted` when the maintainer confirms it in `QUESTIONS.md`.
 | [0002](adr-0002-ephemeris-agnostic-port.md) | Ephemeris-agnostic through a capability-negotiated port; positions required, overrides optional | accepted 2026-09-04 (revised) | Q7, Q8, Q15 |
 | [0003](adr-0003-keys-not-strings.md) | Engine emits keys; localisation is data packs | accepted 2026-09-04 | Q10 |
 | [0004](adr-0004-binding-generation.md) | One API description, generated bindings, parity gate; generator chosen by the Phase 0 spike | accepted 2026-09-04 | Q2, Q3 |
-| [0005](adr-0005-modularity.md) | Module families as crates and packages; profiles; size gates; v1.0 is baseline parity | accepted 2026-09-04 | Q4 |
+| [0005](adr-0005-modularity.md) | Module families as crates and packages; profiles; size gates; v1.0 is baseline parity | accepted 2026-09-04; the v1-scope clause superseded by ADR-0025, the modularity decision unchanged | Q4 |
 | [0006](adr-0006-licence.md) | Apache-2.0 open core; packs and adapters under their own terms | accepted 2026-09-04 | Q5 |
 | [0007](adr-0007-binding-toolchain.md) | The binding toolchain: option A, a designed C ABI, an extracted API description and generators of our own; Diplomat rejected on the spike's measurements (no host callbacks in its JavaScript and Dart backends, accessor-only trees, wasm-only JavaScript) | accepted on the spike, 2026-09-05 | Q2 |
 | [0008](adr-0008-builtin-ephemeris.md) | A built-in analytic ephemeris ships in v1 | accepted 2026-09-04; extended by 0021 | Q7 |
@@ -30,6 +30,9 @@ to `accepted` when the maintainer confirms it in `QUESTIONS.md`.
 | [0021](adr-0021-reference-ephemeris-path.md) | The reference-accuracy ephemeris path: ERFA port, DE reader, `reference` tier (extends 0008, 0009, 0013) | accepted 2026-09-04 | Q31 |
 | [0022](adr-0022-determinism-and-conformance-repository.md) | The determinism contract and the conformance repository (extends 0015) | accepted 2026-09-04 | Q32 |
 | [0023](adr-0023-type-safety-in-every-binding.md) | Type safety is a correctness feature, in every binding: newtypes, generated typed surfaces, suggestions from the description, robust boundaries | accepted 2026-09-04 | Q33 |
+| [0024](adr-0024-the-default-profile.md) | The default profile is `parashari-classical`, the texts as read, inheriting nothing else | accepted 2026-09-07 | Q34 |
+| [0025](adr-0025-v1-is-the-whole-feature-universe.md) | v1.0 is the whole feature universe: Western and Hellenistic move from v1.x into v1 (supersedes ADR-0005's v1-scope clause) | accepted 2026-09-10 | Q4 (revised) |
+| [0026](adr-0026-chart-geometry-and-the-first-party-renderer.md) | Chart layouts as cited rows a consumer can extend, geometry in Phase 4, and an optional first-party SVG renderer above the core | accepted 2026-09-10 | Q36 |
 
 ## Template
 

@@ -43,3 +43,16 @@ reports).
 The SDK ships geometry and data; it never draws. A separate optional
 rendering package per platform (SVG for web, canvas for Flutter) can be
 built on top later.
+
+**Refined 2026-09-10 by ADR-0026.** The line holds — the *core* still
+never draws — but two things changed around it. Geometry moved from
+Phase 9 to Phase 4, because cell assignment is chart data rather than
+release engineering; and the optional renderer became first-party and
+singular: one Rust `render-svg` crate rather than a package per platform,
+since SVG renders in web, Flutter and native alike and a Rust crate
+reaches every binding and wasm at once. Layouts themselves became cited
+rows in a registry a consumer can extend, so a regional format is a row
+rather than a fork — which is what the baseline engine's own
+template-driven principle asks for, expressed in this project's own
+kernel-and-table shape. The Nepali lotus (Ashtadala Padma), missing from
+the table below, is one of those rows.

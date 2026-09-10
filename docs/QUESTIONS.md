@@ -11,7 +11,7 @@ and links its ADR. Status key: `open`, `decided`, `deferred`.
 | Q1 | core language | Rust core, one audited `ffi` crate exposing a Teimeris-style C ABI | ADR-0001 |
 | Q2 | binding generation | one description, generated bindings, parity gate; the generator chosen by the Phase 0 spike with numbers: option A (a designed C ABI, an extracted API description, our own generators in Rust), Diplomat rejected because its JavaScript and Dart backends cannot pass a host provider, marshal trees only through accessors, and serve Node only through wasm | ADR-0004, ADR-0007 |
 | Q3 | binding order | Node native, wasm, Dart/Flutter, Python, Rust, then Java; Swift and Kotlin on demand; C and C++ headers from Phase 1 | roadmap |
-| Q4 | v1 scope | v1.0 is baseline parity; Western and Hellenistic designed in Phase 0, shipped in v1.x | ADR-0005 |
+| Q4 | v1 scope | **revised 2026-09-10**: v1.0 is the whole feature universe — Western and Hellenistic move from v1.x into Phase 7, the maintainer accepting the longer road explicitly. The original decision (v1.0 is baseline parity) held from 2026-09-04 until the developer-market survey falsified the evidence it rested on | ADR-0025, superseding ADR-0005's scope clause |
 | Q5 | licence | Apache-2.0 open core; packs and adapters under their own terms | ADR-0006 |
 | Q6 | ownership of the baseline engine's content | Teispace owns the SDK and the baseline engine's interpretations, rules, names and corpora; the baseline engine will replace its packages with the SDK | this table |
 | Q7 | fallback ephemeris | a built-in analytic ephemeris ships in v1 as its own module and phase | ADR-0008 |
@@ -42,6 +42,7 @@ and links its ADR. Status key: `open`, `decided`, `deferred`.
 | Q32 | determinism and conformance | byte identity across architectures compared by hash; the corpus in a separate CC0 repository consumed as a pinned submodule; the quality bar extended (mutation, instruction counts, feature matrix, semver, compile-fail) | ADR-0022 |
 | Q33 | type safety in every binding | validated newtypes, generated typed surfaces with documentation and examples in every binding, runtime schemas, coherence validation, typed states and errors, compile-fail and strictness gates | ADR-0023 |
 | Q34 | the default profile | `parashari-classical`, the texts as read, patching the root and nothing else: geocentric, Gregorian, the three pan-Indic eras, an undefined polar day, with Sripati bhava, proportional ghatis, eight chara karakas and the Surya Siddhanta's orbs. It was declared over `nepali-default` and so had inherited that engine's topocentric centre and Nepal's calendar; the centre alone moves the Moon by up to 39′ and changes a mahadasha lord in one of the six charts the corpus records both ways | ADR-0024 |
+| Q36 | chart geometry and drawing | layouts are cited rows a consumer can extend; geometry lands in Phase 4 as chart data; an optional first-party `render-svg` above the core turns geometry plus a theme record into a deterministic SVG in every binding. The core still never draws | ADR-0026 |
 
 Principle confirmed by the maintainer: the baseline engine's packages are the minimum
 bar, not the model. The SDK is structured, designed and governed as a

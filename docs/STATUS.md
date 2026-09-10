@@ -1224,8 +1224,11 @@ provider's DUT1).
 ## Decided (all on 2026-09-04 unless dated)
 
 Rust core with a C ABI. Generated bindings with a parity gate, generator
-chosen by spike. v1.0 is baseline parity with Western and Hellenistic
-designed in. Apache-2.0 open core. Teispace owns all baseline engine content and
+chosen by spike. v1.0 is the whole feature universe: Western and Hellenistic
+moved out of v1.x into Phase 7 on 2026-09-10 (ADR-0025, revising Q4),
+the maintainer accepting the longer road; chart geometry moved out of
+Phase 9 into Phase 4 with an optional first-party SVG renderer above the
+core (ADR-0026). Apache-2.0 open core. Teispace owns all baseline engine content and
 the baseline engine will migrate onto the SDK. A built-in analytic ephemeris in three
 tiers (`standard` default) ships in v1 as its own phase. The SDK owns the
 entire astronomy layer above raw positions; provider overrides
