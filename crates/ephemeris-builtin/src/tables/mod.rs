@@ -7,11 +7,11 @@
 //! makes the tier mean anything on a platform that counts
 //! kilobytes.
 //!
-//! | tier | planets | Moon | data | source |
+//! | tier | planets | Moon | data of budget | source |
 //! |---|---|---|---:|---:|
-//! | `compact` | 3e-6 au, 21.2729″, 2503 terms | 1, 18.0895″, 160 terms | 83 KB | 127 KB |
-//! | `standard` | 3e-8 au, 0.6190″, 15860 terms | 0.01, 0.7131″, 1139 terms | 531 KB | 761 KB |
-//! | `full` | whole theory, 0.0000″, 39198 terms | whole theory, 0.0000″, 37872 terms | 2408 KB | 4229 KB |
+//! | `compact` | 3e-6 au, 21.2729″, 2503 terms | 1, 18.0895″, 160 terms | 83 of 128 KB | 129 KB |
+//! | `standard` | 3e-8 au, 0.6190″, 15860 terms | 0.01, 0.7131″, 1139 terms | 531 of 640 KB | 763 KB |
+//! | `full` | whole theory, 0.0000″, 39198 terms | whole theory, 0.0000″, 37872 terms | 2408 of 4096 KB | 4231 KB |
 
 #[cfg(all(feature = "compact", not(feature = "standard"), not(feature = "full")))]
 #[rustfmt::skip]

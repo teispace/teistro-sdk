@@ -60,6 +60,13 @@ const ELP_LADDER: [f64; 7] = [1.0, 0.3, 0.1, 0.03, 0.01, 0.001, 0.0];
 struct Tier {
     /// The cargo feature and module name.
     name: &'static str,
+    /// What the tier's coefficient data may cost, in bytes.
+    ///
+    /// A budget is a claim, and a claim nothing reads is a claim that
+    /// drifts. The generator emits it beside the measured size and the
+    /// crate's own tests hold the one to the other, so a tier that grew
+    /// fails rather than ships.
+    budget_bytes: usize,
     /// What a planet's truncation may cost, in arcseconds.
     planet_target_arcsec: f64,
     /// What the Moon's truncation may cost, in arcseconds.
@@ -72,18 +79,21 @@ struct Tier {
 const TIERS: [Tier; 3] = [
     Tier {
         name: "compact",
+        budget_bytes: 128 * 1024,
         planet_target_arcsec: 60.0,
         moon_target_arcsec: 30.0,
         purpose: "wasm and mobile, where every kilobyte is paid for; one arcminute",
     },
     Tier {
         name: "standard",
+        budget_bytes: 640 * 1024,
         planet_target_arcsec: 1.0,
         moon_target_arcsec: 1.0,
         purpose: "the default: production charts with no provider installed",
     },
     Tier {
         name: "full",
+        budget_bytes: 4 * 1024 * 1024,
         planet_target_arcsec: 0.0,
         moon_target_arcsec: 0.0,
         purpose: "research, and the second oracle for the astronomy layer's own tests",
@@ -327,6 +337,75 @@ fn moon_table(theory: &Theory, threshold: f64) -> (String, usize) {
     (out, terms)
 }
 
+/// What a tier is, as constants rather than as prose in a header.
+///
+/// A header that says a tier holds 0.62 arcseconds is a claim, and this
+/// repository has four lints because a claim nothing reads is a claim
+/// that drifts. These are read: the crate's tests hold the term counts
+/// to the arrays' lengths and the size to the budget, and a consumer can
+/// ask what the tier it compiled promises rather than looking it up in a
+/// document that may have moved on.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one tier's measured facts, which travel together"
+)]
+fn facts_block(
+    tier: &str,
+    planet_threshold: f64,
+    planet_error: f64,
+    planet_terms: usize,
+    moon_threshold: f64,
+    moon_error: f64,
+    moon_terms: usize,
+    budget_bytes: usize,
+) -> String {
+    let bytes = planet_terms * 32 + moon_terms * 32;
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "/// Which tier these tables are.\n\
+         pub const TIER_NAME: &str = \"{tier}\";\n\
+         \n\
+         /// The amplitude below which a planetary term was dropped, in\n\
+         /// astronomical units. Zero keeps the whole theory.\n\
+         pub const PLANET_THRESHOLD_AU: f64 = {planet_threshold:?};\n\
+         \n\
+         /// The worst the truncation costs a planet's geocentric direction\n\
+         /// over 1800 to 2400, in arcseconds, measured by the generator.\n\
+         ///\n\
+         /// This is what the **table** costs, not what a chart is wrong by:\n\
+         /// the theory's own error against a modern ephemeris is separate\n\
+         /// and larger, and is published in\n\
+         /// `03-design/builtin-ephemeris-measured.md`.\n\
+         pub const PLANET_TRUNCATION_ARCSEC: f64 = {planet_error:?};\n\
+         \n\
+         /// How many planetary terms this tier keeps.\n\
+         pub const PLANET_TERMS: usize = {planet_terms};\n\
+         \n\
+         /// The amplitude below which a lunar term was dropped, in each\n\
+         /// coordinate's own unit.\n\
+         pub const MOON_THRESHOLD: f64 = {moon_threshold:?};\n\
+         \n\
+         /// The worst the truncation costs the Moon's direction over 1800\n\
+         /// to 2400, in arcseconds.\n\
+         pub const MOON_TRUNCATION_ARCSEC: f64 = {moon_error:?};\n\
+         \n\
+         /// How many lunar terms this tier keeps, of both kinds.\n\
+         pub const MOON_TERMS: usize = {moon_terms};\n\
+         \n\
+         /// What the coefficients cost in a binary: a planetary term is\n\
+         /// three `f64` and a power, and a lunar one its multipliers and\n\
+         /// two `f64`.\n\
+         pub const DATA_BYTES: usize = {bytes};\n\
+         \n\
+         /// What this tier is allowed to cost. The crate's tests hold\n\
+         /// [`DATA_BYTES`] to it, so a tier that grew past its budget\n\
+         /// fails rather than ships.\n\
+         pub const BUDGET_BYTES: usize = {budget_bytes};"
+    );
+    out
+}
+
 /// The bija: the correction ADR-0027 fixed, with the provenance that
 /// makes it inspectable rather than a silent adjustment.
 ///
@@ -473,6 +552,112 @@ struct Emitted {
     moon_terms: usize,
     bytes: usize,
     source_bytes: usize,
+    budget_bytes: usize,
+}
+
+/// Every tier's table and the facts about it.
+///
+/// Lifted out so the entry point reads as the steps it is — find the
+/// sources, load them, measure the ladders once, emit the tiers, write
+/// the manifest — rather than as one function with a loop in the middle
+/// of it.
+fn tiers(
+    root: &Path,
+    series: &BTreeMap<&'static str, BodySeries>,
+    theory: &Theory,
+    planets_ladder: &Ladder,
+    moon_ladder: &Ladder,
+) -> (Vec<Output>, Vec<Emitted>) {
+    let mut outputs = Vec::new();
+    let mut emitted = Vec::new();
+    for tier in TIERS {
+        let (planet_threshold, planet_error_value) =
+            planets_ladder.choose(tier.planet_target_arcsec);
+        let (moon_threshold, moon_error_value) = moon_ladder.choose(tier.moon_target_arcsec);
+        let bija = bija_block(root);
+        let planets_label = if planet_threshold == 0.0 {
+            "the whole theory".to_string()
+        } else {
+            format!("threshold {planet_threshold:e} au")
+        };
+        let moon_label = if moon_threshold == 0.0 {
+            "the whole theory".to_string()
+        } else {
+            format!("threshold {moon_threshold}")
+        };
+        let (planets, planet_terms) = planet_table(series, planet_threshold);
+        let (moon, moon_terms) = moon_table(theory, moon_threshold);
+        let facts = facts_block(
+            tier.name,
+            planet_threshold,
+            planet_error_value,
+            planet_terms,
+            moon_threshold,
+            moon_error_value,
+            moon_terms,
+            tier.budget_bytes,
+        );
+        let checkpoints = checkpoints(series, theory, planet_threshold, moon_threshold);
+        let text = format!(
+            "//! The `{}` tier: {}.\n\
+             //!\n\
+             //! Generated by `cargo xtask ephemgen`. Do not edit.\n\
+             //!\n\
+             //! The thresholds are not chosen here. `ephemgen` takes the\n\
+             //! loosest rung of each ladder whose worst truncation error is\n\
+             //! inside this tier's target, so the number below is a\n\
+             //! consequence of the target and the measurement rather than a\n\
+             //! constant somebody picked.\n\
+             //!\n\
+             //! - planets: {planets_label}, worst {planet_error_value:.4} arcsec, {planet_terms} terms\n\
+             //! - Moon: {moon_label}, worst {moon_error_value:.4} arcsec, {moon_terms} terms\n\
+             \n\
+             #![allow(\n    \
+             clippy::unreadable_literal,\n    \
+             clippy::excessive_precision,\n    \
+             clippy::approx_constant,\n    \
+             reason = \"generated tables: the digits are the publication's\"\n\
+             )]\n\
+             \n\
+             use crate::elp::{{MainTerm, PerturbationTerm}};\n\
+             use crate::series::Term;\n\
+             \n\
+             /// Every body's three coordinate series, by name.\n\
+             pub type Planets = [(&'static str, [&'static [Term]; 3]); 8];\n\
+             \n\
+             /// An instant and what this tier's tables must give at it:\n\
+             /// Mars and the Earth heliocentrically, then the Moon.\n\
+             pub type Checkpoint = (f64, [f64; 3], [f64; 3], [f64; 3]);\n\
+             \n\
+             /// A planetary term, abbreviated so the table stays readable.\n\
+             const fn t(amplitude: f64, phase: f64, frequency: f64, power: u8) -> Term {{\n    \
+             Term::new(amplitude, phase, frequency, power)\n\
+             }}\n\
+             \n{facts}\n{planets}\n{moon}\n{bija}\n{checkpoints}\n",
+            tier.name, tier.purpose
+        );
+        // The size that matters is what the data costs in a binary, not
+        // what the source costs in the repository: a term is three
+        // `f64` and a power for a planet, and eleven multipliers with
+        // two `f64` for the Moon.
+        let bytes = planet_terms * 32 + moon_terms * 32;
+        let source_bytes = text.len();
+        outputs.push(Output::new(format!("{TABLES}/{}.rs", tier.name), text));
+        emitted.push(Emitted {
+            tier: tier.name,
+            planet_threshold,
+            planet_error: planet_error_value,
+            planet_terms,
+            moon_threshold,
+            moon_error: moon_error_value,
+            moon_terms,
+            bytes,
+            source_bytes,
+            budget_bytes: tier.budget_bytes,
+        });
+    }
+
+    (outputs, emitted)
 }
 
 /// Reads both sources and writes every tier's table and the manifest.
@@ -509,84 +694,7 @@ pub(crate) fn generate(root: &Path, vsop: Option<&str>, elp: Option<&str>) -> i3
     let planets_ladder = Ladder::of(&VSOP_LADDER, &planet_errors(&series, &VSOP_LADDER));
     let moon_ladder = Ladder::of(&ELP_LADDER, &moon_errors(&theory, &ELP_LADDER));
 
-    let mut outputs = Vec::new();
-    let mut emitted = Vec::new();
-    for tier in TIERS {
-        let (planet_threshold, planet_error_value) =
-            planets_ladder.choose(tier.planet_target_arcsec);
-        let (moon_threshold, moon_error_value) = moon_ladder.choose(tier.moon_target_arcsec);
-        let bija = bija_block(root);
-        let planets_label = if planet_threshold == 0.0 {
-            "the whole theory".to_string()
-        } else {
-            format!("threshold {planet_threshold:e} au")
-        };
-        let moon_label = if moon_threshold == 0.0 {
-            "the whole theory".to_string()
-        } else {
-            format!("threshold {moon_threshold}")
-        };
-        let (planets, planet_terms) = planet_table(&series, planet_threshold);
-        let (moon, moon_terms) = moon_table(&theory, moon_threshold);
-        let checkpoints = checkpoints(&series, &theory, planet_threshold, moon_threshold);
-        let text = format!(
-            "//! The `{}` tier: {}.\n\
-             //!\n\
-             //! Generated by `cargo xtask ephemgen`. Do not edit.\n\
-             //!\n\
-             //! The thresholds are not chosen here. `ephemgen` takes the\n\
-             //! loosest rung of each ladder whose worst truncation error is\n\
-             //! inside this tier's target, so the number below is a\n\
-             //! consequence of the target and the measurement rather than a\n\
-             //! constant somebody picked.\n\
-             //!\n\
-             //! - planets: {planets_label}, worst {planet_error_value:.4} arcsec, {planet_terms} terms\n\
-             //! - Moon: {moon_label}, worst {moon_error_value:.4} arcsec, {moon_terms} terms\n\
-             \n\
-             #![allow(\n    \
-             clippy::unreadable_literal,\n    \
-             clippy::excessive_precision,\n    \
-             clippy::approx_constant,\n    \
-             reason = \"generated tables: the digits are the publication's\"\n\
-             )]\n\
-             \n\
-             use crate::elp::{{MainTerm, PerturbationTerm}};\n\
-             use crate::series::Term;\n\
-             \n\
-             /// Every body's three coordinate series, by name.\n\
-             pub type Planets = [(&'static str, [&'static [Term]; 3]); 8];\n\
-             \n\
-             /// An instant and what this tier's tables must give at it:\n\
-             /// Mars and the Earth heliocentrically, then the Moon.\n\
-             pub type Checkpoint = (f64, [f64; 3], [f64; 3], [f64; 3]);\n\
-             \n\
-             /// A planetary term, abbreviated so the table stays readable.\n\
-             const fn t(amplitude: f64, phase: f64, frequency: f64, power: u8) -> Term {{\n    \
-             Term::new(amplitude, phase, frequency, power)\n\
-             }}\n\
-             \n{planets}\n{moon}\n{bija}\n{checkpoints}\n",
-            tier.name, tier.purpose
-        );
-        // The size that matters is what the data costs in a binary, not
-        // what the source costs in the repository: a term is three
-        // `f64` and a power for a planet, and eleven multipliers with
-        // two `f64` for the Moon.
-        let bytes = planet_terms * 32 + moon_terms * 32;
-        let source_bytes = text.len();
-        outputs.push(Output::new(format!("{TABLES}/{}.rs", tier.name), text));
-        emitted.push(Emitted {
-            tier: tier.name,
-            planet_threshold,
-            planet_error: planet_error_value,
-            planet_terms,
-            moon_threshold,
-            moon_error: moon_error_value,
-            moon_terms,
-            bytes,
-            source_bytes,
-        });
-    }
-
+    let (mut outputs, emitted) = tiers(root, &series, &theory, &planets_ladder, &moon_ladder);
     outputs.push(Output::new(format!("{TABLES}/mod.rs"), module(&emitted)));
     write(root, &outputs)
 }
@@ -615,13 +723,13 @@ fn module(emitted: &[Emitted]) -> String {
          //! makes the tier mean anything on a platform that counts\n\
          //! kilobytes.\n\
          //!\n\
-         //! | tier | planets | Moon | data | source |\n\
+         //! | tier | planets | Moon | data of budget | source |\n\
          //! |---|---|---|---:|---:|"
     );
     for tier in emitted {
         let _ = writeln!(
             out,
-            "//! | `{}` | {}, {:.4}″, {} terms | {}, {:.4}″, {} terms | {:.0} KB | {:.0} KB |",
+            "//! | `{}` | {}, {:.4}″, {} terms | {}, {:.4}″, {} terms | {:.0} of {:.0} KB | {:.0} KB |",
             tier.tier,
             if tier.planet_threshold == 0.0 {
                 "whole theory".to_string()
@@ -638,6 +746,7 @@ fn module(emitted: &[Emitted]) -> String {
             tier.moon_error,
             tier.moon_terms,
             kilobytes(tier.bytes),
+            kilobytes(tier.budget_bytes),
             kilobytes(tier.source_bytes)
         );
     }

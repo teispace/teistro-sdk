@@ -73,9 +73,20 @@ ephemeris's is the same device applied to the same kind of problem.
 
 | tier | Moon | planets | span | size |
 |---|---|---|---|---|
-| `compact` | as `standard` — the Moon's cost is the theory, not the table | 1 arcminute | 1800–2400 | about 110 KB |
-| `standard` | 0.26″ over 1900–2100, 3.0″ over 1800–2400 | 1″ for Mercury to Saturn; **Uranus 4.7″ and Neptune 6.6″** | 1800–2400 | about 420 KB |
+| `compact` | as `standard` — the Moon's cost is the theory, not the table | 1 arcminute | 1800–2400 | **83 KB** |
+| `standard` | 0.26″ over 1900–2100, 3.0″ over 1800–2400 | 1″ for Mercury to Saturn; **Uranus 4.7″ and Neptune 6.6″** | 1800–2400 | **531 KB** |
+| `full` | the theories as published | the theories as published | 1800–2400 | **2 408 KB** |
 | `reference` | by refit, if ADR-0021's fitter meets its target | by refit | 1800–2400 | **budget raised to 4 MB** |
+
+**Sizes corrected 2026-09-10, when the generator measured them.** This
+table first carried about 110 KB and about 420 KB, which were estimates
+made before `ephemgen` existed. The tiers are what they are: 83 KB and
+531 KB of coefficient data, against budgets of 128 KB and 640 KB that the
+crate now asserts **at compile time**, so a tier that grew tells whoever
+builds it rather than whoever runs the tests. A plan corrected by its own
+measurement is the plan working (`no-dead-ends-mandate`); an estimate
+left standing beside the measurement that replaced it is how two numbers
+come to disagree in public.
 
 `standard` no longer claims "2 arcsec Moon" or "1 arcsec planets"
 without qualification. Both were falsified: the Moon by 19.4 arcseconds
