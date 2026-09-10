@@ -522,10 +522,27 @@ provider's DUT1).
    before it goes into code, so a compaction or a new session loses
    nothing.
 
-   The conformance harness — comparing a **computed** longitude against
-   the 55 recorded charts, which is Phase 4's remaining exit work and
-   what decides whether the topocentric step's 0.084″ on the Moon
-   matters — is unblocked and waits behind these.
+   **The conformance harness is built and Phase 4's remaining exit work
+   is done.** `adapters/ephemeris-teimeris/rust/tests/baseline_positions.rs`
+   takes the instant and the place each of the 55 charts records, asks
+   the SDK for every graha through the Teimeris adapter in the frame the
+   fixture was recorded in, and compares longitude, latitude, speed and
+   distance against what was recorded. **605 positions, every one
+   exact**: the worst sidereal longitude, tropical longitude, latitude
+   and distance are all 0.000000, and the worst speed is 0.000026″/day
+   on Pluto. So the topocentric step's 0.084″ on the Moon does **not**
+   matter to a recorded chart — the corpus cannot see it.
+
+   Two things the harness had to get right, both of which read as
+   agreement if got wrong. The `outer` block records
+   `"frame": "geocentric"` while the chart is topocentric, so comparing
+   those three in the chart's frame measures the parallax and calls it a
+   disagreement — 0.44″ to 0.56″, which is 8.79″ over the distance in
+   astronomical units, exactly what a parallax is; the fixture says which
+   centre and the harness reads it. And a worst that compared *nothing*
+   prints exactly like perfect agreement: the first version reported
+   `0.000000″` for the tropical longitude and the distance and neither
+   was ever compared, so every count is now printed and asserted.
 
    **The page also poses the question the design has to answer.** A
    lunisolar date's day is the tithi at sunrise, which repeats one day
