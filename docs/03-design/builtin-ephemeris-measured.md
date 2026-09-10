@@ -44,8 +44,8 @@ measured against Teimeris in the frame VSOP87 is stated in —
 `HELIOCENTRIC/J2000/ECLIPTIC/TROPICAL/GEOMETRIC` — at 5479 instants 40
 days apart, on the engine's `compatible` profile. Recorded by
 `teistro-ephemeris-teimeris-vsop-floor` into
-`fixtures/teimeris/vsop87-floor.json`; the number, not the code that
-produced it.
+`crates/ephemeris-builtin/data/vsop87-floor.json`; the number, not the
+code that produced it.
 
 | body | scatter ″ | worst ″ | radius (relative) | 1800 ″ | 2100 ″ | 2400 ″ |
 |---|---:|---:|---:|---:|---:|---:|
@@ -81,16 +81,6 @@ belongs in the design page; what this page establishes is that the
 single-number claim is not available.
 
 
-## What the claims measure to
-
-| proposed rule | verdict | measured |
-|---|---|---|
-| `compact` holds 1 arcminute in tens of KB | **holds** | 59 KB at threshold 3e-6 |
-| `standard` holds 1 arcsecond in a few hundred KB | **holds** | 372 KB at threshold 3e-8 |
-| `full` is a few MB | **holds** | 919 KB |
-| `standard` holds 1 arcsecond for **every** planet, the theory included | falsified | Neptune is 6.57 arcseconds from the engine with every term kept |
-
-
 ## What this does not measure
 
 **Which threshold `standard` should take** is now decidable and is not
@@ -112,4 +102,14 @@ than inheriting these figures.
 **Pluto, the nodes and the apogees**, which have no VSOP87 series at
 all: Pluto is fitted from a public-domain kernel and the rest are mean
 elements (ADR-0021).
+
+
+## What the claims measure to
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| `compact` holds 1 arcminute in tens of KB | **holds** | 59 KB at threshold 3e-6 |
+| `standard` holds 1 arcsecond in a few hundred KB | **holds** | 372 KB at threshold 3e-8 |
+| `full` is a few MB | **holds** | 919 KB |
+| `standard` holds 1 arcsecond for **every** planet, the theory included | falsified | Neptune is 6.57 arcseconds from the engine with every term kept |
 

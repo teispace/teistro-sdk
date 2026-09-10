@@ -1,0 +1,81 @@
+{
+  "source": "VSOP87A, CDS catalogue VI/81 (Bretagnon and Francou 1988), every term",
+  "frame": "HELIOCENTRIC/J2000/ECLIPTIC/TROPICAL/GEOMETRIC",
+  "from_jd": 2378497.0,
+  "to_jd": 2597641.0,
+  "step_days": 40.0,
+  "samples": 5479,
+  "engine_profile": "compatible",
+  "rows": [
+    {
+      "body": "Mercury",
+      "mean_arcsec": 0.1248280530113974,
+      "scatter_arcsec": 0.24834365503471903,
+      "worst_arcsec": 0.37317170804611643,
+      "radius_relative": 2.834568003552234e-7,
+      "at_1800_arcsec": 0.027366343823106393,
+      "at_2100_arcsec": 0.09441133821123968,
+      "at_2400_arcsec": 0.37317170804611643
+    },
+    {
+      "body": "Venus",
+      "mean_arcsec": 0.063160792468675,
+      "scatter_arcsec": 0.06445313109972316,
+      "worst_arcsec": 0.12761392356839815,
+      "radius_relative": 2.9775655341088856e-8,
+      "at_1800_arcsec": 0.12701867329899358,
+      "at_2100_arcsec": 0.05511814172059075,
+      "at_2400_arcsec": 0.03369049580616608
+    },
+    {
+      "body": "Mars",
+      "mean_arcsec": 0.24035245667729055,
+      "scatter_arcsec": 0.8331100484979177,
+      "worst_arcsec": 1.0734625051752082,
+      "radius_relative": 3.8085547861081165e-7,
+      "at_1800_arcsec": 0.008130908525238071,
+      "at_2100_arcsec": 0.028267960523940122,
+      "at_2400_arcsec": 0.8385723672940155
+    },
+    {
+      "body": "Jupiter",
+      "mean_arcsec": 0.40208828550572956,
+      "scatter_arcsec": 0.4324523390444232,
+      "worst_arcsec": 0.8345406245501528,
+      "radius_relative": 2.8408488641359955e-7,
+      "at_1800_arcsec": 0.2003763109894604,
+      "at_2100_arcsec": 0.42248057104928316,
+      "at_2400_arcsec": 0.6961140287638201
+    },
+    {
+      "body": "Saturn",
+      "mean_arcsec": 0.32735625097702126,
+      "scatter_arcsec": 0.4398948875346026,
+      "worst_arcsec": 0.7672511385116239,
+      "radius_relative": 3.7951687919161707e-7,
+      "at_1800_arcsec": 0.14199127749010326,
+      "at_2100_arcsec": 0.34620843081198166,
+      "at_2400_arcsec": 0.7616341104574336
+    },
+    {
+      "body": "Uranus",
+      "mean_arcsec": 1.0471371905027342,
+      "scatter_arcsec": 3.6804653377490966,
+      "worst_arcsec": 4.727602528251831,
+      "radius_relative": 9.559932680483707e-6,
+      "at_1800_arcsec": 0.7804052591063634,
+      "at_2100_arcsec": 0.03342552935490037,
+      "at_2400_arcsec": 4.076138475271291
+    },
+    {
+      "body": "Neptune",
+      "mean_arcsec": 2.5801696535947714,
+      "scatter_arcsec": 3.9861266538110978,
+      "worst_arcsec": 6.566296307405869,
+      "radius_relative": 2.4739656803646324e-6,
+      "at_1800_arcsec": 2.0492726093309024,
+      "at_2100_arcsec": 2.298490041691253,
+      "at_2400_arcsec": 6.566296307405869
+    }
+  ]
+}
