@@ -428,10 +428,28 @@ provider's DUT1).
    Cumulatively an almanac day is **1228 calls → 333** and fifty days
    **60 631 → 8 174**, with every generated page unchanged throughout.
 
-   **A1c is deferred and the plan says why**: the anchoring and the memo
-   took its ephemeris ground — a fifty-day range now fetches 23 888 cells
-   against a union of 21 446 — so what it would still save is arithmetic
-   the measured page cannot gate, since it counts calls and not seconds.
+   **A1c is closed, measured away three times.** The anchoring and the
+   memo took its ephemeris ground — a fifty-day range fetches 23 888
+   cells against a union of 21 446, within 11% of the least possible.
+   Its arithmetic case was then measured directly: fifty days as a range
+   against fifty asked one at a time shares **51% of the calls and 8.5%
+   of the time**, so the memo does the sharing and the per-day
+   arithmetic does not. Attributing the range's remaining 8 174 calls
+   closed it — **over half is the horizon solver's Meeus iteration**,
+   which is not shared work because every day genuinely has a different
+   sunrise and each iteration is serial by construction, and the scans a
+   hoist would share are 8% of the calls.
+
+   **What that attribution points at instead**: 543 calls carrying
+   **14 032 cells** are the horizon scan walking a whole window at
+   ten-minute steps to prove an event is *absent* — `almanac::events`
+   ends its loop by searching for a rise that is not there, twice a day.
+   A body whose altitude cannot reach the target anywhere in the window
+   can be shown so from the declination and the latitude in constant
+   time. That is astronomy rather than plumbing and wants a measured
+   page before a line of it, because the bound has to hold for the Moon,
+   whose declination moves five degrees in a day. **It is the next
+   piece.**
    **B1's route is built.** The port gained two optional methods —
    `native_manifest()` for the manifest the engine ships and
    `native_call(function, arguments_json)` to relay a call by the name

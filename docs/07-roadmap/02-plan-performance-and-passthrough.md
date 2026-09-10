@@ -220,18 +220,50 @@ exceed the walk's by up to a chunk less one, because a chunk can carry
 instants past the one that brackets the crossing; the test bounds it
 rather than pretending otherwise, and no output carries that count.
 
-**A1c. Hoist what a range shares — deferred, and the measurement says
-why.** A1c was to have a range compute its shared searches once. Two
-things since have taken its ground. The anchored grid made neighbouring
-days ask for the *same instants*, and the memo then answered them
-without asking twice: a fifty-day range now fetches 23 888 cells against
-a union of 21 446 distinct ones, so the ephemeris work is already within
-11% of the least it could be. What A1c would still save is **arithmetic
-above the ephemeris** — walking the same scan and refining the same
-crossing once per day rather than once — which this page cannot gate,
-because it counts calls and not seconds by its own §1 argument. It waits
-for a countable measure or for A3, whose threads address the same
-arithmetic more directly.
+**A1c. Hoist what a range shares — closed, measured away three times.**
+A1c was to have a range compute its shared searches once. Three
+measurements have taken its ground in turn.
+
+The anchored grid made neighbouring days ask for the *same* instants and
+the memo then answered them without asking twice, so a fifty-day range
+fetches 23 888 cells against a union of 21 446 — **within 11% of the
+least it could be**. That removed the ephemeris case for it.
+
+Then the arithmetic case was measured directly: fifty days as one range
+against fifty days asked one at a time, over the analytic provider so
+that time is arithmetic rather than engine. The range shares **51% of
+the calls and 8.5% of the time** — which says the memo is doing the
+sharing and the per-day arithmetic is not shared. That looked like A1c's
+opening.
+
+Attributing the range's remaining 8 174 calls closed it:
+
+| calls | share | what asks |
+|---:|---:|---|
+| 2 259 | 27.6% | the Moon's rise and set, `almanac::events` |
+| 2 016 | 24.7% | the day's own rise and set, `Solver::day` |
+| 1 902 | 23.2% | the lattice searches' refinements |
+| 842 | 10.3% | `find_sankranti` |
+| 543 | 6.6% | the horizon scan — 543 calls carrying **14 032 cells** |
+| 150 | 1.8% | the lattice searches' scans |
+
+**Over half of it is the horizon solver's Meeus iteration**, and that is
+not shared work: every day genuinely has a different sunrise, and each
+iteration is serial because each instant is computed from the sample
+before it. The scans a hoist would share are down to 8% of the calls.
+There is no longer a case for restructuring `Almanac::between`, so it is
+closed rather than deferred.
+
+*What the same attribution does point at* is the last row's shape: 543
+calls carrying **14 032 cells**, which is the scan walking a whole window
+at ten-minute steps to prove an event is **absent**. `almanac::events`
+ends its loop by searching for a rise that is not there, twice a day.
+Proving an absence by walking is the expensive way to do it: for a body
+whose altitude cannot reach the target anywhere in the window, the
+declination and the latitude say so in constant time. That is astronomy
+rather than plumbing and wants its own measured page before any of it is
+written — the bound has to hold for the Moon, whose declination moves
+five degrees in a day.
 
 *What it costs, measured rather than feared.* A1a and A1b both move
 where a scan's samples fall, so the crossing instants they refine to are
@@ -632,9 +664,9 @@ the emitted code is verified in its own language.
    the anchoring moved it ahead of A1c.
 5. **A1d** grid the horizon scan — *done*, a fifty-day range 21 663
    calls to 8 174, which the attribution found rather than the plan.
-6. **A1c** hoist what a range shares — *deferred*: the anchoring and the
-   memo took its ephemeris ground, and what is left is arithmetic this
-   page cannot gate.
+6. **A1c** hoist what a range shares — *closed*: over half of what is
+   left is the horizon solver's per-day iteration, which is not shared
+   work, and the scans a hoist would share are 8% of the calls.
 7. **B1** the manifest, the port's two methods and the Rust surface —
    *done*; the adapter's generated dispatch is the engine's side.
 8. **B2** the two entry points and the proxy in all three bindings —
