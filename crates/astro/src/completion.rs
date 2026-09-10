@@ -21,12 +21,13 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, Centre, Coordinates, EphemerisProvider, Equinox, Frame, Obliquity,
-    Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
+    Body, Capabilities, Cell, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame,
+    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
 use crate::ayanamsha;
 use crate::delta_t::DeltaTModel;
+use crate::iau;
 use crate::precession::{self, PrecessionModel};
 use crate::scale::{tt_of, ut1_from_tt};
 use crate::sky::{self, Apparent, ApparentPositions, Spherical};
@@ -383,11 +384,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 Err(error) => return Err(error.into()),
             }
         }
-        if wanted.corrections != native.corrections {
-            return Err(CompletionError::Unsupported {
-                step: "corrections",
-            });
-        }
+
         let mut steps = vec![Step {
             name: "positions",
             implementation: Implementation::Native,
@@ -405,6 +402,13 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // rather than a refused one.
         if wanted.equinox != native.equinox {
             self.precess(&mut columns, request, native, &mut steps)?;
+        }
+        // The corrections next, while the columns are still geocentric:
+        // light time, deflection and aberration are all about the path
+        // light took to the **Earth's centre**, and the observer's own
+        // displacement is a separate question that comes after them.
+        if wanted.corrections != native.corrections {
+            self.correct(&mut columns, request, native, &mut steps)?;
         }
         if wanted.centre != native.centre {
             self.recentre(&mut columns, request, native, &mut steps)?;
@@ -500,6 +504,88 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             steps,
             Step {
                 name: "equinox",
+                implementation: Implementation::Sdk,
+            },
+        );
+        Ok(())
+    }
+
+    /// Geometric positions turned into apparent ones: light time,
+    /// gravitational deflection by the Sun, annual aberration, and
+    /// nutation.
+    ///
+    /// Only geometric to apparent is done — the direction a provider that
+    /// answers a theory needs. Undoing corrections is a different
+    /// question and is refused by the same name.
+    ///
+    /// **Why after the equinox rather than before it.** The textbook
+    /// chain corrects in the barycentric frame of J2000 and rotates
+    /// afterwards. Correcting after the rotation gives the same answer
+    /// provided every vector is expressed in the frame the columns are
+    /// in, and [`sky::earth_at`] returns the Earth's velocity and
+    /// heliocentric position already rotated to the equator of date. So
+    /// the pipeline keeps one order — rotate, then correct, then
+    /// recentre — rather than two that have to be kept in step.
+    ///
+    /// **Light time without a second call.** Seeing a body where it was
+    /// `distance / c` ago normally means asking the provider again at a
+    /// retarded instant. It does not here: the columns carry the body's
+    /// own rate, so the retarded place is one step back along it. The
+    /// step is 8 minutes for the Sun and 1.3 seconds for the Moon, over
+    /// which the second-order term is far below the arcsecond.
+    ///
+    /// A body that is a **direction** — a node, an apogee — takes none of
+    /// this. Nothing is there for light to leave, nothing occupies a
+    /// place for the Sun to deflect, and the port says so
+    /// ([`Body::is_placed`]).
+    fn correct(
+        &self,
+        columns: &mut PositionColumns,
+        request: &PositionRequest<'_>,
+        native: Frame,
+        steps: &mut Vec<Step>,
+    ) -> Result<(), CompletionError> {
+        let wanted = request.frame.corrections;
+        if native.corrections != Corrections::GEOMETRIC {
+            return Err(CompletionError::Unsupported {
+                step: "corrections",
+            });
+        }
+        if self.policy == OverridePolicy::NativeOnly {
+            return Err(CompletionError::PolicyRefused {
+                step: "corrections",
+                policy: self.policy,
+            });
+        }
+        for (jd_index, jd) in request.jds.iter().enumerate() {
+            let tt = self.tt_at(*jd, request.scale, steps)?;
+            let earth = sky::earth_at(tt);
+            let obliquity = self.obliquity(*jd, request.scale, steps)?;
+            for (body_index, body) in request.bodies.iter().enumerate() {
+                let Some(cell) = columns.at(jd_index, body_index) else {
+                    continue;
+                };
+                if !cell.is_ok() {
+                    continue;
+                }
+                columns.set_at(
+                    jd_index,
+                    body_index,
+                    correct_cell(
+                        cell,
+                        *body,
+                        wanted,
+                        &earth,
+                        (obliquity.mean_deg, obliquity.true_deg),
+                        native.coordinates,
+                    ),
+                );
+            }
+        }
+        push_once(
+            steps,
+            Step {
+                name: "corrections",
                 implementation: Implementation::Sdk,
             },
         );
@@ -855,6 +941,84 @@ fn precess_cell(
         lat: here.lat_deg,
         lon_speed,
         lat_speed,
+        ..cell
+    }
+}
+
+/// Light's own speed, astronomical units a day.
+const AU_PER_DAY_LIGHT: f64 = 173.144_632_674_240_5;
+
+/// Turns one geometric cell into an apparent one.
+///
+/// The order is the one the corrections physically happen in: the light
+/// left the body first, was bent by the Sun on the way, and arrived at a
+/// moving Earth. Nutation is last because it is a change of frame rather
+/// than a change of what is seen.
+fn correct_cell(
+    cell: Cell,
+    body: Body,
+    wanted: Corrections,
+    earth: &sky::EarthAt,
+    obliquities: (f64, f64),
+    coordinates: Coordinates,
+) -> Cell {
+    let (mean_deg, true_deg) = obliquities;
+    // Everything below is done on the equator, because that is the frame
+    // ERFA's routines and the Earth's state are expressed in.
+    let to_equatorial = |p: Spherical| match coordinates {
+        Coordinates::Ecliptic => sky::ecliptic_to_equatorial(p, mean_deg),
+        Coordinates::Equatorial => p,
+    };
+    let from_equatorial = |p: Spherical, obliquity: f64| match coordinates {
+        Coordinates::Ecliptic => sky::equatorial_to_ecliptic(p, obliquity),
+        Coordinates::Equatorial => p,
+    };
+
+    // Light time, as one step back along the body's own motion. A
+    // direction has no distance and so no light time.
+    let mut lon = cell.lon;
+    let mut lat = cell.lat;
+    if wanted.light_time && body.is_placed() && cell.dist > 0.0 {
+        let tau = cell.dist / AU_PER_DAY_LIGHT;
+        lon -= cell.lon_speed * tau;
+        lat -= cell.lat_speed * tau;
+    }
+
+    let mut direction = to_vector(to_equatorial(Spherical {
+        lon_deg: lon,
+        lat_deg: lat,
+    }));
+
+    if body.is_placed() {
+        if wanted.deflection {
+            direction =
+                iau::apparent::ldsun(&direction, &earth.heliocentric_au, earth.sun_distance_au);
+        }
+        if wanted.aberration {
+            let v = [
+                earth.velocity_au_per_day[0] / AU_PER_DAY_LIGHT,
+                earth.velocity_au_per_day[1] / AU_PER_DAY_LIGHT,
+                earth.velocity_au_per_day[2] / AU_PER_DAY_LIGHT,
+            ];
+            let speed_squared: f64 = v.iter().map(|c| c * c).sum();
+            direction = iau::apparent::ab(
+                &direction,
+                &v,
+                earth.sun_distance_au,
+                (1.0 - speed_squared).sqrt(),
+            );
+        }
+    }
+
+    let corrected = to_spherical(direction);
+    // Nutation is a frame change: on the equator it is the matrix, and on
+    // the ecliptic it is the shift in longitude plus the true obliquity
+    // on the way out.
+    let obliquity_out = if wanted.nutation { true_deg } else { mean_deg };
+    let here = from_equatorial(corrected, obliquity_out);
+    Cell {
+        lon: here.lon_deg,
+        lat: here.lat_deg,
         ..cell
     }
 }

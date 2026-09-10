@@ -181,6 +181,15 @@ pub struct EarthAt {
     /// The Sun's distance from the Earth, astronomical units, which the
     /// aberration's own gravitational term is divided by.
     pub sun_distance_au: f64,
+    /// The Earth's heliocentric position in the true equator and equinox
+    /// of date, astronomical units: the direction the Sun's light
+    /// deflection is measured from.
+    ///
+    /// It is the same vector `sun_distance_au` is the length of, kept
+    /// beside it because deflection needs the direction and aberration
+    /// needs the length, and computing the state twice to get both would
+    /// be two answers to one question.
+    pub heliocentric_au: Vector3,
 }
 
 /// The Earth's barycentric velocity and the Sun's distance at an
@@ -218,6 +227,7 @@ pub fn earth_at(tt: JulianDay<Tt>) -> EarthAt {
     EarthAt {
         velocity_au_per_day: iau::vector::rxp(&to_of_date, &state.barycentric.velocity),
         sun_distance_au: iau::vector::pm(&state.heliocentric.position),
+        heliocentric_au: iau::vector::rxp(&to_of_date, &state.heliocentric.position),
     }
 }
 
