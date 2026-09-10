@@ -97,9 +97,10 @@ So the two are separated:
 
 | | when | how |
 |---|---|---|
-| the npm `@teistro` scope | now | created as an organisation in the web console; a scope needs no stored publishing credential to exist |
-| `teistro` and `teistro-*` on crates.io | now | minimal `0.0.0` stubs, each pointing at the repository, published with a token that is **revoked in the same sitting** |
-| `teistro` on PyPI | now | the same, with the same revoke |
+| the npm `@teistro` scope | **done 2026-09-10** | created as a free public organisation in the web console; creating it reserved the whole scope, and `@teistro/sdk@0.0.0` was published into it as a pointer so `npm i` leads somewhere rather than 404ing |
+| `teistro` and `teistro-*` on crates.io | **done 2026-09-10** | twenty-two `0.0.0` stubs — the umbrella and every crate that exists in the workspace — each saying it is a placeholder and pointing at `STATUS.md` and the roadmap. crates.io rate-limits a new crate to one per ten minutes after a burst of five, so the set takes about three hours to publish and the script is re-runnable, skipping what is already held |
+| module names not yet written (`teistro-dasha`, `teistro-western`, `teistro-render-svg`, …) | at the release | **deliberately not held.** crates.io's placeholder policy covers a crate you are actively working on; a name for code that does not exist is the squatting it objects to. They are claimed as they are built |
+| `teistro` on PyPI | not yet | no credential on this machine; the name was free on 2026-09-10 |
 | pub.dev | at the release | pub.dev discourages placeholder packages and may remove one; the name is watched instead |
 | any standing publishing credential | at the release | unchanged, and preferably never — see trusted publishing below |
 

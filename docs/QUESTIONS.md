@@ -23,7 +23,7 @@ and links its ADR. Status key: `open`, `decided`, `deferred`.
 | Q13 | numeric policy | precision-first `f64` with error-bounded algorithms | ADR-0011 |
 | Q14 | team and infrastructure | the maintainer and this assistant; public repository | roadmap |
 | Q15 | Teimeris relationship | Teimeris updated as needed | ADR-0002, ADR-0009 |
-| Q16 | names | GitHub `teispace/teistro-sdk`; npm `@teistro/*`; crates `teistro-*`; PyPI `teistro`; pub.dev `teistro` and `teistro_flutter`; adapters published separately | implementation page |
+| Q16 | names | GitHub `teispace/teistro-sdk`; npm `@teistro/*`; crates `teistro-*`; PyPI `teistro`; pub.dev `teistro` and `teistro_flutter`; adapters published separately. **Held from 2026-09-10**: the `teistro` npm organisation exists and `@teistro/sdk@0.0.0` is published, and `teistro` plus the `teistro-*` crates are being reserved on crates.io as placeholders that say so. Every one of them was still free that morning, checked against each registry's API. PyPI and pub.dev are not held: pub.dev removes placeholders, so it is watched instead | implementation page, `06-cicd/03-release-process.md` |
 | Q17 | built-in ephemeris tiers and data terms | all three tiers, `standard` default; published-series tables with citations in `NOTICE`; Pluto fitted from a public-domain JPL kernel | ADR-0013 |
 | Q18 | contributor agreement | DCO sign-off, no CLA | guideline 07, `DCO` |
 | Q19 | commit convention | Conventional Commits with bodies that say what was wrong | guideline 05 |
