@@ -94,6 +94,38 @@ const MAX_ITERATIONS: u32 = 12;
 /// iteration's correction is not trusted and the scan answers.
 const MIN_RATE_FACTOR: f64 = 1e-3;
 
+/// How far a body's declination strays from the straight line between
+/// two readings a day apart, degrees.
+///
+/// The companion of [`crate::events::greatest_rate`], one coordinate
+/// over, and it exists for one purpose: bounding where a body's altitude
+/// can reach over a window, which is how a rise or a set is shown **not
+/// to happen** without walking the window to find out
+/// (`03-design/horizon-absence-measured.md`).
+///
+/// **Not the day's motion**, which was tried and is hopeless: the Moon's
+/// declination moves six degrees in a day, and a margin that wide puts
+/// every temperate latitude inside the range, proves nothing at all, and
+/// costs two readings to find that out. It took an almanac from 19 632
+/// calls to 20 032. What a margin has to cover is the *stray*, and over
+/// a day a smooth curve barely leaves its chord.
+///
+/// Measured rather than assumed, at seven interior points of every
+/// window over thirteen latitudes and thirty-four days; the page checks
+/// that these cover what it saw.
+///
+/// `None` for a body the sweep has not measured, and there the fast path
+/// does not apply at all — a bound that might be too small is worse than
+/// no bound, so an unmeasured body walks the window as it always did.
+#[must_use]
+pub const fn declination_chord_margin(body: Body) -> Option<f64> {
+    match body {
+        Body::Sun => Some(0.01),
+        Body::Moon => Some(0.5),
+        _ => None,
+    }
+}
+
 /// The mean radius of a body, kilometres, for its apparent semidiameter:
 /// the Sun's nominal radius (IAU 2015 Resolution B3), the others from the
 /// IAU Working Group on Cartographic Coordinates (Archinal et al., 2018);
@@ -284,6 +316,7 @@ pub struct Solver<'a> {
     horizon: Horizon,
     delta_t: DeltaTModel,
     chunk: usize,
+    absence_check: bool,
 }
 
 impl fmt::Debug for Solver<'_> {
@@ -308,7 +341,28 @@ impl<'a> Solver<'a> {
             horizon,
             delta_t,
             chunk: SCAN_CHUNK,
+            absence_check: true,
         }
+    }
+
+    /// Whether to try proving a rise or a set **absent** before looking
+    /// for it.
+    ///
+    /// On by default. Two readings of the sky bound where the altitude
+    /// can reach over the window, and where that bound is on one side of
+    /// the event's target there is no crossing and nothing to look for
+    /// — which saves the iteration and the walk behind it, and an
+    /// almanac spends most of its horizon work proving absences
+    /// (`03-design/horizon-absence-measured.md`).
+    ///
+    /// Turning it off is what the measured page's own sweep does, so
+    /// that the rule is compared against a search that does not use it;
+    /// a caller who wants the walk's answer by the walk's route can do
+    /// the same.
+    #[must_use]
+    pub const fn with_absence_check(mut self, on: bool) -> Solver<'a> {
+        self.absence_check = on;
+        self
     }
 
     /// How many of the scan's instants to ask the source for at once.
@@ -463,6 +517,97 @@ impl<'a> Solver<'a> {
         }
     }
 
+    /// Whether the body certainly reaches no crossing of the event's
+    /// target inside the window.
+    ///
+    /// An altitude is `sin h = sin φ sin δ + cos φ cos δ cos H`, and over
+    /// a rotation `cos H` sweeps −1 to 1, so for a fixed declination the
+    /// altitude lies between its two transits:
+    ///
+    /// ```text
+    /// h ≤ 90° − |φ − δ|      upper transit, cos H = 1
+    /// h ≥ |φ + δ| − 90°      lower transit, cos H = −1
+    /// ```
+    ///
+    /// If the upper bound is under the target the body never reaches it;
+    /// if the lower bound is over it the body never falls to it. Either
+    /// way there is no crossing, and no rise and no set.
+    ///
+    /// **Both bounds take the declination kindest to an event**, because
+    /// an absence is only proved when *no* declination the window allows
+    /// permits one. Getting either the wrong way round claims absences
+    /// that are not: taking the largest `|φ + δ|` rather than the
+    /// smallest called fifty-three events absent when the rule was
+    /// measured, and widening the margin made that worse rather than
+    /// better — which is what said the bound was inverted rather than
+    /// merely tight.
+    ///
+    /// The bounds hold for a *fixed* declination and it moves, so the
+    /// range is what the two readings saw widened by
+    /// [`declination_chord_margin`]. A body with no measured margin gets
+    /// no fast path.
+    ///
+    /// Only a rise or a set: a transit is a crossing of the hour angle,
+    /// which happens once a rotation whatever the altitude does.
+    ///
+    /// Conservative in the one direction that matters. The transits bound
+    /// a **whole** rotation, so a window shorter than one can hold no
+    /// event where these allow one; this therefore proves fewer absences
+    /// than exist and never one that does not — 60% of them over the
+    /// measured sweep, and none of 1768 searches wrongly.
+    fn cannot_cross(
+        &self,
+        kind: HorizonEventKind,
+        start: f64,
+        end: f64,
+        evaluations: &mut u32,
+    ) -> Result<bool, Error> {
+        if !matches!(kind, HorizonEventKind::Rise | HorizonEventKind::Set) {
+            return Ok(false);
+        }
+        // A whole rotation, or nothing. The transits bound the altitude
+        // over one, so a shorter window can hold no event where they
+        // allow one and the bound can never prove an absence in it — it
+        // would only cost two readings to say nothing.
+        //
+        // This is not a refinement, it is what makes the fast path pay.
+        // An almanac's event loop searches a **partial** window every
+        // time it ends, which is the very case that dominates its
+        // absences, and at any temperate latitude the Moon rises every
+        // day so the bound would never fire there anyway. Without this
+        // guard the check cost an almanac 400 calls over fifty days and
+        // saved none of them.
+        if end - start < 360.0 / HOUR_ANGLE_RATE_DEG_PER_DAY {
+            return Ok(false);
+        }
+        let Some(margin) = declination_chord_margin(self.body) else {
+            return Ok(false);
+        };
+        let first = self.sample(start, evaluations)?;
+        let last = self.sample(end, evaluations)?;
+
+        let (dec_lo, dec_hi) = (
+            first.dec_deg.min(last.dec_deg) - margin,
+            first.dec_deg.max(last.dec_deg) + margin,
+        );
+        let latitude = self.place.latitude.get();
+        // The highest an upper transit could reach: the declination
+        // nearest the latitude, since `90° − |φ − δ|` grows as they close.
+        let nearest = latitude.clamp(dec_lo, dec_hi);
+        let highest = 90.0 - (latitude - nearest).abs();
+        // The deepest a lower transit could fall: the declination making
+        // `|φ + δ|` smallest, since `|φ + δ| − 90°` falls as it shrinks.
+        let shallowest = (-latitude).clamp(dec_lo, dec_hi);
+        let lowest = (latitude + shallowest).abs() - 90.0;
+        // The kindest target either reading offers, so an absence holds
+        // for both.
+        let (target_lo, target_hi) = (
+            first.target_deg.min(last.target_deg),
+            first.target_deg.max(last.target_deg),
+        );
+        Ok(highest < target_lo || lowest > target_hi)
+    }
+
     /// Meeus's iteration from the hour-angle estimate: `Some(instant)`
     /// when it converged inside the window, `Ok(None)` when it did not
     /// settle or its rate factor vanished, which hands the search to the
@@ -533,6 +678,24 @@ impl<'a> Solver<'a> {
         end: f64,
         evaluations: u32,
     ) -> Result<Option<HorizonEvent>, Error> {
+        // Before walking, try to show there is nothing to walk for. Two
+        // readings against a hundred and forty-four, and an almanac's
+        // event loop ends by searching for a rise that is not there,
+        // twice a day (`03-design/horizon-absence-measured.md`).
+        //
+        // **Here rather than before the iteration**, which is where it
+        // was first put and where it cost more than it saved: an event
+        // that iterates cleanly is the common case at any temperate
+        // latitude, and making it pay two readings for a proof it does
+        // not need took an almanac from 19 632 calls to 22 020. Only a
+        // search that is about to walk can be worth two readings, so only
+        // a search that is about to walk pays them.
+        let mut counted = evaluations;
+        if self.absence_check && self.cannot_cross(kind, start, end, &mut counted)? {
+            return Ok(None);
+        }
+        let evaluations = counted;
+
         let quantity = |sample: &Sample| -> f64 {
             match kind {
                 HorizonEventKind::Rise | HorizonEventKind::Set => {

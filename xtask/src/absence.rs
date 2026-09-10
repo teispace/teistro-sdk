@@ -44,6 +44,14 @@
 //! question that decides the rule: over every place and day it sweeps,
 //! **does the bound ever say absent where the solver found an event?**
 //!
+//! # Measuring a rule the code now uses
+//!
+//! The solver has this rule in it since the page was first written, so
+//! the sweep runs it with [`Solver::with_absence_check`] **off**. A
+//! sweep that let the solver use the rule would be measuring the rule
+//! against itself, and the row that matters — the bound never claims an
+//! absence where an event exists — could never be anything but zero.
+//!
 //! `cargo xtask absence` writes the page; `check-absence` regenerates it
 //! in memory and fails on any difference.
 
@@ -80,24 +88,10 @@ const DAY_STEP: f64 = 11.0;
 /// declination is the reason this pass exists.
 const BODIES: [Body; 2] = [Body::Sun, Body::Moon];
 
-/// The greatest a body's declination can move in a day, degrees.
-///
-/// **Measured by this pass, not assumed** — §3 prints what the sweep
-/// saw and the claims check that the table covers it. `None` for a body
-/// the sweep has not measured, and there the fast path does not apply at
-/// all: a margin that is too small turns a rise into an absence, so a
-/// body without a measured bound walks the window like it always did.
-fn greatest_declination_rate(body: Body) -> Option<f64> {
-    match body {
-        // 0.405° measured; the obliquity divided by a quarter year is
-        // 0.41, so this is the whole of it with a little over.
-        Body::Sun => Some(0.5),
-        // 5.705° measured. The Moon's orbit is inclined five degrees to
-        // the ecliptic and it goes round in twenty-seven days, so the
-        // declination swings by up to 57° in a fortnight.
-        Body::Moon => Some(6.0),
-        _ => None,
-    }
+/// The table the solver uses, read from the solver rather than copied,
+/// so this pass measures what the code will actually do.
+fn margin_of(body: Body) -> Option<f64> {
+    teistro_astro::rise_set::declination_chord_margin(body)
 }
 
 /// What one search decided, both ways.
@@ -181,13 +175,21 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
                 Longitude::literal(0.0),
                 Altitude::literal(0.0),
             );
+            // **Without the fast path**, and that is not a detail. The
+            // solver has the rule in it now, so a sweep that let it use
+            // the rule would be measuring the rule against itself and
+            // could never find it wrong. This page's whole worth is the
+            // row that says the bound never claims an absence where an
+            // event exists, and that row is only worth reading if the
+            // search it is compared against does not use the bound.
             let solver = Solver::new(
                 &completion,
                 body,
                 place,
                 horizon,
                 DeltaTModel::TableThenModel,
-            );
+            )
+            .with_absence_check(false);
             for day in 0..DAYS {
                 let from = 2_451_545.0 + f64::from(day) * DAY_STEP;
                 let Some(start) = sky_at(&completion, body, &horizon, from) else {
@@ -196,11 +198,25 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
                 let Some(end) = sky_at(&completion, body, &horizon, from + 1.0) else {
                     continue;
                 };
-                // What the declination did over the day, which is what a
-                // margin has to cover.
-                let rate = (end.0 - start.0).abs();
-                if rate > widest_rate[index] {
-                    widest_rate[index] = rate;
+                // What a margin actually has to cover is **not** the
+                // day's motion but how far the declination strays from
+                // the straight line between the two readings that bound
+                // it. Sizing the margin from the motion was measured and
+                // was hopeless: six degrees for the Moon puts every
+                // temperate latitude inside the range and proves nothing
+                // at all, while costing two readings to find that out.
+                let mut deviation = 0.0f64;
+                for step in 1..8 {
+                    let fraction = f64::from(step) / 8.0;
+                    let Some((dec, _)) = sky_at(&completion, body, &horizon, from + fraction)
+                    else {
+                        continue;
+                    };
+                    let chord = start.0 + (end.0 - start.0) * fraction;
+                    deviation = deviation.max((dec - chord).abs());
+                }
+                if deviation > widest_rate[index] {
+                    widest_rate[index] = deviation;
                 }
                 for kind in [HorizonEventKind::Rise, HorizonEventKind::Set] {
                     provider.reset();
@@ -212,8 +228,8 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
                     // The window is a day, so the declination can move
                     // by a whole day's worth between the two readings
                     // that bound it.
-                    let proved_absent = greatest_declination_rate(body)
-                        .is_some_and(|rate| proves_absent(latitude, [start, end], rate));
+                    let proved_absent = margin_of(body)
+                        .is_some_and(|margin| proves_absent(latitude, [start, end], margin));
                     readings.push(Reading {
                         found: outcome.is_some(),
                         cells,
@@ -296,20 +312,28 @@ fn page() -> String {
     );
     let _ = writeln!(
         out,
-        "## 3. What the declination does, measured rather than assumed\n\n\
-         The bounds hold for a fixed δ and δ moves, so the sweep records\n\
-         what it moved by over each day:\n"
+        "## 3. What a margin has to cover, measured rather than assumed\n\n\
+         The bounds hold for a fixed δ and δ moves, so the range has to be\n\
+         widened by what happens between the two readings that bound it.\n\
+         **Not by the day's motion**: that was tried and it is hopeless —\n\
+         six degrees for the Moon puts every temperate latitude inside the\n\
+         range, proves nothing at all, and costs two readings to find that\n\
+         out. What matters is how far δ strays from the straight line\n\
+         between the ends, which the sweep measures at seven interior\n\
+         points of every window:\n"
     );
-    let mut rates = String::from("| body | greatest change in a day |\n|---|---:|\n");
+    let mut rates = String::from("| body | greatest stray from the chord |\n|---|---:|\n");
     for (index, body) in BODIES.into_iter().enumerate() {
         let _ = writeln!(rates, "| {} | {:.3}° |", body.key(), widest_rate[index]);
     }
     let _ = writeln!(out, "{rates}");
     let _ = writeln!(
         out,
-        "The Moon is the reason this pass exists: its declination moves by\n\
-         degrees where the Sun's crawls, so a margin sized for the Sun\n\
-         would be wrong for the Moon in the direction that matters.\n"
+        "The Moon is the reason this pass exists — its declination moves\n\
+         by degrees in a day where the Sun's crawls — but the stray is\n\
+         what the margin pays for, and over a day a smooth curve barely\n\
+         leaves its chord. The table in `rise_set` carries these with a\n\
+         margin, and the claims below check that it covers what was seen.\n"
     );
     let _ = writeln!(
         out,
@@ -337,6 +361,27 @@ fn page() -> String {
     let _ = writeln!(out, "{found}");
 
     let mut claims = Vec::new();
+    let table_covers = BODIES
+        .into_iter()
+        .enumerate()
+        .all(|(index, body)| margin_of(body).is_none_or(|margin| margin >= widest_rate[index]));
+    claims.push(Claim::stated(
+        "the margin the solver uses covers the stray the sweep saw",
+        verdict_of(table_covers),
+        BODIES
+            .into_iter()
+            .enumerate()
+            .map(|(index, body)| {
+                format!(
+                    "{} {:.4}° seen, {} in the table",
+                    body.key(),
+                    widest_rate[index],
+                    margin_of(body).map_or_else(|| String::from("none"), |m| format!("{m:.4}°"))
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("; "),
+    ));
     claims.push(Claim::stated(
         "the bound never says absent where an event exists",
         verdict_of(wrong == 0),
@@ -398,6 +443,29 @@ fn page() -> String {
          can miss an event the bounds allow. So the rule is a fast path\n\
          and never a replacement — where it cannot prove an absence the\n\
          walk still runs, and the answer is the walk's.\n"
+    );
+    let _ = writeln!(
+        out,
+        "## 6. What the solver does with it\n\n\
+         Two guards, and both were put there by a measurement rather than\n\
+         by caution.\n\n\
+         **Only when a walk is about to happen.** The check sits at the\n\
+         top of the scan, not before the iteration. An event that iterates\n\
+         cleanly is the common case at any temperate latitude, and making\n\
+         it pay two readings for a proof it does not need took an almanac\n\
+         from 19 632 calls to 22 020.\n\n\
+         **Only over a whole rotation.** The claim above is not a caveat,\n\
+         it is the guard: a shorter window can hold no event where these\n\
+         bounds allow one, so the check would spend two readings to say\n\
+         nothing. That is exactly what an almanac's event loop does every\n\
+         time it ends — it searches the *remainder* of a day — and at a\n\
+         temperate latitude the Moon rises every day, so the bound could\n\
+         never have fired there. With the guard an almanac pays 0.08% and\n\
+         a polar one keeps the {} above.\n\n\
+         `Solver::with_absence_check` turns it off, which is what this\n\
+         page's own sweep does so that the rule is measured against a\n\
+         search that does not use it.\n",
+        share_of(saved, absent_cells)
     );
     fill(&out)
 }
