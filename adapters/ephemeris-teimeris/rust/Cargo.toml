@@ -36,6 +36,10 @@ name = "teistro-ephemeris-teimeris-pheno-table"
 path = "src/bin/pheno_table.rs"
 
 [[bin]]
+name = "teistro-ephemeris-teimeris-moon-floor"
+path = "src/bin/moon_floor_table.rs"
+
+[[bin]]
 name = "teistro-ephemeris-teimeris-vsop-floor"
 path = "src/bin/vsop_floor_table.rs"
 

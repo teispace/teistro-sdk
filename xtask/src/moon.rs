@@ -42,12 +42,26 @@ use teistro_astro::events::{Quantity, quantity_least_rate};
 use teistro_port_ephemeris::Body;
 
 use crate::generated::{Output, write};
-use crate::measure::{Claim, fill, table, verdict_of};
+use crate::measure::{Claim, count, fill, table, verdict_of};
+
+/// A byte count as kilobytes. The cast is exact: a coefficient table is
+/// kilobytes, decades below the range an `f64` represents exactly.
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "a table's size is kilobytes, far below 2^53"
+)]
+fn kilobytes(bytes: usize) -> f64 {
+    bytes as f64 / 1024.0
+}
 
 const PAGE: &str = "docs/03-design/lunar-accuracy-measured.md";
 
 /// Where the Sun's measured error is recorded.
 const FLOOR: &str = "crates/ephemeris-builtin/data/vsop87-floor.json";
+
+/// Where the Moon's measured error is recorded, by
+/// `teistro-ephemeris-teimeris-moon-floor`.
+const MOON_FLOOR: &str = "crates/ephemeris-builtin/data/elp82b-floor.json";
 
 /// Seconds of clock time in a day.
 const SECONDS_PER_DAY: f64 = 86_400.0;
@@ -112,13 +126,49 @@ fn solar_error_arcsec(root: &Path) -> Option<f64> {
         .as_f64()
 }
 
+/// One span of the recorded lunar measurement.
+#[derive(Debug, serde::Deserialize)]
+struct MoonSpan {
+    label: String,
+    worst_arcsec: f64,
+    worst_tithi_seconds: f64,
+    radius_relative: f64,
+}
+
+/// One truncation row of the recorded lunar measurement.
+#[derive(Debug, serde::Deserialize)]
+struct MoonRow {
+    threshold: f64,
+    terms: usize,
+    bytes: usize,
+    worst_arcsec: f64,
+}
+
+/// The recorded lunar measurement.
+#[derive(Debug, serde::Deserialize)]
+struct MoonFloor {
+    engine_profile: String,
+    whole_theory_terms: usize,
+    rows: Vec<MoonRow>,
+    spans: Vec<MoonSpan>,
+}
+
 /// Writes the page.
 pub(crate) fn generate(root: &Path) -> i32 {
-    write(root, &[Output::new(PAGE, page(solar_error_arcsec(root)))])
+    let moon = std::fs::read_to_string(root.join(MOON_FLOOR))
+        .ok()
+        .and_then(|text| serde_json::from_str::<MoonFloor>(&text).ok());
+    write(
+        root,
+        &[Output::new(
+            PAGE,
+            page(solar_error_arcsec(root), moon.as_ref()),
+        )],
+    )
 }
 
 /// The page, as the sections it is made of.
-fn page(solar_arcsec: Option<f64>) -> String {
+fn page(solar_arcsec: Option<f64>, moon: Option<&MoonFloor>) -> String {
     let (sensitivity, worst) = sensitivity_section();
     let mut out = String::new();
     out.push_str(&opening());
@@ -126,9 +176,72 @@ fn page(solar_arcsec: Option<f64>) -> String {
     out.push_str(&budget_section(worst, solar_arcsec));
     out.push_str(&candidates_section(worst));
     out.push_str(&finding_section(solar_arcsec));
-    out.push_str(&claims_section(worst));
-    out.push_str(&limits_section());
+    if let Some(moon) = moon {
+        out.push_str(&measured_section(moon));
+    }
+    out.push_str(&claims_section(worst, moon));
+    out.push_str(&limits_section(moon.is_some()));
     fill(&out)
+}
+
+/// What ELP2000-82B measured to, which is the answer the page was for.
+fn measured_section(moon: &MoonFloor) -> String {
+    let mut out = String::new();
+    let _ = writeln!(out, "## What ELP2000-82B actually costs\n");
+    let _ = writeln!(
+        out,
+        "Measured against the engine in the frame the theory is stated in — geocentric, ecliptic, J2000, geometric — on the engine's `{}` profile. The whole theory is {} terms.\n",
+        moon.engine_profile,
+        count(moon.whole_theory_terms)
+    );
+    let _ = writeln!(
+        out,
+        "**Truncation is not what limits it.** The ladder converges long before the terms run out, so the Moon is cheap and the theory is the whole cost:\n"
+    );
+    let _ = writeln!(out, "| threshold | terms | table | worst |");
+    let _ = writeln!(out, "|---:|---:|---:|---:|");
+    for row in &moon.rows {
+        let label = if row.threshold == 0.0 {
+            "0 (whole theory)".to_string()
+        } else {
+            format!("{}", row.threshold)
+        };
+        let _ = writeln!(
+            out,
+            "| {label} | {} | {:.0} KB | {:.2}″ |",
+            count(row.terms),
+            kilobytes(row.bytes),
+            row.worst_arcsec
+        );
+    }
+    let _ = writeln!(
+        out,
+        "\n**What limits it is distance from its own epoch.** Every row below keeps every term:\n"
+    );
+    let _ = writeln!(
+        out,
+        "| span | worst | as tithi boundary | radius | verdict |"
+    );
+    let _ = writeln!(out, "|---|---:|---:|---:|---|");
+    for span in &moon.spans {
+        let verdict = if span.worst_arcsec <= 0.445 {
+            "**second-accurate**"
+        } else if span.worst_tithi_seconds <= 60.0 {
+            "minute-accurate"
+        } else {
+            "neither"
+        };
+        let _ = writeln!(
+            out,
+            "| {} | {:.3}″ | {:.2} s | {:.1e} | {verdict} |",
+            span.label, span.worst_arcsec, span.worst_tithi_seconds, span.radius_relative
+        );
+    }
+    let _ = writeln!(
+        out,
+        "\nThe first row is the check that the port is faithful rather than the finding: at the theory's own epoch it agrees with a modern ephemeris to a quarter of an arcsecond, which is what a correct reading of a DE200-fitted theory should give. Everything after it is the fit ageing — and it ages fast, because a lunar theory's mean longitude carries the tidal acceleration its source ephemeris assumed, and an error there grows with the square of the time.\n"
+    );
+    out
 }
 
 /// What the page is and where its numbers come from.
@@ -274,8 +387,8 @@ fn finding_section(solar_arcsec: Option<f64>) -> String {
 }
 
 /// The claims, and what each measures to.
-fn claims_section(worst: f64) -> String {
-    let claims = vec![
+fn claims_section(worst: f64, moon: Option<&MoonFloor>) -> String {
+    let mut claims = vec![
         Claim::stated(
             "the Moon decides the tiers, not the planets",
             verdict_of(true),
@@ -292,6 +405,38 @@ fn claims_section(worst: f64) -> String {
             "ELP/MPP02 is published at an address that no longer serves it, was never captured by the archive, and reaches the public only through copyleft re-implementations that ADR-0019 refuses".to_string(),
         ),
     ];
+    if let Some(moon) = moon {
+        let standard = moon.spans.iter().find(|span| span.label == "1800 to 2400");
+        if let Some(span) = standard {
+            claims.push(Claim::stated(
+                "`standard` holds 2 arcseconds for the Moon over 1800 to 2400",
+                verdict_of(span.worst_arcsec <= 2.0),
+                format!(
+                    "ELP2000-82B, every term kept, is {:.2}″ — {:.0} s of tithi",
+                    span.worst_arcsec, span.worst_tithi_seconds
+                ),
+            ));
+        }
+        let cheapest = moon
+            .rows
+            .iter()
+            .filter(|row| {
+                row.worst_arcsec
+                    <= moon.rows.last().map_or(f64::MAX, |last| last.worst_arcsec) * 1.01
+            })
+            .min_by_key(|row| row.bytes);
+        if let Some(row) = cheapest {
+            claims.push(Claim::stated(
+                "the Moon's table is a cost worth optimising",
+                verdict_of(false),
+                format!(
+                    "the theory's own accuracy is reached at {:.0} KB; the remaining {} terms buy nothing",
+                    kilobytes(row.bytes),
+                    count(moon.whole_theory_terms - row.terms)
+                ),
+            ));
+        }
+    }
     let mut out = String::new();
     let _ = writeln!(out, "## What the claims measure to\n");
     let _ = writeln!(out, "{}", table(&claims));
@@ -299,13 +444,20 @@ fn claims_section(worst: f64) -> String {
 }
 
 /// What the page cannot see.
-fn limits_section() -> String {
+fn limits_section(measured: bool) -> String {
     let mut out = String::new();
     let _ = writeln!(out, "\n## What this does not measure\n");
-    let _ = writeln!(
-        out,
-        "**What ELP2000-82B actually costs.** Its accuracy against a modern ephemeris is the next measurement, and the floor harness already exists: it is the same comparison the planets had, in the same isolated frame.\n"
-    );
+    if measured {
+        let _ = writeln!(
+            out,
+            "**What a better lunar source would cost.** ELP/MPP02 cannot be had; what remains is the `reference` tier's refit from a modern kernel, or `ephemeris-de` reading one directly, and neither is sized here. That is the next decision, and it is an ADR rather than a build step.\n"
+        );
+    } else {
+        let _ = writeln!(
+            out,
+            "**What ELP2000-82B actually costs.** Its accuracy against a modern ephemeris is the next measurement, and the floor harness already exists: it is the same comparison the planets had, in the same isolated frame.\n"
+        );
+    }
     let _ = writeln!(
         out,
         "**The rate distribution.** The table uses the slowest the quantity ever moves, which is the worst case and is what a bound needs. A typical boundary moves less, and a page that wanted the typical figure would have to sweep real rates rather than read the catalogued extreme.\n"
