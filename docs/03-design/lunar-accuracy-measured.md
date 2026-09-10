@@ -1,0 +1,98 @@
+# How accurate the Moon has to be, measured
+
+Status: `generated` by `cargo xtask moon`. Do not edit. The rates are
+the SDK's own catalogued extremes (`astro::events::quantity_least_rate`,
+the table the search grid is sized from) and the arithmetic over them is
+exact; the Sun's error is measured and recorded in
+`crates/ephemeris-builtin/data/vsop87-floor.json`.
+
+Phase 3 must choose a lunar theory, and the research page says the tiers
+are chosen by Moon accuracy first without saying what accuracy. This is
+the number. Panchanga publishes instants, so an error in the Moon's
+longitude is not an error in a position — it is an error in a *time*,
+and this page converts one into the other.
+
+## What an arcsecond of lunar error costs
+
+A boundary is where a quantity crosses a line of its lattice. An error
+of `ε` degrees in the quantity moves the crossing by `ε / rate` days,
+so one arcsecond moves it by `24 / rate` seconds. The rate is the
+**quantity's**, which is why the same lunar error is worth more in a
+tithi than in a yoga: a tithi runs on the Moon less the Sun and a yoga
+on the Moon plus it. The rate used is the slowest the quantity ever
+moves, because that is the worst case and the Moon's daily motion swings
+by a third between perigee and apogee.
+
+| limb | quantity | member width | slowest rate | one arcsecond is | one second needs | one minute needs |
+|---|---|---:|---:|---:|---:|---:|
+| Tithi | Moon and Sun | 12.0° | 10.670°/day | 2.25 s | 0.445″ | 26.67″ |
+| Karana | Moon and Sun | 6.0° | 10.670°/day | 2.25 s | 0.445″ | 26.67″ |
+| Nakshatra | Moon alone | 13.3° | 11.700°/day | 2.05 s | 0.488″ | 29.25″ |
+| Yoga | Moon and Sun | 13.3° | 12.650°/day | 1.90 s | 0.527″ | 31.62″ |
+
+## What that asks of a theory
+
+Reading the table the other way: to hold **every** panchanga boundary to
+one second of clock time, the Moon's longitude must be right to
+**0.445″**, and to hold it to one minute, to **26.67″**. The tithi
+is the binding limb, because its quantity is the slowest.
+
+**The Sun is already spent, and it is cheap.** The floor measurement
+puts VSOP87's Sun at 0.148″ against the engine, which is 0.33 s of
+tithi boundary on its own. That leaves the Moon essentially the whole
+budget rather than half of it, and it means a lunar theory good to a
+tenth of an arcsecond is not wasted on a Sun good to a seventh.
+
+## The candidates
+
+| theory | fitted to | published accuracy | as tithi boundary | source |
+|---|---|---|---:|---|
+| ELP/MPP02 | DE405 and DE406 | 2.4 m over a century about J2000; 1.4 km over five millennia | 0.003 s and 1.7 s | **its host is unreachable** |
+| ELP2000-82B | DE200 and LE200 | stated as the theory's own; unmeasured here | unmeasured | CDS VI/79 and IMCCE, both reachable |
+
+A metre at the Moon's mean distance subtends 5.37e-4″, which is how
+the first row's seconds are reached.
+
+## The finding that blocks the choice
+
+**ELP/MPP02 cannot be fetched from its authoritative source.** ADR-0013
+and the research page name it as the SDK's lunar theory, with
+ELP2000-82B as the smaller variant. Its six data files are published at
+`cyrano-se.obspm.fr`, which did not answer over either FTP or HTTPS on
+2026-09-10; IMCCE's own `ftp.imcce.fr/pub/ephem/moon/` carries `elp82b`
+and nothing later, and CDS catalogue VI/79 is ELP2000-82B as well.
+
+That matters more than a broken link, because of what the floor
+measurement found about the planets. VSOP87 was fitted to DE200 in 1981
+and drifts by arcseconds against a modern ephemeris — Uranus by 4.7″
+and Neptune by 6.6″ — while its Sun, the best-determined body in it,
+holds to 0.148″. **ELP2000-82B was fitted to the same DE200
+generation.** Whether it inherits the same drift is not known here and
+cannot be assumed either way: it must be measured, exactly as VSOP87's
+was, before it is adopted or rejected.
+
+## What the claims measure to
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| the Moon decides the tiers, not the planets | **holds** | one arcsecond of Moon is 2.25 s of tithi; one arcsecond of a planet is a position nobody times |
+| a second-accurate panchanga is reachable with an analytic theory | **holds** | ELP/MPP02's published 2.4 m is 0.003 s |
+| the chosen theory can be obtained | falsified | ELP/MPP02's host did not answer on 2026-09-10; only ELP2000-82B is reachable |
+
+
+## What this does not measure
+
+**What ELP2000-82B actually costs.** Its accuracy against a modern
+ephemeris is the next measurement, and the floor harness already exists:
+it is the same comparison the planets had, in the same isolated frame.
+
+**The rate distribution.** The table uses the slowest the quantity ever
+moves, which is the worst case and is what a bound needs. A typical
+boundary moves less, and a page that wanted the typical figure would
+have to sweep real rates rather than read the catalogued extreme.
+
+**Latitude and distance.** Only longitude moves a panchanga boundary.
+The Moon's latitude decides eclipses and its distance decides the
+parallax that moves a rising, and both have budgets of their own that
+this page does not set.
+

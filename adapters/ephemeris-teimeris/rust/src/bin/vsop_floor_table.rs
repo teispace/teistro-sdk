@@ -74,7 +74,16 @@ use teistro_port_ephemeris::{
 const ARCSEC_PER_RAD: f64 = 206_264.806_247_096_36;
 
 /// The bodies the comparison covers, with the name the series file uses.
-const PAIRS: [(Body, &str); 7] = [
+///
+/// The **Sun** is first and is the special case: VSOP87 has no solar
+/// series, because the Sun's geocentric direction is the Earth's
+/// heliocentric one reversed. It is measured geocentrically for that
+/// reason, and it is measured at all because panchanga's two busiest
+/// quantities are the Moon *less* the Sun and the Moon *plus* the Sun —
+/// leaving the Sun out would have published a floor that says nothing
+/// about a tithi.
+const PAIRS: [(Body, &str); 8] = [
+    (Body::Sun, "Earth"),
     (Body::Mercury, "Mercury"),
     (Body::Venus, "Venus"),
     (Body::Mars, "Mars"),
@@ -155,8 +164,17 @@ fn compare(
     name: &str,
     jds: &[f64],
 ) -> Difference {
+    // The Sun is asked for geocentrically and the Earth's heliocentric
+    // vector reversed; every planet is asked for heliocentrically and
+    // compared as it stands. Both are geometric, J2000 and ecliptic, so
+    // the only rung left between them is the frame VSOP87 is stated in.
+    let is_sun = body == Body::Sun;
     let frame = Frame {
-        centre: Centre::Heliocentric,
+        centre: if is_sun {
+            Centre::Geocentric
+        } else {
+            Centre::Heliocentric
+        },
         equinox: Equinox::J2000,
         coordinates: Coordinates::Ecliptic,
         zodiac: Zodiac::Tropical,
@@ -175,7 +193,10 @@ fn compare(
             .at(index, 0)
             .unwrap_or_else(|| panic!("{name}: no cell at {jd}"));
         let engine = direction_of(cell.lon, cell.lat);
-        let (theory, distance) = theory_position(&series[name], *jd);
+        let (mut theory, distance) = theory_position(&series[name], *jd);
+        if is_sun {
+            theory = [-theory[0], -theory[1], -theory[2]];
+        }
         separations.push(separation_arcsec(theory, engine));
         radius_relative = radius_relative.max(((distance - cell.dist) / distance).abs());
     }
@@ -243,7 +264,11 @@ fn main() -> ExitCode {
     for (body, name) in PAIRS {
         let difference = compare(&provider, &series, body, name, &jds);
         rows.push(Row {
-            body: name.to_string(),
+            body: if body == Body::Sun {
+                "Sun".to_string()
+            } else {
+                name.to_string()
+            },
             mean_arcsec: difference.mean_arcsec,
             scatter_arcsec: difference.scatter_arcsec,
             worst_arcsec: difference.worst_arcsec,
