@@ -69,8 +69,12 @@ consumer nothing.
 - **The conformance corpus must cover Western.** The current corpus is
   Vedic. Western and Hellenistic fixtures have to be sourced or computed
   and recorded before their exits can be gated, and the oracle for them
-  is not Teimeris. This is the largest new unknown and is tracked as a
-  crux, not assumed away.
+  is not Teimeris — the astronomy underneath is already exact against it,
+  but the doctrine above it is not something an ephemeris holds. This is
+  the largest new unknown. It is **C46** in
+  `01-research/feature-universe/19-verification-cruxes.md`, where the
+  three steps that close it are written down; it blocks Phase 7's Western
+  exit, not its build.
 - **The rule engine's tradition-neutrality stops being theoretical.** It
   was specified as neutral and has only ever run Vedic rules. Western
   configurations and horary considerations are the falsification.
