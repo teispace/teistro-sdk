@@ -449,13 +449,47 @@ third time, so `boundary-is-described` now does: every `ffi` module with
 a `#[unsafe(no_mangle)]` entry point is on the list, or says at the top
 of itself why not.
 
-**The proxy — next.** Each binding has a hand-written ergonomic layer
-over its generated declarations, and that is where
-`call("tm_eclipse_when", …)` becomes `engine.tm_eclipse_when(…)`:
-`__getattr__` in Python, a `Proxy` in Node, and Dart's `noSuchMethod`,
-each over the same two entry points, each reading the manifest for what
-a caller supplies. A binding that added a *list* of operations would
-undo the whole point, so none of them may.
+**The proxy — built, and not identically in all three.** Each binding
+has a hand-written ergonomic layer over its generated declarations, and
+that is where the two entry points become an engine a consumer can use.
+`context.ephemeris` answers with one in every language, and each asks
+the engine for its manifest at that moment rather than at the first
+call, so a context that cannot offer this says so where a caller can act
+on it.
+
+| binding | how an operation is reached |
+|---|---|
+| Python | `engine.tp_echo(value=6.0)` — `__getattr__`, with `__dir__` so a REPL completes the names |
+| Node | `engine.tp_echo({ value: 6 })` — a `Proxy`, with `has` and `ownKeys` so `in`, `Object.keys` and a debugger see them |
+| Dart | `engine('tp_echo', {'value': 6.0})` — by name |
+
+**Dart is deliberately different.** Dart spells its members in camel case
+and an engine spells its functions as C does, so a member proxy would
+have to guess the mapping between `tm_eclipse_when` and `tmEclipseWhen`
+— and a guess that is wrong for one engine's spelling would make that
+operation unreachable, which is the dead end this whole route exists to
+close. Python and Node reach them as members because in those languages
+the engine's own spelling *is* the idiomatic one. Uniformity across the
+three would have cost reach in one of them, and reach is the point.
+
+**None of the three holds a list.** Python's `names` and Node's `names`
+read the manifest; Node's TypeScript declaration is an index signature
+rather than a set of methods, precisely because writing the names down
+would be a promise the next engine release breaks. A binding that
+shipped a list would undo the requirement, so none may.
+
+*Held by each binding's own suite*, all three green: the engine names
+its own operations, an operation is called by the name the engine gives
+it, a name the engine does not have is absent rather than a function
+that fails when called, the manifest carries the role of every
+parameter, the engine's own refusal comes back with its words, and a
+context without an ephemeris says so.
+
+One thing the Node proxy had to get right: `Engine` keeps its context in
+a private field, so reading a member with the *proxy* as the receiver
+cannot see it. The trap reads with the target as receiver and binds
+methods to it. The binding's own tests caught that, which is what they
+are for.
 
 ### B3. The one hard part, stated plainly
 
@@ -552,8 +586,8 @@ the emitted code is verified in its own language.
    page cannot gate.
 7. **B1** the manifest, the port's two methods and the Rust surface —
    *done*; the adapter's generated dispatch is the engine's side.
-8. **B2** the two entry points — *done* — and the dynamic proxy in the
-   three bindings.
+8. **B2** the two entry points and the proxy in all three bindings —
+   *done*.
 9. **A3** `compute.parallelism` with the threshold measured.
 10. **B3** `libffi` dispatch behind a feature.
 11. **C1** the `check-names` rule.

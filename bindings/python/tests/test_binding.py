@@ -374,3 +374,65 @@ class Positions(WithLibrary):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AnEngine(WithLibrary):
+    """The engine's own operations, through the proxy.
+
+    The test provider ships a two-function manifest, so this runs with no
+    real engine present and still exercises the whole route: the manifest
+    crosses, a call crosses, and the names come from the engine rather
+    than from this package.
+    """
+
+    def setUp(self) -> None:
+        self.ctx = self.teistro.context(
+            profile=PROFILE, locale=LOCALE, test_provider=True
+        )
+
+    def tearDown(self) -> None:
+        self.ctx.close()
+
+    def test_the_engine_names_its_own_operations(self) -> None:
+        engine = self.ctx.ephemeris
+        self.assertIn("tp_echo", engine.names)
+        self.assertIn("tp_echo", engine)
+        self.assertEqual(len(engine), len(engine.names))
+        self.assertEqual(engine.manifest["engine"], "test-provider")
+
+    def test_an_operation_is_called_by_the_name_the_engine_gives_it(self) -> None:
+        engine = self.ctx.ephemeris
+        self.assertEqual(engine.tp_echo(value=6.0), {"value": 6.0})
+        self.assertEqual(engine.call("tp_echo", value=6.0), {"value": 6.0})
+        summed = engine.tp_sum(values=[1.0, 2.0, 3.5])
+        self.assertEqual(summed["total"], 6.5)
+
+    def test_the_names_come_from_the_engine_and_not_from_this_package(self) -> None:
+        engine = self.ctx.ephemeris
+        # `dir` lists what the engine offers, so a REPL completes them
+        # without this package ever holding a list.
+        self.assertIn("tp_sum", dir(engine))
+        # And a name it does not have is an AttributeError that says so.
+        with self.assertRaises(AttributeError) as caught:
+            engine.tm_eclipse_when  # noqa: B018
+        self.assertIn("tm_eclipse_when", str(caught.exception))
+
+    def test_the_manifest_carries_the_role_of_every_parameter(self) -> None:
+        engine = self.ctx.ephemeris
+        signature = engine.signature("tp_sum")
+        assert signature is not None
+        roles = [param["role"] for param in signature["params"]]
+        self.assertEqual(roles, ["array_in", "array_len", "scalar_out"])
+        self.assertIsNone(engine.signature("tm_no_such_thing"))
+
+    def test_the_engines_own_refusal_comes_back(self) -> None:
+        engine = self.ctx.ephemeris
+        with self.assertRaises(TeistroError) as caught:
+            engine.call("tm_eclipse_when")
+        self.assertIn("tm_eclipse_when", str(caught.exception))
+
+    def test_a_context_without_an_ephemeris_says_so(self) -> None:
+        with self.teistro.context(profile=PROFILE) as bare:
+            with self.assertRaises(TeistroError):
+                bare.ephemeris  # noqa: B018
+

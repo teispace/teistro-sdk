@@ -604,8 +604,85 @@ export interface ContextInit {
  * A context: settings resolved from a profile and a patch, a locale, and
  * an ephemeris. One context serves one thread; a worker builds its own.
  */
+/** One parameter of an engine's operation, as its manifest describes it. */
+export interface EngineParam {
+  /** The name, which is the key a caller uses. */
+  name: string;
+  /**
+   * What it is for: `value`, `handle`, `struct_in`, `array_in`,
+   * `array_len`, `scalar_out` and the rest — or a word this package has
+   * never heard of, kept as the engine spelled it, because an engine
+   * that gains a role must still describe itself.
+   */
+  role: string;
+  /** The engine's own spelling of its type. */
+  kind?: string;
+  /** What it means, when the engine says. */
+  doc?: string;
+}
+
+/** One operation an engine offers beyond the SDK's own. */
+export interface EngineFunction {
+  /** The name to call it by. */
+  name: string;
+  /** Its parameters, in the engine's own order. */
+  params?: EngineParam[];
+  /** What it answers with, in the engine's spelling. */
+  returns?: string;
+  /** What it does, when the engine says. */
+  doc?: string;
+}
+
+/** What an engine says it offers. */
+export interface EngineManifest {
+  /** The engine's name. */
+  engine?: string;
+  /** Its version, which is what a caller caches against. */
+  version?: string;
+  /** The operations, in the engine's own order. */
+  functions?: EngineFunction[];
+}
+
+/**
+ * The engine's own operations, reached by the names it gives them.
+ *
+ * The SDK names eight operations; an engine names far more, and what it
+ * names beyond them is reached through here. Nothing in this type is a
+ * list of an engine's operations — the index signature is the promise: a
+ * function the engine gains after this package ships is callable without
+ * a new release of it, so the names cannot be written down here.
+ *
+ * ```ts
+ * const engine = context.ephemeris;
+ * const answer = engine.tp_echo({ value: 6 });
+ * ```
+ */
+export declare class Engine {
+  /** The manifest as the engine wrote it. */
+  readonly manifestJson: string;
+  /** The manifest, parsed and remembered. */
+  readonly manifest: EngineManifest;
+  /** Every operation the engine offers, in its own order. */
+  readonly names: string[];
+  /** What the manifest says about one operation, or `undefined`. */
+  signature(name: string): EngineFunction | undefined;
+  /** Calls an operation by name, with its parameters as an object. */
+  call(name: string, argumentsObject?: Record<string, unknown>): unknown;
+  /** Calls an operation with arguments as JSON, answering with JSON. */
+  callJson(name: string, argumentsJson: string): string;
+  /** Any operation the engine's manifest names. */
+  [operation: string]: unknown;
+}
+
 export declare class Context {
   constructor(options?: ContextInit);
+  /**
+   * The engine's own operations, beyond the eight the SDK names.
+   *
+   * Throws when the context has no ephemeris, or when the one it has
+   * describes nothing of its own.
+   */
+  readonly ephemeris: Engine;
   /** The id of the profile the settings came from. */
   readonly profile: string;
   /** The resolved settings, as their canonical document. */

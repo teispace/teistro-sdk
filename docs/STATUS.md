@@ -462,11 +462,26 @@ provider's DUT1).
    that. `boundary-is-described` is the rule that now catches it, and it
    was proved by unregistering the module and watching it fail.
 
-   **The next step is B2's proxy** — `__getattr__` in Python, a `Proxy`
-   in Node, `noSuchMethod` in Dart, each over those two entry points, so
-   that `call("tm_eclipse_when", …)` reads as `engine.tm_eclipse_when(…)`.
-   A binding that added a *list* of operations would undo the point, so
-   none may. Then the Teimeris adapter's own generated dispatch.
+   **B2 is done: all three bindings have the proxy.**
+   `context.ephemeris` answers with an engine in every language —
+   `engine.tp_echo(value=6.0)` in Python (`__getattr__`, with `__dir__`
+   so a REPL completes the names), `engine.tp_echo({ value: 6 })` in
+   Node (a `Proxy`, with `has` and `ownKeys` so `in` and `Object.keys`
+   see them), and `engine('tp_echo', {...})` in Dart **by name on
+   purpose**: Dart spells members in camel case and an engine spells its
+   functions as C does, so a member proxy would have to guess the mapping
+   and a wrong guess would make that operation unreachable — the very
+   dead end this route closes. Uniformity would have cost reach in one
+   language, and reach is the point.
+
+   **None of the three holds a list of operations**; Node's TypeScript
+   declaration is an index signature rather than a set of methods for the
+   same reason. `check-python` (80 tests, mypy strict), `check-node`
+   (tests, maximum strictness) and `check-dart` (45 tests, analyse,
+   format) all pass.
+
+   **The next step is the Teimeris adapter's own generated dispatch**,
+   which is the engine's side of the route, and then A3.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an

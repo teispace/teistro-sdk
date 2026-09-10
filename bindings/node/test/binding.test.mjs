@@ -532,3 +532,46 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
   known.dispose();
 });
 
+
+// ── The engine's own operations ──────────────────────────────────────
+// The test provider ships a two-function manifest, so these run with no
+// real engine present and still exercise the whole route.
+
+test('the engine names its own operations', () => {
+  const engine = context().ephemeris;
+  assert.ok(engine.names.includes('tp_echo'));
+  assert.equal(engine.manifest.engine, 'test-provider');
+  // `in` and `Object.keys` see them, so a debugger and a REPL do.
+  assert.ok('tp_sum' in engine);
+  assert.ok(Object.keys(engine).includes('tp_sum'));
+});
+
+test('an operation is called by the name the engine gives it', () => {
+  const engine = context().ephemeris;
+  assert.deepEqual(engine.tp_echo({ value: 6 }), { value: 6 });
+  assert.deepEqual(engine.call('tp_echo', { value: 6 }), { value: 6 });
+  assert.equal(engine.tp_sum({ values: [1, 2, 3.5] }).total, 6.5);
+});
+
+test('the names come from the engine and not from the package', () => {
+  const engine = context().ephemeris;
+  // A name the engine does not have is undefined rather than a function
+  // that fails when it is called.
+  assert.equal(engine.tm_eclipse_when, undefined);
+  assert.equal(engine.signature('tm_eclipse_when'), undefined);
+  // And the manifest carries the role of every parameter.
+  assert.deepEqual(
+    engine.signature('tp_sum').params.map((p) => p.role),
+    ['array_in', 'array_len', 'scalar_out'],
+  );
+});
+
+test("the engine's own refusal comes back", () => {
+  const engine = context().ephemeris;
+  assert.throws(() => engine.call('tm_eclipse_when'), /tm_eclipse_when/);
+});
+
+test('a context without an ephemeris says so', () => {
+  const bare = new Context({ profile: 'nepali-default' });
+  assert.throws(() => bare.ephemeris);
+});
