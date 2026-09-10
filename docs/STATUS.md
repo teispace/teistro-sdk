@@ -468,11 +468,31 @@ provider's DUT1).
    the smallest `|φ + δ|`, and it was taking the largest. Building on
    either version would have turned sunrises into silence.
 
-   **Next is building it**, as a fast path in front of the scan and never
-   a replacement: the transits bound a whole rotation, so a window
-   shorter than one can hold no event where the bounds allow one, and
-   where the bound cannot prove an absence the walk still runs and the
-   answer is the walk's.
+   **It is built**, and building it corrected the rule twice more.
+
+   The margin was wrong: sized from the day's *motion* — six degrees for
+   the Moon — it put every temperate latitude inside the range, proved
+   nothing, and cost two readings to say so, taking an almanac from
+   19 632 calls to 20 032. What a margin has to cover is the **stray from
+   the chord** between the two readings, which the page now measures at
+   seven interior points of every window: **0.168° for the Moon, 0.001°
+   for the Sun**, thirty-six times tighter. With that the sweep proves
+   216 of 274 absences and **78.2% of the cells they cost**.
+
+   The placement was wrong twice. Before the iteration it charged every
+   event that iterates cleanly — the common case anywhere temperate — for
+   a proof it does not need. And with no window guard it ran on the
+   partial windows an almanac's event loop ends with, where a
+   whole-rotation bound can never fire: **the falsified claim on the page
+   was the guard, and I had written it without connecting it to the
+   workload**. Both fixed, an almanac now pays **0.08%** for it.
+
+   Held two ways, which are not the same thing: the page holds the
+   **rule**, swept with `Solver::with_absence_check(false)` so it is
+   never measured against itself; `astro/tests/absence.rs` holds the
+   **code**, 5 304 searches where the fast path and the walk agree on
+   found or absent and on the instant to the bit, at **37.6% fewer
+   cells**.
    **B1's route is built.** The port gained two optional methods —
    `native_manifest()` for the manifest the engine ships and
    `native_call(function, arguments_json)` to relay a call by the name
