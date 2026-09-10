@@ -514,6 +514,18 @@ provider's DUT1).
    threading one — the SDK is handed *a* provider and nothing says how to
    get another. The plan records the three things to settle first.
 
+   **The determinism matrix now covers the panchanga.** It had sections
+   for the calendar, the astronomy, the houses and the classical model
+   and none for the layer the searches feed, so the instants a crossing
+   search *produces* were watched by nothing — three changes in a row
+   moved them and the digest was identical to the bit each time.
+   `teistro-scenario` has a `panchanga` section now: ten almanac days
+   over the analytic provider, hashing every limb boundary, sunrise and
+   moonrise, 374 values for ten milliseconds. Proved by moving
+   `SCAN_ANCHOR_JD` half a step — the `astro` digest does not move and
+   this one does. The module's own cost claim was stale by the same
+   reading and is corrected to the measured forty milliseconds.
+
    **The next step is the Teimeris adapter's own generated dispatch**,
    which is the engine's side of the passthrough route.
 

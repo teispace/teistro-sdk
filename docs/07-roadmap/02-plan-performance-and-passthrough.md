@@ -246,12 +246,17 @@ both numbers rather than asserting that nothing happened
 (`crates/panchanga/tests/kernel.rs`,
 `the_signs_a_day_touches_are_the_same_however_far_the_search_reached`).
 
-One thing that measurement also says: the determinism digest has
+One thing that measurement also said: the determinism digest had
 sections for the calendar, the astronomy, the houses and the classical
 model, and **none for the panchanga**, so it could not have caught a
-change here. That is a gap in the matrix rather than a licence, and it
-is worth a section of its own before A1c moves the same instants
-further.
+change here. Three changes in a row moved where a scan puts its samples
+and the digest was identical to the bit each time, which said nothing
+about the layer where they moved. **That gap is now closed**:
+`teistro-scenario` has a `panchanga` section — ten almanac days over the
+analytic provider, hashing every limb boundary, sunrise and moonrise a
+search produces, 374 values for ten milliseconds. It sees what the
+others cannot: moving `SCAN_ANCHOR_JD` by half a step leaves the `astro`
+digest unchanged and moves this one.
 
 *Gate:* the almanac and chart rows of
 `03-design/batch-and-parallelism-measured.md`, whose counts fall when
