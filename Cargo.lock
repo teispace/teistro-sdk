@@ -1445,6 +1445,8 @@ dependencies = [
  "teistro-astro",
  "teistro-calendar",
  "teistro-core",
+ "teistro-panchanga",
+ "teistro-port-ephemeris",
  "teistro-siddhanta",
 ]
 
