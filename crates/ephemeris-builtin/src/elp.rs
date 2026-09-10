@@ -426,9 +426,29 @@ pub const fn time_power(file: u8) -> u8 {
     }
 }
 
+/// How fast a term's argument turns, per Julian century.
+///
+/// The argument is `sum over k, i of m_i * del[i][k] * t^k`, so its rate
+/// is `sum over k >= 1, i of k * m_i * del[i][k] * t^(k-1)` — the same
+/// nesting, the power outside and the argument inside, so the sum is
+/// accumulated in the order the reader accumulates the argument itself.
+fn argument_rate(multipliers: &[i8], arguments: &Arguments, powers: usize) -> f64 {
+    let mut rate = 0.0;
+    for (k, row) in arguments.del.iter().enumerate().take(powers).skip(1) {
+        #[expect(clippy::cast_precision_loss, reason = "a polynomial power is 1 to 4")]
+        let power = k as f64;
+        let previous = arguments.t.get(k - 1).copied().unwrap_or(0.0);
+        for (multiplier, coefficient) in multipliers.iter().zip(row) {
+            rate += f64::from(*multiplier) * coefficient * power * previous;
+        }
+    }
+    rate
+}
+
 /// The main problem's contribution to a coordinate.
-#[must_use]
-pub fn main_contribution(term: &MainTerm, file: u8, arguments: &Arguments) -> f64 {
+/// The amplitude the fit rebuilds and the argument, shared by the value
+/// and the rate so that the two cannot drift apart.
+fn main_amplitude_and_angle(term: &MainTerm, file: u8, arguments: &Arguments) -> (f64, f64) {
     let f = fit(arguments.w1[1]);
     let mut coefficients = term.coefficients;
     // The distance file's leading coefficient carries a correction of
@@ -454,12 +474,35 @@ pub fn main_contribution(term: &MainTerm, file: u8, arguments: &Arguments) -> f6
     if coordinate_of(file) == 2 {
         angle += std::f64::consts::FRAC_PI_2;
     }
+    (amplitude, angle)
+}
+
+/// The main problem's contribution to a coordinate.
+#[must_use]
+pub fn main_contribution(term: &MainTerm, file: u8, arguments: &Arguments) -> f64 {
+    let (amplitude, angle) = main_amplitude_and_angle(term, file, arguments);
     amplitude * angle.sin()
+}
+
+/// The main problem's contribution to a coordinate's **rate**, per
+/// Julian century.
+///
+/// `A * sin(theta)` differentiates to `A * cos(theta) * theta'`, and the
+/// amplitude is the one the fit rebuilds, exactly as the value uses.
+#[must_use]
+pub fn main_rate(term: &MainTerm, file: u8, arguments: &Arguments) -> f64 {
+    let (amplitude, angle) = main_amplitude_and_angle(term, file, arguments);
+    let rate = argument_rate(&term.multipliers, arguments, 5);
+    amplitude * angle.cos() * rate
 }
 
 /// A perturbation term's contribution to a coordinate.
 #[must_use]
-pub fn perturbation_contribution(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
+fn perturbation_amplitude_and_angle(
+    term: &PerturbationTerm,
+    file: u8,
+    arguments: &Arguments,
+) -> (f64, f64) {
     let amplitude = term.amplitude
         * arguments
             .t
@@ -531,9 +574,29 @@ pub fn perturbation_contribution(term: &PerturbationTerm, file: u8, arguments: &
                 }
             }
         }
-        Some(Group::Main) | None => return 0.0,
+        Some(Group::Main) | None => return (0.0, 0.0),
     }
+    (amplitude, angle)
+}
+
+/// A perturbation term's contribution to a coordinate.
+#[must_use]
+pub fn perturbation_contribution(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
+    let (amplitude, angle) = perturbation_amplitude_and_angle(term, file, arguments);
     amplitude * angle.sin()
+}
+
+/// The multipliers that go with Delaunay's arguments for a file, which
+/// differ by group and are what the argument's rate is taken over.
+fn argument_multipliers(term: &PerturbationTerm, file: u8) -> &[i8] {
+    match Group::of(file) {
+        // The zeta multiplier leads, then the four Delaunay ones.
+        Some(Group::Figure) => term.multipliers.get(1..5).unwrap_or(&[]),
+        // Table 1 takes D, l and F out of order; table 2 takes all four.
+        Some(Group::Planetary) if file <= 15 => term.multipliers.get(8..11).unwrap_or(&[]),
+        Some(Group::Planetary) => term.multipliers.get(7..11).unwrap_or(&[]),
+        Some(Group::Main) | None => &[],
+    }
 }
 
 /// The Moon's geocentric rectangular position in kilometres, in the
@@ -563,6 +626,32 @@ pub fn position_from(
         add(*file, perturbation_contribution(term, *file, &arguments));
     }
     to_rectangular(sums, jd)
+}
+
+/// A perturbation term's contribution to a coordinate's **rate**, per
+/// Julian century.
+///
+/// Both halves of the product rule: the amplitude carries a power of
+/// time for four of the file ranges, and the argument turns.
+#[must_use]
+pub fn perturbation_rate(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
+    let power = time_power(file);
+    let (amplitude, angle) = perturbation_amplitude_and_angle(term, file, arguments);
+    // Only the first two powers of time enter a perturbation's argument.
+    let turning = argument_rate(argument_multipliers(term, file), arguments, 2);
+    let from_argument = amplitude * angle.cos() * turning;
+    if power == 0 {
+        return from_argument;
+    }
+    let previous = arguments
+        .t
+        .get(usize::from(power) - 1)
+        .copied()
+        .unwrap_or(0.0);
+    //  to  is exact; no expectation is needed and one that is
+    // never met is noise a reader has to check.
+    let power = f64::from(power);
+    from_argument + power * previous * term.amplitude * angle.sin()
 }
 
 /// The three summed coordinates, turned into a geocentric rectangular
@@ -600,6 +689,59 @@ pub fn to_j2000(v: [f64; 3], jd: f64) -> [f64; 3] {
         pwqw * x1 + qw2 * x2 - qw * x3,
         -pw * x1 + qw * x2 + (pw2 + qw2 - 1.0) * x3,
     ]
+}
+
+/// The Moon's geocentric position **and rate** from a table of terms:
+/// kilometres, and kilometres per day, in the mean dynamical ecliptic and
+/// inertial equinox of J2000.
+///
+/// One pass over the terms produces both. The rate is analytic — the
+/// derivative of this series and not of two evaluations of it — because
+/// a difference over any step long enough to be well conditioned is an
+/// average rate, and the Moon's own rate swings by a third across a
+/// month. The provider kit measured the gap: a half-day difference was
+/// 0.036 degrees a day out, against a bound of 0.002.
+///
+/// The rotation to J2000 turns by about a fiftieth of an arcsecond a
+/// century, so it is applied to the rate as a constant matrix. That is
+/// an approximation and it is stated: it costs the Moon's rate about
+/// 1e-9 degrees a day, six orders below the bound.
+#[must_use]
+pub fn position_and_rate_from(
+    main: &[(u8, MainTerm)],
+    perturbations: &[(u8, PerturbationTerm)],
+    jd: f64,
+) -> ([f64; 3], [f64; 3]) {
+    let arguments = Arguments::at(jd);
+    let mut sums = [0.0; 3];
+    let mut rates = [0.0; 3];
+    {
+        let mut add = |file: u8, value: f64, rate: f64| {
+            if let Some(index) = coordinate_of(file).into() {
+                if let Some(sum) = sums.get_mut::<usize>(index) {
+                    *sum += value;
+                }
+                if let Some(slot) = rates.get_mut::<usize>(index) {
+                    *slot += rate;
+                }
+            }
+        };
+        for (file, term) in main {
+            add(
+                *file,
+                main_contribution(term, *file, &arguments),
+                main_rate(term, *file, &arguments),
+            );
+        }
+        for (file, term) in perturbations {
+            add(
+                *file,
+                perturbation_contribution(term, *file, &arguments),
+                perturbation_rate(term, *file, &arguments),
+            );
+        }
+    }
+    to_rectangular_and_rate(sums, rates, jd)
 }
 
 /// The three summed coordinates, turned into a geocentric rectangular
@@ -649,6 +791,46 @@ pub fn to_rectangular(sums: [f64; 3], jd: f64) -> [f64; 3] {
         pwqw * x1 + qw2 * x2 - qw * x3,
         -pw * x1 + qw * x2 + (pw2 + qw2 - 1.0) * x3,
     ]
+}
+
+/// The summed coordinates and their rates, as a rectangular position in
+/// kilometres and a rate in kilometres per day.
+///
+/// `rates` are the series' own derivatives, per Julian century.
+#[must_use]
+pub fn to_rectangular_and_rate(sums: [f64; 3], rates: [f64; 3], jd: f64) -> ([f64; 3], [f64; 3]) {
+    let arguments = Arguments::at(jd);
+    let [_, t1, t2, t3, t4] = arguments.t;
+    let [sum_longitude, sum_latitude, sum_distance] = sums;
+    let [rate_longitude, rate_latitude, rate_distance] = rates;
+    let [w0, w1, w2, w3, w4] = arguments.w1;
+
+    let longitude = sum_longitude / RAD + w0 + w1 * t1 + w2 * t2 + w3 * t3 + w4 * t4;
+    let latitude = sum_latitude / RAD;
+    let distance = sum_distance * A0 / ATH;
+    // The mean longitude's own polynomial turns as well as the series.
+    let mean_rate = w1 + 2.0 * w2 * t1 + 3.0 * w3 * t2 + 4.0 * w4 * t3;
+    let d_longitude = (rate_longitude / RAD + mean_rate) / DAYS_PER_CENTURY;
+    let d_latitude = rate_latitude / RAD / DAYS_PER_CENTURY;
+    let d_distance = rate_distance * A0 / ATH / DAYS_PER_CENTURY;
+
+    let (sin_lat, cos_lat) = latitude.sin_cos();
+    let (sin_lon, cos_lon) = longitude.sin_cos();
+    let position = [
+        distance * cos_lat * cos_lon,
+        distance * cos_lat * sin_lon,
+        distance * sin_lat,
+    ];
+    // The product rule over three factors, twice.
+    let rate = [
+        d_distance * cos_lat * cos_lon
+            - distance * sin_lat * d_latitude * cos_lon
+            - distance * cos_lat * sin_lon * d_longitude,
+        d_distance * cos_lat * sin_lon - distance * sin_lat * d_latitude * sin_lon
+            + distance * cos_lat * cos_lon * d_longitude,
+        d_distance * sin_lat + distance * cos_lat * d_latitude,
+    ];
+    (to_j2000(position, jd), to_j2000(rate, jd))
 }
 
 #[cfg(test)]

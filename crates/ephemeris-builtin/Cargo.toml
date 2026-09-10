@@ -38,10 +38,12 @@ full = []
 ingest = []
 
 [dependencies]
+teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 
 [dev-dependencies]
+teistro-ephemeris-kit = { path = "../ephemeris-kit" }
 
 [lints]
 workspace = true

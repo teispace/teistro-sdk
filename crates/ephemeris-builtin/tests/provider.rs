@@ -450,3 +450,43 @@ fn the_mean_node_at_the_epoch_is_the_published_constant() {
         "the mean apogee at J2000 is 263.3532 degrees, not {apogee}"
     );
 }
+
+/// A UT1 request and a TT request for the same Julian day are **not**
+/// the same instant, and the provider must not answer as though they
+/// were.
+///
+/// The completion passes the scale through rather than converting it, so
+/// this is the provider's job. Delta T is about seventy seconds now, in
+/// which the Moon moves 0.01 degrees — twenty seconds of tithi, on a
+/// budget of one. A provider that ignored the scale would be quietly
+/// wrong in exactly the quantity panchanga publishes.
+#[test]
+fn the_time_scale_is_honoured_and_not_assumed() {
+    let provider = Builtin::new();
+    let jds = [2_451_545.0];
+    let bodies = [Body::Moon, Body::Sun];
+    let in_tt = PositionRequest::new(&jds, TimeScale::Tt, &bodies, frame());
+    let in_ut1 = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame());
+    let tt = provider.positions(&in_tt).expect("the provider");
+    let ut1 = provider.positions(&in_ut1).expect("the provider");
+
+    let moon_tt = tt.at(0, 0).expect("the Moon").lon;
+    let moon_ut1 = ut1.at(0, 0).expect("the Moon").lon;
+    let apart_arcsec = (moon_tt - moon_ut1).abs() * 3_600.0;
+    // Delta T at J2000 is about 64 seconds, and the Moon moves 13.2
+    // degrees a day, so the two instants are about 35 arcseconds apart.
+    assert!(
+        (20.0..60.0).contains(&apart_arcsec),
+        "UT1 and TT should differ by Delta T's worth of lunar motion, not {apart_arcsec} arcsec"
+    );
+    // The Sun moves a fiftieth as fast, so its difference is far smaller
+    // but still there — which is the check that the shift is a time shift
+    // and not a constant added to the Moon.
+    let sun_apart = (tt.at(0, 1).expect("the Sun").lon - ut1.at(0, 1).expect("the Sun").lon).abs();
+    let moon_apart = (moon_tt - moon_ut1).abs();
+    let ratio = moon_apart / sun_apart;
+    assert!(
+        (10.0..16.0).contains(&ratio),
+        "the shift must scale with each body's own speed; the ratio is {ratio}"
+    );
+}
