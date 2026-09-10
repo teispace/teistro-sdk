@@ -321,29 +321,66 @@ nowhere else. And the memo reports the inner provider's capabilities
 unchanged, so a context that wraps and a context that does not stamp
 their values identically.
 
-### A3. Parallelism, as a knob, without a pool
+### A3. Parallelism — measured first, and the measurement changed it
 
-*The finding:* the items of a batch are independent — `Founder::value`
-takes `&self` and every field of `&self` is `Sync`, because the port
-already requires `EphemerisProvider: Send + Sync`.
+*Corrected 2026-09-10, before a line of it was written.* A3 was to spend
+threads on a batch through `std::thread::scope`, chunking by index so the
+answers stay bit-identical. The chunking is still right. What was wrong
+was the assumption underneath it: that threads over a batch would
+overlap the work.
 
-*The design, and why it is not rayon:* a library must not install a
-global thread pool in its consumer's process. `std::thread::scope` costs
-no dependency, starts and joins inside the call, and leaves nothing
-behind. Chunk boundaries are fixed by index rather than by scheduling, so
-**the answers are bit-identical whatever the thread count** — there is no
-reduction to reorder, only independent writes into pre-sized columns.
-That is what keeps the determinism matrix and the cross-architecture
-hashes valid.
+**The engine says otherwise about itself.** A `teimeris::Context` is
+`Send` and deliberately **not** `Sync`, and the binding says why: *"N
+contexts may be used concurrently from N threads with no locking — which
+is a statement about N contexts, not about one shared between them. A
+context mutates its caches on every call."* So the shipped adapter holds
+`Mutex<Context>`, and **every ephemeris call the SDK makes takes one
+lock**.
 
-*The knob:* `compute.parallelism` — `Serial` (the default), `Auto`
-(threads above a measured threshold, serial below it, because a batch of
-two loses to the spawn), `Threads(n)`. Reported in provenance. The C ABI
-carries it; the three bindings expose it.
+*Measured* (`adapters/ephemeris-teimeris/rust/tests/parallelism_probe.rs`,
+a year of the Moon's sign ingresses through the real engine, 160
+crossings and 1077 provider calls):
 
-*The threshold is measured, not guessed*: the pass gains a row for the
-batch size at which threading begins to pay on this machine, and the
-default is stated with that number beside it.
+| | share |
+|---|---:|
+| inside the engine, behind its lock | **46–48%** |
+| the SDK's own arithmetic outside it | 52–54% |
+
+Threads over a batch that shares one provider can overlap **only the
+second row**. Amdahl on 46% serialised: 1.7× at four threads, and **2.2×
+however many cores are given**. That is the ceiling of the design A3
+assumed, and no amount of hardware moves it.
+
+**So the shape is not threads over one provider. It is a provider per
+thread** — which is what the engine's own rule says, and what would
+overlap both rows. That is a port question before it is a threading
+one: the SDK is handed *a* provider, and nothing in the port says how to
+get another. It wants either a provider that can be cloned per thread or
+a factory the consumer supplies, and both are a change to what an
+adapter must offer rather than a change to a loop.
+
+*What has to be settled before it is built:*
+
+1. **How the SDK gets N providers.** A `Clone` bound would exclude every
+   adapter that owns a handle, which is all of them. A factory
+   (`fn provider(&self) -> Result<Box<dyn EphemerisProvider>>`) is
+   another optional override in the port's own idiom, declared in
+   `Capabilities` like the rest, and an adapter that cannot make a second
+   one says so and is run on one thread.
+2. **What a thread costs against what it saves.** A `teimeris::Context`
+   opens ephemeris files; N of them is N times that memory and that
+   setup. The threshold is a measurement over the real adapter and not a
+   guess.
+3. **What stays gate-able.** A timing belongs to the machine, so the
+   measured page cannot hold one. What it can hold is that the answers
+   are bit-identical whatever the thread count, and that the *counts* are
+   unchanged — and the counts are only deterministic if the memo is
+   per-thread or the measurement runs single-threaded, which is itself a
+   thing to decide rather than discover.
+
+Until those are settled this stays unbuilt, and the plan says so rather
+than shipping a knob that buys 1.7× at four threads and calls it
+parallelism.
 
 ### A4. The order, and the number to beat
 
@@ -609,7 +646,9 @@ the emitted code is verified in its own language.
    *done*; the adapter's generated dispatch is the engine's side.
 8. **B2** the two entry points and the proxy in all three bindings —
    *done*.
-9. **A3** `compute.parallelism` with the threshold measured.
+9. **A3** parallelism — *measured, not built*: threads over one provider
+   cap at 2.2× because 46% of a batch is behind the engine's own lock, so
+   the shape is a provider per thread and that is a port question first.
 10. **B3** `libffi` dispatch behind a feature.
 11. **C1** one spelling per name — *done*.
 
