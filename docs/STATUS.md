@@ -499,7 +499,7 @@ provider's DUT1).
    beside it, which is the fault the step is about; reading the existing
    check first is the lesson.
 
-   **A3 is measured and not built, and the measurement changed it.** A3
+   **A3 is closed by measurement, not merely blocked.** A3
    was to spend threads on a batch. The engine says otherwise about
    itself: a `teimeris::Context` is `Send` and deliberately **not**
    `Sync` — *"N contexts from N threads with no locking, which is a
@@ -509,10 +509,19 @@ provider's DUT1).
    through the real engine (`parallelism_probe.rs`): **46–48% of the
    work is inside that lock**, 52–54% is the SDK's own arithmetic.
    Threads over one provider overlap only the second, which is **2.2×
-   however many cores are given** and 1.7× at four. So the shape is a
-   **provider per thread**, which is a port question before it is a
-   threading one — the SDK is handed *a* provider and nothing says how to
-   get another. The plan records the three things to settle first.
+   however many cores are given** and 1.7× at four. So the shape looked
+   like a **provider per thread** — until that was measured too:
+   **opening an engine context costs 43.8 ms, which is 19 491
+   `positions` calls, and the largest batch this project measures is
+   8 174**. A thread would pay more for its context than the whole batch
+   costs. So the shape that wins is a pool of providers outliving many
+   batches, which is the **consumer's** and needs nothing from the SDK —
+   `Send + Sync` throughout, N providers on N threads works today.
+   Threading one batch internally would buy at most 2.2× and cost a
+   knob, a contended memo and the determinism of the gated counts.
+   **Closed, not built**, with the threshold asserted in
+   `tests/context_cost.rs` so it fails if a context ever becomes cheap
+   enough to be worth revisiting.
 
    **The determinism matrix now covers the panchanga.** It had sections
    for the calendar, the astronomy, the houses and the classical model
