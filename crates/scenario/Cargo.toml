@@ -6,7 +6,9 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 description = "The fixed scenario the SDK measures itself with: what the determinism matrix hashes and what the instruction-count benchmarks count"
-# A measurement, not a product.
+# Never published: this is the SDK's own test scaffolding. The name
+# is held on crates.io all the same (0.0.0, 2026-09-10) so no one
+# else can publish under a `teistro-` name that looks like ours.
 publish = false
 
 [dependencies]
