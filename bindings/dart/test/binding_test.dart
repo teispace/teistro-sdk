@@ -425,4 +425,49 @@ void main() {
     expect(exact.offsetSeconds, 5 * 3600 + 45 * 60);
     expect(exact.warnings, isEmpty);
   });
+
+  _engineTests();
+}
+
+// ── The engine's own operations ──────────────────────────────────────
+// The test provider ships a two-function manifest, so these run with no
+// real engine present and still exercise the whole route.
+
+void _engineTests() {
+  test('the engine names its own operations', () {
+    final engine = context().ephemeris;
+    expect(engine.names, contains('tp_echo'));
+    expect(engine.has('tp_sum'), isTrue);
+    expect(engine.manifest['engine'], 'test-provider');
+  });
+
+  test('an operation is called by the name the engine gives it', () {
+    final engine = context().ephemeris;
+    expect(engine('tp_echo', {'value': 6.0}), {'value': 6.0});
+    final summed =
+        engine('tp_sum', {
+              'values': [1.0, 2.0, 3.5],
+            })
+            as Map<String, Object?>;
+    expect(summed['total'], 6.5);
+  });
+
+  test('the manifest carries the role of every parameter', () {
+    final engine = context().ephemeris;
+    final signature = engine.signature('tp_sum')!;
+    final roles = [
+      for (final param in signature['params'] as List<Object?>)
+        (param as Map<String, Object?>)['role'],
+    ];
+    expect(roles, ['array_in', 'array_len', 'scalar_out']);
+    expect(engine.signature('tm_no_such_thing'), isNull);
+  });
+
+  test("the engine's own refusal comes back", () {
+    final engine = context().ephemeris;
+    expect(
+      () => engine('tm_eclipse_when'),
+      throwsA(predicate((e) => '$e'.contains('tm_eclipse_when'))),
+    );
+  });
 }

@@ -1065,6 +1065,135 @@ export class Rendered extends Decoded {
  * A context: settings resolved from a profile and a patch, a locale, and
  * an ephemeris. One context serves one thread; a worker builds its own.
  */
+/**
+ * The engine's own operations, reached by the names it gives them.
+ *
+ * The SDK names eight operations. An engine names far more, and what it
+ * names beyond them is reached through here rather than around the SDK.
+ * **Nothing in this class is a list of an engine's operations**: it asks
+ * the engine what it offers and calls what the answer names, so a
+ * function the engine gains after this package ships is callable without
+ * a new release of it.
+ *
+ * Use the engine's own spelling, because that is what its manifest says
+ * and what its documentation calls it:
+ *
+ * ```js
+ * const engine = context.ephemeris;
+ * const answer = engine.tp_echo({ value: 6 });
+ * ```
+ *
+ * A member is looked up in the manifest, so a name the engine does not
+ * have is `undefined` rather than a function that fails when called, and
+ * `Object.keys` lists what the engine offers.
+ */
+class Engine {
+  #context;
+  #manifest = null;
+
+  constructor(context) {
+    this.#context = context;
+  }
+
+  /** The manifest as the engine wrote it. */
+  get manifestJson() {
+    return this.#context.ephemerisManifestJson();
+  }
+
+  /**
+   * The manifest, parsed and remembered. Read once per engine: it
+   * changes when the engine does, and an engine does not change under a
+   * live context.
+   */
+  get manifest() {
+    this.#manifest ??= JSON.parse(this.manifestJson);
+    return this.#manifest;
+  }
+
+  /** Every operation the engine offers, in its own order. */
+  get names() {
+    return (this.manifest.functions ?? []).map((f) => f.name);
+  }
+
+  /**
+   * What the manifest says about one operation, or `undefined`. Its
+   * parameters carry the role of each, which says which a caller
+   * supplies and which the engine fills.
+   */
+  signature(name) {
+    return (this.manifest.functions ?? []).find((f) => f.name === name);
+  }
+
+  /**
+   * Calls an operation by name, with its parameters as an object keyed
+   * by the names the manifest gives. Answers with the engine's own
+   * answer, parsed.
+   */
+  call(name, argumentsObject = {}) {
+    return JSON.parse(this.callJson(name, JSON.stringify(argumentsObject)));
+  }
+
+  /**
+   * Calls an operation with arguments already written as JSON, and
+   * answers with the engine's own JSON: the form to use when the answer
+   * is being handed on rather than read.
+   */
+  callJson(name, argumentsJson) {
+    return this.#context.ephemerisCallJson(name, argumentsJson);
+  }
+}
+
+/** The members `Engine` itself defines, which a proxy must not shadow. */
+const ENGINE_OWN = new Set([
+  'manifest',
+  'manifestJson',
+  'names',
+  'signature',
+  'call',
+  'callJson',
+]);
+
+/**
+ * An `Engine` whose members are the engine's own operations.
+ *
+ * The proxy is what keeps the promise: the names come from the manifest
+ * at the moment they are asked for, so this file never holds one.
+ */
+function engineProxy(context) {
+  const engine = new Engine(context);
+  return new Proxy(engine, {
+    get(target, property, _receiver) {
+      if (typeof property !== 'string' || ENGINE_OWN.has(property) || property in target) {
+        // Read with the target as the receiver, not the proxy: `Engine`
+        // keeps its context in a private field, and a getter or a method
+        // called with the proxy as `this` cannot see one. Methods are
+        // bound for the same reason.
+        const value = Reflect.get(target, property, target);
+        return typeof value === 'function' ? value.bind(target) : value;
+      }
+      if (!engine.names.includes(property)) {
+        return undefined;
+      }
+      const operation = (argumentsObject = {}) => engine.call(property, argumentsObject);
+      Object.defineProperty(operation, 'name', { value: property });
+      return operation;
+    },
+    has(target, property) {
+      return Reflect.has(target, property)
+        || (typeof property === 'string' && engine.names.includes(property));
+    },
+    ownKeys(target) {
+      return [...new Set([...Reflect.ownKeys(target), ...engine.names])];
+    },
+    getOwnPropertyDescriptor(target, property) {
+      if (typeof property === 'string' && engine.names.includes(property)) {
+        return { configurable: true, enumerable: true, value: this.get(target, property, target) };
+      }
+      return Reflect.getOwnPropertyDescriptor(target, property);
+    },
+  });
+}
+
 export class Context {
   #inner;
   #messages = null;
@@ -1117,6 +1246,29 @@ export class Context {
         positions,
       ),
     );
+  }
+
+  /**
+   * The engine's own operations, beyond the eight the SDK names.
+   *
+   * Throws when the context has no ephemeris, or when the one it has
+   * describes nothing of its own — asked now rather than at the first
+   * call, so a caller learns it where they can act on it.
+   */
+  get ephemeris() {
+    const engine = engineProxy(this);
+    engine.manifestJson;
+    return engine;
+  }
+
+  /** @internal the boundary call the engine proxy relays through. */
+  ephemerisManifestJson() {
+    return this.#call(() => this.#inner.ephemerisManifest());
+  }
+
+  /** @internal the boundary call the engine proxy relays through. */
+  ephemerisCallJson(name, argumentsJson) {
+    return this.#call(() => this.#inner.ephemerisCall(name, argumentsJson));
   }
 
   /** The id of the profile the settings came from. */

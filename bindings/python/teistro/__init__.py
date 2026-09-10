@@ -27,7 +27,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Generic, Iterator, Mapping, Optional, Sequence, TypeVar
+from typing import Any, Generic, Iterator, List, Mapping, Optional, Sequence, Tuple, TypeVar
 
 from . import messages as intl
 from ._blob import (
@@ -128,6 +128,7 @@ from .catalogue import (
 
 __all__ = [
     "Altitude",
+    "Engine",
     "Ayanamsha",
     "BlobError",
     "Abhijit",
@@ -465,6 +466,115 @@ class Cell:
     source: int
 
 
+class Engine:
+    """The engine's own operations, reached by the names it gives them.
+
+    The SDK names eight operations. An engine names far more, and what it
+    names beyond them is reached through here rather than around the SDK.
+    **Nothing in this class is a list of an engine's operations**: it asks
+    the engine what it offers and calls what the answer names, so a
+    function the engine gains after this package ships is callable
+    without a new release of it.
+
+    The engine's own spelling is the name to use, because that is what
+    its manifest says and what its documentation calls it. In Python that
+    reads naturally, since an engine's C names are already snake case::
+
+        engine = context.ephemeris
+        answer = engine.tp_echo(value=6.0)
+
+    `dir()` lists what the engine offers, so a REPL completes the names
+    without this class ever holding one.
+    """
+
+    def __init__(self, inner: TeistroContext) -> None:
+        self._inner = inner
+        self._manifest: Optional[Any] = None
+
+    @property
+    def manifest_json(self) -> str:
+        """The manifest as the engine wrote it."""
+        return self._inner.ephemeris_manifest()
+
+    @property
+    def manifest(self) -> Any:
+        """The manifest, parsed and remembered.
+
+        Read once per engine: it changes when the engine does, and an
+        engine does not change under a live context.
+        """
+        if self._manifest is None:
+            self._manifest = json.loads(self.manifest_json)
+        return self._manifest
+
+    @property
+    def names(self) -> Tuple[str, ...]:
+        """Every operation the engine offers, in its own order."""
+        return tuple(
+            str(function.get("name", ""))
+            for function in self.manifest.get("functions", [])
+        )
+
+    def signature(self, function: str) -> Any:
+        """What the manifest says about one operation, or `None`.
+
+        The parameters carry the role of each, which says which of them a
+        caller supplies and which the engine fills.
+        """
+        for candidate in self.manifest.get("functions", []):
+            if candidate.get("name") == function:
+                return candidate
+        return None
+
+    def call(self, function: str, **arguments: Any) -> Any:
+        """Calls an operation by name, with its parameters as keywords.
+
+        The keywords are the parameter names the manifest gives. What
+        comes back is the engine's own answer, parsed.
+        """
+        return json.loads(self.call_json(function, json.dumps(arguments, separators=(",", ":"))))
+
+    def call_json(self, function: str, arguments_json: str) -> str:
+        """Calls an operation with arguments already written as JSON, and
+        answers with the engine's own JSON: the form to use when the
+        answer is being handed on rather than read.
+        """
+        return self._inner.ephemeris_call(function, arguments_json)
+
+    def __getattr__(self, name: str) -> Any:
+        if name.startswith("_"):
+            raise AttributeError(name)
+        if name not in self.names:
+            raise AttributeError(
+                f"this engine names no operation `{name}`; "
+                f"it offers {len(self.names)}, and `dir()` lists them"
+            )
+
+        def operation(**arguments: Any) -> Any:
+            return self.call(name, **arguments)
+
+        operation.__name__ = name
+        signature = self.signature(name) or {}
+        operation.__doc__ = signature.get("doc") or f"The engine's `{name}`."
+        return operation
+
+    def __dir__(self) -> List[str]:
+        return sorted(set(list(super().__dir__()) + list(self.names)))
+
+    def __contains__(self, name: str) -> bool:
+        return name in self.names
+
+    def __len__(self) -> int:
+        return len(self.names)
+
+    def __repr__(self) -> str:
+        manifest = self.manifest
+        return (
+            f"Engine({manifest.get('engine', '?')!r} "
+            f"{manifest.get('version', '?')!r}, {len(self)} operations)"
+        )
+
+
 class Context:
     """A context, and everything a consumer asks of one.
 
@@ -488,6 +598,19 @@ class Context:
         """The typed accessors: every message of the SDK, by its key."""
 
     # ── The context itself ────────────────────────────────────────────
+
+    @property
+    def ephemeris(self) -> Engine:
+        """The engine's own operations, beyond the eight the SDK names.
+
+        Raises `TeistroError` when the context has no ephemeris, or when
+        the one it has describes nothing of its own.
+        """
+        engine = Engine(self.inner)
+        # Ask now rather than at the first call, so a context that cannot
+        # offer this says so where a caller can act on it.
+        engine.manifest_json
+        return engine
 
     @property
     def profile(self) -> str:

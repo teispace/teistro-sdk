@@ -214,6 +214,83 @@ final class Teistro {
   }
 }
 
+/// The engine's own operations, reached by the names it gives them.
+///
+/// The SDK names eight operations. An engine names far more, and what it
+/// names beyond them is reached through here rather than around the SDK.
+/// **Nothing in this class is a list of an engine's operations**: it asks
+/// the engine what it offers and calls what the answer names, so a
+/// function the engine gains after this package ships is callable without
+/// a new release of it.
+///
+/// ```dart
+/// final engine = context.ephemeris;
+/// final answer = engine('tp_echo', {'value': 6.0});
+/// ```
+///
+/// The operations are called by name rather than reached as members.
+/// Dart spells its members in camel case and an engine spells its
+/// functions as C does, so a member proxy would have to guess at the
+/// mapping between `tm_eclipse_when` and `tmEclipseWhen` — and a guess
+/// that is wrong for one engine's spelling would make that operation
+/// unreachable, which is the dead end this whole route exists to close.
+/// The engine's own spelling is what its manifest says and what its
+/// documentation calls it, so that is what this takes. The Node and
+/// Python bindings reach them as members because in those languages the
+/// engine's own spelling *is* the idiomatic one.
+final class Engine {
+  Engine._(this._context);
+
+  final Context _context;
+  Map<String, Object?>? _manifest;
+
+  /// The manifest as the engine wrote it.
+  String get manifestJson => _context._inner.ephemerisManifest();
+
+  /// The manifest, parsed and remembered.
+  ///
+  /// Read once per engine: it changes when the engine does, and an engine
+  /// does not change under a live context.
+  Map<String, Object?> get manifest =>
+      _manifest ??= jsonDecode(manifestJson) as Map<String, Object?>;
+
+  /// Every operation the engine offers, in its own order.
+  List<String> get names => [
+    for (final function in (manifest['functions'] as List<Object?>? ?? []))
+      (function as Map<String, Object?>)['name'] as String,
+  ];
+
+  /// What the manifest says about one operation, or `null`.
+  ///
+  /// Its parameters carry the role of each, which says which of them a
+  /// caller supplies and which the engine fills.
+  Map<String, Object?>? signature(String name) {
+    for (final function in (manifest['functions'] as List<Object?>? ?? [])) {
+      final candidate = function as Map<String, Object?>;
+      if (candidate['name'] == name) return candidate;
+    }
+    return null;
+  }
+
+  /// Whether the engine names an operation.
+  bool has(String name) => names.contains(name);
+
+  /// Calls an operation by name, with its parameters keyed by the names
+  /// the manifest gives, answering with the engine's own answer, parsed.
+  Object? call(String name, [Map<String, Object?> arguments = const {}]) =>
+      jsonDecode(callJson(name, jsonEncode(arguments)));
+
+  /// Calls an operation with arguments already written as JSON, and
+  /// answers with the engine's own JSON: the form to use when the answer
+  /// is being handed on rather than read.
+  String callJson(String name, String argumentsJson) =>
+      _context._inner.ephemerisCall(name, argumentsJson);
+
+  @override
+  String toString() =>
+      'Engine(${manifest['engine']} ${manifest['version']}, ${names.length} operations)';
+}
+
 /// A context: settings, a locale and an ephemeris, with the calls that use
 /// them. Built by [Teistro.context].
 ///
@@ -234,6 +311,17 @@ final class Context {
 
   /// The generated context, for a call this layer does not wrap.
   TeistroContext get inner => _inner;
+
+  /// The engine's own operations, beyond the eight the SDK names.
+  ///
+  /// Throws when the context has no ephemeris, or when the one it has
+  /// describes nothing of its own — asked now rather than at the first
+  /// call, so a caller learns it where they can act on it.
+  Engine get ephemeris {
+    final engine = Engine._(this);
+    engine.manifestJson;
+    return engine;
+  }
 
   /// The id of the profile the settings came from.
   String get profile => _inner.profile();
