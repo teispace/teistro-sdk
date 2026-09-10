@@ -64,11 +64,17 @@ const JD_RANGE: (f64, f64) = (2_378_497.0, 2_597_641.0);
 
 /// The bodies the built-in ephemeris computes.
 ///
-/// Pluto, the nodes and the apogees are not here yet: Pluto has no VSOP87
-/// series and is fitted separately, and the nodes and apogees are mean
-/// elements (ADR-0021). A body it cannot do is an unsupported cell, never
-/// a guess.
-const BODIES: [Body; 9] = [
+/// Rahu is here under both its names — the mean node and the true one —
+/// because a Vedic chart has nine grahas and two of them are the nodes.
+/// Ketu is not a body: it is Rahu's opposite point, which the chart layer
+/// derives.
+///
+/// Pluto and the osculating apogee are not here. Pluto has no VSOP87
+/// series and is fitted from a kernel separately (ADR-0021); the
+/// osculating apogee needs the Earth-Moon mass parameter, which is a
+/// constant neither theory carries. A body without a theory is refused by
+/// name rather than guessed at.
+const BODIES: [Body; 12] = [
     Body::Sun,
     Body::Moon,
     Body::Mercury,
@@ -78,6 +84,9 @@ const BODIES: [Body; 9] = [
     Body::Saturn,
     Body::Uranus,
     Body::Neptune,
+    Body::MeanNode,
+    Body::TrueNode,
+    Body::MeanApogee,
 ];
 
 /// The built-in analytic ephemeris.
@@ -180,6 +189,49 @@ impl Builtin {
             .sum();
         (arcsec / ARCSEC_PER_DEGREE).to_radians()
     }
+}
+
+/// A direction on the ecliptic at a longitude, as a unit vector.
+fn on_the_ecliptic(longitude: f64) -> [f64; 3] {
+    let (sin, cos) = longitude.sin_cos();
+    [cos, sin, 0.0]
+}
+
+/// A node or an apogee: a **direction**, not a place.
+///
+/// The port is explicit that nothing sits at a node — it is where the
+/// Moon's orbit crosses the ecliptic — so the latitude is zero by
+/// construction and the distance is zero rather than a nominal figure
+/// dressed up as a measurement. No observer sees such a point displaced,
+/// which is why the conformance corpus records them identically under
+/// every centre.
+fn direction_cell(longitude: f64, rate: f64, source: Source) -> Cell {
+    Cell {
+        lon: longitude.to_degrees().rem_euclid(360.0),
+        lat: 0.0,
+        dist: 0.0,
+        lon_speed: rate.to_degrees(),
+        lat_speed: 0.0,
+        dist_speed: 0.0,
+        status: CellStatus::Ok,
+        source,
+    }
+}
+
+/// The ascending node of the Moon's osculating orbit, in J2000.
+///
+/// The orbit's plane is fixed by `r x v`, and the line of nodes is where
+/// that plane meets the ecliptic — `z x h`, pointing at the ascending
+/// crossing. It needs no mass parameter and no element solution: the
+/// position and the velocity are the orbit's orientation.
+fn true_node_longitude(position: [f64; 3], velocity: [f64; 3]) -> f64 {
+    let h = [
+        position[1] * velocity[2] - position[2] * velocity[1],
+        position[2] * velocity[0] - position[0] * velocity[2],
+        position[0] * velocity[1] - position[1] * velocity[0],
+    ];
+    // z x h, which is (-h_y, h_x, 0).
+    (h[0]).atan2(-h[1])
 }
 
 /// Turns a vector about the ecliptic pole, which is what adjusting a
@@ -316,6 +368,50 @@ impl EphemerisProvider for Builtin {
                     (Some(_), Body::Moon) => {
                         let (position, rate) = self.moon(*jd);
                         to_cell(position, rate, source)
+                    }
+                    (Some(_), Body::MeanNode | Body::MeanApogee) => {
+                        let arguments = elp::Arguments::at(*jd);
+                        let coefficients = if *body == Body::MeanNode {
+                            arguments.w3
+                        } else {
+                            arguments.w2
+                        };
+                        let (mut longitude, rate) = arguments.mean_longitude(coefficients);
+                        // The apogee is half a turn from the perigee,
+                        // which is what the theory carries.
+                        if *body == Body::MeanApogee {
+                            longitude += std::f64::consts::PI;
+                        }
+                        // The mean longitudes are of date; the direction
+                        // reaches J2000 by the path the Moon's own
+                        // position takes.
+                        let rotated = elp::to_j2000(on_the_ecliptic(longitude), *jd);
+                        direction_cell(rotated[1].atan2(rotated[0]), rate, source)
+                    }
+                    (Some(_), Body::TrueNode) => {
+                        // The node's own motion is a wobble of about half
+                        // a month, so a difference over a day is well
+                        // conditioned and there is no station to fall in.
+                        const STEP: f64 = 0.5;
+                        let (position, velocity) = self.moon(*jd);
+                        let at = |jd: f64| {
+                            let (p, v) = self.moon(jd);
+                            true_node_longitude(p, v)
+                        };
+                        let before = at(*jd - STEP);
+                        let after = at(*jd + STEP);
+                        let mut moved = after - before;
+                        while moved > std::f64::consts::PI {
+                            moved -= std::f64::consts::TAU;
+                        }
+                        while moved < -std::f64::consts::PI {
+                            moved += std::f64::consts::TAU;
+                        }
+                        direction_cell(
+                            true_node_longitude(position, velocity),
+                            moved / (2.0 * STEP),
+                            source,
+                        )
                     }
                     (Some((earth_position, earth_rate)), other) => series_name(*other)
                         .and_then(|name| Builtin::heliocentric(name, *jd))
