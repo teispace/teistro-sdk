@@ -295,6 +295,17 @@ pub struct MainTerm {
     pub coefficients: [f64; 7],
 }
 
+impl MainTerm {
+    /// One term, `const` so a generated table is a constant.
+    #[must_use]
+    pub const fn new(multipliers: [i8; 4], coefficients: [f64; 7]) -> MainTerm {
+        MainTerm {
+            multipliers,
+            coefficients,
+        }
+    }
+}
+
 /// One term of every other group: a phase in degrees, an amplitude, and
 /// the multipliers its argument is built from.
 #[derive(Clone, Copy, Debug)]
@@ -305,6 +316,18 @@ pub struct PerturbationTerm {
     pub phase_deg: f64,
     /// The amplitude, in the coordinate's own unit.
     pub amplitude: f64,
+}
+
+impl PerturbationTerm {
+    /// One term, `const` so a generated table is a constant.
+    #[must_use]
+    pub const fn new(multipliers: [i8; 11], phase_deg: f64, amplitude: f64) -> PerturbationTerm {
+        PerturbationTerm {
+            multipliers,
+            phase_deg,
+            amplitude,
+        }
+    }
 }
 
 /// The three groups a file belongs to, which decide how its argument is
@@ -471,6 +494,35 @@ pub fn perturbation_contribution(term: &PerturbationTerm, file: u8, arguments: &
         Some(Group::Main) | None => return 0.0,
     }
     amplitude * angle.sin()
+}
+
+/// The Moon's geocentric rectangular position in kilometres, in the
+/// mean dynamical ecliptic and inertial equinox of J2000, from a table
+/// of terms.
+///
+/// This is the evaluator the shipped tables use and the one the
+/// ingester uses, so a generated table and the series it came from
+/// cannot diverge through two implementations of the same sum.
+#[must_use]
+pub fn position_from(
+    main: &[(u8, MainTerm)],
+    perturbations: &[(u8, PerturbationTerm)],
+    jd: f64,
+) -> [f64; 3] {
+    let arguments = Arguments::at(jd);
+    let mut sums = [0.0; 3];
+    let mut add = |file: u8, value: f64| {
+        if let Some(sum) = sums.get_mut(coordinate_of(file)) {
+            *sum += value;
+        }
+    };
+    for (file, term) in main {
+        add(*file, main_contribution(term, *file, &arguments));
+    }
+    for (file, term) in perturbations {
+        add(*file, perturbation_contribution(term, *file, &arguments));
+    }
+    to_rectangular(sums, jd)
 }
 
 /// The three summed coordinates, turned into a geocentric rectangular
@@ -773,35 +825,27 @@ pub mod ingest {
     /// is what makes a tier a length rather than a different table.
     #[must_use]
     pub fn position(theory: &Theory, jd: f64, threshold: f64) -> [f64; 3] {
-        let arguments = super::Arguments::at(jd);
-        let mut sums = [0.0; 3];
-        // `get_mut` rather than an index: the coordinate is always one of
-        // three by construction, and saying so with the access rather
-        // than in a comment is what keeps it true after an edit.
-        let mut add = |file: u8, value: f64| {
-            if let Some(sum) = sums.get_mut(super::coordinate_of(file)) {
-                *sum += value;
-            }
-        };
-        for (file, term) in &theory.main {
-            let Some(leading) = term.coefficients.first() else {
-                continue;
-            };
-            if leading.abs() < threshold {
-                continue;
-            }
-            add(*file, super::main_contribution(term, *file, &arguments));
-        }
-        for (file, term) in &theory.perturbations {
-            if term.amplitude < threshold {
-                continue;
-            }
-            add(
-                *file,
-                super::perturbation_contribution(term, *file, &arguments),
-            );
-        }
-        super::to_rectangular(sums, jd)
+        // Filtered here and then handed to the one evaluator, rather
+        // than summed a second way: two implementations of one sum are
+        // two implementations that can disagree, and this one is what
+        // the generated tables are checked against.
+        let main: Vec<(u8, super::MainTerm)> = theory
+            .main
+            .iter()
+            .filter(|(_, term)| {
+                term.coefficients
+                    .first()
+                    .is_some_and(|leading| leading.abs() >= threshold)
+            })
+            .copied()
+            .collect();
+        let perturbations: Vec<(u8, super::PerturbationTerm)> = theory
+            .perturbations
+            .iter()
+            .filter(|(_, term)| term.amplitude >= threshold)
+            .copied()
+            .collect();
+        super::position_from(&main, &perturbations, jd)
     }
 
     #[cfg(test)]
