@@ -301,9 +301,20 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is step A1 of
-   [`07-roadmap/02-plan-performance-and-passthrough.md`](07-roadmap/02-plan-performance-and-passthrough.md)**,
-   and the plan is the thing to read before anything else in this file.
+3. **The next task is Phase 3, the built-in ephemeris — milestone M3**
+   ([`07-roadmap/00-roadmap.md`](07-roadmap/00-roadmap.md); the tier
+   ladder is
+   [ADR-0021](08-decisions/adr-0021-reference-ephemeris-path.md)). It is
+   the largest unstarted piece and the one that lets a full chart
+   compute with nothing but the SDK installed. It has no plan page yet,
+   and writing one — the way `02-plan-…` was written, from a
+   falsification pass rather than from an intention — is its first step.
+
+   [`07-roadmap/02-plan-performance-and-passthrough.md`](07-roadmap/02-plan-performance-and-passthrough.md)
+   is finished: every step is built, or closed by a measurement that
+   refused it (A1c, A3), or costed and deliberately unbuilt (B3). The
+   rest of this item is that plan's record, and stays because it is the
+   reason the numbers are what they are.
 
    The maintainer set a standing brief on 2026-09-09 with two halves,
    and a falsification pass measured where the SDK stands against both
