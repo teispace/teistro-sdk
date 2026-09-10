@@ -21,13 +21,13 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, Centre, Coordinates, EphemerisProvider, Frame, Obliquity, Overrides,
-    PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
+    Body, Capabilities, Cell, Centre, Coordinates, EphemerisProvider, Equinox, Frame, Obliquity,
+    Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
 use crate::ayanamsha;
 use crate::delta_t::DeltaTModel;
-use crate::precession::PrecessionModel;
+use crate::precession::{self, PrecessionModel};
 use crate::scale::{tt_of, ut1_from_tt};
 use crate::sky::{self, Apparent, ApparentPositions, Spherical};
 use crate::topocentric::Station;
@@ -383,9 +383,6 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 Err(error) => return Err(error.into()),
             }
         }
-        if wanted.equinox != native.equinox {
-            return Err(CompletionError::Unsupported { step: "equinox" });
-        }
         if wanted.corrections != native.corrections {
             return Err(CompletionError::Unsupported {
                 step: "corrections",
@@ -397,9 +394,18 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }];
         let native_request = request.in_frame(native);
         let mut columns = self.provider.positions(&native_request)?;
-        // The centre first, in the frame the provider answered in: the
-        // step is a displacement in space, and a rotation or a zodiac
-        // shift afterwards carries it as it carries everything else.
+        // The equinox before the centre, and before everything else.
+        //
+        // Every other step is a rotation or a shift within one epoch, and
+        // carries a displacement as it carries anything. The equinox is
+        // not: it changes which epoch the axes belong to, and the
+        // observer's station is built in the equator **of date**. A
+        // topocentric correction applied to J2000 columns would subtract
+        // an of-date vector from a J2000 one, which is a wrong answer
+        // rather than a refused one.
+        if wanted.equinox != native.equinox {
+            self.precess(&mut columns, request, native, &mut steps)?;
+        }
         if wanted.centre != native.centre {
             self.recentre(&mut columns, request, native, &mut steps)?;
         }
@@ -433,6 +439,71 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }
         columns.frame = wanted;
         Ok(Completed { columns, steps })
+    }
+
+    /// The columns carried from the equinox the provider answered in to
+    /// the one the request asks for.
+    ///
+    /// Only J2000 to the equinox of date is done, which is the direction
+    /// every consumer needs: a theory is stated at a fixed epoch and a
+    /// chart is cast in the equinox of its own moment. The other
+    /// direction is refused by the same name rather than guessed at.
+    ///
+    /// Precession is defined on the equator, so an ecliptic frame is
+    /// turned to the equator of J2000, precessed, and turned back to the
+    /// ecliptic **of date** — with each end's own mean obliquity, taken
+    /// from the precession model itself so the frame and the rotation
+    /// that reaches it cannot come from two different theories.
+    fn precess(
+        &self,
+        columns: &mut PositionColumns,
+        request: &PositionRequest<'_>,
+        native: Frame,
+        steps: &mut Vec<Step>,
+    ) -> Result<(), CompletionError> {
+        if native.equinox != Equinox::J2000 || request.frame.equinox != Equinox::OfDate {
+            return Err(CompletionError::Unsupported { step: "equinox" });
+        }
+        if self.policy == OverridePolicy::NativeOnly {
+            return Err(CompletionError::PolicyRefused {
+                step: "equinox",
+                policy: self.policy,
+            });
+        }
+        let model = self.precession;
+        let epoch = JulianDay::<Tt>::literal(2_451_545.0);
+        let from_obliquity = precession::mean_obliquity_deg(model, epoch);
+        for (jd_index, jd) in request.jds.iter().enumerate() {
+            let tt = self.tt_at(*jd, request.scale, steps)?;
+            let to_obliquity = precession::mean_obliquity_deg(model, tt);
+            for body_index in 0..columns.body_count {
+                let Some(cell) = columns.at(jd_index, body_index) else {
+                    continue;
+                };
+                if cell.is_ok() {
+                    columns.set_at(
+                        jd_index,
+                        body_index,
+                        precess_cell(
+                            cell,
+                            model,
+                            tt,
+                            native.coordinates,
+                            (from_obliquity, to_obliquity),
+                            request.speeds,
+                        ),
+                    );
+                }
+            }
+        }
+        push_once(
+            steps,
+            Step {
+                name: "equinox",
+                implementation: Implementation::Sdk,
+            },
+        );
+        Ok(())
     }
 
     /// The columns as seen from the request's place rather than from the
@@ -714,6 +785,80 @@ fn apparent_cell(
     })
 }
 
+/// A direction as a unit vector, and back.
+fn to_vector(p: Spherical) -> [f64; 3] {
+    let lon = p.lon_deg.to_radians();
+    let lat = p.lat_deg.to_radians();
+    let (sin_lon, cos_lon) = lon.sin_cos();
+    let (sin_lat, cos_lat) = lat.sin_cos();
+    [cos_lat * cos_lon, cos_lat * sin_lon, sin_lat]
+}
+
+fn to_spherical(v: [f64; 3]) -> Spherical {
+    let flat = v[0].hypot(v[1]);
+    Spherical {
+        lon_deg: v[1].atan2(v[0]).to_degrees().rem_euclid(360.0),
+        lat_deg: v[2].atan2(flat).to_degrees(),
+    }
+}
+
+/// Precesses one cell.
+///
+/// The speeds are carried the way [`rotate_cell`] carries them — the
+/// transform applied a short step either side — so the precession
+/// matrix's own rate is neglected. It turns by about fifty arcseconds a
+/// year, which over the step used here is under a microarcsecond.
+fn precess_cell(
+    cell: Cell,
+    model: PrecessionModel,
+    tt: JulianDay<Tt>,
+    coordinates: Coordinates,
+    obliquities: (f64, f64),
+    speeds: bool,
+) -> Cell {
+    let (from_obliquity, to_obliquity) = obliquities;
+    let carry = |p: Spherical| -> Spherical {
+        let equatorial = match coordinates {
+            Coordinates::Ecliptic => sky::ecliptic_to_equatorial(p, from_obliquity),
+            Coordinates::Equatorial => p,
+        };
+        let moved = precession::to_date(model, tt, to_vector(equatorial));
+        let of_date = to_spherical(moved);
+        match coordinates {
+            Coordinates::Ecliptic => sky::equatorial_to_ecliptic(of_date, to_obliquity),
+            Coordinates::Equatorial => of_date,
+        }
+    };
+    let here = carry(Spherical {
+        lon_deg: cell.lon,
+        lat_deg: cell.lat,
+    });
+    let (lon_speed, lat_speed) = if speeds {
+        let h = 1e-3;
+        let ahead = carry(Spherical {
+            lon_deg: cell.lon + cell.lon_speed * h,
+            lat_deg: cell.lat + cell.lat_speed * h,
+        });
+        let behind = carry(Spherical {
+            lon_deg: cell.lon - cell.lon_speed * h,
+            lat_deg: cell.lat - cell.lat_speed * h,
+        });
+        (
+            difference_deg(ahead.lon_deg, behind.lon_deg) / (2.0 * h),
+            (ahead.lat_deg - behind.lat_deg) / (2.0 * h),
+        )
+    } else {
+        (0.0, 0.0)
+    };
+    Cell {
+        lon: here.lon_deg,
+        lat: here.lat_deg,
+        lon_speed,
+        lat_speed,
+        ..cell
+    }
+}
+
 /// Rotates one cell's coordinates; speeds are rotated by a central
 /// difference over a short step, so the obliquity's own rate is neglected
 /// (it is under 0.5 arcsecond per year).
@@ -970,6 +1115,132 @@ mod tests {
         assert_eq!(
             sdk.positions(&plain).unwrap().step_keys(),
             vec!["positions:PassThrough"]
+        );
+    }
+
+    /// A provider whose native frame is J2000, which is what an analytic
+    /// theory is stated in. Until the built-in ephemeris existed, every
+    /// provider of this port answered of-date natively and the equinox
+    /// step had nothing to exercise it.
+    #[derive(Debug)]
+    struct AtJ2000;
+
+    impl EphemerisProvider for AtJ2000 {
+        fn capabilities(&self) -> Capabilities {
+            Capabilities {
+                native_frame: Frame {
+                    equinox: Equinox::J2000,
+                    ..Frame::CANONICAL
+                },
+                ..TestProvider.capabilities()
+            }
+        }
+
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
+            let frame = self.capabilities().native_frame;
+            if request.frame != frame {
+                return Err(ProviderError::unsupported("only its own frame"));
+            }
+            let mut columns = PositionColumns::new(request.jds.len(), request.bodies.len(), frame);
+            // One body, fixed on the sky, so what moves is the equinox.
+            for jd_index in 0..request.jds.len() {
+                for body_index in 0..request.bodies.len() {
+                    columns.set_at(
+                        jd_index,
+                        body_index,
+                        Cell {
+                            lon: 100.0,
+                            lat: 2.0,
+                            dist: 1.0,
+                            lon_speed: 0.0,
+                            lat_speed: 0.0,
+                            dist_speed: 0.0,
+                            status: teistro_port_ephemeris::CellStatus::Ok,
+                            source: teistro_port_ephemeris::Source::UNKNOWN,
+                        },
+                    );
+                }
+            }
+            Ok(columns)
+        }
+    }
+
+    /// The equinox step carries a J2000 frame to the equinox of date.
+    ///
+    /// A fixed direction's ecliptic longitude grows with general
+    /// precession, about 50.29 arcseconds a year, so a century is 1.396
+    /// degrees.
+    ///
+    /// The latitude moves too, and by a specific amount rather than
+    /// nothing: the frame asked for is the mean ecliptic **of date**, and
+    /// the ecliptic plane itself turns by about 47 arcseconds a century
+    /// under the planets. A test that demanded an unmoving latitude
+    /// would be demanding a rotation about a fixed ecliptic pole, which
+    /// is not what precession is — and would have failed against correct
+    /// code, which is how this bound came to be written from the physics
+    /// instead of from an expectation.
+    #[test]
+    fn the_equinox_step_precesses_a_j2000_frame_to_date() {
+        static PROVIDER: AtJ2000 = AtJ2000;
+        let completion = Completion::new(
+            &PROVIDER,
+            OverridePolicy::PreferNative,
+            DeltaTModel::TableThenModel,
+        );
+        // J2000 itself, and a century after it.
+        let jds = [2_451_545.0, 2_488_070.0];
+        let request = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Sun], Frame::CANONICAL);
+        let done = completion.positions(&request).unwrap();
+        assert!(
+            done.step_keys().iter().any(|key| key == "equinox:Sdk"),
+            "the step must say who did it: {:?}",
+            done.step_keys()
+        );
+
+        let at_epoch = done.columns.at(0, 0).unwrap();
+        assert!(
+            (at_epoch.lon - 100.0).abs() < 1e-6,
+            "at J2000 the two equinoxes are the same, so nothing moves: {}",
+            at_epoch.lon
+        );
+        assert!((at_epoch.lat - 2.0).abs() < 1e-6);
+
+        let after = done.columns.at(1, 0).unwrap();
+        let moved = after.lon - at_epoch.lon;
+        assert!(
+            (moved - 1.3964).abs() < 0.002,
+            "a century of general precession is about 1.3964 degrees, not {moved}"
+        );
+        let latitude_arcsec = (after.lat - 2.0).abs() * 3_600.0;
+        assert!(
+            (5.0..60.0).contains(&latitude_arcsec),
+            "the moving ecliptic should shift the latitude by tens of arcseconds \
+             in a century, not {latitude_arcsec}"
+        );
+    }
+
+    /// The other direction is still refused, by name. A theory stated at
+    /// J2000 is what the SDK has to carry forward; carrying a chart back
+    /// is a different question and is not guessed at.
+    #[test]
+    fn of_date_to_j2000_is_still_refused() {
+        let completion = completion(OverridePolicy::PreferNative);
+        let jds = [2_460_000.5];
+        let request = PositionRequest::new(
+            &jds,
+            TimeScale::Ut1,
+            &[Body::Sun],
+            Frame {
+                equinox: Equinox::J2000,
+                ..Frame::CANONICAL
+            },
+        );
+        assert_eq!(
+            completion.positions(&request).err(),
+            Some(CompletionError::Unsupported { step: "equinox" })
         );
     }
 

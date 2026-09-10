@@ -43,6 +43,8 @@ teistro-core = { path = "../core" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 
 [dev-dependencies]
+teistro-chart = { path = "../chart" }
+teistro-calendar = { path = "../calendar" }
 teistro-ephemeris-kit = { path = "../ephemeris-kit" }
 
 [lints]
