@@ -6,6 +6,9 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 description = "A global allocator that counts what the calling thread allocates, so a test can assert how many times a hot path allocates"
+# Never published: this is the SDK's own test scaffolding. The name
+# is held on crates.io all the same (0.0.0, 2026-09-10) so no one
+# else can publish under a `teistro-` name that looks like ours.
 publish = false
 
 [dependencies]

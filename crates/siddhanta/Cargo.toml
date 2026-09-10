@@ -9,7 +9,10 @@ description = "Teistro SDK: the Surya Siddhanta as a computation model and an ep
 readme = "README.md"
 keywords = ["surya-siddhanta", "astrology", "jyotisha", "panchanga"]
 categories = ["science"]
-# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+# The name is held on crates.io — a 0.0.0 placeholder published
+# 2026-09-10 — and this crate publishes for real at the first
+# release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
 publish = false
 
 [dependencies]

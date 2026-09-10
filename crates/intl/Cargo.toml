@@ -9,7 +9,10 @@ description = "Teistro Intl: the MessageFormat 2 engine bound to the SDK's types
 readme = "README.md"
 keywords = ["i18n", "messageformat", "localization", "astrology"]
 categories = ["internationalization"]
-# Not published until the Phase 1 exit (docs/07-roadmap/00-roadmap.md).
+# The name is held on crates.io — a 0.0.0 placeholder published
+# 2026-09-10 — and this crate publishes for real at the first
+# release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
 publish = false
 
 [features]
