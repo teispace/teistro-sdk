@@ -61,6 +61,25 @@ Legend: `●` present, `◐` partial or limited, `○` absent, `?` unknown.
 4. **Nobody offers an SDK across platforms.** VedAstro is the closest (REST
    and Python, 706 methods) but is one ephemeris, one language of text,
    .NET-centric and monolithic. The position is open.
-5. **Product-level features that are not engine features** (worksheets,
+
+   **Corrected 2026-09-10.** It was contested three weeks after this page
+   was written. XALEN (`vedika-io/xalen-ephemeris`, Apache-2.0, pure Rust,
+   seventeen crates, 866 stars) is the same shape as this SDK and shipped
+   first. It has since stalled — 840 KB of repository for twelve
+   traditions, no commit since 2026-07-02, its best-adopted crate at 1 143
+   downloads all-time, its Python and Node packages still unpublished — so
+   the position is vacant again rather than open. The lesson is not that
+   the field is safe; it is that the field is reachable by whoever ships
+   something installable, and that breadth declared before depth does not
+   hold it. Measured in
+   [`02-developer-market.md`](02-developer-market.md), which also surveys
+   the tier this matrix missed: the libraries and hosted APIs a developer
+   actually chooses between.
+5. **The competition for adoption is a tier this matrix does not list.**
+   Kerykeion (AGPL plus a paid hosted API), Immanuel, PyJHora and the
+   hosted vendors — Prokerala, AstrologyAPI, VedicRishi, RoxyAPI, Vedika,
+   DivineAPI — are what a developer picks between today. See
+   [`02-developer-market.md`](02-developer-market.md).
+6. **Product-level features that are not engine features** (worksheets,
    atlases, printing, chart art, databases) stay out of scope; the SDK
    provides the data those features render.
