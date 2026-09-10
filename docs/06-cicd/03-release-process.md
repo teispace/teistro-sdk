@@ -75,13 +75,38 @@ chain is rehearsed before a tag exists.
 ## What is set up, and what is not
 
 GitHub Pages is enabled for the repository with GitHub Actions as its
-source (2026-09-07), so `docs` can publish on a tag. Nothing else is:
-the npm organisation, the pub.dev account and the publishing credential
-are deferred to the release itself, because nothing needs them before it
-and a credential that exists before it is needed is a credential nobody
-is watching. The names are held by nobody: the `@teistro` scope and
-`@teistro/sdk` on npm, and `teistro` on pub.dev, were all free when this
-was written.
+source (2026-09-07), so `docs` can publish on a tag.
+
+**Revised 2026-09-10: the names are reserved now; the credentials still
+are not.** This section previously deferred both together, on the ground
+that "a credential that exists before it is needed is a credential nobody
+is watching". That argument is about credentials and remains right. It was
+doing double duty as an argument about *names*, and names are a different
+risk: every one of them was still free on 2026-09-10 — checked against
+each registry's own API, `teistro` and all twenty-one `teistro-*` crates,
+the `@teistro` npm scope, `teistro` on PyPI, `teistro` and
+`teistro_flutter` on pub.dev — and a name that is free is a name anyone
+may take. A competing Rust astrology SDK took 866 stars in five weeks with
+a `cargo add` line
+(`01-research/competitive-analysis/02-developer-market.md`); a naming
+collision would cost the SDK its whole identity across four registries at
+once, and unlike a credential the loss is not recoverable by rotating
+anything.
+
+So the two are separated:
+
+| | when | how |
+|---|---|---|
+| the npm `@teistro` scope | now | created as an organisation in the web console; a scope needs no stored publishing credential to exist |
+| `teistro` and `teistro-*` on crates.io | now | minimal `0.0.0` stubs, each pointing at the repository, published with a token that is **revoked in the same sitting** |
+| `teistro` on PyPI | now | the same, with the same revoke |
+| pub.dev | at the release | pub.dev discourages placeholder packages and may remove one; the name is watched instead |
+| any standing publishing credential | at the release | unchanged, and preferably never — see trusted publishing below |
+
+The rule the original sentence was protecting survives intact: **no
+long-lived publishing credential exists before the release.** A token
+minted, used once and revoked within the hour is not a credential nobody
+is watching.
 
 When the time comes, prefer npm's trusted publishing over a token: the
 `publish` job already asks for the `id-token: write` permission it needs,
