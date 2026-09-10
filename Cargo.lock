@@ -1314,6 +1314,8 @@ name = "teistro-ephemeris-builtin"
 version = "0.0.0"
 dependencies = [
  "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
  "teistro-core",
  "teistro-ephemeris-kit",
  "teistro-port-ephemeris",
