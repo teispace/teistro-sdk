@@ -17,7 +17,10 @@
     clippy::expect_used,
     clippy::indexing_slicing,
     clippy::panic,
-    reason = "a test fails by panicking and indexes its own fixtures"
+    clippy::float_cmp,
+    reason = "a test fails by panicking, indexes its own fixtures, and a \
+              direction's latitude and distance are exactly zero by \
+              construction rather than nearly so"
 )]
 
 use teistro_ephemeris_builtin::provider::Builtin;
@@ -60,9 +63,10 @@ fn it_answers_for_every_body_it_declares() {
     assert_eq!(columns.len(), INSTANTS.len() * bodies.len());
 }
 
-/// Pluto has no VSOP87 series and is fitted separately; the nodes and
-/// apogees are mean elements. Until they are built, asking for one must
-/// fail, and it must fail by name.
+/// Pluto has no VSOP87 series and is fitted from a kernel separately; the
+/// osculating apogee needs the Earth-Moon mass parameter, which neither
+/// theory carries. Until they are built, asking for one must fail, and it
+/// must fail by name.
 ///
 /// The port refuses it at the request rather than per cell — the
 /// declared body list is a contract, so a body outside it is a malformed
@@ -73,7 +77,7 @@ fn it_answers_for_every_body_it_declares() {
 fn a_body_it_cannot_do_is_refused_by_name() {
     let provider = Builtin::new();
     let jds = [2_451_545.0];
-    for body in [Body::Pluto, Body::MeanNode, Body::TrueNode] {
+    for body in [Body::Pluto, Body::OsculatingApogee] {
         let bodies = [body];
         let request = PositionRequest::new(&jds, TimeScale::Tt, &bodies, frame());
         let error = provider
@@ -277,5 +281,172 @@ fn the_capabilities_describe_what_it_does() {
             .identity
             .data_version
             .contains("bija")
+    );
+}
+
+/// The nodes are the reason this provider can cast a Vedic chart at all:
+/// two of the nine grahas are Rahu and Ketu, and Ketu is derived from
+/// Rahu by the chart layer rather than asked for.
+///
+/// What is asserted is what the sky does, not a recorded number. The mean
+/// node goes backwards through the zodiac once in about 18.6 years, which
+/// is 0.053 degrees a day; nothing else in the solar system moves like
+/// that, so a node computed from the wrong polynomial cannot pass.
+#[test]
+fn the_mean_node_regresses_once_in_a_saros_and_a_bit() {
+    let columns = ask(&INSTANTS, &[Body::MeanNode]);
+    for index in 0..INSTANTS.len() {
+        let cell = columns.at(index, 0).expect("the node");
+        assert!(
+            cell.lon_speed < 0.0,
+            "the mean node is retrograde, always: {}",
+            cell.lon_speed
+        );
+        let period_years = 360.0 / cell.lon_speed.abs() / 365.25;
+        assert!(
+            (period_years - 18.6).abs() < 0.1,
+            "a nodal cycle is about 18.6 years, not {period_years}"
+        );
+    }
+}
+
+/// A node is a direction and not a place. The port says so, the
+/// conformance corpus records it under every centre, and a provider that
+/// answered a nominal distance beside one would be dressing a constant up
+/// as a measurement.
+#[test]
+fn the_nodes_and_the_mean_apogee_are_directions() {
+    let bodies = [Body::MeanNode, Body::TrueNode, Body::MeanApogee];
+    let columns = ask(&INSTANTS, &bodies);
+    for jd_index in 0..INSTANTS.len() {
+        for (body_index, body) in bodies.iter().enumerate() {
+            let cell = columns.at(jd_index, body_index).expect("a cell");
+            assert!(!body.is_placed(), "{body:?} is not somewhere");
+            assert_eq!(cell.lat, 0.0, "{body:?} is on the ecliptic by construction");
+            assert_eq!(cell.dist, 0.0, "{body:?} has no distance to report");
+            assert_eq!(cell.lat_speed, 0.0);
+            assert!((0.0..360.0).contains(&cell.lon), "{body:?} at {}", cell.lon);
+        }
+    }
+}
+
+/// The true node oscillates about the mean one by a degree or two with a
+/// period of about half a month. Too close and one of them is the other;
+/// too far and the osculating plane is being read wrongly.
+#[test]
+fn the_true_node_oscillates_about_the_mean_one() {
+    // A fortnight of days, which is long enough to see the wobble.
+    let jds: Vec<f64> = (0..30).map(|d| 2_451_545.0 + f64::from(d)).collect();
+    let columns = ask(&jds, &[Body::MeanNode, Body::TrueNode]);
+    let mut worst: f64 = 0.0;
+    for index in 0..jds.len() {
+        let mean = columns.at(index, 0).expect("the mean node").lon;
+        let true_node = columns.at(index, 1).expect("the true node").lon;
+        let mut apart = true_node - mean;
+        while apart > 180.0 {
+            apart -= 360.0;
+        }
+        while apart < -180.0 {
+            apart += 360.0;
+        }
+        worst = worst.max(apart.abs());
+    }
+    assert!(
+        (0.1..3.0).contains(&worst),
+        "the true node should wander a degree or so from the mean one, not {worst}"
+    );
+}
+
+/// The apogee is half a turn from the perigee and goes forward, once in
+/// about 8.85 years. Like the node's, the figure is the sky's and not a
+/// recorded value.
+#[test]
+fn the_mean_apogee_advances_once_in_about_nine_years() {
+    let columns = ask(&INSTANTS, &[Body::MeanApogee]);
+    for index in 0..INSTANTS.len() {
+        let cell = columns.at(index, 0).expect("the apogee");
+        assert!(cell.lon_speed > 0.0, "the apogee advances");
+        let period_years = 360.0 / cell.lon_speed / 365.25;
+        assert!(
+            (period_years - 8.85).abs() < 0.05,
+            "an apsidal cycle is about 8.85 years, not {period_years}"
+        );
+    }
+}
+
+/// The true node must sit where the Moon actually crosses the ecliptic.
+///
+/// This is the check that ties the node to the body rather than to a
+/// polynomial, and it is exact rather than approximate: the osculating
+/// orbit is the one whose plane contains the Moon's position and
+/// velocity, so a Moon at zero latitude lies in the ecliptic *and* in
+/// its own orbital plane — which is to say, on the line of nodes.
+///
+/// The crossing is interpolated rather than sampled. At six-hour steps
+/// the Moon moves three degrees, so the nearest sample is up to three
+/// degrees past the crossing, and a test that compared there would be
+/// measuring its own step size and calling it an error.
+#[test]
+fn the_true_node_is_where_the_moon_crosses_the_ecliptic() {
+    let jds: Vec<f64> = (0..120)
+        .map(|q| 2_451_545.0 + f64::from(q) * 0.25)
+        .collect();
+    let columns = ask(&jds, &[Body::Moon, Body::TrueNode]);
+    let wrapped = |mut degrees: f64| {
+        while degrees > 180.0 {
+            degrees -= 360.0;
+        }
+        while degrees < -180.0 {
+            degrees += 360.0;
+        }
+        degrees
+    };
+    let mut crossings = 0;
+    for index in 1..jds.len() {
+        let before = columns.at(index - 1, 0).expect("the Moon");
+        let here = columns.at(index, 0).expect("the Moon");
+        if before.lat >= 0.0 || here.lat < 0.0 {
+            continue; // the ascending crossing only
+        }
+        crossings += 1;
+        // Where the latitude reaches zero, and the longitude there.
+        let fraction = -before.lat / (here.lat - before.lat);
+        let moved = wrapped(here.lon - before.lon);
+        let at_crossing = before.lon + fraction * moved;
+        let node = columns.at(index, 1).expect("the true node").lon;
+        let apart = wrapped(at_crossing - node);
+        assert!(
+            apart.abs() < 0.05,
+            "at the ascending crossing the Moon is on the node line: \
+             {at_crossing} against {node}, {apart} apart"
+        );
+    }
+    assert!(crossings > 0, "a month must contain an ascending crossing");
+}
+
+/// At the epoch the mean node must be the number every reference gives
+/// for it: 125.0445 degrees.
+///
+/// It is a weaker check than it looks, and saying so is the point — the
+/// figure is ELP's own `W3` constant, so this confirms that the
+/// polynomial is evaluated and rotated correctly at the epoch rather than
+/// that the theory is right. What it would catch is a transposed
+/// coefficient, a degree read as a radian, or a rotation applied when it
+/// should be the identity, and those are exactly the mistakes a table of
+/// constants invites.
+#[test]
+fn the_mean_node_at_the_epoch_is_the_published_constant() {
+    let columns = ask(&[2_451_545.0], &[Body::MeanNode, Body::MeanApogee]);
+    let node = columns.at(0, 0).expect("the node").lon;
+    assert!(
+        (node - 125.0445).abs() < 0.001,
+        "the mean node at J2000 is 125.0445 degrees, not {node}"
+    );
+    // The perigee is 83.3532 at the epoch, so the apogee is half a turn
+    // from it.
+    let apogee = columns.at(0, 1).expect("the apogee").lon;
+    assert!(
+        (apogee - 263.3532).abs() < 0.001,
+        "the mean apogee at J2000 is 263.3532 degrees, not {apogee}"
     );
 }

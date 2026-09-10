@@ -94,6 +94,43 @@ pub struct Arguments {
     pub p: [[f64; 8]; 2],
     /// The Moon's own mean longitude, as five polynomial coefficients.
     pub w1: [f64; 5],
+    /// The mean longitude of the Moon's perigee, as five polynomial
+    /// coefficients. The **apogee** is half a turn from it, which is what
+    /// the port calls [`Body::MeanApogee`].
+    ///
+    /// [`Body::MeanApogee`]: https://docs.rs/teistro-port-ephemeris
+    pub w2: [f64; 5],
+    /// The mean longitude of the Moon's ascending node, as five
+    /// polynomial coefficients — Rahu, when a chart takes the mean node.
+    ///
+    /// Its rate is negative, which is why the node is retrograde: that
+    /// falls out of the theory rather than being asserted anywhere.
+    pub w3: [f64; 5],
+}
+
+impl Arguments {
+    /// A mean longitude and its rate from five polynomial coefficients:
+    /// radians, and radians per day.
+    ///
+    /// The rate is the polynomial's derivative, not a difference — these
+    /// are the one place in the theory where an exact derivative costs
+    /// nothing at all.
+    #[must_use]
+    pub fn mean_longitude(&self, coefficients: [f64; 5]) -> (f64, f64) {
+        let mut angle = 0.0;
+        let mut rate = 0.0;
+        for (power, (coefficient, t)) in coefficients.iter().zip(self.t).enumerate() {
+            angle += coefficient * t;
+            if power > 0 {
+                // d/dT of c·T^p is p·c·T^(p-1), and t[p-1] is that power.
+                let previous = self.t.get(power - 1).copied().unwrap_or(0.0);
+                #[expect(clippy::cast_precision_loss, reason = "a polynomial power is 0 to 4")]
+                let power = power as f64;
+                rate += power * coefficient * previous;
+            }
+        }
+        (angle, rate / DAYS_PER_CENTURY)
+    }
 }
 
 /// The constants of the theory, in the order and to the digits the
@@ -238,6 +275,7 @@ impl Arguments {
         // Delaunay's four arguments, each as five polynomial
         // coefficients: D, l', l and F, in the reader's own order.
         let [w1, w2, w3] = w;
+        let (w2_coefficients, w3_coefficients) = (w2, w3);
         let mut d = [0.0; 5];
         let mut l_prime = [0.0; 5];
         let mut l = [0.0; 5];
@@ -270,6 +308,8 @@ impl Arguments {
         Arguments {
             t,
             del,
+            w2: w2_coefficients,
+            w3: w3_coefficients,
             zeta: [w1_constant, w1_rate + preces],
             p: {
                 let mut by_power = [[0.0; 8]; 2];
@@ -523,6 +563,43 @@ pub fn position_from(
         add(*file, perturbation_contribution(term, *file, &arguments));
     }
     to_rectangular(sums, jd)
+}
+
+/// The three summed coordinates, turned into a geocentric rectangular
+/// position in kilometres referred to the mean dynamical ecliptic and
+/// inertial equinox of J2000.
+///
+/// `sums` are the raw series totals: longitude and latitude in
+/// arcseconds, distance in kilometres before its scale.
+/// The rotation from the mean dynamical ecliptic of date to the
+/// inertial equinox of J2000, as the published reader writes it.
+///
+/// Exposed because the mean node and the mean apogee are longitudes in
+/// the of-date frame and have to reach J2000 by the same path the
+/// Moon's own position does. Two rotations would be two things to keep
+/// in step.
+#[must_use]
+pub fn to_j2000(v: [f64; 3], jd: f64) -> [f64; 3] {
+    let [_, t1, t2, t3, t4] = Arguments::at(jd).t;
+    let pw = (0.10180391e-4 + 0.47020439e-6 * t1 - 0.5417367e-9 * t2 - 0.2507948e-11 * t3
+        + 0.463486e-14 * t4)
+        * t1;
+    let qw = (-0.113469002e-3 + 0.12372674e-6 * t1 + 0.1265417e-8 * t2
+        - 0.1371808e-11 * t3
+        - 0.320334e-14 * t4)
+        * t1;
+    let ra = 2.0 * (1.0 - pw * pw - qw * qw).sqrt();
+    let pwqw = 2.0 * pw * qw;
+    let pw2 = 1.0 - 2.0 * pw * pw;
+    let qw2 = 1.0 - 2.0 * qw * qw;
+    let pw = pw * ra;
+    let qw = qw * ra;
+    let [x1, x2, x3] = v;
+    [
+        pw2 * x1 + pwqw * x2 + pw * x3,
+        pwqw * x1 + qw2 * x2 - qw * x3,
+        -pw * x1 + qw * x2 + (pw2 + qw2 - 1.0) * x3,
+    ]
 }
 
 /// The three summed coordinates, turned into a geocentric rectangular
