@@ -9,8 +9,8 @@
 //!
 //! | tier | planets | Moon | data | source |
 //! |---|---|---|---:|---:|
-//! | `compact` | 3e-6 au, 21.2729″, 2503 terms | 1, 18.0895″, 160 terms | 83 KB | 126 KB |
-//! | `standard` | 3e-8 au, 0.6190″, 15860 terms | 0.01, 0.7131″, 1139 terms | 531 KB | 760 KB |
+//! | `compact` | 3e-6 au, 21.2729″, 2503 terms | 1, 18.0895″, 160 terms | 83 KB | 127 KB |
+//! | `standard` | 3e-8 au, 0.6190″, 15860 terms | 0.01, 0.7131″, 1139 terms | 531 KB | 761 KB |
 //! | `full` | whole theory, 0.0000″, 39198 terms | whole theory, 0.0000″, 37872 terms | 2408 KB | 4229 KB |
 
 #[cfg(all(feature = "compact", not(feature = "standard"), not(feature = "full")))]

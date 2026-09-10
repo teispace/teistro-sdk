@@ -42,6 +42,9 @@ use teistro_ephemeris_builtin::ingest::{BODIES, BodySeries, load as load_vsop};
 
 use crate::generated::{Output, write};
 
+/// Where the fitted bija is recorded.
+const BIJA_SOURCE: &str = "crates/ephemeris-builtin/data/elp82b-floor.json";
+
 /// Where the tables go.
 const TABLES: &str = "crates/ephemeris-builtin/src/tables";
 
@@ -90,64 +93,74 @@ const TIERS: [Tier; 3] = [
 /// Radians to arcseconds.
 const ARCSEC_PER_RAD: f64 = 206_264.806_247_096_36;
 
-/// The worst geocentric angular error a planet threshold costs, over a
-/// grid, measured against the whole theory exactly as the sweep does.
-fn planet_error(series: &BTreeMap<&'static str, BodySeries>, threshold: f64) -> f64 {
+/// The worst geocentric angular error each planet threshold costs, for
+/// the whole ladder at once, measured against the whole theory exactly
+/// as the sweep does.
+///
+/// Hoisted for the same reason as the Moon's: the exact positions are
+/// the same for every rung.
+fn planet_errors(series: &BTreeMap<&'static str, BodySeries>, ladder: &[f64]) -> Vec<f64> {
     const FROM: f64 = 2_378_497.0;
     const TO: f64 = 2_597_641.0;
     const STEP: f64 = 40.0;
     let earth = &series["Earth"];
-    let mut worst: f64 = 0.0;
+    let mut worst = vec![0.0_f64; ladder.len()];
     let mut jd = FROM;
     while jd <= TO {
         let t = teistro_ephemeris_builtin::series::millennia(jd);
         let earth_exact = earth.at(t, 0.0);
-        let earth_cut = earth.at(t, threshold);
-        for (name, _) in BODIES {
-            if name == "Earth" {
-                // What the Earth's series gives geocentrically is the
-                // Sun, reversed.
-                worst = worst.max(separation(
-                    [-earth_exact[0], -earth_exact[1], -earth_exact[2]],
-                    [-earth_cut[0], -earth_cut[1], -earth_cut[2]],
+        for (slot, threshold) in worst.iter_mut().zip(ladder) {
+            let earth_cut = earth.at(t, *threshold);
+            for (name, _) in BODIES {
+                if name == "Earth" {
+                    *slot = slot.max(separation(
+                        [-earth_exact[0], -earth_exact[1], -earth_exact[2]],
+                        [-earth_cut[0], -earth_cut[1], -earth_cut[2]],
+                    ));
+                    continue;
+                }
+                let body = &series[name];
+                let exact = body.at(t, 0.0);
+                let cut = body.at(t, *threshold);
+                *slot = slot.max(separation(
+                    [
+                        exact[0] - earth_exact[0],
+                        exact[1] - earth_exact[1],
+                        exact[2] - earth_exact[2],
+                    ],
+                    [
+                        cut[0] - earth_cut[0],
+                        cut[1] - earth_cut[1],
+                        cut[2] - earth_cut[2],
+                    ],
                 ));
-                continue;
             }
-            let body = &series[name];
-            let exact = body.at(t, 0.0);
-            let cut = body.at(t, threshold);
-            worst = worst.max(separation(
-                [
-                    exact[0] - earth_exact[0],
-                    exact[1] - earth_exact[1],
-                    exact[2] - earth_exact[2],
-                ],
-                [
-                    cut[0] - earth_cut[0],
-                    cut[1] - earth_cut[1],
-                    cut[2] - earth_cut[2],
-                ],
-            ));
         }
         jd += STEP;
     }
     worst
 }
 
-/// The worst angular error a Moon threshold costs against the whole
-/// theory.
-fn moon_error(theory: &Theory, threshold: f64) -> f64 {
+/// The worst angular error each Moon threshold costs against the whole
+/// theory, for the whole ladder at once.
+///
+/// The exact position does not depend on the threshold, so computing it
+/// per rung meant evaluating thirty-eight thousand terms at every
+/// instant seven times over to produce the same vector each time. Once
+/// per instant instead, which is the same mistake and the same fix as
+/// hoisting the Earth out of the body loop.
+fn moon_errors(theory: &Theory, ladder: &[f64]) -> Vec<f64> {
     use teistro_ephemeris_builtin::elp::ingest::position;
     const FROM: f64 = 2_378_497.0;
     const TO: f64 = 2_597_641.0;
     const STEP: f64 = 7.0;
-    let mut worst: f64 = 0.0;
+    let mut worst = vec![0.0_f64; ladder.len()];
     let mut jd = FROM;
     while jd <= TO {
-        worst = worst.max(separation(
-            position(theory, jd, 0.0),
-            position(theory, jd, threshold),
-        ));
+        let exact = position(theory, jd, 0.0);
+        for (slot, threshold) in worst.iter_mut().zip(ladder) {
+            *slot = slot.max(separation(exact, position(theory, jd, *threshold)));
+        }
         jd += STEP;
     }
     worst
@@ -175,11 +188,13 @@ struct Ladder {
 }
 
 impl Ladder {
-    fn measure(thresholds: &[f64], error: impl Fn(f64) -> f64) -> Ladder {
+    /// A ladder from thresholds and the errors already measured for them.
+    fn of(thresholds: &[f64], errors: &[f64]) -> Ladder {
         Ladder {
             rungs: thresholds
                 .iter()
-                .map(|threshold| (*threshold, error(*threshold)))
+                .copied()
+                .zip(errors.iter().copied())
                 .collect(),
         }
     }
@@ -312,6 +327,93 @@ fn moon_table(theory: &Theory, threshold: f64) -> (String, usize) {
     (out, terms)
 }
 
+/// The bija: the correction ADR-0027 fixed, with the provenance that
+/// makes it inspectable rather than a silent adjustment.
+///
+/// It is read from the recorded measurement rather than restated here,
+/// so the coefficients that ship and the coefficients that were measured
+/// cannot drift apart.
+fn bija_block(root: &Path) -> String {
+    let Some(text) = std::fs::read_to_string(root.join(BIJA_SOURCE)).ok() else {
+        return String::new();
+    };
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) else {
+        return String::new();
+    };
+    let Some(correction) = value
+        .get("corrections")
+        .and_then(serde_json::Value::as_array)
+        .and_then(|all| {
+            all.iter()
+                .find(|c| c.get("degree").and_then(serde_json::Value::as_u64) == Some(2))
+        })
+    else {
+        return String::new();
+    };
+    let number = |key: &str| correction.get(key).and_then(serde_json::Value::as_f64);
+    let coefficients: Vec<f64> = correction
+        .get("coefficients_arcsec")
+        .and_then(serde_json::Value::as_array)
+        .map(|all| all.iter().filter_map(serde_json::Value::as_f64).collect())
+        .unwrap_or_default();
+    if coefficients.len() != 3 {
+        return String::new();
+    }
+    let fitted_over = correction
+        .get("fitted_over")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or("an unrecorded span");
+    let residual = number("worst_after_arcsec").unwrap_or(f64::NAN);
+    let wide: Vec<String> = correction
+        .get("out_of_sample")
+        .and_then(serde_json::Value::as_array)
+        .map(|all| {
+            all.iter()
+                .filter_map(|span| {
+                    Some(format!(
+                        "{} to {:.2} arcsec",
+                        span.get("label")?.as_str()?,
+                        span.get("worst_after_arcsec")?.as_f64()?
+                    ))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "/// The bija: a quadratic correction to the Moon's mean longitude,\n\
+         /// in arcseconds, against Julian centuries from J2000.\n\
+         ///\n\
+         /// ELP2000-82B's constants are fitted to DE200/LE200, and a lunar\n\
+         /// theory ages through the tidal acceleration its source ephemeris\n\
+         /// assumed — a term in the square of the time. These three numbers\n\
+         /// remove it. The tradition has the device and the name already\n\
+         /// (ADR-0027).\n\
+         ///\n\
+         /// **Provenance.** Fitted over {fitted_over} against the reference\n\
+         /// named in the manifest, and scored on spans it never saw:\n\
+         /// {residual:.3} arcsec where fitted, {}. Refitting is a\n\
+         /// calculation-version change under ADR-0020. A consumer who wants\n\
+         /// the theory as its authors published it turns it off.\n\
+         pub const MOON_BIJA_ARCSEC: [f64; 3] = [{:?}, {:?}, {:?}];\n",
+        if wide.is_empty() {
+            "not scored outside it".to_string()
+        } else {
+            wide.join(" and ")
+        },
+        coefficients[0],
+        coefficients[1],
+        coefficients[2]
+    );
+    let _ = writeln!(
+        out,
+        "/// The span the bija was fitted over, for provenance.\n\
+         pub const MOON_BIJA_FITTED_OVER: &str = \"{fitted_over}\";"
+    );
+    out
+}
+
 /// Positions this tier's tables must reproduce, computed here from the
 /// truncated series and checked in the crate's own tests.
 ///
@@ -404,9 +506,8 @@ pub(crate) fn generate(root: &Path, vsop: Option<&str>, elp: Option<&str>) -> i3
         }
     };
 
-    let planets_ladder =
-        Ladder::measure(&VSOP_LADDER, |threshold| planet_error(&series, threshold));
-    let moon_ladder = Ladder::measure(&ELP_LADDER, |threshold| moon_error(&theory, threshold));
+    let planets_ladder = Ladder::of(&VSOP_LADDER, &planet_errors(&series, &VSOP_LADDER));
+    let moon_ladder = Ladder::of(&ELP_LADDER, &moon_errors(&theory, &ELP_LADDER));
 
     let mut outputs = Vec::new();
     let mut emitted = Vec::new();
@@ -414,6 +515,7 @@ pub(crate) fn generate(root: &Path, vsop: Option<&str>, elp: Option<&str>) -> i3
         let (planet_threshold, planet_error_value) =
             planets_ladder.choose(tier.planet_target_arcsec);
         let (moon_threshold, moon_error_value) = moon_ladder.choose(tier.moon_target_arcsec);
+        let bija = bija_block(root);
         let planets_label = if planet_threshold == 0.0 {
             "the whole theory".to_string()
         } else {
@@ -462,7 +564,7 @@ pub(crate) fn generate(root: &Path, vsop: Option<&str>, elp: Option<&str>) -> i3
              const fn t(amplitude: f64, phase: f64, frequency: f64, power: u8) -> Term {{\n    \
              Term::new(amplitude, phase, frequency, power)\n\
              }}\n\
-             \n{planets}\n{moon}\n{checkpoints}\n",
+             \n{planets}\n{moon}\n{bija}\n{checkpoints}\n",
             tier.name, tier.purpose
         );
         // The size that matters is what the data costs in a binary, not

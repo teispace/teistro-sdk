@@ -37,6 +37,10 @@ full = []
 # adapter's floor measurements turn it on; nothing else does.
 ingest = []
 
+[dependencies]
+teistro-core = { path = "../core" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+
 [dev-dependencies]
 
 [lints]
