@@ -133,6 +133,7 @@ mod intl;
 mod lints;
 mod lunisolar;
 mod measure;
+mod moon;
 mod node_binding;
 mod package;
 mod panchanga;
@@ -159,9 +160,52 @@ use std::process::{self, Command};
 use regex::Regex;
 use serde_json::Value;
 
+/// The passes that write a generated page and gate it.
+///
+/// Every one has the same two front doors: `cargo xtask <name>` writes
+/// the page, and `check-<name>` regenerates it in memory and fails on any
+/// difference, so a checked-in page can never drift from its sources.
+/// One shape, so one table rather than thirty arms — and a new pass is a
+/// row here instead of two arms in the dispatch that can disagree.
+fn generated_page(command: &str) -> Option<i32> {
+    type Pass = fn(&Path) -> i32;
+    let checking = command.starts_with("check-");
+    let name = command.strip_prefix("check-").unwrap_or(command);
+    let (generate, check): (Pass, Pass) = match name {
+        "chalit" => (chalit::generate, chalit::check_generated),
+        "panchanga" => (panchanga::generate, panchanga::check_generated),
+        "vargas" => (vargas::generate, vargas::check_generated),
+        "state" => (state::generate, state::check_generated),
+        "aspect" => (aspect::generate, aspect::check_generated),
+        "points" => (points::generate, points::check_generated),
+        "houses" => (houses::generate, houses::check_generated),
+        "absence" => (absence::generate, absence::check_generated),
+        "serial" => (serial::generate, serial::check_generated),
+        "schema" => (schema::generate, schema::check_generated),
+        "almanac" => (almanac::generate, almanac::check_generated),
+        "lunisolar" => (lunisolar::generate, lunisolar::check_generated),
+        "topocentric" => (topocentric::generate, topocentric::check_generated),
+        "batching" => (batching::generate, batching::check_generated),
+        "surface" => (surface::generate, surface::check_generated),
+        _ => return None,
+    };
+    let root = repo_root();
+    Some(if checking {
+        check(&root)
+    } else {
+        generate(&root)
+    })
+}
+
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
-    let code = match args.first().map(String::as_str) {
+    let Some(command) = args.first().map(String::as_str) else {
+        std::process::exit(usage());
+    };
+    if let Some(code) = generated_page(command) {
+        std::process::exit(code);
+    }
+    let code = match Some(command) {
         Some("check-docs") => check_docs(),
         Some("check-dco") => match args.as_slice() {
             [_, base, head] => check_dco(base, head),
@@ -180,37 +224,8 @@ fn main() {
         Some("check-python") => python_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
         Some("check-lints") => lints::check(&repo_root()),
-        Some("check-chalit") => chalit::check_generated(&repo_root()),
-        Some("chalit") => chalit::generate(&repo_root()),
-        Some("check-panchanga") => panchanga::check_generated(&repo_root()),
-        Some("panchanga") => panchanga::generate(&repo_root()),
-        Some("check-vargas") => vargas::check_generated(&repo_root()),
-        Some("vargas") => vargas::generate(&repo_root()),
-        Some("check-state") => state::check_generated(&repo_root()),
-        Some("state") => state::generate(&repo_root()),
-        Some("check-aspect") => aspect::check_generated(&repo_root()),
-        Some("aspect") => aspect::generate(&repo_root()),
-        Some("check-points") => points::check_generated(&repo_root()),
-        Some("points") => points::generate(&repo_root()),
-        Some("check-houses") => houses::check_generated(&repo_root()),
-        Some("houses") => houses::generate(&repo_root()),
-        Some("check-absence") => absence::check_generated(&repo_root()),
-        Some("absence") => absence::generate(&repo_root()),
+        Some("moon") => moon::generate(&repo_root()),
         Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
-        Some("check-almanac") => almanac::check_generated(&repo_root()),
-        Some("check-lunisolar") => lunisolar::check_generated(&repo_root()),
-        Some("check-topocentric") => topocentric::check_generated(&repo_root()),
-        Some("check-batching") => batching::check_generated(&repo_root()),
-        Some("batching") => batching::generate(&repo_root()),
-        Some("topocentric") => topocentric::generate(&repo_root()),
-        Some("lunisolar") => lunisolar::generate(&repo_root()),
-        Some("almanac") => almanac::generate(&repo_root()),
-        Some("check-schema") => schema::check_generated(&repo_root()),
-        Some("schema") => schema::generate(&repo_root()),
-        Some("check-serial") => serial::check_generated(&repo_root()),
-        Some("serial") => serial::generate(&repo_root()),
-        Some("check-surface") => surface::check_generated(&repo_root()),
-        Some("surface") => surface::generate(&repo_root()),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
         Some("check-site") => site::check(&repo_root()),
@@ -264,7 +279,7 @@ fn main() {
 
 fn usage() -> i32 {
     eprintln!(
-        "usage: cargo xtask <check-absence | absence | vsop [DIR] | check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-almanac | almanac | check-lunisolar | lunisolar | check-topocentric | topocentric | check-batching | batching | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <check-absence | absence | vsop [DIR] | moon | check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-almanac | almanac | check-lunisolar | lunisolar | check-topocentric | topocentric | check-batching | batching | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
     );
     2
 }

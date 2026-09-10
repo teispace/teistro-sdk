@@ -8,6 +8,16 @@
   "engine_profile": "compatible",
   "rows": [
     {
+      "body": "Sun",
+      "mean_arcsec": 0.07573410498487158,
+      "scatter_arcsec": 0.07195651852767003,
+      "worst_arcsec": 0.1476906235125416,
+      "radius_relative": 3.2629195377791167e-8,
+      "at_1800_arcsec": 0.1475065599403977,
+      "at_2100_arcsec": 0.05715793783969874,
+      "at_2400_arcsec": 0.0757745329171792
+    },
+    {
       "body": "Mercury",
       "mean_arcsec": 0.1248280530113974,
       "scatter_arcsec": 0.24834365503471903,
