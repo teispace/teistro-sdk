@@ -33,6 +33,7 @@ to `accepted` when the maintainer confirms it in `QUESTIONS.md`.
 | [0024](adr-0024-the-default-profile.md) | The default profile is `parashari-classical`, the texts as read, inheriting nothing else | accepted 2026-09-07 | Q34 |
 | [0025](adr-0025-v1-is-the-whole-feature-universe.md) | v1.0 is the whole feature universe: Western and Hellenistic move from v1.x into v1 (supersedes ADR-0005's v1-scope clause) | accepted 2026-09-10 | Q4 (revised) |
 | [0026](adr-0026-chart-geometry-and-the-first-party-renderer.md) | Chart layouts as cited rows a consumer can extend, geometry in Phase 4, and an optional first-party SVG renderer above the core | accepted 2026-09-10 | Q36 |
+| [0027](adr-0027-the-lunar-theory-and-its-bija.md) | ELP2000-82B with a quadratic bija; tier bounds per body and per span; `reference` budget raised to 4 MB (amends 0013 and 0021) | accepted 2026-09-10 | Q37 |
 
 ## Template
 

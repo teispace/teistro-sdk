@@ -182,9 +182,17 @@ binding, the conformance kit run against every tier, the accuracy
 document with worst-case error per body, century and tier, and the
 nakshatra and tithi boundary timing error published.
 
-Exit: a full chart computes with nothing but the SDK installed; the
-`standard` tier meets its accuracy target against Teimeris; sizes per tier
-are within budget.
+Exit: a full chart computes with nothing but the SDK installed; every
+tier meets **the bounds ADR-0027 fixed per body and per span** against
+Teimeris; sizes per tier are within budget.
+
+The single-number targets this exit once carried were falsified by the
+measurements that opened the phase, and the corrected ones are ADR-0027's:
+the Moon by ELP2000-82B with a quadratic bija (0.26″ over the span it is
+fitted to, 3.0″ over 1800 to 2400), the planets at 1″ for Mercury to
+Saturn but 4.7″ and 6.6″ for Uranus and Neptune, which is VSOP87's own
+age and not a truncation that can be mended. `reference`'s budget is 4 MB
+rather than 1, because a fitted Moon alone is 3.76 MB.
 
 ## Phase 4: Chart core and panchanga day (now, beside Phase 3)
 
@@ -478,7 +486,7 @@ asks for.
 | M0 decisions, repository, scaffolding, kernel designs | 0 | ADRs accepted; CI green on the docs; `cargo deny` green |
 | M1 first parity computation in two bindings with typed intl | 1 | parity gate |
 | M2 astronomy layer conformant | 2 | accuracy document |
-| M3 built-in ephemeris at three tiers | 3 | conformance kit, size gates |
+| M3 built-in ephemeris at three tiers, each inside ADR-0027's per-body bounds | 3 | conformance kit, size gates |
 | M4 foundation, panchanga and chart geometry golden | 4 | conformance run |
 | M5 strengths and dashas golden | 5 | conformance run |
 | M6 rules and text parity, corpus migrated, renderer deterministic | 6 | rule, snapshot and SVG-determinism gates |

@@ -148,10 +148,21 @@ struct MoonRow {
 #[derive(Debug, serde::Deserialize)]
 struct MoonCorrection {
     degree: usize,
-    worst_before_arcsec: f64,
+    #[serde(default)]
+    fitted_over: String,
     worst_after_arcsec: f64,
     worst_after_tithi_seconds: f64,
+    #[serde(default)]
+    out_of_sample: Vec<MoonOutOfSample>,
     bytes: usize,
+}
+
+/// One span a correction was tested on but not fitted over.
+#[derive(Debug, serde::Deserialize)]
+struct MoonOutOfSample {
+    label: String,
+    worst_before_arcsec: f64,
+    worst_after_arcsec: f64,
 }
 
 /// The recorded lunar measurement.
@@ -429,47 +440,7 @@ fn routes_section(moon: &MoonFloor, fitted: Option<&FitRecord>) -> String {
         "The theory is 19.4″ over the span `standard` claims, and that is 44 seconds of tithi against a budget of one. There are three ways out and all three are now measured rather than argued.\n"
     );
 
-    let _ = writeln!(out, "### Correct the theory's mean longitude\n");
-    let _ = writeln!(
-        out,
-        "The drift is not noise. A lunar theory ages mainly through the tidal acceleration its source ephemeris assumed, which enters the mean longitude as a term in the **square** of the time — so if that is what the difference is, a polynomial of two or three coefficients removes most of it. The tradition has the same idea and the same name for it: a *bija*, a seed correction that re-anchors an old theory to the present sky, which this SDK already computes for the Surya Siddhanta.\n"
-    );
-    let _ = writeln!(out, "| degree | cost | before | after | as tithi |");
-    let _ = writeln!(out, "|---:|---:|---:|---:|---:|");
-    for correction in &moon.corrections {
-        let _ = writeln!(
-            out,
-            "| {} | {} bytes | {:.2}″ | {:.2}″ | {:.1} s |",
-            correction.degree,
-            correction.bytes,
-            correction.worst_before_arcsec,
-            correction.worst_after_arcsec,
-            correction.worst_after_tithi_seconds
-        );
-    }
-    let best = moon
-        .corrections
-        .iter()
-        .min_by(|a, b| a.worst_after_arcsec.total_cmp(&b.worst_after_arcsec));
-    if let Some(best) = best {
-        let quadratic = moon.corrections.iter().find(|c| c.degree == 2);
-        if let Some(quadratic) = quadratic {
-            let _ = writeln!(
-                out,
-                "\n**It saturates at the square**, which is the physics rather than a coincidence: degree three and four buy nothing over degree two, so what the polynomial is removing is the tidal term and not a curve fitted to noise. {} bytes take the Moon from {:.2}″ to {:.2}″ — {:.0} seconds of tithi to {:.1} — over six centuries. What remains is the periodic part of the difference, which no polynomial can reach.\n",
-                quadratic.bytes,
-                quadratic.worst_before_arcsec,
-                quadratic.worst_after_arcsec,
-                quadratic.worst_before_arcsec * 2.25,
-                quadratic.worst_after_tithi_seconds
-            );
-        }
-        let _ = writeln!(
-            out,
-            "The best of them is degree {} at {:.2}″.\n",
-            best.degree, best.worst_after_arcsec
-        );
-    }
+    out.push_str(&bija_route(moon));
 
     out.push_str(&fitted_route(fitted));
 
@@ -478,6 +449,102 @@ fn routes_section(moon: &MoonFloor, fitted: Option<&FitRecord>) -> String {
         out,
         "The span table above is this route's price list. The theory holds under four seconds of tithi over 1900 to 2100 and under eight over 1850 to 2150, so a tier that claims three centuries rather than six needs nothing built at all — it needs the claim to say so.\n"
     );
+    out
+}
+
+/// The route that corrects the theory's mean longitude.
+fn bija_route(moon: &MoonFloor) -> String {
+    let mut out = String::new();
+    let _ = writeln!(out, "### Correct the theory's mean longitude\n");
+    let _ = writeln!(
+        out,
+        "The drift is not noise. A lunar theory ages mainly through the tidal acceleration its source ephemeris assumed, which enters the mean longitude as a term in the **square** of the time — so if that is what the difference is, a polynomial of two or three coefficients removes most of it. The tradition has the same idea and the same name for it: a *bija*, a seed correction that re-anchors an old theory to the present sky, which this SDK already computes for the Surya Siddhanta.\n"
+    );
+    let fitted_over = moon
+        .corrections
+        .first()
+        .map_or("its own span", |correction| correction.fitted_over.as_str());
+    let _ = writeln!(
+        out,
+        "The coefficients below are fitted over **{fitted_over}** and then scored on spans they never saw. A polynomial judged on the samples it was fitted to reports how well it fits and never whether it predicts, and the difference is the whole question: a tidal term is a fact about the theory and holds wherever the theory is used, where an overfitted curve diverges the moment it leaves its window.\n"
+    );
+    let _ = write!(out, "| degree | cost | fitted span |");
+    if let Some(first) = moon.corrections.first() {
+        for span in &first.out_of_sample {
+            let _ = write!(out, " {} |", span.label);
+        }
+    }
+    let _ = writeln!(out);
+    let _ = write!(out, "|---:|---:|---:|");
+    if let Some(first) = moon.corrections.first() {
+        for _ in &first.out_of_sample {
+            let _ = write!(out, "---:|");
+        }
+    }
+    let _ = writeln!(out);
+    for correction in &moon.corrections {
+        let _ = write!(
+            out,
+            "| {} | {} bytes | {:.3}″ |",
+            correction.degree, correction.bytes, correction.worst_after_arcsec
+        );
+        for span in &correction.out_of_sample {
+            let _ = write!(out, " {:.2}″ |", span.worst_after_arcsec);
+        }
+        let _ = writeln!(out);
+    }
+    let uncorrected: Vec<String> = moon
+        .corrections
+        .first()
+        .map(|correction| {
+            correction
+                .out_of_sample
+                .iter()
+                .map(|span| format!("{:.2}″ over {}", span.worst_before_arcsec, span.label))
+                .collect()
+        })
+        .unwrap_or_default();
+    if !uncorrected.is_empty() {
+        let _ = writeln!(
+            out,
+            "\nUncorrected, the theory is {}.\n",
+            uncorrected.join(" and ")
+        );
+    }
+
+    let quadratic = moon.corrections.iter().find(|c| c.degree == 2);
+    let quartic = moon.corrections.iter().find(|c| c.degree == 4);
+    if let (Some(quadratic), Some(quartic)) = (quadratic, quartic) {
+        let _ = writeln!(
+            out,
+            "**Two things settle it.** The quadratic is fitted over two centuries and repairs eight, which is what a fact about the theory does and what a curve fitted to a window does not. And the quartic is **better on its own span and worse off it** — {:.3}″ against {:.3}″ where it was fitted, then {} — which is what overfitting looks like from the outside. The model the evidence chooses is the square, and the square is what the physics predicts: a lunar theory ages through the tidal acceleration its source ephemeris assumed, and that enters the mean longitude in the square of the time.\n",
+            quartic.worst_after_arcsec,
+            quadratic.worst_after_arcsec,
+            quartic
+                .out_of_sample
+                .iter()
+                .zip(&quadratic.out_of_sample)
+                .map(|(bad, good)| format!(
+                    "{:.2}″ against {:.2}″ over {}",
+                    bad.worst_after_arcsec, good.worst_after_arcsec, bad.label
+                ))
+                .collect::<Vec<_>>()
+                .join(" and ")
+        );
+        let _ = writeln!(
+            out,
+            "So {} bytes buy a Moon that is **second-accurate over the span they are fitted to** ({:.3}″, {:.2} s of tithi) and stays inside {:.0} seconds of tithi over the six centuries `standard` claims.\n",
+            quadratic.bytes,
+            quadratic.worst_after_arcsec,
+            quadratic.worst_after_tithi_seconds,
+            quadratic
+                .out_of_sample
+                .first()
+                .map_or(0.0, |span| span.worst_after_arcsec)
+                * 2.25
+        );
+    }
+
     out
 }
 

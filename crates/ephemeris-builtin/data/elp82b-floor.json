@@ -156,52 +156,104 @@
   "corrections": [
     {
       "degree": 1,
+      "fitted_over": "1900 to 2100",
       "coefficients_arcsec": [
-        -2.017830284494976,
-        -2.254072340666872
+        -0.43525259656640475,
+        -0.3886930426292392
       ],
-      "worst_before_arcsec": 19.397764189801883,
-      "worst_after_arcsec": 8.478089930356536,
-      "worst_after_tithi_seconds": 19.06974304859952,
+      "worst_before_arcsec": 1.6852639388749935,
+      "worst_after_arcsec": 0.8670760147663132,
+      "worst_after_tithi_seconds": 1.9503115608614359,
+      "out_of_sample": [
+        {
+          "label": "1800 to 2400",
+          "worst_before_arcsec": 19.397764189801883,
+          "worst_after_arcsec": 17.419763788310004
+        },
+        {
+          "label": "1700 to 2500",
+          "worst_before_arcsec": 29.7423165867351,
+          "worst_after_arcsec": 27.373004847046243
+        }
+      ],
       "bytes": 16
     },
     {
       "degree": 2,
+      "fitted_over": "1900 to 2100",
       "coefficients_arcsec": [
-        -0.1426741296784546,
-        -0.3789418549876826,
-        -0.9375909126797658
+        -0.1179182049433601,
+        -0.38871910705571483,
+        -0.9520031770099446
       ],
-      "worst_before_arcsec": 19.397764189801883,
-      "worst_after_arcsec": 3.1993200434306344,
-      "worst_after_tithi_seconds": 7.196221278569375,
+      "worst_before_arcsec": 1.6852639388749935,
+      "worst_after_arcsec": 0.26088640079329517,
+      "worst_after_tithi_seconds": 0.5868110233401204,
+      "out_of_sample": [
+        {
+          "label": "1800 to 2400",
+          "worst_before_arcsec": 19.397764189801883,
+          "worst_after_arcsec": 2.9952594120612788
+        },
+        {
+          "label": "1700 to 2500",
+          "worst_before_arcsec": 29.7423165867351,
+          "worst_after_arcsec": 4.457405433837135
+        }
+      ],
       "bytes": 24
     },
     {
       "degree": 3,
+      "fitted_over": "1900 to 2100",
       "coefficients_arcsec": [
-        -0.12099635762529823,
-        -0.3907667491198112,
-        -0.9523715245143649,
-        0.004927005505592167
+        -0.11791821940302455,
+        -0.38977538554123325,
+        -0.9520031047116222,
+        0.0017604641511082817
       ],
-      "worst_before_arcsec": 19.397764189801883,
-      "worst_after_arcsec": 3.2442407932871817,
-      "worst_after_tithi_seconds": 7.297261390711562,
+      "worst_before_arcsec": 1.6852639388749935,
+      "worst_after_arcsec": 0.2614917502274377,
+      "worst_after_tithi_seconds": 0.58817263406359,
+      "out_of_sample": [
+        {
+          "label": "1800 to 2400",
+          "worst_before_arcsec": 19.397764189801883,
+          "worst_after_arcsec": 3.0837205251682196
+        },
+        {
+          "label": "1700 to 2500",
+          "worst_before_arcsec": 29.7423165867351,
+          "worst_after_arcsec": 4.627943048522254
+        }
+      ],
       "bytes": 32
     },
     {
       "degree": 4,
+      "fitted_over": "1900 to 2100",
       "coefficients_arcsec": [
-        -0.12126246198200961,
-        -0.404062993939351,
-        -0.9503768611812915,
-        0.009580774016181263,
-        -0.001163473981828837
+        -0.11877737784271972,
+        -0.3897751503164695,
+        -0.9434115202277286,
+        0.0017599152933219428,
+        -0.01002351531761393
       ],
-      "worst_before_arcsec": 19.397764189801883,
-      "worst_after_arcsec": 3.2262597971365974,
-      "worst_after_tithi_seconds": 7.2568167883109975,
+      "worst_before_arcsec": 1.6852639388749935,
+      "worst_after_arcsec": 0.25954106742755906,
+      "worst_after_tithi_seconds": 0.5837849689092238,
+      "out_of_sample": [
+        {
+          "label": "1800 to 2400",
+          "worst_before_arcsec": 19.397764189801883,
+          "worst_after_arcsec": 4.532143440958159
+        },
+        {
+          "label": "1700 to 2500",
+          "worst_before_arcsec": 29.7423165867351,
+          "worst_after_arcsec": 9.099461756436732
+        }
+      ],
       "bytes": 40
     }
   ]

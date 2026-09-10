@@ -175,11 +175,29 @@ fn polynomial(xs: &[f64], ys: &[f64], degree: usize) -> Option<Vec<f64>> {
 #[derive(Debug, Serialize)]
 struct Correction {
     degree: usize,
+    /// The span the coefficients were fitted over.
+    fitted_over: &'static str,
     coefficients_arcsec: Vec<f64>,
     worst_before_arcsec: f64,
     worst_after_arcsec: f64,
     worst_after_tithi_seconds: f64,
+    /// The same correction applied outside the span it was fitted over,
+    /// which is the check that it is physics and not a curve.
+    ///
+    /// A polynomial fitted and then judged on its own samples reports how
+    /// well it fits, never whether it predicts. A tidal term is a fact
+    /// about the theory and holds wherever the theory is used; an
+    /// overfitted curve diverges the moment it leaves its window.
+    out_of_sample: Vec<OutOfSample>,
     bytes: usize,
+}
+
+/// One span a fitted correction is tested on but was not fitted over.
+#[derive(Debug, Serialize)]
+struct OutOfSample {
+    label: &'static str,
+    worst_before_arcsec: f64,
+    worst_after_arcsec: f64,
 }
 
 /// One span, measured with every term kept.
@@ -355,9 +373,15 @@ fn main() -> ExitCode {
     // span `standard` claims.
     let mut corrections = Vec::new();
     {
+        // Fitted over a **narrow** window and then judged on wide ones.
+        // Fitting over the span it is later scored on would report how
+        // well a polynomial fits and never whether it predicts.
+        const FIT_FROM: f64 = 2_415_021.0; // 1900
+        const FIT_TO: f64 = 2_488_070.0; // 2100
+        const FIT_LABEL: &str = "1900 to 2100";
         let sample_jds: Vec<f64> = (0..)
-            .map(|index| 3.0_f64.mul_add(f64::from(index), 2_378_497.0))
-            .take_while(|jd| *jd <= 2_597_641.0)
+            .map(|index| 3.0_f64.mul_add(f64::from(index), FIT_FROM))
+            .take_while(|jd| *jd <= FIT_TO)
             .collect();
         let sample_request = PositionRequest::new(&sample_jds, TimeScale::Tt, &bodies, frame);
         let sample_answered = provider
@@ -389,34 +413,110 @@ fn main() -> ExitCode {
             .zip(&theories)
             .map(|(engine, theory)| separation_arcsec(*theory, *engine))
             .fold(0.0_f64, f64::max);
+        // Applying a mean-longitude correction is a rotation about the
+        // ecliptic pole, which is one place rather than four.
+        let corrected_by = |coefficients: &[f64], century: f64, theory: [f64; 3]| {
+            let correction_arcsec: f64 = coefficients
+                .iter()
+                .enumerate()
+                .map(|(k, c)| c * century.powi(i32::try_from(k).unwrap_or(0)))
+                .sum();
+            let angle = (correction_arcsec / 3_600.0).to_radians();
+            let (sin, cos) = angle.sin_cos();
+            [
+                theory[0] * cos - theory[1] * sin,
+                theory[0] * sin + theory[1] * cos,
+                theory[2],
+            ]
+        };
+
+        // The theory's positions over a wide span do not depend on the
+        // degree of the correction, so they are computed once per span
+        // and reused. Recomputing them inside the degree loop cost four
+        // passes over 37 872 terms at every one of ninety thousand
+        // instants, for the same numbers each time.
+        struct Wide {
+            label: &'static str,
+            centuries: Vec<f64>,
+            theories: Vec<[f64; 3]>,
+            engines: Vec<[f64; 3]>,
+            raw_worst: f64,
+        }
+        let mut wides = Vec::new();
+        for (label, from, to) in [
+            ("1800 to 2400", 2_378_497.0, 2_597_641.0),
+            ("1700 to 2500", 2_342_338.0, 2_634_166.0),
+        ] {
+            let wide_jds: Vec<f64> = (0..)
+                .map(|index| 6.0_f64.mul_add(f64::from(index), from))
+                .take_while(|jd| *jd <= to)
+                .collect();
+            let wide_request = PositionRequest::new(&wide_jds, TimeScale::Tt, &bodies, frame);
+            let answered_wide = provider
+                .positions(&wide_request)
+                .expect("the engine in the isolated frame");
+            let mut wide = Wide {
+                label,
+                centuries: Vec::with_capacity(wide_jds.len()),
+                theories: Vec::with_capacity(wide_jds.len()),
+                engines: Vec::with_capacity(wide_jds.len()),
+                raw_worst: 0.0,
+            };
+            for (index, jd) in wide_jds.iter().enumerate() {
+                let cell = answered_wide.at(index, 0).expect("a cell");
+                let engine = direction_of(cell.lon, cell.lat);
+                let (theory_direction, _) = unit(position(&theory, *jd, 0.0));
+                wide.raw_worst = wide
+                    .raw_worst
+                    .max(separation_arcsec(theory_direction, engine));
+                wide.centuries.push((jd - 2_451_545.0) / 36_525.0);
+                wide.theories.push(theory_direction);
+                wide.engines.push(engine);
+            }
+            wides.push(wide);
+        }
+
         for degree in [1usize, 2, 3, 4] {
             let Some(coefficients) = polynomial(&centuries, &differences, degree) else {
                 continue;
             };
-            let mut worst_after: f64 = 0.0;
-            for ((century, engine), theory) in centuries.iter().zip(&engines).zip(&theories) {
-                let correction_arcsec: f64 = coefficients
-                    .iter()
-                    .enumerate()
-                    .map(|(k, c)| c * century.powi(k as i32))
-                    .sum();
-                // Rotate the theory's direction about the pole by the
-                // correction, which is what adjusting a mean longitude does.
-                let angle = (correction_arcsec / 3_600.0).to_radians();
-                let (sin, cos) = angle.sin_cos();
-                let corrected = [
-                    theory[0] * cos - theory[1] * sin,
-                    theory[0] * sin + theory[1] * cos,
-                    theory[2],
-                ];
-                worst_after = worst_after.max(separation_arcsec(corrected, *engine));
-            }
+            let worst_after = centuries
+                .iter()
+                .zip(&engines)
+                .zip(&theories)
+                .map(|((century, engine), theory)| {
+                    separation_arcsec(corrected_by(&coefficients, *century, *theory), *engine)
+                })
+                .fold(0.0_f64, f64::max);
+
+            let out_of_sample = wides
+                .iter()
+                .map(|wide| OutOfSample {
+                    label: wide.label,
+                    worst_before_arcsec: wide.raw_worst,
+                    worst_after_arcsec: wide
+                        .centuries
+                        .iter()
+                        .zip(&wide.engines)
+                        .zip(&wide.theories)
+                        .map(|((century, engine), theory)| {
+                            separation_arcsec(
+                                corrected_by(&coefficients, *century, *theory),
+                                *engine,
+                            )
+                        })
+                        .fold(0.0_f64, f64::max),
+                })
+                .collect();
+
             corrections.push(Correction {
                 degree,
+                fitted_over: FIT_LABEL,
                 coefficients_arcsec: coefficients.clone(),
                 worst_before_arcsec: before,
                 worst_after_arcsec: worst_after,
                 worst_after_tithi_seconds: worst_after * TITHI_SECONDS_PER_ARCSEC,
+                out_of_sample,
                 bytes: coefficients.len() * 8,
             });
         }

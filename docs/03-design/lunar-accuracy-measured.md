@@ -138,21 +138,37 @@ most of it. The tradition has the same idea and the same name for it: a
 *bija*, a seed correction that re-anchors an old theory to the present
 sky, which this SDK already computes for the Surya Siddhanta.
 
-| degree | cost | before | after | as tithi |
+The coefficients below are fitted over **1900 to 2100** and then scored
+on spans they never saw. A polynomial judged on the samples it was
+fitted to reports how well it fits and never whether it predicts, and
+the difference is the whole question: a tidal term is a fact about the
+theory and holds wherever the theory is used, where an overfitted curve
+diverges the moment it leaves its window.
+
+| degree | cost | fitted span | 1800 to 2400 | 1700 to 2500 |
 |---:|---:|---:|---:|---:|
-| 1 | 16 bytes | 19.40″ | 8.48″ | 19.1 s |
-| 2 | 24 bytes | 19.40″ | 3.20″ | 7.2 s |
-| 3 | 32 bytes | 19.40″ | 3.24″ | 7.3 s |
-| 4 | 40 bytes | 19.40″ | 3.23″ | 7.3 s |
+| 1 | 16 bytes | 0.867″ | 17.42″ | 27.37″ |
+| 2 | 24 bytes | 0.261″ | 3.00″ | 4.46″ |
+| 3 | 32 bytes | 0.261″ | 3.08″ | 4.63″ |
+| 4 | 40 bytes | 0.260″ | 4.53″ | 9.10″ |
 
-**It saturates at the square**, which is the physics rather than a
-coincidence: degree three and four buy nothing over degree two, so what
-the polynomial is removing is the tidal term and not a curve fitted to
-noise. 24 bytes take the Moon from 19.40″ to 3.20″ — 44 seconds of
-tithi to 7.2 — over six centuries. What remains is the periodic part
-of the difference, which no polynomial can reach.
+Uncorrected, the theory is 19.40″ over 1800 to 2400 and 29.74″ over
+1700 to 2500.
 
-The best of them is degree 2 at 3.20″.
+**Two things settle it.** The quadratic is fitted over two centuries and
+repairs eight, which is what a fact about the theory does and what a
+curve fitted to a window does not. And the quartic is **better on its
+own span and worse off it** — 0.260″ against 0.261″ where it was
+fitted, then 4.53″ against 3.00″ over 1800 to 2400 and 9.10″
+against 4.46″ over 1700 to 2500 — which is what overfitting looks
+like from the outside. The model the evidence chooses is the square, and
+the square is what the physics predicts: a lunar theory ages through the
+tidal acceleration its source ephemeris assumed, and that enters the
+mean longitude in the square of the time.
+
+So 24 bytes buy a Moon that is **second-accurate over the span they are
+fitted to** (0.261″, 0.59 s of tithi) and stays inside 7 seconds of
+tithi over the six centuries `standard` claims.
 
 ### Replace the theory with a fitted table
 
