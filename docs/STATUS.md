@@ -596,8 +596,26 @@ provider's DUT1).
    this one does. The module's own cost claim was stale by the same
    reading and is corrected to the measured forty milliseconds.
 
-   **The next step is the Teimeris adapter's own generated dispatch**,
-   which is the engine's side of the passthrough route.
+   **The engine's side is researched and costed, not yet built.** The
+   maintainer handed me Teimeris on 2026-09-10
+   (`~/Projects/Teispace/teistro/teimeris`, `teispace/teimeris`), so its
+   conventions apply: `tools/ci/verify.sh all` is the arbiter, generated
+   files are generated, and *benchmark before adding*. A dispatcher
+   cannot live in the C core, which gates its size and speed against
+   upstream, nor in `teimeris` or `teimeris-sys`, which have **no
+   dependencies on purpose** so that they audit to nothing and build
+   `--offline`. It wants a separate generated crate from the same IDL.
+   The register hazard is moot there: `teimeris-sys` declares every
+   function with its real C types, so the dispatcher writes typed Rust
+   and never a machine word.
+
+   Costed rather than assumed (`adapters/…/tests/dispatch_cost.rs`): the
+   relay's floor is **18.70 µs against a 2.29 µs call, 8.15×** — but
+   `positions` is the cheapest thing the engine does, and against an
+   eclipse search the relay is under a per cent. It confirms the shape:
+   this path is for what the port does not cover and is never the hot
+   loop. Teimeris's roadmap is untouched, because their convention opens
+   an item when work starts and this is a costed design.
 
    **Reach.** The port names eight operations; Teimeris's public header
    names 161 functions, 57 structs and 40 enums, so a consumer wanting an

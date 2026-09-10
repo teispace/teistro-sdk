@@ -478,9 +478,57 @@ stand between a consumer and their engine, each forwards the two
 methods, with a test that says so: a wrapper that swallowed them would
 quietly close the door this opens.
 
-*What remains for the engine:* the Teimeris adapter generates its
-dispatcher from `tools/idl/teimeris.idl` and answers these two methods.
-The count on the measured page moves when it does.
+*What remains for the engine*, researched 2026-09-10 and costed before
+anything is written, because the engine's own conventions require it —
+*"before adding: benchmark it. Two planned APIs died on a benchmark that
+ran before any code existed."*
+
+**Where the dispatcher can live, and where it cannot.** Not in the C
+core: Teimeris gates its own size and speed against upstream on every
+benchmark, and a JSON parser in the shipped library would be paid for by
+every consumer, most of whom will never call one operation by name. Not
+in `teimeris` or `teimeris-sys` either, and this one is a stated
+decision rather than a preference — both crates have **no dependencies
+on purpose**: *"a package with no dependency tree is one nobody has to
+audit. It also means the crate builds with `--offline` on a machine that
+has never seen crates.io."* So: **a separate generated crate**, from the
+same IDL every other binding is generated from, which leaves those two
+as they are and gives a consumer who does not want it nothing to audit.
+
+**The register hazard is moot there**, which is worth recording because
+it was the reason to fear this. `teimeris-sys` is generated from the IDL
+and declares every function with its real C types, so a dispatcher above
+it writes typed Rust calls and never a machine word. The 82 by-value
+doubles are the compiler's problem, and it has already solved them.
+
+**What it costs**, measured
+(`adapters/ephemeris-teimeris/rust/tests/dispatch_cost.rs`):
+
+| | |
+|---|---:|
+| one `positions` call, three cells | 2.29 µs |
+| parsing the arguments and the answer | 11.06 µs |
+| writing the answer | 7.64 µs |
+| **the relay's floor** | **18.70 µs — 8.15× the call** |
+
+Read the denominator before the ratio: `positions` is the *cheapest*
+thing the engine does. Against an eclipse search or a heliacal
+visibility scan, which run in milliseconds, the relay is under a per
+cent. Against a position it is eight times the work.
+
+**So the cost confirms the shape rather than refusing it**, and it turns
+a claim into a number: this path is for what the port does not cover, it
+is never the hot loop, and the eight typed operations remain the way to
+ask for anything in bulk. That sentence was already in `crate::native`;
+now it has 18.70 µs behind it.
+
+*Not yet opened as an engine roadmap item.* Teimeris's `ROADMAP.md`
+keeps two accounts of itself — a checklist and a prose execution order —
+reconciled by `tools/ci/roadmap.py` by id, with the open count in the
+section heading and a table breaking it down, because those three had
+drifted by twelve items before. Opening an item there is five coupled
+edits, and their convention is to update it when a change *opens* work,
+not when a design is costed. It opens when the work starts.
 
 ### B2. The two entry points, and a proxy in each language
 
