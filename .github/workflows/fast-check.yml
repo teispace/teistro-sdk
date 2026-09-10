@@ -82,6 +82,8 @@ jobs:
         run: cargo xtask check-topocentric
       - name: Batch page (the calls, widths and repeats a batch asks the ephemeris for)
         run: cargo xtask check-batching
+      - name: Absence page (proving a rise or a set does not happen without walking the window)
+        run: cargo xtask check-absence
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)

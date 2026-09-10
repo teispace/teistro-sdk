@@ -1838,6 +1838,7 @@ dependencies = [
  "teistro-ffi",
  "teistro-idl",
  "teistro-intl",
+ "teistro-port-ephemeris",
  "teistro-scenario",
  "teistro-siddhanta",
  "teistro-time",
