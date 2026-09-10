@@ -117,7 +117,22 @@ pub(crate) fn generate(root: &Path) -> i32 {
     write(root, &[Output::new(PAGE, page(solar_error_arcsec(root)))])
 }
 
+/// The page, as the sections it is made of.
 fn page(solar_arcsec: Option<f64>) -> String {
+    let (sensitivity, worst) = sensitivity_section();
+    let mut out = String::new();
+    out.push_str(&opening());
+    out.push_str(&sensitivity);
+    out.push_str(&budget_section(worst, solar_arcsec));
+    out.push_str(&candidates_section(worst));
+    out.push_str(&finding_section(solar_arcsec));
+    out.push_str(&claims_section(worst));
+    out.push_str(&limits_section());
+    fill(&out)
+}
+
+/// What the page is and where its numbers come from.
+fn opening() -> String {
     let mut out = String::new();
     let _ = writeln!(out, "# How accurate the Moon has to be, measured\n");
     let _ = writeln!(
@@ -128,25 +143,29 @@ fn page(solar_arcsec: Option<f64>) -> String {
         out,
         "Phase 3 must choose a lunar theory, and the research page says the tiers are chosen by Moon accuracy first without saying what accuracy. This is the number. Panchanga publishes instants, so an error in the Moon's longitude is not an error in a position — it is an error in a *time*, and this page converts one into the other.\n"
     );
+    out
+}
 
+/// The table of what one arcsecond costs each limb, and the worst of them.
+fn sensitivity_section() -> (String, f64) {
+    let mut out = String::new();
     let _ = writeln!(out, "## What an arcsecond of lunar error costs\n");
     let _ = writeln!(
         out,
-        "A boundary is where a quantity crosses a line of its lattice. An error of `ε` degrees in the quantity moves the crossing by `ε / rate` days, so one arcsecond moves it by `24 / rate` seconds. The rate is the **quantity's**, which is why the same lunar error is worth more in a tithi than in a yoga: a tithi runs on the Moon less the Sun and a yoga on the Moon plus it. The rate used is the slowest the quantity ever moves, because that is the worst case and the Moon's daily motion swings by a third between perigee and apogee.\n"
+        "A boundary is where a quantity crosses a line of its lattice. An error of `e` degrees in the quantity moves the crossing by `e / rate` days, so one arcsecond moves it by `24 / rate` seconds. The rate is the **quantity's**, which is why the same lunar error is worth more in a tithi than in a yoga: a tithi runs on the Moon less the Sun and a yoga on the Moon plus it. The rate used is the slowest the quantity ever moves, because that is the worst case and the Moon's daily motion swings by a third between perigee and apogee.\n"
     );
-
     let _ = writeln!(
         out,
         "| limb | quantity | member width | slowest rate | one arcsecond is | one second needs | one minute needs |"
     );
     let _ = writeln!(out, "|---|---|---:|---:|---:|---:|---:|");
-    let mut worst_seconds_per_arcsec: f64 = 0.0;
+    let mut worst: f64 = 0.0;
     for limb in limbs() {
         let Some(rate) = quantity_least_rate(limb.quantity) else {
             continue;
         };
         let seconds = seconds_per_arcsec(rate);
-        worst_seconds_per_arcsec = worst_seconds_per_arcsec.max(seconds);
+        worst = worst.max(seconds);
         let _ = writeln!(
             out,
             "| {} | {} | {:.1}° | {rate:.3}°/day | {seconds:.2} s | {:.3}″ | {:.2}″ |",
@@ -161,51 +180,127 @@ fn page(solar_arcsec: Option<f64>) -> String {
             60.0 / seconds,
         );
     }
+    (out, worst)
+}
 
+/// What the sensitivity asks of a theory, and what the Sun has spent of it.
+fn budget_section(worst: f64, solar_arcsec: Option<f64>) -> String {
+    let mut out = String::new();
     let _ = writeln!(out, "\n## What that asks of a theory\n");
     let _ = writeln!(
         out,
         "Reading the table the other way: to hold **every** panchanga boundary to one second of clock time, the Moon's longitude must be right to **{:.3}″**, and to hold it to one minute, to **{:.2}″**. The tithi is the binding limb, because its quantity is the slowest.\n",
-        1.0 / worst_seconds_per_arcsec,
-        60.0 / worst_seconds_per_arcsec
+        1.0 / worst,
+        60.0 / worst
     );
-
     if let Some(solar) = solar_arcsec {
         let _ = writeln!(
             out,
             "**The Sun is already spent, and it is cheap.** The floor measurement puts VSOP87's Sun at {solar:.3}″ against the engine, which is {:.2} s of tithi boundary on its own. That leaves the Moon essentially the whole budget rather than half of it, and it means a lunar theory good to a tenth of an arcsecond is not wasted on a Sun good to a seventh.\n",
-            solar * worst_seconds_per_arcsec
+            solar * worst
         );
     }
+    out
+}
 
-    out.push_str(&candidates_section(worst_seconds_per_arcsec, solar_arcsec));
+/// The two lunar theories, weighed against the budget.
+fn candidates_section(worst: f64) -> String {
+    let mut out = String::new();
+    let _ = writeln!(out, "## The candidates\n");
+    let _ = writeln!(
+        out,
+        "| theory | fitted to | published accuracy | as tithi boundary | source |"
+    );
+    let _ = writeln!(out, "|---|---|---|---:|---|");
+    let _ = writeln!(
+        out,
+        "| ELP/MPP02 | DE405 and DE406 | 2.4 m over a century about J2000; 1.4 km over five millennia | {:.3} s and {:.1} s | **cannot be obtained** |",
+        metres_as_seconds(2.4, worst),
+        metres_as_seconds(1_400.0, worst)
+    );
+    let _ = writeln!(
+        out,
+        "| ELP2000-82B | DE200 and LE200 | stated as the theory's own; unmeasured here | unmeasured | CDS VI/79 and IMCCE, both reachable |"
+    );
+    let _ = writeln!(
+        out,
+        "\nA metre at the Moon's mean distance subtends {:.2e}″, which is how the first row's seconds are reached.\n",
+        arcsec_per_metre()
+    );
+    out
+}
 
-    let _ = writeln!(out, "## What the claims measure to\n");
+/// Why the choice is blocked, with every route tried.
+fn finding_section(solar_arcsec: Option<f64>) -> String {
+    let mut out = String::new();
+    let _ = writeln!(out, "## The finding that blocks the choice\n");
+    let _ = writeln!(
+        out,
+        "**ELP/MPP02 cannot be obtained.** ADR-0013 and the research page name it as the SDK's lunar theory. Every route to it was tried on 2026-09-10, and the result is not a broken link but a removal.\n"
+    );
+    let _ = writeln!(out, "| route | result |");
+    let _ = writeln!(out, "|---|---|");
+    let _ = writeln!(
+        out,
+        "| `cyrano-se.obspm.fr`, the address the theory is published at | no answer over FTP or HTTPS |"
+    );
+    let _ = writeln!(
+        out,
+        "| the same path in the Internet Archive | the directory listing is captured, naming `ELP_MAIN.S1/2/3` and `ELP_PERT.S1/2/3`; **not one of the six files was ever captured**, and the directory itself already answered 404 in the August 2022 crawl while its five siblings did not |"
+    );
+    let _ = writeln!(
+        out,
+        "| `ftp.imcce.fr/pub/ephem/moon/` | `elp82b` and nothing later |"
+    );
+    let _ = writeln!(out, "| CDS catalogue VI/79 | ELP2000-82B as well |");
+    let _ = writeln!(
+        out,
+        "| the two public re-implementations that carry data files | **excluded.** One is GPL-3.0 and the other EUPL-1.2, and `deny.toml` refuses copyleft everywhere in the workspace (ADR-0019). The GPL one's files are transformed besides — fourteen files under names of its own, where the publication has six — so they are that project's derived work and not the published series |"
+    );
+    let _ = writeln!(
+        out,
+        "\nSo the choice is between a theory that cannot be had and one that can, and the second has a question over it.\n"
+    );
+    let _ = writeln!(
+        out,
+        "**ELP2000-82B says of itself: \"Constants fitted to JPL's ephemerides DE200/LE200\".** That is the header of `elp82b.f`, the reader its own authors publish, and not an inference from outside. It is the same fit whose age the planetary floor measurement caught: VSOP87 was fitted to DE200 in 1981 and drifts against a modern ephemeris by 4.7 arcseconds at Uranus and 6.6 at Neptune, while holding {} at the Sun.\n",
+        solar_arcsec.map_or_else(|| "well".to_string(), |value| format!("{value:.3}″"))
+    );
+    let _ = writeln!(
+        out,
+        "Whether the Moon inherits that drift is **not known and must not be assumed either way**. A tenth of the planets' worst would still be inside the second-accurate budget; a half of it would not. The measurement is the one the planets had — the whole theory against the engine in the isolated frame — and the harness for it exists.\n"
+    );
+    out
+}
+
+/// The claims, and what each measures to.
+fn claims_section(worst: f64) -> String {
     let claims = vec![
         Claim::stated(
             "the Moon decides the tiers, not the planets",
             verdict_of(true),
-            format!(
-                "one arcsecond of Moon is {worst_seconds_per_arcsec:.2} s of tithi; one arcsecond of a planet is a position nobody times"
-            ),
+            format!("one arcsecond of Moon is {worst:.2} s of tithi; one arcsecond of a planet is a position nobody times"),
         ),
         Claim::stated(
             "a second-accurate panchanga is reachable with an analytic theory",
-            verdict_of(metres_as_seconds(2.4, worst_seconds_per_arcsec) < 1.0),
-            format!(
-                "ELP/MPP02's published 2.4 m is {:.3} s",
-                metres_as_seconds(2.4, worst_seconds_per_arcsec)
-            ),
+            verdict_of(metres_as_seconds(2.4, worst) < 1.0),
+            format!("ELP/MPP02's published 2.4 m is {:.3} s", metres_as_seconds(2.4, worst)),
         ),
         Claim::stated(
             "the chosen theory can be obtained",
             verdict_of(false),
-            "ELP/MPP02's host did not answer on 2026-09-10; only ELP2000-82B is reachable"
-                .to_string(),
+            "ELP/MPP02 is published at an address that no longer serves it, was never captured by the archive, and reaches the public only through copyleft re-implementations that ADR-0019 refuses".to_string(),
         ),
     ];
+    let mut out = String::new();
+    let _ = writeln!(out, "## What the claims measure to\n");
     let _ = writeln!(out, "{}", table(&claims));
+    out
+}
 
+/// What the page cannot see.
+fn limits_section() -> String {
+    let mut out = String::new();
     let _ = writeln!(out, "\n## What this does not measure\n");
     let _ = writeln!(
         out,
@@ -219,46 +314,6 @@ fn page(solar_arcsec: Option<f64>) -> String {
         out,
         "**Latitude and distance.** Only longitude moves a panchanga boundary. The Moon's latitude decides eclipses and its distance decides the parallax that moves a rising, and both have budgets of their own that this page does not set.\n"
     );
-    fill(&out)
-}
-
-/// The section that weighs the two lunar theories against the budget.
-fn candidates_section(worst_seconds_per_arcsec: f64, solar_arcsec: Option<f64>) -> String {
-    let mut out = String::new();
-    let _ = writeln!(out, "## The candidates\n");
-    let _ = writeln!(
-        out,
-        "| theory | fitted to | published accuracy | as tithi boundary | source |"
-    );
-    let _ = writeln!(out, "|---|---|---|---:|---|");
-    let _ = writeln!(
-        out,
-        "| ELP/MPP02 | DE405 and DE406 | 2.4 m over a century about J2000; 1.4 km over five millennia | {:.3} s and {:.1} s | **its host is unreachable** |",
-        metres_as_seconds(2.4, worst_seconds_per_arcsec),
-        metres_as_seconds(1_400.0, worst_seconds_per_arcsec)
-    );
-    let _ = writeln!(
-        out,
-        "| ELP2000-82B | DE200 and LE200 | stated as the theory's own; unmeasured here | unmeasured | CDS VI/79 and IMCCE, both reachable |"
-    );
-
-    let _ = writeln!(
-        out,
-        "\nA metre at the Moon's mean distance subtends {:.2e}″, which is how the first row's seconds are reached.\n",
-        arcsec_per_metre()
-    );
-
-    let _ = writeln!(out, "## The finding that blocks the choice\n");
-    let _ = writeln!(
-        out,
-        "**ELP/MPP02 cannot be fetched from its authoritative source.** ADR-0013 and the research page name it as the SDK's lunar theory, with ELP2000-82B as the smaller variant. Its six data files are published at `cyrano-se.obspm.fr`, which did not answer over either FTP or HTTPS on 2026-09-10; IMCCE's own `ftp.imcce.fr/pub/ephem/moon/` carries `elp82b` and nothing later, and CDS catalogue VI/79 is ELP2000-82B as well.\n"
-    );
-    let _ = writeln!(
-        out,
-        "That matters more than a broken link, because of what the floor measurement found about the planets. VSOP87 was fitted to DE200 in 1981 and drifts by arcseconds against a modern ephemeris — Uranus by 4.7″ and Neptune by 6.6″ — while its Sun, the best-determined body in it, holds {}. **ELP2000-82B was fitted to the same DE200 generation.** Whether it inherits the same drift is not known here and cannot be assumed either way: it must be measured, exactly as VSOP87's was, before it is adopted or rejected.\n",
-        solar_arcsec.map_or_else(|| "well".to_string(), |value| format!("to {value:.3}″"))
-    );
-
     out
 }
 

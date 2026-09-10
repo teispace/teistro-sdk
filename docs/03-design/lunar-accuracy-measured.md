@@ -15,8 +15,8 @@ and this page converts one into the other.
 ## What an arcsecond of lunar error costs
 
 A boundary is where a quantity crosses a line of its lattice. An error
-of `ε` degrees in the quantity moves the crossing by `ε / rate` days,
-so one arcsecond moves it by `24 / rate` seconds. The rate is the
+of `e` degrees in the quantity moves the crossing by `e / rate` days, so
+one arcsecond moves it by `24 / rate` seconds. The rate is the
 **quantity's**, which is why the same lunar error is worth more in a
 tithi than in a yoga: a tithi runs on the Moon less the Sun and a yoga
 on the Moon plus it. The rate used is the slowest the quantity ever
@@ -47,7 +47,7 @@ tenth of an arcsecond is not wasted on a Sun good to a seventh.
 
 | theory | fitted to | published accuracy | as tithi boundary | source |
 |---|---|---|---:|---|
-| ELP/MPP02 | DE405 and DE406 | 2.4 m over a century about J2000; 1.4 km over five millennia | 0.003 s and 1.7 s | **its host is unreachable** |
+| ELP/MPP02 | DE405 and DE406 | 2.4 m over a century about J2000; 1.4 km over five millennia | 0.003 s and 1.7 s | **cannot be obtained** |
 | ELP2000-82B | DE200 and LE200 | stated as the theory's own; unmeasured here | unmeasured | CDS VI/79 and IMCCE, both reachable |
 
 A metre at the Moon's mean distance subtends 5.37e-4″, which is how
@@ -55,21 +55,33 @@ the first row's seconds are reached.
 
 ## The finding that blocks the choice
 
-**ELP/MPP02 cannot be fetched from its authoritative source.** ADR-0013
-and the research page name it as the SDK's lunar theory, with
-ELP2000-82B as the smaller variant. Its six data files are published at
-`cyrano-se.obspm.fr`, which did not answer over either FTP or HTTPS on
-2026-09-10; IMCCE's own `ftp.imcce.fr/pub/ephem/moon/` carries `elp82b`
-and nothing later, and CDS catalogue VI/79 is ELP2000-82B as well.
+**ELP/MPP02 cannot be obtained.** ADR-0013 and the research page name it
+as the SDK's lunar theory. Every route to it was tried on 2026-09-10,
+and the result is not a broken link but a removal.
 
-That matters more than a broken link, because of what the floor
-measurement found about the planets. VSOP87 was fitted to DE200 in 1981
-and drifts by arcseconds against a modern ephemeris — Uranus by 4.7″
-and Neptune by 6.6″ — while its Sun, the best-determined body in it,
-holds to 0.148″. **ELP2000-82B was fitted to the same DE200
-generation.** Whether it inherits the same drift is not known here and
-cannot be assumed either way: it must be measured, exactly as VSOP87's
-was, before it is adopted or rejected.
+| route | result |
+|---|---|
+| `cyrano-se.obspm.fr`, the address the theory is published at | no answer over FTP or HTTPS |
+| the same path in the Internet Archive | the directory listing is captured, naming `ELP_MAIN.S1/2/3` and `ELP_PERT.S1/2/3`; **not one of the six files was ever captured**, and the directory itself already answered 404 in the August 2022 crawl while its five siblings did not |
+| `ftp.imcce.fr/pub/ephem/moon/` | `elp82b` and nothing later |
+| CDS catalogue VI/79 | ELP2000-82B as well |
+| the two public re-implementations that carry data files | **excluded.** One is GPL-3.0 and the other EUPL-1.2, and `deny.toml` refuses copyleft everywhere in the workspace (ADR-0019). The GPL one's files are transformed besides — fourteen files under names of its own, where the publication has six — so they are that project's derived work and not the published series |
+
+So the choice is between a theory that cannot be had and one that can,
+and the second has a question over it.
+
+**ELP2000-82B says of itself: "Constants fitted to JPL's ephemerides
+DE200/LE200".** That is the header of `elp82b.f`, the reader its own
+authors publish, and not an inference from outside. It is the same fit
+whose age the planetary floor measurement caught: VSOP87 was fitted to
+DE200 in 1981 and drifts against a modern ephemeris by 4.7 arcseconds at
+Uranus and 6.6 at Neptune, while holding 0.148″ at the Sun.
+
+Whether the Moon inherits that drift is **not known and must not be
+assumed either way**. A tenth of the planets' worst would still be
+inside the second-accurate budget; a half of it would not. The
+measurement is the one the planets had — the whole theory against the
+engine in the isolated frame — and the harness for it exists.
 
 ## What the claims measure to
 
@@ -77,7 +89,7 @@ was, before it is adopted or rejected.
 |---|---|---|
 | the Moon decides the tiers, not the planets | **holds** | one arcsecond of Moon is 2.25 s of tithi; one arcsecond of a planet is a position nobody times |
 | a second-accurate panchanga is reachable with an analytic theory | **holds** | ELP/MPP02's published 2.4 m is 0.003 s |
-| the chosen theory can be obtained | falsified | ELP/MPP02's host did not answer on 2026-09-10; only ELP2000-82B is reachable |
+| the chosen theory can be obtained | falsified | ELP/MPP02 is published at an address that no longer serves it, was never captured by the archive, and reaches the public only through copyleft re-implementations that ADR-0019 refuses |
 
 
 ## What this does not measure
