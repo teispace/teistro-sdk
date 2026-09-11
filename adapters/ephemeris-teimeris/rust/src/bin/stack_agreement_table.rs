@@ -58,17 +58,20 @@ use teistro_port_ephemeris::{
     TimeScale, Zodiac,
 };
 
-/// The bodies a Vedic chart asks for, and Pluto beside them.
+/// **Every body the port defines**, which since the osculating apogee
+/// was built is every body the built-in computes.
 ///
-/// Pluto is not one of the nine grahas and no Vedic reading uses it. It
-/// is measured here because it is the one body that is *fitted* rather
-/// than derived, so it is the one whose accuracy a reader cannot infer
-/// from a theory's published bounds.
+/// A Vedic reading uses nine of them and no more, but an accuracy
+/// document that covered only those would be silent about exactly the
+/// bodies whose accuracy a reader cannot infer: Uranus and Neptune, where
+/// VSOP87's own age and not a truncation is the limit; Pluto, which is
+/// fitted rather than derived; and the osculating apogee, which is built
+/// from a mass rather than from a theory.
 ///
-/// The original note: Ketu is not among them: it is
+/// The original note on Ketu: Ketu is not among them: it is
 /// Rahu's opposite point and the chart layer derives it, so it carries
 /// Rahu's error exactly and measuring it twice would say nothing.
-const BODIES: [Body; 10] = [
+const BODIES: [Body; 14] = [
     Body::Sun,
     Body::Moon,
     Body::Mercury,
@@ -76,9 +79,13 @@ const BODIES: [Body; 10] = [
     Body::Mars,
     Body::Jupiter,
     Body::Saturn,
+    Body::Uranus,
+    Body::Neptune,
     Body::Pluto,
     Body::MeanNode,
     Body::TrueNode,
+    Body::MeanApogee,
+    Body::OsculatingApogee,
 ];
 
 /// Kathmandu, where the conformance corpus's charts are cast.

@@ -315,14 +315,24 @@ provider's DUT1).
    nothing but the SDK installed **in every binding** rather than in Rust
    alone (ADR-0028).
 
-   **What is left of it**, none of it large: no tier matrix in CI, so
-   "the kit against every tier" is a run by hand rather than a gate; the
-   nakshatra boundary timing the exit asks for is unpublished where the
-   tithi one is; the osculating apogee is still refused by name for want
-   of the Earth-Moon mass parameter; and the `reference` tier is a
-   decision rather than a task — ADR-0021's "else" clause puts it in v1.x
-   unless the maintainer wants it in v1, because a fitted Moon alone is
-   3.76 MB of a 4 MB budget.
+   **What is left of it is one decision.** The `reference` tier is not a
+   task but a choice: ADR-0021's "else" clause puts it in v1.x unless the
+   maintainer wants it in v1, because a fitted Moon alone is 3.76 MB of a
+   4 MB budget. Everything else that was outstanding is done — the tier
+   matrix gates the kit at all three tiers in CI, the nakshatra boundary
+   timing is published beside the tithi's, and the osculating apogee is
+   built, which took the one constant neither theory carries
+   (`GM_EARTH_MOON`, from IERS 2010 and DE440, checked against the mass
+   ratio it implies). **The provider now computes every one of the port's
+   fourteen bodies**, so the test that asked it to refuse one could not be
+   written any more and asserts completeness instead.
+
+   Two measured figures are recorded and **not** explained, which is the
+   honest state rather than a gap to paper over: the true node disagrees
+   by 118 arcseconds, traced to the two theories' orbital planes and not
+   to truncation, the bija or the precession model; and the mean apogee
+   by 417, where the mean node beside it is inside one. Both accounts are
+   in `03-design/completion-measured.md` with the candidates named.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation

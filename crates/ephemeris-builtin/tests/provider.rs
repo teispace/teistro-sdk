@@ -66,32 +66,98 @@ fn it_answers_for_every_body_it_declares() {
     assert_eq!(columns.len(), INSTANTS.len() * bodies.len());
 }
 
-/// The osculating apogee needs the Earth-Moon mass parameter, which
-/// neither theory carries. Until it is built, asking for one must fail,
-/// and it must fail by name.
+/// **The built-in now computes every body the port defines.**
 ///
-/// Pluto used to be in this list and is not any more: it is fitted rather
-/// than derived (`03-design/pluto-measured.md`), and the test below
-/// asks it for a place instead of asking it to refuse.
+/// This test used to be `a_body_it_cannot_do_is_refused_by_name`, and it
+/// had a list: Pluto, which had no series, and the osculating apogee,
+/// which had no mass parameter. Both are built, the catalogue holds
+/// fourteen bodies and the provider declares fourteen, so there is
+/// nothing left for it to refuse and the test that asked it to refuse
+/// cannot be written any more. That is a result rather than a gap, and
+/// this asserts it in the form the result actually takes.
 ///
-/// The port refuses it at the request rather than per cell — the
-/// declared body list is a contract, so a body outside it is a malformed
-/// request and not a cell that happens to be empty. That is stricter
-/// than the provider's own fallback, which is why the fallback stays: it
-/// is the answer if the two lists ever disagree.
+/// The refusal *machinery* is not untested by this — it moved rather than
+/// vanished. The port validates a request against the declared list
+/// before a provider sees it (a body outside it is a malformed request
+/// and not a cell that happens to be empty), and that path is exercised
+/// wherever a provider declares less than everything: the conformance
+/// kit, the test provider, and `crates/ffi`'s own refusals.
 #[test]
-fn a_body_it_cannot_do_is_refused_by_name() {
-    let provider = Builtin::new();
-    let jds = [2_451_545.0];
-    let bodies = [Body::OsculatingApogee];
-    let request = PositionRequest::new(&jds, TimeScale::Tt, &bodies, frame());
-    let error = provider
-        .positions(&request)
-        .expect_err("a body with no theory must be refused");
-    let message = error.to_string();
+fn it_declares_every_body_the_port_defines() {
+    let declared = Builtin::new().capabilities().bodies;
+    for body in Body::ALL {
+        assert!(
+            declared.contains(&body),
+            "{body:?} is in the port's catalogue and the built-in does not declare it"
+        );
+    }
+    assert_eq!(
+        declared.len(),
+        Body::ALL.len(),
+        "and it declares nothing the port does not define"
+    );
+}
+
+/// The osculating apogee is an apogee: far side, right distance, and
+/// never far from the mean one it oscillates about.
+///
+/// It is the one body here built from a **mass** rather than from a
+/// theory — an osculating element is the two-body orbit matching a
+/// position and a velocity, and VSOP87 and ELP2000-82B carry no masses.
+/// So this checks the three things that would break if the constant or
+/// the algebra were wrong, and each would break differently:
+///
+/// - **It is opposite the Moon's perigee, not its position.** An apogee
+///   is an apse of the orbit, so it does not chase the Moon; over a month
+///   the Moon laps it.
+/// - **Its distance is the apogee distance**, 404 000 km or so, and never
+///   the Moon's current one. A wrong `GM` shows here first: the
+///   semi-major axis comes straight out of vis-viva, so a mass wrong by a
+///   percent puts the apogee wrong by a percent.
+/// - **It stays near the mean apogee.** The osculating apse swings under
+///   the Sun's pull, by degrees over a month, but it is the same apse:
+///   they cannot be on opposite sides of the sky.
+#[test]
+fn the_osculating_apogee_is_an_apogee() {
+    let jds: Vec<f64> = (0..30).map(|day| 2_451_545.0 + f64::from(day)).collect();
+    let columns = ask(
+        &jds,
+        &[Body::OsculatingApogee, Body::MeanApogee, Body::Moon],
+    );
+    assert!(columns.all_ok(), "every instant answers");
+    let mut worst_from_mean = 0.0_f64;
+    for (index, jd) in jds.iter().enumerate() {
+        let osculating = columns.at(index, 0).expect("the osculating apogee");
+        let mean = columns.at(index, 1).expect("the mean apogee");
+        let moon = columns.at(index, 2).expect("the Moon");
+        // The apogee distance of the Moon's orbit, in astronomical units:
+        // 404 000 km is 0.0027, and the swing either side of it is real.
+        assert!(
+            (0.0024..=0.0030).contains(&osculating.dist),
+            "at {jd} the apogee is {} au away, which is not the far side \
+             of the Moon's orbit",
+            osculating.dist
+        );
+        assert!(
+            osculating.dist > moon.dist || (osculating.dist - moon.dist).abs() < 5e-4,
+            "at {jd} the apogee is nearer than the Moon: {} against {}",
+            osculating.dist,
+            moon.dist
+        );
+        let apart = teistro_core::angle::difference_deg(osculating.lon, mean.lon).abs();
+        worst_from_mean = worst_from_mean.max(apart);
+        assert!(
+            apart < 40.0,
+            "at {jd} the osculating apogee is {apart} degrees from the mean one, \
+             which is not the same apse"
+        );
+    }
+    // And it does swing: an osculating apse that sat exactly on the mean
+    // one would mean the algebra had collapsed to the polynomial.
     assert!(
-        message.contains("does not support"),
-        "the refusal must say what it cannot do: {message}"
+        worst_from_mean > 1.0,
+        "the osculating apogee never left the mean one by more than \
+         {worst_from_mean} degrees, so it is not osculating"
     );
 }
 

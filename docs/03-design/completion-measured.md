@@ -25,9 +25,13 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | MARS | 21.1 | 1.40 | 0.331 | 4.04 | 1.51 | 4.33 | 9.8e-5 | 2224 |
 | JUPITER | 2.61 | 0.516 | 0.063 | 1.02 | 0.002 | 0.817 | 1.7e-5 | 2119 |
 | SATURN | 1.59 | 0.418 | 0.970 | 0.084 | 0.977 | 0.672 | 8.9e-6 | 2301 |
+| URANUS | 4.85 | 1.02 | 0.892 | 0.058 | 3.88 | 0.317 | 1.1e-5 | 2334 |
+| NEPTUNE | 6.76 | 2.59 | 1.98 | 2.27 | 6.71 | 0.169 | 4.3e-6 | 2399 |
 | PLUTO | 33.3 | 8.73 | 13.4 | 7.58 | 4.49 | 6.43 | 1.4e-4 | 2260 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 224 | 47.0 | 21.5 | 36.4 | 116 | — | — | 1955 |
+| MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
+| OSCULATING_APOGEE | 976 | 154 | 159 | 3.70 | 59.7 | 74.9 | 5.5e-4 | 2389 |
 
 Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
@@ -42,9 +46,13 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 21.1 | 1.40 | 0.470 | 4.20 | 1.47 | 4.24 | 9.8e-5 | 2224 |
 | JUPITER | 2.72 | 0.527 | 0.007 | 1.25 | 0.137 | 0.812 | 1.7e-5 | 2119 |
 | SATURN | 1.66 | 0.440 | 0.831 | 0.301 | 0.908 | 0.673 | 8.9e-6 | 2302 |
+| URANUS | 5.02 | 1.04 | 1.15 | 0.292 | 3.92 | 0.377 | 1.1e-5 | 2330 |
+| NEPTUNE | 6.89 | 2.60 | 1.78 | 2.53 | 6.87 | 0.271 | 4.3e-6 | 2395 |
 | PLUTO | 33.4 | 8.73 | 13.6 | 7.79 | 4.58 | 6.45 | 1.4e-4 | 2260 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 224 | 47.0 | 21.5 | 36.4 | 116 | — | — | 1955 |
+| MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
+| OSCULATING_APOGEE | 3963 | 1953 | 1295 | 250 | 721 | 2771 | 1.6e-2 | 1803 |
 
 Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
@@ -59,9 +67,13 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 0.541 | 0.443 |
 | JUPITER | 90.0 | 1.09 |
 | SATURN | 2.55 | 2.27 |
+| URANUS | 5.19 | 2.71 |
+| NEPTUNE | 1.57 | 0.942 |
 | PLUTO | 0.562 | 0.660 |
 | MEAN_NODE | 0.001 | — |
 | TRUE_NODE | 102 | — |
+| MEAN_APOGEE | 2.39 | — |
+| OSCULATING_APOGEE | 732 | 1999 |
 
 Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matters twice over: it is the out-of-plane motion, so it fixes the orbital plane the nodes are cut from.
 
@@ -101,6 +113,14 @@ A month of six-hour steps at each epoch, with the crossing interpolated rather t
 
 The mean node, a polynomial that does not depend on where the Moon is, is unaffected and reads 0.987″ at every tier.
 
+**The two apses.** The osculating apogee reads 976″ and the mean apogee 417″, where the mean *node* beside them is 0.987″. All three are the Moon's, and two of the three are polynomials from one theory, so the gap is not the Moon.
+
+The **osculating** apogee is the one built from a mass rather than from a theory — an osculating element is the two-body orbit matching a position and a velocity, and neither VSOP87 nor ELP2000-82B carries a mass (ADR-0008 refused this body until the constant was sourced). It is also the apse the Sun swings hardest: it wanders by tens of degrees over a month, so 976″ of disagreement is a small fraction of its own motion, and it is bounded by the same lunar velocity the true node is. Unlike the mean apogee it **does** answer to the tier, reading 976″ here against 561″ at `full`, because it is built from where the Moon is rather than from a polynomial.
+
+The **mean** apogee is the one to explain, and this page does not. It is ELP's `W2` polynomial with half a turn added, exactly as the mean node is `W3`, and it is 422 times worse than that node. Its mean of 265″ against its worst of 417″ says a standing offset with an oscillation on top rather than a drift. The candidates are that the engine's mean apogee is not `W2 + 180°` but a series of its own, and that one of the two carries periodic terms the other does not; nothing here distinguishes them, and a page that picked one would be guessing. What can be said is what it is **not**: not the tier, since `full` reads 417″ for the same figure, which is what a polynomial untouched by truncation looks like; and not the Moon, whose own longitude agrees to 14.6″.
+
+Their **latitudes** are a convention and not an error. This SDK answers a mean apogee as a *direction* on the ecliptic, latitude zero by construction; the engine places it on the Moon's own orbital plane, where it reaches the orbit's 5.145-degree inclination. The column reports the difference rather than hiding it, and the two are answering different questions rather than one of them answering it wrongly.
+
 ## `standard`
 
 **The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:Native` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
@@ -118,9 +138,13 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | MARS | 3.98 | 0.246 | 0.026 | 0.142 | 0.514 | 0.300 | 6.6e-5 | 2399 |
 | JUPITER | 1.04 | 0.401 | 0.269 | 0.408 | 0.604 | 0.125 | 1.1e-5 | 2365 |
 | SATURN | 0.834 | 0.327 | 0.170 | 0.339 | 0.696 | 0.060 | 5.5e-6 | 2399 |
+| URANUS | 4.97 | 1.04 | 0.761 | 0.057 | 3.91 | 0.081 | 1.1e-5 | 2332 |
+| NEPTUNE | 6.76 | 2.58 | 2.00 | 2.31 | 6.75 | 0.176 | 4.0e-6 | 2399 |
 | PLUTO | 0.926 | 0.210 | 0.024 | 0.004 | 0.088 | 0.186 | 8.1e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
+| MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
+| OSCULATING_APOGEE | 565 | 107 | 131 | 48.8 | 28.6 | 50.4 | 1.8e-4 | 2016 |
 
 Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
@@ -135,9 +159,13 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 4.06 | 0.315 | 0.165 | 0.307 | 0.472 | 0.305 | 6.6e-5 | 2367 |
 | JUPITER | 1.13 | 0.429 | 0.325 | 0.633 | 0.470 | 0.358 | 1.1e-5 | 2364 |
 | SATURN | 1.03 | 0.358 | 0.031 | 0.556 | 0.627 | 0.155 | 5.5e-6 | 2399 |
+| URANUS | 5.10 | 1.06 | 1.02 | 0.177 | 3.95 | 0.184 | 1.1e-5 | 2329 |
+| NEPTUNE | 6.91 | 2.59 | 1.80 | 2.57 | 6.91 | 0.275 | 4.0e-6 | 2398 |
 | PLUTO | 1.20 | 0.276 | 0.194 | 0.205 | 0.001 | 0.294 | 8.1e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
+| MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
+| OSCULATING_APOGEE | 3575 | 1953 | 1323 | 204 | 752 | 2766 | 1.6e-2 | 2108 |
 
 Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
@@ -152,9 +180,13 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 0.520 | 0.474 |
 | JUPITER | 90.0 | 1.07 |
 | SATURN | 2.56 | 2.28 |
+| URANUS | 5.19 | 2.70 |
+| NEPTUNE | 1.57 | 0.945 |
 | PLUTO | 0.502 | 0.660 |
 | MEAN_NODE | 0.001 | — |
 | TRUE_NODE | 30.5 | — |
+| MEAN_APOGEE | 2.39 | — |
+| OSCULATING_APOGEE | 243 | 1999 |
 
 Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matters twice over: it is the out-of-plane motion, so it fixes the orbital plane the nodes are cut from.
 
@@ -194,6 +226,14 @@ A month of six-hour steps at each epoch, with the crossing interpolated rather t
 
 The mean node, a polynomial that does not depend on where the Moon is, is unaffected and reads 0.987″ at every tier.
 
+**The two apses.** The osculating apogee reads 565″ and the mean apogee 417″, where the mean *node* beside them is 0.987″. All three are the Moon's, and two of the three are polynomials from one theory, so the gap is not the Moon.
+
+The **osculating** apogee is the one built from a mass rather than from a theory — an osculating element is the two-body orbit matching a position and a velocity, and neither VSOP87 nor ELP2000-82B carries a mass (ADR-0008 refused this body until the constant was sourced). It is also the apse the Sun swings hardest: it wanders by tens of degrees over a month, so 565″ of disagreement is a small fraction of its own motion, and it is bounded by the same lunar velocity the true node is. Unlike the mean apogee it **does** answer to the tier, reading 565″ here against 561″ at `full`, because it is built from where the Moon is rather than from a polynomial.
+
+The **mean** apogee is the one to explain, and this page does not. It is ELP's `W2` polynomial with half a turn added, exactly as the mean node is `W3`, and it is 422 times worse than that node. Its mean of 265″ against its worst of 417″ says a standing offset with an oscillation on top rather than a drift. The candidates are that the engine's mean apogee is not `W2 + 180°` but a series of its own, and that one of the two carries periodic terms the other does not; nothing here distinguishes them, and a page that picked one would be guessing. What can be said is what it is **not**: not the tier, since `full` reads 417″ for the same figure, which is what a polynomial untouched by truncation looks like; and not the Moon, whose own longitude agrees to 2.75″.
+
+Their **latitudes** are a convention and not an error. This SDK answers a mean apogee as a *direction* on the ecliptic, latitude zero by construction; the engine places it on the Moon's own orbital plane, where it reaches the orbit's 5.145-degree inclination. The column reports the difference rather than hiding it, and the two are answering different questions rather than one of them answering it wrongly.
+
 ## `full`
 
 **The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:Native` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
@@ -211,9 +251,13 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | MARS | 4.02 | 0.245 | 0.048 | 0.079 | 0.509 | 0.199 | 6.6e-5 | 2399 |
 | JUPITER | 1.02 | 0.397 | 0.282 | 0.395 | 0.608 | 0.124 | 1.1e-5 | 2365 |
 | SATURN | 0.842 | 0.327 | 0.169 | 0.338 | 0.701 | 0.055 | 5.5e-6 | 2397 |
+| URANUS | 4.97 | 1.04 | 0.764 | 0.058 | 3.91 | 0.081 | 1.1e-5 | 2332 |
+| NEPTUNE | 6.77 | 2.58 | 2.00 | 2.31 | 6.76 | 0.176 | 4.0e-6 | 2399 |
 | PLUTO | 0.006 | 0.001 | 0.003 | 0.000 | 0.002 | 0.001 | 4.5e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 118 | 38.6 | 67.6 | 8.83 | 64.3 | — | — | 2392 |
+| MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
+| OSCULATING_APOGEE | 561 | 107 | 126 | 45.8 | 29.7 | 50.1 | 1.9e-4 | 2016 |
 
 Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
@@ -228,9 +272,13 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 4.05 | 0.313 | 0.187 | 0.244 | 0.467 | 0.306 | 6.6e-5 | 2399 |
 | JUPITER | 1.12 | 0.426 | 0.337 | 0.619 | 0.473 | 0.357 | 1.1e-5 | 2364 |
 | SATURN | 1.04 | 0.358 | 0.031 | 0.555 | 0.632 | 0.152 | 5.5e-6 | 2399 |
+| URANUS | 5.09 | 1.06 | 1.02 | 0.176 | 3.95 | 0.184 | 1.1e-5 | 2329 |
+| NEPTUNE | 6.91 | 2.59 | 1.80 | 2.57 | 6.91 | 0.276 | 4.0e-6 | 2400 |
 | PLUTO | 0.289 | 0.176 | 0.215 | 0.209 | 0.085 | 0.147 | 4.5e-6 | 2004 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 118 | 38.6 | 67.6 | 8.83 | 64.3 | — | — | 2392 |
+| MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
+| OSCULATING_APOGEE | 3571 | 1953 | 1328 | 207 | 751 | 2766 | 1.6e-2 | 2108 |
 
 Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
@@ -245,9 +293,13 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 0.520 | 0.476 |
 | JUPITER | 90.0 | 1.07 |
 | SATURN | 2.56 | 2.28 |
+| URANUS | 5.19 | 2.70 |
+| NEPTUNE | 1.57 | 0.945 |
 | PLUTO | 0.502 | 0.660 |
 | MEAN_NODE | 0.001 | — |
 | TRUE_NODE | 26.5 | — |
+| MEAN_APOGEE | 2.39 | — |
+| OSCULATING_APOGEE | 238 | 1999 |
 
 Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matters twice over: it is the out-of-plane motion, so it fixes the orbital plane the nodes are cut from.
 
@@ -287,6 +339,14 @@ A month of six-hour steps at each epoch, with the crossing interpolated rather t
 
 The mean node, a polynomial that does not depend on where the Moon is, is unaffected and reads 0.987″ at every tier.
 
+**The two apses.** The osculating apogee reads 561″ and the mean apogee 417″, where the mean *node* beside them is 0.987″. All three are the Moon's, and two of the three are polynomials from one theory, so the gap is not the Moon.
+
+The **osculating** apogee is the one built from a mass rather than from a theory — an osculating element is the two-body orbit matching a position and a velocity, and neither VSOP87 nor ELP2000-82B carries a mass (ADR-0008 refused this body until the constant was sourced). It is also the apse the Sun swings hardest: it wanders by tens of degrees over a month, so 561″ of disagreement is a small fraction of its own motion, and it is bounded by the same lunar velocity the true node is. Unlike the mean apogee it **does** answer to the tier, reading 561″ here against 561″ at `full`, because it is built from where the Moon is rather than from a polynomial.
+
+The **mean** apogee is the one to explain, and this page does not. It is ELP's `W2` polynomial with half a turn added, exactly as the mean node is `W3`, and it is 422 times worse than that node. Its mean of 265″ against its worst of 417″ says a standing offset with an oscillation on top rather than a drift. The candidates are that the engine's mean apogee is not `W2 + 180°` but a series of its own, and that one of the two carries periodic terms the other does not; nothing here distinguishes them, and a page that picked one would be guessing. What can be said is what it is **not**: not the tier, since `full` reads 417″ for the same figure, which is what a polynomial untouched by truncation looks like; and not the Moon, whose own longitude agrees to 2.47″.
+
+Their **latitudes** are a convention and not an error. This SDK answers a mean apogee as a *direction* on the ecliptic, latitude zero by construction; the engine places it on the Moon's own orbital plane, where it reaches the orbit's 5.145-degree inclination. The column reports the difference rather than hiding it, and the two are answering different questions rather than one of them answering it wrongly.
+
 ## One correction at a time
 
 A disagreement in the apparent frame is five corrections at once, and a table of it names none of them. This ladder asks for one correction at a time, at `standard`, so a number can be attributed.
@@ -313,19 +373,19 @@ Each bound is one ADR-0027 argued from, not one chosen to be met, and each is de
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| `compact`: the retired single-number claim — one arcsecond for every planet | falsified | worst 33.3″ |
+| `compact`: the retired single-number claim — one arcsecond for every planet | falsified | worst 21.4″ |
 | `compact`: the Sun stays inside one arcsecond over the whole span | falsified | worst 5.45″ |
 | `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | falsified | worst 3.67 s of tithi |
 | `compact`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 33 s of tithi |
 | `compact`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 14.6″ |
 | `compact`: the mean node is inside one arcsecond | **holds** | worst 0.987″ |
-| `standard`: the retired single-number claim — one arcsecond for every planet | falsified | worst 3.98″ |
+| `standard`: the retired single-number claim — one arcsecond for every planet | falsified | worst 6.76″ |
 | `standard`: the Sun stays inside one arcsecond over the whole span | **holds** | worst 0.228″ |
 | `standard`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | **holds** | worst 0.63 s of tithi |
 | `standard`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 6.18 s of tithi |
 | `standard`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 2.75″ |
 | `standard`: the mean node is inside one arcsecond | **holds** | worst 0.987″ |
-| `full`: the retired single-number claim — one arcsecond for every planet | falsified | worst 4.02″ |
+| `full`: the retired single-number claim — one arcsecond for every planet | falsified | worst 6.77″ |
 | `full`: the Sun stays inside one arcsecond over the whole span | **holds** | worst 0.152″ |
 | `full`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | **holds** | worst 0.35 s of tithi |
 | `full`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 5.55 s of tithi |
@@ -334,13 +394,13 @@ Each bound is one ADR-0027 argued from, not one chosen to be met, and each is de
 
 8 of 18 falsified:
 
-- `compact`: the retired single-number claim — one arcsecond for every planet — worst 33.3″
+- `compact`: the retired single-number claim — one arcsecond for every planet — worst 21.4″
 - `compact`: the Sun stays inside one arcsecond over the whole span — worst 5.45″
 - `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) — worst 3.67 s of tithi
 - `compact`: the Moon meets the almanac's 0.445 arcseconds — worst 14.6″
-- `standard`: the retired single-number claim — one arcsecond for every planet — worst 3.98″
+- `standard`: the retired single-number claim — one arcsecond for every planet — worst 6.76″
 - `standard`: the Moon meets the almanac's 0.445 arcseconds — worst 2.75″
-- `full`: the retired single-number claim — one arcsecond for every planet — worst 4.02″
+- `full`: the retired single-number claim — one arcsecond for every planet — worst 6.77″
 - `full`: the Moon meets the almanac's 0.445 arcseconds — worst 2.47″
 
 **None of them is the completion.** What the completion decides is the Sun, the mean node and the frame the whole table is stated in; those are the rows that hold wherever the ephemeris under them is good enough to show it.
