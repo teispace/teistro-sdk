@@ -38,6 +38,19 @@ const RECORDED: &str = "crates/ephemeris-builtin/data";
 /// The tiers the built-in ephemeris ships, richest last.
 const TIERS: [&str; 3] = ["compact", "standard", "full"];
 
+/// The bodies ADR-0027's "one arcsecond for the planets" is a claim
+/// about: VSOP87's own, **named** rather than filtered.
+///
+/// Naming them matters more than it looks. This was a filter — every row
+/// that was not the Sun, the Moon or a node — and it was right until the
+/// document grew to cover the whole catalogue, at which point it quietly
+/// began charging VSOP87's claim for a fitted Pluto and for an osculating
+/// apse built from a mass. A list that must be edited when a body is
+/// added is better than a rule that silently takes in whatever arrives.
+const VSOP_PLANETS: [&str; 7] = [
+    "MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE",
+];
+
 /// The Moon's orbital inclination, degrees, and the amplitude of the
 /// latitude rate that follows from it: the latitude swings through the
 /// inclination once a draconic month, so its rate peaks at `2 pi i / P`.
@@ -366,6 +379,7 @@ fn tier_section(tier: &Recorded, richest: &Recorded) -> String {
     );
 
     out.push_str(&node_section(tier, richest));
+    out.push_str(&apse_section(tier, richest));
     out
 }
 
@@ -439,6 +453,65 @@ fn node_section(tier: &Recorded, richest: &Recorded) -> String {
             ),
         );
     }
+    out
+}
+
+/// The two apses, which are the rows a reader stops at.
+///
+/// They sit beside a mean node right to a fraction of an arcsecond and
+/// are worse by two orders, so the page owes an account of why — and the
+/// honest one is that this is measured and not yet explained.
+fn apse_section(tier: &Recorded, richest: &Recorded) -> String {
+    let mut out = String::new();
+    let (Some(mean), Some(osculating), Some(node)) = (
+        row(&tier.geocentric_rows, "MEAN_APOGEE"),
+        row(&tier.geocentric_rows, "OSCULATING_APOGEE"),
+        row(&tier.geocentric_rows, "MEAN_NODE"),
+    ) else {
+        return out;
+    };
+    let _ = writeln!(
+        out,
+        "**The two apses.** The osculating apogee reads {} and the mean apogee {}, where the mean *node* beside them is {}. All three are the Moon's, and two of the three are polynomials from one theory, so the gap is not the Moon.\n",
+        arcsec_mark(osculating.worst_arcsec),
+        arcsec_mark(mean.worst_arcsec),
+        arcsec_mark(node.worst_arcsec),
+    );
+    let _ = writeln!(
+        out,
+        "The **osculating** apogee is the one built from a mass rather than from a theory — an osculating element is the two-body orbit matching a position and a velocity, and neither VSOP87 nor ELP2000-82B carries a mass (ADR-0008 refused this body until the constant was sourced). It is also the apse the Sun swings hardest: it wanders by tens of degrees over a month, so {} of disagreement is a small fraction of its own motion, and it is bounded by the same lunar velocity the true node is. Unlike the mean apogee it **does** answer to the tier, reading {} here against {} at `{}`, because it is built from where the Moon is rather than from a polynomial.\n",
+        arcsec_mark(osculating.worst_arcsec),
+        arcsec_mark(osculating.worst_arcsec),
+        row(&richest.geocentric_rows, "OSCULATING_APOGEE").map_or_else(
+            || "an unrecorded figure".to_string(),
+            |best| arcsec_mark(best.worst_arcsec)
+        ),
+        richest.tier,
+    );
+    let _ = writeln!(
+        out,
+        "The **mean** apogee is the one to explain, and this page does not. It is ELP's `W2` polynomial with half a turn added, exactly as the mean node is `W3`, and it is {:.0} times worse than that node. Its mean of {} against its worst of {} says a standing offset with an oscillation on top rather than a drift. The candidates are that the engine's mean apogee is not `W2 + 180°` but a series of its own, and that one of the two carries periodic terms the other does not; nothing here distinguishes them, and a page that picked one would be guessing. What can be said is what it is **not**: not the tier, since `{}` reads {} for the same figure, which is what a polynomial untouched by truncation looks like; and not the Moon, whose own longitude agrees to {}.\n",
+        if node.worst_arcsec > 0.0 {
+            mean.worst_arcsec / node.worst_arcsec
+        } else {
+            f64::NAN
+        },
+        arcsec_mark(mean.mean_arcsec),
+        arcsec_mark(mean.worst_arcsec),
+        richest.tier,
+        row(&richest.geocentric_rows, "MEAN_APOGEE").map_or_else(
+            || "an unrecorded figure".to_string(),
+            |best| arcsec_mark(best.worst_arcsec)
+        ),
+        row(&tier.geocentric_rows, "MOON").map_or_else(
+            || "an unrecorded figure".to_string(),
+            |moon| arcsec_mark(moon.worst_arcsec)
+        ),
+    );
+    let _ = writeln!(
+        out,
+        "Their **latitudes** are a convention and not an error. This SDK answers a mean apogee as a *direction* on the ecliptic, latitude zero by construction; the engine places it on the Moon's own orbital plane, where it reaches the orbit's {INCLINATION_DEG}-degree inclination. The column reports the difference rather than hiding it, and the two are answering different questions rather than one of them answering it wrongly.\n"
+    );
     out
 }
 
@@ -635,12 +708,7 @@ fn claims_for(tiers: &[Recorded]) -> Vec<Claim> {
         let planets: Vec<&Row> = tier
             .geocentric_rows
             .iter()
-            .filter(|row| {
-                !matches!(
-                    row.body.as_str(),
-                    "MOON" | "MEAN_NODE" | "TRUE_NODE" | "SUN"
-                )
-            })
+            .filter(|row| VSOP_PLANETS.contains(&row.body.as_str()))
             .collect();
         claims.push(within_arcsec(
             format!("`{name}`: the retired single-number claim — one arcsecond for every planet"),

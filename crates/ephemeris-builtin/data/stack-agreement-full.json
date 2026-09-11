@@ -244,6 +244,34 @@
       "worst_at_jd": 2596697.0
     },
     {
+      "body": "URANUS",
+      "worst_arcsec": 4.971643256976677,
+      "mean_arcsec": 1.0446019003343348,
+      "at_1800_arcsec": 0.7638961097086394,
+      "at_2100_arcsec": 0.057864020186571,
+      "at_2400_arcsec": 3.9086172305019318,
+      "worst_speed_arcsec_per_day": 5.194824954244245,
+      "is_direction": false,
+      "worst_lat_arcsec": 0.08103865103790131,
+      "worst_lat_speed_arcsec_per_day": 2.7019641296489683,
+      "worst_dist_relative": 0.000010853858064709844,
+      "worst_at_jd": 2572657.0
+    },
+    {
+      "body": "NEPTUNE",
+      "worst_arcsec": 6.766131401309394,
+      "mean_arcsec": 2.577590092179285,
+      "at_1800_arcsec": 2.003733414198905,
+      "at_2100_arcsec": 2.3114161734952177,
+      "at_2400_arcsec": 6.755041147397378,
+      "worst_speed_arcsec_per_day": 1.574990874578408,
+      "is_direction": false,
+      "worst_lat_arcsec": 0.17557257054532371,
+      "worst_lat_speed_arcsec_per_day": 0.944943557234236,
+      "worst_dist_relative": 4.020714394971818e-6,
+      "worst_at_jd": 2597297.0
+    },
+    {
       "body": "PLUTO",
       "worst_arcsec": 0.006188086229030887,
       "mean_arcsec": 0.0013746409802890605,
@@ -284,6 +312,34 @@
       "worst_lat_speed_arcsec_per_day": 0.6718838377194618,
       "worst_dist_relative": 1.0,
       "worst_at_jd": 2594857.0
+    },
+    {
+      "body": "MEAN_APOGEE",
+      "worst_arcsec": 416.90272296862076,
+      "mean_arcsec": 265.0994613967279,
+      "at_1800_arcsec": 172.36348835035784,
+      "at_2100_arcsec": 259.62771341546613,
+      "at_2400_arcsec": 328.5848269590588,
+      "worst_speed_arcsec_per_day": 2.3942641060930914,
+      "is_direction": true,
+      "worst_lat_arcsec": 18691.083310128895,
+      "worst_lat_speed_arcsec_per_day": 53.381646591830936,
+      "worst_dist_relative": 1.0,
+      "worst_at_jd": 2380337.0
+    },
+    {
+      "body": "OSCULATING_APOGEE",
+      "worst_arcsec": 560.5367065259657,
+      "mean_arcsec": 106.52901623362811,
+      "at_1800_arcsec": 126.39836429018914,
+      "at_2100_arcsec": 45.830178580354186,
+      "at_2400_arcsec": 29.727853338772547,
+      "worst_speed_arcsec_per_day": 238.2287806407228,
+      "is_direction": false,
+      "worst_lat_arcsec": 50.1319043965963,
+      "worst_lat_speed_arcsec_per_day": 1999.4908554524932,
+      "worst_dist_relative": 0.0001850068380556922,
+      "worst_at_jd": 2457217.0
     }
   ],
   "topocentric_rows": [
@@ -386,6 +442,34 @@
       "worst_at_jd": 2597377.0
     },
     {
+      "body": "URANUS",
+      "worst_arcsec": 5.091755132980325,
+      "mean_arcsec": 1.062758885245839,
+      "at_1800_arcsec": 1.0208350833067925,
+      "at_2100_arcsec": 0.17596024840713653,
+      "at_2400_arcsec": 3.948144396144926,
+      "worst_speed_arcsec_per_day": 3.8894771574419313,
+      "is_direction": false,
+      "worst_lat_arcsec": 0.18392265751217968,
+      "worst_lat_speed_arcsec_per_day": 2.6567214703205115,
+      "worst_dist_relative": 0.000010839147312245031,
+      "worst_at_jd": 2571857.0
+    },
+    {
+      "body": "NEPTUNE",
+      "worst_arcsec": 6.912723801735865,
+      "mean_arcsec": 2.5882252003598003,
+      "at_1800_arcsec": 1.8039623524259696,
+      "at_2100_arcsec": 2.569111450145556,
+      "at_2400_arcsec": 6.912723801735865,
+      "worst_speed_arcsec_per_day": 2.395920653443684,
+      "is_direction": false,
+      "worst_lat_arcsec": 0.2758312663267759,
+      "worst_lat_speed_arcsec_per_day": 1.1447583364701555,
+      "worst_dist_relative": 4.010219005683253e-6,
+      "worst_at_jd": 2597617.0
+    },
+    {
       "body": "PLUTO",
       "worst_arcsec": 0.28876574137939315,
       "mean_arcsec": 0.17580047133108379,
@@ -426,6 +510,34 @@
       "worst_lat_speed_arcsec_per_day": 0.6718838380639498,
       "worst_dist_relative": 1.0,
       "worst_at_jd": 2594857.0
+    },
+    {
+      "body": "MEAN_APOGEE",
+      "worst_arcsec": 416.90272296862076,
+      "mean_arcsec": 265.0994613967279,
+      "at_1800_arcsec": 172.36348835035784,
+      "at_2100_arcsec": 259.62771341546613,
+      "at_2400_arcsec": 328.5848269590588,
+      "worst_speed_arcsec_per_day": 2.3969550312585852,
+      "is_direction": true,
+      "worst_lat_arcsec": 18691.083310128895,
+      "worst_lat_speed_arcsec_per_day": 53.38162729650216,
+      "worst_dist_relative": 1.0,
+      "worst_at_jd": 2380337.0
+    },
+    {
+      "body": "OSCULATING_APOGEE",
+      "worst_arcsec": 3571.446646017853,
+      "mean_arcsec": 1952.8868494779833,
+      "at_1800_arcsec": 1327.91123981208,
+      "at_2100_arcsec": 206.88115951957116,
+      "at_2400_arcsec": 751.3247035840322,
+      "worst_speed_arcsec_per_day": 19157.072701034638,
+      "is_direction": false,
+      "worst_lat_arcsec": 2765.729200583708,
+      "worst_lat_speed_arcsec_per_day": 9552.462639540032,
+      "worst_dist_relative": 0.016283541172781718,
+      "worst_at_jd": 2491097.0
     }
   ]
 }

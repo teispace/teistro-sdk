@@ -91,10 +91,13 @@ const JD_RANGE: (f64, f64) = (2_378_497.0, 2_597_641.0);
 /// (`03-design/pluto-measured.md`, ADR-0008). What it costs and what it
 /// is worth are per tier and published, like everything else.
 ///
-/// The osculating apogee is still not here. It needs the Earth-Moon mass
-/// parameter, which is a constant neither theory carries, and a body
-/// without a theory is refused by name rather than guessed at.
-const BODIES: [Body; 13] = [
+/// The osculating apogee is here on terms of its own again: it needs the
+/// Earth-Moon mass parameter, which is a constant *neither theory
+/// carries*, because an osculating element is a two-body orbit and a
+/// two-body orbit needs a mass. ADR-0008 refused it rather than guess
+/// one; `GM_EARTH_MOON` is that constant sourced, cited and checked
+/// against the mass ratio it implies.
+const BODIES: [Body; 14] = [
     Body::Sun,
     Body::Moon,
     Body::Mercury,
@@ -108,6 +111,7 @@ const BODIES: [Body; 13] = [
     Body::MeanNode,
     Body::TrueNode,
     Body::MeanApogee,
+    Body::OsculatingApogee,
 ];
 
 /// The built-in analytic ephemeris.
@@ -201,6 +205,47 @@ impl Builtin {
         Some((position, rate))
     }
 
+    /// The osculating apogee as a placed cell: where it is, how far away,
+    /// and how fast its longitude runs.
+    ///
+    /// The rate is a half-day central difference, the same the true node
+    /// takes and for the same reason — an osculating apse swings by
+    /// degrees over a month under the Sun's pull, which is well
+    /// conditioned over half a day and has no station to fall into. The
+    /// analytic alternative differentiates the eccentricity vector
+    /// through the Moon's own rate, which is the derivative of a quotient
+    /// of series and buys nothing a consumer can feel.
+    fn osculating_apogee_cell(&self, jd: f64, source: Source) -> Cell {
+        const STEP: f64 = 0.5;
+        let longitude_at = |at: f64| {
+            let (place, speed) = self.moon(at);
+            let (apogee, _) = osculating_apogee(place, speed);
+            apogee[1].atan2(apogee[0])
+        };
+        let mut moved = longitude_at(jd + STEP) - longitude_at(jd - STEP);
+        while moved > std::f64::consts::PI {
+            moved -= std::f64::consts::TAU;
+        }
+        while moved < -std::f64::consts::PI {
+            moved += std::f64::consts::TAU;
+        }
+        let (position, velocity) = self.moon(jd);
+        let (apogee, distance) = osculating_apogee(position, velocity);
+        let scale = length(apogee);
+        if scale <= 0.0 {
+            // A circular osculating orbit has no apse to report. It does
+            // not happen for the Moon, and answering zero would be a
+            // place rather than a refusal.
+            return Cell::failed(CellStatus::NotComputed);
+        }
+        // A placed point rather than a direction: it carries the distance
+        // the orbit puts it at, and takes what anything placed takes.
+        let at = apogee.map(|component| component / scale * distance);
+        let mut cell = to_cell(at, [0.0; 3], source);
+        cell.lon_speed = (moved / (2.0 * STEP)).to_degrees();
+        cell
+    }
+
     /// The Moon's geocentric position and rate, in astronomical units
     /// and astronomical units per day.
     ///
@@ -276,6 +321,34 @@ fn direction_cell(longitude: f64, rate: f64, source: Source) -> Cell {
     }
 }
 
+/// The Earth-Moon system's gravitational parameter, in astronomical
+/// units cubed per day squared.
+///
+/// **The only constant in this crate that comes from neither theory.**
+/// VSOP87 and ELP2000-82B are kinematic: they say where a body is, not
+/// what holds it there. An *osculating* element is the two-body orbit
+/// that matches a position and a velocity at an instant, and a two-body
+/// orbit needs a mass. ADR-0008 refused the osculating apogee rather than
+/// guess one; this is that constant sourced rather than guessed.
+///
+/// `GM(Earth)` is 3.986004418e14 m³/s² (IERS Conventions 2010, table
+/// 1.1), `GM(Moon)` is 4.902800118e12 (JPL DE440), and the astronomical
+/// unit is 1.495978707e11 m exactly (IAU 2012 Resolution B2). The
+/// Earth-Moon mass ratio those two imply is 81.3005695, which reproduces
+/// DE440's own 81.30056907 to eight digits — the check that the pair
+/// belongs to one system rather than to two.
+const GM_EARTH_MOON: f64 = 8.997_011_533_253_215e-10;
+
+/// The scalar product.
+fn dot(a: [f64; 3], b: [f64; 3]) -> f64 {
+    a[0].mul_add(b[0], a[1].mul_add(b[1], a[2] * b[2]))
+}
+
+/// A vector's length.
+fn length(v: [f64; 3]) -> f64 {
+    dot(v, v).sqrt()
+}
+
 /// The vector product, which both halves of a node need.
 fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
     [
@@ -305,6 +378,37 @@ fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
 fn true_node_longitude(position: [f64; 3], velocity: [f64; 3], pole: [f64; 3]) -> f64 {
     let node = cross(pole, cross(position, velocity));
     node[1].atan2(node[0])
+}
+
+/// The apogee of the Moon's osculating orbit: the direction of it, and
+/// how far away it is.
+///
+/// The **eccentricity vector** points at perigee and its length is the
+/// eccentricity, so apogee is its opposite; the semi-major axis comes
+/// from vis-viva, and the two together give the apogee's distance,
+/// `a(1 + e)`. That distance is why the port calls this body *placed*
+/// where it calls a node a direction: a node is an intersection and has
+/// nowhere to be, but the apogee is a point on the orbit, at the orbit's
+/// own distance, and light leaves it like anything else.
+///
+/// Unlike a node it needs **no reference plane**. A node is where two
+/// planes meet, so tilting one slides it along the orbit — which cost
+/// this crate 2044 arcseconds until it was measured. An apse is a
+/// direction in space, and a direction simply precesses.
+fn osculating_apogee(position: [f64; 3], velocity: [f64; 3]) -> ([f64; 3], f64) {
+    let r = length(position);
+    let speed_squared = dot(velocity, velocity);
+    let radial = dot(position, velocity);
+    // e = ((v² − μ/r) r − (r·v) v) / μ
+    let mut eccentricity = [0.0; 3];
+    let outward = speed_squared - GM_EARTH_MOON / r;
+    for ((slot, place), speed) in eccentricity.iter_mut().zip(position).zip(velocity) {
+        *slot = outward.mul_add(place, -(radial * speed)) / GM_EARTH_MOON;
+    }
+    // Vis-viva: 1/a = 2/r − v²/μ.
+    let semi_major = 1.0 / (2.0 / r - speed_squared / GM_EARTH_MOON);
+    let apogee = eccentricity.map(|component| -component);
+    (apogee, semi_major * (1.0 + length(eccentricity)))
 }
 
 /// The pole of the mean ecliptic of date, in the J2000 coordinates the
@@ -513,6 +617,9 @@ impl EphemerisProvider for Builtin {
                             moved / (2.0 * STEP),
                             source,
                         )
+                    }
+                    (Some(_), Body::OsculatingApogee) => {
+                        self.osculating_apogee_cell(dynamical, source)
                     }
                     (Some((earth_position, earth_rate)), other) => {
                         { heliocentric_of(*other, dynamical) }.map_or(
