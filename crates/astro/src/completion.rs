@@ -25,7 +25,7 @@ use teistro_port_ephemeris::{
     Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
-use crate::ayanamsha;
+use crate::ayanamsha::{self, Basis};
 use crate::delta_t::DeltaTModel;
 use crate::iau;
 use crate::precession::{self, PrecessionModel};
@@ -178,12 +178,15 @@ pub struct Completion<'p, P: EphemerisProvider + ?Sized> {
     policy: OverridePolicy,
     delta_t: DeltaTModel,
     precession: PrecessionModel,
+    ayanamsha_basis: Basis,
 }
 
 impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// Binds a provider under a policy; the capabilities are read once.
     /// The SDK's ayanamshas are carried by the default precession model
-    /// until [`Completion::with_precession`] says otherwise.
+    /// until [`Completion::with_precession`] says otherwise, and are the
+    /// mean value until [`Completion::with_ayanamsha_basis`] says
+    /// otherwise, both being what the root profile sets.
     pub fn new(provider: &'p P, policy: OverridePolicy, delta_t: DeltaTModel) -> Completion<'p, P> {
         Completion {
             provider,
@@ -191,6 +194,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             policy,
             delta_t,
             precession: PrecessionModel::default(),
+            ayanamsha_basis: Basis::Mean,
         }
     }
 
@@ -199,6 +203,27 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     pub const fn with_precession(mut self, model: PrecessionModel) -> Self {
         self.precession = model;
         self
+    }
+
+    /// Which equinox the SDK's ayanamsha is measured from: the mean
+    /// value, or the true value with the nutation in longitude added.
+    ///
+    /// It must match the equinox the longitude it is subtracted from is
+    /// referred to. A longitude corrected for nutation is of the true
+    /// equinox, so it wants the true basis; subtracting the mean value
+    /// from it leaves the whole nutation in longitude behind — measured
+    /// against the baseline engine, up to 18.5 arcseconds on every body
+    /// at once.
+    #[must_use]
+    pub const fn with_ayanamsha_basis(mut self, basis: Basis) -> Self {
+        self.ayanamsha_basis = basis;
+        self
+    }
+
+    /// The ayanamsha basis in force.
+    #[must_use]
+    pub const fn ayanamsha_basis(&self) -> Basis {
+        self.ayanamsha_basis
     }
 
     /// The policy in force.
@@ -561,6 +586,12 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             let tt = self.tt_at(*jd, request.scale, steps)?;
             let earth = sky::earth_at(tt);
             let obliquity = self.obliquity(*jd, request.scale, steps)?;
+            // Nutation in longitude, which on the ecliptic is added to the
+            // longitude directly. The obliquity alone carries only the
+            // nutation in obliquity, and a step that applied one and not
+            // the other would be wrong by up to seventeen arcseconds.
+            let (date1, date2) = tt.split();
+            let nutation = iau::nut00b(date1, date2);
             for (body_index, body) in request.bodies.iter().enumerate() {
                 let Some(cell) = columns.at(jd_index, body_index) else {
                     continue;
@@ -577,6 +608,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                         wanted,
                         &earth,
                         (obliquity.mean_deg, obliquity.true_deg),
+                        nutation.dpsi.to_degrees(),
                         native.coordinates,
                     ),
                 );
@@ -726,8 +758,9 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             });
         }
         // The provider's override when the policy allows and it declares
-        // one; otherwise the SDK's catalogue, the mean value carried by the
-        // precession model in force, which every epoch-defined ayanamsha has.
+        // one; otherwise the SDK's catalogue, carried by the precession
+        // model in force, which every epoch-defined ayanamsha has, on the
+        // basis the frame asked for.
         let implementation = self.choose(Overrides::AYANAMSHA, "ayanamsha")?;
         let mut ayanamsha_steps = Vec::new();
         let mut value = |zodiac: Zodiac, jd: f64| -> Result<f64, CompletionError> {
@@ -739,9 +772,10 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                     }
                     Implementation::Sdk | Implementation::PassThrough => {
                         let tt = self.tt_at(jd, request.scale, &mut ayanamsha_steps)?;
-                        Ok(ayanamsha::mean_deg(
+                        Ok(ayanamsha::value_deg(
                             &ayanamsha.into(),
                             tt,
+                            self.ayanamsha_basis,
                             self.precession,
                             self.delta_t,
                         )?)
@@ -871,6 +905,54 @@ fn apparent_cell(
     })
 }
 
+/// A cell's rate as a rectangular velocity in the equatorial frame,
+/// astronomical units a day.
+///
+/// The product rule over the three spherical factors, then the same
+/// rotation the position takes. The obliquity's own rate is neglected;
+/// it is under half an arcsecond a year.
+fn rectangular_rate(cell: Cell, coordinates: Coordinates, obliquity_deg: f64) -> [f64; 3] {
+    let lon = cell.lon.to_radians();
+    let lat = cell.lat.to_radians();
+    let d_lon = cell.lon_speed.to_radians();
+    let d_lat = cell.lat_speed.to_radians();
+    let (sin_lat, cos_lat) = lat.sin_cos();
+    let (sin_lon, cos_lon) = lon.sin_cos();
+    let r = cell.dist;
+    let d_r = cell.dist_speed;
+    let rate = [
+        d_r * cos_lat * cos_lon - r * sin_lat * d_lat * cos_lon - r * cos_lat * sin_lon * d_lon,
+        d_r * cos_lat * sin_lon - r * sin_lat * d_lat * sin_lon + r * cos_lat * cos_lon * d_lon,
+        d_r * sin_lat + r * cos_lat * d_lat,
+    ];
+    match coordinates {
+        Coordinates::Equatorial => rate,
+        // A velocity rotates like a position, so it takes the same
+        // rotation rather than a second copy of its matrix; the sign is
+        // held by `the_rate_takes_the_same_rotation_as_the_position`.
+        Coordinates::Ecliptic => {
+            iau::vector::rxp(&ecliptic_to_equatorial_matrix(obliquity_deg), &rate)
+        }
+    }
+}
+
+/// The rotation that carries an ecliptic vector to the equator: about
+/// the x axis, by the obliquity, in ERFA's sense of the word.
+fn ecliptic_to_equatorial_matrix(obliquity_deg: f64) -> iau::vector::Matrix3 {
+    let mut matrix = iau::vector::ir();
+    iau::vector::rx(-obliquity_deg.to_radians(), &mut matrix);
+    matrix
+}
+
+/// A vector scaled to unit length; zero stays zero.
+fn unit(v: [f64; 3]) -> [f64; 3] {
+    let length = v.iter().map(|c| c * c).sum::<f64>().sqrt();
+    if length == 0.0 {
+        return v;
+    }
+    [v[0] / length, v[1] / length, v[2] / length]
+}
+
 /// A direction as a unit vector, and back.
 fn to_vector(p: Spherical) -> [f64; 3] {
     let lon = p.lon_deg.to_radians();
@@ -960,6 +1042,7 @@ fn correct_cell(
     wanted: Corrections,
     earth: &sky::EarthAt,
     obliquities: (f64, f64),
+    nutation_longitude_deg: f64,
     coordinates: Coordinates,
 ) -> Cell {
     let (mean_deg, true_deg) = obliquities;
@@ -974,25 +1057,73 @@ fn correct_cell(
         Coordinates::Equatorial => p,
     };
 
-    // Light time, as one step back along the body's own motion. A
-    // direction has no distance and so no light time.
-    let mut lon = cell.lon;
-    let mut lat = cell.lat;
+    // Light time: the body is seen where it was `distance / c` ago, and
+    // "where it was" means in a frame that does not itself move.
+    //
+    // Stepping back along the body's **geocentric** rate is wrong and
+    // wrong by exactly the amount that matters. The Sun's geocentric
+    // motion is the Earth's own orbital motion seen from the other end,
+    // so a step back along it duplicates the aberration applied
+    // afterwards: measured, the two cancelled and left the Sun 20.9
+    // arcseconds from the engine, which is the whole of the correction.
+    //
+    // The body's barycentric motion is its geocentric motion plus the
+    // Earth's, and the Earth's is already to hand. For the Sun that sum
+    // is nearly nothing — the Sun hardly moves about the barycentre —
+    // which is why the Sun's apparent place is aberration and almost no
+    // light time at all.
+    //
+    // The step is taken on the scaled vector and the direction taken
+    // back from it, never the other way about: a node or an apogee is a
+    // *direction*, carrying no distance at all, and scaling one by its
+    // zero distance destroys the only thing it has. The guard below
+    // keeps such a cell on its unit vector untouched.
+    let mut direction = to_vector(to_equatorial(Spherical {
+        lon_deg: cell.lon,
+        lat_deg: cell.lat,
+    }));
     if wanted.light_time && body.is_placed() && cell.dist > 0.0 {
         let tau = cell.dist / AU_PER_DAY_LIGHT;
-        lon -= cell.lon_speed * tau;
-        lat -= cell.lat_speed * tau;
+        let rate = rectangular_rate(cell, coordinates, mean_deg);
+        let mut geocentric = direction.map(|component| component * cell.dist);
+        for (index, slot) in geocentric.iter_mut().enumerate() {
+            let barycentric = rate.get(index).copied().unwrap_or(0.0)
+                + earth.velocity_au_per_day.get(index).copied().unwrap_or(0.0);
+            *slot -= barycentric * tau;
+        }
+        direction = unit(geocentric);
     }
-
-    let mut direction = to_vector(to_equatorial(Spherical {
-        lon_deg: lon,
-        lat_deg: lat,
-    }));
 
     if body.is_placed() {
         if wanted.deflection {
-            direction =
-                iau::apparent::ldsun(&direction, &earth.heliocentric_au, earth.sun_distance_au);
+            // **Not** `ldsun`. That routine assumes the source is at
+            // infinity and so takes the direction from the Sun to it as
+            // the direction from the observer to it — true of a star,
+            // false of a planet, and catastrophically false near
+            // conjunction, where the two are opposite and the routine's
+            // own limiter is all that keeps the answer finite. Measured
+            // against the engine it put the Moon 719 arcseconds out.
+            //
+            // The Sun-to-body direction is available rather than
+            // approximated: the observer's heliocentric vector plus the
+            // body's geocentric one. The vectors it takes are unit
+            // vectors, which is the other half of what `ldsun` was
+            // hiding — a position in astronomical units is near enough
+            // to unit to look right and is not.
+            let em = earth.sun_distance_au;
+            let to_body = [
+                earth.heliocentric_au[0] + cell.dist * direction[0],
+                earth.heliocentric_au[1] + cell.dist * direction[1],
+                earth.heliocentric_au[2] + cell.dist * direction[2],
+            ];
+            direction = iau::apparent::ld(
+                1.0,
+                &direction,
+                &unit(to_body),
+                &unit(earth.heliocentric_au),
+                em,
+                1e-6 / (em * em).max(1.0),
+            );
         }
         if wanted.aberration {
             let v = [
@@ -1011,11 +1142,17 @@ fn correct_cell(
     }
 
     let corrected = to_spherical(direction);
-    // Nutation is a frame change: on the equator it is the matrix, and on
-    // the ecliptic it is the shift in longitude plus the true obliquity
-    // on the way out.
+    // Nutation is a frame change rather than a change in what is seen.
+    // On the ecliptic it is two things and not one: the true obliquity on
+    // the way out, **and** the nutation in longitude added to the
+    // longitude. Applying only the obliquity leaves the longitude short
+    // by up to seventeen arcseconds, which is thirty-eight seconds of
+    // tithi.
     let obliquity_out = if wanted.nutation { true_deg } else { mean_deg };
-    let here = from_equatorial(corrected, obliquity_out);
+    let mut here = from_equatorial(corrected, obliquity_out);
+    if wanted.nutation && coordinates == Coordinates::Ecliptic {
+        here.lon_deg = (here.lon_deg + nutation_longitude_deg).rem_euclid(360.0);
+    }
     Cell {
         lon: here.lon_deg,
         lat: here.lat_deg,
@@ -1473,5 +1610,86 @@ mod tests {
         let out = PositionRequest::new(&outside, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
         let apparent = completion.apparent(Body::Sun, JulianDay::literal(outside[0]));
         assert!(apparent.is_err() && completion.positions(&out).is_ok());
+    }
+    /// The rate's rotation and the position's must be the same rotation.
+    /// They are written in different terms — the position goes through
+    /// the spherical formulae, the rate through a matrix — so nothing
+    /// but a measurement says the matrix turns the same way. A sign
+    /// wrong here is a light-time step taken sideways.
+    #[test]
+    fn the_rate_takes_the_same_rotation_as_the_position() {
+        for lon in [0.0, 47.5, 180.0, 300.25] {
+            for lat in [-60.0, -5.0, 0.0, 5.0, 60.0] {
+                let spherical = Spherical {
+                    lon_deg: lon,
+                    lat_deg: lat,
+                };
+                let by_formula =
+                    to_vector(sky::ecliptic_to_equatorial(spherical, MEAN_OBLIQUITY_DEG));
+                let by_matrix = iau::vector::rxp(
+                    &ecliptic_to_equatorial_matrix(MEAN_OBLIQUITY_DEG),
+                    &to_vector(spherical),
+                );
+                for (axis, (formula, matrix)) in by_formula.iter().zip(by_matrix.iter()).enumerate()
+                {
+                    let apart = (formula - matrix).abs();
+                    assert!(
+                        apart < 1e-12,
+                        "axis {axis} at {lon},{lat} differs by {apart}"
+                    );
+                }
+            }
+        }
+    }
+
+    /// The obliquity at J2000, near enough for a rotation test.
+    const MEAN_OBLIQUITY_DEG: f64 = 23.439_291_1;
+
+    /// A node and an apogee are *directions*: they have a longitude and
+    /// nothing else, and their distance is exactly zero. Every correction
+    /// that needs a distance must leave them alone rather than multiply
+    /// by it.
+    ///
+    /// This is a measured regression. Stepping a direction back along its
+    /// light time was written as a scale by the distance followed by a
+    /// renormalisation, which sends a direction cell to the zero vector
+    /// and its longitude to whatever `atan2(0, 0)` happens to be. Both
+    /// nodes then read the same value, and against the baseline engine
+    /// they were out by up to ninety degrees — a whole quadrant, from
+    /// arithmetic that is invisible on every body that has a distance.
+    #[test]
+    fn a_direction_keeps_its_direction_through_the_corrections() {
+        let earth = sky::earth_at(JulianDay::<Tt>::literal(2_451_545.0));
+        let obliquities = (MEAN_OBLIQUITY_DEG, MEAN_OBLIQUITY_DEG);
+        for body in [Body::MeanNode, Body::TrueNode, Body::MeanApogee] {
+            assert!(!body.is_placed(), "{body:?} is a direction and must say so");
+            for lon in [0.0, 125.044_55, 250.5, 359.9] {
+                let cell = Cell {
+                    lon,
+                    lat: 0.0,
+                    dist: 0.0,
+                    lon_speed: -0.053,
+                    lat_speed: 0.0,
+                    dist_speed: 0.0,
+                    status: teistro_port_ephemeris::CellStatus::Ok,
+                    ..Cell::EMPTY
+                };
+                let done = correct_cell(
+                    cell,
+                    body,
+                    Corrections::APPARENT,
+                    &earth,
+                    obliquities,
+                    0.0,
+                    Coordinates::Ecliptic,
+                );
+                let moved = difference_deg(cell.lon, done.lon).abs();
+                assert!(
+                    moved < 1e-9,
+                    "{body:?} at {lon} moved {moved} degrees; a direction \
+                     takes no light time, no deflection and no aberration"
+                );
+            }
+        }
     }
 }

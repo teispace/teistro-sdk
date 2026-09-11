@@ -18,14 +18,12 @@
 //! value per chart.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::ayanamsha::{self, Basis};
+use teistro_astro::ayanamsha;
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt};
-use teistro_core::settings::{
-    AyanamshaBasis, AyanamshaChoice, Centre, Positions, Settings, Zodiac as ZodiacKnob,
-};
+use teistro_core::settings::{AyanamshaChoice, Centre, Positions, Settings, Zodiac as ZodiacKnob};
 use teistro_port_ephemeris::{Centre as FrameCentre, Corrections, Frame, Zodiac};
 
 /// The port's centre a setting names.
@@ -92,14 +90,17 @@ impl ChartZodiac {
         let (offset_deg, ayanamsha) = if frame.zodiac == ZodiacKnob::Tropical {
             (0.0, None)
         } else {
-            // A basis core adds before this crate learns it is the mean
-            // value, which is what the root sets.
-            let basis = if frame.ayanamsha_basis == AyanamshaBasis::True {
-                Basis::True
-            } else {
-                Basis::Mean
-            };
-            let value = ayanamsha::value_deg(&frame.ayanamsha, at, basis, precession, delta_t)?;
+            // `Basis` is the knob's own type, so the frame's choice is
+            // the argument. Mapping it by hand would send a variant core
+            // adds later silently to the mean value, where passing it
+            // through makes that a compile error in the one match on it.
+            let value = ayanamsha::value_deg(
+                &frame.ayanamsha,
+                at,
+                frame.ayanamsha_basis,
+                precession,
+                delta_t,
+            )?;
             (value, Some(frame.ayanamsha))
         };
         Ok(ChartZodiac {
