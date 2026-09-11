@@ -74,3 +74,37 @@ jobs:
         # matrix is here for the libraries.
         if: matrix.platform == 'linux-x64'
         run: cargo xtask check-site
+
+  # Phase 3's exit asks for the conformance kit against **every tier**,
+  # and a tier is a cargo feature, so the kit is whichever one is
+  # compiled: running it three times is running it three times. Without
+  # this job that was a run by hand, which is a claim rather than a gate.
+  #
+  # One platform is enough. The tiers differ in which coefficients are
+  # compiled in, not in how they are evaluated, and the library the
+  # matrix above builds is the same code at `standard`.
+  tiers:
+    name: ephemeris tier (${{ matrix.tier }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tier: [compact, standard, full]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: The provider kit and the crate's own tests at this tier
+        run: >
+          cargo test -p teistro-ephemeris-builtin
+          --no-default-features --features ${{ matrix.tier }}
+      - name: The boundary carries this tier too
+        run: >
+          cargo test -p teistro-ffi
+          --no-default-features --features builtin-${{ matrix.tier }}
+      - name: And the library builds with no built-in at all, which
+          ADR-0008 requires stay possible
+        if: matrix.tier == 'standard'
+        run: cargo build -p teistro-ffi --no-default-features
