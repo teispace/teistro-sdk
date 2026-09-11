@@ -210,6 +210,35 @@ Bengali, the Nepali lotus and the Western wheel, each a row a consumer
 can add to — ADR-0026), `serial` JSON with the extended envelope, Python
 binding, the baseline engine golden vectors for all of it.
 
+**Added 2026-09-11, from the maintainer's brief on plugins and the
+consumption surface** (ADR-0029, ADR-0030, research in
+`01-research/platform/15-provider-plugins-and-targets.md`). These are
+Phase 4's because its exit already requires "three bindings on **both
+providers**" and the engine half of that does not exist outside Rust:
+
+- **The adapters become loadable plugins.** `crate-type = ["cdylib",
+  "rlib"]` and an exported vtable factory for Teimeris and Swiss
+  Ephemeris; `ts_provider_load` and `ts_provider_free` at the boundary,
+  one loader rather than three; an adapter package per target that ships
+  a platform binary and its licence.
+- **The engine route is wired.** The Teimeris adapter answers the port's
+  `native_manifest` and `native_call` from its own 161-function IDL,
+  which it has always described and never exposed, so `sdk.engine.*`
+  reaches an engine at last.
+- **The typed engine façade is generated into the adapter**, not into the
+  SDK, so the port stays agnostic while a consumer who installs the
+  adapter gets 161 typed operations.
+- **The surface is namespaced** — `sdk.<area>.<operation>`, the areas
+  derived from the boundary modules the reference site already groups by.
+  Cheap now and breaking after v1, and every phase from here adds areas.
+
+The **v1 target matrix** is Rust, Node, wasm, Flutter/Dart and Python,
+with C as the ABI beneath them. wasm is already Phase 5's binding; what
+this records is what an ephemeris means there — **the built-in `compact`
+tier**, which exists for it at about 80 KB, since a wasm module cannot
+load a shared library and an engine compiled to wasm is a project of its
+own rather than a packaging step.
+
 Exit: the baseline engine's foundation and daily panchanga golden vectors reproduced
 within tolerance in three bindings on both providers (Teimeris and
 built-in `standard`, with the built-in differences within its published
