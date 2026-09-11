@@ -67,7 +67,14 @@ Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matt
 
 The Moon is the whole of the difference between the two tables: 14.6″ from the centre, 119″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 0.012″ at 1800, where Delta T is recorded, against 92.5″ at 2400, where it is extrapolated.
 
-The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 33, 1800 3, 2100 4, 2400 10. The recorded topocentric worst, for comparison, is 268 seconds.
+The geocentric Moon again as **the time it costs a boundary**, which is what a consumer of an almanac feels and what Phase 3's exit asks be published. A tithi is twelve degrees of the Moon's elongation from the Sun and is crossed at 10.670 degrees a day; a nakshatra is 13°20' of the Moon's own longitude, crossed at its sidereal 13.176 — so the same arcsecond is worth less time at a nakshatra edge.
+
+| boundary | worst | 1800 | 2100 | 2400 |
+|---|---:|---:|---:|---:|
+| tithi | 32.9 s | 2.9 s | 3.7 s | 9.6 s |
+| nakshatra | 26.7 s | 2.4 s | 3.0 s | 7.8 s |
+
+The recorded **topocentric** tithi worst, for comparison, is 268 seconds — the Delta T term again, and the reason the table above is the geocentric one.
 
 **The bija, measured rather than declared.** From the centre, the Moon is 14.6″ with it and 29.5″ without — the correction removes 14.8″ of 29.5″, fitted over 1900 to 2100. The true node moves 224″ against 224″, which is the same shift carried through and not a correction of its own.
 
@@ -153,7 +160,14 @@ Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matt
 
 The Moon is the whole of the difference between the two tables: 2.75″ from the centre, 117″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 1.44″ at 1800, where Delta T is recorded, against 95.1″ at 2400, where it is extrapolated.
 
-The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 6, 1800 0, 2100 1, 2400 4. The recorded topocentric worst, for comparison, is 262 seconds.
+The geocentric Moon again as **the time it costs a boundary**, which is what a consumer of an almanac feels and what Phase 3's exit asks be published. A tithi is twelve degrees of the Moon's elongation from the Sun and is crossed at 10.670 degrees a day; a nakshatra is 13°20' of the Moon's own longitude, crossed at its sidereal 13.176 — so the same arcsecond is worth less time at a nakshatra edge.
+
+| boundary | worst | 1800 | 2100 | 2400 |
+|---|---:|---:|---:|---:|
+| tithi | 6.2 s | 0.3 s | 0.6 s | 3.9 s |
+| nakshatra | 5.0 s | 0.3 s | 0.5 s | 3.1 s |
+
+The recorded **topocentric** tithi worst, for comparison, is 262 seconds — the Delta T term again, and the reason the table above is the geocentric one.
 
 **The bija, measured rather than declared.** From the centre, the Moon is 2.75″ with it and 19.2″ without — the correction removes 16.4″ of 19.2″, fitted over 1900 to 2100. The true node moves 119″ against 105″, which is the same shift carried through and not a correction of its own.
 
@@ -239,7 +253,14 @@ Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matt
 
 The Moon is the whole of the difference between the two tables: 2.47″ from the centre, 117″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 1.43″ at 1800, where Delta T is recorded, against 94.9″ at 2400, where it is extrapolated.
 
-The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 6, 1800 0, 2100 0, 2400 4. The recorded topocentric worst, for comparison, is 263 seconds.
+The geocentric Moon again as **the time it costs a boundary**, which is what a consumer of an almanac feels and what Phase 3's exit asks be published. A tithi is twelve degrees of the Moon's elongation from the Sun and is crossed at 10.670 degrees a day; a nakshatra is 13°20' of the Moon's own longitude, crossed at its sidereal 13.176 — so the same arcsecond is worth less time at a nakshatra edge.
+
+| boundary | worst | 1800 | 2100 | 2400 |
+|---|---:|---:|---:|---:|
+| tithi | 5.6 s | 0.3 s | 0.4 s | 4.1 s |
+| nakshatra | 4.5 s | 0.3 s | 0.3 s | 3.3 s |
+
+The recorded **topocentric** tithi worst, for comparison, is 263 seconds — the Delta T term again, and the reason the table above is the geocentric one.
 
 **The bija, measured rather than declared.** From the centre, the Moon is 2.47″ with it and 19.3″ without — the correction removes 16.8″ of 19.3″, fitted over 1900 to 2100. The true node moves 118″ against 105″, which is the same shift carried through and not a correction of its own.
 

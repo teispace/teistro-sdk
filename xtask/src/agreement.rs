@@ -54,6 +54,16 @@ const ALMANAC_MOON_ARCSEC: f64 = 0.445;
 /// constant the recording binary uses.
 const TITHI_SECONDS_PER_ARCSEC: f64 = 86_400.0 / (10.670 * 3_600.0);
 
+/// Seconds of **nakshatra** boundary per arcsecond of lunar longitude.
+///
+/// A different rate from the tithi's, and the difference is the point: a
+/// tithi is twelve degrees of the Moon's elongation *from the Sun*, so it
+/// is crossed at 10.670 degrees a day, while a nakshatra is 13°20' of the
+/// Moon's own longitude and is crossed at its sidereal 13.176. The same
+/// arcsecond of error is therefore worth less time at a nakshatra edge
+/// than at a tithi edge, and Phase 3's exit asks for both published.
+const NAKSHATRA_SECONDS_PER_ARCSEC: f64 = 86_400.0 / (13.176_358 * 3_600.0);
+
 /// A claim whose measurement is arcseconds, which `Claim::within` would
 /// otherwise print as seconds of time.
 fn within_arcsec(rule: String, worst: f64, bound: f64) -> Claim {
@@ -314,14 +324,29 @@ fn tier_section(tier: &Recorded, richest: &Recorded) -> String {
             arcsec_mark(topocentric.at_1800_arcsec),
             arcsec_mark(topocentric.at_2400_arcsec),
         );
-        let tithi = |value: f64| format!("{:.0}", value * TITHI_SECONDS_PER_ARCSEC);
+        let at = |value: f64, per_arcsec: f64| format!("{:.1}", value * per_arcsec);
         let _ = writeln!(
             out,
-            "The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst {}, 1800 {}, 2100 {}, 2400 {}. The recorded topocentric worst, for comparison, is {} seconds.\n",
-            tithi(geocentric.worst_arcsec),
-            tithi(geocentric.at_1800_arcsec),
-            tithi(geocentric.at_2100_arcsec),
-            tithi(geocentric.at_2400_arcsec),
+            "The geocentric Moon again as **the time it costs a boundary**, which is what a consumer of an almanac feels and what Phase 3's exit asks be published. A tithi is twelve degrees of the Moon's elongation from the Sun and is crossed at 10.670 degrees a day; a nakshatra is 13°20' of the Moon's own longitude, crossed at its sidereal 13.176 — so the same arcsecond is worth less time at a nakshatra edge.\n"
+        );
+        let _ = writeln!(out, "| boundary | worst | 1800 | 2100 | 2400 |");
+        let _ = writeln!(out, "|---|---:|---:|---:|---:|");
+        for (name, per_arcsec) in [
+            ("tithi", TITHI_SECONDS_PER_ARCSEC),
+            ("nakshatra", NAKSHATRA_SECONDS_PER_ARCSEC),
+        ] {
+            let _ = writeln!(
+                out,
+                "| {name} | {} s | {} s | {} s | {} s |",
+                at(geocentric.worst_arcsec, per_arcsec),
+                at(geocentric.at_1800_arcsec, per_arcsec),
+                at(geocentric.at_2100_arcsec, per_arcsec),
+                at(geocentric.at_2400_arcsec, per_arcsec),
+            );
+        }
+        let _ = writeln!(
+            out,
+            "\nThe recorded **topocentric** tithi worst, for comparison, is {} seconds — the Delta T term again, and the reason the table above is the geocentric one.\n",
             spaced(tier.moon_worst_tithi_seconds, 0),
         );
     }
