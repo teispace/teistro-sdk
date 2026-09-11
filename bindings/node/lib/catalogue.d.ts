@@ -5485,6 +5485,44 @@ export declare const ProviderCode: {
 export declare const ProviderCodeById: ReadonlyMap<number, ProviderCode>;
 
 /**
+ * Which of the SDK's own ephemerides a context computes with when no
+ * provider vtable is given.
+ *
+ * A caller who passes a vtable has already answered the question, and
+ * this is ignored. The states are exclusive, which is why they are an
+ * enum and not flag bits (ADR-0028).
+ */
+export type Ephemeris = 'none' | 'builtin' | 'test';
+
+/** Every Ephemeris by name; the values are the strings the union accepts. */
+export declare const Ephemeris: {
+  /**
+   * None. Positions are `CAPABILITY`, and so is anything built on
+   * them. The zero value, and what a caller who passes a vtable
+   * leaves this at.
+   */
+  readonly None: 'none';
+  /**
+   * The SDK's own built-in analytic ephemeris: no files, no network,
+   * no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming
+   * the feature if this library was built without it.
+   */
+  readonly Builtin: 'builtin';
+  /**
+   * The analytic test provider. For tests and examples only — its
+   * positions are **not astronomy**, and a chart cast from them is a
+   * shape rather than a sky.
+   */
+  readonly Test: 'test';
+};
+
+/**
+ * Every Ephemeris by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const EphemerisById: ReadonlyMap<number, Ephemeris>;
+
+/**
  * How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
  */
 export type Resolution = 'defined' | 'tabular' | 'computed' | 'divergent';

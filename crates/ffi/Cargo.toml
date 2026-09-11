@@ -25,11 +25,30 @@ teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
 teistro-idl = { path = "../idl", default-features = false }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-time = { path = "../time" }
+
+# The SDK's own ephemeris, so a consumer who installs nothing else still
+# computes a chart (ADR-0008, ADR-0028). It is a feature because a shared
+# library cannot be tree-shaken: a consumer who brings their own provider
+# and counts kilobytes turns it off and keeps the vtable path.
+#
+# A tier is additive and the richest wins, which is the built-in crate's
+# own rule, so asking for `builtin-full` beside the default leaves `full`
+# in force rather than a conflict.
+[features]
+default = ["builtin-ephemeris"]
+builtin-ephemeris = [
+  "dep:teistro-ephemeris-builtin",
+  "teistro-ephemeris-builtin/standard",
+]
+builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
+builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
+builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
 # The build script builds the SDK's locale bundles from `i18n/` so the
 # library carries its own messages (ADR-0010).

@@ -18,7 +18,7 @@ from __future__ import annotations
 import ctypes
 import unittest
 
-from teistro import _ffi
+from teistro import _ffi, catalogue
 
 
 def _struct_of(c_name: str) -> type[ctypes.Structure]:
@@ -87,7 +87,9 @@ class Sizes(unittest.TestCase):
             altitude_m=_ffi.Altitude(1400),
         )._to_c(owned)
         self.assertEqual(ctypes.sizeof(raw), _ffi.SIZES["ts_observer"])
-        options = _ffi.ContextOptions(flags=0)._to_c(owned)
+        options = _ffi.ContextOptions(
+            flags=0, ephemeris=catalogue.Ephemeris.NONE
+        )._to_c(owned)
         self.assertEqual(
             options.struct_size, ctypes.sizeof(_ffi._ContextOptionsStruct)
         )

@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -411,7 +411,9 @@ export interface Hash {
 /**
  * How a context is built. Every field may be left at its zero value: a
  * null `profile` selects `ts_default_profile`, a null `settings_json`
- * patches nothing, a null `locale` renders in the base locale.
+ * patches nothing, a null `locale` renders in the base locale, and a
+ * zero `ephemeris` leaves the context without one unless a vtable is
+ * passed.
  */
 export interface ContextOptions {
   /**
@@ -439,6 +441,13 @@ export interface ContextOptions {
    * @nullable
    */
   readonly locale?: string;
+  /**
+   * Which of the SDK's own ephemerides to use when no provider vtable
+   * is given; ignored when one is (ADR-0028).
+   * @enum Ephemeris
+   * @example 0
+   */
+  readonly ephemeris: Ephemeris;
 }
 
 /**

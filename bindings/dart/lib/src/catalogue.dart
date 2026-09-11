@@ -4095,6 +4095,53 @@ enum ProviderCode {
   }
 }
 
+/// Which of the SDK's own ephemerides a context computes with when no
+/// provider vtable is given.
+///
+/// A caller who passes a vtable has already answered the question, and
+/// this is ignored. The states are exclusive, which is why they are an
+/// enum and not flag bits (ADR-0028).
+enum Ephemeris {
+  /// None. Positions are `CAPABILITY`, and so is anything built on
+  /// them. The zero value, and what a caller who passes a vtable
+  /// leaves this at.
+  none(0, 'none'),
+  /// The SDK's own built-in analytic ephemeris: no files, no network,
+  /// no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming
+  /// the feature if this library was built without it.
+  builtin(1, 'builtin'),
+  /// The analytic test provider. For tests and examples only — its
+  /// positions are **not astronomy**, and a chart cast from them is a
+  /// shape rather than a sky.
+  test(2, 'test');
+
+  const Ephemeris(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Ephemeris byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Ephemeris'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Ephemeris? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
 enum Resolution {
   /// A mathematical definition; exact by construction.

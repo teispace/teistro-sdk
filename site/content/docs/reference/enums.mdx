@@ -1406,6 +1406,18 @@ assert_eq!(ProviderError::unsupported("positions").code(), ProviderCode::Unsuppo
 | `TS_PROVIDER_CODE_REFUSED` | -4 | The provider refused rather than answer with something else. |
 | `TS_PROVIDER_CODE_INVALID` | -5 | The request is malformed. |
 
+## ts_ephemeris
+
+Which of the SDK's own ephemerides a context computes with when no provider vtable is given.
+
+A caller who passes a vtable has already answered the question, and this is ignored. The states are exclusive, which is why they are an enum and not flag bits (ADR-0028).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_EPHEMERIS_NONE` | 0 | None. Positions are `CAPABILITY`, and so is anything built on them. The zero value, and what a caller who passes a vtable leaves this at. |
+| `TS_EPHEMERIS_BUILTIN` | 1 | The SDK's own built-in analytic ephemeris: no files, no network, no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming the feature if this library was built without it. |
+| `TS_EPHEMERIS_TEST` | 2 | The analytic test provider. For tests and examples only — its positions are **not astronomy**, and a chart cast from them is a shape rather than a sky. |
+
 ## ts_resolution
 
 How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).

@@ -4139,6 +4139,35 @@ typedef enum ts_provider_code {
 } ts_provider_code;
 
 /**
+ * Which of the SDK's own ephemerides a context computes with when no
+ * provider vtable is given.
+ *
+ * A caller who passes a vtable has already answered the question, and
+ * this is ignored. The states are exclusive, which is why they are an
+ * enum and not flag bits (ADR-0028).
+ */
+typedef enum ts_ephemeris {
+    /**
+     * None. Positions are `CAPABILITY`, and so is anything built on
+     * them. The zero value, and what a caller who passes a vtable
+     * leaves this at.
+     */
+    TS_EPHEMERIS_NONE = 0,
+    /**
+     * The SDK's own built-in analytic ephemeris: no files, no network,
+     * no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming
+     * the feature if this library was built without it.
+     */
+    TS_EPHEMERIS_BUILTIN = 1,
+    /**
+     * The analytic test provider. For tests and examples only — its
+     * positions are **not astronomy**, and a chart cast from them is a
+     * shape rather than a sky.
+     */
+    TS_EPHEMERIS_TEST = 2,
+} ts_ephemeris;
+
+/**
  * How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
  */
 typedef enum ts_resolution {
@@ -5152,7 +5181,9 @@ struct ts_blob {
 /**
  * How a context is built. Every field may be left at its zero value: a
  * null `profile` selects `ts_default_profile`, a null `settings_json`
- * patches nothing, a null `locale` renders in the base locale.
+ * patches nothing, a null `locale` renders in the base locale, and a
+ * zero `ephemeris` leaves the context without one unless a vtable is
+ * passed.
  * Set `struct_size` to `sizeof` before passing it; the library refuses a size it does not know.
  */
 struct ts_context_options {
@@ -5182,6 +5213,12 @@ struct ts_context_options {
      * Example: en-Latn. May be null.
      */
     const char * locale;
+    /**
+     * Which of the SDK's own ephemerides to use when no provider vtable
+     * is given; ignored when one is (ADR-0028).
+     * Enum: ts_ephemeris. Example: 0.
+     */
+    uint8_t ephemeris;
 };
 
 /**
@@ -6218,7 +6255,7 @@ _Static_assert(sizeof(ts_string) == 24, "ts_string is 24 bytes on 64-bit targets
 _Static_assert(sizeof(ts_str) == 16, "ts_str is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_hash) == 32, "ts_hash is 32 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_blob) == 24, "ts_blob is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_context_options) == 32, "ts_context_options is 32 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_context_options) == 40, "ts_context_options is 40 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");

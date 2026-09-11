@@ -50,6 +50,7 @@ from .catalogue import (
     Direction,
     DistanceUnit,
     Dst,
+    Ephemeris,
     Equinox,
     Era,
     Gana,
@@ -141,7 +142,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_str": 16,
     "ts_hash": 32,
     "ts_blob": 24,
-    "ts_context_options": 32,
+    "ts_context_options": 40,
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
@@ -171,7 +172,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_str": 8,
     "ts_hash": 32,
     "ts_blob": 12,
-    "ts_context_options": 20,
+    "ts_context_options": 24,
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
@@ -437,7 +438,9 @@ class _BlobStruct(ctypes.Structure):
 class _ContextOptionsStruct(ctypes.Structure):
     """How a context is built. Every field may be left at its zero value: a
     null `profile` selects `ts_default_profile`, a null `settings_json`
-    patches nothing, a null `locale` renders in the base locale.
+    patches nothing, a null `locale` renders in the base locale, and a
+    zero `ephemeris` leaves the context without one unless a vtable is
+    passed.
 
     The C layout, field for field. `ContextOptions` is the value class over it.
     """
@@ -448,6 +451,7 @@ class _ContextOptionsStruct(ctypes.Structure):
         ("profile", ctypes.c_char_p),
         ("settings_json", ctypes.c_char_p),
         ("locale", ctypes.c_char_p),
+        ("ephemeris", ctypes.c_uint8),
     ]
 
 
@@ -1574,12 +1578,20 @@ class Hash:
 class ContextOptions:
     """How a context is built. Every field may be left at its zero value: a
     null `profile` selects `ts_default_profile`, a null `settings_json`
-    patches nothing, a null `locale` renders in the base locale.
+    patches nothing, a null `locale` renders in the base locale, and a
+    zero `ephemeris` leaves the context without one unless a vtable is
+    passed.
     """
 
     flags: int
     """`TS_CONTEXT_*` flags, or zero.
     Example: 0.
+    """
+
+    ephemeris: Ephemeris
+    """Which of the SDK's own ephemerides to use when no provider vtable
+    is given; ignored when one is (ADR-0028).
+    Enum: TsEphemeris. Example: 0.
     """
 
     profile: Optional[str] = None
@@ -1617,6 +1629,7 @@ class ContextOptions:
         _locale = None if self.locale is None else self.locale.encode("utf-8")
         owned.append(_locale)
         raw.locale = _locale
+        raw.ephemeris = _c_value(self.ephemeris)
 
     def _to_c(self, owned: list[Any]) -> _ContextOptionsStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -1637,6 +1650,7 @@ class ContextOptions:
             profile=_text(raw.profile),
             settings_json=_text(raw.settings_json),
             locale=_text(raw.locale),
+            ephemeris=Ephemeris(raw.ephemeris),
         )
 
 

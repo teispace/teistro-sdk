@@ -1224,20 +1224,29 @@ export class Context {
    *   is what `defaultProfile()` names
    * @param {object} [options.settings] a settings patch over the profile
    * @param {string} [options.locale] the locale every render resolves from
-   * @param {boolean} [options.testProvider] use the SDK's analytic test
-   *   provider, for examples and tests only
+   * @param {'none'|'builtin'|'test'} [options.ephemeris] which of the
+   *   SDK's own ephemerides to use: `builtin` is the analytic ephemeris
+   *   the SDK carries, which needs no files, no network and no licence
+   *   beyond the SDK's own, and is what lets a chart compute with
+   *   nothing else installed; `test` is the test provider, whose
+   *   positions are **not astronomy**
+   * @param {boolean} [options.testProvider] the older spelling of
+   *   `ephemeris: 'test'`; `ephemeris` wins when both are given
    * @param {object} [options.provider] an ephemeris of your own: `name`,
    *   `bodies` (their catalogue keys) and `positions(request)`, which
    *   answers with the columns; everything else has a default
    */
   constructor(options = {}) {
-    const { profile, settings, locale, testProvider = false, provider } = options;
+    const { profile, settings, locale, ephemeris, testProvider = false, provider } = options;
     const [info, positions, thrown] = describeProvider(provider);
     this.#thrown = thrown;
     this.#inner = guarded(null, () =>
       new native.Context(
         clean({
-          flags: testProvider ? CONTEXT_TEST_PROVIDER : 0,
+          // One rule, written once: a named ephemeris wins, and the
+          // older flag decides only when none was named (ADR-0028).
+          flags: 0,
+          ephemeris: ephemeris ?? (testProvider ? 'test' : 'none'),
           profile,
           settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
           locale,

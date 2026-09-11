@@ -102,6 +102,7 @@ from .catalogue import (
     Choghadiya,
     DayPart,
     Direction,
+    Ephemeris,
     Graha,
     HouseSystem,
     Kaala,
@@ -150,6 +151,7 @@ __all__ = [
     "Coordinates",
     "DeltaT",
     "EphemerisProvider",
+    "Ephemeris",
     "Era",
     "Error",
     "Frame",
@@ -379,6 +381,7 @@ class Teistro:
         settings_json: Optional[str] = None,
         locale: Optional[str] = None,
         provider: Optional[EphemerisProvider] = None,
+        ephemeris: Optional[Ephemeris] = None,
         test_provider: bool = False,
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
@@ -389,10 +392,17 @@ class Teistro:
         for a caller who has the document rather than the mapping; giving
         both is refused rather than one silently winning.
 
-        `provider` binds an ephemeris written in Python;
-        `test_provider=True` selects the analytic one the SDK carries, and
-        neither leaves the context without an ephemeris, so a request for
-        positions is refused with `Status.CAPABILITY`.
+        `provider` binds an ephemeris written in Python. `ephemeris`
+        names one of the SDK's own instead: `Ephemeris.BUILTIN` is the
+        analytic ephemeris the SDK carries, which needs no files, no
+        network and no licence beyond the SDK's own, and is what lets a
+        chart compute with nothing else installed; `Ephemeris.TEST` is the
+        test provider, whose positions are **not astronomy**.
+
+        `test_provider=True` is the older spelling of `Ephemeris.TEST` and
+        still works; `ephemeris` wins when both are given (ADR-0028).
+        Naming none of the three leaves the context without an ephemeris,
+        so a request for positions is refused with `Status.CAPABILITY`.
         """
         if settings is not None and settings_json is not None:
             raise ValueError(
@@ -402,11 +412,17 @@ class Teistro:
         if settings is not None:
             settings_json = json.dumps(settings, separators=(",", ":"))
         host = None if provider is None else HostProvider(self.library, provider)
+        # One rule, written once: a named ephemeris wins, and the older
+        # flag decides only when none was named (ADR-0028).
+        chosen = ephemeris
+        if chosen is None:
+            chosen = Ephemeris.TEST if test_provider else Ephemeris.NONE
         options = ContextOptions(
-            flags=CONTEXT_TEST_PROVIDER if test_provider else 0,
+            flags=0,
             profile=profile,
             settings_json=settings_json,
             locale=locale,
+            ephemeris=chosen,
         )
         inner = TeistroContext._new(
             self.library,

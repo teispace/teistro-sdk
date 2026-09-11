@@ -30,8 +30,8 @@ use teistro_ffi::calendar::{
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
 use teistro_ffi::context::{
-    TsContext, TsContextOptions, TsError, ts_context_free, ts_context_last_error, ts_context_new,
-    ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
+    TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
+    ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
 };
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::keys::{ts_key_name, ts_key_parse};
@@ -60,6 +60,17 @@ impl Ctx {
         settings_json: Option<&str>,
         locale: Option<&str>,
     ) -> Result<Ctx, (Status, String)> {
+        Ctx::with_ephemeris(flags, TsEphemeris::None, profile, settings_json, locale)
+    }
+
+    /// The same, naming one of the SDK's own ephemerides (ADR-0028).
+    fn with_ephemeris(
+        flags: u32,
+        ephemeris: TsEphemeris,
+        profile: Option<&str>,
+        settings_json: Option<&str>,
+        locale: Option<&str>,
+    ) -> Result<Ctx, (Status, String)> {
         let profile = profile.map(|p| CString::new(p).unwrap());
         let settings = settings_json.map(|p| CString::new(p).unwrap());
         let locale = locale.map(|p| CString::new(p).unwrap());
@@ -69,6 +80,7 @@ impl Ctx {
             profile: profile.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             settings_json: settings.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             locale: locale.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
+            ephemeris: ephemeris as u8,
         };
         let mut handle = ptr::null_mut();
         let mut error = TsString::empty();
@@ -285,6 +297,7 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
         profile: ptr::null(),
         settings_json: ptr::null(),
         locale: ptr::null(),
+        ephemeris: TsEphemeris::None as u8,
     };
     let mut handle = ptr::null_mut();
     // SAFETY: valid pointers.
@@ -315,6 +328,88 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
     );
     // SAFETY: null is ignored.
     unsafe { ts_context_free(ptr::null_mut()) };
+}
+
+/// **Phase 3's promise at the boundary a consumer actually crosses.**
+///
+/// Every other test here computes with the test provider, whose positions
+/// are not astronomy. This one names the SDK's own ephemeris and gets a
+/// real sky: no vtable, no files, no network, no second library. It is
+/// the whole of what "a chart computes with nothing but the SDK
+/// installed" means for a caller outside Rust (ADR-0008, ADR-0028).
+///
+/// It asserts places and not accuracy — accuracy is measured against an
+/// engine in `03-design/completion-measured.md` — so what it checks is
+/// what a boundary test can: the Sun is where the Sun is at J2000, it
+/// moves about a degree a day, and the provenance names the built-in
+/// rather than whatever was bound last.
+#[cfg(feature = "builtin-ephemeris")]
+#[test]
+fn the_built_in_ephemeris_computes_a_real_sky_across_the_boundary() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let jds = [2_451_545.0, 2_451_546.0];
+    let bodies = [Body::Sun.id()];
+    let frame = Frame::CANONICAL;
+    let request = sized(
+        PositionRequestC {
+            struct_size: 0,
+            scale: TimeScale::Tt.id(),
+            frame_bits: frame.to_bits(),
+            speeds: 1,
+            has_observer: 0,
+            reserved: [0; 2],
+            observer: teistro_port_ephemeris::vtable::ObserverC::default(),
+            jds: jds.as_ptr(),
+            jd_count: jds.len(),
+            bodies: bodies.as_ptr(),
+            body_count: bodies.len(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live handle, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_positions(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "the built-in answers where no provider was bound"
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::positions();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let lon = reader.column("cells", "lon").unwrap();
+    let speed = reader.column("cells", "lon_speed").unwrap();
+    assert_eq!(reader.count("cells"), Some(2));
+    assert!(
+        reader
+            .column("cells", "status")
+            .unwrap()
+            .iter()
+            .all(|s| s.as_i64() == 0),
+        "every cell computed"
+    );
+    // The Sun's apparent tropical longitude at J2000.0 is 280.4 degrees,
+    // a figure any almanac carries; a degree of room is far tighter than
+    // anything that could pass by accident and far looser than the
+    // arcseconds the accuracy document measures.
+    let sun = lon[0].as_f64();
+    assert!(
+        (279.0..282.0).contains(&sun),
+        "the Sun is at {sun} degrees at J2000, which is not where the Sun is"
+    );
+    // And it moves the way the Sun moves.
+    let daily = speed[0].as_f64();
+    assert!(
+        (0.9..1.1).contains(&daily),
+        "the Sun moves {daily} degrees a day, which is not a year"
+    );
+    let moved = lon[1].as_f64() - sun;
+    assert!(
+        (0.9..1.1).contains(&moved),
+        "a day later it has moved {moved} degrees"
+    );
 }
 
 #[test]

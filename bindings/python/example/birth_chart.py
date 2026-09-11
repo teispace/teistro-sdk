@@ -16,10 +16,11 @@ takes, in order:
 4.  Each longitude read as a rashi, a nakshatra and a pada, using the
     catalogue's own members and the locale's own names.
 
-What it does **not** need: an ephemeris of your own. `test_provider=True`
-selects the analytic one the SDK carries so this file runs anywhere. Its
-numbers are a smooth model, not an ephemeris — see `ephemeris.py` for what that
-means in practice.
+What it does **not** need: an ephemeris of your own, a data file, a
+network, or a second library. `ephemeris=Ephemeris.BUILTIN` selects the
+one the SDK carries, so every position below is a real sky and this file
+runs anywhere the package installs — see `ephemeris.py` for how to bind
+one of your own instead.
 
 Run it:
 
@@ -35,6 +36,7 @@ from teistro import (
     Body,
     Calendar,
     Context,
+    Ephemeris,
     Teistro,
     TeistroError,
     at,
@@ -129,7 +131,9 @@ def chart(ctx: Context, teistro: Teistro, instant: float) -> list[Placement]:
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-default",
+        locale="ne-Deva-NP",
+        ephemeris=Ephemeris.BUILTIN,
     ) as ctx:
         # ── 1. The record, as it would be written on a form ───────────
         birth_day = date(Calendar.BIKRAM_SAMBAT, 2042, 9, 17)
@@ -207,7 +211,7 @@ def main() -> None:
         with teistro.context(
             profile="nepali-default",
             locale="ne-Deva-NP",
-            test_provider=True,
+            ephemeris=Ephemeris.BUILTIN,
             settings=settings,
         ) as scoped:
             label = (policy or "refuse").ljust(9)

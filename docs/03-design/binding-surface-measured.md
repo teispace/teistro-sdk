@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 2 exported constants, 91 enums of 946 members in
+The description carries 2 exported constants, 92 enums of 949 members in
 all, 1 opaque handle type, 8 callback types, 27 structs, 43 entry points
 and 4 result-blob schemas, extracted from 18 source files. A binding's
 mechanical layer is a rule per **role**, not a rule per entry point,
@@ -67,18 +67,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1278 | 1 | 0 | 0 | 0 |
-| TypeScript | 332 | 0 | 0 | 1 | 0 |
-| Python | 1278 | 0 | 1 | 2 | 0 |
+| Dart | 1282 | 1 | 0 | 0 | 0 |
+| TypeScript | 333 | 0 | 0 | 1 | 0 |
+| Python | 1282 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1278 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 332 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1278 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1278 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 332 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1278 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1282 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 333 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1282 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1282 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 333 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1282 disagree |
 
 What Dart renames:
 
@@ -133,7 +133,7 @@ against them on the machine the library was actually built for.
 | `ts_str` | 16 | 8 | 8 | yes |
 | `ts_hash` | 32 | 1 | same | no |
 | `ts_blob` | 24 | 8 | 12 | yes |
-| `ts_context_options` | 32 | 8 | 20 | yes |
+| `ts_context_options` | 40 | 8 | 24 | yes |
 | `ts_error` | 56 | 8 | 36 | yes |
 | `ts_frame` | 16 | 4 | same | no |
 | `ts_calendar_date` | 24 | 4 | same | no |
@@ -169,7 +169,7 @@ the class of mistake a generated binding exists to make impossible.
 
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
-| `u8` | `c_uint8` | `B` | 66 | 43 |
+| `u8` | `c_uint8` | `B` | 67 | 43 |
 | `u16` | `c_uint16` | `H` | 18 | 39 |
 | `u32` | `c_uint32` | `I` | 46 | 23 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
@@ -194,15 +194,15 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 179 of 179 visible struct fields
+much of that there is to reach for: 180 of 180 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
 |---|---|
 | `bitset` | 1 |
 | `brand` | 4 |
-| `enum` | 23 |
-| `example` | 86 |
+| `enum` | 24 |
+| `example` | 87 |
 | `flag` | 15 |
 | `len` | 14 |
 | `nullable` | 11 |
@@ -212,8 +212,8 @@ carry a doc comment.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 179 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 179 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 180 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 180 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

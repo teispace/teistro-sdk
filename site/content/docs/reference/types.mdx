@@ -196,7 +196,7 @@ A result blob the library allocated; its layout is the `TSRB` encoding under the
 
 ## ts_context_options
 
-How a context is built. Every field may be left at its zero value: a null `profile` selects `ts_default_profile`, a null `settings_json` patches nothing, a null `locale` renders in the base locale.
+How a context is built. Every field may be left at its zero value: a null `profile` selects `ts_default_profile`, a null `settings_json` patches nothing, a null `locale` renders in the base locale, and a zero `ephemeris` leaves the context without one unless a vtable is passed.
 
 | field | type | what it carries |
 |---|---|---|
@@ -204,6 +204,7 @@ How a context is built. Every field may be left at its zero value: a null `profi
 | `profile` | `const char *` | The shipped profile's id (`parashari-classical`, `nepali-default`, `kp-default`, `western-tropical-default`, `conformance-baseline`). Example `parashari-classical`. |
 | `settings_json` | `const char *` | A JSON settings patch over the profile: an object whose groups and knobs are the settings document's, every one optional; an unknown knob or a value outside its type is `INVALID_ARG` naming it. |
 | `locale` | `const char *` | The locale every render resolves from (`ne-Deva-NP`). Example `en-Latn`. |
+| `ephemeris` | `uint8_t` | Which of the SDK's own ephemerides to use when no provider vtable is given; ignored when one is (ADR-0028). One of `ts_ephemeris`. Example `0`. |
 
 ## ts_error
 

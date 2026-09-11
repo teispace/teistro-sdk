@@ -445,6 +445,28 @@ pub fn coordinates_to_str(value: u8) -> String {
     .to_string()
 }
 
+/// A `Ephemeris` from the string `catalogue.js` names it by.
+pub fn ephemeris_from_str(value: &str) -> Result<u8> {
+    match value {
+        "none" => Ok(0),
+        "builtin" => Ok(1),
+        "test" => Ok(2),
+        other => Err(Error::from_reason(format!("`{other}` is not a Ephemeris"))),
+    }
+}
+
+/// The string for a `Ephemeris`; a value from a newer library is
+/// `unknown`.
+pub fn ephemeris_to_str(value: u8) -> String {
+    match value {
+        0 => "none",
+        1 => "builtin",
+        2 => "test",
+        _ => "unknown",
+    }
+    .to_string()
+}
+
 /// A `Resolution` from the string `catalogue.js` names it by.
 pub fn resolution_from_str(value: &str) -> Result<u8> {
     match value {
@@ -1326,7 +1348,9 @@ impl Hash {
 
 /// How a context is built. Every field may be left at its zero value: a
 /// null `profile` selects `ts_default_profile`, a null `settings_json`
-/// patches nothing, a null `locale` renders in the base locale.
+/// patches nothing, a null `locale` renders in the base locale, and a
+/// zero `ephemeris` leaves the context without one unless a vtable is
+/// passed.
 #[napi(object)]
 #[derive(Clone, Debug)]
 pub struct ContextOptions {
@@ -1344,6 +1368,10 @@ pub struct ContextOptions {
     /// The locale every render resolves from (`ne-Deva-NP`).
     /// Example: en-Latn. May be null.
     pub locale: Option<String>,
+    /// Which of the SDK's own ephemerides to use when no provider vtable
+    /// is given; ignored when one is (ADR-0028).
+    /// Enum: TsEphemeris. Example: 0.
+    pub ephemeris: String,
 }
 
 /// What a `ContextOptions` lends the C struct built from it: the buffers its
@@ -1353,6 +1381,7 @@ pub struct HeldContextOptions {
     profile: Option<std::ffi::CString>,
     settings_json: Option<std::ffi::CString>,
     locale: Option<std::ffi::CString>,
+    ephemeris: u8,
 }
 
 impl HeldContextOptions {
@@ -1367,6 +1396,7 @@ impl HeldContextOptions {
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
             locale: self.locale.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            ephemeris: self.ephemeris,
         }
     }
 }
@@ -1391,6 +1421,7 @@ impl ContextOptions {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            ephemeris: ephemeris_from_str(&self.ephemeris)?,
         })
     }
 
@@ -1406,6 +1437,7 @@ impl ContextOptions {
             profile: unsafe { lent_text(raw.profile) },
             settings_json: unsafe { lent_text(raw.settings_json) },
             locale: unsafe { lent_text(raw.locale) },
+            ephemeris: ephemeris_to_str(raw.ephemeris),
         }
     }
 }

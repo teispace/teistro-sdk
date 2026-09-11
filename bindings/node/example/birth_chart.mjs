@@ -16,8 +16,10 @@
 // 4. Each longitude read as a rashi, a nakshatra and a pada, using the
 //    catalogue's own members and the locale's own names.
 //
-// What it does not need: an ephemeris of your own. `testProvider: true`
-// selects the analytic one the SDK carries so this file runs anywhere.
+// What it does not need: an ephemeris of your own, a data file, a
+// network, or a second library. `ephemeris: 'builtin'` selects the one
+// the SDK carries, so every position below is a real sky and this file
+// runs anywhere the package installs.
 
 import {
   Ayanamsha,
@@ -119,7 +121,7 @@ const two = (value) => String(value).padStart(2, '0');
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  testProvider: true,
+  ephemeris: 'builtin',
 });
 
 // ── 1. The record, as it would be written on a form ────────────────────
@@ -192,7 +194,7 @@ for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
   const scoped = new Context({
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: 'builtin',
     settings: policy ? { time: { unknown_time: policy } } : undefined,
   });
   try {
