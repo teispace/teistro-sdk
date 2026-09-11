@@ -16,8 +16,10 @@
 // 4. Each longitude read as a rashi, a nakshatra and a pada, using the
 //    catalogue's own members and the locale's own names.
 //
-// What it does not need: an ephemeris of your own. `testProvider: true`
-// selects the analytic one the SDK carries so this file runs anywhere.
+// What it does not need: an ephemeris of your own, a data file, a
+// network, or a second library. `ephemeris: Ephemeris.builtin` selects
+// the one the SDK carries, so every position below is a real sky and
+// this file runs anywhere the package installs.
 
 import 'package:teistro/teistro.dart';
 
@@ -107,7 +109,7 @@ void main() {
   final ctx = teistro.context(
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: Ephemeris.builtin,
   );
 
   // ── 1. The record, as it would be written on a form ─────────────────
@@ -197,7 +199,7 @@ void main() {
     final scoped = teistro.context(
       profile: 'nepali-default',
       locale: 'ne-Deva-NP',
-      testProvider: true,
+      ephemeris: Ephemeris.builtin,
       settings:
           policy == null
               ? null

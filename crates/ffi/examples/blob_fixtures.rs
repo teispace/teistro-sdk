@@ -25,7 +25,9 @@ use std::ptr;
 use teistro_core::Status;
 use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
-use teistro_ffi::context::{TsContext, TsContextOptions, ts_context_free, ts_context_new};
+use teistro_ffi::context::{
+    TsContext, TsContextOptions, TsEphemeris, ts_context_free, ts_context_new,
+};
 use teistro_ffi::frame::{TsFrame, ts_frame_canonical, ts_frame_pack};
 use teistro_ffi::intl::ts_intl_render;
 use teistro_ffi::positions::ts_positions;
@@ -65,6 +67,7 @@ fn main() {
         profile: profile.as_ptr(),
         settings_json: ptr::null(),
         locale: locale.as_ptr(),
+        ephemeris: TsEphemeris::None as u8,
     };
     let mut context: *mut TsContext = ptr::null_mut();
     // SAFETY: valid pointers for the call.

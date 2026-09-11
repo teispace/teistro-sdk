@@ -5948,6 +5948,29 @@
       "source": "crates/port-ephemeris/src/vtable.rs"
     },
     {
+      "name": "TsEphemeris",
+      "doc": "Which of the SDK's own ephemerides a context computes with when no\nprovider vtable is given.\n\nA caller who passes a vtable has already answered the question, and\nthis is ignored. The states are exclusive, which is why they are an\nenum and not flag bits (ADR-0028).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "None",
+          "value": 0,
+          "doc": "None. Positions are `CAPABILITY`, and so is anything built on\nthem. The zero value, and what a caller who passes a vtable\nleaves this at."
+        },
+        {
+          "name": "Builtin",
+          "value": 1,
+          "doc": "The SDK's own built-in analytic ephemeris: no files, no network,\nno licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming\nthe feature if this library was built without it."
+        },
+        {
+          "name": "Test",
+          "value": 2,
+          "doc": "The analytic test provider. For tests and examples only — its\npositions are **not astronomy**, and a chart cast from them is a\nshape rather than a sky."
+        }
+      ],
+      "source": "crates/ffi/src/context.rs"
+    },
+    {
       "name": "TsResolution",
       "doc": "How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).",
       "repr": "u8",
@@ -8106,7 +8129,7 @@
     },
     {
       "name": "TsContextOptions",
-      "doc": "How a context is built. Every field may be left at its zero value: a\nnull `profile` selects `ts_default_profile`, a null `settings_json`\npatches nothing, a null `locale` renders in the base locale.",
+      "doc": "How a context is built. Every field may be left at its zero value: a\nnull `profile` selects `ts_default_profile`, a null `settings_json`\npatches nothing, a null `locale` renders in the base locale, and a\nzero `ephemeris` leaves the context without one unless a vtable is\npassed.",
       "role": "object",
       "fields": [
         {
@@ -8171,6 +8194,18 @@
           "meta": {
             "example": "en-Latn",
             "nullable": true
+          }
+        },
+        {
+          "name": "ephemeris",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Which of the SDK's own ephemerides to use when no provider vtable\nis given; ignored when one is (ADR-0028).",
+          "meta": {
+            "example": "0",
+            "enum": "TsEphemeris"
           }
         }
       ],

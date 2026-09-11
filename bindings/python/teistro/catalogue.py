@@ -3339,6 +3339,34 @@ class ProviderCode(Member):
     """The request is malformed."""
 
 
+class Ephemeris(Member):
+    """Which of the SDK's own ephemerides a context computes with when no
+    provider vtable is given.
+
+    A caller who passes a vtable has already answered the question, and
+    this is ignored. The states are exclusive, which is why they are an
+    enum and not flag bits (ADR-0028).
+    """
+
+    NONE = 0
+    """None. Positions are `CAPABILITY`, and so is anything built on
+    them. The zero value, and what a caller who passes a vtable
+    leaves this at.
+    """
+
+    BUILTIN = 1
+    """The SDK's own built-in analytic ephemeris: no files, no network,
+    no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming
+    the feature if this library was built without it.
+    """
+
+    TEST = 2
+    """The analytic test provider. For tests and examples only — its
+    positions are **not astronomy**, and a chart cast from them is a
+    shape rather than a sky.
+    """
+
+
 class Resolution(Member):
     """How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`)."""
 
@@ -4724,6 +4752,11 @@ _KEYS: dict[str, dict[int, str]] = {
         -3: "data-missing",
         -4: "refused",
         -5: "invalid",
+    },
+    "Ephemeris": {
+        0: "none",
+        1: "builtin",
+        2: "test",
     },
     "Resolution": {
         0: "defined",

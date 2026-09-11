@@ -539,7 +539,9 @@ final class BlobStruct extends ffi.Struct {
 
 /// How a context is built. Every field may be left at its zero value: a
 /// null `profile` selects `ts_default_profile`, a null `settings_json`
-/// patches nothing, a null `locale` renders in the base locale.
+/// patches nothing, a null `locale` renders in the base locale, and a
+/// zero `ephemeris` leaves the context without one unless a vtable is
+/// passed.
 final class ContextOptionsStruct extends ffi.Struct {
   /// `sizeof(ts_context_options)` as the caller compiled it.
   @ffi.Uint32()
@@ -563,6 +565,12 @@ final class ContextOptionsStruct extends ffi.Struct {
   /// The locale every render resolves from (`ne-Deva-NP`).
   /// Example: en-Latn. May be null.
   external ffi.Pointer<ffi.Char> locale;
+
+  /// Which of the SDK's own ephemerides to use when no provider vtable
+  /// is given; ignored when one is (ADR-0028).
+  /// Enum: TsEphemeris. Example: 0.
+  @ffi.Uint8()
+  external int ephemeris;
 
 }
 
@@ -2172,10 +2180,12 @@ final class Hash {
 
 /// How a context is built. Every field may be left at its zero value: a
 /// null `profile` selects `ts_default_profile`, a null `settings_json`
-/// patches nothing, a null `locale` renders in the base locale.
+/// patches nothing, a null `locale` renders in the base locale, and a
+/// zero `ephemeris` leaves the context without one unless a vtable is
+/// passed.
 final class ContextOptions {
   /// A ContextOptions with every field named.
-  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale});
+  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale, required this.ephemeris});
 
   /// `TS_CONTEXT_*` flags, or zero.
   /// Example: 0.
@@ -2194,6 +2204,11 @@ final class ContextOptions {
   /// The locale every render resolves from (`ne-Deva-NP`).
   /// Example: en-Latn. May be null.
   final String? locale;
+
+  /// Which of the SDK's own ephemerides to use when no provider vtable
+  /// is given; ignored when one is (ADR-0028).
+  /// Enum: TsEphemeris. Example: 0.
+  final Ephemeris ephemeris;
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -2214,6 +2229,7 @@ final class ContextOptions {
     raw.locale = locale == null
         ? ffi.nullptr
         : locale!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.ephemeris = ephemeris.id;
   }
 
   /// Reads the value a call filled in.
@@ -2231,6 +2247,7 @@ final class ContextOptions {
         locale: raw.locale == ffi.nullptr
             ? null
             : raw.locale.cast<pkg_ffi.Utf8>().toDartString(),
+        ephemeris: Ephemeris.byId(raw.ephemeris),
       );
 }
 

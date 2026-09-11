@@ -2597,6 +2597,23 @@ export const ProviderCodeById = new Map([
   [-5, 'invalid'],
 ]);
 
+/** Every Ephemeris by name. */
+export const Ephemeris = Object.freeze({
+  None: 'none',
+  Builtin: 'builtin',
+  Test: 'test',
+});
+
+/**
+ * Every Ephemeris by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const EphemerisById = new Map([
+  [0, 'none'],
+  [1, 'builtin'],
+  [2, 'test'],
+]);
+
 /** Every Resolution by name. */
 export const Resolution = Object.freeze({
   Defined: 'defined',

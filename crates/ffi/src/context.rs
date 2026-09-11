@@ -32,9 +32,50 @@ use crate::support::{c_struct, optional_text, read_in, with_context, write_out, 
 
 include!(concat!(env!("OUT_DIR"), "/bundles.rs"));
 
+/// Which of the SDK's own ephemerides a context computes with when no
+/// provider vtable is given.
+///
+/// A caller who passes a vtable has already answered the question, and
+/// this is ignored. The states are exclusive, which is why they are an
+/// enum and not flag bits (ADR-0028).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum TsEphemeris {
+    /// None. Positions are `CAPABILITY`, and so is anything built on
+    /// them. The zero value, and what a caller who passes a vtable
+    /// leaves this at.
+    #[default]
+    None = 0,
+    /// The SDK's own built-in analytic ephemeris: no files, no network,
+    /// no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming
+    /// the feature if this library was built without it.
+    Builtin = 1,
+    /// The analytic test provider. For tests and examples only — its
+    /// positions are **not astronomy**, and a chart cast from them is a
+    /// shape rather than a sky.
+    Test = 2,
+}
+
+impl TsEphemeris {
+    /// The value a caller wrote, or `None` if it names nothing.
+    ///
+    /// An unknown number is not silently the default: a caller who meant
+    /// something this library does not have should hear so.
+    const fn from_repr(value: u8) -> Option<TsEphemeris> {
+        match value {
+            0 => Some(TsEphemeris::None),
+            1 => Some(TsEphemeris::Builtin),
+            2 => Some(TsEphemeris::Test),
+            _ => None,
+        }
+    }
+}
+
 /// How a context is built. Every field may be left at its zero value: a
 /// null `profile` selects `ts_default_profile`, a null `settings_json`
-/// patches nothing, a null `locale` renders in the base locale.
+/// patches nothing, a null `locale` renders in the base locale, and a
+/// zero `ephemeris` leaves the context without one unless a vtable is
+/// passed.
 #[repr(C)]
 #[derive(Debug)]
 pub struct TsContextOptions {
@@ -55,6 +96,10 @@ pub struct TsContextOptions {
     /// The locale every render resolves from (`ne-Deva-NP`).
     /// `api: nullable example=en-Latn`
     pub locale: *const c_char,
+    /// Which of the SDK's own ephemerides to use when no provider vtable
+    /// is given; ignored when one is (ADR-0028).
+    /// `api: enum=TsEphemeris example=0`
+    pub ephemeris: u8,
 }
 
 /// The last error of a call on a context: the status, the detail, and the
@@ -395,9 +440,9 @@ unsafe fn build(
             optional_text(options.map_or(ptr::null(), |o| o.locale), "options.locale")?,
         )
     };
+    let ephemeris = options.map_or(0, |o| o.ephemeris);
     let provider: Option<Box<dyn EphemerisProvider>> = if provider.is_null() {
-        (flags & TS_CONTEXT_TEST_PROVIDER != 0)
-            .then(|| Box::new(TestProvider::new()) as Box<dyn EphemerisProvider>)
+        own_provider(ephemeris, flags)?
     } else {
         // SAFETY: non-null; the caller promises a readable vtable whose
         // functions stay valid with `provider_user_data`.
@@ -405,6 +450,63 @@ unsafe fn build(
         Some(Box::new(bound))
     };
     TsContext::build(profile, settings_json, provider, locale)
+}
+
+/// Which of the SDK's own providers a caller asked for, and the one it
+/// gets.
+///
+/// The selector and `TS_CONTEXT_TEST_PROVIDER` are two spellings of one
+/// question, so they are answered in one place: the selector decides
+/// whenever it is not `NONE`, and the flag decides when it is. A total
+/// rule rather than a conflict to report, and one code path, so the two
+/// cannot drift apart (ADR-0028).
+fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
+    let Some(asked) = TsEphemeris::from_repr(ephemeris) else {
+        return Err(Error::invalid_arg(format!(
+            "options.ephemeris is {ephemeris}, which names no ephemeris; \
+             it is 0 for none, 1 for the built-in, 2 for the test provider"
+        ))
+        .with_field("options.ephemeris"));
+    };
+    Ok(match asked {
+        TsEphemeris::None if flags & TS_CONTEXT_TEST_PROVIDER != 0 => TsEphemeris::Test,
+        other => other,
+    })
+}
+
+/// The provider a caller asked for by name, or the refusal that says why
+/// this build has none.
+fn own_provider(ephemeris: u8, flags: u32) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
+    Ok(match resolve(ephemeris, flags)? {
+        TsEphemeris::None => None,
+        TsEphemeris::Test => Some(Box::new(TestProvider::new())),
+        TsEphemeris::Builtin => Some(builtin()?),
+    })
+}
+
+/// The built-in ephemeris, when this library was built with it.
+///
+/// A build without it refuses **by name**: not a silent fall back to no
+/// ephemeris, and not a silent fall back to the test provider, because
+/// either would answer a chart the caller did not ask for (ADR-0028).
+#[cfg(feature = "builtin-ephemeris")]
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "the other half of this cfg pair is all error; one signature               keeps the caller from having two"
+)]
+fn builtin() -> Result<Box<dyn EphemerisProvider>, Error> {
+    Ok(Box::new(teistro_ephemeris_builtin::provider::Builtin::new()))
+}
+
+#[cfg(not(feature = "builtin-ephemeris"))]
+fn builtin() -> Result<Box<dyn EphemerisProvider>, Error> {
+    Err(Error::new(
+        teistro_core::error::Status::Unsupported,
+        "this build of the library has no built-in ephemeris: rebuild with \
+         the `builtin-ephemeris` feature, or pass a provider vtable to \
+         ts_context_new",
+    )
+    .with_field("options.ephemeris"))
 }
 
 /// Frees a context; null is ignored.
@@ -536,7 +638,9 @@ mod tests {
         reason = "tests fail by panicking"
     )]
 
-    use super::{TsContext, remembering};
+    use super::{
+        TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_provider, remembering, resolve,
+    };
     use teistro_core::settings::DEFAULT_CACHE_CELLS;
     use teistro_port_ephemeris::{
         Body, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale,
@@ -603,5 +707,88 @@ mod tests {
     fn no_provider_is_still_no_provider() {
         assert!(remembering(None, DEFAULT_CACHE_CELLS).is_none());
         assert!(remembering(None, 0).is_none());
+    }
+
+    /// The selector and the flag are two spellings of one question, and
+    /// the rule between them is total: the selector decides whenever it
+    /// is not `NONE`, the flag decides when it is. Nothing here is a
+    /// conflict to report, so nothing here can be reported inconsistently.
+    #[test]
+    fn the_selector_and_the_flag_answer_one_question() {
+        let none = 0;
+        let builtin = TsEphemeris::Builtin as u8;
+        let test = TsEphemeris::Test as u8;
+        assert_eq!(resolve(none, 0).unwrap(), TsEphemeris::None);
+        assert_eq!(
+            resolve(none, TS_CONTEXT_TEST_PROVIDER).unwrap(),
+            TsEphemeris::Test,
+            "the flag still says what it always said"
+        );
+        assert_eq!(resolve(test, 0).unwrap(), TsEphemeris::Test);
+        assert_eq!(resolve(builtin, 0).unwrap(), TsEphemeris::Builtin);
+        assert_eq!(
+            resolve(builtin, TS_CONTEXT_TEST_PROVIDER).unwrap(),
+            TsEphemeris::Builtin,
+            "a caller who named one is not overruled by a flag they left set"
+        );
+    }
+
+    /// A number that names no ephemeris is refused by name rather than
+    /// rounded down to the default, because a caller who meant something
+    /// this library does not have should hear so.
+    #[test]
+    fn an_unknown_ephemeris_is_refused_by_name() {
+        let error = resolve(7, 0).expect_err("7 names nothing");
+        assert_eq!(error.status, teistro_core::error::Status::InvalidArg);
+        assert_eq!(error.field(), Some("options.ephemeris"));
+        assert!(
+            error.to_string().contains('7'),
+            "the refusal must quote what was asked: {error}"
+        );
+    }
+
+    /// The built-in answers where the test provider only pretends to.
+    ///
+    /// This is Phase 3's promise reduced to one assertion: a context
+    /// built with nothing but a selector computes a real position. What
+    /// the position *is* is measured elsewhere — in
+    /// `03-design/completion-measured.md`, against an engine — because a
+    /// test that asserted an accuracy figure would be asserting a number
+    /// this crate cannot check.
+    #[cfg(feature = "builtin-ephemeris")]
+    #[test]
+    fn the_built_in_selector_yields_an_ephemeris_that_computes() {
+        let provider = own_provider(TsEphemeris::Builtin as u8, 0)
+            .expect("the built-in is compiled in")
+            .expect("and is a provider");
+        let capabilities = provider.capabilities();
+        assert_eq!(capabilities.identity.name, "teistro-builtin");
+        assert!(
+            capabilities.identity.tier.is_some(),
+            "the built-in stamps the tier it was built at"
+        );
+        assert!(
+            capabilities.bodies.len() >= 9,
+            "a Vedic chart needs nine grahas and it declares {}",
+            capabilities.bodies.len()
+        );
+    }
+
+    /// A build without the built-in refuses **by name**, and does not
+    /// quietly hand back the test provider or no provider at all —
+    /// either would answer a chart the caller did not ask for.
+    #[cfg(not(feature = "builtin-ephemeris"))]
+    #[test]
+    fn without_the_feature_the_built_in_is_refused_by_name() {
+        // A `match` rather than `expect_err`, which would want `Debug` on
+        // a boxed trait object that has no reason to carry it.
+        let Err(error) = own_provider(TsEphemeris::Builtin as u8, 0) else {
+            panic!("a build without the feature must refuse the built-in");
+        };
+        assert_eq!(error.status, teistro_core::error::Status::Unsupported);
+        assert!(
+            error.to_string().contains("builtin-ephemeris"),
+            "the refusal must name the feature: {error}"
+        );
     }
 }

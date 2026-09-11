@@ -301,12 +301,29 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **The next task is Phase 3, the built-in ephemeris — milestone M3**
-   ([`07-roadmap/00-roadmap.md`](07-roadmap/00-roadmap.md); the tier
-   ladder is
-   [ADR-0021](08-decisions/adr-0021-reference-ephemeris-path.md)). It is
-   the largest unstarted piece and the one that lets a full chart
-   compute with nothing but the SDK installed. It has no plan page yet,
+3. **Phase 3, the built-in ephemeris — milestone M3 — is all but
+   closed** ([`07-roadmap/00-roadmap.md`](07-roadmap/00-roadmap.md); the
+   tier ladder is
+   [ADR-0021](08-decisions/adr-0021-reference-ephemeris-path.md)). Every
+   body is built — VSOP87's planets, ELP2000-82B's Moon with its bija,
+   Pluto fitted, the nodes and the mean apogee — at three tiers, each
+   inside its size budget by an assertion that fails the build; the
+   conformance kit passes at all three; the accuracy document is
+   generated and gated per body, per span and per tier
+   (`03-design/completion-measured.md`, `03-design/pluto-measured.md`);
+   and the ephemeris now crosses the boundary, so a chart computes with
+   nothing but the SDK installed **in every binding** rather than in Rust
+   alone (ADR-0028).
+
+   **What is left of it**, none of it large: no tier matrix in CI, so
+   "the kit against every tier" is a run by hand rather than a gate; the
+   nakshatra boundary timing the exit asks for is unpublished where the
+   tithi one is; the osculating apogee is still refused by name for want
+   of the Earth-Moon mass parameter; and the `reference` tier is a
+   decision rather than a task — ADR-0021's "else" clause puts it in v1.x
+   unless the maintainer wants it in v1, because a fitted Moon alone is
+   3.76 MB of a 4 MB budget.
+
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation
    curve holds every size claim; the theory floor does not — VSOP87's

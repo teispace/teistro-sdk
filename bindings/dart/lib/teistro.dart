@@ -179,15 +179,21 @@ final class Teistro {
   /// `profile` names a shipped profile ([defaultProfileId] by default),
   /// `settings` is a patch over it as the settings document's own groups
   /// and knobs, `locale` is what every render resolves from, `provider`
-  /// is an ephemeris of your own, and `testProvider` selects the SDK's
-  /// analytic provider, which is for examples and tests only. With
-  /// neither the context has no ephemeris and positions answer
-  /// `Status.capability`.
+  /// is an ephemeris of your own, and `ephemeris` names one of the SDK's:
+  /// `Ephemeris.builtin` is the analytic ephemeris the SDK carries, which
+  /// needs no files, no network and no licence beyond the SDK's own, and
+  /// is what lets a chart compute with nothing else installed;
+  /// `Ephemeris.test` is the test provider, whose positions are **not
+  /// astronomy**. `testProvider` is the older spelling of the latter and
+  /// still works, with `ephemeris` winning when both are given
+  /// (ADR-0028). With none of them the context has no ephemeris and
+  /// positions answer `Status.capability`.
   Context context({
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
     EphemerisProvider? provider,
+    Ephemeris? ephemeris,
     bool testProvider = false,
   }) {
     final host = provider == null ? null : HostProvider(library, provider);
@@ -197,7 +203,14 @@ final class Teistro {
         TeistroContext(
           library,
           options: ContextOptions(
-            flags: testProvider && host == null ? contextTestProvider : 0,
+            flags: 0,
+            // One rule, written once: a named ephemeris wins, and the
+            // older flag decides only when none was named (ADR-0028).
+            ephemeris:
+                ephemeris ??
+                (testProvider && host == null
+                    ? Ephemeris.test
+                    : Ephemeris.none),
             profile: profile,
             settingsJson: settings == null ? null : jsonEncode(settings),
             locale: locale,
