@@ -11,6 +11,22 @@ description = "The Teimeris adapter of the Teistro SDK's ephemeris port, outside
 # reverse, and the SDK workspace builds without it.
 [workspace]
 
+
+# The built-in ephemeris's tiers, forwarded. The floor and agreement
+# binaries measure whichever tier is compiled in, and a tier is a feature,
+# so without these the measurement could only ever be taken of the
+# default one -- and `03-design/completion-measured.md` would be printing
+# a command that did nothing.
+#
+# Additive like any feature: enabling `full` beside the default leaves the
+# richest enabled tier in force, which is what the builtin crate's own
+# cfg does.
+[features]
+default = ["standard"]
+compact = ["teistro-ephemeris-builtin/compact"]
+standard = ["teistro-ephemeris-builtin/standard"]
+full = ["teistro-ephemeris-builtin/full"]
+
 [[bin]]
 name = "teistro-ephemeris-teimeris-kit"
 path = "src/bin/kit.rs"
@@ -58,7 +74,7 @@ teimeris = { path = "../../../../teimeris/bindings/rust/teimeris" }
 teistro-astro = { path = "../../../crates/astro" }
 teistro-calendar = { path = "../../../crates/calendar" }
 teistro-core = { path = "../../../crates/core" }
-teistro-ephemeris-builtin = { path = "../../../crates/ephemeris-builtin", features = [
+teistro-ephemeris-builtin = { path = "../../../crates/ephemeris-builtin", default-features = false, features = [
   "ingest",
 ] }
 teistro-ephemeris-kit = { path = "../../../crates/ephemeris-kit" }

@@ -113,6 +113,7 @@
 
 mod absence;
 mod accuracy;
+mod agreement;
 mod almanac;
 mod aspect;
 mod batching;
@@ -189,6 +190,7 @@ fn generated_page(command: &str) -> Option<i32> {
         "topocentric" => (topocentric::generate, topocentric::check_generated),
         "batching" => (batching::generate, batching::check_generated),
         "surface" => (surface::generate, surface::check_generated),
+        "agreement" => (agreement::generate, agreement::check_generated),
         _ => return None,
     };
     let root = repo_root();

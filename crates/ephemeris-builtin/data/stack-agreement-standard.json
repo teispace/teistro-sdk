@@ -1,0 +1,293 @@
+{
+  "tier": "standard",
+  "frame": "OF_DATE/ECLIPTIC/SIDEREAL(LAHIRI)/APPARENT, from both centres",
+  "moon_with_bija_arcsec": 3.2314389011801836,
+  "moon_without_bija_arcsec": 19.304273003618277,
+  "true_node_with_bija_arcsec": 2043.8968329621816,
+  "true_node_without_bija_arcsec": 2060.256525116645,
+  "moon_bija_fitted_over": "1900 to 2100",
+  "from_jd": 2378497.0,
+  "to_jd": 2597641.0,
+  "step_days": 40.0,
+  "samples": 5479,
+  "engine_profile": "compatible",
+  "note": "the engine answers the whole frame natively (`positions:Native` alone) and the built-in ephemeris is completed by the SDK's own steps, so these are two pipelines and not one; geocentric isolates the ephemeris because the instants are TT and nothing in that path needs Delta T, while topocentric additionally carries the two sides' Delta T models",
+  "moon_worst_tithi_seconds": 262.38523469292215,
+  "by_correction": [
+    {
+      "correction": "geometric (of date)",
+      "engine_moves_sun_arcsec": 0.0,
+      "sun_arcsec": 0.22681386742533505,
+      "moon_arcsec": 2.7478606399569117,
+      "mars_arcsec": 3.981471113479529,
+      "builtin_steps": [
+        "positions:Native",
+        "equinox:Sdk"
+      ]
+    },
+    {
+      "correction": "light time only",
+      "engine_moves_sun_arcsec": 0.011051390663396887,
+      "sun_arcsec": 0.22681443314240823,
+      "moon_arcsec": 2.7476216927141195,
+      "mars_arcsec": 3.981427686380812,
+      "builtin_steps": [
+        "positions:Native",
+        "equinox:Sdk",
+        "obliquity:Sdk",
+        "corrections:Sdk"
+      ]
+    },
+    {
+      "correction": "deflection only",
+      "engine_moves_sun_arcsec": 0.0,
+      "sun_arcsec": 0.22824408255246453,
+      "moon_arcsec": 2.7478611556915666,
+      "mars_arcsec": 3.981447434398433,
+      "builtin_steps": [
+        "positions:Native",
+        "equinox:Sdk",
+        "obliquity:Sdk",
+        "corrections:Sdk"
+      ]
+    },
+    {
+      "correction": "aberration only",
+      "engine_moves_sun_arcsec": 0.0,
+      "sun_arcsec": 20.883112026376693,
+      "moon_arcsec": 23.335532582774476,
+      "mars_arcsec": 21.311432507513928,
+      "builtin_steps": [
+        "positions:Native",
+        "equinox:Sdk",
+        "obliquity:Sdk",
+        "corrections:Sdk"
+      ]
+    },
+    {
+      "correction": "nutation only",
+      "engine_moves_sun_arcsec": 18.901253703893417,
+      "sun_arcsec": 0.2247579326876803,
+      "moon_arcsec": 3.2219785210912733,
+      "mars_arcsec": 4.792802236033822,
+      "builtin_steps": [
+        "positions:Native",
+        "equinox:Sdk",
+        "obliquity:Sdk",
+        "corrections:Sdk"
+      ]
+    },
+    {
+      "correction": "apparent, tropical",
+      "engine_moves_sun_arcsec": 39.55055717385676,
+      "sun_arcsec": 0.22618680550294812,
+      "moon_arcsec": 3.221855147472752,
+      "mars_arcsec": 4.7928477258665225,
+      "builtin_steps": [
+        "positions:Native",
+        "equinox:Sdk",
+        "obliquity:Sdk",
+        "corrections:Sdk"
+      ]
+    },
+    {
+      "correction": "apparent, sidereal",
+      "engine_moves_sun_arcsec": 106035.31240840565,
+      "sun_arcsec": 0.22815502186404046,
+      "moon_arcsec": 3.2314389011801836,
+      "mars_arcsec": 4.801794673880977,
+      "builtin_steps": [
+        "positions:Native",
+        "equinox:Sdk",
+        "obliquity:Sdk",
+        "corrections:Sdk",
+        "ayanamsha:Sdk",
+        "zodiac-shift:Sdk"
+      ]
+    }
+  ],
+  "geocentric_rows": [
+    {
+      "body": "SUN",
+      "worst_arcsec": 0.22815502186404046,
+      "mean_arcsec": 0.07477141465563569,
+      "at_1800_arcsec": 0.15613450316322997,
+      "at_2100_arcsec": 0.06556355571092354,
+      "at_2400_arcsec": 0.06831247513900962,
+      "worst_speed_arcsec_per_day": 0.014356809468862863,
+      "worst_at_jd": 2389417.0
+    },
+    {
+      "body": "MOON",
+      "worst_arcsec": 3.2314389011801836,
+      "mean_arcsec": 0.4224712322834721,
+      "at_1800_arcsec": 0.5589630338363349,
+      "at_2100_arcsec": 0.2086172031795286,
+      "at_2400_arcsec": 1.349332602899267,
+      "worst_speed_arcsec_per_day": 2.9385815099402635,
+      "worst_at_jd": 2593577.0
+    },
+    {
+      "body": "MERCURY",
+      "worst_arcsec": 0.8499541404262345,
+      "mean_arcsec": 0.1457270208578929,
+      "at_1800_arcsec": 0.17210406217600394,
+      "at_2100_arcsec": 0.08841958435823472,
+      "at_2400_arcsec": 0.05799626936777713,
+      "worst_speed_arcsec_per_day": 3.232747411031056,
+      "worst_at_jd": 2379297.0
+    },
+    {
+      "body": "VENUS",
+      "worst_arcsec": 1.7135982941226757,
+      "mean_arcsec": 0.14882029724360774,
+      "at_1800_arcsec": 0.12102186828997219,
+      "at_2100_arcsec": 0.10265267803788447,
+      "at_2400_arcsec": 0.00430591677513803,
+      "worst_speed_arcsec_per_day": 0.3280271138401236,
+      "worst_at_jd": 2508057.0
+    },
+    {
+      "body": "MARS",
+      "worst_arcsec": 4.801794673880977,
+      "mean_arcsec": 0.2754287652224929,
+      "at_1800_arcsec": 0.019925648382468353,
+      "at_2100_arcsec": 0.052465368139564816,
+      "at_2400_arcsec": 0.5315521768920917,
+      "worst_speed_arcsec_per_day": 0.5200702672885971,
+      "worst_at_jd": 2597177.0
+    },
+    {
+      "body": "JUPITER",
+      "worst_arcsec": 1.1183886811977573,
+      "mean_arcsec": 0.40814695117898975,
+      "at_1800_arcsec": 0.27310592359128805,
+      "at_2100_arcsec": 0.23449414503602384,
+      "at_2400_arcsec": 0.6008415225323915,
+      "worst_speed_arcsec_per_day": 89.9785359877709,
+      "worst_at_jd": 2559577.0
+    },
+    {
+      "body": "SATURN",
+      "worst_arcsec": 1.0908928036997168,
+      "mean_arcsec": 0.34936945929352137,
+      "at_1800_arcsec": 0.22230070512705424,
+      "at_2100_arcsec": 0.01683633006450691,
+      "at_2400_arcsec": 0.6849478176832235,
+      "worst_speed_arcsec_per_day": 2.561097678431934,
+      "worst_at_jd": 2579697.0
+    },
+    {
+      "body": "MEAN_NODE",
+      "worst_arcsec": 0.9846231946767148,
+      "mean_arcsec": 0.3256485044754781,
+      "at_1800_arcsec": 0.3299040678271581,
+      "at_2100_arcsec": 0.18181732118591754,
+      "at_2400_arcsec": 0.9846231946767148,
+      "worst_speed_arcsec_per_day": 0.000530729623099413,
+      "worst_at_jd": 2597617.0
+    },
+    {
+      "body": "TRUE_NODE",
+      "worst_arcsec": 2043.8968329621816,
+      "mean_arcsec": 540.647575954956,
+      "at_1800_arcsec": 767.9519243409864,
+      "at_2100_arcsec": 34.720919488904656,
+      "at_2400_arcsec": 1558.8773627498313,
+      "worst_speed_arcsec_per_day": 34.41588418563965,
+      "worst_at_jd": 2595137.0
+    }
+  ],
+  "topocentric_rows": [
+    {
+      "body": "SUN",
+      "worst_arcsec": 0.20129584793266986,
+      "mean_arcsec": 0.06141200333648455,
+      "at_1800_arcsec": 0.13676004236913286,
+      "at_2100_arcsec": 0.04718294828762737,
+      "at_2400_arcsec": 0.07621277443377039,
+      "worst_speed_arcsec_per_day": 1.7748421562635563,
+      "worst_at_jd": 2389417.0
+    },
+    {
+      "body": "MOON",
+      "worst_arcsec": 116.65210225722831,
+      "mean_arcsec": 23.134280145855872,
+      "at_1800_arcsec": 1.8576417501208198,
+      "at_2100_arcsec": 18.394392843333662,
+      "at_2400_arcsec": 95.44246983236917,
+      "worst_speed_arcsec_per_day": 750.4143023054824,
+      "worst_at_jd": 2595697.0
+    },
+    {
+      "body": "MERCURY",
+      "worst_arcsec": 0.8555941675467693,
+      "mean_arcsec": 0.14483860628042558,
+      "at_1800_arcsec": 0.21305714957406963,
+      "at_2100_arcsec": 0.06797191090299748,
+      "at_2400_arcsec": 0.02444517374442512,
+      "worst_speed_arcsec_per_day": 4.74578318899237,
+      "worst_at_jd": 2589857.0
+    },
+    {
+      "body": "VENUS",
+      "worst_arcsec": 1.7037831021866623,
+      "mean_arcsec": 0.1707626538033961,
+      "at_1800_arcsec": 0.05892905588780195,
+      "at_2100_arcsec": 0.25012705348217423,
+      "at_2400_arcsec": 0.014320263630906993,
+      "worst_speed_arcsec_per_day": 5.162742151703936,
+      "worst_at_jd": 2508057.0
+    },
+    {
+      "body": "MARS",
+      "worst_arcsec": 4.835049671714842,
+      "mean_arcsec": 0.330538601207553,
+      "at_1800_arcsec": 0.1588609340842595,
+      "at_2100_arcsec": 0.21760728791377915,
+      "at_2400_arcsec": 0.4896096567790664,
+      "worst_speed_arcsec_per_day": 3.00388332085455,
+      "worst_at_jd": 2597177.0
+    },
+    {
+      "body": "JUPITER",
+      "worst_arcsec": 1.2113391157981823,
+      "mean_arcsec": 0.4334050282186157,
+      "at_1800_arcsec": 0.3283990497010336,
+      "at_2100_arcsec": 0.4590490604982733,
+      "at_2400_arcsec": 0.4663729907861125,
+      "worst_speed_arcsec_per_day": 80.63165569728572,
+      "worst_at_jd": 2559537.0
+    },
+    {
+      "body": "SATURN",
+      "worst_arcsec": 1.2672232292629815,
+      "mean_arcsec": 0.3778537997269068,
+      "at_1800_arcsec": 0.08381849689840237,
+      "at_2100_arcsec": 0.23365709740801321,
+      "at_2400_arcsec": 0.6159047421192554,
+      "worst_speed_arcsec_per_day": 2.4486690447321156,
+      "worst_at_jd": 2573177.0
+    },
+    {
+      "body": "MEAN_NODE",
+      "worst_arcsec": 0.9846231946767148,
+      "mean_arcsec": 0.3256485044754781,
+      "at_1800_arcsec": 0.3299040678271581,
+      "at_2100_arcsec": 0.18181732118591754,
+      "at_2400_arcsec": 0.9846231946767148,
+      "worst_speed_arcsec_per_day": 0.007177132488322968,
+      "worst_at_jd": 2597617.0
+    },
+    {
+      "body": "TRUE_NODE",
+      "worst_arcsec": 2043.8968329621816,
+      "mean_arcsec": 540.647575954956,
+      "at_1800_arcsec": 767.9519243409864,
+      "at_2100_arcsec": 34.720919488904656,
+      "at_2400_arcsec": 1558.8773627498313,
+      "worst_speed_arcsec_per_day": 41.70938610224084,
+      "worst_at_jd": 2595137.0
+    }
+  ]
+}
