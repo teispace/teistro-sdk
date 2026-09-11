@@ -23,6 +23,9 @@
               construction rather than nearly so"
 )]
 
+use teistro_astro::Completion;
+use teistro_astro::delta_t::DeltaTModel;
+use teistro_core::settings::OverridePolicy;
 use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_port_ephemeris::{
     Body, CellStatus, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame,
@@ -374,24 +377,17 @@ fn the_mean_apogee_advances_once_in_about_nine_years() {
     }
 }
 
-/// The true node must sit where the Moon actually crosses the ecliptic.
-///
-/// This is the check that ties the node to the body rather than to a
-/// polynomial, and it is exact rather than approximate: the osculating
-/// orbit is the one whose plane contains the Moon's position and
-/// velocity, so a Moon at zero latitude lies in the ecliptic *and* in
-/// its own orbital plane — which is to say, on the line of nodes.
+/// Where the Moon's latitude reaches zero going north, and how far the
+/// node is from it, degrees. One entry per ascending crossing.
 ///
 /// The crossing is interpolated rather than sampled. At six-hour steps
 /// the Moon moves three degrees, so the nearest sample is up to three
 /// degrees past the crossing, and a test that compared there would be
 /// measuring its own step size and calling it an error.
-#[test]
-fn the_true_node_is_where_the_moon_crosses_the_ecliptic() {
-    let jds: Vec<f64> = (0..120)
-        .map(|q| 2_451_545.0 + f64::from(q) * 0.25)
-        .collect();
-    let columns = ask(&jds, &[Body::Moon, Body::TrueNode]);
+fn node_against_crossing(
+    columns: &teistro_port_ephemeris::PositionColumns,
+    count: usize,
+) -> Vec<f64> {
     let wrapped = |mut degrees: f64| {
         while degrees > 180.0 {
             degrees -= 360.0;
@@ -401,27 +397,103 @@ fn the_true_node_is_where_the_moon_crosses_the_ecliptic() {
         }
         degrees
     };
-    let mut crossings = 0;
-    for index in 1..jds.len() {
+    let mut apart = Vec::new();
+    for index in 1..count {
         let before = columns.at(index - 1, 0).expect("the Moon");
         let here = columns.at(index, 0).expect("the Moon");
         if before.lat >= 0.0 || here.lat < 0.0 {
             continue; // the ascending crossing only
         }
-        crossings += 1;
-        // Where the latitude reaches zero, and the longitude there.
         let fraction = -before.lat / (here.lat - before.lat);
         let moved = wrapped(here.lon - before.lon);
         let at_crossing = before.lon + fraction * moved;
         let node = columns.at(index, 1).expect("the true node").lon;
-        let apart = wrapped(at_crossing - node);
+        apart.push(wrapped(at_crossing - node));
+    }
+    apart
+}
+
+/// A month of six-hour steps from an instant.
+fn a_month_from(jd: f64) -> Vec<f64> {
+    (0..120).map(|q| f64::from(q).mul_add(0.25, jd)).collect()
+}
+
+/// The true node must sit where the Moon actually crosses the ecliptic.
+///
+/// This is the check that ties the node to the body rather than to a
+/// polynomial, and it is exact rather than approximate: the osculating
+/// orbit is the one whose plane contains the Moon's position and
+/// velocity, so a Moon at zero latitude lies in the ecliptic *and* in
+/// its own orbital plane — which is to say, on the line of nodes.
+#[test]
+fn the_true_node_is_where_the_moon_crosses_the_ecliptic() {
+    let jds = a_month_from(2_451_545.0);
+    let columns = ask(&jds, &[Body::Moon, Body::TrueNode]);
+    let apart = node_against_crossing(&columns, jds.len());
+    assert!(
+        !apart.is_empty(),
+        "a month must contain an ascending crossing"
+    );
+    for difference in apart {
         assert!(
-            apart.abs() < 0.05,
-            "at the ascending crossing the Moon is on the node line: \
-             {at_crossing} against {node}, {apart} apart"
+            difference.abs() < 0.05,
+            "at the ascending crossing the Moon is on the node line, \
+             {difference} degrees apart"
         );
     }
-    assert!(crossings > 0, "a month must contain an ascending crossing");
+}
+
+/// The same property four centuries on, in the ecliptic **of date**.
+///
+/// The test above runs from J2000, where the ecliptic of date *is* the
+/// J2000 ecliptic — so it cannot see which of the two the node was cut
+/// against, and for a while the answer was the wrong one. A node is the
+/// intersection of two planes, so tilting the reference plane slides it
+/// along the orbit: about the tilt divided by the sine of the orbit's
+/// five-degree inclination, which turns the ecliptic's 47 arcseconds a
+/// century into some 520 of node. Measured against the reference engine
+/// the node was 2044 arcseconds out by 2400, beside a mean node from this
+/// same crate that was right to 0.985, and every test here passed.
+///
+/// So this one asks at an epoch where the two ecliptics differ, and in
+/// the frame the node is defined in. It needs the completion, because
+/// the provider answers in J2000 by declaration and the precession to
+/// the equinox of date is the astronomy layer's step.
+#[test]
+fn the_true_node_is_cut_against_the_ecliptic_of_date() {
+    let provider = Builtin::new();
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::PreferNative,
+        DeltaTModel::TableThenModel,
+    );
+    // 2400-ish: four centuries of precession, where cutting against
+    // J2000's ecliptic instead of the date's is half a degree of node.
+    let jds = a_month_from(2_597_000.0);
+    let request = PositionRequest::new(
+        &jds,
+        TimeScale::Tt,
+        &[Body::Moon, Body::TrueNode],
+        Frame {
+            equinox: Equinox::OfDate,
+            ..frame()
+        },
+    );
+    let done = completion
+        .positions(&request)
+        .expect("the completion precesses to the equinox of date");
+    let apart = node_against_crossing(&done.columns, jds.len());
+    assert!(
+        !apart.is_empty(),
+        "a month must contain an ascending crossing"
+    );
+    for difference in apart {
+        assert!(
+            difference.abs() < 0.05,
+            "four centuries on, the node is still the crossing: \
+             {difference} degrees apart"
+        );
+    }
 }
 
 /// At the epoch the mean node must be the number every reference gives

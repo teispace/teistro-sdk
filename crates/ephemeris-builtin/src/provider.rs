@@ -272,20 +272,42 @@ fn direction_cell(longitude: f64, rate: f64, source: Source) -> Cell {
     }
 }
 
-/// The ascending node of the Moon's osculating orbit, in J2000.
+/// The vector product, which both halves of a node need.
+fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
+    [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ]
+}
+
+/// The ascending node of the Moon's osculating orbit, as a direction in
+/// the frame `pole` is given in.
 ///
 /// The orbit's plane is fixed by `r x v`, and the line of nodes is where
-/// that plane meets the ecliptic — `z x h`, pointing at the ascending
-/// crossing. It needs no mass parameter and no element solution: the
-/// position and the velocity are the orbit's orientation.
-fn true_node_longitude(position: [f64; 3], velocity: [f64; 3]) -> f64 {
-    let h = [
-        position[1] * velocity[2] - position[2] * velocity[1],
-        position[2] * velocity[0] - position[0] * velocity[2],
-        position[0] * velocity[1] - position[1] * velocity[0],
-    ];
-    // z x h, which is (-h_y, h_x, 0).
-    (h[0]).atan2(-h[1])
+/// that plane meets **the ecliptic that `pole` is the pole of** — `pole x
+/// h`, pointing at the ascending crossing. It needs no mass parameter and
+/// no element solution: the position and the velocity are the orbit's
+/// orientation.
+///
+/// *Which* ecliptic is not a detail. The node is an intersection of two
+/// planes, so tilting the reference plane slides it along the orbit, and
+/// the ecliptic of date turns about 47 arcseconds a century away from
+/// J2000's. Divided by the sine of the orbit's five-degree inclination
+/// that is some 520 arcseconds a century of node, and cutting against the
+/// wrong plane put this 2044 arcseconds out by 2400 — against a mean node
+/// from the same crate that was right to 0.985, because the mean node
+/// already took its longitude of date and carried the direction back.
+fn true_node_longitude(position: [f64; 3], velocity: [f64; 3], pole: [f64; 3]) -> f64 {
+    let node = cross(pole, cross(position, velocity));
+    node[1].atan2(node[0])
+}
+
+/// The pole of the mean ecliptic of date, in the J2000 coordinates the
+/// provider answers in, by the same rotation the Moon's own position
+/// takes.
+fn ecliptic_pole_of_date(jd: f64) -> [f64; 3] {
+    elp::to_j2000([0.0, 0.0, 1.0], jd)
 }
 
 /// Turns a vector about the ecliptic pole, which is what adjusting a
@@ -452,7 +474,7 @@ impl EphemerisProvider for Builtin {
                         let (position, velocity) = self.moon(dynamical);
                         let at = |jd: f64| {
                             let (p, v) = self.moon(jd);
-                            true_node_longitude(p, v)
+                            true_node_longitude(p, v, ecliptic_pole_of_date(jd))
                         };
                         let before = at(dynamical - STEP);
                         let after = at(dynamical + STEP);
@@ -464,7 +486,11 @@ impl EphemerisProvider for Builtin {
                             moved += std::f64::consts::TAU;
                         }
                         direction_cell(
-                            true_node_longitude(position, velocity),
+                            true_node_longitude(
+                                position,
+                                velocity,
+                                ecliptic_pole_of_date(dynamical),
+                            ),
                             moved / (2.0 * STEP),
                             source,
                         )
