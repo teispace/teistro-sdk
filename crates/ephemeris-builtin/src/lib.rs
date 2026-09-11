@@ -19,7 +19,10 @@
 //! tables; it has no use for a parser of a 5.7 MB text file, and paying
 //! for one in a wasm binary would be the opposite of the point.
 
+pub mod chebyshev;
 pub mod elp;
+#[rustfmt::skip]
+pub mod pluto;
 pub mod provider;
 pub mod series;
 #[rustfmt::skip]

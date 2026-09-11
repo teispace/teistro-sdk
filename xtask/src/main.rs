@@ -142,6 +142,7 @@ mod package;
 mod panchanga;
 mod parity;
 mod platform;
+mod pluto;
 mod points;
 mod python_binding;
 mod release;
@@ -191,6 +192,7 @@ fn generated_page(command: &str) -> Option<i32> {
         "batching" => (batching::generate, batching::check_generated),
         "surface" => (surface::generate, surface::check_generated),
         "agreement" => (agreement::generate, agreement::check_generated),
+        "pluto" => (pluto::generate, pluto::check_generated),
         _ => return None,
     };
     let root = repo_root();

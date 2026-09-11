@@ -25,6 +25,7 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | MARS | 21.1 | 1.40 | 0.331 | 4.04 | 1.51 | 4.33 | 9.8e-5 | 2224 |
 | JUPITER | 2.61 | 0.516 | 0.063 | 1.02 | 0.002 | 0.817 | 1.7e-5 | 2119 |
 | SATURN | 1.59 | 0.418 | 0.970 | 0.084 | 0.977 | 0.672 | 8.9e-6 | 2301 |
+| PLUTO | 33.3 | 8.73 | 13.4 | 7.58 | 4.49 | 6.43 | 1.4e-4 | 2260 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 224 | 47.0 | 21.5 | 36.4 | 116 | — | — | 1955 |
 
@@ -41,6 +42,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 21.1 | 1.40 | 0.470 | 4.20 | 1.47 | 4.24 | 9.8e-5 | 2224 |
 | JUPITER | 2.72 | 0.527 | 0.007 | 1.25 | 0.137 | 0.812 | 1.7e-5 | 2119 |
 | SATURN | 1.66 | 0.440 | 0.831 | 0.301 | 0.908 | 0.673 | 8.9e-6 | 2302 |
+| PLUTO | 33.4 | 8.73 | 13.6 | 7.79 | 4.58 | 6.45 | 1.4e-4 | 2260 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 224 | 47.0 | 21.5 | 36.4 | 116 | — | — | 1955 |
 
@@ -57,6 +59,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 0.541 | 0.443 |
 | JUPITER | 90.0 | 1.09 |
 | SATURN | 2.55 | 2.27 |
+| PLUTO | 0.562 | 0.660 |
 | MEAN_NODE | 0.001 | — |
 | TRUE_NODE | 102 | — |
 
@@ -108,6 +111,7 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | MARS | 3.98 | 0.246 | 0.026 | 0.142 | 0.514 | 0.300 | 6.6e-5 | 2399 |
 | JUPITER | 1.04 | 0.401 | 0.269 | 0.408 | 0.604 | 0.125 | 1.1e-5 | 2365 |
 | SATURN | 0.834 | 0.327 | 0.170 | 0.339 | 0.696 | 0.060 | 5.5e-6 | 2399 |
+| PLUTO | 0.926 | 0.210 | 0.024 | 0.004 | 0.088 | 0.186 | 8.1e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
 
@@ -124,6 +128,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 4.06 | 0.315 | 0.165 | 0.307 | 0.472 | 0.305 | 6.6e-5 | 2367 |
 | JUPITER | 1.13 | 0.429 | 0.325 | 0.633 | 0.470 | 0.358 | 1.1e-5 | 2364 |
 | SATURN | 1.03 | 0.358 | 0.031 | 0.556 | 0.627 | 0.155 | 5.5e-6 | 2399 |
+| PLUTO | 1.20 | 0.276 | 0.194 | 0.205 | 0.001 | 0.294 | 8.1e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
 
@@ -140,6 +145,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 0.520 | 0.474 |
 | JUPITER | 90.0 | 1.07 |
 | SATURN | 2.56 | 2.28 |
+| PLUTO | 0.502 | 0.660 |
 | MEAN_NODE | 0.001 | — |
 | TRUE_NODE | 30.5 | — |
 
@@ -191,6 +197,7 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | MARS | 4.02 | 0.245 | 0.048 | 0.079 | 0.509 | 0.199 | 6.6e-5 | 2399 |
 | JUPITER | 1.02 | 0.397 | 0.282 | 0.395 | 0.608 | 0.124 | 1.1e-5 | 2365 |
 | SATURN | 0.842 | 0.327 | 0.169 | 0.338 | 0.701 | 0.055 | 5.5e-6 | 2397 |
+| PLUTO | 0.006 | 0.001 | 0.003 | 0.000 | 0.002 | 0.001 | 4.5e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 118 | 38.6 | 67.6 | 8.83 | 64.3 | — | — | 2392 |
 
@@ -207,6 +214,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 4.05 | 0.313 | 0.187 | 0.244 | 0.467 | 0.306 | 6.6e-5 | 2399 |
 | JUPITER | 1.12 | 0.426 | 0.337 | 0.619 | 0.473 | 0.357 | 1.1e-5 | 2364 |
 | SATURN | 1.04 | 0.358 | 0.031 | 0.555 | 0.632 | 0.152 | 5.5e-6 | 2399 |
+| PLUTO | 0.289 | 0.176 | 0.215 | 0.209 | 0.085 | 0.147 | 4.5e-6 | 2004 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 118 | 38.6 | 67.6 | 8.83 | 64.3 | — | — | 2392 |
 
@@ -223,6 +231,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MARS | 0.520 | 0.476 |
 | JUPITER | 90.0 | 1.07 |
 | SATURN | 2.56 | 2.28 |
+| PLUTO | 0.502 | 0.660 |
 | MEAN_NODE | 0.001 | — |
 | TRUE_NODE | 26.5 | — |
 
@@ -283,7 +292,7 @@ Each bound is one ADR-0027 argued from, not one chosen to be met, and each is de
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| `compact`: the retired single-number claim — one arcsecond for every planet | falsified | worst 21.4″ |
+| `compact`: the retired single-number claim — one arcsecond for every planet | falsified | worst 33.3″ |
 | `compact`: the Sun stays inside one arcsecond over the whole span | falsified | worst 5.45″ |
 | `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | falsified | worst 3.67 s of tithi |
 | `compact`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 33 s of tithi |
@@ -304,7 +313,7 @@ Each bound is one ADR-0027 argued from, not one chosen to be met, and each is de
 
 8 of 18 falsified:
 
-- `compact`: the retired single-number claim — one arcsecond for every planet — worst 21.4″
+- `compact`: the retired single-number claim — one arcsecond for every planet — worst 33.3″
 - `compact`: the Sun stays inside one arcsecond over the whole span — worst 5.45″
 - `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) — worst 3.67 s of tithi
 - `compact`: the Moon meets the almanac's 0.445 arcseconds — worst 14.6″
