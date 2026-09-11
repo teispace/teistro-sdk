@@ -58,10 +58,17 @@ use teistro_port_ephemeris::{
     TimeScale, Zodiac,
 };
 
-/// The bodies a Vedic chart asks for. Ketu is not among them: it is
+/// The bodies a Vedic chart asks for, and Pluto beside them.
+///
+/// Pluto is not one of the nine grahas and no Vedic reading uses it. It
+/// is measured here because it is the one body that is *fitted* rather
+/// than derived, so it is the one whose accuracy a reader cannot infer
+/// from a theory's published bounds.
+///
+/// The original note: Ketu is not among them: it is
 /// Rahu's opposite point and the chart layer derives it, so it carries
 /// Rahu's error exactly and measuring it twice would say nothing.
-const BODIES: [Body; 9] = [
+const BODIES: [Body; 10] = [
     Body::Sun,
     Body::Moon,
     Body::Mercury,
@@ -69,6 +76,7 @@ const BODIES: [Body; 9] = [
     Body::Mars,
     Body::Jupiter,
     Body::Saturn,
+    Body::Pluto,
     Body::MeanNode,
     Body::TrueNode,
 ];
@@ -305,6 +313,16 @@ fn main() -> ExitCode {
             })
             .fold(0.0_f64, f64::max)
     };
+    // By body rather than by index: the ladder names three of them, and a
+    // body added to `BODIES` must not silently re-point a column at its
+    // neighbour.
+    let column = |body: Body| {
+        BODIES
+            .iter()
+            .position(|candidate| *candidate == body)
+            .expect("the ladder's bodies are among the measured ones")
+    };
+    let (sun, moon, mars) = (column(Body::Sun), column(Body::Moon), column(Body::Mars));
     let by_correction: Vec<LadderRow> = ladder
         .into_iter()
         .map(|(correction, frame)| {
@@ -318,11 +336,11 @@ fn main() -> ExitCode {
                 engine_moves_sun_arcsec: worst_between(
                     &engine_geometric.columns,
                     &engine_side.columns,
-                    0,
+                    sun,
                 ),
-                sun_arcsec: worst_between(&builtin_side.columns, &engine_side.columns, 0),
-                moon_arcsec: worst_between(&builtin_side.columns, &engine_side.columns, 1),
-                mars_arcsec: worst_between(&builtin_side.columns, &engine_side.columns, 4),
+                sun_arcsec: worst_between(&builtin_side.columns, &engine_side.columns, sun),
+                moon_arcsec: worst_between(&builtin_side.columns, &engine_side.columns, moon),
+                mars_arcsec: worst_between(&builtin_side.columns, &engine_side.columns, mars),
                 builtin_steps: builtin_side
                     .step_keys()
                     .into_iter()

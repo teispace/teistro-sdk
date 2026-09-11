@@ -244,6 +244,20 @@
       "worst_at_jd": 2597457.0
     },
     {
+      "body": "PLUTO",
+      "worst_arcsec": 0.9263215828696048,
+      "mean_arcsec": 0.21047687339854357,
+      "at_1800_arcsec": 0.02375034425767808,
+      "at_2100_arcsec": 0.003970897086347236,
+      "at_2400_arcsec": 0.08770214488720285,
+      "worst_speed_arcsec_per_day": 0.5017348717090822,
+      "is_direction": false,
+      "worst_lat_arcsec": 0.1857074998099506,
+      "worst_lat_speed_arcsec_per_day": 0.660183241036207,
+      "worst_dist_relative": 8.072931626748224e-6,
+      "worst_at_jd": 2446697.0
+    },
+    {
       "body": "MEAN_NODE",
       "worst_arcsec": 0.9874286002741428,
       "mean_arcsec": 0.32564801508888913,
@@ -370,6 +384,20 @@
       "worst_lat_speed_arcsec_per_day": 2.4047659858919315,
       "worst_dist_relative": 5.4833474155054485e-6,
       "worst_at_jd": 2597377.0
+    },
+    {
+      "body": "PLUTO",
+      "worst_arcsec": 1.1958710405679085,
+      "mean_arcsec": 0.2757074420724641,
+      "at_1800_arcsec": 0.19375394733742723,
+      "at_2100_arcsec": 0.20467890096718122,
+      "at_2400_arcsec": 0.0014747485920452164,
+      "worst_speed_arcsec_per_day": 1.899721153032516,
+      "is_direction": false,
+      "worst_lat_arcsec": 0.29402737725519046,
+      "worst_lat_speed_arcsec_per_day": 0.9806008543126595,
+      "worst_dist_relative": 8.072838924883285e-6,
+      "worst_at_jd": 2446657.0
     },
     {
       "body": "MEAN_NODE",

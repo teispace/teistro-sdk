@@ -86,12 +86,15 @@ const JD_RANGE: (f64, f64) = (2_378_497.0, 2_597_641.0);
 /// Ketu is not a body: it is Rahu's opposite point, which the chart layer
 /// derives.
 ///
-/// Pluto and the osculating apogee are not here. Pluto has no VSOP87
-/// series and is fitted from a kernel separately (ADR-0021); the
-/// osculating apogee needs the Earth-Moon mass parameter, which is a
-/// constant neither theory carries. A body without a theory is refused by
-/// name rather than guessed at.
-const BODIES: [Body; 12] = [
+/// Pluto is here on different terms from the rest: it has no published
+/// series to truncate, so it is **fitted** rather than derived
+/// (`03-design/pluto-measured.md`, ADR-0008). What it costs and what it
+/// is worth are per tier and published, like everything else.
+///
+/// The osculating apogee is still not here. It needs the Earth-Moon mass
+/// parameter, which is a constant neither theory carries, and a body
+/// without a theory is refused by name rather than guessed at.
+const BODIES: [Body; 13] = [
     Body::Sun,
     Body::Moon,
     Body::Mercury,
@@ -101,6 +104,7 @@ const BODIES: [Body; 12] = [
     Body::Saturn,
     Body::Uranus,
     Body::Neptune,
+    Body::Pluto,
     Body::MeanNode,
     Body::TrueNode,
     Body::MeanApogee,
@@ -367,6 +371,21 @@ fn native_frame() -> Frame {
 }
 
 /// The VSOP87 name for a body the port names.
+/// A body's heliocentric position and rate, whether it comes from a
+/// truncated series or from a fitted table.
+///
+/// One function rather than two call sites, so the subtraction of the
+/// Earth that turns a heliocentric vector into a geocentric one is
+/// written once and Pluto cannot drift from the planets it sits beside.
+fn heliocentric_of(body: Body, jd: f64) -> Option<([f64; 3], [f64; 3])> {
+    if body == Body::Pluto {
+        // Refuses outside its fit rather than extrapolating: a Chebyshev
+        // table does not degrade past its span, it diverges.
+        return crate::pluto::PLUTO.at(jd);
+    }
+    Builtin::heliocentric(series_name(body)?, jd)
+}
+
 fn series_name(body: Body) -> Option<&'static str> {
     match body {
         Body::Mercury => Some("Mercury"),
@@ -495,21 +514,24 @@ impl EphemerisProvider for Builtin {
                             source,
                         )
                     }
-                    (Some((earth_position, earth_rate)), other) => series_name(*other)
-                        .and_then(|name| Builtin::heliocentric(name, dynamical))
-                        .map_or(Cell::failed(CellStatus::UnsupportedBody), |(p, r)| {
-                            let mut position = [0.0; 3];
-                            let mut rate = [0.0; 3];
-                            for (index, slot) in position.iter_mut().enumerate() {
-                                *slot = p.get(index).copied().unwrap_or(0.0)
-                                    - earth_position.get(index).copied().unwrap_or(0.0);
-                            }
-                            for (index, slot) in rate.iter_mut().enumerate() {
-                                *slot = r.get(index).copied().unwrap_or(0.0)
-                                    - earth_rate.get(index).copied().unwrap_or(0.0);
-                            }
-                            to_cell(position, rate, source)
-                        }),
+                    (Some((earth_position, earth_rate)), other) => {
+                        { heliocentric_of(*other, dynamical) }.map_or(
+                            Cell::failed(CellStatus::UnsupportedBody),
+                            |(p, r)| {
+                                let mut position = [0.0; 3];
+                                let mut rate = [0.0; 3];
+                                for (index, slot) in position.iter_mut().enumerate() {
+                                    *slot = p.get(index).copied().unwrap_or(0.0)
+                                        - earth_position.get(index).copied().unwrap_or(0.0);
+                                }
+                                for (index, slot) in rate.iter_mut().enumerate() {
+                                    *slot = r.get(index).copied().unwrap_or(0.0)
+                                        - earth_rate.get(index).copied().unwrap_or(0.0);
+                                }
+                                to_cell(position, rate, source)
+                            },
+                        )
+                    }
                 };
                 columns.set_at(jd_index, body_index, cell);
             }
