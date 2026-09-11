@@ -356,7 +356,17 @@ fn meridian_longitude_deg(ra_deg: f64, obliquity_rad: f64) -> f64 {
 }
 
 /// The mean ayanamsha at a TT instant, degrees: the offset a sidereal
-/// longitude subtracts from a tropical one.
+/// longitude subtracts from a tropical one **of the mean equinox**.
+///
+/// A caller that has a frame wants [`value_deg`] rather than this. The
+/// ayanamsha has to be measured from the same equinox as the longitude it
+/// is subtracted from, and a longitude corrected for nutation is of the
+/// *true* equinox; subtracting the mean value from it leaves the whole
+/// nutation in longitude behind, on every body at once. The completion
+/// step called this function for a while and was 18.6 arcseconds out
+/// because of it. The settings lint cannot catch that: it proves a knob
+/// has a reader somewhere, not that every computation the knob governs
+/// consults it.
 ///
 /// # Errors
 ///
