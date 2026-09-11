@@ -338,6 +338,35 @@ provider's DUT1).
    by 417, where the mean node beside it is inside one. Both accounts are
    in `03-design/completion-measured.md` with the candidates named.
 
+   **The next task is Phase 4's plugin and surface work** (ADR-0029,
+   ADR-0030, researched in
+   [`01-research/platform/15-provider-plugins-and-targets.md`](01-research/platform/15-provider-plugins-and-targets.md)).
+   The maintainer's brief of 2026-09-11: an ephemeris is **plugged in**
+   the way a transport is plugged into nodemailer, in some 98% of cases a
+   real engine rather than the built-in, with the consumer reading
+   `sdk.<area>.<operation>` and reaching the engine's own functions at
+   `sdk.engine.*` where the SDK has not ported one.
+
+   The survey found two things that reorder the work. **Outside Rust no
+   consumer can reach an engine at all** — both adapters are `rlib`s with
+   no C entry point and no package — so the 98% path does not exist in
+   Node, Python or Dart. And **`sdk.engine.*` is built at the boundary and
+   attached to nothing**: the Teimeris adapter has always described 161
+   functions in `tools/idl/teimeris.idl` and has never answered the port's
+   `native_manifest`, which its own source says is its remaining work.
+   The second is smaller than it looks, because that IDL is typed to the
+   parameter's role and the SDK's generators are role-driven, so a typed
+   `sdk.engine.*` is generated rather than written — into the **adapter**,
+   so the port stays agnostic.
+
+   In order: the adapters gain `cdylib` and a vtable factory; the SDK
+   gains one `ts_provider_load` rather than three; the Teimeris adapter
+   answers the manifest; the façade generator runs; the surface is
+   namespaced while it is still cheap. wasm's ephemeris is the built-in
+   `compact` tier, which exists for it — a wasm module cannot load a
+   shared library, and an engine compiled to wasm is a project rather
+   than a packaging step.
+
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation
    curve holds every size claim; the theory floor does not — VSOP87's
