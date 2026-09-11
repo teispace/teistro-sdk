@@ -46,8 +46,8 @@ rows:
     area: position completion
     target: "1e-6″ when fed identical geometric vectors"
     page: 03-design/ephemeris-port-and-adapters.md
-    evidence: "the coordinate, zodiac and topocentric-centre steps; the corrections and equinox steps, and a heliocentric or barycentric centre, wait for the built-in ephemeris (Phase 3)"
-    by_hand: "the kit's completion checks: through the native obliquity 2.0e-10″ from the engine's own ecliptic output, through the SDK's obliquity and nutation 3.9e-4″ (Teimeris and the Swiss Ephemeris, 2026-09-05)"
+    evidence: "the coordinate, zodiac and topocentric-centre steps; the equinox and corrections steps, built in Phase 3 and measured against the engine through the whole stack in `03-design/completion-measured.md` (held by `cargo xtask check-agreement`), which puts the Sun 0.228″ and the mean node 0.987″ geocentric over 1800 to 2400, and every planet's latitude inside 0.3″; a heliocentric or barycentric centre is still unbuilt"
+    by_hand: "the kit's completion checks: through the native obliquity 2.0e-10″ from the engine's own ecliptic output, through the SDK's obliquity and nutation 3.9e-4″ (Teimeris and the Swiss Ephemeris, 2026-09-05); and five defects in the step that only measuring found, every test green through all of them (`03-design/completion-measured.md`, 2026-09-11): light time stepped back along the geocentric rate and so cancelled aberration (Sun 20.9″); the ayanamsha ignored `frame.ayanamsha_basis` and kept the whole nutation in longitude (18.6″); scaling a direction by its zero distance sent both nodes to one value (mean node 90°); ecliptic latitude was converted with the true obliquity where the ecliptic of date is the mean one, tilting every body at once including a Sun that has no latitude to be wrong about (9.9″); and the true node was cut against the J2000 ecliptic rather than the date's, which a node amplifies by the cotangent of its five-degree inclination (2044″)"
   - id: topocentric
     area: topocentric correction
     target: "1e-6″"

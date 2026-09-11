@@ -38,6 +38,14 @@ const RECORDED: &str = "crates/ephemeris-builtin/data";
 /// The tiers the built-in ephemeris ships, richest last.
 const TIERS: [&str; 3] = ["compact", "standard", "full"];
 
+/// The Moon's orbital inclination, degrees, and the amplitude of the
+/// latitude rate that follows from it: the latitude swings through the
+/// inclination once a draconic month, so its rate peaks at `2 pi i / P`.
+/// Both are needed to turn a disagreement in the rate into the tilt of
+/// the plane it implies.
+const INCLINATION_DEG: f64 = 5.145;
+const DRACONIC_MONTH_DAYS: f64 = 27.212_22;
+
 /// What a consumer of the almanac needs the Moon inside, arcseconds
 /// (`03-design/lunar-accuracy-measured.md`).
 const ALMANAC_MOON_ARCSEC: f64 = 0.445;
@@ -81,6 +89,15 @@ struct LadderRow {
     builtin_steps: Vec<String>,
 }
 
+/// One provider's true node against its own Moon's crossing.
+#[derive(Debug, serde::Deserialize)]
+struct SelfCheck {
+    provider: String,
+    year: i32,
+    crossings: usize,
+    worst_degrees: f64,
+}
+
 /// One body's agreement over the whole span, as recorded.
 #[derive(Debug, serde::Deserialize)]
 struct Row {
@@ -91,6 +108,10 @@ struct Row {
     at_2100_arcsec: f64,
     at_2400_arcsec: f64,
     worst_speed_arcsec_per_day: f64,
+    is_direction: bool,
+    worst_lat_arcsec: f64,
+    worst_lat_speed_arcsec_per_day: f64,
+    worst_dist_relative: f64,
     worst_at_jd: f64,
 }
 
@@ -110,6 +131,7 @@ struct Recorded {
     true_node_with_bija_arcsec: f64,
     true_node_without_bija_arcsec: f64,
     moon_bija_fitted_over: String,
+    node_against_own_crossing: Vec<SelfCheck>,
     note: String,
     by_correction: Vec<LadderRow>,
     geocentric_rows: Vec<Row>,
@@ -203,8 +225,14 @@ fn page(tiers: &[Recorded]) -> String {
         out.push_str(&missing_section(tiers));
         return out;
     }
+    // The richest tier recorded is the theories entire, so every other
+    // tier's figures are read against it to separate what a truncation
+    // costs from what a theory cannot do.
+    let Some(richest) = tiers.last() else {
+        return out;
+    };
     for tier in tiers {
-        out.push_str(&tier_section(tier));
+        out.push_str(&tier_section(tier, richest));
     }
     out.push_str(&ladder_section(tiers));
     out.push_str(&claims_section(tiers));
@@ -253,7 +281,7 @@ fn header(tiers: &[Recorded]) -> String {
     out
 }
 
-fn tier_section(tier: &Recorded) -> String {
+fn tier_section(tier: &Recorded, richest: &Recorded) -> String {
     let mut out = String::new();
     let _ = writeln!(out, "## `{}`\n", tier.tier);
     let _ = writeln!(
@@ -272,6 +300,7 @@ fn tier_section(tier: &Recorded) -> String {
         "From the place — what a chart receives",
         &tier.topocentric_rows,
     ));
+    out.push_str(&rates_table(&tier.geocentric_rows));
 
     if let (Some(geocentric), Some(topocentric)) = (
         row(&tier.geocentric_rows, "MOON"),
@@ -311,26 +340,138 @@ fn tier_section(tier: &Recorded) -> String {
         arcsec_mark(tier.moon_with_bija_arcsec),
     );
 
+    out.push_str(&node_section(tier, richest));
+    out
+}
+
+/// The true node's account: why it is what it is, and the three
+/// explanations measurement excluded before the fourth was believed.
+fn node_section(tier: &Recorded, richest: &Recorded) -> String {
+    let mut out = String::new();
     if let (Some(node), Some(moon)) = (
         row(&tier.geocentric_rows, "TRUE_NODE"),
         row(&tier.geocentric_rows, "MOON"),
     ) {
+        let inclination = INCLINATION_DEG.to_radians();
+        let tilt = node.worst_arcsec * inclination.sin();
+        // The latitude rate's own amplitude, so a disagreement in it can
+        // be read as the tilt it implies.
+        let rate_amplitude =
+            std::f64::consts::TAU * INCLINATION_DEG * 3_600.0 / DRACONIC_MONTH_DAYS;
+        let implied =
+            moon.worst_lat_speed_arcsec_per_day / rate_amplitude * INCLINATION_DEG * 3_600.0;
+        let richest_node =
+            row(&richest.geocentric_rows, "TRUE_NODE").map_or(f64::NAN, |row| row.worst_arcsec);
         let _ = writeln!(
             out,
-            "**The true node is the open question on this page.** It reads {} — identical from both centres, which is correct, because a node is a *direction* and the centre step leaves directions alone. But that is {:.0} times the Moon's own {}, where the geometry predicts about eleven: a node is where the orbit crosses the ecliptic, so an error arrives there divided by the tangent of a five-degree inclination. Two candidates are already excluded by measurement. It is **not truncation** — the `full` tier, the theories entire, gives the same figure. It is **not the bija** — turning it off moves the node {}, of {}. What is left is the latitude and the velocity the node is built from, and that is measured where those are rather than guessed at here.\n",
+            "**The true node, and why it is {} when the Moon is {}.** A node is where the orbit meets the ecliptic, and near that meeting the Moon's latitude is level: it climbs at about the tangent of the orbit's {INCLINATION_DEG}-degree inclination, so an error across the orbit arrives along it divided by that tangent — an amplification of about {:.0}.\n",
             arcsec_mark(node.worst_arcsec),
-            if moon.worst_arcsec > 0.0 {
-                node.worst_arcsec / moon.worst_arcsec
-            } else {
-                f64::NAN
-            },
             arcsec_mark(moon.worst_arcsec),
+            1.0 / inclination.tan(),
+        );
+        let by_truncation = node.worst_arcsec - richest_node;
+        let _ = writeln!(
+            out,
+            "{} It is **not the bija**: turning it off moves the node {} of {}. It is **not the precession model**: deriving the reference pole from the SDK's own model rather than the lunar theory's moved it 0.13 arcseconds. And it is **not the node's own arithmetic** — the table below shows each provider's node sitting on its own Moon's crossing.\n",
+            if by_truncation.abs() < 1.0 {
+                format!(
+                    "It is **not truncation**: `{}`, the theories entire, reads {} for the same figure.",
+                    richest.tier,
+                    arcsec_mark(richest_node)
+                )
+            } else {
+                format!(
+                    "**{} of it is this tier's truncation**: `{}`, the theories entire, reads {}, so the rest of what follows is about the {} that remain there too.",
+                    arcsec_mark(by_truncation),
+                    richest.tier,
+                    arcsec_mark(richest_node),
+                    arcsec_mark(richest_node)
+                )
+            },
             arcsec_mark(
                 (tier.true_node_without_bija_arcsec - tier.true_node_with_bija_arcsec).abs()
             ),
             arcsec_mark(node.worst_arcsec),
         );
+        out.push_str(&self_check_table(&tier.node_against_own_crossing));
+        let _ = writeln!(
+            out,
+            "**Each node is where its own Moon crosses.** So neither is wrong about its own theory, and what the {} measures is the two theories disagreeing about the *plane* rather than about the node. Read backwards, {} of node is {} of orbital tilt — and the Moon's position agrees far better than that, to {} of latitude. A plane is fixed by a velocity as much as by a position, and the out-of-plane rate is where the disagreement is: {} a day against a rate whose own amplitude is {}, which tilts a {INCLINATION_DEG}-degree orbit by {}. That is the number the node is amplifying, and it accounts for the tilt the node implies.\n",
+            arcsec_mark(node.worst_arcsec),
+            arcsec_mark(node.worst_arcsec),
+            arcsec_mark(tilt),
+            arcsec_mark(moon.worst_lat_arcsec),
+            arcsec_mark(moon.worst_lat_speed_arcsec_per_day),
+            arcsec_mark(rate_amplitude),
+            arcsec_mark(implied),
+        );
+        let _ = writeln!(
+            out,
+            "The mean node, a polynomial that does not depend on where the Moon is, is unaffected and reads {} at every tier.\n",
+            row(&tier.geocentric_rows, "MEAN_NODE").map_or_else(
+                || "an unrecorded figure".to_string(),
+                |mean| arcsec_mark(mean.worst_arcsec)
+            ),
+        );
     }
+    out
+}
+
+/// The rates, which are what an *event* is found from: a crossing, a
+/// conjunction, a tithi boundary. A position can agree while the motion
+/// through it does not, and a search that lands on a boundary feels the
+/// rate rather than the place.
+fn rates_table(rows: &[Row]) -> String {
+    let mut out = String::new();
+    let _ = writeln!(out, "### The rates, from the centre\n");
+    let _ = writeln!(out, "| body | longitude (\"/day) | latitude (\"/day) |");
+    let _ = writeln!(out, "|---|---:|---:|");
+    for row in rows {
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} |",
+            row.body,
+            arcsec(row.worst_speed_arcsec_per_day),
+            if row.is_direction {
+                "\u{2014}".to_string()
+            } else {
+                arcsec(row.worst_lat_speed_arcsec_per_day)
+            },
+        );
+    }
+    let _ = writeln!(
+        out,
+        "\nWorst disagreement in each rate, arcseconds a day. The Moon's latitude rate matters twice over: it is the out-of-plane motion, so it fixes the orbital plane the nodes are cut from.\n"
+    );
+    out
+}
+
+/// Each provider's node against its own Moon, which separates a
+/// disagreement between two definitions from an error in either.
+fn self_check_table(checks: &[SelfCheck]) -> String {
+    let mut out = String::new();
+    if checks.is_empty() {
+        return out;
+    }
+    let _ = writeln!(
+        out,
+        "| provider | year | crossings | node against its own crossing |"
+    );
+    let _ = writeln!(out, "|---|---:|---:|---:|");
+    for check in checks {
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} | {} |",
+            check.provider,
+            check.year,
+            check.crossings,
+            arcsec_mark(check.worst_degrees * 3_600.0),
+        );
+    }
+    let _ = writeln!(
+        out,
+        "\nA month of six-hour steps at each epoch, with the crossing interpolated rather than sampled — at six hours the Moon moves three degrees, and comparing at the nearest sample would measure the step size and call it an error.\n"
+    );
     out
 }
 
@@ -340,26 +481,35 @@ fn centre_table(title: &str, rows: &[Row]) -> String {
     let _ = writeln!(out, "### {title}\n");
     let _ = writeln!(
         out,
-        "| body | worst | mean | 1800 | 2100 | 2400 | worst speed (\"/day) | worst at |"
+        "| body | worst | mean | 1800 | 2100 | 2400 | latitude | distance | worst at |"
     );
-    let _ = writeln!(out, "|---|---:|---:|---:|---:|---:|---:|---:|");
+    let _ = writeln!(out, "|---|---:|---:|---:|---:|---:|---:|---:|---:|");
     for row in rows {
         let _ = writeln!(
             out,
-            "| {} | {} | {} | {} | {} | {} | {} | {} |",
+            "| {} | {} | {} | {} | {} | {} | {} | {} | {} |",
             row.body,
             arcsec(row.worst_arcsec),
             arcsec(row.mean_arcsec),
             arcsec(row.at_1800_arcsec),
             arcsec(row.at_2100_arcsec),
             arcsec(row.at_2400_arcsec),
-            arcsec(row.worst_speed_arcsec_per_day),
+            if row.is_direction {
+                "—".to_string()
+            } else {
+                arcsec(row.worst_lat_arcsec)
+            },
+            if row.is_direction {
+                "—".to_string()
+            } else {
+                format!("{:.1e}", row.worst_dist_relative)
+            },
             year_of(row.worst_at_jd),
         );
     }
     let _ = writeln!(
         out,
-        "\nArcseconds of ecliptic longitude, the shortest way round the circle.\n"
+        "\nArcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.\n"
     );
     out
 }

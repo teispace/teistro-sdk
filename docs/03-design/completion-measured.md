@@ -16,47 +16,80 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 
 ### From the Earth's centre — the ephemeris
 
-| body | worst | mean | 1800 | 2100 | 2400 | worst speed ("/day) | worst at |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| SUN | 5.45 | 1.16 | 0.164 | 0.206 | 0.516 | 0.186 | 1844 |
-| MOON | 14.3 | 2.33 | 0.884 | 1.70 | 3.90 | 9.48 | 1864 |
-| MERCURY | 8.49 | 1.41 | 2.30 | 0.966 | 2.01 | 3.82 | 2397 |
-| VENUS | 21.8 | 1.68 | 1.17 | 0.205 | 0.048 | 1.15 | 2209 |
-| MARS | 20.9 | 1.40 | 0.324 | 3.95 | 1.53 | 0.541 | 2224 |
-| JUPITER | 2.47 | 0.522 | 0.059 | 0.850 | 0.006 | 90.0 | 2119 |
-| SATURN | 1.78 | 0.438 | 1.02 | 0.238 | 0.965 | 2.55 | 1820 |
-| MEAN_NODE | 0.985 | 0.326 | 0.330 | 0.182 | 0.985 | 0.001 | 2400 |
-| TRUE_NODE | 2082 | 543 | 722 | 6.57 | 1508 | 103 | 2384 |
+| body | worst | mean | 1800 | 2100 | 2400 | latitude | distance | worst at |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| SUN | 5.45 | 1.16 | 0.164 | 0.206 | 0.516 | 1.17 | 1.7e-5 | 1844 |
+| MOON | 14.6 | 2.33 | 1.29 | 1.63 | 4.27 | 11.0 | 1.3e-4 | 1864 |
+| MERCURY | 8.32 | 1.40 | 2.29 | 0.958 | 2.03 | 2.60 | 2.2e-4 | 2350 |
+| VENUS | 21.4 | 1.67 | 1.42 | 0.376 | 0.008 | 6.09 | 1.7e-4 | 2209 |
+| MARS | 21.1 | 1.40 | 0.331 | 4.04 | 1.51 | 4.33 | 9.8e-5 | 2224 |
+| JUPITER | 2.61 | 0.516 | 0.063 | 1.02 | 0.002 | 0.817 | 1.7e-5 | 2119 |
+| SATURN | 1.59 | 0.418 | 0.970 | 0.084 | 0.977 | 0.672 | 8.9e-6 | 2301 |
+| MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
+| TRUE_NODE | 224 | 47.0 | 21.5 | 36.4 | 116 | — | — | 1955 |
 
-Arcseconds of ecliptic longitude, the shortest way round the circle.
+Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
 ### From the place — what a chart receives
 
-| body | worst | mean | 1800 | 2100 | 2400 | worst speed ("/day) | worst at |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| SUN | 5.42 | 1.15 | 0.145 | 0.225 | 0.524 | 1.92 | 1844 |
-| MOON | 119 | 23.9 | 0.401 | 20.3 | 92.9 | 751 | 2396 |
-| MERCURY | 8.55 | 1.40 | 2.26 | 0.945 | 2.05 | 5.31 | 2397 |
-| VENUS | 21.9 | 1.68 | 1.35 | 0.057 | 0.030 | 5.26 | 2209 |
-| MARS | 20.9 | 1.40 | 0.463 | 4.11 | 1.48 | 3.15 | 2224 |
-| JUPITER | 2.58 | 0.534 | 0.004 | 1.07 | 0.140 | 80.6 | 2119 |
-| SATURN | 1.94 | 0.459 | 0.884 | 0.021 | 0.896 | 2.45 | 1820 |
-| MEAN_NODE | 0.985 | 0.326 | 0.330 | 0.182 | 0.985 | 0.007 | 2400 |
-| TRUE_NODE | 2082 | 543 | 722 | 6.57 | 1508 | 104 | 2384 |
+| body | worst | mean | 1800 | 2100 | 2400 | latitude | distance | worst at |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| SUN | 5.42 | 1.15 | 0.145 | 0.225 | 0.524 | 1.26 | 1.7e-5 | 1844 |
+| MOON | 119 | 23.9 | 0.012 | 20.3 | 92.5 | 58.2 | 5.8e-4 | 2396 |
+| MERCURY | 8.35 | 1.40 | 2.25 | 0.938 | 2.06 | 2.56 | 2.2e-4 | 2350 |
+| VENUS | 21.5 | 1.67 | 1.60 | 0.229 | 0.026 | 6.05 | 1.7e-4 | 2209 |
+| MARS | 21.1 | 1.40 | 0.470 | 4.20 | 1.47 | 4.24 | 9.8e-5 | 2224 |
+| JUPITER | 2.72 | 0.527 | 0.007 | 1.25 | 0.137 | 0.812 | 1.7e-5 | 2119 |
+| SATURN | 1.66 | 0.440 | 0.831 | 0.301 | 0.908 | 0.673 | 8.9e-6 | 2302 |
+| MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
+| TRUE_NODE | 224 | 47.0 | 21.5 | 36.4 | 116 | — | — | 1955 |
 
-Arcseconds of ecliptic longitude, the shortest way round the circle.
+Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
-The Moon is the whole of the difference between the two tables: 14.3″ from the centre, 119″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 0.401″ at 1800, where Delta T is recorded, against 92.9″ at 2400, where it is extrapolated.
+### The rates, from the centre
 
-The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 32, 1800 2, 2100 4, 2400 9. The recorded topocentric worst, for comparison, is 268 seconds.
+| body | longitude ("/day) | latitude ("/day) |
+|---|---:|---:|
+| SUN | 0.186 | 0.155 |
+| MOON | 9.48 | 6.79 |
+| MERCURY | 3.82 | 1.88 |
+| VENUS | 1.15 | 0.618 |
+| MARS | 0.541 | 0.443 |
+| JUPITER | 90.0 | 1.09 |
+| SATURN | 2.55 | 2.27 |
+| MEAN_NODE | 0.001 | — |
+| TRUE_NODE | 102 | — |
 
-**The bija, measured rather than declared.** From the centre, the Moon is 14.3″ with it and 29.5″ without — the correction removes 15.3″ of 29.5″, fitted over 1900 to 2100. The true node moves 2082″ against 2066″, which is the same shift carried through and not a correction of its own.
+Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matters twice over: it is the out-of-plane motion, so it fixes the orbital plane the nodes are cut from.
 
-ADR-0027 argued the theory to be 19.4″ uncorrected over this span and about 3 corrected, from a floor measurement in ELP's own frame. Reaching 29.5″ and 14.3″ again through the whole completion is an independent path to the same two numbers.
+The Moon is the whole of the difference between the two tables: 14.6″ from the centre, 119″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 0.012″ at 1800, where Delta T is recorded, against 92.5″ at 2400, where it is extrapolated.
+
+The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 33, 1800 3, 2100 4, 2400 10. The recorded topocentric worst, for comparison, is 268 seconds.
+
+**The bija, measured rather than declared.** From the centre, the Moon is 14.6″ with it and 29.5″ without — the correction removes 14.8″ of 29.5″, fitted over 1900 to 2100. The true node moves 224″ against 224″, which is the same shift carried through and not a correction of its own.
+
+ADR-0027 argued the theory to be 19.4″ uncorrected over this span and about 3 corrected, from a floor measurement in ELP's own frame. Reaching 29.5″ and 14.6″ again through the whole completion is an independent path to the same two numbers.
 
 It is a knob rather than a baked-in adjustment, so what it is worth is recorded beside what it was set to — where a `bija: true` field would have asserted only that somebody meant to switch it on.
 
-**The true node is the open question on this page.** It reads 2082″ — identical from both centres, which is correct, because a node is a *direction* and the centre step leaves directions alone. But that is 146 times the Moon's own 14.3″, where the geometry predicts about eleven: a node is where the orbit crosses the ecliptic, so an error arrives there divided by the tangent of a five-degree inclination. Two candidates are already excluded by measurement. It is **not truncation** — the `full` tier, the theories entire, gives the same figure. It is **not the bija** — turning it off moves the node 15.6″, of 2082″. What is left is the latitude and the velocity the node is built from, and that is measured where those are rather than guessed at here.
+**The true node, and why it is 224″ when the Moon is 14.6″.** A node is where the orbit meets the ecliptic, and near that meeting the Moon's latitude is level: it climbs at about the tangent of the orbit's 5.145-degree inclination, so an error across the orbit arrives along it divided by that tangent — an amplification of about 11.
+
+**106″ of it is this tier's truncation**: `full`, the theories entire, reads 118″, so the rest of what follows is about the 118″ that remain there too. It is **not the bija**: turning it off moves the node 0.136″ of 224″. It is **not the precession model**: deriving the reference pole from the SDK's own model rather than the lunar theory's moved it 0.13 arcseconds. And it is **not the node's own arithmetic** — the table below shows each provider's node sitting on its own Moon's crossing.
+
+| provider | year | crossings | node against its own crossing |
+|---|---:|---:|---:|
+| built-in | 1850 | 2 | 1.96″ |
+| engine | 1850 | 2 | 1.59″ |
+| built-in | 2000 | 1 | 0.166″ |
+| engine | 2000 | 1 | 0.798″ |
+| built-in | 2350 | 1 | 5.08″ |
+| engine | 2350 | 1 | 1.98″ |
+
+A month of six-hour steps at each epoch, with the crossing interpolated rather than sampled — at six hours the Moon moves three degrees, and comparing at the nearest sample would measure the step size and call it an error.
+
+**Each node is where its own Moon crosses.** So neither is wrong about its own theory, and what the 224″ measures is the two theories disagreeing about the *plane* rather than about the node. Read backwards, 224″ of node is 20.1″ of orbital tilt — and the Moon's position agrees far better than that, to 11.0″ of latitude. A plane is fixed by a velocity as much as by a position, and the out-of-plane rate is where the disagreement is: 6.79″ a day against a rate whose own amplitude is 4277″, which tilts a 5.145-degree orbit by 29.4″. That is the number the node is amplifying, and it accounts for the tilt the node implies.
+
+The mean node, a polynomial that does not depend on where the Moon is, is unaffected and reads 0.987″ at every tier.
 
 ## `standard`
 
@@ -66,47 +99,80 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 
 ### From the Earth's centre — the ephemeris
 
-| body | worst | mean | 1800 | 2100 | 2400 | worst speed ("/day) | worst at |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| SUN | 0.228 | 0.075 | 0.156 | 0.066 | 0.068 | 0.014 | 1830 |
-| MOON | 3.23 | 0.422 | 0.559 | 0.209 | 1.35 | 2.94 | 2389 |
-| MERCURY | 0.850 | 0.146 | 0.172 | 0.088 | 0.058 | 3.23 | 1802 |
-| VENUS | 1.71 | 0.149 | 0.121 | 0.103 | 0.004 | 0.328 | 2155 |
-| MARS | 4.80 | 0.275 | 0.020 | 0.052 | 0.532 | 0.520 | 2399 |
-| JUPITER | 1.12 | 0.408 | 0.273 | 0.234 | 0.601 | 90.0 | 2296 |
-| SATURN | 1.09 | 0.349 | 0.222 | 0.017 | 0.685 | 2.56 | 2351 |
-| MEAN_NODE | 0.985 | 0.326 | 0.330 | 0.182 | 0.985 | 0.001 | 2400 |
-| TRUE_NODE | 2044 | 541 | 768 | 34.7 | 1559 | 34.4 | 2393 |
+| body | worst | mean | 1800 | 2100 | 2400 | latitude | distance | worst at |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| SUN | 0.228 | 0.075 | 0.156 | 0.066 | 0.068 | 0.058 | 3.9e-7 | 1830 |
+| MOON | 2.75 | 0.336 | 0.151 | 0.280 | 1.73 | 1.75 | 1.0e-4 | 2389 |
+| MERCURY | 0.285 | 0.078 | 0.187 | 0.081 | 0.040 | 0.125 | 2.0e-4 | 1833 |
+| VENUS | 0.787 | 0.081 | 0.121 | 0.069 | 0.052 | 0.250 | 1.2e-4 | 2310 |
+| MARS | 3.98 | 0.246 | 0.026 | 0.142 | 0.514 | 0.300 | 6.6e-5 | 2399 |
+| JUPITER | 1.04 | 0.401 | 0.269 | 0.408 | 0.604 | 0.125 | 1.1e-5 | 2365 |
+| SATURN | 0.834 | 0.327 | 0.170 | 0.339 | 0.696 | 0.060 | 5.5e-6 | 2399 |
+| MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
+| TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
 
-Arcseconds of ecliptic longitude, the shortest way round the circle.
+Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
 ### From the place — what a chart receives
 
-| body | worst | mean | 1800 | 2100 | 2400 | worst speed ("/day) | worst at |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| SUN | 0.201 | 0.061 | 0.137 | 0.047 | 0.076 | 1.77 | 1830 |
-| MOON | 117 | 23.1 | 1.86 | 18.4 | 95.4 | 750 | 2395 |
-| MERCURY | 0.856 | 0.145 | 0.213 | 0.068 | 0.024 | 4.75 | 2379 |
-| VENUS | 1.70 | 0.171 | 0.059 | 0.250 | 0.014 | 5.16 | 2155 |
-| MARS | 4.84 | 0.331 | 0.159 | 0.218 | 0.490 | 3.00 | 2399 |
-| JUPITER | 1.21 | 0.433 | 0.328 | 0.459 | 0.466 | 80.6 | 2296 |
-| SATURN | 1.27 | 0.378 | 0.084 | 0.234 | 0.616 | 2.45 | 2333 |
-| MEAN_NODE | 0.985 | 0.326 | 0.330 | 0.182 | 0.985 | 0.007 | 2400 |
-| TRUE_NODE | 2044 | 541 | 768 | 34.7 | 1559 | 41.7 | 2393 |
+| body | worst | mean | 1800 | 2100 | 2400 | latitude | distance | worst at |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| SUN | 0.201 | 0.061 | 0.137 | 0.047 | 0.076 | 0.148 | 1.6e-6 | 1830 |
+| MOON | 117 | 23.1 | 1.44 | 18.3 | 95.1 | 53.9 | 5.7e-4 | 2395 |
+| MERCURY | 0.334 | 0.076 | 0.228 | 0.061 | 0.007 | 0.164 | 2.0e-4 | 1856 |
+| VENUS | 0.770 | 0.112 | 0.301 | 0.079 | 0.070 | 0.451 | 1.2e-4 | 2310 |
+| MARS | 4.06 | 0.315 | 0.165 | 0.307 | 0.472 | 0.305 | 6.6e-5 | 2367 |
+| JUPITER | 1.13 | 0.429 | 0.325 | 0.633 | 0.470 | 0.358 | 1.1e-5 | 2364 |
+| SATURN | 1.03 | 0.358 | 0.031 | 0.556 | 0.627 | 0.155 | 5.5e-6 | 2399 |
+| MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
+| TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
 
-Arcseconds of ecliptic longitude, the shortest way round the circle.
+Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
-The Moon is the whole of the difference between the two tables: 3.23″ from the centre, 117″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 1.86″ at 1800, where Delta T is recorded, against 95.4″ at 2400, where it is extrapolated.
+### The rates, from the centre
 
-The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 7, 1800 1, 2100 0, 2400 3. The recorded topocentric worst, for comparison, is 262 seconds.
+| body | longitude ("/day) | latitude ("/day) |
+|---|---:|---:|
+| SUN | 0.014 | 0.004 |
+| MOON | 2.94 | 2.36 |
+| MERCURY | 3.23 | 2.00 |
+| VENUS | 0.328 | 0.095 |
+| MARS | 0.520 | 0.474 |
+| JUPITER | 90.0 | 1.07 |
+| SATURN | 2.56 | 2.28 |
+| MEAN_NODE | 0.001 | — |
+| TRUE_NODE | 30.5 | — |
 
-**The bija, measured rather than declared.** From the centre, the Moon is 3.23″ with it and 19.3″ without — the correction removes 16.1″ of 19.3″, fitted over 1900 to 2100. The true node moves 2044″ against 2060″, which is the same shift carried through and not a correction of its own.
+Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matters twice over: it is the out-of-plane motion, so it fixes the orbital plane the nodes are cut from.
 
-ADR-0027 argued the theory to be 19.4″ uncorrected over this span and about 3 corrected, from a floor measurement in ELP's own frame. Reaching 19.3″ and 3.23″ again through the whole completion is an independent path to the same two numbers.
+The Moon is the whole of the difference between the two tables: 2.75″ from the centre, 117″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 1.44″ at 1800, where Delta T is recorded, against 95.1″ at 2400, where it is extrapolated.
+
+The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 6, 1800 0, 2100 1, 2400 4. The recorded topocentric worst, for comparison, is 262 seconds.
+
+**The bija, measured rather than declared.** From the centre, the Moon is 2.75″ with it and 19.2″ without — the correction removes 16.4″ of 19.2″, fitted over 1900 to 2100. The true node moves 119″ against 105″, which is the same shift carried through and not a correction of its own.
+
+ADR-0027 argued the theory to be 19.4″ uncorrected over this span and about 3 corrected, from a floor measurement in ELP's own frame. Reaching 19.2″ and 2.75″ again through the whole completion is an independent path to the same two numbers.
 
 It is a knob rather than a baked-in adjustment, so what it is worth is recorded beside what it was set to — where a `bija: true` field would have asserted only that somebody meant to switch it on.
 
-**The true node is the open question on this page.** It reads 2044″ — identical from both centres, which is correct, because a node is a *direction* and the centre step leaves directions alone. But that is 633 times the Moon's own 3.23″, where the geometry predicts about eleven: a node is where the orbit crosses the ecliptic, so an error arrives there divided by the tangent of a five-degree inclination. Two candidates are already excluded by measurement. It is **not truncation** — the `full` tier, the theories entire, gives the same figure. It is **not the bija** — turning it off moves the node 16.4″, of 2044″. What is left is the latitude and the velocity the node is built from, and that is measured where those are rather than guessed at here.
+**The true node, and why it is 119″ when the Moon is 2.75″.** A node is where the orbit meets the ecliptic, and near that meeting the Moon's latitude is level: it climbs at about the tangent of the orbit's 5.145-degree inclination, so an error across the orbit arrives along it divided by that tangent — an amplification of about 11.
+
+It is **not truncation**: `full`, the theories entire, reads 118″ for the same figure. It is **not the bija**: turning it off moves the node 13.3″ of 119″. It is **not the precession model**: deriving the reference pole from the SDK's own model rather than the lunar theory's moved it 0.13 arcseconds. And it is **not the node's own arithmetic** — the table below shows each provider's node sitting on its own Moon's crossing.
+
+| provider | year | crossings | node against its own crossing |
+|---|---:|---:|---:|
+| built-in | 1850 | 2 | 2.17″ |
+| engine | 1850 | 2 | 1.59″ |
+| built-in | 2000 | 1 | 0.189″ |
+| engine | 2000 | 1 | 0.798″ |
+| built-in | 2350 | 1 | 5.19″ |
+| engine | 2350 | 1 | 1.98″ |
+
+A month of six-hour steps at each epoch, with the crossing interpolated rather than sampled — at six hours the Moon moves three degrees, and comparing at the nearest sample would measure the step size and call it an error.
+
+**Each node is where its own Moon crosses.** So neither is wrong about its own theory, and what the 119″ measures is the two theories disagreeing about the *plane* rather than about the node. Read backwards, 119″ of node is 10.6″ of orbital tilt — and the Moon's position agrees far better than that, to 1.75″ of latitude. A plane is fixed by a velocity as much as by a position, and the out-of-plane rate is where the disagreement is: 2.36″ a day against a rate whose own amplitude is 4277″, which tilts a 5.145-degree orbit by 10.2″. That is the number the node is amplifying, and it accounts for the tilt the node implies.
+
+The mean node, a polynomial that does not depend on where the Moon is, is unaffected and reads 0.987″ at every tier.
 
 ## `full`
 
@@ -116,47 +182,80 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 
 ### From the Earth's centre — the ephemeris
 
-| body | worst | mean | 1800 | 2100 | 2400 | worst speed ("/day) | worst at |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| SUN | 0.152 | 0.076 | 0.151 | 0.056 | 0.071 | 0.007 | 1814 |
-| MOON | 2.93 | 0.416 | 0.549 | 0.085 | 1.46 | 2.93 | 2389 |
-| MERCURY | 0.868 | 0.145 | 0.178 | 0.077 | 0.076 | 3.22 | 1840 |
-| VENUS | 1.51 | 0.145 | 0.097 | 0.114 | 0.003 | 0.311 | 1896 |
-| MARS | 4.84 | 0.276 | 0.042 | 0.011 | 0.526 | 0.520 | 2399 |
-| JUPITER | 1.10 | 0.404 | 0.285 | 0.221 | 0.604 | 90.0 | 2296 |
-| SATURN | 1.09 | 0.349 | 0.222 | 0.016 | 0.690 | 2.56 | 2351 |
-| MEAN_NODE | 0.985 | 0.326 | 0.330 | 0.182 | 0.985 | 0.001 | 2400 |
-| TRUE_NODE | 2044 | 541 | 767 | 34.2 | 1560 | 31.9 | 2393 |
+| body | worst | mean | 1800 | 2100 | 2400 | latitude | distance | worst at |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| SUN | 0.152 | 0.076 | 0.151 | 0.056 | 0.071 | 0.015 | 7.8e-8 | 1814 |
+| MOON | 2.47 | 0.317 | 0.141 | 0.156 | 1.84 | 1.58 | 1.1e-4 | 2396 |
+| MERCURY | 0.207 | 0.077 | 0.192 | 0.069 | 0.059 | 0.021 | 2.0e-4 | 1803 |
+| VENUS | 0.233 | 0.075 | 0.145 | 0.058 | 0.053 | 0.071 | 1.2e-4 | 2393 |
+| MARS | 4.02 | 0.245 | 0.048 | 0.079 | 0.509 | 0.199 | 6.6e-5 | 2399 |
+| JUPITER | 1.02 | 0.397 | 0.282 | 0.395 | 0.608 | 0.124 | 1.1e-5 | 2365 |
+| SATURN | 0.842 | 0.327 | 0.169 | 0.338 | 0.701 | 0.055 | 5.5e-6 | 2397 |
+| MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
+| TRUE_NODE | 118 | 38.6 | 67.6 | 8.83 | 64.3 | — | — | 2392 |
 
-Arcseconds of ecliptic longitude, the shortest way round the circle.
+Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
 ### From the place — what a chart receives
 
-| body | worst | mean | 1800 | 2100 | 2400 | worst speed ("/day) | worst at |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| SUN | 0.137 | 0.061 | 0.131 | 0.038 | 0.079 | 1.78 | 1801 |
-| MOON | 117 | 23.1 | 1.85 | 18.5 | 95.3 | 750 | 2395 |
-| MERCURY | 0.793 | 0.143 | 0.219 | 0.056 | 0.043 | 4.74 | 1840 |
-| VENUS | 1.53 | 0.166 | 0.083 | 0.261 | 0.015 | 5.20 | 2324 |
-| MARS | 4.87 | 0.330 | 0.181 | 0.154 | 0.484 | 2.99 | 2399 |
-| JUPITER | 1.20 | 0.430 | 0.341 | 0.446 | 0.470 | 80.6 | 2296 |
-| SATURN | 1.26 | 0.377 | 0.083 | 0.233 | 0.621 | 2.45 | 2333 |
-| MEAN_NODE | 0.985 | 0.326 | 0.330 | 0.182 | 0.985 | 0.007 | 2400 |
-| TRUE_NODE | 2044 | 541 | 767 | 34.2 | 1560 | 41.4 | 2393 |
+| body | worst | mean | 1800 | 2100 | 2400 | latitude | distance | worst at |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| SUN | 0.137 | 0.061 | 0.131 | 0.038 | 0.079 | 0.120 | 1.5e-6 | 1801 |
+| MOON | 117 | 23.1 | 1.43 | 18.4 | 94.9 | 53.8 | 5.7e-4 | 2395 |
+| MERCURY | 0.251 | 0.071 | 0.233 | 0.049 | 0.025 | 0.124 | 2.0e-4 | 1803 |
+| VENUS | 0.544 | 0.103 | 0.325 | 0.090 | 0.071 | 0.383 | 1.2e-4 | 2399 |
+| MARS | 4.05 | 0.313 | 0.187 | 0.244 | 0.467 | 0.306 | 6.6e-5 | 2399 |
+| JUPITER | 1.12 | 0.426 | 0.337 | 0.619 | 0.473 | 0.357 | 1.1e-5 | 2364 |
+| SATURN | 1.04 | 0.358 | 0.031 | 0.555 | 0.632 | 0.152 | 5.5e-6 | 2399 |
+| MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
+| TRUE_NODE | 118 | 38.6 | 67.6 | 8.83 | 64.3 | — | — | 2392 |
 
-Arcseconds of ecliptic longitude, the shortest way round the circle.
+Arcseconds of ecliptic longitude, the shortest way round the circle, except the last two: **latitude** is the worst in arcseconds and **distance** the worst relative difference. A node and an apogee are *directions*, carrying a longitude and nothing else, so the SDK answers them with no latitude and no distance and those two columns would compare a declared zero against whatever the engine supplies — a convention, not an error, and left blank rather than dressed up as a measurement.
 
-The Moon is the whole of the difference between the two tables: 2.93″ from the centre, 117″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 1.85″ at 1800, where Delta T is recorded, against 95.3″ at 2400, where it is extrapolated.
+### The rates, from the centre
 
-The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 7, 1800 1, 2100 0, 2400 3. The recorded topocentric worst, for comparison, is 263 seconds.
+| body | longitude ("/day) | latitude ("/day) |
+|---|---:|---:|
+| SUN | 0.007 | 0.001 |
+| MOON | 2.93 | 2.35 |
+| MERCURY | 3.22 | 2.00 |
+| VENUS | 0.311 | 0.091 |
+| MARS | 0.520 | 0.476 |
+| JUPITER | 90.0 | 1.07 |
+| SATURN | 2.56 | 2.28 |
+| MEAN_NODE | 0.001 | — |
+| TRUE_NODE | 26.5 | — |
 
-**The bija, measured rather than declared.** From the centre, the Moon is 2.93″ with it and 19.5″ without — the correction removes 16.5″ of 19.5″, fitted over 1900 to 2100. The true node moves 2044″ against 2061″, which is the same shift carried through and not a correction of its own.
+Worst disagreement in each rate, arcseconds a day. The Moon's latitude rate matters twice over: it is the out-of-plane motion, so it fixes the orbital plane the nodes are cut from.
 
-ADR-0027 argued the theory to be 19.4″ uncorrected over this span and about 3 corrected, from a floor measurement in ELP's own frame. Reaching 19.5″ and 2.93″ again through the whole completion is an independent path to the same two numbers.
+The Moon is the whole of the difference between the two tables: 2.47″ from the centre, 117″ from the place. Nothing about the ephemeris changed between them. Delta T did — at 2400 the two sides' models differ by enough Earth rotation to move the Moon about a hundred arcseconds, and the Moon is the one body near enough for the observer's position to matter. The trend says the same thing: 1.43″ at 1800, where Delta T is recorded, against 94.9″ at 2400, where it is extrapolated.
+
+The geocentric Moon again as **seconds of tithi boundary**, which is what ADR-0027 argues in: worst 6, 1800 0, 2100 0, 2400 4. The recorded topocentric worst, for comparison, is 263 seconds.
+
+**The bija, measured rather than declared.** From the centre, the Moon is 2.47″ with it and 19.3″ without — the correction removes 16.8″ of 19.3″, fitted over 1900 to 2100. The true node moves 118″ against 105″, which is the same shift carried through and not a correction of its own.
+
+ADR-0027 argued the theory to be 19.4″ uncorrected over this span and about 3 corrected, from a floor measurement in ELP's own frame. Reaching 19.3″ and 2.47″ again through the whole completion is an independent path to the same two numbers.
 
 It is a knob rather than a baked-in adjustment, so what it is worth is recorded beside what it was set to — where a `bija: true` field would have asserted only that somebody meant to switch it on.
 
-**The true node is the open question on this page.** It reads 2044″ — identical from both centres, which is correct, because a node is a *direction* and the centre step leaves directions alone. But that is 699 times the Moon's own 2.93″, where the geometry predicts about eleven: a node is where the orbit crosses the ecliptic, so an error arrives there divided by the tangent of a five-degree inclination. Two candidates are already excluded by measurement. It is **not truncation** — the `full` tier, the theories entire, gives the same figure. It is **not the bija** — turning it off moves the node 16.4″, of 2044″. What is left is the latitude and the velocity the node is built from, and that is measured where those are rather than guessed at here.
+**The true node, and why it is 118″ when the Moon is 2.47″.** A node is where the orbit meets the ecliptic, and near that meeting the Moon's latitude is level: it climbs at about the tangent of the orbit's 5.145-degree inclination, so an error across the orbit arrives along it divided by that tangent — an amplification of about 11.
+
+It is **not truncation**: `full`, the theories entire, reads 118″ for the same figure. It is **not the bija**: turning it off moves the node 13.3″ of 118″. It is **not the precession model**: deriving the reference pole from the SDK's own model rather than the lunar theory's moved it 0.13 arcseconds. And it is **not the node's own arithmetic** — the table below shows each provider's node sitting on its own Moon's crossing.
+
+| provider | year | crossings | node against its own crossing |
+|---|---:|---:|---:|
+| built-in | 1850 | 2 | 2.19″ |
+| engine | 1850 | 2 | 1.59″ |
+| built-in | 2000 | 1 | 0.180″ |
+| engine | 2000 | 1 | 0.798″ |
+| built-in | 2350 | 1 | 5.16″ |
+| engine | 2350 | 1 | 1.98″ |
+
+A month of six-hour steps at each epoch, with the crossing interpolated rather than sampled — at six hours the Moon moves three degrees, and comparing at the nearest sample would measure the step size and call it an error.
+
+**Each node is where its own Moon crosses.** So neither is wrong about its own theory, and what the 118″ measures is the two theories disagreeing about the *plane* rather than about the node. Read backwards, 118″ of node is 10.6″ of orbital tilt — and the Moon's position agrees far better than that, to 1.58″ of latitude. A plane is fixed by a velocity as much as by a position, and the out-of-plane rate is where the disagreement is: 2.35″ a day against a rate whose own amplitude is 4277″, which tilts a 5.145-degree orbit by 10.2″. That is the number the node is amplifying, and it accounts for the tilt the node implies.
+
+The mean node, a polynomial that does not depend on where the Moon is, is unaffected and reads 0.987″ at every tier.
 
 ## One correction at a time
 
@@ -170,9 +269,9 @@ The first column is the check that makes the rest mean anything: **how far the e
 | light time only | 0.011 | 0.227 | 2.75 | 3.98 |
 | deflection only | 0.000 | 0.228 | 2.75 | 3.98 |
 | aberration only | 0.000 | 20.9 | 23.3 | 21.3 |
-| nutation only | 18.9 | 0.225 | 3.22 | 4.79 |
-| apparent, tropical | 39.6 | 0.226 | 3.22 | 4.79 |
-| apparent, sidereal | 106035 | 0.228 | 3.23 | 4.80 |
+| nutation only | 18.9 | 0.225 | 2.74 | 3.97 |
+| apparent, tropical | 39.6 | 0.226 | 2.74 | 3.97 |
+| apparent, sidereal | 106035 | 0.228 | 2.75 | 3.98 |
 
 Of the four single corrections the engine distinguishes `light time` and `nutation` — asking for `deflection` and `aberration` moves its own answer not at all. So those rows do not measure agreement: they measure the SDK applying a correction the engine did not, and are here to be read that way rather than mistaken for accuracy. **Only the rows the engine honours, and the two whole-frame rows at the foot, compare like with like.**
 
@@ -184,35 +283,35 @@ Each bound is one ADR-0027 argued from, not one chosen to be met, and each is de
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| `compact`: the retired single-number claim — one arcsecond for every planet | falsified | worst 21.8″ |
+| `compact`: the retired single-number claim — one arcsecond for every planet | falsified | worst 21.4″ |
 | `compact`: the Sun stays inside one arcsecond over the whole span | falsified | worst 5.45″ |
-| `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | falsified | worst 3.83 s of tithi |
-| `compact`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 32 s of tithi |
-| `compact`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 14.3″ |
-| `compact`: the mean node is inside one arcsecond | **holds** | worst 0.985″ |
-| `standard`: the retired single-number claim — one arcsecond for every planet | falsified | worst 4.80″ |
+| `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | falsified | worst 3.67 s of tithi |
+| `compact`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 33 s of tithi |
+| `compact`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 14.6″ |
+| `compact`: the mean node is inside one arcsecond | **holds** | worst 0.987″ |
+| `standard`: the retired single-number claim — one arcsecond for every planet | falsified | worst 3.98″ |
 | `standard`: the Sun stays inside one arcsecond over the whole span | **holds** | worst 0.228″ |
-| `standard`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | **holds** | worst 0.47 s of tithi |
-| `standard`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 7.27 s of tithi |
-| `standard`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 3.23″ |
-| `standard`: the mean node is inside one arcsecond | **holds** | worst 0.985″ |
-| `full`: the retired single-number claim — one arcsecond for every planet | falsified | worst 4.84″ |
+| `standard`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | **holds** | worst 0.63 s of tithi |
+| `standard`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 6.18 s of tithi |
+| `standard`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 2.75″ |
+| `standard`: the mean node is inside one arcsecond | **holds** | worst 0.987″ |
+| `full`: the retired single-number claim — one arcsecond for every planet | falsified | worst 4.02″ |
 | `full`: the Sun stays inside one arcsecond over the whole span | **holds** | worst 0.152″ |
-| `full`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | **holds** | worst 0.19 s of tithi |
-| `full`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 6.58 s of tithi |
-| `full`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 2.93″ |
-| `full`: the mean node is inside one arcsecond | **holds** | worst 0.985″ |
+| `full`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) | **holds** | worst 0.35 s of tithi |
+| `full`: minute-accurate over the whole six centuries (ADR-0027) | **holds** | worst 5.55 s of tithi |
+| `full`: the Moon meets the almanac's 0.445 arcseconds | falsified | worst 2.47″ |
+| `full`: the mean node is inside one arcsecond | **holds** | worst 0.987″ |
 
 8 of 18 falsified:
 
-- `compact`: the retired single-number claim — one arcsecond for every planet — worst 21.8″
+- `compact`: the retired single-number claim — one arcsecond for every planet — worst 21.4″
 - `compact`: the Sun stays inside one arcsecond over the whole span — worst 5.45″
-- `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) — worst 3.83 s of tithi
-- `compact`: the Moon meets the almanac's 0.445 arcseconds — worst 14.3″
-- `standard`: the retired single-number claim — one arcsecond for every planet — worst 4.80″
-- `standard`: the Moon meets the almanac's 0.445 arcseconds — worst 3.23″
-- `full`: the retired single-number claim — one arcsecond for every planet — worst 4.84″
-- `full`: the Moon meets the almanac's 0.445 arcseconds — worst 2.93″
+- `compact`: second-accurate inside the bija's fitted span, 1900 to 2100 (ADR-0027) — worst 3.67 s of tithi
+- `compact`: the Moon meets the almanac's 0.445 arcseconds — worst 14.6″
+- `standard`: the retired single-number claim — one arcsecond for every planet — worst 3.98″
+- `standard`: the Moon meets the almanac's 0.445 arcseconds — worst 2.75″
+- `full`: the retired single-number claim — one arcsecond for every planet — worst 4.02″
+- `full`: the Moon meets the almanac's 0.445 arcseconds — worst 2.47″
 
 **None of them is the completion.** What the completion decides is the Sun, the mean node and the frame the whole table is stated in; those are the rows that hold wherever the ephemeris under them is good enough to show it.
 

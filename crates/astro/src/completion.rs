@@ -1052,10 +1052,6 @@ fn correct_cell(
         Coordinates::Ecliptic => sky::ecliptic_to_equatorial(p, mean_deg),
         Coordinates::Equatorial => p,
     };
-    let from_equatorial = |p: Spherical, obliquity: f64| match coordinates {
-        Coordinates::Ecliptic => sky::equatorial_to_ecliptic(p, obliquity),
-        Coordinates::Equatorial => p,
-    };
 
     // Light time: the body is seen where it was `distance / c` ago, and
     // "where it was" means in a frame that does not itself move.
@@ -1142,17 +1138,44 @@ fn correct_cell(
     }
 
     let corrected = to_spherical(direction);
-    // Nutation is a frame change rather than a change in what is seen.
-    // On the ecliptic it is two things and not one: the true obliquity on
-    // the way out, **and** the nutation in longitude added to the
-    // longitude. Applying only the obliquity leaves the longitude short
-    // by up to seventeen arcseconds, which is thirty-eight seconds of
-    // tithi.
-    let obliquity_out = if wanted.nutation { true_deg } else { mean_deg };
-    let mut here = from_equatorial(corrected, obliquity_out);
-    if wanted.nutation && coordinates == Coordinates::Ecliptic {
-        here.lon_deg = (here.lon_deg + nutation_longitude_deg).rem_euclid(360.0);
-    }
+    // Nutation is a frame change rather than a change in what is seen,
+    // and it is a change of the **equator** rather than of the ecliptic.
+    // That decides both branches below, and getting it wrong is invisible
+    // in a longitude.
+    //
+    // On the ecliptic: the ecliptic of date is the *mean* ecliptic,
+    // because the ecliptic plane is not what nutates. So the conversion
+    // out takes the mean obliquity whether nutation was asked for or not,
+    // and what nutation does is slide the equinox along that ecliptic —
+    // the nutation in longitude added to the longitude, with the latitude
+    // untouched. Converting with the *true* obliquity instead tilts the
+    // latitude by the nutation in obliquity, which measured against the
+    // engine was 9.9 arcseconds on every body at once, the Sun included
+    // — and the Sun has no ecliptic latitude to be wrong about, which is
+    // what gave it away. The longitudes agreed to a fifth of an
+    // arcsecond throughout.
+    //
+    // On the equator: the whole nutation matrix, not half of it. The
+    // vector arrives in the mean equator and equinox of date and apparent
+    // equatorial coordinates are of the true one.
+    let here = match coordinates {
+        Coordinates::Ecliptic => {
+            let mut here = sky::equatorial_to_ecliptic(corrected, mean_deg);
+            if wanted.nutation {
+                here.lon_deg = (here.lon_deg + nutation_longitude_deg).rem_euclid(360.0);
+            }
+            here
+        }
+        Coordinates::Equatorial if wanted.nutation => to_spherical(iau::vector::rxp(
+            &iau::apparent::numat(
+                mean_deg.to_radians(),
+                nutation_longitude_deg.to_radians(),
+                (true_deg - mean_deg).to_radians(),
+            ),
+            &direction,
+        )),
+        Coordinates::Equatorial => corrected,
+    };
     Cell {
         lon: here.lon_deg,
         lat: here.lat_deg,

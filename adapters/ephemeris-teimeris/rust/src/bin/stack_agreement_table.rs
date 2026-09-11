@@ -107,6 +107,24 @@ struct Row {
     at_2100_arcsec: f64,
     at_2400_arcsec: f64,
     worst_speed_arcsec_per_day: f64,
+    /// Latitude, which longitude alone hides. It is what sets an orbit's
+    /// plane, so a node is far more sensitive to it than to longitude,
+    /// and a graha's war is decided by it.
+    /// Whether the body is a *direction* — a node or an apogee, which
+    /// has a longitude and nothing else. The SDK answers one with no
+    /// latitude and no distance by construction, so those two columns
+    /// compare a declared zero against whatever the engine supplies and
+    /// are a convention rather than an error. The row says so rather than
+    /// leaving a reader to know it.
+    is_direction: bool,
+    worst_lat_arcsec: f64,
+    /// The latitude's *rate*, which is the out-of-plane motion and so
+    /// what tilts the orbital plane the nodes are cut from. A position
+    /// can agree while the plane it is moving in does not.
+    worst_lat_speed_arcsec_per_day: f64,
+    /// Distance, relative, which sets the parallax the centre step
+    /// applies and the disc a phenomenon is computed from.
+    worst_dist_relative: f64,
     /// The instant the worst disagreement happened at, which is what
     /// tells a systematic offset from a spike.
     worst_at_jd: f64,
@@ -147,6 +165,13 @@ struct Table {
     /// The span the bija's coefficients were fitted over, carried from
     /// the tables rather than restated, so a refit moves the page.
     moon_bija_fitted_over: &'static str,
+    /// Each provider's true node against **its own** Moon's ascending
+    /// crossing, degrees. The node is defined as the place where the
+    /// orbit meets the ecliptic, so a provider whose Moon reaches zero
+    /// latitude somewhere else is answering a different question — and
+    /// this separates a disagreement between two definitions from an
+    /// error in either.
+    node_against_own_crossing: Vec<SelfCheck>,
     from_jd: f64,
     to_jd: f64,
     step_days: f64,
@@ -161,6 +186,15 @@ struct Table {
     /// From the place the chart is cast for: what a consumer receives,
     /// which carries the two sides' Delta T models as well.
     topocentric_rows: Vec<Row>,
+}
+
+/// One provider's true node against its own Moon.
+#[derive(Debug, Serialize)]
+struct SelfCheck {
+    provider: &'static str,
+    year: i32,
+    crossings: usize,
+    worst_degrees: f64,
 }
 
 /// The shortest way round the circle, degrees.
@@ -365,6 +399,9 @@ fn main() -> ExitCode {
             let mut worst = 0.0_f64;
             let mut worst_at = 0.0_f64;
             let mut worst_speed = 0.0_f64;
+            let mut worst_lat = 0.0_f64;
+            let mut worst_lat_speed = 0.0_f64;
+            let mut worst_dist = 0.0_f64;
             let mut total = 0.0;
             let mut ends = [0.0_f64; 3];
             for (jd_index, jd) in jds.iter().enumerate() {
@@ -381,6 +418,14 @@ fn main() -> ExitCode {
                     worst_at = *jd;
                 }
                 worst_speed = worst_speed.max((x.lon_speed - y.lon_speed).abs() * 3_600.0);
+                worst_lat = worst_lat.max((x.lat - y.lat).abs() * 3_600.0);
+                worst_lat_speed =
+                    worst_lat_speed.max((x.lat_speed - y.lat_speed).abs() * 3_600.0);
+                // A direction carries no distance, so there is nothing to
+                // compare and a relative difference would be 0/0.
+                if y.dist > 0.0 {
+                    worst_dist = worst_dist.max((x.dist - y.dist).abs() / y.dist);
+                }
                 total += difference;
                 if jd_index == 0 {
                     ends[0] = difference;
@@ -412,11 +457,63 @@ fn main() -> ExitCode {
                 at_2100_arcsec: ends[1],
                 at_2400_arcsec: ends[2],
                 worst_speed_arcsec_per_day: worst_speed,
+                is_direction: !body.is_placed(),
+                worst_lat_arcsec: worst_lat,
+                worst_lat_speed_arcsec_per_day: worst_lat_speed,
+                worst_dist_relative: worst_dist,
                 worst_at_jd: worst_at,
             });
         }
         (rows, moon_worst)
     };
+
+    // Each provider against itself: a month of six-hour steps, dense
+    // enough to interpolate the Moon's ascending crossing, at three
+    // epochs across the span.
+    let self_check = |name: &'static str, provider: &dyn EphemerisProvider, year: i32, from: f64| {
+        let dense: Vec<f64> = (0..120).map(|q| f64::from(q).mul_add(0.25, from)).collect();
+        let request = PositionRequest::new(
+            &dense,
+            TimeScale::Tt,
+            &[Body::Moon, Body::TrueNode],
+            Frame {
+                centre: Centre::Geocentric,
+                zodiac: Zodiac::Tropical,
+                ..chart_frame()
+            },
+        );
+        let columns = completion(provider)
+            .positions(&request)
+            .expect("a month of the Moon and its node")
+            .columns;
+        let (mut worst, mut crossings) = (0.0_f64, 0usize);
+        for index in 1..dense.len() {
+            let (Some(before), Some(here)) = (columns.at(index - 1, 0), columns.at(index, 0)) else {
+                continue;
+            };
+            if before.lat >= 0.0 || here.lat < 0.0 {
+                continue; // the ascending crossing only
+            }
+            let Some(node) = columns.at(index, 1) else {
+                continue;
+            };
+            crossings += 1;
+            let fraction = -before.lat / (here.lat - before.lat);
+            let at_crossing = before.lon + fraction * apart(here.lon, before.lon);
+            worst = worst.max(apart(at_crossing, node.lon).abs());
+        }
+        SelfCheck {
+            provider: name,
+            year,
+            crossings,
+            worst_degrees: worst,
+        }
+    };
+    let mut node_against_own_crossing = Vec::new();
+    for (year, from) in [(1850, 2_396_759.0), (2000, 2_451_545.0), (2350, 2_579_305.0)] {
+        node_against_own_crossing.push(self_check("built-in", &builtin, year, from));
+        node_against_own_crossing.push(self_check("engine", &engine, year, from));
+    }
 
     let (topocentric_rows, moon_worst) = rows_for(&over_builtin.columns, &over_engine.columns);
     let (geocentric_rows, _) = rows_for(&geocentric_builtin.columns, &geocentric_engine.columns);
@@ -429,6 +526,7 @@ fn main() -> ExitCode {
         true_node_with_bija_arcsec: node_with_bija,
         true_node_without_bija_arcsec: node_without_bija,
         moon_bija_fitted_over: MOON_BIJA_FITTED_OVER,
+        node_against_own_crossing,
         from_jd: FROM,
         to_jd: TO,
         step_days: STEP,
