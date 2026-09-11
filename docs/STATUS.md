@@ -315,10 +315,14 @@ provider's DUT1).
    nothing but the SDK installed **in every binding** rather than in Rust
    alone (ADR-0028).
 
-   **What is left of it is one decision.** The `reference` tier is not a
-   task but a choice: ADR-0021's "else" clause puts it in v1.x unless the
-   maintainer wants it in v1, because a fitted Moon alone is 3.76 MB of a
-   4 MB budget. Everything else that was outstanding is done — the tier
+   **Nothing is left of it.** The `reference` tier was the last open
+   item and it was a choice rather than a task: ADR-0021 made it
+   conditional on the fitter meeting 0.005 arcsecond in about 1 MB, the
+   condition was evaluated on 2026-09-11, and the tier **moved to v1.x**
+   because a fitted Moon alone measures 3.76 MB and would spend the whole
+   budget on one body. The ladder, the target and the machinery all
+   stand; Pluto already proved the machinery. Everything else that was
+   outstanding is done — the tier
    matrix gates the kit at all three tiers in CI, the nakshatra boundary
    timing is published beside the tithi's, and the osculating apogee is
    built, which took the one constant neither theory carries
