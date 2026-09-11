@@ -1,6 +1,8 @@
 # ADR-0021: The reference-accuracy ephemeris path
 
-Status: accepted (maintainer, 2026-09-04); extends ADR-0008, ADR-0009 and ADR-0013
+Status: accepted (maintainer, 2026-09-04); extends ADR-0008, ADR-0009 and ADR-0013.
+**Its `reference`-tier condition was evaluated on 2026-09-11 and the tier
+moves to v1.x** — see "The condition, resolved" below.
 Date: 2026-09-04
 Question: Q31
 
@@ -46,6 +48,36 @@ bounded range at a loosened tolerance is small.
    consumer ships the Sun and Moon only; narrow the range to 1700 to
    2300; loosen the outer planets to 0.05 arcsecond; raise the budget to
    1.5 MB and say so. Never a looser figure under the published one.
+## The condition, resolved (2026-09-11)
+
+Point 3 above made `reference` conditional: **Phase 3 if the fitter meets
+the target, otherwise v1.x.** The condition has been evaluated and the
+answer is v1.x (maintainer, 2026-09-11).
+
+What decided it was a measurement rather than an estimate. ADR-0027's
+lunar work sized a Chebyshev refit of the Moon alone at **3.76 MB** for
+0.445 arcseconds over 1800 to 2400, and raised this ADR's budget from
+about 1 MB to 4 MB on the strength of it. A fitted Moon therefore spends
+the whole tier on one body before the Sun, the planets or Pluto are
+counted, and "about 1 MB for all bodies" is not available at the target
+this point names. The degradation ladder fixed in advance is what the
+tier would have to descend, and descending all of it before the tier has
+ever shipped is a sign the tier is not ready rather than a sign the
+ladder works.
+
+Nothing is discarded. The ladder stands, the target stands, and Pluto has
+already proved the machinery: `crates/ephemeris-builtin/src/chebyshev.rs`
+is a shipped evaluator with an analytic derivative, and
+`03-design/pluto-measured.md` is a fitter sweeping interval against
+degree and choosing a rung from a stated bound. `reference` is that same
+pass over a DE kernel, which is what `ephemeris-de` (point 2, already
+v1.x) exists to read.
+
+**Phase 3's exit does not depend on it.** The three analytic tiers meet
+the per-body bounds ADR-0027 fixed, each inside its budget by an
+assertion that fails the build, and the figures are published per body,
+per span and per tier in `03-design/completion-measured.md`.
+
 4. **Validation is stage-isolated.** Teimeris exposes the same flags
    Swiss Ephemeris does (true position, no aberration, no deflection,
    J2000, no nutation, barycentric, equatorial, topocentric, sidereal), so

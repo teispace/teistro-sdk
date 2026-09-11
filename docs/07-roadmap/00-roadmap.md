@@ -174,13 +174,17 @@ phenomena, the `CROSSINGS` override, the engine findings register.
 
 ## Phase 3: The built-in ephemeris (now; own phase, may run beside Phase 4)
 
-`tools/ephemgen`, VSOP87 planets, ELP/MPP02 Moon, fitted Pluto, nodes and
-apogees, analytic speeds, three analytic tiers, the DE-refit `reference`
-tier if the fitter meets 0.005 arcsecond in about 1 MB (else v1.x, with
-the degradation ladder in ADR-0021), size gates, packaging in every
-binding, the conformance kit run against every tier, the accuracy
-document with worst-case error per body, century and tier, and the
-nakshatra and tithi boundary timing error published.
+`tools/ephemgen`, VSOP87 planets, ELP2000-82B Moon with its bija, fitted
+Pluto, the nodes and both apogees, analytic speeds, three analytic tiers,
+size gates, packaging in every binding, the conformance kit run against
+every tier, the accuracy document with worst-case error per body, century
+and tier, and the nakshatra and tithi boundary timing error published.
+
+The DE-refit `reference` tier was conditional on the fitter meeting 0.005
+arcsecond in about 1 MB. **The condition was evaluated on 2026-09-11 and
+the tier moved to v1.x**: a fitted Moon alone measures 3.76 MB, so it
+would spend the whole budget on one body. ADR-0021 records what decided
+it and what stands unchanged.
 
 Exit: a full chart computes with nothing but the SDK installed; every
 tier meets **the bounds ADR-0027 fixed per body and per span** against
