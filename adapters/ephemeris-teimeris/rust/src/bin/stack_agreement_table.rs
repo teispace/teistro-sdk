@@ -49,7 +49,7 @@ use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_ephemeris_builtin::provider::Builtin;
-use teistro_ephemeris_builtin::tables::TIER_NAME;
+use teistro_ephemeris_builtin::tables::{MOON_BIJA_FITTED_OVER, TIER_NAME};
 use teistro_ephemeris_teimeris::{
     TeimerisProvider, data_dir_from_env, profile_from_env, profile_key,
 };
@@ -104,7 +104,7 @@ struct Row {
     worst_arcsec: f64,
     mean_arcsec: f64,
     at_1800_arcsec: f64,
-    at_2000_arcsec: f64,
+    at_2100_arcsec: f64,
     at_2400_arcsec: f64,
     worst_speed_arcsec_per_day: f64,
     /// The instant the worst disagreement happened at, which is what
@@ -134,7 +134,19 @@ struct LadderRow {
 struct Table {
     tier: &'static str,
     frame: &'static str,
-    bija: bool,
+    /// The Moon's worst disagreement with the bija applied and with it
+    /// off, so the field is a measurement of what the correction does
+    /// rather than an assertion that it was switched on.
+    moon_with_bija_arcsec: f64,
+    moon_without_bija_arcsec: f64,
+    /// The true node under the same pair. The bija corrects a mean
+    /// longitude, so if its rate reaches the velocity the node — which is
+    /// built from position crossed with velocity — moves with it.
+    true_node_with_bija_arcsec: f64,
+    true_node_without_bija_arcsec: f64,
+    /// The span the bija's coefficients were fitted over, carried from
+    /// the tables rather than restated, so a refit moves the page.
+    moon_bija_fitted_over: &'static str,
     from_jd: f64,
     to_jd: f64,
     step_days: f64,
@@ -143,7 +155,12 @@ struct Table {
     note: &'static str,
     moon_worst_tithi_seconds: f64,
     by_correction: Vec<LadderRow>,
-    rows: Vec<Row>,
+    /// From the Earth's centre: the ephemeris, and nothing that needs
+    /// Delta T.
+    geocentric_rows: Vec<Row>,
+    /// From the place the chart is cast for: what a consumer receives,
+    /// which carries the two sides' Delta T models as well.
+    topocentric_rows: Vec<Row>,
 }
 
 /// The shortest way round the circle, degrees.
@@ -161,6 +178,22 @@ fn apart(a: f64, b: f64) -> f64 {
 /// The one completion every row of these tables is measured through, so
 /// that a difference between two rows is the frame and never the setup.
 ///
+/// **The two sides are not the same pipeline, and cannot be made so.**
+/// The engine answers the whole frame in a single native call — its step
+/// list is `positions:Native` and nothing else — while the built-in
+/// ephemeris is completed by seven of the SDK's own steps. `SDK_ONLY`
+/// looks like the fix and is not: the engine's native positions are
+/// *apparent*, the SDK can add corrections and never remove them, so
+/// asking it for a geometric frame is refused with
+/// `Unsupported { step: "corrections" }`. Measured, not assumed.
+///
+/// So the tables record **both centres**. Geocentric isolates the
+/// ephemeris: the instants are TT, so nothing in that path needs Delta T.
+/// Topocentric is what a chart actually receives, and it carries the two
+/// sides' Delta T models as well — at 2400 they differ by enough Earth
+/// rotation to move the Moon about a hundred arcseconds, which is why the
+/// Moon reads 3.2 arcseconds geocentric and 116.7 topocentric.
+///
 /// The true basis is the conformance baseline's: the engine has no basis
 /// knob and applies the nutated ayanamsha, so the mean value would leave
 /// the whole nutation in longitude — up to 18.5 arcseconds — in every
@@ -171,7 +204,7 @@ fn completion<P: EphemerisProvider + ?Sized>(provider: &P) -> Completion<'_, P> 
         OverridePolicy::PreferNative,
         DeltaTModel::TableThenModel,
     )
-    .with_ayanamsha_basis(Basis::True)
+        .with_ayanamsha_basis(Basis::True)
 }
 
 fn main() -> ExitCode {
@@ -183,6 +216,10 @@ fn main() -> ExitCode {
         }
     };
     let builtin = Builtin::new();
+    // The same ephemeris with the bija off, so what the correction is
+    // worth can be read off rather than assumed (ADR-0027 keeps it a
+    // declared, inspectable knob for exactly this reason).
+    let uncorrected = Builtin::without_bija();
 
     const FROM: f64 = 2_378_497.0;
     const TO: f64 = 2_597_641.0;
@@ -273,75 +310,139 @@ fn main() -> ExitCode {
     let over_engine = completion(&engine)
         .positions(&request)
         .expect("the SDK over the engine");
+    // The same request from the Earth's centre. The instants are TT, so
+    // nothing in this path needs Delta T: what is left is the ephemeris.
+    let mut geocentric = PositionRequest::new(&jds, TimeScale::Tt, &BODIES, frame);
+    geocentric.frame.centre = Centre::Geocentric;
+    let geocentric_builtin = completion(&builtin)
+        .positions(&geocentric)
+        .expect("the SDK over its own ephemeris, from the centre");
+    let geocentric_engine = completion(&engine)
+        .positions(&geocentric)
+        .expect("the SDK over the engine, from the centre");
+    // From the centre, like every other figure the bija is judged by:
+    // measuring it topocentrically would charge the correction for the
+    // Delta T models as well.
+    let over_uncorrected = completion(&uncorrected)
+        .positions(&geocentric)
+        .expect("the SDK over its own ephemeris, bija off");
+    let moon_index = BODIES
+        .iter()
+        .position(|body| *body == Body::Moon)
+        .expect("the Moon is among the bodies");
+    let moon_without_bija = worst_between(
+        &over_uncorrected.columns,
+        &geocentric_engine.columns,
+        moon_index,
+    );
+    let moon_with_bija = worst_between(
+        &geocentric_builtin.columns,
+        &geocentric_engine.columns,
+        moon_index,
+    );
+    let node_index = BODIES
+        .iter()
+        .position(|body| *body == Body::TrueNode)
+        .expect("the true node is among the bodies");
+    let node_without_bija = worst_between(
+        &over_uncorrected.columns,
+        &geocentric_engine.columns,
+        node_index,
+    );
+    let node_with_bija = worst_between(
+        &geocentric_builtin.columns,
+        &geocentric_engine.columns,
+        node_index,
+    );
 
-    let mut rows = Vec::new();
-    let mut moon_worst = 0.0_f64;
-    for (body_index, body) in BODIES.iter().enumerate() {
-        let mut worst = 0.0_f64;
-        let mut worst_at = 0.0_f64;
-        let mut worst_speed = 0.0_f64;
-        let mut total = 0.0;
-        let mut ends = [0.0_f64; 3];
-        for (jd_index, _) in jds.iter().enumerate() {
-            let (Some(a), Some(b)) = (
-                over_builtin.columns.at(jd_index, body_index),
-                over_engine.columns.at(jd_index, body_index),
-            ) else {
-                continue;
-            };
-            if !a.is_ok() || !b.is_ok() {
-                continue;
+    // One body's row, so the two centres are built by one piece of code
+    // and a difference between the tables is the centre and never the
+    // arithmetic.
+    let rows_for = |a: &PositionColumns, b: &PositionColumns| -> (Vec<Row>, f64) {
+        let mut rows = Vec::new();
+        let mut moon_worst = 0.0_f64;
+        for (body_index, body) in BODIES.iter().enumerate() {
+            let mut worst = 0.0_f64;
+            let mut worst_at = 0.0_f64;
+            let mut worst_speed = 0.0_f64;
+            let mut total = 0.0;
+            let mut ends = [0.0_f64; 3];
+            for (jd_index, jd) in jds.iter().enumerate() {
+                let (Some(x), Some(y)) = (a.at(jd_index, body_index), b.at(jd_index, body_index))
+                else {
+                    continue;
+                };
+                if !x.is_ok() || !y.is_ok() {
+                    continue;
+                }
+                let difference = apart(x.lon, y.lon).abs() * 3_600.0;
+                if difference > worst {
+                    worst = difference;
+                    worst_at = *jd;
+                }
+                worst_speed = worst_speed.max((x.lon_speed - y.lon_speed).abs() * 3_600.0);
+                total += difference;
+                if jd_index == 0 {
+                    ends[0] = difference;
+                }
+                // The midpoint of 1800 to 2400, which is 2100 and not
+                // 2000. `vsop.rs` names the same column the same way; a
+                // field called `at_2000` holding the midpoint would be a
+                // name asserting something nothing checks.
+                if jd_index == jds.len() / 2 {
+                    ends[1] = difference;
+                }
+                if jd_index == jds.len() - 1 {
+                    ends[2] = difference;
+                }
             }
-            let difference = apart(a.lon, b.lon).abs() * 3_600.0;
-            if difference > worst {
-                worst = difference;
-                worst_at = jds[jd_index];
+            if *body == Body::Moon {
+                moon_worst = worst;
             }
-            worst_speed = worst_speed.max((a.lon_speed - b.lon_speed).abs() * 3_600.0);
-            total += difference;
-            if jd_index == 0 {
-                ends[0] = difference;
-            }
-            if jd_index == jds.len() / 2 {
-                ends[1] = difference;
-            }
-            if jd_index == jds.len() - 1 {
-                ends[2] = difference;
-            }
+            #[expect(
+                clippy::cast_precision_loss,
+                reason = "a sample count is thousands"
+            )]
+            let mean = total / jds.len() as f64;
+            rows.push(Row {
+                body: body.key().to_string(),
+                worst_arcsec: worst,
+                mean_arcsec: mean,
+                at_1800_arcsec: ends[0],
+                at_2100_arcsec: ends[1],
+                at_2400_arcsec: ends[2],
+                worst_speed_arcsec_per_day: worst_speed,
+                worst_at_jd: worst_at,
+            });
         }
-        if *body == Body::Moon {
-            moon_worst = worst;
-        }
-        #[expect(
-            clippy::cast_precision_loss,
-            reason = "a sample count is thousands"
-        )]
-        let mean = total / jds.len() as f64;
-        rows.push(Row {
-            body: body.key().to_string(),
-            worst_arcsec: worst,
-            mean_arcsec: mean,
-            at_1800_arcsec: ends[0],
-            at_2000_arcsec: ends[1],
-            at_2400_arcsec: ends[2],
-            worst_speed_arcsec_per_day: worst_speed,
-            worst_at_jd: worst_at,
-        });
-    }
+        (rows, moon_worst)
+    };
+
+    let (topocentric_rows, moon_worst) = rows_for(&over_builtin.columns, &over_engine.columns);
+    let (geocentric_rows, _) = rows_for(&geocentric_builtin.columns, &geocentric_engine.columns);
 
     let table = Table {
         tier: TIER_NAME,
-        frame: "TOPOCENTRIC/OF_DATE/ECLIPTIC/SIDEREAL(LAHIRI)/APPARENT",
-        bija: true,
+        frame: "OF_DATE/ECLIPTIC/SIDEREAL(LAHIRI)/APPARENT, from both centres",
+        moon_with_bija_arcsec: moon_with_bija,
+        moon_without_bija_arcsec: moon_without_bija,
+        true_node_with_bija_arcsec: node_with_bija,
+        true_node_without_bija_arcsec: node_without_bija,
+        moon_bija_fitted_over: MOON_BIJA_FITTED_OVER,
         from_jd: FROM,
         to_jd: TO,
         step_days: STEP,
         samples: jds.len(),
         engine_profile: profile_key(profile_from_env()).to_string(),
-        note: "the same completion over each provider, so the difference is the ephemeris",
+        note: "the engine answers the whole frame natively (`positions:Native` alone) \
+               and the built-in ephemeris is completed by the SDK's own steps, so these \
+               are two pipelines and not one; geocentric isolates the ephemeris because \
+               the instants are TT and nothing in that path needs Delta T, while \
+               topocentric additionally carries the two sides' Delta T models",
         by_correction,
         moon_worst_tithi_seconds: moon_worst * TITHI_SECONDS_PER_ARCSEC,
-        rows,
+        geocentric_rows,
+        topocentric_rows,
     };
     println!(
         "{}",
