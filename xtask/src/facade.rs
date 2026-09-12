@@ -147,9 +147,11 @@ fn arguments<'a>(described: &'a Described<'a>) -> Vec<(String, &'a str)> {
 /// every wrapper rather than rebuilt for each.
 fn node(version: &str, described: &[Described<'_>]) -> String {
     let mut out = header(version, "//");
+    // Exported, because the `.d.ts` beside this declares it and a
+    // consumer holding one wants its type to have a name.
     let _ = writeln!(
         out,
-        "\nclass TeimerisEngine {{\n  #engine;\n\n  constructor(engine) {{\n    this.#engine = engine;\n    Object.freeze(this);\n  }}\n"
+        "\nexport class TeimerisEngine {{\n  #engine;\n\n  constructor(engine) {{\n    this.#engine = engine;\n    Object.freeze(this);\n  }}\n"
     );
     for one in described {
         let args = arguments(one);

@@ -13,7 +13,7 @@
 // named engine and does not survive changing it — which is why it is
 // taken as a value rather than laid over `sdk.engine` (ADR-0030).
 
-class TeimerisEngine {
+export class TeimerisEngine {
   #engine;
 
   constructor(engine) {

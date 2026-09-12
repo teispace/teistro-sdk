@@ -1,0 +1,34 @@
+{
+  "name": "@teistro/ephemeris-teimeris",
+  "version": "0.0.0",
+  "description": "The Teimeris ephemeris, as a Teistro adapter: the descriptor the SDK's ephemeris chain takes, and a typed facade over the engine's own operations.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "engine.js",
+    "engine.d.ts",
+    "LICENSE",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@teistro/sdk": "0.0.0"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teispace/teistro-sdk.git",
+    "directory": "adapters/ephemeris-teimeris/node"
+  }
+}
