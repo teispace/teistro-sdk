@@ -297,15 +297,13 @@ principle:
    fact the C smoke test already asserts has proved the whole shape, and
    the rest are that shape again.
 
-   **Done:** the context, the builder, the ephemeris chain, `calendar`
-   and `time` — the last of which is where the section above earned
-   itself: `Scale` and `Conversion` are the surface's own types, and
-   `convert` is a three-by-three matrix over the scale functions that
-   answers with what it applied as well as the number. **Next:** `intl`,
-   `keys` and `frame`, which are thin — and `intl` is thinner than it
-   looked, because its `messages` is a module tree Rust already has,
-   per the section above — then `chart`, `almanac` and the root's
-   `positions`, which need the provider.
+   **Done:** the context, the builder, the ephemeris chain, and five of
+   the eight areas — `calendar`, `time`, `intl`, `keys` and `frame`.
+   `time` is where the dynamic-type section earned itself; `intl` is
+   where the module-tree one did. **Next:** `chart`, `almanac` and the
+   root's `positions`, which are the three that need the ephemeris, and
+   which are therefore where this surface stops being a composition of
+   calendars and starts computing.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
 3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps

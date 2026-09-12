@@ -18,6 +18,9 @@
 //! file nobody reads.
 
 mod calendar;
+mod frame;
+mod intl;
+mod keys;
 mod time;
 
 use teistro_calendar::{CalendarSystem, shipped};
@@ -38,4 +41,7 @@ pub(crate) fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Err
 }
 
 pub use calendar::CalendarArea;
+pub use frame::FrameArea;
+pub use intl::IntlArea;
+pub use keys::KeysArea;
 pub use time::TimeArea;

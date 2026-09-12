@@ -322,3 +322,57 @@ fn delta_t_carries_its_source_and_its_model() {
     assert!((60.0..70.0).contains(&value.seconds), "{}", value.seconds);
     assert!(!value.model.key().is_empty());
 }
+
+#[test]
+fn the_locale_renders_a_message_by_its_typed_accessor() {
+    let sdk = context();
+    // What the C smoke test prints, and what every binding's quickstart
+    // shows: the reason a graha is in a bhava, in Nepali.
+    assert_eq!(sdk.intl().locale(), "ne-Deva-NP");
+    let rendered = sdk
+        .intl()
+        .render_typed(&teistro::messages::sdk::reason::GrahaInBhava {
+            graha: teistro::catalogue::Graha::Jupiter,
+            bhava: 7,
+        });
+    assert!(
+        rendered.text.contains("गुरु"),
+        "the Nepali for Jupiter: {}",
+        rendered.text
+    );
+    assert!(sdk.intl().has("sdk.reason.grahaInBhava"));
+}
+
+#[test]
+fn an_entity_carries_its_forms_in_the_locale() {
+    let sdk = context();
+    let sun = sdk.intl().entity("graha.SUN").expect("a catalogued graha");
+    assert!(!sun.forms.is_empty(), "{sun:?}");
+
+    let refusal = sdk
+        .intl()
+        .entity("graha.NOT_A_GRAHA")
+        .expect_err("no such entity");
+    assert_eq!(refusal.field(), Some("key"));
+}
+
+#[test]
+fn a_key_resolves_to_its_id_and_back() {
+    let sdk = context();
+    let id = sdk.keys().id("graha.SUN").expect("a catalogued key");
+    assert_eq!(sdk.keys().name(id).expect("a live id"), "graha.SUN");
+
+    let refusal = sdk.keys().id("graha.SUNN").expect_err("no such key");
+    assert!(
+        refusal.hint().is_some_and(|hint| hint.contains("SUN")),
+        "{refusal:?}"
+    );
+}
+
+#[test]
+fn the_canonical_frame_packs_and_unpacks() {
+    let sdk = context();
+    let canonical = sdk.frame().canonical();
+    let bits = sdk.frame().pack(canonical);
+    assert_eq!(sdk.frame().unpack(bits).expect("its own bits"), canonical);
+}

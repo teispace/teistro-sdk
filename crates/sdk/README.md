@@ -60,14 +60,22 @@ first.
 |---|---|---|
 | `calendar` | `date_of`, `fixed_of`, `convert`, `weekday_of`, `month_length`, `is_leap` | built |
 | `time` | `resolve`, `civil_of`, `convert`, `delta_t` | built |
+| `intl` | `locale`, `set_locale`, `render`, `render_typed`, `has`, `entity`, `transliterate`, `load_pack` | built |
+| `keys` | `id`, `name` | built |
+| `frame` | `canonical`, `pack`, `unpack` | built |
 | the root | `profile`, `settings`, `settings_hash`, `ephemeris`, `locale_engine` | built |
-| `intl`, `keys`, `frame`, `chart`, `almanac`, `engine`, and the root's `positions` | — | next |
+| `chart`, `almanac`, `engine`, and the root's `positions` | — | next, and each needs the ephemeris |
 
-`locale_engine` is deliberately not called `intl`: `intl` is an *area* in
-every other binding — `sdk.intl.render` and six more — and a root
-accessor of that name would be an operation the other three do not have,
-which `check-areas` holds the four to. It is what a consumer renders
-with until that area lands.
+`intl`'s **`messages`** is not a method here. The typed accessor tree
+every other binding spells
+`sdk.intl.messages.sdk.reason.grahaInBhava({ … })` is a *module* tree in
+Rust — `teistro::messages::sdk::reason::GrahaInBhava { graha, bhava }`,
+handed to `render_typed` — because a module tree is what a namespace is
+in this language. `teistro-intl` already generates it.
+
+`locale_engine` at the root is the engine itself, for what the area does
+not wrap; it is deliberately not called `intl`, which is the area's name
+in all four bindings.
 
 `time.convert` is where this surface owns a type rather than
 re-exporting one. The crates keep a scale in the *type system* —

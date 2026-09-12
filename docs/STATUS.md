@@ -1012,6 +1012,18 @@ provider's DUT1).
    from another. The acceptance test moved with it: 2 of 9 rather than 3,
    `teistro-chart` and `teistro-panchanga` left.
 
+   **Five of the eight areas are built now**: `calendar`, `time`,
+   `intl`, `keys` and `frame`, over nineteen tests. `intl` is where the
+   second design note earned itself — its `messages` is a **module**
+   tree in Rust rather than a method, `messages::sdk::reason::GrahaInBhava
+   { graha, bhava }` handed to `render_typed`, which is what a namespace
+   is in this language and which `teistro-intl` already generates. The
+   test renders it and gets `गुरु`. What is left is the three that need
+   the ephemeris — `chart`, `almanac` and the root's `positions` — which
+   is where this surface stops composing calendars and starts computing,
+   and which is why the acceptance test still names `teistro-chart` and
+   `teistro-panchanga`.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the

@@ -41,7 +41,7 @@ mod context;
 mod ephemeris;
 mod scale;
 
-pub use area::{CalendarArea, TimeArea};
+pub use area::{CalendarArea, FrameArea, IntlArea, KeysArea, TimeArea};
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
 pub use scale::{Conversion, Scale};
@@ -56,6 +56,11 @@ pub use teistro_core::envelope::Hash;
 pub use teistro_core::error::{Error, Status};
 pub use teistro_core::quantity;
 pub use teistro_core::settings;
+// The typed accessor tree: every message of the SDK's locale as a value
+// of its own parameters. A **module** tree, because that is what a
+// namespace is in Rust — where Node writes
+// `ctx.intl.messages.sdk.reason.grahaInBhava({ … })`.
+pub use teistro_intl::messages;
 pub use teistro_time::{CivilDateTime, CivilTime, ZoneSpec};
 
 // `BUNDLES`: the SDK's locales, built from `i18n/` by this crate's build

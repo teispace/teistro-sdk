@@ -14,7 +14,7 @@ use teistro_intl::pack::locales_from_packs;
 use teistro_port_ephemeris::{CachingProvider, EphemerisProvider};
 
 use crate::BUNDLES;
-use crate::area::{CalendarArea, TimeArea};
+use crate::area::{CalendarArea, FrameArea, IntlArea, KeysArea, TimeArea};
 use crate::ephemeris::{self, Ephemeris};
 
 /// One context: built once, read many times.
@@ -137,6 +137,25 @@ impl Context {
     #[must_use]
     pub fn time(&self) -> TimeArea<'_> {
         TimeArea::of(self)
+    }
+
+    /// The locale engine: a message, an entity's forms,
+    /// transliteration, and a pack loaded at run time.
+    #[must_use]
+    pub fn intl(&self) -> IntlArea<'_> {
+        IntlArea::of(self)
+    }
+
+    /// A catalogue key to its packed id and back.
+    #[must_use]
+    pub fn keys(&self) -> KeysArea<'_> {
+        KeysArea::of(self)
+    }
+
+    /// The canonical frame, and packing one to carry it.
+    #[must_use]
+    pub fn frame(&self) -> FrameArea<'_> {
+        FrameArea::of(self)
     }
 
     /// The ΔT model the settings chose, which `time()` reads.
