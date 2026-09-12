@@ -1249,9 +1249,11 @@ dependencies = [
  "serde_json",
  "teistro-astro",
  "teistro-calendar",
+ "teistro-chart",
  "teistro-core",
  "teistro-ephemeris-builtin",
  "teistro-intl",
+ "teistro-panchanga",
  "teistro-port-ephemeris",
  "teistro-time",
 ]

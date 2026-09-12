@@ -25,7 +25,7 @@ impl<'a> FrameArea<'a> {
 
     /// The context this area was read off.
     #[must_use]
-    pub fn context(&self) -> &'a Context {
+    pub fn context(self) -> &'a Context {
         self.context
     }
 
@@ -33,13 +33,13 @@ impl<'a> FrameArea<'a> {
     /// apparent — what an ephemeris answers in before the SDK completes
     /// it.
     #[must_use]
-    pub fn canonical(&self) -> Frame {
+    pub fn canonical(self) -> Frame {
         Frame::CANONICAL
     }
 
     /// A frame as the bits that carry it.
     #[must_use]
-    pub fn pack(&self, frame: Frame) -> u32 {
+    pub fn pack(self, frame: Frame) -> u32 {
         frame.to_bits()
     }
 
@@ -49,7 +49,7 @@ impl<'a> FrameArea<'a> {
     ///
     /// Bits that name no frame — a reserved field set, or a member no
     /// catalogue has.
-    pub fn unpack(&self, bits: u32) -> Result<Frame, Error> {
+    pub fn unpack(self, bits: u32) -> Result<Frame, Error> {
         Frame::try_from_bits(bits).map_err(Error::from)
     }
 }

@@ -29,7 +29,7 @@ impl<'a> EngineArea<'a> {
 
     /// The context this area was read off.
     #[must_use]
-    pub fn context(&self) -> &'a Context {
+    pub fn context(self) -> &'a Context {
         self.context
     }
 
@@ -38,7 +38,7 @@ impl<'a> EngineArea<'a> {
     ///
     /// One reading, because every operation here needs it and each would
     /// otherwise spell both refusals itself.
-    fn native(&self) -> Result<Native<'_>, Error> {
+    fn native(self) -> Result<Native<'a>, Error> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let capabilities = provider.capabilities();
         if !capabilities.native {
@@ -58,7 +58,7 @@ impl<'a> EngineArea<'a> {
     ///
     /// A context with no ephemeris, an ephemeris that describes no
     /// operations of its own, or the engine's own refusal.
-    pub fn manifest(&self) -> Result<NativeManifest, Error> {
+    pub fn manifest(self) -> Result<NativeManifest, Error> {
         self.native()?.manifest().map_err(Error::from)
     }
 
@@ -68,7 +68,7 @@ impl<'a> EngineArea<'a> {
     /// # Errors
     ///
     /// As [`EngineArea::manifest`].
-    pub fn manifest_json(&self) -> Result<String, Error> {
+    pub fn manifest_json(self) -> Result<String, Error> {
         self.native()?.manifest_json().map_err(Error::from)
     }
 
@@ -77,7 +77,7 @@ impl<'a> EngineArea<'a> {
     /// # Errors
     ///
     /// As [`EngineArea::manifest`].
-    pub fn names(&self) -> Result<Vec<String>, Error> {
+    pub fn names(self) -> Result<Vec<String>, Error> {
         Ok(self
             .manifest()?
             .functions
@@ -92,7 +92,7 @@ impl<'a> EngineArea<'a> {
     ///
     /// As [`EngineArea::manifest`], or a name the engine does not
     /// offer.
-    pub fn signature(&self, name: &str) -> Result<NativeFunction, Error> {
+    pub fn signature(self, name: &str) -> Result<NativeFunction, Error> {
         let manifest = self.manifest()?;
         manifest.function(name).cloned().ok_or_else(|| {
             Error::unsupported(format!("the engine offers no `{name}`"))
@@ -109,7 +109,7 @@ impl<'a> EngineArea<'a> {
     /// As [`EngineArea::manifest`], a name the engine does not offer, an
     /// argument of the wrong shape, or the engine's own refusal.
     pub fn call(
-        &self,
+        self,
         name: &str,
         arguments: &serde_json::Value,
     ) -> Result<serde_json::Value, Error> {
@@ -122,7 +122,7 @@ impl<'a> EngineArea<'a> {
     /// # Errors
     ///
     /// As [`EngineArea::call`].
-    pub fn call_json(&self, name: &str, arguments_json: &str) -> Result<String, Error> {
+    pub fn call_json(self, name: &str, arguments_json: &str) -> Result<String, Error> {
         self.native()?
             .call_json(name, arguments_json)
             .map_err(Error::from)

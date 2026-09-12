@@ -32,9 +32,11 @@
 
 use std::collections::BTreeMap;
 
-use teistro::catalogue::{Calendar, Graha};
+use teistro::catalogue::{Calendar, ChartKind, Graha};
 use teistro::{Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, TimeScale};
 use teistro_core::envelope::CalendarResolution;
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro_core::time::UtcOffset;
 use teistro_time::{CivilDateTime, CivilTime, ZoneSpec};
 
 /// A number as every binding spells it: nine decimals, never an
@@ -404,6 +406,170 @@ fn the_frame(report: &mut Report, sdk: &Context) {
     );
 }
 
+/// A chart founded under the geocentric profile, as the report prints
+/// it.
+///
+/// Everything here runs on `parashari-classical`, which is geocentric,
+/// so the two centres are both exercised -- the same reason the other
+/// three runners build a second context.
+fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
+    let geo = Context::builder()
+        .profile("parashari-classical")
+        .locale("ne-Deva-NP")
+        .ephemeris([Ephemeris::Test])
+        .build()
+        .expect("a shipped profile");
+    put(report, "geo-profile", geo.profile().to_owned());
+    put(report, "geo-settings-hash", geo.settings_hash().to_string());
+
+    let place = Place::new(
+        Latitude::try_new(27.7172).expect("a latitude"),
+        Longitude::try_new(85.324).expect("a longitude"),
+        Altitude::try_new(1400.0).expect("an altitude"),
+    );
+    let offset = UtcOffset::try_from_seconds(20700).expect("+05:45");
+    // Two instants, so a per-chart section that ran charts-outermost the
+    // wrong way round shows as the second chart's values in the first's
+    // place rather than as nothing at all.
+    let instants = [
+        JulianDay::<Utc>::literal(2_460_482.5),
+        JulianDay::<Utc>::literal(2_460_600.25),
+    ];
+    let founded = geo
+        .chart()
+        .found_many(&instants, &place, offset, ChartKind::Natal)
+        .expect("the test provider");
+    put(report, "chart-count", founded.value.len().to_string());
+    put(report, "chart-place-lat", number(place.latitude.get()));
+    put(report, "chart-place-lon", number(place.longitude.get()));
+    put(
+        report,
+        "chart-provenance-profile",
+        founded.provenance.profile.clone(),
+    );
+    for (index, chart) in founded.value.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-lagna"),
+            number(chart.lagna_deg),
+        );
+        put(
+            report,
+            &format!("chart-{index}-day-lagna"),
+            number(chart.day_lagna_deg),
+        );
+        put(
+            report,
+            &format!("chart-{index}-ayanamsha"),
+            number(chart.zodiac.offset_deg),
+        );
+        put(
+            report,
+            &format!("chart-{index}-day-part"),
+            kebab(&format!("{:?}", chart.day.part)),
+        );
+    }
+
+    // `found` is the batch of one unwrapped, and must agree with the
+    // batch -- which is the property the other three assert too.
+    let single = geo
+        .chart()
+        .found(instants[0], &place, offset, ChartKind::Natal)
+        .expect("the test provider");
+    put(report, "chart-single-lagna", number(single.value.lagna_deg));
+    put(
+        report,
+        "chart-single-agrees",
+        founded
+            .value
+            .first()
+            // Bit for bit: `found` is the same computation as the batch
+            // of one, so anything but an identical number would mean the
+            // convenience had taken a different path.
+            .is_some_and(|first| first.lagna_deg.to_bits() == single.value.lagna_deg.to_bits())
+            .to_string(),
+    );
+    (geo, place, offset)
+}
+
+/// An almanac over three days, as the report prints it.
+///
+/// Three, because a day's lists are ragged and two consecutive days with
+/// the same counts would not exercise the offsets -- the same reason the
+/// other three runners ask for three.
+fn an_almanac(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 17);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 19);
+    let week = geo
+        .almanac()
+        .of(&from, &to, place, offset)
+        .expect("the test provider");
+    put(report, "almanac-days", week.value.len().to_string());
+    put(
+        report,
+        "almanac-calendar",
+        from.calendar.full_key().to_owned(),
+    );
+    put(report, "almanac-place-lat", number(place.latitude.get()));
+
+    for (index, day) in week.value.iter().enumerate() {
+        put(
+            report,
+            &format!("day-{index}-vara"),
+            day.day.vara.full_key().to_owned(),
+        );
+        put(
+            report,
+            &format!("day-{index}-sunrise"),
+            number(day.day.sunrise.get()),
+        );
+        put(
+            report,
+            &format!("day-{index}-sunset"),
+            number(day.day.sunset.get()),
+        );
+        put(
+            report,
+            &format!("day-{index}-next-sunrise"),
+            number(day.day.next_sunrise.get()),
+        );
+        put(
+            report,
+            &format!("day-{index}-date"),
+            format!(
+                "{}-{}-{}",
+                day.day.date.year, day.day.date.month, day.day.date.day
+            ),
+        );
+        put(
+            report,
+            &format!("day-{index}-window-from"),
+            number(day.window.from.get()),
+        );
+        put(
+            report,
+            &format!("day-{index}-window-to"),
+            number(day.window.to.get()),
+        );
+    }
+
+    // `day` is the range of one, unwrapped, and must agree with it.
+    let one = geo
+        .almanac()
+        .day(&from, place, offset)
+        .expect("the test provider");
+    put(
+        report,
+        "almanac-single-agrees",
+        week.value
+            .first()
+            .is_some_and(|first| {
+                first.day.sunrise.get().to_bits() == one.value.day.sunrise.get().to_bits()
+            })
+            .to_string(),
+    );
+}
+
 fn main() {
     let mut report = Report::new();
     // The **test** provider, as the other three runners use: the
@@ -422,6 +588,8 @@ fn main() {
     positions(&mut report, &sdk);
     the_locale(&mut report, &sdk);
     the_frame(&mut report, &sdk);
+    let (geo, place, offset) = charts(&mut report);
+    an_almanac(&mut report, &geo, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

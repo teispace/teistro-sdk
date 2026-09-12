@@ -23,7 +23,7 @@ impl<'a> KeysArea<'a> {
 
     /// The context this area was read off.
     #[must_use]
-    pub fn context(&self) -> &'a Context {
+    pub fn context(self) -> &'a Context {
         self.context
     }
 
@@ -34,7 +34,7 @@ impl<'a> KeysArea<'a> {
     ///
     /// A key no catalogued member has, with the nearest one as the
     /// hint.
-    pub fn id(&self, key: &str) -> Result<KeyId, Error> {
+    pub fn id(self, key: &str) -> Result<KeyId, Error> {
         resolve(key).map_err(Error::from)
     }
 
@@ -43,7 +43,7 @@ impl<'a> KeysArea<'a> {
     /// # Errors
     ///
     /// An id no catalogued member has.
-    pub fn name(&self, id: KeyId) -> Result<String, Error> {
+    pub fn name(self, id: KeyId) -> Result<String, Error> {
         let (Some(kind), Some(key)) = (id.kind(), id.key()) else {
             return Err(Error::unsupported(format!(
                 "no catalogued member has id {:#010x}",

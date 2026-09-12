@@ -442,3 +442,112 @@ fn the_engine_area_refuses_where_there_is_nothing_to_ask() {
     let refusal = bare.engine().manifest().expect_err("no ephemeris");
     assert_eq!(refusal.field(), Some("ephemeris"));
 }
+
+/// A place and an offset the chart and the almanac tests share.
+fn kathmandu() -> (teistro::quantity::Place, teistro::UtcOffset) {
+    use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    (
+        Place::new(
+            Latitude::try_new(27.7172).expect("a latitude"),
+            Longitude::try_new(85.324).expect("a longitude"),
+            Altitude::try_new(1400.0).expect("an altitude"),
+        ),
+        teistro::UtcOffset::try_from_seconds(20700).expect("+05:45"),
+    )
+}
+
+#[test]
+fn one_chart_is_the_batch_of_one_unwrapped() {
+    use teistro::catalogue::ChartKind;
+    use teistro::quantity::{JulianDay, Utc};
+
+    let sdk = Context::builder()
+        .profile("parashari-classical")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a shipped profile");
+    let (place, offset) = kathmandu();
+    let instants = [
+        JulianDay::<Utc>::literal(2_460_482.5),
+        JulianDay::<Utc>::literal(2_460_600.25),
+    ];
+    let many = sdk
+        .chart()
+        .found_many(&instants, &place, offset, ChartKind::Natal)
+        .expect("the built-in ephemeris");
+    assert_eq!(many.value.len(), 2);
+    // A lagna is a longitude, and the two instants are months apart, so
+    // the second is not the first -- which is what a batch that ran
+    // instants the wrong way round would produce.
+    let lagnas: Vec<f64> = many.value.iter().map(|chart| chart.lagna_deg).collect();
+    let [first, second] = lagnas.as_slice() else {
+        panic!("two instants founded two charts, not {}", lagnas.len());
+    };
+    // Bit for bit, because the assertion is that they are *different*
+    // computations rather than that they are far apart.
+    assert_ne!(first.to_bits(), second.to_bits());
+
+    let one = sdk
+        .chart()
+        .found(instants[0], &place, offset, ChartKind::Natal)
+        .expect("the built-in ephemeris");
+    assert_eq!(
+        one.value.lagna_deg.to_bits(),
+        first.to_bits(),
+        "the batch of one takes the same path as the batch"
+    );
+    // The envelope carries a content hash rather than the founder's
+    // placeholder, as a binding's blob does.
+    // ...and it is not the placeholder the founder leaves.
+    assert_ne!(
+        many.provenance.content_hash,
+        teistro::Hash::of(&[]),
+        "the founder's placeholder was not replaced"
+    );
+}
+
+#[test]
+fn an_almanac_answers_a_run_of_days_in_one_crossing() {
+    use teistro::catalogue::Calendar;
+
+    let sdk = Context::builder()
+        .profile("parashari-classical")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a shipped profile");
+    let (place, offset) = kathmandu();
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 17);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 19);
+    let week = sdk
+        .almanac()
+        .of(&from, &to, &place, offset)
+        .expect("the built-in ephemeris");
+    assert_eq!(week.value.len(), 3);
+    // Consecutive days share a boundary: day n's next sunrise is day
+    // n+1's sunrise, which is the reason a run costs less than the days
+    // asked for separately.
+    for pair in week.value.windows(2) {
+        let [earlier, later] = pair else {
+            unreachable!("`windows(2)` yields pairs");
+        };
+        assert_eq!(
+            earlier.day.next_sunrise.get().to_bits(),
+            later.day.sunrise.get().to_bits()
+        );
+    }
+
+    let one = sdk
+        .almanac()
+        .day(&from, &place, offset)
+        .expect("the built-in ephemeris");
+    assert_eq!(
+        one.value.day.sunrise.get().to_bits(),
+        week.value
+            .first()
+            .expect("three days")
+            .day
+            .sunrise
+            .get()
+            .to_bits()
+    );
+}

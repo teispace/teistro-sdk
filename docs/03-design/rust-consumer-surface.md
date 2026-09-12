@@ -327,8 +327,16 @@ principle:
    ephemeris that describes no operations of its own, which is what the
    built-in is.
 
-   **Next: `chart` and `almanac`, and the parity runner before them.**
-   That reverses steps 1 and 2 for those two, and the reason is an
+   **And `chart` and `almanac`, so all eight areas and the root are
+   built.** The runner came first, as the paragraph below asks, and it
+   was the right order: with it in place the two compositions were
+   checkable line by line, and both agreed on their first run. 125 keys,
+   every one a key Node prints, every value identical. The step this
+   page's first property was waiting for has happened — *the façade owns
+   the composition* now **holds**, 0 of 9.
+
+   **`chart` and `almanac` came after the parity runner**, which
+   reversed steps 1 and 2 for those two, and the reason was an
    oracle. Every area so far could be checked against a fact the C smoke
    test already asserts — a Bikram Sambat date, a Kathmandu offset, the
    Sun near 280°. A chart's lagna, day lagna, ayanamsha offset and day

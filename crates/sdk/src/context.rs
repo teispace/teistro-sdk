@@ -15,7 +15,9 @@ use teistro_intl::pack::locales_from_packs;
 use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest};
 
 use crate::BUNDLES;
-use crate::area::{CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
+use crate::area::{
+    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea,
+};
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
 /// One context: built once, read many times.
@@ -112,6 +114,12 @@ impl Context {
         self.provider.as_deref()
     }
 
+    /// The resolved settings with their warnings and the profile they
+    /// came from, which the chart founder wants whole.
+    pub(crate) fn resolved(&self) -> &Resolved {
+        &self.settings
+    }
+
     /// The locale engine itself, for a render.
     ///
     /// **Not `intl()`**, and the name matters: `intl` is an *area* in
@@ -179,6 +187,20 @@ impl Context {
     #[must_use]
     pub fn intl(&self) -> IntlArea<'_> {
         IntlArea::of(self)
+    }
+
+    /// A chart founded from a birth record, and a batch of them founded
+    /// in one crossing.
+    #[must_use]
+    pub fn chart(&self) -> ChartArea<'_> {
+        ChartArea::of(self)
+    }
+
+    /// A panchanga: the five limbs of a day and its periods, for a day
+    /// or a run of them.
+    #[must_use]
+    pub fn almanac(&self) -> AlmanacArea<'_> {
+        AlmanacArea::of_context(self)
     }
 
     /// The operations your **ephemeris** brings with it, beyond the ones

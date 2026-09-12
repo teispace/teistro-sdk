@@ -1093,6 +1093,34 @@ provider's DUT1).
    own `step_keys` gives `PassThrough`. Each was one line, and each would
    have been a false disagreement in the gate.
 
+   **All eight areas and the root are built, and the parity runner is
+   what says so.** `chart` and `almanac` came last and after the runner,
+   which reversed the design's steps 1 and 2 for them — and that was the
+   right order: with the oracle in place both compositions were
+   checkable line by line, and both agreed on their first run. **125
+   keys, every one of them a key the Node runner prints, every value
+   identical**: the settings hash, the Bikram Sambat date, the Kathmandu
+   offset, ΔT, the key round trip, six position cells, two charts' lagna
+   and day lagna and ayanamsha offset and day part, three almanac days'
+   varas and sunrises and windows, the Nepali render, the Sun's forms
+   and the frame's bits.
+
+   **So the acceptance test's first half has flipped.** *The façade owns
+   the composition: every crate a context needs is one it depends on* is
+   **holds**, 0 of 9 — where it was falsified 3 of 9 when the crate was
+   a context and a calendar. The second half stands: `teistro-ffi` does
+   not depend on `teistro` yet, so the composition is written twice,
+   knowingly, until step 3.
+
+   Twenty-four tests beside the runner, and the two newest assert the
+   properties the numbers cannot: a batch of one takes the same path as
+   the batch (bit for bit), consecutive almanac days share a boundary —
+   day n's next sunrise is day n+1's sunrise, which is why a run costs
+   less than the days apart — and the envelope carries a content hash
+   rather than the founder's placeholder, which is what the C boundary
+   fills and the first place `serial-and-the-envelope.md` §8's open
+   question showed.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the

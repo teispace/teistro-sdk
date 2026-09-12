@@ -65,7 +65,12 @@ first.
 | `frame` | `canonical`, `pack`, `unpack` | built |
 | the root | `positions`, `profile`, `settings`, `settings_hash`, `ephemeris`, `locale_engine` | built |
 | `engine` | `manifest`, `manifest_json`, `names`, `signature`, `call`, `call_json` | built |
-| `chart`, `almanac` | — | next, and the parity runner is their oracle |
+| `chart` | `found`, `found_many` | built |
+| `almanac` | `of`, `day` | built |
+
+**All eight areas and the root**, and the parity runner is what says so
+rather than the compiler: 125 keys, every one of them a key the Node
+runner prints, and every value identical.
 
 `intl`'s **`messages`** is not a method here. The typed accessor tree
 every other binding spells
@@ -123,11 +128,12 @@ cargo run -p teistro --example parity > /tmp/rust.tsv
 join -t $'\t' /tmp/rust.tsv /tmp/node.tsv | awk -F'\t' '$2 != $3'
 ```
 
-**84 keys, every one of them a key Node prints, and every value
+**125 keys, every one of them a key Node prints, and every value
 identical** — which is what proves this composition equal to the one at
-the C boundary rather than merely compiling. It is also the oracle the
-last two areas need: a chart's lagna and ayanamsha offset are asserted
-by no smoke test, and this report is where the bindings agree on them.
+the C boundary rather than merely compiling. It was also the oracle the
+last two areas needed: a chart's lagna, day lagna and ayanamsha offset,
+and an almanac day's sunrise and window, are asserted by no smoke test,
+and this report is where the bindings agree on them.
 
 It does **not** print every key the other three do, and that is §6 of the
 design page arriving in a gate rather than a gap. Among theirs are `abi`,

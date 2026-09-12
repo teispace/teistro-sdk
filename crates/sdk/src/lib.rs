@@ -41,7 +41,9 @@ mod context;
 mod ephemeris;
 mod scale;
 
-pub use area::{CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
+pub use area::{
+    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea,
+};
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
 pub use scale::{Conversion, Scale};
@@ -67,6 +69,7 @@ pub use teistro_intl::messages;
 // stop -- and the test for `positions` reached past it before these
 // were here, which is how the gap was noticed.
 pub use teistro_astro::completion::Completed;
+pub use teistro_core::time::UtcOffset;
 pub use teistro_port_ephemeris::{
     Body, Capabilities, Cell, CellStatus, EphemerisProvider, Frame, PositionColumns,
     PositionRequest, TimeScale,

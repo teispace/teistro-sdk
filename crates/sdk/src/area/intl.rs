@@ -34,13 +34,13 @@ impl<'a> IntlArea<'a> {
 
     /// The context this area was read off.
     #[must_use]
-    pub fn context(&self) -> &'a Context {
+    pub fn context(self) -> &'a Context {
         self.context
     }
 
     /// The locale every render resolves from.
     #[must_use]
-    pub fn locale(&self) -> String {
+    pub fn locale(self) -> String {
         self.context.locale_engine().locale().to_owned()
     }
 
@@ -50,7 +50,7 @@ impl<'a> IntlArea<'a> {
     ///
     /// A locale the embedded bundles and the loaded packs do not carry,
     /// with the ones they do as the hint.
-    pub fn set_locale(&self, tag: &str) -> Result<(), Error> {
+    pub fn set_locale(self, tag: &str) -> Result<(), Error> {
         let mut engine = self.context.locale_engine_mut();
         engine.set_locale(tag).map_err(|e| {
             let known: Vec<&str> = engine.locales().map(|l| l.tag.as_str()).collect();
@@ -65,7 +65,7 @@ impl<'a> IntlArea<'a> {
 
     /// Whether the locale carries a message.
     #[must_use]
-    pub fn has(&self, key: &str) -> bool {
+    pub fn has(self, key: &str) -> bool {
         self.context.locale_engine().has(key)
     }
 
@@ -74,7 +74,7 @@ impl<'a> IntlArea<'a> {
     /// Prefer [`IntlArea::render_typed`], which cannot be given a
     /// parameter the message does not have.
     #[must_use]
-    pub fn render(&self, key: &str, params: &Params) -> Rendered {
+    pub fn render(self, key: &str, params: &Params) -> Rendered {
         self.context.locale_engine().render(key, params)
     }
 
@@ -92,7 +92,7 @@ impl<'a> IntlArea<'a> {
     /// # Errors
     ///
     /// A key the locale and its fallbacks carry no entity for.
-    pub fn entity(&self, key: &str) -> Result<Entity, Error> {
+    pub fn entity(self, key: &str) -> Result<Entity, Error> {
         let engine = self.context.locale_engine();
         let locale = engine.locale();
         // Cloned rather than lent: the engine is behind a borrow that
@@ -111,7 +111,7 @@ impl<'a> IntlArea<'a> {
     /// # Errors
     ///
     /// A script pair the transliterator does not carry.
-    pub fn transliterate(&self, text: &str, from: Script, to: Script) -> Result<String, Error> {
+    pub fn transliterate(self, text: &str, from: Script, to: Script) -> Result<String, Error> {
         // The same refusal the boundary gives, naming the field a
         // caller can change.
         transliterate(text, from, to)
@@ -124,7 +124,7 @@ impl<'a> IntlArea<'a> {
     /// # Errors
     ///
     /// Bytes that are not a pack, or a pack built for another catalogue.
-    pub fn load_pack(&self, bytes: &[u8]) -> Result<Loaded, Error> {
+    pub fn load_pack(self, bytes: &[u8]) -> Result<Loaded, Error> {
         self.context
             .locale_engine_mut()
             .load_pack(bytes)

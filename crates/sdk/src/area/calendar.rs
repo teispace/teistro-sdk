@@ -24,7 +24,7 @@ impl<'a> CalendarArea<'a> {
     /// The context this area was read off, so a consumer who held the
     /// area still has everything.
     #[must_use]
-    pub fn context(&self) -> &'a Context {
+    pub fn context(self) -> &'a Context {
         self.context
     }
 
@@ -33,7 +33,7 @@ impl<'a> CalendarArea<'a> {
     /// # Errors
     ///
     /// A calendar the SDK does not ship, or one that refuses the day.
-    pub fn date_of(&self, calendar: Calendar, fixed: FixedDay) -> Result<CalendarDate, Error> {
+    pub fn date_of(self, calendar: Calendar, fixed: FixedDay) -> Result<CalendarDate, Error> {
         system_of(calendar)?.date_of(fixed)
     }
 
@@ -42,7 +42,7 @@ impl<'a> CalendarArea<'a> {
     /// # Errors
     ///
     /// A calendar the SDK does not ship, or a date it refuses.
-    pub fn fixed_of(&self, date: &CalendarDate) -> Result<FixedDay, Error> {
+    pub fn fixed_of(self, date: &CalendarDate) -> Result<FixedDay, Error> {
         system_of(date.calendar)?.fixed_of(date)
     }
 
@@ -51,7 +51,7 @@ impl<'a> CalendarArea<'a> {
     /// # Errors
     ///
     /// Either calendar's refusal.
-    pub fn convert(&self, date: &CalendarDate, into: Calendar) -> Result<CalendarDate, Error> {
+    pub fn convert(self, date: &CalendarDate, into: Calendar) -> Result<CalendarDate, Error> {
         system_of(date.calendar)?.convert(date, system_of(into)?)
     }
 
@@ -60,7 +60,7 @@ impl<'a> CalendarArea<'a> {
     /// # Errors
     ///
     /// As [`CalendarArea::fixed_of`].
-    pub fn weekday_of(&self, date: &CalendarDate) -> Result<Weekday, Error> {
+    pub fn weekday_of(self, date: &CalendarDate) -> Result<Weekday, Error> {
         system_of(date.calendar)?.weekday(date)
     }
 
@@ -69,7 +69,7 @@ impl<'a> CalendarArea<'a> {
     /// # Errors
     ///
     /// A calendar the SDK does not ship, or a month it refuses.
-    pub fn month_length(&self, calendar: Calendar, year: i32, month: u8) -> Result<u8, Error> {
+    pub fn month_length(self, calendar: Calendar, year: i32, month: u8) -> Result<u8, Error> {
         system_of(calendar)?.month_length(year, month)
     }
 
@@ -78,7 +78,7 @@ impl<'a> CalendarArea<'a> {
     /// # Errors
     ///
     /// A calendar the SDK does not ship.
-    pub fn is_leap(&self, calendar: Calendar, year: i32) -> Result<bool, Error> {
+    pub fn is_leap(self, calendar: Calendar, year: i32) -> Result<bool, Error> {
         Ok(system_of(calendar)?.is_leap(year))
     }
 }

@@ -31,7 +31,7 @@ impl<'a> TimeArea<'a> {
 
     /// The context this area was read off.
     #[must_use]
-    pub fn context(&self) -> &'a Context {
+    pub fn context(self) -> &'a Context {
         self.context
     }
 
@@ -48,7 +48,7 @@ impl<'a> TimeArea<'a> {
     /// A calendar the SDK does not ship, a civil time that does not
     /// exist in the zone under a policy that refuses it, or a zone the
     /// database does not have.
-    pub fn resolve(&self, civil: &CivilDateTime, zone: &ZoneSpec) -> Result<Resolved, Error> {
+    pub fn resolve(self, civil: &CivilDateTime, zone: &ZoneSpec) -> Result<Resolved, Error> {
         let policy = Policy::of(self.context.settings());
         resolve(civil, zone, &policy, EmbeddedTzdb::shared())
     }
@@ -60,7 +60,7 @@ impl<'a> TimeArea<'a> {
     /// A calendar the SDK does not ship, an instant outside its range,
     /// or a zone the database does not have.
     pub fn civil_of(
-        &self,
+        self,
         instant: JulianDay<Utc>,
         zone: &ZoneSpec,
         calendar: Calendar,
@@ -79,7 +79,7 @@ impl<'a> TimeArea<'a> {
     ///
     /// An instant outside the range of the scale it is in, or a ΔT model
     /// that cannot answer for it.
-    pub fn convert(&self, jd: f64, from: Scale, to: Scale) -> Result<Conversion, Error> {
+    pub fn convert(self, jd: f64, from: Scale, to: Scale) -> Result<Conversion, Error> {
         let model = self.context.delta_t();
         let given =
             |field| JulianDay::<Ut1>::try_new(jd).map_err(|e| Error::from(e).with_field(field));
@@ -154,7 +154,7 @@ impl<'a> TimeArea<'a> {
     /// # Errors
     ///
     /// An instant outside UT1's range, or a model that cannot answer.
-    pub fn delta_t(&self, instant: JulianDay<Ut1>) -> Result<DeltaT, Error> {
+    pub fn delta_t(self, instant: JulianDay<Ut1>) -> Result<DeltaT, Error> {
         delta_t(instant, self.context.delta_t())
     }
 }

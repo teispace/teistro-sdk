@@ -17,7 +17,9 @@
 //! One module per area, because eight of them in one file would be one
 //! file nobody reads.
 
+mod almanac;
 mod calendar;
+mod chart;
 mod engine;
 mod frame;
 mod intl;
@@ -41,7 +43,9 @@ pub(crate) fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Err
     })
 }
 
+pub use almanac::AlmanacArea;
 pub use calendar::CalendarArea;
+pub use chart::ChartArea;
 pub use engine::EngineArea;
 pub use frame::FrameArea;
 pub use intl::IntlArea;
