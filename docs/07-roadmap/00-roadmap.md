@@ -247,14 +247,22 @@ providers**" and the engine half of that does not exist outside Rust:
   derived from the boundary modules the reference site already groups by.
   Cheap now and breaking after v1, and every phase from here adds areas.
 
-  Built in all four bindings, and Rust's own surface has had its
-  measurement taken (`03-design/rust-consumer-surface-measured.md`,
-  gated by `check-rust-surface`): an area's operations come from one SDK
-  crate **7 times out of 8** — `chart` needs six crates — and two of the
-  nine a context needs are held by `crates/ffi` and by nothing else, so
-  the composition that makes a context exists in Rust nowhere but the C
-  boundary. A Rust façade is therefore the first place that composition
-  would exist, not a convenience over it. The design page is next.
+  Built in all four bindings, and Rust's own surface is measured
+  (`03-design/rust-consumer-surface-measured.md`, gated by
+  `check-rust-surface`) and designed
+  (`03-design/rust-consumer-surface.md`, settling ADR-0030 §9). An
+  area's operations come from one SDK crate **1 time in 8** — `chart`
+  needs six crates, `almanac` seven — 23 of the 46 entry points reach
+  two or more, and two of the nine a context needs are held by
+  `crates/ffi` and by nothing else. So the composition that makes a
+  context exists in Rust nowhere but the C boundary, and the façade is
+  the first place it would exist rather than a convenience over it.
+
+  The design moves that composition **into** the façade and has
+  `teistro-ffi` depend on it, keeping only its marshalling; the measured
+  page's second property is the acceptance test, flipping from falsified
+  to holding when it lands. Order of work: the façade beside the
+  boundary, the fourth parity runner, then the dependency inversion.
 
 The **v1 target matrix** is Rust, Node, wasm, Flutter/Dart and Python,
 with C as the ABI beneath them. wasm is already Phase 5's binding; what

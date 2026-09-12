@@ -908,10 +908,46 @@ provider's DUT1).
    the locale and the ephemeris are composed — so the page counts those
    two modules too and says why.
 
-   The design page is next, and the measured page's "what this does not
-   measure" hands it its question: whether a Rust consumer wants a
-   context object, a builder, or free functions over a settings value,
-   and what each crate's public API already offers.
+   **And the design page is written**
+   (`03-design/rust-consumer-surface.md`), which settles ADR-0030 §9.
+   Four decisions, each from the measurement rather than from taste:
+
+   - **The façade composes the crates; it does not call the SDK's own C
+     ABI.** The cheap alternative — wrap `teistro-ffi` as the other
+     three bindings do — is refused on the third result: a Rust consumer
+     would write a request struct so the boundary could decode it, and
+     decode a blob to read numbers the crates already returned as
+     `JulianDay` and `Longitude`. Rust would be the only binding whose
+     implementation language is its consumption language and which still
+     crossed a C ABI to reach itself.
+   - **So the composition moves into the façade and `teistro-ffi`
+     depends on it**, keeping only what is its own: the handles, the
+     `struct_size` handshake, the blob writer, the panic guard, the
+     `last_error` slot. The composition gets one home, and the home is
+     the one both a Rust consumer and the C boundary can reach.
+   - **That is checkable, which is why it is written this way round.**
+     The measured page's *no crate a context needs is brought in by the
+     boundary alone* is falsified 2 of 9 today and **holds** when the
+     façade holds those two crates. The pass that measured the gap is
+     the acceptance test for closing it — a pass whose subject you are
+     changing turning over when the change lands.
+   - **One `Context`, a builder, and an area as a borrowing view.**
+     `sdk.calendar().convert(…)`: an area is a value in every other
+     binding, and the Rust equivalent of a value you can hold is
+     `Calendar<'a>(&'a Context)` — allocating nothing, unable to outlive
+     its context. A builder rather than an options struct because
+     `build()` can report the settings it resolved, which is the "no dead
+     ends" brief's *what was applied is reported*. No `dispose`: `Drop`
+     is the whole of it, and that is the first place the Rust surface is
+     smaller than the C one.
+
+   The order of work is deliberately duplication-first: the façade beside
+   the boundary, then the fourth parity runner that proves it equal to
+   the other three, and only then the dependency inversion — because the
+   two steps before it are what make it safe. Left unsettled and said so:
+   the crate's name and whether `teistro` is held on crates.io (the
+   maintainer's), how much of each area is re-export (step 1 answers it
+   by construction), and `no_std`.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation

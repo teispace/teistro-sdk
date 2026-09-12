@@ -608,7 +608,7 @@ fn header(api: &Api, surfaces: &[crate::areas::Surface], whole: &BTreeSet<&str>)
     );
     let _ = writeln!(
         out,
-        "ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, and the obvious proposal is that it mirrors the other three: **{areas} areas and a root**, {operations} operations, over one context. What that proposal is worth depends on how far a Rust consumer is from it today, which is the thing this page measures rather than argues.\n"
+        "ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, and the obvious proposal is that it mirrors the other three: **{areas} areas and a root**, {operations} operations, over one context. What that proposal is worth depends on how far a Rust consumer is from it today, which is the thing this page measures rather than argues. The design it decided is [`rust-consumer-surface.md`](rust-consumer-surface.md), and this page's second property is that design's acceptance test.\n"
     );
     let _ = writeln!(
         out,
