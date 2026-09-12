@@ -101,15 +101,24 @@ impl Context {
         self.provider.as_deref()
     }
 
-    /// The locale engine, for a render.
+    /// The locale engine itself, for a render.
+    ///
+    /// **Not `intl()`**, and the name matters: `intl` is an *area* in
+    /// every other binding — `sdk.intl.render`, `sdk.intl.entity` and
+    /// five more — so a root accessor of that name would be an operation
+    /// the other three do not have, and `check-areas` holds the four to
+    /// one list. The area is the next increment; these two are what a
+    /// consumer uses until it lands, and may become private when it
+    /// does.
     #[must_use]
-    pub fn intl(&self) -> Ref<'_, Intl> {
+    pub fn locale_engine(&self) -> Ref<'_, Intl> {
         self.intl.borrow()
     }
 
-    /// The locale engine, to change the locale or load a pack.
+    /// The locale engine, to change the locale or load a pack. See
+    /// [`Context::locale_engine`] for why it is not called `intl_mut`.
     #[must_use]
-    pub fn intl_mut(&self) -> RefMut<'_, Intl> {
+    pub fn locale_engine_mut(&self) -> RefMut<'_, Intl> {
         self.intl.borrow_mut()
     }
 

@@ -291,7 +291,9 @@ fn a_scale_conversion_reports_what_it_applied() {
         .time()
         .convert(2_451_545.0, Scale::Tt, Scale::Tt)
         .expect("the identity");
-    assert_eq!(same.jd, 2_451_545.0);
+    // Bit for bit, which is what "applies nothing" has to mean: a
+    // conversion that rounded the identity would be a conversion.
+    assert_eq!(same.jd.to_bits(), 2_451_545.0_f64.to_bits());
     assert!(same.delta_t.is_none());
 
     // And the round trip comes back.

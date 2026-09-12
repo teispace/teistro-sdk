@@ -60,8 +60,14 @@ first.
 |---|---|---|
 | `calendar` | `date_of`, `fixed_of`, `convert`, `weekday_of`, `month_length`, `is_leap` | built |
 | `time` | `resolve`, `civil_of`, `convert`, `delta_t` | built |
-| the root | `profile`, `settings`, `settings_hash`, `ephemeris`, `intl` | built |
+| the root | `profile`, `settings`, `settings_hash`, `ephemeris`, `locale_engine` | built |
 | `intl`, `keys`, `frame`, `chart`, `almanac`, `engine`, and the root's `positions` | — | next |
+
+`locale_engine` is deliberately not called `intl`: `intl` is an *area* in
+every other binding — `sdk.intl.render` and six more — and a root
+accessor of that name would be an operation the other three do not have,
+which `check-areas` holds the four to. It is what a consumer renders
+with until that area lands.
 
 `time.convert` is where this surface owns a type rather than
 re-exporting one. The crates keep a scale in the *type system* —
