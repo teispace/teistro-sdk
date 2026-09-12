@@ -11,7 +11,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::binding::{blob_fixtures, build, present, step};
+use crate::binding::{blob_fixtures, build, present, step, tool};
 use crate::platform::Platform;
 
 const FIXTURES: &str = "target/tsrb";
@@ -56,21 +56,26 @@ fn build_addon(root: &Path) -> Result<(), ()> {
 
 /// The TypeScript compiler, when the machine has one: `TSC`, a local
 /// install beside the consumer, or one npm has already fetched.
+///
+/// Both of the last two go through [`tool`], because npm installs `tsc`
+/// and `npx` as `.cmd` shims on Windows and neither `Path::exists` on a
+/// name without its extension nor `Command::new` finds one.
 fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     if let Ok(tsc) = std::env::var("TSC") {
         return Some((tsc, Vec::new()));
     }
-    let local: PathBuf = root.join("bindings/node/typecheck/node_modules/.bin/tsc");
-    if local.exists() {
-        return Some((local.display().to_string(), Vec::new()));
+    let local = root.join("bindings/node/typecheck/node_modules/.bin/tsc");
+    if let Some(found) = tool(&local.display().to_string(), "--version") {
+        return Some((found, Vec::new()));
     }
-    let npx = Command::new("npx")
+    let npx = tool("npx", "--version")?;
+    let fetched = Command::new(&npx)
         .args(["--no-install", "tsc", "--version"])
         .current_dir(root)
         .output();
-    match npx {
+    match fetched {
         Ok(output) if output.status.success() => Some((
-            String::from("npx"),
+            npx,
             ["--no-install", "tsc"]
                 .iter()
                 .map(|s| (*s).to_string())

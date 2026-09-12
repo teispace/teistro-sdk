@@ -19,7 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::binding::{LIBRARY_STEM, StaticLink, present, step};
+use crate::binding::{LIBRARY_STEM, StaticLink, present, step, tool};
 use crate::package;
 use crate::platform::{NPM_SCOPE, Platform};
 use crate::release;
@@ -166,10 +166,10 @@ fn unpack(archive: &Path, into: &Path) -> std::io::Result<()> {
 /// Packs the two staged packages exactly as `npm publish` would, installs
 /// them into an empty project, and runs the consumer there.
 fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
-    if !present("npm", "--version") {
+    let Some(npm) = tool("npm", "--version") else {
         println!("skip  the Node packages: no `npm` on this machine");
         return Ok(());
-    }
+    };
     let into = check.join("node");
     let tarballs = into.join("tarballs");
     fs::create_dir_all(&tarballs).map_err(|err| println!("FAIL  {CHECK}/node: {err}"))?;
@@ -177,7 +177,7 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
     let staged = dist.join("npm");
     for package in [NPM_SCOPE.to_string(), platform.npm_package()] {
         step(
-            Command::new("npm")
+            Command::new(&npm)
                 .args(["pack", "--silent", "--pack-destination"])
                 .arg(&tarballs)
                 .arg(staged.join(&package))
@@ -202,7 +202,7 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
         "{\n  \"name\": \"teistro-packaging-check\",\n  \"private\": true,\n  \"type\": \"module\"\n}\n",
     )?;
     step(
-        Command::new("npm")
+        Command::new(&npm)
             .args(["install", "--silent", "--no-audit", "--no-fund"])
             .args(&packed)
             .current_dir(&into),
@@ -251,10 +251,10 @@ const ENGINE_DATA: &str = "TEISTRO_TEIMERIS_DATA";
 /// engine's data (`TEISTRO_TEIMERIS_DATA`). A skip is not a pass and
 /// says which it wanted.
 fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
-    if !present("npm", "--version") {
+    let Some(npm) = tool("npm", "--version") else {
         println!("skip  the adapter package: no `npm` on this machine");
         return Ok(());
-    }
+    };
     let Some(library) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
         println!("skip  the adapter package: set TEISTRO_TEIMERIS_ADAPTER to the built adapter");
         return Ok(());
@@ -270,7 +270,7 @@ fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform)
     let staged = dist.join("npm");
     for package in [NPM_SCOPE.to_string(), platform.npm_package()] {
         step(
-            Command::new("npm")
+            Command::new(&npm)
                 .args(["pack", "--silent", "--pack-destination"])
                 .arg(&tarballs)
                 .arg(staged.join(&package))
@@ -280,7 +280,7 @@ fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform)
         )?;
     }
     step(
-        Command::new("npm")
+        Command::new(&npm)
             .args(["pack", "--silent", "--pack-destination"])
             .arg(&tarballs)
             .arg(root.join(ADAPTER_NODE))
@@ -304,7 +304,7 @@ fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform)
         "{\n  \"name\": \"teistro-adapter-packaging-check\",\n  \"private\": true,\n  \"type\": \"module\"\n}\n",
     )?;
     step(
-        Command::new("npm")
+        Command::new(&npm)
             .args(["install", "--silent", "--no-audit", "--no-fund"])
             .args(&packed)
             .current_dir(&into),
@@ -440,7 +440,7 @@ fn python_consumer(
         "",
         "the Python environment could not be created",
     )?;
-    let venv = into.join(".venv/bin");
+    let venv = into.join(".venv").join(platform.venv_bin());
     step(
         crate::binding::python_command(venv.join("pip"))
             .args(["install", "--disable-pip-version-check", "--quiet"])

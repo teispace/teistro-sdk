@@ -717,6 +717,21 @@ provider's DUT1).
    all, was listed by none of them. 117 pairs, 39 operations by three
    runners, and it holds.
 
+   **win32 kept giving up one defect per run, and each was real.** With
+   the link fixed, `check-c`, `check-node`, `check-dart`, `check-python`
+   and `check-parity` all pass there. `check-package` then found two
+   more, both Windows facts hard-coded as Unix ones: a Python virtual
+   environment puts its executables in `Scripts` and not `bin`, so
+   `pip` was never where the gate looked — now a row of the platform
+   table like every other name an operating system decides; and **npm,
+   npx and tsc are `.cmd` shims** there, which `Command::new` cannot
+   find because `CreateProcess` appends `.exe` and nothing else. So a
+   runner with npm installed answered "no `npm` on this machine" and the
+   gate skipped the Node packages on the platform whose packaging is
+   least like the others'. `binding::tool` resolves a tool's spelling
+   once; a skip that says the machine lacks a tool it has is worse than
+   a failure.
+
    **Next: the publishing half of packaging.** A package per adapter per
    target triple, each shipping the platform binary its host needs, so a
    consumer installs rather than builds. Everything above resolves a

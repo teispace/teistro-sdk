@@ -123,10 +123,32 @@ pub(crate) fn cargo() -> String {
     std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"))
 }
 
+/// A tool as this platform spells it, or `None` when the machine has
+/// none.
+///
+/// **Windows spells some tools `.cmd`.** `npm`, `npx` and `tsc` are
+/// batch shims there, and `Command::new` goes through `CreateProcess`,
+/// which appends `.exe` and nothing else — so a Windows runner with npm
+/// installed answered "no `npm` on this machine", and `check-package`
+/// skipped the Node packages on the platform whose packaging is least
+/// like the others'. A skip that says the machine lacks a tool it has is
+/// worse than a failure.
+///
+/// A tool that is an `.exe`, or any tool on a Unix, resolves on the
+/// first candidate, so this costs one spawn where nothing is wrong.
+pub(crate) fn tool(name: &str, version: &str) -> Option<String> {
+    [name.to_owned(), format!("{name}.cmd")]
+        .into_iter()
+        .find(|candidate| Command::new(candidate).arg(version).output().is_ok())
+}
+
 /// Whether a tool is on this machine, which decides whether a gate runs
 /// or says why it is skipping (ADR-0014: the fast check stays Rust-only).
-pub(crate) fn present(tool: &str, version: &str) -> bool {
-    Command::new(tool).arg(version).output().is_ok()
+///
+/// The same question as [`tool`] without the answer's spelling, for a
+/// gate that only has to decide whether to run.
+pub(crate) fn present(tool_name: &str, version: &str) -> bool {
+    tool(tool_name, version).is_some()
 }
 
 /// Runs a step and reports it: `Ok(())` when it passed, `Err(())` when it
