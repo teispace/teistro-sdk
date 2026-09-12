@@ -81,6 +81,29 @@ pub use teistro_port_ephemeris::{
 };
 pub use teistro_time::{CivilDateTime, CivilTime, ZoneSpec};
 
+/// The Julian day a fixed day begins at, in local time.
+///
+/// A **free function** and not an area's operation, as it is in the
+/// other three bindings: it takes no context, because a fixed day and a
+/// Julian day are two spellings of the same integer and nothing about a
+/// profile or a locale can change the arithmetic.
+#[must_use]
+pub fn jd_of_fixed(fixed: FixedDay) -> f64 {
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "a fixed day within any calendar's range is exact in an f64"
+    )]
+    let day = fixed.get() as f64;
+    day + FixedDay::JD_EPOCH
+}
+
+/// The fixed day a Julian day falls in, and the fraction of that day
+/// elapsed since its midnight.
+#[must_use]
+pub fn fixed_of_jd(jd: f64) -> (FixedDay, f64) {
+    FixedDay::from_local_jd(jd)
+}
+
 // `BUNDLES`: the SDK's locales, built from `i18n/` by this crate's build
 // script so a consumer needs no files to render its messages (ADR-0010).
 include!(concat!(env!("OUT_DIR"), "/bundles.rs"));

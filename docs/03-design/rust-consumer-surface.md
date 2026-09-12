@@ -291,11 +291,28 @@ principle:
   red by adding one to a day of the month.
 
   The count is a *count* and not a declared list, and that is a
-  deliberate weakening. A list would have to name all 549, and most of
+  deliberate weakening. A list would have to name every one, and most of
   them are not §6's boundary-only keys at all — they are detail the Rust
-  runner simply does not print yet, a graha at a time and a muhurta at a
-  time. Completing it is mechanical and the count is what says how much
-  is left.
+  runner does not print yet, a graha at a time and a muhurta at a time.
+  Completing it is mechanical and the count is what says how much is
+  left.
+
+  **549 → 155**, in four passes and with every added key agreeing on its
+  first run: every graha's longitude, latitude, speed, retrograde flag,
+  house and placement; all twelve bhava madhyas and sandhis of both
+  charts; every tithi, nakshatra, yoga and karana span of three days with
+  its member and bounds; each day's month, convention, ayana and disha
+  shool; and the values a day may not have, `none` in all four bindings
+  rather than nought in one.
+
+  What is left is 54 per-item day rows (kaalas, choghadiya, horas,
+  muhurtas, moon events), 36 for a topocentric scenario the Rust runner
+  does not walk, and about ten that are §6's — `abi`, `build-*`, the
+  blobs' hashes. Growing it found one real gap, which is what a gate is
+  for: `jd_of_fixed` and `fixed_of_jd` were operations the façade did not
+  have. They are free functions now, as they are in the other three,
+  because a fixed day and a Julian day are two spellings of one integer
+  and no profile or locale changes the arithmetic.
 
   `check-areas`'s property *every operation the layer declares is listed
   by every parity runner* extends to the Rust runner once it exists, and

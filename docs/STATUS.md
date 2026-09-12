@@ -1182,6 +1182,32 @@ provider's DUT1).
    mechanical, and the count is what says how much is left. The number
    only going down is the property a reader can watch.
 
+   **And it went down: 549 → 155, in four passes, with every added key
+   agreeing on its first run.** The runner prints 519 keys where it
+   printed 125 — every graha's longitude, latitude, speed, retrograde
+   flag, house and placement in both charts; all twelve bhava madhyas
+   and sandhis of each; every tithi, nakshatra, yoga and karana span of
+   three days with its member and both bounds; each day's lunar month
+   and convention and ayana and disha shool; and the values a day may
+   *not* have, printed `none` in all four bindings rather than nought in
+   one. That last is the class of disagreement a count of absences
+   cannot see, and it is now compared.
+
+   Growing it found one real gap, which is what a gate is for.
+   `jd_of_fixed` and `fixed_of_jd` were operations the other three
+   bindings have and the façade did not: the runner could not convert
+   the day it was standing on. They are **free functions** on the crate
+   root rather than members of `calendar` or `time`, because a fixed day
+   and a Julian day are two spellings of one integer and no profile,
+   locale or setting changes the arithmetic — an area is for what a
+   context's state bears on, and this bears on none of it.
+
+   What is left of the 155 is named by kind rather than counted: 54
+   per-item day rows (kaalas, choghadiya, horas, muhurtas, moon events),
+   36 for a topocentric scenario the Rust runner does not walk, and
+   about ten that are genuinely §6's — `abi`, the `build-*` keys, the
+   blobs' hashes.
+
    The order of work was deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the
