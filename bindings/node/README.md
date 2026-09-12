@@ -161,9 +161,9 @@ machine and every runner type-checks with the same one; `TSC` overrides
 it, and an `npx`-resolvable `tsc` is the last resort. It needs Node, so
 it runs by hand and in the nightly matrix; the fast check needs the Rust
 toolchain and nothing else (ADR-0014). The second walks one scenario through this
-binding and the Dart binding and compares the ninety values they report,
-so a difference between the two layers is a failed gate rather than
-something a reader has to notice.
+binding and the Dart and Python bindings and compares every value they report,
+so a difference between any two of the three is a failed gate rather
+than something a reader has to notice.
 
 Never edit what the generator writes: change the Rust source and
 regenerate.

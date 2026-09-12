@@ -151,9 +151,9 @@ cargo xtask check-parity
 
 The first builds the C library, resolves the package's dependencies and
 runs the tests; the second walks one scenario through this binding and
-the Node binding and compares the ninety values they report, so a
-difference between the two layers is a failed gate rather than something
-a reader has to notice. It needs the Dart SDK, so it runs by hand and in the nightly
+the Node and Python bindings and compares every value they report, so a
+difference between any two of the three is a failed gate rather than
+something a reader has to notice. It needs the Dart SDK, so it runs by hand and in the nightly
 matrix; the fast check needs the Rust toolchain and nothing else
 (ADR-0014).
 
