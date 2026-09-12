@@ -50,10 +50,15 @@ const DISPATCH: &str = "adapters/ephemeris-teimeris/rust/src/dispatch.rs";
 /// Excluded whatever their shape, and named here rather than discovered
 /// by the marshaller failing to handle them, because the reason is a
 /// boundary and not a difficulty.
-const OWNED_BY_THE_ADAPTER: [&str; 3] = [
+const OWNED_BY_THE_ADAPTER: [&str; 4] = [
     "tm_context_open",
     "tm_context_close",
     "tm_context_set_fetch",
+    // Binds a data source to the context for that context's life. It is
+    // outside the prefix below because it is named for the context and
+    // not for the source, and it belongs here for the same reason as
+    // the rest: the memory it binds is the adapter's.
+    "tm_context_add_source",
 ];
 
 /// The prefix of the data-source family, all of which bind memory the
@@ -68,8 +73,20 @@ const OWNED_PREFIX: &str = "tm_data_source_";
 /// ported is the whole point of the namespace, and marked so that a
 /// consumer chooses it knowingly.
 fn mutates_engine_state(name: &str) -> bool {
-    name.starts_with("tm_set_") || name.starts_with("tm_clear_")
+    name.starts_with("tm_set_") || name.starts_with("tm_clear_") || ALSO_MUTATES.contains(&name)
 }
+
+/// Functions that change engine state without a name that says so.
+///
+/// The prefix rule above catches the engine's own `set`/`clear` families
+/// and would silently miss these, which is worse than missing them
+/// loudly: the column on the page exists so a consumer can see what a
+/// call will do to every chart cast after it.
+const ALSO_MUTATES: [&str; 1] = [
+    // Loads a star catalogue into the context, so `tm_star_calc` after
+    // it resolves names it did not resolve before.
+    "tm_star_load_catalogue",
+];
 
 #[derive(Debug, Deserialize)]
 struct TypeRef {
@@ -99,16 +116,52 @@ struct Named {
     name: String,
 }
 
+/// A public typedef over a plain arithmetic type, as the engine
+/// describes it.
+///
+/// The engine has three — `tm_body`, `tm_flags`, `tm_ayanamsha` — and
+/// each is an integer a caller passes and reads like any other. They are
+/// read rather than listed here for the reason the engine's own
+/// extractor gives: a name that is not in the description is
+/// indistinguishable from `tm_context`, which is a handle and must never
+/// be treated as a number, and a hand-written list of the difference is
+/// right only until the next header.
+#[derive(Debug, Deserialize)]
+struct Alias {
+    name: String,
+    base: String,
+}
+
 #[derive(Debug, Deserialize)]
 struct Idl {
     version: String,
     functions: Vec<Function>,
+    #[serde(default)]
+    aliases: Vec<Alias>,
     #[serde(default)]
     structs: Vec<Named>,
     #[serde(default)]
     enums: Vec<Named>,
     #[serde(default)]
     callbacks: Vec<Named>,
+}
+
+/// One function as the page prints it: the description it came from, so
+/// every figure on the page is computed from the same reading, and the
+/// reason the classifier gave.
+struct Row<'a> {
+    function: &'a Function,
+    why: &'a str,
+}
+
+impl Row<'_> {
+    fn name(&self) -> &str {
+        &self.function.name
+    }
+
+    fn mutates(&self) -> bool {
+        mutates_engine_state(&self.function.name)
+    }
 }
 
 /// Where a function stands with respect to the passthrough.
@@ -128,31 +181,101 @@ const SCALARS: [&str; 11] = [
     "bool", "char",
 ];
 
-fn plain(type_ref: &TypeRef, enums: &[String]) -> bool {
-    type_ref.pointer == 0
-        && (SCALARS.contains(&type_ref.base.as_str()) || enums.contains(&type_ref.base))
+/// The engine's own names for the things it takes and answers.
+///
+/// One place, because the two questions the classifier asks — is this a
+/// number, and is that number fractional — must be asked of the same
+/// vocabulary, and the second is the one an alias would silently answer
+/// wrong: a `scalar_out` of a base this does not resolve gets `0` for
+/// its initial value whether or not `0.0` was meant.
+struct Vocabulary {
+    enums: Vec<String>,
+    aliases: BTreeMap<String, String>,
 }
 
-fn scalar_out(type_ref: &TypeRef, enums: &[String]) -> bool {
-    type_ref.pointer == 1
-        && (SCALARS.contains(&type_ref.base.as_str()) || enums.contains(&type_ref.base))
+impl Vocabulary {
+    fn new(idl: &Idl) -> Self {
+        Self {
+            enums: idl.enums.iter().map(|e| e.name.clone()).collect(),
+            aliases: idl
+                .aliases
+                .iter()
+                .map(|a| (a.name.clone(), a.base.clone()))
+                .collect(),
+        }
+    }
+
+    /// A public alias followed to the arithmetic type it stands for;
+    /// anything else unchanged.
+    fn resolve<'a>(&'a self, base: &'a str) -> &'a str {
+        self.aliases.get(base).map_or(base, String::as_str)
+    }
+
+    /// Whether a base crosses JSON as a number.
+    fn is_number(&self, base: &str) -> bool {
+        SCALARS.contains(&self.resolve(base)) || self.enums.iter().any(|e| e == base)
+    }
+
+    /// Whether a base crosses JSON as a number with a fractional part.
+    fn is_float(&self, base: &str) -> bool {
+        matches!(self.resolve(base), "double" | "float")
+    }
+}
+
+fn plain(type_ref: &TypeRef, vocabulary: &Vocabulary) -> bool {
+    type_ref.pointer == 0 && vocabulary.is_number(&type_ref.base)
+}
+
+fn scalar_out(type_ref: &TypeRef, vocabulary: &Vocabulary) -> bool {
+    type_ref.pointer == 1 && vocabulary.is_number(&type_ref.base)
+}
+
+/// The parameter roles the marshaller carries.
+///
+/// One list, read by the classifier and by nothing else: a role added
+/// here without an arm in [`arm`] would generate code that does not
+/// compile, which is the failure mode to want.
+const ROLES_KNOWN: [&str; 6] = [
+    "handle",
+    "value",
+    "scalar_out",
+    "string_in",
+    "string_out",
+    "string_cap",
+];
+
+/// Whether a parameter is one the marshaller does not report and the
+/// caller does not pass: the context it is called on, and the capacity
+/// of a buffer the marshalling itself sizes.
+fn bookkeeping(role: &str) -> bool {
+    matches!(role, "handle" | "string_cap")
 }
 
 /// Where one function stands, and why.
-fn standing(function: &Function, enums: &[String]) -> (Standing, &'static str) {
+fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standing, &'static str) {
     if OWNED_BY_THE_ADAPTER.contains(&function.name.as_str())
         || function.name.starts_with(OWNED_PREFIX)
     {
         return (Standing::Owned, "the adapter's own context or data");
     }
-    let roles: Vec<&str> = function.params.iter().map(|p| p.role.as_str()).collect();
-    let shape_known = roles
+    // A handle the adapter is not holding cannot be filled in from
+    // anywhere: the arm has one context and no way to name another. Every
+    // such function today is excluded above, so this classifies nothing —
+    // it is here so that one the engine adds later is queued rather than
+    // silently generated with the wrong pointer.
+    if function
+        .params
         .iter()
-        .all(|role| matches!(*role, "handle" | "value" | "scalar_out"));
+        .any(|p| p.role == "handle" && p.type_ref.base != "tm_context")
+    {
+        return (Standing::Unlearned, "a handle the adapter does not hold");
+    }
+    let roles: Vec<&str> = function.params.iter().map(|p| p.role.as_str()).collect();
+    let shape_known = roles.iter().all(|role| ROLES_KNOWN.contains(role));
     if !shape_known {
         let unknown = roles
             .iter()
-            .find(|role| !matches!(**role, "handle" | "value" | "scalar_out"))
+            .find(|role| !ROLES_KNOWN.contains(role))
             .copied()
             .unwrap_or("?");
         return (
@@ -162,8 +285,6 @@ fn standing(function: &Function, enums: &[String]) -> (Standing, &'static str) {
                 "array_in" | "array_len" | "array_out" | "array_cap" | "array_out_parallel" => {
                     "an array"
                 }
-                "string_out" | "string_cap" => "a string it fills",
-                "string_in" => "a string it reads",
                 "handle_out" => "a handle it creates",
                 "opaque" => "opaque bytes",
                 _ => "a role the marshaller does not know",
@@ -174,24 +295,84 @@ fn standing(function: &Function, enums: &[String]) -> (Standing, &'static str) {
         .params
         .iter()
         .filter(|p| p.role == "value")
-        .all(|p| plain(&p.type_ref, enums));
+        .all(|p| plain(&p.type_ref, vocabulary));
     let outs_plain = function
         .params
         .iter()
         .filter(|p| p.role == "scalar_out")
-        .all(|p| scalar_out(&p.type_ref, enums));
+        .all(|p| scalar_out(&p.type_ref, vocabulary));
+    let strings_plain = function
+        .params
+        .iter()
+        .filter(|p| matches!(p.role.as_str(), "string_in" | "string_out"))
+        .all(|p| p.type_ref.pointer == 1 && p.type_ref.base == "char");
     let returns_plain = function.returns.pointer == 0
-        && (SCALARS.contains(&function.returns.base.as_str())
-            || enums.contains(&function.returns.base)
-            || function.returns.base == "void");
-    if args_plain && outs_plain && returns_plain {
-        (Standing::Callable, "scalars and enums only")
-    } else if function.returns.pointer == 1 && function.returns.base == "char" {
-        (Standing::Unlearned, "a string it returns")
-    } else if !returns_plain {
+        && (vocabulary.is_number(&function.returns.base) || function.returns.base == "void");
+    // A buffer the engine fills is only fillable by its own protocol —
+    // fill, and be told the length it wanted — so a `string_out` without
+    // a capacity beside it, or one whose function answers something other
+    // than that length, is a shape this generator has not been shown.
+    if fills_a_string(function) {
+        let paired = roles.contains(&"string_cap");
+        let answers_length = function.returns.pointer == 0 && function.returns.base == "size_t";
+        if !(paired && answers_length) {
+            return (
+                Standing::Unlearned,
+                "a buffer it fills by no protocol this generator knows",
+            );
+        }
+    } else if roles.contains(&"string_cap") {
+        return (Standing::Unlearned, "a capacity with no buffer beside it");
+    }
+    let returns_known = returns_plain || returns_a_string(function);
+    if args_plain && outs_plain && strings_plain && returns_known {
+        (Standing::Callable, "shapes the marshaller carries")
+    } else if !returns_known {
         (Standing::Unlearned, "a pointer it returns")
     } else {
         (Standing::Unlearned, "a type that is not a plain scalar")
+    }
+}
+
+/// Whether the function's own return value is a string it lends.
+fn returns_a_string(function: &Function) -> bool {
+    function.returns.pointer == 1 && function.returns.base == "char"
+}
+
+/// Whether the function fills a buffer of the caller's with a string.
+fn fills_a_string(function: &Function) -> bool {
+    has_role(function, "string_out")
+}
+
+/// Whether any parameter plays the given role.
+fn has_role(function: &Function, role: &str) -> bool {
+    function.params.iter().any(|p| p.role == role)
+}
+
+/// How many rows describe a function satisfying a predicate, as the
+/// page's prose needs it.
+///
+/// Over the description rather than over the row, so the predicates are
+/// the same ones the classifier used and no second definition of "takes
+/// a string" can drift away from the first.
+fn count_where(rows: &[Row<'_>], predicate: impl Fn(&Function) -> bool) -> usize {
+    rows.iter().filter(|row| predicate(row.function)).count()
+}
+
+/// What a callable function carries beyond numbers, for the table.
+///
+/// Read from the description rather than from the arm, so the column
+/// cannot describe code that is no longer generated.
+fn carries(function: &Function) -> &'static str {
+    match (
+        has_role(function, "string_in"),
+        fills_a_string(function),
+        returns_a_string(function),
+    ) {
+        (true, _, _) => "a string it reads",
+        (_, true, _) => "a string it fills",
+        (_, _, true) => "a string it lends",
+        _ => "",
     }
 }
 
@@ -202,18 +383,18 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
         .map_err(|error| format!("{IDL} is not readable: {error}"))?;
     let idl: Idl =
         serde_json::from_str(&text).map_err(|error| format!("{IDL} does not parse: {error}"))?;
-    let enums: Vec<String> = idl.enums.iter().map(|e| e.name.clone()).collect();
+    let vocabulary = Vocabulary::new(&idl);
     let classified: Vec<(&Function, Standing, &'static str)> = idl
         .functions
         .iter()
         .map(|function| {
-            let (standing, why) = standing(function, &enums);
+            let (standing, why) = standing(function, &vocabulary);
             (function, standing, why)
         })
         .collect();
     Ok(vec![
         Output::new(PAGE, page(&idl, &classified)),
-        Output::new(DISPATCH, dispatch(&idl, &classified)),
+        Output::new(DISPATCH, dispatch(&idl, &classified, &vocabulary)),
     ])
 }
 
@@ -241,13 +422,12 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 
 /// The measurement, from a reading already done.
 fn page(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String {
-    let mut by_standing: BTreeMap<Standing, Vec<(&str, &'static str, bool)>> = BTreeMap::new();
+    let mut by_standing: BTreeMap<Standing, Vec<Row<'_>>> = BTreeMap::new();
     for (function, standing, why) in classified {
-        by_standing.entry(*standing).or_default().push((
-            function.name.as_str(),
-            why,
-            mutates_engine_state(&function.name),
-        ));
+        by_standing
+            .entry(*standing)
+            .or_default()
+            .push(Row { function, why });
     }
     let callable = by_standing.get(&Standing::Callable).map_or(0, Vec::len);
     let owned = by_standing.get(&Standing::Owned).map_or(0, Vec::len);
@@ -291,7 +471,10 @@ fn page(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String
 
     out.push_str(&owned_section(by_standing.get(&Standing::Owned)));
     out.push_str(&callable_section(by_standing.get(&Standing::Callable)));
-    out.push_str(&queue_section(by_standing.get(&Standing::Unlearned)));
+    out.push_str(&queue_section(
+        by_standing.get(&Standing::Unlearned),
+        idl.structs.len(),
+    ));
     out.push_str(&limits_section());
     out
 }
@@ -316,13 +499,12 @@ fn rust_type(base: &str) -> String {
     }
 }
 
-/// Whether a base crosses JSON as a number with a fractional part.
-fn is_float(base: &str) -> bool {
-    matches!(base, "double" | "float")
-}
-
 /// The marshalling: one arm per callable function, generated.
-fn dispatch(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String {
+fn dispatch(
+    idl: &Idl,
+    classified: &[(&Function, Standing, &'static str)],
+    vocabulary: &Vocabulary,
+) -> String {
     let callable: Vec<&Function> = classified
         .iter()
         .filter(|(_, standing, _)| *standing == Standing::Callable)
@@ -355,7 +537,7 @@ fn dispatch(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> St
          use teimeris::sys;\n\
          use teistro_port_ephemeris::ProviderError;\n\
          \n\
-         use crate::passthrough::{{narrow, number, status}};\n",
+         use crate::passthrough::{{borrowed, fill, narrow, number, status, text}};\n",
         idl.version
     );
 
@@ -366,19 +548,30 @@ fn dispatch(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> St
         let params: Vec<String> = function
             .params
             .iter()
-            .filter(|p| p.role != "handle")
+            .filter(|p| !bookkeeping(&p.role))
             .map(|p| {
-                let role = if p.role == "scalar_out" { "out" } else { "in" };
-                format!(
-                    "{{\"name\":\"{}\",\"role\":\"{role}\",\"type\":\"{}\"}}",
-                    p.name, p.type_ref.base
-                )
+                let role = if matches!(p.role.as_str(), "scalar_out" | "string_out") {
+                    "out"
+                } else {
+                    "in"
+                };
+                let declared = if matches!(p.role.as_str(), "string_in" | "string_out") {
+                    "string"
+                } else {
+                    p.type_ref.base.as_str()
+                };
+                format!("{{\"name\":\"{}\",\"role\":\"{role}\",\"type\":\"{declared}\"}}", p.name)
             })
             .collect();
+        // `returns` is a word about the answer and not about C: `status`
+        // is already not a type name, and a function whose return the
+        // fill protocol consumes puts nothing under `return` either.
         let returns = if function.returns.base == "tm_status" {
             "status".to_string()
-        } else if function.returns.base == "void" {
+        } else if function.returns.base == "void" || fills_a_string(function) {
             "void".to_string()
+        } else if returns_a_string(function) {
+            "string".to_string()
         } else {
             function.returns.base.clone()
         };
@@ -419,7 +612,7 @@ fn dispatch(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> St
          match function {{"
     );
     for function in &callable {
-        out.push_str(&arm(function));
+        out.push_str(&arm(function, vocabulary));
     }
     let _ = writeln!(
         out,
@@ -433,22 +626,41 @@ fn dispatch(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> St
 }
 
 /// One function's arm: read the arguments, call, answer.
-fn arm(function: &Function) -> String {
+fn arm(function: &Function, vocabulary: &Vocabulary) -> String {
     let mut out = String::new();
     let name = &function.name;
     let _ = writeln!(out, "        \"{name}\" => {{");
 
     let mut call_args: Vec<String> = Vec::new();
     let mut outs: Vec<&str> = Vec::new();
+    // The buffer of a fill, if there is one: its name is what the string
+    // comes back under, and the call is made inside a closure so the
+    // protocol can run it twice.
+    let mut buffer: Option<&str> = None;
     for param in &function.params {
         match param.role.as_str() {
             "handle" => call_args.push("context".to_string()),
+            "string_in" => {
+                // Bound, not inlined: the `CString` must outlive the call
+                // and a temporary would be dropped at the semicolon.
+                let _ = writeln!(
+                    out,
+                    "            let {} = text(args, \"{}\")?;",
+                    param.name, param.name
+                );
+                call_args.push(format!("{}.as_ptr()", param.name));
+            }
+            "string_out" => {
+                buffer = Some(param.name.as_str());
+                call_args.push("buffer".to_string());
+            }
+            "string_cap" => call_args.push("capacity".to_string()),
             "value" => {
                 let ty = rust_type(&param.type_ref.base);
                 // A float is read as one; anything else is **narrowed** to
                 // the width the engine declares, and refused when it does
                 // not fit rather than silently keeping the low bits.
-                let _ = if is_float(&param.type_ref.base) {
+                let _ = if vocabulary.is_float(&param.type_ref.base) {
                     // `number` answers `f64` already; only a `float`
                     // parameter needs narrowing, and that one is lossy by
                     // the engine's own declaration rather than by ours.
@@ -473,7 +685,7 @@ fn arm(function: &Function) -> String {
             }
             "scalar_out" => {
                 let ty = rust_type(&param.type_ref.base);
-                let zero = if is_float(&param.type_ref.base) {
+                let zero = if vocabulary.is_float(&param.type_ref.base) {
                     "0.0"
                 } else {
                     "0"
@@ -482,24 +694,35 @@ fn arm(function: &Function) -> String {
                 call_args.push(format!("&raw mut {}", param.name));
                 outs.push(param.name.as_str());
             }
-            _ => unreachable!("only a callable function reaches here"),
+            other => unreachable!("a callable function has no `{other}` parameter"),
         }
     }
 
     let call = format!("sys::{name}({})", call_args.join(", "));
-    let binding = if function.returns.base == "void" {
-        String::new()
+    let safety = safety(function);
+    if let Some(buffer) = buffer {
+        // The fill protocol owns the buffer and the count, and runs the
+        // call again only if the first answer did not fit.
+        let indented = safety.replace('\n', "\n                ");
+        let _ = writeln!(
+            out,
+            "            let {buffer} = fill(\"{name}\", |buffer, capacity| {{\n                \
+             {indented}\n                unsafe {{ {call} }}\n            }})?;"
+        );
     } else {
-        "let answered = ".to_string()
-    };
-    let _ = writeln!(
-        out,
-        "            // SAFETY: the context is the adapter's own, live for\n            \
-         // this call; every out-parameter is a local of the declared width.\n            \
-         {binding}unsafe {{ {call} }};"
-    );
-    if function.returns.base == "tm_status" {
-        let _ = writeln!(out, "            status(answered, \"{name}\")?;");
+        let binding = if function.returns.base == "void" {
+            String::new()
+        } else {
+            "let answered = ".to_string()
+        };
+        let indented = safety.replace('\n', "\n            ");
+        let _ = writeln!(
+            out,
+            "            {indented}\n            {binding}unsafe {{ {call} }};"
+        );
+        if function.returns.base == "tm_status" {
+            let _ = writeln!(out, "            status(answered, \"{name}\")?;");
+        }
     }
     let mut fields: Vec<String> = outs
         .iter()
@@ -508,7 +731,17 @@ fn arm(function: &Function) -> String {
         // be a claim about which of them was declared.
         .map(|name| format!("\"{name}\": {name}"))
         .collect();
-    if !matches!(function.returns.base.as_str(), "tm_status" | "void") {
+    // A filled string comes back under its parameter's own name, like
+    // every other out-parameter. The length the function answered is the
+    // protocol's and is not reported: the string it describes is already
+    // here in full.
+    if let Some(buffer) = buffer {
+        fields.push(format!("\"{buffer}\": {buffer}"));
+    } else if returns_a_string(function) {
+        // `None` for null, which is how the engine says there is no such
+        // name, and which JSON has a word for.
+        fields.push("\"return\": borrowed(answered)".to_string());
+    } else if !matches!(function.returns.base.as_str(), "tm_status" | "void") {
         fields.push("\"return\": answered".to_string());
     }
     let _ = writeln!(out, "            Ok(json!({{{}}}))", fields.join(", "));
@@ -516,7 +749,65 @@ fn arm(function: &Function) -> String {
     out
 }
 
-fn owned_section(rows: Option<&Vec<(&str, &'static str, bool)>>) -> String {
+/// The SAFETY note for one arm, naming **what that arm actually
+/// passes** and nothing else.
+///
+/// A generated note that lists an out-parameter the call does not have,
+/// or a context it is not given, is worse than none: the whole reason
+/// this file is allowed its `unsafe` is that the note beside each call
+/// can be checked against the call.
+fn safety(function: &Function) -> String {
+    let mut clauses: Vec<&str> = Vec::new();
+    if has_role(function, "handle") {
+        clauses.push("the context is the adapter's own and live for this call");
+    }
+    if has_role(function, "scalar_out") {
+        clauses.push("every out-parameter is a local of the width the engine declares");
+    }
+    if has_role(function, "string_in") {
+        clauses.push("every string argument is a `CString` that outlives the call");
+    }
+    if fills_a_string(function) {
+        clauses.push(
+            "the buffer and its capacity are the fill protocol's own, and it passes the length \
+             of what it allocated",
+        );
+    }
+    if clauses.is_empty() {
+        // Nothing is lent and nothing is written through: the arm passes
+        // numbers the engine declared and that is the whole of it.
+        clauses.push("the call takes nothing but values of the widths the engine declares");
+    }
+    wrapped(&format!("SAFETY: {}.", clauses.join("; ")))
+}
+
+/// A note as comment lines no wider than the project's own limit.
+///
+/// Unindented; the caller indents to the depth its arm sits at.
+fn wrapped(note: &str) -> String {
+    /// What is left for text once `            // ` is in front of it.
+    const ROOM: usize = 60;
+
+    let mut lines: Vec<String> = vec![String::new()];
+    for word in note.split_whitespace() {
+        let line = lines.last_mut().unwrap_or_else(|| unreachable!("never empty"));
+        if line.is_empty() {
+            line.push_str(word);
+        } else if line.len() + 1 + word.len() <= ROOM {
+            line.push(' ');
+            line.push_str(word);
+        } else {
+            lines.push(word.to_string());
+        }
+    }
+    lines
+        .iter()
+        .map(|line| format!("// {line}"))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn owned_section(rows: Option<&Vec<Row<'_>>>) -> String {
     let mut out = String::new();
     let Some(rows) = rows else { return out };
     let _ = writeln!(out, "## What the adapter will not hand over\n");
@@ -529,46 +820,54 @@ fn owned_section(rows: Option<&Vec<(&str, &'static str, bool)>>) -> String {
         out,
         "They are named here rather than left to the marshaller to fail on, because the reason is a **boundary** and not a difficulty — teaching the generator more shapes must never bring them in.\n"
     );
-    for (name, _, _) in rows {
-        let _ = writeln!(out, "- `{name}`");
+    for row in rows {
+        let _ = writeln!(out, "- `{}`", row.name());
     }
     let _ = writeln!(out);
     out
 }
 
-fn callable_section(rows: Option<&Vec<(&str, &'static str, bool)>>) -> String {
+fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     let mut out = String::new();
     let _ = writeln!(out, "## What is callable\n");
     let Some(rows) = rows else {
         let _ = writeln!(out, "Nothing yet.\n");
         return out;
     };
-    let mutating: Vec<&str> = rows
-        .iter()
-        .filter(|(_, _, mutates)| *mutates)
-        .map(|(name, _, _)| *name)
-        .collect();
+    let mutating = count_where(rows, |function| mutates_engine_state(&function.name));
+    // Counted from the same rows the table below prints, because the
+    // sentence is a claim about them: an arm that carries a string is a
+    // different amount of generated code from one that does not, and a
+    // paragraph asserting "scalars alone" outlived the truth of it once
+    // already.
+    let takes = count_where(rows, |function| has_role(function, "string_in"));
+    let fills = count_where(rows, fills_a_string);
+    let lends = count_where(rows, returns_a_string);
+    let scalar_only = rows.len() - takes - fills - lends;
     let _ = writeln!(
         out,
-        "**{} functions**, every one of them taking and returning scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else.\n",
-        spelled(rows.len())
+        "**{} functions**. {} of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else. The other {} carry a string: {} read one the caller passes, {} fill a buffer of the marshaller's, and {} answer with one the engine lends and the marshaller copies before anything else can move it.\n",
+        spelled(rows.len()),
+        spelled(scalar_only),
+        spelled(takes + fills + lends),
+        spelled(takes),
+        spelled(fills),
+        spelled(lends),
     );
-    let _ = writeln!(out, "| function | changes engine state |");
-    let _ = writeln!(out, "|---|---|");
-    for (name, _, mutates) in rows {
+    let _ = writeln!(out, "| function | carries | changes engine state |");
+    let _ = writeln!(out, "|---|---|---|");
+    for row in rows {
         let _ = writeln!(
             out,
-            "| `{name}` | {} |",
-            if *mutates { "**yes**" } else { "" }
+            "| `{}` | {} | {} |",
+            row.name(),
+            carries(row.function),
+            if row.mutates() { "**yes**" } else { "" }
         );
     }
     let _ = writeln!(out);
-    if !mutating.is_empty() {
-        let _ = writeln!(
-            out,
-            "### The {} that change engine state\n",
-            spelled(mutating.len())
-        );
+    if mutating > 0 {
+        let _ = writeln!(out, "### The {} that change engine state\n", spelled(mutating));
         let _ = writeln!(
             out,
             "These are **offered rather than refused**, and the column above is why the distinction is drawn at all. Reaching what the SDK has not ported is the point of the namespace; but after one of these the engine is answering under settings the SDK's own provenance does not record, so a chart cast afterwards says it was computed one way and was computed another.\n"
@@ -581,13 +880,13 @@ fn callable_section(rows: Option<&Vec<(&str, &'static str, bool)>>) -> String {
     out
 }
 
-fn queue_section(rows: Option<&Vec<(&str, &'static str, bool)>>) -> String {
+fn queue_section(rows: Option<&Vec<Row<'_>>>, structs: usize) -> String {
     let mut out = String::new();
     let Some(rows) = rows else { return out };
     let _ = writeln!(out, "## What the marshaller has not learned\n");
     let mut by_reason: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
-    for (name, why, _) in rows {
-        by_reason.entry(why).or_default().push(name);
+    for row in rows {
+        by_reason.entry(row.why).or_default().push(row.name());
     }
     let _ = writeln!(
         out,
@@ -603,7 +902,12 @@ fn queue_section(rows: Option<&Vec<(&str, &'static str, bool)>>) -> String {
     let _ = writeln!(out);
     let _ = writeln!(
         out,
-        "The order to learn them in is **not** the order of that table by size. A string the engine *returns* is one `CStr` read and brings its whole group at once; a string it *fills* and an array it fills share one protocol — ask the size, allocate, ask again — so whichever is learned first brings the other nearly free; a struct is fifty-seven field lists and is the largest group because it is the largest job. Opaque bytes are last and may stay there: what crosses is a buffer, and a buffer has no meaning in a JSON object.\n"
+        "The order to learn them in is **not** the order of that table by size, and the strings are the worked example: they were the largest group after structs, and they came in as three shapes that cost one helper each. **An array the engine fills is the next tranche and is nearly free**, because it is the shape the marshaller already runs — the engine's fill protocol answers the length it wanted, so the call is made into a buffer generous enough for the common answer and made again only when the answer did not fit, which is the same helper an array needs with a different element width.\n"
+    );
+    let _ = writeln!(
+        out,
+        "A struct is the largest group because it is the largest job: {} field lists, each of which has to be read out of the description and written into and out of a JSON object, and several of which carry a `struct_size` the engine reads before it writes. Opaque bytes are last and may stay there — what crosses is a buffer, and a buffer has no meaning in a JSON object.\n",
+        spelled(structs)
     );
     out
 }

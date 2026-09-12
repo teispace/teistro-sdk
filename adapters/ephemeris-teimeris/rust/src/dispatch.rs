@@ -21,7 +21,7 @@ use serde_json::{Map, Value, json};
 use teimeris::sys;
 use teistro_port_ephemeris::ProviderError;
 
-use crate::passthrough::{narrow, number, status};
+use crate::passthrough::{borrowed, fill, narrow, number, status, text};
 
 /// What this adapter offers of the engine's own surface, as the
 /// port's `native_manifest` answers it.
@@ -29,7 +29,7 @@ use crate::passthrough::{narrow, number, status};
 /// `mutatesEngineState` is the flag a consumer needs and no other
 /// manifest would carry: after such a call the engine answers under
 /// settings the SDK's provenance does not record.
-pub(crate) const MANIFEST: &str = r#"{"engine":"teimeris","version":"0.1.0","functions":[{"name":"tm_context_release_caches","params":[],"returns":"void","mutatesEngineState":false},{"name":"tm_version","params":[{"name":"major","role":"out","type":"int"},{"name":"minor","role":"out","type":"int"},{"name":"patch","role":"out","type":"int"}],"returns":"void","mutatesEngineState":false},{"name":"tm_delta_t","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_day_of_week","params":[{"name":"jd","role":"in","type":"double"}],"returns":"tm_weekday","mutatesEngineState":false},{"name":"tm_equation_of_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_mean_to_apparent","params":[{"name":"jd_local_mean","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_apparent","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_apparent_to_mean","params":[{"name":"jd_local_apparent","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_mean","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_house_cusp_count","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_system_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_position","params":[{"name":"armc","role":"in","type":"double"},{"name":"geo_lat_deg","role":"in","type":"double"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"sys","role":"in","type":"tm_house_system"},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out_house","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_jpl_info","params":[{"name":"out_denum","role":"out","type":"int32_t"},{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"},{"name":"out_segment_days","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_ayanamsha_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"out_model","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_model_count","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_tidal_acceleration","params":[{"name":"arcsec_per_century2","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_tidal_acceleration","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_tidal_acceleration","params":[{"name":"out_value","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_delta_t_override","params":[{"name":"seconds","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_delta_t_override","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_delta_t_override","params":[{"name":"out_seconds","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_nutation_interpolation","params":[{"name":"enable","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_nutation_interpolation","params":[{"name":"out","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_embedded_coverage","params":[{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_reset","params":[],"returns":"status","mutatesEngineState":false},{"name":"tm_star_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_angle_normalize_deg","params":[{"name":"deg","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_normalize_rad","params":[{"name":"rad","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg_positive","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_degrees_to_centiseconds","params":[{"name":"deg","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_to_degrees","params":[{"name":"centiseconds","role":"in","type":"int32_t"}],"returns":"double","mutatesEngineState":false},{"name":"tm_centiseconds_normalize","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff_signed","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_round_seconds","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_round_half_away","params":[{"name":"x","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_chart_blob_size","params":[{"name":"body_count","role":"in","type":"size_t"},{"name":"cusp_count","role":"in","type":"size_t"},{"name":"with_cusp_speeds","role":"in","type":"int32_t"},{"name":"with_angles","role":"in","type":"int32_t"}],"returns":"size_t","mutatesEngineState":false}]}"#;
+pub(crate) const MANIFEST: &str = r#"{"engine":"teimeris","version":"0.1.0","functions":[{"name":"tm_status_name","params":[{"name":"s","role":"in","type":"tm_status"}],"returns":"string","mutatesEngineState":false},{"name":"tm_context_release_caches","params":[],"returns":"void","mutatesEngineState":false},{"name":"tm_version_string","params":[],"returns":"string","mutatesEngineState":false},{"name":"tm_version","params":[{"name":"major","role":"out","type":"int"},{"name":"minor","role":"out","type":"int"},{"name":"patch","role":"out","type":"int"}],"returns":"void","mutatesEngineState":false},{"name":"tm_body_name","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_delta_t","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_day_of_week","params":[{"name":"jd","role":"in","type":"double"}],"returns":"tm_weekday","mutatesEngineState":false},{"name":"tm_weekday_name","params":[{"name":"day","role":"in","type":"tm_weekday"}],"returns":"string","mutatesEngineState":false},{"name":"tm_equation_of_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_mean_to_apparent","params":[{"name":"jd_local_mean","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_apparent","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_apparent_to_mean","params":[{"name":"jd_local_apparent","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_mean","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"field","role":"in","type":"tm_position_field"},{"name":"out","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_house_cusp_count","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_system_name","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"string","mutatesEngineState":false},{"name":"tm_house_system_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_position","params":[{"name":"armc","role":"in","type":"double"},{"name":"geo_lat_deg","role":"in","type":"double"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"sys","role":"in","type":"tm_house_system"},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out_house","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_jpl_file","params":[{"name":"filename","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_jpl_info","params":[{"name":"out_denum","role":"out","type":"int32_t"},{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"},{"name":"out_segment_days","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_ayanamsha","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"},{"name":"t0","role":"in","type":"double"},{"name":"ayan_t0","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_ayanamsha_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_degrees","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_ayanamsha_name","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"}],"returns":"string","mutatesEngineState":false},{"name":"tm_ayanamsha_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"out_model","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_model_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_kind_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_count","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_tidal_acceleration","params":[{"name":"arcsec_per_century2","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_tidal_acceleration","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_tidal_acceleration","params":[{"name":"out_value","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_delta_t_override","params":[{"name":"seconds","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_delta_t_override","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_delta_t_override","params":[{"name":"out_seconds","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_nutation_interpolation","params":[{"name":"enable","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_nutation_interpolation","params":[{"name":"out","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_embedded_coverage","params":[{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_reset","params":[],"returns":"status","mutatesEngineState":false},{"name":"tm_cache_dir_default","params":[{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_load_catalogue","params":[{"name":"path","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_star_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_eclipse_type_name","params":[{"name":"bit","role":"in","type":"tm_eclipse_type"}],"returns":"string","mutatesEngineState":false},{"name":"tm_event_kind_name","params":[{"name":"kind","role":"in","type":"tm_event_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_angle_normalize_deg","params":[{"name":"deg","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_normalize_rad","params":[{"name":"rad","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg_positive","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_degrees_to_centiseconds","params":[{"name":"deg","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_to_degrees","params":[{"name":"centiseconds","role":"in","type":"int32_t"}],"returns":"double","mutatesEngineState":false},{"name":"tm_centiseconds_normalize","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff_signed","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_round_seconds","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_round_half_away","params":[{"name":"x","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_angle_format","params":[{"name":"deg","role":"in","type":"double"},{"name":"style","role":"in","type":"tm_angle_style"},{"name":"decimals","role":"in","type":"int32_t"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_zodiac_sign_name","params":[{"name":"sign","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_name","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_lord","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_chart_blob_size","params":[{"name":"body_count","role":"in","type":"size_t"},{"name":"cusp_count","role":"in","type":"size_t"},{"name":"with_cusp_speeds","role":"in","type":"int32_t"},{"name":"with_angles","role":"in","type":"int32_t"}],"returns":"size_t","mutatesEngineState":false}]}"#;
 
 /// Calls one of them by name.
 ///
@@ -44,26 +44,50 @@ pub(crate) fn call(
     args: &Map<String, Value>,
 ) -> Result<Value, ProviderError> {
     match function {
+        "tm_status_name" => {
+            let s: sys::tm_status = narrow(args, "s")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_status_name(s) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
         "tm_context_release_caches" => {
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             unsafe { sys::tm_context_release_caches(context) };
             Ok(json!({}))
+        }
+        "tm_version_string" => {
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_version_string() };
+            Ok(json!({"return": borrowed(answered)}))
         }
         "tm_version" => {
             let mut major: ::core::ffi::c_int = 0;
             let mut minor: ::core::ffi::c_int = 0;
             let mut patch: ::core::ffi::c_int = 0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: every out-parameter is a local of the width the
+            // engine declares.
             unsafe { sys::tm_version(&raw mut major, &raw mut minor, &raw mut patch) };
             Ok(json!({"major": major, "minor": minor, "patch": patch}))
+        }
+        "tm_body_name" => {
+            let body: sys::tm_body = narrow(args, "body")?;
+            let buf = fill("tm_body_name", |buffer, capacity| {
+                // SAFETY: the context is the adapter's own and live for this
+                // call; the buffer and its capacity are the fill protocol's
+                // own, and it passes the length of what it allocated.
+                unsafe { sys::tm_body_name(context, body, buffer, capacity) }
+            })?;
+            Ok(json!({"buf": buf}))
         }
         "tm_delta_t" => {
             let jd_ut1: f64 = number(args, "jd_ut1")?;
             let mut out_seconds: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_delta_t(context, jd_ut1, &raw mut out_seconds) };
             status(answered, "tm_delta_t")?;
             Ok(json!({"out_seconds": out_seconds}))
@@ -72,24 +96,33 @@ pub(crate) fn call(
             let jd_ut1: f64 = number(args, "jd_ut1")?;
             let geo_lon_deg: f64 = number(args, "geo_lon_deg")?;
             let mut out_hours: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_sidereal_time(context, jd_ut1, geo_lon_deg, &raw mut out_hours) };
             status(answered, "tm_sidereal_time")?;
             Ok(json!({"out_hours": out_hours}))
         }
         "tm_day_of_week" => {
             let jd: f64 = number(args, "jd")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_day_of_week(jd) };
             Ok(json!({"return": answered}))
+        }
+        "tm_weekday_name" => {
+            let day: sys::tm_weekday = narrow(args, "day")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_weekday_name(day) };
+            Ok(json!({"return": borrowed(answered)}))
         }
         "tm_equation_of_time" => {
             let jd_ut1: f64 = number(args, "jd_ut1")?;
             let mut out_seconds: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_equation_of_time(context, jd_ut1, &raw mut out_seconds) };
             status(answered, "tm_equation_of_time")?;
             Ok(json!({"out_seconds": out_seconds}))
@@ -98,8 +131,9 @@ pub(crate) fn call(
             let jd_local_mean: f64 = number(args, "jd_local_mean")?;
             let geo_lon_deg: f64 = number(args, "geo_lon_deg")?;
             let mut out_jd_local_apparent: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_local_mean_to_apparent(context, jd_local_mean, geo_lon_deg, &raw mut out_jd_local_apparent) };
             status(answered, "tm_local_mean_to_apparent")?;
             Ok(json!({"out_jd_local_apparent": out_jd_local_apparent}))
@@ -108,22 +142,44 @@ pub(crate) fn call(
             let jd_local_apparent: f64 = number(args, "jd_local_apparent")?;
             let geo_lon_deg: f64 = number(args, "geo_lon_deg")?;
             let mut out_jd_local_mean: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_local_apparent_to_mean(context, jd_local_apparent, geo_lon_deg, &raw mut out_jd_local_mean) };
             status(answered, "tm_local_apparent_to_mean")?;
             Ok(json!({"out_jd_local_mean": out_jd_local_mean}))
         }
+        "tm_position_value" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let field: sys::tm_position_field = narrow(args, "field")?;
+            let mut out: f64 = 0.0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
+            let answered = unsafe { sys::tm_position_value(context, jd, scale, body, flags, field, &raw mut out) };
+            status(answered, "tm_position_value")?;
+            Ok(json!({"out": out}))
+        }
         "tm_house_cusp_count" => {
             let sys: sys::tm_house_system = narrow(args, "sys")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_house_cusp_count(sys) };
             Ok(json!({"return": answered}))
         }
+        "tm_house_system_name" => {
+            let sys: sys::tm_house_system = narrow(args, "sys")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_house_system_name(sys) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
         "tm_house_system_count" => {
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_house_system_count() };
             Ok(json!({"return": answered}))
         }
@@ -135,34 +191,74 @@ pub(crate) fn call(
             let lon_deg: f64 = number(args, "lon_deg")?;
             let lat_deg: f64 = number(args, "lat_deg")?;
             let mut out_house: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_house_position(context, armc, geo_lat_deg, obliquity_deg, sys, lon_deg, lat_deg, &raw mut out_house) };
             status(answered, "tm_house_position")?;
             Ok(json!({"out_house": out_house}))
+        }
+        "tm_set_jpl_file" => {
+            let filename = text(args, "filename")?;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every string argument is a `CString` that outlives the
+            // call.
+            let answered = unsafe { sys::tm_set_jpl_file(context, filename.as_ptr()) };
+            status(answered, "tm_set_jpl_file")?;
+            Ok(json!({}))
         }
         "tm_jpl_info" => {
             let mut out_denum: i32 = 0;
             let mut out_jd_start: f64 = 0.0;
             let mut out_jd_end: f64 = 0.0;
             let mut out_segment_days: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_jpl_info(context, &raw mut out_denum, &raw mut out_jd_start, &raw mut out_jd_end, &raw mut out_segment_days) };
             status(answered, "tm_jpl_info")?;
             Ok(json!({"out_denum": out_denum, "out_jd_start": out_jd_start, "out_jd_end": out_jd_end, "out_segment_days": out_segment_days}))
         }
+        "tm_set_ayanamsha" => {
+            let mode: sys::tm_ayanamsha = narrow(args, "mode")?;
+            let t0: f64 = number(args, "t0")?;
+            let ayan_t0: f64 = number(args, "ayan_t0")?;
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
+            let answered = unsafe { sys::tm_set_ayanamsha(context, mode, t0, ayan_t0) };
+            status(answered, "tm_set_ayanamsha")?;
+            Ok(json!({}))
+        }
+        "tm_ayanamsha_value" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let mut out_degrees: f64 = 0.0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
+            let answered = unsafe { sys::tm_ayanamsha_value(context, jd, scale, flags, &raw mut out_degrees) };
+            status(answered, "tm_ayanamsha_value")?;
+            Ok(json!({"out_degrees": out_degrees}))
+        }
+        "tm_ayanamsha_name" => {
+            let mode: sys::tm_ayanamsha = narrow(args, "mode")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_ayanamsha_name(mode) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
         "tm_ayanamsha_count" => {
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_ayanamsha_count() };
             Ok(json!({"return": answered}))
         }
         "tm_set_model" => {
             let kind: sys::tm_model_kind = narrow(args, "kind")?;
             let model: i32 = narrow(args, "model")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_set_model(context, kind, model) };
             status(answered, "tm_set_model")?;
             Ok(json!({}))
@@ -170,30 +266,46 @@ pub(crate) fn call(
         "tm_get_model" => {
             let kind: sys::tm_model_kind = narrow(args, "kind")?;
             let mut out_model: i32 = 0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_get_model(context, kind, &raw mut out_model) };
             status(answered, "tm_get_model")?;
             Ok(json!({"out_model": out_model}))
         }
+        "tm_model_name" => {
+            let kind: sys::tm_model_kind = narrow(args, "kind")?;
+            let model: i32 = narrow(args, "model")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_model_name(kind, model) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
+        "tm_model_kind_name" => {
+            let kind: sys::tm_model_kind = narrow(args, "kind")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_model_kind_name(kind) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
         "tm_model_count" => {
             let kind: sys::tm_model_kind = narrow(args, "kind")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_model_count(kind) };
             Ok(json!({"return": answered}))
         }
         "tm_set_tidal_acceleration" => {
             let arcsec_per_century2: f64 = number(args, "arcsec_per_century2")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_set_tidal_acceleration(context, arcsec_per_century2) };
             status(answered, "tm_set_tidal_acceleration")?;
             Ok(json!({}))
         }
         "tm_clear_tidal_acceleration" => {
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_clear_tidal_acceleration(context) };
             status(answered, "tm_clear_tidal_acceleration")?;
             Ok(json!({}))
@@ -201,23 +313,24 @@ pub(crate) fn call(
         "tm_get_tidal_acceleration" => {
             let mut out_value: f64 = 0.0;
             let mut out_is_set: i32 = 0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_get_tidal_acceleration(context, &raw mut out_value, &raw mut out_is_set) };
             status(answered, "tm_get_tidal_acceleration")?;
             Ok(json!({"out_value": out_value, "out_is_set": out_is_set}))
         }
         "tm_set_delta_t_override" => {
             let seconds: f64 = number(args, "seconds")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_set_delta_t_override(context, seconds) };
             status(answered, "tm_set_delta_t_override")?;
             Ok(json!({}))
         }
         "tm_clear_delta_t_override" => {
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_clear_delta_t_override(context) };
             status(answered, "tm_clear_delta_t_override")?;
             Ok(json!({}))
@@ -225,24 +338,26 @@ pub(crate) fn call(
         "tm_get_delta_t_override" => {
             let mut out_seconds: f64 = 0.0;
             let mut out_is_set: i32 = 0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_get_delta_t_override(context, &raw mut out_seconds, &raw mut out_is_set) };
             status(answered, "tm_get_delta_t_override")?;
             Ok(json!({"out_seconds": out_seconds, "out_is_set": out_is_set}))
         }
         "tm_set_nutation_interpolation" => {
             let enable: i32 = narrow(args, "enable")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_set_nutation_interpolation(context, enable) };
             status(answered, "tm_set_nutation_interpolation")?;
             Ok(json!({}))
         }
         "tm_get_nutation_interpolation" => {
             let mut out: i32 = 0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares.
             let answered = unsafe { sys::tm_get_nutation_interpolation(context, &raw mut out) };
             status(answered, "tm_get_nutation_interpolation")?;
             Ok(json!({"out": out}))
@@ -250,137 +365,201 @@ pub(crate) fn call(
         "tm_embedded_coverage" => {
             let mut out_jd_start: f64 = 0.0;
             let mut out_jd_end: f64 = 0.0;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: every out-parameter is a local of the width the
+            // engine declares.
             let answered = unsafe { sys::tm_embedded_coverage(&raw mut out_jd_start, &raw mut out_jd_end) };
             status(answered, "tm_embedded_coverage")?;
             Ok(json!({"out_jd_start": out_jd_start, "out_jd_end": out_jd_end}))
         }
         "tm_fallback_stats_reset" => {
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_fallback_stats_reset(context) };
             status(answered, "tm_fallback_stats_reset")?;
             Ok(json!({}))
         }
+        "tm_cache_dir_default" => {
+            let buf = fill("tm_cache_dir_default", |buffer, capacity| {
+                // SAFETY: the buffer and its capacity are the fill protocol's
+                // own, and it passes the length of what it allocated.
+                unsafe { sys::tm_cache_dir_default(buffer, capacity) }
+            })?;
+            Ok(json!({"buf": buf}))
+        }
+        "tm_star_load_catalogue" => {
+            let path = text(args, "path")?;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every string argument is a `CString` that outlives the
+            // call.
+            let answered = unsafe { sys::tm_star_load_catalogue(context, path.as_ptr()) };
+            status(answered, "tm_star_load_catalogue")?;
+            Ok(json!({}))
+        }
         "tm_star_count" => {
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the context is the adapter's own and live for this
+            // call.
             let answered = unsafe { sys::tm_star_count(context) };
             Ok(json!({"return": answered}))
         }
+        "tm_eclipse_type_name" => {
+            let bit: sys::tm_eclipse_type = narrow(args, "bit")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_eclipse_type_name(bit) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
+        "tm_event_kind_name" => {
+            let kind: sys::tm_event_kind = narrow(args, "kind")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_event_kind_name(kind) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
         "tm_angle_normalize_deg" => {
             let deg: f64 = number(args, "deg")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_angle_normalize_deg(deg) };
             Ok(json!({"return": answered}))
         }
         "tm_angle_normalize_rad" => {
             let rad: f64 = number(args, "rad")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_angle_normalize_rad(rad) };
             Ok(json!({"return": answered}))
         }
         "tm_angle_diff_deg" => {
             let a: f64 = number(args, "a")?;
             let b: f64 = number(args, "b")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_angle_diff_deg(a, b) };
             Ok(json!({"return": answered}))
         }
         "tm_angle_diff_deg_positive" => {
             let a: f64 = number(args, "a")?;
             let b: f64 = number(args, "b")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_angle_diff_deg_positive(a, b) };
             Ok(json!({"return": answered}))
         }
         "tm_angle_diff_rad" => {
             let a: f64 = number(args, "a")?;
             let b: f64 = number(args, "b")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_angle_diff_rad(a, b) };
             Ok(json!({"return": answered}))
         }
         "tm_angle_midpoint_deg" => {
             let a: f64 = number(args, "a")?;
             let b: f64 = number(args, "b")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_angle_midpoint_deg(a, b) };
             Ok(json!({"return": answered}))
         }
         "tm_angle_midpoint_rad" => {
             let a: f64 = number(args, "a")?;
             let b: f64 = number(args, "b")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_angle_midpoint_rad(a, b) };
             Ok(json!({"return": answered}))
         }
         "tm_degrees_to_centiseconds" => {
             let deg: f64 = number(args, "deg")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_degrees_to_centiseconds(deg) };
             Ok(json!({"return": answered}))
         }
         "tm_centiseconds_to_degrees" => {
             let centiseconds: i32 = narrow(args, "centiseconds")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_centiseconds_to_degrees(centiseconds) };
             Ok(json!({"return": answered}))
         }
         "tm_centiseconds_normalize" => {
             let cs: i32 = narrow(args, "cs")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_centiseconds_normalize(cs) };
             Ok(json!({"return": answered}))
         }
         "tm_centiseconds_diff" => {
             let a: i32 = narrow(args, "a")?;
             let b: i32 = narrow(args, "b")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_centiseconds_diff(a, b) };
             Ok(json!({"return": answered}))
         }
         "tm_centiseconds_diff_signed" => {
             let a: i32 = narrow(args, "a")?;
             let b: i32 = narrow(args, "b")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_centiseconds_diff_signed(a, b) };
             Ok(json!({"return": answered}))
         }
         "tm_centiseconds_round_seconds" => {
             let cs: i32 = narrow(args, "cs")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_centiseconds_round_seconds(cs) };
             Ok(json!({"return": answered}))
         }
         "tm_round_half_away" => {
             let x: f64 = number(args, "x")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_round_half_away(x) };
             Ok(json!({"return": answered}))
+        }
+        "tm_angle_format" => {
+            let deg: f64 = number(args, "deg")?;
+            let style: sys::tm_angle_style = narrow(args, "style")?;
+            let decimals: i32 = narrow(args, "decimals")?;
+            let buf = fill("tm_angle_format", |buffer, capacity| {
+                // SAFETY: the context is the adapter's own and live for this
+                // call; the buffer and its capacity are the fill protocol's
+                // own, and it passes the length of what it allocated.
+                unsafe { sys::tm_angle_format(context, deg, style, decimals, buffer, capacity) }
+            })?;
+            Ok(json!({"buf": buf}))
+        }
+        "tm_zodiac_sign_name" => {
+            let sign: i32 = narrow(args, "sign")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_zodiac_sign_name(sign) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
+        "tm_nakshatra_name" => {
+            let nakshatra: i32 = narrow(args, "nakshatra")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_nakshatra_name(nakshatra) };
+            Ok(json!({"return": borrowed(answered)}))
+        }
+        "tm_nakshatra_lord" => {
+            let nakshatra: i32 = narrow(args, "nakshatra")?;
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
+            let answered = unsafe { sys::tm_nakshatra_lord(nakshatra) };
+            Ok(json!({"return": borrowed(answered)}))
         }
         "tm_chart_blob_size" => {
             let body_count: usize = narrow(args, "body_count")?;
             let cusp_count: usize = narrow(args, "cusp_count")?;
             let with_cusp_speeds: i32 = narrow(args, "with_cusp_speeds")?;
             let with_angles: i32 = narrow(args, "with_angles")?;
-            // SAFETY: the context is the adapter's own, live for
-            // this call; every out-parameter is a local of the declared width.
+            // SAFETY: the call takes nothing but values of the widths the
+            // engine declares.
             let answered = unsafe { sys::tm_chart_blob_size(body_count, cusp_count, with_cusp_speeds, with_angles) };
             Ok(json!({"return": answered}))
         }

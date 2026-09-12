@@ -227,7 +227,11 @@ providers**" and the engine half of that does not exist outside Rust:
   reaches an engine at last.
 - **The typed engine façade is generated into the adapter**, not into the
   SDK, so the port stays agnostic while a consumer who installs the
-  adapter gets 161 typed operations.
+  adapter gets typed operations for everything the marshaller carries.
+  How many that is, is a measurement and not a target:
+  [`03-design/engine-passthrough-measured.md`](../03-design/engine-passthrough-measured.md)
+  classifies all 161 into what is callable, what the adapter will never
+  hand over, and what is queued behind one more shape.
 - **The surface is namespaced** — `sdk.<area>.<operation>`, the areas
   derived from the boundary modules the reference site already groups by.
   Cheap now and breaking after v1, and every phase from here adds areas.

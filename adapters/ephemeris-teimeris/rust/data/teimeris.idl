@@ -17,6 +17,23 @@
   "ayanamsha_modes.h",
   "ayanamsha.h"
  ],
+ "aliases": [
+  {
+   "name": "tm_body",
+   "kind": "alias",
+   "base": "int32_t"
+  },
+  {
+   "name": "tm_flags",
+   "kind": "alias",
+   "base": "uint32_t"
+  },
+  {
+   "name": "tm_ayanamsha",
+   "kind": "alias",
+   "base": "int32_t"
+  }
+ ],
  "enums": [
   {
    "name": "tm_status",

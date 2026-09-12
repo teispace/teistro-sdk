@@ -58,8 +58,106 @@ fn the_manifest_describes_what_the_adapter_will_answer() {
                 matches!(role, "in" | "out"),
                 "a parameter is the caller's or the engine's, not {role}"
             );
+            assert!(
+                param["type"].as_str().is_some_and(|t| t != "char"),
+                "a string is declared a string and not the C it is made of: {param}"
+            );
         }
     }
+}
+
+/// A string the engine **lends** arrives copied, and its way of saying
+/// "there is no such name" arrives as null rather than as an empty
+/// string — which is a different answer and the caller needs to tell
+/// them apart.
+#[test]
+fn a_string_the_engine_lends_arrives_and_null_stays_null() {
+    let provider = provider();
+    let answer = provider
+        .native_call("tm_status_name", r#"{"s": 0}"#)
+        .expect("the engine answers");
+    let answer: Value = serde_json::from_str(&answer).expect("it parses");
+    assert!(
+        answer["return"].as_str().is_some_and(|n| !n.is_empty()),
+        "success has a name: {answer}"
+    );
+
+    let none = provider
+        .native_call("tm_zodiac_sign_name", r#"{"sign": -1}"#)
+        .expect("the engine answers");
+    let none: Value = serde_json::from_str(&none).expect("it parses");
+    assert!(
+        none["return"].is_null(),
+        "there is no sign before Aries, and that is not \"\": {none}"
+    );
+}
+
+/// A string the engine **fills** comes back under its own parameter's
+/// name, like every other out-parameter.
+///
+/// And the `size_t` the function returns does **not** come back: it is
+/// the fill protocol's bookkeeping, the string it counts is already here
+/// in full, and a `return` beside `buf` would invite a caller to believe
+/// it meant something else.
+#[test]
+fn a_string_the_engine_fills_comes_back_under_its_parameter_name() {
+    let provider = provider();
+    let answer = provider
+        .native_call("tm_body_name", r#"{"body": 0}"#)
+        .expect("the engine answers");
+    let answer: Value = serde_json::from_str(&answer).expect("it parses");
+    assert_eq!(answer["buf"], "Sun");
+    assert!(
+        answer.get("return").is_none(),
+        "the length is the protocol's, not an answer: {answer}"
+    );
+
+    // A formatted angle, because it is the fill whose answer is not a
+    // table lookup and so is the one a marshalling bug would garble.
+    let formatted = provider
+        .native_call(
+            "tm_angle_format",
+            // Style 1 is the zodiacal one; the manifest names the
+            // parameter and the engine's own enumeration names the value.
+            r#"{"deg": 35.5, "style": 1, "decimals": 0}"#,
+        )
+        .expect("the engine answers");
+    let formatted: Value = serde_json::from_str(&formatted).expect("it parses");
+    let text = formatted["buf"].as_str().expect("buf");
+    assert!(
+        text.contains("Taurus") && text.contains("30"),
+        "35.5 degrees is 5 Taurus 30, not {text}"
+    );
+}
+
+/// A string the **caller** passes reaches the engine, and the two ways
+/// it can be wrong are told apart: a shape the marshaller refuses by
+/// name, and a value the engine refuses with its own code.
+#[test]
+fn a_string_the_caller_passes_reaches_the_engine() {
+    let provider = provider();
+    let refused = provider
+        .native_call(
+            "tm_star_load_catalogue",
+            r#"{"path": "/nowhere/no-such-catalogue.txt"}"#,
+        )
+        .expect_err("there is no such file");
+    assert!(
+        refused.to_string().contains("tm_star_load_catalogue"),
+        "the engine refused the path it was given: {refused}"
+    );
+
+    let wrong_kind = provider
+        .native_call("tm_star_load_catalogue", r#"{"path": 7}"#)
+        .expect_err("a number is not a path");
+    let said = wrong_kind.to_string();
+    assert!(said.contains("path"), "{said}");
+    assert!(said.contains("a number"), "{said}");
+
+    let cut = provider
+        .native_call("tm_set_jpl_file", "{\"filename\": \"de441\\u0000.eph\"}")
+        .expect_err("C cannot carry a NUL");
+    assert!(cut.to_string().contains("NUL"), "{cut}");
 }
 
 /// A real call, through the adapter's own context, answering the value

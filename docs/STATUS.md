@@ -367,6 +367,31 @@ provider's DUT1).
    shared library, and an engine compiled to wasm is a project rather
    than a packaging step.
 
+   **The first four of those are built.** The adapters export a plugin
+   (ADR-0029), the boundary loads one (`ts_provider_load`), and the
+   Teimeris adapter answers `native_manifest` and `native_call` from
+   marshalling generated out of its own IDL by `cargo xtask engine`,
+   gated by `check-engine`. The coverage is a **measurement**, not a
+   target: `03-design/engine-passthrough-measured.md` classifies all 161
+   functions into what is callable today (62), what the adapter will
+   never hand over whatever its shape (12, each of which opens, closes or
+   rebinds the context every chart is cast on), and what is queued behind
+   one more shape (87 — structs, arrays, opaque bytes). Strings closed
+   the way the page predicted they would: three shapes, one helper each,
+   and the queue's largest non-struct group went with them.
+
+   Growing that IDL was part of it. Three of the engine's public types —
+   `tm_body`, `tm_flags`, `tm_ayanamsha` — are integers a caller passes
+   like any other, and the description said nothing about them, so every
+   generator that read it carried its own copy of the list and one copy
+   had already gone wrong. They are described now, which is what makes
+   the five functions that take one callable here.
+
+   **What is left of Phase 4's surface work:** the typed façade generator,
+   then the namespacing. Both were asked for explicitly and the façade is
+   worth more over a larger callable set, which is why the marshalling
+   came first.
+
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation
    curve holds every size claim; the theory floor does not — VSOP87's
