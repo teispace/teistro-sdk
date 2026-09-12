@@ -1,6 +1,6 @@
 ---
 title: The surface
-description: sdk.<area>.<operation> — seven areas and a root, spelled the same in Node, Dart and Python, over one C ABI.
+description: sdk.<area>.<operation> — seven areas and a root, spelled the same in Node, Dart, Python and Rust.
 ---
 
 Everything a consumer calls hangs off a **context**: the settings a chart
@@ -40,13 +40,13 @@ you would rather not wait for the collector.
 operation whose name is its own area's name is a root operation: nobody
 wants to write `sdk.positions.positions`.
 
-## One shape, three languages
+## One shape, four languages
 
 The grouping is the same in every binding, and a gate holds it that way:
 each binding's parity runner prints one line per operation keyed by a
 canonical `<area>.<operation>` path, and `cargo xtask check-parity`
-compares the three reports value for value — the same numbers **and** the
-same shape. What differs is only how each language spells a name.
+compares the reports value for value — the same numbers **and** the same
+shape. What differs is only how each language spells a name.
 
 ```js
 ctx.calendar.monthLength(...)   // Node: lower camel case
@@ -60,13 +60,39 @@ ctx.calendar.monthLength(...)   // Dart: lower camel case
 ctx.calendar.month_length(...)  # Python: snake case
 ```
 
+```rust
+sdk.calendar().month_length(..) // Rust: snake case, and an area is a call
+```
+
 ```c
-ts_calendar_month_length(...)   /* C: the ABI beneath all three */
+ts_calendar_month_length(...)   /* C: the ABI beneath all four */
 ```
 
 An area is a **value**, not a namespace trick: a frozen class instance in
-Node, a `late final` field in Dart, a `cached_property` in Python. You
-can hold one — `const cal = ctx.calendar` — and pass it on.
+Node, a `late final` field in Dart, a `cached_property` in Python, a
+borrowing view in Rust. You can hold one — `const cal = ctx.calendar`,
+`let cal = sdk.calendar();` — and pass it on.
+
+### Rust is the one that composes rather than crosses
+
+The other three bindings call the C ABI. Rust does not, and should not:
+it is the language the SDK is written in, so a Rust consumer reaching
+itself through C would write a request struct for the boundary to decode
+and decode a result blob to read numbers the crates had already returned
+as `JulianDay` and `Longitude`. The `teistro` crate composes those
+crates directly, and the C boundary is built on **it** rather than
+beside it — so a C caller and a Rust consumer get the same context
+resolved the same way.
+
+What that buys, and what it costs:
+
+- **No `dispose`.** `Drop` is the whole of it.
+- **No result blob.** An operation answers with the crates' own types.
+- **`positions` answers `Completed`**, so a longitude is
+  `sky.columns.at(0, 0)?.lon` rather than a decoded column.
+- **A context is neither `Send` nor `Sync`** — one context per worker,
+  which every binding already says and Rust's compiler enforces. The
+  part that decides it is the locale engine, not the ephemeris.
 
 ## `sdk.engine`
 
@@ -101,3 +127,6 @@ knows which.
   [Python](https://github.com/teispace/teistro-sdk/tree/main/bindings/python/example)
   — each run by a gate, so none of them can drift from what the binding
   does.
+- For Rust, the
+  [crate's own page](https://github.com/teispace/teistro-sdk/tree/main/crates/sdk),
+  which says what it composes and why it does not call the C ABI.

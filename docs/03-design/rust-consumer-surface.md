@@ -390,10 +390,17 @@ principle:
    composition moved; the types are shared.
 4. **Examples**, the same eight scenarios the other three bindings run,
    held by a gate the same way.
-5. **The site**, whose surface page gains a Rust column, and whose
-   install page gains a Rust section — after the crate exists, not
-   before. The install page already carries a lesson about documenting
-   what nobody has run.
+5. **The site.** The surface page has its Rust column — the fourth
+   spelling, an area as a borrowing view, and a section on the one thing
+   Rust does differently: it composes rather than crosses, so no
+   `dispose`, no blob, `positions` answering `Completed`, and a context
+   that is neither `Send` nor `Sync`.
+
+   The install page's Rust section is **deliberately not written yet**.
+   The crate is `0.0.0` and `publish = false`, so a `cargo add teistro`
+   would be an instruction nobody can follow — which is the lesson that
+   page already carries about documenting what nobody has run. It gets
+   its section when there is a release to name.
 
 ## 9. What this design does not settle
 

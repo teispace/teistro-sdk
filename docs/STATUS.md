@@ -1156,6 +1156,19 @@ provider's DUT1).
    along the way took `ts_context_new` with it, caught by four
    "unused import" warnings naming things only that function used.
 
+   **Confirmed on every platform**: the verify matrix passed on the
+   inversion — all five binding platforms and all three ephemeris
+   tiers — which is the C boundary, all four bindings, the parity gate
+   and the packaging gate all working through a composition that now
+   lives in the façade. The one thing that did fail was `check-ffi`, and
+   it was right to: the note I put on `TsContext` explaining *why* the
+   composition had moved was a `///` comment, and `cargo xtask gen ffi`
+   extracts those into `idl/api.json`, `teistro.h` and three bindings'
+   declarations — so a C consumer opening the header met this
+   repository's changelog, with a date and a design page's section
+   number in it. In `crates/ffi`, `///` is a public document in five
+   languages and `//` is a note to us.
+
    The order of work was deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the
