@@ -27,6 +27,14 @@ pub(crate) const LIBRARY_STEM: &str = "teistro_ffi";
 /// for the build in front of it, which is the same answer
 /// `bindings/c/README.md` tells a consumer to get.
 ///
+/// **Asked in a target directory of its own**, and that was a defect
+/// before it was a comment: `cargo rustc --crate-type staticlib`
+/// rebuilds the crate with its crate-type overridden, which removed the
+/// shared library the gate had just built and was about to link. It
+/// passed locally, where both artefacts happened to be present, and
+/// failed `check-c` on every platform in the matrix. A probe that
+/// disturbs what it is probing for is worse than no probe.
+///
 /// Falls back to `-lm` alone when the question cannot be asked, because
 /// that is the one flag every non-macOS platform certainly needs and a
 /// gate that silently linked nothing extra is how this was missed for
@@ -44,6 +52,7 @@ pub(crate) fn c_link_flags(root: &Path) -> Vec<String> {
             "--print",
             "native-static-libs",
         ])
+        .env("CARGO_TARGET_DIR", root.join("target/dist/link-probe"))
         .current_dir(root)
         .output();
     let Ok(output) = asked else {
