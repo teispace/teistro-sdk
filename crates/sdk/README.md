@@ -123,6 +123,23 @@ keeps `teistro-intl` too, because it still *marshals* the engine's types
 — the composition moved, the types are shared. Its build script is only
 `build_info` now; the locale bundles are built here.
 
+## The examples
+
+Eight programs in [`examples/`](examples/), one per scenario, each
+runnable and each run by `cargo xtask check-rust` so none of them can
+describe a surface nobody has executed:
+
+```sh
+cargo run --release -p teistro --example birth_chart
+```
+
+Release, because the built-in ephemeris is a truncated VSOP87 and
+ELP2000 and a debug build of it computes a year of the sky slowly enough
+to notice. [`examples/README.md`](examples/README.md) has the table of
+what each one is really teaching, and each file repeats its own small
+helpers on purpose: an example is a program a reader is invited to
+*copy*.
+
 ## The parity runner
 
 `examples/parity.rs` prints this binding's half of the parity report:
@@ -135,20 +152,22 @@ cargo run -p teistro --example parity > /tmp/rust.tsv
 join -t $'\t' /tmp/rust.tsv /tmp/node.tsv | awk -F'\t' '$2 != $3'
 ```
 
-**125 keys, every one of them a key Node prints, and every value
+**519 keys, every one of them a key Node prints, and every value
 identical** — which is what proves this composition equal to the one at
 the C boundary rather than merely compiling. It was also the oracle the
 last two areas needed: a chart's lagna, day lagna and ayanamsha offset,
 and an almanac day's sunrise and window, are asserted by no smoke test,
-and this report is where the bindings agree on them.
+and this report is where the bindings agree on them. It began at 125 and
+every key added since has agreed on its first run.
 
 It does **not** print every key the other three do, and that is §6 of the
 design page arriving in a gate rather than a gap. Among theirs are `abi`,
 `build-commit`, `build-target` and the result blobs' sections: a Rust
 consumer has none of them, because Cargo resolved the versions, `Drop`
 freed the memory, and the crates handed back their own types. So
-`check-parity` will hold this report to every key the others have except
-a declared list, and until it does the command above is the check.
+`check-parity` holds this report to every key it *prints* and **counts**
+the 155 it does not on every run, which is what makes a subset that
+stops shrinking visible.
 
 ## Testing it
 
@@ -159,3 +178,13 @@ cargo test -p teistro
 `tests/surface.rs` asserts the facts `bindings/c/tests/smoke.c` already
 asserts, in the same words, so a difference between the two compositions
 is a failing test rather than something a reader has to notice.
+
+`cargo xtask check-rust` runs those, the doctests and all eight
+examples, and is the gate CI runs on five platforms.
+
+Every target that names `Ephemeris::Builtin` declares
+`required-features = ["builtin-ephemeris"]`, so
+`cargo build -p teistro --no-default-features` skips them rather than
+failing on them; `check-lints`'
+`target-declares-the-feature-it-needs` holds that by reading the
+sources.

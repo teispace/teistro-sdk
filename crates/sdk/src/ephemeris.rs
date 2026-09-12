@@ -93,13 +93,14 @@ impl Ephemeris {
     /// ```no_run
     /// # use teistro::{Context, Ephemeris};
     /// # fn teimeris(_: &str) -> Result<Box<dyn teistro_port_ephemeris::EphemerisProvider>, teistro::Error> { unimplemented!() }
+    /// # #[cfg(feature = "builtin-ephemeris")] fn run() -> Result<(), teistro::Error> {
     /// let sdk = Context::builder()
     ///     .ephemeris([
     ///         Ephemeris::opening("teimeris", || teimeris("./ephe")),
     ///         Ephemeris::Builtin,
     ///     ])
     ///     .build()?;
-    /// # Ok::<(), teistro::Error>(())
+    /// # Ok(()) }
     /// ```
     #[must_use]
     pub fn opening<F>(name: impl Into<String>, open: F) -> Ephemeris

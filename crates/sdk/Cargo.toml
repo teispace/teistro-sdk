@@ -45,3 +45,48 @@ builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
 [lints]
 workspace = true
+
+# Every target that names `Ephemeris::Builtin` declares the feature the
+# variant lives behind. Without this a `--no-default-features` build of
+# this crate **fails** on those targets rather than skipping them, which
+# is not what a tier build is asking for -- and it did, unnoticed,
+# because nothing had ever built this crate without its default.
+# `check-lints`' `target-declares-the-feature-it-needs` holds the class
+# by reading the sources, so a target that stops naming the built-in
+# stops needing the line and one that starts cannot be added without it.
+#
+# `calendar` and `parity` are absent on purpose: the first names
+# `Ephemeris::None` (a calendar needs no ephemeris, which is its lesson)
+# and the second `Ephemeris::Test`. Neither is gated.
+
+[[test]]
+name = "surface"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "almanac"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "birth_chart"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "ephemeris"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "panchanga"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "quickstart"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "rectification"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "your_own_ephemeris"
+required-features = ["builtin-ephemeris"]

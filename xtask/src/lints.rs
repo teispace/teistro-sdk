@@ -87,7 +87,7 @@ struct Outcome {
 }
 
 /// Every `.rs` file under a directory, sorted.
-fn sources(root: &Path) -> Vec<PathBuf> {
+pub(crate) fn sources(root: &Path) -> Vec<PathBuf> {
     let mut out = Vec::new();
     let mut stack = vec![root.to_path_buf()];
     while let Some(dir) = stack.pop() {
@@ -765,6 +765,84 @@ fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Every target of the façade crate that names a feature-gated
+/// ephemeris declares the feature it needs.
+///
+/// `Ephemeris::Builtin` exists only under `builtin-ephemeris`, so an
+/// example or a test that names it and does **not** carry
+/// `required-features` breaks a `--no-default-features` build of the
+/// crate instead of being skipped by it. That is not hypothetical: the
+/// eight examples and `tests/surface.rs` all had the hole, and nobody
+/// saw it because nothing had ever built this crate without its
+/// default — the ephemeris tier matrix builds
+/// `teistro-ephemeris-builtin` and `teistro-ffi`, not this.
+///
+/// The rule reads the source rather than a list, so an example that
+/// stops naming the built-in stops needing the line, and a ninth that
+/// names it cannot be added without one.
+fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "target-declares-the-feature-it-needs";
+    /// The feature the variant lives behind, and the variant.
+    const GATED: (&str, &str) = ("builtin-ephemeris", "Ephemeris::Builtin");
+    let manifest = root.join("crates/sdk/Cargo.toml");
+    let Ok(manifest_text) = std::fs::read_to_string(&manifest) else {
+        outcome.failures.push(Finding {
+            file: String::from("crates/sdk/Cargo.toml"),
+            line: 0,
+            text: String::from("the façade's manifest could not be read"),
+            rule: RULE,
+        });
+        return;
+    };
+    for (kind, directory) in [
+        ("example", "crates/sdk/examples"),
+        ("test", "crates/sdk/tests"),
+    ] {
+        for path in sources(&root.join(directory)) {
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            if !text.contains(GATED.1) {
+                continue;
+            }
+            let Some(name) = path
+                .file_stem()
+                .map(|stem| stem.to_string_lossy().to_string())
+            else {
+                continue;
+            };
+            // The manifest section for this target, and whether it
+            // requires the feature. Read as text because the question is
+            // whether two lines sit together, which is what a reader
+            // checking the manifest by eye would look for.
+            let header = format!("[[{kind}]]\nname = \"{name}\"");
+            let requires = manifest_text.split_once(&header).is_some_and(|(_, after)| {
+                after
+                    .split("\n[")
+                    .next()
+                    .is_some_and(|section| section.contains(GATED.0))
+            });
+            if requires {
+                continue;
+            }
+            let shown = path
+                .strip_prefix(root)
+                .unwrap_or(&path)
+                .display()
+                .to_string();
+            outcome.failures.push(Finding {
+                file: shown,
+                line: 0,
+                text: format!(
+                    "names `{}` but no `[[{kind}]] name = \"{name}\"` requires `{}`",
+                    GATED.1, GATED.0
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// Every platform row of a workflow matrix runs on the runner the
 /// platform table names.
 ///
@@ -880,6 +958,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     gate_runners(root, &mut outcome);
     python_in_utf8(root, &mut outcome);
     platform_runners(root, &mut outcome);
+    targets_declare_their_features(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -894,6 +973,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "entry-point-is-reachable",
         "python-runs-in-utf8-mode",
         "runner-matches-the-platform-table",
+        "target-declares-the-feature-it-needs",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();

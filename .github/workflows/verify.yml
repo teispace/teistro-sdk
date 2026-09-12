@@ -69,7 +69,9 @@ jobs:
         run: cargo xtask check-dart
       - name: The Python binding, its sizes and a strict type check
         run: cargo xtask check-python
-      - name: The three bindings against each other, value by value
+      - name: The Rust facade's examples and its own tests
+        run: cargo xtask check-rust
+      - name: The four bindings against each other, value by value
         run: cargo xtask check-parity
       - name: The packages installed into throwaway projects and run
         run: cargo xtask check-package

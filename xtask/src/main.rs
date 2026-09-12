@@ -149,6 +149,7 @@ mod pluto;
 mod points;
 mod python_binding;
 mod release;
+mod rust_binding;
 mod rust_surface;
 mod schema;
 mod serial;
@@ -251,6 +252,7 @@ fn main() {
         Some("check-node") => node_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-python") => python_binding::check(&repo_root()),
+        Some("check-rust") => rust_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
         Some("check-lints") => lints::check(&repo_root()),
         Some("ephemgen") => ephemgen::generate(
@@ -325,7 +327,8 @@ fn usage() -> i32 {
          vsop [DIR] | moon | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | \
-         check-dart | check-python | check-parity | check-lints | check-versions | \
+         check-dart | check-python | check-rust | check-parity | check-lints | \
+         check-versions | \
          check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package stage [--partial] | bench [FILE] | \
          compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | \
