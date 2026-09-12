@@ -764,8 +764,11 @@ provider's DUT1).
 
    `macos-15-intel` is the image that replaced it, and the fix was the
    experiment — a wrong label fails a job at once rather than hanging,
-   so a dispatch answers either way. It answered: `bindings (darwin-x64)`
-   is running on a real runner for the first time.
+   so a dispatch answers either way. It answered, and then the whole
+   matrix did: **run 34688535483 is the first `verify` run to reach a
+   conclusion, and the conclusion is `success`** — all five binding
+   platforms, including the Intel macOS row that had never run and the
+   win32 row that had never passed, and all three ephemeris tiers.
 
    Three places had to change, and `xtask/src/platform.rs` opens by
    saying it is "the only place any of that is written". It was not: both
