@@ -125,7 +125,7 @@ The counting allocator found that on its first run.
 | documentation | every public item documented with a compiled example; no warnings from `cargo doc` | `cargo doc -D warnings` | fast check |
 | dependencies | licences on the allow list (`deny.toml`; copyleft and MPL denied everywhere), no oracle or ephemeris adapter in a publishable crate's graph, advisories none, duplicates justified, every dependency vetted | `cargo deny check`, `cargo-audit`, `cargo-vet` | fast check (deny), weekly (audit) |
 | containment | the workspace builds and passes its tests with the test provider only and no adapter present | a CI job (ADR-0019) | fast check once an adapter exists |
-| generated artefacts | regenerated output equals the committed output | `cargo xtask check-generated` | fast check |
+| generated artefacts | regenerated output equals the committed output -- the emitted bindings and headers, and every **measured design page**, each of which is regenerated in memory from its own sources and compared | `cargo xtask check-generated`, `cargo xtask check-<pass>` | fast check |
 | gates proven red | every new gate was broken once and observed failing before it was trusted | recorded in the pull request | review |
 
 ### Why a knob needs a reader
