@@ -36,7 +36,13 @@ jobs:
             platform: linux-arm64
           - os: macos-latest
             platform: darwin-arm64
-          - os: macos-13
+          # Intel macOS. **Not `macos-13`**: that image was retired, and
+          # nothing picks the label up -- eleven dispatches on
+          # 2026-09-12 sat in `queued` from the moment they were made,
+          # so this row alone kept every run of this workflow from ever
+          # reaching a conclusion. A job nobody runs is worse than a job
+          # that fails.
+          - os: macos-15-intel
             platform: darwin-x64
           - os: windows-latest
             platform: win32-x64
