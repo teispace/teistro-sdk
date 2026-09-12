@@ -281,3 +281,24 @@ principle:
   context does not need, so the measurement says nothing about it.
 - **`no_std`.** Nothing in this design needs an allocator that the crates
   do not already need, and nothing in it has been measured without one.
+- **Whether a context should be shareable across threads.** It is not,
+  today, and the building found out which part decides that. Not the
+  ephemeris: the port requires `Send + Sync` of a provider. The **locale
+  engine** — `teistro_intl`'s plural rules hold an
+  `icu_plurals::PluralRules` whose data payload is reference-counted with
+  `Rc`, so a `Context` is neither `Send` nor `Sync`.
+
+  Every binding already says *one context serves one thread, and a worker
+  builds its own*, so this is the stated rule enforced rather than a new
+  limit. But it lands differently in Rust, where the obvious shape for a
+  server is one context in an `axum` app state behind a `&`, and `!Send`
+  forbids it — a Rust consumer needs a context per worker or a pool.
+
+  What it would take is known and checked rather than guessed:
+  `icu_provider` has a `sync` feature (`sync = []` in its manifest) which
+  moves those payloads to `Arc`. Enabling it is cross-cutting — it costs
+  atomic reference counts on every render in every binding, and the
+  boundary's `TsContext` is `!Send` for the same reason — so it is a
+  decision with a measurement behind it, not a line in this page. **A
+  falsification pass belongs in front of it**: what a render costs with
+  `Rc` and with `Arc`, over the message set `check-intl` already walks.

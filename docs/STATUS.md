@@ -978,6 +978,22 @@ provider's DUT1).
    (falsified, 1 of 1). Both flip as the work lands, and neither can
    flip without it.
 
+   **And a third correction, from a test that would not compile.** A
+   `Context` is neither `Send` nor `Sync`, and the part that decides it
+   is not the one a reader would guess: the port requires `Send + Sync`
+   of an ephemeris, and it is the **locale engine** whose plural rules
+   hold an `icu_plurals::PluralRules` with an `Rc`-backed payload. Every
+   binding already says *one context serves one thread, and a worker
+   builds its own*, so this is the stated rule enforced rather than a new
+   limit — but it lands differently in Rust, where the obvious shape for
+   a server is one context in an `axum` app state behind a `&`. The test
+   builds one per worker, which is the pattern it leaves, and the design
+   page's §9 records what lifting it would take: `icu_provider` has a
+   `sync` feature (checked, not guessed) that moves those payloads to
+   `Arc`, at the cost of atomic reference counts on every render in every
+   binding — so that decision wants a falsification pass in front of it,
+   over the message set `check-intl` already walks.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the

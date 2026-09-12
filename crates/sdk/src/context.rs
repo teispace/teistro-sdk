@@ -24,9 +24,18 @@ use crate::ephemeris::{self, Ephemeris};
 /// two contexts with the same settings hash compute the same numbers and
 /// the hash is a cache key.
 ///
-/// **One context serves one thread.** It is `Send` where its provider is:
-/// the ephemeris is the only part a consumer supplies, so the bound is
-/// theirs rather than this crate's.
+/// **One context serves one thread, and a worker builds its own** — the
+/// same rule the other three bindings state, and in Rust it is enforced
+/// rather than advised: a `Context` is neither `Send` nor `Sync`.
+///
+/// The reason is worth knowing, because it is not the one a reader would
+/// guess. The ephemeris cannot be it: the port requires `Send + Sync` of
+/// a provider. It is the **locale engine** — `teistro_intl`'s plural
+/// rules hold an `icu_plurals::PluralRules`, whose data payload is
+/// reference-counted with `Rc`. `tests/surface.rs` builds one per worker,
+/// which is the pattern this leaves, and
+/// `03-design/rust-consumer-surface.md` §9 records what it would take to
+/// lift (`icu_provider`'s `sync` feature, which exists).
 pub struct Context {
     settings: Resolved,
     provider: Option<Box<dyn EphemerisProvider>>,

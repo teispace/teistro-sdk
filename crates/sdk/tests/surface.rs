@@ -205,3 +205,30 @@ fn a_chain_that_opens_nothing_names_every_entry_that_failed() {
     assert!(said.contains("first: "), "{said}");
     assert!(said.contains("second: "), "{said}");
 }
+
+/// A worker builds its own context, which is the pattern a `!Send`
+/// context leaves and the one every other binding states.
+///
+/// Asserted rather than left to a doc comment, because a Rust consumer
+/// putting one in an `axum` app state finds out the hard way otherwise.
+/// The reason is the locale engine and not the ephemeris: the port
+/// requires `Send + Sync` of a provider, while `teistro_intl`'s plural
+/// rules hold an `Rc`-backed icu4x payload.
+#[test]
+fn a_worker_builds_its_own_context() {
+    let answers: Vec<(i32, u8, u8)> = (0..4)
+        .map(|_| {
+            std::thread::spawn(|| {
+                let sdk = context();
+                let day = CalendarDate::defined(Calendar::Gregorian, 2015, 4, 14);
+                let bs = sdk
+                    .calendar()
+                    .convert(&day, Calendar::BikramSambat)
+                    .expect("a date inside the table");
+                (bs.year, bs.month, bs.day)
+            })
+        })
+        .map(|worker| worker.join().expect("the worker finished"))
+        .collect();
+    assert_eq!(answers, vec![(2072, 1, 1); 4]);
+}
