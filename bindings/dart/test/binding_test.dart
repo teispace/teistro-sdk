@@ -253,14 +253,17 @@ void main() {
       'GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT',
     );
 
-    // Without an ephemeris the call is a missing capability, named.
+    // Without an ephemeris the call is a missing capability naming the
+    // option a consumer sets, and hinting at what to pass -- the same
+    // field and the same hint as Node, Python and C.
     final bare = context(testProvider: false);
     expect(
       () => bare.positions(instants: [2451545.0], bodies: [Body.sun]),
       throwsA(
         isA<TeistroException>()
             .having((e) => e.status, 'status', Status.capability)
-            .having((e) => e.field, 'field', 'provider'),
+            .having((e) => e.field, 'field', 'ephemeris')
+            .having((e) => e.hint, 'hint', contains('builtin')),
       ),
     );
     expect(

@@ -209,11 +209,17 @@ test('positions come back in the frame asked for, decoded on first use', () => {
   });
   assert.deepEqual(Buffer.from(again.bytes), Buffer.from(positions.bytes));
 
-  // Without an ephemeris the call is a missing capability, named.
+  // Without an ephemeris the call is a missing capability naming the
+  // option a consumer sets -- `ephemeris`, which this binding spells the
+  // way the other two do, and not the C entry point they have no access
+  // to. The hint says what to pass, so the refusal is actionable here.
   const bare = new Context({});
   assert.throws(
     () => bare.positions({ instants: [2451545.0], bodies: [Body.Sun] }),
-    (error) => error.status === 'capability' && error.field === 'provider',
+    (error) =>
+      error.status === 'capability' &&
+      error.field === 'ephemeris' &&
+      error.hint.includes('builtin'),
   );
   assert.throws(() => ctx.positions({ instants: [], bodies: [Body.Sun] }), TypeError);
   assert.throws(() => ctx.positions({ instants: [Number.NaN], bodies: [Body.Sun] }), TypeError);

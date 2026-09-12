@@ -318,6 +318,11 @@ class Positions(WithLibrary):
             with self.assertRaises(TeistroError) as caught:
                 bare.positions(instants=[2451545.0], bodies=[Body.SUN])
             self.assertEqual(caught.exception.status, Status.CAPABILITY)
+            # The field and the hint name the option this binding sets,
+            # not the C entry point it has no access to -- the same pair
+            # Node, Dart and C are held to.
+            self.assertEqual(caught.exception.field, "ephemeris")
+            self.assertIn("builtin", caught.exception.hint or "")
 
     def test_a_birth_with_no_time_is_refused_or_reported_never_guessed(self) -> None:
         day = date(Calendar.BIKRAM_SAMBAT, 2042, 9, 17)
