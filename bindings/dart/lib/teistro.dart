@@ -9,7 +9,9 @@
 ///
 /// ```dart
 /// final teistro = Teistro.open();
-/// final context = teistro.context(testProvider: true);
+/// final context = teistro.context(
+///   ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+/// );
 /// final sun = context.positions(
 ///   instants: [2451545.0],
 ///   bodies: [Body.sun],

@@ -13,7 +13,7 @@
 // the same sunrise. Founding them one at a time would give the same
 // numbers and pay the setup for every one of them.
 //
-// `testProvider: true` selects the analytic ephemeris the SDK carries,
+// `ephemeris: 'builtin'` selects the analytic ephemeris the SDK carries,
 // so this file runs anywhere.
 
 import { Calendar, ChartKind, Context, Graha, RashiById, at, date, ianaZone } from '../lib/index.js';
@@ -27,7 +27,7 @@ import { Calendar, ChartKind, Context, Graha, RashiById, at, date, ianaZone } fr
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  testProvider: true,
+  ephemeris: 'builtin',
 });
 
 // The record: a Bikram Sambat date, a place, and an hour nobody is sure

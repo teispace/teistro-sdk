@@ -39,7 +39,7 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass
 
-from teistro import Body, Calendar, Context, Teistro, at, date, iana_zone
+from teistro import Body, Calendar, Context, Ephemeris, Teistro, at, date, iana_zone
 from teistro.catalogue import Ayanamsha, Karana, Nakshatra, Tithi, Vara, Yoga
 
 NAKSHATRA_DEG = 360.0 / 27.0
@@ -133,7 +133,7 @@ def panchanga_at(ctx: Context, teistro: Teistro, instant: float, weekday: int) -
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # Nepali New Year: the first day of Baisakh, BS 2082.
         day = date(Calendar.BIKRAM_SAMBAT, 2082, 1, 1)

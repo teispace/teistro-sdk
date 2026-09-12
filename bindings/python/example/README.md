@@ -24,12 +24,13 @@ PYTHONPATH=. python3 example/birth_chart.py
 
 ## What these examples do not do
 
-They all use `test_provider=True`, the analytic provider the SDK carries,
-so that they run anywhere with no ephemeris to install. It is a smooth
-model: its positions are plausible and its motions are not. Nothing in it
-turns retrograde except the lunar node, which always is, and its
-positions are not an ephemeris's. Point the SDK at a real provider —
-`05` shows how — and every one of these programs is unchanged.
+They all name `Ephemeris.BUILTIN`, the analytic ephemeris the SDK carries,
+so that they run anywhere with nothing to install. It is the fallback and
+not the intended path: in most cases a consumer belongs on a real engine —
+Teimeris, Swiss Ephemeris — installed as its own package under its own
+licence and named the same way. Do that, or hand in an ephemeris of your own
+as [`your_own_ephemeris.py`](your_own_ephemeris.py) shows, and every one of
+these programs is unchanged, which is what the port is for.
 
 They also stop where the C boundary does. Houses, divisional charts,
 planetary states, aspects and dashas are computed by the SDK's Rust

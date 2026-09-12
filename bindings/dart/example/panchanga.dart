@@ -130,7 +130,7 @@ void main() {
   final ctx = teistro.context(
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // Nepali New Year: the first day of Baisakh, BS 2082.

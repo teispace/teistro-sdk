@@ -13,7 +13,7 @@ once, and the day each instant belongs to is reckoned against the same
 sunrise. Founding them one at a time would give the same numbers and pay
 the setup for every one of them.
 
-``test_provider=True`` selects the analytic ephemeris the SDK carries, so
+``Ephemeris.BUILTIN`` selects the analytic ephemeris the SDK carries, so
 this file runs anywhere.
 """
 
@@ -22,6 +22,7 @@ from __future__ import annotations
 from teistro import (
     Altitude,
     Calendar,
+    Ephemeris,
     Latitude,
     Longitude,
     Observer,
@@ -46,7 +47,7 @@ def main() -> None:
     # (`03-design/topocentric-measured.md`), so the analytic one below is
     # enough, and the steps printed at the end name it.
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # The record: a Bikram Sambat date, a place, and an hour nobody
         # is sure of. Everything below narrows the last of those.

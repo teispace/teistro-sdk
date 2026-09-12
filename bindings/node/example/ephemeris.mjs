@@ -17,10 +17,11 @@
 //    steps applied and a provenance envelope with the settings hash —
 //    the two things a cache key and an audit trail are made of.
 //
-// Honest about the provider: the SDK's analytic test provider is a smooth
-// model, so nothing in it ever turns retrograde except the lunar node,
-// which always is. The scan below therefore looks for **sign ingresses**,
-// which do occur, and shows where a retrograde scan would go.
+// `ephemeris: 'builtin'` computes with the analytic ephemeris the SDK
+// carries, so this file runs anywhere with nothing installed. It is the
+// fallback rather than the intended path — most consumers should be on a
+// real engine — but it is astronomy: the scans below find sign ingresses
+// and retrograde stations because the sky has them.
 
 import {
   Ayanamsha,
@@ -63,10 +64,27 @@ function ingresses(longitudes, dayCount, stride, column) {
   return found;
 }
 
+/**
+ * Every day on which a body turned, direct to retrograde or back.
+ *
+ * The same shape as `ingresses` over a different column: a station is a
+ * sign change in `lonSpeed` rather than in `lon`. One grid answers both,
+ * which is the reason to ask for a grid.
+ */
+function stations(speeds, dayCount, stride, column) {
+  const found = [];
+  for (let day = 1; day < dayCount; day++) {
+    const before = speeds[(day - 1) * stride + column];
+    const after = speeds[day * stride + column];
+    if (before < 0 !== after < 0) found.push([day, after < 0 ? 'retrograde' : 'direct']);
+  }
+  return found;
+}
+
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  testProvider: true,
+  ephemeris: 'builtin',
 });
 
 // ── Which build am I talking to? ───────────────────────────────────────
@@ -103,13 +121,14 @@ console.log('');
 for (const [column, [body, graha]] of BODIES.entries()) {
   const name = ctx.intl.entity(graha).name;
   const crossings = ingresses(cells.lon, DAYS, sky.bodyCount, column);
+  const turns = stations(cells.lonSpeed, DAYS, sky.bodyCount, column);
   const speed = cells.lonSpeed[column];
   const direction = speed < 0 ? 'retrograde' : 'direct';
   const key = body.split('.').at(-1);
   console.log(
     `  ${key.padEnd(10)} ${name.padEnd(8)} ${direction.padEnd(10)} at` +
       ` ${speed >= 0 ? '+' : ''}${speed.toFixed(4).padStart(7)}°/day,` +
-      ` ${crossings.length} sign change(s)`,
+      ` ${crossings.length} sign change(s), ${turns.length} station(s)`,
   );
   for (const [day, sign] of crossings.slice(0, 3)) {
     console.log(
@@ -118,12 +137,10 @@ for (const [column, [body, graha]] of BODIES.entries()) {
     );
   }
   if (crossings.length > 3) console.log(`      … and ${crossings.length - 3} more`);
+  for (const [day, into] of turns) {
+    console.log(`      day ${String(day).padStart(3)}  turns  ${into}`);
+  }
 }
-
-// The node is the only body here that ever moves backwards, and it always
-// does. A real ephemeris would put Mars into retrograde for about ten
-// weeks every two years, and the scan for it is the same shape as the one
-// above, over `cells.lonSpeed` instead of `cells.lon`.
 
 // ── What the answer says about itself ──────────────────────────────────
 console.log('');

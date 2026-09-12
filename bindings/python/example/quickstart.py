@@ -4,7 +4,7 @@
 from what the binding does.
 """
 
-from teistro import Body, Calendar, Teistro, at, date, iana_zone, intl
+from teistro import Body, Calendar, Ephemeris, Teistro, at, date, iana_zone, intl
 
 
 def main() -> None:
@@ -12,7 +12,7 @@ def main() -> None:
     print(f"Teistro {teistro.version}, ABI {teistro.abi}")
 
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # 14 April 2015 is 1 Baisakh 2072 BS.
         bs = ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)

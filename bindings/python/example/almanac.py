@@ -16,7 +16,7 @@ What the shape teaches, and what a reader should copy:
   * A value a day may not have is **absent**, never a sentinel: no
     sankranti is `None`, not Julian day zero.
 
-``test_provider=True`` selects the analytic ephemeris the SDK carries, so
+``Ephemeris.BUILTIN`` selects the analytic ephemeris the SDK carries, so
 this file runs anywhere.
 """
 
@@ -27,6 +27,7 @@ from typing import Any
 from teistro import (
     Altitude,
     Calendar,
+    Ephemeris,
     Latitude,
     Longitude,
     Observer,
@@ -49,7 +50,7 @@ def clock(jd: float) -> str:
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="parashari-classical", locale="ne-Deva-NP", test_provider=True
+        profile="parashari-classical", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
 
         def name(key: str) -> str:

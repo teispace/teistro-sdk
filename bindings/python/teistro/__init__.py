@@ -8,10 +8,10 @@ know: where the shared library is, defaults, JSON in and out, and the
 small conveniences a decoded result deserves.
 
 ```python
-from teistro import Teistro, Body
+from teistro import Body, Ephemeris, Teistro
 
 teistro = Teistro.open()
-with teistro.context(test_provider=True) as sky:
+with teistro.context(ephemeris=Ephemeris.BUILTIN) as sky:
     sun = sky.positions(instants=[2451545.0], bodies=[Body.SUN]).at(0, 0)
     print(sun.longitude)
 ```

@@ -11,7 +11,7 @@ void main() {
   final ctx = teistro.context(
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // 14 April 2015 is 1 Baisakh 2072 BS.

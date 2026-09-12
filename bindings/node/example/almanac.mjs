@@ -16,7 +16,7 @@
 //   * A value a day may not have is **absent**, never a sentinel: no
 //     sankranti is `null`, not Julian day zero.
 //
-// `testProvider: true` selects the analytic ephemeris the SDK carries,
+// `ephemeris: 'builtin'` selects the analytic ephemeris the SDK carries,
 // so this file runs anywhere.
 
 import { Calendar, Context, date, ianaZone } from '../lib/index.js';
@@ -24,7 +24,7 @@ import { Calendar, Context, date, ianaZone } from '../lib/index.js';
 const ctx = new Context({
   profile: 'parashari-classical',
   locale: 'ne-Deva-NP',
-  testProvider: true,
+  ephemeris: 'builtin',
 });
 
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

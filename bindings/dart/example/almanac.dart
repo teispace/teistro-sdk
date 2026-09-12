@@ -16,7 +16,7 @@
 //   * A value a day may not have is **absent**, never a sentinel: no
 //     sankranti is `null`, not Julian day zero.
 //
-// `testProvider: true` selects the analytic ephemeris the SDK carries,
+// `Ephemeris.builtin` selects the analytic ephemeris the SDK carries,
 // so this file runs anywhere.
 
 import 'package:teistro/teistro.dart';
@@ -37,7 +37,7 @@ void main() {
   final ctx = teistro.context(
     profile: 'parashari-classical',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // A locale pack names most of the catalogue and not all of it: `masa`

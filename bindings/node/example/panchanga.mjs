@@ -102,7 +102,7 @@ const two = (value) => String(value).padStart(2, '0');
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  testProvider: true,
+  ephemeris: 'builtin',
 });
 
 // Nepali New Year: the first day of Baisakh, BS 2082.

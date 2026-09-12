@@ -13,7 +13,7 @@
 // the same sunrise. Founding them one at a time would give the same
 // numbers and pay the setup for every one of them.
 //
-// `testProvider: true` selects the analytic ephemeris the SDK carries,
+// `Ephemeris.builtin` selects the analytic ephemeris the SDK carries,
 // so this file runs anywhere.
 
 import 'package:teistro/teistro.dart';
@@ -31,7 +31,7 @@ void main() {
   final ctx = teistro.context(
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // The record: a Bikram Sambat date, a place, and an hour nobody is
