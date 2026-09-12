@@ -41,6 +41,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         .arg("-L")
         .arg(&library)
         .arg("-lteistro_ffi")
+        .args(crate::binding::C_LINK_FLAGS)
         .status();
     match compiled {
         Ok(status) if status.success() => {}

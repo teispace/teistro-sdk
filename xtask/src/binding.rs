@@ -12,6 +12,19 @@ use crate::platform::Platform;
 /// artefacts.
 pub(crate) const LIBRARY_STEM: &str = "teistro_ffi";
 
+/// What a C consumer must link beside the SDK's own library.
+///
+/// **`-lm`**, because the astronomy calls `sin`, `atan2` and the rest,
+/// and on Linux and MinGW the maths functions live in a separate `libm`
+/// that the linker will not pull in by itself. On macOS they are in
+/// libSystem and the flag is a harmless no-op — which is exactly why
+/// this was missing: every gate that ran locally passed, and three of
+/// the five platforms in the nightly matrix could not link at all.
+///
+/// Read by both C gates and stated in `bindings/c/README.md`, so the
+/// line a consumer is told to run is the line the gates run.
+pub(crate) const C_LINK_FLAGS: [&str; 1] = ["-lm"];
+
 /// Cargo, as the environment names it.
 pub(crate) fn cargo() -> String {
     std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"))

@@ -28,13 +28,21 @@ teistro-c-0.1.0-linux-x64/
 
 ```sh
 cc -std=c11 -Iteistro-c-0.1.0-linux-x64/include app.c \
-   teistro-c-0.1.0-linux-x64/lib/libteistro_ffi.a -o app
+   teistro-c-0.1.0-linux-x64/lib/libteistro_ffi.a -lm -o app
 ```
 
-or against the shared library with `-L .../lib -lteistro_ffi`. Both are
-compiled and run by `cargo xtask check-package` on every platform before
-a release is published, out of the unpacked bundle and against this same
-smoke test.
+or against the shared library with `-L .../lib -lteistro_ffi -lm`.
+
+**`-lm` is not optional on Linux or MinGW.** The astronomy calls `sin`,
+`atan2` and the rest, and those live in a separate `libm` there which the
+linker will not pull in by itself; on macOS they are in libSystem and the
+flag does nothing. Omitting it is a page of `undefined reference` at link
+time and nothing at all at compile time.
+
+Both lines are compiled and run by `cargo xtask check-package` on every
+platform before a release is published, out of the unpacked bundle and
+against this same smoke test — with the same flags this page gives, so
+the instruction and the gate cannot drift apart.
 
 Every archive's SHA-256 is in `checksums.txt` on the release, in the
 format `sha256sum -c` reads, and `manifest.json` carries the digest of
