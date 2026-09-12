@@ -19,7 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::binding::{LIBRARY_STEM, present, step};
+use crate::binding::{LIBRARY_STEM, StaticLink, present, step};
 use crate::package;
 use crate::platform::{NPM_SCOPE, Platform};
 use crate::release;
@@ -93,29 +93,36 @@ fn c_consumer(
         }
     }
 
-    // Asked once, used by both link lines: the toolchain's own answer
-    // for what `libteistro_ffi.a` needs beside it.
-    let link_flags = crate::binding::c_link_flags(root);
     let smoke = root.join("bindings/c/tests/smoke.c");
-    let statically = into.join("smoke-static");
-    step(
-        Command::new(&cc)
-            .args(["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"])
-            .arg("-I")
-            .arg(&include)
-            .arg("-o")
-            .arg(&statically)
-            .arg(&smoke)
-            .arg(lib.join(platform.static_library(LIBRARY_STEM)))
-            .args(&link_flags),
-        "",
-        "the C bundle's static library does not link",
-    )?;
-    step(
-        &mut Command::new(&statically),
-        "the C bundle links statically and answers",
-        "the C bundle's static build did not pass",
-    )?;
+    match crate::binding::static_link(platform) {
+        StaticLink::With(beside) => {
+            let statically = into.join("smoke-static");
+            step(
+                Command::new(&cc)
+                    .args(["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"])
+                    .arg("-I")
+                    .arg(&include)
+                    .arg("-o")
+                    .arg(&statically)
+                    .arg(&smoke)
+                    .arg(lib.join(platform.static_library(LIBRARY_STEM)))
+                    .args(beside),
+                "",
+                "the C bundle's static library does not link",
+            )?;
+            step(
+                &mut Command::new(&statically),
+                "the C bundle links statically and answers",
+                "the C bundle's static build did not pass",
+            )?;
+        }
+        // Said, not skipped in silence: the bundle still ships the
+        // static library and a consumer with the matching compiler
+        // links it, but this gate's `cc` is not that compiler.
+        StaticLink::Refused(why) => {
+            println!("skip  the C bundle's static library, with `{cc}`: {why}");
+        }
+    }
 
     let dynamically = into.join("smoke-shared");
     step(
@@ -126,10 +133,7 @@ fn c_consumer(
             .arg("-o")
             .arg(&dynamically)
             .arg(&smoke)
-            .arg("-L")
-            .arg(&lib)
-            .arg("-lteistro_ffi")
-            .args(&link_flags),
+            .args(crate::binding::shared_link(platform, &lib)),
         "",
         "the C bundle's shared library does not link",
     )?;

@@ -3,6 +3,7 @@
 //! their decoders read. `check-c`, `check-node` and `check-dart` differ
 //! only in the toolchain they drive, so everything else is here once.
 
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -12,72 +13,77 @@ use crate::platform::Platform;
 /// artefacts.
 pub(crate) const LIBRARY_STEM: &str = "teistro_ffi";
 
-/// The native libraries a C consumer must link beside the SDK's own,
-/// **as the toolchain reports them**.
+/// How a C compiler is pointed at the SDK's **shared** library in `dir`.
 ///
-/// Not a list written here. `libteistro_ffi.a` carries Rust's standard
-/// library, and what that needs is a property of the target and the
-/// toolchain version: `-lm` on Linux and MinGW where the maths functions
-/// are separate, and on Windows some thirty more — `ws2_32`, `userenv`,
-/// `ntdll`, `__chkstk`. A list copied from one toolchain is a list that
-/// is wrong for another, and a list written from memory is a guess in a
-/// consumer's link line.
+/// On Unix the two arguments a consumer writes, `-L <dir>
+/// -lteistro_ffi`; on Windows the import library by path. A shared
+/// library resolves its own imports, so neither needs anything else —
+/// not `-lm`, not the Windows import libraries, whatever the toolchain
+/// reports for the *static* library.
 ///
-/// So the compiler is asked. `rustc --print native-static-libs` answers
-/// for the build in front of it, which is the same answer
-/// `bindings/c/README.md` tells a consumer to get.
-///
-/// **Asked in a target directory of its own**, and that was a defect
-/// before it was a comment: `cargo rustc --crate-type staticlib`
-/// rebuilds the crate with its crate-type overridden, which removed the
-/// shared library the gate had just built and was about to link. It
-/// passed locally, where both artefacts happened to be present, and
-/// failed `check-c` on every platform in the matrix. A probe that
-/// disturbs what it is probing for is worse than no probe.
-///
-/// Falls back to `-lm` alone when the question cannot be asked, because
-/// that is the one flag every non-macOS platform certainly needs and a
-/// gate that silently linked nothing extra is how this was missed for
-/// days.
-pub(crate) fn c_link_flags(root: &Path) -> Vec<String> {
-    let asked = Command::new("cargo")
-        .args([
-            "rustc",
-            "-q",
-            "-p",
-            "teistro-ffi",
-            "--crate-type",
-            "staticlib",
-            "--",
-            "--print",
-            "native-static-libs",
-        ])
-        .env("CARGO_TARGET_DIR", root.join("target/dist/link-probe"))
-        .current_dir(root)
-        .output();
-    let Ok(output) = asked else {
-        return vec![String::from("-lm")];
-    };
-    let said = String::from_utf8_lossy(&output.stderr);
-    let Some(line) = said
-        .lines()
-        .find_map(|line| line.split_once("native-static-libs:"))
-        .map(|(_, tail)| tail)
-    else {
-        return vec![String::from("-lm")];
-    };
-    // Deduplicated, order kept: rustc repeats a library that more than
-    // one crate asked for, and a linker does not need it twice.
-    let mut seen = std::collections::BTreeSet::new();
-    let flags: Vec<String> = line
-        .split_whitespace()
-        .filter(|flag| seen.insert((*flag).to_string()))
-        .map(str::to_string)
-        .collect();
-    if flags.is_empty() {
-        return vec![String::from("-lm")];
+/// Windows is not a variation for neatness. `-l<stem>` makes the linker
+/// search, and beside `teistro_ffi.dll.lib` in the same directory sits
+/// `teistro_ffi.lib` — the **static** library — which GNU ld finds
+/// first. That silently turned `check-c` into a static link of Rust's
+/// whole standard library, built for the MSVC ABI, driven by the
+/// runner's MinGW gcc: `undefined reference to __chkstk`, to
+/// `__imp_NtReadFile`, and to `??_7type_info@@6B@`, which lives in the
+/// MSVC C++ runtime that MinGW does not have. No set of `-l` flags
+/// closes that — the two ABIs do not meet — and chasing it with flags
+/// is what three failed attempts at this were. The import library is
+/// what a Windows consumer links under either compiler, so it is what
+/// the gates link.
+pub(crate) fn shared_link(platform: &Platform, dir: &Path) -> Vec<OsString> {
+    match platform.import_library(LIBRARY_STEM) {
+        Some(import) => vec![dir.join(import).into_os_string()],
+        None => vec![
+            OsString::from("-L"),
+            dir.as_os_str().to_os_string(),
+            OsString::from(format!("-l{LIBRARY_STEM}")),
+        ],
     }
-    flags
+}
+
+/// Whether a C consumer on this platform can link the **static**
+/// library, and what they must link beside it.
+///
+/// `libteistro_ffi.a` carries Rust's standard library as object code,
+/// and an archive records nothing about what it needs, so the caller's
+/// link line has to say.
+///
+/// **`-lm`**, because the astronomy calls `sin`, `atan2` and the rest,
+/// and on Linux the maths functions live in a separate `libm` the
+/// linker will not pull in by itself. On macOS they are in libSystem
+/// and the flag is a harmless no-op — which is exactly why this was
+/// missing for two days: every gate that ran locally passed.
+///
+/// **Refused on Windows.** The Rust target is `x86_64-pc-windows-msvc`,
+/// so `teistro_ffi.lib` is MSVC-ABI object code that wants the MSVC C++
+/// runtime; the `cc` on the runner, and on most Windows machines
+/// without Visual Studio's environment loaded, is MinGW's gcc. Linking
+/// the two is not a missing flag, and a gate that pretends otherwise
+/// fails with a page of mangled symbols. `cl` links it; `gcc` does not.
+///
+/// Stated on `bindings/c/README.md`, so the line a consumer is told to
+/// run is the line the gates run.
+pub(crate) fn static_link(platform: &Platform) -> StaticLink {
+    if platform.is_windows() {
+        StaticLink::Refused(
+            "teistro_ffi.lib is MSVC-ABI object code; link it with `cl`, \
+             or link teistro_ffi.dll.lib against the DLL instead",
+        )
+    } else {
+        StaticLink::With(&["-lm"])
+    }
+}
+
+/// What [`static_link`] answers: the libraries to link beside the static
+/// one, or why this platform's C compiler cannot link it at all.
+pub(crate) enum StaticLink {
+    /// Linkable, with these libraries beside it.
+    With(&'static [&'static str]),
+    /// Not linkable by this platform's `cc`, for this reason.
+    Refused(&'static str),
 }
 
 /// Cargo, as the environment names it.
@@ -146,4 +152,82 @@ pub(crate) fn blob_fixtures(root: &Path, into: &Path) -> Result<(), ()> {
         "",
         "the blob fixtures did not build",
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::{LIBRARY_STEM, StaticLink, shared_link, static_link};
+    use crate::platform::PLATFORMS;
+
+    /// The defect this pair of functions exists to stop: a link line
+    /// that means the shared library and names the static one. On
+    /// Windows the two live in the same directory under names a
+    /// searching linker cannot tell apart by intent, so the check is
+    /// that no shared link line mentions the static library's file name
+    /// anywhere in it.
+    #[test]
+    fn a_shared_link_never_names_the_static_library() {
+        for platform in PLATFORMS {
+            let line = shared_link(&platform, Path::new("/lib"));
+            let joined = line
+                .iter()
+                .map(|argument| argument.to_string_lossy().into_owned())
+                .collect::<Vec<_>>()
+                .join(" ");
+            assert!(
+                !joined.contains(&platform.static_library(LIBRARY_STEM)),
+                "the shared link line for {} names the static library: {joined}",
+                platform.name()
+            );
+            match platform.import_library(LIBRARY_STEM) {
+                // A platform that ships an import library links through
+                // it, by path. `-l` would search, and searching is the
+                // defect: it finds the static library first.
+                Some(import) => assert!(
+                    joined.contains(&import),
+                    "{} ships {import} and the shared link line does not use it: {joined}",
+                    platform.name()
+                ),
+                None => assert!(
+                    joined.contains(&format!("-l{LIBRARY_STEM}")),
+                    "the shared link line for {} names no library at all: {joined}",
+                    platform.name()
+                ),
+            }
+        }
+    }
+
+    /// Windows is the exception and is the only one: the release builds
+    /// `*-windows-msvc` and the gate's `cc` is MinGW's gcc, so the
+    /// archive cannot be linked there. Every other platform's `cc` and
+    /// Rust target share an ABI, and a refusal there would be a gate
+    /// quietly proving less than it says.
+    #[test]
+    fn only_windows_refuses_the_static_link() {
+        for platform in PLATFORMS {
+            match static_link(&platform) {
+                StaticLink::With(beside) => {
+                    assert!(
+                        !platform.is_windows(),
+                        "Windows cannot link an MSVC archive with MinGW's gcc"
+                    );
+                    assert!(
+                        beside.contains(&"-lm"),
+                        "{} links an archive of the astronomy without libm",
+                        platform.name()
+                    );
+                }
+                StaticLink::Refused(why) => {
+                    assert!(
+                        platform.is_windows(),
+                        "{} refuses the static link, and only Windows should: {why}",
+                        platform.name()
+                    );
+                    assert!(!why.is_empty(), "a refusal with no reason");
+                }
+            }
+        }
+    }
 }

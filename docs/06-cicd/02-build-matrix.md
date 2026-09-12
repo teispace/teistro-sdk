@@ -81,7 +81,9 @@ release workflow never passes it.
 what it built into three throwaway projects under `target/dist/check`:
 
 - the C bundle unpacked, `bindings/c/tests/smoke.c` compiled against its
-  header and linked both statically and dynamically, and run;
+  header and linked both statically and dynamically, and run — the
+  static half only where this platform's `cc` can link an archive built
+  for the Rust target's ABI, which is everywhere but Windows;
 - both npm packages packed with `npm pack` exactly as `npm publish` would,
   installed into an empty project, and
   [`consumer.mjs`](../../bindings/node/packaging/consumer.mjs) run there —
@@ -97,11 +99,23 @@ Sambat date, the resolved instant and zone, the rendered Nepali message,
 and the Sun's longitude at J2000 — so a package that loads but answers
 differently fails here rather than in the field.
 
-On Windows the C step skips: the bundle is built with MSVC and the gate
-drives a `cc`-style compiler, which the runner does not have in a form
-that links an MSVC `.lib`. The Windows bundle is therefore built and
-recorded but not compiled against, which is the one gap in this gate;
-the Node and Dart packages are proved there like everywhere else.
+On Windows the C step proves half of that, and says which half. The
+bundle is built for `x86_64-pc-windows-msvc` while the `cc` the gate
+drives is the runner's MinGW gcc, and the two ABIs meet in the import
+library but not in the static one: `teistro_ffi.dll.lib` links and runs
+there like anywhere else, and `teistro_ffi.lib` — MSVC object code
+carrying Rust's standard library, which wants the MSVC C++ runtime —
+does not, on `__chkstk`, `__imp_NtReadFile` and `??_7type_info@@6B@`.
+No set of `-l` flags closes that, so the gate prints the reason it is
+skipping rather than pretending, and linking the Windows static library
+under `cl` is the one gap left in this gate. The Node and Dart packages
+are proved there like everywhere else.
+
+The same mismatch is why `check-c` links the shared library by path on
+Windows rather than by `-lteistro_ffi`: a searching linker finds
+`teistro_ffi.lib` beside `teistro_ffi.dll.lib` and takes the static one,
+turning a shared link into the link that cannot work. `binding::shared_link`
+is the one place either gate decides that.
 
 This is the only thing that tests the packages rather than the code in
 them. A test that imports `../lib/index.js` cannot catch an export left
