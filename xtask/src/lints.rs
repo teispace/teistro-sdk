@@ -778,6 +778,12 @@ fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
 /// The same shape as `knob-has-a-reader` and the parity runners' list:
 /// a description that claims to be the only one, read by generators
 /// that each keep a copy.
+///
+/// A matrix row that names no `platform` is not covered, and that is
+/// deliberate rather than an oversight: `hash-matrix.yml` chooses
+/// runners to compare two architectures and two operating systems, in
+/// Rust's own arch vocabulary (`linux-x86_64`), and which runners those
+/// are is that workflow's decision and not the shipping table's.
 fn platform_runners(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "runner-matches-the-platform-table";
     for path in workflows(root) {
