@@ -17,7 +17,7 @@
 //    catalogue's own members and the locale's own names.
 //
 // What it does not need: an ephemeris of your own, a data file, a
-// network, or a second library. `ephemeris: Ephemeris.builtin` selects
+// network, or a second library. `ephemeris: [NamedEphemeris(Ephemeris.builtin)]` selects
 // the one the SDK carries, so every position below is a real sky and
 // this file runs anywhere the package installs.
 
@@ -109,7 +109,7 @@ void main() {
   final ctx = teistro.context(
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    ephemeris: Ephemeris.builtin,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // ── 1. The record, as it would be written on a form ─────────────────
@@ -199,7 +199,7 @@ void main() {
     final scoped = teistro.context(
       profile: 'nepali-default',
       locale: 'ne-Deva-NP',
-      ephemeris: Ephemeris.builtin,
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
       settings:
           policy == null
               ? null

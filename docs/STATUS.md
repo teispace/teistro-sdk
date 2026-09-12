@@ -554,15 +554,24 @@ provider's DUT1).
    nothing yet holds them against a compiler, though all three were run
    by hand against the engine.
 
-   **And the plugin surface is not yet ADR-0029's, which is recorded in
-   that ADR rather than left to be noticed.** It decided a *descriptor* —
-   `teimeris({ dataDir })`, a value the adapter's package exports — and an
-   ordered fallback chain, and explicitly rejected naming a path. What
-   ships is `plugin` + `pluginConfig`, which is the **primitive
-   underneath** a descriptor: a descriptor is exactly the binary its own
-   package ships plus its configuration. Both gaps have one cause — there
-   is no package to import a descriptor from. `plugin` must not survive
-   as a second spelling once there is, and ADR-0029 now says so.
+   **And the plugin surface is ADR-0029's**, after one commit where it
+   was not. `plugin` and `pluginConfig` — a path, which that ADR rejected
+   for four stated reasons, and no chain — are folded into one option:
+   `ephemeris` takes an entry or an **ordered chain** of them, tried in
+   order. An entry is a name of the SDK's own or an adapter's descriptor,
+   spelled each language's way: a plain object in Node, a `Plugin`
+   dataclass in Python, a **sealed** `EphemerisChoice` in Dart so the
+   switch that opens one is exhaustive.
+
+   **A chain of one is not a chain**, and that was a defect before it was
+   a rule. The first version caught every refusal to try the next entry,
+   so a bad *profile* — not an ephemeris failure, and identical on every
+   entry — came back as "nothing could be opened" instead of a refusal
+   carrying its status, its field and its hint. **An existing Dart test
+   caught it**, which is the memory's own rule earning itself again: a
+   refactor that reddens a test has found either a bug or a contract.
+   With one entry nothing is caught; with more, every refusal is kept and
+   reported together.
 
    **Next:** those adapter packages — `@teistro/ephemeris-teimeris` and
    its Dart and Python siblings, each declaring AGPL-3.0, shipping a

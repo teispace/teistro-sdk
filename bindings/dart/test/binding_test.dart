@@ -500,7 +500,10 @@ void _engineTests() {
       markTestSkipped('the adapter is not built in this checkout');
       return;
     }
-    final ctx = teistro.context(profile: 'parashari-classical', plugin: plugin);
+    final ctx = teistro.context(
+      profile: 'parashari-classical',
+      ephemeris: [PluginEphemeris(plugin: plugin)],
+    );
     addTearDown(ctx.dispose);
     final sky = ctx.positions(instants: [2451545.0], bodies: [Body.sun]);
     // The Sun at J2000 is near 280.4°, which is astronomy rather than
@@ -514,22 +517,47 @@ void _engineTests() {
     );
   });
 
-  /// Three ways to answer one question, so two together is a refusal
-  /// rather than one silently winning. Needs no adapter.
-  test('a plugin and a named ephemeris together are refused', () {
-    expect(
-      () => teistro.context(
-        plugin: '/nowhere/adapter.so',
-        ephemeris: Ephemeris.builtin,
-      ),
-      throwsA(predicate((e) => '$e'.contains('give one of them'))),
+  /// A chain is **ordered and explicit** (ADR-0029): tried in order, and
+  /// a refusal names every entry that failed rather than only the last,
+  /// which would hide the one the caller actually wanted. Needs no
+  /// adapter.
+  test('an ephemeris chain is tried in order and refuses naming each', () {
+    // An adapter that is not there, then the built-in: the fallback the
+    // caller wrote down.
+    final fellBack = teistro.context(
+      profile: 'parashari-classical',
+      ephemeris: const [
+        PluginEphemeris(plugin: '/nowhere/adapter.so'),
+        NamedEphemeris(Ephemeris.builtin),
+      ],
     );
+    addTearDown(fellBack.dispose);
+    expect(
+      fellBack
+          .positions(instants: [2451545.0], bodies: [Body.sun])
+          .at(0, 0)
+          .longitude,
+      closeTo(280.37, 0.5),
+    );
+
+    // Nothing in the chain opening is one refusal that names each.
     expect(
       () => teistro.context(
-        pluginConfig: const {'data_dir': '/x'},
-        testProvider: true,
+        ephemeris: const [
+          PluginEphemeris(plugin: '/a.so'),
+          PluginEphemeris(plugin: '/b.so'),
+        ],
       ),
-      throwsA(predicate((e) => '$e'.contains('name one with `plugin`'))),
+      throwsA(
+        predicate((e) => '$e'.contains('/a.so') && '$e'.contains('/b.so')),
+      ),
+    );
+
+    // A chain of none names nothing, which is a mistake rather than a
+    // default.
+    expect(
+      () => teistro.context(ephemeris: const []),
+      throwsA(predicate((e) => '$e'.contains('names nothing'))),
     );
   });
 

@@ -1493,72 +1493,47 @@ export class Context {
    *   is what `defaultProfile()` names
    * @param {object} [options.settings] a settings patch over the profile
    * @param {string} [options.locale] the locale every render resolves from
-   * @param {'none'|'builtin'|'test'} [options.ephemeris] which of the
-   *   SDK's own ephemerides to use: `builtin` is the analytic ephemeris
-   *   the SDK carries, which needs no files, no network and no licence
-   *   beyond the SDK's own, and is what lets a chart compute with
-   *   nothing else installed; `test` is the test provider, whose
-   *   positions are **not astronomy**
+   * @param {EphemerisChoice|readonly EphemerisChoice[]} [options.ephemeris]
+   *   which ephemeris to compute with, or an **ordered chain** of them,
+   *   tried in order (ADR-0029).
+   *
+   *   An entry is an adapter's own descriptor — what
+   *   `@teistro/ephemeris-teimeris` and its like export, carrying the
+   *   platform binary they ship and their own configuration — or one of
+   *   the SDK's own by name: `builtin` is the analytic ephemeris the SDK
+   *   carries, which needs no files, no network and no licence beyond
+   *   the SDK's own; `test` is the test provider, whose positions are
+   *   **not astronomy**.
+   *
+   *   A chain is a caller **saying** they will accept the fallback. One
+   *   entry is one entry: a context asked for an engine and given the
+   *   built-in without being told is the silence this refuses.
    * @param {boolean} [options.testProvider] the older spelling of
    *   `ephemeris: 'test'`; `ephemeris` wins when both are given
    * @param {object} [options.provider] an ephemeris of your own: `name`,
    *   `bodies` (their catalogue keys) and `positions(request)`, which
    *   answers with the columns; everything else has a default
-   * @param {string} [options.plugin] the platform binary of an ephemeris
-   *   adapter — Teimeris, Swiss Ephemeris — which is the path a consumer
-   *   is on in most cases (ADR-0029). The SDK's own ephemerides are the
-   *   fallback, not the intended one.
-   * @param {object} [options.pluginConfig] that adapter's own options.
-   *   What they mean is the adapter's to say and its package's to type;
-   *   the SDK hands them over as JSON and reads none of them.
    */
   constructor(options = {}) {
-    const {
-      profile,
-      settings,
-      locale,
-      ephemeris,
-      testProvider = false,
-      provider,
-      plugin,
-      pluginConfig,
-    } = options;
-    // Three ways to answer one question, so two of them together is a
-    // refusal rather than one silently winning. The same rule the
-    // settings patch has: give one of them.
-    if (plugin !== undefined && (provider !== undefined || ephemeris !== undefined)) {
+    const { profile, settings, locale, ephemeris, testProvider = false, provider } = options;
+    // Two ways to answer one question, so both together is a refusal
+    // rather than one silently winning — the rule the settings patch
+    // has.
+    if (provider !== undefined && ephemeris !== undefined) {
       throw new TypeError(
-        'plugin, provider and ephemeris each name the ephemeris to compute with; give one of them',
+        'provider and ephemeris each name the ephemeris to compute with; give one of them',
       );
     }
-    if (pluginConfig !== undefined && plugin === undefined) {
-      throw new TypeError('pluginConfig configures a plugin; name one with `plugin`');
-    }
+    const chain = ephemerisChain(ephemeris, testProvider);
     const [info, positions, thrown] = describeProvider(provider);
     this.#thrown = thrown;
-    const chosen = clean({
-      // One rule, written once: a named ephemeris wins, and the
-      // older flag decides only when none was named (ADR-0028).
+    const settled = clean({
       flags: 0,
-      ephemeris: ephemeris ?? (testProvider ? 'test' : 'none'),
       profile,
       settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
       locale,
     });
-    this.#inner = guarded(null, () => {
-      if (plugin === undefined) {
-        return new native.Context(chosen, info, positions);
-      }
-      // The context takes its own reference to the adapter, so the
-      // handle this loads is freed at once: what keeps the library
-      // loaded is the context, and a consumer never holds either.
-      const loaded = new native.Provider(plugin, JSON.stringify(pluginConfig ?? {}));
-      try {
-        return native.Context.newWithProvider(chosen, loaded);
-      } finally {
-        loaded.dispose();
-      }
-    });
+    this.#inner = guarded(null, () => open(chain, settled, info, positions));
 
     // The areas, built once and never rebuilt: each holds the one way in
     // and nothing else, so a consumer may destructure one and keep it
@@ -1682,6 +1657,92 @@ export class Context {
    */
   [Symbol.dispose]() {
     this.dispose();
+  }
+}
+
+/**
+ * One entry of an ephemeris chain, normalised: either a name of the
+ * SDK's own or a loaded adapter.
+ *
+ * @typedef {'none'|'builtin'|'test'|{ plugin: string, config?: object }} EphemerisChoice
+ */
+
+/**
+ * The chain as a list, however it was written.
+ *
+ * One entry is a list of one. A caller who wants a fallback writes the
+ * fallback down, which is what ADR-0029 means by never automatic.
+ *
+ * @param {EphemerisChoice|readonly EphemerisChoice[]|undefined} ephemeris
+ * @param {boolean} testProvider the older spelling of `'test'`
+ * @returns {readonly EphemerisChoice[]}
+ */
+function ephemerisChain(ephemeris, testProvider) {
+  // One rule, written once: a named ephemeris wins, and the older flag
+  // decides only when none was named (ADR-0028).
+  if (ephemeris === undefined) {
+    return [testProvider ? 'test' : 'none'];
+  }
+  const entries = Array.isArray(ephemeris) ? ephemeris : [ephemeris];
+  if (entries.length === 0) {
+    throw new TypeError('an ephemeris chain of none names nothing; give an entry or omit it');
+  }
+  for (const entry of entries) {
+    const named = typeof entry === 'string';
+    if (!named && (entry === null || typeof entry.plugin !== 'string')) {
+      throw new TypeError(
+        "an ephemeris is a name ('none', 'builtin', 'test') or an adapter's descriptor, " +
+          "which carries a `plugin` path; got " +
+          JSON.stringify(entry),
+      );
+    }
+  }
+  return entries;
+}
+
+/**
+ * Opens the context on the first entry of the chain that answers.
+ *
+ * **A chain of one is not a chain, so nothing is caught for it.** Found
+ * by an existing test: a bad *profile* is not an ephemeris failure, and
+ * catching it to try the next entry replaced a refusal carrying its
+ * status, its field and its hint with a bare "nothing could be opened".
+ * With one entry there is no next entry, so the refusal is the refusal.
+ *
+ * With more than one, **every refusal is kept and reported together**,
+ * because a chain that said only why its last entry failed would hide
+ * the one the caller actually wanted.
+ */
+function open(chain, settled, info, positions) {
+  if (chain.length === 1) {
+    return attempt(chain[0], settled, info, positions);
+  }
+  const refusals = [];
+  for (const entry of chain) {
+    try {
+      return attempt(entry, settled, info, positions);
+    } catch (refusal) {
+      refusals.push(`${typeof entry === 'string' ? entry : entry.plugin}: ${refusal.message}`);
+    }
+  }
+  throw new Error(
+    `no ephemeris in the chain could be opened:\n  ${refusals.join('\n  ')}`,
+  );
+}
+
+/** One entry of the chain, opened. */
+function attempt(entry, settled, info, positions) {
+  if (typeof entry === 'string') {
+    return new native.Context({ ...settled, ephemeris: entry }, info, positions);
+  }
+  // The context takes its own reference to the adapter, so the handle
+  // this loads is freed at once: what keeps the library loaded is the
+  // context, and a consumer never holds either.
+  const loaded = new native.Provider(entry.plugin, JSON.stringify(entry.config ?? {}));
+  try {
+    return native.Context.newWithProvider({ ...settled, ephemeris: 'none' }, loaded);
+  } finally {
+    loaded.dispose();
   }
 }
 

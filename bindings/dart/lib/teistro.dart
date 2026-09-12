@@ -188,80 +188,174 @@ final class Teistro {
   /// still works, with `ephemeris` winning when both are given
   /// (ADR-0028). With none of them the context has no ephemeris and
   /// positions answer `Status.capability`.
+  /// A context: settings, a locale and an ephemeris.
+  ///
+  /// `ephemeris` is an **ordered chain**, tried in order (ADR-0029). An
+  /// entry is an adapter's own descriptor — [PluginEphemeris], what a
+  /// package like `teistro_ephemeris_teimeris` exports, carrying the
+  /// platform binary it ships and its own configuration — or one of the
+  /// SDK's own by name, [NamedEphemeris].
+  ///
+  /// **A list even for one**, which Dart needs because it has no
+  /// untagged union, and which says the thing the ADR wants said: a
+  /// chain is a caller *saying* they will accept the fallback. A context
+  /// asked for an engine and given the built-in without being told is
+  /// the silence this refuses.
   Context context({
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
     EphemerisProvider? provider,
-    Ephemeris? ephemeris,
+    List<EphemerisChoice>? ephemeris,
     bool testProvider = false,
-    String? plugin,
-    Map<String, Object?>? pluginConfig,
   }) {
-    // Three ways to answer one question, so two of them together is a
-    // refusal rather than one silently winning.
-    if (plugin != null && (provider != null || ephemeris != null)) {
+    // Two ways to answer one question, so both together is a refusal
+    // rather than one silently winning.
+    if (provider != null && ephemeris != null) {
       throw ArgumentError(
-        'plugin, provider and ephemeris each name the ephemeris to compute '
-        'with; give one of them',
+        'provider and ephemeris each name the ephemeris to compute with; '
+        'give one of them',
       );
     }
-    if (pluginConfig != null && plugin == null) {
+    if (ephemeris != null && ephemeris.isEmpty) {
       throw ArgumentError(
-        'pluginConfig configures a plugin; name one with `plugin`',
+        'an ephemeris chain of none names nothing; give an entry or omit it',
       );
     }
     final host = provider == null ? null : HostProvider(library, provider);
+    // One rule, written once: a named ephemeris wins, and the older flag
+    // decides only when none was named (ADR-0028).
+    final chain =
+        ephemeris ??
+        <EphemerisChoice>[
+          NamedEphemeris(
+            testProvider && host == null ? Ephemeris.test : Ephemeris.none,
+          ),
+        ];
     try {
-      final options = ContextOptions(
-        flags: 0,
-        // One rule, written once: a named ephemeris wins, and the
-        // older flag decides only when none was named (ADR-0028).
-        ephemeris:
-            ephemeris ??
-            (testProvider && host == null ? Ephemeris.test : Ephemeris.none),
-        profile: profile,
-        settingsJson: settings == null ? null : jsonEncode(settings),
-        locale: locale,
-      );
-      if (plugin == null) {
+      // A chain of one is not a chain, so nothing is caught for it.
+      // Found by an existing test: a bad *profile* is not an ephemeris
+      // failure, and catching it to try the next entry replaced a
+      // refusal carrying its status, its field and its hint with a bare
+      // "nothing could be opened". With one entry there is no next
+      // entry, so the refusal is the refusal.
+      if (chain.length == 1) {
         return Context._(
           this,
-          TeistroContext(
-            library,
-            options: options,
-            provider: host?.vtable,
-            providerUserData: host?.userData,
-          ),
+          _open(chain.first, profile, settings, locale, host),
           host,
         );
       }
-      // The context takes its own reference to the adapter, so the handle
-      // this loads is disposed at once: what keeps the library loaded is
-      // the context, and a consumer holds neither.
-      final loaded = TeistroProvider(
-        library,
-        path: plugin,
-        configJson: jsonEncode(pluginConfig ?? const <String, Object?>{}),
-      );
-      try {
-        return Context._(
-          this,
-          TeistroContext.newWithProvider(
-            library,
-            options: options,
-            provider: loaded,
-          ),
-          host,
-        );
-      } finally {
-        loaded.dispose();
+      // With more than one, every refusal is kept and reported together,
+      // because a chain that said only why its last entry failed would
+      // hide the one the caller actually wanted.
+      final refusals = <String>[];
+      for (final entry in chain) {
+        try {
+          return Context._(
+            this,
+            _open(entry, profile, settings, locale, host),
+            host,
+          );
+        } on Object catch (refusal) {
+          refusals.add('${_names(entry)}: $refusal');
+        }
       }
+      throw StateError(
+        'no ephemeris in the chain could be opened:\n  ${refusals.join('\n  ')}',
+      );
     } on Object {
       host?.dispose();
       rethrow;
     }
   }
+
+  /// What one entry of the chain is called, for a refusal that names it.
+  static String _names(EphemerisChoice entry) => switch (entry) {
+    NamedEphemeris(:final name) => name.key,
+    PluginEphemeris(:final plugin) => plugin,
+  };
+
+  /// Opens the context on one entry of the chain.
+  TeistroContext _open(
+    EphemerisChoice entry,
+    String? profile,
+    Map<String, Object?>? settings,
+    String? locale,
+    HostProvider? host,
+  ) {
+    ContextOptions options(Ephemeris named) => ContextOptions(
+      flags: 0,
+      ephemeris: named,
+      profile: profile,
+      settingsJson: settings == null ? null : jsonEncode(settings),
+      locale: locale,
+    );
+    switch (entry) {
+      case NamedEphemeris(:final name):
+        return TeistroContext(
+          library,
+          options: options(name),
+          provider: host?.vtable,
+          providerUserData: host?.userData,
+        );
+      case PluginEphemeris(:final plugin, :final config):
+        // The context takes its own reference to the adapter, so the
+        // handle this loads is disposed at once: what keeps the library
+        // loaded is the context, and a consumer holds neither.
+        final loaded = TeistroProvider(
+          library,
+          path: plugin,
+          configJson: jsonEncode(config ?? const <String, Object?>{}),
+        );
+        try {
+          return TeistroContext.newWithProvider(
+            library,
+            options: options(Ephemeris.none),
+            provider: loaded,
+          );
+        } finally {
+          loaded.dispose();
+        }
+    }
+  }
+}
+
+/// One entry of an ephemeris chain (ADR-0029).
+///
+/// Sealed, so the two kinds are the two kinds: the switch that opens one
+/// is exhaustive and a third would not compile until it was handled.
+sealed class EphemerisChoice {
+  const EphemerisChoice();
+}
+
+/// One of the SDK's own ephemerides, by name.
+///
+/// `Ephemeris.builtin` is the analytic ephemeris the SDK carries, which
+/// needs no files, no network and no licence beyond the SDK's own;
+/// `Ephemeris.test` is the test provider, whose positions are **not
+/// astronomy**.
+final class NamedEphemeris extends EphemerisChoice {
+  const NamedEphemeris(this.name);
+
+  /// Which of the SDK's own.
+  final Ephemeris name;
+}
+
+/// An adapter's descriptor: the platform binary its package ships, and
+/// that adapter's own configuration.
+///
+/// What the configuration means is the adapter's to say and its
+/// package's to type; the SDK hands it over as JSON and reads none of
+/// it.
+final class PluginEphemeris extends EphemerisChoice {
+  const PluginEphemeris({required this.plugin, this.config});
+
+  /// The adapter's platform binary.
+  final String plugin;
+
+  /// That adapter's own options.
+  final Map<String, Object?>? config;
 }
 
 /// The engine's own operations, reached by the names it gives them.

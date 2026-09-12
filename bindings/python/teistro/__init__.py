@@ -294,6 +294,27 @@ def refuse_build(info: BuildInfo, *, named: bool) -> Optional[str]:
     return None
 
 
+@dataclass(frozen=True, slots=True)
+class Plugin:
+    """An adapter's descriptor: the platform binary its package ships,
+    and that adapter's own configuration.
+
+    What the configuration means is the adapter's to say and its
+    package's to type; the SDK hands it over as JSON and reads none of
+    it (ADR-0029).
+    """
+
+    plugin: str
+    """The adapter's platform binary."""
+    config: Optional[Mapping[str, object]] = None
+    """That adapter's own options."""
+
+
+EphemerisChoice = Ephemeris | Plugin
+"""One entry of an ephemeris chain: one of the SDK's own by name, or an
+adapter's descriptor."""
+
+
 class Teistro:
     """The SDK's shared library, opened once and shared by every context.
 
@@ -383,10 +404,8 @@ class Teistro:
         settings_json: Optional[str] = None,
         locale: Optional[str] = None,
         provider: Optional[EphemerisProvider] = None,
-        ephemeris: Optional[Ephemeris] = None,
+        ephemeris: Optional[EphemerisChoice | Sequence[EphemerisChoice]] = None,
         test_provider: bool = False,
-        plugin: Optional[str] = None,
-        plugin_config: Optional[Mapping[str, object]] = None,
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
 
@@ -403,12 +422,15 @@ class Teistro:
         chart compute with nothing else installed; `Ephemeris.TEST` is the
         test provider, whose positions are **not astronomy**.
 
-        `plugin` is the platform binary of an ephemeris adapter --
-        Teimeris, Swiss Ephemeris -- which is the path most consumers are
-        on (ADR-0029); the SDK's own ephemerides are the fallback rather
-        than the intended one. `plugin_config` is that adapter's own
-        options, handed over as JSON and read by the SDK not at all: what
-        they mean is the adapter's to say and its package's to type.
+        `ephemeris` is one entry or an **ordered chain**, tried in order
+        (ADR-0029). An entry is an adapter's own descriptor -- `Plugin`,
+        what a package like `teistro_ephemeris_teimeris` exports,
+        carrying the platform binary it ships and that adapter's own
+        configuration -- or one of the SDK's own by name.
+
+        A chain is a caller **saying** they will accept the fallback. One
+        entry is one entry: a context asked for an engine and given the
+        built-in without being told is the silence this refuses.
 
         `test_provider=True` is the older spelling of `Ephemeris.TEST` and
         still works; `ephemeris` wins when both are given (ADR-0028).
@@ -420,55 +442,85 @@ class Teistro:
                 "settings and settings_json are the same patch twice; "
                 "give one of them"
             )
-        # Three ways to answer one question, so two of them together is a
-        # refusal rather than one silently winning -- the same rule the
-        # settings patch has just above.
-        if plugin is not None and (provider is not None or ephemeris is not None):
+        # Two ways to answer one question, so both together is a refusal
+        # rather than one silently winning -- the same rule the settings
+        # patch has just above.
+        if provider is not None and ephemeris is not None:
             raise ValueError(
-                "plugin, provider and ephemeris each name the ephemeris to "
-                "compute with; give one of them"
-            )
-        if plugin_config is not None and plugin is None:
-            raise ValueError(
-                "plugin_config configures a plugin; name one with `plugin`"
+                "provider and ephemeris each name the ephemeris to compute "
+                "with; give one of them"
             )
         if settings is not None:
             settings_json = json.dumps(settings, separators=(",", ":"))
         host = None if provider is None else HostProvider(self.library, provider)
         # One rule, written once: a named ephemeris wins, and the older
         # flag decides only when none was named (ADR-0028).
-        chosen = ephemeris
-        if chosen is None:
-            chosen = Ephemeris.TEST if test_provider else Ephemeris.NONE
+        chain: list[EphemerisChoice]
+        if ephemeris is None:
+            chain = [Ephemeris.TEST if test_provider else Ephemeris.NONE]
+        elif isinstance(ephemeris, (Ephemeris, Plugin)):
+            chain = [ephemeris]
+        else:
+            chain = list(ephemeris)
+        if not chain:
+            raise ValueError(
+                "an ephemeris chain of none names nothing; give an entry or "
+                "omit it"
+            )
+        # A chain of one is not a chain, so nothing is caught for it: a
+        # bad *profile* is not an ephemeris failure, and catching it to
+        # try the next entry would replace a refusal carrying its status,
+        # its field and its hint with a bare "nothing could be opened".
+        if len(chain) == 1:
+            return Context(
+                self, self._open(chain[0], profile, settings_json, locale, host), host
+            )
+        # With more than one, every refusal is kept and reported
+        # together, because a chain that said only why its last entry
+        # failed would hide the one the caller actually wanted.
+        refusals: list[str] = []
+        for entry in chain:
+            try:
+                return Context(
+                    self, self._open(entry, profile, settings_json, locale, host), host
+                )
+            except TeistroError as refusal:
+                named = entry.plugin if isinstance(entry, Plugin) else entry.key
+                refusals.append(f"{named}: {refusal}")
+        joined = "\n  ".join(refusals)
+        raise ValueError(f"no ephemeris in the chain could be opened:\n  {joined}")
+
+    def _open(
+        self,
+        entry: EphemerisChoice,
+        profile: Optional[str],
+        settings_json: Optional[str],
+        locale: Optional[str],
+        host: Optional[HostProvider],
+    ) -> TeistroContext:
+        """Opens the context on one entry of the chain."""
+        named = Ephemeris.NONE if isinstance(entry, Plugin) else entry
         options = ContextOptions(
             flags=0,
             profile=profile,
             settings_json=settings_json,
             locale=locale,
-            ephemeris=chosen,
+            ephemeris=named,
         )
-        if plugin is None:
-            inner = TeistroContext._new(
-                self.library,
-                options,
-                None if host is None else host.vtable,
+        if not isinstance(entry, Plugin):
+            return TeistroContext._new(
+                self.library, options, None if host is None else host.vtable
             )
-        else:
-            # The context takes its own reference to the adapter, so the
-            # handle this loads is closed at once: what keeps the library
-            # loaded is the context, and a consumer holds neither.
-            loaded = TeistroProvider._new(
-                self.library,
-                plugin,
-                json.dumps({} if plugin_config is None else plugin_config),
-            )
-            try:
-                inner = TeistroContext._new_with_provider(
-                    self.library, options, loaded
-                )
-            finally:
-                loaded.close()
-        return Context(self, inner, host)
+        # The context takes its own reference to the adapter, so the
+        # handle this loads is closed at once: what keeps the library
+        # loaded is the context, and a consumer holds neither.
+        loaded = TeistroProvider._new(
+            self.library, entry.plugin, json.dumps(dict(entry.config or {}))
+        )
+        try:
+            return TeistroContext._new_with_provider(self.library, options, loaded)
+        finally:
+            loaded.close()
 
 
 def _candidates() -> list[str]:

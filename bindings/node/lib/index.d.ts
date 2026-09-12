@@ -603,32 +603,43 @@ export interface ContextInit {
   /** An ephemeris of your own, answered in this language. */
   readonly provider?: EphemerisProvider;
   /**
-   * Which of the SDK's own ephemerides to use. `builtin` is the analytic
-   * one the SDK carries, which needs no files, no network and no licence
-   * beyond the SDK's own; `test` is the test provider, whose positions
-   * are **not astronomy**.
+   * Which ephemeris to compute with, or an **ordered chain** of them,
+   * tried in order (ADR-0029).
    *
-   * These are the **fallback**. In most cases a consumer plugs a real
-   * engine instead — see `plugin`.
-   */
-  readonly ephemeris?: 'none' | 'builtin' | 'test';
-  /**
-   * The platform binary of an ephemeris adapter — Teimeris, Swiss
-   * Ephemeris — plugged in the way a transport is plugged into nodemailer
-   * (ADR-0029). This is the path most consumers are on.
+   * A chain is a caller **saying** they will accept the fallback. One
+   * entry is one entry: a context asked for an engine and given the
+   * built-in without being told is the silence this refuses.
    *
-   * `plugin`, `provider` and `ephemeris` each answer the same question,
-   * so two of them together is a `TypeError` rather than one silently
-   * winning.
+   * `provider` and `ephemeris` each answer the same question, so both
+   * together is a `TypeError` rather than one silently winning.
    */
-  readonly plugin?: string;
-  /**
-   * That adapter's own options. What they mean is the adapter's to say
-   * and its package's to type; the SDK hands them over as JSON and reads
-   * none of them.
-   */
-  readonly pluginConfig?: Record<string, unknown>;
+  readonly ephemeris?: EphemerisChoice | readonly EphemerisChoice[];
 }
+
+/**
+ * An adapter's descriptor: the platform binary its package ships, and
+ * that adapter's own configuration.
+ *
+ * What the configuration means is the adapter's to say and its
+ * package's to type; the SDK hands it over as JSON and reads none of it.
+ */
+export interface PluginEphemeris {
+  /** The adapter's platform binary. */
+  readonly plugin: string;
+  /** That adapter's own options. */
+  readonly config?: Record<string, unknown>;
+}
+
+/**
+ * One entry of an ephemeris chain: one of the SDK's own by name, or an
+ * adapter's descriptor.
+ *
+ * `builtin` is the analytic ephemeris the SDK carries, which needs no
+ * files, no network and no licence beyond the SDK's own; `test` is the
+ * test provider, whose positions are **not astronomy**. Those are the
+ * **fallback** — in most cases a consumer plugs a real engine.
+ */
+export type EphemerisChoice = 'none' | 'builtin' | 'test' | PluginEphemeris;
 
 /**
  * A context: settings resolved from a profile and a patch, a locale, and

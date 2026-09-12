@@ -611,7 +611,10 @@ test('an ephemeris is plugged in by naming its platform binary', () => {
     console.log('skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
     return;
   }
-  using ctx = new Context({ profile: 'parashari-classical', plugin });
+  using ctx = new Context({
+    profile: 'parashari-classical',
+    ephemeris: { plugin },
+  });
   const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
   // The Sun at J2000 is near 280.4°, which is astronomy rather than this
   // package: what is being tested is that a real engine answered.
@@ -625,18 +628,44 @@ test('an ephemeris is plugged in by naming its platform binary', () => {
 });
 
 /**
- * Three ways to answer one question, so two of them together is a
- * refusal rather than one silently winning. This needs no adapter, so it
- * runs everywhere.
+ * A chain is **ordered and explicit** (ADR-0029): tried in order, and a
+ * refusal names every entry that failed rather than only the last, which
+ * would hide the one the caller actually wanted. Needs no adapter.
  */
-test('a plugin and a named ephemeris together are refused', () => {
+test('an ephemeris chain is tried in order and refuses naming each', () => {
+  // An adapter that is not there, then the built-in: the fallback the
+  // caller wrote down.
+  using fellBack = new Context({
+    profile: 'parashari-classical',
+    ephemeris: [{ plugin: '/nowhere/adapter.so' }, 'builtin'],
+  });
+  const sky = fellBack.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+  assert.ok(Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5);
+
+  // Nothing in the chain opening is one refusal that names each.
   assert.throws(
-    () => new Context({ plugin: '/nowhere/adapter.so', ephemeris: 'builtin' }),
-    /give one of them/,
+    () => new Context({ ephemeris: [{ plugin: '/a.so' }, { plugin: '/b.so' }] }),
+    (error) => /a\.so/u.test(error.message) && /b\.so/u.test(error.message),
   );
+
+  // A chain of none names nothing, which is a mistake rather than a
+  // default; and a descriptor without a `plugin` is not a descriptor.
+  assert.throws(() => new Context({ ephemeris: [] }), /names nothing/u);
+  assert.throws(() => new Context({ ephemeris: [{ config: {} }] }), /descriptor/u);
+});
+
+/**
+ * `provider` and `ephemeris` each answer one question, so both together
+ * is a refusal rather than one silently winning.
+ */
+test('a provider and a named ephemeris together are refused', () => {
   assert.throws(
-    () => new Context({ pluginConfig: { dataDir: '/x' }, testProvider: true }),
-    /name one with `plugin`/,
+    () =>
+      new Context({
+        ephemeris: 'builtin',
+        provider: { name: 'x', bodies: [], positions: () => null },
+      }),
+    /give one of them/u,
   );
 });
 

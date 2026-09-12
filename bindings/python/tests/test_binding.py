@@ -16,6 +16,8 @@ from teistro import (
     Body,
     Calendar,
     Ephemeris,
+    EphemerisProvider,
+    Plugin,
     Scale,
     Status,
     Teistro,
@@ -446,7 +448,7 @@ class AnEngine(WithLibrary):
         plugin = os.environ.get("TEISTRO_TEIMERIS_ADAPTER")
         if not plugin:
             self.skipTest("set TEISTRO_TEIMERIS_ADAPTER to the adapter's library")
-        with self.teistro.context(profile=PROFILE, plugin=plugin) as ctx:
+        with self.teistro.context(profile=PROFILE, ephemeris=Plugin(plugin)) as ctx:
             sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
             # The Sun at J2000 is near 280.4 degrees, which is astronomy
             # rather than this package: what is tested is that a real
@@ -457,17 +459,46 @@ class AnEngine(WithLibrary):
             self.assertEqual(ctx.engine.manifest["engine"], "teimeris")
             self.assertEqual(ctx.engine.call("tm_body_name", body=0)["buf"], "Sun")
 
-    def test_a_plugin_and_a_named_ephemeris_together_are_refused(self) -> None:
-        """Three ways to answer one question, so two together is a refusal
-        rather than one silently winning. Needs no adapter."""
+    def test_an_ephemeris_chain_is_tried_in_order_and_refuses_naming_each(
+        self,
+    ) -> None:
+        """A chain is **ordered and explicit** (ADR-0029).
+
+        Tried in order, and a refusal names every entry that failed
+        rather than only the last, which would hide the one the caller
+        actually wanted. Needs no adapter.
+        """
+        # An adapter that is not there, then the built-in: the fallback
+        # the caller wrote down.
+        with self.teistro.context(
+            profile=PROFILE,
+            ephemeris=[Plugin("/nowhere/adapter.so"), Ephemeris.BUILTIN],
+        ) as fell_back:
+            sky = fell_back.positions(instants=[2451545.0], bodies=[Body.SUN])
+            self.assertAlmostEqual(sky.at(0, 0).longitude, 280.37, delta=0.5)
+
+        # Nothing in the chain opening is one refusal that names each.
+        with self.assertRaises(ValueError) as caught:
+            self.teistro.context(ephemeris=[Plugin("/a.so"), Plugin("/b.so")])
+        self.assertIn("/a.so", str(caught.exception))
+        self.assertIn("/b.so", str(caught.exception))
+
+        # A chain of none names nothing, which is a mistake rather than a
+        # default.
+        with self.assertRaises(ValueError) as empty:
+            self.teistro.context(ephemeris=[])
+        self.assertIn("names nothing", str(empty.exception))
+
+    def test_a_provider_and_a_named_ephemeris_together_are_refused(self) -> None:
+        """Each answers one question, so both together is a refusal."""
+        # The refusal happens before anything touches the provider, so
+        # the base class as it stands is provider enough: `name`,
+        # `bodies` and `positions` are attributes with defaults.
         with self.assertRaises(ValueError) as caught:
             self.teistro.context(
-                plugin="/nowhere/adapter.so", ephemeris=Ephemeris.BUILTIN
+                ephemeris=Ephemeris.BUILTIN, provider=EphemerisProvider()
             )
         self.assertIn("give one of them", str(caught.exception))
-        with self.assertRaises(ValueError) as also:
-            self.teistro.context(plugin_config={"data_dir": "/x"}, test_provider=True)
-        self.assertIn("name one with `plugin`", str(also.exception))
 
     def test_a_context_without_an_ephemeris_says_so(self) -> None:
         with self.teistro.context(profile=PROFILE) as bare:
