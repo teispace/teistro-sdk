@@ -1253,6 +1253,7 @@ dependencies = [
  "teistro-ephemeris-builtin",
  "teistro-intl",
  "teistro-port-ephemeris",
+ "teistro-time",
 ]
 
 [[package]]

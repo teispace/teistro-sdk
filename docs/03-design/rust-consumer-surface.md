@@ -276,11 +276,13 @@ principle:
    fact the C smoke test already asserts has proved the whole shape, and
    the rest are that shape again.
 
-   **Done:** the context, the builder, the ephemeris chain and
-   `calendar`. **Next:** `time`, which is the first area that is not
-   only a rename — its `convert` is a three-by-three matrix over the
-   scale functions plus the record of what was applied, and both of the
-   types in the section above belong to it.
+   **Done:** the context, the builder, the ephemeris chain, `calendar`
+   and `time` — the last of which is where the section above earned
+   itself: `Scale` and `Conversion` are the surface's own types, and
+   `convert` is a three-by-three matrix over the scale functions that
+   answers with what it applied as well as the number. **Next:** `intl`,
+   `keys` and `frame`, which are thin, then `chart`, `almanac` and the
+   root's `positions`, which need the provider.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
 3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps

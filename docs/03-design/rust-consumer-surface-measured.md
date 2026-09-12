@@ -15,10 +15,10 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 | an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 8 disagree; more than one: `almanac (7)`, `calendar (2)`, `chart (6)`, `engine (2)`, `frame (2)`, `intl (3)`, `time (4)` |
 | every area reaches the boundary, so every area names crates | **holds** | 0 of 9 disagree; so every row of the table below is a measurement and not a gap |
 | an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 23 of 46 disagree; 23 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
-| the façade owns the composition: every crate a context needs is one it depends on | falsified | 3 of 9 disagree; not yet: `teistro-chart`, `teistro-panchanga`, `teistro-time` |
+| the façade owns the composition: every crate a context needs is one it depends on | falsified | 2 of 9 disagree; not yet: `teistro-chart`, `teistro-panchanga` |
 | and the boundary is inverted onto it, so the composition is written once | falsified | 1 of 1 disagree; `teistro-ffi` does not depend on `teistro` yet |
 
-**3 of the crates a context needs are not yet the façade's** — `teistro-chart`, `teistro-panchanga`, `teistro-time` — so those areas' composition still lives only at the C boundary. This is the design's acceptance test rather than a count for its own sake, and it has to be this rather than *does anything other than the boundary depend on it*: that weaker reading went green the moment the façade declared a dependency, before any composition had moved.
+**2 of the crates a context needs are not yet the façade's** — `teistro-chart`, `teistro-panchanga` — so those areas' composition still lives only at the C boundary. This is the design's acceptance test rather than a count for its own sake, and it has to be this rather than *does anything other than the boundary depend on it*: that weaker reading went green the moment the façade declared a dependency, before any composition had moved.
 
 ## What each area needs
 

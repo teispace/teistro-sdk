@@ -15,7 +15,7 @@
 )]
 
 use teistro::catalogue::{Calendar, Era};
-use teistro::{CalendarDate, Context, Ephemeris};
+use teistro::{CalendarDate, Context, Ephemeris, Scale};
 use teistro_core::envelope::CalendarResolution;
 
 /// A context on the profile every binding's quickstart names.
@@ -231,4 +231,92 @@ fn a_worker_builds_its_own_context() {
         .map(|worker| worker.join().expect("the worker finished"))
         .collect();
     assert_eq!(answers, vec![(2072, 1, 1); 4]);
+}
+
+#[test]
+fn a_nepali_birth_time_resolves() {
+    let sdk = context();
+    // The C smoke test's own fact: 00:20 on 1 January 1986 in Kathmandu
+    // is +05:45, the offset that began that midnight, under the zone's
+    // current rules and with no warning.
+    let civil = teistro::CivilDateTime::at(
+        CalendarDate::defined(Calendar::Gregorian, 1986, 1, 1),
+        teistro::CivilTime::new(0, 20, 0).expect("a time of day"),
+    );
+    let zone = teistro::ZoneSpec::Iana {
+        zone: String::from("Asia/Kathmandu"),
+    };
+    let resolved = sdk.time().resolve(&civil, &zone).expect("a known zone");
+    assert_eq!(resolved.zone.offset.seconds(), 20700);
+    assert!(
+        resolved.zone.warnings.is_empty(),
+        "{:?}",
+        resolved.zone.warnings
+    );
+    assert!(!resolved.zone.tzdb_version.is_empty());
+
+    // And back: the instant read as the civil clock in that zone.
+    let (back, _) = sdk
+        .time()
+        .civil_of(resolved.instant, &zone, Calendar::Gregorian)
+        .expect("a known zone");
+    assert_eq!(
+        (back.date.year, back.date.month, back.date.day),
+        (1986, 1, 1)
+    );
+    let time = back.time.expect("the time is known");
+    assert_eq!((time.hour(), time.minute()), (0, 20));
+}
+
+#[test]
+fn a_scale_conversion_reports_what_it_applied() {
+    let sdk = context();
+    let at_j2000 = sdk
+        .time()
+        .convert(2_451_545.0, Scale::Ut1, Scale::Tt)
+        .expect("inside the model's range");
+    // Never only the number: ΔT at J2000 is about 64 seconds, and which
+    // model said so is what a cache key and an audit trail are made of.
+    let applied = at_j2000.delta_t.expect("UT1 to TT needs a ΔT");
+    assert!(
+        (60.0..70.0).contains(&applied.seconds),
+        "ΔT at J2000 is about 64 s, not {}",
+        applied.seconds
+    );
+    assert!(at_j2000.jd > 2_451_545.0);
+
+    // A scale to itself applies nothing and says so, rather than making
+    // a caller who converts by a run-time value special-case it.
+    let same = sdk
+        .time()
+        .convert(2_451_545.0, Scale::Tt, Scale::Tt)
+        .expect("the identity");
+    assert_eq!(same.jd, 2_451_545.0);
+    assert!(same.delta_t.is_none());
+
+    // And the round trip comes back.
+    let there = sdk
+        .time()
+        .convert(2_451_545.0, Scale::Utc, Scale::Tt)
+        .expect("forward");
+    let back = sdk
+        .time()
+        .convert(there.jd, Scale::Tt, Scale::Utc)
+        .expect("back");
+    assert!(
+        (back.jd - 2_451_545.0).abs() < 1e-9,
+        "{} != 2451545",
+        back.jd
+    );
+}
+
+#[test]
+fn delta_t_carries_its_source_and_its_model() {
+    let sdk = context();
+    let value = sdk
+        .time()
+        .delta_t(teistro::quantity::JulianDay::try_new(2_451_545.0).expect("a Julian day"))
+        .expect("inside the model's range");
+    assert!((60.0..70.0).contains(&value.seconds), "{}", value.seconds);
+    assert!(!value.model.key().is_empty());
 }

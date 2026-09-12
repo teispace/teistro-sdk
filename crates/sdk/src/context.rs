@@ -14,7 +14,7 @@ use teistro_intl::pack::locales_from_packs;
 use teistro_port_ephemeris::{CachingProvider, EphemerisProvider};
 
 use crate::BUNDLES;
-use crate::area::CalendarArea;
+use crate::area::{CalendarArea, TimeArea};
 use crate::ephemeris::{self, Ephemeris};
 
 /// One context: built once, read many times.
@@ -43,11 +43,7 @@ pub struct Context {
     /// Resolved once from `time.delta_t`, as the boundary resolves it,
     /// so the two agree on which model a context uses.
     ///
-    /// Read by `time()` and by `positions`, which are the next two
-    /// increments of `03-design/rust-consumer-surface.md`'s step 1 —
-    /// declared with its reader named, which is what
-    /// `knob-has-a-reader` asks of a settings knob for the same reason.
-    #[expect(dead_code, reason = "read by the time area and by positions")]
+    /// Read by `time()`, and by `positions` when it lands.
     delta_t: DeltaTModel,
 }
 
@@ -126,6 +122,17 @@ impl Context {
     #[must_use]
     pub fn calendar(&self) -> CalendarArea<'_> {
         CalendarArea::of(self)
+    }
+
+    /// Civil times to instants and back, the time scales, and ΔT.
+    #[must_use]
+    pub fn time(&self) -> TimeArea<'_> {
+        TimeArea::of(self)
+    }
+
+    /// The ΔT model the settings chose, which `time()` reads.
+    pub(crate) fn delta_t(&self) -> DeltaTModel {
+        self.delta_t
     }
 }
 

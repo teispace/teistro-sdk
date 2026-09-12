@@ -1,35 +1,12 @@
-//! The areas: what a consumer reads operations off.
-//!
-//! An area is a **borrowing view** of a context, which is the Rust
-//! equivalent of what it is in every other binding — a frozen instance
-//! in Node, a `late final` field in Dart, a `cached_property` in Python.
-//! It allocates nothing, it cannot outlive the context it came from, and
-//! `sdk.calendar()` costs a pointer copy, so a consumer who wants to
-//! keep one writes `let cal = sdk.calendar();` exactly as a Node
-//! consumer writes `const cal = ctx.calendar`.
-//!
-//! The operations are the ones `03-design/surface-areas.md` puts in each
-//! area and no others. That is not tidiness: `check-areas` holds every
-//! binding's list to the same canonical paths, so an operation invented
-//! here would be an operation the other three lack.
+//! `sdk.calendar`: dates in the calendars the SDK carries, and the
+//! arithmetic over them.
 
-use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, Weekday, shipped};
+use teistro_calendar::{CalendarDate, FixedDay, Weekday};
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
 
+use crate::area::system_of;
 use crate::context::Context;
-
-/// The calendar the SDK ships for an id, or the refusal that says why it
-/// does not.
-///
-/// One reading, because six operations need it and each would otherwise
-/// spell the refusal itself.
-fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Error> {
-    shipped(id).ok_or_else(|| {
-        Error::unsupported(format!("the SDK does not ship the `{}` calendar", id.key()))
-            .with_field("calendar")
-    })
-}
 
 /// `sdk.calendar`: dates in the calendars the SDK carries — Bikram
 /// Sambat, Gregorian, Julian, the 1582 mixed calendar and the ISO week

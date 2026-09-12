@@ -39,10 +39,12 @@
 mod area;
 mod context;
 mod ephemeris;
+mod scale;
 
-pub use area::CalendarArea;
+pub use area::{CalendarArea, TimeArea};
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
+pub use scale::{Conversion, Scale};
 
 // The types an operation takes and answers with are the crates' own, and
 // are re-exported so a consumer needs one dependency rather than five.
@@ -54,6 +56,7 @@ pub use teistro_core::envelope::Hash;
 pub use teistro_core::error::{Error, Status};
 pub use teistro_core::quantity;
 pub use teistro_core::settings;
+pub use teistro_time::{CivilDateTime, CivilTime, ZoneSpec};
 
 // `BUNDLES`: the SDK's locales, built from `i18n/` by this crate's build
 // script so a consumer needs no files to render its messages (ADR-0010).

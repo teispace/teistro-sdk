@@ -59,8 +59,19 @@ first.
 | area | operations | state |
 |---|---|---|
 | `calendar` | `date_of`, `fixed_of`, `convert`, `weekday_of`, `month_length`, `is_leap` | built |
+| `time` | `resolve`, `civil_of`, `convert`, `delta_t` | built |
 | the root | `profile`, `settings`, `settings_hash`, `ephemeris`, `intl` | built |
-| `time`, `intl`, `keys`, `frame`, `chart`, `almanac`, `engine`, and the root's `positions` | — | next |
+| `intl`, `keys`, `frame`, `chart`, `almanac`, `engine`, and the root's `positions` | — | next |
+
+`time.convert` is where this surface owns a type rather than
+re-exporting one. The crates keep a scale in the *type system* —
+`JulianDay<Ut1>`, `<Tt>`, `<Utc>` — which gives a caller who names a
+scale at run time nothing to name it with, so `Scale` and `Conversion`
+are the surface's. That is the rule and not an exception: the surface
+owns a type exactly where an operation is dynamic and the crates are
+static. It answers with **what was applied** as well as the number,
+because a ΔT of 63.8 seconds from one model is not the same answer as
+63.8 from another.
 
 The operations in an area are the ones
 [`surface-areas.md`](../../docs/03-design/surface-areas.md) puts there and

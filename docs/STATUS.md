@@ -994,6 +994,24 @@ provider's DUT1).
    binding — so that decision wants a falsification pass in front of it,
    over the message set `check-intl` already walks.
 
+   **And `time` followed**, which is the first area that is not only a
+   rename: `resolve`, `civil_of`, `convert` and `delta_t`, with the C
+   smoke test's own facts asserted here too — 00:20 on 1 January 1986 in
+   Kathmandu is +05:45 under the zone's current rules with no warning,
+   and ΔT at J2000 is about 64 seconds. Reading the boundary for it
+   found a rule the design page had not stated: **the surface owns a
+   type exactly where an operation is dynamic and the crates are
+   static.** `time.convert(jd, from, to)` names its scales at run time,
+   and the crates keep a scale in the *type system* —
+   `JulianDay<Ut1>`, `<Tt>`, `<Utc>` — so there is nothing to
+   re-export; `crates/ffi` invented a `TsScale` and a private `Applied`
+   for the same reason. Both are the façade's now, so the boundary can
+   convert *from* them rather than there being a third copy. And
+   `Conversion` answers with what was applied as well as the number,
+   because 63.8 seconds from one ΔT model is not the same answer as 63.8
+   from another. The acceptance test moved with it: 2 of 9 rather than 3,
+   `teistro-chart` and `teistro-panchanga` left.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the
