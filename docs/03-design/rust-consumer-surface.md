@@ -270,13 +270,27 @@ principle:
 
 ## 7. What the gates gain
 
-- **A fourth parity runner.** The three runners print one line per
-  operation keyed by a canonical `surface.<area>.<operation>` path, and
-  `check-parity` compares every report against the first. A Rust runner
-  joins them, and `check-areas`'s property *every operation the layer
-  declares is listed by every parity runner* extends to it — so the
-  façade cannot grow an operation the other three lack, or lack one they
-  have, without a gate saying so.
+- **A fourth parity runner**, and it cannot have the same key set as the
+  other three. That is not a gap in it; it is §6 arriving in the gate.
+
+  The three runners print ~674 keys, and among them are `abi`,
+  `build-sdk`, `build-commit`, `build-target` and the result blobs'
+  sections and hashes. A Rust consumer has **none of those**: Cargo
+  resolved the versions, `Drop` freed the memory, and the crates handed
+  back their own types instead of a blob. `check-parity` compares every
+  report against the first *by key set*, so a Rust report would fail on
+  absences that are the design working.
+
+  So the gate holds the Rust report to **every key the others have,
+  except a declared list** — the same shape as `knob-has-a-reader` and
+  `entry-point-is-reachable`: an inventory printed on every run rather
+  than a silence, so an absence that stops being deliberate becomes a
+  stale allowance and therefore a failure. The list is §6, which is
+  already written down.
+
+  `check-areas`'s property *every operation the layer declares is listed
+  by every parity runner* extends to the Rust runner once it exists, and
+  needs a reader for this crate's surface the way it has one for Node's.
 - **The measured page turns over**, as §3 says: its second property
   flips from falsified to holding, and that is the acceptance test for
   the refactor rather than a note in a commit message.
@@ -323,12 +337,19 @@ principle:
    lifting that composition without the runner would be writing numbers
    with nothing to check them against, which this project does not do.
 
-   The runner cannot join `check-parity` until the surface is complete,
-   though, because that gate compares **key sets** and a report missing
-   `chart.found` would fail rather than say "not yet". So the order is:
-   write the runner, run it by hand against the other three's report for
-   the operations that exist, build `chart` and `almanac` against it,
-   then wire it in.
+   The runner cannot join `check-parity` as it stands, though, and for
+   **two** reasons rather than one. The gate compares key sets, so a
+   report missing `chart.found` fails rather than saying "not yet" — and
+   a complete Rust report *still* will not match, because ~674 of those
+   keys include `abi`, `build-commit`, `build-target` and the blobs'
+   sections, which §6 says this surface does not have and should not.
+   §7 says what the gate must do instead: hold the Rust report to every
+   key the others have except a declared list, printed on every run.
+
+   So the order is: write the runner, run it by hand against the other
+   three's report for the operations that exist, build `chart` and
+   `almanac` against it, teach `check-parity` the declared absences, and
+   wire it in.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
 3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps

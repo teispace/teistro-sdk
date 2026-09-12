@@ -1055,11 +1055,24 @@ provider's DUT1).
    by value. So lifting that composition without the fourth runner would
    be writing numbers with nothing to check them against.
 
-   And the runner cannot join `check-parity` until the surface is
-   complete, because that gate compares **key sets**: a report missing
-   `chart.found` fails rather than saying "not yet". So: write the
-   runner, run it by hand against the other three for the operations
-   that exist, build `chart` and `almanac` against it, then wire it in.
+   And the runner cannot join `check-parity` as it stands, for **two**
+   reasons rather than one. The gate compares key sets, so a report
+   missing `chart.found` fails rather than saying "not yet" — and a
+   *complete* Rust report still will not match, because among the ~674
+   keys the three print are `abi`, `build-sdk`, `build-commit`,
+   `build-target` and the result blobs' sections and hashes. A Rust
+   consumer has none of those, by design: Cargo resolved the versions,
+   `Drop` freed the memory, and the crates handed back their own types
+   instead of a blob. **The absences are the design working**, so the
+   gate has to hold the Rust report to every key the others have *except
+   a declared list* — the `knob-has-a-reader` shape, an inventory
+   printed every run so an absence that stops being deliberate becomes a
+   stale allowance and therefore a failure. The list is the design's §6,
+   already written.
+
+   So: write the runner, run it by hand against the other three for the
+   operations that exist, build `chart` and `almanac` against it, teach
+   `check-parity` the declared absences, and wire it in.
 
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
