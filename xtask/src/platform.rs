@@ -63,7 +63,14 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         os: "darwin",
         cpu: "x64",
         libc: None,
-        runner: "macos-13",
+        // Intel macOS. Not `macos-13`: GitHub retired that image, and a
+        // retired label does not fail, it queues -- eleven dispatches of
+        // the verify matrix on 2026-09-12 never reached a conclusion
+        // because this one row waited for a runner that does not exist.
+        // `check-lints`'s `runner-matches-the-platform-table` holds the
+        // workflows to this field now, because the correction had to be
+        // made in three places and one of them was missed.
+        runner: "macos-15-intel",
     },
     Platform {
         triple: "x86_64-pc-windows-msvc",

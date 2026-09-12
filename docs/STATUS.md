@@ -752,6 +752,29 @@ provider's DUT1).
    correctly: it became the nearest `package.json` to those files, so
    they stopped being ES modules until it said `"type": "module"`.
 
+   **And the matrix could never have gone green anyway.** Every
+   dispatch of `verify.yml` today — eleven of them — was still in
+   `queued`, and the one run from the 11th "completed" only because it
+   had been cancelled. One row did it: `bindings (darwin-x64)` asked for
+   `macos-13`, GitHub retired that image, and **a retired label does not
+   fail, it queues**. So the run never reached a conclusion, and every
+   judgement of "green" today was made from the four rows that do run.
+   It is the same defect as a gate that skips while claiming the machine
+   lacks a tool it has: silence read as the absence of a problem.
+
+   `macos-15-intel` is the image that replaced it, and the fix was the
+   experiment — a wrong label fails a job at once rather than hanging,
+   so a dispatch answers either way. It answered: `bindings (darwin-x64)`
+   is running on a real runner for the first time.
+
+   Three places had to change, and `xtask/src/platform.rs` opens by
+   saying it is "the only place any of that is written". It was not: both
+   workflows kept their own copy of which runner builds which platform.
+   `check-lints`'s **eleventh** rule,
+   `runner-matches-the-platform-table`, holds every platform row of
+   every workflow matrix to that field — born red on the one row this
+   correction had reached, which is how a rule should arrive.
+
    The Python type checker was the same story one step behind: `mypy`
    installed by a workflow step, unpinned, so a release of it could
    redden CI on a day nothing here changed and a machine with an older

@@ -15,7 +15,7 @@ is adding a row there and repeating it in the two workflow matrices.
 | `linux-x64` | `x86_64-unknown-linux-gnu` | `ubuntu-latest` | `linux` / `x64` / `glibc` |
 | `linux-arm64` | `aarch64-unknown-linux-gnu` | `ubuntu-24.04-arm` | `linux` / `arm64` / `glibc` |
 | `darwin-arm64` | `aarch64-apple-darwin` | `macos-latest` | `darwin` / `arm64` |
-| `darwin-x64` | `x86_64-apple-darwin` | `macos-13` | `darwin` / `x64` |
+| `darwin-x64` | `x86_64-apple-darwin` | `macos-15-intel` | `darwin` / `x64` |
 | `win32-x64` | `x86_64-pc-windows-msvc` | `windows-latest` | `win32` / `x64` |
 
 The short name is Node's `process.platform` and `process.arch`, and Dart's

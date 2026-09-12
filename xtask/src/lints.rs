@@ -763,6 +763,85 @@ fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Every platform row of a workflow matrix runs on the runner the
+/// platform table names.
+///
+/// `xtask/src/platform.rs` says it is "the only place any of that is
+/// written", and it was not: the workflows kept their own copy of which
+/// runner builds which platform, and when GitHub retired the
+/// `macos-13` image the table and two workflows had to be corrected in
+/// three places. One of them was missed for an afternoon, and the
+/// symptom was not a failure -- `bindings (darwin-x64)` sat in `queued`
+/// for as long as anyone let it, so eleven dispatches of the verify
+/// matrix never reached a conclusion at all.
+///
+/// The same shape as `knob-has-a-reader` and the parity runners' list:
+/// a description that claims to be the only one, read by generators
+/// that each keep a copy.
+fn platform_runners(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "runner-matches-the-platform-table";
+    for path in workflows(root) {
+        let shown = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        // A workflow that does not parse is `workflow-parses`'s to
+        // report; this rule says nothing about it.
+        let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&text) else {
+            continue;
+        };
+        for entry in matrix_rows(&doc) {
+            let (Some(platform), Some(os)) = (
+                entry.get("platform").and_then(serde_yaml_ng::Value::as_str),
+                entry.get("os").and_then(serde_yaml_ng::Value::as_str),
+            ) else {
+                continue;
+            };
+            let complaint = match crate::platform::Platform::by_name(platform) {
+                Some(row) if row.runner == os => continue,
+                Some(row) => format!(
+                    "`{platform}` runs on `{os}`; the platform table says `{}`",
+                    row.runner
+                ),
+                None => format!("`{platform}` is not a row of the platform table"),
+            };
+            let line = text
+                .lines()
+                .position(|line| line.contains(&format!("platform: {platform}")))
+                .map_or(0, |at| at + 1);
+            outcome.failures.push(Finding {
+                file: shown.clone(),
+                line,
+                text: complaint,
+                rule: RULE,
+            });
+        }
+    }
+}
+
+/// Every `strategy.matrix.include` entry of every job of a workflow.
+fn matrix_rows(doc: &serde_yaml_ng::Value) -> Vec<&serde_yaml_ng::Value> {
+    let mut out = Vec::new();
+    let Some(jobs) = doc.get("jobs").and_then(serde_yaml_ng::Value::as_mapping) else {
+        return out;
+    };
+    for (_, job) in jobs {
+        let include = job
+            .get("strategy")
+            .and_then(|strategy| strategy.get("matrix"))
+            .and_then(|matrix| matrix.get("include"))
+            .and_then(serde_yaml_ng::Value::as_sequence);
+        if let Some(entries) = include {
+            out.extend(entries.iter());
+        }
+    }
+    out
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -792,6 +871,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     entry_points_reachable(root, &mut outcome);
     gate_runners(root, &mut outcome);
     python_in_utf8(root, &mut outcome);
+    platform_runners(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -805,6 +885,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "gate-has-a-runner",
         "entry-point-is-reachable",
         "python-runs-in-utf8-mode",
+        "runner-matches-the-platform-table",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
