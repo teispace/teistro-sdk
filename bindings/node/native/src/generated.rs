@@ -2597,6 +2597,43 @@ impl Context {
         Ok(Context { handle, host })
     }
 
+    /// Creates a context that computes with a **loaded** provider.
+    ///
+    /// The same as `ts_context_new` in every other respect — `options` may be
+    /// null for the defaults, and `options.ephemeris` is ignored because this
+    /// call has already answered the question it asks.
+    ///
+    /// The context takes its own reference to the adapter, so this handle may
+    /// be freed immediately afterwards or kept to found another context; the
+    /// library is unloaded when the last of them goes.
+    #[napi(factory)]
+    pub fn new_with_provider(options: Option<ContextOptions>, provider: &Provider) -> Result<Self> {
+        let held_options = options.map(|v| v.read()).transpose()?;
+        let raw_options = held_options.as_ref().map(HeldContextOptions::as_c);
+        let options = raw_options.as_ref().map_or(ptr::null(), |v| &raw const *v);
+        let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
+        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every pointer is valid for the call; the handle is owned
+        // from here and freed once, in `Drop`.
+        let status = unsafe {
+            ffi::provider::ts_context_new_with_provider(
+                options,
+                provider.handle,
+                &raw mut handle,
+                &raw mut out_error,
+            )
+        };
+        if status != core_::Status::Ok {
+            let message = take_string(&mut out_error);
+            return Err(Error::from_reason(if message.is_empty() {
+                format!("the handle could not be built (code {})", status.code())
+            } else {
+                message
+            }));
+        }
+        Ok(Context { handle, host: None })
+    }
+
     /// The outcome of the last call on this context, which the layer
     /// above rethrows with its field, its hint and its code.
     #[napi]

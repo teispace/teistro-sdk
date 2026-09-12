@@ -483,13 +483,27 @@ provider's DUT1).
    (`new Context({ ephemeris: { plugin: …, config: … } })`), is what
    makes the 98% path exist outside Rust.
 
-   **`check-lints` now holds the class of gap rather than the instance.**
-   Its ninth rule, `entry-point-is-reachable`, applies the emitters' own
+   **`check-lints` holds the class of gap rather than the instance.** Its
+   ninth rule, `entry-point-is-reachable`, applies the emitters' own
    grouping rules to every function in the description and reports any
-   the rules place nowhere — born red on exactly this one. It carries the
-   deferral as an **inventory**, the way `knob-has-a-reader` does: the
-   row names what will place it and the gate prints it on every run, so
-   the allowance rots loudly once the emitters learn the shape.
+   the rules place nowhere — born red on exactly this one.
+
+   **The generated half is now built.** `rules::factories` is the rule
+   that was missing: a class has one constructor and may have more than
+   one way in, and every other `handle_out` for a type is a **factory**.
+   `build_call` in each emitter learned whose handle is `self`, so any
+   other opaque's becomes a parameter of the class that holds it. All
+   three now have it — `Context.newWithProvider(options, provider)` in
+   Node, `TeistroContext.newWithProvider(lib, …)` in Dart,
+   `TeistroContext._new_with_provider(lib, …)` in Python — and all four
+   binding gates pass on the generated code. The lint's inventory is
+   empty and the list is kept, so the next unplaced entry point has
+   somewhere to be declared.
+
+   **What is left is the ergonomic half:** each hand-written layer needs
+   a plugin option (a path and the adapter's own configuration) so a
+   consumer never touches the generated `Provider` class. Until then the
+   route exists and nothing offers it.
 
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter

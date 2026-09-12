@@ -1026,13 +1026,13 @@ struct Marshalling {
 /// roles the description actually uses, and `array_in` has no instance,
 /// so a rule written for it would be a rule nothing exercises
 /// (`03-design/binding-surface-measured.md` §1).
-fn marshal(api: &Api, f: &FunctionDef, lib: &str) -> Marshalled {
+fn marshal(api: &Api, f: &FunctionDef, lib: &str, receiver: Option<&str>) -> Marshalled {
     let mut signature = String::new();
     let mut setup: Vec<String> = Vec::new();
     let mut args: Vec<String> = Vec::new();
     let mut owns = false;
     for (index, p) in f.params.iter().enumerate() {
-        let one = parameter(api, f, p, index);
+        let one = parameter(api, f, p, index, receiver);
         signature.push_str(&one.signature);
         setup.extend(one.setup);
         args.extend(one.args);
@@ -1043,7 +1043,13 @@ fn marshal(api: &Api, f: &FunctionDef, lib: &str) -> Marshalled {
 
 /// The arms, one per role, so the whole of the marshalling reads as the
 /// list of roles the pass counted.
-fn parameter(api: &Api, f: &FunctionDef, p: &ParamDef, index: usize) -> Marshalling {
+fn parameter(
+    api: &Api,
+    f: &FunctionDef,
+    p: &ParamDef,
+    index: usize,
+    receiver: Option<&str>,
+) -> Marshalling {
     let mut signature = String::new();
     let mut setup: Vec<String> = Vec::new();
     let mut args: Vec<String> = Vec::new();
@@ -1051,7 +1057,22 @@ fn parameter(api: &Api, f: &FunctionDef, p: &ParamDef, index: usize) -> Marshall
     {
         let name = identifier(&p.name);
         match p.role {
-            Role::Handle => args.push(String::from("self._raw")),
+            // The handle of the class being rendered is `self`; any other
+            // opaque's is a parameter, and the class that holds it is what
+            // the caller passes (`rules::factories`).
+            Role::Handle => {
+                let held = crate::rules::pointee_opaque(api, p).map(|o| o.name.clone());
+                if held.as_deref() == receiver || receiver.is_none() {
+                    args.push(String::from("self._raw"));
+                } else {
+                    let class = format!(
+                        "Teistro{}",
+                        binding_type_name(held.as_deref().unwrap_or_default())
+                    );
+                    signature.push_str(&format!(", {name}: {class}"));
+                    args.push(format!("{name}._raw"));
+                }
+            }
             Role::HandleOut => args.push(String::from("ctypes.byref(handle)")),
             // The pointer the SDK hands back to every callback. A provider
             // written in Python closes over itself, so nothing has to be
@@ -1310,6 +1331,9 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     if let Some(ctor) = constructor(api, opaque) {
         render_constructor(out, api, ctor, &name, &handle);
     }
+    for factory in crate::rules::factories(api, opaque) {
+        render_factory(out, api, factory, opaque, &name, &handle);
+    }
     let _ = writeln!(
         out,
         "    @property\n    def _raw(self) -> \"ctypes._Pointer[{handle}]\":\n        \"\"\"The live handle, or a refusal saying it was closed.\"\"\"\n        if self._handle is None:\n            raise TeistroError(\n                Status.INVALID_ARG,\n                \"this context has been closed\",\n                hint=\"open another one\",\n            )\n        return self._handle\n\n    def close(self) -> None:\n        \"\"\"Frees the context's native memory. Closing twice is allowed.\"\"\"\n        if self._handle is not None:\n            self._handle = None\n            self._finalise()\n\n    def __enter__(self) -> Teistro{name}:\n        return self\n\n    def __exit__(\n        self,\n        kind: Optional[type[BaseException]],\n        value: Optional[BaseException],\n        traceback: Optional[TracebackType],\n    ) -> None:\n        self.close()"
@@ -1329,7 +1353,7 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
 }
 
 fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str, handle: &str) {
-    let m = marshal(api, ctor, "lib");
+    let m = marshal(api, ctor, "lib", None);
     let _ = writeln!(
         out,
         "    @classmethod\n    def _new(cls, lib: TeistroLibrary{}) -> Teistro{name}:",
@@ -1348,6 +1372,50 @@ fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &st
         "        status = Status({})\n        if status != Status.OK:\n            _refuse(lib, status, {})\n        return cls(lib, handle)\n",
         call_text("lib", ctor, &m.args, "        "),
         ctor.params
+            .iter()
+            .find(|p| p.role == Role::StringOut)
+            .map_or_else(
+                || String::from("None"),
+                |p| format!("_{}", identifier(&p.name))
+            ),
+    );
+}
+
+/// A second way in, beside the constructor: a class method named for
+/// the entry point it calls.
+///
+/// `_new_with_provider` beside `_new`, because Python has one
+/// `__init__` and a class method is how a second way in is spelled. The
+/// body is the constructor's, and a `handle` of another opaque becomes a
+/// parameter of that class rather than `self` (`rules::factories`).
+fn render_factory(
+    out: &mut String,
+    api: &Api,
+    f: &FunctionDef,
+    opaque: &OpaqueDef,
+    name: &str,
+    handle: &str,
+) {
+    let method = identifier(&method_name(&api.prefix, &opaque.name, &f.name));
+    let m = marshal(api, f, "lib", Some(&opaque.name));
+    let _ = writeln!(
+        out,
+        "    @classmethod\n    def _{method}(cls, lib: TeistroLibrary{}) -> Teistro{name}:",
+        m.signature
+    );
+    out.push_str(&docstring(&f.doc, "        "));
+    if m.owns {
+        out.push_str("        owned: list[Any] = []\n");
+    }
+    let _ = writeln!(out, "        handle = ctypes.POINTER({handle})()");
+    for line in &m.setup {
+        let _ = writeln!(out, "        {line}");
+    }
+    let _ = writeln!(
+        out,
+        "        status = Status({})\n        if status != Status.OK:\n            _refuse(lib, status, {})\n        return cls(lib, handle)\n",
+        call_text("lib", f, &m.args, "        "),
+        f.params
             .iter()
             .find(|p| p.role == Role::StringOut)
             .map_or_else(
@@ -1391,7 +1459,7 @@ fn render_error_reader(out: &mut String, api: &Api) {
 
 fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, f: &FunctionDef) {
     let name = identifier(&method_name(&api.prefix, &opaque.name, &f.name));
-    let m = marshal(api, f, "self._lib");
+    let m = marshal(api, f, "self._lib", Some(&opaque.name));
     let _ = writeln!(
         out,
         "\n    def {name}(self{}) -> {}:",
@@ -1424,7 +1492,7 @@ fn render_free_functions(out: &mut String, api: &Api) {
         if !is_free_function(f) || frees {
             continue;
         }
-        let m = marshal(api, f, "lib");
+        let m = marshal(api, f, "lib", None);
         let _ = writeln!(
             out,
             "def {}(lib: TeistroLibrary{}) -> {}:",

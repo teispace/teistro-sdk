@@ -621,10 +621,10 @@ fn boundary_sources(root: &Path, outcome: &mut Outcome) {
 /// `boundary-is-described` holds that a *file* of entry points is on the
 /// description's source list. This holds the next thing along: that each
 /// **function** on that list is placed by one of the rules the emitters
-/// group by — a free function, an opaque's constructor, a method of one,
-/// its destructor or its last-error reader. A function none of them
-/// matches is described, generated into every `extern` declaration, and
-/// reachable from no binding.
+/// group by — a free function, an opaque's constructor, one of its
+/// factories, a method of one, its destructor or its last-error reader.
+/// A function none of them matches is described, generated into every
+/// `extern` declaration, and reachable from no binding.
 ///
 /// It was written because one had been in exactly that state:
 /// `ts_context_new_with_provider` takes a `handle` of `TsProvider` that
@@ -660,6 +660,11 @@ fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
         for method in teistro_idl::rules::methods(&api, opaque) {
             placed.insert(&method.name);
         }
+        // A second way in, beside the constructor: the rule this lint's
+        // own first run called for.
+        for factory in teistro_idl::rules::factories(&api, opaque) {
+            placed.insert(&factory.name);
+        }
     }
     for function in &api.functions {
         if placed.contains(function.name.as_str()) {
@@ -675,8 +680,8 @@ fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
                 Some((name, awaiting)) => format!("`{name}` is unplaced: {awaiting}"),
                 None => format!(
                     "`{}` matches no emitter rule — not a free function, and no opaque's \
-                     constructor, method, destructor or last-error reader — so it is described \
-                     and reachable from no binding",
+                     constructor, factory, method, destructor or last-error reader — so it \
+                     is described and reachable from no binding",
                     function.name
                 ),
             },
@@ -698,17 +703,12 @@ fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
 /// row on every run, so a deferral is read rather than forgotten, and a
 /// row that has been placed since becomes a stale allowance — itself a
 /// failure of that rule's own kind.
-const AWAITING_AN_EMITTER: [(&str, &str); 1] = [(
-    "ts_context_new_with_provider",
-    "a second way to build one opaque, taking another opaque's handle. \
-     `rules::constructor` finds the first `handle_out` for a type and \
-     there is no notion of a factory beside it, and `rules::methods` \
-     wants the handle first where this one has `options` there. Until \
-     the three emitters learn that shape, a provider loaded by \
-     `ts_provider_load` cannot be handed to a context from Node, Dart \
-     or Python — which is ADR-0029's whole route, and the reason this \
-     rule exists",
-)];
+///
+/// Empty, and it was not: `ts_context_new_with_provider` sat here for
+/// exactly as long as it took to write `rules::factories` and teach the
+/// three emitters a second way in. Leaving the list in place is the
+/// point — the next one has somewhere to be declared.
+const AWAITING_AN_EMITTER: [(&str, &str); 0] = [];
 
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();

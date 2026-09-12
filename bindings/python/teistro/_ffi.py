@@ -3063,6 +3063,32 @@ class TeistroContext:
             _refuse(lib, status, _out_error)
         return cls(lib, handle)
 
+    @classmethod
+    def _new_with_provider(cls, lib: TeistroLibrary, options: ContextOptions, provider: TeistroProvider) -> TeistroContext:
+        """Creates a context that computes with a **loaded** provider.
+
+        The same as `ts_context_new` in every other respect — `options` may be
+        null for the defaults, and `options.ephemeris` is ignored because this
+        call has already answered the question it asks.
+
+        The context takes its own reference to the adapter, so this handle may
+        be freed immediately afterwards or kept to found another context; the
+        library is unloaded when the last of them goes.
+        """
+        owned: list[Any] = []
+        handle = ctypes.POINTER(_Context)()
+        _options = options._to_c(owned)
+        _out_error = _StringStruct()
+        status = Status(lib.ts_context_new_with_provider(
+            ctypes.byref(_options),
+            provider._raw,
+            ctypes.byref(handle),
+            ctypes.byref(_out_error),
+        ))
+        if status != Status.OK:
+            _refuse(lib, status, _out_error)
+        return cls(lib, handle)
+
     @property
     def _raw(self) -> "ctypes._Pointer[_Context]":
         """The live handle, or a refusal saying it was closed."""

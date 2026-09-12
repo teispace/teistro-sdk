@@ -296,6 +296,35 @@ pub fn constructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionD
     })
 }
 
+/// The other ways an opaque type's handle is created.
+///
+/// A class has one constructor and may have more than one way in.
+/// [`constructor`] takes the first function with a `handle_out` for the
+/// type; these are the rest, and each is rendered as a **static
+/// factory** rather than a second constructor, because a class in Node,
+/// Dart and Python has room for exactly one of the latter.
+///
+/// `ts_context_new_with_provider` is the case that called for this, and
+/// it had been placed by no rule at all: its `TsProvider` handle is not
+/// its first parameter, so [`methods`] does not want it, and `TsContext`
+/// already has a constructor. It was described, generated into every
+/// `extern` declaration, and reachable from no binding —
+/// `check-lints`'s `entry-point-is-reachable` exists because of it.
+#[must_use]
+pub fn factories<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
+    let primary = constructor(api, opaque).map(|c| c.name.as_str());
+    api.functions
+        .iter()
+        .filter(|f| {
+            Some(f.name.as_str()) != primary
+                && f.params.iter().any(|p| {
+                    p.role == Role::HandleOut
+                        && pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name)
+                })
+        })
+        .collect()
+}
+
 /// The function that frees an opaque type's handle.
 #[must_use]
 pub fn destructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDef> {

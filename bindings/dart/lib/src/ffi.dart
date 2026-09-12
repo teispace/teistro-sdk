@@ -3223,6 +3223,34 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
+  /// Creates a context that computes with a **loaded** provider.
+  ///
+  /// The same as `ts_context_new` in every other respect — `options` may be
+  /// null for the defaults, and `options.ephemeris` is ignored because this
+  /// call has already answered the question it asks.
+  ///
+  /// The context takes its own reference to the adapter, so this handle may
+  /// be freed immediately afterwards or kept to found another context; the
+  /// library is unloaded when the last of them goes.
+  factory TeistroContext.newWithProvider(TeistroLibrary lib, {ContextOptions? options, required TeistroProvider provider}) {
+    rememberLibrary(lib);
+    return pkg_ffi.using((arena) {
+      final rawoptions = options == null ? ffi.nullptr : arena<ContextOptionsStruct>();
+      options?.write(rawoptions, arena);
+      final out = arena<ffi.Pointer<Context>>();
+      final error = arena<StringStruct>();
+      final status = lib.ts_context_new_with_provider(rawoptions, provider._handle, out, error);
+      if (status != 0) {
+        final message = error.ref.data == ffi.nullptr
+            ? 'the context could not be built (code $status)'
+            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();
+        lib.ts_string_free(error);
+        throw TeistroException(Status.byId(status), message);
+      }
+      return TeistroContext._(lib, out.value);
+    });
+  }
+
   /// Turns a failed call into the exception the library described,
   /// with its detail, its field and its hint.
   Never _fail(int status) {

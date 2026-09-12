@@ -25,7 +25,8 @@ use crate::model::{
 use crate::names::{binding_type_name, camel, kebab, method_name, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constant_key, constants, constructor, destructor, field_roles,
-    has_handshake, methods, pointee_struct, results, returned_scalar, returns_status, status_enum,
+    has_handshake, methods, pointee_opaque, pointee_struct, results, returned_scalar,
+    returns_status, status_enum,
 };
 
 /// A Dart identifier for a member or a field. A name that is one of
@@ -673,7 +674,11 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
         );
     }
     if let Some(ctor) = constructor(api, opaque) {
-        render_dart_constructor(out, api, ctor, &name);
+        render_dart_way_in(out, api, ctor, &name, None, Some(&opaque.name));
+    }
+    for factory in crate::rules::factories(api, opaque) {
+        let named = camel(&crate::rules::method_name(api, opaque, factory));
+        render_dart_way_in(out, api, factory, &name, Some(&named), Some(&opaque.name));
     }
     render_dart_error_reader(out, api, opaque);
     for m in methods(api, opaque) {
@@ -701,7 +706,22 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     let _ = writeln!(out, "}}\n");
 }
 
-fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str) {
+/// A way into a handle class: the unnamed constructor, or a **named**
+/// one for each factory beside it.
+///
+/// `named` is `None` for the constructor and `Some("newWithProvider")`
+/// for a factory, which is how Dart spells a second way in; `receiver`
+/// is the opaque whose handle would be `self` in a method, so that any
+/// other opaque's handle becomes a parameter of the class that holds it
+/// (`rules::factories`).
+fn render_dart_way_in(
+    out: &mut String,
+    api: &Api,
+    ctor: &FunctionDef,
+    name: &str,
+    named: Option<&str>,
+    receiver: Option<&str>,
+) {
     let mut params = Vec::new();
     let mut body = String::new();
     let mut args = Vec::new();
@@ -734,6 +754,19 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
             Role::UserData => {
                 params.push(format!("ffi.Pointer<ffi.Void>? {field}"));
                 args.push(format!("{field} ?? ffi.nullptr"));
+            }
+            // Another opaque's handle: the class that holds it is what
+            // the caller passes. Only a factory has one — the class
+            // being built has no handle yet.
+            Role::Handle => {
+                let held = pointee_opaque(api, p).map(|o| o.name.clone());
+                if held.as_deref() == receiver {
+                    params.push(format!("required Teistro{name} {field}"));
+                } else {
+                    let class = binding_type_name(held.as_deref().unwrap_or_default());
+                    params.push(format!("required Teistro{class} {field}"));
+                }
+                args.push(format!("{field}._handle"));
             }
             Role::HandleOut => {
                 let _ = writeln!(body, "      final out = arena<ffi.Pointer<{name}>>();");
@@ -792,8 +825,9 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
     }
     let _ = writeln!(
         out,
-        "{doc}  factory Teistro{name}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final message = error.ref.data == ffi.nullptr\n            ? 'the context could not be built (code $status)'\n            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();\n        lib.{free}(error);\n        throw TeistroException(Status.byId(status), message);\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
+        "{doc}  factory Teistro{name}{suffix}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final message = error.ref.data == ffi.nullptr\n            ? 'the context could not be built (code $status)'\n            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();\n        lib.{free}(error);\n        throw TeistroException(Status.byId(status), message);\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
         doc = doc(&ctor.doc, "  "),
+        suffix = named.map_or_else(String::new, |n| format!(".{n}")),
         params = params.join(", "),
         call = ctor.name,
         args = args.join(", "),
