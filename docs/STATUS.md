@@ -1169,6 +1169,19 @@ provider's DUT1).
    number in it. In `crates/ffi`, `///` is a public document in five
    languages and `//` is a note to us.
 
+   **And `check-parity` runs four runners now**, so the 125-key
+   agreement is a gate rather than a snapshot: *4 bindings agree, value
+   for value*, with `Rust does not print 549 of Node's keys` printed
+   beside it on every run. Proved red by adding one to a day of the
+   month.
+
+   The 549 are a **count and not a declared list**, deliberately: a list
+   would have to name all of them, and most are not the boundary-only
+   keys §6 accounts for — they are detail the Rust runner does not print
+   yet, a graha at a time and a muhurta at a time. Completing it is
+   mechanical, and the count is what says how much is left. The number
+   only going down is the property a reader can watch.
+
    The order of work was deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the

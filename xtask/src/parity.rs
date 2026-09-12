@@ -47,6 +47,10 @@ use crate::binding::{build, library, library_artefact, present};
 const NODE: &str = "bindings/node/parity.mjs";
 const DART: &str = "bindings/dart/bin/parity.dart";
 const PYTHON: &str = "bindings/python/parity.py";
+/// The Rust surface's runner, which is an example of its own crate
+/// rather than a script beside a binding: a Rust consumer runs an
+/// example, and `cargo` already knows how.
+const RUST: &str = "crates/sdk/examples/parity.rs";
 /// Where a number's last digit is allowed to differ. Both reports print
 /// nine decimals, so two languages rounding the same double can differ by
 /// one in that place and no more; the tolerance is absolute rather than
@@ -58,16 +62,33 @@ const TOLERANCE: f64 = 2e-9;
 struct Report {
     binding: &'static str,
     lines: Vec<(String, String)>,
+    /// Whether this report is allowed to print fewer keys than the
+    /// first, which one of the four is.
+    ///
+    /// **The Rust surface cannot print the same key set, by design.**
+    /// Among the others' are `abi`, `build-commit`, `build-target` and
+    /// the result blobs' sections: a Rust consumer has none of them,
+    /// because Cargo resolved the versions, `Drop` freed the memory and
+    /// the crates handed back their own types rather than a blob
+    /// (`03-design/rust-consumer-surface.md` §6). Its report is
+    /// therefore a **subset**, and what is gated is that every key it
+    /// does print agrees — with the count of what it does not printed
+    /// on every run, so a subset that stops shrinking is visible.
+    subset: bool,
 }
 
 impl Report {
-    fn read(binding: &'static str, output: &str) -> Report {
+    fn read(binding: &'static str, output: &str, subset: bool) -> Report {
         let lines = output
             .lines()
             .filter_map(|line| line.split_once('\t'))
             .map(|(key, value)| (key.to_string(), value.to_string()))
             .collect();
-        Report { binding, lines }
+        Report {
+            binding,
+            lines,
+            subset,
+        }
     }
 }
 
@@ -90,14 +111,28 @@ fn compare(left: &Report, right: &Report) -> usize {
     let mut right_keys: Vec<&str> = right.lines.iter().map(|(k, _)| k.as_str()).collect();
     left_keys.sort_unstable();
     right_keys.sort_unstable();
+    let mut absent = 0_usize;
     for key in &left_keys {
         if !right_keys.contains(key) {
+            if right.subset {
+                absent += 1;
+                continue;
+            }
             println!(
                 "      {key}: {} has it, {} does not",
                 left.binding, right.binding
             );
             differences += 1;
         }
+    }
+    if absent != 0 {
+        // Counted, not silent: the Rust surface prints a subset by
+        // design (§6), and the number is on every run so a subset that
+        // stops shrinking as that surface grows is visible.
+        println!(
+            "      {} does not print {absent} of {}'s keys, which §6 of `03-design/rust-consumer-surface.md` accounts for",
+            right.binding, left.binding
+        );
     }
     for key in &right_keys {
         if !left_keys.contains(key) {
@@ -125,11 +160,11 @@ fn compare(left: &Report, right: &Report) -> usize {
 
 /// Runs one binding's report, or `None` when the runner failed, which is
 /// printed either way. Each caller sets the directory its runner expects.
-fn run(binding: &'static str, command: &mut Command) -> Option<Report> {
+fn run(binding: &'static str, command: &mut Command, subset: bool) -> Option<Report> {
     match command.output() {
         Ok(output) if output.status.success() => {
             let text = String::from_utf8_lossy(&output.stdout).to_string();
-            let report = Report::read(binding, &text);
+            let report = Report::read(binding, &text, subset);
             if report.lines.is_empty() {
                 println!("FAIL  the {binding} runner printed no report");
                 return None;
@@ -184,6 +219,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         reports.extend(run(
             "Node",
             Command::new("node").arg(NODE).current_dir(root),
+            false,
         ));
     } else {
         println!("skip  {NODE}: no `node` on this machine");
@@ -196,6 +232,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                 .args(["run", "bin/parity.dart"])
                 .env("TEISTRO_LIBRARY", &library)
                 .current_dir(root.join("bindings/dart")),
+            false,
         ));
     } else {
         println!("skip  {DART}: no `dart` on this machine");
@@ -209,10 +246,23 @@ pub(crate) fn check(root: &Path) -> i32 {
                 .env("TEISTRO_LIBRARY", &library)
                 .env("PYTHONPATH", root.join("bindings/python"))
                 .current_dir(root.join("bindings/python")),
+            false,
         ));
     } else {
         println!("skip  {PYTHON}: no `{python}` on this machine");
     }
+    // The Rust surface's own runner. No `present` check: it is an
+    // example of a workspace crate, so a machine that can run this gate
+    // can run it.
+    println!("run   {RUST}");
+    reports.extend(run(
+        "Rust",
+        Command::new(crate::binding::cargo())
+            .args(["run", "--quiet", "-p", "teistro", "--example", "parity"])
+            .current_dir(root),
+        true,
+    ));
+
     if reports.len() < 2 {
         println!("skip  nothing to compare: {} report(s)", reports.len());
         return i32::from(reports.is_empty() && ran);
@@ -225,11 +275,13 @@ pub(crate) fn check(root: &Path) -> i32 {
     for other in &reports[1..] {
         let found = compare(first, other);
         if found == 0 {
+            // The count compared, not the first report's: a subset
+            // agreeing on 125 of 674 must not read as 674.
             println!(
                 "ok    the {} and {} bindings agree on every one of {} values",
                 first.binding,
                 other.binding,
-                first.lines.len()
+                other.lines.len().min(first.lines.len())
             );
         }
         differences += found;

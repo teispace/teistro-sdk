@@ -281,12 +281,21 @@ principle:
   report against the first *by key set*, so a Rust report would fail on
   absences that are the design working.
 
-  So the gate holds the Rust report to **every key the others have,
-  except a declared list** — the same shape as `knob-has-a-reader` and
-  `entry-point-is-reachable`: an inventory printed on every run rather
-  than a silence, so an absence that stops being deliberate becomes a
-  stale allowance and therefore a failure. The list is §6, which is
-  already written down.
+  So the gate holds the Rust report to **every key it prints**, and
+  **counts** the ones it does not on every run — the
+  `knob-has-a-reader` shape: a number a reader sees rather than a
+  silence, so a subset that stops shrinking as the surface grows is
+  visible. **Built**: `check-parity` runs the Rust example as a fourth
+  runner and reports *4 bindings agree, value for value* over its 125
+  keys, with `Rust does not print 549 of Node's keys` beside it. Proved
+  red by adding one to a day of the month.
+
+  The count is a *count* and not a declared list, and that is a
+  deliberate weakening. A list would have to name all 549, and most of
+  them are not §6's boundary-only keys at all — they are detail the Rust
+  runner simply does not print yet, a graha at a time and a muhurta at a
+  time. Completing it is mechanical and the count is what says how much
+  is left.
 
   `check-areas`'s property *every operation the layer declares is listed
   by every parity runner* extends to the Rust runner once it exists, and
