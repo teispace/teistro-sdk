@@ -18,6 +18,7 @@
 //! file nobody reads.
 
 mod calendar;
+mod engine;
 mod frame;
 mod intl;
 mod keys;
@@ -41,6 +42,7 @@ pub(crate) fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Err
 }
 
 pub use calendar::CalendarArea;
+pub use engine::EngineArea;
 pub use frame::FrameArea;
 pub use intl::IntlArea;
 pub use keys::KeysArea;

@@ -1039,6 +1039,28 @@ provider's DUT1).
    exactly the five-dependency problem this crate exists to stop, so
    they are re-exported. One dependency is the point of a façade.
 
+   **`engine` too**, which makes six of the eight areas and the root's
+   `positions`: one reading of the provider's manifest behind two
+   refusals — no ephemeris at all, and an ephemeris that describes no
+   operations of its own, which is exactly what the built-in is, so a
+   consumer on the fallback is told which they have rather than handed
+   an empty manifest. Twenty-two tests.
+
+   **And the order of work reverses for the last two, because of an
+   oracle.** Every area so far could be checked against a fact the C
+   smoke test already asserts — a Bikram Sambat date, a Kathmandu
+   offset, the Sun near 280°. A chart's lagna, day lagna, ayanamsha
+   offset and day part are asserted by no smoke test; what holds them is
+   the **parity report**, where the three bindings agree on them value
+   by value. So lifting that composition without the fourth runner would
+   be writing numbers with nothing to check them against.
+
+   And the runner cannot join `check-parity` until the surface is
+   complete, because that gate compares **key sets**: a report missing
+   `chart.found` fails rather than saying "not yet". So: write the
+   runner, run it by hand against the other three for the operations
+   that exist, build `chart` and `almanac` against it, then wire it in.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the

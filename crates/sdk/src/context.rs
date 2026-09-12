@@ -15,7 +15,7 @@ use teistro_intl::pack::locales_from_packs;
 use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest};
 
 use crate::BUNDLES;
-use crate::area::{CalendarArea, FrameArea, IntlArea, KeysArea, TimeArea};
+use crate::area::{CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
 /// One context: built once, read many times.
@@ -169,6 +169,13 @@ impl Context {
     #[must_use]
     pub fn intl(&self) -> IntlArea<'_> {
         IntlArea::of(self)
+    }
+
+    /// The operations your **ephemeris** brings with it, beyond the ones
+    /// the SDK names.
+    #[must_use]
+    pub fn engine(&self) -> EngineArea<'_> {
+        EngineArea::of(self)
     }
 
     /// A catalogue key to its packed id and back.

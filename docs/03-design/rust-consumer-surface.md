@@ -308,8 +308,27 @@ principle:
    answering with the astronomy crate's own `Completed` and no blob
    anywhere. The types it takes are re-exported, so one dependency is
    enough — its own test reached past this crate before they were, which
-   is how that gap was noticed. **Next:** `chart`, `almanac` and
-   `engine`.
+   is how that gap was noticed. `engine` is built too: one reading of the
+   provider's manifest behind two refusals — no ephemeris at all, and an
+   ephemeris that describes no operations of its own, which is what the
+   built-in is.
+
+   **Next: `chart` and `almanac`, and the parity runner before them.**
+   That reverses steps 1 and 2 for those two, and the reason is an
+   oracle. Every area so far could be checked against a fact the C smoke
+   test already asserts — a Bikram Sambat date, a Kathmandu offset, the
+   Sun near 280°. A chart's lagna, day lagna, ayanamsha offset and day
+   part are asserted by no smoke test; what holds them is the parity
+   report, where the three bindings agree on them value by value. So
+   lifting that composition without the runner would be writing numbers
+   with nothing to check them against, which this project does not do.
+
+   The runner cannot join `check-parity` until the surface is complete,
+   though, because that gate compares **key sets** and a report missing
+   `chart.found` would fail rather than say "not yet". So the order is:
+   write the runner, run it by hand against the other three's report for
+   the operations that exist, build `chart` and `almanac` against it,
+   then wire it in.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
 3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps

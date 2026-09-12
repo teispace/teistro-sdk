@@ -421,3 +421,24 @@ fn positions_without_an_ephemeris_refuse_by_capability() {
         "{refusal:?}"
     );
 }
+
+#[test]
+fn the_engine_area_refuses_where_there_is_nothing_to_ask() {
+    // The built-in describes no operations of its own -- it is the SDK's
+    // own ephemeris, not an engine with a surface -- so `engine` refuses
+    // by name rather than answering an empty manifest. A consumer on a
+    // real engine gets the manifest; a consumer on the fallback is told
+    // which they have.
+    let sdk = context();
+    let refusal = sdk.engine().manifest().expect_err("the built-in has none");
+    assert!(
+        refusal.to_string().contains("describes no operations"),
+        "{refusal}"
+    );
+
+    // And with no ephemeris at all it is the capability refusal, naming
+    // the option, not a confusing one about operations.
+    let bare = Context::builder().build().expect("every default");
+    let refusal = bare.engine().manifest().expect_err("no ephemeris");
+    assert_eq!(refusal.field(), Some("ephemeris"));
+}

@@ -41,7 +41,7 @@ mod context;
 mod ephemeris;
 mod scale;
 
-pub use area::{CalendarArea, FrameArea, IntlArea, KeysArea, TimeArea};
+pub use area::{CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
 pub use scale::{Conversion, Scale};

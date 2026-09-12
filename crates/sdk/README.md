@@ -64,7 +64,8 @@ first.
 | `keys` | `id`, `name` | built |
 | `frame` | `canonical`, `pack`, `unpack` | built |
 | the root | `positions`, `profile`, `settings`, `settings_hash`, `ephemeris`, `locale_engine` | built |
-| `chart`, `almanac`, `engine` | — | next |
+| `engine` | `manifest`, `manifest_json`, `names`, `signature`, `call`, `call_json` | built |
+| `chart`, `almanac` | — | next, and the parity runner is their oracle |
 
 `intl`'s **`messages`** is not a method here. The typed accessor tree
 every other binding spells
