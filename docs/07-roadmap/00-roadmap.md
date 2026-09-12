@@ -262,14 +262,27 @@ providers**" and the engine half of that does not exist outside Rust:
   `teistro-ffi` depend on it, keeping only its marshalling; the measured
   page's last two properties are the acceptance test, flipping from
   falsified to holding when it lands. Order of work: the façade beside
-  the boundary, the fourth parity runner, then the dependency inversion.
+  the boundary, the fourth parity runner, then the dependency inversion,
+  then the examples, then the site.
 
-  **Begun**: `crates/sdk`, the crate `teistro` — the context, a builder,
-  the ephemeris chain, and the `calendar` and `time` areas, with fifteen
-  tests asserting the C smoke test's own facts in the same words. The
-  acceptance test tracks it: two of the nine crates a context needs are
-  not the façade's yet, and those two are exactly the two areas left
-  before the inversion.
+  **Done — every step of it**, and the acceptance test says so: *the
+  façade owns the composition* holds 0 of 8, and *the boundary is
+  inverted onto it* holds 0 of 1. `crates/sdk` is the crate `teistro`,
+  with all eight areas and the root, the ephemeris chain, 25 tests
+  asserting the C smoke test's own facts in the same words, and eight
+  runnable examples held by `cargo xtask check-rust` on five platforms.
+  `TsContext` wraps a `teistro::Context` and `TsContext::build` is a
+  call into the builder, so a C caller and a Rust consumer get the same
+  context resolved the same way.
+
+  What proves it equal rather than merely compiling is the **fourth
+  parity runner**: 665 of the other three's 674 values, every one
+  identical, reached in five passes with every added key agreeing on its
+  first run. The nine it does not print are named rather than counted,
+  and `check-parity` holds the list exhaustively in both directions.
+  `check-areas` reads four runners now, and the measured page gained a
+  third property — *every type an area's signature names is reachable
+  from the crate root* — which was born red on four.
 
 The **v1 target matrix** is Rust, Node, wasm, Flutter/Dart and Python,
 with C as the ABI beneath them. wasm is already Phase 5's binding; what
