@@ -115,7 +115,7 @@ from .catalogue import (
 )
 
 # The ABI version of the vtable layout.
-VTABLE_ABI_VERSION: Final = 2
+VTABLE_ABI_VERSION: Final = 3
 
 # A context flag: use the SDK's analytic test provider when no provider
 # vtable is given. For tests and examples only; its positions are not
@@ -137,7 +137,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_crossing_event": 24,
     "ts_data_hash": 24,
     "ts_capabilities": 112,
-    "ts_provider_vtable": 72,
+    "ts_provider_vtable": 88,
     "ts_string": 24,
     "ts_str": 16,
     "ts_hash": 32,
@@ -167,7 +167,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_crossing_event": 24,
     "ts_data_hash": 16,
     "ts_capabilities": 72,
-    "ts_provider_vtable": 40,
+    "ts_provider_vtable": 48,
     "ts_string": 12,
     "ts_str": 8,
     "ts_hash": 32,
@@ -787,6 +787,35 @@ CrossingsFn = ctypes.CFUNCTYPE(
     ctypes.POINTER(ctypes.c_uint32),
 )
 
+# The engine's own manifest, as JSON.
+#
+# Writes up to `capacity` bytes into the caller's buffer and the length
+# it wanted into `out_len`, which may exceed the capacity — in which
+# case the caller calls again with a larger one. The same size-then-fill
+# protocol the crossings use, and for the same reason: nothing allocated
+# on one side of this boundary is freed on the other.
+NativeManifestFn = ctypes.CFUNCTYPE(
+    ctypes.c_int32,
+    ctypes.c_void_p,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_size_t),
+)
+
+# One of the engine's own operations, called by the name its manifest
+# gives, with arguments as a JSON object.
+#
+# Answers as `NativeManifestFn` does.
+NativeCallFn = ctypes.CFUNCTYPE(
+    ctypes.c_int32,
+    ctypes.c_void_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_size_t),
+)
+
 class _ProviderVtableStruct(ctypes.Structure):
     """The vtable: `user_data` is whatever the provider registered and is
     passed back to every function; a null function is an undeclared
@@ -806,6 +835,8 @@ class _ProviderVtableStruct(ctypes.Structure):
         ("dut1", Dut1Fn),
         ("horizon_event", HorizonEventFn),
         ("crossings", CrossingsFn),
+        ("native_manifest", NativeManifestFn),
+        ("native_call", NativeCallFn),
     ]
 
 

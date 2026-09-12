@@ -97,7 +97,12 @@ serde_json = "1"
 
 # The same table as the SDK workspace; a standalone crate cannot inherit it.
 [lints.rust]
-unsafe_code = "forbid"
+# Denied rather than forbidden, in one module and for one reason: the
+# generated engine pass-through (`src/dispatch.rs`) calls the engine's C
+# entry points directly, because the functions it offers are the ones the
+# safe binding does not wrap. Everything else in this adapter goes
+# through that binding and holds no `unsafe` at all.
+unsafe_code = "deny"
 missing_docs = "warn"
 missing_debug_implementations = "warn"
 unreachable_pub = "warn"

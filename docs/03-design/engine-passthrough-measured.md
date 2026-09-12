@@ -1,6 +1,6 @@
 # The engine passthrough, measured
 
-Status: `generated` by `cargo xtask engine`, gated by `check-engine`. Do not edit. Read from `adapters/ephemeris-teimeris/rust/data/teimeris.idl`, the engine's own generated description, vendored beside the adapter at version `0.1.0`.
+Status: `generated` by `cargo xtask engine`, gated by `check-engine`. Do not edit. Read from `adapters/ephemeris-teimeris/rust/data/teimeris.idl`, the engine's own generated description, vendored beside the adapter at version `0.1.0`. The same reading writes `adapters/ephemeris-teimeris/rust/src/dispatch.rs`, so a figure here and the code that answers it cannot disagree.
 
 ADR-0030 puts an engine's own functions at `sdk.engine.*`, so that a consumer can reach what the SDK has not ported. The port says how — "the marshalling belongs to the adapter, generated from the engine's manifest" — and this is the measurement that generation is sized from.
 

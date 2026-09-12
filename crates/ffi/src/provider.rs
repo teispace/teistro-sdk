@@ -256,6 +256,8 @@ unsafe fn load(path: *const c_char, config_json: *const c_char) -> Result<TsProv
         dut1: None,
         horizon_event: None,
         crossings: None,
+        native_manifest: None,
+        native_call: None,
     };
     let mut user_data: *mut c_void = core::ptr::null_mut();
     let mut message = [0 as c_char; ERROR_CAPACITY];

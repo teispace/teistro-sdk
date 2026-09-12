@@ -39,6 +39,9 @@ const IDL: &str = "adapters/ephemeris-teimeris/rust/data/teimeris.idl";
 
 const PAGE: &str = "docs/03-design/engine-passthrough-measured.md";
 
+/// The generated marshalling, beside the adapter that uses it.
+const DISPATCH: &str = "adapters/ephemeris-teimeris/rust/src/dispatch.rs";
+
 /// What the SDK owns and a caller must not take from it.
 ///
 /// These open, close or rebind the very things the adapter is holding: a
@@ -77,6 +80,7 @@ struct TypeRef {
 
 #[derive(Debug, Deserialize)]
 struct Param {
+    name: String,
     #[serde(rename = "type")]
     type_ref: TypeRef,
     #[serde(default)]
@@ -191,39 +195,55 @@ fn standing(function: &Function, enums: &[String]) -> (Standing, &'static str) {
     }
 }
 
-/// Runs the classification and writes the page.
-pub(crate) fn generate(root: &Path) -> i32 {
-    match page(root) {
-        Ok(text) => write(root, &[Output::new(PAGE, text)]),
-        Err(message) => {
-            eprintln!("{message}");
-            1
-        }
-    }
-}
-
-/// Regenerates in memory and fails on any difference.
-pub(crate) fn check_generated(root: &Path) -> i32 {
-    match page(root) {
-        Ok(text) => check(root, &[Output::new(PAGE, text)], "cargo xtask engine"),
-        Err(message) => {
-            eprintln!("{message}");
-            1
-        }
-    }
-}
-
-fn page(root: &Path) -> Result<String, String> {
+/// The page and the marshalling, from one reading of the description, so
+/// a figure on the page and the code that answers it cannot disagree.
+fn outputs(root: &Path) -> Result<Vec<Output>, String> {
     let text = std::fs::read_to_string(root.join(IDL))
         .map_err(|error| format!("{IDL} is not readable: {error}"))?;
     let idl: Idl =
         serde_json::from_str(&text).map_err(|error| format!("{IDL} does not parse: {error}"))?;
     let enums: Vec<String> = idl.enums.iter().map(|e| e.name.clone()).collect();
+    let classified: Vec<(&Function, Standing, &'static str)> = idl
+        .functions
+        .iter()
+        .map(|function| {
+            let (standing, why) = standing(function, &enums);
+            (function, standing, why)
+        })
+        .collect();
+    Ok(vec![
+        Output::new(PAGE, page(&idl, &classified)),
+        Output::new(DISPATCH, dispatch(&idl, &classified)),
+    ])
+}
 
+/// Runs the classification and writes both.
+pub(crate) fn generate(root: &Path) -> i32 {
+    match outputs(root) {
+        Ok(outputs) => write(root, &outputs),
+        Err(message) => {
+            eprintln!("{message}");
+            1
+        }
+    }
+}
+
+/// Regenerates both in memory and fails on any difference.
+pub(crate) fn check_generated(root: &Path) -> i32 {
+    match outputs(root) {
+        Ok(outputs) => check(root, &outputs, "cargo xtask engine"),
+        Err(message) => {
+            eprintln!("{message}");
+            1
+        }
+    }
+}
+
+/// The measurement, from a reading already done.
+fn page(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String {
     let mut by_standing: BTreeMap<Standing, Vec<(&str, &'static str, bool)>> = BTreeMap::new();
-    for function in &idl.functions {
-        let (standing, why) = standing(function, &enums);
-        by_standing.entry(standing).or_default().push((
+    for (function, standing, why) in classified {
+        by_standing.entry(*standing).or_default().push((
             function.name.as_str(),
             why,
             mutates_engine_state(&function.name),
@@ -237,7 +257,7 @@ fn page(root: &Path) -> Result<String, String> {
     let _ = writeln!(out, "# The engine passthrough, measured\n");
     let _ = writeln!(
         out,
-        "Status: `generated` by `cargo xtask engine`, gated by `check-engine`. Do not edit. Read from `{IDL}`, the engine's own generated description, vendored beside the adapter at version `{}`.\n",
+        "Status: `generated` by `cargo xtask engine`, gated by `check-engine`. Do not edit. Read from `{IDL}`, the engine's own generated description, vendored beside the adapter at version `{}`. The same reading writes `{DISPATCH}`, so a figure here and the code that answers it cannot disagree.\n",
         idl.version
     );
     let _ = writeln!(
@@ -273,7 +293,227 @@ fn page(root: &Path) -> Result<String, String> {
     out.push_str(&callable_section(by_standing.get(&Standing::Callable)));
     out.push_str(&queue_section(by_standing.get(&Standing::Unlearned)));
     out.push_str(&limits_section());
-    Ok(out)
+    out
+}
+
+/// The Rust spelling of an IDL type, as the `sys` crate names it.
+///
+/// The engine's enums are `c_int` aliases in `sys`, so a name that is not
+/// a scalar is an alias and passes through unchanged: the cast does the
+/// work and nothing here has to carry a table of forty enums.
+fn rust_type(base: &str) -> String {
+    match base {
+        "double" => "f64".to_string(),
+        "float" => "f32".to_string(),
+        "int32_t" => "i32".to_string(),
+        "uint32_t" => "u32".to_string(),
+        "int64_t" => "i64".to_string(),
+        "uint64_t" => "u64".to_string(),
+        "size_t" => "usize".to_string(),
+        "int" => "::core::ffi::c_int".to_string(),
+        "bool" => "bool".to_string(),
+        other => format!("sys::{other}"),
+    }
+}
+
+/// Whether a base crosses JSON as a number with a fractional part.
+fn is_float(base: &str) -> bool {
+    matches!(base, "double" | "float")
+}
+
+/// The marshalling: one arm per callable function, generated.
+fn dispatch(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String {
+    let callable: Vec<&Function> = classified
+        .iter()
+        .filter(|(_, standing, _)| *standing == Standing::Callable)
+        .map(|(function, _, _)| *function)
+        .collect();
+
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "//! The engine's own functions, reachable by name. **Generated by\n\
+         //! `cargo xtask engine`. Do not edit.**\n\
+         //!\n\
+         //! One arm per function the marshaller can carry, from the engine's\n\
+         //! own description at version `{}`. What is here and what is not is\n\
+         //! measured in `docs/03-design/engine-passthrough-measured.md`: the\n\
+         //! functions this adapter will never offer are excluded by what they\n\
+         //! touch, and the rest are a queue for the generator.\n\
+         //!\n\
+         //! This is the adapter's only `unsafe`. Everything else goes through\n\
+         //! the safe binding; these are the calls that binding does not wrap,\n\
+         //! which is the whole reason a consumer would reach for them.\n\
+         \n\
+         #![allow(\n    \
+         unsafe_code,\n    \
+         clippy::too_many_lines,\n    \
+         reason = \"generated: one arm per engine function\"\n\
+         )]\n\
+         \n\
+         use serde_json::{{Map, Value, json}};\n\
+         use teimeris::sys;\n\
+         use teistro_port_ephemeris::ProviderError;\n\
+         \n\
+         use crate::passthrough::{{narrow, number, status}};\n",
+        idl.version
+    );
+
+    // The manifest: what a caller may ask for, and the role of each
+    // parameter, which is what `sdk.engine.signature(name)` reads.
+    let mut functions_json = Vec::new();
+    for function in &callable {
+        let params: Vec<String> = function
+            .params
+            .iter()
+            .filter(|p| p.role != "handle")
+            .map(|p| {
+                let role = if p.role == "scalar_out" { "out" } else { "in" };
+                format!(
+                    "{{\"name\":\"{}\",\"role\":\"{role}\",\"type\":\"{}\"}}",
+                    p.name, p.type_ref.base
+                )
+            })
+            .collect();
+        let returns = if function.returns.base == "tm_status" {
+            "status".to_string()
+        } else if function.returns.base == "void" {
+            "void".to_string()
+        } else {
+            function.returns.base.clone()
+        };
+        functions_json.push(format!(
+            "{{\"name\":\"{}\",\"params\":[{}],\"returns\":\"{returns}\",\"mutatesEngineState\":{}}}",
+            function.name,
+            params.join(","),
+            mutates_engine_state(&function.name)
+        ));
+    }
+    let _ = writeln!(
+        out,
+        "/// What this adapter offers of the engine's own surface, as the\n\
+         /// port's `native_manifest` answers it.\n\
+         ///\n\
+         /// `mutatesEngineState` is the flag a consumer needs and no other\n\
+         /// manifest would carry: after such a call the engine answers under\n\
+         /// settings the SDK's provenance does not record.\n\
+         pub(crate) const MANIFEST: &str = r#\"{{\"engine\":\"teimeris\",\"version\":\"{}\",\"functions\":[{}]}}\"#;\n",
+        idl.version,
+        functions_json.join(",")
+    );
+
+    let _ = writeln!(
+        out,
+        "/// Calls one of them by name.\n\
+         ///\n\
+         /// # Errors\n\
+         ///\n\
+         /// `Unsupported` for a name this adapter does not offer, `Invalid`\n\
+         /// for an argument missing or of the wrong kind, and the engine's\n\
+         /// own refusal otherwise.\n\
+         pub(crate) fn call(\n    \
+         context: *mut sys::tm_context,\n    \
+         function: &str,\n    \
+         args: &Map<String, Value>,\n\
+         ) -> Result<Value, ProviderError> {{\n    \
+         match function {{"
+    );
+    for function in &callable {
+        out.push_str(&arm(function));
+    }
+    let _ = writeln!(
+        out,
+        "        other => Err(ProviderError::unsupported(format!(\n            \
+         \"the engine offers no `{{other}}` through this adapter; \\\n             \
+         `native_manifest` lists what it does\"\n        ))),\n    \
+         }}\n\
+         }}"
+    );
+    out
+}
+
+/// One function's arm: read the arguments, call, answer.
+fn arm(function: &Function) -> String {
+    let mut out = String::new();
+    let name = &function.name;
+    let _ = writeln!(out, "        \"{name}\" => {{");
+
+    let mut call_args: Vec<String> = Vec::new();
+    let mut outs: Vec<&str> = Vec::new();
+    for param in &function.params {
+        match param.role.as_str() {
+            "handle" => call_args.push("context".to_string()),
+            "value" => {
+                let ty = rust_type(&param.type_ref.base);
+                // A float is read as one; anything else is **narrowed** to
+                // the width the engine declares, and refused when it does
+                // not fit rather than silently keeping the low bits.
+                let _ = if is_float(&param.type_ref.base) {
+                    // `number` answers `f64` already; only a `float`
+                    // parameter needs narrowing, and that one is lossy by
+                    // the engine's own declaration rather than by ours.
+                    let cast = if ty == "f64" {
+                        String::new()
+                    } else {
+                        format!(" as {ty}")
+                    };
+                    writeln!(
+                        out,
+                        "            let {}: {ty} = number(args, \"{}\")?{cast};",
+                        param.name, param.name
+                    )
+                } else {
+                    writeln!(
+                        out,
+                        "            let {}: {ty} = narrow(args, \"{}\")?;",
+                        param.name, param.name
+                    )
+                };
+                call_args.push(param.name.clone());
+            }
+            "scalar_out" => {
+                let ty = rust_type(&param.type_ref.base);
+                let zero = if is_float(&param.type_ref.base) {
+                    "0.0"
+                } else {
+                    "0"
+                };
+                let _ = writeln!(out, "            let mut {}: {ty} = {zero};", param.name);
+                call_args.push(format!("&raw mut {}", param.name));
+                outs.push(param.name.as_str());
+            }
+            _ => unreachable!("only a callable function reaches here"),
+        }
+    }
+
+    let call = format!("sys::{name}({})", call_args.join(", "));
+    let binding = if function.returns.base == "void" {
+        String::new()
+    } else {
+        "let answered = ".to_string()
+    };
+    let _ = writeln!(
+        out,
+        "            // SAFETY: the context is the adapter's own, live for\n            \
+         // this call; every out-parameter is a local of the declared width.\n            \
+         {binding}unsafe {{ {call} }};"
+    );
+    if function.returns.base == "tm_status" {
+        let _ = writeln!(out, "            status(answered, \"{name}\")?;");
+    }
+    let mut fields: Vec<String> = outs
+        .iter()
+        // No cast at all: `serde_json` serialises every primitive
+        // numeric, and the widths here are the engine's own. A cast would
+        // be a claim about which of them was declared.
+        .map(|name| format!("\"{name}\": {name}"))
+        .collect();
+    if !matches!(function.returns.base.as_str(), "tm_status" | "void") {
+        fields.push("\"return\": answered".to_string());
+    }
+    let _ = writeln!(out, "            Ok(json!({{{}}}))", fields.join(", "));
+    let _ = writeln!(out, "        }}");
+    out
 }
 
 fn owned_section(rows: Option<&Vec<(&str, &'static str, bool)>>) -> String {

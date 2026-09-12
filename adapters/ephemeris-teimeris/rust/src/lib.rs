@@ -106,6 +106,10 @@ pub fn data_dir_from_env() -> PathBuf {
     )
 }
 
+#[rustfmt::skip]
+mod dispatch;
+mod passthrough;
+
 /// The plugin entry points, so this adapter can be **loaded** rather
 /// than linked (ADR-0029).
 ///
@@ -351,11 +355,11 @@ impl TeimerisProvider {
                 .with(Overrides::RISE_SET),
             ayanamshas,
             deterministic: true,
-            // Teimeris describes 161 functions of its own in
-            // `tools/idl/teimeris.idl`, and answering the port's
-            // `native_manifest` and `native_call` from it is this
-            // adapter's remaining work; until it does, it must not claim
-            // the route.
+            // The engine's own functions, by name (ADR-0030). What is
+            // offered and what is withheld is measured in
+            // `03-design/engine-passthrough-measured.md` and generated
+            // into `dispatch.rs` from the same reading.
+            native: true,
             ..Capabilities::default()
         };
         Ok(TeimerisProvider {
@@ -396,6 +400,47 @@ impl TeimerisProvider {
 impl EphemerisProvider for TeimerisProvider {
     fn capabilities(&self) -> Capabilities {
         self.capabilities.clone()
+    }
+
+    /// What this adapter offers of the engine's own surface.
+    ///
+    /// Generated from the engine's description, not written: the port
+    /// asks for the manifest an adapter can actually honour, so this
+    /// lists what `native_call` will answer and nothing the marshaller
+    /// has not learned.
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        Ok(dispatch::MANIFEST.to_string())
+    }
+
+    /// Calls one of the engine's own functions by name.
+    ///
+    /// The context is the adapter's own — the same one every other call
+    /// on this provider goes through — so a caller reading engine state
+    /// reads the state the charts were computed under, and a caller
+    /// changing it changes that. The manifest marks which calls do
+    /// (`mutatesEngineState`); this does not stop them, because reaching
+    /// what the SDK has not ported is the point of the route.
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        let arguments: serde_json::Value = if arguments_json.trim().is_empty() {
+            serde_json::Value::Object(serde_json::Map::new())
+        } else {
+            serde_json::from_str(arguments_json).map_err(|error| {
+                ProviderError::invalid(format!("the arguments do not parse: {error}"))
+            })?
+        };
+        let Some(arguments) = arguments.as_object() else {
+            return Err(ProviderError::invalid(
+                "the arguments must be an object keyed by parameter name",
+            ));
+        };
+        let guard = self.context.lock().unwrap_or_else(PoisonError::into_inner);
+        let answered = dispatch::call(guard.as_ptr(), function, arguments)?;
+        drop(guard);
+        serde_json::to_string(&answered).map_err(|error| {
+            ProviderError::Refused {
+                detail: format!("the answer does not serialise: {error}"),
+            }
+        })
     }
 
     fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {

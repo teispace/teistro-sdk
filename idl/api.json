@@ -29,7 +29,7 @@
       "name": "VTABLE_ABI_VERSION",
       "doc": "The ABI version of the vtable layout.",
       "ty": "u32",
-      "value": 2,
+      "value": 3,
       "source": "crates/port-ephemeris/src/vtable.rs"
     },
     {
@@ -6867,6 +6867,144 @@
         "scalar": "i32"
       },
       "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
+      "name": "NativeManifestFn",
+      "doc": "The engine's own manifest, as JSON.\n\nWrites up to `capacity` bytes into the caller's buffer and the length\nit wanted into `out_len`, which may exceed the capacity — in which\ncase the caller calls again with a larger one. The same size-then-fill\nprotocol the crossings use, and for the same reason: nothing allocated\non one side of this boundary is freed on the other.",
+      "params": [
+        {
+          "name": "user_data",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "void"
+            },
+            "mutable": true
+          },
+          "role": "user_data",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": true
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "capacity",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "out_len",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "usize"
+            },
+            "mutable": true
+          },
+          "role": "scalar_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "scalar",
+        "scalar": "i32"
+      },
+      "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
+      "name": "NativeCallFn",
+      "doc": "One of the engine's own operations, called by the name its manifest\ngives, with arguments as a JSON object.\n\nAnswers as `NativeManifestFn` does.",
+      "params": [
+        {
+          "name": "user_data",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "void"
+            },
+            "mutable": true
+          },
+          "role": "user_data",
+          "meta": {}
+        },
+        {
+          "name": "function",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "arguments_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": true
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "capacity",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "out_len",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "usize"
+            },
+            "mutable": true
+          },
+          "role": "scalar_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "scalar",
+        "scalar": "i32"
+      },
+      "source": "crates/port-ephemeris/src/vtable.rs"
     }
   ],
   "structs": [
@@ -8000,6 +8138,24 @@
             "name": "CrossingsFn"
           },
           "doc": "The crossings override.",
+          "meta": {}
+        },
+        {
+          "name": "native_manifest",
+          "ty": {
+            "kind": "callback",
+            "name": "NativeManifestFn"
+          },
+          "doc": "The engine's own manifest, when it offers one.\n\nNull where the provider offers no operations of its own — which\nis what `Capabilities::native` already says, and this is the\nfunction that makes the saying true across the boundary. Added at\nABI 3: a loaded adapter could declare the route and had no way to\nanswer it.",
+          "meta": {}
+        },
+        {
+          "name": "native_call",
+          "ty": {
+            "kind": "callback",
+            "name": "NativeCallFn"
+          },
+          "doc": "One of the engine's own operations.",
           "meta": {}
         }
       ],

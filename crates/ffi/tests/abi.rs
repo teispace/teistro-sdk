@@ -36,6 +36,7 @@ use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
     ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
 };
+use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::keys::{ts_key_name, ts_key_parse};
 use teistro_ffi::positions::ts_positions;
@@ -423,6 +424,50 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
         (279.0..282.0).contains(&sun),
         "the engine put the Sun at {sun} degrees at J2000"
     );
+    // **The whole chain**: a consumer's binding, this library, an adapter
+    // loaded from a file, and the engine's own function reached by name
+    // (ADR-0030). Nothing of the engine is compiled into this library,
+    // and none of the names below appear in it.
+    let mut json = TsString::empty();
+    // SAFETY: a live context and a writable slot.
+    assert_eq!(
+        unsafe { ts_ephemeris_manifest(context, &raw mut json) },
+        Status::Ok,
+        "a loaded engine describes itself"
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let manifest = unsafe { core::slice::from_raw_parts(json.data, json.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_string_free(&raw mut json) };
+    let manifest = String::from_utf8(manifest).expect("the manifest is text");
+    assert!(
+        manifest.contains("tm_delta_t"),
+        "the manifest lists what can be called"
+    );
+    assert!(
+        !manifest.contains("tm_context_close"),
+        "and not what the adapter owns"
+    );
+
+    let name = CString::new("tm_delta_t").unwrap();
+    let arguments = CString::new(r#"{"jd_ut1": 2451545.0}"#).unwrap();
+    let mut answer = TsString::empty();
+    // SAFETY: a live context, live strings and a writable slot.
+    assert_eq!(
+        unsafe { ts_ephemeris_call(context, name.as_ptr(), arguments.as_ptr(), &raw mut answer,) },
+        Status::Ok,
+        "and answers when called by name"
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let said = unsafe { core::slice::from_raw_parts(answer.data, answer.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_string_free(&raw mut answer) };
+    let said = String::from_utf8(said).expect("the answer is text");
+    assert!(
+        said.contains("out_seconds"),
+        "the engine's out-parameter comes back under its own name: {said}"
+    );
+
     // SAFETY: a live context, freed once.
     unsafe { ts_context_free(context) };
 }

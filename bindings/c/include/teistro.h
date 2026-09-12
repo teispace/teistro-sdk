@@ -16,7 +16,7 @@ extern "C" {
 /**
  * The ABI version of the vtable layout.
  */
-#define TS_VTABLE_ABI_VERSION ((uint32_t)2)
+#define TS_VTABLE_ABI_VERSION ((uint32_t)3)
 
 /**
  * The ABI version `ts_abi_version` returns; a binding refuses to load a
@@ -4642,6 +4642,25 @@ typedef int32_t (*ts_horizon_event_fn)(void * user_data, const ts_horizon_reques
 typedef int32_t (*ts_crossings_fn)(void * user_data, const ts_crossing_request * request, ts_crossing_event * out_events, uint32_t capacity, uint32_t * out_count);
 
 /**
+ * The engine's own manifest, as JSON.
+ *
+ * Writes up to `capacity` bytes into the caller's buffer and the length
+ * it wanted into `out_len`, which may exceed the capacity — in which
+ * case the caller calls again with a larger one. The same size-then-fill
+ * protocol the crossings use, and for the same reason: nothing allocated
+ * on one side of this boundary is freed on the other.
+ */
+typedef int32_t (*ts_native_manifest_fn)(void * user_data, char * out_json, size_t capacity, size_t * out_len);
+
+/**
+ * One of the engine's own operations, called by the name its manifest
+ * gives, with arguments as a JSON object.
+ *
+ * Answers as `NativeManifestFn` does.
+ */
+typedef int32_t (*ts_native_call_fn)(void * user_data, const char * function, const char * arguments_json, char * out_json, size_t capacity, size_t * out_len);
+
+/**
  * A C observer: degrees and metres, validated into a `Place` on the
  * way in.
  */
@@ -5119,6 +5138,20 @@ struct ts_provider_vtable {
      * The crossings override.
      */
     ts_crossings_fn crossings;
+    /**
+     * The engine's own manifest, when it offers one.
+     *
+     * Null where the provider offers no operations of its own — which
+     * is what `Capabilities::native` already says, and this is the
+     * function that makes the saying true across the boundary. Added at
+     * ABI 3: a loaded adapter could declare the route and had no way to
+     * answer it.
+     */
+    ts_native_manifest_fn native_manifest;
+    /**
+     * One of the engine's own operations.
+     */
+    ts_native_call_fn native_call;
 };
 
 /**
@@ -6301,7 +6334,7 @@ _Static_assert(sizeof(ts_crossing_request) == 96, "ts_crossing_request is 96 byt
 _Static_assert(sizeof(ts_crossing_event) == 24, "ts_crossing_event is 24 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_data_hash) == 24, "ts_data_hash is 24 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_capabilities) == 112, "ts_capabilities is 112 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_provider_vtable) == 72, "ts_provider_vtable is 72 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_provider_vtable) == 88, "ts_provider_vtable is 88 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_string) == 24, "ts_string is 24 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_str) == 16, "ts_str is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_hash) == 32, "ts_hash is 32 bytes on 64-bit targets");

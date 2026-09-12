@@ -41,11 +41,18 @@ const COMPUTATION: [&str; 8] = [
 /// never published. Everything else inherits `forbid`, which the compiler
 /// then enforces; what this rule watches is a manifest quietly changing
 /// its mind.
-const UNSAFE_CRATES: [&str; 4] = [
+const UNSAFE_CRATES: [&str; 6] = [
     "crates/port-ephemeris",
     "crates/ffi",
     "crates/test-allocator",
     "bindings/node/native",
+    // The adapters call a C engine directly. They are outside the
+    // workspace, which is why they were outside this inventory until
+    // 2026-09-12 — and being outside the workspace is no reason to be
+    // outside the inventory, because an adapter is now a shared library
+    // a consumer loads into their own process (ADR-0029).
+    "adapters/ephemeris-teimeris/rust",
+    "adapters/ephemeris-sweph/rust",
 ];
 
 /// The classification functions of `core::angle`: exact integer
@@ -185,7 +192,11 @@ fn scan(root: &Path, rule: &'static str, needles: &[&str], outcome: &mut Outcome
 /// downgrade the workspace's `forbid`, and each says why in its manifest.
 fn unsafe_inventory(root: &Path, outcome: &mut Outcome) {
     let mut manifests: Vec<PathBuf> = Vec::new();
-    for dir in [root.join("crates"), root.join("bindings")] {
+    for dir in [
+        root.join("crates"),
+        root.join("bindings"),
+        root.join("adapters"),
+    ] {
         let mut stack = vec![dir];
         while let Some(here) = stack.pop() {
             let Ok(entries) = std::fs::read_dir(&here) else {

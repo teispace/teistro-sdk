@@ -64,6 +64,23 @@ typedef HorizonEventFnDart = int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<Hor
 typedef CrossingsFnNative = ffi.Int32 Function(ffi.Pointer<ffi.Void>, ffi.Pointer<CrossingRequestStruct>, ffi.Pointer<CrossingEventStruct>, ffi.Uint32, ffi.Pointer<ffi.Uint32>);
 typedef CrossingsFnDart = int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<CrossingRequestStruct>, ffi.Pointer<CrossingEventStruct>, int, ffi.Pointer<ffi.Uint32>);
 
+/// The engine's own manifest, as JSON.
+///
+/// Writes up to `capacity` bytes into the caller's buffer and the length
+/// it wanted into `out_len`, which may exceed the capacity — in which
+/// case the caller calls again with a larger one. The same size-then-fill
+/// protocol the crossings use, and for the same reason: nothing allocated
+/// on one side of this boundary is freed on the other.
+typedef NativeManifestFnNative = ffi.Int32 Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>, ffi.Size, ffi.Pointer<ffi.Size>);
+typedef NativeManifestFnDart = int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>, int, ffi.Pointer<ffi.Size>);
+
+/// One of the engine's own operations, called by the name its manifest
+/// gives, with arguments as a JSON object.
+///
+/// Answers as `NativeManifestFn` does.
+typedef NativeCallFnNative = ffi.Int32 Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Size, ffi.Pointer<ffi.Size>);
+typedef NativeCallFnDart = int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int, ffi.Pointer<ffi.Size>);
+
 /// A C observer: degrees and metres, validated into a `Place` on the
 /// way in.
 final class ObserverStruct extends ffi.Struct {
@@ -486,6 +503,18 @@ final class ProviderVtableStruct extends ffi.Struct {
 
   /// The crossings override.
   external ffi.Pointer<ffi.NativeFunction<CrossingsFnNative>> crossings;
+
+  /// The engine's own manifest, when it offers one.
+  ///
+  /// Null where the provider offers no operations of its own — which
+  /// is what `Capabilities::native` already says, and this is the
+  /// function that makes the saying true across the boundary. Added at
+  /// ABI 3: a loaded adapter could declare the route and had no way to
+  /// answer it.
+  external ffi.Pointer<ffi.NativeFunction<NativeManifestFnNative>> nativeManifest;
+
+  /// One of the engine's own operations.
+  external ffi.Pointer<ffi.NativeFunction<NativeCallFnNative>> nativeCall;
 
 }
 
