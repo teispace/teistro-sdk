@@ -396,10 +396,32 @@ provider's DUT1).
    had already gone wrong. They are described now, which is what makes
    the five functions that take one callable here.
 
-   **What is left of Phase 4's surface work:** the typed façade generator,
-   then the namespacing. Both were asked for explicitly and the façade is
-   worth more over a larger callable set, which is why the marshalling
-   came first.
+   **What is left of Phase 4's surface work:** the namespacing, then the
+   typed façade. Both were asked for explicitly, and the order is the
+   other way round from how they were asked because the façade attaches
+   to the `sdk.engine` namespace the other one creates.
+
+   The namespacing's measurement is done and it falsified the rule ADR-0030
+   words it by (`03-design/surface-areas-measured.md`, gated by
+   `check-areas`). The ADR says the areas are "derived from the boundary
+   modules the reference site already groups by"; measured, **5 of the 14
+   boundary modules are never reached by anything a consumer calls** —
+   they are the C caller's memory and the context's own life — and one
+   member reaches two modules. So the grouping is real and the derivation
+   is not: the areas have to be *chosen* with the measurement as
+   evidence, which is what the design page is for. Two further findings:
+   entry points do not measure an area's size to a consumer (`chart`,
+   `positions` and `panchanga` have one each and are what the SDK exists
+   for), and **6 of the members already spell their own area inside their
+   own name** — `convertTime` because `convert` was taken by the
+   calendar — so namespacing mostly gives those names back rather than
+   inventing any.
+
+   Running that pass found a hole beside it: the gate-coverage lint read
+   `xtask`'s hand-written arms and so could not see the nineteen
+   generated-page gates at all, four of which no workflow ran. It reads
+   the pass table now, and `check-agreement`, `check-pluto`,
+   `check-engine` and `check-areas` are wired.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation

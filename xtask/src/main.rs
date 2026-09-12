@@ -114,6 +114,7 @@
 mod absence;
 mod accuracy;
 mod agreement;
+mod areas;
 mod almanac;
 mod aspect;
 mod batching;
@@ -177,8 +178,9 @@ type Pass = (&'static str, fn(&Path) -> i32, fn(&Path) -> i32);
 /// row here instead of two arms in the dispatch that can disagree.
 ///
 /// `usage()` prints this table rather than a copy of it: the copy had
-/// gone stale on three passes, which is the whole argument.
-const PASSES: [Pass; 18] = [
+/// gone stale on three passes, which is the whole argument. A slice and
+/// not an array, so that adding a row is one line and not two.
+const PASSES: &[Pass] = &[
     ("chalit", chalit::generate, chalit::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
@@ -197,6 +199,7 @@ const PASSES: [Pass; 18] = [
     ("agreement", agreement::generate, agreement::check_generated),
     ("pluto", pluto::generate, pluto::check_generated),
     ("engine", engine::generate, engine::check_generated),
+    ("areas", areas::generate, areas::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

@@ -455,6 +455,20 @@ fn gate_declared_by(line: &str) -> Option<&str> {
     name.starts_with("check-").then_some(name)
 }
 
+/// Which line of the entry point holds a pass's row, so a finding points
+/// at something a reader can open. Zero when it cannot be found, which
+/// is a worse message and not a wrong one.
+fn pass_row(root: &Path, name: &str) -> usize {
+    let entry = root.join("xtask").join("src").join("main.rs");
+    let Ok(text) = std::fs::read_to_string(&entry) else {
+        return 0;
+    };
+    let needle = format!("(\"{name}\", ");
+    text.lines()
+        .position(|line| line.trim_start().starts_with(&needle))
+        .map_or(0, |index| index + 1)
+}
+
 /// Every workflow file parses.
 ///
 /// A step name with an unquoted colon, a slipped indent, a duplicated
@@ -492,6 +506,13 @@ fn workflows_parse(root: &Path, outcome: &mut Outcome) {
 /// documentation claims and the repository does not have. A gate meant
 /// to be run by hand says so on its arm, so the exception is an
 /// inventory rather than a silence.
+///
+/// Two sources, because `xtask` declares its gates two ways. The
+/// hand-written arms spell `Some("check-...")` and are found by reading
+/// the file; the generated pages are rows of [`crate::PASSES`] whose
+/// gate name is `check-` and the row's own, and were **not covered at
+/// all** until this asked the table — nineteen pages whose gates the
+/// rule could not see, four of which no workflow ran.
 fn gate_runners(root: &Path, outcome: &mut Outcome) {
     let mut wired: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
     for path in workflows(root) {
@@ -503,6 +524,18 @@ fn gate_runners(root: &Path, outcome: &mut Outcome) {
                 wired.insert(name.to_owned());
             }
         }
+    }
+    for (name, _, _) in crate::PASSES {
+        let gate = format!("check-{name}");
+        if wired.contains(&gate) {
+            continue;
+        }
+        outcome.failures.push(Finding {
+            file: "xtask/src/main.rs".to_owned(),
+            line: pass_row(root, name),
+            text: format!("`cargo xtask {gate}` is declared and no workflow runs it"),
+            rule: "gate-has-a-runner",
+        });
     }
     let entry = root.join("xtask").join("src").join("main.rs");
     let Ok(text) = std::fs::read_to_string(&entry) else {
