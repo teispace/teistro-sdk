@@ -38,7 +38,7 @@
 
 use std::fmt::Write as _;
 
-use crate::engine::{Described, Function, describe};
+use crate::engine::{Described, Function, Vocabulary, describe};
 use crate::generated::Output;
 
 /// Where the adapter's packages live. One directory per target beside
@@ -72,28 +72,80 @@ fn camel(name: &str) -> String {
     out
 }
 
-/// Whether the manifest's word for a type is a string rather than a
-/// number.
-fn is_text(declared: &str) -> bool {
-    declared == "string"
+/// The three words a target has for the three kinds of value the engine
+/// declares.
+///
+/// **There is no fourth kind**, and that is what makes a façade possible
+/// without a type table per target: an enum member, a body id and a flag
+/// set all cross as integers. So one decision is made here, and each
+/// target supplies its own vocabulary for it — rather than three
+/// closures that could quietly disagree about which kind a type is.
+struct Words {
+    text: &'static str,
+    /// A number with a fractional part.
+    fractional: &'static str,
+    /// A whole number: a count, an id, an enum member, a flag set.
+    integer: &'static str,
 }
 
-/// Whether a number has a fractional part. Everything the engine
-/// declares is one of these two, which is what makes a façade possible
-/// without a type table: an enum member, a body id and a flag set all
-/// cross as integers.
-fn is_float(declared: &str) -> bool {
-    matches!(declared, "double" | "float")
+impl Words {
+    /// TypeScript, whose one `number` covers both numeric kinds — said
+    /// twice on purpose, so the collapse is visible rather than implied
+    /// by a shorter branch.
+    const TYPESCRIPT: Self = Self {
+        text: "string",
+        fractional: "number",
+        integer: "number",
+    };
+    const DART: Self = Self {
+        text: "String",
+        fractional: "double",
+        integer: "int",
+    };
+    const PYTHON: Self = Self {
+        text: "str",
+        fractional: "float",
+        integer: "int",
+    };
+
+    /// What one declared type is called here.
+    ///
+    /// **Refuses** a type the engine's own vocabulary does not classify,
+    /// rather than calling it an integer and generating a façade that
+    /// type-checks a wrong call. The Dart constructor emitter refuses an
+    /// unknown *role* for the same reason and says so: a generator that
+    /// quietly guesses writes code that compiles and is wrong.
+    fn of(&self, declared: &str, vocabulary: &Vocabulary, whose: &str) -> &'static str {
+        if declared == "string" {
+            return self.text;
+        }
+        assert!(
+            vocabulary.is_number(declared),
+            "the façade generator cannot type `{declared}` on `{whose}`: the engine's \
+             description does not classify it as a number, and typing it as one would \
+             make a call that type-checks and fails. Teach `Words` that kind, or leave \
+             the function out of the callable set."
+        );
+        if vocabulary.is_float(declared) {
+            self.fractional
+        } else {
+            self.integer
+        }
+    }
 }
 
 /// The façades, from one reading of the description.
-pub(crate) fn outputs(version: &str, callable: &[&Function]) -> Vec<Output> {
+pub(crate) fn outputs(
+    version: &str,
+    callable: &[&Function],
+    vocabulary: &Vocabulary,
+) -> Vec<Output> {
     let described: Vec<Described<'_>> = callable.iter().map(|f| describe(f)).collect();
     vec![
         Output::new(NODE, node(version, &described)),
-        Output::new(NODE_TYPES, node_types(version, &described)),
-        Output::new(DART, dart(version, &described)),
-        Output::new(PYTHON, python(version, &described)),
+        Output::new(NODE_TYPES, node_types(version, &described, vocabulary)),
+        Output::new(DART, dart(version, &described, vocabulary)),
+        Output::new(PYTHON, python(version, &described, vocabulary)),
     ]
 }
 
@@ -218,14 +270,7 @@ fn node(version: &str, described: &[Described<'_>]) -> String {
 }
 
 /// The Node façade's types, which are the half a consumer reads.
-fn node_types(version: &str, described: &[Described<'_>]) -> String {
-    let ts = |declared: &str| {
-        if is_text(declared) {
-            "string"
-        } else {
-            "number"
-        }
-    };
+fn node_types(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
     let mut out = header(version, "//");
     let _ = writeln!(
         out,
@@ -242,7 +287,7 @@ fn node_types(version: &str, described: &[Described<'_>]) -> String {
                     .zip(one.takes.iter())
                     .map(|((spelling, _), (_, declared))| format!(
                         "readonly {spelling}: {}",
-                        ts(declared)
+                        Words::TYPESCRIPT.of(declared, vocabulary, one.name)
                     ))
                     .collect::<Vec<_>>()
                     .join("; ")
@@ -250,11 +295,17 @@ fn node_types(version: &str, described: &[Described<'_>]) -> String {
         };
         let returns = match one.gives.as_slice() {
             [] => String::from("void"),
-            [(_, declared)] => ts(declared).to_string(),
+            [(_, declared)] => Words::TYPESCRIPT
+                .of(declared, vocabulary, one.name)
+                .to_string(),
             many => format!(
                 "{{ {} }}",
                 many.iter()
-                    .map(|(key, declared)| format!("readonly {}: {}", camel(key), ts(declared)))
+                    .map(|(key, declared)| format!(
+                        "readonly {}: {}",
+                        camel(key),
+                        Words::TYPESCRIPT.of(declared, vocabulary, one.name)
+                    ))
                     .collect::<Vec<_>>()
                     .join("; ")
             ),
@@ -284,13 +335,17 @@ fn node_types(version: &str, described: &[Described<'_>]) -> String {
 /// carries no distinction the engine's `double` and `int32_t` keep, so a
 /// whole-valued double would decode as an `int` and `as double` would
 /// throw on it. `toDouble()` accepts either and costs nothing.
-fn dart_read(key: &str, declared: &str, from: &str) -> String {
-    if is_text(declared) {
-        format!("{from}['{key}']! as String")
-    } else if is_float(declared) {
-        format!("({from}['{key}']! as num).toDouble()")
-    } else {
-        format!("({from}['{key}']! as num).toInt()")
+fn dart_read(
+    key: &str,
+    declared: &str,
+    from: &str,
+    vocabulary: &Vocabulary,
+    whose: &str,
+) -> String {
+    match Words::DART.of(declared, vocabulary, whose) {
+        "String" => format!("{from}['{key}']! as String"),
+        "double" => format!("({from}['{key}']! as num).toDouble()"),
+        _ => format!("({from}['{key}']! as num).toInt()"),
     }
 }
 
@@ -301,16 +356,7 @@ fn dart_read(key: &str, declared: &str, from: &str) -> String {
 /// The one target where an augmentation is honest, because a Dart
 /// extension method has a body and is resolved statically: it is typed
 /// and installed at once, and needs no wrapper to take.
-fn dart(version: &str, described: &[Described<'_>]) -> String {
-    let ty = |declared: &str| {
-        if is_text(declared) {
-            "String"
-        } else if is_float(declared) {
-            "double"
-        } else {
-            "int"
-        }
-    };
+fn dart(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
     let mut out = header(version, "//");
     // The same directive the SDK's own generated Dart carries, for the
     // same reason: the generator lays the file out, so `dart format .`
@@ -331,7 +377,7 @@ fn dart(version: &str, described: &[Described<'_>]) -> String {
                     .zip(one.takes.iter())
                     .map(|((spelling, _), (_, declared))| format!(
                         "required {} {spelling}",
-                        ty(declared)
+                        Words::DART.of(declared, vocabulary, one.name)
                     ))
                     .collect::<Vec<_>>()
                     .join(", ")
@@ -352,22 +398,32 @@ fn dart(version: &str, described: &[Described<'_>]) -> String {
         let (returns, body) = match one.gives.as_slice() {
             [] => (String::from("void"), format!("    {call};")),
             [(only, declared)] => (
-                ty(declared).to_string(),
+                Words::DART.of(declared, vocabulary, one.name).to_string(),
                 format!(
                     "    final answered = ({call}) as Map<String, Object?>;\n    return {};",
-                    dart_read(only, declared, "answered")
+                    dart_read(only, declared, "answered", vocabulary, one.name)
                 ),
             ),
             many => {
                 let record = many
                     .iter()
-                    .map(|(key, declared)| format!("{} {}", ty(declared), camel(key)))
+                    .map(|(key, declared)| {
+                        format!(
+                            "{} {}",
+                            Words::DART.of(declared, vocabulary, one.name),
+                            camel(key)
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join(", ");
                 let fields = many
                     .iter()
                     .map(|(key, declared)| {
-                        format!("{}: {}", camel(key), dart_read(key, declared, "answered"))
+                        format!(
+                            "{}: {}",
+                            camel(key),
+                            dart_read(key, declared, "answered", vocabulary, one.name)
+                        )
                     })
                     .collect::<Vec<_>>()
                     .join(", ");
@@ -410,16 +466,7 @@ fn dart(version: &str, described: &[Described<'_>]) -> String {
 /// are the engine's own, because Python spells them the same way the
 /// engine does and a translation nobody needs is a translation to get
 /// wrong.
-fn python(version: &str, described: &[Described<'_>]) -> String {
-    let ty = |declared: &str| {
-        if is_text(declared) {
-            "str"
-        } else if is_float(declared) {
-            "float"
-        } else {
-            "int"
-        }
-    };
+fn python(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
     let mut out = header(version, "#");
     let _ = writeln!(
         out,
@@ -439,7 +486,11 @@ fn python(version: &str, described: &[Described<'_>]) -> String {
             one.name
         );
         for (key, declared) in &one.gives {
-            let _ = writeln!(out, "    {key}: {}", ty(declared));
+            let _ = writeln!(
+                out,
+                "    {key}: {}",
+                Words::PYTHON.of(declared, vocabulary, one.name)
+            );
         }
         let _ = writeln!(out);
     }
@@ -453,7 +504,11 @@ fn python(version: &str, described: &[Described<'_>]) -> String {
         // and each carries its own leading comma.
         let mut params = String::new();
         for (name, declared) in &one.takes {
-            let _ = write!(params, ", {name}: {}", ty(declared));
+            let _ = write!(
+                params,
+                ", {name}: {}",
+                Words::PYTHON.of(declared, vocabulary, one.name)
+            );
         }
         let keys = one
             .takes
@@ -471,15 +526,14 @@ fn python(version: &str, described: &[Described<'_>]) -> String {
                 // between the engine's `double` and its `int32_t`, so a
                 // whole-valued double arrives as an `int` and a cast
                 // would be a lie a type checker believed.
-                let read = if is_float(declared) {
-                    format!("float(cast(float, answered[\"{only}\"]))")
-                } else if is_text(declared) {
-                    format!("cast(str, answered[\"{only}\"])")
-                } else {
-                    format!("int(cast(int, answered[\"{only}\"]))")
+                let named = Words::PYTHON.of(declared, vocabulary, one.name);
+                let read = match named {
+                    "float" => format!("float(cast(float, answered[\"{only}\"]))"),
+                    "str" => format!("cast(str, answered[\"{only}\"])"),
+                    _ => format!("int(cast(int, answered[\"{only}\"]))"),
                 };
                 (
-                    ty(declared).to_string(),
+                    named.to_string(),
                     format!(
                         "        answered = cast(dict[str, object], {call})\n        return {read}"
                     ),

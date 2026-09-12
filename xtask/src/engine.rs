@@ -188,7 +188,7 @@ const SCALARS: [&str; 11] = [
 /// vocabulary, and the second is the one an alias would silently answer
 /// wrong: a `scalar_out` of a base this does not resolve gets `0` for
 /// its initial value whether or not `0.0` was meant.
-struct Vocabulary {
+pub(crate) struct Vocabulary {
     enums: Vec<String>,
     aliases: BTreeMap<String, String>,
 }
@@ -212,12 +212,12 @@ impl Vocabulary {
     }
 
     /// Whether a base crosses JSON as a number.
-    fn is_number(&self, base: &str) -> bool {
+    pub(crate) fn is_number(&self, base: &str) -> bool {
         SCALARS.contains(&self.resolve(base)) || self.enums.iter().any(|e| e == base)
     }
 
     /// Whether a base crosses JSON as a number with a fractional part.
-    fn is_float(&self, base: &str) -> bool {
+    pub(crate) fn is_float(&self, base: &str) -> bool {
         matches!(self.resolve(base), "double" | "float")
     }
 }
@@ -552,7 +552,7 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
     // The typed façades, from the same reading: a façade that typed an
     // argument the dispatch would refuse by name is the one thing
     // generating both from one description makes impossible (ADR-0030).
-    outputs.extend(crate::facade::outputs(&idl.version, &callable));
+    outputs.extend(crate::facade::outputs(&idl.version, &callable, &vocabulary));
     Ok(outputs)
 }
 
