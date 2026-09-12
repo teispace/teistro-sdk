@@ -610,59 +610,107 @@ provider's DUT1).
    passes that object through as JSON and reads none of it, and every
    earlier probe had called `teimeris()` with no options at all.
 
-   **Next: the publishing half.** A package per adapter per target
-   triple, each shipping the platform binary its host needs, so a
-   consumer installs rather than builds. Everything above resolves a
-   binary a contributor built.
-
-   Then wasm, whose ephemeris is the built-in `compact` tier; then Rust's
-   own consumer surface, the READMEs and the site.
-
-   **A red nightly, found and fixed, that predates all of this.** The
-   verify matrix was dispatched on the branch to validate the three new
-   adapter gates on clean runners, and showed the C binding failing on
-   win32 and `check-package`'s C consumer on both Linuxes — on `main`
+   **A red nightly that predates all of this, and took four attempts.**
+   The verify matrix was dispatched on the branch to validate the three
+   new adapter gates on clean runners, and showed the C binding failing
+   on win32 and `check-package`'s C consumer on both Linuxes — on `main`
    too, since at least 2026-09-10. `undefined reference to `sin``: the
    astronomy calls it, Linux and MinGW keep the maths functions in a
    separate `libm`, and `bindings/c/README.md` told a consumer to link
    without it. macOS has them in libSystem, so every local run passed.
-   Fixed in one constant read by both gates and stated on that page, so
-   the instruction and the gate cannot drift. **Three of the four
-   platforms that were failing now pass**; the fix was re-validated by
-   dispatching the matrix again.
+   One constant, `-lm`, read by both gates and stated on that page —
+   and **three of the four failing platforms went green**.
 
-   **win32 remains red, for a different reason, and is not guessed at.**
-   Its symbols are `__imp_WSAStartup`, `__imp_NtCreateFile`,
-   `__imp_GetUserProfileDirectoryW`, `__chkstk` and some thirty more:
-   `libteistro_ffi.a` carries Rust's standard library, and a Rust
-   **staticlib** on Windows needs the system import libraries std itself
-   links — `ws2_32`, `userenv`, `ntdll`. The authoritative list is what
-   `rustc --print native-static-libs` reports for that toolchain and
-   target, which cannot be obtained on a machine that cannot cross-link
-   to it, so nothing was written into a consumer-facing link line from
-   memory. `bindings/c/README.md` now says that this is the situation,
-   names the command, and says why no list is printed there — and that
-   the **shared** library needs none of it, which is the answer for a
-   Windows consumer today.
+   Then two more attempts chased win32 with flags, and both broke
+   platforms that had been passing. The log said why, once it was read
+   rather than reasoned about.
 
-   **So the gates ask instead of listing.** `c_link_flags` runs
-   `rustc --print native-static-libs` and passes what the toolchain
-   answers — `-lc -lm -liconv -lSystem` here, the Windows set there —
-   which is right on every target and every toolchain version rather than
-   right on the one it was written against. It falls back to `-lm` alone
-   if the question cannot be asked, because linking nothing extra is how
-   this went unnoticed for days. Both C link lines use it, and
-   `bindings/c/README.md` tells a consumer the same command rather than a
-   list that would go stale.
+   **It was never a flag.** `check-c` links `-L target/release
+   -lteistro_ffi`, and on Windows a searching linker finds
+   `teistro_ffi.lib` — the **static** library — beside
+   `teistro_ffi.dll.lib`, and takes it. So the gate was statically
+   linking Rust's whole standard library, built for the MSVC ABI, with
+   the runner's MinGW gcc: `__chkstk`, `__imp_NtReadFile`, and
+   `??_7type_info@@6B@`, which lives in the MSVC C++ runtime MinGW does
+   not have. No `-l` closes that; the two ABIs do not meet.
 
-   Whether that closes win32 is for the matrix to say: the symptom there
-   is a static link where a shared one was asked for, and the set it
-   wants is exactly what this now supplies.
+   And `rustc --print native-static-libs` — the third attempt, which
+   looked principled — **cannot be pasted into an arbitrary C driver**.
+   Its dialect is the Rust target's linker's: on win32 it answers
+   `kernel32.lib` and `/defaultlib:msvcrt`, which MinGW's ld looks for
+   as file names and does not find; on Linux its `-lc` gives `cannot
+   find -lc`; on darwin its `-lc -lm -liconv -lSystem` gives `library
+   'm' not found` where `-lm` alone had linked. It is information for a
+   consumer who knows their own toolchain, not a link line, and
+   `bindings/c/README.md` now says to read it rather than paste it.
 
-   After that: the engine's typed façade, which attaches to the
-   `sdk.engine` the three bindings now have and wants the adapter
-   packages to live in; Rust's own consumer surface; the READMEs and the
-   site.
+   So the two questions are answered apart. `binding::shared_link` says
+   how to point a C compiler at the **shared** library — `-L <dir>
+   -lteistro_ffi` on Unix, the import library **by path** on Windows,
+   and nothing else on either, because a shared library resolves its own
+   imports. `binding::static_link` says what to link beside the
+   **static** one (`-lm`), or refuses with the reason this platform's
+   `cc` cannot link it at all. `check-package` prints that reason for
+   the Windows static library instead of failing on it, and proves the
+   import library there, so the gap narrows from "the C step skips on
+   win32" to "the win32 static library wants `cl`".
+
+   Two tests over the platform table hold both, and the first is the one
+   that would have caught this on the first attempt: a platform that
+   ships an import library must link through it, because `-l` searches
+   and searching is the defect. Proved red by putting `-l` back.
+
+   **And win32 had a second defect hiding behind the first.**
+   `check-python` had never run there, because `check-c` failed in the
+   same job before it; with the link fixed it ran, and
+   `UnicodeEncodeError: 'charmap' codec can't encode characters in
+   position 0-5` — those six characters being `सोमबार`, the weekday
+   `almanac.py` prints first. The Windows console's default encoding is
+   cp1252. PEP 540's UTF-8 mode is the answer and becomes Python's
+   default in 3.15, so the gate sets `PYTHONUTF8` and the Python README
+   tells a Windows reader to set it too.
+
+   **Fixed in one gate when four needed it**, and the next run said so:
+   `check-parity`'s Python runner failed with the same error on `\u2609`,
+   the Sun. Four gates start a Python process and each answered "which
+   interpreter" for itself; `binding::python_command` answers both
+   questions once, and `check-lints`'s tenth rule,
+   `python-runs-in-utf8-mode`, holds the class — the interpreter is named
+   in one place and no module builds a Python command of its own. Proved
+   red by putting the parity runner's own `Command::new` back.
+
+   **The docs had the same class of defect as the code: they described a
+   surface nobody had run.** The site's install page gave a Node
+   quickstart that refuses — `the context has no ephemeris` — because
+   `ephemeris` has no default and the page named none; it had no Python
+   section at all, though that binding has been gated since the 8th; and
+   its C link line was the line that cannot link. All three are fixed,
+   and the page gained a **Choosing an ephemeris** section: the three
+   things an entry can be, the ordered chain, all three languages, and
+   why an adapter is its own package rather than a build flag.
+
+   And twelve of the fifteen example programs still selected the
+   **test** provider, three of them claiming in prose that it "selects
+   the analytic ephemeris the SDK carries". It does not: `builtin` is
+   that, and `test` is one periodic term per body. Every example names
+   the built-in now, and `ephemeris.{mjs,dart,py}` gained the retrograde
+   scan it had carried as a hypothetical comment — `stations`, the same
+   shape over `lonSpeed` that `ingresses` is over `lon`. Measured, and
+   the three bindings agree: Mars retrograde at -0.3281°/day, one
+   station, day 55 from 2025-01-01, which is when it turned.
+
+   The refusal a consumer meets when they forget the option was written
+   for a C caller and duplicated three times — *pass a provider vtable
+   to `ts_context_new`, or the `TS_CONTEXT_TEST_PROVIDER` flag for
+   tests*, which a Node, Dart or Python consumer can act on in neither
+   half. One `support::no_ephemeris` now, naming the `ephemeris` option
+   and hinting at the three kinds of answer it takes.
+
+   **Next: the publishing half of packaging.** A package per adapter per
+   target triple, each shipping the platform binary its host needs, so a
+   consumer installs rather than builds. Everything above resolves a
+   binary a contributor built. Then wasm, whose ephemeris is the built-in
+   `compact` tier; then Rust's own consumer surface.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation

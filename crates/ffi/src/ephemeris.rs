@@ -31,10 +31,9 @@ use crate::support::{text, with_context, write_plain};
 
 /// The engine of a context, or the refusal that says why there is none.
 fn native_of(context: &TsContext) -> Result<Native<'_>, Error> {
-    let provider = context.provider().ok_or_else(|| {
-        Error::new(Status::Capability, "this context has no ephemeris")
-            .with_hint("build the context with a provider")
-    })?;
+    let provider = context
+        .provider()
+        .ok_or_else(crate::support::no_ephemeris)?;
     if !provider.capabilities().native {
         return Err(Error::unsupported(format!(
             "{} describes no operations of its own",

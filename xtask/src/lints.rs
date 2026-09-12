@@ -710,6 +710,59 @@ fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
 /// point — the next one has somewhere to be declared.
 const AWAITING_AN_EMITTER: [(&str, &str); 0] = [];
 
+/// Python is spawned in one place, and that place puts it in UTF-8 mode.
+///
+/// Two halves of one property, both read off `xtask`'s own source: the
+/// interpreter is named once, and no module builds a Python `Command`
+/// of its own. `binding::python_command` is that place, and the reason
+/// it has to be one place is in its doc comment -- `PYTHONUTF8`, which
+/// every program that prints what this SDK returns needs on Windows.
+///
+/// Born of a fix that went into one gate when four needed it: the
+/// binding's examples were fixed and `check-parity`'s runner failed on
+/// the next run with the same `UnicodeEncodeError`. A rule over the
+/// source catches the third and fourth without another matrix run.
+fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "python-runs-in-utf8-mode";
+    for path in sources(&root.join("xtask/src")) {
+        // Not this file: a rule cannot be written without naming what it
+        // looks for, and its own needles are not Python being spawned.
+        if path.file_name().is_some_and(|name| name == "lints.rs") {
+            continue;
+        }
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        let shown = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        for (number, line) in outside_tests(&text) {
+            if line.trim_start().starts_with("//") {
+                continue;
+            }
+            let builds_one =
+                line.contains("Command::new(") && line.to_lowercase().contains("python");
+            let names_the_variable = line.contains(r#"env::var("PYTHON")"#);
+            if !builds_one && !names_the_variable {
+                continue;
+            }
+            let finding = Finding {
+                file: shown.clone(),
+                line: number,
+                text: format!("`{}`", line.trim()),
+                rule: RULE,
+            };
+            if excused(line, RULE) {
+                outcome.allowed.push(finding);
+            } else {
+                outcome.failures.push(finding);
+            }
+        }
+    }
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -738,6 +791,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     workflows_parse(root, &mut outcome);
     entry_points_reachable(root, &mut outcome);
     gate_runners(root, &mut outcome);
+    python_in_utf8(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -750,6 +804,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "workflow-parses",
         "gate-has-a-runner",
         "entry-point-is-reachable",
+        "python-runs-in-utf8-mode",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();

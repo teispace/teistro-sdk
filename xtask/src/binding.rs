@@ -86,6 +86,38 @@ pub(crate) enum StaticLink {
     Refused(&'static str),
 }
 
+/// The Python interpreter, as the environment names it.
+pub(crate) fn python() -> String {
+    std::env::var("PYTHON").unwrap_or_else(|_| String::from("python3")) // lint: python-runs-in-utf8-mode the one reader
+}
+
+/// A Python command, **in UTF-8 mode**.
+///
+/// Four gates run Python -- the binding's tests, its examples, the
+/// parity runner and the installed package's consumer -- and each of
+/// them needs the same two answers: which interpreter, and that it must
+/// be in UTF-8 mode. Each used to answer the first for itself and none
+/// answered the second.
+///
+/// `PYTHONUTF8`, because this SDK answers in Devanagari when it is asked
+/// to and every one of those programs prints what it returns. The
+/// Windows console's default encoding is cp1252, and `print` of a Nepali
+/// string raises `UnicodeEncodeError` there before a character reaches
+/// the screen -- `'charmap' codec can't encode characters in position
+/// 0-5`, those six being `सोमबार`, and later `'\u2609'`, the Sun. PEP
+/// 540's UTF-8 mode is the documented answer and becomes Python's
+/// default in 3.15; `bindings/python/README.md` tells a Windows consumer
+/// the same.
+///
+/// Found twice, in two gates, because the fix went into one of them.
+/// `check-lints`'s `python-runs-in-utf8-mode` now holds the class: no
+/// module may build a Python command of its own.
+pub(crate) fn python_command(program: impl AsRef<std::ffi::OsStr>) -> Command {
+    let mut command = Command::new(program); // lint: python-runs-in-utf8-mode the one builder
+    command.env("PYTHONUTF8", "1");
+    command
+}
+
 /// Cargo, as the environment names it.
 pub(crate) fn cargo() -> String {
     std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"))

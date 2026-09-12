@@ -575,13 +575,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
         }
         // SAFETY: non-null; the caller promises a readable request.
         let asked = unsafe { *request };
-        let provider = ctx.provider().ok_or_else(|| {
-            Error::new(
-                Status::Capability,
-                "the context has no ephemeris: pass a provider vtable to ts_context_new, or the TS_CONTEXT_TEST_PROVIDER flag for tests",
-            )
-            .with_field("provider")
-        })?;
+        let provider = ctx.provider().ok_or_else(crate::support::no_ephemeris)?;
         let resolved = ctx.resolved();
         let settings = &resolved.settings;
         let place = Place::new(

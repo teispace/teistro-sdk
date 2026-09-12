@@ -68,6 +68,32 @@ pub(crate) fn null(name: &str) -> Error {
     Error::invalid_arg(format!("`{name}` is null")).with_field(name)
 }
 
+/// `CAPABILITY` when a call needs an ephemeris and the context has none.
+///
+/// One sentence in one place. Four entry points refuse this -- positions,
+/// a chart, a panchanga and the engine passthrough -- and three of them
+/// carried the same sentence written for a C caller: *pass a provider
+/// vtable to `ts_context_new`, or the `TS_CONTEXT_TEST_PROVIDER` flag
+/// for tests*. A Node, Dart or Python consumer reaches this refusal
+/// through a binding that has neither of those, so it named two things
+/// they cannot do and not the one they can.
+///
+/// It now names the **option**, which every binding spells `ephemeris`
+/// and the boundary spells `options.ephemeris`, and the hint gives the
+/// three kinds of answer it takes. Proved by the site's own quickstart,
+/// which this refusal was the reply to.
+pub(crate) fn no_ephemeris() -> Error {
+    Error::new(
+        Status::Capability,
+        "the context has no ephemeris, and this call needs one",
+    )
+    .with_field("ephemeris")
+    .with_hint(
+        "name one when the context is built: `builtin` for the ephemeris the SDK carries, \
+         an adapter's descriptor for a real engine, or a provider of your own",
+    )
+}
+
 /// `SCHEMA_VERSION` when the caller's `struct_size` is not this build's.
 pub(crate) fn check_size<T: CStruct>(size: u32) -> Result<(), Error> {
     let expected = size_of_u32::<T>();

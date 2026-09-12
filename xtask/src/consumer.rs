@@ -424,7 +424,7 @@ fn python_consumer(
     platform: &Platform,
     version: &str,
 ) -> Result<(), ()> {
-    let python = std::env::var("PYTHON").unwrap_or_else(|_| String::from("python3"));
+    let python = crate::binding::python();
     if !present(&python, "--version") {
         println!("skip  the Python package: no `{python}` on this machine");
         return Ok(());
@@ -434,7 +434,7 @@ fn python_consumer(
     let staged = dist.join("pypi/teistro");
 
     step(
-        Command::new(&python)
+        crate::binding::python_command(&python)
             .args(["-m", "venv", ".venv"])
             .current_dir(&into),
         "",
@@ -442,7 +442,7 @@ fn python_consumer(
     )?;
     let venv = into.join(".venv/bin");
     step(
-        Command::new(venv.join("pip"))
+        crate::binding::python_command(venv.join("pip"))
             .args(["install", "--disable-pip-version-check", "--quiet"])
             .arg(&staged)
             .current_dir(&into),
@@ -457,7 +457,7 @@ fn python_consumer(
         platform.name()
     ));
     step(
-        Command::new(venv.join("teistro-install"))
+        crate::binding::python_command(venv.join("teistro-install"))
             .arg("--from")
             .arg(&archive)
             .current_dir(&into)
@@ -480,7 +480,7 @@ fn python_consumer(
     )
     .map_err(|err| println!("FAIL  the Python consumer did not copy: {err}"))?;
     step(
-        Command::new(venv.join("python"))
+        crate::binding::python_command(venv.join("python"))
             .arg("consumer.py")
             .current_dir(&into)
             .env_remove("TEISTRO_LIBRARY"),

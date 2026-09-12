@@ -656,12 +656,21 @@ fn positions_come_back_as_a_blob_with_steps_and_provenance() {
         unsafe { ts_positions(bare.handle, &raw const request, &raw mut blob) },
         Status::Capability
     );
-    let (status, message, field, _, _) = bare.last_error();
+    let (status, message, field, hint, _) = bare.last_error();
     assert_eq!(
         (status, field.as_deref()),
-        (Status::Capability, Some("provider"))
+        (Status::Capability, Some("ephemeris"))
     );
-    assert!(message.contains("TS_CONTEXT_TEST_PROVIDER"));
+    // The field and the hint name the option a consumer sets, in whatever
+    // language they are in -- not `ts_context_new` and not the flag,
+    // which is what this message used to say to a Node caller who has
+    // neither.
+    assert!(message.contains("has no ephemeris"), "{message}");
+    let hint = hint.expect("the refusal hints at what to pass");
+    assert!(
+        hint.contains("`builtin`") && hint.contains("descriptor"),
+        "{hint}"
+    );
     // A request with a wrong size, and a null request.
     let mut wrong = request;
     wrong.struct_size = 4;

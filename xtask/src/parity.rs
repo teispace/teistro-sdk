@@ -157,7 +157,7 @@ fn run(binding: &'static str, command: &mut Command) -> Option<Report> {
 pub(crate) fn check(root: &Path) -> i32 {
     let has_node = present("node", "--version");
     let has_dart = present("dart", "--version");
-    let python = std::env::var("PYTHON").unwrap_or_else(|_| String::from("python3"));
+    let python = crate::binding::python();
     let has_python = present(&python, "--version");
     let ran = has_node || has_dart || has_python;
     if !ran {
@@ -204,7 +204,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         let library = root.join("target/release").join(library_artefact());
         reports.extend(run(
             "Python",
-            Command::new(&python)
+            crate::binding::python_command(&python)
                 .arg("parity.py")
                 .env("TEISTRO_LIBRARY", &library)
                 .env("PYTHONPATH", root.join("bindings/python"))
