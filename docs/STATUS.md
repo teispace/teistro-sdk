@@ -376,9 +376,18 @@ provider's DUT1).
    functions into what is callable today (62), what the adapter will
    never hand over whatever its shape (12, each of which opens, closes or
    rebinds the context every chart is cast on), and what is queued behind
-   one more shape (87 — structs, arrays, opaque bytes). Strings closed
-   the way the page predicted they would: three shapes, one helper each,
-   and the queue's largest non-struct group went with them.
+   one more shape (87). Strings closed the way the page predicted they
+   would: three shapes, one helper each, and the queue's largest
+   non-struct group went with them.
+
+   The page then falsified its own next sentence. It had said arrays were
+   the next tranche and nearly free, on the strength of a table that
+   grouped a function by the **first** unlearned role in parameter order.
+   Grouped by the **hardest** one instead, 81 of the 87 are behind
+   structs and an array of numbers would release three: 31 of the arrays
+   are arrays *of structs*, which is the struct job wearing a count. So
+   there is one tranche left and it is the large one, and the cheap thing
+   the page recommended would have bought almost nothing.
 
    Growing that IDL was part of it. Three of the engine's public types —
    `tm_body`, `tm_flags`, `tm_ayanamsha` — are integers a caller passes

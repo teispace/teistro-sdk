@@ -113,13 +113,12 @@ A consumer who wants the change *recorded* has the settings for it (ADR-0013's o
 | what it takes or returns | functions | examples |
 |---|---:|---|
 | a pointer it returns | 3 | `tm_last_error`, `tm_embedded_files`, `tm_embedded_find` |
-| a struct | 63 | `tm_config_init_sized`, `tm_julian_day`, `tm_calendar_date` |
-| an array | 19 | `tm_julian_day_many`, `tm_calendar_date_many`, `tm_delta_t_many` |
-| opaque bytes | 2 | `tm_chart_blob_info`, `tm_chart_decode` |
+| a struct | 81 | `tm_config_init_sized`, `tm_julian_day`, `tm_calendar_date` |
+| an array of numbers | 3 | `tm_delta_t_many`, `tm_sidereal_time_many`, `tm_chart_default_bodies` |
 
-The order to learn them in is **not** the order of that table by size, and the strings are the worked example: they were the largest group after structs, and they came in as three shapes that cost one helper each. **An array the engine fills is the next tranche and is nearly free**, because it is the shape the marshaller already runs — the engine's fill protocol answers the length it wanted, so the call is made into a buffer generous enough for the common answer and made again only when the answer did not fit, which is the same helper an array needs with a different element width.
+**81 of the 87 are behind structs**, and that is the finding. Nothing else in the queue is a tranche: an array of numbers would release three, and the rest are ones and twos. A struct is the largest group because it is the largest job — 57 field lists, each read out of the description and written into and out of a JSON object, several carrying a `struct_size` the engine reads before it writes — and it is now also the *only* group whose learning changes the shape of this page.
 
-A struct is the largest group because it is the largest job: 57 field lists, each of which has to be read out of the description and written into and out of a JSON object, and several of which carry a `struct_size` the engine reads before it writes. Opaque bytes are last and may stay there — what crosses is a buffer, and a buffer has no meaning in a JSON object.
+This table used to group an array by the fact that it was an array, and said on that basis that arrays were the next tranche and nearly free. They are nearly free and they are not a tranche: **31 of them are arrays of structs**, which is the struct job wearing a count. Grouping by the hardest thing in the way rather than by the first one in parameter order is what made that visible.
 
 ## What this does not measure
 

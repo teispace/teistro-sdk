@@ -271,25 +271,18 @@ fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standing, &'static
         return (Standing::Unlearned, "a handle the adapter does not hold");
     }
     let roles: Vec<&str> = function.params.iter().map(|p| p.role.as_str()).collect();
-    let shape_known = roles.iter().all(|role| ROLES_KNOWN.contains(role));
-    if !shape_known {
-        let unknown = roles
-            .iter()
-            .find(|role| !ROLES_KNOWN.contains(role))
-            .copied()
-            .unwrap_or("?");
-        return (
-            Standing::Unlearned,
-            match unknown {
-                "struct_in" | "struct_out" | "out_struct_size" => "a struct",
-                "array_in" | "array_len" | "array_out" | "array_cap" | "array_out_parallel" => {
-                    "an array"
-                }
-                "handle_out" => "a handle it creates",
-                "opaque" => "opaque bytes",
-                _ => "a role the marshaller does not know",
-            },
-        );
+    // The **hardest** thing in the way, not the first one in parameter
+    // order. A function that takes an array of structs is queued behind
+    // structs and not behind arrays, and saying otherwise put a sentence
+    // on the page — "arrays are the next tranche and nearly free" — that
+    // was true of the shape and false of the payoff.
+    if let Some(reason) = function
+        .params
+        .iter()
+        .filter_map(|param| blocked_by(param, vocabulary))
+        .max_by_key(|reason| reason.rank())
+    {
+        return (Standing::Unlearned, reason.wording());
     }
     let args_plain = function
         .params
@@ -334,6 +327,77 @@ fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standing, &'static
     }
 }
 
+/// A shape the marshaller does not carry, ordered by how much work it
+/// is to learn.
+///
+/// The order is the point: a function held up by several of these is
+/// held up by the hardest, and grouping it under an easier one would
+/// promise that learning the easy one released it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Blocker {
+    /// An array whose elements are numbers: the fill protocol the string
+    /// tranche already runs, with a width instead of a byte.
+    NumberArray,
+    /// A handle the caller would then have to hold and eventually free.
+    HandleOut,
+    /// Bytes with no meaning of their own.
+    Opaque,
+    /// A struct, whether passed alone or as an array's element.
+    Struct,
+    /// Something the description says and this generator has never seen.
+    Unknown,
+}
+
+impl Blocker {
+    /// How hard, for choosing between several on one function.
+    fn rank(self) -> u8 {
+        match self {
+            Self::NumberArray => 0,
+            Self::HandleOut => 1,
+            Self::Opaque => 2,
+            Self::Struct => 3,
+            Self::Unknown => 4,
+        }
+    }
+
+    /// What the page's table calls it.
+    fn wording(self) -> &'static str {
+        match self {
+            Self::NumberArray => "an array of numbers",
+            Self::HandleOut => "a handle it creates",
+            Self::Opaque => "opaque bytes",
+            Self::Struct => "a struct",
+            Self::Unknown => "a role the marshaller does not know",
+        }
+    }
+}
+
+/// What stands in the way of one parameter, if anything does.
+fn blocked_by(param: &Param, vocabulary: &Vocabulary) -> Option<Blocker> {
+    if ROLES_KNOWN.contains(&param.role.as_str()) {
+        return None;
+    }
+    Some(match param.role.as_str() {
+        "struct_in" | "struct_out" | "out_struct_size" => Blocker::Struct,
+        // An array is its elements. One of numbers is the protocol
+        // already running; one of structs is the struct job wearing a
+        // count, and belongs in that group where its size can be seen.
+        "array_in" | "array_out" | "array_out_parallel" => {
+            if vocabulary.is_number(&param.type_ref.base) {
+                Blocker::NumberArray
+            } else {
+                Blocker::Struct
+            }
+        }
+        // A length or a capacity is the marshaller's own bookkeeping and
+        // never the reason: whatever it counts is beside it and says so.
+        "array_len" | "array_cap" => Blocker::NumberArray,
+        "handle_out" => Blocker::HandleOut,
+        "opaque" => Blocker::Opaque,
+        _ => Blocker::Unknown,
+    })
+}
+
 /// Whether the function's own return value is a string it lends.
 fn returns_a_string(function: &Function) -> bool {
     function.returns.pointer == 1 && function.returns.base == "char"
@@ -343,6 +407,16 @@ fn returns_a_string(function: &Function) -> bool {
 fn fills_a_string(function: &Function) -> bool {
     has_role(function, "string_out")
 }
+
+/// The roles that describe an array, for the one question the page asks
+/// that the classifier does not.
+const ARRAY_ROLES: [&str; 5] = [
+    "array_in",
+    "array_len",
+    "array_out",
+    "array_cap",
+    "array_out_parallel",
+];
 
 /// Whether any parameter plays the given role.
 fn has_role(function: &Function, role: &str) -> bool {
@@ -393,7 +467,7 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
         })
         .collect();
     Ok(vec![
-        Output::new(PAGE, page(&idl, &classified)),
+        Output::new(PAGE, page(&idl, &classified, &vocabulary)),
         Output::new(DISPATCH, dispatch(&idl, &classified, &vocabulary)),
     ])
 }
@@ -421,7 +495,11 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 }
 
 /// The measurement, from a reading already done.
-fn page(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String {
+fn page(
+    idl: &Idl,
+    classified: &[(&Function, Standing, &'static str)],
+    vocabulary: &Vocabulary,
+) -> String {
     let mut by_standing: BTreeMap<Standing, Vec<Row<'_>>> = BTreeMap::new();
     for (function, standing, why) in classified {
         by_standing
@@ -474,6 +552,7 @@ fn page(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String
     out.push_str(&queue_section(
         by_standing.get(&Standing::Unlearned),
         idl.structs.len(),
+        vocabulary,
     ));
     out.push_str(&limits_section());
     out
@@ -880,7 +959,11 @@ fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     out
 }
 
-fn queue_section(rows: Option<&Vec<Row<'_>>>, structs: usize) -> String {
+fn queue_section(
+    rows: Option<&Vec<Row<'_>>>,
+    structs: usize,
+    vocabulary: &Vocabulary,
+) -> String {
     let mut out = String::new();
     let Some(rows) = rows else { return out };
     let _ = writeln!(out, "## What the marshaller has not learned\n");
@@ -900,14 +983,31 @@ fn queue_section(rows: Option<&Vec<Row<'_>>>, structs: usize) -> String {
         let _ = writeln!(out, "| {why} | {} | {} |", names.len(), examples.join(", "));
     }
     let _ = writeln!(out);
+    // Grouped by the HARDEST thing in the way, which is what makes the
+    // sizes mean anything: an array of structs counted as an array told
+    // this page that arrays were the next tranche and nearly free, and
+    // the payoff would have been three functions.
+    let by_struct = by_reason.get("a struct").map_or(0, Vec::len);
+    let by_array = by_reason.get("an array of numbers").map_or(0, Vec::len);
     let _ = writeln!(
         out,
-        "The order to learn them in is **not** the order of that table by size, and the strings are the worked example: they were the largest group after structs, and they came in as three shapes that cost one helper each. **An array the engine fills is the next tranche and is nearly free**, because it is the shape the marshaller already runs — the engine's fill protocol answers the length it wanted, so the call is made into a buffer generous enough for the common answer and made again only when the answer did not fit, which is the same helper an array needs with a different element width.\n"
-    );
-    let _ = writeln!(
-        out,
-        "A struct is the largest group because it is the largest job: {} field lists, each of which has to be read out of the description and written into and out of a JSON object, and several of which carry a `struct_size` the engine reads before it writes. Opaque bytes are last and may stay there — what crosses is a buffer, and a buffer has no meaning in a JSON object.\n",
+        "**{} of the {} are behind structs**, and that is the finding. Nothing else in the queue is a tranche: an array of numbers would release {}, and the rest are ones and twos. A struct is the largest group because it is the largest job — {} field lists, each read out of the description and written into and out of a JSON object, several carrying a `struct_size` the engine reads before it writes — and it is now also the *only* group whose learning changes the shape of this page.\n",
+        by_struct,
+        rows.len(),
+        spelled(by_array),
         spelled(structs)
+    );
+    // Counted from the rows: a function grouped under structs that also
+    // has an array parameter is one this grouping moved.
+    let moved = count_where(rows, |function| {
+        function.params.iter().any(|param| {
+            ARRAY_ROLES.contains(&param.role.as_str())
+                && blocked_by(param, vocabulary) == Some(Blocker::Struct)
+        })
+    });
+    let _ = writeln!(
+        out,
+        "This table used to group an array by the fact that it was an array, and said on that basis that arrays were the next tranche and nearly free. They are nearly free and they are not a tranche: **{moved} of them are arrays of structs**, which is the struct job wearing a count. Grouping by the hardest thing in the way rather than by the first one in parameter order is what made that visible.\n"
     );
     out
 }
