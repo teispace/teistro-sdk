@@ -75,12 +75,42 @@ frame is tropical**, so a Vedic chart asks for a sidereal one and the SDK
 completes it.
 
 A context frees its native memory when it is collected, so `dispose()` is
-the explicit form rather than the only one (ADR-0007) — and `using ctx =
-new Context(...)` calls it for you.
+the explicit form rather than the only one (ADR-0007). `using ctx = new
+Context(...)` calls it for you where the runtime has explicit resource
+management — that is **Node 24 and above**, so this package's own tests
+use `try`/`finally` instead and so should anything that has to run on the
+Node 20 this package supports.
 
-A context with no provider computes calendars, times and messages;
-positions need one, and `{ testProvider: true }` selects the SDK's
-analytic provider for examples and tests.
+## Which ephemeris
+
+A context with no ephemeris computes calendars, times and messages;
+positions need one. `ephemeris` names it, or names an **ordered chain**
+tried in order (ADR-0029):
+
+```js
+import teimeris from '@teistro/ephemeris-teimeris';
+
+const ctx = new Context({
+  // A real engine, and the SDK's own only if it is not there.
+  ephemeris: [teimeris({ dataDir: './ephe' }), 'builtin'],
+});
+```
+
+**That is the intended path.** In most cases a consumer should be on a
+real engine — Teimeris, Swiss Ephemeris — installed as its own package
+under its own licence, and the SDK's `'builtin'` is the fallback that
+makes a chart compute with nothing else installed. `'test'` (or the older
+`{ testProvider: true }`) selects the analytic test provider, whose
+positions are **not astronomy**.
+
+A chain is a caller *saying* they will accept the fallback: one entry is
+one entry, and a context asked for an engine and given the built-in
+without being told is the silence this refuses. Nothing in the chain
+opening is one refusal naming each entry that failed.
+
+An engine brings its own operations with it, beyond the eight the SDK
+names, at `ctx.engine` — and the adapter's package carries a typed façade
+over them.
 
 ## An ephemeris of your own
 

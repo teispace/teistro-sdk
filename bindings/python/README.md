@@ -113,6 +113,35 @@ longitudes = np.asarray(sky.decoded.cells.lon)   # no copy
 
 numpy is not a dependency; the buffer protocol is.
 
+## Which ephemeris
+
+A context with no ephemeris computes calendars, times and messages;
+positions need one. `ephemeris` names it, or names an **ordered chain**
+tried in order (ADR-0029):
+
+```python
+from teistro_ephemeris_teimeris import teimeris
+
+# A real engine, and the SDK's own only if it is not there.
+ctx = sdk.context(ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN])
+```
+
+**That is the intended path.** In most cases a consumer should be on a
+real engine -- Teimeris, Swiss Ephemeris -- installed as its own package
+under its own licence, and `Ephemeris.BUILTIN` is the fallback that makes
+a chart compute with nothing else installed. `Ephemeris.TEST` (or the
+older `test_provider=True`) selects the analytic test provider, whose
+positions are **not astronomy**.
+
+A chain is a caller *saying* they will accept the fallback: one entry is
+one entry, and a context asked for an engine and given the built-in
+without being told is the silence this refuses. Nothing in the chain
+opening is one refusal naming each entry that failed.
+
+An engine brings its own operations with it, beyond the eight the SDK
+names, at `ctx.engine` -- and the adapter's package carries a typed façade
+over them.
+
 ## An ephemeris of your own
 
 Subclass `EphemerisProvider` and give the context one. It is asked once

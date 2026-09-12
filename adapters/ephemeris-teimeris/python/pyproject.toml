@@ -41,7 +41,7 @@ teistro_ephemeris_teimeris = ["py.typed", "*.dylib", "*.so", "*.dll"]
 [tool.mypy]
 strict = true
 python_version = "3.11"
-files = ["teistro_ephemeris_teimeris"]
+files = ["teistro_ephemeris_teimeris", "typecheck"]
 # The SDK's own settings, for the SDK's own reason: `ctypes` answers
 # `Any` for a looked-up symbol, and the generated layer holds those in
 # fields it declares as `Any` deliberately.
