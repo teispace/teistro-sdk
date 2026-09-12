@@ -221,6 +221,17 @@ providers**" and the engine half of that does not exist outside Rust:
   Ephemeris; `ts_provider_load` and `ts_provider_free` at the boundary,
   one loader rather than three; an adapter package per target that ships
   a platform binary and its licence.
+
+  Everything but the last clause is built. The per-target packages were
+  surveyed on 2026-09-12 and the cost is not where it looked: the engine
+  compiles from source on any target (`teimeris-sys` carries `core/` and
+  `data/` in its `.crate` for precisely that) and embeds one tier of
+  ephemeris data, about 2 MB, so a package needs no licensed data
+  directory at install time. What is left is **one decision that is the
+  maintainer's** — how this repository's CI obtains the Teimeris source,
+  given that it cannot be a sibling checkout as it is today, and that
+  the SDK's tree and workspace are deliberately AGPL-free. STATUS.md's
+  "How to resume" states the options and what each costs.
 - **The engine route is wired.** The Teimeris adapter answers the port's
   `native_manifest` and `native_call` from its own 161-function IDL,
   which it has always described and never exposed, so `sdk.engine.*`

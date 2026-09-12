@@ -732,11 +732,53 @@ provider's DUT1).
    once; a skip that says the machine lacks a tool it has is worse than
    a failure.
 
-   **Next: the publishing half of packaging.** A package per adapter per
-   target triple, each shipping the platform binary its host needs, so a
+   **Next: the publishing half of packaging**, and it was surveyed
+   rather than started, because the survey moved the cost twice — once
+   down, once onto a decision that is not this assistant's to take.
+
+   The deliverable is ADR-0029's: a package per adapter per target
+   triple, each shipping the platform binary its host needs, so a
    consumer installs rather than builds. Everything above resolves a
-   binary a contributor built. Then wasm, whose ephemeris is the built-in
-   `compact` tier; then Rust's own consumer surface.
+   binary a contributor built on their own machine.
+
+   **What the survey found, in the order it matters:**
+
+   - **Nothing outside this machine can build the adapter at all.** Its
+     manifest reads `teimeris = { path = "../../../../teimeris/..." }`
+     — a sibling checkout, four levels above the repository root. No CI
+     runner and no contributor has it, which is why
+     `check-package`'s adapter step and every plugin test skip
+     everywhere but here. The 98% path is *built*, and it is proven on
+     one machine.
+   - **The engine does not need cross-compiled prebuilts**, which was
+     the feared cost. `teimeris-sys`'s `build.rs` resolves an archive
+     from `TEIMERIS_LIB_DIR`, then `vendor/<target>/`, then a
+     development checkout — **and compiles the C core from source when
+     none of them has one**, with `core/` and `data/` travelling in the
+     `.crate` for exactly that case. So every target builds itself.
+   - **And the default tier is self-contained.** `teimeris-sys` embeds
+     one tier's ephemeris data into the library at build time — about
+     2.05 MB, the default — so an adapter package built that way needs
+     no `dataDir` and no licensed data directory at install time. Any
+     other tier needs `TM_EPHE_DIR` against a full ephemeris.
+
+   So the whole of it reduces to **one question that is the
+   maintainer's**: how the SDK's CI obtains the Teimeris source. A git
+   dependency pinned to a tag, a submodule beside `fixtures/`, or
+   vendored `.crate` files — the first two keep AGPL out of this
+   repository's tree and out of the workspace `cargo deny` reads, and
+   the third does not. Nothing about acquisition changes what the
+   artefact is licensed as: it links Teimeris either way, which is why
+   the packages already declare `AGPL-3.0-only`.
+
+   **And it is blocked on two commits.** `teispace/teimeris` has
+   `51b4345` and `6df3867` unpushed — the public integer typedefs the
+   engine façade is generated from, and the context reachability the
+   adapter's passthrough needs. Whatever mechanism CI uses, it can only
+   fetch what has been pushed.
+
+   Then wasm, whose ephemeris is the built-in `compact` tier; then
+   Rust's own consumer surface.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation
