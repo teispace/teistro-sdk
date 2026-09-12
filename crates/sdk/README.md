@@ -108,13 +108,20 @@ no others, and that is not tidiness: `check-areas` holds every binding's
 list to the same canonical paths, so an operation invented here would be
 one the other three lack.
 
-**Still owed**, and both are in the design page's order of work: the
-fourth parity runner, which is what proves this equals the other three
-rather than merely compiling, and the dependency inversion that moves the
-composition out of `crates/ffi` and has the boundary call this crate. The
-composition is written twice until then, knowingly — and so is the
-thirty-line build script that compiles the locale bundles, because a
-build script cannot use the crate it builds.
+**And the boundary depends on this crate**, which was the last step of
+the design's order of work. `TsContext` wraps a `teistro::Context`, and
+`TsContext::build` — which used to resolve the profile, parse the patch,
+load the embedded bundles, start the locale engine, read the ΔT knob and
+wrap the provider in its cache — is a call into the builder above. So
+the composition has one home, and a C caller and a Rust consumer get the
+same context built the same way rather than two compositions kept equal
+by hand.
+
+The boundary keeps what only it needs: the handles, the `struct_size`
+handshake, the blob writer, the panic guard, the `last_error` slot. It
+keeps `teistro-intl` too, because it still *marshals* the engine's types
+— the composition moved, the types are shared. Its build script is only
+`build_info` now; the locale bundles are built here.
 
 ## The parity runner
 

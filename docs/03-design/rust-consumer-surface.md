@@ -360,10 +360,34 @@ principle:
    wire it in.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
-3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps
-   only its marshalling; the measured page's second property flips. This
-   is the step that pays the duplication back, and it is third because
-   the two steps before it are what make it safe.
+3. ~~**Invert the dependency.**~~ **Done.** `teistro-ffi` depends on
+   `teistro`, `TsContext` wraps `teistro::Context`, and
+   `TsContext::build` — which used to resolve the profile, parse the
+   patch, load the embedded bundles, start the locale engine, read the ΔT
+   knob and wrap the provider in its cache — is now a call into the
+   builder. Both of the measured page's last two properties **hold**.
+
+   It was third for the reason this page gave, and the reason held: with
+   the façade built and the parity runner agreeing, the inversion was
+   checkable rather than hopeful. Every one of the boundary's 30 unit
+   tests and 9 ABI tests passed unchanged, as did `check-c`,
+   `check-node`, `check-dart`, `check-python` and `check-parity`'s 674
+   values.
+
+   Four things moved out of the boundary with the composition:
+   `own_provider` became `own_ephemeris`, answering the façade's
+   `Ephemeris` rather than a boxed provider; `remembering` and its three
+   tests went with the knob they read; `builtin()` became the variant
+   selector, since the façade gates the *variant* on the feature and a C
+   caller who passes a number still needs the refusal; and the locale
+   bundles' build script, so the boundary's own build script is only
+   `build_info` now and has no build dependency at all.
+
+   What stayed: the handles, the `struct_size` handshake, the blob
+   writer, the panic guard, the `last_error` slot — and
+   `teistro-intl` as a dependency, because the boundary still *marshals*
+   the engine's types even though it no longer composes it. The
+   composition moved; the types are shared.
 4. **Examples**, the same eight scenarios the other three bindings run,
    held by a gate the same way.
 5. **The site**, whose surface page gains a Rust column, and whose

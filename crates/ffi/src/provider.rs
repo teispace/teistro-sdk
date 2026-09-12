@@ -382,8 +382,13 @@ unsafe fn with_provider(
     let bound = unsafe { teistro_port_ephemeris::VtableProvider::bind(vtable, user_data) }?;
     // SAFETY: the entry point's contract.
     let (profile, settings_json, locale) = unsafe { crate::context::read_options(options) }?;
-    crate::context::TsContext::build(profile, settings_json, Some(Box::new(bound)), locale)
-        .map(|context| context.keeping(keepalive))
+    crate::context::TsContext::build(
+        profile,
+        settings_json,
+        teistro::Ephemeris::Provider(Box::new(bound)),
+        locale,
+    )
+    .map(|context| context.keeping(keepalive))
 }
 
 /// Frees a loaded provider; null is ignored.

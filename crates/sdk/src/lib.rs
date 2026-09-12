@@ -52,6 +52,7 @@ pub use scale::{Conversion, Scale};
 // are re-exported so a consumer needs one dependency rather than five.
 // Re-exported and **not** wrapped: a newtype over `JulianDay` would be a
 // second type with the same invariant and no new one (ADR-0023).
+pub use teistro_astro::DeltaTModel;
 pub use teistro_calendar::{CalendarDate, FixedDay, Weekday};
 pub use teistro_core::catalogue;
 pub use teistro_core::envelope::Hash;
@@ -63,6 +64,10 @@ pub use teistro_core::settings;
 // namespace is in Rust — where Node writes
 // `ctx.intl.messages.sdk.reason.grahaInBhava({ … })`.
 pub use teistro_intl::messages;
+// What the locale area takes and answers with.
+pub use teistro_intl::source::Entity;
+pub use teistro_intl::translit::Script;
+pub use teistro_intl::{Intl, Loaded, Params, Rendered, TypedMessage, Value, params};
 // What `positions` takes and answers with, and what an ephemeris of
 // your own implements. Re-exported because a consumer needing five
 // dependencies to call one operation is the thing this crate exists to

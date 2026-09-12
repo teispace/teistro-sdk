@@ -114,7 +114,15 @@ impl Ephemeris {
 
     /// The provider this entry opens, or the refusal that says why it
     /// could not.
-    pub(crate) fn open(self) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
+    ///
+    /// A chain opens its entries itself, so a consumer rarely needs
+    /// this; what does is a caller holding one entry and wanting the
+    /// provider it names -- the C boundary's selector, for one.
+    ///
+    /// # Errors
+    ///
+    /// Whatever a recipe's own opening refuses with.
+    pub fn open(self) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
         match self {
             Ephemeris::None => Ok(None),
             #[cfg(feature = "builtin-ephemeris")]

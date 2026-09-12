@@ -1121,7 +1121,42 @@ provider's DUT1).
    fills and the first place `serial-and-the-envelope.md` §8's open
    question showed.
 
-   The order of work is deliberately duplication-first: the façade beside
+   **And the inversion landed, so the design is built.** `teistro-ffi`
+   depends on `teistro`; `TsContext` wraps a `teistro::Context`; and
+   `TsContext::build` — which resolved the profile, parsed the patch,
+   loaded the embedded bundles, started the locale engine, read the ΔT
+   knob and wrapped the provider in its cache — is a call into the
+   builder. **Both of the measured page's last two properties hold**:
+   *the façade owns the composition* (0 of 8) and *the boundary is
+   inverted onto it* (0 of 1).
+
+   It was third in the order for a reason and the reason held: with the
+   façade built and the parity runner agreeing, the inversion was
+   checkable rather than hopeful. **Every one of the boundary's 30 unit
+   tests and 9 ABI tests passed unchanged**, as did `check-c`,
+   `check-node`, `check-dart`, `check-python`, `check-ffi`,
+   `check-lints`, `cargo deny`, and `check-parity`'s 674 values across
+   three bindings.
+
+   Four things moved out of the boundary with the composition:
+   `own_provider` became `own_ephemeris`, answering the façade's
+   `Ephemeris` rather than a boxed provider; `remembering` went with the
+   `provider.cache_cells` knob it reads, and its three tests with it;
+   `builtin()` became a variant selector, because the façade gates the
+   *variant* on the feature while a C caller passing a number still
+   needs the run-time refusal; and the locale bundles' build script, so
+   the boundary's build script is `build_info` alone and has no build
+   dependency at all.
+
+   What stayed is what only a C caller needs — the handles, the
+   `struct_size` handshake, the blob writer, the panic guard, the
+   `last_error` slot — and `teistro-intl`, because the boundary still
+   **marshals** the engine's types even though it no longer composes it.
+   The composition moved; the types are shared. One accidental deletion
+   along the way took `ts_context_new` with it, caught by four
+   "unused import" warnings naming things only that function used.
+
+   The order of work was deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the
    two steps before it are what make it safe. Left unsettled and said so:

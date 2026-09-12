@@ -114,9 +114,14 @@ impl Context {
         self.provider.as_deref()
     }
 
-    /// The resolved settings with their warnings and the profile they
-    /// came from, which the chart founder wants whole.
-    pub(crate) fn resolved(&self) -> &Resolved {
+    /// The resolved settings **whole**: the knobs, the warnings the
+    /// coherence rules raised, and the profile they came from.
+    ///
+    /// [`Context::settings`] is the knobs alone, which is what most
+    /// callers want; this is what the chart founder and a consumer
+    /// auditing a resolution want.
+    #[must_use]
+    pub fn resolved(&self) -> &Resolved {
         &self.settings
     }
 
@@ -222,8 +227,13 @@ impl Context {
         FrameArea::of(self)
     }
 
-    /// The ΔT model the settings chose, which `time()` reads.
-    pub(crate) fn delta_t(&self) -> DeltaTModel {
+    /// The ΔT model the settings chose.
+    ///
+    /// Declared rather than hidden: a choice the SDK makes on a
+    /// consumer's behalf is a knob or is at least answerable, which is
+    /// the "no dead ends" brief's rule.
+    #[must_use]
+    pub fn delta_t(&self) -> DeltaTModel {
         self.delta_t
     }
 }

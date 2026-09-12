@@ -35,10 +35,13 @@ teistro-intl = { path = "../intl", default-features = false }
 # the builtin crate and a consumer of this one chooses it here.
 [features]
 default = ["builtin-ephemeris"]
-builtin-ephemeris = ["teistro-ephemeris-builtin", "teistro-ephemeris-builtin/standard"]
-builtin-compact = ["teistro-ephemeris-builtin", "teistro-ephemeris-builtin/compact"]
-builtin-standard = ["builtin-ephemeris"]
-builtin-full = ["teistro-ephemeris-builtin", "teistro-ephemeris-builtin/full"]
+builtin-ephemeris = [
+  "dep:teistro-ephemeris-builtin",
+  "teistro-ephemeris-builtin/standard",
+]
+builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
+builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
+builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
 [lints]
 workspace = true
