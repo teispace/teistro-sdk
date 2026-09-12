@@ -1074,6 +1074,25 @@ provider's DUT1).
    operations that exist, build `chart` and `almanac` against it, teach
    `check-parity` the declared absences, and wire it in.
 
+   **The runner is written, and the first step of that is done.**
+   `crates/sdk/examples/parity.rs` prints 84 keys; **every one of them is
+   a key the Node runner prints, and every value is identical.** That is
+   what proves this composition equal to the one at the C boundary
+   rather than merely compiling — the settings hash, the Bikram Sambat
+   date with its era and resolution, the Kathmandu offset and tzdb
+   version, ΔT and its source and model, the key round trip, the refusal
+   with its detail and hint, six position cells with their longitudes,
+   latitudes, distances, speeds and statuses, the steps applied, the
+   Nepali render's hash and length, the Sun's four forms, and the frame's
+   bits.
+
+   Getting there took three formatting agreements the diff found rather
+   than a reading did: a resolution's kind is its JSON tag (`tabular`), a
+   cell's status is the **id** the boundary carries and not its name, and
+   a step's implementation is `PASS_THROUGH` where the astronomy crate's
+   own `step_keys` gives `PassThrough`. Each was one line, and each would
+   have been a false disagreement in the gate.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the

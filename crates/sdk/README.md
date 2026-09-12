@@ -111,6 +111,32 @@ composition is written twice until then, knowingly — and so is the
 thirty-line build script that compiles the locale bundles, because a
 build script cannot use the crate it builds.
 
+## The parity runner
+
+`examples/parity.rs` prints this binding's half of the parity report:
+`key<TAB>value` lines, sorted, the same scenario the other three runners
+walk. Run it against one of theirs:
+
+```sh
+cargo run -p teistro --example parity > /tmp/rust.tsv
+(cd bindings/node && node parity.mjs) > /tmp/node.tsv
+join -t $'\t' /tmp/rust.tsv /tmp/node.tsv | awk -F'\t' '$2 != $3'
+```
+
+**84 keys, every one of them a key Node prints, and every value
+identical** — which is what proves this composition equal to the one at
+the C boundary rather than merely compiling. It is also the oracle the
+last two areas need: a chart's lagna and ayanamsha offset are asserted
+by no smoke test, and this report is where the bindings agree on them.
+
+It does **not** print every key the other three do, and that is §6 of the
+design page arriving in a gate rather than a gap. Among theirs are `abi`,
+`build-commit`, `build-target` and the result blobs' sections: a Rust
+consumer has none of them, because Cargo resolved the versions, `Drop`
+freed the memory, and the crates handed back their own types. So
+`check-parity` will hold this report to every key the others have except
+a declared list, and until it does the command above is the check.
+
 ## Testing it
 
 ```sh

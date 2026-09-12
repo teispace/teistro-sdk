@@ -83,6 +83,16 @@ impl Context {
         self.settings.profile.as_str()
     }
 
+    /// The canonical settings document: the JSON the hash is taken of,
+    /// and what a consumer stores beside a chart so it can be recomputed.
+    ///
+    /// Canonical, so two contexts that compute the same numbers write
+    /// the same bytes — which is what makes the hash a cache key.
+    #[must_use]
+    pub fn settings_json(&self) -> String {
+        self.settings.settings.canonical_json()
+    }
+
     /// The SHA-256 of the canonical settings document: the
     /// `settings_hash` every result's provenance carries, and the cache
     /// key two contexts share when they compute the same numbers.
