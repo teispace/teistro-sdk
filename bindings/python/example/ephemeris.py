@@ -109,7 +109,7 @@ def main() -> None:
         # ── What the columns are for ──────────────────────────────────
         print()
         for column, (body, graha) in enumerate(BODIES):
-            name = ctx.entity(graha.full_key).name
+            name = ctx.intl.entity(graha.full_key).name
             crossings = ingresses(cells.lon, DAYS, sky.body_count, column)
             speed = cells.lon_speed[column]
             direction = "retrograde" if speed < 0 else "direct"
@@ -118,7 +118,7 @@ def main() -> None:
                 f" {len(crossings)} sign change(s)"
             )
             for day, sign in crossings[:3]:
-                sign_name = ctx.entity(sign.full_key).name
+                sign_name = ctx.intl.entity(sign.full_key).name
                 print(f"      day {day:3}  enters {sign.key:12} {sign_name}")
             if len(crossings) > 3:
                 print(f"      … and {len(crossings) - 3} more")

@@ -88,24 +88,24 @@ def main() -> None:
         profile="nepali-default", locale="ne-Deva-NP", test_provider=True
     )
     put("profile", ctx.profile)
-    put("locale", ctx.locale)
+    put("locale", ctx.intl.locale)
     put("settings-hash", ctx.settings_hash)
     put("settings-fnv", fnv(ctx.settings_json))
 
     # ── The calendars ─────────────────────────────────────────────────
     day = date(Calendar.GREGORIAN, 2015, 4, 14)
-    bs = ctx.convert(day, Calendar.BIKRAM_SAMBAT)
+    bs = ctx.calendar.convert(day, Calendar.BIKRAM_SAMBAT)
     put("bs-year", bs.year)
     put("bs-month", bs.month)
     put("bs-day", bs.day)
     put("bs-era", None if bs.era is None else bs.era.full_key)
     put("bs-era-year", bs.era_year)
     put("bs-resolution", bs.resolution.key)
-    fixed = ctx.fixed_of(day)
+    fixed = ctx.calendar.fixed_of(day)
     put("fixed", fixed)
-    put("weekday", ctx.weekday_of(day))
-    put("month-length", ctx.month_length(Calendar.GREGORIAN, 2024, 2))
-    put("is-leap", ctx.is_leap(Calendar.GREGORIAN, 2024))
+    put("weekday", ctx.calendar.weekday_of(day))
+    put("month-length", ctx.calendar.month_length(Calendar.GREGORIAN, 2024, 2))
+    put("is-leap", ctx.calendar.is_leap(Calendar.GREGORIAN, 2024))
     put("jd-of-fixed", teistro.julian_day_of_fixed(fixed))
     back, fraction = teistro.fixed_of_julian_day(2457126.75)
     put("fixed-of-jd", back)
@@ -114,7 +114,7 @@ def main() -> None:
     # ── Time ──────────────────────────────────────────────────────────
     civil = at(date(Calendar.GREGORIAN, 1986, 1, 1), hour=0, minute=20)
     zone = iana_zone("Asia/Kathmandu")
-    resolved = ctx.resolve(civil, zone)
+    resolved = ctx.time.resolve(civil, zone)
     put("resolve-jd", resolved.instant_jd_utc)
     put("resolve-offset", resolved.offset_seconds)
     put("resolve-era", resolved.era.key)
@@ -122,27 +122,27 @@ def main() -> None:
     put("resolve-time-known", resolved.time_known)
     put("resolve-tzdb", resolved.tzdb_version)
     put("resolve-warnings", len(resolved.warnings))
-    civil_back, resolution = ctx.civil_of(
+    civil_back, resolution = ctx.time.civil_of(
         resolved.instant_jd_utc, zone, Calendar.GREGORIAN
     )
     put("civil-year", civil_back.date.year)
     put("civil-minute", civil_back.time.minute)
     put("civil-offset", resolution.offset_seconds)
-    tt = ctx.convert_time(2451544.5, Scale.UTC, Scale.TT)
+    tt = ctx.time.convert(2451544.5, Scale.UTC, Scale.TT)
     put("tt-jd", tt.jd)
     put("tt-delta-t", tt.delta_t_seconds)
     put("tt-delta-t-source", tt.delta_t_source.key)
     put("tt-delta-t-model", tt.delta_t_model)
-    delta = ctx.delta_t(2451544.5)
+    delta = ctx.time.delta_t(2451544.5)
     put("delta-t-seconds", delta.seconds)
     put("delta-t-source", delta.source.key)
 
     # ── Keys ──────────────────────────────────────────────────────────
-    identifier = ctx.key_id("graha.SUN")
+    identifier = ctx.keys.id("graha.SUN")
     put("key-id", identifier)
-    put("key-name", ctx.key_name(identifier))
+    put("key-name", ctx.keys.name(identifier))
     try:
-        ctx.key_id("graha.SUNN")
+        ctx.keys.id("graha.SUNN")
         put("refusal", "none")
     except TeistroError as error:
         put("refusal-status", error.status.key)
@@ -150,7 +150,7 @@ def main() -> None:
         put("refusal-hint-names-sun", "SUN" in error.hint)
 
     # ── The locale engine ─────────────────────────────────────────────
-    rendered = ctx.render(
+    rendered = ctx.intl.render(
         "sdk.reason.grahaInBhava",
         {"graha": {"$entity": "graha.JUPITER"}, "bhava": 7},
     )
@@ -158,21 +158,21 @@ def main() -> None:
     put("render-length", len(rendered.text))
     put("render-resolved-from", rendered.resolved_from)
     put("render-fallback", bool(rendered.is_fallback))
-    put("has-message", ctx.has("sdk.reason.grahaInBhava"))
-    put("has-missing-message", ctx.has("sdk.nope.missing"))
-    put("transliterated", ctx.transliterate("सूर्य बृहस्पति"))
-    sun = ctx.entity("graha.SUN")
+    put("has-message", ctx.intl.has("sdk.reason.grahaInBhava"))
+    put("has-missing-message", ctx.intl.has("sdk.nope.missing"))
+    put("transliterated", ctx.intl.transliterate("सूर्य बृहस्पति"))
+    sun = ctx.intl.entity("graha.SUN")
     put("entity-sun-name", sun.name)
     put("entity-sun-iast", sun.iast)
     put("entity-sun-glyph", sun.glyph)
     put("entity-sun-gender", None if sun.gender is None else sun.gender.value)
     put(
         "message-graha-in-bhava",
-        ctx.messages.sdk.reason.graha_in_bhava(graha=intl.GrahaKey.JUPITER, bhava=7),
+        ctx.intl.messages.sdk.reason.graha_in_bhava(graha=intl.GrahaKey.JUPITER, bhava=7),
     )
     put(
         "message-bs-date",
-        ctx.messages.sdk.calendar.bikram_sambat.date.long(
+        ctx.intl.messages.sdk.calendar.bikram_sambat.date.long(
             day=1, month_name="बैशाख", year=2072
         ),
     )
@@ -223,7 +223,7 @@ def main() -> None:
         longitude_deg=Longitude(85.324),
         altitude_m=Altitude(1400),
     )
-    placed = ctx.found(instant=2451545, place=place, utc_offset_seconds=20700)
+    placed = ctx.chart.found(instant=2451545, place=place, utc_offset_seconds=20700)
     put("chart-under-topocentric", "founded")
     put("topocentric-steps", ",".join(placed.batch.steps_applied))
     put("topocentric-lagna", placed.lagna_deg)
@@ -247,7 +247,7 @@ def main() -> None:
         # Two instants, so a per-chart section that ran charts-outermost
         # the wrong way round shows up as the second chart's values in
         # the first's place rather than as nothing at all.
-        charts = geo.found_many(
+        charts = geo.chart.found_many(
             instants=[2460482.5, 2460600.25],
             place=place,
             utc_offset_seconds=20700,
@@ -300,7 +300,7 @@ def main() -> None:
                 put(f"chart-{i}-chalit-{k}-madhya", bhava.madhya_deg)
 
         # `found` is the batch of one unwrapped, and must agree with it.
-        single = geo.found(
+        single = geo.chart.found(
             instant=2460482.5, place=place, utc_offset_seconds=20700
         )
         put("chart-single-lagna", single.lagna_deg)
@@ -310,7 +310,7 @@ def main() -> None:
         # Three days, because a day's lists are ragged and two
         # consecutive days with the same counts would not exercise the
         # offsets.
-        week = geo.almanac(
+        week = geo.almanac.of(
             from_date=date(Calendar.GREGORIAN, 2024, 6, 17),
             to_date=date(Calendar.GREGORIAN, 2024, 6, 19),
             place=place,
@@ -421,7 +421,7 @@ def main() -> None:
                 )
 
         # `almanac_day` is the range of one unwrapped, and must agree.
-        one_day = geo.almanac_day(
+        one_day = geo.almanac.day(
             date=date(Calendar.GREGORIAN, 2024, 6, 17),
             place=place,
             utc_offset_seconds=20700,

@@ -137,12 +137,12 @@ def main() -> None:
     ) as ctx:
         # Nepali New Year: the first day of Baisakh, BS 2082.
         day = date(Calendar.BIKRAM_SAMBAT, 2082, 1, 1)
-        gregorian = ctx.convert(day, Calendar.GREGORIAN)
+        gregorian = ctx.calendar.convert(day, Calendar.GREGORIAN)
         # Six in the morning stands in for sunrise, which the almanac
         # would use and which needs the rise-and-set solver.
-        when = ctx.resolve(at(day, hour=6), iana_zone("Asia/Kathmandu"))
+        when = ctx.time.resolve(at(day, hour=6), iana_zone("Asia/Kathmandu"))
         found = panchanga_at(
-            ctx, teistro, when.instant_jd_utc, ctx.weekday_of(day)
+            ctx, teistro, when.instant_jd_utc, ctx.calendar.weekday_of(day)
         )
 
         print(
@@ -163,7 +163,7 @@ def main() -> None:
             ("yoga", found.yoga),
             ("karana", found.karana),
         ):
-            entity = ctx.entity(member.full_key)
+            entity = ctx.intl.entity(member.full_key)
             print(
                 f"  {label:10} {entity.name:14} {entity.iast:18} "
                 f"({member.key})"

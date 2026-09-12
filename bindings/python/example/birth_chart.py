@@ -137,7 +137,7 @@ def main() -> None:
     ) as ctx:
         # ── 1. The record, as it would be written on a form ───────────
         birth_day = date(Calendar.BIKRAM_SAMBAT, 2042, 9, 17)
-        gregorian = ctx.convert(birth_day, Calendar.GREGORIAN)
+        gregorian = ctx.calendar.convert(birth_day, Calendar.GREGORIAN)
         print(
             f"born  BS {birth_day.year}-{birth_day.month:02}-{birth_day.day:02}"
             f"  ({gregorian.year}-{gregorian.month:02}-{gregorian.day:02})"
@@ -145,7 +145,7 @@ def main() -> None:
         )
 
         # ── 2. The instant, with the zone's own history ───────────────
-        when = ctx.resolve(
+        when = ctx.time.resolve(
             at(birth_day, hour=0, minute=20), iana_zone("Asia/Kathmandu")
         )
         offset = when.offset_seconds
@@ -169,9 +169,9 @@ def main() -> None:
         print(f"{'graha':12} {'':4} {'sign':12} {'deg':>9}  {'nakshatra':14} pada")
         print("─" * 62)
         for placed in placements:
-            graha = ctx.entity(placed.graha.full_key)
-            rashi = ctx.entity(placed.rashi.full_key)
-            nakshatra = ctx.entity(placed.nakshatra.full_key)
+            graha = ctx.intl.entity(placed.graha.full_key)
+            rashi = ctx.intl.entity(placed.rashi.full_key)
+            nakshatra = ctx.intl.entity(placed.nakshatra.full_key)
             mark = "℞" if placed.retrograde else " "
             print(
                 f"{graha.name:12} {graha.glyph or '':2} {mark:1} "
@@ -216,7 +216,7 @@ def main() -> None:
         ) as scoped:
             label = (policy or "refuse").ljust(9)
             try:
-                resolved = scoped.resolve(no_time, iana_zone("Asia/Kathmandu"))
+                resolved = scoped.time.resolve(no_time, iana_zone("Asia/Kathmandu"))
             except TeistroError as error:
                 print(f"{label} {error.message}")
                 print(f"{' ' * 10}hint: {error.hint}")

@@ -226,7 +226,7 @@ def main() -> None:
     # to act on. That is what to put in front of a person.
     with teistro.context(profile="parashari-classical") as ctx:
         try:
-            ctx.key_id("graha.SUNN")
+            ctx.keys.id("graha.SUNN")
         except TeistroError as error:
             print()
             print(f"status   {error.status.key}")

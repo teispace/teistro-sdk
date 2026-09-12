@@ -35,11 +35,11 @@ def month_page(ctx: Context, year: int, month: int) -> str:
     a month that gains or loses a day at either end is then right by
     construction.
     """
-    length = ctx.month_length(Calendar.BIKRAM_SAMBAT, year, month)
+    length = ctx.calendar.month_length(Calendar.BIKRAM_SAMBAT, year, month)
     first = date(Calendar.BIKRAM_SAMBAT, year, month, 1)
     # ISO weekday 1..7; a calendar page starts on Monday, so the first of
     # the month sits at column `weekday - 1`.
-    lead = ctx.weekday_of(first) - 1
+    lead = ctx.calendar.weekday_of(first) - 1
 
     cells = ["   "] * lead
     cells += [f"{day:3}" for day in range(1, length + 1)]
@@ -68,13 +68,13 @@ def main() -> None:
         print(f"BS {year}")
         total = 0
         for month in range(1, 13):
-            length = ctx.month_length(Calendar.BIKRAM_SAMBAT, year, month)
+            length = ctx.calendar.month_length(Calendar.BIKRAM_SAMBAT, year, month)
             total += length
             first = date(Calendar.BIKRAM_SAMBAT, year, month, 1)
             last = date(Calendar.BIKRAM_SAMBAT, year, month, length)
-            starts = ctx.convert(first, Calendar.GREGORIAN)
-            ends = ctx.convert(last, Calendar.GREGORIAN)
-            name = ctx.messages.sdk.calendar.bikram_sambat.month_name(month=month)
+            starts = ctx.calendar.convert(first, Calendar.GREGORIAN)
+            ends = ctx.calendar.convert(last, Calendar.GREGORIAN)
+            name = ctx.intl.messages.sdk.calendar.bikram_sambat.month_name(month=month)
             print(
                 f"  {month:2}  {name:10} {length:2} days   "
                 f"{starts.year}-{starts.month:02}-{starts.day:02}"
@@ -93,12 +93,12 @@ def main() -> None:
         # ── The round trip, and what each date says about itself ──────
         print()
         new_year = date(Calendar.BIKRAM_SAMBAT, year, 1, 1)
-        gregorian = ctx.convert(new_year, Calendar.GREGORIAN)
-        back = ctx.convert(gregorian, Calendar.BIKRAM_SAMBAT)
+        gregorian = ctx.calendar.convert(new_year, Calendar.GREGORIAN)
+        back = ctx.calendar.convert(gregorian, Calendar.BIKRAM_SAMBAT)
         print(f"  BS   {described(ctx, new_year)}")
         print(f"  ->   {described(ctx, gregorian)}")
         print(f"  ->   {described(ctx, back)}")
-        print(f"  fixed day {ctx.fixed_of(new_year)}, weekday {ctx.weekday_of(new_year)}")
+        print(f"  fixed day {ctx.calendar.fixed_of(new_year)}, weekday {ctx.calendar.weekday_of(new_year)}")
 
         # ── Inside the table, and outside it ──────────────────────────
         # A date a caller *states* is always `DEFINED`: it is what was
@@ -106,10 +106,10 @@ def main() -> None:
         # the resolution to read is the one on the answer.
         print()
         for asked in (2082, 2200, 1960):
-            gregorian = ctx.convert(
+            gregorian = ctx.calendar.convert(
                 date(Calendar.BIKRAM_SAMBAT, asked, 1, 1), Calendar.GREGORIAN
             )
-            answer = ctx.convert(gregorian, Calendar.BIKRAM_SAMBAT)
+            answer = ctx.calendar.convert(gregorian, Calendar.BIKRAM_SAMBAT)
             print(
                 f"  BS {asked} began {gregorian.year}-{gregorian.month:02}"
                 f"-{gregorian.day:02}, and the answer is [{answer.resolution.key}]"
@@ -126,9 +126,9 @@ def main() -> None:
         print()
         print(
             "  rendered  "
-            + ctx.messages.sdk.calendar.bikram_sambat.date.long(
+            + ctx.intl.messages.sdk.calendar.bikram_sambat.date.long(
                 day=1,
-                month_name=ctx.messages.sdk.calendar.bikram_sambat.month_name(month=1),
+                month_name=ctx.intl.messages.sdk.calendar.bikram_sambat.month_name(month=1),
                 year=year,
             )
         )
