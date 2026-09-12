@@ -29,9 +29,20 @@ Nothing is compiled at install time and there is no install script.
 import { Context } from '@teistro/sdk';
 import { Body } from '@teistro/sdk/catalogue';
 
-const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP' });
+const ctx = new Context({
+  profile: 'nepali-default',
+  locale: 'ne-Deva-NP',
+  ephemeris: 'builtin',
+});
 const sun = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] }).at(0, 0);
 ```
+
+`ephemeris` is not optional and there is no default: a context with none
+computes calendars, time and text, and refuses a position. `'builtin'` is
+the analytic ephemeris the SDK carries — enough to cast a chart with
+nothing else installed, and a fallback rather than the intended path.
+[Choosing an ephemeris](#choosing-an-ephemeris) says what to put
+there instead.
 
 `$TEISTRO_ADDON` names an addon outright when you have one the loader
 would not find.
@@ -54,7 +65,11 @@ first.
 import 'package:teistro/teistro.dart';
 
 final teistro = Teistro.open();
-final ctx = teistro.context(profile: 'nepali-default', locale: 'ne-Deva-NP');
+final ctx = teistro.context(
+  profile: 'nepali-default',
+  locale: 'ne-Deva-NP',
+  ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+);
 final sun = ctx.positions(instants: [2451545.0], bodies: [Body.sun]).at(0, 0);
 ```
 
@@ -66,6 +81,42 @@ dart run teistro:install --from libteistro_ffi-0.1.0-linux-x64.so.gz
 
 `$TEISTRO_LIBRARY` names a library outright.
 
+## Python
+
+```sh
+pip install teistro
+teistro-install
+```
+
+The wheel carries no binaries either: `teistro-install` fetches the
+library for this machine from the release the package's version was cut
+from, checks it against a digest recorded when it was built, and writes
+it to `.teistro/<version>/`, which is one of the first places
+`Teistro.open()` looks. There is nothing to compile and no wheel per
+interpreter version — the package loads the library through `ctypes`,
+which is in the standard library.
+
+```python
+from teistro import Body, Ephemeris, Teistro
+
+teistro = Teistro.open()
+with teistro.context(
+    profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+) as ctx:
+    sun = ctx.positions(instants=[2451545.0], bodies=[Body.SUN]).at(0, 0)
+```
+
+`teistro-install --from <file>` installs from a file you already have,
+and `$TEISTRO_LIBRARY` names a library outright.
+
+<Callout>
+  On Windows, run Python in UTF-8 mode — `PYTHONUTF8=1`, or `python -X
+  utf8` — whenever you print what the SDK returns. The console's default
+  encoding is cp1252 and `print` of a Devanagari string raises
+  `UnicodeEncodeError` there; UTF-8 mode becomes Python's default in
+  3.15.
+</Callout>
+
 ## C, and everything that speaks C
 
 A release attaches one bundle per platform,
@@ -73,8 +124,18 @@ A release attaches one bundle per platform,
 shared and the static library, and the terms.
 
 ```sh
-cc -std=c11 -Iteistro-c/include app.c teistro-c/lib/libteistro_ffi.a -o app
+cc -std=c11 -Iteistro-c/include app.c teistro-c/lib/libteistro_ffi.a -lm -o app
 ```
+
+`-lm` is not optional on Linux: the static library carries Rust's
+standard library as object code, the astronomy calls `sin` and `atan2`,
+and an archive records nothing about what it needs. Against the **shared**
+library the line is `-Lteistro-c/lib -lteistro_ffi` and nothing else —
+except on Windows, where it is `teistro-c/lib/teistro_ffi.dll.lib` by
+path, because `-l` would find the static library beside it.
+[`bindings/c/README.md`](https://github.com/teispace/teistro-sdk/blob/main/bindings/c/README.md)
+gives both lines in full and says what MinGW cannot do with an MSVC
+archive.
 
 The header is generated from the same description as every other binding,
 and a C compiler checks every struct's size against the library's on
@@ -83,6 +144,60 @@ computing quietly wrong answers.
 
 C++, Swift, Kotlin (Panama or JNI) and Java (FFM) consume this header
 directly.
+
+## Choosing an ephemeris
+
+A context with no ephemeris computes calendars, times and messages;
+positions need one, and there is no default. `ephemeris` names it, or
+names an **ordered chain** tried in order.
+
+An entry is one of three things: a **name** of an ephemeris the SDK
+carries (`builtin`, `test`, `none`), a **descriptor** exported by an
+adapter's own package, or a **provider you write yourself** — a
+JavaScript, Dart or Python object the SDK calls into.
+
+```js
+import { Context } from '@teistro/sdk';
+import teimeris from '@teistro/ephemeris-teimeris';
+
+// A real engine, and the SDK's own only if it is not there.
+const ctx = new Context({ ephemeris: [teimeris({ dataDir: './ephe' }), 'builtin'] });
+```
+
+```dart
+import 'package:teistro_ephemeris_teimeris/teistro_ephemeris_teimeris.dart';
+
+final ctx = teistro.context(
+  ephemeris: [teimeris(dataDir: './ephe'), NamedEphemeris(Ephemeris.builtin)],
+);
+```
+
+```python
+from teistro_ephemeris_teimeris import teimeris
+
+ctx = sdk.context(ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN])
+```
+
+**A real engine is the intended path.** In most cases a consumer belongs
+on Teimeris or Swiss Ephemeris, each installed as its own package under
+its own licence, and the SDK's `builtin` is the fallback that makes a
+chart compute with nothing else installed. It is real astronomy —
+VSOP87A and ELP2000-82B — and it is still the fallback. `test` selects
+the analytic test provider, whose positions are **not astronomy**.
+
+A chain is a caller *saying* they will accept the fallback. Nothing is
+silent: a context asked for an engine and quietly given the built-in is
+what this refuses, and when no entry opens, the refusal names each one
+that failed. A chain of one is a chain of one.
+
+An engine brings its own operations with it, beyond the ones the SDK
+names, and they are reachable at `ctx.engine` — with a typed façade over
+them carried by the adapter's package.
+
+Why a separate package rather than a build flag: the SDK is Apache-2.0
+and both engines are AGPL-3.0. An adapter is its own package under its
+own terms, so the licence follows the engine a consumer chose rather
+than the SDK everyone gets.
 
 ## From source
 
