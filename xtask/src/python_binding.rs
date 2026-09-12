@@ -36,6 +36,22 @@ const FIXTURES: &str = "target/tsrb";
 /// `# expect:` must be reported, which is how the Python half of Phase
 /// 1's "a swapped latitude and longitude does not compile" is proved.
 const WRONG: &str = "typecheck/wrong.py";
+/// UTF-8 mode, which every one of these programs needs on Windows.
+///
+/// The SDK answers in Nepali when it is asked to, and `print` of a
+/// Devanagari string through the Windows console's default cp1252 raises
+/// `UnicodeEncodeError` before a character reaches the screen. PEP 540's
+/// UTF-8 mode is the documented answer and becomes Python's default in
+/// 3.15; until then a program that prints what this SDK returns asks for
+/// it, and `bindings/python/README.md` tells a Windows reader the same.
+///
+/// Not new, only newly reachable: `almanac.py`'s first line is a
+/// weekday, `सोमबार`, and the six characters cp1252 refused are those.
+/// It had been failing on win32 for as long as the example has printed
+/// one, and the matrix could not say so because `check-c` failed in the
+/// same job before `check-python` ran.
+const UTF8: &str = "1";
+
 /// Where the examples live. **Every** file there is run, so a scenario
 /// added to the directory is gated by having been added — the failure a
 /// list in this file would eventually have is that someone writes an
@@ -151,6 +167,7 @@ fn examples(package: &Path, python: &str, library: &Path) -> Result<(), ()> {
                 .arg(example)
                 .env("TEISTRO_LIBRARY", library)
                 .env("PYTHONPATH", package)
+                .env("PYTHONUTF8", UTF8)
                 .current_dir(package),
             "",
             &format!("{PACKAGE}/{EXAMPLES}/{name} did not run"),
@@ -179,6 +196,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                     .env("TEISTRO_LIBRARY", &library)
                     .env("TEISTRO_FIXTURES", &fixtures)
                     .env("PYTHONPATH", &package)
+                    .env("PYTHONUTF8", UTF8)
                     .current_dir(&package),
                 &format!("{PACKAGE}/tests passes against the library it was built for"),
                 &format!("{PACKAGE}/tests did not pass"),

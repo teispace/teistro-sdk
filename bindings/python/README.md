@@ -68,6 +68,14 @@ TEISTRO_LIBRARY=../../target/release/libteistro_ffi.dylib \
 PYTHONPATH=. python3 example/quickstart.py
 ```
 
+**On Windows, run Python in UTF-8 mode** — `PYTHONUTF8=1`, or
+`python -X utf8` — whenever you print what this SDK returns. The console's
+default encoding there is cp1252, and `print` of a Devanagari string
+raises `UnicodeEncodeError` before a character reaches the screen; the
+string itself was never the problem. PEP 540's UTF-8 mode is the
+documented answer and becomes Python's default in 3.15. `cargo xtask
+check-python` sets it, so the examples run there as they do anywhere.
+
 The one thing to know before writing anything real is in
 [`example/birth_chart.py`](example/birth_chart.py): **the canonical
 frame is tropical**, because that is what an ephemeris computes. A Vedic
