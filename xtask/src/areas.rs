@@ -364,8 +364,13 @@ fn claims_section(
     out
 }
 
-/// The entry points whose names do not carry their module, which are two
-/// different things and the page should say which.
+/// The entry points whose names do not carry their module for a reason
+/// `03-design/surface-areas.md` records, so the page can tell a decision
+/// from an oversight while the rule goes on counting both.
+const DECLARED: [&str; 1] = ["ts_context_new_with_provider"];
+
+/// The entry points whose names do not carry their module, which are
+/// three different things and the page should say which.
 fn strays_section(api: &Api) -> String {
     let mut by_module: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     for function in &api.functions {
@@ -385,17 +390,53 @@ fn strays_section(api: &Api) -> String {
     if library + mismatched.len() == 0 {
         return out;
     }
+    let declared: Vec<&str> = mismatched
+        .iter()
+        .copied()
+        .filter(|name| DECLARED.contains(name))
+        .collect();
+    let unexplained: Vec<&str> = mismatched
+        .iter()
+        .copied()
+        .filter(|name| !DECLARED.contains(name))
+        .collect();
     let _ = writeln!(out, "### The names that do not carry their module\n");
     let _ = writeln!(
         out,
         "{library} of them are `lib`'s, and `lib` is not a module in the sense the others are: it is the library itself, and `ts_sdk_version` would gain nothing by becoming `ts_lib_sdk_version`. The rule does not apply to it, and this page counts it as a miss rather than writing the exception into the rule — a rule with its exceptions inside it cannot be falsified by anything.\n"
     );
-    let _ = writeln!(
-        out,
-        "The remaining {} are **inconsistencies rather than exceptions**, and each is a line to fix while the surface is being restructured anyway: {}.\n",
-        mismatched.len(),
-        named(&mismatched)
-    );
+    if !declared.is_empty() {
+        let _ = writeln!(
+            out,
+            "{} {} **declared in [`surface-areas.md`](surface-areas.md)** and still counted here for the same reason: {}. It belongs to `context`'s family by the name a consumer calls and to `provider`'s by what it depends on, and the name that should read well is the one a consumer calls.\n",
+            declared.len(),
+            if declared.len() == 1 {
+                "is an exception"
+            } else {
+                "are exceptions"
+            },
+            named(&declared)
+        );
+    }
+    if unexplained.is_empty() {
+        let _ = writeln!(
+            out,
+            "Nothing else. The three that were inconsistencies were all the same one — a function named in the singular in a file named in the plural — and were fixed by renaming the **file**, which is not an ABI symbol, rather than the function, which is.\n"
+        );
+    } else {
+        let _ = writeln!(
+            out,
+            "The remaining {} {} **{}**, and each is a line to fix while the surface is being restructured anyway: {}.\n",
+            unexplained.len(),
+            if unexplained.len() == 1 { "is an" } else { "are" },
+            if unexplained.len() == 1 {
+                "inconsistency rather than an exception"
+            } else {
+                "inconsistencies rather than exceptions"
+            },
+            named(&unexplained)
+        );
+    }
     out
 }
 

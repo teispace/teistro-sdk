@@ -27,7 +27,7 @@ use teistro_port_ephemeris::{
 };
 
 use crate::TS_CONTEXT_TEST_PROVIDER;
-use crate::strings::{TsHash, TsStr, TsString};
+use crate::string::{TsHash, TsStr, TsString};
 use crate::support::{c_struct, optional_text, read_in, with_context, write_out, write_plain};
 
 include!(concat!(env!("OUT_DIR"), "/bundles.rs"));

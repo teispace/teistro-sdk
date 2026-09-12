@@ -47,12 +47,12 @@ pub mod context;
 pub mod ephemeris;
 pub mod frame;
 pub mod intl;
-pub mod keys;
+pub mod key;
 pub mod panchanga;
 pub mod positions;
 pub mod provider;
 pub mod schemas;
-pub mod strings;
+pub mod string;
 mod support;
 pub mod time;
 

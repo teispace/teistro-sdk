@@ -14,7 +14,7 @@ use teistro_core::error::{Detail, Error};
 use teistro_core::key::{KeyId, resolve};
 
 use crate::context::TsContext;
-use crate::strings::TsStr;
+use crate::string::TsStr;
 use crate::support::{text, with_context, write_plain};
 
 /// Resolves a full key (`graha.SUN`, an alias, or a former key) to its

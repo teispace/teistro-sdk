@@ -44,7 +44,7 @@ use teistro_port_ephemeris::plugin::{
 };
 use teistro_port_ephemeris::vtable::ProviderVtable;
 
-use crate::strings::TsString;
+use crate::string::TsString;
 use crate::support::optional_text;
 
 /// How much room an adapter is given for its refusal.

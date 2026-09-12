@@ -26,7 +26,7 @@ use teistro_core::error::Error;
 use teistro_port_ephemeris::Native;
 
 use crate::context::TsContext;
-use crate::strings::TsString;
+use crate::string::TsString;
 use crate::support::{text, with_context, write_plain};
 
 /// The engine of a context, or the refusal that says why there is none.

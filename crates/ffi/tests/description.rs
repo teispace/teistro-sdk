@@ -38,7 +38,7 @@ fn every_struct_has_the_layout_the_description_computes() {
     use teistro_ffi::frame::TsFrame;
     use teistro_ffi::intl::TsIntlLoaded;
     use teistro_ffi::panchanga::TsPanchangaRequest;
-    use teistro_ffi::strings::{TsHash, TsStr, TsString};
+    use teistro_ffi::string::{TsHash, TsStr, TsString};
     use teistro_ffi::time::{
         TsCivilDateTime, TsCivilTime, TsDeltaT, TsTimeConversion, TsZoneResolution, TsZoneSpec,
     };

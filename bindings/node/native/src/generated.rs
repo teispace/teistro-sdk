@@ -1316,8 +1316,8 @@ pub struct HeldHash {
 
 impl HeldHash {
     /// The C struct, borrowing this value's buffers.
-    pub fn as_c(&self) -> ffi::strings::TsHash {
-        ffi::strings::TsHash { bytes: self.bytes }
+    pub fn as_c(&self) -> ffi::string::TsHash {
+        ffi::string::TsHash { bytes: self.bytes }
     }
 }
 
@@ -1339,7 +1339,7 @@ impl Hash {
     ///
     /// Every pointer in `raw` must be valid as the struct documents, for
     /// the length of this call.
-    pub unsafe fn write(raw: &ffi::strings::TsHash) -> Self {
+    pub unsafe fn write(raw: &ffi::string::TsHash) -> Self {
         Hash {
             bytes: Buffer::from(raw.bytes.to_vec()),
         }
@@ -2684,7 +2684,7 @@ impl Context {
         // SAFETY: every field is a plain integer, float or pointer, so
         // all-zero is a valid value; a size, where the struct has one, is set
         // before the call reads it.
-        let mut out_hash: ffi::strings::TsHash = unsafe { core::mem::zeroed() };
+        let mut out_hash: ffi::string::TsHash = unsafe { core::mem::zeroed() };
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
@@ -2703,7 +2703,7 @@ impl Context {
         let mut out_id: u32 = Default::default();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
-        let status = unsafe { ffi::keys::ts_key_parse(self.handle, key.as_ptr(), &raw mut out_id) };
+        let status = unsafe { ffi::key::ts_key_parse(self.handle, key.as_ptr(), &raw mut out_id) };
         self.leave()?;
         self.check(status)?;
         Ok(out_id as _)
@@ -2719,7 +2719,7 @@ impl Context {
         };
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
-        let status = unsafe { ffi::keys::ts_key_name(self.handle, id as u32, &raw mut out_key) };
+        let status = unsafe { ffi::key::ts_key_name(self.handle, id as u32, &raw mut out_key) };
         self.leave()?;
         self.check(status)?;
         Ok(unsafe { lent_text(out_key.data) }.unwrap_or_default())

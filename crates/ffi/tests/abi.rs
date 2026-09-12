@@ -38,13 +38,13 @@ use teistro_ffi::context::{
 };
 use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
-use teistro_ffi::keys::{ts_key_name, ts_key_parse};
+use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
     TsProvider, ts_context_new_with_provider, ts_provider_free, ts_provider_load,
 };
 use teistro_ffi::schemas;
-use teistro_ffi::strings::{TsHash, TsStr, TsString, ts_string_free};
+use teistro_ffi::string::{TsHash, TsStr, TsString, ts_string_free};
 use teistro_ffi::time::{
     TsCivilDateTime, TsCivilTime, TsDeltaT, TsDeltaTSource, TsScale, TsTimeConversion, TsZoneEra,
     TsZoneResolution, TsZoneSource, TsZoneSpec, ts_time_civil, ts_time_convert, ts_time_delta_t,
