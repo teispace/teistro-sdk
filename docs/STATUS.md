@@ -545,14 +545,36 @@ provider's DUT1).
    sixty-two. The same count showed `return` never appears beside another
    key, so no target has to rename a keyword.
 
-   **What the façade still lacks is its package.** It cannot be
-   *type-checked* by a gate until each target has a manifest that
-   resolves the SDK — a `pubspec.yaml`, a `package.json` and a tsconfig,
-   a `pyproject.toml` — and those carry decisions this session did not
-   take: the package names, their versions, and the AGPL licence each
-   must declare. `check-engine` holds the files against the description;
-   nothing yet holds them against a compiler, though all three were run
-   by hand against the engine.
+   **And the packages are built, so the façade is gated by a compiler
+   rather than proven by hand.** `@teistro/ephemeris-teimeris`,
+   `teistro_ephemeris_teimeris` for Dart and pub, and the Python
+   distribution of the same name: each exports `teimeris(…)` — the
+   descriptor, with the platform binary filled in — and carries the
+   generated façade. Each resolves its binary the way the SDK resolves
+   its own: a named path, `TEISTRO_TEIMERIS_ADAPTER`, the per-platform
+   package, then this repository's release and debug builds, with a
+   refusal naming every place it looked.
+
+   Each binding's gate now checks its adapter package too, because what
+   an adapter package needs is that ecosystem's checker at that
+   ecosystem's strictness: `tsc` at maximum strictness in `check-node`,
+   `dart analyze --fatal-infos` in `check-dart`, `mypy --strict` in
+   `check-python`. **Proven red**: a string where the engine declares
+   `tm_body` is a type error, which traces back through the façade and
+   the manifest to the integer aliases the engine's IDL gained earlier in
+   this session.
+
+   **The licence, as the maintainer decided.** Each package declares
+   `AGPL-3.0-only` and carries the licence text, because the artefact it
+   ships links Teimeris and an Apache-2.0 library that links AGPL code is
+   an AGPL work. Both adapter crates keep `license = "Apache-2.0"` for
+   their own source, and each says so in its manifest where a reader
+   meets the apparent contradiction.
+
+   The binary resolver paid for itself on its first outing: it found a
+   stale local *release* build ahead of the debug one, and the boundary
+   refused it by name — `vtable size 72 version 2; this port is version
+   3` — which is the ABI check ADR-0029 asked for, working.
 
    **And the plugin surface is ADR-0029's**, after one commit where it
    was not. `plugin` and `pluginConfig` — a path, which that ADR rejected
@@ -573,13 +595,15 @@ provider's DUT1).
    With one entry nothing is caught; with more, every refusal is kept and
    reported together.
 
-   **Next:** those adapter packages — `@teistro/ephemeris-teimeris` and
-   its Dart and Python siblings, each declaring AGPL-3.0, shipping a
-   platform binary per target triple, exporting the descriptor, and
-   carrying the generated façade with a type-check gate apiece. Then the
-   fallback chain over them, which is what folds `plugin` away. Then
-   wasm, whose ephemeris is the built-in `compact` tier; then Rust's own
-   consumer surface, the READMEs and the site.
+   **Next: the packaging matrix**, which is the recurring cost ADR-0029
+   named and the one thing here still unbuilt. A package per adapter per
+   target triple, each shipping the platform binary its host needs, and
+   `check-package` extended to cover them the way it covers the SDK's
+   own. Everything above resolves a binary a contributor built; nothing
+   yet *publishes* one.
+
+   Then wasm, whose ephemeris is the built-in `compact` tier; then Rust's
+   own consumer surface, the READMEs and the site.
 
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter

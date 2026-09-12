@@ -20,6 +20,15 @@ const TESTS: &str = "bindings/node/test/";
 /// added to the directory is gated by having been added.
 const EXAMPLES: &str = "bindings/node/example";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
+/// The Teimeris adapter's own package, which the SDK does not depend on
+/// and which depends on the SDK.
+///
+/// Checked here rather than in a gate of its own, because what it needs
+/// is this ecosystem's type checker and this ecosystem's strictness: an
+/// adapter package that did not compile against the SDK's declarations
+/// would be a broken package however green the SDK's own gate was. The
+/// generated façade is most of what it holds (ADR-0030).
+const ADAPTER_TSCONFIG: &str = "adapters/ephemeris-teimeris/node/tsconfig.json";
 /// Where the addon is loaded from: Node requires the `.node` suffix, so
 /// the cdylib Cargo builds is copied there.
 pub(crate) const ADDON: &str = "bindings/node/native/index.node";
@@ -142,5 +151,16 @@ pub(crate) fn check(root: &Path) -> i32 {
         &format!("{TSCONFIG} type-checks at maximum strictness"),
         &format!("{TSCONFIG} does not type-check"),
     );
-    i32::from(checked.is_err())
+    if checked.is_err() {
+        return 1;
+    }
+    let adapter = step(
+        Command::new(&tsc)
+            .args(&args)
+            .args(["-p", ADAPTER_TSCONFIG])
+            .current_dir(root),
+        &format!("{ADAPTER_TSCONFIG}: the typed engine façade composes with the SDK"),
+        &format!("{ADAPTER_TSCONFIG} does not type-check"),
+    );
+    i32::from(adapter.is_err())
 }

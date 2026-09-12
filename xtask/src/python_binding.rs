@@ -22,6 +22,15 @@ use std::process::Command;
 use crate::binding::{blob_fixtures, library, present, step};
 
 const PACKAGE: &str = "bindings/python";
+/// The Teimeris adapter's own package, which the SDK does not depend on
+/// and which depends on the SDK.
+///
+/// Type-checked here rather than in a gate of its own, because what it
+/// needs is this ecosystem's checker and this ecosystem's strictness: an
+/// adapter package that did not type-check against the SDK's own
+/// declarations would be a broken package however green the SDK's gate
+/// was. Most of what it holds is the generated façade (ADR-0030).
+const ADAPTER: &str = "adapters/ephemeris-teimeris/python";
 const FIXTURES: &str = "target/tsrb";
 /// The file whose whole purpose is to be wrong: every line marked
 /// `# expect:` must be reported, which is how the Python half of Phase
@@ -183,15 +192,30 @@ pub(crate) fn check(root: &Path) -> i32 {
         println!("skip  {PACKAGE}: no type checker (set MYPY, or `{python} -m pip install mypy`)");
         return 0;
     };
-    let outcome = wrong_usages(&package, &checker).and_then(|()| {
-        step(
-            Command::new(&checker.0)
-                .args(&checker.1)
-                .arg("--no-error-summary")
-                .current_dir(&package),
-            &format!("{PACKAGE} type-checks in strict mode"),
-            &format!("{PACKAGE} does not type-check"),
-        )
-    });
+    let outcome = wrong_usages(&package, &checker)
+        .and_then(|()| {
+            step(
+                Command::new(&checker.0)
+                    .args(&checker.1)
+                    .arg("--no-error-summary")
+                    .current_dir(&package),
+                &format!("{PACKAGE} type-checks in strict mode"),
+                &format!("{PACKAGE} does not type-check"),
+            )
+        })
+        .and_then(|()| {
+            // `MYPYPATH` rather than an install: the SDK is a sibling
+            // directory here, and the adapter depends on it by path for
+            // as long as neither is published.
+            step(
+                Command::new(&checker.0)
+                    .args(&checker.1)
+                    .arg("--no-error-summary")
+                    .env("MYPYPATH", package.as_os_str())
+                    .current_dir(root.join(ADAPTER)),
+                &format!("{ADAPTER}: the typed engine façade composes with the SDK"),
+                &format!("{ADAPTER} does not type-check"),
+            )
+        });
     i32::from(outcome.is_err())
 }

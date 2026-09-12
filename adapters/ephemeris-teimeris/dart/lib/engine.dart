@@ -12,6 +12,7 @@
 // `sdk.engine.signature(name)` reads. A call through here is to a
 // named engine and does not survive changing it — which is why it is
 // taken as a value rather than laid over `sdk.engine` (ADR-0030).
+// dart format off
 
 import 'package:teistro/teistro.dart';
 

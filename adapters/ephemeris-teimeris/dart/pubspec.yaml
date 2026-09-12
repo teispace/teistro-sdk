@@ -1,0 +1,25 @@
+name: teistro_ephemeris_teimeris
+description: >-
+  The Teimeris ephemeris, as a Teistro adapter: the descriptor the SDK's
+  ephemeris chain takes, and a typed facade over the engine's own
+  operations.
+version: 0.0.0
+publish_to: none
+repository: https://github.com/teispace/teistro-sdk
+
+# AGPL-3.0-only, because the library this package ships links Teimeris,
+# which is AGPL, and an Apache-2.0 library that links AGPL code is an AGPL
+# work (ADR-0029). The Rust crate beside it keeps `license = "Apache-2.0"`
+# for its own source; this is the licence of what is distributed.
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  # A path dependency while neither package is published: the SDK is the
+  # thing this extends, and `dart analyze` needs it to resolve `Engine`.
+  teistro:
+    path: ../../../bindings/dart
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0

@@ -17,6 +17,15 @@ use std::process::Command;
 use crate::binding::{blob_fixtures, library, present, step};
 
 const PACKAGE: &str = "bindings/dart";
+/// The Teimeris adapter's own package, which the SDK does not depend on
+/// and which depends on the SDK.
+///
+/// Analysed here rather than in a gate of its own, because what it needs
+/// is this ecosystem's analyser and this ecosystem's strictness: an
+/// adapter package that did not resolve against the SDK's own types
+/// would be a broken package however green the SDK's gate was. Most of
+/// what it holds is the generated façade (ADR-0030).
+const ADAPTER: &str = "adapters/ephemeris-teimeris/dart";
 /// The file whose whole purpose is to be wrong: every line marked
 /// `// expect:` must be reported, which is how the Dart half of Phase 1's
 /// "a swapped latitude and longitude does not compile" is proved.
@@ -112,6 +121,41 @@ fn examples(package: &Path, library: &Path) -> Result<(), ()> {
     Ok(())
 }
 
+/// The adapter package: resolved, analysed and formatted.
+///
+/// Its façade is generated from the engine's own description, so what
+/// this holds is that the generated extension composes with the SDK's
+/// `Engine` — which nothing else can say, because the SDK does not know
+/// the adapter exists.
+fn adapter(root: &Path) -> Result<(), ()> {
+    let package = root.join(ADAPTER);
+    step(
+        Command::new("dart")
+            .args(["pub", "get"])
+            .current_dir(&package),
+        "",
+        &format!("{ADAPTER}: `dart pub get` failed"),
+    )
+    .and_then(|()| {
+        step(
+            Command::new("dart")
+                .args(["analyze", "--fatal-infos"])
+                .current_dir(&package),
+            &format!("{ADAPTER}: the typed engine façade composes with the SDK"),
+            &format!("{ADAPTER} does not analyse clean"),
+        )
+    })
+    .and_then(|()| {
+        step(
+            Command::new("dart")
+                .args(["format", "--set-exit-if-changed", "."])
+                .current_dir(&package),
+            &format!("{ADAPTER} is formatted"),
+            &format!("{ADAPTER} is not formatted; run `dart format .`"),
+        )
+    })
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("dart", "--version") {
         eprintln!("no `dart` on this machine; the Dart binding's tests need it");
@@ -150,6 +194,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{PACKAGE} is not formatted; run `dart format .`"),
             )
         })
+        .and_then(|()| adapter(root))
         .and_then(|()| wrong_usages(&package))
         .and_then(|()| examples(&package, &library))
         .and_then(|()| {

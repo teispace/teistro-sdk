@@ -1,0 +1,9 @@
+# The SDK's own rules, so a generated facade is held to what the rest of
+# the repository is held to.
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true

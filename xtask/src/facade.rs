@@ -47,8 +47,11 @@ use crate::generated::Output;
 /// doing.
 const NODE: &str = "adapters/ephemeris-teimeris/node/engine.js";
 const NODE_TYPES: &str = "adapters/ephemeris-teimeris/node/engine.d.ts";
-const DART: &str = "adapters/ephemeris-teimeris/dart/engine.dart";
-const PYTHON: &str = "adapters/ephemeris-teimeris/python/engine.py";
+/// Under `lib/`, because that is where a Dart package's own code lives
+/// and the façade is the package's reason to exist.
+const DART: &str = "adapters/ephemeris-teimeris/dart/lib/engine.dart";
+/// Inside the importable package, for the same reason.
+const PYTHON: &str = "adapters/ephemeris-teimeris/python/teistro_ephemeris_teimeris/engine.py";
 
 /// `snake_case` to `camelCase`, which is what Node and Dart spell a name
 /// in. The engine's own name is what crosses; this is only what a
@@ -309,9 +312,13 @@ fn dart(version: &str, described: &[Described<'_>]) -> String {
         }
     };
     let mut out = header(version, "//");
+    // The same directive the SDK's own generated Dart carries, for the
+    // same reason: the generator lays the file out, so `dart format .`
+    // leaves it alone and `check-engine` can regenerate it on a machine
+    // with no Dart toolchain and still compare it byte for byte.
     let _ = writeln!(
         out,
-        "\nimport 'package:teistro/teistro.dart';\n\n/// The engine's own operations, typed.\n///\n/// An extension rather than a wrapper, because a Dart extension method\n/// has a body: importing this file is what makes the names exist, and\n/// they are as typed and as real as any method.\nextension TeimerisEngine on Engine {{"
+        "// dart format off\n\nimport 'package:teistro/teistro.dart';\n\n/// The engine's own operations, typed.\n///\n/// An extension rather than a wrapper, because a Dart extension method\n/// has a body: importing this file is what makes the names exist, and\n/// they are as typed and as real as any method.\nextension TeimerisEngine on Engine {{"
     );
     for one in described {
         let args = arguments(one);
