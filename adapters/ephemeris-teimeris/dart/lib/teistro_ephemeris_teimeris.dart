@@ -117,8 +117,11 @@ String binary([String? named]) {
 PluginEphemeris teimeris({String? dataDir, String? profile, String? path}) =>
     PluginEphemeris(
       plugin: binary(path),
+      // The keys are the **adapter's**, and its own `Config` spells them
+      // in camelCase with `deny_unknown_fields` — so a misspelling is
+      // refused rather than silently defaulted.
       config: <String, Object?>{
-        if (dataDir != null) 'data_dir': dataDir,
+        if (dataDir != null) 'dataDir': dataDir,
         if (profile != null) 'profile': profile,
       },
     );

@@ -102,8 +102,13 @@ export function binary(named) {
  */
 export default function teimeris(options = {}) {
   const { dataDir, profile, binary: named } = options;
+  // The keys are the **adapter's**, and its own `Config` spells them in
+  // camelCase with `deny_unknown_fields` — so a misspelling is refused
+  // rather than silently defaulted. `cargo xtask check-package` caught
+  // `data_dir` here, which nothing else could: the SDK passes this
+  // object through as JSON and reads none of it.
   const config = {};
-  if (dataDir !== undefined) config.data_dir = dataDir;
+  if (dataDir !== undefined) config.dataDir = dataDir;
   if (profile !== undefined) config.profile = profile;
   return Object.freeze({ plugin: binary(named), config: Object.freeze(config) });
 }

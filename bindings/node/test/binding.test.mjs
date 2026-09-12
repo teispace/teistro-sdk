@@ -611,20 +611,26 @@ test('an ephemeris is plugged in by naming its platform binary', () => {
     console.log('skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
     return;
   }
-  using ctx = new Context({
+  // `dispose()` in a `finally`, not `using`: the explicit resource
+  // management syntax needs Node 24 and this suite runs on 20.
+  const ctx = new Context({
     profile: 'parashari-classical',
     ephemeris: { plugin },
   });
-  const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
-  // The Sun at J2000 is near 280.4°, which is astronomy rather than this
-  // package: what is being tested is that a real engine answered.
-  assert.ok(
-    Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5,
-    `the Sun at J2000 came back as ${sky.at(0, 0).longitude}`,
-  );
-  // And its own functions came with it, which no SDK operation offers.
-  assert.equal(ctx.engine.manifest.engine, 'teimeris');
-  assert.equal(ctx.engine.call('tm_body_name', { body: 0 }).buf, 'Sun');
+  try {
+    const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+    // The Sun at J2000 is near 280.4°, which is astronomy rather than
+    // this package: what is being tested is that a real engine answered.
+    assert.ok(
+      Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5,
+      `the Sun at J2000 came back as ${sky.at(0, 0).longitude}`,
+    );
+    // And its own functions came with it, which no SDK operation offers.
+    assert.equal(ctx.engine.manifest.engine, 'teimeris');
+    assert.equal(ctx.engine.call('tm_body_name', { body: 0 }).buf, 'Sun');
+  } finally {
+    ctx.dispose();
+  }
 });
 
 /**
@@ -635,12 +641,16 @@ test('an ephemeris is plugged in by naming its platform binary', () => {
 test('an ephemeris chain is tried in order and refuses naming each', () => {
   // An adapter that is not there, then the built-in: the fallback the
   // caller wrote down.
-  using fellBack = new Context({
+  const fellBack = new Context({
     profile: 'parashari-classical',
     ephemeris: [{ plugin: '/nowhere/adapter.so' }, 'builtin'],
   });
-  const sky = fellBack.positions({ instants: [2451545.0], bodies: [Body.Sun] });
-  assert.ok(Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5);
+  try {
+    const sky = fellBack.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+    assert.ok(Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5);
+  } finally {
+    fellBack.dispose();
+  }
 
   // Nothing in the chain opening is one refusal that names each.
   assert.throws(

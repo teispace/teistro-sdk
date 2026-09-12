@@ -119,9 +119,13 @@ def teimeris(
     profile. `path` names the platform binary, for a caller who would
     rather say than let this package look.
     """
+    # The keys are the **adapter's**, and its own `Config` spells them in
+    # camelCase with `deny_unknown_fields` -- so a misspelling is refused
+    # rather than silently defaulted. The parameter stays snake_case,
+    # because that is what Python callers write.
     config: dict[str, object] = {}
     if data_dir is not None:
-        config["data_dir"] = data_dir
+        config["dataDir"] = data_dir
     if profile is not None:
         config["profile"] = profile
     return Plugin(plugin=binary(path), config=config)

@@ -595,15 +595,39 @@ provider's DUT1).
    With one entry nothing is caught; with more, every refusal is kept and
    reported together.
 
-   **Next: the packaging matrix**, which is the recurring cost ADR-0029
-   named and the one thing here still unbuilt. A package per adapter per
-   target triple, each shipping the platform binary its host needs, and
-   `check-package` extended to cover them the way it covers the SDK's
-   own. Everything above resolves a binary a contributor built; nothing
-   yet *publishes* one.
+   **`check-package` covers the adapter now**, which is the half of
+   ADR-0029's packaging cost that does not need a publishing pipeline.
+   The npm package is packed, installed into a throwaway project beside
+   the SDK's own tarballs, and a consumer that knows nothing but the
+   published names is run against it — which is the only thing that tests
+   the *package* rather than the code in it. It skips, saying which it
+   wanted, without the adapter's library or the engine's data.
+
+   It earned itself on its first run: the descriptor sent `data_dir`
+   where the adapter's own `Config` is `#[serde(rename_all =
+   "camelCase", deny_unknown_fields)]` and wants `dataDir`. All three
+   packages had it wrong, and nothing else could have caught it — the SDK
+   passes that object through as JSON and reads none of it, and every
+   earlier probe had called `teimeris()` with no options at all.
+
+   **Next: the publishing half.** A package per adapter per target
+   triple, each shipping the platform binary its host needs, so a
+   consumer installs rather than builds. Everything above resolves a
+   binary a contributor built.
 
    Then wasm, whose ephemeris is the built-in `compact` tier; then Rust's
    own consumer surface, the READMEs and the site.
+
+   **A red nightly, found and fixed, that predates all of this.** The
+   verify matrix was dispatched on the branch to validate the three new
+   adapter gates on clean runners, and showed the C binding failing on
+   win32 and `check-package`'s C consumer on both Linuxes — on `main`
+   too, since at least 2026-09-10. `undefined reference to `sin``: the
+   astronomy calls it, Linux and MinGW keep the maths functions in a
+   separate `libm`, and `bindings/c/README.md` told a consumer to link
+   without it. macOS has them in libSystem, so every local run passed.
+   Fixed in one constant read by both gates and stated on that page, so
+   the instruction and the gate cannot drift.
 
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter
