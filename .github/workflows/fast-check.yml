@@ -94,6 +94,8 @@ jobs:
         run: cargo xtask check-engine
       - name: Surface areas page (which boundary modules a consumer reaches, and what a namespaced surface would group by)
         run: cargo xtask check-areas
+      - name: Rust consumer surface page (how many crates each area needs, and what only the C boundary composes)
+        run: cargo xtask check-rust-surface
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

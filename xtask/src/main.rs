@@ -149,6 +149,7 @@ mod pluto;
 mod points;
 mod python_binding;
 mod release;
+mod rust_surface;
 mod schema;
 mod serial;
 mod site;
@@ -205,6 +206,11 @@ const PASSES: &[Pass] = &[
     ("pluto", pluto::generate, pluto::check_generated),
     ("engine", engine::generate, engine::check_generated),
     ("areas", areas::generate, areas::check_generated),
+    (
+        "rust-surface",
+        rust_surface::generate,
+        rust_surface::check_generated,
+    ),
 ];
 
 /// Runs a pass, or says it is not one.

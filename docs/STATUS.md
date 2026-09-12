@@ -854,8 +854,46 @@ provider's DUT1).
    adapter's passthrough needs. Whatever mechanism CI uses, it can only
    fetch what has been pushed.
 
-   Then wasm, whose ephemeris is the built-in `compact` tier; then
-   Rust's own consumer surface.
+   Then wasm, whose ephemeris is the built-in `compact` tier.
+
+   **And Rust's own consumer surface has had its measurement taken**,
+   which is the step the project's own order asks for before the design
+   page ADR-0030 §9 defers it to (`cargo xtask rust-surface` →
+   `03-design/rust-consumer-surface-measured.md`, gated by
+   `check-rust-surface`). The obvious proposal is that Rust mirrors the
+   other three — eight areas and a root over one context — and what it
+   is worth depends on a question nobody had asked: how far is a Rust
+   consumer from it today?
+
+   Measured by composing two readings the repository already had: the
+   boundary's description says which module each entry point came from,
+   the Node layer says which entry points each area reaches, and each
+   boundary module names the SDK crates it calls.
+
+   - **A context and its areas need 9 of the SDK's crates**, and the
+     proposal that an area's operations come from one crate is
+     **falsified 7 of 8 times**: `chart` needs six, `almanac` five,
+     `(root)`'s `positions` four.
+   - **Two of those nine are held by `crates/ffi` and by nothing
+     else** — `teistro-intl` and `teistro-ephemeris-builtin` — so the
+     composition that makes a context is written once, at the C
+     boundary. That is the finding that decides the question: a Rust
+     façade would not be a convenience over crates a consumer already
+     composes, it would be the *first* place that composition exists in
+     Rust.
+   - And it would be **smaller** than the boundary, not larger: `blob`,
+     `string` and `support` are the C caller's memory and its handshake,
+     which a Rust consumer does not have.
+
+   Leaving `context` and `provider` out understated it — the areas are
+   operations *on* a context, and building one is where the settings,
+   the locale and the ephemeris are composed — so the page counts those
+   two modules too and says why.
+
+   The design page is next, and the measured page's "what this does not
+   measure" hands it its question: whether a Rust consumer wants a
+   context object, a builder, or free functions over a settings value,
+   and what each crate's public API already offers.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation

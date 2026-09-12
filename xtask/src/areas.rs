@@ -85,25 +85,25 @@ fn camel(name: &str) -> String {
 }
 
 /// One member of a surface, as the ergonomic layer declares it.
-struct Member {
-    name: String,
+pub(crate) struct Member {
+    pub(crate) name: String,
     /// The entry points its own body calls, in the order they appear.
-    reaches: Vec<String>,
+    pub(crate) reaches: Vec<String>,
 }
 
 /// One thing a consumer reads members off: an area, or the context
 /// itself.
-struct Surface {
+pub(crate) struct Surface {
     /// What a consumer writes — `calendar` for `sdk.calendar`, or
     /// `(root)` for the context.
-    name: String,
+    pub(crate) name: String,
     /// The class the layer declares it with, so a reader can find it.
     class: String,
-    members: Vec<Member>,
+    pub(crate) members: Vec<Member>,
 }
 
 /// The name the context is read under, which is not an area.
-const ROOT: &str = "(root)";
+pub(crate) const ROOT: &str = "(root)";
 
 /// The layer's surfaces, and what each member of each reaches.
 ///
@@ -112,7 +112,7 @@ const ROOT: &str = "(root)";
 /// moved. **Refuses** rather than guesses when a class is not where it
 /// expects: a parse that silently found nothing would report a surface
 /// of no members and call every rule proven.
-fn surfaces(source: &str, entry_points: &[String]) -> Result<Vec<Surface>, String> {
+pub(crate) fn surfaces_of(source: &str, entry_points: &[String]) -> Result<Vec<Surface>, String> {
     let reached: Vec<(String, String)> = entry_points
         .iter()
         .map(|name| (format!(".{}(", camel(name)), name.clone()))
@@ -361,7 +361,7 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
     let node = std::fs::read_to_string(root.join(NODE))
         .map_err(|error| format!("{NODE} is not readable: {error}"))?;
     let entry_points: Vec<String> = api.functions.iter().map(|f| f.name.clone()).collect();
-    let surfaces = surfaces(&node, &entry_points)?;
+    let surfaces = surfaces_of(&node, &entry_points)?;
     let mut runners: Vec<(&str, BTreeSet<String>)> = Vec::with_capacity(RUNNERS.len());
     for runner in RUNNERS {
         let text = std::fs::read_to_string(root.join(runner))
