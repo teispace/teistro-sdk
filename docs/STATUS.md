@@ -1024,6 +1024,21 @@ provider's DUT1).
    and which is why the acceptance test still names `teistro-chart` and
    `teistro-panchanga`.
 
+   **And `positions` at the root**, which is the first operation on this
+   surface that computes rather than composes:
+   `Completion::new(provider, overrides, delta_t).positions(&request)`,
+   answering with the astronomy crate's own `Completed` — a Rust
+   consumer reads a longitude off `sky.columns.at(0, 0)` where every
+   other binding decodes a result blob for the same number. The test
+   gets the Sun at J2000 near 280° from the built-in, and a context
+   without an ephemeris refuses with the same field and hint the C
+   boundary gives. Twenty-one tests.
+
+   It also found a gap by failing to be convenient: the test reached
+   past the crate for `Body`, `Frame` and `PositionRequest`, which is
+   exactly the five-dependency problem this crate exists to stop, so
+   they are re-exported. One dependency is the point of a façade.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the

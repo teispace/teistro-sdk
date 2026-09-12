@@ -300,10 +300,16 @@ principle:
    **Done:** the context, the builder, the ephemeris chain, and five of
    the eight areas — `calendar`, `time`, `intl`, `keys` and `frame`.
    `time` is where the dynamic-type section earned itself; `intl` is
-   where the module-tree one did. **Next:** `chart`, `almanac` and the
-   root's `positions`, which are the three that need the ephemeris, and
-   which are therefore where this surface stops being a composition of
-   calendars and starts computing.
+   where the module-tree one did.
+
+   The root's **`positions`** is built too, and it is the first
+   operation here that computes rather than composes:
+   `Completion::new(provider, overrides, delta_t).positions(&request)`,
+   answering with the astronomy crate's own `Completed` and no blob
+   anywhere. The types it takes are re-exported, so one dependency is
+   enough — its own test reached past this crate before they were, which
+   is how that gap was noticed. **Next:** `chart`, `almanac` and
+   `engine`.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
 3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps

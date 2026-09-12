@@ -4,6 +4,7 @@
 use core::cell::{Ref, RefCell, RefMut};
 
 use teistro_astro::DeltaTModel;
+use teistro_astro::completion::{Completed, Completion};
 use teistro_core::envelope::Hash;
 use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
@@ -11,11 +12,11 @@ use teistro_core::settings::{
 };
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
-use teistro_port_ephemeris::{CachingProvider, EphemerisProvider};
+use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest};
 
 use crate::BUNDLES;
 use crate::area::{CalendarArea, FrameArea, IntlArea, KeysArea, TimeArea};
-use crate::ephemeris::{self, Ephemeris};
+use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
 /// One context: built once, read many times.
 ///
@@ -137,6 +138,30 @@ impl Context {
     #[must_use]
     pub fn time(&self) -> TimeArea<'_> {
         TimeArea::of(self)
+    }
+
+    /// **Positions**: a grid of instants by bodies, in the frame asked
+    /// for, with every step the SDK applied to get there.
+    ///
+    /// A root operation and not an area's, because an operation whose
+    /// name is its own area's name is one — nobody writes
+    /// `sdk.positions.positions` (`03-design/surface-areas.md`).
+    ///
+    /// The answer is the astronomy crate's own `Completed`: a Rust
+    /// consumer reads `JulianDay` and `Longitude` off it, where every
+    /// other binding decodes a result blob to get the same numbers back
+    /// as doubles.
+    ///
+    /// # Errors
+    ///
+    /// A context with no ephemeris, a frame the provider refuses and the
+    /// SDK cannot complete, an instant outside the provider's coverage,
+    /// or the provider's own refusal, which crosses back as itself.
+    pub fn positions(&self, request: &PositionRequest<'_>) -> Result<Completed, Error> {
+        let provider = self.provider.as_deref().ok_or_else(no_ephemeris)?;
+        let completion =
+            Completion::new(provider, self.settings().provider.overrides, self.delta_t);
+        completion.positions(request).map_err(Error::from)
     }
 
     /// The locale engine: a message, an entity's forms,

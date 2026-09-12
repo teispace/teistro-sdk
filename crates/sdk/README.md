@@ -63,8 +63,8 @@ first.
 | `intl` | `locale`, `set_locale`, `render`, `render_typed`, `has`, `entity`, `transliterate`, `load_pack` | built |
 | `keys` | `id`, `name` | built |
 | `frame` | `canonical`, `pack`, `unpack` | built |
-| the root | `profile`, `settings`, `settings_hash`, `ephemeris`, `locale_engine` | built |
-| `chart`, `almanac`, `engine`, and the root's `positions` | — | next, and each needs the ephemeris |
+| the root | `positions`, `profile`, `settings`, `settings_hash`, `ephemeris`, `locale_engine` | built |
+| `chart`, `almanac`, `engine` | — | next |
 
 `intl`'s **`messages`** is not a method here. The typed accessor tree
 every other binding spells
@@ -76,6 +76,15 @@ in this language. `teistro-intl` already generates it.
 `locale_engine` at the root is the engine itself, for what the area does
 not wrap; it is deliberately not called `intl`, which is the area's name
 in all four bindings.
+
+**`positions` is at the root** because an operation whose name is its own
+area's name is a root operation — nobody writes
+`sdk.positions.positions`. It answers with the astronomy crate's own
+`Completed`: a Rust consumer reads a longitude off `sky.columns.at(0, 0)`
+where every other binding decodes a result blob to get the same number
+back as a double. The types it takes and answers with are re-exported
+here, so one dependency is enough; the test for it reached past this
+crate before they were, which is how the gap was noticed.
 
 `time.convert` is where this surface owns a type rather than
 re-exporting one. The crates keep a scale in the *type system* —

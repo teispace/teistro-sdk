@@ -61,6 +61,16 @@ pub use teistro_core::settings;
 // namespace is in Rust — where Node writes
 // `ctx.intl.messages.sdk.reason.grahaInBhava({ … })`.
 pub use teistro_intl::messages;
+// What `positions` takes and answers with, and what an ephemeris of
+// your own implements. Re-exported because a consumer needing five
+// dependencies to call one operation is the thing this crate exists to
+// stop -- and the test for `positions` reached past it before these
+// were here, which is how the gap was noticed.
+pub use teistro_astro::completion::Completed;
+pub use teistro_port_ephemeris::{
+    Body, Capabilities, Cell, CellStatus, EphemerisProvider, Frame, PositionColumns,
+    PositionRequest, TimeScale,
+};
 pub use teistro_time::{CivilDateTime, CivilTime, ZoneSpec};
 
 // `BUNDLES`: the SDK's locales, built from `i18n/` by this crate's build

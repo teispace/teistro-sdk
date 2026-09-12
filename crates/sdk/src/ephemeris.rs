@@ -1,6 +1,7 @@
 //! Which ephemeris a context computes with, and the ordered chain that
 //! chooses between them.
 
+use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
 
@@ -151,4 +152,24 @@ pub(crate) fn open(chain: Vec<Ephemeris>) -> Result<Option<Box<dyn EphemerisProv
         refusals.join("; ")
     ))
     .with_field("ephemeris"))
+}
+
+/// `CAPABILITY` when a call needs an ephemeris and the context has none.
+///
+/// **The same sentence as `crates/ffi`'s `support::no_ephemeris`**, and
+/// the duplication is an inventory rather than an accident: the
+/// composition is written twice until
+/// `03-design/rust-consumer-surface.md`'s third step has the boundary
+/// depend on this crate, and a refusal is part of a composition. That
+/// step deletes the boundary's copy; it does not add a third.
+pub(crate) fn no_ephemeris() -> Error {
+    Error::new(
+        Status::Capability,
+        "the context has no ephemeris, and this call needs one",
+    )
+    .with_field("ephemeris")
+    .with_hint(
+        "name one when the context is built: `builtin` for the ephemeris the SDK carries, \
+         an adapter's descriptor for a real engine, or a provider of your own",
+    )
 }

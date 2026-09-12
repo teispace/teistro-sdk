@@ -15,7 +15,7 @@
 )]
 
 use teistro::catalogue::{Calendar, Era};
-use teistro::{CalendarDate, Context, Ephemeris, Scale};
+use teistro::{Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, TimeScale};
 use teistro_core::envelope::CalendarResolution;
 
 /// A context on the profile every binding's quickstart names.
@@ -375,4 +375,49 @@ fn the_canonical_frame_packs_and_unpacks() {
     let canonical = sdk.frame().canonical();
     let bits = sdk.frame().pack(canonical);
     assert_eq!(sdk.frame().unpack(bits).expect("its own bits"), canonical);
+}
+
+#[test]
+fn positions_answer_in_the_frame_asked_for() {
+    let sdk = context();
+    let jds = [2_451_545.0];
+    let bodies = [Body::Sun, Body::Moon];
+    let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
+    let sky = sdk.positions(&request).expect("the built-in ephemeris");
+
+    // The answer is the astronomy crate's own type: a Rust consumer
+    // reads a `Longitude` off it where every other binding decodes a
+    // result blob to get the same number back as a double.
+    assert_eq!((sky.columns.jd_count, sky.columns.body_count), (1, 2));
+    let sun = sky.columns.at(0, 0).expect("a cell");
+    // The Sun at J2000 is in Capricorn, tropical, near 280°.
+    assert!(
+        (279.0..282.0).contains(&sun.lon),
+        "the Sun at J2000 is near 280°, not {}",
+        sun.lon
+    );
+    // And what was applied to get there, which is half the answer.
+    assert!(!sky.steps.is_empty());
+    assert!(
+        sky.step_keys()
+            .iter()
+            .any(|step| step.starts_with("positions:"))
+    );
+}
+
+#[test]
+fn positions_without_an_ephemeris_refuse_by_capability() {
+    let sdk = Context::builder().build().expect("every default");
+    let jds = [2_451_545.0];
+    let bodies = [Body::Sun];
+    let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
+    let refusal = sdk.positions(&request).expect_err("no ephemeris");
+    // The same field and the same hint the C boundary gives, because a
+    // consumer who forgot the option wants the same sentence in
+    // whichever language they forgot it in.
+    assert_eq!(refusal.field(), Some("ephemeris"));
+    assert!(
+        refusal.hint().is_some_and(|hint| hint.contains("builtin")),
+        "{refusal:?}"
+    );
 }
