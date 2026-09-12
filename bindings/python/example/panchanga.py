@@ -173,13 +173,23 @@ def main() -> None:
         print(f"  tithi is   {found.tithi_elapsed:.1%} elapsed at this instant")
 
         # The Sun on this day is the reason the year turns: BS begins at
-        # the Mesha Sankranti, when the Sun enters Aries. At six in the
-        # morning it has not quite arrived, which is why the almanac's
-        # own year-start is an instant and not a date.
+        # the **Mesha Sankranti**, the instant the Sun enters Aries, and the
+        # year's first day is the civil day that instant is reckoned into.
+        # So the number worth printing is how far *past* the crossing this
+        # moment is -- which is why the almanac's year-start is an instant
+        # and not a date.
+        #
+        # A Rust example of the same scenario is what found this wrong. This
+        # file said the Sun "has not quite arrived" and printed 359.9023°
+        # short of Aries, when it had entered Aries two and a half hours
+        # earlier: `(360 - sun) % 360` of a longitude just past zero is just
+        # under 360, and reads as nearly a whole circle still to go.
+        into_sign = found.sun % 30.0
         print(
-            f"  the Sun stands {(360.0 - found.sun) % 360.0:.4f}° short of Aries,"
-            " which is what the new year waits for"
+            f"  the Sun stands {into_sign:.4f}° into Aries, so the Mesha Sankranti"
+            f" is about {into_sign / 0.9856 * 24:.1f} hours past --"
         )
+        print("  which is what BS 2082 is reckoned from, and why it opens today")
 
 
 if __name__ == "__main__":
