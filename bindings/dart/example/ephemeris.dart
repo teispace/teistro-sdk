@@ -115,7 +115,7 @@ void main() {
   print('');
   for (var column = 0; column < bodies.length; column++) {
     final (body, graha) = bodies[column];
-    final name = ctx.entity(graha.fullKey).name;
+    final name = ctx.intl.entity(graha.fullKey).name;
     final crossings = ingresses(cells.lon, days, sky.bodyCount, column);
     final speed = cells.lonSpeed[column];
     final direction = speed < 0 ? 'retrograde' : 'direct';
@@ -126,7 +126,7 @@ void main() {
       ' ${crossings.length} sign change(s)',
     );
     for (final (day, sign) in crossings.take(3)) {
-      final signName = ctx.entity(sign.fullKey).name;
+      final signName = ctx.intl.entity(sign.fullKey).name;
       print(
         '      day ${day.toString().padLeft(3)}'
         '  enters ${sign.key.padRight(12)} $signName',

@@ -48,7 +48,7 @@ void main() {
 
   // One resolution fixes the zone and the offset; the candidates are
   // then arithmetic on the instant, which is what a Julian day is for.
-  final start = ctx.resolve(
+  final start = ctx.time.resolve(
     born.at(hour: fromHour),
     ianaZone('Asia/Kathmandu'),
   );
@@ -59,7 +59,7 @@ void main() {
   ];
 
   // ── One crossing for every candidate ─────────────────────────────────
-  final charts = ctx.foundMany(
+  final charts = ctx.chart.foundMany(
     instants: instants,
     place: place,
     utcOffsetSeconds: start.offsetSeconds,
@@ -81,7 +81,7 @@ void main() {
   for (final chart in charts.each) {
     final sign = chart.lagnaDeg ~/ 30;
     final moon = chart.grahas.firstWhere((g) => g.graha == Graha.moon);
-    final rashi = ctx.entity(Rashi.byId(sign).fullKey);
+    final rashi = ctx.intl.entity(Rashi.byId(sign).fullKey);
     final minutes = fromHour * 60 + chart.index * everyMinutes;
     print(
       '${_two(minutes ~/ 60)}:${_two(minutes % 60)}   '
@@ -108,7 +108,7 @@ void main() {
   // A batch of one is the ordinary case, and `found` is the same
   // crossing with the batch unwrapped: the answer is a chart, not a list
   // of one.
-  final single = ctx.found(
+  final single = ctx.chart.found(
     instant: start.instantJdUtc,
     place: place,
     utcOffsetSeconds: start.offsetSeconds,

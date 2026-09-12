@@ -39,7 +39,7 @@ void main() {
     testProvider: true,
   );
 
-  final bs = context.convert(
+  final bs = context.calendar.convert(
     CalendarDate(
       calendar: Calendar.gregorian,
       year: 2015,
@@ -59,10 +59,10 @@ void main() {
     'the Bikram Sambat date',
   );
 
-  final rendered = context.render('sdk.reason.grahaInBhava', <String, Object?>{
-    'graha': 'graha.JUPITER',
-    'bhava': 7,
-  });
+  final rendered = context.intl.render(
+    'sdk.reason.grahaInBhava',
+    <String, Object?>{'graha': 'graha.JUPITER', 'bhava': 7},
+  );
   stdout.writeln('sdk.reason.grahaInBhava in ne-Deva-NP: ${rendered.text}');
   expect(rendered.text, 'गुरु ७औं भावमा', 'the rendered message');
 

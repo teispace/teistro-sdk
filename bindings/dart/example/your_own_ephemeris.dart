@@ -263,7 +263,7 @@ void main() {
   {
     final ctx = teistro.context(profile: 'parashari-classical');
     try {
-      ctx.keyId('graha.SUNN');
+      ctx.keys.id('graha.SUNN');
     } on TeistroException catch (error) {
       print('');
       print('status   ${error.status.key}');

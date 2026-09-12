@@ -114,7 +114,7 @@ void main() {
 
   // ── 1. The record, as it would be written on a form ─────────────────
   final birthDay = Calendar.bikramSambat.date(2042, 9, 17);
-  final gregorian = ctx.convert(birthDay, Calendar.gregorian);
+  final gregorian = ctx.calendar.convert(birthDay, Calendar.gregorian);
   print(
     'born  BS ${birthDay.year}-${_two(birthDay.month)}-${_two(birthDay.day)}'
     '  (${gregorian.year}-${_two(gregorian.month)}-${_two(gregorian.day)})'
@@ -122,7 +122,7 @@ void main() {
   );
 
   // ── 2. The instant, with the zone's own history ─────────────────────
-  final when = ctx.resolve(
+  final when = ctx.time.resolve(
     birthDay.at(hour: 0, minute: 20),
     ianaZone('Asia/Kathmandu'),
   );
@@ -146,9 +146,9 @@ void main() {
   print('graha            sign               deg  nakshatra      pada');
   print('─' * 62);
   for (final placed in placements) {
-    final graha = ctx.entity(placed.graha.fullKey);
-    final rashi = ctx.entity(placed.rashi.fullKey);
-    final nakshatra = ctx.entity(placed.nakshatra.fullKey);
+    final graha = ctx.intl.entity(placed.graha.fullKey);
+    final rashi = ctx.intl.entity(placed.rashi.fullKey);
+    final nakshatra = ctx.intl.entity(placed.nakshatra.fullKey);
     print(
       '${graha.name.padRight(12)} ${(graha.glyph ?? '').padRight(2)} '
       '${placed.retrograde ? '℞' : ' '} '
@@ -209,7 +209,7 @@ void main() {
     );
     final label = (policy ?? 'refuse').padRight(9);
     try {
-      final resolved = scoped.resolve(noTime, ianaZone('Asia/Kathmandu'));
+      final resolved = scoped.time.resolve(noTime, ianaZone('Asia/Kathmandu'));
       // The warnings are catalogue members here rather than strings, so
       // the key is what to print; it is the same word in every binding.
       final warnings =

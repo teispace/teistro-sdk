@@ -15,14 +15,14 @@ void main() {
   );
 
   // 14 April 2015 is 1 Baisakh 2072 BS.
-  final bs = ctx.convert(
+  final bs = ctx.calendar.convert(
     Calendar.gregorian.date(2015, 4, 14),
     Calendar.bikramSambat,
   );
   print('${bs.year}-${bs.month}-${bs.day} ${bs.era?.key}');
 
   // A Kathmandu birth time, with the metadata a stored chart keeps.
-  final resolved = ctx.resolve(
+  final resolved = ctx.time.resolve(
     Calendar.gregorian.date(1986, 1, 1).at(hour: 0, minute: 20),
     ianaZone('Asia/Kathmandu'),
   );
@@ -41,12 +41,14 @@ void main() {
   // A message in the context's locale, by its typed accessor, and an
   // entity's name in that locale.
   print(
-    ctx.messages.sdk.reason.grahaInBhava(
+    ctx.intl.messages.sdk.reason.grahaInBhava(
       graha: intl.GrahaKey.jupiter,
       bhava: 7,
     ),
   );
-  print('${ctx.entity('graha.SUN').name} ${ctx.entity('graha.SUN').glyph}');
+  print(
+    '${ctx.intl.entity('graha.SUN').name} ${ctx.intl.entity('graha.SUN').glyph}',
+  );
 
   ctx.dispose();
 }

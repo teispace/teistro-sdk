@@ -67,24 +67,24 @@ void main() {
     testProvider: true,
   );
   put('profile', ctx.profile);
-  put('locale', ctx.locale);
+  put('locale', ctx.intl.locale);
   put('settings-hash', ctx.settingsHash);
   put('settings-fnv', fnv(ctx.settingsJson));
 
   // ── The calendars ────────────────────────────────────────────────────
   final date = Calendar.gregorian.date(2015, 4, 14);
-  final bs = ctx.convert(date, Calendar.bikramSambat);
+  final bs = ctx.calendar.convert(date, Calendar.bikramSambat);
   put('bs-year', bs.year);
   put('bs-month', bs.month);
   put('bs-day', bs.day);
   put('bs-era', bs.era?.fullKey);
   put('bs-era-year', bs.eraYear);
   put('bs-resolution', bs.resolution.key);
-  final fixed = ctx.fixedOf(date);
+  final fixed = ctx.calendar.fixedOf(date);
   put('fixed', fixed);
-  put('weekday', ctx.weekdayOf(date));
-  put('month-length', ctx.monthLength(Calendar.gregorian, 2024, 2));
-  put('is-leap', ctx.isLeap(Calendar.gregorian, 2024));
+  put('weekday', ctx.calendar.weekdayOf(date));
+  put('month-length', ctx.calendar.monthLength(Calendar.gregorian, 2024, 2));
+  put('is-leap', ctx.calendar.isLeap(Calendar.gregorian, 2024));
   put('jd-of-fixed', teistro.julianDayOfFixed(fixed));
   final back = teistro.fixedOfJulianDay(2457126.75);
   put('fixed-of-jd', back.value);
@@ -93,7 +93,7 @@ void main() {
   // ── Time ─────────────────────────────────────────────────────────────
   final civil = Calendar.gregorian.date(1986, 1, 1).at(hour: 0, minute: 20);
   final zone = ianaZone('Asia/Kathmandu');
-  final resolved = ctx.resolve(civil, zone);
+  final resolved = ctx.time.resolve(civil, zone);
   put('resolve-jd', resolved.instantJdUtc);
   put('resolve-offset', resolved.offsetSeconds);
   put('resolve-era', resolved.era.key);
@@ -101,7 +101,7 @@ void main() {
   put('resolve-time-known', resolved.timeKnown);
   put('resolve-tzdb', resolved.tzdbVersion);
   put('resolve-warnings', resolved.warnings.length);
-  final civilBack = ctx.civilOf(
+  final civilBack = ctx.time.civilOf(
     resolved.instantJdUtc,
     zone,
     Calendar.gregorian,
@@ -109,21 +109,21 @@ void main() {
   put('civil-year', civilBack.civil.date.year);
   put('civil-minute', civilBack.civil.time.minute);
   put('civil-offset', civilBack.resolution.offsetSeconds);
-  final tt = ctx.convertTime(2451544.5, Scale.utc, Scale.tt);
+  final tt = ctx.time.convert(2451544.5, Scale.utc, Scale.tt);
   put('tt-jd', tt.jd);
   put('tt-delta-t', tt.deltaTSeconds);
   put('tt-delta-t-source', tt.deltaTSource.key);
   put('tt-delta-t-model', tt.deltaTModel);
-  final delta = ctx.deltaT(2451544.5);
+  final delta = ctx.time.deltaT(2451544.5);
   put('delta-t-seconds', delta.seconds);
   put('delta-t-source', delta.source.key);
 
   // ── Keys ─────────────────────────────────────────────────────────────
-  final id = ctx.keyId('graha.SUN');
+  final id = ctx.keys.id('graha.SUN');
   put('key-id', id);
-  put('key-name', ctx.keyName(id));
+  put('key-name', ctx.keys.name(id));
   try {
-    ctx.keyId('graha.SUNN');
+    ctx.keys.id('graha.SUNN');
     put('refusal', 'none');
   } on TeistroException catch (error) {
     put('refusal-status', error.status.key);
@@ -132,7 +132,7 @@ void main() {
   }
 
   // ── The locale engine ────────────────────────────────────────────────
-  final rendered = ctx.render('sdk.reason.grahaInBhava', {
+  final rendered = ctx.intl.render('sdk.reason.grahaInBhava', {
     'graha': {r'$entity': 'graha.JUPITER'},
     'bhava': 7,
   });
@@ -140,23 +140,23 @@ void main() {
   put('render-length', rendered.text.runes.length);
   put('render-resolved-from', rendered.resolvedFrom);
   put('render-fallback', rendered.fallback);
-  put('has-message', ctx.has('sdk.reason.grahaInBhava'));
-  put('has-missing-message', ctx.has('sdk.nope.missing'));
-  put('transliterated', ctx.transliterate('सूर्य बृहस्पति'));
-  put('entity-sun-name', ctx.entity('graha.SUN').name);
-  put('entity-sun-iast', ctx.entity('graha.SUN').iast);
-  put('entity-sun-glyph', ctx.entity('graha.SUN').glyph);
-  put('entity-sun-gender', ctx.entity('graha.SUN').gender?.key);
+  put('has-message', ctx.intl.has('sdk.reason.grahaInBhava'));
+  put('has-missing-message', ctx.intl.has('sdk.nope.missing'));
+  put('transliterated', ctx.intl.transliterate('सूर्य बृहस्पति'));
+  put('entity-sun-name', ctx.intl.entity('graha.SUN').name);
+  put('entity-sun-iast', ctx.intl.entity('graha.SUN').iast);
+  put('entity-sun-glyph', ctx.intl.entity('graha.SUN').glyph);
+  put('entity-sun-gender', ctx.intl.entity('graha.SUN').gender?.key);
   put(
     'message-graha-in-bhava',
-    ctx.messages.sdk.reason.grahaInBhava(
+    ctx.intl.messages.sdk.reason.grahaInBhava(
       graha: intl.GrahaKey.jupiter,
       bhava: 7,
     ),
   );
   put(
     'message-bs-date',
-    ctx.messages.sdk.calendar.bikramSambat.date.long(
+    ctx.intl.messages.sdk.calendar.bikramSambat.date.long(
       day: 1,
       monthName: 'बैशाख',
       year: 2072,
@@ -218,7 +218,7 @@ void main() {
     longitudeDeg: Longitude(85.324),
     altitudeM: Altitude(1400),
   );
-  final placed = ctx.found(
+  final placed = ctx.chart.found(
     instant: 2451545,
     place: place,
     utcOffsetSeconds: 20700,
@@ -251,7 +251,7 @@ void main() {
   // Two instants, so a per-chart section that ran charts-outermost the
   // wrong way round shows up as the second chart's values in the first's
   // place rather than as nothing at all.
-  final charts = geo.foundMany(
+  final charts = geo.chart.foundMany(
     instants: <double>[2460482.5, 2460600.25],
     place: place,
     utcOffsetSeconds: 20700,
@@ -312,7 +312,7 @@ void main() {
     }
   }
   // `found` is the batch of one unwrapped, and must agree with the batch.
-  final single = geo.found(
+  final single = geo.chart.found(
     instant: 2460482.5,
     place: place,
     utcOffsetSeconds: 20700,
@@ -323,7 +323,7 @@ void main() {
   // ── An almanac ───────────────────────────────────────────────────────
   // Three days, because a day's lists are ragged and two consecutive days
   // with the same counts would not exercise the offsets.
-  final week = geo.almanac(
+  final week = geo.almanac.of(
     from: Calendar.gregorian.date(2024, 6, 17),
     to: Calendar.gregorian.date(2024, 6, 19),
     place: place,
@@ -427,7 +427,7 @@ void main() {
     }
   }
   // `almanacDay` is the range of one unwrapped, and must agree.
-  final oneDay = geo.almanacDay(
+  final oneDay = geo.almanac.day(
     date: Calendar.gregorian.date(2024, 6, 17),
     place: place,
     utcOffsetSeconds: 20700,

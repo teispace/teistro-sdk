@@ -304,93 +304,165 @@ final class Engine {
       'Engine(${manifest['engine']} ${manifest['version']}, ${names.length} operations)';
 }
 
-/// A context: settings, a locale and an ephemeris, with the calls that use
-/// them. Built by [Teistro.context].
+/// What every area is.
 ///
-/// The native context is freed when this object is collected; [dispose]
-/// frees it at once, and every call after that is a [StateError].
-final class Context {
-  Context._(this._teistro, this._inner, this._host) {
-    final host = _host;
-    if (host != null) _hostFinaliser.attach(this, host, detach: this);
-  }
+/// A **value**: one object per context, built on first read of the field
+/// that holds it and kept, so a consumer may hold it and pass it. That is
+/// what makes the areas worth having rather than merely tidy
+/// (`03-design/surface-areas.md`).
+///
+/// Dart has extension methods and they were rejected for this: an
+/// extension resolves statically and cannot be held or passed, and the
+/// requirement is that an area is a value.
+///
+/// Each holds the context and nothing else. The context's own members are
+/// library-private, so an area reaches the boundary through it rather
+/// than keeping a handle of its own.
+sealed class _Area {
+  const _Area(this._context);
 
-  final Teistro _teistro;
-  final TeistroContext _inner;
-  final HostProvider? _host;
+  final Context _context;
+}
 
-  /// The library this context was built on.
-  Teistro get teistro => _teistro;
+/// `sdk.calendar` — the calendars, and the fixed day they share.
+final class CalendarArea extends _Area {
+  const CalendarArea._(super.context);
 
-  /// The generated context, for a call this layer does not wrap.
-  TeistroContext get inner => _inner;
+  /// The date a fixed day falls on in a calendar.
+  CalendarDate dateOf(Calendar calendar, int fixed) =>
+      _context._inner.calendarFromFixed(calendar, fixed);
 
-  /// The engine's own operations, beyond the eight the SDK names.
-  ///
-  /// Throws when the context has no ephemeris, or when the one it has
-  /// describes nothing of its own — asked now rather than at the first
-  /// call, so a caller learns it where they can act on it.
-  Engine get ephemeris {
-    final engine = Engine._(this);
-    engine.manifestJson;
-    return engine;
-  }
+  /// The fixed day of a date.
+  int fixedOf(CalendarDate date) => _context._inner.calendarToFixed(date);
 
-  /// The id of the profile the settings came from.
-  String get profile => _inner.profile();
+  /// The same date in another calendar.
+  CalendarDate convert(CalendarDate date, Calendar into) =>
+      _context._inner.calendarConvert(date, into);
 
-  /// The resolved settings, as their canonical document.
-  Map<String, Object?> get settings =>
-      jsonDecode(settingsJson) as Map<String, Object?>;
+  /// The weekday of a date, Monday `1` to Sunday `7`.
+  int weekdayOf(CalendarDate date) => _context._inner.calendarWeekday(date);
 
-  /// The same document as the text the library wrote, which is what the
-  /// settings hash is taken over and what a stored chart keeps.
-  String get settingsJson => _inner.settingsJson();
+  /// The length of a month.
+  int monthLength(Calendar calendar, int year, int month) =>
+      _context._inner.calendarMonthLength(calendar, year, month);
 
-  /// The SHA-256 of the canonical settings, in hex; every result carries
-  /// it, and two runs that agree on it are comparable.
-  String get settingsHash => _hex(_inner.settingsHash().bytes);
+  /// Whether a year is a leap year.
+  bool isLeap(Calendar calendar, int year) =>
+      _context._inner.calendarIsLeap(calendar, year) == 1;
+}
+
+/// `sdk.time` — the scales, the zones and what separates them.
+final class TimeArea extends _Area {
+  const TimeArea._(super.context);
+
+  /// A civil date and time in a zone, resolved to an instant with what the
+  /// resolution had to decide.
+  ZoneResolution resolve(CivilDateTime civil, ZoneSpec zone) =>
+      _context._inner.timeResolve(civil, zone);
+
+  /// The civil date and time of an instant in a zone.
+  ({CivilDateTime civil, ZoneResolution resolution}) civilOf(
+    double jdUtc,
+    ZoneSpec zone,
+    Calendar calendar,
+  ) => _context._inner.timeCivil(jdUtc, zone, calendar);
+
+  /// Converts an instant between the time scales.
+  TimeConversion convert(double jd, Scale from, Scale to) =>
+      _context._inner.timeConvert(jd, from, to);
+
+  /// Delta T at a UT1 instant, with what produced it.
+  DeltaT deltaT(double jdUt1) => _context._inner.timeDeltaT(jdUt1);
+}
+
+/// `sdk.intl` — the locale, its messages and the scripts they are in.
+final class IntlArea extends _Area {
+  IntlArea._(super.context);
 
   /// The locale every render resolves from.
-  String get locale => _inner.intlLocale();
+  String get locale => _context._inner.intlLocale();
 
-  set locale(String tag) => _inner.intlSetLocale(tag);
+  set locale(String tag) => _context._inner.intlSetLocale(tag);
 
-  /// Positions over a grid of instants and bodies, completed into the
-  /// frame asked for; the canonical frame by default.
-  ///
-  /// The result's cells are instants outermost: cell `i * bodies.length +
-  /// b` is body `b` at instant `i`, which [Positions.at] reads for you.
-  Positions positions({
-    required List<double> instants,
-    required List<Body> bodies,
-    TimeScale scale = TimeScale.ut1,
-    Frame? frame,
-    bool speeds = true,
-    Observer? observer,
-  }) {
-    if (instants.isEmpty) {
-      throw ArgumentError.value(instants, 'instants', 'expected an instant');
-    }
-    if (bodies.isEmpty) {
-      throw ArgumentError.value(bodies, 'bodies', 'expected a body');
-    }
-    final bits = _teistro.packFrame(frame ?? _teistro.canonicalFrame);
-    return decodePositions(
-      _guarded(
-        () => _inner.positions(
-          PositionRequest(
-            scale: scale,
-            frameBits: bits,
-            speeds: speeds,
-            observer: observer,
-            jds: instants,
-            bodies: bodies,
-          ),
+  /// Renders a message of the current locale with its parameters.
+  IntlRender render(String key, [Map<String, Object?>? params]) =>
+      decodeIntlRender(
+        _context._inner.intlRender(
+          key,
+          params == null ? null : jsonEncode(params),
         ),
-      ),
-    );
-  }
+      );
+
+  /// Whether the current locale or its fallbacks have a message.
+  bool has(String key) => _context._inner.intlHas(key) == 1;
+
+  /// Text from one script into another (`deva`, `iast`), for a Sanskrit
+  /// or Nepali term written in the other.
+  String transliterate(
+    String text, {
+    String from = 'deva',
+    String to = 'iast',
+  }) => _context._inner.intlTransliterate(text, from, to);
+
+  /// An entity's forms in the current locale or its fallbacks: its name,
+  /// its prose form, its transliteration, and the glyph and gender the
+  /// locale gives it.
+  intl.EntityForms entity(String key) =>
+      intl.EntityForms.of(_context._inner.intlEntity(key));
+
+  /// The typed accessors: every message of the SDK's own locale as a
+  /// function of its parameters, and every catalogued entity as its
+  /// forms. A key is spelled once, by the generator, and never by an
+  /// application.
+  ///
+  /// ```dart
+  /// ctx.messages.sdk.reason.grahaInBhava(
+  ///   graha: GrahaKey.jupiter,
+  ///   bhava: 7,
+  /// );
+  /// ctx.messages.sdk.entity.graha.sun.name;
+  /// ```
+  ///
+  /// The types are `package:teistro/messages.dart`.
+  intl.Messages get messages =>
+      _messages ??= intl.Messages(_Renderer(_context));
+
+  intl.Messages? _messages;
+
+  /// Loads a `.tpack` or `.tbundle` file into the locale engine.
+  IntlLoaded loadPack(Uint8List bytes) => _context._inner.intlLoadPack(bytes);
+}
+
+/// `sdk.keys` — the catalogue's keys and their packed ids.
+final class KeysArea extends _Area {
+  const KeysArea._(super.context);
+
+  /// The packed id of a catalogue key (`graha.SUN`, an alias, or a former
+  /// key).
+  int id(String key) => _context._inner.keyParse(key);
+
+  /// The catalogue key of a packed id.
+  String name(int id) => _context._inner.keyName(id);
+}
+
+/// `sdk.frame` — the coordinate conventions a request is expressed in.
+final class FrameArea extends _Area {
+  const FrameArea._(super.context);
+
+  /// The SDK's canonical frame: apparent geocentric ecliptic of date,
+  /// tropical.
+  Frame get canonical => _context._teistro.canonicalFrame;
+
+  /// Packs a frame's fields into the bits a position request carries.
+  int pack(Frame frame) => _context._teistro.packFrame(frame);
+
+  /// The frame a packed set of bits describes.
+  Frame unpack(int bits) => _context._teistro.unpackFrame(bits);
+}
+
+/// `sdk.chart` — a chart founded at an instant and a place.
+final class ChartArea extends _Area {
+  const ChartArea._(super.context);
 
   /// Founds a chart at an instant and a place.
   ///
@@ -428,8 +500,8 @@ final class Context {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
   }) => decodeCharts(
-    _guarded(
-      () => _inner.chartFound(
+    _context._guarded(
+      () => _context._inner.chartFound(
         ChartRequest(
           kind: kind,
           instants: instants,
@@ -441,6 +513,16 @@ final class Context {
       ),
     ),
   );
+}
+
+/// `sdk.almanac` — a day, or a run of days, with its limbs.
+///
+/// The boundary calls this `panchanga`; the area takes the consumer's
+/// word, because an almanac is what the operation answers and a panchanga
+/// is one tradition's name for five of its limbs
+/// (`03-design/surface-areas.md`).
+final class AlmanacArea extends _Area {
+  const AlmanacArea._(super.context);
 
   /// The almanac of every day in a range, at one place.
   ///
@@ -449,15 +531,15 @@ final class Context {
   /// so a month of days costs much less than thirty days computed
   /// separately. A range holding more than a year and a day is refused
   /// by name.
-  Almanac almanac({
+  Almanac of({
     required CalendarDate from,
     required CalendarDate to,
     required Observer place,
     required int utcOffsetSeconds,
   }) => Almanac(
     decodePanchanga(
-      _guarded(
-        () => _inner.panchangaDays(
+      _context._guarded(
+        () => _context._inner.panchangaDays(
           PanchangaRequest(
             calendar: from.calendar,
             fromYear: from.year,
@@ -477,16 +559,134 @@ final class Context {
   );
 
   /// The almanac of one day, which is the range of one unwrapped.
-  AlmanacDay almanacDay({
+  AlmanacDay day({
     required CalendarDate date,
     required Observer place,
     required int utcOffsetSeconds,
-  }) => almanac(
+  }) => of(
     from: date,
     to: date,
     place: place,
     utcOffsetSeconds: utcOffsetSeconds,
   ).at(0);
+}
+
+/// A context: settings, a locale and an ephemeris, with the calls that use
+/// them. Built by [Teistro.context].
+///
+/// The native context is freed when this object is collected; [dispose]
+/// frees it at once, and every call after that is a [StateError].
+final class Context {
+  Context._(this._teistro, this._inner, this._host) {
+    final host = _host;
+    if (host != null) _hostFinaliser.attach(this, host, detach: this);
+  }
+
+  final Teistro _teistro;
+  final TeistroContext _inner;
+  final HostProvider? _host;
+
+  /// The library this context was built on.
+  Teistro get teistro => _teistro;
+
+  /// The generated context, for a call this layer does not wrap.
+  TeistroContext get inner => _inner;
+
+  /// The engine's own operations, beyond the eight the SDK names.
+  ///
+  /// **Not `ephemeris`**: `engine` says *this particular engine, not the
+  /// portable contract*, so a consumer reading their own code sees the
+  /// difference between a call that survives changing provider and one
+  /// that does not (ADR-0030).
+  ///
+  /// Throws when the context has no ephemeris, or when the one it has
+  /// describes nothing of its own — asked now rather than at the first
+  /// call, so a caller learns it where they can act on it.
+  Engine get engine {
+    final engine = _engine ??= Engine._(this);
+    engine.manifestJson;
+    return engine;
+  }
+
+  Engine? _engine;
+
+  /// The calendars, and the fixed day they share.
+  ///
+  /// An **area**: one object per context, built on first read and kept, so
+  /// a consumer may hold it (`final calendar = sdk.calendar`). A field
+  /// rather than a getter, because a getter that rebuilt on every read
+  /// would make holding one a lie
+  /// (`03-design/surface-areas.md`).
+  late final CalendarArea calendar = CalendarArea._(this);
+
+  /// The scales, the zones and what separates them.
+  late final TimeArea time = TimeArea._(this);
+
+  /// The locale, its messages and the scripts they are in.
+  late final IntlArea intl = IntlArea._(this);
+
+  /// The catalogue's keys and their packed ids.
+  late final KeysArea keys = KeysArea._(this);
+
+  /// The coordinate conventions a request is expressed in.
+  late final FrameArea frame = FrameArea._(this);
+
+  /// A chart founded at an instant and a place.
+  late final ChartArea chart = ChartArea._(this);
+
+  /// A day, or a run of days, with its limbs.
+  late final AlmanacArea almanac = AlmanacArea._(this);
+
+  /// The id of the profile the settings came from.
+  String get profile => _inner.profile();
+
+  /// The resolved settings, as their canonical document.
+  Map<String, Object?> get settings =>
+      jsonDecode(settingsJson) as Map<String, Object?>;
+
+  /// The same document as the text the library wrote, which is what the
+  /// settings hash is taken over and what a stored chart keeps.
+  String get settingsJson => _inner.settingsJson();
+
+  /// The SHA-256 of the canonical settings, in hex; every result carries
+  /// it, and two runs that agree on it are comparable.
+  String get settingsHash => _hex(_inner.settingsHash().bytes);
+
+  /// Positions over a grid of instants and bodies, completed into the
+  /// frame asked for; the canonical frame by default.
+  ///
+  /// The result's cells are instants outermost: cell `i * bodies.length +
+  /// b` is body `b` at instant `i`, which [Positions.at] reads for you.
+  Positions positions({
+    required List<double> instants,
+    required List<Body> bodies,
+    TimeScale scale = TimeScale.ut1,
+    Frame? frame,
+    bool speeds = true,
+    Observer? observer,
+  }) {
+    if (instants.isEmpty) {
+      throw ArgumentError.value(instants, 'instants', 'expected an instant');
+    }
+    if (bodies.isEmpty) {
+      throw ArgumentError.value(bodies, 'bodies', 'expected a body');
+    }
+    final bits = _teistro.packFrame(frame ?? _teistro.canonicalFrame);
+    return decodePositions(
+      _guarded(
+        () => _inner.positions(
+          PositionRequest(
+            scale: scale,
+            frameBits: bits,
+            speeds: speeds,
+            observer: observer,
+            jds: instants,
+            bodies: bodies,
+          ),
+        ),
+      ),
+    );
+  }
 
   /// Runs a call that may reach a provider written in Dart, and rethrows
   /// what the provider itself threw.
@@ -507,98 +707,6 @@ final class Context {
       throw thrown;
     }
   }
-
-  /// Renders a message of the current locale with its parameters.
-  IntlRender render(String key, [Map<String, Object?>? params]) =>
-      decodeIntlRender(
-        _inner.intlRender(key, params == null ? null : jsonEncode(params)),
-      );
-
-  /// Whether the current locale or its fallbacks have a message.
-  bool has(String key) => _inner.intlHas(key) == 1;
-
-  /// Text from one script into another (`deva`, `iast`), for a Sanskrit
-  /// or Nepali term written in the other.
-  String transliterate(
-    String text, {
-    String from = 'deva',
-    String to = 'iast',
-  }) => _inner.intlTransliterate(text, from, to);
-
-  /// An entity's forms in the current locale or its fallbacks: its name,
-  /// its prose form, its transliteration, and the glyph and gender the
-  /// locale gives it.
-  intl.EntityForms entity(String key) =>
-      intl.EntityForms.of(_inner.intlEntity(key));
-
-  /// The typed accessors: every message of the SDK's own locale as a
-  /// function of its parameters, and every catalogued entity as its
-  /// forms. A key is spelled once, by the generator, and never by an
-  /// application.
-  ///
-  /// ```dart
-  /// ctx.messages.sdk.reason.grahaInBhava(
-  ///   graha: GrahaKey.jupiter,
-  ///   bhava: 7,
-  /// );
-  /// ctx.messages.sdk.entity.graha.sun.name;
-  /// ```
-  ///
-  /// The types are `package:teistro/messages.dart`.
-  intl.Messages get messages => _messages ??= intl.Messages(_Renderer(this));
-
-  intl.Messages? _messages;
-
-  /// Loads a `.tpack` or `.tbundle` file into the locale engine.
-  IntlLoaded loadPack(Uint8List bytes) => _inner.intlLoadPack(bytes);
-
-  /// The date a fixed day falls on in a calendar.
-  CalendarDate dateOf(Calendar calendar, int fixed) =>
-      _inner.calendarFromFixed(calendar, fixed);
-
-  /// The fixed day of a date.
-  int fixedOf(CalendarDate date) => _inner.calendarToFixed(date);
-
-  /// The same date in another calendar.
-  CalendarDate convert(CalendarDate date, Calendar into) =>
-      _inner.calendarConvert(date, into);
-
-  /// The weekday of a date, Monday `1` to Sunday `7`.
-  int weekdayOf(CalendarDate date) => _inner.calendarWeekday(date);
-
-  /// The length of a month.
-  int monthLength(Calendar calendar, int year, int month) =>
-      _inner.calendarMonthLength(calendar, year, month);
-
-  /// Whether a year is a leap year.
-  bool isLeap(Calendar calendar, int year) =>
-      _inner.calendarIsLeap(calendar, year) == 1;
-
-  /// A civil date and time in a zone, resolved to an instant with what the
-  /// resolution had to decide.
-  ZoneResolution resolve(CivilDateTime civil, ZoneSpec zone) =>
-      _inner.timeResolve(civil, zone);
-
-  /// The civil date and time of an instant in a zone.
-  ({CivilDateTime civil, ZoneResolution resolution}) civilOf(
-    double jdUtc,
-    ZoneSpec zone,
-    Calendar calendar,
-  ) => _inner.timeCivil(jdUtc, zone, calendar);
-
-  /// Converts an instant between the time scales.
-  TimeConversion convertTime(double jd, Scale from, Scale to) =>
-      _inner.timeConvert(jd, from, to);
-
-  /// Delta T at a UT1 instant, with what produced it.
-  DeltaT deltaT(double jdUt1) => _inner.timeDeltaT(jdUt1);
-
-  /// The packed id of a catalogue key (`graha.SUN`, an alias, or a former
-  /// key).
-  int keyId(String key) => _inner.keyParse(key);
-
-  /// The catalogue key of a packed id.
-  String keyName(int id) => _inner.keyName(id);
 
   /// The provider written in Dart this context drives, null when it has
   /// none or uses the SDK's own.
@@ -742,10 +850,10 @@ final class _Renderer implements intl.Renderer {
 
   @override
   String render(String key, [Map<String, Object?> params = const {}]) =>
-      _context.render(key, params.isEmpty ? null : params).text;
+      _context.intl.render(key, params.isEmpty ? null : params).text;
 
   @override
-  intl.EntityForms entity(String key) => _context.entity(key);
+  intl.EntityForms entity(String key) => _context.intl.entity(key);
 }
 
 /// Closes the callbacks of a provider written in Dart when the context

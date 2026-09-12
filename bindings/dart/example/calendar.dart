@@ -23,11 +23,11 @@ const List<String> week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 /// a month that gains or loses a day at either end is then right by
 /// construction.
 String monthPage(Context ctx, int year, int month) {
-  final length = ctx.monthLength(Calendar.bikramSambat, year, month);
+  final length = ctx.calendar.monthLength(Calendar.bikramSambat, year, month);
   final first = Calendar.bikramSambat.date(year, month, 1);
   // ISO weekday 1..7; a calendar page starts on Monday, so the first of
   // the month sits at column `weekday - 1`.
-  final lead = ctx.weekdayOf(first) - 1;
+  final lead = ctx.calendar.weekdayOf(first) - 1;
 
   final cells = <String>[
     for (var i = 0; i < lead; i++) '',
@@ -60,13 +60,15 @@ void main() {
   print('BS $year');
   var total = 0;
   for (var month = 1; month <= 12; month++) {
-    final length = ctx.monthLength(Calendar.bikramSambat, year, month);
+    final length = ctx.calendar.monthLength(Calendar.bikramSambat, year, month);
     total += length;
     final first = Calendar.bikramSambat.date(year, month, 1);
     final last = Calendar.bikramSambat.date(year, month, length);
-    final starts = ctx.convert(first, Calendar.gregorian);
-    final ends = ctx.convert(last, Calendar.gregorian);
-    final name = ctx.messages.sdk.calendar.bikramSambat.monthName(month: month);
+    final starts = ctx.calendar.convert(first, Calendar.gregorian);
+    final ends = ctx.calendar.convert(last, Calendar.gregorian);
+    final name = ctx.intl.messages.sdk.calendar.bikramSambat.monthName(
+      month: month,
+    );
     print(
       '  ${month.toString().padLeft(2)}  ${name.padRight(10)}'
       ' ${length.toString().padLeft(2)} days   '
@@ -87,13 +89,13 @@ void main() {
   // ── The round trip, and what each date says about itself ───────────
   print('');
   final newYear = Calendar.bikramSambat.date(year, 1, 1);
-  final gregorian = ctx.convert(newYear, Calendar.gregorian);
-  final back = ctx.convert(gregorian, Calendar.bikramSambat);
+  final gregorian = ctx.calendar.convert(newYear, Calendar.gregorian);
+  final back = ctx.calendar.convert(gregorian, Calendar.bikramSambat);
   print('  BS   ${described(newYear)}');
   print('  ->   ${described(gregorian)}');
   print('  ->   ${described(back)}');
   print(
-    '  fixed day ${ctx.fixedOf(newYear)}, weekday ${ctx.weekdayOf(newYear)}',
+    '  fixed day ${ctx.calendar.fixedOf(newYear)}, weekday ${ctx.calendar.weekdayOf(newYear)}',
   );
 
   // ── Inside the table, and outside it ───────────────────────────────
@@ -102,11 +104,11 @@ void main() {
   // resolution to read is the one on the answer.
   print('');
   for (final asked in [2082, 2200, 1960]) {
-    final greg = ctx.convert(
+    final greg = ctx.calendar.convert(
       Calendar.bikramSambat.date(asked, 1, 1),
       Calendar.gregorian,
     );
-    final answer = ctx.convert(greg, Calendar.bikramSambat);
+    final answer = ctx.calendar.convert(greg, Calendar.bikramSambat);
     print(
       '  BS $asked began ${greg.year}-${_two(greg.month)}-${_two(greg.day)},'
       ' and the answer is [${answer.resolution.key}]',
@@ -123,7 +125,7 @@ void main() {
   // the parameters are typed.
   print('');
   print(
-    '  rendered  ${ctx.messages.sdk.calendar.bikramSambat.date.long(day: 1, monthName: ctx.messages.sdk.calendar.bikramSambat.monthName(month: 1), year: year)}',
+    '  rendered  ${ctx.intl.messages.sdk.calendar.bikramSambat.date.long(day: 1, monthName: ctx.intl.messages.sdk.calendar.bikramSambat.monthName(month: 1), year: year)}',
   );
 
   ctx.dispose();

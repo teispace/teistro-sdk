@@ -135,15 +135,15 @@ void main() {
 
   // Nepali New Year: the first day of Baisakh, BS 2082.
   final day = Calendar.bikramSambat.date(2082, 1, 1);
-  final gregorian = ctx.convert(day, Calendar.gregorian);
+  final gregorian = ctx.calendar.convert(day, Calendar.gregorian);
   // Six in the morning stands in for sunrise, which the almanac would
   // use and which needs the rise-and-set solver.
-  final when = ctx.resolve(day.at(hour: 6), ianaZone('Asia/Kathmandu'));
+  final when = ctx.time.resolve(day.at(hour: 6), ianaZone('Asia/Kathmandu'));
   final found = panchangaAt(
     teistro,
     ctx,
     when.instantJdUtc,
-    ctx.weekdayOf(day),
+    ctx.calendar.weekdayOf(day),
   );
 
   print(
@@ -169,7 +169,7 @@ void main() {
     ('karana', found.karana.fullKey, found.karana.key),
   ];
   for (final (label, fullKey, key) in limbs) {
-    final entity = ctx.entity(fullKey);
+    final entity = ctx.intl.entity(fullKey);
     print(
       '  ${label.padRight(10)} ${entity.name.padRight(14)} '
       '${entity.iast.padRight(18)} ($key)',
