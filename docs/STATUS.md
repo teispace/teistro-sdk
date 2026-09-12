@@ -483,6 +483,14 @@ provider's DUT1).
    (`new Context({ ephemeris: { plugin: …, config: … } })`), is what
    makes the 98% path exist outside Rust.
 
+   **`check-lints` now holds the class of gap rather than the instance.**
+   Its ninth rule, `entry-point-is-reachable`, applies the emitters' own
+   grouping rules to every function in the description and reports any
+   the rules place nowhere — born red on exactly this one. It carries the
+   deferral as an **inventory**, the way `knob-has-a-reader` does: the
+   row names what will place it and the gate prints it on every run, so
+   the allowance rots loudly once the emitters learn the shape.
+
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter
    packages to live in; Rust's own consumer surface; the READMEs and the

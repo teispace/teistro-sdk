@@ -616,6 +616,100 @@ fn boundary_sources(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Every entry point of the boundary is reached by some emitter.
+///
+/// `boundary-is-described` holds that a *file* of entry points is on the
+/// description's source list. This holds the next thing along: that each
+/// **function** on that list is placed by one of the rules the emitters
+/// group by — a free function, an opaque's constructor, a method of one,
+/// its destructor or its last-error reader. A function none of them
+/// matches is described, generated into every `extern` declaration, and
+/// reachable from no binding.
+///
+/// It was written because one had been in exactly that state:
+/// `ts_context_new_with_provider` takes a `handle` of `TsProvider` that
+/// is not its first parameter, so it is nobody's method; and `TsContext`
+/// already had a constructor, so it is not that either. The plugin route
+/// the whole of ADR-0029 is about therefore stopped at the boundary in
+/// every binding but Rust, and nothing said so.
+fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "entry-point-is-reachable";
+    let Ok(text) = std::fs::read_to_string(root.join("idl").join("api.json")) else {
+        return;
+    };
+    let Ok(api) = serde_json::from_str::<teistro_idl::model::Api>(&text) else {
+        return;
+    };
+    let mut placed: std::collections::BTreeSet<&str> = std::collections::BTreeSet::new();
+    for function in &api.functions {
+        if teistro_idl::rules::is_free_function(function) {
+            placed.insert(&function.name);
+        }
+    }
+    for opaque in &api.opaques {
+        for found in [
+            teistro_idl::rules::constructor(&api, opaque),
+            teistro_idl::rules::destructor(&api, opaque),
+            teistro_idl::rules::last_error(&api, opaque),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            placed.insert(&found.name);
+        }
+        for method in teistro_idl::rules::methods(&api, opaque) {
+            placed.insert(&method.name);
+        }
+    }
+    for function in &api.functions {
+        if placed.contains(function.name.as_str()) {
+            continue;
+        }
+        let deferred = AWAITING_AN_EMITTER
+            .iter()
+            .find(|(name, _)| *name == function.name);
+        let finding = Finding {
+            file: function.source.clone(),
+            line: 1,
+            text: match deferred {
+                Some((name, awaiting)) => format!("`{name}` is unplaced: {awaiting}"),
+                None => format!(
+                    "`{}` matches no emitter rule — not a free function, and no opaque's \
+                     constructor, method, destructor or last-error reader — so it is described \
+                     and reachable from no binding",
+                    function.name
+                ),
+            },
+            rule: RULE,
+        };
+        if deferred.is_some() {
+            outcome.allowed.push(finding);
+        } else {
+            outcome.failures.push(finding);
+        }
+    }
+}
+
+/// Entry points no emitter rule places yet, each with what will place
+/// it.
+///
+/// **An inventory rather than a silence**, which is what
+/// `knob-has-a-reader` keeps for the same reason: the gate prints every
+/// row on every run, so a deferral is read rather than forgotten, and a
+/// row that has been placed since becomes a stale allowance — itself a
+/// failure of that rule's own kind.
+const AWAITING_AN_EMITTER: [(&str, &str); 1] = [(
+    "ts_context_new_with_provider",
+    "a second way to build one opaque, taking another opaque's handle. \
+     `rules::constructor` finds the first `handle_out` for a type and \
+     there is no notion of a factory beside it, and `rules::methods` \
+     wants the handle first where this one has `options` there. Until \
+     the three emitters learn that shape, a provider loaded by \
+     `ts_provider_load` cannot be handed to a context from Node, Dart \
+     or Python — which is ADR-0029's whole route, and the reason this \
+     rule exists",
+)];
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -642,6 +736,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     knob_readers(root, &mut outcome);
     boundary_sources(root, &mut outcome);
     workflows_parse(root, &mut outcome);
+    entry_points_reachable(root, &mut outcome);
     gate_runners(root, &mut outcome);
 
     let mut report = String::new();
@@ -654,6 +749,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "boundary-is-described",
         "workflow-parses",
         "gate-has-a-runner",
+        "entry-point-is-reachable",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
