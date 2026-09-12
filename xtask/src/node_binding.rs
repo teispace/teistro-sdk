@@ -19,6 +19,8 @@ const TESTS: &str = "bindings/node/test/";
 /// Where the examples live. **Every** file there is run, so a scenario
 /// added to the directory is gated by having been added.
 const EXAMPLES: &str = "bindings/node/example";
+/// Where the pinned TypeScript compiler and the strict consumer live.
+const TYPECHECK: &str = "bindings/node/typecheck";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
 /// The Teimeris adapter's own package, which the SDK does not depend on
 /// and which depends on the SDK.
@@ -57,16 +59,37 @@ fn build_addon(root: &Path) -> Result<(), ()> {
 /// The TypeScript compiler, when the machine has one: `TSC`, a local
 /// install beside the consumer, or one npm has already fetched.
 ///
-/// Both of the last two go through [`tool`], because npm installs `tsc`
-/// and `npx` as `.cmd` shims on Windows and neither `Path::exists` on a
-/// name without its extension nor `Command::new` finds one.
+/// **The local one is run as what it is**, a JavaScript program, by
+/// `node` and not by the `.bin` shim beside it. npm writes that shim as
+/// `tsc.cmd` on Windows, and a shim goes through `cmd.exe` -- which is
+/// how `The system cannot find the path specified.` became the whole of
+/// a win32 failure, with nothing in it naming a tool. `node` is an
+/// executable on every platform and `typescript/bin/tsc` is the same
+/// file on every platform, so this path has no shim in it at all.
+///
+/// `npx` stays as the last resort and still goes through [`tool`],
+/// because there it is the only thing on offer.
 fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     if let Ok(tsc) = std::env::var("TSC") {
         return Some((tsc, Vec::new()));
     }
-    let local = root.join("bindings/node/typecheck/node_modules/.bin/tsc");
-    if let Some(found) = tool(&local.display().to_string(), "--version") {
-        return Some((found, Vec::new()));
+    let dir = root.join(TYPECHECK);
+    let local = dir.join("node_modules/typescript/bin/tsc");
+    // Installed from the lock file beside it when it is not there yet,
+    // which is what the site's gate does with its own: a version pinned
+    // in the repository means every machine and every runner type-checks
+    // with the same compiler, rather than whichever one a runner image
+    // happens to carry.
+    if !local.is_file()
+        && let Some(npm) = tool("npm", "--version")
+    {
+        let _ = Command::new(&npm)
+            .args(["ci", "--silent", "--no-audit", "--no-fund"])
+            .current_dir(&dir)
+            .status();
+    }
+    if local.is_file() {
+        return Some((String::from("node"), vec![local.display().to_string()]));
     }
     let npx = tool("npx", "--version")?;
     let fetched = Command::new(&npx)

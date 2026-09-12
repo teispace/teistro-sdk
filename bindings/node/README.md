@@ -17,7 +17,7 @@ which is thin on purpose.
 | `lib/index.js`, `lib/index.d.ts` | the layer a consumer uses: where the addon is, validation at the door, defaults, errors with their field and hint, results decoded on first use | by hand |
 | `native/src/provider.rs` | the port adapter: an ephemeris written in JavaScript bound into the port's vtable | by hand |
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |
-| `typecheck/` | a consumer, the layer's declarations and the typed accessors at maximum strictness, where every wrong usage is a compile error the file asserts, a swapped latitude and longitude among them | by hand |
+| `typecheck/` | a consumer, the layer's declarations and the typed accessors at maximum strictness, where every wrong usage is a compile error the file asserts, a swapped latitude and longitude among them; its `package.json` pins the compiler every type-check gate in this repository runs | by hand |
 | `parity.mjs` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Dart binding's | by hand |
 | `packaging/consumer.mjs` | a consumer that imports the published package by name, run by `cargo xtask check-package` inside a project that installed it | by hand |
 
@@ -155,10 +155,12 @@ cargo xtask check-parity
 
 The first builds the addon, copies it where the loader looks, writes blob
 fixtures through the C ABI, runs the tests with Node, and type-checks the
-consumer when a TypeScript compiler is on the machine (`npm install
-typescript` in `typecheck/`, or set `TSC`). It needs Node, so it runs by
-hand and in the nightly matrix; the fast check needs the Rust toolchain
-and nothing else (ADR-0014). The second walks one scenario through this
+consumer. The compiler is **pinned** in `typecheck/package.json` and the
+gate installs it from the lock file beside it on first run, so every
+machine and every runner type-checks with the same one; `TSC` overrides
+it, and an `npx`-resolvable `tsc` is the last resort. It needs Node, so
+it runs by hand and in the nightly matrix; the fast check needs the Rust
+toolchain and nothing else (ADR-0014). The second walks one scenario through this
 binding and the Dart binding and compares the ninety values they report,
 so a difference between the two layers is a failed gate rather than
 something a reader has to notice.

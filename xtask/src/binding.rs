@@ -161,7 +161,15 @@ pub(crate) fn step(command: &mut Command, passed: &str, failed: &str) -> Result<
         }
         Ok(())
     } else {
-        println!("FAIL  {failed}");
+        // **The program, on the failure line.** A step that prints only
+        // what it wanted leaves a reader to guess which of several tools
+        // it drove, and on a platform nobody can reproduce locally that
+        // guess costs a matrix run each time. `The system cannot find
+        // the path specified.` was the whole of one win32 failure.
+        println!(
+            "FAIL  {failed} (`{}`)",
+            command.get_program().to_string_lossy()
+        );
         Err(())
     }
 }

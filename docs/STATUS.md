@@ -732,6 +732,26 @@ provider's DUT1).
    once; a skip that says the machine lacks a tool it has is worse than
    a failure.
 
+   **And the TypeScript type-check had never run on Windows**, which the
+   npm fix revealed rather than caused: with `npx.cmd` resolvable the
+   gate stopped skipping and failed, on `The system cannot find the path
+   specified.` — a message naming no tool, in a step that printed only
+   what it wanted. Two changes, and the second is the one that matters:
+   `step` now names the program on its failure line, and the compiler is
+   run as what it is. `tsc` is a JavaScript program; `node
+   typescript/bin/tsc` is the same file on every platform, so that path
+   has no `.cmd` shim in it at all.
+
+   And it is **pinned**: `bindings/node/typecheck/package.json` names the
+   version, the gate installs it from the lock file on first run the way
+   `check-site` does with its own, and `TSC` still overrides. Before
+   this, every machine type-checked with whatever compiler it happened
+   to have and every runner with whatever its image carried — which is
+   why nobody had noticed that on four of the five platforms the gate
+   was skipping. Adding the manifest reddened the gate at once, and
+   correctly: it became the nearest `package.json` to those files, so
+   they stopped being ES modules until it said `"type": "module"`.
+
    **And the site now says what the API looks like**, which it did not.
    Between the install page and a generated reference of C entry points
    there was nothing telling a Node, Dart or Python consumer the shape of
