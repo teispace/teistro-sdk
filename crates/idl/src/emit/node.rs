@@ -1067,8 +1067,8 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     if let Some(ctor) = constructor(api, opaque) {
         render_constructor(out, api, ctor, &name, host);
     }
-    render_last_error_method(out, api);
-    render_check(out, api);
+    render_last_error_method(out, api, opaque);
+    render_check(out, api, opaque);
     if host {
         render_host_helpers(out);
     }
@@ -1135,12 +1135,10 @@ fn render_host_helpers(out: &mut String) {
     );
 }
 
-fn render_last_error_method(out: &mut String, api: &Api) {
-    let Some(reader) = api
-        .functions
-        .iter()
-        .find(|f| f.name.ends_with("_last_error"))
-    else {
+fn render_last_error_method(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+    // This opaque's own reader, matched by the handle it takes: a second
+    // opaque type without one must not inherit the first's.
+    let Some(reader) = crate::rules::last_error(api, opaque) else {
         return;
     };
     let Some(s) = reader
@@ -1161,11 +1159,19 @@ fn render_last_error_method(out: &mut String, api: &Api) {
 
 /// The check every method runs: a status other than `Ok` becomes an error
 /// carrying the library's own sentence.
-fn render_check(out: &mut String, api: &Api) {
-    let _ = api;
+fn render_check(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+    // An opaque type with a last-error reader gets the library's own
+    // sentence; one without gets the status's, because there is nothing
+    // to read it from and inventing a reader is what stopped the addon
+    // compiling when the second opaque type arrived.
+    let message = if crate::rules::last_error(api, opaque).is_some() {
+        "        let message = self\n            .last_error()\n            .and_then(|e| e.message)\n            .unwrap_or_else(|| {\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()\n            });"
+    } else {
+        "        // SAFETY: the library returns a static NUL-terminated string.\n        let message =\n            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();"
+    };
     let _ = writeln!(
         out,
-        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence; the layer above adds the field, the hint and the code\n    /// from `last_error`.\n    fn check(&self, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n        let message = self\n            .last_error()\n            .and_then(|e| e.message)\n            .unwrap_or_else(|| {{\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe {{ lent_text(ffi::ts_status_message(status.code())) }}.unwrap_or_default()\n            }});\n        Err(Error::from_reason(message))\n    }}\n"
+        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence.\n    fn check(&self, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n{message}\n        Err(Error::from_reason(message))\n    }}\n"
     );
 }
 

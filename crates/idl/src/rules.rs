@@ -309,6 +309,26 @@ pub fn destructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDe
     })
 }
 
+/// The last-error reader **of one opaque type**, if it has one.
+///
+/// Matched the way a method is — by the handle its first parameter points
+/// at — and not by its name alone. Named alone it would be found for
+/// every opaque type in the description, which was true while there was
+/// only one; the second (`TsProvider`, ADR-0029) made a generator emit a
+/// reader that passed a provider handle to a function expecting a
+/// context, and the Node addon stopped compiling. A rule that reads the
+/// types cannot make that mistake.
+#[must_use]
+pub fn last_error<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDef> {
+    api.functions.iter().find(|f| {
+        f.name.ends_with("_last_error")
+            && f.params.first().is_some_and(|p| {
+                p.role == Role::Handle
+                    && pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name)
+            })
+    })
+}
+
 /// The methods of an opaque type, in declaration order: every function
 /// whose first parameter is its handle, the destructor excepted.
 #[must_use]

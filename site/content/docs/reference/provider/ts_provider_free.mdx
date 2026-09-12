@@ -1,0 +1,48 @@
+---
+title: ts_provider_free
+description: "Frees a loaded provider; null is ignored."
+---
+
+Frees a loaded provider; null is ignored.
+
+The library is unloaded when the last reference goes, so a context still using it keeps it alive and the order of these calls does not matter.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+void ts_provider_free(ts_provider * provider);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+provider_free(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.providerFree(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `provider` | `ts_provider *` | the handle | — |
+
+## Safety
+
+`provider` must be null or a handle from `ts_provider_load` that is not used again.
+
+Declared in `crates/ffi/src/provider.rs`.

@@ -206,6 +206,16 @@ class _Context(ctypes.Structure):
     """
 
 
+class _Provider(ctypes.Structure):
+    """An ephemeris loaded from a shared library. Free with
+    `ts_provider_free`; a context built from it keeps its own reference,
+    so the order does not matter.
+
+    An incomplete type: it is only ever a pointer, and giving it a class
+    of its own keeps it apart from every other handle.
+    """
+
+
 class _ObserverStruct(ctypes.Structure):
     """A C observer: degrees and metres, validated into a `Place` on the
     way in.
@@ -2957,6 +2967,27 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_ephemeris_call.restype = ctypes.c_int32
+        self.ts_provider_load: Any = library.ts_provider_load
+        self.ts_provider_load.argtypes = [
+            ctypes.c_char_p,
+            ctypes.c_char_p,
+            ctypes.POINTER(ctypes.POINTER(_Provider)),
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_provider_load.restype = ctypes.c_int32
+        self.ts_context_new_with_provider: Any = library.ts_context_new_with_provider
+        self.ts_context_new_with_provider.argtypes = [
+            ctypes.POINTER(_ContextOptionsStruct),
+            ctypes.POINTER(_Provider),
+            ctypes.POINTER(ctypes.POINTER(_Context)),
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_context_new_with_provider.restype = ctypes.c_int32
+        self.ts_provider_free: Any = library.ts_provider_free
+        self.ts_provider_free.argtypes = [
+            ctypes.POINTER(_Provider),
+        ]
+        self.ts_provider_free.restype = None
 
 
 class TeistroContext:
@@ -3609,6 +3640,104 @@ def _free_context(lib: TeistroLibrary, handle: Any) -> None:
     """The finaliser: frees a handle whoever let it go."""
     if handle:
         lib.ts_context_free(handle)
+
+
+class TeistroProvider:
+    """A live context, and every call that takes one.
+
+    The handle is freed by `close`, by leaving a `with` block, or by the
+    finaliser when neither happened; a result that waits for the
+    collector can exhaust memory (ADR-0007, finding 4), so the explicit
+    forms are the ones to use.
+    """
+
+    def __init__(
+        self, lib: TeistroLibrary, handle: "ctypes._Pointer[_Provider]"
+    ) -> None:
+        self._lib = lib
+        self._handle: Optional["ctypes._Pointer[_Provider]"] = handle
+        self._finalise = weakref.finalize(self, _free_provider, lib, handle)
+
+    @classmethod
+    def _new(cls, lib: TeistroLibrary, path: str, config_json: str) -> TeistroProvider:
+        """Opens an adapter and the provider inside it.
+
+        `path` is the adapter's platform binary — the file its package ships.
+        `config_json` is that adapter's own options, or null; what they mean
+        is the adapter's to say and its package's to type.
+
+        `UNSUPPORTED` when the file is not an adapter of this version,
+        `DATA_MISSING` when it is and its data is not there, `INVALID_ARG`
+        when its configuration is wrong — each of them the adapter's own
+        judgement, passed through with its message rather than replaced.
+        """
+        owned: list[Any] = []
+        handle = ctypes.POINTER(_Provider)()
+        _path = path.encode("utf-8")
+        owned.append(_path)
+        _config_json = config_json.encode("utf-8")
+        owned.append(_config_json)
+        _out_error = _StringStruct()
+        status = Status(lib.ts_provider_load(
+            _path,
+            _config_json,
+            ctypes.byref(handle),
+            ctypes.byref(_out_error),
+        ))
+        if status != Status.OK:
+            _refuse(lib, status, _out_error)
+        return cls(lib, handle)
+
+    @property
+    def _raw(self) -> "ctypes._Pointer[_Provider]":
+        """The live handle, or a refusal saying it was closed."""
+        if self._handle is None:
+            raise TeistroError(
+                Status.INVALID_ARG,
+                "this context has been closed",
+                hint="open another one",
+            )
+        return self._handle
+
+    def close(self) -> None:
+        """Frees the context's native memory. Closing twice is allowed."""
+        if self._handle is not None:
+            self._handle = None
+            self._finalise()
+
+    def __enter__(self) -> TeistroProvider:
+        return self
+
+    def __exit__(
+        self,
+        kind: Optional[type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()
+
+    def _raise(self, status: Status) -> None:
+        """Raises what the library said about its last refusal."""
+        raw = _ErrorStruct()
+        raw.struct_size = ctypes.sizeof(_ErrorStruct)
+        if self._handle is not None:
+            if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
+                found = Error._of(raw)
+                raise TeistroError(
+                    status,
+                    found.message or status.key,
+                    detail=found.detail or "",
+                    field=found.field or "",
+                    hint=found.hint or "",
+                    key=found.key or "",
+                )
+        raise TeistroError(status, status.key)
+
+
+def _free_provider(lib: TeistroLibrary, handle: Any) -> None:
+    """The finaliser: frees a handle whoever let it go."""
+    if handle:
+        lib.ts_provider_free(handle)
 
 
 def abi_version(lib: TeistroLibrary) -> int:

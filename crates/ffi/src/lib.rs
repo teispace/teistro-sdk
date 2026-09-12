@@ -50,6 +50,7 @@ pub mod intl;
 pub mod keys;
 pub mod panchanga;
 pub mod positions;
+pub mod provider;
 pub mod schemas;
 pub mod strings;
 mod support;

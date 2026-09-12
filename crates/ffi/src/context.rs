@@ -143,6 +143,13 @@ pub struct TsContext {
     intl: RefCell<Intl>,
     delta_t: DeltaTModel,
     scratch: RefCell<Scratch>,
+    /// A reference that keeps a loaded adapter's library in memory for
+    /// as long as this context might call into it (ADR-0029).
+    ///
+    /// **Declared last on purpose**: fields drop in declaration order, so
+    /// `provider` — whose vtable is a table of function pointers into
+    /// that library — is gone before the library can be unloaded.
+    loaded: Option<crate::provider::Keepalive>,
 }
 
 impl core::fmt::Debug for TsContext {
@@ -229,7 +236,16 @@ impl TsContext {
             intl: RefCell::new(intl),
             delta_t,
             scratch: RefCell::new(Scratch::default()),
+            loaded: None,
         })
+    }
+
+    /// The same context, keeping a loaded adapter's library alive for as
+    /// long as it lives (ADR-0029).
+    #[must_use]
+    pub(crate) fn keeping(mut self, loaded: crate::provider::Keepalive) -> TsContext {
+        self.loaded = Some(loaded);
+        self
     }
 
     /// The resolved settings.
@@ -427,19 +443,7 @@ unsafe fn build(
     };
     let flags = options.map_or(0, |o| o.flags);
     // SAFETY: the entry point's contract.
-    let (profile, settings_json, locale) = unsafe {
-        (
-            optional_text(
-                options.map_or(ptr::null(), |o| o.profile),
-                "options.profile",
-            )?,
-            optional_text(
-                options.map_or(ptr::null(), |o| o.settings_json),
-                "options.settings_json",
-            )?,
-            optional_text(options.map_or(ptr::null(), |o| o.locale), "options.locale")?,
-        )
-    };
+    let (profile, settings_json, locale) = unsafe { texts_of(options) }?;
     let ephemeris = options.map_or(0, |o| o.ephemeris);
     let provider: Option<Box<dyn EphemerisProvider>> = if provider.is_null() {
         own_provider(ephemeris, flags)?
@@ -507,6 +511,52 @@ fn builtin() -> Result<Box<dyn EphemerisProvider>, Error> {
          ts_context_new",
     )
     .with_field("options.ephemeris"))
+}
+
+/// The three strings an options record carries: profile, settings and
+/// locale, each optional.
+pub(crate) type OptionTexts<'a> = (Option<&'a str>, Option<&'a str>, Option<&'a str>);
+
+/// The three strings an options record carries, checked and borrowed.
+///
+/// Shared by both ways of making a context, so a field added here reaches
+/// each of them and neither can forget one.
+///
+/// # Safety
+///
+/// `options` must be null or a readable record whose strings stay valid
+/// for the returned lifetime.
+pub(crate) unsafe fn read_options<'a>(
+    options: *const TsContextOptions,
+) -> Result<OptionTexts<'a>, Error> {
+    let options = if options.is_null() {
+        None
+    } else {
+        // SAFETY: the caller's contract.
+        Some(unsafe { read_in(options, "options") }?)
+    };
+    // SAFETY: the caller's contract.
+    unsafe { texts_of(options) }
+}
+
+/// # Safety
+///
+/// The record's strings must stay valid for the returned lifetime.
+unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts<'a>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe {
+        Ok((
+            optional_text(
+                options.map_or(ptr::null(), |o| o.profile),
+                "options.profile",
+            )?,
+            optional_text(
+                options.map_or(ptr::null(), |o| o.settings_json),
+                "options.settings_json",
+            )?,
+            optional_text(options.map_or(ptr::null(), |o| o.locale), "options.locale")?,
+        ))
+    }
 }
 
 /// Frees a context; null is ignored.

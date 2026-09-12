@@ -73,6 +73,19 @@ pub fn profile_from_env() -> Profile {
     }
 }
 
+/// A profile by the name the engine gives it, or `None`.
+///
+/// The inverse of [`profile_key`], so a configuration that names a
+/// profile and a table that records one cannot drift apart.
+#[must_use]
+pub fn profile_named(name: &str) -> Option<Profile> {
+    match name {
+        "max" | "MAX" => Some(Profile::MAX),
+        "compatible" | "COMPATIBLE" => Some(Profile::COMPATIBLE),
+        _ => None,
+    }
+}
+
 /// The name a profile goes by, for a table's provenance.
 #[must_use]
 pub fn profile_key(profile: Profile) -> &'static str {
@@ -91,6 +104,62 @@ pub fn data_dir_from_env() -> PathBuf {
         || Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../../teimeris/data"),
         PathBuf::from,
     )
+}
+
+/// The plugin entry points, so this adapter can be **loaded** rather
+/// than linked (ADR-0029).
+///
+/// This is the whole of what makes an engine reachable from Node, Python
+/// or Dart: the licence keeps it out of the SDK's own artefact, so the
+/// SDK loads it instead. The macro writes the three exported symbols and
+/// the `unsafe` that goes with them; what is here is the one thing an
+/// adapter actually has to decide, which is what its configuration means.
+mod plugin {
+    use std::path::PathBuf;
+
+    use serde::Deserialize;
+    use teistro_port_ephemeris::ProviderError;
+
+    use crate::{TeimerisProvider, data_dir_from_env, profile_from_env};
+
+    /// What a consumer may configure when they load this adapter.
+    ///
+    /// Both fields are optional and both fall back to the environment,
+    /// so a caller who has already set `TEIMERIS_DATA_DIR` passes no
+    /// configuration at all. `deny_unknown_fields` because a misspelt
+    /// option that is silently ignored is worse than one that is
+    /// refused: the consumer would get the default and no reason for it.
+    #[derive(Debug, Default, Deserialize)]
+    #[serde(rename_all = "camelCase", deny_unknown_fields)]
+    struct Config {
+        /// Where the engine's data files are.
+        data_dir: Option<PathBuf>,
+        /// `compatible` or `max`; the engine's own profile names.
+        profile: Option<String>,
+    }
+
+    /// Builds the provider a loader asked for.
+    fn open(config_json: &str) -> Result<TeimerisProvider, ProviderError> {
+        let config: Config = if config_json.trim().is_empty() {
+            Config::default()
+        } else {
+            serde_json::from_str(config_json).map_err(|error| {
+                ProviderError::invalid(format!("the adapter's configuration: {error}"))
+            })?
+        };
+        let profile = match config.profile.as_deref() {
+            None => profile_from_env(),
+            Some(name) => crate::profile_named(name).ok_or_else(|| {
+                ProviderError::invalid(format!(
+                    "profile `{name}` is not one this engine has; it has `compatible` and `max`"
+                ))
+            })?,
+        };
+        let data_dir = config.data_dir.unwrap_or_else(data_dir_from_env);
+        TeimerisProvider::open_with(&data_dir, profile)
+    }
+
+    teistro_port_ephemeris::export_provider!(TeimerisProvider, open);
 }
 
 /// The engine's error in the port's vocabulary. `jd` is the instant the

@@ -14,7 +14,10 @@
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
     clippy::too_many_lines,
-    reason = "tests cross the boundary, fail by panicking, read sizes as C does and walk one scenario each"
+    clippy::print_stdout,
+    reason = "tests cross the boundary, fail by panicking, read sizes as C does, \
+              walk one scenario each, and say when one is skipped for want of \
+              an adapter a checkout does not have"
 )]
 
 use core::ffi::CStr;
@@ -36,6 +39,9 @@ use teistro_ffi::context::{
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::keys::{ts_key_name, ts_key_parse};
 use teistro_ffi::positions::ts_positions;
+use teistro_ffi::provider::{
+    TsProvider, ts_context_new_with_provider, ts_provider_free, ts_provider_load,
+};
 use teistro_ffi::schemas;
 use teistro_ffi::strings::{TsHash, TsStr, TsString, ts_string_free};
 use teistro_ffi::time::{
@@ -328,6 +334,97 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
     );
     // SAFETY: null is ignored.
     unsafe { ts_context_free(ptr::null_mut()) };
+}
+
+/// **An engine, loaded rather than linked** (ADR-0029).
+///
+/// This is the 98% path at the boundary a consumer crosses: no vtable
+/// written by hand, no engine compiled into this library — which its
+/// licence forbids — but an adapter opened from a file and a real sky
+/// computed through it.
+///
+/// It runs only where the adapter has been built and its data is present,
+/// because neither can be assumed of a checkout; where they are, it is
+/// the test that the whole seam holds. `TEISTRO_TEIMERIS_ADAPTER` names
+/// the library.
+#[test]
+fn an_engine_is_loaded_from_a_shared_library_and_computes() {
+    let Some(path) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
+        // A checkout has neither the adapter built nor the engine's data,
+        // and a test that failed for that would fail for everyone.
+        println!("skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter's library");
+        return;
+    };
+    let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
+    let mut provider: *mut TsProvider = ptr::null_mut();
+    let mut error = TsString::empty();
+    // SAFETY: a live path and writable slots.
+    let status = unsafe {
+        ts_provider_load(
+            path.as_ptr(),
+            ptr::null(),
+            &raw mut provider,
+            &raw mut error,
+        )
+    };
+    if status != Status::Ok {
+        // SAFETY: the library wrote a descriptor or left it empty.
+        let said = unsafe { core::slice::from_raw_parts(error.data, error.len) };
+        panic!("loading the adapter: {}", String::from_utf8_lossy(said));
+    }
+
+    let mut context: *mut TsContext = ptr::null_mut();
+    // SAFETY: a live handle and writable slots.
+    let status = unsafe {
+        ts_context_new_with_provider(ptr::null(), provider, &raw mut context, ptr::null_mut())
+    };
+    assert_eq!(status, Status::Ok, "a context over the loaded engine");
+
+    // Freed **first**, on purpose: the context holds its own reference,
+    // so the library must still be there for the call below. An ordering
+    // that mattered would be a footgun in every binding.
+    // SAFETY: a handle from `ts_provider_load`, freed once.
+    unsafe { ts_provider_free(provider) };
+
+    let jds = [2_451_545.0];
+    let bodies = [Body::Sun.id()];
+    let frame = Frame::CANONICAL;
+    let request = sized(
+        PositionRequestC {
+            struct_size: 0,
+            scale: TimeScale::Tt.id(),
+            frame_bits: frame.to_bits(),
+            speeds: 1,
+            has_observer: 0,
+            reserved: [0; 2],
+            observer: teistro_port_ephemeris::vtable::ObserverC::default(),
+            jds: jds.as_ptr(),
+            jd_count: jds.len(),
+            bodies: bodies.as_ptr(),
+            body_count: bodies.len(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_positions(context, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "the loaded engine answered"
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::positions();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let sun = reader.column("cells", "lon").unwrap()[0].as_f64();
+    assert!(
+        (279.0..282.0).contains(&sun),
+        "the engine put the Sun at {sun} degrees at J2000"
+    );
+    // SAFETY: a live context, freed once.
+    unsafe { ts_context_free(context) };
 }
 
 /// **Phase 3's promise at the boundary a consumer actually crosses.**

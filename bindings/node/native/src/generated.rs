@@ -2616,8 +2616,7 @@ impl Context {
     }
 
     /// Turns a failed call into an error whose message is the library's
-    /// own sentence; the layer above adds the field, the hint and the code
-    /// from `last_error`.
+    /// own sentence.
     fn check(&self, status: core_::Status) -> Result<()> {
         if status == core_::Status::Ok {
             return Ok(());
@@ -3305,6 +3304,95 @@ impl Drop for Context {
         }
         // SAFETY: the handle came from the constructor and is dropped once.
         unsafe { ffi::context::ts_context_free(self.handle) };
+    }
+}
+
+/// An ephemeris loaded from a shared library. Free with
+/// `ts_provider_free`; a context built from it keeps its own reference,
+/// so the order does not matter.
+#[napi]
+pub struct Provider {
+    handle: *mut ffi::provider::TsProvider,
+}
+
+// SAFETY: a context is used by one thread at a time, which is the contract
+// the boundary documents; a worker thread builds its own.
+unsafe impl Send for Provider {}
+
+#[napi]
+impl Provider {
+    /// Opens an adapter and the provider inside it.
+    ///
+    /// `path` is the adapter's platform binary — the file its package ships.
+    /// `config_json` is that adapter's own options, or null; what they mean
+    /// is the adapter's to say and its package's to type.
+    ///
+    /// `UNSUPPORTED` when the file is not an adapter of this version,
+    /// `DATA_MISSING` when it is and its data is not there, `INVALID_ARG`
+    /// when its configuration is wrong — each of them the adapter's own
+    /// judgement, passed through with its message rather than replaced.
+    #[napi(constructor)]
+    pub fn new(path: String, config_json: String) -> Result<Self> {
+        let path = std::ffi::CString::new(path).map_err(|e| Error::from_reason(e.to_string()))?;
+        let config_json =
+            std::ffi::CString::new(config_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut handle: *mut ffi::provider::TsProvider = ptr::null_mut();
+        let mut out_error = ffi::strings::TsString::empty();
+        // SAFETY: every pointer is valid for the call; the handle is owned
+        // from here and freed once, in `Drop`.
+        let status = unsafe {
+            ffi::provider::ts_provider_load(
+                path.as_ptr(),
+                config_json.as_ptr(),
+                &raw mut handle,
+                &raw mut out_error,
+            )
+        };
+        if status != core_::Status::Ok {
+            let message = take_string(&mut out_error);
+            return Err(Error::from_reason(if message.is_empty() {
+                format!("the context could not be built (code {})", status.code())
+            } else {
+                message
+            }));
+        }
+        Ok(Provider { handle })
+    }
+
+    /// Turns a failed call into an error whose message is the library's
+    /// own sentence.
+    fn check(&self, status: core_::Status) -> Result<()> {
+        if status == core_::Status::Ok {
+            return Ok(());
+        }
+        // SAFETY: the library returns a static NUL-terminated string.
+        let message =
+            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
+        Err(Error::from_reason(message))
+    }
+
+    /// Frees the handle's native memory now, rather than when the
+    /// collector gets to it. Calling it twice is allowed, and a call on a
+    /// disposed handle is refused with `INVALID_ARG`.
+    #[napi]
+    pub fn dispose(&mut self) {
+        if self.handle.is_null() {
+            return;
+        }
+        // SAFETY: the handle came from the constructor and is freed once;
+        // nulling it here is what makes that true.
+        unsafe { ffi::provider::ts_provider_free(self.handle) };
+        self.handle = std::ptr::null_mut();
+    }
+}
+
+impl Drop for Provider {
+    fn drop(&mut self) {
+        if self.handle.is_null() {
+            return;
+        }
+        // SAFETY: the handle came from the constructor and is dropped once.
+        unsafe { ffi::provider::ts_provider_free(self.handle) };
     }
 }
 

@@ -30,6 +30,7 @@ teistro-idl = { path = "../idl", default-features = false }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
+libloading = "0.8"
 teistro-time = { path = "../time" }
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still

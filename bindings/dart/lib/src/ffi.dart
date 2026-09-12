@@ -22,6 +22,11 @@ import 'catalogue.dart';
 /// error. Used by one thread at a time.
 final class Context extends ffi.Opaque {}
 
+/// An ephemeris loaded from a shared library. Free with
+/// `ts_provider_free`; a context built from it keeps its own reference,
+/// so the order does not matter.
+final class Provider extends ffi.Opaque {}
+
 /// Fills the capabilities; returns `0` or a `ProviderError::code`.
 typedef CapabilitiesFnNative = ffi.Int32 Function(ffi.Pointer<ffi.Void>, ffi.Pointer<CapabilitiesStruct>);
 typedef CapabilitiesFnDart = int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<CapabilitiesStruct>);
@@ -1227,6 +1232,12 @@ typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi
 typedef TsEphemerisManifestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsProviderLoadNative = ffi.Int32 Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Provider>>, ffi.Pointer<StringStruct>);
+typedef TsProviderLoadDart = int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Provider>>, ffi.Pointer<StringStruct>);
+typedef TsContextNewWithProviderNative = ffi.Int32 Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<Provider>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<StringStruct>);
+typedef TsContextNewWithProviderDart = int Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<Provider>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<StringStruct>);
+typedef TsProviderFreeNative = ffi.Void Function(ffi.Pointer<Provider>);
+typedef TsProviderFreeDart = void Function(ffi.Pointer<Provider>);
 
 /// The C surface, every entry point looked up once when the library
 /// opens rather than on each call.
@@ -1275,7 +1286,10 @@ final class TeistroLibrary {
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_ephemeris_manifest = library.lookupFunction<TsEphemerisManifestNative, TsEphemerisManifestDart>('ts_ephemeris_manifest'),
-        ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call');
+        ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call'),
+        ts_provider_load = library.lookupFunction<TsProviderLoadNative, TsProviderLoadDart>('ts_provider_load'),
+        ts_context_new_with_provider = library.lookupFunction<TsContextNewWithProviderNative, TsContextNewWithProviderDart>('ts_context_new_with_provider'),
+        ts_provider_free = library.lookupFunction<TsProviderFreeNative, TsProviderFreeDart>('ts_provider_free');
 
   /// The open library, for a finaliser that needs its symbols.
   final ffi.DynamicLibrary library;
@@ -1526,6 +1540,36 @@ final class TeistroLibrary {
   /// engine describes nothing of its own or names no such operation, and
   /// `PROVIDER` when the engine itself refuses.
   final TsEphemerisCallDart ts_ephemeris_call;
+
+  /// Opens an adapter and the provider inside it.
+  ///
+  /// `path` is the adapter's platform binary — the file its package ships.
+  /// `config_json` is that adapter's own options, or null; what they mean
+  /// is the adapter's to say and its package's to type.
+  ///
+  /// `UNSUPPORTED` when the file is not an adapter of this version,
+  /// `DATA_MISSING` when it is and its data is not there, `INVALID_ARG`
+  /// when its configuration is wrong — each of them the adapter's own
+  /// judgement, passed through with its message rather than replaced.
+  final TsProviderLoadDart ts_provider_load;
+
+  /// Creates a context that computes with a **loaded** provider.
+  ///
+  /// The same as `ts_context_new` in every other respect — `options` may be
+  /// null for the defaults, and `options.ephemeris` is ignored because this
+  /// call has already answered the question it asks.
+  ///
+  /// The context takes its own reference to the adapter, so this handle may
+  /// be freed immediately afterwards or kept to found another context; the
+  /// library is unloaded when the last of them goes.
+  final TsContextNewWithProviderDart ts_context_new_with_provider;
+
+  /// Frees a loaded provider; null is ignored.
+  ///
+  /// The library is unloaded when the last reference goes, so a context
+  /// still using it keeps it alive and the order of these calls does not
+  /// matter.
+  final TsProviderFreeDart ts_provider_free;
 
 }
 
@@ -3595,8 +3639,8 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
-  /// Frees the native context now. Using this object afterwards is a
-  /// [StateError]; a context that is never disposed is freed when it is
+  /// Frees the native handle now. Using this object afterwards is a
+  /// [StateError]; a handle that is never disposed is freed when it is
   /// collected.
   void dispose() {
     if (_disposed) return;
@@ -3607,8 +3651,69 @@ final class TeistroContext implements ffi.Finalizable {
 
   void _alive() {
     if (_disposed) {
-      throw StateError('this context was disposed');
+      throw StateError('this handle was disposed');
     }
+  }
+
+}
+
+/// An ephemeris loaded from a shared library. Free with
+/// `ts_provider_free`; a context built from it keeps its own reference,
+/// so the order does not matter.
+final class TeistroProvider implements ffi.Finalizable {
+  TeistroProvider._(this._lib, this._handle) {
+    _finaliser.attach(this, _handle.cast(), detach: this);
+  }
+
+  final TeistroLibrary _lib;
+  final ffi.Pointer<Provider> _handle;
+  var _disposed = false;
+
+  /// Frees the native context when this object is collected, so a
+  /// dropped context releases its memory without a call (ADR-0007).
+  static final _finaliser = ffi.NativeFinalizer(_freeAddress);
+
+  /// The address of `ts_provider_free`, resolved once when the library opens.
+  static final ffi.Pointer<ffi.NativeFinalizerFunction> _freeAddress =
+      _library!.library.lookup<ffi.NativeFinalizerFunction>('ts_provider_free');
+
+  /// Opens an adapter and the provider inside it.
+  ///
+  /// `path` is the adapter's platform binary — the file its package ships.
+  /// `config_json` is that adapter's own options, or null; what they mean
+  /// is the adapter's to say and its package's to type.
+  ///
+  /// `UNSUPPORTED` when the file is not an adapter of this version,
+  /// `DATA_MISSING` when it is and its data is not there, `INVALID_ARG`
+  /// when its configuration is wrong — each of them the adapter's own
+  /// judgement, passed through with its message rather than replaced.
+  factory TeistroProvider(TeistroLibrary lib, {required String path, required String configJson}) {
+    rememberLibrary(lib);
+    return pkg_ffi.using((arena) {
+      final rawpath = path.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+      final rawconfigJson = configJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+      final out = arena<ffi.Pointer<Provider>>();
+      final error = arena<StringStruct>();
+      final status = lib.ts_provider_load(rawpath, rawconfigJson, out, error);
+      if (status != 0) {
+        final message = error.ref.data == ffi.nullptr
+            ? 'the context could not be built (code $status)'
+            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();
+        lib.ts_string_free(error);
+        throw TeistroException(Status.byId(status), message);
+      }
+      return TeistroProvider._(lib, out.value);
+    });
+  }
+
+  /// Frees the native handle now. Using this object afterwards is a
+  /// [StateError]; a handle that is never disposed is freed when it is
+  /// collected.
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _finaliser.detach(this);
+    _lib.ts_provider_free(_handle);
   }
 
 }

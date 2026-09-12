@@ -48,6 +48,7 @@ pub mod error;
 pub mod frame;
 pub mod horizon;
 pub mod native;
+pub mod plugin;
 pub mod provider;
 pub mod sefile;
 pub mod test_provider;

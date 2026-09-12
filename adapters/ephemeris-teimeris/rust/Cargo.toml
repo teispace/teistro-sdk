@@ -21,6 +21,12 @@ description = "The Teimeris adapter of the Teistro SDK's ephemeris port, outside
 # Additive like any feature: enabling `full` beside the default leaves the
 # richest enabled tier in force, which is what the builtin crate's own
 # cfg does.
+# A loadable plugin as well as a Rust library: the `cdylib` is what the
+# SDK's loader opens from Node, Python or Dart (ADR-0029), and the `rlib`
+# is what a Rust consumer links directly without paying for a loader.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [features]
 default = ["standard"]
 compact = ["teistro-ephemeris-builtin/compact"]

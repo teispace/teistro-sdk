@@ -1336,6 +1336,7 @@ dependencies = [
 name = "teistro-ffi"
 version = "0.0.0"
 dependencies = [
+ "libloading",
  "serde",
  "serde_json",
  "teistro-astro",

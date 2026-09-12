@@ -21,7 +21,8 @@
     "crates/ffi/src/intl.rs",
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
-    "crates/ffi/src/ephemeris.rs"
+    "crates/ffi/src/ephemeris.rs",
+    "crates/ffi/src/provider.rs"
   ],
   "constants": [
     {
@@ -6434,6 +6435,11 @@
       "name": "TsContext",
       "doc": "An opaque context: settings, a provider, the locale engine, the last\nerror. Used by one thread at a time.",
       "source": "crates/ffi/src/context.rs"
+    },
+    {
+      "name": "TsProvider",
+      "doc": "An ephemeris loaded from a shared library. Free with\n`ts_provider_free`; a context built from it keeps its own reference,\nso the order does not matter.",
+      "source": "crates/ffi/src/provider.rs"
     }
   ],
   "callbacks": [
@@ -11477,6 +11483,164 @@
       },
       "meta": {},
       "source": "crates/ffi/src/ephemeris.rs"
+    },
+    {
+      "name": "ts_provider_load",
+      "doc": "Opens an adapter and the provider inside it.\n\n`path` is the adapter's platform binary — the file its package ships.\n`config_json` is that adapter's own options, or null; what they mean\nis the adapter's to say and its package's to type.\n\n`UNSUPPORTED` when the file is not an adapter of this version,\n`DATA_MISSING` when it is and its data is not there, `INVALID_ARG`\nwhen its configuration is wrong — each of them the adapter's own\njudgement, passed through with its message rather than replaced.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call. Loading a library runs its\ninitialisers, so `path` must be a file the caller trusts.",
+      "params": [
+        {
+          "name": "path",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "config_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_provider",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "pointer",
+              "to": {
+                "kind": "opaque",
+                "name": "TsProvider"
+              },
+              "mutable": true
+            },
+            "mutable": true
+          },
+          "role": "handle_out",
+          "meta": {}
+        },
+        {
+          "name": "out_error",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/provider.rs"
+    },
+    {
+      "name": "ts_context_new_with_provider",
+      "doc": "Creates a context that computes with a **loaded** provider.\n\nThe same as `ts_context_new` in every other respect — `options` may be\nnull for the defaults, and `options.ephemeris` is ignored because this\ncall has already answered the question it asks.\n\nThe context takes its own reference to the adapter, so this handle may\nbe freed immediately afterwards or kept to found another context; the\nlibrary is unloaded when the last of them goes.",
+      "safety": "`provider` must be a live handle from `ts_provider_load`; every\nother pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call.",
+      "params": [
+        {
+          "name": "options",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsContextOptions"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "provider",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsProvider"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "out_context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "pointer",
+              "to": {
+                "kind": "opaque",
+                "name": "TsContext"
+              },
+              "mutable": true
+            },
+            "mutable": true
+          },
+          "role": "handle_out",
+          "meta": {}
+        },
+        {
+          "name": "out_error",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/provider.rs"
+    },
+    {
+      "name": "ts_provider_free",
+      "doc": "Frees a loaded provider; null is ignored.\n\nThe library is unloaded when the last reference goes, so a context\nstill using it keeps it alive and the order of these calls does not\nmatter.",
+      "safety": "`provider` must be null or a handle from `ts_provider_load` that is\nnot used again.",
+      "params": [
+        {
+          "name": "provider",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsProvider"
+            },
+            "mutable": true
+          },
+          "role": "handle",
+          "meta": {}
+        }
+      ],
+      "meta": {},
+      "source": "crates/ffi/src/provider.rs"
     }
   ],
   "blobs": [

@@ -675,14 +675,26 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     if let Some(ctor) = constructor(api, opaque) {
         render_dart_constructor(out, api, ctor, &name);
     }
-    render_dart_error_reader(out, api);
+    render_dart_error_reader(out, api, opaque);
     for m in methods(api, opaque) {
         render_dart_method(out, api, opaque, m);
     }
     if let Some(free) = destructor(api, opaque) {
+        // `_alive` guards a method against use after disposal, so an
+        // opaque type with no methods has nothing to guard and the
+        // analyser calls it dead. It was unconditional while every
+        // opaque type had methods.
+        let guard = if methods(api, opaque)
+            .iter()
+            .any(|m| !m.name.ends_with("_last_error"))
+        {
+            "\n\n  void _alive() {\n    if (_disposed) {\n      throw StateError('this handle was disposed');\n    }\n  }"
+        } else {
+            ""
+        };
         let _ = writeln!(
             out,
-            "  /// Frees the native context now. Using this object afterwards is a\n  /// [StateError]; a context that is never disposed is freed when it is\n  /// collected.\n  void dispose() {{\n    if (_disposed) return;\n    _disposed = true;\n    _finaliser.detach(this);\n    _lib.{}(_handle);\n  }}\n\n  void _alive() {{\n    if (_disposed) {{\n      throw StateError('this context was disposed');\n    }}\n  }}\n",
+            "  /// Frees the native handle now. Using this object afterwards is a\n  /// [StateError]; a handle that is never disposed is freed when it is\n  /// collected.\n  void dispose() {{\n    if (_disposed) return;\n    _disposed = true;\n    _finaliser.detach(this);\n    _lib.{}(_handle);\n  }}{guard}\n",
             free.name
         );
     }
@@ -738,7 +750,44 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
                 );
                 args.push(String::from("error"));
             }
-            _ => {}
+            // A text input, the same way a method takes one. The
+            // constructor emitter went without this until a second
+            // constructor had one (`ts_provider_load`, ADR-0029), and
+            // the parameter was **silently dropped**: an empty named
+            // block and a call two arguments short.
+            Role::StringIn => {
+                let native = "toNativeUtf8(allocator: arena).cast<ffi.Char>()";
+                let value = if p.meta.nullable {
+                    params.push(format!("String? {field}"));
+                    format!("{field} == null ? ffi.nullptr : {field}.{native}")
+                } else {
+                    // A constructor's parameters are named, and a
+                    // non-nullable named parameter must say `required`
+                    // or Dart has no value to give it.
+                    params.push(format!("required String {field}"));
+                    format!("{field}.{native}")
+                };
+                let _ = writeln!(body, "      final raw{field} = {value};");
+                args.push(format!("raw{field}"));
+            }
+            // **Loudly**, and not `_ => {}`. An emitter that quietly
+            // skips a role it does not know writes code that does not
+            // compile, or worse compiles and calls with the wrong
+            // arguments; failing here says which role, on which
+            // parameter, of which function.
+            #[expect(
+                clippy::panic,
+                reason = "a generator that meets a role it does not understand must \
+                          stop, not emit a call missing an argument; this is a build \
+                          tool and the message names the role, the parameter and the \
+                          function"
+            )]
+            other => panic!(
+                "the Dart constructor emitter does not handle the role {other:?} \
+                 on `{field}` of `{}`; teach it that role rather than \
+                 letting it emit a call without the parameter",
+                ctor.name
+            ),
         }
     }
     let _ = writeln!(
@@ -752,12 +801,12 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
     );
 }
 
-fn render_dart_error_reader(out: &mut String, api: &Api) {
-    let Some(reader) = api
-        .functions
-        .iter()
-        .find(|f| f.name.ends_with("_last_error"))
-    else {
+fn render_dart_error_reader(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+    // This opaque's own reader, matched by the handle it takes. Matched
+    // by name alone it was found for every opaque type, and the second
+    // one (`TsProvider`, ADR-0029) got a reader that passed its handle
+    // to a function expecting a context.
+    let Some(reader) = crate::rules::last_error(api, opaque) else {
         return;
     };
     let Some(s) = reader
