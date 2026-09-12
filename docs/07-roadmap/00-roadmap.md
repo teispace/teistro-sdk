@@ -260,9 +260,16 @@ providers**" and the engine half of that does not exist outside Rust:
 
   The design moves that composition **into** the façade and has
   `teistro-ffi` depend on it, keeping only its marshalling; the measured
-  page's second property is the acceptance test, flipping from falsified
-  to holding when it lands. Order of work: the façade beside the
-  boundary, the fourth parity runner, then the dependency inversion.
+  page's last two properties are the acceptance test, flipping from
+  falsified to holding when it lands. Order of work: the façade beside
+  the boundary, the fourth parity runner, then the dependency inversion.
+
+  **Begun**: `crates/sdk`, the crate `teistro` — the context, a builder,
+  the ephemeris chain, and the `calendar` and `time` areas, with fifteen
+  tests asserting the C smoke test's own facts in the same words. The
+  acceptance test tracks it: two of the nine crates a context needs are
+  not the façade's yet, and those two are exactly the two areas left
+  before the inversion.
 
 The **v1 target matrix** is Rust, Node, wasm, Flutter/Dart and Python,
 with C as the ABI beneath them. wasm is already Phase 5's binding; what
