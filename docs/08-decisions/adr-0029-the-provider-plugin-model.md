@@ -126,6 +126,39 @@ let a consumer discover the licence after shipping.
   nothing else was installed, and it carries no licence a consumer has to
   think about.
 
+### Built so far, and where it stops (2026-09-12)
+
+The **route** is complete: an adapter exports the plugin entry points,
+`ts_provider_load` opens one, `ts_context_new_with_provider` builds a
+context over it, and all three ergonomic layers reach both. A real
+Teimeris computes the Sun at J2000 identically from Node, Dart and
+Python, and its own 62 operations come with it.
+
+The **surface** is not yet the one decided above, and that is worth
+naming rather than leaving to be noticed. What ships is the primitive
+underneath a descriptor:
+
+```js
+new Context({ plugin: '…/libteistro_ephemeris_teimeris.dylib',
+              pluginConfig: { dataDir: './ephe' } })
+```
+
+A **path**, which "A declared fallback chain" rejected for four stated
+reasons, and **no chain**. Both gaps have the same cause: a descriptor is
+a value *the adapter's package exports*, and there is no package yet —
+`import teimeris from '@teistro/ephemeris-teimeris'` has nothing to
+import. So the primitive had to come first, and it is what the descriptor
+will be built on: `teimeris({ dataDir })` returns the binary its own
+package ships plus the configuration, which is exactly a `plugin` and a
+`pluginConfig`.
+
+**`plugin` must not survive as a second spelling.** When the packages
+arrive, the descriptor and the chain become the surface and this option
+is folded into them — `ephemeris` taking an ordered list of descriptors
+and `'builtin'` — because two ways to name one ephemeris is the defect
+this project keeps finding under other names. It is recorded here so the
+fold is a planned step and not a discovery.
+
 ## Alternatives considered
 
 **Link the engine into the SDK and select it by name**, the way ADR-0028

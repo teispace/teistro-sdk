@@ -554,10 +554,23 @@ provider's DUT1).
    nothing yet holds them against a compiler, though all three were run
    by hand against the engine.
 
-   **Next:** those adapter packages, with their licences, their platform
-   binaries and a type-check gate apiece; wasm, whose ephemeris is the
-   built-in `compact` tier; then Rust's own consumer surface, the READMEs
-   and the site.
+   **And the plugin surface is not yet ADR-0029's, which is recorded in
+   that ADR rather than left to be noticed.** It decided a *descriptor* —
+   `teimeris({ dataDir })`, a value the adapter's package exports — and an
+   ordered fallback chain, and explicitly rejected naming a path. What
+   ships is `plugin` + `pluginConfig`, which is the **primitive
+   underneath** a descriptor: a descriptor is exactly the binary its own
+   package ships plus its configuration. Both gaps have one cause — there
+   is no package to import a descriptor from. `plugin` must not survive
+   as a second spelling once there is, and ADR-0029 now says so.
+
+   **Next:** those adapter packages — `@teistro/ephemeris-teimeris` and
+   its Dart and Python siblings, each declaring AGPL-3.0, shipping a
+   platform binary per target triple, exporting the descriptor, and
+   carrying the generated façade with a type-check gate apiece. Then the
+   fallback chain over them, which is what folds `plugin` away. Then
+   wasm, whose ephemeris is the built-in `compact` tier; then Rust's own
+   consumer surface, the READMEs and the site.
 
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter
