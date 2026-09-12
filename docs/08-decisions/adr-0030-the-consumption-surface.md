@@ -77,16 +77,45 @@ This is the point that keeps ADR-0002 intact. The SDK must not know what
 functions Teimeris has; if it generated a typed `sdk.engine.tm*` it would
 know, and the agnostic port would be agnostic in name only.
 
-So: the **adapter package** carries the generated façade and augments the
-SDK's own types with it — a TypeScript declaration merge, a Python
-protocol, a Dart extension. Installing `@teistro/ephemeris-teimeris` is
-what makes `sdk.engine.tmCalendarWeekday` exist and be typed; without it,
-`sdk.engine.call('tm_calendar_weekday', …)` still works and is not typed.
+So: the **adapter package** carries the generated façade. Installing
+`@teistro/ephemeris-teimeris` is what makes the engine's operations
+typed; without it, `sdk.engine.call('tm_calendar_weekday', …)` still
+works and is not typed.
 
 It is generated rather than written. `tools/idl/teimeris.idl` describes
 161 functions with each parameter's role, and the SDK's own generators are
 already role-driven — "nothing in them names a function of the slice".
 The same shape of generator emits the façade.
+
+#### Amended 2026-09-12: the façade carries its own runtime
+
+This section first said the façade "augments the SDK's own types" — "a
+TypeScript declaration merge, a Python protocol, a Dart extension" — and
+two of those three would have been **a lie about the runtime.** A
+declaration merge on `Engine` and a Python `Protocol` both promise
+methods that nothing installs: with the dynamic index signature gone
+(decision 3's own consequence), `sdk.engine.tmBodyName` is `undefined`
+at run time however well it type-checks. A façade that type-checks a
+call which then fails is worse than no façade, and it is the same defect
+the index signature was rejected for, arriving from the other side.
+
+So the façade is **a value a consumer takes**, not a promise laid over
+one they have:
+
+```ts
+import { teimeris } from '@teistro/ephemeris-teimeris';
+const engine = teimeris(sdk.engine);        // typed, and real
+engine.tmBodyName({ body: 0 });
+```
+
+Per target: a generated wrapper with both halves (`.js` and `.d.ts`) in
+Node, a generated class in Python, and in Dart an **extension** — which
+was right in the original list, because a Dart extension method has a
+body and is resolved statically, so it is typed *and* installed.
+
+It reads better than an augmentation as well: the line that introduces
+the engine is the line that names which engine, which is the thing
+`sdk.engine` deliberately does not survive changing.
 
 ### 4. Engine functions are **not** hoisted to the root
 

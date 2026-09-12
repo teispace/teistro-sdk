@@ -130,6 +130,7 @@ mod consumer;
 mod dart_binding;
 mod engine;
 mod ephemgen;
+mod facade;
 mod ffi;
 mod generated;
 mod hashes;

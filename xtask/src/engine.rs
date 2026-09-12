@@ -96,7 +96,7 @@ struct TypeRef {
 }
 
 #[derive(Debug, Deserialize)]
-struct Param {
+pub(crate) struct Param {
     name: String,
     #[serde(rename = "type")]
     type_ref: TypeRef,
@@ -105,7 +105,7 @@ struct Param {
 }
 
 #[derive(Debug, Deserialize)]
-struct Function {
+pub(crate) struct Function {
     name: String,
     returns: TypeRef,
     params: Vec<Param>,
@@ -398,6 +398,80 @@ fn blocked_by(param: &Param, vocabulary: &Vocabulary) -> Option<Blocker> {
     })
 }
 
+/// One callable function as **the manifest describes it**, which is the
+/// only description a consumer ever sees.
+///
+/// Read once and shared, because the manifest and the typed façades must
+/// agree about every name, role and type: a façade that typed an
+/// argument the manifest calls something else would type-check a call
+/// that the dispatch then refuses by name.
+pub(crate) struct Described<'a> {
+    /// The engine's own name, which `call` takes.
+    pub(crate) name: &'a str,
+    /// What the caller supplies: the key, and the manifest's word for
+    /// its type.
+    pub(crate) takes: Vec<(&'a str, &'a str)>,
+    /// What comes back, keyed as the answer keys it. `return` is in here
+    /// when the function's own return value is reported.
+    pub(crate) gives: Vec<(&'a str, &'a str)>,
+    /// Whether a call changes engine state the SDK's provenance does not
+    /// record.
+    pub(crate) mutates: bool,
+}
+
+/// The manifest's word for a parameter's type.
+fn declared_type(param: &Param) -> &str {
+    if matches!(param.role.as_str(), "string_in" | "string_out") {
+        "string"
+    } else {
+        param.type_ref.base.as_str()
+    }
+}
+
+/// The manifest's word for what a function answers with.
+///
+/// A word about the answer and not about C: `status` is already not a
+/// type name, and a function whose return the fill protocol consumes
+/// puts nothing under `return` either.
+fn declared_return(function: &Function) -> &str {
+    if function.returns.base == "tm_status" {
+        "status"
+    } else if function.returns.base == "void" || fills_a_string(function) {
+        "void"
+    } else if returns_a_string(function) {
+        "string"
+    } else {
+        function.returns.base.as_str()
+    }
+}
+
+/// One callable function, described once.
+pub(crate) fn describe(function: &Function) -> Described<'_> {
+    let mut takes = Vec::new();
+    let mut gives = Vec::new();
+    for param in &function.params {
+        if bookkeeping(&param.role) {
+            continue;
+        }
+        let entry = (param.name.as_str(), declared_type(param));
+        if matches!(param.role.as_str(), "scalar_out" | "string_out") {
+            gives.push(entry);
+        } else {
+            takes.push(entry);
+        }
+    }
+    let returns = declared_return(function);
+    if !matches!(returns, "status" | "void") {
+        gives.push(("return", returns));
+    }
+    Described {
+        name: &function.name,
+        takes,
+        gives,
+        mutates: mutates_engine_state(&function.name),
+    }
+}
+
 /// Whether the function's own return value is a string it lends.
 fn returns_a_string(function: &Function) -> bool {
     function.returns.pointer == 1 && function.returns.base == "char"
@@ -466,10 +540,20 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
             (function, standing, why)
         })
         .collect();
-    Ok(vec![
+    let callable: Vec<&Function> = classified
+        .iter()
+        .filter(|(_, standing, _)| *standing == Standing::Callable)
+        .map(|(function, _, _)| *function)
+        .collect();
+    let mut outputs = vec![
         Output::new(PAGE, page(&idl, &classified, &vocabulary)),
         Output::new(DISPATCH, dispatch(&idl, &classified, &vocabulary)),
-    ])
+    ];
+    // The typed façades, from the same reading: a façade that typed an
+    // argument the dispatch would refuse by name is the one thing
+    // generating both from one description makes impossible (ADR-0030).
+    outputs.extend(crate::facade::outputs(&idl.version, &callable));
+    Ok(outputs)
 }
 
 /// Runs the classification and writes both.
@@ -554,7 +638,74 @@ fn page(
         idl.structs.len(),
         vocabulary,
     ));
+    out.push_str(&facade_section(
+        by_standing
+            .get(&Standing::Callable)
+            .map_or(&[][..], |rows| rows.as_slice()),
+    ));
     out.push_str(&limits_section());
+    out
+}
+
+/// What shape the typed façade hands an answer back in, which is a
+/// measurement rather than a taste.
+fn facade_section(rows: &[Row<'_>]) -> String {
+    let mut out = String::new();
+    if rows.is_empty() {
+        return out;
+    }
+    let mut by_count: BTreeMap<usize, Vec<&str>> = BTreeMap::new();
+    for row in rows {
+        by_count
+            .entry(describe(row.function).gives.len())
+            .or_default()
+            .push(row.name());
+    }
+    let one = by_count.get(&1).map_or(0, Vec::len);
+    let none = by_count.get(&0).map_or(0, Vec::len);
+    let many: Vec<&str> = by_count
+        .iter()
+        .filter(|(count, _)| **count > 1)
+        .flat_map(|(_, names)| names.iter().copied())
+        .collect();
+    let listed = many
+        .iter()
+        .map(|name| format!("`{name}`"))
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    let _ = writeln!(out, "## What the typed façade hands back\n");
+    let _ = writeln!(
+        out,
+        "ADR-0030 puts a typed façade in the **adapter's** package, generated from this same reading so that it cannot type an argument the dispatch would refuse by name. What a method answers with is decided here, by counting:\n"
+    );
+    let _ = writeln!(out, "| values answered | functions | the façade's answer |");
+    let _ = writeln!(out, "|---:|---:|---|");
+    let _ = writeln!(
+        out,
+        "| 1 | {one} | **the value itself** — a number, a string |"
+    );
+    let _ = writeln!(out, "| 0 | {none} | nothing |");
+    let _ = writeln!(
+        out,
+        "| more | {} | a record: an object, a Dart record, a `TypedDict` |",
+        many.len()
+    );
+    let _ = writeln!(out);
+    let _ = writeln!(
+        out,
+        "**{one} of the {} answer with exactly one value**, so a façade that always returned an object would have made every one of them an indexing exercise for the sake of {}. Those {} get a record apiece — {listed} — which is {} types per target rather than {}.\n",
+        rows.len(),
+        many.len(),
+        many.len(),
+        many.len(),
+        rows.len()
+    );
+    let _ = writeln!(
+        out,
+        "The same count settles a question every target would otherwise have raised. `return` — the key a function's own return value comes back under — **never appears beside another key**: every one of those {} is a status-returning function with out-parameters. So no record field is ever named `return`, and no target has to rename a keyword it could not spell.\n",
+        many.len()
+    );
     out
 }
 
@@ -624,44 +775,32 @@ fn dispatch(
     // parameter, which is what `sdk.engine.signature(name)` reads.
     let mut functions_json = Vec::new();
     for function in &callable {
-        let params: Vec<String> = function
-            .params
+        let described = describe(function);
+        // The manifest keeps `role` as `in`/`out` because that is what a
+        // consumer reading `sdk.engine.signature(name)` needs, and the
+        // description above is already grouped that way.
+        let params: Vec<String> = described
+            .takes
             .iter()
-            .filter(|p| !bookkeeping(&p.role))
-            .map(|p| {
-                let role = if matches!(p.role.as_str(), "scalar_out" | "string_out") {
-                    "out"
-                } else {
-                    "in"
-                };
-                let declared = if matches!(p.role.as_str(), "string_in" | "string_out") {
-                    "string"
-                } else {
-                    p.type_ref.base.as_str()
-                };
-                format!(
-                    "{{\"name\":\"{}\",\"role\":\"{role}\",\"type\":\"{declared}\"}}",
-                    p.name
-                )
+            .map(|(name, declared)| {
+                format!("{{\"name\":\"{name}\",\"role\":\"in\",\"type\":\"{declared}\"}}")
             })
+            .chain(
+                described
+                    .gives
+                    .iter()
+                    .filter(|(name, _)| *name != "return")
+                    .map(|(name, declared)| {
+                        format!("{{\"name\":\"{name}\",\"role\":\"out\",\"type\":\"{declared}\"}}")
+                    }),
+            )
             .collect();
-        // `returns` is a word about the answer and not about C: `status`
-        // is already not a type name, and a function whose return the
-        // fill protocol consumes puts nothing under `return` either.
-        let returns = if function.returns.base == "tm_status" {
-            "status".to_string()
-        } else if function.returns.base == "void" || fills_a_string(function) {
-            "void".to_string()
-        } else if returns_a_string(function) {
-            "string".to_string()
-        } else {
-            function.returns.base.clone()
-        };
         functions_json.push(format!(
-            "{{\"name\":\"{}\",\"params\":[{}],\"returns\":\"{returns}\",\"mutatesEngineState\":{}}}",
-            function.name,
+            "{{\"name\":\"{}\",\"params\":[{}],\"returns\":\"{}\",\"mutatesEngineState\":{}}}",
+            described.name,
             params.join(","),
-            mutates_engine_state(&function.name)
+            declared_return(function),
+            described.mutates
         ));
     }
     let _ = writeln!(

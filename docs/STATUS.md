@@ -520,12 +520,44 @@ provider's DUT1).
    the adapter is not built, which is what `crates/ffi/tests/abi.rs`
    already did with the same `TEISTRO_TEIMERIS_ADAPTER`.
 
-   **Next:** the engine's typed façade, generated into the adapter's own
-   package (ADR-0030), which is what turns `sdk.engine.call('tm_body_name',
-   { body: 0 })` into `sdk.engine.tmBodyName({ body: 0 })` with
-   completions; the adapter packages themselves, one per platform target;
-   wasm, whose ephemeris is the built-in `compact` tier; then Rust's own
-   consumer surface, the READMEs and the site.
+   **The typed façade is generated too**, from the same reading that
+   writes the dispatch and the page, so it cannot type an argument the
+   dispatch would refuse by name. Four files under
+   `adapters/ephemeris-teimeris/` — `node/engine.js` with its `.d.ts`, a
+   Dart extension, a Python class — each with a method per callable
+   operation, named the way its language names things while the keys that
+   cross stay the engine's own.
+
+   Proven against the real engine in all three: `tmBodyName({ body: 0 })`
+   → `"Sun"`, `tmDeltaT({ jdUt1: 2451545 })` → `63.8289…`,
+   `tmVersion()` → a record, `tmAngleFormat(…)` → `5 Tau 30'00"`.
+
+   Two things it corrected. **ADR-0030's façade shape was wrong** and is
+   amended: a TypeScript declaration merge and a Python `Protocol` would
+   each have promised methods nothing installs — with the index signature
+   gone, `sdk.engine.tmBodyName` is `undefined` however well it
+   type-checks — so the façade is a **value a consumer takes**
+   (`teimeris(sdk.engine)`), except in Dart where an extension method has
+   a body and is therefore both typed and installed. And the shape of an
+   answer is a **measurement**: 46 of the 62 answer with exactly one
+   value, so a method hands that value back as itself and only the five
+   that answer with more get a record — five types per target rather than
+   sixty-two. The same count showed `return` never appears beside another
+   key, so no target has to rename a keyword.
+
+   **What the façade still lacks is its package.** It cannot be
+   *type-checked* by a gate until each target has a manifest that
+   resolves the SDK — a `pubspec.yaml`, a `package.json` and a tsconfig,
+   a `pyproject.toml` — and those carry decisions this session did not
+   take: the package names, their versions, and the AGPL licence each
+   must declare. `check-engine` holds the files against the description;
+   nothing yet holds them against a compiler, though all three were run
+   by hand against the engine.
+
+   **Next:** those adapter packages, with their licences, their platform
+   binaries and a type-check gate apiece; wasm, whose ephemeris is the
+   built-in `compact` tier; then Rust's own consumer surface, the READMEs
+   and the site.
 
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter

@@ -120,6 +120,20 @@ A consumer who wants the change *recorded* has the settings for it (ADR-0013's o
 
 This table used to group an array by the fact that it was an array, and said on that basis that arrays were the next tranche and nearly free. They are nearly free and they are not a tranche: **31 of them are arrays of structs**, which is the struct job wearing a count. Grouping by the hardest thing in the way rather than by the first one in parameter order is what made that visible.
 
+## What the typed façade hands back
+
+ADR-0030 puts a typed façade in the **adapter's** package, generated from this same reading so that it cannot type an argument the dispatch would refuse by name. What a method answers with is decided here, by counting:
+
+| values answered | functions | the façade's answer |
+|---:|---:|---|
+| 1 | 46 | **the value itself** — a number, a string |
+| 0 | 11 | nothing |
+| more | 5 | a record: an object, a Dart record, a `TypedDict` |
+
+**46 of the 62 answer with exactly one value**, so a façade that always returned an object would have made every one of them an indexing exercise for the sake of 5. Those 5 get a record apiece — `tm_get_tidal_acceleration`, `tm_get_delta_t_override`, `tm_embedded_coverage`, `tm_version`, `tm_jpl_info` — which is 5 types per target rather than 62.
+
+The same count settles a question every target would otherwise have raised. `return` — the key a function's own return value comes back under — **never appears beside another key**: every one of those 5 is a status-returning function with out-parameters. So no record field is ever named `return`, and no target has to rename a keyword it could not spell.
+
 ## What this does not measure
 
 **Whether a callable function answers correctly.** This reads a description and classifies shapes; it does not call anything. What the marshalling produces is tested against the engine where the adapter's own tests run, and a function's presence here is a claim about its *shape* alone.
