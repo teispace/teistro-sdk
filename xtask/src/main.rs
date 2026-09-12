@@ -127,6 +127,7 @@ mod chebyshev;
 mod classical;
 mod consumer;
 mod dart_binding;
+mod engine;
 mod ephemgen;
 mod ffi;
 mod generated;
@@ -193,6 +194,7 @@ fn generated_page(command: &str) -> Option<i32> {
         "surface" => (surface::generate, surface::check_generated),
         "agreement" => (agreement::generate, agreement::check_generated),
         "pluto" => (pluto::generate, pluto::check_generated),
+        "engine" => (engine::generate, engine::check_generated),
         _ => return None,
     };
     let root = repo_root();
