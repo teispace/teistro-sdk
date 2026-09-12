@@ -1069,7 +1069,7 @@ fn parameter(
                         "Teistro{}",
                         binding_type_name(held.as_deref().unwrap_or_default())
                     );
-                    signature.push_str(&format!(", {name}: {class}"));
+                    let _ = write!(signature, ", {name}: {class}");
                     args.push(format!("{name}._raw"));
                 }
             }
