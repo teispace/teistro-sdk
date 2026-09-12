@@ -627,7 +627,37 @@ provider's DUT1).
    separate `libm`, and `bindings/c/README.md` told a consumer to link
    without it. macOS has them in libSystem, so every local run passed.
    Fixed in one constant read by both gates and stated on that page, so
-   the instruction and the gate cannot drift.
+   the instruction and the gate cannot drift. **Three of the four
+   platforms that were failing now pass**; the fix was re-validated by
+   dispatching the matrix again.
+
+   **win32 remains red, for a different reason, and is not guessed at.**
+   Its symbols are `__imp_WSAStartup`, `__imp_NtCreateFile`,
+   `__imp_GetUserProfileDirectoryW`, `__chkstk` and some thirty more:
+   `libteistro_ffi.a` carries Rust's standard library, and a Rust
+   **staticlib** on Windows needs the system import libraries std itself
+   links — `ws2_32`, `userenv`, `ntdll`. The authoritative list is what
+   `rustc --print native-static-libs` reports for that toolchain and
+   target, which cannot be obtained on a machine that cannot cross-link
+   to it, so nothing was written into a consumer-facing link line from
+   memory. `bindings/c/README.md` now says that this is the situation,
+   names the command, and says why no list is printed there — and that
+   the **shared** library needs none of it, which is the answer for a
+   Windows consumer today.
+
+   **So the gates ask instead of listing.** `c_link_flags` runs
+   `rustc --print native-static-libs` and passes what the toolchain
+   answers — `-lc -lm -liconv -lSystem` here, the Windows set there —
+   which is right on every target and every toolchain version rather than
+   right on the one it was written against. It falls back to `-lm` alone
+   if the question cannot be asked, because linking nothing extra is how
+   this went unnoticed for days. Both C link lines use it, and
+   `bindings/c/README.md` tells a consumer the same command rather than a
+   list that would go stale.
+
+   Whether that closes win32 is for the matrix to say: the symptom there
+   is a static link where a shared one was asked for, and the set it
+   wants is exactly what this now supplies.
 
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter

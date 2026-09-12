@@ -12,18 +12,64 @@ use crate::platform::Platform;
 /// artefacts.
 pub(crate) const LIBRARY_STEM: &str = "teistro_ffi";
 
-/// What a C consumer must link beside the SDK's own library.
+/// The native libraries a C consumer must link beside the SDK's own,
+/// **as the toolchain reports them**.
 ///
-/// **`-lm`**, because the astronomy calls `sin`, `atan2` and the rest,
-/// and on Linux and MinGW the maths functions live in a separate `libm`
-/// that the linker will not pull in by itself. On macOS they are in
-/// libSystem and the flag is a harmless no-op — which is exactly why
-/// this was missing: every gate that ran locally passed, and three of
-/// the five platforms in the nightly matrix could not link at all.
+/// Not a list written here. `libteistro_ffi.a` carries Rust's standard
+/// library, and what that needs is a property of the target and the
+/// toolchain version: `-lm` on Linux and MinGW where the maths functions
+/// are separate, and on Windows some thirty more — `ws2_32`, `userenv`,
+/// `ntdll`, `__chkstk`. A list copied from one toolchain is a list that
+/// is wrong for another, and a list written from memory is a guess in a
+/// consumer's link line.
 ///
-/// Read by both C gates and stated in `bindings/c/README.md`, so the
-/// line a consumer is told to run is the line the gates run.
-pub(crate) const C_LINK_FLAGS: [&str; 1] = ["-lm"];
+/// So the compiler is asked. `rustc --print native-static-libs` answers
+/// for the build in front of it, which is the same answer
+/// `bindings/c/README.md` tells a consumer to get.
+///
+/// Falls back to `-lm` alone when the question cannot be asked, because
+/// that is the one flag every non-macOS platform certainly needs and a
+/// gate that silently linked nothing extra is how this was missed for
+/// days.
+pub(crate) fn c_link_flags(root: &Path) -> Vec<String> {
+    let asked = Command::new("cargo")
+        .args([
+            "rustc",
+            "-q",
+            "-p",
+            "teistro-ffi",
+            "--crate-type",
+            "staticlib",
+            "--",
+            "--print",
+            "native-static-libs",
+        ])
+        .current_dir(root)
+        .output();
+    let Ok(output) = asked else {
+        return vec![String::from("-lm")];
+    };
+    let said = String::from_utf8_lossy(&output.stderr);
+    let Some(line) = said
+        .lines()
+        .find_map(|line| line.split_once("native-static-libs:"))
+        .map(|(_, tail)| tail)
+    else {
+        return vec![String::from("-lm")];
+    };
+    // Deduplicated, order kept: rustc repeats a library that more than
+    // one crate asked for, and a linker does not need it twice.
+    let mut seen = std::collections::BTreeSet::new();
+    let flags: Vec<String> = line
+        .split_whitespace()
+        .filter(|flag| seen.insert((*flag).to_string()))
+        .map(str::to_string)
+        .collect();
+    if flags.is_empty() {
+        return vec![String::from("-lm")];
+    }
+    flags
+}
 
 /// Cargo, as the environment names it.
 pub(crate) fn cargo() -> String {

@@ -93,6 +93,9 @@ fn c_consumer(
         }
     }
 
+    // Asked once, used by both link lines: the toolchain's own answer
+    // for what `libteistro_ffi.a` needs beside it.
+    let link_flags = crate::binding::c_link_flags(root);
     let smoke = root.join("bindings/c/tests/smoke.c");
     let statically = into.join("smoke-static");
     step(
@@ -104,7 +107,7 @@ fn c_consumer(
             .arg(&statically)
             .arg(&smoke)
             .arg(lib.join(platform.static_library(LIBRARY_STEM)))
-            .args(crate::binding::C_LINK_FLAGS),
+            .args(&link_flags),
         "",
         "the C bundle's static library does not link",
     )?;
@@ -126,7 +129,7 @@ fn c_consumer(
             .arg("-L")
             .arg(&lib)
             .arg("-lteistro_ffi")
-            .args(crate::binding::C_LINK_FLAGS),
+            .args(&link_flags),
         "",
         "the C bundle's shared library does not link",
     )?;

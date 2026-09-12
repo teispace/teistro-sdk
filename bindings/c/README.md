@@ -39,6 +39,21 @@ linker will not pull in by itself; on macOS they are in libSystem and the
 flag does nothing. Omitting it is a page of `undefined reference` at link
 time and nothing at all at compile time.
 
+**Linking the static library on Windows needs more than that**, and the
+list is a property of the Rust toolchain rather than of this library:
+`libteistro_ffi.a` carries Rust's standard library, which calls into
+`ws2_32`, `userenv`, `ntdll` and others. The authoritative set for a
+build is what the compiler reports —
+
+```sh
+rustc --print native-static-libs --crate-type staticlib …
+```
+
+— and it is not written out here because a list copied from one
+toolchain version is a list that will be wrong for another. **The shared
+library needs none of it**: it resolves its own imports, so
+`-L .../lib -lteistro_ffi -lm` is the whole line on every platform.
+
 Both lines are compiled and run by `cargo xtask check-package` on every
 platform before a release is published, out of the unpacked bundle and
 against this same smoke test — with the same flags this page gives, so
