@@ -210,6 +210,28 @@ wherever a binding can have it.
 what a consumer who is *not* in Rust needs, and a Rust consumer who wants
 it can still call it.
 
+### Where the surface owns a type, and it is not an exception
+
+The types an operation takes and answers with are the crates' own, and
+this page says so — but reading the boundary for the next increment
+found two that are **nobody's**, and they are nobody's for a reason.
+
+`time.convert(jd, from, to)` is dynamic: a caller names the scales at run
+time. The crates express a scale in the *type system* — `JulianDay<Ut1>`,
+`<Tt>`, `<Utc>` — so there is no runtime value to re-export, and the C
+boundary invented `TsScale` because C needs one. A Rust consumer
+converting a scale chosen by a request parameter needs one too. Likewise
+the record of *what was applied* — the ΔT, whether UTC was proleptic, the
+DUT1 seconds — which `crates/ffi` declares as a private `Applied` and no
+crate has.
+
+**So the rule is: the surface owns a type exactly where an operation is
+dynamic and the crates are static.** Two of them, both for `convert`,
+and each should be the façade's public type that the boundary converts
+*from* once the inversion lands — not a third copy. It is not an
+exception to "the crates' own types"; it is what that rule means when the
+type system is where a crate keeps the distinction.
+
 ## 6. What the façade does not carry
 
 From the measurement's third result, and it is a list rather than a
@@ -253,6 +275,12 @@ principle:
    independently provable: the first one that compiles and reproduces a
    fact the C smoke test already asserts has proved the whole shape, and
    the rest are that shape again.
+
+   **Done:** the context, the builder, the ephemeris chain and
+   `calendar`. **Next:** `time`, which is the first area that is not
+   only a rename — its `convert` is a three-by-three matrix over the
+   scale functions plus the record of what was applied, and both of the
+   types in the section above belong to it.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
 3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps
