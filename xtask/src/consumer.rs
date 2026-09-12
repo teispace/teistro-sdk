@@ -19,7 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::binding::{LIBRARY_STEM, present, step};
+use crate::binding::{LIBRARY_STEM, StaticLink, present, step, tool};
 use crate::package;
 use crate::platform::{NPM_SCOPE, Platform};
 use crate::release;
@@ -50,6 +50,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         node_consumer(root, &dist, &check, &platform),
         dart_consumer(root, &dist, &check, &platform, &version),
         python_consumer(root, &dist, &check, &platform, &version),
+        adapter_consumer(root, &dist, &check, &platform),
     ];
     let failed = outcomes.iter().filter(|outcome| outcome.is_err()).count();
     println!(
@@ -93,24 +94,35 @@ fn c_consumer(
     }
 
     let smoke = root.join("bindings/c/tests/smoke.c");
-    let statically = into.join("smoke-static");
-    step(
-        Command::new(&cc)
-            .args(["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"])
-            .arg("-I")
-            .arg(&include)
-            .arg("-o")
-            .arg(&statically)
-            .arg(&smoke)
-            .arg(lib.join(platform.static_library(LIBRARY_STEM))),
-        "",
-        "the C bundle's static library does not link",
-    )?;
-    step(
-        &mut Command::new(&statically),
-        "the C bundle links statically and answers",
-        "the C bundle's static build did not pass",
-    )?;
+    match crate::binding::static_link(platform) {
+        StaticLink::With(beside) => {
+            let statically = into.join("smoke-static");
+            step(
+                Command::new(&cc)
+                    .args(["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"])
+                    .arg("-I")
+                    .arg(&include)
+                    .arg("-o")
+                    .arg(&statically)
+                    .arg(&smoke)
+                    .arg(lib.join(platform.static_library(LIBRARY_STEM)))
+                    .args(beside),
+                "",
+                "the C bundle's static library does not link",
+            )?;
+            step(
+                &mut Command::new(&statically),
+                "the C bundle links statically and answers",
+                "the C bundle's static build did not pass",
+            )?;
+        }
+        // Said, not skipped in silence: the bundle still ships the
+        // static library and a consumer with the matching compiler
+        // links it, but this gate's `cc` is not that compiler.
+        StaticLink::Refused(why) => {
+            println!("skip  the C bundle's static library, with `{cc}`: {why}");
+        }
+    }
 
     let dynamically = into.join("smoke-shared");
     step(
@@ -121,9 +133,7 @@ fn c_consumer(
             .arg("-o")
             .arg(&dynamically)
             .arg(&smoke)
-            .arg("-L")
-            .arg(&lib)
-            .arg("-lteistro_ffi"),
+            .args(crate::binding::shared_link(platform, &lib)),
         "",
         "the C bundle's shared library does not link",
     )?;
@@ -156,10 +166,10 @@ fn unpack(archive: &Path, into: &Path) -> std::io::Result<()> {
 /// Packs the two staged packages exactly as `npm publish` would, installs
 /// them into an empty project, and runs the consumer there.
 fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
-    if !present("npm", "--version") {
+    let Some(npm) = tool("npm", "--version") else {
         println!("skip  the Node packages: no `npm` on this machine");
         return Ok(());
-    }
+    };
     let into = check.join("node");
     let tarballs = into.join("tarballs");
     fs::create_dir_all(&tarballs).map_err(|err| println!("FAIL  {CHECK}/node: {err}"))?;
@@ -167,7 +177,7 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
     let staged = dist.join("npm");
     for package in [NPM_SCOPE.to_string(), platform.npm_package()] {
         step(
-            Command::new("npm")
+            Command::new(&npm)
                 .args(["pack", "--silent", "--pack-destination"])
                 .arg(&tarballs)
                 .arg(staged.join(&package))
@@ -192,7 +202,7 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
         "{\n  \"name\": \"teistro-packaging-check\",\n  \"private\": true,\n  \"type\": \"module\"\n}\n",
     )?;
     step(
-        Command::new("npm")
+        Command::new(&npm)
             .args(["install", "--silent", "--no-audit", "--no-fund"])
             .args(&packed)
             .current_dir(&into),
@@ -213,6 +223,116 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
             .env_remove("TEISTRO_ADDON"),
         "the installed Node package answers as the library does",
         "the installed Node package did not answer",
+    )
+}
+
+// ── The adapter ────────────────────────────────────────────────────────────
+
+/// Where the Teimeris adapter's npm package lives, which is the package
+/// itself rather than a staged copy: it ships no per-platform binary yet,
+/// so there is nothing to assemble.
+const ADAPTER_NODE: &str = "adapters/ephemeris-teimeris/node";
+
+/// The environment variable naming the engine's data directory, which a
+/// checkout of the SDK does not have.
+const ENGINE_DATA: &str = "TEISTRO_TEIMERIS_DATA";
+
+/// The adapter package, installed beside the SDK's and run.
+///
+/// This is what ADR-0029 meant by `check-package` having to cover the
+/// adapters. It tests the **package**: the name, the export map, the
+/// `files` list, and the generated façade being inside it — none of
+/// which the adapter's own type-check can fail, because that imports
+/// `../index.js` by path.
+///
+/// It needs two things a checkout does not have, and skips rather than
+/// fails without them: the adapter's built library
+/// (`TEISTRO_TEIMERIS_ADAPTER`, as every plugin test uses) and the
+/// engine's data (`TEISTRO_TEIMERIS_DATA`). A skip is not a pass and
+/// says which it wanted.
+fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
+    let Some(npm) = tool("npm", "--version") else {
+        println!("skip  the adapter package: no `npm` on this machine");
+        return Ok(());
+    };
+    let Some(library) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
+        println!("skip  the adapter package: set TEISTRO_TEIMERIS_ADAPTER to the built adapter");
+        return Ok(());
+    };
+    let into = check.join("adapter-node");
+    let tarballs = into.join("tarballs");
+    fs::create_dir_all(&tarballs).map_err(|err| println!("FAIL  {CHECK}/adapter-node: {err}"))?;
+
+    // The SDK's own packages, which the adapter depends on, and then the
+    // adapter itself. Packed from where each lives: the SDK's from the
+    // staged tree the release would publish, the adapter's from its own
+    // directory, which is already the package.
+    let staged = dist.join("npm");
+    for package in [NPM_SCOPE.to_string(), platform.npm_package()] {
+        step(
+            Command::new(&npm)
+                .args(["pack", "--silent", "--pack-destination"])
+                .arg(&tarballs)
+                .arg(staged.join(&package))
+                .current_dir(root),
+            "",
+            &format!("{package} did not pack"),
+        )?;
+    }
+    step(
+        Command::new(&npm)
+            .args(["pack", "--silent", "--pack-destination"])
+            .arg(&tarballs)
+            .arg(root.join(ADAPTER_NODE))
+            .current_dir(root),
+        "",
+        "the adapter package did not pack",
+    )?;
+    let packed: Vec<PathBuf> = fs::read_dir(&tarballs)
+        .map_err(|err| println!("FAIL  {CHECK}/adapter-node/tarballs: {err}"))?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "tgz"))
+        .collect();
+    if packed.len() != 3 {
+        println!("FAIL  npm packed {} tarball(s), not three", packed.len());
+        return Err(());
+    }
+
+    write(
+        &into.join("package.json"),
+        "{\n  \"name\": \"teistro-adapter-packaging-check\",\n  \"private\": true,\n  \"type\": \"module\"\n}\n",
+    )?;
+    step(
+        Command::new(&npm)
+            .args(["install", "--silent", "--no-audit", "--no-fund"])
+            .args(&packed)
+            .current_dir(&into),
+        "",
+        "the adapter package did not install",
+    )?;
+
+    // Copied rather than run where it lives, for the reason the SDK's own
+    // consumer is: a script inside the repository would resolve the
+    // package to the repository itself.
+    let consumer = into.join("consumer.mjs");
+    fs::copy(
+        root.join(ADAPTER_NODE).join("packaging/consumer.mjs"),
+        &consumer,
+    )
+    .map_err(|err| println!("FAIL  the adapter consumer did not copy: {err}"))?;
+    let mut run = Command::new("node");
+    run.arg(&consumer)
+        .current_dir(&into)
+        .env_remove("TEISTRO_ADDON")
+        .env("TEISTRO_TEIMERIS_ADAPTER", &library);
+    if let Some(data) = std::env::var_os(ENGINE_DATA) {
+        run.env(ENGINE_DATA, data);
+    }
+    step(
+        &mut run,
+        "the installed adapter package answers as the engine does",
+        "the installed adapter package did not answer",
     )
 }
 
@@ -304,7 +424,7 @@ fn python_consumer(
     platform: &Platform,
     version: &str,
 ) -> Result<(), ()> {
-    let python = std::env::var("PYTHON").unwrap_or_else(|_| String::from("python3"));
+    let python = crate::binding::python();
     if !present(&python, "--version") {
         println!("skip  the Python package: no `{python}` on this machine");
         return Ok(());
@@ -314,15 +434,15 @@ fn python_consumer(
     let staged = dist.join("pypi/teistro");
 
     step(
-        Command::new(&python)
+        crate::binding::python_command(&python)
             .args(["-m", "venv", ".venv"])
             .current_dir(&into),
         "",
         "the Python environment could not be created",
     )?;
-    let venv = into.join(".venv/bin");
+    let venv = into.join(".venv").join(platform.venv_bin());
     step(
-        Command::new(venv.join("pip"))
+        crate::binding::python_command(venv.join("pip"))
             .args(["install", "--disable-pip-version-check", "--quiet"])
             .arg(&staged)
             .current_dir(&into),
@@ -337,7 +457,7 @@ fn python_consumer(
         platform.name()
     ));
     step(
-        Command::new(venv.join("teistro-install"))
+        crate::binding::python_command(venv.join("teistro-install"))
             .arg("--from")
             .arg(&archive)
             .current_dir(&into)
@@ -360,7 +480,7 @@ fn python_consumer(
     )
     .map_err(|err| println!("FAIL  the Python consumer did not copy: {err}"))?;
     step(
-        Command::new(venv.join("python"))
+        crate::binding::python_command(venv.join("python"))
             .arg("consumer.py")
             .current_dir(&into)
             .env_remove("TEISTRO_LIBRARY"),

@@ -156,6 +156,8 @@ The vtable: `user_data` is whatever the provider registered and is passed back t
 | `dut1` | `ts_dut1_fn` | The DUT1 override, seconds. |
 | `horizon_event` | `ts_horizon_event_fn` | The rise and set override. |
 | `crossings` | `ts_crossings_fn` | The crossings override. |
+| `native_manifest` | `ts_native_manifest_fn` | The engine's own manifest, when it offers one.  Null where the provider offers no operations of its own — which is what `Capabilities::native` already says, and this is the function that makes the saying true across the boundary. Added at ABI 3: a loaded adapter could declare the route and had no way to answer it. |
+| `native_call` | `ts_native_call_fn` | One of the engine's own operations. |
 
 ## ts_string
 

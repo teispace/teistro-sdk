@@ -15,7 +15,7 @@
 use std::path::Path;
 use std::process::Command;
 
-use crate::binding::{present, step};
+use crate::binding::{step, tool};
 use crate::rel;
 
 const SITE: &str = "site";
@@ -23,18 +23,23 @@ const REFERENCE: &str = "site/content/docs/reference";
 /// Where the static export writes the site.
 const OUT: &str = "site/out";
 /// Pages the build must have produced whatever else it did: the home
-/// page and the guide, so a build that silently rendered nothing fails.
-const BUILT: [&str; 2] = ["site/out/index.html", "site/out/docs/install.html"];
+/// page and both guide pages, so a build that silently rendered nothing
+/// fails.
+const BUILT: [&str; 3] = [
+    "site/out/index.html",
+    "site/out/docs/install.html",
+    "site/out/docs/surface.html",
+];
 
 pub(crate) fn check(root: &Path) -> i32 {
-    if !present("npm", "--version") {
+    let Some(npm) = tool("npm", "--version") else {
         eprintln!("no `npm` on this machine; the documentation site's gate needs it");
         return 0;
-    }
+    };
     let site = root.join(SITE);
     if !site.join("node_modules").is_dir()
         && step(
-            Command::new("npm")
+            Command::new(&npm)
                 .args(["ci", "--silent", "--no-audit", "--no-fund"])
                 .current_dir(&site),
             "",
@@ -45,7 +50,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 1;
     }
     if step(
-        Command::new("npm")
+        Command::new(&npm)
             .args(["run", "--silent", "build"])
             .current_dir(&site),
         "",

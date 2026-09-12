@@ -126,6 +126,54 @@ let a consumer discover the licence after shipping.
   nothing else was installed, and it carries no licence a consumer has to
   think about.
 
+### Built so far, and where it stops (2026-09-12)
+
+The **route** is complete: an adapter exports the plugin entry points,
+`ts_provider_load` opens one, `ts_context_new_with_provider` builds a
+context over it, and all three ergonomic layers reach both. A real
+Teimeris computes the Sun at J2000 identically from Node, Dart and
+Python, and its own 62 operations come with it.
+
+The **surface** is this section's, and the descriptor is a **shape** the
+SDK accepts rather than a type it defines:
+
+```js
+new Context({ ephemeris: [{ plugin: '…/libteistro….dylib',
+                            config: { dataDir: './ephe' } }, 'builtin'] })
+```
+
+An earlier pass shipped `plugin` and `pluginConfig` as separate options —
+a path, which this section rejected for four stated reasons, and no chain.
+Both are folded away: there is one option, `ephemeris`, and it takes an
+entry or an ordered list of them. Two ways to name one ephemeris is the
+defect this project keeps finding under other names, and it lasted one
+commit.
+
+Each binding spells an entry in its own idiom, and they mean one thing: a
+plain object in Node (`{ plugin, config }`), a `Plugin` dataclass in
+Python, and in Dart a **sealed** `EphemerisChoice` with `NamedEphemeris`
+and `PluginEphemeris` — sealed so the switch that opens one is exhaustive
+and a third kind would not compile until it was handled. Dart takes a
+list even for one entry, because it has no untagged union; that turns out
+to say the thing this section wants said, which is that a chain is
+written down.
+
+What is still owed is the **package that exports the descriptor**:
+`import teimeris from '@teistro/ephemeris-teimeris'` has nothing behind it
+yet, so a consumer names the binary themselves. `teimeris({ dataDir })`
+will return exactly the entry above, with the path filled in from the
+platform binary its own package ships.
+
+**A chain of one is not a chain**, and that was a defect before it was a
+rule: the first version caught every refusal to try the next entry, so a
+bad *profile* — which is not an ephemeris failure and fails identically
+on every entry — came back as "nothing could be opened" instead of a
+refusal carrying its status, its field and its hint. An existing test
+caught it. With one entry there is no next entry, so nothing is caught;
+with more, every refusal is kept and reported together, because a chain
+that said only why its last entry failed would hide the one the caller
+actually wanted.
+
 ## Alternatives considered
 
 **Link the engine into the SDK and select it by name**, the way ADR-0028

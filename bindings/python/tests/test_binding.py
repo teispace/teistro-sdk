@@ -9,11 +9,15 @@ back out of the one it filled.
 from __future__ import annotations
 
 import json
+import os
 import unittest
 
 from teistro import (
     Body,
     Calendar,
+    Ephemeris,
+    EphemerisProvider,
+    Plugin,
     Scale,
     Status,
     Teistro,
@@ -78,7 +82,7 @@ class AContext(WithLibrary):
 
     def test_it_carries_the_settings_it_was_asked_for(self) -> None:
         self.assertEqual(self.ctx.profile, PROFILE)
-        self.assertEqual(self.ctx.locale, LOCALE)
+        self.assertEqual(self.ctx.intl.locale, LOCALE)
         self.assertEqual(len(self.ctx.settings_hash), 64)
         settings = self.ctx.settings
         self.assertIsInstance(settings, dict)
@@ -109,7 +113,7 @@ class TheCalendars(WithLibrary):
         self.ctx.close()
 
     def test_the_new_year_of_2072_bs_is_14_april_2015(self) -> None:
-        bs = self.ctx.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
+        bs = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
         self.assertEqual((bs.year, bs.month, bs.day), (2072, 1, 1))
         self.assertIsNotNone(bs.era)
         assert bs.era is not None
@@ -118,20 +122,20 @@ class TheCalendars(WithLibrary):
 
     def test_a_date_round_trips_through_its_fixed_day(self) -> None:
         day = date(Calendar.GREGORIAN, 2015, 4, 14)
-        fixed = self.ctx.fixed_of(day)
-        again = self.ctx.date_of(Calendar.GREGORIAN, fixed)
+        fixed = self.ctx.calendar.fixed_of(day)
+        again = self.ctx.calendar.date_of(Calendar.GREGORIAN, fixed)
         self.assertEqual((again.year, again.month, again.day), (2015, 4, 14))
-        self.assertEqual(self.ctx.weekday_of(day), 2, "a Tuesday")
+        self.assertEqual(self.ctx.calendar.weekday_of(day), 2, "a Tuesday")
 
     def test_a_leap_year_and_a_month_length(self) -> None:
-        self.assertTrue(self.ctx.is_leap(Calendar.GREGORIAN, 2024))
-        self.assertFalse(self.ctx.is_leap(Calendar.GREGORIAN, 2023))
-        self.assertEqual(self.ctx.month_length(Calendar.GREGORIAN, 2024, 2), 29)
-        self.assertEqual(self.ctx.month_length(Calendar.GREGORIAN, 2023, 2), 28)
+        self.assertTrue(self.ctx.calendar.is_leap(Calendar.GREGORIAN, 2024))
+        self.assertFalse(self.ctx.calendar.is_leap(Calendar.GREGORIAN, 2023))
+        self.assertEqual(self.ctx.calendar.month_length(Calendar.GREGORIAN, 2024, 2), 29)
+        self.assertEqual(self.ctx.calendar.month_length(Calendar.GREGORIAN, 2023, 2), 28)
 
     def test_a_month_the_calendar_does_not_have_is_refused_by_field(self) -> None:
         with self.assertRaises(TeistroError) as caught:
-            self.ctx.fixed_of(date(Calendar.GREGORIAN, 2015, 13, 1))
+            self.ctx.calendar.fixed_of(date(Calendar.GREGORIAN, 2015, 13, 1))
         self.assertNotEqual(caught.exception.status, Status.OK)
         self.assertTrue(str(caught.exception))
 
@@ -145,7 +149,7 @@ class Time(WithLibrary):
 
     def test_a_kathmandu_birth_time_resolves_with_its_metadata(self) -> None:
         civil = at(date(Calendar.GREGORIAN, 1986, 1, 1), hour=0, minute=20)
-        resolved = self.ctx.resolve(civil, iana_zone("Asia/Kathmandu"))
+        resolved = self.ctx.time.resolve(civil, iana_zone("Asia/Kathmandu"))
         self.assertEqual(resolved.offset_seconds, 20700, "+05:45")
         self.assertGreater(resolved.instant_jd_utc, 2_446_000)
         self.assertTrue(resolved.time_known)
@@ -156,7 +160,7 @@ class Time(WithLibrary):
         # answer, and the boundary says so with the field and the choices
         # rather than picking one.
         with self.assertRaises(TeistroError) as caught:
-            self.ctx.resolve(
+            self.ctx.time.resolve(
                 when_unknown(date(Calendar.GREGORIAN, 1986, 1, 1)),
                 iana_zone("Asia/Kathmandu"),
             )
@@ -167,8 +171,8 @@ class Time(WithLibrary):
     def test_an_instant_reads_back_as_the_civil_time_it_was(self) -> None:
         zone = iana_zone("Asia/Kathmandu")
         civil = at(date(Calendar.GREGORIAN, 1986, 1, 1), hour=0, minute=20)
-        resolved = self.ctx.resolve(civil, zone)
-        back, resolution = self.ctx.civil_of(
+        resolved = self.ctx.time.resolve(civil, zone)
+        back, resolution = self.ctx.time.civil_of(
             resolved.instant_jd_utc, zone, Calendar.GREGORIAN
         )
         self.assertEqual(back.date.year, 1986)
@@ -177,15 +181,15 @@ class Time(WithLibrary):
 
     def test_the_other_two_kinds_of_zone(self) -> None:
         civil = at(date(Calendar.GREGORIAN, 2000, 1, 1), hour=12)
-        self.assertEqual(self.ctx.resolve(civil, fixed_zone(3600)).offset_seconds, 3600)
-        mean = self.ctx.resolve(civil, local_mean_zone(Longitude(85.324)))
+        self.assertEqual(self.ctx.time.resolve(civil, fixed_zone(3600)).offset_seconds, 3600)
+        mean = self.ctx.time.resolve(civil, local_mean_zone(Longitude(85.324)))
         self.assertNotEqual(mean.offset_seconds, 0)
 
     def test_utc_to_tt_reads_the_leap_seconds(self) -> None:
         # `Scale` and not `TimeScale`: the time layer knows UTC and the
         # port does not, and the two enums agree on the ids they share, so
         # the wrong one would convert from the wrong scale in silence.
-        converted = self.ctx.convert_time(2451544.5, Scale.UTC, Scale.TT)
+        converted = self.ctx.time.convert(2451544.5, Scale.UTC, Scale.TT)
         self.assertGreater(converted.jd, 2451544.5, "TT runs ahead of UTC")
         self.assertEqual(converted.delta_t_source.key, "leap-seconds")
         self.assertAlmostEqual(converted.delta_t_seconds, 64.184, places=3)
@@ -193,8 +197,8 @@ class Time(WithLibrary):
     def test_ut1_to_tt_is_the_delta_t_the_model_gives(self) -> None:
         # `delta_t` takes a UT1 instant, so the conversion it must agree
         # with is the one that starts on UT1 as well.
-        converted = self.ctx.convert_time(2451544.5, Scale.UT1, Scale.TT)
-        delta = self.ctx.delta_t(2451544.5)
+        converted = self.ctx.time.convert(2451544.5, Scale.UT1, Scale.TT)
+        delta = self.ctx.time.delta_t(2451544.5)
         self.assertAlmostEqual(delta.seconds, converted.delta_t_seconds, places=6)
         self.assertEqual(delta.source, converted.delta_t_source)
         self.assertTrue(delta.source.key)
@@ -208,12 +212,12 @@ class Keys(WithLibrary):
         self.ctx.close()
 
     def test_a_key_and_its_id_are_each_other(self) -> None:
-        identifier = self.ctx.key_id("graha.SUN")
-        self.assertEqual(self.ctx.key_name(identifier), "graha.SUN")
+        identifier = self.ctx.keys.id("graha.SUN")
+        self.assertEqual(self.ctx.keys.name(identifier), "graha.SUN")
 
     def test_a_key_that_is_not_one_is_refused_with_a_suggestion(self) -> None:
         with self.assertRaises(TeistroError) as caught:
-            self.ctx.key_id("graha.SUNN")
+            self.ctx.keys.id("graha.SUNN")
         error = caught.exception
         self.assertNotEqual(error.status, Status.OK)
         self.assertIn("SUN", error.hint or error.message)
@@ -227,7 +231,7 @@ class TheLocaleEngine(WithLibrary):
         self.ctx.close()
 
     def test_a_message_renders_in_the_contexts_locale(self) -> None:
-        rendered = self.ctx.render(
+        rendered = self.ctx.intl.render(
             "sdk.reason.grahaInBhava",
             {"graha": {"$entity": "graha.JUPITER"}, "bhava": 7},
         )
@@ -235,26 +239,26 @@ class TheLocaleEngine(WithLibrary):
         self.assertFalse(rendered.is_fallback, "the locale carries it")
 
     def test_the_typed_accessor_renders_the_same_message(self) -> None:
-        typed = self.ctx.messages.sdk.reason.graha_in_bhava(
+        typed = self.ctx.intl.messages.sdk.reason.graha_in_bhava(
             graha=intl.GrahaKey.JUPITER, bhava=7
         )
-        loose = self.ctx.render(
+        loose = self.ctx.intl.render(
             "sdk.reason.grahaInBhava",
             {"graha": {"$entity": "graha.JUPITER"}, "bhava": 7},
         ).text
         self.assertEqual(typed, loose)
 
     def test_a_message_the_locale_lacks_is_reported_rather_than_invented(self) -> None:
-        self.assertTrue(self.ctx.has("sdk.reason.grahaInBhava"))
-        self.assertFalse(self.ctx.has("sdk.nope.missing"))
+        self.assertTrue(self.ctx.intl.has("sdk.reason.grahaInBhava"))
+        self.assertFalse(self.ctx.intl.has("sdk.nope.missing"))
 
     def test_an_entity_carries_its_forms(self) -> None:
-        sun = self.ctx.entity("graha.SUN")
+        sun = self.ctx.intl.entity("graha.SUN")
         self.assertTrue(sun.name)
         self.assertTrue(sun.iast)
 
     def test_transliteration_changes_the_script(self) -> None:
-        latin = self.ctx.transliterate("सूर्य")
+        latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)
         self.assertNotEqual(latin, "सूर्य")
 
@@ -314,6 +318,11 @@ class Positions(WithLibrary):
             with self.assertRaises(TeistroError) as caught:
                 bare.positions(instants=[2451545.0], bodies=[Body.SUN])
             self.assertEqual(caught.exception.status, Status.CAPABILITY)
+            # The field and the hint name the option this binding sets,
+            # not the C entry point it has no access to -- the same pair
+            # Node, Dart and C are held to.
+            self.assertEqual(caught.exception.field, "ephemeris")
+            self.assertIn("builtin", caught.exception.hint or "")
 
     def test_a_birth_with_no_time_is_refused_or_reported_never_guessed(self) -> None:
         day = date(Calendar.BIKRAM_SAMBAT, 2042, 9, 17)
@@ -322,7 +331,7 @@ class Positions(WithLibrary):
         # No policy: refused by name, with the hint naming the choices.
         with self.teistro.context(profile=PROFILE, test_provider=True) as strict:
             with self.assertRaises(TeistroError) as caught:
-                strict.resolve(when_unknown(day), zone)
+                strict.time.resolve(when_unknown(day), zone)
             self.assertIn("has no time of day", caught.exception.message)
             self.assertIn("NOON, MIDNIGHT or SUNRISE", caught.exception.hint or "")
             self.assertEqual(caught.exception.field, "time")
@@ -330,7 +339,7 @@ class Positions(WithLibrary):
             # A known time on the same date resolves with the time known
             # and no warning: this record sits on the day Nepal moved to
             # +05:45.
-            exact = strict.resolve(at(day, hour=0, minute=20), zone)
+            exact = strict.time.resolve(at(day, hour=0, minute=20), zone)
             self.assertTrue(exact.time_known)
             self.assertEqual(exact.offset_seconds, 5 * 3600 + 45 * 60)
             self.assertEqual(list(exact.warnings), [])
@@ -344,7 +353,7 @@ class Positions(WithLibrary):
             test_provider=True,
             settings={"time": {"unknown_time": "NOON"}},
         ) as noon:
-            resolved = noon.resolve(when_unknown(day), zone)
+            resolved = noon.time.resolve(when_unknown(day), zone)
             self.assertFalse(resolved.time_known)
             self.assertIn(
                 "time-unknown-fallback", [w.key for w in resolved.warnings]
@@ -394,21 +403,21 @@ class AnEngine(WithLibrary):
         self.ctx.close()
 
     def test_the_engine_names_its_own_operations(self) -> None:
-        engine = self.ctx.ephemeris
+        engine = self.ctx.engine
         self.assertIn("tp_echo", engine.names)
         self.assertIn("tp_echo", engine)
         self.assertEqual(len(engine), len(engine.names))
         self.assertEqual(engine.manifest["engine"], "test-provider")
 
     def test_an_operation_is_called_by_the_name_the_engine_gives_it(self) -> None:
-        engine = self.ctx.ephemeris
+        engine = self.ctx.engine
         self.assertEqual(engine.tp_echo(value=6.0), {"value": 6.0})
         self.assertEqual(engine.call("tp_echo", value=6.0), {"value": 6.0})
         summed = engine.tp_sum(values=[1.0, 2.0, 3.5])
         self.assertEqual(summed["total"], 6.5)
 
     def test_the_names_come_from_the_engine_and_not_from_this_package(self) -> None:
-        engine = self.ctx.ephemeris
+        engine = self.ctx.engine
         # `dir` lists what the engine offers, so a REPL completes them
         # without this package ever holding a list.
         self.assertIn("tp_sum", dir(engine))
@@ -418,7 +427,7 @@ class AnEngine(WithLibrary):
         self.assertIn("tm_eclipse_when", str(caught.exception))
 
     def test_the_manifest_carries_the_role_of_every_parameter(self) -> None:
-        engine = self.ctx.ephemeris
+        engine = self.ctx.engine
         signature = engine.signature("tp_sum")
         assert signature is not None
         roles = [param["role"] for param in signature["params"]]
@@ -426,13 +435,91 @@ class AnEngine(WithLibrary):
         self.assertIsNone(engine.signature("tm_no_such_thing"))
 
     def test_the_engines_own_refusal_comes_back(self) -> None:
-        engine = self.ctx.ephemeris
+        engine = self.ctx.engine
         with self.assertRaises(TeistroError) as caught:
             engine.call("tm_eclipse_when")
         self.assertIn("tm_eclipse_when", str(caught.exception))
 
+    def test_an_ephemeris_is_plugged_in_by_naming_its_platform_binary(self) -> None:
+        """**An engine, plugged in** (ADR-0029): the 98% path.
+
+        A consumer names an adapter's platform binary and never sees a
+        vtable. It runs only where the adapter has been built and its
+        data is present, because a checkout has neither and a test that
+        failed for that would fail for everyone.
+        `TEISTRO_TEIMERIS_ADAPTER` names the library -- the same variable
+        `crates/ffi/tests/abi.rs` reads for the same reason.
+        """
+        plugin = os.environ.get("TEISTRO_TEIMERIS_ADAPTER")
+        if not plugin:
+            self.skipTest("set TEISTRO_TEIMERIS_ADAPTER to the adapter's library")
+        with self.teistro.context(profile=PROFILE, ephemeris=Plugin(plugin)) as ctx:
+            sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
+            # The Sun at J2000 is near 280.4 degrees, which is astronomy
+            # rather than this package: what is tested is that a real
+            # engine answered.
+            self.assertAlmostEqual(sky.at(0, 0).longitude, 280.37, delta=0.5)
+            # And its own functions came with it, which no SDK operation
+            # offers.
+            self.assertEqual(ctx.engine.manifest["engine"], "teimeris")
+            self.assertEqual(ctx.engine.call("tm_body_name", body=0)["buf"], "Sun")
+
+    def test_an_ephemeris_chain_is_tried_in_order_and_refuses_naming_each(
+        self,
+    ) -> None:
+        """A chain is **ordered and explicit** (ADR-0029).
+
+        Tried in order, and a refusal names every entry that failed
+        rather than only the last, which would hide the one the caller
+        actually wanted. Needs no adapter.
+        """
+        # An adapter that is not there, then the built-in: the fallback
+        # the caller wrote down.
+        with self.teistro.context(
+            profile=PROFILE,
+            ephemeris=[Plugin("/nowhere/adapter.so"), Ephemeris.BUILTIN],
+        ) as fell_back:
+            sky = fell_back.positions(instants=[2451545.0], bodies=[Body.SUN])
+            self.assertAlmostEqual(sky.at(0, 0).longitude, 280.37, delta=0.5)
+
+        # Nothing in the chain opening is one refusal that names each.
+        with self.assertRaises(ValueError) as caught:
+            self.teistro.context(ephemeris=[Plugin("/a.so"), Plugin("/b.so")])
+        self.assertIn("/a.so", str(caught.exception))
+        self.assertIn("/b.so", str(caught.exception))
+
+        # A chain of none names nothing, which is a mistake rather than a
+        # default.
+        with self.assertRaises(ValueError) as empty:
+            self.teistro.context(ephemeris=[])
+        self.assertIn("names nothing", str(empty.exception))
+
+    def test_a_provider_and_a_named_ephemeris_together_are_refused(self) -> None:
+        """Each answers one question, so both together is a refusal."""
+        # The refusal happens before anything touches the provider, so
+        # the base class as it stands is provider enough: `name`,
+        # `bodies` and `positions` are attributes with defaults.
+        with self.assertRaises(ValueError) as caught:
+            self.teistro.context(
+                ephemeris=Ephemeris.BUILTIN, provider=EphemerisProvider()
+            )
+        self.assertIn("give one of them", str(caught.exception))
+
     def test_a_context_without_an_ephemeris_says_so(self) -> None:
         with self.teistro.context(profile=PROFILE) as bare:
             with self.assertRaises(TeistroError):
-                bare.ephemeris  # noqa: B018
+                bare.engine  # noqa: B018
+
+    def test_an_area_is_a_value_that_can_be_held_and_passed(self) -> None:
+        """An area is built once with the context and kept.
+
+        That is what makes the grouping worth having rather than merely
+        tidy: a consumer may hold one and pass it to something that needs
+        only that much of the SDK (`03-design/surface-areas.md`).
+        """
+        calendar = self.ctx.calendar
+        self.assertIs(calendar, self.ctx.calendar, "the same object every read")
+        self.assertTrue(calendar.is_leap(Calendar.GREGORIAN, 2024))
+        self.assertGreater(self.ctx.time.delta_t(2451545.0).seconds, 60)
+        self.assertEqual(self.ctx.keys.name(self.ctx.keys.id("graha.SUN")), "graha.SUN")
 

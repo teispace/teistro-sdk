@@ -115,6 +115,7 @@ mod absence;
 mod accuracy;
 mod agreement;
 mod almanac;
+mod areas;
 mod aspect;
 mod batching;
 mod bench;
@@ -127,7 +128,9 @@ mod chebyshev;
 mod classical;
 mod consumer;
 mod dart_binding;
+mod engine;
 mod ephemgen;
+mod facade;
 mod ffi;
 mod generated;
 mod hashes;
@@ -146,6 +149,8 @@ mod pluto;
 mod points;
 mod python_binding;
 mod release;
+mod rust_binding;
+mod rust_surface;
 mod schema;
 mod serial;
 mod site;
@@ -164,6 +169,9 @@ use std::process::{self, Command};
 use regex::Regex;
 use serde_json::Value;
 
+/// One pass: the name, and its two front doors.
+type Pass = (&'static str, fn(&Path) -> i32, fn(&Path) -> i32);
+
 /// The passes that write a generated page and gate it.
 ///
 /// Every one has the same two front doors: `cargo xtask <name>` writes
@@ -171,30 +179,46 @@ use serde_json::Value;
 /// difference, so a checked-in page can never drift from its sources.
 /// One shape, so one table rather than thirty arms — and a new pass is a
 /// row here instead of two arms in the dispatch that can disagree.
+///
+/// `usage()` prints this table rather than a copy of it: the copy had
+/// gone stale on three passes, which is the whole argument. A slice and
+/// not an array, so that adding a row is one line and not two.
+const PASSES: &[Pass] = &[
+    ("chalit", chalit::generate, chalit::check_generated),
+    ("panchanga", panchanga::generate, panchanga::check_generated),
+    ("vargas", vargas::generate, vargas::check_generated),
+    ("state", state::generate, state::check_generated),
+    ("aspect", aspect::generate, aspect::check_generated),
+    ("points", points::generate, points::check_generated),
+    ("houses", houses::generate, houses::check_generated),
+    ("absence", absence::generate, absence::check_generated),
+    ("serial", serial::generate, serial::check_generated),
+    ("schema", schema::generate, schema::check_generated),
+    ("almanac", almanac::generate, almanac::check_generated),
+    ("lunisolar", lunisolar::generate, lunisolar::check_generated),
+    (
+        "topocentric",
+        topocentric::generate,
+        topocentric::check_generated,
+    ),
+    ("batching", batching::generate, batching::check_generated),
+    ("surface", surface::generate, surface::check_generated),
+    ("agreement", agreement::generate, agreement::check_generated),
+    ("pluto", pluto::generate, pluto::check_generated),
+    ("engine", engine::generate, engine::check_generated),
+    ("areas", areas::generate, areas::check_generated),
+    (
+        "rust-surface",
+        rust_surface::generate,
+        rust_surface::check_generated,
+    ),
+];
+
+/// Runs a pass, or says it is not one.
 fn generated_page(command: &str) -> Option<i32> {
-    type Pass = fn(&Path) -> i32;
     let checking = command.starts_with("check-");
     let name = command.strip_prefix("check-").unwrap_or(command);
-    let (generate, check): (Pass, Pass) = match name {
-        "chalit" => (chalit::generate, chalit::check_generated),
-        "panchanga" => (panchanga::generate, panchanga::check_generated),
-        "vargas" => (vargas::generate, vargas::check_generated),
-        "state" => (state::generate, state::check_generated),
-        "aspect" => (aspect::generate, aspect::check_generated),
-        "points" => (points::generate, points::check_generated),
-        "houses" => (houses::generate, houses::check_generated),
-        "absence" => (absence::generate, absence::check_generated),
-        "serial" => (serial::generate, serial::check_generated),
-        "schema" => (schema::generate, schema::check_generated),
-        "almanac" => (almanac::generate, almanac::check_generated),
-        "lunisolar" => (lunisolar::generate, lunisolar::check_generated),
-        "topocentric" => (topocentric::generate, topocentric::check_generated),
-        "batching" => (batching::generate, batching::check_generated),
-        "surface" => (surface::generate, surface::check_generated),
-        "agreement" => (agreement::generate, agreement::check_generated),
-        "pluto" => (pluto::generate, pluto::check_generated),
-        _ => return None,
-    };
+    let &(_, generate, check) = PASSES.iter().find(|(pass, _, _)| *pass == name)?;
     let root = repo_root();
     Some(if checking {
         check(&root)
@@ -228,6 +252,7 @@ fn main() {
         Some("check-node") => node_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-python") => python_binding::check(&repo_root()),
+        Some("check-rust") => rust_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
         Some("check-lints") => lints::check(&repo_root()),
         Some("ephemgen") => ephemgen::generate(
@@ -290,8 +315,25 @@ fn main() {
 }
 
 fn usage() -> i32 {
+    let passes: Vec<String> = PASSES
+        .iter()
+        .map(|(name, _, _)| format!("{name} | check-{name}"))
+        .collect();
     eprintln!(
-        "usage: cargo xtask <check-absence | absence | vsop [DIR] | moon | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-dart | check-python | check-parity | check-lints | check-chalit | chalit | check-panchanga | panchanga | check-vargas | vargas | check-state | state | check-aspect | aspect | check-points | points | check-houses | houses | check-serial | serial | check-schema | schema | check-almanac | almanac | check-lunisolar | lunisolar | check-topocentric | topocentric | check-batching | batching | check-surface | surface | check-versions | check-package | check-site | check-tag TAG | version [X] | changelog-entry X | package [TARGET] | package stage [--partial] | bench [FILE] | compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi>"
+        "usage: cargo xtask <COMMAND>\n\n\
+         the generated pages, each written by its name and gated by `check-`:\n  \
+         {}\n\n\
+         everything else:\n  \
+         vsop [DIR] | moon | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
+         check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
+         check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | \
+         check-dart | check-python | check-rust | check-parity | check-lints | \
+         check-versions | \
+         check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
+         package [TARGET] | package stage [--partial] | bench [FILE] | \
+         compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | \
+         calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi",
+        passes.join("\n  ")
     );
     2
 }

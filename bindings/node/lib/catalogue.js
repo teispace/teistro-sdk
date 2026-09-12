@@ -9,7 +9,7 @@ export const SDK_VERSION = "0.0.0";
 /**
  * The ABI version of the vtable layout.
  */
-export const VTABLE_ABI_VERSION = 2;
+export const VTABLE_ABI_VERSION = 3;
 
 /**
  * A context flag: use the SDK's analytic test provider when no provider

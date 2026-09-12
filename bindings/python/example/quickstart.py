@@ -4,7 +4,7 @@
 from what the binding does.
 """
 
-from teistro import Body, Calendar, Teistro, at, date, iana_zone, intl
+from teistro import Body, Calendar, Ephemeris, Teistro, at, date, iana_zone, intl
 
 
 def main() -> None:
@@ -12,15 +12,15 @@ def main() -> None:
     print(f"Teistro {teistro.version}, ABI {teistro.abi}")
 
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # 14 April 2015 is 1 Baisakh 2072 BS.
-        bs = ctx.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
+        bs = ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
         era = bs.era.key if bs.era is not None else ""
         print(f"{bs.year}-{bs.month}-{bs.day} {era}")
 
         # A Kathmandu birth time, with the metadata a stored chart keeps.
-        resolved = ctx.resolve(
+        resolved = ctx.time.resolve(
             at(date(Calendar.GREGORIAN, 1986, 1, 1), hour=0, minute=20),
             iana_zone("Asia/Kathmandu"),
         )
@@ -36,11 +36,11 @@ def main() -> None:
         # A message in the context's locale, by its typed accessor, and an
         # entity's name in that locale.
         print(
-            ctx.messages.sdk.reason.graha_in_bhava(
+            ctx.intl.messages.sdk.reason.graha_in_bhava(
                 graha=intl.GrahaKey.JUPITER, bhava=7
             )
         )
-        sun = ctx.entity("graha.SUN")
+        sun = ctx.intl.entity("graha.SUN")
         print(f"{sun.name} {sun.glyph}")
 
 

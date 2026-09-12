@@ -3,6 +3,12 @@ name = "teistro-ephemeris-sweph"
 version = "0.0.0"
 edition = "2024"
 rust-version = "1.85"
+# **The source in this crate**, which is ours. The artefact it builds is
+# not: it links Swiss Ephemeris, which is AGPL-3.0, and an Apache-2.0 library
+# that links AGPL code is an AGPL work (ADR-0029). So the packages that
+# **ship** the built library -- `../node`, `../dart`, `../python` --
+# declare `AGPL-3.0-only`, and each carries the licence text. This field
+# describes this crate's own files and nothing downstream of them.
 license = "Apache-2.0"
 publish = false
 build = "build.rs"

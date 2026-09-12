@@ -23,7 +23,9 @@ use std::path::{Path, PathBuf};
 
 /// The crates whose code computes an answer: what they iterate, read and
 /// round is what a chart is made of. The tooling crates (`idl`, `xtask`)
-/// and the boundary (`ffi`) are held to the compiler's lints alone.
+/// and the two surfaces (`ffi`, the C boundary, and `sdk`, the Rust
+/// façade) are held to the compiler's lints alone — a surface composes
+/// what these compute and rounds nothing itself.
 const COMPUTATION: [&str; 8] = [
     "core",
     "calendar",
@@ -41,11 +43,18 @@ const COMPUTATION: [&str; 8] = [
 /// never published. Everything else inherits `forbid`, which the compiler
 /// then enforces; what this rule watches is a manifest quietly changing
 /// its mind.
-const UNSAFE_CRATES: [&str; 4] = [
+const UNSAFE_CRATES: [&str; 6] = [
     "crates/port-ephemeris",
     "crates/ffi",
     "crates/test-allocator",
     "bindings/node/native",
+    // The adapters call a C engine directly. They are outside the
+    // workspace, which is why they were outside this inventory until
+    // 2026-09-12 — and being outside the workspace is no reason to be
+    // outside the inventory, because an adapter is now a shared library
+    // a consumer loads into their own process (ADR-0029).
+    "adapters/ephemeris-teimeris/rust",
+    "adapters/ephemeris-sweph/rust",
 ];
 
 /// The classification functions of `core::angle`: exact integer
@@ -78,7 +87,7 @@ struct Outcome {
 }
 
 /// Every `.rs` file under a directory, sorted.
-fn sources(root: &Path) -> Vec<PathBuf> {
+pub(crate) fn sources(root: &Path) -> Vec<PathBuf> {
     let mut out = Vec::new();
     let mut stack = vec![root.to_path_buf()];
     while let Some(dir) = stack.pop() {
@@ -185,7 +194,11 @@ fn scan(root: &Path, rule: &'static str, needles: &[&str], outcome: &mut Outcome
 /// downgrade the workspace's `forbid`, and each says why in its manifest.
 fn unsafe_inventory(root: &Path, outcome: &mut Outcome) {
     let mut manifests: Vec<PathBuf> = Vec::new();
-    for dir in [root.join("crates"), root.join("bindings")] {
+    for dir in [
+        root.join("crates"),
+        root.join("bindings"),
+        root.join("adapters"),
+    ] {
         let mut stack = vec![dir];
         while let Some(here) = stack.pop() {
             let Ok(entries) = std::fs::read_dir(&here) else {
@@ -444,6 +457,20 @@ fn gate_declared_by(line: &str) -> Option<&str> {
     name.starts_with("check-").then_some(name)
 }
 
+/// Which line of the entry point holds a pass's row, so a finding points
+/// at something a reader can open. Zero when it cannot be found, which
+/// is a worse message and not a wrong one.
+fn pass_row(root: &Path, name: &str) -> usize {
+    let entry = root.join("xtask").join("src").join("main.rs");
+    let Ok(text) = std::fs::read_to_string(&entry) else {
+        return 0;
+    };
+    let needle = format!("(\"{name}\", ");
+    text.lines()
+        .position(|line| line.trim_start().starts_with(&needle))
+        .map_or(0, |index| index + 1)
+}
+
 /// Every workflow file parses.
 ///
 /// A step name with an unquoted colon, a slipped indent, a duplicated
@@ -481,6 +508,13 @@ fn workflows_parse(root: &Path, outcome: &mut Outcome) {
 /// documentation claims and the repository does not have. A gate meant
 /// to be run by hand says so on its arm, so the exception is an
 /// inventory rather than a silence.
+///
+/// Two sources, because `xtask` declares its gates two ways. The
+/// hand-written arms spell `Some("check-...")` and are found by reading
+/// the file; the generated pages are rows of [`crate::PASSES`] whose
+/// gate name is `check-` and the row's own, and were **not covered at
+/// all** until this asked the table — nineteen pages whose gates the
+/// rule could not see, four of which no workflow ran.
 fn gate_runners(root: &Path, outcome: &mut Outcome) {
     let mut wired: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
     for path in workflows(root) {
@@ -492,6 +526,18 @@ fn gate_runners(root: &Path, outcome: &mut Outcome) {
                 wired.insert(name.to_owned());
             }
         }
+    }
+    for (name, _, _) in crate::PASSES {
+        let gate = format!("check-{name}");
+        if wired.contains(&gate) {
+            continue;
+        }
+        outcome.failures.push(Finding {
+            file: "xtask/src/main.rs".to_owned(),
+            line: pass_row(root, name),
+            text: format!("`cargo xtask {gate}` is declared and no workflow runs it"),
+            rule: "gate-has-a-runner",
+        });
     }
     let entry = root.join("xtask").join("src").join("main.rs");
     let Ok(text) = std::fs::read_to_string(&entry) else {
@@ -572,6 +618,316 @@ fn boundary_sources(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Every entry point of the boundary is reached by some emitter.
+///
+/// `boundary-is-described` holds that a *file* of entry points is on the
+/// description's source list. This holds the next thing along: that each
+/// **function** on that list is placed by one of the rules the emitters
+/// group by — a free function, an opaque's constructor, one of its
+/// factories, a method of one, its destructor or its last-error reader.
+/// A function none of them matches is described, generated into every
+/// `extern` declaration, and reachable from no binding.
+///
+/// It was written because one had been in exactly that state:
+/// `ts_context_new_with_provider` takes a `handle` of `TsProvider` that
+/// is not its first parameter, so it is nobody's method; and `TsContext`
+/// already had a constructor, so it is not that either. The plugin route
+/// the whole of ADR-0029 is about therefore stopped at the boundary in
+/// every binding but Rust, and nothing said so.
+fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "entry-point-is-reachable";
+    let Ok(text) = std::fs::read_to_string(root.join("idl").join("api.json")) else {
+        return;
+    };
+    let Ok(api) = serde_json::from_str::<teistro_idl::model::Api>(&text) else {
+        return;
+    };
+    let mut placed: std::collections::BTreeSet<&str> = std::collections::BTreeSet::new();
+    for function in &api.functions {
+        if teistro_idl::rules::is_free_function(function) {
+            placed.insert(&function.name);
+        }
+    }
+    for opaque in &api.opaques {
+        for found in [
+            teistro_idl::rules::constructor(&api, opaque),
+            teistro_idl::rules::destructor(&api, opaque),
+            teistro_idl::rules::last_error(&api, opaque),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            placed.insert(&found.name);
+        }
+        for method in teistro_idl::rules::methods(&api, opaque) {
+            placed.insert(&method.name);
+        }
+        // A second way in, beside the constructor: the rule this lint's
+        // own first run called for.
+        for factory in teistro_idl::rules::factories(&api, opaque) {
+            placed.insert(&factory.name);
+        }
+    }
+    for function in &api.functions {
+        if placed.contains(function.name.as_str()) {
+            continue;
+        }
+        let deferred = AWAITING_AN_EMITTER
+            .iter()
+            .find(|(name, _)| *name == function.name);
+        let finding = Finding {
+            file: function.source.clone(),
+            line: 1,
+            text: match deferred {
+                Some((name, awaiting)) => format!("`{name}` is unplaced: {awaiting}"),
+                None => format!(
+                    "`{}` matches no emitter rule — not a free function, and no opaque's \
+                     constructor, factory, method, destructor or last-error reader — so it \
+                     is described and reachable from no binding",
+                    function.name
+                ),
+            },
+            rule: RULE,
+        };
+        if deferred.is_some() {
+            outcome.allowed.push(finding);
+        } else {
+            outcome.failures.push(finding);
+        }
+    }
+}
+
+/// Entry points no emitter rule places yet, each with what will place
+/// it.
+///
+/// **An inventory rather than a silence**, which is what
+/// `knob-has-a-reader` keeps for the same reason: the gate prints every
+/// row on every run, so a deferral is read rather than forgotten, and a
+/// row that has been placed since becomes a stale allowance — itself a
+/// failure of that rule's own kind.
+///
+/// Empty, and it was not: `ts_context_new_with_provider` sat here for
+/// exactly as long as it took to write `rules::factories` and teach the
+/// three emitters a second way in. Leaving the list in place is the
+/// point — the next one has somewhere to be declared.
+const AWAITING_AN_EMITTER: [(&str, &str); 0] = [];
+
+/// Python is spawned in one place, and that place puts it in UTF-8 mode.
+///
+/// Two halves of one property, both read off `xtask`'s own source: the
+/// interpreter is named once, and no module builds a Python `Command`
+/// of its own. `binding::python_command` is that place, and the reason
+/// it has to be one place is in its doc comment -- `PYTHONUTF8`, which
+/// every program that prints what this SDK returns needs on Windows.
+///
+/// Born of a fix that went into one gate when four needed it: the
+/// binding's examples were fixed and `check-parity`'s runner failed on
+/// the next run with the same `UnicodeEncodeError`. A rule over the
+/// source catches the third and fourth without another matrix run.
+fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "python-runs-in-utf8-mode";
+    for path in sources(&root.join("xtask/src")) {
+        // Not this file: a rule cannot be written without naming what it
+        // looks for, and its own needles are not Python being spawned.
+        if path.file_name().is_some_and(|name| name == "lints.rs") {
+            continue;
+        }
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        let shown = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        for (number, line) in outside_tests(&text) {
+            if line.trim_start().starts_with("//") {
+                continue;
+            }
+            let builds_one =
+                line.contains("Command::new(") && line.to_lowercase().contains("python");
+            let names_the_variable = line.contains(r#"env::var("PYTHON")"#);
+            if !builds_one && !names_the_variable {
+                continue;
+            }
+            let finding = Finding {
+                file: shown.clone(),
+                line: number,
+                text: format!("`{}`", line.trim()),
+                rule: RULE,
+            };
+            if excused(line, RULE) {
+                outcome.allowed.push(finding);
+            } else {
+                outcome.failures.push(finding);
+            }
+        }
+    }
+}
+
+/// Every target of the façade crate that names a feature-gated
+/// ephemeris declares the feature it needs.
+///
+/// `Ephemeris::Builtin` exists only under `builtin-ephemeris`, so an
+/// example or a test that names it and does **not** carry
+/// `required-features` breaks a `--no-default-features` build of the
+/// crate instead of being skipped by it. That is not hypothetical: the
+/// eight examples and `tests/surface.rs` all had the hole, and nobody
+/// saw it because nothing had ever built this crate without its
+/// default — the ephemeris tier matrix builds
+/// `teistro-ephemeris-builtin` and `teistro-ffi`, not this.
+///
+/// The rule reads the source rather than a list, so an example that
+/// stops naming the built-in stops needing the line, and a ninth that
+/// names it cannot be added without one.
+fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "target-declares-the-feature-it-needs";
+    /// The feature the variant lives behind, and the variant.
+    const GATED: (&str, &str) = ("builtin-ephemeris", "Ephemeris::Builtin");
+    let manifest = root.join("crates/sdk/Cargo.toml");
+    let Ok(manifest_text) = std::fs::read_to_string(&manifest) else {
+        outcome.failures.push(Finding {
+            file: String::from("crates/sdk/Cargo.toml"),
+            line: 0,
+            text: String::from("the façade's manifest could not be read"),
+            rule: RULE,
+        });
+        return;
+    };
+    for (kind, directory) in [
+        ("example", "crates/sdk/examples"),
+        ("test", "crates/sdk/tests"),
+    ] {
+        for path in sources(&root.join(directory)) {
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            if !text.contains(GATED.1) {
+                continue;
+            }
+            let Some(name) = path
+                .file_stem()
+                .map(|stem| stem.to_string_lossy().to_string())
+            else {
+                continue;
+            };
+            // The manifest section for this target, and whether it
+            // requires the feature. Read as text because the question is
+            // whether two lines sit together, which is what a reader
+            // checking the manifest by eye would look for.
+            let header = format!("[[{kind}]]\nname = \"{name}\"");
+            let requires = manifest_text.split_once(&header).is_some_and(|(_, after)| {
+                after
+                    .split("\n[")
+                    .next()
+                    .is_some_and(|section| section.contains(GATED.0))
+            });
+            if requires {
+                continue;
+            }
+            let shown = path
+                .strip_prefix(root)
+                .unwrap_or(&path)
+                .display()
+                .to_string();
+            outcome.failures.push(Finding {
+                file: shown,
+                line: 0,
+                text: format!(
+                    "names `{}` but no `[[{kind}]] name = \"{name}\"` requires `{}`",
+                    GATED.1, GATED.0
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
+/// Every platform row of a workflow matrix runs on the runner the
+/// platform table names.
+///
+/// `xtask/src/platform.rs` says it is "the only place any of that is
+/// written", and it was not: the workflows kept their own copy of which
+/// runner builds which platform, and when GitHub retired the
+/// `macos-13` image the table and two workflows had to be corrected in
+/// three places. One of them was missed for an afternoon, and the
+/// symptom was not a failure -- `bindings (darwin-x64)` sat in `queued`
+/// for as long as anyone let it, so eleven dispatches of the verify
+/// matrix never reached a conclusion at all.
+///
+/// The same shape as `knob-has-a-reader` and the parity runners' list:
+/// a description that claims to be the only one, read by generators
+/// that each keep a copy.
+///
+/// A matrix row that names no `platform` is not covered, and that is
+/// deliberate rather than an oversight: `hash-matrix.yml` chooses
+/// runners to compare two architectures and two operating systems, in
+/// Rust's own arch vocabulary (`linux-x86_64`), and which runners those
+/// are is that workflow's decision and not the shipping table's.
+fn platform_runners(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "runner-matches-the-platform-table";
+    for path in workflows(root) {
+        let shown = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        // A workflow that does not parse is `workflow-parses`'s to
+        // report; this rule says nothing about it.
+        let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&text) else {
+            continue;
+        };
+        for entry in matrix_rows(&doc) {
+            let (Some(platform), Some(os)) = (
+                entry.get("platform").and_then(serde_yaml_ng::Value::as_str),
+                entry.get("os").and_then(serde_yaml_ng::Value::as_str),
+            ) else {
+                continue;
+            };
+            let complaint = match crate::platform::Platform::by_name(platform) {
+                Some(row) if row.runner == os => continue,
+                Some(row) => format!(
+                    "`{platform}` runs on `{os}`; the platform table says `{}`",
+                    row.runner
+                ),
+                None => format!("`{platform}` is not a row of the platform table"),
+            };
+            let line = text
+                .lines()
+                .position(|line| line.contains(&format!("platform: {platform}")))
+                .map_or(0, |at| at + 1);
+            outcome.failures.push(Finding {
+                file: shown.clone(),
+                line,
+                text: complaint,
+                rule: RULE,
+            });
+        }
+    }
+}
+
+/// Every `strategy.matrix.include` entry of every job of a workflow.
+fn matrix_rows(doc: &serde_yaml_ng::Value) -> Vec<&serde_yaml_ng::Value> {
+    let mut out = Vec::new();
+    let Some(jobs) = doc.get("jobs").and_then(serde_yaml_ng::Value::as_mapping) else {
+        return out;
+    };
+    for (_, job) in jobs {
+        let include = job
+            .get("strategy")
+            .and_then(|strategy| strategy.get("matrix"))
+            .and_then(|matrix| matrix.get("include"))
+            .and_then(serde_yaml_ng::Value::as_sequence);
+        if let Some(entries) = include {
+            out.extend(entries.iter());
+        }
+    }
+    out
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -598,7 +954,11 @@ pub(crate) fn check(root: &Path) -> i32 {
     knob_readers(root, &mut outcome);
     boundary_sources(root, &mut outcome);
     workflows_parse(root, &mut outcome);
+    entry_points_reachable(root, &mut outcome);
     gate_runners(root, &mut outcome);
+    python_in_utf8(root, &mut outcome);
+    platform_runners(root, &mut outcome);
+    targets_declare_their_features(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -610,6 +970,10 @@ pub(crate) fn check(root: &Path) -> i32 {
         "boundary-is-described",
         "workflow-parses",
         "gate-has-a-runner",
+        "entry-point-is-reachable",
+        "python-runs-in-utf8-mode",
+        "runner-matches-the-platform-table",
+        "target-declares-the-feature-it-needs",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();

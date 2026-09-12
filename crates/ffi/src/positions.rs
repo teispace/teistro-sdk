@@ -76,13 +76,7 @@ pub unsafe extern "C" fn ts_positions(
         // SAFETY: non-null; the caller promises a readable request whose
         // arrays hold the counts it states.
         let decoded = unsafe { (*request).decode() }?;
-        let provider = ctx.provider().ok_or_else(|| {
-            Error::new(
-                Status::Capability,
-                "the context has no ephemeris: pass a provider vtable to ts_context_new, or the TS_CONTEXT_TEST_PROVIDER flag for tests",
-            )
-            .with_field("provider")
-        })?;
+        let provider = ctx.provider().ok_or_else(crate::support::no_ephemeris)?;
         let completion =
             Completion::new(provider, ctx.settings().provider.overrides, ctx.delta_t());
         let completed = match completion.positions(&decoded.request()) {

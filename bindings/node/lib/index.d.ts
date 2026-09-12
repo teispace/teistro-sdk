@@ -51,6 +51,10 @@ import type {
   Panchanga as DecodedAlmanac,
   Positions as DecodedPositions,
 } from './blob.js';
+// The typed accessors and an entity's forms, declared where `sdk.intl`
+// answers with them: the flat surface had both members and declared
+// neither, which the areas made visible.
+import type { EntityForms, Messages } from './messages.js';
 
 export * from './catalogue.js';
 export type * from './types.js';
@@ -598,7 +602,44 @@ export interface ContextInit {
   readonly testProvider?: boolean;
   /** An ephemeris of your own, answered in this language. */
   readonly provider?: EphemerisProvider;
+  /**
+   * Which ephemeris to compute with, or an **ordered chain** of them,
+   * tried in order (ADR-0029).
+   *
+   * A chain is a caller **saying** they will accept the fallback. One
+   * entry is one entry: a context asked for an engine and given the
+   * built-in without being told is the silence this refuses.
+   *
+   * `provider` and `ephemeris` each answer the same question, so both
+   * together is a `TypeError` rather than one silently winning.
+   */
+  readonly ephemeris?: EphemerisChoice | readonly EphemerisChoice[];
 }
+
+/**
+ * An adapter's descriptor: the platform binary its package ships, and
+ * that adapter's own configuration.
+ *
+ * What the configuration means is the adapter's to say and its
+ * package's to type; the SDK hands it over as JSON and reads none of it.
+ */
+export interface PluginEphemeris {
+  /** The adapter's platform binary. */
+  readonly plugin: string;
+  /** That adapter's own options. */
+  readonly config?: Record<string, unknown>;
+}
+
+/**
+ * One entry of an ephemeris chain: one of the SDK's own by name, or an
+ * adapter's descriptor.
+ *
+ * `builtin` is the analytic ephemeris the SDK carries, which needs no
+ * files, no network and no licence beyond the SDK's own; `test` is the
+ * test provider, whose positions are **not astronomy**. Those are the
+ * **fallback** — in most cases a consumer plugs a real engine.
+ */
+export type EphemerisChoice = 'none' | 'builtin' | 'test' | PluginEphemeris;
 
 /**
  * A context: settings resolved from a profile and a patch, a locale, and
@@ -648,13 +689,20 @@ export interface EngineManifest {
  *
  * The SDK names eight operations; an engine names far more, and what it
  * names beyond them is reached through here. Nothing in this type is a
- * list of an engine's operations — the index signature is the promise: a
- * function the engine gains after this package ships is callable without
- * a new release of it, so the names cannot be written down here.
+ * list of an engine's operations: a function the engine gains after this
+ * package ships is callable through `call` without a new release of it,
+ * so the names cannot be written down here.
+ *
+ * There is **no index signature**. ADR-0030 considered one and rejected
+ * it under ADR-0023: it type-checks everything, the misspelling
+ * included, and Dart and Rust cannot express it, so it would be a
+ * surface that exists in two of five targets. What replaces it is the
+ * typed façade an adapter generates from its own engine's description,
+ * which augments this type from the adapter's own package.
  *
  * ```ts
- * const engine = context.ephemeris;
- * const answer = engine.tp_echo({ value: 6 });
+ * const engine = context.engine;
+ * const answer = engine.call('tp_echo', { value: 6 });
  * ```
  */
 export declare class Engine {
@@ -670,60 +718,15 @@ export declare class Engine {
   call(name: string, argumentsObject?: Record<string, unknown>): unknown;
   /** Calls an operation with arguments as JSON, answering with JSON. */
   callJson(name: string, argumentsJson: string): string;
-  /** Any operation the engine's manifest names. */
-  [operation: string]: unknown;
 }
 
-export declare class Context {
-  constructor(options?: ContextInit);
-  /**
-   * The engine's own operations, beyond the eight the SDK names.
-   *
-   * Throws when the context has no ephemeris, or when the one it has
-   * describes nothing of its own.
-   */
-  readonly ephemeris: Engine;
-  /** The id of the profile the settings came from. */
-  readonly profile: string;
-  /** The resolved settings, as their canonical document. */
-  readonly settings: Record<string, unknown>;
-  /**
-   * The same document as the text the library wrote, which is what the
-   * settings hash is taken over and what a stored chart keeps.
-   */
-  readonly settingsJson: string;
-  /** The SHA-256 of the canonical settings, in hex. */
-  readonly settingsHash: string;
-  /** The locale every render resolves from. */
-  locale: string;
-  /** The SDK's canonical frame. */
-  canonicalFrame(): Frame;
-  /** Positions over a grid, completed into the frame asked for. */
-  positions(request: PositionsRequest): Positions;
-  /** Founds a chart at an instant and a place. */
-  found(request: ChartRequest): Chart;
-  /**
-   * The almanac of every day in a range, at one place: consecutive days
-   * share a boundary, so a month costs much less than thirty days
-   * computed separately.
-   */
-  almanac(request: AlmanacRequest): Almanac;
-  /** The almanac of one day, which is the range of one unwrapped. */
-  almanacDay(request: AlmanacDayRequest): AlmanacDay;
-  /**
-   * Founds a chart at each of many instants, at one place, in one
-   * crossing: the founder shares the settings and the solar model across
-   * the batch. A batch of none is an empty result rather than an error.
-   */
-  foundMany(request: ChartBatchRequest): Charts;
-  /** Renders a message of the current locale with its parameters. */
-  render(key: string, params?: Record<string, unknown>): Rendered;
-  /** Text from one script into another (`deva`, `iast`). */
-  transliterate(text: string, from?: string, to?: string): string;
-  /** Whether the current locale or its fallbacks have a message. */
-  has(key: string): boolean;
-  /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
-  loadPack(bytes: Uint8Array): IntlLoaded;
+/**
+ * `sdk.calendar` — the calendars, and the fixed day they share.
+ *
+ * An **area**: a value built once with the context, which a consumer may
+ * destructure and keep (`const { calendar } = sdk`).
+ */
+export declare class CalendarArea {
   /** The date a fixed day falls on in a calendar. */
   dateOf(calendar: Calendar, fixed: number): CalendarDate;
   /** The fixed day of a date. */
@@ -736,6 +739,10 @@ export declare class Context {
   monthLength(calendar: Calendar, year: number, month: number): number;
   /** Whether a year is a leap year. */
   isLeap(calendar: Calendar, year: number): boolean;
+}
+
+/** `sdk.time` — the scales, the zones and what separates them. */
+export declare class TimeArea {
   /** A civil date and time in a zone, resolved with its metadata. */
   resolve(civil: CivilDateTime, zone: ZoneSpec): ZoneResolution;
   /** The civil date and time of an instant in a zone. */
@@ -745,13 +752,135 @@ export declare class Context {
     calendar: Calendar,
   ): { readonly civil: CivilDateTime; readonly resolution: ZoneResolution };
   /** Converts an instant between the time scales. */
-  convertTime(jd: number, from: Scale, to: Scale): TimeConversion;
+  convert(jd: number, from: Scale, to: Scale): TimeConversion;
   /** Delta T at a UT1 instant, with what produced it. */
   deltaT(jdUt1: number): DeltaT;
+}
+
+/** `sdk.intl` — the locale, its messages and the scripts they are in. */
+export declare class IntlArea {
+  /** The locale every render resolves from. */
+  locale: string;
+  /** Renders a message of the current locale with its parameters. */
+  render(key: string, params?: Record<string, unknown>): Rendered;
+  /** Whether the current locale or its fallbacks have a message. */
+  has(key: string): boolean;
+  /** Text from one script into another (`deva`, `iast`). */
+  transliterate(text: string, from?: string, to?: string): string;
+  /** An entity's forms in the current locale or its fallbacks. */
+  entity(key: string): EntityForms;
+  /** The typed accessors: every message and every catalogued entity. */
+  readonly messages: Messages;
+  /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
+  loadPack(bytes: Uint8Array): IntlLoaded;
+}
+
+/** `sdk.keys` — the catalogue's keys and their packed ids. */
+export declare class KeysArea {
   /** The packed id of a catalogue key. */
-  keyId(key: string): number;
+  id(key: string): number;
   /** The catalogue key of a packed id. */
-  keyName(id: number): string;
+  name(id: number): string;
+}
+
+/** `sdk.frame` — the coordinate conventions a request is expressed in. */
+export declare class FrameArea {
+  /** The SDK's canonical frame. */
+  canonical(): Frame;
+  /** Packs a frame's fields into the bits a position request carries. */
+  pack(frame: Frame): number;
+  /** The frame a packed set of bits describes. */
+  unpack(bits: number): Frame;
+}
+
+/** `sdk.chart` — a chart founded at an instant and a place. */
+export declare class ChartArea {
+  /** Founds a chart at an instant and a place. */
+  found(request: ChartRequest): Chart;
+  /**
+   * Founds a chart at each of many instants, at one place, in one
+   * crossing: the founder shares the settings and the solar model across
+   * the batch. A batch of none is an empty result rather than an error.
+   */
+  foundMany(request: ChartBatchRequest): Charts;
+}
+
+/**
+ * `sdk.almanac` — a day, or a run of days, with its limbs.
+ *
+ * The boundary calls this `panchanga`; the area takes the consumer's
+ * word, because an almanac is what the operation answers and a panchanga
+ * is one tradition's name for five of its limbs.
+ */
+export declare class AlmanacArea {
+  /**
+   * The almanac of every day in a range, at one place: consecutive days
+   * share a boundary, so a month costs much less than thirty days
+   * computed separately.
+   */
+  of(request: AlmanacRequest): Almanac;
+  /** The almanac of one day, which is the range of one unwrapped. */
+  day(request: AlmanacDayRequest): AlmanacDay;
+}
+
+export declare class Context {
+  constructor(options?: ContextInit);
+  /**
+   * The engine's own operations, beyond the eight the SDK names.
+   *
+   * **Not `ephemeris`**: `engine` says *this particular engine, not the
+   * portable contract*, so a consumer reading their own code sees the
+   * difference between a call that survives changing provider and one
+   * that does not (ADR-0030).
+   *
+   * Throws when the context has no ephemeris, or when the one it has
+   * describes nothing of its own.
+   */
+  readonly engine: Engine;
+  /** The calendars, and the fixed day they share. */
+  readonly calendar: CalendarArea;
+  /** The scales, the zones and what separates them. */
+  readonly time: TimeArea;
+  /** The locale, its messages and the scripts they are in. */
+  readonly intl: IntlArea;
+  /** The catalogue's keys and their packed ids. */
+  readonly keys: KeysArea;
+  /** The coordinate conventions a request is expressed in. */
+  readonly frame: FrameArea;
+  /** A chart founded at an instant and a place. */
+  readonly chart: ChartArea;
+  /** A day, or a run of days, with its limbs. */
+  readonly almanac: AlmanacArea;
+  /** The id of the profile the settings came from. */
+  readonly profile: string;
+  /** The resolved settings, as their canonical document. */
+  readonly settings: Record<string, unknown>;
+  /**
+   * The same document as the text the library wrote, which is what the
+   * settings hash is taken over and what a stored chart keeps.
+   */
+  readonly settingsJson: string;
+  /** The SHA-256 of the canonical settings, in hex. */
+  readonly settingsHash: string;
+  /**
+   * Positions over a grid, completed into the frame asked for.
+   *
+   * On the context and not in an area, because an operation whose name is
+   * its own area's name is a root operation: this is the SDK's one
+   * primitive over the port, and every area is built on it.
+   */
+  positions(request: PositionsRequest): Positions;
+  /**
+   * Frees the context's native memory now, rather than when the
+   * collector gets to it.
+   *
+   * The layer also implements `Symbol.dispose`, so a context works with
+   * `using`. It is **not declared here**: the symbol exists only in
+   * `lib: ["ESNext.Disposable"]` and above, and a declaration referring
+   * to it would make this file refuse to compile for every consumer on
+   * a lower target rather than for none.
+   */
+  dispose(): void;
 }
 
 /**

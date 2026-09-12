@@ -567,6 +567,16 @@ the engine for its manifest at that moment rather than at the first
 call, so a context that cannot offer this says so where a caller can act
 on it.
 
+> **Renamed since, and the proxy withdrawn.** It is `context.engine` in
+> every binding now: ADR-0030 decided that `ephemeris` says the portable
+> contract and this is the opposite of that, and
+> `03-design/surface-areas.md` built it. The dynamic proxy is gone with
+> it, rejected under ADR-0023 — it type-checks the misspelling, and Dart
+> and Rust cannot express it — so `engine.call(name, args)` is the route
+> and a typed façade generated into the *adapter* is what will give the
+> names back. What this section records is what was true when it was
+> written, and the reasoning below still holds of the two entry points.
+
 | binding | how an operation is reached |
 |---|---|
 | Python | `engine.tp_echo(value=6.0)` — `__getattr__`, with `__dir__` so a REPL completes the names |
@@ -637,6 +647,18 @@ must produce the same JSON for the same call.
   typed wrappers can be generated from the manifest for consumers who
   want completions, and are a convenience over the dynamic path rather
   than the only way in.
+
+> **What shipped instead**, and why the difference matters: the dynamic
+> proxy was rejected. It gives completions to nothing and type-checks
+> everything, the misspelling included, and two of the five targets
+> cannot express it at all — so it would have been a surface that
+> existed in Node and Python and nowhere else. What ships is
+> `sdk.engine.call(name, args)`, dynamic in the name and typed in its
+> arguments, and a **generated typed façade in the adapter's own
+> package** for the names, which is the inverse of what this paragraph
+> proposed: the names are the generated part and the dynamic route is
+> the one written by hand. ADR-0030 and
+> `03-design/surface-areas.md` carry it.
 
 ### B5. What it must not do
 

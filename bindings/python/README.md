@@ -68,6 +68,14 @@ TEISTRO_LIBRARY=../../target/release/libteistro_ffi.dylib \
 PYTHONPATH=. python3 example/quickstart.py
 ```
 
+**On Windows, run Python in UTF-8 mode** — `PYTHONUTF8=1`, or
+`python -X utf8` — whenever you print what this SDK returns. The console's
+default encoding there is cp1252, and `print` of a Devanagari string
+raises `UnicodeEncodeError` before a character reaches the screen; the
+string itself was never the problem. PEP 540's UTF-8 mode is the
+documented answer and becomes Python's default in 3.15. `cargo xtask
+check-python` sets it, so the examples run there as they do anywhere.
+
 The one thing to know before writing anything real is in
 [`example/birth_chart.py`](example/birth_chart.py): **the canonical
 frame is tropical**, because that is what an ephemeris computes. A Vedic
@@ -112,6 +120,35 @@ longitudes = np.asarray(sky.decoded.cells.lon)   # no copy
 ```
 
 numpy is not a dependency; the buffer protocol is.
+
+## Which ephemeris
+
+A context with no ephemeris computes calendars, times and messages;
+positions need one. `ephemeris` names it, or names an **ordered chain**
+tried in order (ADR-0029):
+
+```python
+from teistro_ephemeris_teimeris import teimeris
+
+# A real engine, and the SDK's own only if it is not there.
+ctx = sdk.context(ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN])
+```
+
+**That is the intended path.** In most cases a consumer should be on a
+real engine -- Teimeris, Swiss Ephemeris -- installed as its own package
+under its own licence, and `Ephemeris.BUILTIN` is the fallback that makes
+a chart compute with nothing else installed. `Ephemeris.TEST` (or the
+older `test_provider=True`) selects the analytic test provider, whose
+positions are **not astronomy**.
+
+A chain is a caller *saying* they will accept the fallback: one entry is
+one entry, and a context asked for an engine and given the built-in
+without being told is the silence this refuses. Nothing in the chain
+opening is one refusal naming each entry that failed.
+
+An engine brings its own operations with it, beyond the eight the SDK
+names, at `ctx.engine` -- and the adapter's package carries a typed façade
+over them.
 
 ## An ephemeris of your own
 
@@ -159,5 +196,8 @@ TEISTRO_FIXTURES=../../target/tsrb \
 PYTHONPATH=. python3 -m unittest discover -s tests -t .
 ```
 
-The type-check step needs `mypy`, which the gate skips with a note when
-the machine has none.
+The type-check step needs `mypy`, and the gate installs it: the version
+is pinned in [`typecheck/requirements.txt`](typecheck/requirements.txt)
+and goes into a `.venv` beside this file the first time the gate finds
+none, so every machine and every runner checks with the same one.
+`$MYPY` names one outright where you would rather use your own.

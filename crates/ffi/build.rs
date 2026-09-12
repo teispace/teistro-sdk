@@ -1,9 +1,4 @@
-//! Builds the SDK's locale bundles from `i18n/` into `OUT_DIR`, so the C
-//! library carries every shipped locale and a consumer needs no files to
-//! render the SDK's own messages (ADR-0010). `bundles.rs` lists them for
-//! `include_bytes!`.
-//!
-//! It also records what this build is, for `ts_build_info`: the commit it
+//! Records what this build is, for `ts_build_info`: the commit it
 //! came from and whether the tree was clean, the target, the profile and
 //! the compiler. A binding refuses a library that is not the build its
 //! own half was generated for
@@ -19,12 +14,8 @@
     reason = "a build script"
 )]
 
-use std::fmt::Write as _;
 use std::path::PathBuf;
 use std::process::Command;
-
-use teistro_intl::pack::build_bundle;
-use teistro_intl::source::Tree;
 
 /// What `git` says about the tree this is built from, or `None` when the
 /// build is not from a checkout (a published crate, a vendored source).
@@ -80,27 +71,24 @@ fn build_info(out: &std::path::Path, root: &std::path::Path) {
 }
 
 fn main() {
-    let root = teistro_intl::sdk_root();
-    println!("cargo:rerun-if-changed={}", root.display());
     let out = PathBuf::from(std::env::var_os("OUT_DIR").expect("cargo sets OUT_DIR"));
-    let tree = Tree::load(&root).unwrap_or_else(|e| panic!("the i18n/ sources load: {e}"));
-    let mut entries = String::new();
-    for (tag, locale) in &tree.locales {
-        let bytes = build_bundle(locale).unwrap_or_else(|e| panic!("{tag}: {e}"));
-        let path = out.join(format!("{tag}.tbundle"));
-        std::fs::write(&path, bytes).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
-        let _ = writeln!(
-            entries,
-            "    ({tag:?}, include_bytes!({:?})),",
-            path.display()
-        );
-    }
-    let listing = format!(
-        "/// The SDK's locales as bundles, built from `i18n/` when the crate is compiled.\npub(crate) static BUNDLES: &[(&str, &[u8])] = &[\n{entries}];\n"
+    // **The locale bundles are the façade's now.** This script used to
+    // build them from `i18n/` as well, and `crates/sdk/build.rs` does
+    // that — so the library still carries every shipped locale
+    // (ADR-0010), through the context it now composes with. What is left
+    // here is what only the C library has: which build a binding is
+    // talking to.
+    // The repository, from this crate's own manifest: `crates/ffi` is
+    // two levels down. Derived rather than asked of `teistro-intl`,
+    // which this script no longer needs now that the bundles are the
+    // façade's -- so it has no build dependency at all.
+    let manifest = PathBuf::from(
+        std::env::var_os("CARGO_MANIFEST_DIR").expect("cargo sets CARGO_MANIFEST_DIR"),
     );
-    let path = out.join("bundles.rs");
-    std::fs::write(&path, listing).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
-    let repository = root.parent().unwrap_or(&root).to_path_buf();
+    let repository = manifest
+        .parent()
+        .and_then(std::path::Path::parent)
+        .map_or_else(|| manifest.clone(), std::path::Path::to_path_buf);
     println!(
         "cargo:rerun-if-changed={}",
         repository.join(".git/HEAD").display()

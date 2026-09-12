@@ -8,10 +8,10 @@ know: where the shared library is, defaults, JSON in and out, and the
 small conveniences a decoded result deserves.
 
 ```python
-from teistro import Teistro, Body
+from teistro import Body, Ephemeris, Teistro
 
 teistro = Teistro.open()
-with teistro.context(test_provider=True) as sky:
+with teistro.context(ephemeris=Ephemeris.BUILTIN) as sky:
     sun = sky.positions(instants=[2451545.0], bodies=[Body.SUN]).at(0, 0)
     print(sun.longitude)
 ```
@@ -25,6 +25,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Generic, Iterator, List, Mapping, Optional, Sequence, Tuple, TypeVar
@@ -62,6 +63,7 @@ from ._ffi import (
     PanchangaRequest,
     PositionRequest,
     TeistroContext,
+    TeistroProvider,
     TeistroError,
     TeistroLibrary,
     TimeConversion,
@@ -292,6 +294,27 @@ def refuse_build(info: BuildInfo, *, named: bool) -> Optional[str]:
     return None
 
 
+@dataclass(frozen=True, slots=True)
+class Plugin:
+    """An adapter's descriptor: the platform binary its package ships,
+    and that adapter's own configuration.
+
+    What the configuration means is the adapter's to say and its
+    package's to type; the SDK hands it over as JSON and reads none of
+    it (ADR-0029).
+    """
+
+    plugin: str
+    """The adapter's platform binary."""
+    config: Optional[Mapping[str, object]] = None
+    """That adapter's own options."""
+
+
+EphemerisChoice = Ephemeris | Plugin
+"""One entry of an ephemeris chain: one of the SDK's own by name, or an
+adapter's descriptor."""
+
+
 class Teistro:
     """The SDK's shared library, opened once and shared by every context.
 
@@ -381,7 +404,7 @@ class Teistro:
         settings_json: Optional[str] = None,
         locale: Optional[str] = None,
         provider: Optional[EphemerisProvider] = None,
-        ephemeris: Optional[Ephemeris] = None,
+        ephemeris: Optional[EphemerisChoice | Sequence[EphemerisChoice]] = None,
         test_provider: bool = False,
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
@@ -399,37 +422,105 @@ class Teistro:
         chart compute with nothing else installed; `Ephemeris.TEST` is the
         test provider, whose positions are **not astronomy**.
 
+        `ephemeris` is one entry or an **ordered chain**, tried in order
+        (ADR-0029). An entry is an adapter's own descriptor -- `Plugin`,
+        what a package like `teistro_ephemeris_teimeris` exports,
+        carrying the platform binary it ships and that adapter's own
+        configuration -- or one of the SDK's own by name.
+
+        A chain is a caller **saying** they will accept the fallback. One
+        entry is one entry: a context asked for an engine and given the
+        built-in without being told is the silence this refuses.
+
         `test_provider=True` is the older spelling of `Ephemeris.TEST` and
         still works; `ephemeris` wins when both are given (ADR-0028).
-        Naming none of the three leaves the context without an ephemeris,
-        so a request for positions is refused with `Status.CAPABILITY`.
+        Naming none of them leaves the context without an ephemeris, so a
+        request for positions is refused with `Status.CAPABILITY`.
         """
         if settings is not None and settings_json is not None:
             raise ValueError(
                 "settings and settings_json are the same patch twice; "
                 "give one of them"
             )
+        # Two ways to answer one question, so both together is a refusal
+        # rather than one silently winning -- the same rule the settings
+        # patch has just above.
+        if provider is not None and ephemeris is not None:
+            raise ValueError(
+                "provider and ephemeris each name the ephemeris to compute "
+                "with; give one of them"
+            )
         if settings is not None:
             settings_json = json.dumps(settings, separators=(",", ":"))
         host = None if provider is None else HostProvider(self.library, provider)
         # One rule, written once: a named ephemeris wins, and the older
         # flag decides only when none was named (ADR-0028).
-        chosen = ephemeris
-        if chosen is None:
-            chosen = Ephemeris.TEST if test_provider else Ephemeris.NONE
+        chain: list[EphemerisChoice]
+        if ephemeris is None:
+            chain = [Ephemeris.TEST if test_provider else Ephemeris.NONE]
+        elif isinstance(ephemeris, (Ephemeris, Plugin)):
+            chain = [ephemeris]
+        else:
+            chain = list(ephemeris)
+        if not chain:
+            raise ValueError(
+                "an ephemeris chain of none names nothing; give an entry or "
+                "omit it"
+            )
+        # A chain of one is not a chain, so nothing is caught for it: a
+        # bad *profile* is not an ephemeris failure, and catching it to
+        # try the next entry would replace a refusal carrying its status,
+        # its field and its hint with a bare "nothing could be opened".
+        if len(chain) == 1:
+            return Context(
+                self, self._open(chain[0], profile, settings_json, locale, host), host
+            )
+        # With more than one, every refusal is kept and reported
+        # together, because a chain that said only why its last entry
+        # failed would hide the one the caller actually wanted.
+        refusals: list[str] = []
+        for entry in chain:
+            try:
+                return Context(
+                    self, self._open(entry, profile, settings_json, locale, host), host
+                )
+            except TeistroError as refusal:
+                named = entry.plugin if isinstance(entry, Plugin) else entry.key
+                refusals.append(f"{named}: {refusal}")
+        joined = "\n  ".join(refusals)
+        raise ValueError(f"no ephemeris in the chain could be opened:\n  {joined}")
+
+    def _open(
+        self,
+        entry: EphemerisChoice,
+        profile: Optional[str],
+        settings_json: Optional[str],
+        locale: Optional[str],
+        host: Optional[HostProvider],
+    ) -> TeistroContext:
+        """Opens the context on one entry of the chain."""
+        named = Ephemeris.NONE if isinstance(entry, Plugin) else entry
         options = ContextOptions(
             flags=0,
             profile=profile,
             settings_json=settings_json,
             locale=locale,
-            ephemeris=chosen,
+            ephemeris=named,
         )
-        inner = TeistroContext._new(
-            self.library,
-            options,
-            None if host is None else host.vtable,
+        if not isinstance(entry, Plugin):
+            return TeistroContext._new(
+                self.library, options, None if host is None else host.vtable
+            )
+        # The context takes its own reference to the adapter, so the
+        # handle this loads is closed at once: what keeps the library
+        # loaded is the context, and a consumer holds neither.
+        loaded = TeistroProvider._new(
+            self.library, entry.plugin, json.dumps(dict(entry.config or {}))
         )
-        return Context(self, inner, host)
+        try:
+            return TeistroContext._new_with_provider(self.library, options, loaded)
+        finally:
+            loaded.close()
 
 
 def _candidates() -> list[str]:
@@ -591,112 +682,40 @@ class Engine:
         )
 
 
-class Context:
-    """A context, and everything a consumer asks of one.
+class _Area:
+    """What every area is.
 
-    A context frees its native memory when it is collected, so `close` is
-    the explicit form rather than the only one (ADR-0007); `with` is the
-    idiomatic one.
+    A **value**: one object per context, built on first read of the
+    `cached_property` that holds it and kept, so a consumer may hold it
+    and pass it (`calendar = sdk.calendar`). That is what makes the areas
+    worth having rather than merely tidy
+    (`03-design/surface-areas.md`).
+
+    Each holds the context and nothing else, and reaches the boundary
+    through it, so the guard that re-raises what a provider written in
+    Python raised stays in one place.
     """
 
-    def __init__(
-        self,
-        teistro: Teistro,
-        inner: TeistroContext,
-        host: Optional[HostProvider] = None,
-    ) -> None:
-        self.teistro = teistro
-        """The library this context was built on."""
-        self.inner = inner
-        """The generated context, for a call this layer does not wrap."""
-        self._host = host
-        self.messages = intl.Messages(_Renderer(self))
-        """The typed accessors: every message of the SDK, by its key."""
+    __slots__ = ("_context",)
 
-    # ── The context itself ────────────────────────────────────────────
+    def __init__(self, context: Context) -> None:
+        self._context = context
 
-    @property
-    def ephemeris(self) -> Engine:
-        """The engine's own operations, beyond the eight the SDK names.
 
-        Raises `TeistroError` when the context has no ephemeris, or when
-        the one it has describes nothing of its own.
-        """
-        engine = Engine(self.inner)
-        # Ask now rather than at the first call, so a context that cannot
-        # offer this says so where a caller can act on it.
-        engine.manifest_json
-        return engine
-
-    @property
-    def profile(self) -> str:
-        """The id of the profile the settings came from."""
-        return self.inner.profile()
-
-    @property
-    def settings_json(self) -> str:
-        """The resolved settings as their canonical JSON document."""
-        return self.inner.settings_json()
-
-    @property
-    def settings(self) -> Any:
-        """The resolved settings, parsed."""
-        return json.loads(self.settings_json)
-
-    @property
-    def settings_hash(self) -> str:
-        """The settings hash, as the hexadecimal every result stamps."""
-        return self.inner.settings_hash().bytes.hex()
-
-    @property
-    def locale(self) -> str:
-        """The locale tag messages are rendered in."""
-        return self.inner.intl_locale()
-
-    @locale.setter
-    def locale(self, tag: str) -> None:
-        self.inner.intl_set_locale(tag)
-
-    @property
-    def last_error(self) -> Error:
-        """The outcome of the last call on the context."""
-        return self.inner.last_error()
-
-    @property
-    def provider(self) -> Optional[EphemerisProvider]:
-        """The ephemeris written in Python this context was given."""
-        return None if self._host is None else self._host.provider
-
-    def close(self) -> None:
-        """Frees the context, and then whatever its provider held."""
-        self.inner.close()
-        if self._host is not None:
-            self._host.close()
-
-    def __enter__(self) -> Context:
-        return self
-
-    def __exit__(
-        self,
-        kind: Optional[type[BaseException]],
-        value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        self.close()
-
-    # ── The calendars ─────────────────────────────────────────────────
+class CalendarArea(_Area):
+    """`sdk.calendar` — the calendars, and the fixed day they share."""
 
     def date_of(self, calendar: Calendar, fixed: int) -> CalendarDate:
         """The date a fixed day number is, in a calendar."""
-        return self.inner.calendar_from_fixed(calendar, fixed)
+        return self._context.inner.calendar_from_fixed(calendar, fixed)
 
     def fixed_of(self, date: CalendarDate) -> int:
         """The fixed day number a date is."""
-        return self.inner.calendar_to_fixed(date)
+        return self._context.inner.calendar_to_fixed(date)
 
     def convert(self, date: CalendarDate, into: Calendar) -> CalendarDate:
         """The same day in another calendar."""
-        return self.inner.calendar_convert(date, into)
+        return self._context.inner.calendar_convert(date, into)
 
     def weekday_of(self, date: CalendarDate) -> int:
         """The weekday of a date as its ISO number: Monday `1`, Sunday `7`.
@@ -705,30 +724,32 @@ class Context:
         `weekday_of(day) % 7`, and the panchanga example does exactly
         that.
         """
-        return self.inner.calendar_weekday(date)
+        return self._context.inner.calendar_weekday(date)
 
     def month_length(self, calendar: Calendar, year: int, month: int) -> int:
         """How many days a month has."""
-        return self.inner.calendar_month_length(calendar, year, month)
+        return self._context.inner.calendar_month_length(calendar, year, month)
 
     def is_leap(self, calendar: Calendar, year: int) -> bool:
         """Whether a year is a leap year in a calendar."""
-        return self.inner.calendar_is_leap(calendar, year) != 0
+        return self._context.inner.calendar_is_leap(calendar, year) != 0
 
-    # ── Time ──────────────────────────────────────────────────────────
+
+class TimeArea(_Area):
+    """`sdk.time` — the scales, the zones and what separates them."""
 
     def resolve(self, civil: CivilDateTime, zone: ZoneSpec) -> ZoneResolution:
         """The instant a civil date and time in a zone stands for."""
-        return self.inner.time_resolve(civil, zone)
+        return self._context.inner.time_resolve(civil, zone)
 
     def civil_of(
         self, jd_utc: float, zone: ZoneSpec, calendar: Calendar
     ) -> tuple[CivilDateTime, ZoneResolution]:
         """The civil date and time an instant is, in a zone."""
-        found = self.inner.time_civil(jd_utc, zone, calendar)
+        found = self._context.inner.time_civil(jd_utc, zone, calendar)
         return found.civil, found.resolution
 
-    def convert_time(self, jd: float, scale: Scale, into: Scale) -> TimeConversion:
+    def convert(self, jd: float, scale: Scale, into: Scale) -> TimeConversion:
         """The same instant on another time scale.
 
         `Scale` and not `TimeScale`: the time layer knows UTC as well as
@@ -736,81 +757,94 @@ class Context:
         share, so passing the wrong one would convert from the wrong
         scale without any complaint.
         """
-        return self.inner.time_convert(jd, scale, into)
+        return self._context.inner.time_convert(jd, scale, into)
 
     def delta_t(self, jd_ut1: float) -> DeltaT:
         """TT less UT1 at an instant, and where the value came from."""
-        return self.inner.time_delta_t(jd_ut1)
+        return self._context.inner.time_delta_t(jd_ut1)
 
-    # ── Keys ──────────────────────────────────────────────────────────
 
-    def key_id(self, key: str) -> int:
-        """The catalogue id a key stands for."""
-        return self.inner.key_parse(key)
+class IntlArea(_Area):
+    """`sdk.intl` — the locale, its messages and the scripts they are in."""
 
-    def key_name(self, identifier: int) -> str:
-        """The key an id stands for."""
-        return self.inner.key_name(identifier)
+    # `cached_property` writes to the instance, so this area cannot use
+    # `__slots__` the way the others do.
+    __slots__ = ("__dict__",)
 
-    # ── The locale engine ─────────────────────────────────────────────
+    @property
+    def locale(self) -> str:
+        """The locale tag messages are rendered in."""
+        return self._context.inner.intl_locale()
+
+    @locale.setter
+    def locale(self, tag: str) -> None:
+        self._context.inner.intl_set_locale(tag)
 
     def render(self, key: str, params: Optional[Mapping[str, object]] = None) -> IntlRender:
         """A message rendered in the context's locale."""
         return decode_intl_render(
-            self.inner.intl_render(key, json.dumps({} if params is None else params))
+            self._context.inner.intl_render(key, json.dumps({} if params is None else params))
         )
 
     def has(self, key: str) -> bool:
         """Whether the current locale carries a message."""
-        return self.inner.intl_has(key) != 0
+        return self._context.inner.intl_has(key) != 0
 
     def entity(self, key: str) -> intl.EntityForms:
         """A catalogued entity's forms in the current locale."""
-        return intl.EntityForms.of(self.inner.intl_entity(key))
+        return intl.EntityForms.of(self._context.inner.intl_entity(key))
 
     def transliterate(self, text: str, source: str = "Deva", into: str = "Latn") -> str:
         """Text from one script into another."""
-        return self.inner.intl_transliterate(text, source, into)
+        return self._context.inner.intl_transliterate(text, source, into)
 
     def load_pack(self, data: bytes) -> IntlLoaded:
         """Loads a locale pack's bytes into the engine."""
-        return self.inner.intl_load_pack(data)
+        return self._context.inner.intl_load_pack(data)
 
-    # ── Positions ─────────────────────────────────────────────────────
+    @cached_property
+    def messages(self) -> intl.Messages:
+        """The typed accessors: every message of the SDK, by its key.
 
-    def positions(
-        self,
-        *,
-        instants: Sequence[float],
-        bodies: Sequence[Body],
-        scale: TimeScale = TimeScale.UT1,
-        frame: Optional[Frame] = None,
-        speeds: bool = True,
-        observer: Optional[Observer] = None,
-    ) -> PositionGrid:
-        """The positions of a grid of bodies at a grid of instants.
-
-        The cells run instants outermost: cell `i * len(bodies) + j` is
-        instant `i`, body `j`, which is what `at` reads.
+        ```python
+        sdk.intl.messages.sdk.reason.graha_in_bhava(graha="graha.JUPITER", bhava=7)
+        ```
         """
-        if not instants:
-            raise ValueError("a request needs at least one instant")
-        if not bodies:
-            raise ValueError("a request needs at least one body")
-        bits = self.teistro.pack_frame(
-            self.teistro.canonical_frame if frame is None else frame
-        )
-        request = PositionRequest(
-            scale=scale,
-            frame_bits=bits,
-            speeds=speeds,
-            jds=list(instants),
-            bodies=list(bodies),
-            observer=observer,
-        )
-        return PositionGrid(
-            decode_positions(self._through_provider(lambda: self.inner.positions(request)))
-        )
+        return intl.Messages(_Renderer(self._context))
+
+
+class KeysArea(_Area):
+    """`sdk.keys` — the catalogue's keys and their packed ids."""
+
+    def id(self, key: str) -> int:
+        """The catalogue id a key stands for."""
+        return self._context.inner.key_parse(key)
+
+    def name(self, identifier: int) -> str:
+        """The key an id stands for."""
+        return self._context.inner.key_name(identifier)
+
+
+class FrameArea(_Area):
+    """`sdk.frame` — the coordinate conventions a request is expressed in."""
+
+    @property
+    def canonical(self) -> Frame:
+        """The SDK's canonical frame: apparent geocentric ecliptic of
+        date, tropical."""
+        return self._context.teistro.canonical_frame
+
+    def pack(self, frame: Frame) -> int:
+        """A frame's fields as the bits a position request carries."""
+        return self._context.teistro.pack_frame(frame)
+
+    def unpack(self, bits: int) -> Frame:
+        """The frame a packed set of bits describes."""
+        return self._context.teistro.unpack_frame(bits)
+
+
+class ChartArea(_Area):
+    """`sdk.chart` — a chart founded at an instant and a place."""
 
     def found(
         self,
@@ -865,10 +899,20 @@ class Context:
             utc_offset_seconds=utc_offset_seconds,
         )
         return ChartBatch(
-            decode_charts(self._through_provider(lambda: self.inner.chart_found(request)))
+            decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request)))
         )
 
-    def almanac(
+
+class AlmanacArea(_Area):
+    """`sdk.almanac` — a day, or a run of days, with its limbs.
+
+    The boundary calls this `panchanga`; the area takes the consumer's
+    word, because an almanac is what the operation answers and a
+    panchanga is one tradition's name for five of its limbs
+    (`03-design/surface-areas.md`).
+    """
+
+    def of(
         self,
         *,
         from_date: CalendarDate,
@@ -899,11 +943,11 @@ class Context:
         )
         return Almanac(
             decode_panchanga(
-                self._through_provider(lambda: self.inner.panchanga_days(request))
+                self._context._through_provider(lambda: self._context.inner.panchanga_days(request))
             )
         )
 
-    def almanac_day(
+    def day(
         self,
         *,
         date: CalendarDate,
@@ -911,12 +955,177 @@ class Context:
         utc_offset_seconds: int,
     ) -> AlmanacDay:
         """The almanac of one day, which is the range of one unwrapped."""
-        return self.almanac(
+        return self.of(
             from_date=date,
             to_date=date,
             place=place,
             utc_offset_seconds=utc_offset_seconds,
         ).at(0)
+
+
+class Context:
+    """A context, and everything a consumer asks of one.
+
+    A context frees its native memory when it is collected, so `close` is
+    the explicit form rather than the only one (ADR-0007); `with` is the
+    idiomatic one.
+    """
+
+    def __init__(
+        self,
+        teistro: Teistro,
+        inner: TeistroContext,
+        host: Optional[HostProvider] = None,
+    ) -> None:
+        self.teistro = teistro
+        """The library this context was built on."""
+        self.inner = inner
+        """The generated context, for a call this layer does not wrap."""
+        self._host = host
+
+    # ── The areas ─────────────────────────────────────────────────────
+    #
+    # A `cached_property` apiece: the first read builds it and every later
+    # one is the same object, so `calendar = sdk.calendar` is a value a
+    # consumer can hold (`03-design/surface-areas.md`).
+
+    @cached_property
+    def calendar(self) -> CalendarArea:
+        """The calendars, and the fixed day they share."""
+        return CalendarArea(self)
+
+    @cached_property
+    def time(self) -> TimeArea:
+        """The scales, the zones and what separates them."""
+        return TimeArea(self)
+
+    @cached_property
+    def intl(self) -> IntlArea:
+        """The locale, its messages and the scripts they are in."""
+        return IntlArea(self)
+
+    @cached_property
+    def keys(self) -> KeysArea:
+        """The catalogue's keys and their packed ids."""
+        return KeysArea(self)
+
+    @cached_property
+    def frame(self) -> FrameArea:
+        """The coordinate conventions a request is expressed in."""
+        return FrameArea(self)
+
+    @cached_property
+    def chart(self) -> ChartArea:
+        """A chart founded at an instant and a place."""
+        return ChartArea(self)
+
+    @cached_property
+    def almanac(self) -> AlmanacArea:
+        """A day, or a run of days, with its limbs."""
+        return AlmanacArea(self)
+
+    # ── The context itself ────────────────────────────────────────────
+
+    @property
+    def engine(self) -> Engine:
+        """The engine's own operations, beyond the eight the SDK names.
+
+        **Not `ephemeris`**: `engine` says *this particular engine, not
+        the portable contract*, so a consumer reading their own code sees
+        the difference between a call that survives changing provider and
+        one that does not (ADR-0030).
+
+        Raises `TeistroError` when the context has no ephemeris, or when
+        the one it has describes nothing of its own.
+        """
+        engine = Engine(self.inner)
+        # Ask now rather than at the first call, so a context that cannot
+        # offer this says so where a caller can act on it.
+        engine.manifest_json
+        return engine
+
+    @property
+    def profile(self) -> str:
+        """The id of the profile the settings came from."""
+        return self.inner.profile()
+
+    @property
+    def settings_json(self) -> str:
+        """The resolved settings as their canonical JSON document."""
+        return self.inner.settings_json()
+
+    @property
+    def settings(self) -> Any:
+        """The resolved settings, parsed."""
+        return json.loads(self.settings_json)
+
+    @property
+    def settings_hash(self) -> str:
+        """The settings hash, as the hexadecimal every result stamps."""
+        return self.inner.settings_hash().bytes.hex()
+
+    @property
+    def last_error(self) -> Error:
+        """The outcome of the last call on the context."""
+        return self.inner.last_error()
+
+    @property
+    def provider(self) -> Optional[EphemerisProvider]:
+        """The ephemeris written in Python this context was given."""
+        return None if self._host is None else self._host.provider
+
+    def close(self) -> None:
+        """Frees the context, and then whatever its provider held."""
+        self.inner.close()
+        if self._host is not None:
+            self._host.close()
+
+    def __enter__(self) -> Context:
+        return self
+
+    def __exit__(
+        self,
+        kind: Optional[type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()
+
+    # ── Positions ─────────────────────────────────────────────────────
+
+    def positions(
+        self,
+        *,
+        instants: Sequence[float],
+        bodies: Sequence[Body],
+        scale: TimeScale = TimeScale.UT1,
+        frame: Optional[Frame] = None,
+        speeds: bool = True,
+        observer: Optional[Observer] = None,
+    ) -> PositionGrid:
+        """The positions of a grid of bodies at a grid of instants.
+
+        The cells run instants outermost: cell `i * len(bodies) + j` is
+        instant `i`, body `j`, which is what `at` reads.
+        """
+        if not instants:
+            raise ValueError("a request needs at least one instant")
+        if not bodies:
+            raise ValueError("a request needs at least one body")
+        bits = self.teistro.pack_frame(
+            self.teistro.canonical_frame if frame is None else frame
+        )
+        request = PositionRequest(
+            scale=scale,
+            frame_bits=bits,
+            speeds=speeds,
+            jds=list(instants),
+            bodies=list(bodies),
+            observer=observer,
+        )
+        return PositionGrid(
+            decode_positions(self._through_provider(lambda: self.inner.positions(request)))
+        )
 
     def _through_provider(self, call: Any) -> Any:
         """Runs a call that may reach a provider written in Python, and
@@ -1705,10 +1914,10 @@ class _Renderer:
         self._context = context
 
     def render(self, key: str, params: Mapping[str, object] = {}) -> str:
-        return self._context.render(key, params).text
+        return self._context.intl.render(key, params).text
 
     def entity(self, key: str) -> intl.EntityForms:
-        return self._context.entity(key)
+        return self._context.intl.entity(key)
 
 
 def date(calendar: Calendar, year: int, month: int, day: int) -> CalendarDate:

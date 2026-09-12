@@ -10,10 +10,10 @@
     "crates/port-ephemeris/src/frame.rs",
     "crates/port-ephemeris/src/vtable.rs",
     "crates/ffi/src/lib.rs",
-    "crates/ffi/src/strings.rs",
+    "crates/ffi/src/string.rs",
     "crates/ffi/src/blob.rs",
     "crates/ffi/src/context.rs",
-    "crates/ffi/src/keys.rs",
+    "crates/ffi/src/key.rs",
     "crates/ffi/src/frame.rs",
     "crates/ffi/src/calendar.rs",
     "crates/ffi/src/chart.rs",
@@ -21,14 +21,15 @@
     "crates/ffi/src/intl.rs",
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
-    "crates/ffi/src/ephemeris.rs"
+    "crates/ffi/src/ephemeris.rs",
+    "crates/ffi/src/provider.rs"
   ],
   "constants": [
     {
       "name": "VTABLE_ABI_VERSION",
       "doc": "The ABI version of the vtable layout.",
       "ty": "u32",
-      "value": 2,
+      "value": 3,
       "source": "crates/port-ephemeris/src/vtable.rs"
     },
     {
@@ -6434,6 +6435,11 @@
       "name": "TsContext",
       "doc": "An opaque context: settings, a provider, the locale engine, the last\nerror. Used by one thread at a time.",
       "source": "crates/ffi/src/context.rs"
+    },
+    {
+      "name": "TsProvider",
+      "doc": "An ephemeris loaded from a shared library. Free with\n`ts_provider_free`; a context built from it keeps its own reference,\nso the order does not matter.",
+      "source": "crates/ffi/src/provider.rs"
     }
   ],
   "callbacks": [
@@ -6849,6 +6855,144 @@
             "to": {
               "kind": "scalar",
               "scalar": "u32"
+            },
+            "mutable": true
+          },
+          "role": "scalar_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "scalar",
+        "scalar": "i32"
+      },
+      "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
+      "name": "NativeManifestFn",
+      "doc": "The engine's own manifest, as JSON.\n\nWrites up to `capacity` bytes into the caller's buffer and the length\nit wanted into `out_len`, which may exceed the capacity — in which\ncase the caller calls again with a larger one. The same size-then-fill\nprotocol the crossings use, and for the same reason: nothing allocated\non one side of this boundary is freed on the other.",
+      "params": [
+        {
+          "name": "user_data",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "void"
+            },
+            "mutable": true
+          },
+          "role": "user_data",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": true
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "capacity",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "out_len",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "usize"
+            },
+            "mutable": true
+          },
+          "role": "scalar_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "scalar",
+        "scalar": "i32"
+      },
+      "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
+      "name": "NativeCallFn",
+      "doc": "One of the engine's own operations, called by the name its manifest\ngives, with arguments as a JSON object.\n\nAnswers as `NativeManifestFn` does.",
+      "params": [
+        {
+          "name": "user_data",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "void"
+            },
+            "mutable": true
+          },
+          "role": "user_data",
+          "meta": {}
+        },
+        {
+          "name": "function",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "arguments_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": true
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "capacity",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "out_len",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "usize"
             },
             "mutable": true
           },
@@ -7995,6 +8139,24 @@
           },
           "doc": "The crossings override.",
           "meta": {}
+        },
+        {
+          "name": "native_manifest",
+          "ty": {
+            "kind": "callback",
+            "name": "NativeManifestFn"
+          },
+          "doc": "The engine's own manifest, when it offers one.\n\nNull where the provider offers no operations of its own — which\nis what `Capabilities::native` already says, and this is the\nfunction that makes the saying true across the boundary. Added at\nABI 3: a loaded adapter could declare the route and had no way to\nanswer it.",
+          "meta": {}
+        },
+        {
+          "name": "native_call",
+          "ty": {
+            "kind": "callback",
+            "name": "NativeCallFn"
+          },
+          "doc": "One of the engine's own operations.",
+          "meta": {}
         }
       ],
       "source": "crates/port-ephemeris/src/vtable.rs"
@@ -8036,7 +8198,7 @@
           "meta": {}
         }
       ],
-      "source": "crates/ffi/src/strings.rs"
+      "source": "crates/ffi/src/string.rs"
     },
     {
       "name": "TsStr",
@@ -8065,7 +8227,7 @@
           "meta": {}
         }
       ],
-      "source": "crates/ffi/src/strings.rs"
+      "source": "crates/ffi/src/string.rs"
     },
     {
       "name": "TsHash",
@@ -8086,7 +8248,7 @@
           "meta": {}
         }
       ],
-      "source": "crates/ffi/src/strings.rs"
+      "source": "crates/ffi/src/string.rs"
     },
     {
       "name": "TsBlob",
@@ -9665,7 +9827,7 @@
         }
       ],
       "meta": {},
-      "source": "crates/ffi/src/strings.rs"
+      "source": "crates/ffi/src/string.rs"
     },
     {
       "name": "ts_blob_free",
@@ -9997,7 +10159,7 @@
         "name": "Status"
       },
       "meta": {},
-      "source": "crates/ffi/src/keys.rs"
+      "source": "crates/ffi/src/key.rs"
     },
     {
       "name": "ts_key_name",
@@ -10045,7 +10207,7 @@
         "name": "Status"
       },
       "meta": {},
-      "source": "crates/ffi/src/keys.rs"
+      "source": "crates/ffi/src/key.rs"
     },
     {
       "name": "ts_frame_canonical",
@@ -11477,6 +11639,164 @@
       },
       "meta": {},
       "source": "crates/ffi/src/ephemeris.rs"
+    },
+    {
+      "name": "ts_provider_load",
+      "doc": "Opens an adapter and the provider inside it.\n\n`path` is the adapter's platform binary — the file its package ships.\n`config_json` is that adapter's own options, or null; what they mean\nis the adapter's to say and its package's to type.\n\n`UNSUPPORTED` when the file is not an adapter of this version,\n`DATA_MISSING` when it is and its data is not there, `INVALID_ARG`\nwhen its configuration is wrong — each of them the adapter's own\njudgement, passed through with its message rather than replaced.",
+      "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call. Loading a library runs its\ninitialisers, so `path` must be a file the caller trusts.",
+      "params": [
+        {
+          "name": "path",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "config_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_provider",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "pointer",
+              "to": {
+                "kind": "opaque",
+                "name": "TsProvider"
+              },
+              "mutable": true
+            },
+            "mutable": true
+          },
+          "role": "handle_out",
+          "meta": {}
+        },
+        {
+          "name": "out_error",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/provider.rs"
+    },
+    {
+      "name": "ts_context_new_with_provider",
+      "doc": "Creates a context that computes with a **loaded** provider.\n\nThe same as `ts_context_new` in every other respect — `options` may be\nnull for the defaults, and `options.ephemeris` is ignored because this\ncall has already answered the question it asks.\n\nThe context takes its own reference to the adapter, so this handle may\nbe freed immediately afterwards or kept to found another context; the\nlibrary is unloaded when the last of them goes.",
+      "safety": "`provider` must be a live handle from `ts_provider_load`; every\nother pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call.",
+      "params": [
+        {
+          "name": "options",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsContextOptions"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "provider",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsProvider"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "out_context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "pointer",
+              "to": {
+                "kind": "opaque",
+                "name": "TsContext"
+              },
+              "mutable": true
+            },
+            "mutable": true
+          },
+          "role": "handle_out",
+          "meta": {}
+        },
+        {
+          "name": "out_error",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/provider.rs"
+    },
+    {
+      "name": "ts_provider_free",
+      "doc": "Frees a loaded provider; null is ignored.\n\nThe library is unloaded when the last reference goes, so a context\nstill using it keeps it alive and the order of these calls does not\nmatter.",
+      "safety": "`provider` must be null or a handle from `ts_provider_load` that is\nnot used again.",
+      "params": [
+        {
+          "name": "provider",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsProvider"
+            },
+            "mutable": true
+          },
+          "role": "handle",
+          "meta": {}
+        }
+      ],
+      "meta": {},
+      "source": "crates/ffi/src/provider.rs"
     }
   ],
   "blobs": [

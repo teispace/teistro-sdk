@@ -296,12 +296,61 @@ pub fn constructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionD
     })
 }
 
+/// The other ways an opaque type's handle is created.
+///
+/// A class has one constructor and may have more than one way in.
+/// [`constructor`] takes the first function with a `handle_out` for the
+/// type; these are the rest, and each is rendered as a **static
+/// factory** rather than a second constructor, because a class in Node,
+/// Dart and Python has room for exactly one of the latter.
+///
+/// `ts_context_new_with_provider` is the case that called for this, and
+/// it had been placed by no rule at all: its `TsProvider` handle is not
+/// its first parameter, so [`methods`] does not want it, and `TsContext`
+/// already has a constructor. It was described, generated into every
+/// `extern` declaration, and reachable from no binding —
+/// `check-lints`'s `entry-point-is-reachable` exists because of it.
+#[must_use]
+pub fn factories<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
+    let primary = constructor(api, opaque).map(|c| c.name.as_str());
+    api.functions
+        .iter()
+        .filter(|f| {
+            Some(f.name.as_str()) != primary
+                && f.params.iter().any(|p| {
+                    p.role == Role::HandleOut
+                        && pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name)
+                })
+        })
+        .collect()
+}
+
 /// The function that frees an opaque type's handle.
 #[must_use]
 pub fn destructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDef> {
     api.functions.iter().find(|f| {
         f.name.ends_with("_free")
             && f.params.len() == 1
+            && f.params.first().is_some_and(|p| {
+                p.role == Role::Handle
+                    && pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name)
+            })
+    })
+}
+
+/// The last-error reader **of one opaque type**, if it has one.
+///
+/// Matched the way a method is — by the handle its first parameter points
+/// at — and not by its name alone. Named alone it would be found for
+/// every opaque type in the description, which was true while there was
+/// only one; the second (`TsProvider`, ADR-0029) made a generator emit a
+/// reader that passed a provider handle to a function expecting a
+/// context, and the Node addon stopped compiling. A rule that reads the
+/// types cannot make that mistake.
+#[must_use]
+pub fn last_error<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDef> {
+    api.functions.iter().find(|f| {
+        f.name.ends_with("_last_error")
             && f.params.first().is_some_and(|p| {
                 p.role == Role::Handle
                     && pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name)

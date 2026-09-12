@@ -3,6 +3,12 @@ name = "teistro-ephemeris-teimeris"
 version = "0.0.0"
 edition = "2024"
 rust-version = "1.85"
+# **The source in this crate**, which is ours. The artefact it builds is
+# not: it links Teimeris, which is AGPL-3.0, and an Apache-2.0 library
+# that links AGPL code is an AGPL work (ADR-0029). So the packages that
+# **ship** the built library -- `../node`, `../dart`, `../python` --
+# declare `AGPL-3.0-only`, and each carries the licence text. This field
+# describes this crate's own files and nothing downstream of them.
 license = "Apache-2.0"
 publish = false
 description = "The Teimeris adapter of the Teistro SDK's ephemeris port, outside the SDK workspace (ADR-0019); links Teimeris under Teimeris's own terms"
@@ -21,6 +27,12 @@ description = "The Teimeris adapter of the Teistro SDK's ephemeris port, outside
 # Additive like any feature: enabling `full` beside the default leaves the
 # richest enabled tier in force, which is what the builtin crate's own
 # cfg does.
+# A loadable plugin as well as a Rust library: the `cdylib` is what the
+# SDK's loader opens from Node, Python or Dart (ADR-0029), and the `rlib`
+# is what a Rust consumer links directly without paying for a loader.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [features]
 default = ["standard"]
 compact = ["teistro-ephemeris-builtin/compact"]
@@ -91,7 +103,15 @@ serde_json = "1"
 
 # The same table as the SDK workspace; a standalone crate cannot inherit it.
 [lints.rust]
-unsafe_code = "forbid"
+# Denied rather than forbidden, in two modules and for one reason: the
+# generated engine pass-through (`src/dispatch.rs`) calls the engine's C
+# entry points directly, because the functions it offers are the ones the
+# safe binding does not wrap. Everything else in this adapter goes
+# through that binding and holds no `unsafe` at all. `src/passthrough.rs`
+# reads a string the engine lent, which is the one thing the generated
+# code cannot do for itself without writing the same read out twelve
+# times.
+unsafe_code = "deny"
 missing_docs = "warn"
 missing_debug_implementations = "warn"
 unreachable_pub = "warn"

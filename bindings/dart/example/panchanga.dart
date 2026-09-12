@@ -130,20 +130,20 @@ void main() {
   final ctx = teistro.context(
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // Nepali New Year: the first day of Baisakh, BS 2082.
   final day = Calendar.bikramSambat.date(2082, 1, 1);
-  final gregorian = ctx.convert(day, Calendar.gregorian);
+  final gregorian = ctx.calendar.convert(day, Calendar.gregorian);
   // Six in the morning stands in for sunrise, which the almanac would
   // use and which needs the rise-and-set solver.
-  final when = ctx.resolve(day.at(hour: 6), ianaZone('Asia/Kathmandu'));
+  final when = ctx.time.resolve(day.at(hour: 6), ianaZone('Asia/Kathmandu'));
   final found = panchangaAt(
     teistro,
     ctx,
     when.instantJdUtc,
-    ctx.weekdayOf(day),
+    ctx.calendar.weekdayOf(day),
   );
 
   print(
@@ -169,7 +169,7 @@ void main() {
     ('karana', found.karana.fullKey, found.karana.key),
   ];
   for (final (label, fullKey, key) in limbs) {
-    final entity = ctx.entity(fullKey);
+    final entity = ctx.intl.entity(fullKey);
     print(
       '  ${label.padRight(10)} ${entity.name.padRight(14)} '
       '${entity.iast.padRight(18)} ($key)',
@@ -182,14 +182,24 @@ void main() {
     ' elapsed at this instant',
   );
 
-  // The Sun on this day is the reason the year turns: BS begins at the
-  // Mesha Sankranti, when the Sun enters Aries. At six in the morning it
-  // has not quite arrived, which is why the almanac's own year-start is
-  // an instant and not a date.
+  // The Sun on this day is the reason the year turns: BS begins at
+  // the **Mesha Sankranti**, the instant the Sun enters Aries, and the
+  // year's first day is the civil day that instant is reckoned into.
+  // So the number worth printing is how far *past* the crossing this
+  // moment is -- which is why the almanac's year-start is an instant
+  // and not a date.
+  //
+  // A Rust example of the same scenario is what found this wrong. This
+  // file said the Sun "has not quite arrived" and printed 359.9023°
+  // short of Aries, when it had entered Aries two and a half hours
+  // earlier: `(360 - sun) % 360` of a longitude just past zero is just
+  // under 360, and reads as nearly a whole circle still to go.
+  final intoSign = found.sun % 30.0;
   print(
-    '  the Sun stands ${((360.0 - found.sun) % 360.0).toStringAsFixed(4)}°'
-    ' short of Aries, which is what the new year waits for',
+    '  the Sun stands ${intoSign.toStringAsFixed(4)}° into Aries, so the Mesha'
+    ' Sankranti is about ${(intoSign / 0.9856 * 24).toStringAsFixed(1)} hours past --',
   );
+  print('  which is what BS 2082 is reckoned from, and why it opens today');
 
   ctx.dispose();
 }

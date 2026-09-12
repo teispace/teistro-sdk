@@ -86,6 +86,16 @@ jobs:
         run: cargo xtask check-absence
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
+      - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
+        run: cargo xtask check-agreement
+      - name: Pluto page (the fitted tables' span, size and worst error at each tier)
+        run: cargo xtask check-pluto
+      - name: Engine passthrough page (which of the engine's own functions the adapter offers, withholds and has not marshalled)
+        run: cargo xtask check-engine
+      - name: Surface areas page (which boundary modules a consumer reaches, and what a namespaced surface would group by)
+        run: cargo xtask check-areas
+      - name: Rust consumer surface page (how many crates each area needs, and what only the C boundary composes)
+        run: cargo xtask check-rust-surface
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

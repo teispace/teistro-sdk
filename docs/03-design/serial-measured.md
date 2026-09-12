@@ -33,31 +33,26 @@ envelope exists to carry.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every producer stamps the hash of the value it produced | falsified | 2 of 4 disagree |
+| every producer stamps the hash of the value it produced | **holds** | 0 of 4 disagree |
 | every field the envelope documents is filled by someone | falsified | 5 of 10 disagree |
 
 | producer | fills |
 |---|---|
-| `crates/chart/src/foundation.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
+| `crates/chart/src/foundation.rs` | `content_hash`, `provider`, `time.delta_t_model`, `time.leap_table` |
 | `crates/ffi/src/positions.rs` | `content_hash`, `provider`, `time.delta_t_model`, `time.leap_table`, `time.tzdb_version` |
-| `crates/panchanga/src/almanac.rs` | `time.delta_t_model`, `time.leap_table` |
+| `crates/panchanga/src/almanac.rs` | `content_hash`, `provider`, `time.delta_t_model`, `time.leap_table` |
 | `crates/serial/src/seal.rs` | `content_hash` |
 
-**`content_hash` is the hash of nothing on 2 of the 4.**
-`Provenance::new` sets it to `Hash::of(&[])` as a placeholder, and a
-producer that does not replace it ships a value carrying the hash of the
-empty string where its own hash should be — the field is documented as
-"the hash of the canonical serialisation of the value" and on those it
-is not that. They are: `crates/chart/src/foundation.rs`,
-`crates/panchanga/src/almanac.rs`.
-
-That is not a bug in any one producer. It is a **shape** problem: a
-value and its stamp are built separately and joined at the end, so the
-one field that cannot be filled until the value exists is the one
-everybody forgets. `crates/serial`'s answer is to make the joining the
-only way to build the pair, so the hash is computed by the constructor
-and never by a caller who remembers — which is why that crate is in
-the table above and fills it.
+**`content_hash` is the hash of nothing on none of the 4.**
+`Provenance::new` still sets it to `Hash::of(&[])` as a placeholder, and
+every producer now replaces it — but not by remembering to. The shape
+problem this section found is answered the way `crates/serial` answered
+it: a value and its stamp are joined by a constructor that knows both,
+so the one field that cannot be filled until the value exists is filled
+where it can be. `Envelope::sealing` is that join for `chart` and
+`panchanga`, and the four callers that used to mend the stamp afterwards
+— the boundary's two entry points and the Rust façade's two areas —
+no longer do. Four callers writing the same line is what decided it.
 
 Nothing at all fills 5: `module_versions`, `packs`,
 `time.delta_t_seconds`, `calendar`, `applied_conventions`. Each is a
@@ -148,7 +143,7 @@ works, and almost nothing carries it.
 
 ## 6. What this pass decides
 
-- **A value and its stamp are sealed together.** 2 of the
+- **A value and its stamp are sealed together.** 0 of the
 4 producers ship a `content_hash` that is the hash of nothing,
 because the field cannot be filled until the value exists and a
 caller has to remember. The module makes the sealing the only

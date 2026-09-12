@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "teistro-ephemeris-teimeris"
+version = "0.0.0"
+description = "The Teimeris ephemeris, as a Teistro adapter: the descriptor the SDK's ephemeris chain takes, and a typed facade over the engine's own operations."
+readme = "README.md"
+requires-python = ">=3.11"
+# AGPL-3.0-only, because the library this package ships links Teimeris,
+# which is AGPL, and an Apache-2.0 library that links AGPL code is an AGPL
+# work (ADR-0029). The Rust crate beside it keeps `license = "Apache-2.0"`
+# for its own source; this is the licence of what is distributed.
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
+authors = [{ name = "Teispace", email = "support@teispace.com" }]
+keywords = ["astrology", "ephemeris", "teimeris", "swiss-ephemeris"]
+classifiers = [
+  "Private :: Do Not Upload",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "Typing :: Typed",
+]
+# The SDK, which this extends. No other runtime dependency: the adapter's
+# own library is a file this package ships and `ctypes` in the SDK loads.
+dependencies = ["teistro"]
+
+[project.urls]
+Homepage = "https://github.com/teispace/teistro-sdk"
+Repository = "https://github.com/teispace/teistro-sdk"
+
+[tool.setuptools.packages.find]
+include = ["teistro_ephemeris_teimeris*"]
+
+[tool.setuptools.package-data]
+teistro_ephemeris_teimeris = ["py.typed", "*.dylib", "*.so", "*.dll"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+files = ["teistro_ephemeris_teimeris", "typecheck"]
+# The SDK's own settings, for the SDK's own reason: `ctypes` answers
+# `Any` for a looked-up symbol, and the generated layer holds those in
+# fields it declares as `Any` deliberately.
+disallow_any_explicit = false

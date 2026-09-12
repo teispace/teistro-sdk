@@ -16,7 +16,7 @@
 //   * A value a day may not have is **absent**, never a sentinel: no
 //     sankranti is `null`, not Julian day zero.
 //
-// `testProvider: true` selects the analytic ephemeris the SDK carries,
+// `Ephemeris.builtin` selects the analytic ephemeris the SDK carries,
 // so this file runs anywhere.
 
 import 'package:teistro/teistro.dart';
@@ -37,7 +37,7 @@ void main() {
   final ctx = teistro.context(
     profile: 'parashari-classical',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // A locale pack names most of the catalogue and not all of it: `masa`
@@ -45,7 +45,7 @@ void main() {
   // an almanac falls back to the key rather than refusing to print.
   String name(String key) {
     try {
-      return ctx.entity(key).name;
+      return ctx.intl.entity(key).name;
     } on TeistroException {
       return key
           .substring(key.indexOf('.') + 1)
@@ -61,7 +61,7 @@ void main() {
   );
 
   // ── One crossing for the whole week ─────────────────────────────────
-  final week = ctx.almanac(
+  final week = ctx.almanac.of(
     from: Calendar.gregorian.date(2024, 6, 17),
     to: Calendar.gregorian.date(2024, 6, 23),
     place: place,
@@ -159,7 +159,7 @@ void main() {
 
   // A day on its own is the range of one unwrapped: same crossing, and
   // the answer is a day rather than a list of one.
-  final one = ctx.almanacDay(
+  final one = ctx.almanac.day(
     date: Calendar.gregorian.date(2024, 6, 21),
     place: place,
     utcOffsetSeconds: offsetSeconds,

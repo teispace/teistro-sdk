@@ -28,11 +28,11 @@ const two = (value) => String(value).padStart(2, '0');
  * construction.
  */
 function monthPage(ctx, year, month) {
-  const length = ctx.monthLength(Calendar.BikramSambat, year, month);
+  const length = ctx.calendar.monthLength(Calendar.BikramSambat, year, month);
   const first = date(Calendar.BikramSambat, year, month, 1);
   // ISO weekday 1..7; a calendar page starts on Monday, so the first of
   // the month sits at column `weekday - 1`.
-  const lead = ctx.weekdayOf(first) - 1;
+  const lead = ctx.calendar.weekdayOf(first) - 1;
 
   const cells = [
     ...Array.from({ length: lead }, () => ''),
@@ -53,8 +53,8 @@ const described = (day) =>
 
 const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP' });
 const say = messages({
-  render: (key, params) => ctx.render(key, params).text,
-  entity: (key) => ctx.entity(key),
+  render: (key, params) => ctx.intl.render(key, params).text,
+  entity: (key) => ctx.intl.entity(key),
 });
 const year = 2082;
 
@@ -62,10 +62,10 @@ const year = 2082;
 console.log(`BS ${year}`);
 let total = 0;
 for (let month = 1; month <= 12; month++) {
-  const length = ctx.monthLength(Calendar.BikramSambat, year, month);
+  const length = ctx.calendar.monthLength(Calendar.BikramSambat, year, month);
   total += length;
-  const starts = ctx.convert(date(Calendar.BikramSambat, year, month, 1), Calendar.Gregorian);
-  const ends = ctx.convert(date(Calendar.BikramSambat, year, month, length), Calendar.Gregorian);
+  const starts = ctx.calendar.convert(date(Calendar.BikramSambat, year, month, 1), Calendar.Gregorian);
+  const ends = ctx.calendar.convert(date(Calendar.BikramSambat, year, month, length), Calendar.Gregorian);
   const name = say.sdk.calendar.bikramSambat.monthName({ month });
   console.log(
     `  ${String(month).padStart(2)}  ${name.padEnd(10)} ${String(length).padStart(2)} days   ` +
@@ -86,12 +86,12 @@ console.log(monthPage(ctx, year, 1));
 // ── The round trip, and what each date says about itself ───────────────
 console.log('');
 const newYear = date(Calendar.BikramSambat, year, 1, 1);
-const gregorian = ctx.convert(newYear, Calendar.Gregorian);
-const back = ctx.convert(gregorian, Calendar.BikramSambat);
+const gregorian = ctx.calendar.convert(newYear, Calendar.Gregorian);
+const back = ctx.calendar.convert(gregorian, Calendar.BikramSambat);
 console.log(`  BS   ${described(newYear)}`);
 console.log(`  ->   ${described(gregorian)}`);
 console.log(`  ->   ${described(back)}`);
-console.log(`  fixed day ${ctx.fixedOf(newYear)}, weekday ${ctx.weekdayOf(newYear)}`);
+console.log(`  fixed day ${ctx.calendar.fixedOf(newYear)}, weekday ${ctx.calendar.weekdayOf(newYear)}`);
 
 // ── Inside the table, and outside it ───────────────────────────────────
 // A date a caller *states* is always `defined`: it is what was asked for.
@@ -99,8 +99,8 @@ console.log(`  fixed day ${ctx.fixedOf(newYear)}, weekday ${ctx.weekdayOf(newYea
 // read is the one on the answer.
 console.log('');
 for (const asked of [2082, 2200, 1960]) {
-  const greg = ctx.convert(date(Calendar.BikramSambat, asked, 1, 1), Calendar.Gregorian);
-  const answer = ctx.convert(greg, Calendar.BikramSambat);
+  const greg = ctx.calendar.convert(date(Calendar.BikramSambat, asked, 1, 1), Calendar.Gregorian);
+  const answer = ctx.calendar.convert(greg, Calendar.BikramSambat);
   console.log(
     `  BS ${asked} began ${greg.year}-${two(greg.month)}-${two(greg.day)},` +
       ` and the answer is [${answer.resolution}]`,

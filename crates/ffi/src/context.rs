@@ -17,20 +17,13 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use teistro_astro::DeltaTModel;
 use teistro_core::Status;
 use teistro_core::error::Error;
-use teistro_core::settings::{
-    DEFAULT_PROFILE, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
-};
+use teistro_core::settings::{Resolved, Settings};
 use teistro_intl::Intl;
-use teistro_intl::pack::locales_from_packs;
-use teistro_port_ephemeris::{
-    CachingProvider, EphemerisProvider, ProviderVtable, TestProvider, VtableProvider,
-};
+use teistro_port_ephemeris::{EphemerisProvider, ProviderVtable, VtableProvider};
 
 use crate::TS_CONTEXT_TEST_PROVIDER;
-use crate::strings::{TsHash, TsStr, TsString};
+use crate::string::{TsHash, TsStr, TsString};
 use crate::support::{c_struct, optional_text, read_in, with_context, write_out, write_plain};
-
-include!(concat!(env!("OUT_DIR"), "/bundles.rs"));
 
 /// Which of the SDK's own ephemerides a context computes with when no
 /// provider vtable is given.
@@ -137,19 +130,34 @@ c_struct!(TsContextOptions, TsError);
 
 /// An opaque context: settings, a provider, the locale engine, the last
 /// error. Used by one thread at a time.
+// **Everything above this line is the C header's documentation**, which
+// `cargo xtask gen ffi` extracts and `check-ffi` holds — so a note to
+// this repository's maintainers goes here, in a comment the generator
+// does not read, and not in the sentence a C consumer meets.
+//
+// The note: the composition is the façade's (`teistro::Context`). The
+// settings, the provider, the locale engine and the ΔT model are
+// resolved there, so a Rust consumer and a C caller get the same context
+// built the same way rather than two compositions that have to be kept
+// equal by hand. `03-design/rust-consumer-surface.md` §3 decided it, and
+// the measured page's last two properties are its acceptance test.
 pub struct TsContext {
-    settings: Resolved,
-    provider: Option<Box<dyn EphemerisProvider>>,
-    intl: RefCell<Intl>,
-    delta_t: DeltaTModel,
+    inner: teistro::Context,
     scratch: RefCell<Scratch>,
+    /// A reference that keeps a loaded adapter's library in memory for
+    /// as long as this context might call into it (ADR-0029).
+    ///
+    /// **Declared last on purpose**: fields drop in declaration order, so
+    /// `provider` — whose vtable is a table of function pointers into
+    /// that library — is gone before the library can be unloaded.
+    loaded: Option<crate::provider::Keepalive>,
 }
 
 impl core::fmt::Debug for TsContext {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("TsContext")
-            .field("profile", &self.settings.profile)
-            .field("provider", &self.provider.is_some())
+            .field("profile", &self.inner.profile())
+            .field("provider", &self.inner.ephemeris().is_some())
             .finish_non_exhaustive()
     }
 }
@@ -188,91 +196,92 @@ impl TsContext {
     pub fn build(
         profile: Option<&str>,
         settings_json: Option<&str>,
-        provider: Option<Box<dyn EphemerisProvider>>,
+        ephemeris: teistro::Ephemeris,
         locale: Option<&str>,
     ) -> Result<TsContext, Error> {
-        let id = profile.unwrap_or(DEFAULT_PROFILE);
-        let profile = Profile::shipped(id).ok_or_else(|| {
-            Error::unsupported(format!("no shipped profile `{id}`"))
-                .with_field("profile")
-                .with_hint(format!(
-                    "the shipped profiles are {}",
-                    SHIPPED_PROFILES.join(", ")
-                ))
-        })?;
-        let patch: SettingsPatch = match settings_json {
-            Some(json) => serde_json::from_str(json).map_err(|e| {
-                Error::invalid_arg(format!("the settings patch does not parse: {e}"))
-                    .with_field("settings_json")
-            })?,
-            None => SettingsPatch::default(),
-        };
-        let settings = profile.resolve(&patch)?;
-        let bundles: Vec<&[u8]> = BUNDLES.iter().map(|(_, bytes)| *bytes).collect();
-        let locales = locales_from_packs(&bundles).map_err(|e| {
-            Error::new(
-                Status::Pack,
-                format!("the embedded bundles do not load: {e}"),
-            )
-        })?;
-        let mut intl = Intl::new(locales)
-            .map_err(|e| Error::internal(format!("the locale engine did not start: {e}")))?;
-        if let Some(tag) = locale {
-            intl.set_locale(tag)
-                .map_err(|e| unknown_locale(&intl, tag, &e.to_string()))?;
+        // **The façade composes it.** This function used to resolve the
+        // profile, parse the patch, load the embedded bundles, start the
+        // locale engine, read the ΔT knob and wrap the provider in its
+        // cache -- and `teistro::Context` does all of that, because a
+        // Rust consumer needed it too and two compositions kept equal by
+        // hand is one composition and a hope.
+        let mut building = teistro::Context::builder();
+        if let Some(id) = profile {
+            building = building.profile(id);
         }
-        let delta_t = DeltaTModel::from_knob(settings.settings.time.delta_t).unwrap_or_default();
-        let provider = remembering(provider, settings.settings.provider.cache_cells);
+        if let Some(json) = settings_json {
+            building = building.settings_json(json);
+        }
+        if let Some(tag) = locale {
+            building = building.locale(tag);
+        }
+        // One entry, never a chain: a C caller names one ephemeris and
+        // gets it or a refusal, which is what `ts_context_new`'s
+        // selector means. A chain is the ergonomic layers' shape,
+        // assembled above this boundary.
         Ok(TsContext {
-            settings,
-            provider,
-            intl: RefCell::new(intl),
-            delta_t,
+            inner: building.ephemeris([ephemeris]).build()?,
             scratch: RefCell::new(Scratch::default()),
+            loaded: None,
         })
+    }
+
+    /// The same context, keeping a loaded adapter's library alive for as
+    /// long as it lives (ADR-0029).
+    #[must_use]
+    pub(crate) fn keeping(mut self, loaded: crate::provider::Keepalive) -> TsContext {
+        self.loaded = Some(loaded);
+        self
+    }
+
+    /// The SDK's own context, for what a binding reaches through this
+    /// one.
+    #[must_use]
+    pub fn sdk(&self) -> &teistro::Context {
+        &self.inner
     }
 
     /// The resolved settings.
     #[must_use]
     pub fn settings(&self) -> &Settings {
-        &self.settings.settings
+        self.inner.settings()
     }
 
     /// The whole resolution, which the chart layer takes: the settings
     /// with the profile they came from and what was applied to get them.
     #[must_use]
-    pub const fn resolved(&self) -> &Resolved {
-        &self.settings
+    pub fn resolved(&self) -> &Resolved {
+        self.inner.resolved()
     }
 
     /// The profile the settings came from.
     #[must_use]
     pub fn profile(&self) -> &str {
-        self.settings.profile.as_str()
+        self.inner.profile()
     }
 
     /// The provider, when the context has one.
     #[must_use]
     pub fn provider(&self) -> Option<&dyn EphemerisProvider> {
-        self.provider.as_deref()
+        self.inner.ephemeris()
     }
 
     /// The Delta T model the settings chose.
     #[must_use]
-    pub const fn delta_t(&self) -> DeltaTModel {
-        self.delta_t
+    pub fn delta_t(&self) -> DeltaTModel {
+        self.inner.delta_t()
     }
 
     /// The locale engine.
     #[must_use]
     pub fn intl(&self) -> Ref<'_, Intl> {
-        self.intl.borrow()
+        self.inner.locale_engine()
     }
 
     /// The locale engine, to change it.
     #[must_use]
     pub fn intl_mut(&self) -> RefMut<'_, Intl> {
-        self.intl.borrow_mut()
+        self.inner.locale_engine_mut()
     }
 
     /// Starts a call: the strings lent by the previous call are released
@@ -336,29 +345,26 @@ pub(crate) fn unknown_locale(intl: &Intl, tag: &str, detail: &str) -> Error {
         ))
 }
 
-/// The provider a context will use, wrapped in a memo when the settings
-/// ask for one.
+/// Which of the SDK's own providers a caller asked for, and the one it
+/// gets.
 ///
-/// This is where `provider.cache_cells` is read, and it has to be here: a
-/// Rust caller wraps their own provider, but a binding caller hands the
-/// SDK a vtable and the SDK owns the box, so nothing but the boundary can
-/// put a cache under it. Nought is off, and so is a provider that does
-/// not declare `deterministic` — [`CachingProvider`] refuses to cache one
-/// rather than being wrong about it, and reports the inner provider's
-/// capabilities unchanged either way, so no provenance stamp can tell
-/// the memo is there.
-fn remembering(
-    provider: Option<Box<dyn EphemerisProvider>>,
-    cells: u32,
-) -> Option<Box<dyn EphemerisProvider>> {
-    let inner = provider?;
-    if cells == 0 {
-        return Some(inner);
-    }
-    Some(Box::new(CachingProvider::with_capacity(
-        inner,
-        cells as usize,
-    )))
+/// The selector and `TS_CONTEXT_TEST_PROVIDER` are two spellings of one
+/// question, so they are answered in one place: the selector decides
+/// whenever it is not `NONE`, and the flag decides when it is. A total
+/// rule rather than a conflict to report, and one code path, so the two
+/// cannot drift apart (ADR-0028).
+fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
+    let Some(asked) = TsEphemeris::from_repr(ephemeris) else {
+        return Err(Error::invalid_arg(format!(
+            "options.ephemeris is {ephemeris}, which names no ephemeris; \
+             it is 0 for none, 1 for the built-in, 2 for the test provider"
+        ))
+        .with_field("options.ephemeris"));
+    };
+    Ok(match asked {
+        TsEphemeris::None if flags & TS_CONTEXT_TEST_PROVIDER != 0 => TsEphemeris::Test,
+        other => other,
+    })
 }
 
 /// Creates a context. `options` may be null for every default; `provider`
@@ -427,8 +433,92 @@ unsafe fn build(
     };
     let flags = options.map_or(0, |o| o.flags);
     // SAFETY: the entry point's contract.
-    let (profile, settings_json, locale) = unsafe {
-        (
+    let (profile, settings_json, locale) = unsafe { texts_of(options) }?;
+    let ephemeris = options.map_or(0, |o| o.ephemeris);
+    let chosen: teistro::Ephemeris = if provider.is_null() {
+        own_ephemeris(ephemeris, flags)?
+    } else {
+        // SAFETY: non-null; the caller promises a readable vtable whose
+        // functions stay valid with `provider_user_data`.
+        let bound = unsafe { VtableProvider::bind(ptr::read(provider), provider_user_data) }?;
+        teistro::Ephemeris::Provider(Box::new(bound))
+    };
+    TsContext::build(profile, settings_json, chosen, locale)
+}
+
+/// The ephemeris a caller asked for by name, or the refusal that says
+/// why this build has none.
+fn own_ephemeris(ephemeris: u8, flags: u32) -> Result<teistro::Ephemeris, Error> {
+    Ok(match resolve(ephemeris, flags)? {
+        TsEphemeris::None => teistro::Ephemeris::None,
+        TsEphemeris::Test => teistro::Ephemeris::Test,
+        TsEphemeris::Builtin => builtin()?,
+    })
+}
+
+/// The built-in ephemeris, when this library was built with it.
+///
+/// A build without it refuses **by name**: not a silent fall back to no
+/// ephemeris, and not a silent fall back to the test provider, because
+/// either would answer a chart the caller did not ask for (ADR-0028).
+///
+/// The façade gates the *variant* on the feature, so a Rust consumer
+/// without it cannot name `Builtin` at all -- a compile error rather
+/// than this refusal, which is the better answer where a binding can
+/// have it. A C caller passes a number, so the refusal stays here.
+#[cfg(feature = "builtin-ephemeris")]
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "the other half of this cfg pair is all error; one signature               keeps the caller from having two"
+)]
+fn builtin() -> Result<teistro::Ephemeris, Error> {
+    Ok(teistro::Ephemeris::Builtin)
+}
+
+#[cfg(not(feature = "builtin-ephemeris"))]
+fn builtin() -> Result<teistro::Ephemeris, Error> {
+    Err(Error::new(
+        teistro_core::error::Status::Unsupported,
+        "this build of the library has no built-in ephemeris: rebuild with \
+         the `builtin-ephemeris` feature, or pass a provider vtable to \
+         ts_context_new",
+    )
+    .with_field("options.ephemeris"))
+}
+
+/// The three strings an options record carries: profile, settings and
+/// locale, each optional.
+pub(crate) type OptionTexts<'a> = (Option<&'a str>, Option<&'a str>, Option<&'a str>);
+
+/// The three strings an options record carries, checked and borrowed.
+///
+/// Shared by both ways of making a context, so a field added here reaches
+/// each of them and neither can forget one.
+///
+/// # Safety
+///
+/// `options` must be null or a readable record whose strings stay valid
+/// for the returned lifetime.
+pub(crate) unsafe fn read_options<'a>(
+    options: *const TsContextOptions,
+) -> Result<OptionTexts<'a>, Error> {
+    let options = if options.is_null() {
+        None
+    } else {
+        // SAFETY: the caller's contract.
+        Some(unsafe { read_in(options, "options") }?)
+    };
+    // SAFETY: the caller's contract.
+    unsafe { texts_of(options) }
+}
+
+/// # Safety
+///
+/// The record's strings must stay valid for the returned lifetime.
+unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts<'a>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe {
+        Ok((
             optional_text(
                 options.map_or(ptr::null(), |o| o.profile),
                 "options.profile",
@@ -438,75 +528,8 @@ unsafe fn build(
                 "options.settings_json",
             )?,
             optional_text(options.map_or(ptr::null(), |o| o.locale), "options.locale")?,
-        )
-    };
-    let ephemeris = options.map_or(0, |o| o.ephemeris);
-    let provider: Option<Box<dyn EphemerisProvider>> = if provider.is_null() {
-        own_provider(ephemeris, flags)?
-    } else {
-        // SAFETY: non-null; the caller promises a readable vtable whose
-        // functions stay valid with `provider_user_data`.
-        let bound = unsafe { VtableProvider::bind(ptr::read(provider), provider_user_data) }?;
-        Some(Box::new(bound))
-    };
-    TsContext::build(profile, settings_json, provider, locale)
-}
-
-/// Which of the SDK's own providers a caller asked for, and the one it
-/// gets.
-///
-/// The selector and `TS_CONTEXT_TEST_PROVIDER` are two spellings of one
-/// question, so they are answered in one place: the selector decides
-/// whenever it is not `NONE`, and the flag decides when it is. A total
-/// rule rather than a conflict to report, and one code path, so the two
-/// cannot drift apart (ADR-0028).
-fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
-    let Some(asked) = TsEphemeris::from_repr(ephemeris) else {
-        return Err(Error::invalid_arg(format!(
-            "options.ephemeris is {ephemeris}, which names no ephemeris; \
-             it is 0 for none, 1 for the built-in, 2 for the test provider"
         ))
-        .with_field("options.ephemeris"));
-    };
-    Ok(match asked {
-        TsEphemeris::None if flags & TS_CONTEXT_TEST_PROVIDER != 0 => TsEphemeris::Test,
-        other => other,
-    })
-}
-
-/// The provider a caller asked for by name, or the refusal that says why
-/// this build has none.
-fn own_provider(ephemeris: u8, flags: u32) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
-    Ok(match resolve(ephemeris, flags)? {
-        TsEphemeris::None => None,
-        TsEphemeris::Test => Some(Box::new(TestProvider::new())),
-        TsEphemeris::Builtin => Some(builtin()?),
-    })
-}
-
-/// The built-in ephemeris, when this library was built with it.
-///
-/// A build without it refuses **by name**: not a silent fall back to no
-/// ephemeris, and not a silent fall back to the test provider, because
-/// either would answer a chart the caller did not ask for (ADR-0028).
-#[cfg(feature = "builtin-ephemeris")]
-#[expect(
-    clippy::unnecessary_wraps,
-    reason = "the other half of this cfg pair is all error; one signature               keeps the caller from having two"
-)]
-fn builtin() -> Result<Box<dyn EphemerisProvider>, Error> {
-    Ok(Box::new(teistro_ephemeris_builtin::provider::Builtin::new()))
-}
-
-#[cfg(not(feature = "builtin-ephemeris"))]
-fn builtin() -> Result<Box<dyn EphemerisProvider>, Error> {
-    Err(Error::new(
-        teistro_core::error::Status::Unsupported,
-        "this build of the library has no built-in ephemeris: rebuild with \
-         the `builtin-ephemeris` feature, or pass a provider vtable to \
-         ts_context_new",
-    )
-    .with_field("options.ephemeris"))
+    }
 }
 
 /// Frees a context; null is ignored.
@@ -638,18 +661,15 @@ mod tests {
         reason = "tests fail by panicking"
     )]
 
-    use super::{
-        TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_provider, remembering, resolve,
-    };
+    use super::{TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_ephemeris, resolve};
     use teistro_core::settings::DEFAULT_CACHE_CELLS;
-    use teistro_port_ephemeris::{
-        Body, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale,
-    };
+    use teistro_port_ephemeris::EphemerisProvider;
 
     /// The knob's default is the port's default, in one place.
     #[test]
     fn the_shipped_profile_remembers_what_a_range_needs() {
-        let context = TsContext::build(None, None, None, None).expect("the default profile");
+        let context = TsContext::build(None, None, teistro::Ephemeris::None, None)
+            .expect("the default profile");
         assert_eq!(
             context.settings().provider.cache_cells,
             DEFAULT_CACHE_CELLS,
@@ -663,50 +683,10 @@ mod tests {
     fn the_knob_is_reachable_from_a_settings_patch() {
         for cells in [0u32, 1, 4096] {
             let patch = format!(r#"{{"provider":{{"cache_cells":{cells}}}}}"#);
-            let context =
-                TsContext::build(None, Some(&patch), None, None).expect("the patch applies");
+            let context = TsContext::build(None, Some(&patch), teistro::Ephemeris::None, None)
+                .expect("the patch applies");
             assert_eq!(context.settings().provider.cache_cells, cells);
         }
-    }
-
-    /// Nought is off: the provider the context holds is the one it was
-    /// given.
-    #[test]
-    fn a_capacity_of_nothing_wraps_nothing() {
-        let plain = remembering(Some(Box::new(TestProvider::new())), 0).expect("a provider");
-        let jds = [2_451_545.0];
-        let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
-        // Whether or not it is wrapped, it answers; what this pins is that
-        // the identity a provenance stamp reads is unchanged.
-        assert!(plain.positions(&request).is_ok());
-        assert_eq!(
-            plain.capabilities().identity.name,
-            TestProvider::new().capabilities().identity.name
-        );
-    }
-
-    /// A memo under the boundary answers the second batch without asking,
-    /// and still reports the provider it wraps rather than itself.
-    #[test]
-    fn a_capacity_puts_a_memo_under_the_boundary() {
-        let cached = remembering(Some(Box::new(TestProvider::new())), 64).expect("a provider");
-        let jds = [2_451_545.0, 2_451_546.0];
-        let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
-        let first = cached.positions(&request).expect("it answers");
-        let second = cached.positions(&request).expect("and answers again");
-        assert_eq!(first, second, "the same answer, cell for cell");
-        assert_eq!(
-            cached.capabilities().identity.name,
-            TestProvider::new().capabilities().identity.name,
-            "the stamp cannot tell the memo is there"
-        );
-    }
-
-    /// Without a provider there is nothing to wrap, whatever the knob says.
-    #[test]
-    fn no_provider_is_still_no_provider() {
-        assert!(remembering(None, DEFAULT_CACHE_CELLS).is_none());
-        assert!(remembering(None, 0).is_none());
     }
 
     /// The selector and the flag are two spellings of one question, and
@@ -758,8 +738,12 @@ mod tests {
     #[cfg(feature = "builtin-ephemeris")]
     #[test]
     fn the_built_in_selector_yields_an_ephemeris_that_computes() {
-        let provider = own_provider(TsEphemeris::Builtin as u8, 0)
+        // Opened here rather than asserted as a variant: what this pins
+        // is that a selector alone yields something that computes.
+        let provider = own_ephemeris(TsEphemeris::Builtin as u8, 0)
             .expect("the built-in is compiled in")
+            .open()
+            .expect("it opens")
             .expect("and is a provider");
         let capabilities = provider.capabilities();
         assert_eq!(capabilities.identity.name, "teistro-builtin");
@@ -782,7 +766,7 @@ mod tests {
     fn without_the_feature_the_built_in_is_refused_by_name() {
         // A `match` rather than `expect_err`, which would want `Debug` on
         // a boxed trait object that has no reason to carry it.
-        let Err(error) = own_provider(TsEphemeris::Builtin as u8, 0) else {
+        let Err(error) = own_ephemeris(TsEphemeris::Builtin as u8, 0) else {
             panic!("a build without the feature must refuse the built-in");
         };
         assert_eq!(error.status, teistro_core::error::Status::Unsupported);

@@ -221,16 +221,68 @@ providers**" and the engine half of that does not exist outside Rust:
   Ephemeris; `ts_provider_load` and `ts_provider_free` at the boundary,
   one loader rather than three; an adapter package per target that ships
   a platform binary and its licence.
+
+  Everything but the last clause is built. The per-target packages were
+  surveyed on 2026-09-12 and the cost is not where it looked: the engine
+  compiles from source on any target (`teimeris-sys` carries `core/` and
+  `data/` in its `.crate` for precisely that) and embeds one tier of
+  ephemeris data, about 2 MB, so a package needs no licensed data
+  directory at install time. What is left is **one decision that is the
+  maintainer's** — how this repository's CI obtains the Teimeris source,
+  given that it cannot be a sibling checkout as it is today, and that
+  the SDK's tree and workspace are deliberately AGPL-free. STATUS.md's
+  "How to resume" states the options and what each costs.
 - **The engine route is wired.** The Teimeris adapter answers the port's
   `native_manifest` and `native_call` from its own 161-function IDL,
   which it has always described and never exposed, so `sdk.engine.*`
   reaches an engine at last.
 - **The typed engine façade is generated into the adapter**, not into the
   SDK, so the port stays agnostic while a consumer who installs the
-  adapter gets 161 typed operations.
+  adapter gets typed operations for everything the marshaller carries.
+  How many that is, is a measurement and not a target:
+  [`03-design/engine-passthrough-measured.md`](../03-design/engine-passthrough-measured.md)
+  classifies all 161 into what is callable, what the adapter will never
+  hand over, and what is queued behind one more shape.
 - **The surface is namespaced** — `sdk.<area>.<operation>`, the areas
   derived from the boundary modules the reference site already groups by.
   Cheap now and breaking after v1, and every phase from here adds areas.
+
+  Built in all four bindings, and Rust's own surface is measured
+  (`03-design/rust-consumer-surface-measured.md`, gated by
+  `check-rust-surface`) and designed
+  (`03-design/rust-consumer-surface.md`, settling ADR-0030 §9). An
+  area's operations come from one SDK crate **1 time in 8** — `chart`
+  needs six crates, `almanac` seven — 23 of the 46 entry points reach
+  two or more, and two of the nine a context needs are held by
+  `crates/ffi` and by nothing else. So the composition that makes a
+  context exists in Rust nowhere but the C boundary, and the façade is
+  the first place it would exist rather than a convenience over it.
+
+  The design moves that composition **into** the façade and has
+  `teistro-ffi` depend on it, keeping only its marshalling; the measured
+  page's last two properties are the acceptance test, flipping from
+  falsified to holding when it lands. Order of work: the façade beside
+  the boundary, the fourth parity runner, then the dependency inversion,
+  then the examples, then the site.
+
+  **Done — every step of it**, and the acceptance test says so: *the
+  façade owns the composition* holds 0 of 8, and *the boundary is
+  inverted onto it* holds 0 of 1. `crates/sdk` is the crate `teistro`,
+  with all eight areas and the root, the ephemeris chain, 25 tests
+  asserting the C smoke test's own facts in the same words, and eight
+  runnable examples held by `cargo xtask check-rust` on five platforms.
+  `TsContext` wraps a `teistro::Context` and `TsContext::build` is a
+  call into the builder, so a C caller and a Rust consumer get the same
+  context resolved the same way.
+
+  What proves it equal rather than merely compiling is the **fourth
+  parity runner**: 665 of the other three's 674 values, every one
+  identical, reached in five passes with every added key agreeing on its
+  first run. The nine it does not print are named rather than counted,
+  and `check-parity` holds the list exhaustively in both directions.
+  `check-areas` reads four runners now, and the measured page gained a
+  third property — *every type an area's signature names is reachable
+  from the crate root* — which was born red on four.
 
 The **v1 target matrix** is Rust, Node, wasm, Flutter/Dart and Python,
 with C as the ABI beneath them. wasm is already Phase 5's binding; what

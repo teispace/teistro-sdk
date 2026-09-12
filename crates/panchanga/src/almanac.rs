@@ -220,13 +220,17 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// muhurta yoga table the SDK does not ship.
     pub fn day(&self, date: &CalendarDate, place: &Place) -> Result<Envelope<Panchanga>, Error> {
         let value = self.value(date, place)?;
-        let provenance = self.provenance(content_hash(&Input {
-            date: date.to_string(),
-            latitude_deg: place.latitude.get(),
-            longitude_deg: place.longitude.get(),
-            altitude_m: place.altitude.get(),
-        }));
-        Ok(Envelope::new(value, provenance))
+        let frame = self.frame(value.window.from)?;
+        let provenance = self.provenance(
+            content_hash(&Input {
+                date: date.to_string(),
+                latitude_deg: place.latitude.get(),
+                longitude_deg: place.longitude.get(),
+                altitude_m: place.altitude.get(),
+            }),
+            frame,
+        );
+        Ok(Envelope::sealing(value, provenance))
     }
 
     /// The almanac of the day an instant belongs to, which before sunrise
@@ -281,14 +285,23 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             let date = self.calendar.date_of(first.plus_days(offset))?;
             values.push(self.value(&date, place)?);
         }
-        let provenance = self.provenance(content_hash(&RangeInput {
-            from: from.to_string(),
-            to: to.to_string(),
-            latitude_deg: place.latitude.get(),
-            longitude_deg: place.longitude.get(),
-            altitude_m: place.altitude.get(),
-        }));
-        Ok(Envelope::new(values, provenance))
+        // The frame is the first day's: the batch asks the provider for
+        // one frame, so one is what the stamp names.
+        let frame = match values.first() {
+            Some(first) => self.frame(first.window.from)?,
+            None => return Err(Error::internal("a range of days answered no day")),
+        };
+        let provenance = self.provenance(
+            content_hash(&RangeInput {
+                from: from.to_string(),
+                to: to.to_string(),
+                latitude_deg: place.latitude.get(),
+                longitude_deg: place.longitude.get(),
+                altitude_m: place.altitude.get(),
+            }),
+            frame,
+        );
+        Ok(Envelope::sealing(values, provenance))
     }
 
     /// One day's value, unstamped.
@@ -524,7 +537,19 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     }
 
     /// The stamp every value carries.
-    fn provenance(&self, input: Hash) -> Provenance {
+    ///
+    /// **The provider is named**, as the chart foundation names it. It
+    /// was not until a Rust example printed `provider` off an almanac's
+    /// envelope and got an empty string: a stored page said nothing
+    /// about what computed it, in all four bindings, because nothing
+    /// printed the field.
+    ///
+    /// `flags_used` is **empty and not a guess**. The chart passes the
+    /// completion's steps there, and this path does not have them: its
+    /// positions come through `FrameLongitudes`, which keeps no step
+    /// list, so there is nothing here to vouch for. An empty list is the
+    /// refusal; a plausible one would be a fabrication.
+    fn provenance(&self, input: Hash, frame: Frame) -> Provenance {
         let mut provenance = Provenance::new(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
             CALCULATION_VERSION,
@@ -533,6 +558,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             self.settings().hash(),
             input,
         );
+        provenance.provider = self
+            .provider
+            .capabilities()
+            .identity
+            .stamp(frame, Vec::new());
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance

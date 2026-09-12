@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 43 entry points over 27 structs and 92 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 46 entry points over 27 structs and 92 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -20,11 +20,11 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_build_info`](library/ts_build_info) | What this build is, as a static NUL-terminated JSON object: the SDK version, the ABI and catalogue versions, the commit and whether its tree was clean, the profile, the target, whether debug assertions and optimisation are on, the sanitizer if any, and the compiler. |
 | [`ts_status_message`](library/ts_status_message) | A static NUL-terminated English phrase for a status code; `unknown status` for a code this build does not know. |
 
-### Strings
+### String
 
 | entry point | what it does |
 |---|---|
-| [`ts_string_free`](strings/ts_string_free) | Frees a string the library allocated and zeroes the descriptor; null or an empty string is ignored. |
+| [`ts_string_free`](string/ts_string_free) | Frees a string the library allocated and zeroes the descriptor; null or an empty string is ignored. |
 
 ### Blob
 
@@ -43,12 +43,12 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_context_settings_json`](context/ts_context_settings_json) | The resolved settings as their canonical JSON document, allocated for the caller; free it with `ts_string_free`. |
 | [`ts_context_settings_hash`](context/ts_context_settings_hash) | The SHA-256 of the canonical settings document: the `settings_hash` every result's provenance carries. |
 
-### Keys
+### Key
 
 | entry point | what it does |
 |---|---|
-| [`ts_key_parse`](keys/ts_key_parse) | Resolves a full key (`graha.SUN`, an alias, or a former key) to its packed id. |
-| [`ts_key_name`](keys/ts_key_name) | The full key of a packed id (`graha.SUN`), lent until the next call on the context. |
+| [`ts_key_parse`](key/ts_key_parse) | Resolves a full key (`graha.SUN`, an alias, or a former key) to its packed id. |
+| [`ts_key_name`](key/ts_key_name) | The full key of a packed id (`graha.SUN`), lent until the next call on the context. |
 
 ### Frame
 
@@ -117,6 +117,14 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_ephemeris_manifest`](ephemeris/ts_ephemeris_manifest) | What the context's engine says it offers beyond this library's own operations: its manifest, as the engine wrote it. |
 | [`ts_ephemeris_call`](ephemeris/ts_ephemeris_call) | Calls one of the engine's own operations by the name its manifest gives. |
 
+### Provider
+
+| entry point | what it does |
+|---|---|
+| [`ts_provider_load`](provider/ts_provider_load) | Opens an adapter and the provider inside it. |
+| [`ts_context_new_with_provider`](provider/ts_context_new_with_provider) | Creates a context that computes with a **loaded** provider. |
+| [`ts_provider_free`](provider/ts_provider_free) | Frees a loaded provider; null is ignored. |
+
 ## The rules every entry point follows
 
 - Every struct begins with `struct_size`, which the caller sets to `sizeof` before the call: a library built from a newer description can tell how much of the struct the caller knows about.
@@ -132,10 +140,10 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/port-ephemeris/src/frame.rs`
 - `crates/port-ephemeris/src/vtable.rs`
 - `crates/ffi/src/lib.rs`
-- `crates/ffi/src/strings.rs`
+- `crates/ffi/src/string.rs`
 - `crates/ffi/src/blob.rs`
 - `crates/ffi/src/context.rs`
-- `crates/ffi/src/keys.rs`
+- `crates/ffi/src/key.rs`
 - `crates/ffi/src/frame.rs`
 - `crates/ffi/src/calendar.rs`
 - `crates/ffi/src/chart.rs`
@@ -144,3 +152,4 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/positions.rs`
 - `crates/ffi/src/panchanga.rs`
 - `crates/ffi/src/ephemeris.rs`
+- `crates/ffi/src/provider.rs`

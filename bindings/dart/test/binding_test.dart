@@ -5,6 +5,8 @@
 // `cargo xtask check-dart` builds the shared library and runs this file;
 // `TEISTRO_LIBRARY` names it.
 
+import 'dart:io';
+
 import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
@@ -47,7 +49,7 @@ void main() {
   test('a context resolves its settings and reports them', () {
     final ctx = context();
     expect(ctx.profile, 'nepali-default');
-    expect(ctx.locale, 'ne-Deva-NP');
+    expect(ctx.intl.locale, 'ne-Deva-NP');
     expect(ctx.settingsHash, matches(r'^[0-9a-f]{64}$'));
     expect(
       (ctx.settings['frame']! as Map<String, Object?>)['zodiac'],
@@ -83,7 +85,7 @@ void main() {
   test('a refusal carries its status, its field and its hint', () {
     final ctx = context();
     expect(
-      () => ctx.keyId('graha.SUNN'),
+      () => ctx.keys.id('graha.SUNN'),
       throwsA(
         isA<TeistroException>()
             .having((e) => e.status, 'status', Status.unsupported)
@@ -114,7 +116,7 @@ void main() {
       ),
     );
     expect(
-      () => ctx.fixedOf(gregorian(2023, 2, 29)),
+      () => ctx.calendar.fixedOf(gregorian(2023, 2, 29)),
       throwsA(
         isA<TeistroException>()
             .having((e) => e.detail, 'detail', 'NONEXISTENT_DATE')
@@ -127,7 +129,7 @@ void main() {
       'resolution', () {
     final ctx = context();
     final date = gregorian(2015, 4, 14);
-    final bs = ctx.convert(date, Calendar.bikramSambat);
+    final bs = ctx.calendar.convert(date, Calendar.bikramSambat);
     expect(bs.year, 2072);
     expect(bs.month, 1);
     expect(bs.day, 1);
@@ -139,12 +141,12 @@ void main() {
       reason: 'inside the official table',
     );
 
-    final fixed = ctx.fixedOf(date);
+    final fixed = ctx.calendar.fixedOf(date);
     expect(fixed, 735702);
-    expect(ctx.weekdayOf(date), 2, reason: 'a Tuesday');
-    expect(ctx.dateOf(Calendar.gregorian, fixed).era, Era.commonEra);
-    expect(ctx.monthLength(Calendar.gregorian, 2024, 2), 29);
-    expect(ctx.isLeap(Calendar.gregorian, 2024), isTrue);
+    expect(ctx.calendar.weekdayOf(date), 2, reason: 'a Tuesday');
+    expect(ctx.calendar.dateOf(Calendar.gregorian, fixed).era, Era.commonEra);
+    expect(ctx.calendar.monthLength(Calendar.gregorian, 2024, 2), 29);
+    expect(ctx.calendar.isLeap(Calendar.gregorian, 2024), isTrue);
     expect(teistro.julianDayOfFixed(fixed), 2457126.5);
     expect(teistro.fixedOfJulianDay(2457126.75), (
       value: fixed,
@@ -162,7 +164,7 @@ void main() {
       reason: 'the layer builds the value the generated class holds',
     );
     final zone = ianaZone('Asia/Kathmandu');
-    final resolved = ctx.resolve(civil, zone);
+    final resolved = ctx.time.resolve(civil, zone);
     expect(resolved.instantJdUtc, closeTo(2446431.2743056, 1e-6));
     expect(
       resolved.offsetSeconds,
@@ -175,21 +177,25 @@ void main() {
     expect(resolved.warnings, isEmpty, reason: 'nothing had to be guessed');
     expect(resolved.tzdbVersion, matches(r'^20\d\d[a-z]$'));
 
-    final back = ctx.civilOf(resolved.instantJdUtc, zone, Calendar.gregorian);
+    final back = ctx.time.civilOf(
+      resolved.instantJdUtc,
+      zone,
+      Calendar.gregorian,
+    );
     expect(back.civil.date.year, 1986);
     expect(back.civil.time.minute, 20);
     expect(back.civil.time.hasTime, isTrue);
     expect(back.resolution.offsetSeconds, 20700);
 
     expect(
-      () => ctx.resolve(civil, ianaZone('Asia/Kathmandou')),
+      () => ctx.time.resolve(civil, ianaZone('Asia/Kathmandou')),
       throwsA(isA<TeistroException>()),
     );
   });
 
   test('the time scales convert with what they applied', () {
     final ctx = context();
-    final tt = ctx.convertTime(2451544.5, Scale.utc, Scale.tt);
+    final tt = ctx.time.convert(2451544.5, Scale.utc, Scale.tt);
     expect(
       tt.deltaTSeconds,
       closeTo(64.184, 1e-9),
@@ -199,11 +205,11 @@ void main() {
     expect(tt.deltaTModel, 'TABLE_THEN_MODEL');
     expect(tt.jd, closeTo(2451544.5 + 64.184 / 86400, 1e-12));
     expect(
-      ctx.convertTime(tt.jd, Scale.tt, Scale.utc).jd,
+      ctx.time.convert(tt.jd, Scale.tt, Scale.utc).jd,
       closeTo(2451544.5, 1e-9),
     );
 
-    final delta = ctx.deltaT(2451544.5);
+    final delta = ctx.time.deltaT(2451544.5);
     expect(delta.seconds, closeTo(63.83, 0.02));
     expect(delta.source, DeltaTSource.table);
   });
@@ -247,14 +253,17 @@ void main() {
       'GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT',
     );
 
-    // Without an ephemeris the call is a missing capability, named.
+    // Without an ephemeris the call is a missing capability naming the
+    // option a consumer sets, and hinting at what to pass -- the same
+    // field and the same hint as Node, Python and C.
     final bare = context(testProvider: false);
     expect(
       () => bare.positions(instants: [2451545.0], bodies: [Body.sun]),
       throwsA(
         isA<TeistroException>()
             .having((e) => e.status, 'status', Status.capability)
-            .having((e) => e.field, 'field', 'provider'),
+            .having((e) => e.field, 'field', 'ephemeris')
+            .having((e) => e.hint, 'hint', contains('builtin')),
       ),
     );
     expect(
@@ -270,7 +279,7 @@ void main() {
   test('the locale engine renders typed parameters, and says where '
       'from', () {
     final ctx = context();
-    final rendered = ctx.render('sdk.reason.grahaInBhava', {
+    final rendered = ctx.intl.render('sdk.reason.grahaInBhava', {
       'graha': {r'$entity': 'graha.JUPITER'},
       'bhava': 7,
     });
@@ -279,25 +288,25 @@ void main() {
     expect(rendered.override, isFalse);
     expect(rendered.warningList, isEmpty);
     expect(rendered.text, contains('७'), reason: 'the Nepali numeral seven');
-    expect(ctx.has('sdk.reason.grahaInBhava'), isTrue);
-    expect(ctx.has('sdk.nope.missing'), isFalse);
+    expect(ctx.intl.has('sdk.reason.grahaInBhava'), isTrue);
+    expect(ctx.intl.has('sdk.nope.missing'), isFalse);
 
     // A missing message renders as its key with a warning, never an error.
-    final missing = ctx.render('sdk.nope.missing');
+    final missing = ctx.intl.render('sdk.nope.missing');
     expect(missing.from, isNull);
     expect(missing.warningList, isNotEmpty);
 
-    ctx.locale = 'en-Latn';
-    expect(ctx.locale, 'en-Latn');
+    ctx.intl.locale = 'en-Latn';
+    expect(ctx.intl.locale, 'en-Latn');
     expect(
-      ctx.render('sdk.reason.grahaInBhava', {
+      ctx.intl.render('sdk.reason.grahaInBhava', {
         'graha': {r'$entity': 'graha.JUPITER'},
         'bhava': 7,
       }).text,
       contains('Jupiter'),
     );
     expect(
-      () => ctx.locale = 'fr-Latn',
+      () => ctx.intl.locale = 'fr-Latn',
       throwsA(
         isA<TeistroException>()
             .having((e) => e.field, 'field', 'locale')
@@ -334,16 +343,19 @@ void main() {
 
   test('a catalogue key packs to an id and back', () {
     final ctx = context();
-    final id = ctx.keyId('graha.SUN');
+    final id = ctx.keys.id('graha.SUN');
     expect(
       id,
       1 << 16,
       reason: 'the kind in the high half, the member in the low',
     );
-    expect(ctx.keyName(id), 'graha.SUN');
-    expect(ctx.keyName(ctx.keyId('nakshatra.ASHWINI')), 'nakshatra.ASHWINI');
+    expect(ctx.keys.name(id), 'graha.SUN');
     expect(
-      () => ctx.keyName(0xffffffff),
+      ctx.keys.name(ctx.keys.id('nakshatra.ASHWINI')),
+      'nakshatra.ASHWINI',
+    );
+    expect(
+      () => ctx.keys.name(0xffffffff),
       throwsA(
         isA<TeistroException>().having(
           (e) => e.status,
@@ -387,7 +399,7 @@ void main() {
     final strict = context(locale: null);
     addTearDown(strict.dispose);
     expect(
-      () => strict.resolve(day.whenUnknown, zone),
+      () => strict.time.resolve(day.whenUnknown, zone),
       throwsA(
         isA<TeistroException>()
             .having((e) => e.message, 'message', contains('has no time of day'))
@@ -410,7 +422,7 @@ void main() {
       },
     );
     addTearDown(noon.dispose);
-    final resolved = noon.resolve(day.whenUnknown, zone);
+    final resolved = noon.time.resolve(day.whenUnknown, zone);
     expect(resolved.timeKnown, isFalse);
     expect(
       resolved.warnings.map((w) => w.key),
@@ -420,7 +432,7 @@ void main() {
 
     // A known time on the same date resolves with the time known and no
     // warning: this record sits on the day Nepal moved to +05:45.
-    final exact = strict.resolve(day.at(hour: 0, minute: 20), zone);
+    final exact = strict.time.resolve(day.at(hour: 0, minute: 20), zone);
     expect(exact.timeKnown, isTrue);
     expect(exact.offsetSeconds, 5 * 3600 + 45 * 60);
     expect(exact.warnings, isEmpty);
@@ -435,14 +447,14 @@ void main() {
 
 void _engineTests() {
   test('the engine names its own operations', () {
-    final engine = context().ephemeris;
+    final engine = context().engine;
     expect(engine.names, contains('tp_echo'));
     expect(engine.has('tp_sum'), isTrue);
     expect(engine.manifest['engine'], 'test-provider');
   });
 
   test('an operation is called by the name the engine gives it', () {
-    final engine = context().ephemeris;
+    final engine = context().engine;
     expect(engine('tp_echo', {'value': 6.0}), {'value': 6.0});
     final summed =
         engine('tp_sum', {
@@ -453,7 +465,7 @@ void _engineTests() {
   });
 
   test('the manifest carries the role of every parameter', () {
-    final engine = context().ephemeris;
+    final engine = context().engine;
     final signature = engine.signature('tp_sum')!;
     final roles = [
       for (final param in signature['params'] as List<Object?>)
@@ -464,10 +476,100 @@ void _engineTests() {
   });
 
   test("the engine's own refusal comes back", () {
-    final engine = context().ephemeris;
+    final engine = context().engine;
     expect(
       () => engine('tm_eclipse_when'),
       throwsA(predicate((e) => '$e'.contains('tm_eclipse_when'))),
     );
+  });
+
+  // An area is a **value**: built once with the context, held, and
+  // passable to something that needs only that much of the SDK. That is
+  // what makes the grouping worth having rather than merely tidy
+  // (`03-design/surface-areas.md`).
+  /// **An engine, plugged in** (ADR-0029): the 98% path, where a
+  /// consumer names an adapter's platform binary and never sees a
+  /// vtable.
+  ///
+  /// It runs only where the adapter has been built and its data is
+  /// present, because a checkout has neither and a test that failed for
+  /// that would fail for everyone. `TEISTRO_TEIMERIS_ADAPTER` names the
+  /// library — the same variable `crates/ffi/tests/abi.rs` reads for the
+  /// same reason.
+  test('an ephemeris is plugged in by naming its platform binary', () {
+    final plugin = Platform.environment['TEISTRO_TEIMERIS_ADAPTER'];
+    if (plugin == null || plugin.isEmpty) {
+      printOnFailure('set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
+      markTestSkipped('the adapter is not built in this checkout');
+      return;
+    }
+    final ctx = teistro.context(
+      profile: 'parashari-classical',
+      ephemeris: [PluginEphemeris(plugin: plugin)],
+    );
+    addTearDown(ctx.dispose);
+    final sky = ctx.positions(instants: [2451545.0], bodies: [Body.sun]);
+    // The Sun at J2000 is near 280.4°, which is astronomy rather than
+    // this package: what is tested is that a real engine answered.
+    expect(sky.at(0, 0).longitude, closeTo(280.37, 0.5));
+    // And its own functions came with it, which no SDK operation offers.
+    expect(ctx.engine.manifest['engine'], 'teimeris');
+    expect(
+      (ctx.engine('tm_body_name', {'body': 0}) as Map<String, Object?>)['buf'],
+      'Sun',
+    );
+  });
+
+  /// A chain is **ordered and explicit** (ADR-0029): tried in order, and
+  /// a refusal names every entry that failed rather than only the last,
+  /// which would hide the one the caller actually wanted. Needs no
+  /// adapter.
+  test('an ephemeris chain is tried in order and refuses naming each', () {
+    // An adapter that is not there, then the built-in: the fallback the
+    // caller wrote down.
+    final fellBack = teistro.context(
+      profile: 'parashari-classical',
+      ephemeris: const [
+        PluginEphemeris(plugin: '/nowhere/adapter.so'),
+        NamedEphemeris(Ephemeris.builtin),
+      ],
+    );
+    addTearDown(fellBack.dispose);
+    expect(
+      fellBack
+          .positions(instants: [2451545.0], bodies: [Body.sun])
+          .at(0, 0)
+          .longitude,
+      closeTo(280.37, 0.5),
+    );
+
+    // Nothing in the chain opening is one refusal that names each.
+    expect(
+      () => teistro.context(
+        ephemeris: const [
+          PluginEphemeris(plugin: '/a.so'),
+          PluginEphemeris(plugin: '/b.so'),
+        ],
+      ),
+      throwsA(
+        predicate((e) => '$e'.contains('/a.so') && '$e'.contains('/b.so')),
+      ),
+    );
+
+    // A chain of none names nothing, which is a mistake rather than a
+    // default.
+    expect(
+      () => teistro.context(ephemeris: const []),
+      throwsA(predicate((e) => '$e'.contains('names nothing'))),
+    );
+  });
+
+  test('an area is a value that can be held and passed', () {
+    final ctx = context();
+    final calendar = ctx.calendar;
+    expect(calendar, same(ctx.calendar), reason: 'the same object every read');
+    expect(calendar.isLeap(Calendar.gregorian, 2024), isTrue);
+    expect(ctx.time.deltaT(2451545.0).seconds, greaterThan(60));
+    expect(ctx.keys.name(ctx.keys.id('graha.SUN')), 'graha.SUN');
   });
 }

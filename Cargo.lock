@@ -1243,6 +1243,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3a6bfce3d99adfa72d24750a61f782f3036a81e7f86d8841ee1326deaebd171"
 
 [[package]]
+name = "teistro"
+version = "0.0.0"
+dependencies = [
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-ephemeris-builtin",
+ "teistro-intl",
+ "teistro-panchanga",
+ "teistro-port-ephemeris",
+ "teistro-time",
+]
+
+[[package]]
 name = "teistro-aspect"
 version = "0.0.0"
 dependencies = [
@@ -1336,13 +1352,14 @@ dependencies = [
 name = "teistro-ffi"
 version = "0.0.0"
 dependencies = [
+ "libloading",
  "serde",
  "serde_json",
+ "teistro",
  "teistro-astro",
  "teistro-calendar",
  "teistro-chart",
  "teistro-core",
- "teistro-ephemeris-builtin",
  "teistro-idl",
  "teistro-intl",
  "teistro-panchanga",

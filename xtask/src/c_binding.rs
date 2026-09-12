@@ -11,6 +11,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{build, present};
+use crate::platform::Platform;
 
 const SMOKE: &str = "bindings/c/tests/smoke.c";
 const HEADER_DIR: &str = "bindings/c/include";
@@ -31,6 +32,8 @@ pub(crate) fn check(root: &Path) -> i32 {
     }
     let out = root.join("target/release/teistro-c-smoke");
     let library = root.join("target/release");
+    // The shared library, and on Windows its import library by path:
+    // `-lteistro_ffi` would find the static one sitting beside it.
     let compiled = Command::new(&cc)
         .args(["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"])
         .arg("-I")
@@ -38,9 +41,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         .arg("-o")
         .arg(&out)
         .arg(root.join(SMOKE))
-        .arg("-L")
-        .arg(&library)
-        .arg("-lteistro_ffi")
+        .args(crate::binding::shared_link(&Platform::host(), &library))
         .status();
     match compiled {
         Ok(status) if status.success() => {}

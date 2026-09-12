@@ -25,7 +25,8 @@ use crate::model::{
 use crate::names::{binding_type_name, camel, kebab, method_name, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constant_key, constants, constructor, destructor, field_roles,
-    has_handshake, methods, pointee_struct, results, returned_scalar, returns_status, status_enum,
+    has_handshake, methods, pointee_opaque, pointee_struct, results, returned_scalar,
+    returns_status, status_enum,
 };
 
 /// A Dart identifier for a member or a field. A name that is one of
@@ -673,23 +674,54 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
         );
     }
     if let Some(ctor) = constructor(api, opaque) {
-        render_dart_constructor(out, api, ctor, &name);
+        render_dart_way_in(out, api, ctor, &name, None, Some(&opaque.name));
     }
-    render_dart_error_reader(out, api);
+    for factory in crate::rules::factories(api, opaque) {
+        let named = camel(&crate::rules::method_name(api, opaque, factory));
+        render_dart_way_in(out, api, factory, &name, Some(&named), Some(&opaque.name));
+    }
+    render_dart_error_reader(out, api, opaque);
     for m in methods(api, opaque) {
         render_dart_method(out, api, opaque, m);
     }
     if let Some(free) = destructor(api, opaque) {
+        // `_alive` guards a method against use after disposal, so an
+        // opaque type with no methods has nothing to guard and the
+        // analyser calls it dead. It was unconditional while every
+        // opaque type had methods.
+        let guard = if methods(api, opaque)
+            .iter()
+            .any(|m| !m.name.ends_with("_last_error"))
+        {
+            "\n\n  void _alive() {\n    if (_disposed) {\n      throw StateError('this handle was disposed');\n    }\n  }"
+        } else {
+            ""
+        };
         let _ = writeln!(
             out,
-            "  /// Frees the native context now. Using this object afterwards is a\n  /// [StateError]; a context that is never disposed is freed when it is\n  /// collected.\n  void dispose() {{\n    if (_disposed) return;\n    _disposed = true;\n    _finaliser.detach(this);\n    _lib.{}(_handle);\n  }}\n\n  void _alive() {{\n    if (_disposed) {{\n      throw StateError('this context was disposed');\n    }}\n  }}\n",
+            "  /// Frees the native handle now. Using this object afterwards is a\n  /// [StateError]; a handle that is never disposed is freed when it is\n  /// collected.\n  void dispose() {{\n    if (_disposed) return;\n    _disposed = true;\n    _finaliser.detach(this);\n    _lib.{}(_handle);\n  }}{guard}\n",
             free.name
         );
     }
     let _ = writeln!(out, "}}\n");
 }
 
-fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str) {
+/// A way into a handle class: the unnamed constructor, or a **named**
+/// one for each factory beside it.
+///
+/// `named` is `None` for the constructor and `Some("newWithProvider")`
+/// for a factory, which is how Dart spells a second way in; `receiver`
+/// is the opaque whose handle would be `self` in a method, so that any
+/// other opaque's handle becomes a parameter of the class that holds it
+/// (`rules::factories`).
+fn render_dart_way_in(
+    out: &mut String,
+    api: &Api,
+    ctor: &FunctionDef,
+    name: &str,
+    named: Option<&str>,
+    receiver: Option<&str>,
+) {
     let mut params = Vec::new();
     let mut body = String::new();
     let mut args = Vec::new();
@@ -723,6 +755,19 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
                 params.push(format!("ffi.Pointer<ffi.Void>? {field}"));
                 args.push(format!("{field} ?? ffi.nullptr"));
             }
+            // Another opaque's handle: the class that holds it is what
+            // the caller passes. Only a factory has one — the class
+            // being built has no handle yet.
+            Role::Handle => {
+                let held = pointee_opaque(api, p).map(|o| o.name.clone());
+                if held.as_deref() == receiver {
+                    params.push(format!("required Teistro{name} {field}"));
+                } else {
+                    let class = binding_type_name(held.as_deref().unwrap_or_default());
+                    params.push(format!("required Teistro{class} {field}"));
+                }
+                args.push(format!("{field}._handle"));
+            }
             Role::HandleOut => {
                 let _ = writeln!(body, "      final out = arena<ffi.Pointer<{name}>>();");
                 args.push(String::from("out"));
@@ -738,13 +783,51 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
                 );
                 args.push(String::from("error"));
             }
-            _ => {}
+            // A text input, the same way a method takes one. The
+            // constructor emitter went without this until a second
+            // constructor had one (`ts_provider_load`, ADR-0029), and
+            // the parameter was **silently dropped**: an empty named
+            // block and a call two arguments short.
+            Role::StringIn => {
+                let native = "toNativeUtf8(allocator: arena).cast<ffi.Char>()";
+                let value = if p.meta.nullable {
+                    params.push(format!("String? {field}"));
+                    format!("{field} == null ? ffi.nullptr : {field}.{native}")
+                } else {
+                    // A constructor's parameters are named, and a
+                    // non-nullable named parameter must say `required`
+                    // or Dart has no value to give it.
+                    params.push(format!("required String {field}"));
+                    format!("{field}.{native}")
+                };
+                let _ = writeln!(body, "      final raw{field} = {value};");
+                args.push(format!("raw{field}"));
+            }
+            // **Loudly**, and not `_ => {}`. An emitter that quietly
+            // skips a role it does not know writes code that does not
+            // compile, or worse compiles and calls with the wrong
+            // arguments; failing here says which role, on which
+            // parameter, of which function.
+            #[expect(
+                clippy::panic,
+                reason = "a generator that meets a role it does not understand must \
+                          stop, not emit a call missing an argument; this is a build \
+                          tool and the message names the role, the parameter and the \
+                          function"
+            )]
+            other => panic!(
+                "the Dart constructor emitter does not handle the role {other:?} \
+                 on `{field}` of `{}`; teach it that role rather than \
+                 letting it emit a call without the parameter",
+                ctor.name
+            ),
         }
     }
     let _ = writeln!(
         out,
-        "{doc}  factory Teistro{name}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final message = error.ref.data == ffi.nullptr\n            ? 'the context could not be built (code $status)'\n            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();\n        lib.{free}(error);\n        throw TeistroException(Status.byId(status), message);\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
+        "{doc}  factory Teistro{name}{suffix}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final message = error.ref.data == ffi.nullptr\n            ? 'the context could not be built (code $status)'\n            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();\n        lib.{free}(error);\n        throw TeistroException(Status.byId(status), message);\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
         doc = doc(&ctor.doc, "  "),
+        suffix = named.map_or_else(String::new, |n| format!(".{n}")),
         params = params.join(", "),
         call = ctor.name,
         args = args.join(", "),
@@ -752,12 +835,12 @@ fn render_dart_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name
     );
 }
 
-fn render_dart_error_reader(out: &mut String, api: &Api) {
-    let Some(reader) = api
-        .functions
-        .iter()
-        .find(|f| f.name.ends_with("_last_error"))
-    else {
+fn render_dart_error_reader(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+    // This opaque's own reader, matched by the handle it takes. Matched
+    // by name alone it was found for every opaque type, and the second
+    // one (`TsProvider`, ADR-0029) got a reader that passed its handle
+    // to a function expecting a context.
+    let Some(reader) = crate::rules::last_error(api, opaque) else {
         return;
     };
     let Some(s) = reader

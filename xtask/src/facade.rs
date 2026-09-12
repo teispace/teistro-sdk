@@ -1,0 +1,572 @@
+//! The **typed engine façade**: the adapter's own packages, generated
+//! from the engine's own description (ADR-0030).
+//!
+//! Written by `cargo xtask engine` and gated by `check-engine`, from the
+//! same reading that writes the adapter's dispatch and the measured
+//! page — so a façade cannot type an argument the dispatch would refuse
+//! by name.
+//!
+//! # What a façade is, and what it is not
+//!
+//! `sdk.engine.call('tm_delta_t', { jd_ut1: 2451545 })` works for any
+//! engine that describes itself, and is typed in its arguments and not
+//! in its name. A façade gives the names back:
+//!
+//! ```ts
+//! const engine = teimeris(sdk.engine);
+//! engine.tmDeltaT({ jdUt1: 2451545 });        // → number
+//! ```
+//!
+//! It is **a value a consumer takes**, not a promise laid over the one
+//! they have. ADR-0030 first said a TypeScript declaration merge and a
+//! Python protocol, and both would have promised methods that nothing
+//! installs — the amendment on that section says why. Dart's extension
+//! was right as written, because an extension method has a body.
+//!
+//! # What the shape of the answer is measured from
+//!
+//! **Forty-six of the sixty-two callable functions answer with exactly
+//! one value**, eleven with none, and five with more than one. So a
+//! façade method hands back that one value *as itself* — a `double`, a
+//! `String` — rather than an object a caller has to index; the five get
+//! a record apiece, and the eleven answer with nothing.
+//!
+//! The same measurement settles a question every target would otherwise
+//! have raised: `return`, the key a function's own return value comes
+//! back under, **never appears beside another key**. So no record field
+//! is ever named `return`, and no target has to rename a keyword.
+
+use std::fmt::Write as _;
+
+use crate::engine::{Described, Function, Vocabulary, describe};
+use crate::generated::Output;
+
+/// Where the adapter's packages live. One directory per target beside
+/// the Rust crate, because a package is what ships the platform binary
+/// and its licence, and the façade is what makes installing one worth
+/// doing.
+const NODE: &str = "adapters/ephemeris-teimeris/node/engine.js";
+const NODE_TYPES: &str = "adapters/ephemeris-teimeris/node/engine.d.ts";
+/// Under `lib/`, because that is where a Dart package's own code lives
+/// and the façade is the package's reason to exist.
+const DART: &str = "adapters/ephemeris-teimeris/dart/lib/engine.dart";
+/// Inside the importable package, for the same reason.
+const PYTHON: &str = "adapters/ephemeris-teimeris/python/teistro_ephemeris_teimeris/engine.py";
+
+/// `snake_case` to `camelCase`, which is what Node and Dart spell a name
+/// in. The engine's own name is what crosses; this is only what a
+/// consumer writes.
+fn camel(name: &str) -> String {
+    let mut out = String::with_capacity(name.len());
+    let mut upper = false;
+    for c in name.chars() {
+        if c == '_' {
+            upper = true;
+        } else if upper {
+            out.extend(c.to_uppercase());
+            upper = false;
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}
+
+/// The three words a target has for the three kinds of value the engine
+/// declares.
+///
+/// **There is no fourth kind**, and that is what makes a façade possible
+/// without a type table per target: an enum member, a body id and a flag
+/// set all cross as integers. So one decision is made here, and each
+/// target supplies its own vocabulary for it — rather than three
+/// closures that could quietly disagree about which kind a type is.
+struct Words {
+    text: &'static str,
+    /// A number with a fractional part.
+    fractional: &'static str,
+    /// A whole number: a count, an id, an enum member, a flag set.
+    integer: &'static str,
+}
+
+impl Words {
+    /// TypeScript, whose one `number` covers both numeric kinds — said
+    /// twice on purpose, so the collapse is visible rather than implied
+    /// by a shorter branch.
+    const TYPESCRIPT: Self = Self {
+        text: "string",
+        fractional: "number",
+        integer: "number",
+    };
+    const DART: Self = Self {
+        text: "String",
+        fractional: "double",
+        integer: "int",
+    };
+    const PYTHON: Self = Self {
+        text: "str",
+        fractional: "float",
+        integer: "int",
+    };
+
+    /// What one declared type is called here.
+    ///
+    /// **Refuses** a type the engine's own vocabulary does not classify,
+    /// rather than calling it an integer and generating a façade that
+    /// type-checks a wrong call. The Dart constructor emitter refuses an
+    /// unknown *role* for the same reason and says so: a generator that
+    /// quietly guesses writes code that compiles and is wrong.
+    fn of(&self, declared: &str, vocabulary: &Vocabulary, whose: &str) -> &'static str {
+        if declared == "string" {
+            return self.text;
+        }
+        assert!(
+            vocabulary.is_number(declared),
+            "the façade generator cannot type `{declared}` on `{whose}`: the engine's \
+             description does not classify it as a number, and typing it as one would \
+             make a call that type-checks and fails. Teach `Words` that kind, or leave \
+             the function out of the callable set."
+        );
+        if vocabulary.is_float(declared) {
+            self.fractional
+        } else {
+            self.integer
+        }
+    }
+}
+
+/// The façades, from one reading of the description.
+pub(crate) fn outputs(
+    version: &str,
+    callable: &[&Function],
+    vocabulary: &Vocabulary,
+) -> Vec<Output> {
+    let described: Vec<Described<'_>> = callable.iter().map(|f| describe(f)).collect();
+    vec![
+        Output::new(NODE, node(version, &described)),
+        Output::new(NODE_TYPES, node_types(version, &described, vocabulary)),
+        Output::new(DART, dart(version, &described, vocabulary)),
+        Output::new(PYTHON, python(version, &described, vocabulary)),
+    ]
+}
+
+/// The header every façade carries, in that language's comment.
+fn header(version: &str, comment: &str) -> String {
+    let mut out = String::new();
+    for line in [
+        "The engine's own operations, typed. **Generated by",
+        "`cargo xtask engine`. Do not edit.**",
+        "",
+        &format!("From the engine's own description at version `{version}`."),
+        "Which of its functions are here is a measurement, not a choice:",
+        "`docs/03-design/engine-passthrough-measured.md` classifies all of",
+        "them into what is callable, what this adapter will never hand over,",
+        "and what is queued behind one more shape.",
+        "",
+        "A method's arguments are named the way this language names things;",
+        "the keys that cross are the engine's own, which is what",
+        "`sdk.engine.signature(name)` reads. A call through here is to a",
+        "named engine and does not survive changing it — which is why it is",
+        "taken as a value rather than laid over `sdk.engine` (ADR-0030).",
+    ] {
+        if line.is_empty() {
+            let _ = writeln!(out, "{}", comment.trim_end());
+        } else {
+            let _ = writeln!(out, "{comment} {line}");
+        }
+    }
+    out
+}
+
+/// The note a mutating operation carries, so a consumer chooses it
+/// knowingly.
+const MUTATES: &str = "Changes engine state the SDK's provenance does not record: a chart cast \
+                       afterwards says it was computed one way and was computed another.";
+
+/// The argument list of one method, as `(what the consumer writes, the
+/// key that crosses)`.
+fn arguments<'a>(described: &'a Described<'a>) -> Vec<(String, &'a str)> {
+    described
+        .takes
+        .iter()
+        .map(|(name, _)| (camel(name), *name))
+        .collect()
+}
+
+// ── Node ───────────────────────────────────────────────────────────────
+
+/// The Node façade's runtime: a class whose methods call the engine by
+/// name, so a consumer never spells one.
+///
+/// A class with prototype methods rather than an object of closures, for
+/// the reason the SDK's own areas are classes: the methods are shared by
+/// every wrapper rather than rebuilt for each.
+fn node(version: &str, described: &[Described<'_>]) -> String {
+    let mut out = header(version, "//");
+    // Exported, because the `.d.ts` beside this declares it and a
+    // consumer holding one wants its type to have a name.
+    let _ = writeln!(
+        out,
+        "\nexport class TeimerisEngine {{\n  #engine;\n\n  constructor(engine) {{\n    this.#engine = engine;\n    Object.freeze(this);\n  }}\n"
+    );
+    for one in described {
+        let args = arguments(one);
+        let (params, keys) = if args.is_empty() {
+            (String::new(), String::from("{}"))
+        } else {
+            (
+                format!(
+                    "{{ {} }}",
+                    args.iter()
+                        .map(|(spelling, _)| spelling.clone())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+                format!(
+                    "{{ {} }}",
+                    args.iter()
+                        .map(|(spelling, key)| if spelling == key {
+                            // The engine's own key and this language's
+                            // spelling of it agree, so the shorthand is
+                            // the honest form.
+                            spelling.clone()
+                        } else {
+                            format!("{key}: {spelling}")
+                        })
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+            )
+        };
+        let call = format!("this.#engine.call('{}', {keys})", one.name);
+        let body = match one.gives.as_slice() {
+            [] => format!("    {call};"),
+            [(only, _)] => format!("    return {call}.{only};"),
+            many => {
+                let fields = many
+                    .iter()
+                    .map(|(key, _)| format!("{}: answered.{key}", camel(key)))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("    const answered = {call};\n    return {{ {fields} }};")
+            }
+        };
+        let note = if one.mutates {
+            format!("\n   *\n   * {MUTATES}")
+        } else {
+            String::new()
+        };
+        let _ = writeln!(
+            out,
+            "  /**\n   * `{}`.{note}\n   */\n  {}({params}) {{\n{body}\n  }}\n",
+            one.name,
+            camel(one.name)
+        );
+    }
+    let _ = writeln!(
+        out,
+        "}}\n\n/**\n * The engine's own operations, typed.\n *\n * Pass `sdk.engine`; what comes back has a method per operation this\n * adapter offers, each calling the engine by its own name.\n */\nexport const teimeris = (engine) => new TeimerisEngine(engine);"
+    );
+    out
+}
+
+/// The Node façade's types, which are the half a consumer reads.
+fn node_types(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
+    let mut out = header(version, "//");
+    let _ = writeln!(
+        out,
+        "\nimport type {{ Engine }} from '@teistro/sdk';\n\n/** The engine's own operations, typed. */\nexport declare class TeimerisEngine {{"
+    );
+    for one in described {
+        let args = arguments(one);
+        let params = if args.is_empty() {
+            String::new()
+        } else {
+            format!(
+                "args: {{ {} }}",
+                args.iter()
+                    .zip(one.takes.iter())
+                    .map(|((spelling, _), (_, declared))| format!(
+                        "readonly {spelling}: {}",
+                        Words::TYPESCRIPT.of(declared, vocabulary, one.name)
+                    ))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            )
+        };
+        let returns = match one.gives.as_slice() {
+            [] => String::from("void"),
+            [(_, declared)] => Words::TYPESCRIPT
+                .of(declared, vocabulary, one.name)
+                .to_string(),
+            many => format!(
+                "{{ {} }}",
+                many.iter()
+                    .map(|(key, declared)| format!(
+                        "readonly {}: {}",
+                        camel(key),
+                        Words::TYPESCRIPT.of(declared, vocabulary, one.name)
+                    ))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            ),
+        };
+        let note = if one.mutates {
+            format!("\n   *\n   * {MUTATES}")
+        } else {
+            String::new()
+        };
+        let _ = writeln!(
+            out,
+            "  /**\n   * `{}`.{note}\n   */\n  {}({params}): {returns};",
+            one.name,
+            camel(one.name)
+        );
+    }
+    let _ = writeln!(
+        out,
+        "}}\n\n/** The engine's own operations, typed. Pass `sdk.engine`. */\nexport declare function teimeris(engine: Engine): TeimerisEngine;"
+    );
+    out
+}
+
+/// Reading one value out of the answer, in Dart.
+///
+/// A number goes through `num` rather than straight to `double`: JSON
+/// carries no distinction the engine's `double` and `int32_t` keep, so a
+/// whole-valued double would decode as an `int` and `as double` would
+/// throw on it. `toDouble()` accepts either and costs nothing.
+fn dart_read(
+    key: &str,
+    declared: &str,
+    from: &str,
+    vocabulary: &Vocabulary,
+    whose: &str,
+) -> String {
+    match Words::DART.of(declared, vocabulary, whose) {
+        "String" => format!("{from}['{key}']! as String"),
+        "double" => format!("({from}['{key}']! as num).toDouble()"),
+        _ => format!("({from}['{key}']! as num).toInt()"),
+    }
+}
+
+// ── Dart ───────────────────────────────────────────────────────────────
+
+/// The Dart façade: an **extension** on the SDK's own `Engine`.
+///
+/// The one target where an augmentation is honest, because a Dart
+/// extension method has a body and is resolved statically: it is typed
+/// and installed at once, and needs no wrapper to take.
+fn dart(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
+    let mut out = header(version, "//");
+    // The same directive the SDK's own generated Dart carries, for the
+    // same reason: the generator lays the file out, so `dart format .`
+    // leaves it alone and `check-engine` can regenerate it on a machine
+    // with no Dart toolchain and still compare it byte for byte.
+    let _ = writeln!(
+        out,
+        "// dart format off\n\nimport 'package:teistro/teistro.dart';\n\n/// The engine's own operations, typed.\n///\n/// An extension rather than a wrapper, because a Dart extension method\n/// has a body: importing this file is what makes the names exist, and\n/// they are as typed and as real as any method.\nextension TeimerisEngine on Engine {{"
+    );
+    for one in described {
+        let args = arguments(one);
+        let params = if args.is_empty() {
+            String::new()
+        } else {
+            format!(
+                "{{{}}}",
+                args.iter()
+                    .zip(one.takes.iter())
+                    .map(|((spelling, _), (_, declared))| format!(
+                        "required {} {spelling}",
+                        Words::DART.of(declared, vocabulary, one.name)
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        let keys = if args.is_empty() {
+            String::from("const <String, Object?>{}")
+        } else {
+            format!(
+                "<String, Object?>{{{}}}",
+                args.iter()
+                    .map(|(spelling, key)| format!("'{key}': {spelling}"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        let call = format!("call('{}', {keys})", one.name);
+        let (returns, body) = match one.gives.as_slice() {
+            [] => (String::from("void"), format!("    {call};")),
+            [(only, declared)] => (
+                Words::DART.of(declared, vocabulary, one.name).to_string(),
+                format!(
+                    "    final answered = ({call}) as Map<String, Object?>;\n    return {};",
+                    dart_read(only, declared, "answered", vocabulary, one.name)
+                ),
+            ),
+            many => {
+                let record = many
+                    .iter()
+                    .map(|(key, declared)| {
+                        format!(
+                            "{} {}",
+                            Words::DART.of(declared, vocabulary, one.name),
+                            camel(key)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                let fields = many
+                    .iter()
+                    .map(|(key, declared)| {
+                        format!(
+                            "{}: {}",
+                            camel(key),
+                            dart_read(key, declared, "answered", vocabulary, one.name)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                (
+                    // Braces: `(int major, int minor)` is a record of two
+                    // POSITIONAL fields whose names Dart ignores, and
+                    // `({int major, int minor})` is the named one the
+                    // body below builds. Without them the generated file
+                    // does not compile, which is how this was found.
+                    format!("({{{record}}})"),
+                    format!(
+                        "    final answered = ({call}) as Map<String, Object?>;\n    return ({fields});"
+                    ),
+                )
+            }
+        };
+        let note = if one.mutates {
+            format!("\n  ///\n  /// {MUTATES}")
+        } else {
+            String::new()
+        };
+        let _ = writeln!(
+            out,
+            "  /// `{}`.{note}\n  {returns} {}({params}) {{\n{body}\n  }}\n",
+            one.name,
+            camel(one.name)
+        );
+    }
+    let _ = writeln!(out, "}}");
+    out
+}
+
+// ── Python ─────────────────────────────────────────────────────────────
+
+/// The Python façade: a class wrapping the SDK's own engine.
+///
+/// A class and not a `Protocol`, which ADR-0030 first said: a protocol
+/// types a call that nothing installs, and a typed call that fails at
+/// run time is worse than an untyped one that works. The method names
+/// are the engine's own, because Python spells them the same way the
+/// engine does and a translation nobody needs is a translation to get
+/// wrong.
+fn python(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
+    let mut out = header(version, "#");
+    let _ = writeln!(
+        out,
+        "\nfrom __future__ import annotations\n\nfrom typing import TypedDict, cast\n\nfrom teistro import Engine\n"
+    );
+    // The five answers with more than one value, as the types they are.
+    // Named for the operation, because that is the only thing they have
+    // in common with each other.
+    for one in described {
+        if one.gives.len() < 2 {
+            continue;
+        }
+        let _ = writeln!(
+            out,
+            "\nclass {}(TypedDict):\n    \"\"\"What `{}` answers with.\"\"\"\n",
+            pascal(one.name),
+            one.name
+        );
+        for (key, declared) in &one.gives {
+            let _ = writeln!(
+                out,
+                "    {key}: {}",
+                Words::PYTHON.of(declared, vocabulary, one.name)
+            );
+        }
+        let _ = writeln!(out);
+    }
+    let _ = writeln!(
+        out,
+        "\n\nclass TeimerisEngine:\n    \"\"\"The engine's own operations, typed.\n\n    Pass `sdk.engine`; every method calls the engine by its own name.\n    \"\"\"\n\n    __slots__ = (\"_engine\",)\n\n    def __init__(self, engine: Engine) -> None:\n        self._engine = engine"
+    );
+    for one in described {
+        // Built rather than collected: Python's parameters are the
+        // engine's own names, so there is nothing to join between them
+        // and each carries its own leading comma.
+        let mut params = String::new();
+        for (name, declared) in &one.takes {
+            let _ = write!(
+                params,
+                ", {name}: {}",
+                Words::PYTHON.of(declared, vocabulary, one.name)
+            );
+        }
+        let keys = one
+            .takes
+            .iter()
+            .map(|(name, _)| format!("{name}={name}"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let comma = if keys.is_empty() { "" } else { ", " };
+        let call = format!("self._engine.call(\"{}\"{comma}{keys})", one.name);
+        let (returns, body) = match one.gives.as_slice() {
+            [] => (String::from("None"), format!("        {call}")),
+            [(only, declared)] => {
+                // `float(...)` rather than a cast, for the reason
+                // `dart_read` explains: JSON keeps no distinction
+                // between the engine's `double` and its `int32_t`, so a
+                // whole-valued double arrives as an `int` and a cast
+                // would be a lie a type checker believed.
+                let named = Words::PYTHON.of(declared, vocabulary, one.name);
+                let read = match named {
+                    "float" => format!("float(cast(float, answered[\"{only}\"]))"),
+                    "str" => format!("cast(str, answered[\"{only}\"])"),
+                    _ => format!("int(cast(int, answered[\"{only}\"]))"),
+                };
+                (
+                    named.to_string(),
+                    format!(
+                        "        answered = cast(dict[str, object], {call})\n        return {read}"
+                    ),
+                )
+            }
+            _ => (
+                pascal(one.name),
+                format!("        return cast({}, {call})", pascal(one.name)),
+            ),
+        };
+        let note = if one.mutates {
+            format!("\n\n        {MUTATES}")
+        } else {
+            String::new()
+        };
+        let _ = writeln!(
+            out,
+            "\n    def {}(self{params}) -> {returns}:\n        \"\"\"`{}`.{note}\n        \"\"\"\n{body}",
+            one.name, one.name
+        );
+    }
+    let _ = writeln!(
+        out,
+        "\n\ndef teimeris(engine: Engine) -> TeimerisEngine:\n    \"\"\"The engine's own operations, typed. Pass `sdk.engine`.\"\"\"\n    return TeimerisEngine(engine)"
+    );
+    out
+}
+
+/// `snake_case` to `PascalCase`, for the name of a result type.
+fn pascal(name: &str) -> String {
+    let camelled = camel(name);
+    let mut chars = camelled.chars();
+    chars.next().map_or_else(String::new, |first| {
+        format!("{}{}", first.to_ascii_uppercase(), chars.as_str())
+    })
+}

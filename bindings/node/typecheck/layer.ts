@@ -45,11 +45,11 @@ function scenario(): string {
   };
   const positions = ctx.positions(request);
   const sun = positions.at(0, 0);
-  const rendered = ctx.render('sdk.reason.grahaInBhava', { bhava: 7 });
-  const date = ctx.dateOf('calendar.GREGORIAN' as Calendar, 735702);
-  const converted = ctx.convert(date, 'calendar.BIKRAM_SAMBAT' as Calendar);
-  const delta = ctx.deltaT(2451544.5);
-  const conversion = ctx.convertTime(2451544.5, 'utc' as Scale, 'tt' as Scale);
+  const rendered = ctx.intl.render('sdk.reason.grahaInBhava', { bhava: 7 });
+  const date = ctx.calendar.dateOf('calendar.GREGORIAN' as Calendar, 735702);
+  const converted = ctx.calendar.convert(date, 'calendar.BIKRAM_SAMBAT' as Calendar);
+  const delta = ctx.time.deltaT(2451544.5);
+  const conversion = ctx.time.convert(2451544.5, 'utc' as Scale, 'tt' as Scale);
   return [
     positions.bodies.join(','),
     positions.scale,
@@ -151,7 +151,7 @@ export {
 /** The chart layer, typed: one chart and a batch of them. */
 function charts(): string {
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
-  const one: Chart = ctx.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
+  const one: Chart = ctx.chart.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
   const lagna: number = one.lagnaDeg;
   const vara: string = one.day.vara;
   const bhava: number = one.grahas[0]!.house.bhava;
@@ -165,7 +165,7 @@ function charts(): string {
     place,
     utcOffsetSeconds: 20700,
   };
-  const batch: Charts = ctx.foundMany(request);
+  const batch: Charts = ctx.chart.foundMany(request);
   const count: number = batch.length;
   // Iterating a batch gives charts, and the same view `at` gives.
   const first: Chart = batch.at(0);
@@ -173,7 +173,7 @@ function charts(): string {
   // @ts-expect-error a batch is read, never rewritten
   batch.length = 3;
   // @ts-expect-error `instant` is the singular request's; a batch takes `instants`
-  ctx.foundMany({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
+  ctx.chart.foundMany({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error a chart is a view; its index is not a number to set
   first.index = 2;
   return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${count} ${every.length} ${first.instant}`;
@@ -186,7 +186,7 @@ function almanac(): string {
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
   const from: CalendarDate = someDate;
   const to: CalendarDate = someDate;
-  const batch: Almanac = ctx.almanac({ from, to, place, utcOffsetSeconds: 20700 });
+  const batch: Almanac = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700 });
   const days: number = batch.length;
   const day: AlmanacDay = batch.at(0);
   const vara: string = day.day.vara;
@@ -198,11 +198,11 @@ function almanac(): string {
   const sankranti: number | null = day.sankranti;
   const effective: boolean = day.abhijit?.effective ?? false;
   const every: readonly AlmanacDay[] = [...batch];
-  const one: AlmanacDay = ctx.almanacDay({ date: from, place, utcOffsetSeconds: 20700 });
+  const one: AlmanacDay = ctx.almanac.day({ date: from, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error an absent sankranti is null, so it is not a number
   const wrong: number = day.sankranti;
   // @ts-expect-error a range needs both ends; `date` is the single-day shape
-  ctx.almanac({ date: from, place, utcOffsetSeconds: 20700 });
+  ctx.almanac.of({ date: from, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error a batch is read, never rewritten
   batch.length = 3;
   return `${days} ${vara} ${tithi} ${until} ${lord} ${daylight} ${sankranti} ${effective} ${every.length} ${one.index} ${wrong}`;

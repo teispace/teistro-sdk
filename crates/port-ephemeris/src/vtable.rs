@@ -32,7 +32,7 @@ use crate::provider::{EphemerisProvider, PositionRequest};
 /// The ABI version of the vtable layout.
 ///
 /// `api: constant`
-pub const VTABLE_ABI_VERSION: u32 = 2;
+pub const VTABLE_ABI_VERSION: u32 = 3;
 
 /// What a vtable function returns: `0` for success, and one of these for
 /// a failure the port names. A provider's own code stays outside them
@@ -519,6 +519,33 @@ pub type CrossingsFn = unsafe extern "C" fn(
     out_count: *mut u32,
 ) -> i32;
 
+/// The engine's own manifest, as JSON.
+///
+/// Writes up to `capacity` bytes into the caller's buffer and the length
+/// it wanted into `out_len`, which may exceed the capacity — in which
+/// case the caller calls again with a larger one. The same size-then-fill
+/// protocol the crossings use, and for the same reason: nothing allocated
+/// on one side of this boundary is freed on the other.
+pub type NativeManifestFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    out_json: *mut c_char,
+    capacity: usize,
+    out_len: *mut usize,
+) -> i32;
+
+/// One of the engine's own operations, called by the name its manifest
+/// gives, with arguments as a JSON object.
+///
+/// Answers as [`NativeManifestFn`] does.
+pub type NativeCallFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    function: *const c_char,
+    arguments_json: *const c_char,
+    out_json: *mut c_char,
+    capacity: usize,
+    out_len: *mut usize,
+) -> i32;
+
 /// The vtable: `user_data` is whatever the provider registered and is
 /// passed back to every function; a null function is an undeclared
 /// operation.
@@ -545,6 +572,16 @@ pub struct ProviderVtable {
     pub horizon_event: Option<HorizonEventFn>,
     /// The crossings override.
     pub crossings: Option<CrossingsFn>,
+    /// The engine's own manifest, when it offers one.
+    ///
+    /// Null where the provider offers no operations of its own — which
+    /// is what `Capabilities::native` already says, and this is the
+    /// function that makes the saying true across the boundary. Added at
+    /// ABI 3: a loaded adapter could declare the route and had no way to
+    /// answer it.
+    pub native_manifest: Option<NativeManifestFn>,
+    /// One of the engine's own operations.
+    pub native_call: Option<NativeCallFn>,
 }
 
 #[allow(
@@ -739,6 +776,49 @@ unsafe fn capabilities_from_c(raw: &CapabilitiesC) -> Result<Capabilities, Provi
     })
 }
 
+impl VtableProvider {
+    /// A string from the vtable under the size-then-fill protocol: ask
+    /// for the length, allocate exactly that, ask again.
+    ///
+    /// Two calls rather than a guess and a retry loop, because the answer
+    /// is JSON and a guess that is short costs a second call anyway.
+    /// Written once and used by both native routes, so the protocol
+    /// cannot be implemented two ways.
+    fn text(
+        mut call: impl FnMut(*mut c_char, usize, *mut usize) -> i32,
+    ) -> Result<String, ProviderError> {
+        let mut needed: usize = 0;
+        check(call(ptr::null_mut(), 0, &raw mut needed), "native")?;
+        if needed == 0 {
+            return Ok(String::new());
+        }
+        let mut buffer = vec![0_u8; needed];
+        let mut written: usize = 0;
+        check(
+            call(
+                buffer.as_mut_ptr().cast::<c_char>(),
+                needed,
+                &raw mut written,
+            ),
+            "native",
+        )?;
+        if written > needed {
+            // It grew between the two calls, which a provider may do and
+            // a caller must not paper over.
+            return Err(ProviderError::Refused {
+                detail: format!(
+                    "the provider wanted {needed} bytes and then {written}; its answer changed \
+                     between the size and the fill"
+                ),
+            });
+        }
+        buffer.truncate(written);
+        String::from_utf8(buffer).map_err(|_| ProviderError::Refused {
+            detail: String::from("the provider's answer is not UTF-8"),
+        })
+    }
+}
+
 impl EphemerisProvider for VtableProvider {
     fn capabilities(&self) -> Capabilities {
         self.capabilities.clone()
@@ -896,6 +976,38 @@ impl EphemerisProvider for VtableProvider {
             .map_err(|error| ProviderError::invalid(error.to_string()))
     }
 
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        let Some(f) = self.vtable.native_manifest else {
+            return Err(ProviderError::unsupported("native_manifest"));
+        };
+        // SAFETY: the vtable's contract; `f` came from the provider bound
+        // to this `user_data`.
+        VtableProvider::text(|out, capacity, len| unsafe { f(self.user_data, out, capacity, len) })
+    }
+
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        let Some(f) = self.vtable.native_call else {
+            return Err(ProviderError::unsupported("native_call"));
+        };
+        let (Ok(name), Ok(arguments)) = (CString::new(function), CString::new(arguments_json))
+        else {
+            return Err(ProviderError::invalid(
+                "a function name and its arguments cannot contain a NUL",
+            ));
+        };
+        // SAFETY: as above; both strings are live for the call.
+        VtableProvider::text(|out, capacity, len| unsafe {
+            f(
+                self.user_data,
+                name.as_ptr(),
+                arguments.as_ptr(),
+                out,
+                capacity,
+                len,
+            )
+        })
+    }
+
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
         let Some(f) = self.vtable.crossings else {
             return Err(ProviderError::unsupported("crossings"));
@@ -1034,6 +1146,8 @@ impl<P: EphemerisProvider> Exported<P> {
             dut1: Some(dut1_trampoline::<P>),
             horizon_event: Some(horizon_event_trampoline::<P>),
             crossings: Some(crossings_trampoline::<P>),
+            native_manifest: Some(native_manifest_trampoline::<P>),
+            native_call: Some(native_call_trampoline::<P>),
         }
     }
 
@@ -1309,6 +1423,99 @@ unsafe extern "C" fn horizon_event_trampoline<P: EphemerisProvider>(
             out_found.write(u8::from(found.is_some()));
         }
     }))
+}
+
+/// Writes a string into a caller's buffer under the size-then-fill
+/// protocol, and reports the length it wanted either way.
+///
+/// One helper for both native trampolines, because the protocol is the
+/// thing that has to be identical between them: a caller writes the loop
+/// once and uses it for both.
+///
+/// # Safety
+///
+/// `out` must be null or valid for `capacity` bytes; `out_len` must be
+/// null or writable.
+unsafe fn fill(text: &str, out: *mut c_char, capacity: usize, out_len: *mut usize) {
+    if !out_len.is_null() {
+        // SAFETY: the caller promises a writable slot.
+        unsafe { out_len.write(text.len()) };
+    }
+    if out.is_null() || capacity < text.len() {
+        // Too small, or a size query. The length is already reported, and
+        // a partial answer is worse than none: JSON cut in half parses as
+        // nothing and reads as something.
+        return;
+    }
+    // SAFETY: the caller promises `capacity` writable bytes and the
+    // length fits, checked above.
+    unsafe {
+        ptr::copy_nonoverlapping(text.as_ptr().cast::<c_char>(), out, text.len());
+    }
+}
+
+/// # Safety
+///
+/// As [`NativeManifestFn`].
+unsafe extern "C" fn native_manifest_trampoline<P: EphemerisProvider>(
+    user_data: *mut c_void,
+    out_json: *mut c_char,
+    capacity: usize,
+    out_len: *mut usize,
+) -> i32 {
+    if user_data.is_null() {
+        return ProviderCode::Invalid as i32;
+    }
+    // SAFETY: the caller promises `user_data` came from this provider.
+    let exported = unsafe { &*user_data.cast::<Exported<P>>() };
+    match exported.provider.native_manifest() {
+        Ok(manifest) => {
+            // SAFETY: the caller's contract for the buffer.
+            unsafe { fill(&manifest, out_json, capacity, out_len) };
+            0
+        }
+        Err(error) => error.code(),
+    }
+}
+
+/// # Safety
+///
+/// As [`NativeCallFn`].
+unsafe extern "C" fn native_call_trampoline<P: EphemerisProvider>(
+    user_data: *mut c_void,
+    function: *const c_char,
+    arguments_json: *const c_char,
+    out_json: *mut c_char,
+    capacity: usize,
+    out_len: *mut usize,
+) -> i32 {
+    if user_data.is_null() || function.is_null() {
+        return ProviderCode::Invalid as i32;
+    }
+    // SAFETY: the caller promises `user_data` came from this provider.
+    let exported = unsafe { &*user_data.cast::<Exported<P>>() };
+    // SAFETY: the caller promises NUL-terminated strings.
+    let (name, arguments) = unsafe {
+        (
+            CStr::from_ptr(function).to_str(),
+            if arguments_json.is_null() {
+                Ok("{}")
+            } else {
+                CStr::from_ptr(arguments_json).to_str()
+            },
+        )
+    };
+    let (Ok(name), Ok(arguments)) = (name, arguments) else {
+        return ProviderCode::Invalid as i32;
+    };
+    match exported.provider.native_call(name, arguments) {
+        Ok(answer) => {
+            // SAFETY: the caller's contract for the buffer.
+            unsafe { fill(&answer, out_json, capacity, out_len) };
+            0
+        }
+        Err(error) => error.code(),
+    }
 }
 
 unsafe extern "C" fn crossings_trampoline<P: EphemerisProvider>(

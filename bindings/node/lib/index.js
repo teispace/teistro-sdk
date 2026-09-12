@@ -1088,16 +1088,17 @@ export class Rendered extends Decoded {
  * `Object.keys` lists what the engine offers.
  */
 class Engine {
-  #context;
+  #reach;
   #manifest = null;
 
-  constructor(context) {
-    this.#context = context;
+  constructor(reach) {
+    this.#reach = reach;
+    Object.freeze(this);
   }
 
   /** The manifest as the engine wrote it. */
   get manifestJson() {
-    return this.#context.ephemerisManifestJson();
+    return this.#reach((inner) => inner.ephemerisManifest());
   }
 
   /**
@@ -1139,214 +1140,205 @@ class Engine {
    * is being handed on rather than read.
    */
   callJson(name, argumentsJson) {
-    return this.#context.ephemerisCallJson(name, argumentsJson);
+    return this.#reach((inner) => inner.ephemerisCall(name, argumentsJson));
   }
 }
-
-/** The members `Engine` itself defines, which a proxy must not shadow. */
-const ENGINE_OWN = new Set([
-  'manifest',
-  'manifestJson',
-  'names',
-  'signature',
-  'call',
-  'callJson',
-]);
 
 /**
- * An `Engine` whose members are the engine's own operations.
+ * What every area is.
  *
- * The proxy is what keeps the promise: the names come from the manifest
- * at the moment they are asked for, so this file never holds one.
+ * A **value**, which is what makes the areas worth having rather than
+ * merely tidy: `const { calendar } = sdk` keeps working, and an area can
+ * be passed to something that only needs that much of the SDK
+ * (`03-design/surface-areas.md`).
+ *
+ * A class with prototype methods rather than a frozen object literal of
+ * arrow functions, which is what the design page first said: a literal
+ * of six closures is seven allocations per context and this is one, and
+ * the methods are shared by every context rather than rebuilt for each.
+ * The instance is frozen, so an area cannot be added to from outside.
+ *
+ * `#reach` is the only thing an area holds. It runs a call on the
+ * addon's context with the disposed check and the provider's own thrown
+ * value already applied, so no area touches the handle.
  */
-function engineProxy(context) {
-  const engine = new Engine(context);
-  return new Proxy(engine, {
-    get(target, property, _receiver) {
-      if (typeof property !== 'string' || ENGINE_OWN.has(property) || property in target) {
-        // Read with the target as the receiver, not the proxy: `Engine`
-        // keeps its context in a private field, and a getter or a method
-        // called with the proxy as `this` cannot see one. Methods are
-        // bound for the same reason.
-        const value = Reflect.get(target, property, target);
-        return typeof value === 'function' ? value.bind(target) : value;
-      }
-      if (!engine.names.includes(property)) {
-        return undefined;
-      }
-      const operation = (argumentsObject = {}) => engine.call(property, argumentsObject);
-      Object.defineProperty(operation, 'name', { value: property });
-      return operation;
-    },
-    has(target, property) {
-      return Reflect.has(target, property)
-        || (typeof property === 'string' && engine.names.includes(property));
-    },
-    ownKeys(target) {
-      return [...new Set([...Reflect.ownKeys(target), ...engine.names])];
-    },
-    getOwnPropertyDescriptor(target, property) {
-      if (typeof property === 'string' && engine.names.includes(property)) {
-        return { configurable: true, enumerable: true, value: this.get(target, property, target) };
-      }
-      return Reflect.getOwnPropertyDescriptor(target, property);
-    },
-  });
+class Area {
+  #reach;
+
+  constructor(reach) {
+    this.#reach = reach;
+    // A private field is not a property, so a subclass's own state
+    // (`IntlArea`'s memo) still works on a frozen instance.
+    Object.freeze(this);
+  }
+
+  /** @internal what the subclasses call the boundary through. */
+  _run(run) {
+    return this.#reach(run);
+  }
 }
 
-export class Context {
-  #inner;
-  #messages = null;
-  /** Where this context's own provider leaves what it threw. */
-  #thrown;
-  /** Whether `dispose` has already freed the handle. */
-  #disposed = false;
+/** `sdk.calendar` — the calendars, and the fixed day they share. */
+class CalendarArea extends Area {
+  /** The date a fixed day falls on in a calendar. */
+  dateOf(calendar, fixed) {
+    return this._run((inner) => inner.calendarFromFixed(calendar, fixed));
+  }
 
-  /**
-   * Runs a call on the addon, putting back whatever this context's
-   * provider threw. Every call can reach the provider — a chart asks for
-   * positions — so every call goes through here.
-   */
-  #call(run) {
-    // Said here rather than at the boundary: a call on a freed handle is
-    // refused there as `invalid argument`, which does not tell a reader
-    // that the context they disposed is the argument. The Dart and Python
-    // bindings name it the same way.
-    if (this.#disposed) {
-      throw new Error('this context was disposed; open another one');
-    }
-    return guarded(this.#inner, run, this.#thrown);
+  /** The fixed day of a date. */
+  fixedOf(date) {
+    return this._run((inner) => inner.calendarToFixed(clean(date)));
+  }
+
+  /** The same date in another calendar. */
+  convert(date, into) {
+    return this._run((inner) => inner.calendarConvert(clean(date), into));
+  }
+
+  /** The weekday of a date, Monday `1` to Sunday `7`. */
+  weekdayOf(date) {
+    return this._run((inner) => inner.calendarWeekday(clean(date)));
+  }
+
+  /** The length of a month. */
+  monthLength(calendar, year, month) {
+    return this._run((inner) => inner.calendarMonthLength(calendar, year, month));
+  }
+
+  /** Whether a year is a leap year. */
+  isLeap(calendar, year) {
+    return this._run((inner) => inner.calendarIsLeap(calendar, year)) === 1;
+  }
+}
+
+/** `sdk.time` — the scales, the zones and what separates them. */
+class TimeArea extends Area {
+  /** A civil date and time in a zone, resolved to an instant with its metadata. */
+  resolve(civil, zone) {
+    return this._run((inner) => inner.timeResolve(clean(civil), clean(zone)));
+  }
+
+  /** The civil date and time of an instant in a zone. */
+  civilOf(jdUtc, zone, calendar) {
+    return this._run((inner) => inner.timeCivil(finite(jdUtc, 'jdUtc'), clean(zone), calendar));
   }
 
   /**
-   * @param {object} [options]
-   * @param {string} [options.profile] a shipped profile's id; the default
-   *   is what `defaultProfile()` names
-   * @param {object} [options.settings] a settings patch over the profile
-   * @param {string} [options.locale] the locale every render resolves from
-   * @param {'none'|'builtin'|'test'} [options.ephemeris] which of the
-   *   SDK's own ephemerides to use: `builtin` is the analytic ephemeris
-   *   the SDK carries, which needs no files, no network and no licence
-   *   beyond the SDK's own, and is what lets a chart compute with
-   *   nothing else installed; `test` is the test provider, whose
-   *   positions are **not astronomy**
-   * @param {boolean} [options.testProvider] the older spelling of
-   *   `ephemeris: 'test'`; `ephemeris` wins when both are given
-   * @param {object} [options.provider] an ephemeris of your own: `name`,
-   *   `bodies` (their catalogue keys) and `positions(request)`, which
-   *   answers with the columns; everything else has a default
-   */
-  constructor(options = {}) {
-    const { profile, settings, locale, ephemeris, testProvider = false, provider } = options;
-    const [info, positions, thrown] = describeProvider(provider);
-    this.#thrown = thrown;
-    this.#inner = guarded(null, () =>
-      new native.Context(
-        clean({
-          // One rule, written once: a named ephemeris wins, and the
-          // older flag decides only when none was named (ADR-0028).
-          flags: 0,
-          ephemeris: ephemeris ?? (testProvider ? 'test' : 'none'),
-          profile,
-          settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
-          locale,
-        }),
-        info,
-        positions,
-      ),
-    );
-  }
-
-  /**
-   * The engine's own operations, beyond the eight the SDK names.
+   * Converts an instant between the time scales.
    *
-   * Throws when the context has no ephemeris, or when the one it has
-   * describes nothing of its own — asked now rather than at the first
-   * call, so a caller learns it where they can act on it.
+   * `convertTime` on the flat surface, because the calendar had taken
+   * `convert`. The area carries the word now.
    */
-  get ephemeris() {
-    const engine = engineProxy(this);
-    engine.manifestJson;
-    return engine;
+  convert(jd, from, to) {
+    return this._run((inner) => inner.timeConvert(finite(jd, 'jd'), from, to));
   }
 
-  /** @internal the boundary call the engine proxy relays through. */
-  ephemerisManifestJson() {
-    return this.#call(() => this.#inner.ephemerisManifest());
+  /** Delta T at a UT1 instant, with what produced it. */
+  deltaT(jdUt1) {
+    return this._run((inner) => inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
   }
+}
 
-  /** @internal the boundary call the engine proxy relays through. */
-  ephemerisCallJson(name, argumentsJson) {
-    return this.#call(() => this.#inner.ephemerisCall(name, argumentsJson));
-  }
-
-  /** The id of the profile the settings came from. */
-  get profile() {
-    return this.#call(() => this.#inner.profile());
-  }
-
-  /** The resolved settings, as their canonical document. */
-  get settings() {
-    return JSON.parse(this.settingsJson);
-  }
-
-  /**
-   * The same document as the text the library wrote, which is what the
-   * settings hash is taken over and what a stored chart keeps.
-   */
-  get settingsJson() {
-    return this.#call(() => this.#inner.settingsJson());
-  }
-
-  /** The SHA-256 of the canonical settings, in hex; every result carries it. */
-  get settingsHash() {
-    const hash = this.#call(() => this.#inner.settingsHash());
-    return Buffer.from(hash.bytes).toString('hex');
-  }
+/** `sdk.intl` — the locale, its messages and the scripts they are in. */
+class IntlArea extends Area {
+  #messages = null;
 
   /** The locale every render resolves from. */
   get locale() {
-    return this.#call(() => this.#inner.intlLocale());
+    return this._run((inner) => inner.intlLocale());
   }
 
   set locale(tag) {
-    this.#call(() => this.#inner.intlSetLocale(tag));
+    this._run((inner) => inner.intlSetLocale(tag));
   }
 
-  /** The SDK's canonical frame: apparent geocentric ecliptic of date, tropical. */
-  canonicalFrame() {
-    return this.#call(() => native.frameCanonical());
+  /** Renders a message of the current locale with its parameters. */
+  render(key, params) {
+    const bytes = this._run((inner) =>
+      inner.intlRender(key, params === undefined ? undefined : JSON.stringify(params)),
+    );
+    return new Rendered(bytes);
+  }
+
+  /** Whether the current locale or its fallbacks have a message. */
+  has(key) {
+    return this._run((inner) => inner.intlHas(key)) === 1;
   }
 
   /**
-   * Positions over a grid of instants and bodies, completed into the
-   * frame asked for.
-   *
-   * @param {object} request
-   * @param {readonly number[]|Float64Array} request.instants Julian days
-   * @param {readonly string[]} request.bodies the bodies, by key
-   * @param {string} [request.scale] `ut1` or `tt`; `ut1` by default
-   * @param {object} [request.frame] a frame; the canonical one by default
-   * @param {boolean} [request.speeds] whether speeds are wanted
-   * @param {object} [request.observer] the place a topocentric frame needs
+   * Text from one script into another (`deva`, `iast`), for a Sanskrit
+   * or Nepali term written in the other.
    */
-  positions(request) {
-    const frame = request.frame ?? this.canonicalFrame();
-    const bytes = this.#call(() =>
-      this.#inner.positions(
-        clean({
-          scale: request.scale ?? 'ut1',
-          frameBits: native.framePack(clean(frame)),
-          speeds: request.speeds ?? true,
-          observer: request.observer,
-          jds: instants(request.instants, 'instants'),
-          bodies: request.bodies,
-        }),
-      ),
-    );
-    return new Positions(bytes);
+  transliterate(text, from = 'deva', to = 'iast') {
+    return this._run((inner) => inner.intlTransliterate(text, from, to));
   }
 
+  /**
+   * An entity's forms in the current locale or its fallbacks: its name,
+   * its prose form, its transliteration, and the glyph and gender the
+   * locale gives it.
+   */
+  entity(key) {
+    return entityForms(this._run((inner) => inner.intlEntity(key)));
+  }
+
+  /**
+   * The typed accessors: every message of the SDK's own locale as a
+   * function of its parameters, and every catalogued entity as its forms.
+   * A key is spelled once, by the generator, and never by an application.
+   *
+   * ```js
+   * sdk.intl.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 });
+   * sdk.intl.messages.entity.graha.SUN().name;
+   * ```
+   */
+  get messages() {
+    this.#messages ??= messages({
+      render: (key, params) => this.render(key, params).text,
+      entity: (key) => this.entity(key),
+    });
+    return this.#messages;
+  }
+
+  /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
+  loadPack(bytes) {
+    return this._run((inner) => inner.intlLoadPack(Buffer.from(bytes)));
+  }
+}
+
+/** `sdk.keys` — the catalogue's keys and their packed ids. */
+class KeysArea extends Area {
+  /** The packed id of a catalogue key. */
+  id(key) {
+    return this._run((inner) => inner.keyParse(key));
+  }
+
+  /** The catalogue key of a packed id. */
+  name(id) {
+    return this._run((inner) => inner.keyName(id));
+  }
+}
+
+/** `sdk.frame` — the coordinate conventions a request is expressed in. */
+class FrameArea extends Area {
+  /** The SDK's canonical frame: apparent geocentric ecliptic of date, tropical. */
+  canonical() {
+    return this._run(() => native.frameCanonical());
+  }
+
+  /** Packs a frame's fields into the bits a position request carries. */
+  pack(frame) {
+    return this._run(() => native.framePack(clean(frame)));
+  }
+
+  /** The frame a packed set of bits describes. */
+  unpack(bits) {
+    return this._run(() => native.frameUnpack(bits));
+  }
+}
+
+/** `sdk.chart` — a chart founded at an instant and a place. */
+class ChartArea extends Area {
   /**
    * Founds a chart at an instant and a place.
    *
@@ -1393,8 +1385,8 @@ export class Context {
    */
   foundMany(request) {
     const place = request.place ?? {};
-    const bytes = this.#call(() =>
-      this.#inner.chartFound({
+    const bytes = this._run((inner) =>
+      inner.chartFound({
         kind: request.kind ?? ChartKind.Natal,
         instants: instants(request.instants, 'instants', { allowEmpty: true }),
         latitudeDeg: finite(place.latitude, 'place.latitude'),
@@ -1405,7 +1397,17 @@ export class Context {
     );
     return new Charts(bytes);
   }
+}
 
+/**
+ * `sdk.almanac` — a day, or a run of days, with its limbs.
+ *
+ * The boundary calls this `panchanga` and the area takes the consumer's
+ * word: an almanac is what the operation answers, and a panchanga is one
+ * tradition's name for five of its limbs
+ * (`03-design/surface-areas.md`).
+ */
+class AlmanacArea extends Area {
   /**
    * The almanac of every day in a range, at one place.
    *
@@ -1423,12 +1425,12 @@ export class Context {
    *   from UTC, east positive
    * @returns {Almanac}
    */
-  almanac(request) {
+  of(request) {
     const place = request.place ?? {};
     const from = request.from ?? {};
     const to = request.to ?? from;
-    const bytes = this.#call(() =>
-      this.#inner.panchangaDays({
+    const bytes = this._run((inner) =>
+      inner.panchangaDays({
         calendar: from.calendar,
         fromYear: finite(from.year, 'from.year'),
         fromMonth: finite(from.month, 'from.month'),
@@ -1455,123 +1457,179 @@ export class Context {
    *   from UTC, east positive
    * @returns {AlmanacDay}
    */
-  almanacDay(request) {
-    return this.almanac({ ...request, from: request.date, to: request.date }).at(0);
+  day(request) {
+    return this.of({ ...request, from: request.date, to: request.date }).at(0);
   }
+}
 
-  /** Renders a message of the current locale with its parameters. */
-  render(key, params) {
-    const bytes = this.#call(() =>
-      this.#inner.intlRender(key, params === undefined ? undefined : JSON.stringify(params)),
-    );
-    return new Rendered(bytes);
-  }
-
-  /** Whether the current locale or its fallbacks have a message. */
-  has(key) {
-    return this.#call(() => this.#inner.intlHas(key)) === 1;
-  }
+export class Context {
+  #inner;
+  /** The engine's own operations, built with the areas. */
+  #engine;
+  /** Where this context's own provider leaves what it threw. */
+  #thrown;
+  /** Whether `dispose` has already freed the handle. */
+  #disposed = false;
 
   /**
-   * Text from one script into another (`deva`, `iast`), for a Sanskrit
-   * or Nepali term written in the other.
+   * Runs a call on the addon, putting back whatever this context's
+   * provider threw. Every call can reach the provider — a chart asks for
+   * positions — so every call goes through here.
    */
-  transliterate(text, from = 'deva', to = 'iast') {
-    return this.#call(() => this.#inner.intlTransliterate(text, from, to));
+  #call(run) {
+    // Said here rather than at the boundary: a call on a freed handle is
+    // refused there as `invalid argument`, which does not tell a reader
+    // that the context they disposed is the argument. The Dart and Python
+    // bindings name it the same way.
+    if (this.#disposed) {
+      throw new Error('this context was disposed; open another one');
+    }
+    return guarded(this.#inner, run, this.#thrown);
   }
 
   /**
-   * An entity's forms in the current locale or its fallbacks: its name,
-   * its prose form, its transliteration, and the glyph and gender the
-   * locale gives it.
-   */
-  entity(key) {
-    return entityForms(this.#call(() => this.#inner.intlEntity(key)));
-  }
-
-  /**
-   * The typed accessors: every message of the SDK's own locale as a
-   * function of its parameters, and every catalogued entity as its forms.
-   * A key is spelled once, by the generator, and never by an application.
+   * @param {object} [options]
+   * @param {string} [options.profile] a shipped profile's id; the default
+   *   is what `defaultProfile()` names
+   * @param {object} [options.settings] a settings patch over the profile
+   * @param {string} [options.locale] the locale every render resolves from
+   * @param {EphemerisChoice|readonly EphemerisChoice[]} [options.ephemeris]
+   *   which ephemeris to compute with, or an **ordered chain** of them,
+   *   tried in order (ADR-0029).
    *
-   * ```js
-   * ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 });
-   * ctx.messages.entity.graha.SUN().name;
-   * ```
+   *   An entry is an adapter's own descriptor — what
+   *   `@teistro/ephemeris-teimeris` and its like export, carrying the
+   *   platform binary they ship and their own configuration — or one of
+   *   the SDK's own by name: `builtin` is the analytic ephemeris the SDK
+   *   carries, which needs no files, no network and no licence beyond
+   *   the SDK's own; `test` is the test provider, whose positions are
+   *   **not astronomy**.
+   *
+   *   A chain is a caller **saying** they will accept the fallback. One
+   *   entry is one entry: a context asked for an engine and given the
+   *   built-in without being told is the silence this refuses.
+   * @param {boolean} [options.testProvider] the older spelling of
+   *   `ephemeris: 'test'`; `ephemeris` wins when both are given
+   * @param {object} [options.provider] an ephemeris of your own: `name`,
+   *   `bodies` (their catalogue keys) and `positions(request)`, which
+   *   answers with the columns; everything else has a default
    */
-  get messages() {
-    this.#messages ??= messages({
-      render: (key, params) => this.render(key, params).text,
-      entity: (key) => this.entity(key),
+  constructor(options = {}) {
+    const { profile, settings, locale, ephemeris, testProvider = false, provider } = options;
+    // Two ways to answer one question, so both together is a refusal
+    // rather than one silently winning — the rule the settings patch
+    // has.
+    if (provider !== undefined && ephemeris !== undefined) {
+      throw new TypeError(
+        'provider and ephemeris each name the ephemeris to compute with; give one of them',
+      );
+    }
+    const chain = ephemerisChain(ephemeris, testProvider);
+    const [info, positions, thrown] = describeProvider(provider);
+    this.#thrown = thrown;
+    const settled = clean({
+      flags: 0,
+      profile,
+      settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
+      locale,
     });
-    return this.#messages;
+    this.#inner = guarded(null, () => open(chain, settled, info, positions));
+
+    // The areas, built once and never rebuilt: each holds the one way in
+    // and nothing else, so a consumer may destructure one and keep it
+    // (ADR-0030, `03-design/surface-areas.md`).
+    const reach = (run) => this.#call(() => run(this.#inner));
+    /** The calendars, and the fixed day they share. */
+    this.calendar = new CalendarArea(reach);
+    /** The scales, the zones and what separates them. */
+    this.time = new TimeArea(reach);
+    /** The locale, its messages and the scripts they are in. */
+    this.intl = new IntlArea(reach);
+    /** The catalogue's keys and their packed ids. */
+    this.keys = new KeysArea(reach);
+    /** The coordinate conventions a request is expressed in. */
+    this.frame = new FrameArea(reach);
+    /** A chart founded at an instant and a place. */
+    this.chart = new ChartArea(reach);
+    /** A day, or a run of days, with its limbs. */
+    this.almanac = new AlmanacArea(reach);
+    this.#engine = new Engine(reach);
   }
 
-  /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
-  loadPack(bytes) {
-    return this.#call(() => this.#inner.intlLoadPack(Buffer.from(bytes)));
+  /**
+   * The engine's own operations, beyond the eight the SDK names.
+   *
+   * **Not `ephemeris`**: `engine` says *this particular engine, not the
+   * portable contract*, so a consumer reading their own code sees the
+   * difference between a call that survives changing provider and one
+   * that does not (ADR-0030).
+   *
+   * Throws when the context has no ephemeris, or when the one it has
+   * describes nothing of its own — asked now rather than at the first
+   * call, so a caller learns it where they can act on it.
+   */
+  get engine() {
+    // Reading the manifest is what asks the question.
+    this.#engine.manifestJson;
+    return this.#engine;
   }
 
-  /** The date a fixed day falls on in a calendar. */
-  dateOf(calendar, fixed) {
-    return this.#call(() => this.#inner.calendarFromFixed(calendar, fixed));
+  /** The id of the profile the settings came from. */
+  get profile() {
+    return this.#call(() => this.#inner.profile());
   }
 
-  /** The fixed day of a date. */
-  fixedOf(date) {
-    return this.#call(() => this.#inner.calendarToFixed(clean(date)));
+  /** The resolved settings, as their canonical document. */
+  get settings() {
+    return JSON.parse(this.settingsJson);
   }
 
-  /** The same date in another calendar. */
-  convert(date, into) {
-    return this.#call(() => this.#inner.calendarConvert(clean(date), into));
+  /**
+   * The same document as the text the library wrote, which is what the
+   * settings hash is taken over and what a stored chart keeps.
+   */
+  get settingsJson() {
+    return this.#call(() => this.#inner.settingsJson());
   }
 
-  /** The weekday of a date, Monday `1` to Sunday `7`. */
-  weekdayOf(date) {
-    return this.#call(() => this.#inner.calendarWeekday(clean(date)));
+  /** The SHA-256 of the canonical settings, in hex; every result carries it. */
+  get settingsHash() {
+    const hash = this.#call(() => this.#inner.settingsHash());
+    return Buffer.from(hash.bytes).toString('hex');
   }
 
-  /** The length of a month. */
-  monthLength(calendar, year, month) {
-    return this.#call(() => this.#inner.calendarMonthLength(calendar, year, month));
-  }
-
-  /** Whether a year is a leap year. */
-  isLeap(calendar, year) {
-    return this.#call(() => this.#inner.calendarIsLeap(calendar, year)) === 1;
-  }
-
-  /** A civil date and time in a zone, resolved to an instant with its metadata. */
-  resolve(civil, zone) {
-    return this.#call(() => this.#inner.timeResolve(clean(civil), clean(zone)));
-  }
-
-  /** The civil date and time of an instant in a zone. */
-  civilOf(jdUtc, zone, calendar) {
-    return this.#call(() =>
-      this.#inner.timeCivil(finite(jdUtc, 'jdUtc'), clean(zone), calendar),
+  /**
+   * Positions over a grid of instants and bodies, completed into the
+   * frame asked for.
+   *
+   * **On the context and not in an area**, because an operation whose
+   * name is its own area's name is a root operation: it is the SDK's one
+   * primitive over the port, and every area above is built on it
+   * (`03-design/surface-areas.md`).
+   *
+   * @param {object} request
+   * @param {readonly number[]|Float64Array} request.instants Julian days
+   * @param {readonly string[]} request.bodies the bodies, by key
+   * @param {string} [request.scale] `ut1` or `tt`; `ut1` by default
+   * @param {object} [request.frame] a frame; the canonical one by default
+   * @param {boolean} [request.speeds] whether speeds are wanted
+   * @param {object} [request.observer] the place a topocentric frame needs
+   */
+  positions(request) {
+    const frame = request.frame ?? this.frame.canonical();
+    const bytes = this.#call(() =>
+      this.#inner.positions(
+        clean({
+          scale: request.scale ?? 'ut1',
+          frameBits: native.framePack(clean(frame)),
+          speeds: request.speeds ?? true,
+          observer: request.observer,
+          jds: instants(request.instants, 'instants'),
+          bodies: request.bodies,
+        }),
+      ),
     );
-  }
-
-  /** Converts an instant between the time scales. */
-  convertTime(jd, from, to) {
-    return this.#call(() => this.#inner.timeConvert(finite(jd, 'jd'), from, to));
-  }
-
-  /** Delta T at a UT1 instant, with what produced it. */
-  deltaT(jdUt1) {
-    return this.#call(() => this.#inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
-  }
-
-  /** The packed id of a catalogue key. */
-  keyId(key) {
-    return this.#call(() => this.#inner.keyParse(key));
-  }
-
-  /** The catalogue key of a packed id. */
-  keyName(id) {
-    return this.#call(() => this.#inner.keyName(id));
+    return new Positions(bytes);
   }
 
   /**
@@ -1599,6 +1657,92 @@ export class Context {
    */
   [Symbol.dispose]() {
     this.dispose();
+  }
+}
+
+/**
+ * One entry of an ephemeris chain, normalised: either a name of the
+ * SDK's own or a loaded adapter.
+ *
+ * @typedef {'none'|'builtin'|'test'|{ plugin: string, config?: object }} EphemerisChoice
+ */
+
+/**
+ * The chain as a list, however it was written.
+ *
+ * One entry is a list of one. A caller who wants a fallback writes the
+ * fallback down, which is what ADR-0029 means by never automatic.
+ *
+ * @param {EphemerisChoice|readonly EphemerisChoice[]|undefined} ephemeris
+ * @param {boolean} testProvider the older spelling of `'test'`
+ * @returns {readonly EphemerisChoice[]}
+ */
+function ephemerisChain(ephemeris, testProvider) {
+  // One rule, written once: a named ephemeris wins, and the older flag
+  // decides only when none was named (ADR-0028).
+  if (ephemeris === undefined) {
+    return [testProvider ? 'test' : 'none'];
+  }
+  const entries = Array.isArray(ephemeris) ? ephemeris : [ephemeris];
+  if (entries.length === 0) {
+    throw new TypeError('an ephemeris chain of none names nothing; give an entry or omit it');
+  }
+  for (const entry of entries) {
+    const named = typeof entry === 'string';
+    if (!named && (entry === null || typeof entry.plugin !== 'string')) {
+      throw new TypeError(
+        "an ephemeris is a name ('none', 'builtin', 'test') or an adapter's descriptor, " +
+          "which carries a `plugin` path; got " +
+          JSON.stringify(entry),
+      );
+    }
+  }
+  return entries;
+}
+
+/**
+ * Opens the context on the first entry of the chain that answers.
+ *
+ * **A chain of one is not a chain, so nothing is caught for it.** Found
+ * by an existing test: a bad *profile* is not an ephemeris failure, and
+ * catching it to try the next entry replaced a refusal carrying its
+ * status, its field and its hint with a bare "nothing could be opened".
+ * With one entry there is no next entry, so the refusal is the refusal.
+ *
+ * With more than one, **every refusal is kept and reported together**,
+ * because a chain that said only why its last entry failed would hide
+ * the one the caller actually wanted.
+ */
+function open(chain, settled, info, positions) {
+  if (chain.length === 1) {
+    return attempt(chain[0], settled, info, positions);
+  }
+  const refusals = [];
+  for (const entry of chain) {
+    try {
+      return attempt(entry, settled, info, positions);
+    } catch (refusal) {
+      refusals.push(`${typeof entry === 'string' ? entry : entry.plugin}: ${refusal.message}`);
+    }
+  }
+  throw new Error(
+    `no ephemeris in the chain could be opened:\n  ${refusals.join('\n  ')}`,
+  );
+}
+
+/** One entry of the chain, opened. */
+function attempt(entry, settled, info, positions) {
+  if (typeof entry === 'string') {
+    return new native.Context({ ...settled, ephemeris: entry }, info, positions);
+  }
+  // The context takes its own reference to the adapter, so the handle
+  // this loads is freed at once: what keeps the library loaded is the
+  // context, and a consumer never holds either.
+  const loaded = new native.Provider(entry.plugin, JSON.stringify(entry.config ?? {}));
+  try {
+    return native.Context.newWithProvider({ ...settled, ephemeris: 'none' }, loaded);
+  } finally {
+    loaded.dispose();
   }
 }
 

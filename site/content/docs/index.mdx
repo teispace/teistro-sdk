@@ -10,13 +10,15 @@ fixed the frame, and which model each correction used.
 
 It has one boundary, a C ABI, and every binding's mechanical layer is
 generated from a description of that boundary. That is why the same
-question gets the same answer in C, in Node and in Dart, and why a gate
-can hold the three to each other value by value.
+question gets the same answer in C, in Node, in Dart and in Python, and
+why a gate can hold them to each other value by value — the same shape,
+and the same numbers.
 
 ## Start here
 
 <Cards>
-  <Card title="Install it" href="/docs/install" description="npm, pub, or the C bundle." />
+  <Card title="Install it" href="/docs/install" description="npm, pub, pip, or the C bundle." />
+  <Card title="The surface" href="/docs/surface" description="sdk.<area>.<operation>, and what each area answers." />
   <Card title="The reference" href="/docs/reference" description="Every entry point of the C ABI." />
 </Cards>
 
@@ -25,9 +27,13 @@ can hold the three to each other value by value.
 - **One frame, stated.** Every result carries the settings hash of the
   frame it was computed in, so a chart stored today can be recomputed
   years from now and shown to be the same chart.
-- **Providers are pluggable.** The ephemeris is behind a port. The SDK
-  ships an analytic test provider, adapters exist for licensed engines,
-  and an application can write one in JavaScript or Dart and hand it in.
+- **The ephemeris is plugged in.** It is named in configuration the way
+  a mail transport is: an adapter package's descriptor, a provider you
+  write in JavaScript, Dart or Python, or one of the SDK's own by name.
+  A real engine is the intended path; the built-in analytic ephemeris is
+  the fallback that makes a chart compute with nothing installed. Name
+  an ordered chain and the SDK tries them in turn, and says so — it will
+  not quietly hand back a fallback you did not ask for.
 - **Determinism is measured, not assumed.** The same source computes the
   same numbers on x86-64 and aarch64, value for value; where a platform's
   maths library rounds differently, the difference is published rather

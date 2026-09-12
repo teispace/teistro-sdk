@@ -11,7 +11,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::binding::{blob_fixtures, build, present, step};
+use crate::binding::{blob_fixtures, build, present, step, tool};
 use crate::platform::Platform;
 
 const FIXTURES: &str = "target/tsrb";
@@ -19,7 +19,18 @@ const TESTS: &str = "bindings/node/test/";
 /// Where the examples live. **Every** file there is run, so a scenario
 /// added to the directory is gated by having been added.
 const EXAMPLES: &str = "bindings/node/example";
+/// Where the pinned TypeScript compiler and the strict consumer live.
+const TYPECHECK: &str = "bindings/node/typecheck";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
+/// The Teimeris adapter's own package, which the SDK does not depend on
+/// and which depends on the SDK.
+///
+/// Checked here rather than in a gate of its own, because what it needs
+/// is this ecosystem's type checker and this ecosystem's strictness: an
+/// adapter package that did not compile against the SDK's declarations
+/// would be a broken package however green the SDK's own gate was. The
+/// generated façade is most of what it holds (ADR-0030).
+const ADAPTER_TSCONFIG: &str = "adapters/ephemeris-teimeris/node/tsconfig.json";
 /// Where the addon is loaded from: Node requires the `.node` suffix, so
 /// the cdylib Cargo builds is copied there.
 pub(crate) const ADDON: &str = "bindings/node/native/index.node";
@@ -47,21 +58,47 @@ fn build_addon(root: &Path) -> Result<(), ()> {
 
 /// The TypeScript compiler, when the machine has one: `TSC`, a local
 /// install beside the consumer, or one npm has already fetched.
+///
+/// **The local one is run as what it is**, a JavaScript program, by
+/// `node` and not by the `.bin` shim beside it. npm writes that shim as
+/// `tsc.cmd` on Windows, and a shim goes through `cmd.exe` -- which is
+/// how `The system cannot find the path specified.` became the whole of
+/// a win32 failure, with nothing in it naming a tool. `node` is an
+/// executable on every platform and `typescript/bin/tsc` is the same
+/// file on every platform, so this path has no shim in it at all.
+///
+/// `npx` stays as the last resort and still goes through [`tool`],
+/// because there it is the only thing on offer.
 fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     if let Ok(tsc) = std::env::var("TSC") {
         return Some((tsc, Vec::new()));
     }
-    let local: PathBuf = root.join("bindings/node/typecheck/node_modules/.bin/tsc");
-    if local.exists() {
-        return Some((local.display().to_string(), Vec::new()));
+    let dir = root.join(TYPECHECK);
+    let local = dir.join("node_modules/typescript/bin/tsc");
+    // Installed from the lock file beside it when it is not there yet,
+    // which is what the site's gate does with its own: a version pinned
+    // in the repository means every machine and every runner type-checks
+    // with the same compiler, rather than whichever one a runner image
+    // happens to carry.
+    if !local.is_file()
+        && let Some(npm) = tool("npm", "--version")
+    {
+        let _ = Command::new(&npm)
+            .args(["ci", "--silent", "--no-audit", "--no-fund"])
+            .current_dir(&dir)
+            .status();
     }
-    let npx = Command::new("npx")
+    if local.is_file() {
+        return Some((String::from("node"), vec![local.display().to_string()]));
+    }
+    let npx = tool("npx", "--version")?;
+    let fetched = Command::new(&npx)
         .args(["--no-install", "tsc", "--version"])
         .current_dir(root)
         .output();
-    match npx {
+    match fetched {
         Ok(output) if output.status.success() => Some((
-            String::from("npx"),
+            npx,
             ["--no-install", "tsc"]
                 .iter()
                 .map(|s| (*s).to_string())
@@ -129,8 +166,12 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 1;
     }
     let Some((tsc, args)) = typescript(root) else {
+        // The compiler is pinned in `typecheck/package.json` and this
+        // gate installs it, so reaching here means npm could not be run
+        // or the install failed -- not that the machine was expected to
+        // have brought its own.
         println!(
-            "skip  {TSCONFIG}: no TypeScript compiler (set TSC, or `npm install typescript` in bindings/node/typecheck)"
+            "skip  {TSCONFIG}: the pinned TypeScript compiler is not installed and could not be (needs `npm`; or set TSC)"
         );
         return 0;
     };
@@ -142,5 +183,16 @@ pub(crate) fn check(root: &Path) -> i32 {
         &format!("{TSCONFIG} type-checks at maximum strictness"),
         &format!("{TSCONFIG} does not type-check"),
     );
-    i32::from(checked.is_err())
+    if checked.is_err() {
+        return 1;
+    }
+    let adapter = step(
+        Command::new(&tsc)
+            .args(&args)
+            .args(["-p", ADAPTER_TSCONFIG])
+            .current_dir(root),
+        &format!("{ADAPTER_TSCONFIG}: the typed engine façade composes with the SDK"),
+        &format!("{ADAPTER_TSCONFIG} does not type-check"),
+    );
+    i32::from(adapter.is_err())
 }

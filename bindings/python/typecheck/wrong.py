@@ -38,6 +38,12 @@ date(Body.SUN, 2015, 4, 14)
 with teistro.context(test_provider=True) as ctx:
     ctx.positions(instants=["2451545.0"], bodies=[Body.SUN])
 
-# expect: Argument 2 to "convert" of "Context" has incompatible type "Body"; expected "Calendar"
+# expect: Argument 2 to "convert" of "CalendarArea" has incompatible type "Body"; expected "Calendar"
 with teistro.context() as other:
-    other.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Body.SUN)
+    other.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Body.SUN)
+
+# An area is reached by its own name, so a misspelling is an error rather
+# than a call that fails at run time.
+# expect: "Context" has no attribute "calender"
+with teistro.context() as misspelt:
+    misspelt.calender.is_leap(Calendar.GREGORIAN, 2024)

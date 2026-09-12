@@ -1,0 +1,57 @@
+---
+title: ts_context_new_with_provider
+description: "Creates a context that computes with a **loaded** provider."
+---
+
+Creates a context that computes with a **loaded** provider.
+
+The same as `ts_context_new` in every other respect — `options` may be null for the defaults, and `options.ephemeris` is ignored because this call has already answered the question it asks.
+
+The context takes its own reference to the adapter, so this handle may be freed immediately afterwards or kept to found another context; the library is unloaded when the last of them goes.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_string * out_error);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context_new_with_provider(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.contextNewWithProvider(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `options` | `const ts_context_options *` | a struct read | — |
+| `provider` | `const ts_provider *` | the handle | — |
+| `out_context` | `ts_context * *` | receives a handle | — |
+| `out_error` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`error`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`provider` must be a live handle from `ts_provider_load`; every other pointer must be null or valid for the access its documentation describes, for the duration of the call.
+
+Declared in `crates/ffi/src/provider.rs`.

@@ -216,13 +216,77 @@ fn assigned(root: &Path) -> Result<BTreeMap<&'static str, Vec<&'static str>>, St
             // that names the field: either is filling it.
             let assignment = format!("{field} =");
             let literal = format!("{}: ", field.rsplit('.').next().unwrap_or(field));
-            if text.contains(&assignment) || (field.contains('.') && text.contains(&literal)) {
+            // **And `Envelope::sealing`, which is the join filling it.**
+            // §8's open question closed in favour of the producers, so a
+            // producer no longer spells `content_hash = …` — it hands
+            // the value and the stamp to the constructor that knows
+            // both. This pass's subject moved when the change landed,
+            // and a reader looking only for the assignment would have
+            // reported two producers as still shipping the hash of
+            // nothing, which is the state the change ended.
+            let sealed = field == "content_hash" && text.contains("Envelope::sealing(");
+            if sealed
+                || text.contains(&assignment)
+                || (field.contains('.') && text.contains(&literal))
+            {
                 fills.push(field);
             }
         }
         found.insert(producer, fills);
     }
     Ok(found)
+}
+
+/// The paragraph about `content_hash`, in whichever of its two forms
+/// the measurement supports.
+///
+/// Two sentences, and which one is written is the measurement. The first
+/// was true for six sessions and is the reason that section exists; the
+/// second is what closed §8's open question.
+fn the_hash_of_nothing(missing: &[&str], producers: usize) -> String {
+    let mut out = String::new();
+    if missing.is_empty() {
+        let _ = write!(
+            out,
+            "\n**`content_hash` is the hash of nothing on none of the {producers}.**\n\
+             `Provenance::new` still sets it to `Hash::of(&[])` as a\n\
+             placeholder, and every producer now replaces it — but not by\n\
+             remembering to. The shape problem this section found is\n\
+             answered the way `crates/serial` answered it: a value and its\n\
+             stamp are joined by a constructor that knows both, so the one\n\
+             field that cannot be filled until the value exists is filled\n\
+             where it can be. `Envelope::sealing` is that join for `chart`\n\
+             and `panchanga`, and the four callers that used to mend the\n\
+             stamp afterwards — the boundary's two entry points and the\n\
+             Rust façade's two areas — no longer do. Four callers writing\n\
+             the same line is what decided it.\n\n"
+        );
+    } else {
+        let _ = write!(
+            out,
+            "\n**`content_hash` is the hash of nothing on {} of the {}.**\n\
+             `Provenance::new` sets it to `Hash::of(&[])` as a placeholder, and\n\
+             a producer that does not replace it ships a value carrying the\n\
+             hash of the empty string where its own hash should be — the field\n\
+             is documented as \"the hash of the canonical serialisation of the\n\
+             value\" and on those it is not that. They are: {}.\n\n\
+             That is not a bug in any one producer. It is a **shape** problem:\n\
+             a value and its stamp are built separately and joined at the end,\n\
+             so the one field that cannot be filled until the value exists is\n\
+             the one everybody forgets. `crates/serial`'s answer is to make the\n\
+             joining the only way to build the pair, so the hash is computed by\n\
+             the constructor and never by a caller who remembers — which is\n\
+             why that crate is in the table above and fills it.\n\n",
+            missing.len(),
+            producers,
+            missing
+                .iter()
+                .map(|producer| format!("`{producer}`"))
+                .collect::<Vec<_>>()
+                .join(", "),
+        );
+    }
+    out
 }
 
 fn stamped(root: &Path) -> Result<String, String> {
@@ -281,29 +345,7 @@ fn stamped(root: &Path) -> Result<String, String> {
         .filter(|(_, fills)| !fills.contains(&"content_hash"))
         .map(|(producer, _)| *producer)
         .collect();
-    let _ = write!(
-        out,
-        "\n**`content_hash` is the hash of nothing on {} of the {}.**\n\
-         `Provenance::new` sets it to `Hash::of(&[])` as a placeholder, and\n\
-         a producer that does not replace it ships a value carrying the\n\
-         hash of the empty string where its own hash should be — the field\n\
-         is documented as \"the hash of the canonical serialisation of the\n\
-         value\" and on those it is not that. They are: {}.\n\n\
-         That is not a bug in any one producer. It is a **shape** problem:\n\
-         a value and its stamp are built separately and joined at the end,\n\
-         so the one field that cannot be filled until the value exists is\n\
-         the one everybody forgets. `crates/serial`'s answer is to make the\n\
-         joining the only way to build the pair, so the hash is computed by\n\
-         the constructor and never by a caller who remembers — which is\n\
-         why that crate is in the table above and fills it.\n\n",
-        missing.len(),
-        found.len(),
-        missing
-            .iter()
-            .map(|producer| format!("`{producer}`"))
-            .collect::<Vec<_>>()
-            .join(", "),
-    );
+    out.push_str(&the_hash_of_nothing(&missing, found.len()));
     if !never.is_empty() {
         let _ = write!(
             out,

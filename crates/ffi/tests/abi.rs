@@ -14,7 +14,10 @@
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
     clippy::too_many_lines,
-    reason = "tests cross the boundary, fail by panicking, read sizes as C does and walk one scenario each"
+    clippy::print_stdout,
+    reason = "tests cross the boundary, fail by panicking, read sizes as C does, \
+              walk one scenario each, and say when one is skipped for want of \
+              an adapter a checkout does not have"
 )]
 
 use core::ffi::CStr;
@@ -33,11 +36,15 @@ use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
     ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
 };
+use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
-use teistro_ffi::keys::{ts_key_name, ts_key_parse};
+use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::positions::ts_positions;
+use teistro_ffi::provider::{
+    TsProvider, ts_context_new_with_provider, ts_provider_free, ts_provider_load,
+};
 use teistro_ffi::schemas;
-use teistro_ffi::strings::{TsHash, TsStr, TsString, ts_string_free};
+use teistro_ffi::string::{TsHash, TsStr, TsString, ts_string_free};
 use teistro_ffi::time::{
     TsCivilDateTime, TsCivilTime, TsDeltaT, TsDeltaTSource, TsScale, TsTimeConversion, TsZoneEra,
     TsZoneResolution, TsZoneSource, TsZoneSpec, ts_time_civil, ts_time_convert, ts_time_delta_t,
@@ -330,6 +337,141 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
     unsafe { ts_context_free(ptr::null_mut()) };
 }
 
+/// **An engine, loaded rather than linked** (ADR-0029).
+///
+/// This is the 98% path at the boundary a consumer crosses: no vtable
+/// written by hand, no engine compiled into this library — which its
+/// licence forbids — but an adapter opened from a file and a real sky
+/// computed through it.
+///
+/// It runs only where the adapter has been built and its data is present,
+/// because neither can be assumed of a checkout; where they are, it is
+/// the test that the whole seam holds. `TEISTRO_TEIMERIS_ADAPTER` names
+/// the library.
+#[test]
+fn an_engine_is_loaded_from_a_shared_library_and_computes() {
+    let Some(path) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
+        // A checkout has neither the adapter built nor the engine's data,
+        // and a test that failed for that would fail for everyone.
+        println!("skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter's library");
+        return;
+    };
+    let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
+    let mut provider: *mut TsProvider = ptr::null_mut();
+    let mut error = TsString::empty();
+    // SAFETY: a live path and writable slots.
+    let status = unsafe {
+        ts_provider_load(
+            path.as_ptr(),
+            ptr::null(),
+            &raw mut provider,
+            &raw mut error,
+        )
+    };
+    if status != Status::Ok {
+        // SAFETY: the library wrote a descriptor or left it empty.
+        let said = unsafe { core::slice::from_raw_parts(error.data, error.len) };
+        panic!("loading the adapter: {}", String::from_utf8_lossy(said));
+    }
+
+    let mut context: *mut TsContext = ptr::null_mut();
+    // SAFETY: a live handle and writable slots.
+    let status = unsafe {
+        ts_context_new_with_provider(ptr::null(), provider, &raw mut context, ptr::null_mut())
+    };
+    assert_eq!(status, Status::Ok, "a context over the loaded engine");
+
+    // Freed **first**, on purpose: the context holds its own reference,
+    // so the library must still be there for the call below. An ordering
+    // that mattered would be a footgun in every binding.
+    // SAFETY: a handle from `ts_provider_load`, freed once.
+    unsafe { ts_provider_free(provider) };
+
+    let jds = [2_451_545.0];
+    let bodies = [Body::Sun.id()];
+    let frame = Frame::CANONICAL;
+    let request = sized(
+        PositionRequestC {
+            struct_size: 0,
+            scale: TimeScale::Tt.id(),
+            frame_bits: frame.to_bits(),
+            speeds: 1,
+            has_observer: 0,
+            reserved: [0; 2],
+            observer: teistro_port_ephemeris::vtable::ObserverC::default(),
+            jds: jds.as_ptr(),
+            jd_count: jds.len(),
+            bodies: bodies.as_ptr(),
+            body_count: bodies.len(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_positions(context, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "the loaded engine answered"
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::positions();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let sun = reader.column("cells", "lon").unwrap()[0].as_f64();
+    assert!(
+        (279.0..282.0).contains(&sun),
+        "the engine put the Sun at {sun} degrees at J2000"
+    );
+    // **The whole chain**: a consumer's binding, this library, an adapter
+    // loaded from a file, and the engine's own function reached by name
+    // (ADR-0030). Nothing of the engine is compiled into this library,
+    // and none of the names below appear in it.
+    let mut json = TsString::empty();
+    // SAFETY: a live context and a writable slot.
+    assert_eq!(
+        unsafe { ts_ephemeris_manifest(context, &raw mut json) },
+        Status::Ok,
+        "a loaded engine describes itself"
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let manifest = unsafe { core::slice::from_raw_parts(json.data, json.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_string_free(&raw mut json) };
+    let manifest = String::from_utf8(manifest).expect("the manifest is text");
+    assert!(
+        manifest.contains("tm_delta_t"),
+        "the manifest lists what can be called"
+    );
+    assert!(
+        !manifest.contains("tm_context_close"),
+        "and not what the adapter owns"
+    );
+
+    let name = CString::new("tm_delta_t").unwrap();
+    let arguments = CString::new(r#"{"jd_ut1": 2451545.0}"#).unwrap();
+    let mut answer = TsString::empty();
+    // SAFETY: a live context, live strings and a writable slot.
+    assert_eq!(
+        unsafe { ts_ephemeris_call(context, name.as_ptr(), arguments.as_ptr(), &raw mut answer,) },
+        Status::Ok,
+        "and answers when called by name"
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let said = unsafe { core::slice::from_raw_parts(answer.data, answer.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_string_free(&raw mut answer) };
+    let said = String::from_utf8(said).expect("the answer is text");
+    assert!(
+        said.contains("out_seconds"),
+        "the engine's out-parameter comes back under its own name: {said}"
+    );
+
+    // SAFETY: a live context, freed once.
+    unsafe { ts_context_free(context) };
+}
+
 /// **Phase 3's promise at the boundary a consumer actually crosses.**
 ///
 /// Every other test here computes with the test provider, whose positions
@@ -514,12 +656,21 @@ fn positions_come_back_as_a_blob_with_steps_and_provenance() {
         unsafe { ts_positions(bare.handle, &raw const request, &raw mut blob) },
         Status::Capability
     );
-    let (status, message, field, _, _) = bare.last_error();
+    let (status, message, field, hint, _) = bare.last_error();
     assert_eq!(
         (status, field.as_deref()),
-        (Status::Capability, Some("provider"))
+        (Status::Capability, Some("ephemeris"))
     );
-    assert!(message.contains("TS_CONTEXT_TEST_PROVIDER"));
+    // The field and the hint name the option a consumer sets, in whatever
+    // language they are in -- not `ts_context_new` and not the flag,
+    // which is what this message used to say to a Node caller who has
+    // neither.
+    assert!(message.contains("has no ephemeris"), "{message}");
+    let hint = hint.expect("the refusal hints at what to pass");
+    assert!(
+        hint.contains("`builtin`") && hint.contains("descriptor"),
+        "{hint}"
+    );
     // A request with a wrong size, and a null request.
     let mut wrong = request;
     wrong.struct_size = 4;

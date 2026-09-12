@@ -36,7 +36,13 @@ jobs:
             platform: linux-arm64
           - os: macos-latest
             platform: darwin-arm64
-          - os: macos-13
+          # Intel macOS. **Not `macos-13`**: that image was retired, and
+          # nothing picks the label up -- eleven dispatches on
+          # 2026-09-12 sat in `queued` from the moment they were made,
+          # so this row alone kept every run of this workflow from ever
+          # reaching a conclusion. A job nobody runs is worse than a job
+          # that fails.
+          - os: macos-15-intel
             platform: darwin-x64
           - os: windows-latest
             platform: win32-x64
@@ -53,8 +59,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: The type checker the Python binding's typecheck step needs
-        run: python -m pip install --disable-pip-version-check mypy
       - name: One version across the workspace and both packages
         run: cargo xtask check-versions
       - name: The C binding against the generated header
@@ -65,7 +69,9 @@ jobs:
         run: cargo xtask check-dart
       - name: The Python binding, its sizes and a strict type check
         run: cargo xtask check-python
-      - name: The three bindings against each other, value by value
+      - name: The Rust facade's examples and its own tests
+        run: cargo xtask check-rust
+      - name: The four bindings against each other, value by value
         run: cargo xtask check-parity
       - name: The packages installed into throwaway projects and run
         run: cargo xtask check-package

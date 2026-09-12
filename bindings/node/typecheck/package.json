@@ -1,0 +1,10 @@
+{
+  "name": "teistro-node-typecheck",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The TypeScript compiler this repository's type-check gates run: pinned here so every machine and every runner checks with the same one. `type` is module because these files are ES modules, and this package.json is the nearest one to them.",
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

@@ -39,7 +39,15 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-09, end of the sixty-fourth session (the
+**Last updated:** 2026-09-12, end of the second session of that day
+(the Rust façade's eight examples and the fifth binding gate,
+`check-rust`; the parity runner grown from 125 keys to 519; and four
+defects the writing found — four signature types a consumer could not
+name, an almanac provenance that named no provider, a
+`--no-default-features` build that had always failed, and a
+Nepali-new-year line in the other three bindings that said the Sun had
+not reached Aries two and a half hours after it had); before that
+2026-09-09, end of the sixty-fourth session (the
 completion's topocentric centre, measured and then built. The design
 page's own description of the step — "the observer's geocentric position
 (WGS84) and the parallax" — is falsified by a residual that does not
@@ -366,6 +374,1015 @@ provider's DUT1).
    `compact` tier, which exists for it — a wasm module cannot load a
    shared library, and an engine compiled to wasm is a project rather
    than a packaging step.
+
+   **The first four of those are built.** The adapters export a plugin
+   (ADR-0029), the boundary loads one (`ts_provider_load`), and the
+   Teimeris adapter answers `native_manifest` and `native_call` from
+   marshalling generated out of its own IDL by `cargo xtask engine`,
+   gated by `check-engine`. The coverage is a **measurement**, not a
+   target: `03-design/engine-passthrough-measured.md` classifies all 161
+   functions into what is callable today (62), what the adapter will
+   never hand over whatever its shape (12, each of which opens, closes or
+   rebinds the context every chart is cast on), and what is queued behind
+   one more shape (87). Strings closed the way the page predicted they
+   would: three shapes, one helper each, and the queue's largest
+   non-struct group went with them.
+
+   The page then falsified its own next sentence. It had said arrays were
+   the next tranche and nearly free, on the strength of a table that
+   grouped a function by the **first** unlearned role in parameter order.
+   Grouped by the **hardest** one instead, 81 of the 87 are behind
+   structs and an array of numbers would release three: 31 of the arrays
+   are arrays *of structs*, which is the struct job wearing a count. So
+   there is one tranche left and it is the large one, and the cheap thing
+   the page recommended would have bought almost nothing.
+
+   Growing that IDL was part of it. Three of the engine's public types —
+   `tm_body`, `tm_flags`, `tm_ayanamsha` — are integers a caller passes
+   like any other, and the description said nothing about them, so every
+   generator that read it carried its own copy of the list and one copy
+   had already gone wrong. They are described now, which is what makes
+   the five functions that take one callable here.
+
+   **What is left of Phase 4's surface work:** the namespacing, then the
+   typed façade. Both were asked for explicitly, and the order is the
+   other way round from how they were asked because the façade attaches
+   to the `sdk.engine` namespace the other one creates.
+
+   The namespacing's measurement is done and it falsified the rule ADR-0030
+   words it by (`03-design/surface-areas-measured.md`, gated by
+   `check-areas`). The ADR says the areas are "derived from the boundary
+   modules the reference site already groups by"; measured, **5 of the 14
+   boundary modules are never reached by anything a consumer calls** —
+   they are the C caller's memory and the context's own life — and one
+   member reaches two modules. So the grouping is real and the derivation
+   is not: the areas have to be *chosen* with the measurement as
+   evidence, which is what the design page is for. Two further findings:
+   entry points do not measure an area's size to a consumer (`chart`,
+   `positions` and `panchanga` have one each and are what the SDK exists
+   for), and **6 of the members already spell their own area inside their
+   own name** — `convertTime` because `convert` was taken by the
+   calendar — so namespacing mostly gives those names back rather than
+   inventing any.
+
+   Running that pass found a hole beside it: the gate-coverage lint read
+   `xtask`'s hand-written arms and so could not see the nineteen
+   generated-page gates at all, four of which no workflow ran. It reads
+   the pass table now, and `check-agreement`, `check-pluto`,
+   `check-engine` and `check-areas` are wired.
+
+   **The design is written and the first two steps of it are built**
+   (`03-design/surface-areas.md`). Seven areas and a root, with one rule
+   the measurement could not supply: *an operation whose name is its own
+   area's name is a root operation and not an area of one*, which puts
+   `positions` at the root and keeps `frame` as an area. `sdk.ephemeris`
+   becomes `sdk.engine` (ADR-0030) and the area over `ts_panchanga_days`
+   is `almanac`, taking the consumer's word over the module's.
+
+   Built: the boundary's `keys.rs`/`strings.rs` renamed to match the
+   functions they hold — the **files**, because a file is not an ABI
+   symbol — and **the whole Node layer**, with its 39 tests, its eight
+   examples, its typecheck at maximum strictness and its parity runner.
+   `check-parity` proved that behaviour-preserving: all 635 values still
+   agree with Dart and Python, which had not changed. Node's dynamic
+   index signature came out, which ADR-0030 had considered and rejected
+   under ADR-0023.
+
+   The measured page turned over as Node landed, which was the point of
+   gating it: it had measured a flat surface, and now holds five
+   properties of the built grouping — a module reached from one area, no
+   empty area, no operation spelling its own area, every module reached
+   or accounted for as plumbing, and the boundary's own naming. Four
+   hold; the fifth is the boundary naming, whose seven exceptions are six
+   `lib` functions the rule does not cover and one declared in the design
+   page.
+
+   **Dart and Python followed**, each in its own idiom — a `late final`
+   field and a `functools.cached_property`, both of which make an area a
+   value a consumer can hold — and each green on its own gate. Python's
+   `messages` stopped being eager along the way: it was built in
+   `__init__` for every context whether anything rendered or not.
+
+   And **`check-parity` gained the grouping**, which was the gap the
+   measurement named: it held three bindings to the same *values* and to
+   no *shape*, so a namespaced surface could have drifted into three
+   groupings without the gate telling a deliberate difference from a
+   mistake. Each runner now prints a `surface.<area>.<operation>` line
+   per operation, keyed by a canonical path and referencing its own
+   binding's spelling. 673 values agree across all three; proven red by
+   moving `calendar.convert` to `time.convert_date` in one runner, which
+   reported the extra key and the missing one in both comparisons.
+
+   **Next, and it is the 98% path rather than a tidy-up:** a consumer
+   outside Rust still cannot plug a real engine. The boundary has
+   `ts_provider_load` and `ts_context_new_with_provider`; the Node layer
+   even has a generated `Provider` class that loads an adapter. What is
+   missing is the **other half** — no generated layer wraps
+   `ts_context_new_with_provider`, so a loaded provider cannot be handed
+   to a context, and no ergonomic layer offers a plugin path at all. So
+   `sdk.engine.*` works in Node, Dart and Python against the *test*
+   provider and against nothing else, which is the reverse of the
+   maintainer's brief.
+
+   It is a generator gap rather than a design one: the entry point takes
+   a `handle` of an opaque type that is not `TsContext` beside a
+   `handle_out`, and the three emitters have not been shown that shape.
+   Teaching them, and then giving each ergonomic layer a plugin option
+   (`new Context({ ephemeris: { plugin: …, config: … } })`), is what
+   makes the 98% path exist outside Rust.
+
+   **`check-lints` holds the class of gap rather than the instance.** Its
+   ninth rule, `entry-point-is-reachable`, applies the emitters' own
+   grouping rules to every function in the description and reports any
+   the rules place nowhere — born red on exactly this one.
+
+   **The generated half is now built.** `rules::factories` is the rule
+   that was missing: a class has one constructor and may have more than
+   one way in, and every other `handle_out` for a type is a **factory**.
+   `build_call` in each emitter learned whose handle is `self`, so any
+   other opaque's becomes a parameter of the class that holds it. All
+   three now have it — `Context.newWithProvider(options, provider)` in
+   Node, `TeistroContext.newWithProvider(lib, …)` in Dart,
+   `TeistroContext._new_with_provider(lib, …)` in Python — and all four
+   binding gates pass on the generated code. The lint's inventory is
+   empty and the list is kept, so the next unplaced entry point has
+   somewhere to be declared.
+
+   **And the ergonomic half is built, so the 98% path exists in every
+   binding.** Two options in each layer, spelled the same in all three:
+   `plugin`, the adapter's platform binary, and `pluginConfig` /
+   `plugin_config`, that adapter's own options — handed over as JSON and
+   read by the SDK not at all. `plugin`, `provider` and `ephemeris` each
+   answer the same question, so two together is a refusal rather than one
+   silently winning, which is the rule the settings patch already had.
+   The loaded handle is freed at once in each layer: the context takes
+   its own reference, so what keeps the library loaded is the context and
+   a consumer holds neither.
+
+   Proven end to end, three times, against a real Teimeris built as a
+   `cdylib`: the Sun at J2000 at **280.3689°** from Node, Dart and
+   Python alike, `sdk.engine` reporting 62 operations, and
+   `tm_body_name(0)` answering `"Sun"` — a string crossing the plugin
+   boundary, through the generated marshalling, into three languages.
+   Each binding has a test for it that skips with a printed reason where
+   the adapter is not built, which is what `crates/ffi/tests/abi.rs`
+   already did with the same `TEISTRO_TEIMERIS_ADAPTER`.
+
+   **The typed façade is generated too**, from the same reading that
+   writes the dispatch and the page, so it cannot type an argument the
+   dispatch would refuse by name. Four files under
+   `adapters/ephemeris-teimeris/` — `node/engine.js` with its `.d.ts`, a
+   Dart extension, a Python class — each with a method per callable
+   operation, named the way its language names things while the keys that
+   cross stay the engine's own.
+
+   Proven against the real engine in all three: `tmBodyName({ body: 0 })`
+   → `"Sun"`, `tmDeltaT({ jdUt1: 2451545 })` → `63.8289…`,
+   `tmVersion()` → a record, `tmAngleFormat(…)` → `5 Tau 30'00"`.
+
+   Two things it corrected. **ADR-0030's façade shape was wrong** and is
+   amended: a TypeScript declaration merge and a Python `Protocol` would
+   each have promised methods nothing installs — with the index signature
+   gone, `sdk.engine.tmBodyName` is `undefined` however well it
+   type-checks — so the façade is a **value a consumer takes**
+   (`teimeris(sdk.engine)`), except in Dart where an extension method has
+   a body and is therefore both typed and installed. And the shape of an
+   answer is a **measurement**: 46 of the 62 answer with exactly one
+   value, so a method hands that value back as itself and only the five
+   that answer with more get a record — five types per target rather than
+   sixty-two. The same count showed `return` never appears beside another
+   key, so no target has to rename a keyword.
+
+   **And the packages are built, so the façade is gated by a compiler
+   rather than proven by hand.** `@teistro/ephemeris-teimeris`,
+   `teistro_ephemeris_teimeris` for Dart and pub, and the Python
+   distribution of the same name: each exports `teimeris(…)` — the
+   descriptor, with the platform binary filled in — and carries the
+   generated façade. Each resolves its binary the way the SDK resolves
+   its own: a named path, `TEISTRO_TEIMERIS_ADAPTER`, the per-platform
+   package, then this repository's release and debug builds, with a
+   refusal naming every place it looked.
+
+   Each binding's gate now checks its adapter package too, because what
+   an adapter package needs is that ecosystem's checker at that
+   ecosystem's strictness: `tsc` at maximum strictness in `check-node`,
+   `dart analyze --fatal-infos` in `check-dart`, `mypy --strict` in
+   `check-python`. **Proven red**: a string where the engine declares
+   `tm_body` is a type error, which traces back through the façade and
+   the manifest to the integer aliases the engine's IDL gained earlier in
+   this session.
+
+   **The licence, as the maintainer decided.** Each package declares
+   `AGPL-3.0-only` and carries the licence text, because the artefact it
+   ships links Teimeris and an Apache-2.0 library that links AGPL code is
+   an AGPL work. Both adapter crates keep `license = "Apache-2.0"` for
+   their own source, and each says so in its manifest where a reader
+   meets the apparent contradiction.
+
+   The binary resolver paid for itself on its first outing: it found a
+   stale local *release* build ahead of the debug one, and the boundary
+   refused it by name — `vtable size 72 version 2; this port is version
+   3` — which is the ABI check ADR-0029 asked for, working.
+
+   **And the plugin surface is ADR-0029's**, after one commit where it
+   was not. `plugin` and `pluginConfig` — a path, which that ADR rejected
+   for four stated reasons, and no chain — are folded into one option:
+   `ephemeris` takes an entry or an **ordered chain** of them, tried in
+   order. An entry is a name of the SDK's own or an adapter's descriptor,
+   spelled each language's way: a plain object in Node, a `Plugin`
+   dataclass in Python, a **sealed** `EphemerisChoice` in Dart so the
+   switch that opens one is exhaustive.
+
+   **A chain of one is not a chain**, and that was a defect before it was
+   a rule. The first version caught every refusal to try the next entry,
+   so a bad *profile* — not an ephemeris failure, and identical on every
+   entry — came back as "nothing could be opened" instead of a refusal
+   carrying its status, its field and its hint. **An existing Dart test
+   caught it**, which is the memory's own rule earning itself again: a
+   refactor that reddens a test has found either a bug or a contract.
+   With one entry nothing is caught; with more, every refusal is kept and
+   reported together.
+
+   **`check-package` covers the adapter now**, which is the half of
+   ADR-0029's packaging cost that does not need a publishing pipeline.
+   The npm package is packed, installed into a throwaway project beside
+   the SDK's own tarballs, and a consumer that knows nothing but the
+   published names is run against it — which is the only thing that tests
+   the *package* rather than the code in it. It skips, saying which it
+   wanted, without the adapter's library or the engine's data.
+
+   It earned itself on its first run: the descriptor sent `data_dir`
+   where the adapter's own `Config` is `#[serde(rename_all =
+   "camelCase", deny_unknown_fields)]` and wants `dataDir`. All three
+   packages had it wrong, and nothing else could have caught it — the SDK
+   passes that object through as JSON and reads none of it, and every
+   earlier probe had called `teimeris()` with no options at all.
+
+   **A red nightly that predates all of this, and took four attempts.**
+   The verify matrix was dispatched on the branch to validate the three
+   new adapter gates on clean runners, and showed the C binding failing
+   on win32 and `check-package`'s C consumer on both Linuxes — on `main`
+   too, since at least 2026-09-10. `undefined reference to `sin``: the
+   astronomy calls it, Linux and MinGW keep the maths functions in a
+   separate `libm`, and `bindings/c/README.md` told a consumer to link
+   without it. macOS has them in libSystem, so every local run passed.
+   One constant, `-lm`, read by both gates and stated on that page —
+   and **three of the four failing platforms went green**.
+
+   Then two more attempts chased win32 with flags, and both broke
+   platforms that had been passing. The log said why, once it was read
+   rather than reasoned about.
+
+   **It was never a flag.** `check-c` links `-L target/release
+   -lteistro_ffi`, and on Windows a searching linker finds
+   `teistro_ffi.lib` — the **static** library — beside
+   `teistro_ffi.dll.lib`, and takes it. So the gate was statically
+   linking Rust's whole standard library, built for the MSVC ABI, with
+   the runner's MinGW gcc: `__chkstk`, `__imp_NtReadFile`, and
+   `??_7type_info@@6B@`, which lives in the MSVC C++ runtime MinGW does
+   not have. No `-l` closes that; the two ABIs do not meet.
+
+   And `rustc --print native-static-libs` — the third attempt, which
+   looked principled — **cannot be pasted into an arbitrary C driver**.
+   Its dialect is the Rust target's linker's: on win32 it answers
+   `kernel32.lib` and `/defaultlib:msvcrt`, which MinGW's ld looks for
+   as file names and does not find; on Linux its `-lc` gives `cannot
+   find -lc`; on darwin its `-lc -lm -liconv -lSystem` gives `library
+   'm' not found` where `-lm` alone had linked. It is information for a
+   consumer who knows their own toolchain, not a link line, and
+   `bindings/c/README.md` now says to read it rather than paste it.
+
+   So the two questions are answered apart. `binding::shared_link` says
+   how to point a C compiler at the **shared** library — `-L <dir>
+   -lteistro_ffi` on Unix, the import library **by path** on Windows,
+   and nothing else on either, because a shared library resolves its own
+   imports. `binding::static_link` says what to link beside the
+   **static** one (`-lm`), or refuses with the reason this platform's
+   `cc` cannot link it at all. `check-package` prints that reason for
+   the Windows static library instead of failing on it, and proves the
+   import library there, so the gap narrows from "the C step skips on
+   win32" to "the win32 static library wants `cl`".
+
+   Two tests over the platform table hold both, and the first is the one
+   that would have caught this on the first attempt: a platform that
+   ships an import library must link through it, because `-l` searches
+   and searching is the defect. Proved red by putting `-l` back.
+
+   **And win32 had a second defect hiding behind the first.**
+   `check-python` had never run there, because `check-c` failed in the
+   same job before it; with the link fixed it ran, and
+   `UnicodeEncodeError: 'charmap' codec can't encode characters in
+   position 0-5` — those six characters being `सोमबार`, the weekday
+   `almanac.py` prints first. The Windows console's default encoding is
+   cp1252. PEP 540's UTF-8 mode is the answer and becomes Python's
+   default in 3.15, so the gate sets `PYTHONUTF8` and the Python README
+   tells a Windows reader to set it too.
+
+   **Fixed in one gate when four needed it**, and the next run said so:
+   `check-parity`'s Python runner failed with the same error on `\u2609`,
+   the Sun. Four gates start a Python process and each answered "which
+   interpreter" for itself; `binding::python_command` answers both
+   questions once, and `check-lints`'s tenth rule,
+   `python-runs-in-utf8-mode`, holds the class — the interpreter is named
+   in one place and no module builds a Python command of its own. Proved
+   red by putting the parity runner's own `Command::new` back.
+
+   **The docs had the same class of defect as the code: they described a
+   surface nobody had run.** The site's install page gave a Node
+   quickstart that refuses — `the context has no ephemeris` — because
+   `ephemeris` has no default and the page named none; it had no Python
+   section at all, though that binding has been gated since the 8th; and
+   its C link line was the line that cannot link. All three are fixed,
+   and the page gained a **Choosing an ephemeris** section: the three
+   things an entry can be, the ordered chain, all three languages, and
+   why an adapter is its own package rather than a build flag.
+
+   And twelve of the fifteen example programs still selected the
+   **test** provider, three of them claiming in prose that it "selects
+   the analytic ephemeris the SDK carries". It does not: `builtin` is
+   that, and `test` is one periodic term per body. Every example names
+   the built-in now, and `ephemeris.{mjs,dart,py}` gained the retrograde
+   scan it had carried as a hypothetical comment — `stations`, the same
+   shape over `lonSpeed` that `ingresses` is over `lon`. Measured, and
+   the three bindings agree: Mars retrograde at -0.3281°/day, one
+   station, day 55 from 2025-01-01, which is when it turned.
+
+   The refusal a consumer meets when they forget the option was written
+   for a C caller and duplicated three times — *pass a provider vtable
+   to `ts_context_new`, or the `TS_CONTEXT_TEST_PROVIDER` flag for
+   tests*, which a Node, Dart or Python consumer can act on in neither
+   half. One `support::no_ephemeris` now, naming the `ephemeris` option
+   and hinting at the three kinds of answer it takes.
+
+   **And one more hole, in the gate that holds the three bindings to one
+   shape.** `check-parity` compares what the three runners *print*, and
+   the list of canonical `surface.<area>.<operation>` paths is written
+   out once per runner in three languages — so three runners that all
+   miss the same new operation agree perfectly and the gate is silent.
+   `check-areas` reads all three lists against the layer's own
+   declarations now, as a sixth property, and it was **born red**:
+   `(root).engine`, the accessor a consumer reads to reach the engine at
+   all, was listed by none of them. 117 pairs, 39 operations by three
+   runners, and it holds.
+
+   **win32 kept giving up one defect per run, and each was real.** With
+   the link fixed, `check-c`, `check-node`, `check-dart`, `check-python`
+   and `check-parity` all pass there. `check-package` then found two
+   more, both Windows facts hard-coded as Unix ones: a Python virtual
+   environment puts its executables in `Scripts` and not `bin`, so
+   `pip` was never where the gate looked — now a row of the platform
+   table like every other name an operating system decides; and **npm,
+   npx and tsc are `.cmd` shims** there, which `Command::new` cannot
+   find because `CreateProcess` appends `.exe` and nothing else. So a
+   runner with npm installed answered "no `npm` on this machine" and the
+   gate skipped the Node packages on the platform whose packaging is
+   least like the others'. `binding::tool` resolves a tool's spelling
+   once; a skip that says the machine lacks a tool it has is worse than
+   a failure.
+
+   **And the TypeScript type-check had never run on Windows**, which the
+   npm fix revealed rather than caused: with `npx.cmd` resolvable the
+   gate stopped skipping and failed, on `The system cannot find the path
+   specified.` — a message naming no tool, in a step that printed only
+   what it wanted. Two changes, and the second is the one that matters:
+   `step` now names the program on its failure line, and the compiler is
+   run as what it is. `tsc` is a JavaScript program; `node
+   typescript/bin/tsc` is the same file on every platform, so that path
+   has no `.cmd` shim in it at all.
+
+   And it is **pinned**: `bindings/node/typecheck/package.json` names the
+   version, the gate installs it from the lock file on first run the way
+   `check-site` does with its own, and `TSC` still overrides. Before
+   this, every machine type-checked with whatever compiler it happened
+   to have and every runner with whatever its image carried — which is
+   why nobody had noticed that on four of the five platforms the gate
+   was skipping. Adding the manifest reddened the gate at once, and
+   correctly: it became the nearest `package.json` to those files, so
+   they stopped being ES modules until it said `"type": "module"`.
+
+   **And the matrix could never have gone green anyway.** Every
+   dispatch of `verify.yml` today — eleven of them — was still in
+   `queued`, and the one run from the 11th "completed" only because it
+   had been cancelled. One row did it: `bindings (darwin-x64)` asked for
+   `macos-13`, GitHub retired that image, and **a retired label does not
+   fail, it queues**. So the run never reached a conclusion, and every
+   judgement of "green" today was made from the four rows that do run.
+   It is the same defect as a gate that skips while claiming the machine
+   lacks a tool it has: silence read as the absence of a problem.
+
+   `macos-15-intel` is the image that replaced it, and the fix was the
+   experiment — a wrong label fails a job at once rather than hanging,
+   so a dispatch answers either way. It answered, and then the whole
+   matrix did: **run 34688535483 is the first `verify` run to reach a
+   conclusion, and the conclusion is `success`** — all five binding
+   platforms, including the Intel macOS row that had never run and the
+   win32 row that had never passed, and all three ephemeris tiers.
+
+   Three places had to change, and `xtask/src/platform.rs` opens by
+   saying it is "the only place any of that is written". It was not: both
+   workflows kept their own copy of which runner builds which platform.
+   `check-lints`'s **eleventh** rule,
+   `runner-matches-the-platform-table`, holds every platform row of
+   every workflow matrix to that field — born red on the one row this
+   correction had reached, which is how a rule should arrive.
+
+   The Python type checker was the same story one step behind: `mypy`
+   installed by a workflow step, unpinned, so a release of it could
+   redden CI on a day nothing here changed and a machine with an older
+   one would quietly check less. It is pinned in
+   `bindings/python/typecheck/requirements.txt`, the gate installs it
+   into `bindings/python/.venv` when it finds none — proved by moving
+   that directory away and watching the gate rebuild it — and the
+   workflow step is gone, because a gate that needs a tool should get
+   it rather than rely on the caller having read a list.
+
+   **And the site now says what the API looks like**, which it did not.
+   Between the install page and a generated reference of C entry points
+   there was nothing telling a Node, Dart or Python consumer the shape of
+   the thing they had installed — the seven areas and the root, built
+   earlier today, appeared only in the binding READMEs.
+   [`site/content/docs/surface.mdx`](../site/content/docs/surface.mdx) is
+   that page: what each area answers, why `ctx.calendar.convert` and
+   `ctx.time.convert` can both be `convert`, why `positions` is at the
+   root, that an area is a value a consumer can hold, and what
+   `sdk.engine` is for with the adapter's façade beside it.
+
+   Prose by hand and facts gated, which is the split that matters: the
+   measured page's **seventh** property reads the guide's table of areas
+   against the areas the layer actually wires, in both directions — an
+   area the layer wires and the page does not name is a surface nobody
+   can find, and an area the page names and the layer does not wire is a
+   page describing something that is not there. Proved red by renaming
+   `almanac` to `panchanga` on the page, which reported both halves.
+   `check-site` requires the page to render, as it already did for the
+   install page.
+
+   **Next: the publishing half of packaging**, and it was surveyed
+   rather than started, because the survey moved the cost twice — once
+   down, once onto a decision that is not this assistant's to take.
+
+   The deliverable is ADR-0029's: a package per adapter per target
+   triple, each shipping the platform binary its host needs, so a
+   consumer installs rather than builds. Everything above resolves a
+   binary a contributor built on their own machine.
+
+   **What the survey found, in the order it matters:**
+
+   - **Nothing outside this machine can build the adapter at all.** Its
+     manifest reads `teimeris = { path = "../../../../teimeris/..." }`
+     — a sibling checkout, four levels above the repository root. No CI
+     runner and no contributor has it, which is why
+     `check-package`'s adapter step and every plugin test skip
+     everywhere but here. The 98% path is *built*, and it is proven on
+     one machine.
+   - **The engine does not need cross-compiled prebuilts**, which was
+     the feared cost. `teimeris-sys`'s `build.rs` resolves an archive
+     from `TEIMERIS_LIB_DIR`, then `vendor/<target>/`, then a
+     development checkout — **and compiles the C core from source when
+     none of them has one**, with `core/` and `data/` travelling in the
+     `.crate` for exactly that case. So every target builds itself.
+   - **And the default tier is self-contained.** `teimeris-sys` embeds
+     one tier's ephemeris data into the library at build time — about
+     2.05 MB, the default — so an adapter package built that way needs
+     no `dataDir` and no licensed data directory at install time. Any
+     other tier needs `TM_EPHE_DIR` against a full ephemeris.
+
+   So the whole of it reduces to **one question that is the
+   maintainer's**: how the SDK's CI obtains the Teimeris source. A git
+   dependency pinned to a tag, a submodule beside `fixtures/`, or
+   vendored `.crate` files — the first two keep AGPL out of this
+   repository's tree and out of the workspace `cargo deny` reads, and
+   the third does not. Nothing about acquisition changes what the
+   artefact is licensed as: it links Teimeris either way, which is why
+   the packages already declare `AGPL-3.0-only`.
+
+   **And it is blocked on two commits.** `teispace/teimeris` has
+   `51b4345` and `6df3867` unpushed — the public integer typedefs the
+   engine façade is generated from, and the context reachability the
+   adapter's passthrough needs. Whatever mechanism CI uses, it can only
+   fetch what has been pushed.
+
+   Then wasm, whose ephemeris is the built-in `compact` tier.
+
+   **And Rust's own consumer surface has had its measurement taken**,
+   which is the step the project's own order asks for before the design
+   page ADR-0030 §9 defers it to (`cargo xtask rust-surface` →
+   `03-design/rust-consumer-surface-measured.md`, gated by
+   `check-rust-surface`). The obvious proposal is that Rust mirrors the
+   other three — eight areas and a root over one context — and what it
+   is worth depends on a question nobody had asked: how far is a Rust
+   consumer from it today?
+
+   Measured by composing two readings the repository already had: the
+   boundary's description says which module each entry point came from,
+   the Node layer says which entry points each area reaches, and each
+   boundary module names the SDK crates it calls.
+
+   - **A context and its areas need 9 of the SDK's crates**, and the
+     proposal that an area's operations come from one crate is
+     **falsified 7 of 8 times**: `chart` needs six, `almanac` five,
+     `(root)`'s `positions` four.
+   - **Two of those nine are held by `crates/ffi` and by nothing
+     else** — `teistro-intl` and `teistro-ephemeris-builtin` — so the
+     composition that makes a context is written once, inside the crate
+     whose whole purpose is the C ABI. Precisely, because the claim is
+     load-bearing and was checked rather than assumed: `TsContext::build`
+     is `pub`, and so are `settings`, `profile`, `provider` and `intl`,
+     so a Rust consumer *can* reach the composition. What they cannot
+     reach is an **operation** — converting a date is
+     `ts_calendar_convert` with three raw pointers. **Rust today has a
+     context it can build and cannot use**, which is the sharper
+     statement of the gap and points at the same façade.
+   - **23 of the 46 entry points reach two or more crates**, so a façade
+     over them would be composition rather than a rename; 8 reach none
+     at all and are the C caller's memory. The widest are
+     `ts_panchanga_days` at seven and `ts_chart_found` at six; the six
+     calendar operations are a clean two apiece.
+   - And it would be **smaller** than the boundary, not larger: the
+     eight that reach nothing are its memory and its handshake, which a
+     Rust consumer does not have.
+
+   The per-entry-point figures are the second reading. The first
+   attributed a whole module's imports to each of its entry points,
+   which is honest but coarse, and sharpening it found its own two
+   defects — checked against the source rather than believed. Resolving
+   calls by **bare name** across every module made a date conversion
+   reach the chart and `intl` reach `teistro-panchanga`; keeping a path
+   like `Place::new` whole as one word made every associated function
+   invisible, so `ts_chart_found` came out not reaching `teistro-chart`
+   at all. Calls are resolved through `use crate::<module>::…` and
+   `crate::<module>::<name>` now, and methods are followed because
+   `TsContext::new` *is* the assembly. The two readings agree where they
+   overlap, which is the cross-check that makes either believable.
+
+   Leaving `context` and `provider` out understated it — the areas are
+   operations *on* a context, and building one is where the settings,
+   the locale and the ephemeris are composed — so the page counts those
+   two modules too and says why.
+
+   **And the design page is written**
+   (`03-design/rust-consumer-surface.md`), which settles ADR-0030 §9.
+   Four decisions, each from the measurement rather than from taste:
+
+   - **The façade composes the crates; it does not call the SDK's own C
+     ABI.** The cheap alternative — wrap `teistro-ffi` as the other
+     three bindings do — is refused on the third result: a Rust consumer
+     would write a request struct so the boundary could decode it, and
+     decode a blob to read numbers the crates already returned as
+     `JulianDay` and `Longitude`. Rust would be the only binding whose
+     implementation language is its consumption language and which still
+     crossed a C ABI to reach itself.
+   - **So the composition moves into the façade and `teistro-ffi`
+     depends on it**, keeping only what is its own: the handles, the
+     `struct_size` handshake, the blob writer, the panic guard, the
+     `last_error` slot. The composition gets one home, and the home is
+     the one both a Rust consumer and the C boundary can reach.
+   - **That is checkable, which is why it is written this way round.**
+     The measured page's *no crate a context needs is brought in by the
+     boundary alone* is falsified 2 of 9 today and **holds** when the
+     façade holds those two crates. The pass that measured the gap is
+     the acceptance test for closing it — a pass whose subject you are
+     changing turning over when the change lands.
+   - **One `Context`, a builder, and an area as a borrowing view.**
+     `sdk.calendar().convert(…)`: an area is a value in every other
+     binding, and the Rust equivalent of a value you can hold is
+     `Calendar<'a>(&'a Context)` — allocating nothing, unable to outlive
+     its context. A builder rather than an options struct because
+     `build()` can report the settings it resolved, which is the "no dead
+     ends" brief's *what was applied is reported*. No `dispose`: `Drop`
+     is the whole of it, and that is the first place the Rust surface is
+     smaller than the C one.
+
+   **And step 1 is begun, and the building corrected the page twice.**
+   `crates/sdk`, the crate `teistro`, carries the context, the builder,
+   the ephemeris chain and the **calendar** area — six operations, the
+   ones `surface-areas.md` puts there and no others, because
+   `check-areas` holds every binding's list to the same canonical paths.
+   Eleven tests, and the ones that matter assert what
+   `bindings/c/tests/smoke.c` asserts in the same words: 14 April 2015
+   is 1 Baisakh 2072 BS, in the Vikrama era, inside the official table.
+
+   **Clippy found a design gap before a test could.** It reported that
+   the function opening a chain entry returned a `Result` that could not
+   be an error — and it could not, because in Rust an entry as designed
+   was an already-built `Box<dyn EphemerisProvider>`, which cannot fail
+   to open. So every Rust chain succeeded on its first entry and the
+   ordering was decoration, where in the other three an entry is a
+   *description* whose opening can fail. `Ephemeris::opening(name, f)`
+   is the fourth kind: a **recipe**, which is what a chain can fall back
+   from. `Provider(p)` stays for the case a consumer already has one,
+   and the two are not a second spelling — they answer *here is an
+   ephemeris* and *here is how to get one, which may fail*, which is
+   `rules::factories` again: one constructor, more than one way in.
+
+   **And the acceptance test had to be sharpened, because it went green
+   for the wrong reason.** *No crate a context needs is brought in by
+   the boundary alone* flipped to holding the moment the façade declared
+   a dependency on `teistro-intl` — before a line of composition had
+   moved. It is two properties now, and both are honest: *the façade
+   owns the composition* (falsified 3 of 9 — `teistro-chart`,
+   `teistro-panchanga` and `teistro-time`, which are exactly the three
+   areas not yet built) and *the boundary is inverted onto it*
+   (falsified, 1 of 1). Both flip as the work lands, and neither can
+   flip without it.
+
+   **And a third correction, from a test that would not compile.** A
+   `Context` is neither `Send` nor `Sync`, and the part that decides it
+   is not the one a reader would guess: the port requires `Send + Sync`
+   of an ephemeris, and it is the **locale engine** whose plural rules
+   hold an `icu_plurals::PluralRules` with an `Rc`-backed payload. Every
+   binding already says *one context serves one thread, and a worker
+   builds its own*, so this is the stated rule enforced rather than a new
+   limit — but it lands differently in Rust, where the obvious shape for
+   a server is one context in an `axum` app state behind a `&`. The test
+   builds one per worker, which is the pattern it leaves, and the design
+   page's §9 records what lifting it would take: `icu_provider` has a
+   `sync` feature (checked, not guessed) that moves those payloads to
+   `Arc`, at the cost of atomic reference counts on every render in every
+   binding — so that decision wants a falsification pass in front of it,
+   over the message set `check-intl` already walks.
+
+   **And `time` followed**, which is the first area that is not only a
+   rename: `resolve`, `civil_of`, `convert` and `delta_t`, with the C
+   smoke test's own facts asserted here too — 00:20 on 1 January 1986 in
+   Kathmandu is +05:45 under the zone's current rules with no warning,
+   and ΔT at J2000 is about 64 seconds. Reading the boundary for it
+   found a rule the design page had not stated: **the surface owns a
+   type exactly where an operation is dynamic and the crates are
+   static.** `time.convert(jd, from, to)` names its scales at run time,
+   and the crates keep a scale in the *type system* —
+   `JulianDay<Ut1>`, `<Tt>`, `<Utc>` — so there is nothing to
+   re-export; `crates/ffi` invented a `TsScale` and a private `Applied`
+   for the same reason. Both are the façade's now, so the boundary can
+   convert *from* them rather than there being a third copy. And
+   `Conversion` answers with what was applied as well as the number,
+   because 63.8 seconds from one ΔT model is not the same answer as 63.8
+   from another. The acceptance test moved with it: 2 of 9 rather than 3,
+   `teistro-chart` and `teistro-panchanga` left.
+
+   **Five of the eight areas are built now**: `calendar`, `time`,
+   `intl`, `keys` and `frame`, over nineteen tests. `intl` is where the
+   second design note earned itself — its `messages` is a **module**
+   tree in Rust rather than a method, `messages::sdk::reason::GrahaInBhava
+   { graha, bhava }` handed to `render_typed`, which is what a namespace
+   is in this language and which `teistro-intl` already generates. The
+   test renders it and gets `गुरु`. What is left is the three that need
+   the ephemeris — `chart`, `almanac` and the root's `positions` — which
+   is where this surface stops composing calendars and starts computing,
+   and which is why the acceptance test still names `teistro-chart` and
+   `teistro-panchanga`.
+
+   **And `positions` at the root**, which is the first operation on this
+   surface that computes rather than composes:
+   `Completion::new(provider, overrides, delta_t).positions(&request)`,
+   answering with the astronomy crate's own `Completed` — a Rust
+   consumer reads a longitude off `sky.columns.at(0, 0)` where every
+   other binding decodes a result blob for the same number. The test
+   gets the Sun at J2000 near 280° from the built-in, and a context
+   without an ephemeris refuses with the same field and hint the C
+   boundary gives. Twenty-one tests.
+
+   It also found a gap by failing to be convenient: the test reached
+   past the crate for `Body`, `Frame` and `PositionRequest`, which is
+   exactly the five-dependency problem this crate exists to stop, so
+   they are re-exported. One dependency is the point of a façade.
+
+   **`engine` too**, which makes six of the eight areas and the root's
+   `positions`: one reading of the provider's manifest behind two
+   refusals — no ephemeris at all, and an ephemeris that describes no
+   operations of its own, which is exactly what the built-in is, so a
+   consumer on the fallback is told which they have rather than handed
+   an empty manifest. Twenty-two tests.
+
+   **And the order of work reverses for the last two, because of an
+   oracle.** Every area so far could be checked against a fact the C
+   smoke test already asserts — a Bikram Sambat date, a Kathmandu
+   offset, the Sun near 280°. A chart's lagna, day lagna, ayanamsha
+   offset and day part are asserted by no smoke test; what holds them is
+   the **parity report**, where the three bindings agree on them value
+   by value. So lifting that composition without the fourth runner would
+   be writing numbers with nothing to check them against.
+
+   And the runner cannot join `check-parity` as it stands, for **two**
+   reasons rather than one. The gate compares key sets, so a report
+   missing `chart.found` fails rather than saying "not yet" — and a
+   *complete* Rust report still will not match, because among the ~674
+   keys the three print are `abi`, `build-sdk`, `build-commit`,
+   `build-target` and the result blobs' sections and hashes. A Rust
+   consumer has none of those, by design: Cargo resolved the versions,
+   `Drop` freed the memory, and the crates handed back their own types
+   instead of a blob. **The absences are the design working**, so the
+   gate has to hold the Rust report to every key the others have *except
+   a declared list* — the `knob-has-a-reader` shape, an inventory
+   printed every run so an absence that stops being deliberate becomes a
+   stale allowance and therefore a failure. The list is the design's §6,
+   already written.
+
+   So: write the runner, run it by hand against the other three for the
+   operations that exist, build `chart` and `almanac` against it, teach
+   `check-parity` the declared absences, and wire it in.
+
+   **The runner is written, and the first step of that is done.**
+   `crates/sdk/examples/parity.rs` prints 84 keys; **every one of them is
+   a key the Node runner prints, and every value is identical.** That is
+   what proves this composition equal to the one at the C boundary
+   rather than merely compiling — the settings hash, the Bikram Sambat
+   date with its era and resolution, the Kathmandu offset and tzdb
+   version, ΔT and its source and model, the key round trip, the refusal
+   with its detail and hint, six position cells with their longitudes,
+   latitudes, distances, speeds and statuses, the steps applied, the
+   Nepali render's hash and length, the Sun's four forms, and the frame's
+   bits.
+
+   Getting there took three formatting agreements the diff found rather
+   than a reading did: a resolution's kind is its JSON tag (`tabular`), a
+   cell's status is the **id** the boundary carries and not its name, and
+   a step's implementation is `PASS_THROUGH` where the astronomy crate's
+   own `step_keys` gives `PassThrough`. Each was one line, and each would
+   have been a false disagreement in the gate.
+
+   **All eight areas and the root are built, and the parity runner is
+   what says so.** `chart` and `almanac` came last and after the runner,
+   which reversed the design's steps 1 and 2 for them — and that was the
+   right order: with the oracle in place both compositions were
+   checkable line by line, and both agreed on their first run. **125
+   keys, every one of them a key the Node runner prints, every value
+   identical**: the settings hash, the Bikram Sambat date, the Kathmandu
+   offset, ΔT, the key round trip, six position cells, two charts' lagna
+   and day lagna and ayanamsha offset and day part, three almanac days'
+   varas and sunrises and windows, the Nepali render, the Sun's forms
+   and the frame's bits.
+
+   **So the acceptance test's first half has flipped.** *The façade owns
+   the composition: every crate a context needs is one it depends on* is
+   **holds**, 0 of 9 — where it was falsified 3 of 9 when the crate was
+   a context and a calendar. The second half stands: `teistro-ffi` does
+   not depend on `teistro` yet, so the composition is written twice,
+   knowingly, until step 3.
+
+   Twenty-four tests beside the runner, and the two newest assert the
+   properties the numbers cannot: a batch of one takes the same path as
+   the batch (bit for bit), consecutive almanac days share a boundary —
+   day n's next sunrise is day n+1's sunrise, which is why a run costs
+   less than the days apart — and the envelope carries a content hash
+   rather than the founder's placeholder, which is what the C boundary
+   fills and the first place `serial-and-the-envelope.md` §8's open
+   question showed.
+
+   **And the inversion landed, so the design is built.** `teistro-ffi`
+   depends on `teistro`; `TsContext` wraps a `teistro::Context`; and
+   `TsContext::build` — which resolved the profile, parsed the patch,
+   loaded the embedded bundles, started the locale engine, read the ΔT
+   knob and wrapped the provider in its cache — is a call into the
+   builder. **Both of the measured page's last two properties hold**:
+   *the façade owns the composition* (0 of 8) and *the boundary is
+   inverted onto it* (0 of 1).
+
+   It was third in the order for a reason and the reason held: with the
+   façade built and the parity runner agreeing, the inversion was
+   checkable rather than hopeful. **Every one of the boundary's 30 unit
+   tests and 9 ABI tests passed unchanged**, as did `check-c`,
+   `check-node`, `check-dart`, `check-python`, `check-ffi`,
+   `check-lints`, `cargo deny`, and `check-parity`'s 674 values across
+   three bindings.
+
+   Four things moved out of the boundary with the composition:
+   `own_provider` became `own_ephemeris`, answering the façade's
+   `Ephemeris` rather than a boxed provider; `remembering` went with the
+   `provider.cache_cells` knob it reads, and its three tests with it;
+   `builtin()` became a variant selector, because the façade gates the
+   *variant* on the feature while a C caller passing a number still
+   needs the run-time refusal; and the locale bundles' build script, so
+   the boundary's build script is `build_info` alone and has no build
+   dependency at all.
+
+   What stayed is what only a C caller needs — the handles, the
+   `struct_size` handshake, the blob writer, the panic guard, the
+   `last_error` slot — and `teistro-intl`, because the boundary still
+   **marshals** the engine's types even though it no longer composes it.
+   The composition moved; the types are shared. One accidental deletion
+   along the way took `ts_context_new` with it, caught by four
+   "unused import" warnings naming things only that function used.
+
+   **Confirmed on every platform**: the verify matrix passed on the
+   inversion — all five binding platforms and all three ephemeris
+   tiers — which is the C boundary, all four bindings, the parity gate
+   and the packaging gate all working through a composition that now
+   lives in the façade. The one thing that did fail was `check-ffi`, and
+   it was right to: the note I put on `TsContext` explaining *why* the
+   composition had moved was a `///` comment, and `cargo xtask gen ffi`
+   extracts those into `idl/api.json`, `teistro.h` and three bindings'
+   declarations — so a C consumer opening the header met this
+   repository's changelog, with a date and a design page's section
+   number in it. In `crates/ffi`, `///` is a public document in five
+   languages and `//` is a note to us.
+
+   **And `check-parity` runs four runners now**, so the 125-key
+   agreement is a gate rather than a snapshot: *4 bindings agree, value
+   for value*, with `Rust does not print 549 of Node's keys` printed
+   beside it on every run. Proved red by adding one to a day of the
+   month.
+
+   The 549 are a **count and not a declared list**, deliberately: a list
+   would have to name all of them, and most are not the boundary-only
+   keys §6 accounts for — they are detail the Rust runner does not print
+   yet, a graha at a time and a muhurta at a time. Completing it is
+   mechanical, and the count is what says how much is left. The number
+   only going down is the property a reader can watch.
+
+   **And it went down: 549 → 155, in four passes, with every added key
+   agreeing on its first run.** The runner prints 519 keys where it
+   printed 125 — every graha's longitude, latitude, speed, retrograde
+   flag, house and placement in both charts; all twelve bhava madhyas
+   and sandhis of each; every tithi, nakshatra, yoga and karana span of
+   three days with its member and both bounds; each day's lunar month
+   and convention and ayana and disha shool; and the values a day may
+   *not* have, printed `none` in all four bindings rather than nought in
+   one. That last is the class of disagreement a count of absences
+   cannot see, and it is now compared.
+
+   Growing it found one real gap, which is what a gate is for.
+   `jd_of_fixed` and `fixed_of_jd` were operations the other three
+   bindings have and the façade did not: the runner could not convert
+   the day it was standing on. They are **free functions** on the crate
+   root rather than members of `calendar` or `time`, because a fixed day
+   and a Julian day are two spellings of one integer and no profile,
+   locale or setting changes the arithmetic — an area is for what a
+   context's state bears on, and this bears on none of it.
+
+   **And then to 665 of 674, which turned the count into a list.**
+   549 → 9 in five passes, and every one of the 540 keys added agreed
+   with Node on its first run — no pass needed a second attempt, which
+   is the strongest thing to be said about the composition underneath
+   them. The last pass added each day's periods **item by item** (a
+   count agreeing is not the same as the items agreeing: two lists of
+   three can hold different threes), the chart the **topocentric**
+   profile founds with all nine grahas of it, both envelopes' canonical
+   JSON hashed, and the operation inventory.
+
+   So `check-parity` names its absences rather than counting them, and
+   `RUST_ABSENCES` is exhaustive **both ways**: an absence not on it
+   fails, and one on it that the runner has started printing fails too.
+   Both branches proved red. The nine are `abi` and the six `build-*`
+   keys — the boundary's own handshake, and there is no boundary here,
+   while `sdk`, `catalogue-version` and `default-profile` this runner
+   prints from constants because Cargo resolved the graph —
+   `provenance-fnv`, whose input hash is of the boundary's *decoded*
+   request record, and `surface.(root).dispose`, the one operation this
+   surface cannot have.
+
+   **`check-areas` now reads four runners**, which
+   `rust-consumer-surface.md` §7 said would happen "once it exists": the
+   Rust runner lists all 38 operations it has, a list rather than a probe
+   since existence here is a compile-time fact, and the property is 155
+   pairs with 1 allowed — `(root).dispose`, carried as *that runner's*
+   allowance so Node is still held to listing it.
+
+   Two more gaps the growing found: `canonical_json` and `content_hash`
+   were not re-exported, so a consumer could hold an `Envelope` and not
+   reproduce its own hash; and an almanac's `model` had never been
+   compared at all.
+
+   **And `serial-and-the-envelope.md` §8's open question closed — the
+   producers seal.** What settled it was not a measurement but a count
+   of callers: the same line, `provenance.content_hash =
+   content_hash(&value)`, was written in **four** places — the C
+   boundary's chart and panchanga entry points, and the façade's two
+   areas — each mending a stamp the producer had left empty. A field
+   four callers have to remember is a field the producer should fill,
+   and the producer is the only place that knows both the value and the
+   stamp. `Envelope::sealing` is that join; `Founder::found` and
+   `Almanac::between`/`day` use it, and the four callers dropped their
+   lines.
+
+   It settled a second thing the boundary could not have noticed:
+   `chart().found` and `almanac().day` are the batch and the range of
+   one **unwrapped**, and they carried the batch's stamp — the hash of a
+   list of one, on an envelope holding a chart. They re-seal now, so
+   `found(one)` and `found_many([one])` carry different content hashes,
+   which is right, because they carry different values. The boundary
+   never saw it because it encodes the batch either way.
+
+   Two passes turned over with the change, which is what the rule about
+   re-aiming a pass at the built thing is for. `check-serial`'s reader
+   looked for the assignment, and would have gone on reporting two
+   producers as shipping the hash of nothing — the state the change
+   ended; it reads `Envelope::sealing` now, and *every producer stamps
+   the hash of the value it produced* **holds**, 0 of 4, where it
+   recorded 2 of 4 falsified. Its generated paragraph has two forms and
+   which one is written is the measurement. And
+   `crates/serial/tests/document.rs` asserted the placeholder — which is
+   to say it asserted the defect; it now asserts that the founder's
+   stamp arrives non-empty and that sealing the document **replaces** it
+   rather than trusting it, because a document is more than the
+   foundation it was founded from.
+
+   **And step 4 is done: eight examples, and a fifth binding gate.**
+   `crates/sdk/examples/` holds the same eight scenarios the other three
+   bindings run, and `cargo xtask check-rust` runs every one of them
+   (release, because the built-in ephemeris in a debug build takes
+   minutes over a year of the sky) along with the crate's own tests and
+   doctests. What that adds over the fast check is the thing a compiler
+   cannot say: **that each program runs.** `cargo clippy --workspace
+   --all-targets` already compiles an example, and a compiling example
+   can still print a falsehood.
+
+   Which it did, within the hour, in the *other* three bindings. The
+   Nepali-new-year line of `panchanga.{mjs,dart,py}` said the Sun "has
+   not quite arrived" at Aries and printed `359.9023°` short of it — and
+   the Sun had crossed two and a half hours earlier. `(360 - sun) % 360`
+   of a longitude just past zero is just under 360, and reads as nearly
+   a whole circle still to go. Three files corrected, and the Rust one
+   prints how far *past* the crossing the moment is, which is the number
+   the sentence was reaching for.
+
+   Each example is written as a Rust consumer would rather than
+   transcribed, and where the surface differs the example is what says
+   so: a context is a value with no `dispose`; `positions` answers the
+   astronomy crate's own `Vec<f64>` columns with no blob in between;
+   `CalendarResolution` is an enum a `match` must cover where the others
+   hand over a string; an absent muhurta is an `Option` the compiler will
+   not let a reader ignore; there is no `buildInfo` to ask for, because
+   Cargo fixed the versions, so `ephemeris.rs` logs the provider's
+   `capabilities` instead; and `your_own_ephemeris.rs` implements the
+   port rather than handing over an object literal, which makes coverage
+   a **per-cell** outcome where the other three shims refuse the batch —
+   `provider::validate` says why, and the example says which is which.
+   It also shows the `Arc` newtype for a provider you keep a handle on,
+   and a chain whose first entry is a recipe so a later one can be its
+   fallback.
+
+   **Three defects the writing found, none of them in the examples.**
+
+   Four signature types were not re-exported, so `calendar().convert`
+   answered a `CalendarResolution`, `chart().found` an
+   `Envelope<ChartFoundation>` and `almanac().of` an
+   `Envelope<Vec<Panchanga>>` that a consumer with one dependency could
+   not name — it could call the operation and not read the answer, which
+   is the opposite of what the crate is for. The measured page gained a
+   third property, **born red on exactly those four**: *every type an
+   area's signature names is reachable from the crate root*, measured as
+   the **intersection** of two readings, because neither alone is the
+   question — scanning a signature for capitalised words finds `Result`
+   and every generic parameter, and scanning a module's imports finds
+   what it uses only in its body. 35 types, all reachable. The reader's
+   own first bug was calling `Frame` and `PositionRequest` unreachable
+   because it read only the first line of a braced re-export.
+
+   **An almanac's provenance named no provider**, in all four bindings,
+   because nothing had ever printed the field: the chart foundation
+   stamps it and `Almanac::provenance` did not. A stored panchangam page
+   said nothing about what computed it. `flags_used` there is empty and
+   **not** a guess — the chart passes the completion's steps, and this
+   path reaches its positions through `FrameLongitudes`, which keeps no
+   step list, so there is nothing to vouch for and an invented list
+   would be worse than an empty one.
+
+   **A `--no-default-features` build of the façade failed, and always
+   had**, on the seven examples and `tests/surface.rs` that name
+   `Ephemeris::Builtin` — a variant that exists only under
+   `builtin-ephemeris`. Nobody had seen it because nothing had ever
+   built this crate without its default: the tier matrix builds
+   `teistro-ephemeris-builtin` and `teistro-ffi`, not this.
+   `required-features` on each target is the fix, the two doctests that
+   name the variant are `#[cfg]`-guarded, and `check-lints`'
+   **`target-declares-the-feature-it-needs`** holds the class by reading
+   the sources — so a target that stops naming the built-in stops
+   needing the line, and one that starts cannot be added without it.
+   `calendar.rs` is the example that needs no feature, and that is its
+   lesson: a calendar needs no ephemeris, so it names
+   `Ephemeris::None`.
+
+   One thing the step deliberately did **not** do: the eight files
+   repeat small helpers — a clock formatter, a sign lookup, an
+   entity-name-or-key fallback. An example is a program a reader is
+   invited to *copy*, and a shared `support` module would make every one
+   of them un-copyable. The DRY rule applies to what ships.
+
+   **Step 5 is done too, so the whole order of work is.** The site's
+   surface page has its Rust column, and three things joined that
+   section because writing the examples is what found them worth
+   saying: the types are stricter in two places rather than merely
+   different (a `CalendarResolution` a `match` must cover, an `Option`
+   the compiler will not let a reader ignore); there is no `buildInfo`
+   and none is wanted, so what a service logs at start-up is the
+   provider's capabilities; and an ephemeris of your own is a **trait
+   you implement**, which makes coverage a per-cell outcome where the
+   other three shims refuse the batch — a difference a provider author
+   moving between bindings would otherwise meet as a surprise.
+
+   The install page's Rust section stays deliberately unwritten: the
+   crate is `0.0.0` and `publish = false`, so a `cargo add teistro`
+   would be an instruction nobody can follow. It gets its section when
+   there is a release to name.
+
+   The order of work was deliberately duplication-first: the façade beside
+   the boundary, then the fourth parity runner that proves it equal to
+   the other three, and only then the dependency inversion — because the
+   two steps before it are what make it safe. Left unsettled and said so:
+   the crate's name and whether `teistro` is held on crates.io (the
+   maintainer's), how much of each area is re-export (step 1 answers it
+   by construction), and `no_std`.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation
@@ -1730,6 +2747,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-12 (second session) | **The Rust façade's examples, and the four defects writing them found.** Step 4 of `03-design/rust-consumer-surface.md` is done: eight programs in `crates/sdk/examples/`, the same eight scenarios the other three bindings run, each written as a Rust consumer would rather than transcribed, and each run by the new **`cargo xtask check-rust`** on five platforms. What a gate over examples adds is the thing a compiler cannot say -- that each program *runs* -- and it earned that within the hour, in the **other three** bindings: the Nepali-new-year line of `panchanga.{mjs,dart,py}` said the Sun "has not quite arrived" at Aries and printed `359.9023°` short of it, when the Sun had crossed two and a half hours earlier, because `(360 - sun) % 360` of a longitude just past zero is just under 360. Three files corrected. **Four signature types were unreachable**: `calendar().convert` answered a `CalendarResolution`, `chart().found` an `Envelope<ChartFoundation>` and `almanac().of` an `Envelope<Vec<Panchanga>>` that a consumer with one dependency could not name -- it could call the operation and not read the answer, which is the opposite of what the crate is for. The measured page gained a third property, born red on exactly those four: *every type an area's signature names is reachable from the crate root*, measured as the **intersection** of a module's SDK-crate imports and the identifiers in its `pub fn` signatures, because a signature scan alone finds `Result` and every generic parameter and an import scan alone finds the founder and the tzdb. **An almanac's provenance named no provider** in all four bindings, because nothing had ever printed the field; `flags_used` there is empty and not a guess, since this path's positions come through `FrameLongitudes`, which keeps no step list. **And a `--no-default-features` build of the façade had always failed** on the seven examples and `tests/surface.rs` that name `Ephemeris::Builtin`, unseen because nothing had ever built this crate without its default -- the tier matrix builds the builtin crate and the boundary, not this. `required-features` per target, `#[cfg]` on the two doctests, and `check-lints`' `target-declares-the-feature-it-needs` reading the sources so the class is held rather than the instances. Also: the parity runner grew from 125 keys to **519**, in four passes with every added key agreeing on its first run, which found `jd_of_fixed` and `fixed_of_jd` missing from the façade -- free functions, because a fixed day and a Julian day are two spellings of one integer.  **And then the whole of the order of work.** The parity runner reached **665 of 674** keys in five passes -- every one of the 540 added agreeing with Node on its first run -- which turned the count of absences into a **list**: `RUST_ABSENCES` names all nine and is exhaustive both ways, so an absence that stops being deliberate is a failed gate rather than a number nobody watched. `check-areas` reads four runners now. `serial-and-the-envelope.md` §8's open question closed in favour of the **producers**, and what settled it was a count of callers rather than a measurement: the same mending line in four places. `Envelope::sealing` is the join, and *every producer stamps the hash of the value it produced* holds 0 of 4 where it recorded 2 of 4 falsified -- which also found that `found(one)` and `day(one)` had been carrying the *batch's* stamp, a hash of a list of one on an envelope holding a chart. Two passes turned over with it and were re-aimed. The site's surface page has its Rust section, so step 5 is done too; the install page's stays unwritten until there is a release to name. Next: the publishing half of packaging, which waits on one maintainer decision, and whether to merge PR #130. |
 | 2026-09-04 | The baseline engine analysis, Teimeris survey, competitive and platform research, docs written. Twenty-three questions compiled and decided by the maintainer the same day. Architecture revised for the astronomy layer, the built-in ephemeris and Teistro Intl; roadmap restructured into ten phases; governance and scaffolding written; the tooling made Rust-only (`xtask`) before the founding commit was finalised; repository `teispace/teistro-sdk` created public with the docs as the first commit and `main` protected. Next: spike 1, the golden-vector export from the baseline engine. |
 | 2026-09-04 (second session) | A review of the team's earlier internal planning notes for the same SDK, now retired; everything worth keeping was absorbed into this repository in its own words and the notes are not referenced. Eight decisions (Q26 to Q33, ADR-0016 to ADR-0023), five falsified kernel and arithmetic designs, the cruxes register, the clean-room policy and dependency allow list, library lints, and the corresponding revisions across the architecture, quality bar, roadmap and guidelines. The maintainer added the type-safety mandate (Q33). Next: spike 1 unchanged. |
 | 2026-09-04 (third session) | Spike 1 done: the export script written beside the baseline engine and run; 55 charts (48 chosen adversarially, 7 placed by search at classification boundaries in the topocentric frame), 115 fixtures under 13 settings profiles in `fixtures/baseline/`; the fixtures README with the schema and ten baseline conventions for the deliberate-difference registry; the provisional central tolerance file; `cargo xtask check-fixtures` in the fast check; `05-testing/01-golden-vectors.md` as the result page. Findings: the natal panchanga is topocentric while the daily one is geocentric; local mean time is rounded to the minute; Placidus above the polar circle is not flagged degenerate. Next: spike 2, the binding toolchain. |
@@ -1778,6 +2796,7 @@ on pub.dev (checked 2026-09-07).
 | 2026-09-05 (sixteenth session) | `astro::houses`: the twenty-two catalogued house systems as one construction with the circles each picks, the auxiliary points, the sign-based systems in the zodiac in use, the four polar policies with the outcome reported. Within 4.8e-6° of Teimeris over 25 194 cusps and angles at ten latitudes (the adapter's `houses-table` binary), within 0.00021° of the baseline's 55 charts between 1800 and 2200. Design page `astro-house-systems.md`. Next: crossings and stations, the star table. |
 | 2026-09-05 (tenth session) | The Bikram Sambat computation engine: `crates/siddhanta` (the text by verse, exact mean places, the sine table, both equations, the four steps, motion, precession, declination, the day's arc; 54 ns for the Sun, bit-identical), the `astro` seed (the boundary solver), the `time` seed (offset histories, Nepal's rows) with `core::time`, and in `crates/calendar` the `SolarModel`, the sankranti finder, the month-start rules as cited rows, the engine, the fit report and the table regenerated for 1700 to 2500 BS with a CI gate. Measured: the text's Sun at Kathmandu under Nepal's clock with the Dharmasindhu's punya-kala rule reproduces 1490 of 1512 official month lengths (98.5 %), 116 of 126 years exactly, every year total and every New Year, no drift; the eleven residual boundaries lie within 25 minutes of the rule's boundary. Findings: the baseline's seven-hour epoch shift and 0.705 cutoff nearly cancel to the civil day; the two ayana sankrantis are the whole difference; exact trigonometry changes one boundary; the tradition's day count changes none. Next: `crates/time` proper, then the port promotion with the drik model. |
 | 2026-09-05 (ninth session) | `crates/calendar` built: the fixed day, Gregorian, Julian, mixed (1582, 1752, 1918) and ISO week with every day of −9999 to 9999 round-tripped and agreed with the `calendrical_calculations` oracle; Bikram Sambat over the baseline's table (1856 to 2457, official span stamped `Tabular`, the rest `Computed`) anchored on 13 April 1913; the source memo opened with the generator's findings (Surya Siddhanta at Kathmandu, Nepal's offset history, a fitted 0.705 cutoff, 87 % of month splits, drift within a day). Maintainer's mandate: compute Bikram Sambat from first principles for any year so Nepal's panchanga can use the SDK. Next: the Bikram Sambat engine (siddhanta Sun, drik through the port, rule rows, fit harness), then `crates/time`. |
+| 2026-09-12 | **The nightly matrix, read properly, and what it had been hiding.** The C link took four attempts and the log said it was never a flag: `-l<stem>` was finding `teistro_ffi.lib` beside `teistro_ffi.dll.lib` and turning a shared link into a static one, across two ABIs that do not meet (`__chkstk`, `__imp_NtReadFile`, `??_7type_info@@6B@`). `rustc --print native-static-libs` cannot be pasted into an arbitrary C driver either -- its dialect is the Rust target's linker's, and it broke all three platforms three different ways. `shared_link` and `static_link` answer the two questions apart, the second able to **refuse** with a reason, and two tests over the platform table hold them; the first is the one that would have caught it on attempt one. With the link fixed win32 gave up one defect per run, and every one was a Unix assumption: a virtual environment's executables are in `Scripts`; npm, npx and tsc are `.cmd` shims that `CreateProcess` cannot find, so a runner **with** npm said it had none and the gate skipped the Node packages; `check-python` had never run there and failed on `सोमबार` through cp1252, and then `check-parity` failed on `☉` because the fix went into one gate when four spawn Python. **And the matrix could never have finished at all**: `bindings (darwin-x64)` asked for `macos-13`, GitHub retired that image, and a retired label does not fail -- it queues, so eleven dispatches today never reached a conclusion and every judgement of green was made from the rows that ran. `macos-15-intel` picks it up. Four rules over classes rather than instances: `python-runs-in-utf8-mode`, `runner-matches-the-platform-table`, and two new properties of the measured surface -- every operation the layer declares listed by every parity runner (**born red** on `(root).engine`), and every area the layer wires named by the site's guide. The TypeScript compiler and mypy are both **pinned** and installed by their gates, because each was whatever a machine happened to have, which is why the type-check skipping on four of five platforms went unnoticed. `step` names the program on its failure line. **The docs had the same disease as the code: they described a surface nobody had run.** The install page's Node quickstart refused when run (`the context has no ephemeris`), its C line could not link, and Python was missing from the page though the binding has been gated since the 8th; the site had **no page at all** about `sdk.<area>.<operation>`, and now has one. Twelve of fifteen examples still selected the **test** provider while three of them called it "the analytic ephemeris the SDK carries" -- it is not, `builtin` is -- so every example now names the built-in, and `ephemeris.{mjs,dart,py}` gained the retrograde scan it had carried as a hypothetical comment (Mars stationing direct on day 55 of 2025, the same in all three). The no-ephemeris refusal, written for a C caller and duplicated three times, is one `support::no_ephemeris` naming the option every binding spells the same. Next: the publishing half of packaging, surveyed -- the engine compiles from source on any target and embeds its own data tier, so what is left is one maintainer's decision about how CI obtains the Teimeris source, and two unpushed commits. |
 | 2026-09-09 (sixty-fourth session) | The completion's **topocentric centre**, measured and then built, and the cross-phase dependency that blocked Phase 4's exit discharged along the way. The corpus records six charts **twice** — from the centre of the Earth and from the place they were cast for, with every other setting equal — so for once a completion step had a recorded *before* as well as an after, and a proposed reading of it was right or wrong rather than close. `cargo xtask topocentric` (held by `check-topocentric`) tried nine readings against those pairs. **The one this project's own design page had carried since Phase 2 is the one that failed.** "The observer's geocentric position (WGS84) and the parallax" leaves a third of an arcsecond on **every** body — on Saturn, whose whole parallax is under an arcsecond, as much as on the Moon, whose parallax is forty arcminutes. A residual that does not shrink with distance is not a displacement gone wrong; the station is moving four hundred metres a second and the light it receives arrives aberrated by its own velocity, one and a half parts in a million whatever the distance. With that in, every planet comes inside a thousandth of an arcsecond and the Moon becomes the only body that can decide anything further. It says two more terms are needed, each worth another third of an arcsecond and **only together** — put in one at a time they make the answer worse: the displacement belongs on the direction the light actually came from rather than on the apparent one the Earth's motion has already turned by twenty arcseconds, and the body must be carried over the light time the station saves by standing an Earth radius nearer. Two simplifications a reader would call harmless are falsified by the same six pairs: a sphere costs 3.9″ and sea level 0.75″ against a bound of 0.0036″. **The lunar nodes take none of it**: in the pairs they are identical under both centres to the last bit of a double, and in all 174 recorded node rows — the true node included — their latitude is zero to 1e-15°, where a displaced point at that distance would sit 43′ off the ecliptic. A point defined as a direction on the Moon's orbit is not anywhere, which is now `Body::is_placed` on the port. What the pass leaves open it states rather than rounds away: 0.084″ on the Moon that nothing it could construct accounts for, and a velocity transform this corpus cannot decide at all, because it records a longitude speed and neither of the other two rates while both enter the answer. Built: five ERFA routines for the Earth an observer stands on (`eform`, `gd2gc`, `gd2gce`, `sp00`, `pom00`, `pvtob`) with the reference values of ERFA's own test program; `sky::observer` and `sky::earth_at`; `astro::topocentric::Station`, which transforms a cell's position, distance and all three rates analytically, because the step changes the Moon's longitude speed by 5.5°/day and a step that moved positions and left speeds alone would be wrong by more than it corrected. Held to the corpus at **0.00035″ on every body but the Moon** over 54 comparisons (`baseline_topocentric.rs`). Two things fell out of touching that path: **`sdk-only` now means what it says** — a provider is no longer asked for the whole frame first, because a provider that answers a whole frame has done several of the completion's steps itself — and a topocentric request with no observer is refused before any provider is asked, so the message names the field under every policy. The consequences: the shipped profiles that could not found a chart now do, the rectification examples run under `nepali-default` as a Nepali birth record should, and `check-parity` compares the chart that profile founds — **635 values across three bindings**, where it compared 594. Next: the conformance harness that compares a *computed* longitude against the 55 charts, which is what will decide whether the 0.084″ matters. |
 | 2026-09-09 (sixty-third session) | The Indian lunisolar calendar designed and its month built. The design page Phase 2 named and nothing wrote is now written, from the measurement rather than from a textbook, and its scope is the finding: it is **the mark and not dates**. `panchanga` needs to know whether a month is adhika; a full `CalendarSystem` needs a date shape the SDK does not have, because a lunisolar date's day is the tithi at sunrise, which repeats one day in forty-four and is skipped one in twenty-six — so `(year, month, day)` is not a key and a date wants two flags `CalendarDate` does not carry. Separating them is what let `panchanga` be finished without a boundary change nobody has argued for. The module: a `LunarModel` trait beside `SolarModel` (its own, because a solar calendar needs no Moon and three of that trait's five implementations are test doubles), a three-way `MonthKind`, `kind_of` for a span whose bounds a caller has and `month_at` for one it does not. `panchanga`'s `LunarMonth` carries the kind beside the name, and finding it made the existing code better rather than longer: `limb` used to find the month's opening new moon and throw the search away, and now `lunar_month_span` returns both bounds while `masa_at` names from the first — one crossing search serving the name and the mark where there were two serving one each. Five module tests hold the rule at the two recorded adhika months, the shared name of an adhika month and the nija one after it, a contiguous year, a kshaya month where the measurement says one is, and that a month boundary really is a new moon. Next: the mark crosses the boundary with the panchanga blob's `days` section, then the three bindings and parity. |
 | 2026-09-09 (sixty-second session) | The rule that decides **adhika** and **kshaya**, measured (`cargo xtask lunisolar` → `03-design/calendar-indian-lunisolar-measured.md`, gated by `check-lunisolar`). `panchanga` names the lunar month and cannot mark it; this is the pass the calendar that will mark it is designed from. The first thing it had to establish is that **the corpus cannot settle it alone**: it records `is_adhika` on every day — the *answer* — and none of the inputs, neither the new moon that opened the month nor the sankranti that named it, so unlike the panchanga's conventions this cannot be arithmetic over recorded numbers. It computes the sky from the **Surya Siddhanta**, as the Bikram Sambat engine does, so the calendar needs no ephemeris — which is what the tradition did. Over **12 368 lunar months of a millennium**: 388 hold no sankranti (adhika, one every 2.58 years against the classical seven in nineteen), 11 961 hold one, 19 hold two (kshaya, one in some fifty years). That count is the rule, and it reproduces the corpus's marking on **all fifty-five** days including the two marked adhika. Two things the measurement corrected. **An adhika month needs no naming rule of its own** — the usual formulation is that it takes the following month's name, but the Sun stands in the same sign at both new moons, so the existing rule gives both the same name unaided; August 1947 is Shravana twice over. And **the classification is robust where the month of an instant is not**: the one recorded day where text and recording disagree is nineteen minutes from the eclipse new moon of 8 April 2024, with the two conjunctions on either side of it. **Kshaya is measured and not tested** and the page says so: the corpus records none, so nothing holds the rule to an authority — what can be said is that its frequency matches the astronomy and that all nineteen fall between Vrishchika and Kumbha, the perihelion window, which the pass did not look for. Next: the design page and the calendar module the rule goes into, then wiring it through `panchanga`. |

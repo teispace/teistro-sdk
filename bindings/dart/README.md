@@ -74,6 +74,39 @@ frame is tropical**, because that is what an ephemeris computes. A Vedic
 chart asks for a sidereal one and the SDK completes it, naming every step
 it applied.
 
+## Which ephemeris
+
+A context with no ephemeris computes calendars, times and messages;
+positions need one. `ephemeris` names an **ordered chain**, tried in
+order (ADR-0029):
+
+```dart
+import 'package:teistro_ephemeris_teimeris/teistro_ephemeris_teimeris.dart';
+
+final ctx = teistro.context(
+  // A real engine, and the SDK's own only if it is not there.
+  ephemeris: [teimeris(dataDir: './ephe'), NamedEphemeris(Ephemeris.builtin)],
+);
+```
+
+**That is the intended path.** In most cases a consumer should be on a
+real engine — Teimeris, Swiss Ephemeris — installed as its own package
+under its own licence, and `Ephemeris.builtin` is the fallback that makes
+a chart compute with nothing else installed. `Ephemeris.test` (or the
+older `testProvider: true`) selects the analytic test provider, whose
+positions are **not astronomy**.
+
+A list even for one entry, because Dart has no untagged union — and it
+says the thing the decision wants said: a chain is a caller *saying* they
+will accept the fallback. A context asked for an engine and given the
+built-in without being told is the silence this refuses, and nothing in
+the chain opening is one refusal naming each entry that failed.
+
+An engine brings its own operations with it, beyond the eight the SDK
+names, at `ctx.engine` — and importing the adapter's package adds a typed
+extension over them, so `ctx.engine.tmBodyName(body: 0)` is as real and as
+checked as any method.
+
 ## An ephemeris of your own
 
 Extend `EphemerisProvider` and give the context one. It is asked once for
@@ -118,9 +151,9 @@ cargo xtask check-parity
 
 The first builds the C library, resolves the package's dependencies and
 runs the tests; the second walks one scenario through this binding and
-the Node binding and compares the ninety values they report, so a
-difference between the two layers is a failed gate rather than something
-a reader has to notice. It needs the Dart SDK, so it runs by hand and in the nightly
+the Node and Python bindings and compares every value they report, so a
+difference between any two of the three is a failed gate rather than
+something a reader has to notice. It needs the Dart SDK, so it runs by hand and in the nightly
 matrix; the fast check needs the Rust toolchain and nothing else
 (ADR-0014).
 

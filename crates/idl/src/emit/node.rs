@@ -113,11 +113,11 @@ fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
 }
 
 /// The text of a string the library allocated, copied and the string freed.
-fn take_string(string: &mut ffi::strings::TsString) -> String {
+fn take_string(string: &mut ffi::string::TsString) -> String {
     // SAFETY: the library wrote a NUL-terminated string, or left it null.
     let text = unsafe { lent_text(string.data.cast_const().cast()) }.unwrap_or_default();
     // SAFETY: a descriptor this call passed to the library, freed once.
-    unsafe { ffi::strings::ts_string_free(&raw mut *string) };
+    unsafe { ffi::string::ts_string_free(&raw mut *string) };
     text
 }
 ";
@@ -832,16 +832,35 @@ struct Call {
     clippy::too_many_lines,
     reason = "one arm per parameter role; splitting the table would hide it"
 )]
-fn build_call(api: &Api, f: &FunctionDef) -> Call {
+fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
     let mut params = Vec::new();
     let mut setup = String::new();
     let mut args = Vec::new();
     let mut last_pointer = String::new();
-    let optional_struct = constructor_of(api, f).is_some();
+    // A struct a *way in* takes may be omitted for every default, which
+    // is what the C signature says of it (`options` may be null). That is
+    // true of a factory as much as of the constructor, and reading it off
+    // the primary one alone made the factory demand what the constructor
+    // does not.
+    let optional_struct = builds_a_handle(api, f);
     for p in &f.params {
         let name = snake(&p.name);
         match p.role {
-            Role::Handle => args.push(String::from("self.handle")),
+            // The handle of the class being rendered is `self`; any
+            // other opaque's is a parameter, and the class that holds it
+            // is what the caller passes. A factory is the only shape
+            // where the second case arises, and it arose unplaced —
+            // `rules::factories` says why.
+            Role::Handle => {
+                let held = pointee_opaque(api, p).map(|o| o.name.clone());
+                if held.as_deref() == receiver || receiver.is_none() {
+                    args.push(String::from("self.handle"));
+                } else {
+                    let class = binding_type_name(held.as_deref().unwrap_or_default());
+                    params.push(format!("{name}: &{class}"));
+                    args.push(format!("{name}.handle"));
+                }
+            }
             Role::HandleOut => {
                 let opaque = pointee_opaque(api, p).map_or_else(String::new, |o| o.name.clone());
                 let _ = writeln!(
@@ -916,14 +935,14 @@ fn build_call(api: &Api, f: &FunctionDef) -> Call {
             Role::StringOut => {
                 let _ = writeln!(
                     setup,
-                    "        let mut {name} = ffi::strings::TsString::empty();"
+                    "        let mut {name} = ffi::string::TsString::empty();"
                 );
                 args.push(format!("&raw mut {name}"));
             }
             Role::StrOut => {
                 let _ = writeln!(
                     setup,
-                    "        let mut {name} = ffi::strings::TsStr {{ data: ptr::null(), len: 0 }};"
+                    "        let mut {name} = ffi::string::TsStr {{ data: ptr::null(), len: 0 }};"
                 );
                 args.push(format!("&raw mut {name}"));
             }
@@ -1027,11 +1046,15 @@ fn call_outputs(api: &Api, f: &FunctionDef) -> (String, String) {
     (returns, finish)
 }
 
-/// The opaque a function constructs, when it is a constructor.
-fn constructor_of<'a>(api: &'a Api, f: &FunctionDef) -> Option<&'a OpaqueDef> {
-    api.opaques
-        .iter()
-        .find(|o| constructor(api, o).is_some_and(|c| c.name == f.name))
+/// Whether a function is a way in: the constructor of an opaque, or one
+/// of its factories.
+fn builds_a_handle(api: &Api, f: &FunctionDef) -> bool {
+    api.opaques.iter().any(|o| {
+        constructor(api, o).is_some_and(|c| c.name == f.name)
+            || crate::rules::factories(api, o)
+                .iter()
+                .any(|x| x.name == f.name)
+    })
 }
 
 fn zeroed(path: &str, binding: &str, handshake: bool) -> String {
@@ -1067,8 +1090,11 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     if let Some(ctor) = constructor(api, opaque) {
         render_constructor(out, api, ctor, &name, host);
     }
-    render_last_error_method(out, api);
-    render_check(out, api);
+    for factory in crate::rules::factories(api, opaque) {
+        render_factory(out, api, factory, opaque, &name, host);
+    }
+    render_last_error_method(out, api, opaque);
+    render_check(out, api, opaque);
     if host {
         render_host_helpers(out);
     }
@@ -1107,7 +1133,7 @@ fn render_dispose(out: &mut String, free: &FunctionDef) {
 }
 
 fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str, host: bool) {
-    let call = build_call(api, ctor);
+    let call = build_call(api, ctor, None);
     let built = if host { ", host" } else { "" };
     let _ = writeln!(
         out,
@@ -1116,6 +1142,37 @@ fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &st
         call.params.join(", "),
         call.setup,
         call_expression(ctor, &call.args.join(", "))
+    );
+}
+
+/// A second way to build the class: a static factory.
+///
+/// `#[napi(factory)]` and not a second `#[napi(constructor)]`, because a
+/// JavaScript class has one of the latter. Everything else is the
+/// constructor's body — `build_call` renders the roles the same way, and
+/// a `handle` of another opaque becomes a parameter of that class rather
+/// than `self`.
+fn render_factory(
+    out: &mut String,
+    api: &Api,
+    f: &FunctionDef,
+    opaque: &OpaqueDef,
+    name: &str,
+    host: bool,
+) {
+    let call = build_call(api, f, Some(&opaque.name));
+    // A factory does not bind a host-implemented port: the provider it is
+    // given is already a handle the boundary owns. The field is still on
+    // the struct, so it is filled with nothing.
+    let built = if host { ", host: None" } else { "" };
+    let method = crate::rules::method_name(api, opaque, f);
+    let _ = writeln!(
+        out,
+        "{}    #[napi(factory)]\n    pub fn {method}({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            let message = take_string(&mut out_error);\n            return Err(Error::from_reason(if message.is_empty() {{\n                format!(\"the handle could not be built (code {{}})\", status.code())\n            }} else {{\n                message\n            }}));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
+        doc(&f.doc, "    "),
+        call.params.join(", "),
+        call.setup,
+        call_expression(f, &call.args.join(", "))
     );
 }
 
@@ -1135,12 +1192,10 @@ fn render_host_helpers(out: &mut String) {
     );
 }
 
-fn render_last_error_method(out: &mut String, api: &Api) {
-    let Some(reader) = api
-        .functions
-        .iter()
-        .find(|f| f.name.ends_with("_last_error"))
-    else {
+fn render_last_error_method(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+    // This opaque's own reader, matched by the handle it takes: a second
+    // opaque type without one must not inherit the first's.
+    let Some(reader) = crate::rules::last_error(api, opaque) else {
         return;
     };
     let Some(s) = reader
@@ -1161,11 +1216,19 @@ fn render_last_error_method(out: &mut String, api: &Api) {
 
 /// The check every method runs: a status other than `Ok` becomes an error
 /// carrying the library's own sentence.
-fn render_check(out: &mut String, api: &Api) {
-    let _ = api;
+fn render_check(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+    // An opaque type with a last-error reader gets the library's own
+    // sentence; one without gets the status's, because there is nothing
+    // to read it from and inventing a reader is what stopped the addon
+    // compiling when the second opaque type arrived.
+    let message = if crate::rules::last_error(api, opaque).is_some() {
+        "        let message = self\n            .last_error()\n            .and_then(|e| e.message)\n            .unwrap_or_else(|| {\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()\n            });"
+    } else {
+        "        // SAFETY: the library returns a static NUL-terminated string.\n        let message =\n            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();"
+    };
     let _ = writeln!(
         out,
-        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence; the layer above adds the field, the hint and the code\n    /// from `last_error`.\n    fn check(&self, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n        let message = self\n            .last_error()\n            .and_then(|e| e.message)\n            .unwrap_or_else(|| {{\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe {{ lent_text(ffi::ts_status_message(status.code())) }}.unwrap_or_default()\n            }});\n        Err(Error::from_reason(message))\n    }}\n"
+        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence.\n    fn check(&self, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n{message}\n        Err(Error::from_reason(message))\n    }}\n"
     );
 }
 
@@ -1174,7 +1237,7 @@ fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, m: &FunctionDe
         return;
     }
     let method = snake(&method_name(api, opaque, m));
-    let call = build_call(api, m);
+    let call = build_call(api, m, Some(&opaque.name));
     let called = call_expression(m, &call.args.join(", "));
     // A call that may reach the host provider brackets itself: the
     // environment is lent before it and taken back after, and what the
@@ -1206,7 +1269,7 @@ fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, m: &FunctionDe
 
 fn render_free_function(out: &mut String, api: &Api, f: &FunctionDef) {
     let name = snake(f.name.strip_prefix(&api.prefix).unwrap_or(&f.name));
-    let call = build_call(api, f);
+    let call = build_call(api, f, None);
     let called = call_expression(f, &call.args.join(", "));
     if matches!(&f.returns, Some(TypeRef::Pointer { to, .. }) if matches!(**to, TypeRef::Char)) {
         let _ = writeln!(

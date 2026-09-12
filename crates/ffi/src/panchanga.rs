@@ -32,7 +32,7 @@ use teistro_calendar::lunisolar::MonthKind;
 use teistro_calendar::shipped;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_core::catalogue::{Ayanamsha, Calendar};
-use teistro_core::envelope::{Provenance, content_hash};
+use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
@@ -575,13 +575,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
         }
         // SAFETY: non-null; the caller promises a readable request.
         let asked = unsafe { *request };
-        let provider = ctx.provider().ok_or_else(|| {
-            Error::new(
-                Status::Capability,
-                "the context has no ephemeris: pass a provider vtable to ts_context_new, or the TS_CONTEXT_TEST_PROVIDER flag for tests",
-            )
-            .with_field("provider")
-        })?;
+        let provider = ctx.provider().ok_or_else(crate::support::no_ephemeris)?;
         let resolved = ctx.resolved();
         let settings = &resolved.settings;
         let place = Place::new(
@@ -636,11 +630,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
             ctx.delta_t(),
         )
         .between(&from, &to, &place)?;
-        let mut provenance = founded.provenance;
-        // The founder leaves the placeholder; the boundary fills it, as
-        // `ts_positions` and `ts_chart_found` do.
-        provenance.content_hash = content_hash(&founded.value);
-        let encoded = encode(&founded.value, &place, asked_calendar, &provenance)?;
+        // The almanac seals, as the founder does: the boundary encodes
+        // the stamp it was given.
+        let encoded = encode(&founded.value, &place, asked_calendar, &founded.provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -663,7 +655,7 @@ mod tests {
     use teistro_calendar::solar::drik::DrikSun;
     use teistro_calendar::{CalendarDate, Gregorian};
     use teistro_core::catalogue::{Ayanamsha, Calendar};
-    use teistro_core::envelope::{Provenance, content_hash};
+    use teistro_core::envelope::Provenance;
     use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
     use teistro_core::settings::{
         DEFAULT_PROFILE, LunarMonth, OverridePolicy, Profile, SettingsPatch, Sunrise,
@@ -718,9 +710,7 @@ mod tests {
             &place(),
         )
         .expect("a month of founded days");
-        let mut provenance = founded.provenance;
-        provenance.content_hash = content_hash(&founded.value);
-        (founded.value, provenance)
+        (founded.value, founded.provenance)
     }
 
     /// A batch of almanacs crosses, and each day's rows are where its

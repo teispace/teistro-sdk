@@ -1,0 +1,92 @@
+[package]
+name = "teistro"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK for Rust: one context over the calendars, the time scales, the locale engine and the ephemeris port, with a reason attached to every number"
+readme = "README.md"
+keywords = ["astrology", "ephemeris", "calendar", "panchanga"]
+categories = ["science", "date-and-time"]
+# The name is the one `03-design/rust-consumer-surface.md` §9 leaves to
+# the maintainer, used here so the crate can be built and measured. A
+# rename is one `sed`; nothing outside this manifest spells it.
+publish = false
+
+[dependencies]
+serde_json = "1"
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-chart = { path = "../chart" }
+teistro-core = { path = "../core" }
+teistro-intl = { path = "../intl", default-features = false }
+teistro-panchanga = { path = "../panchanga" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-time = { path = "../time" }
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
+
+[build-dependencies]
+teistro-intl = { path = "../intl", default-features = false }
+
+# The SDK's own ephemeris, so a consumer who installs nothing else still
+# computes a chart (ADR-0008, ADR-0028) — the same feature the boundary
+# crate carries, and the same three tiers, because a tier is a feature of
+# the builtin crate and a consumer of this one chooses it here.
+[features]
+default = ["builtin-ephemeris"]
+builtin-ephemeris = [
+  "dep:teistro-ephemeris-builtin",
+  "teistro-ephemeris-builtin/standard",
+]
+builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
+builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
+builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
+
+[lints]
+workspace = true
+
+# Every target that names `Ephemeris::Builtin` declares the feature the
+# variant lives behind. Without this a `--no-default-features` build of
+# this crate **fails** on those targets rather than skipping them, which
+# is not what a tier build is asking for -- and it did, unnoticed,
+# because nothing had ever built this crate without its default.
+# `check-lints`' `target-declares-the-feature-it-needs` holds the class
+# by reading the sources, so a target that stops naming the built-in
+# stops needing the line and one that starts cannot be added without it.
+#
+# `calendar` and `parity` are absent on purpose: the first names
+# `Ephemeris::None` (a calendar needs no ephemeris, which is its lesson)
+# and the second `Ephemeris::Test`. Neither is gated.
+
+[[test]]
+name = "surface"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "almanac"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "birth_chart"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "ephemeris"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "panchanga"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "quickstart"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "rectification"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "your_own_ephemeris"
+required-features = ["builtin-ephemeris"]

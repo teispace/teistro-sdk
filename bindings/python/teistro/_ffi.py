@@ -115,7 +115,7 @@ from .catalogue import (
 )
 
 # The ABI version of the vtable layout.
-VTABLE_ABI_VERSION: Final = 2
+VTABLE_ABI_VERSION: Final = 3
 
 # A context flag: use the SDK's analytic test provider when no provider
 # vtable is given. For tests and examples only; its positions are not
@@ -137,7 +137,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_crossing_event": 24,
     "ts_data_hash": 24,
     "ts_capabilities": 112,
-    "ts_provider_vtable": 72,
+    "ts_provider_vtable": 88,
     "ts_string": 24,
     "ts_str": 16,
     "ts_hash": 32,
@@ -167,7 +167,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_crossing_event": 24,
     "ts_data_hash": 16,
     "ts_capabilities": 72,
-    "ts_provider_vtable": 40,
+    "ts_provider_vtable": 48,
     "ts_string": 12,
     "ts_str": 8,
     "ts_hash": 32,
@@ -200,6 +200,16 @@ SIZES: Final[dict[str, int]] = (
 class _Context(ctypes.Structure):
     """An opaque context: settings, a provider, the locale engine, the last
     error. Used by one thread at a time.
+
+    An incomplete type: it is only ever a pointer, and giving it a class
+    of its own keeps it apart from every other handle.
+    """
+
+
+class _Provider(ctypes.Structure):
+    """An ephemeris loaded from a shared library. Free with
+    `ts_provider_free`; a context built from it keeps its own reference,
+    so the order does not matter.
 
     An incomplete type: it is only ever a pointer, and giving it a class
     of its own keeps it apart from every other handle.
@@ -777,6 +787,35 @@ CrossingsFn = ctypes.CFUNCTYPE(
     ctypes.POINTER(ctypes.c_uint32),
 )
 
+# The engine's own manifest, as JSON.
+#
+# Writes up to `capacity` bytes into the caller's buffer and the length
+# it wanted into `out_len`, which may exceed the capacity — in which
+# case the caller calls again with a larger one. The same size-then-fill
+# protocol the crossings use, and for the same reason: nothing allocated
+# on one side of this boundary is freed on the other.
+NativeManifestFn = ctypes.CFUNCTYPE(
+    ctypes.c_int32,
+    ctypes.c_void_p,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_size_t),
+)
+
+# One of the engine's own operations, called by the name its manifest
+# gives, with arguments as a JSON object.
+#
+# Answers as `NativeManifestFn` does.
+NativeCallFn = ctypes.CFUNCTYPE(
+    ctypes.c_int32,
+    ctypes.c_void_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_size_t),
+)
+
 class _ProviderVtableStruct(ctypes.Structure):
     """The vtable: `user_data` is whatever the provider registered and is
     passed back to every function; a null function is an undeclared
@@ -796,6 +835,8 @@ class _ProviderVtableStruct(ctypes.Structure):
         ("dut1", Dut1Fn),
         ("horizon_event", HorizonEventFn),
         ("crossings", CrossingsFn),
+        ("native_manifest", NativeManifestFn),
+        ("native_call", NativeCallFn),
     ]
 
 
@@ -2957,6 +2998,27 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_ephemeris_call.restype = ctypes.c_int32
+        self.ts_provider_load: Any = library.ts_provider_load
+        self.ts_provider_load.argtypes = [
+            ctypes.c_char_p,
+            ctypes.c_char_p,
+            ctypes.POINTER(ctypes.POINTER(_Provider)),
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_provider_load.restype = ctypes.c_int32
+        self.ts_context_new_with_provider: Any = library.ts_context_new_with_provider
+        self.ts_context_new_with_provider.argtypes = [
+            ctypes.POINTER(_ContextOptionsStruct),
+            ctypes.POINTER(_Provider),
+            ctypes.POINTER(ctypes.POINTER(_Context)),
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_context_new_with_provider.restype = ctypes.c_int32
+        self.ts_provider_free: Any = library.ts_provider_free
+        self.ts_provider_free.argtypes = [
+            ctypes.POINTER(_Provider),
+        ]
+        self.ts_provider_free.restype = None
 
 
 class TeistroContext:
@@ -2994,6 +3056,32 @@ class TeistroContext:
             ctypes.byref(_options),
             provider,
             None,
+            ctypes.byref(handle),
+            ctypes.byref(_out_error),
+        ))
+        if status != Status.OK:
+            _refuse(lib, status, _out_error)
+        return cls(lib, handle)
+
+    @classmethod
+    def _new_with_provider(cls, lib: TeistroLibrary, options: ContextOptions, provider: TeistroProvider) -> TeistroContext:
+        """Creates a context that computes with a **loaded** provider.
+
+        The same as `ts_context_new` in every other respect — `options` may be
+        null for the defaults, and `options.ephemeris` is ignored because this
+        call has already answered the question it asks.
+
+        The context takes its own reference to the adapter, so this handle may
+        be freed immediately afterwards or kept to found another context; the
+        library is unloaded when the last of them goes.
+        """
+        owned: list[Any] = []
+        handle = ctypes.POINTER(_Context)()
+        _options = options._to_c(owned)
+        _out_error = _StringStruct()
+        status = Status(lib.ts_context_new_with_provider(
+            ctypes.byref(_options),
+            provider._raw,
             ctypes.byref(handle),
             ctypes.byref(_out_error),
         ))
@@ -3609,6 +3697,104 @@ def _free_context(lib: TeistroLibrary, handle: Any) -> None:
     """The finaliser: frees a handle whoever let it go."""
     if handle:
         lib.ts_context_free(handle)
+
+
+class TeistroProvider:
+    """A live context, and every call that takes one.
+
+    The handle is freed by `close`, by leaving a `with` block, or by the
+    finaliser when neither happened; a result that waits for the
+    collector can exhaust memory (ADR-0007, finding 4), so the explicit
+    forms are the ones to use.
+    """
+
+    def __init__(
+        self, lib: TeistroLibrary, handle: "ctypes._Pointer[_Provider]"
+    ) -> None:
+        self._lib = lib
+        self._handle: Optional["ctypes._Pointer[_Provider]"] = handle
+        self._finalise = weakref.finalize(self, _free_provider, lib, handle)
+
+    @classmethod
+    def _new(cls, lib: TeistroLibrary, path: str, config_json: str) -> TeistroProvider:
+        """Opens an adapter and the provider inside it.
+
+        `path` is the adapter's platform binary — the file its package ships.
+        `config_json` is that adapter's own options, or null; what they mean
+        is the adapter's to say and its package's to type.
+
+        `UNSUPPORTED` when the file is not an adapter of this version,
+        `DATA_MISSING` when it is and its data is not there, `INVALID_ARG`
+        when its configuration is wrong — each of them the adapter's own
+        judgement, passed through with its message rather than replaced.
+        """
+        owned: list[Any] = []
+        handle = ctypes.POINTER(_Provider)()
+        _path = path.encode("utf-8")
+        owned.append(_path)
+        _config_json = config_json.encode("utf-8")
+        owned.append(_config_json)
+        _out_error = _StringStruct()
+        status = Status(lib.ts_provider_load(
+            _path,
+            _config_json,
+            ctypes.byref(handle),
+            ctypes.byref(_out_error),
+        ))
+        if status != Status.OK:
+            _refuse(lib, status, _out_error)
+        return cls(lib, handle)
+
+    @property
+    def _raw(self) -> "ctypes._Pointer[_Provider]":
+        """The live handle, or a refusal saying it was closed."""
+        if self._handle is None:
+            raise TeistroError(
+                Status.INVALID_ARG,
+                "this context has been closed",
+                hint="open another one",
+            )
+        return self._handle
+
+    def close(self) -> None:
+        """Frees the context's native memory. Closing twice is allowed."""
+        if self._handle is not None:
+            self._handle = None
+            self._finalise()
+
+    def __enter__(self) -> TeistroProvider:
+        return self
+
+    def __exit__(
+        self,
+        kind: Optional[type[BaseException]],
+        value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()
+
+    def _raise(self, status: Status) -> None:
+        """Raises what the library said about its last refusal."""
+        raw = _ErrorStruct()
+        raw.struct_size = ctypes.sizeof(_ErrorStruct)
+        if self._handle is not None:
+            if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
+                found = Error._of(raw)
+                raise TeistroError(
+                    status,
+                    found.message or status.key,
+                    detail=found.detail or "",
+                    field=found.field or "",
+                    hint=found.hint or "",
+                    key=found.key or "",
+                )
+        raise TeistroError(status, status.key)
+
+
+def _free_provider(lib: TeistroLibrary, handle: Any) -> None:
+    """The finaliser: frees a handle whoever let it go."""
+    if handle:
+        lib.ts_provider_free(handle)
 
 
 def abi_version(lib: TeistroLibrary) -> int:

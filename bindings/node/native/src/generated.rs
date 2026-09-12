@@ -68,11 +68,11 @@ fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
 }
 
 /// The text of a string the library allocated, copied and the string freed.
-fn take_string(string: &mut ffi::strings::TsString) -> String {
+fn take_string(string: &mut ffi::string::TsString) -> String {
     // SAFETY: the library wrote a NUL-terminated string, or left it null.
     let text = unsafe { lent_text(string.data.cast_const().cast()) }.unwrap_or_default();
     // SAFETY: a descriptor this call passed to the library, freed once.
-    unsafe { ffi::strings::ts_string_free(&raw mut *string) };
+    unsafe { ffi::string::ts_string_free(&raw mut *string) };
     text
 }
 /// A `Ayanamsha` from the string `catalogue.js` names it by.
@@ -1316,8 +1316,8 @@ pub struct HeldHash {
 
 impl HeldHash {
     /// The C struct, borrowing this value's buffers.
-    pub fn as_c(&self) -> ffi::strings::TsHash {
-        ffi::strings::TsHash { bytes: self.bytes }
+    pub fn as_c(&self) -> ffi::string::TsHash {
+        ffi::string::TsHash { bytes: self.bytes }
     }
 }
 
@@ -1339,7 +1339,7 @@ impl Hash {
     ///
     /// Every pointer in `raw` must be valid as the struct documents, for
     /// the length of this call.
-    pub unsafe fn write(raw: &ffi::strings::TsHash) -> Self {
+    pub unsafe fn write(raw: &ffi::string::TsHash) -> Self {
         Hash {
             bytes: Buffer::from(raw.bytes.to_vec()),
         }
@@ -2574,7 +2574,7 @@ impl Context {
         let (host_vtable, user_data) = crate::provider::parts(host.as_ref());
         let provider = host_vtable.as_ref().map_or(ptr::null(), |v| &raw const *v);
         let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
-        let mut out_error = ffi::strings::TsString::empty();
+        let mut out_error = ffi::string::TsString::empty();
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -2597,6 +2597,43 @@ impl Context {
         Ok(Context { handle, host })
     }
 
+    /// Creates a context that computes with a **loaded** provider.
+    ///
+    /// The same as `ts_context_new` in every other respect — `options` may be
+    /// null for the defaults, and `options.ephemeris` is ignored because this
+    /// call has already answered the question it asks.
+    ///
+    /// The context takes its own reference to the adapter, so this handle may
+    /// be freed immediately afterwards or kept to found another context; the
+    /// library is unloaded when the last of them goes.
+    #[napi(factory)]
+    pub fn new_with_provider(options: Option<ContextOptions>, provider: &Provider) -> Result<Self> {
+        let held_options = options.map(|v| v.read()).transpose()?;
+        let raw_options = held_options.as_ref().map(HeldContextOptions::as_c);
+        let options = raw_options.as_ref().map_or(ptr::null(), |v| &raw const *v);
+        let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
+        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every pointer is valid for the call; the handle is owned
+        // from here and freed once, in `Drop`.
+        let status = unsafe {
+            ffi::provider::ts_context_new_with_provider(
+                options,
+                provider.handle,
+                &raw mut handle,
+                &raw mut out_error,
+            )
+        };
+        if status != core_::Status::Ok {
+            let message = take_string(&mut out_error);
+            return Err(Error::from_reason(if message.is_empty() {
+                format!("the handle could not be built (code {})", status.code())
+            } else {
+                message
+            }));
+        }
+        Ok(Context { handle, host: None })
+    }
+
     /// The outcome of the last call on this context, which the layer
     /// above rethrows with its field, its hint and its code.
     #[napi]
@@ -2616,8 +2653,7 @@ impl Context {
     }
 
     /// Turns a failed call into an error whose message is the library's
-    /// own sentence; the layer above adds the field, the hint and the code
-    /// from `last_error`.
+    /// own sentence.
     fn check(&self, status: core_::Status) -> Result<()> {
         if status == core_::Status::Ok {
             return Ok(());
@@ -2651,7 +2687,7 @@ impl Context {
     /// next call on the context.
     #[napi]
     pub fn profile(&self, env: Env) -> Result<String> {
-        let mut out_profile = ffi::strings::TsStr {
+        let mut out_profile = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -2668,7 +2704,7 @@ impl Context {
     /// document compute the same numbers.
     #[napi]
     pub fn settings_json(&self, env: Env) -> Result<String> {
-        let mut out_json = ffi::strings::TsString::empty();
+        let mut out_json = ffi::string::TsString::empty();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
@@ -2685,7 +2721,7 @@ impl Context {
         // SAFETY: every field is a plain integer, float or pointer, so
         // all-zero is a valid value; a size, where the struct has one, is set
         // before the call reads it.
-        let mut out_hash: ffi::strings::TsHash = unsafe { core::mem::zeroed() };
+        let mut out_hash: ffi::string::TsHash = unsafe { core::mem::zeroed() };
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
@@ -2704,7 +2740,7 @@ impl Context {
         let mut out_id: u32 = Default::default();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
-        let status = unsafe { ffi::keys::ts_key_parse(self.handle, key.as_ptr(), &raw mut out_id) };
+        let status = unsafe { ffi::key::ts_key_parse(self.handle, key.as_ptr(), &raw mut out_id) };
         self.leave()?;
         self.check(status)?;
         Ok(out_id as _)
@@ -2714,13 +2750,13 @@ impl Context {
     /// the context. An id no catalogued member has is `UNSUPPORTED`.
     #[napi]
     pub fn key_name(&self, env: Env, id: u32) -> Result<String> {
-        let mut out_key = ffi::strings::TsStr {
+        let mut out_key = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
-        let status = unsafe { ffi::keys::ts_key_name(self.handle, id as u32, &raw mut out_key) };
+        let status = unsafe { ffi::key::ts_key_name(self.handle, id as u32, &raw mut out_key) };
         self.leave()?;
         self.check(status)?;
         Ok(unsafe { lent_text(out_key.data) }.unwrap_or_default())
@@ -3053,7 +3089,7 @@ impl Context {
     /// context.
     #[napi]
     pub fn intl_locale(&self, env: Env) -> Result<String> {
-        let mut out_locale = ffi::strings::TsStr {
+        let mut out_locale = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -3094,7 +3130,7 @@ impl Context {
         let text = std::ffi::CString::new(text).map_err(|e| Error::from_reason(e.to_string()))?;
         let from = std::ffi::CString::new(from).map_err(|e| Error::from_reason(e.to_string()))?;
         let to = std::ffi::CString::new(to).map_err(|e| Error::from_reason(e.to_string()))?;
-        let mut out_text = ffi::strings::TsStr {
+        let mut out_text = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -3126,7 +3162,7 @@ impl Context {
     #[napi]
     pub fn intl_entity(&self, env: Env, key: String) -> Result<String> {
         let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
-        let mut out_json = ffi::strings::TsStr {
+        let mut out_json = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -3236,7 +3272,7 @@ impl Context {
     /// engine describes nothing of its own.
     #[napi]
     pub fn ephemeris_manifest(&self, env: Env) -> Result<String> {
-        let mut out_json = ffi::strings::TsString::empty();
+        let mut out_json = ffi::string::TsString::empty();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
@@ -3267,7 +3303,7 @@ impl Context {
             std::ffi::CString::new(function).map_err(|e| Error::from_reason(e.to_string()))?;
         let arguments_json = std::ffi::CString::new(arguments_json)
             .map_err(|e| Error::from_reason(e.to_string()))?;
-        let mut out_json = ffi::strings::TsString::empty();
+        let mut out_json = ffi::string::TsString::empty();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
@@ -3305,6 +3341,95 @@ impl Drop for Context {
         }
         // SAFETY: the handle came from the constructor and is dropped once.
         unsafe { ffi::context::ts_context_free(self.handle) };
+    }
+}
+
+/// An ephemeris loaded from a shared library. Free with
+/// `ts_provider_free`; a context built from it keeps its own reference,
+/// so the order does not matter.
+#[napi]
+pub struct Provider {
+    handle: *mut ffi::provider::TsProvider,
+}
+
+// SAFETY: a context is used by one thread at a time, which is the contract
+// the boundary documents; a worker thread builds its own.
+unsafe impl Send for Provider {}
+
+#[napi]
+impl Provider {
+    /// Opens an adapter and the provider inside it.
+    ///
+    /// `path` is the adapter's platform binary — the file its package ships.
+    /// `config_json` is that adapter's own options, or null; what they mean
+    /// is the adapter's to say and its package's to type.
+    ///
+    /// `UNSUPPORTED` when the file is not an adapter of this version,
+    /// `DATA_MISSING` when it is and its data is not there, `INVALID_ARG`
+    /// when its configuration is wrong — each of them the adapter's own
+    /// judgement, passed through with its message rather than replaced.
+    #[napi(constructor)]
+    pub fn new(path: String, config_json: String) -> Result<Self> {
+        let path = std::ffi::CString::new(path).map_err(|e| Error::from_reason(e.to_string()))?;
+        let config_json =
+            std::ffi::CString::new(config_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut handle: *mut ffi::provider::TsProvider = ptr::null_mut();
+        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every pointer is valid for the call; the handle is owned
+        // from here and freed once, in `Drop`.
+        let status = unsafe {
+            ffi::provider::ts_provider_load(
+                path.as_ptr(),
+                config_json.as_ptr(),
+                &raw mut handle,
+                &raw mut out_error,
+            )
+        };
+        if status != core_::Status::Ok {
+            let message = take_string(&mut out_error);
+            return Err(Error::from_reason(if message.is_empty() {
+                format!("the context could not be built (code {})", status.code())
+            } else {
+                message
+            }));
+        }
+        Ok(Provider { handle })
+    }
+
+    /// Turns a failed call into an error whose message is the library's
+    /// own sentence.
+    fn check(&self, status: core_::Status) -> Result<()> {
+        if status == core_::Status::Ok {
+            return Ok(());
+        }
+        // SAFETY: the library returns a static NUL-terminated string.
+        let message =
+            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();
+        Err(Error::from_reason(message))
+    }
+
+    /// Frees the handle's native memory now, rather than when the
+    /// collector gets to it. Calling it twice is allowed, and a call on a
+    /// disposed handle is refused with `INVALID_ARG`.
+    #[napi]
+    pub fn dispose(&mut self) {
+        if self.handle.is_null() {
+            return;
+        }
+        // SAFETY: the handle came from the constructor and is freed once;
+        // nulling it here is what makes that true.
+        unsafe { ffi::provider::ts_provider_free(self.handle) };
+        self.handle = std::ptr::null_mut();
+    }
+}
+
+impl Drop for Provider {
+    fn drop(&mut self) {
+        if self.handle.is_null() {
+            return;
+        }
+        // SAFETY: the handle came from the constructor and is dropped once.
+        unsafe { ffi::provider::ts_provider_free(self.handle) };
     }
 }
 

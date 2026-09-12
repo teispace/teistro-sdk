@@ -64,7 +64,7 @@ test('the addon and the types were generated for the same ABI', () => {
 test('a context resolves its settings and reports them', () => {
   const ctx = context();
   assert.equal(ctx.profile, 'nepali-default');
-  assert.equal(ctx.locale, 'ne-Deva-NP');
+  assert.equal(ctx.intl.locale, 'ne-Deva-NP');
   assert.match(ctx.settingsHash, /^[0-9a-f]{64}$/u);
   assert.equal(ctx.settings.frame.zodiac, 'SIDEREAL');
   assert.equal(ctx.settings.schema, 1);
@@ -81,7 +81,7 @@ test('a context resolves its settings and reports them', () => {
 test('a refusal carries its status, its field and its hint', () => {
   const ctx = context();
   assert.throws(
-    () => ctx.keyId('graha.SUNN'),
+    () => ctx.keys.id('graha.SUNN'),
     (error) => {
       assert.ok(error instanceof TeistroError, 'a TeistroError, not a bare Error');
       assert.equal(error.status, 'unsupported');
@@ -98,7 +98,7 @@ test('a refusal carries its status, its field and its hint', () => {
   );
   assert.throws(() => context({ locale: 'xx-Latn' }), /ne-Deva-NP/u);
   assert.throws(
-    () => ctx.fixedOf(gregorian(2023, 2, 29)),
+    () => ctx.calendar.fixedOf(gregorian(2023, 2, 29)),
     (error) => error.detail === 'NONEXISTENT_DATE' && error.status === 'invalid-arg',
   );
 });
@@ -106,7 +106,7 @@ test('a refusal carries its status, its field and its hint', () => {
 test('a date converts into Bikram Sambat with its era and its resolution', () => {
   const ctx = context();
   const date = gregorian(2015, 4, 14);
-  const bs = ctx.convert(date, Calendar.BikramSambat);
+  const bs = ctx.calendar.convert(date, Calendar.BikramSambat);
   assert.equal(bs.year, 2072);
   assert.equal(bs.month, 1);
   assert.equal(bs.day, 1);
@@ -114,12 +114,12 @@ test('a date converts into Bikram Sambat with its era and its resolution', () =>
   assert.equal(bs.eraYear, 2072);
   assert.equal(bs.resolution, Resolution.Tabular, 'inside the official table');
 
-  const fixed = ctx.fixedOf(date);
+  const fixed = ctx.calendar.fixedOf(date);
   assert.equal(fixed, 735702);
-  assert.equal(ctx.weekdayOf(date), 2, 'a Tuesday');
-  assert.equal(ctx.dateOf(Calendar.Gregorian, fixed).era, Era.CommonEra);
-  assert.equal(ctx.monthLength(Calendar.Gregorian, 2024, 2), 29);
-  assert.equal(ctx.isLeap(Calendar.Gregorian, 2024), true);
+  assert.equal(ctx.calendar.weekdayOf(date), 2, 'a Tuesday');
+  assert.equal(ctx.calendar.dateOf(Calendar.Gregorian, fixed).era, Era.CommonEra);
+  assert.equal(ctx.calendar.monthLength(Calendar.Gregorian, 2024, 2), 29);
+  assert.equal(ctx.calendar.isLeap(Calendar.Gregorian, 2024), true);
   assert.equal(julianDayOfFixed(fixed), 2457126.5);
   assert.deepEqual(fixedOfJulianDay(2457126.75), { value: fixed, fraction: 0.25 });
 });
@@ -131,7 +131,7 @@ test('a Nepali birth time resolves with the metadata a stored chart keeps', () =
     time: { hour: 0, minute: 20, second: 0, hasTime: true, nanos: 0 },
   };
   const zone = { kind: ZoneKind.Iana, offsetSeconds: 0, longitudeDeg: 0, zone: 'Asia/Kathmandu' };
-  const resolved = ctx.resolve(civil, zone);
+  const resolved = ctx.time.resolve(civil, zone);
   assert.ok(Math.abs(resolved.instantJdUtc - 2446431.2743056) < 1e-6);
   assert.equal(resolved.offsetSeconds, 20700, '+05:45, the offset that began that midnight');
   assert.equal(resolved.era, 'current');
@@ -140,35 +140,35 @@ test('a Nepali birth time resolves with the metadata a stored chart keeps', () =
   assert.deepEqual(resolved.warnings, []);
   assert.match(resolved.tzdbVersion, /^20\d\d[a-z]$/u);
 
-  const back = ctx.civilOf(resolved.instantJdUtc, zone, Calendar.Gregorian);
+  const back = ctx.time.civilOf(resolved.instantJdUtc, zone, Calendar.Gregorian);
   assert.equal(back.civil.date.year, 1986);
   assert.equal(back.civil.time.minute, 20);
   assert.equal(back.civil.time.hasTime, true);
   assert.equal(back.resolution.offsetSeconds, 20700);
 
   const unknown = { kind: ZoneKind.Iana, offsetSeconds: 0, longitudeDeg: 0, zone: 'Asia/Kathmandou' };
-  assert.throws(() => ctx.resolve(civil, unknown), (error) => error instanceof TeistroError);
+  assert.throws(() => ctx.time.resolve(civil, unknown), (error) => error instanceof TeistroError);
 });
 
 test('the time scales convert with what they applied', () => {
   const ctx = context();
-  const tt = ctx.convertTime(2451544.5, Scale.Utc, Scale.Tt);
+  const tt = ctx.time.convert(2451544.5, Scale.Utc, Scale.Tt);
   assert.ok(Math.abs(tt.deltaTSeconds - 64.184) < 1e-9, 'exact through the leap-second table');
   assert.equal(tt.deltaTSource, 'leap-seconds');
   assert.equal(tt.deltaTModel, 'TABLE_THEN_MODEL');
   assert.ok(Math.abs(tt.jd - (2451544.5 + 64.184 / 86400)) < 1e-12);
-  const back = ctx.convertTime(tt.jd, Scale.Tt, Scale.Utc);
+  const back = ctx.time.convert(tt.jd, Scale.Tt, Scale.Utc);
   assert.ok(Math.abs(back.jd - 2451544.5) < 1e-9);
 
-  const delta = ctx.deltaT(2451544.5);
+  const delta = ctx.time.deltaT(2451544.5);
   assert.ok(Math.abs(delta.seconds - 63.83) < 0.02);
   assert.equal(delta.source, 'table');
-  assert.throws(() => ctx.deltaT(Number.NaN), /expected a finite number/u);
+  assert.throws(() => ctx.time.deltaT(Number.NaN), /expected a finite number/u);
 });
 
 test('positions come back in the frame asked for, decoded on first use', () => {
   const ctx = context();
-  const frame = ctx.canonicalFrame();
+  const frame = ctx.frame.canonical();
   assert.equal(frame.centre, 'geocentric');
   assert.equal(frame.coordinates, 'ecliptic');
   assert.equal(frame.sidereal, false);
@@ -209,11 +209,17 @@ test('positions come back in the frame asked for, decoded on first use', () => {
   });
   assert.deepEqual(Buffer.from(again.bytes), Buffer.from(positions.bytes));
 
-  // Without an ephemeris the call is a missing capability, named.
+  // Without an ephemeris the call is a missing capability naming the
+  // option a consumer sets -- `ephemeris`, which this binding spells the
+  // way the other two do, and not the C entry point they have no access
+  // to. The hint says what to pass, so the refusal is actionable here.
   const bare = new Context({});
   assert.throws(
     () => bare.positions({ instants: [2451545.0], bodies: [Body.Sun] }),
-    (error) => error.status === 'capability' && error.field === 'provider',
+    (error) =>
+      error.status === 'capability' &&
+      error.field === 'ephemeris' &&
+      error.hint.includes('builtin'),
   );
   assert.throws(() => ctx.positions({ instants: [], bodies: [Body.Sun] }), TypeError);
   assert.throws(() => ctx.positions({ instants: [Number.NaN], bodies: [Body.Sun] }), TypeError);
@@ -222,7 +228,7 @@ test('positions come back in the frame asked for, decoded on first use', () => {
 
 test('the locale engine renders typed parameters, and says where from', () => {
   const ctx = context();
-  const rendered = ctx.render('sdk.reason.grahaInBhava', {
+  const rendered = ctx.intl.render('sdk.reason.grahaInBhava', {
     graha: { $entity: 'graha.JUPITER' },
     bhava: 7,
   });
@@ -232,26 +238,26 @@ test('the locale engine renders typed parameters, and says where from', () => {
   assert.deepEqual(rendered.warnings, []);
   assert.match(rendered.text, /७/u, 'the Nepali numeral seven');
   assert.equal(String(rendered), rendered.text);
-  assert.equal(ctx.has('sdk.reason.grahaInBhava'), true);
-  assert.equal(ctx.has('sdk.nope.missing'), false);
+  assert.equal(ctx.intl.has('sdk.reason.grahaInBhava'), true);
+  assert.equal(ctx.intl.has('sdk.nope.missing'), false);
 
   // A missing message renders as its key with a warning, never an error.
-  const missing = ctx.render('sdk.nope.missing');
+  const missing = ctx.intl.render('sdk.nope.missing');
   assert.equal(missing.resolvedFrom, null);
   assert.ok(missing.warnings.length > 0);
 
-  ctx.locale = 'en-Latn';
-  assert.equal(ctx.locale, 'en-Latn');
-  const english = ctx.render('sdk.reason.grahaInBhava', {
+  ctx.intl.locale = 'en-Latn';
+  assert.equal(ctx.intl.locale, 'en-Latn');
+  const english = ctx.intl.render('sdk.reason.grahaInBhava', {
     graha: { $entity: 'graha.JUPITER' },
     bhava: 7,
   });
   assert.match(english.text, /Jupiter/u);
   assert.throws(() => {
-    ctx.locale = 'fr-Latn';
+    ctx.intl.locale = 'fr-Latn';
   }, /sa-Deva/u);
   assert.throws(
-    () => ctx.render('sdk.reason.grahaInBhava', 'not an object'),
+    () => ctx.intl.render('sdk.reason.grahaInBhava', 'not an object'),
     (error) => error.status === 'invalid-arg' && error.field === 'params_json',
   );
 });
@@ -280,11 +286,11 @@ test('a quantity is its own type, and its constructor checks the range', () => {
 
 test('a catalogue key packs to an id and back', () => {
   const ctx = context();
-  const id = ctx.keyId('graha.SUN');
+  const id = ctx.keys.id('graha.SUN');
   assert.equal(id, (1 << 16) | 0, 'the kind in the high half, the member in the low');
-  assert.equal(ctx.keyName(id), 'graha.SUN');
-  assert.equal(ctx.keyName(ctx.keyId('nakshatra.ASHWINI')), 'nakshatra.ASHWINI');
-  assert.throws(() => ctx.keyName(0xffffffff), (error) => error.status === 'unsupported');
+  assert.equal(ctx.keys.name(id), 'graha.SUN');
+  assert.equal(ctx.keys.name(ctx.keys.id('nakshatra.ASHWINI')), 'nakshatra.ASHWINI');
+  assert.throws(() => ctx.keys.name(0xffffffff), (error) => error.status === 'unsupported');
 });
 
 /** An ephemeris written in JavaScript: a straight line per body. */
@@ -498,7 +504,7 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
   // No policy: refused by name, with the hint naming the three choices.
   const strict = new Context({ profile: 'nepali-default', testProvider: true });
   assert.throws(
-    () => strict.resolve(whenUnknown(day), zone),
+    () => strict.time.resolve(whenUnknown(day), zone),
     (error) => {
       assert.match(error.message, /has no time of day/u);
       assert.match(error.hint, /NOON, MIDNIGHT or SUNRISE/u);
@@ -516,7 +522,7 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
     testProvider: true,
     settings: { time: { unknown_time: 'NOON' } },
   });
-  const resolved = noon.resolve(whenUnknown(day), zone);
+  const resolved = noon.time.resolve(whenUnknown(day), zone);
   assert.equal(resolved.timeKnown, false);
   assert.ok(resolved.warnings.includes('time-unknown-fallback'), 'the fallback is warned about');
   assert.ok(Number.isFinite(resolved.instantJdUtc));
@@ -525,7 +531,7 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
   // A known time on the same date resolves with the time known and no
   // warning: this record sits on the day Nepal moved to +05:45.
   const known = new Context({ profile: 'nepali-default', testProvider: true });
-  const exact = known.resolve(at(day, { hour: 0, minute: 20 }), zone);
+  const exact = known.time.resolve(at(day, { hour: 0, minute: 20 }), zone);
   assert.equal(exact.timeKnown, true);
   assert.equal(exact.offsetSeconds, 5 * 3600 + 45 * 60);
   assert.deepEqual(exact.warnings, []);
@@ -538,26 +544,21 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
 // real engine present and still exercise the whole route.
 
 test('the engine names its own operations', () => {
-  const engine = context().ephemeris;
+  const engine = context().engine;
   assert.ok(engine.names.includes('tp_echo'));
   assert.equal(engine.manifest.engine, 'test-provider');
-  // `in` and `Object.keys` see them, so a debugger and a REPL do.
-  assert.ok('tp_sum' in engine);
-  assert.ok(Object.keys(engine).includes('tp_sum'));
 });
 
 test('an operation is called by the name the engine gives it', () => {
-  const engine = context().ephemeris;
-  assert.deepEqual(engine.tp_echo({ value: 6 }), { value: 6 });
+  const engine = context().engine;
   assert.deepEqual(engine.call('tp_echo', { value: 6 }), { value: 6 });
-  assert.equal(engine.tp_sum({ values: [1, 2, 3.5] }).total, 6.5);
+  assert.equal(engine.call('tp_sum', { values: [1, 2, 3.5] }).total, 6.5);
+  // The JSON form, for an answer being handed on rather than read.
+  assert.equal(engine.callJson('tp_echo', '{"value":6}'), '{"value":6.0}');
 });
 
 test('the names come from the engine and not from the package', () => {
-  const engine = context().ephemeris;
-  // A name the engine does not have is undefined rather than a function
-  // that fails when it is called.
-  assert.equal(engine.tm_eclipse_when, undefined);
+  const engine = context().engine;
   assert.equal(engine.signature('tm_eclipse_when'), undefined);
   // And the manifest carries the role of every parameter.
   assert.deepEqual(
@@ -566,12 +567,125 @@ test('the names come from the engine and not from the package', () => {
   );
 });
 
+/**
+ * There is no index signature and no proxy: a name is reached by `call`
+ * and not by spelling it on the object.
+ *
+ * ADR-0030 considered the proxy and rejected it under ADR-0023 — it
+ * type-checks the misspelling, and Dart and Rust cannot express it — so
+ * this asserts the absence, because the absence is the decision.
+ */
+test('an operation is not a property of the engine', () => {
+  const engine = context().engine;
+  assert.equal(engine.tp_echo, undefined, 'reached by `call`, not by name');
+  assert.ok(Object.isFrozen(engine), 'and nothing can be added to it');
+});
+
 test("the engine's own refusal comes back", () => {
-  const engine = context().ephemeris;
+  const engine = context().engine;
   assert.throws(() => engine.call('tm_eclipse_when'), /tm_eclipse_when/);
+});
+
+/**
+ * An area is a **value**: built once with the context, destructurable,
+ * and passable to something that needs only that much of the SDK. That
+ * is what makes the grouping worth having rather than merely tidy
+ * (`03-design/surface-areas.md`).
+ */
+test('an area is a value that can be destructured and kept', () => {
+  const ctx = context();
+  const { calendar, time, keys } = ctx;
+  assert.equal(calendar, ctx.calendar, 'the same object every read');
+  assert.equal(calendar.isLeap(Calendar.Gregorian, 2024), true);
+  assert.equal(time.deltaT(2451545.0).seconds > 60, true);
+  assert.equal(keys.name(keys.id('graha.SUN')), 'graha.SUN');
+  assert.ok(Object.isFrozen(calendar), 'and nothing can be added to it');
+});
+
+/**
+ * **An engine, plugged in** (ADR-0029): the 98% path, where a consumer
+ * names an adapter's platform binary and never sees a vtable.
+ *
+ * It runs only where the adapter has been built and its data is present,
+ * because a checkout has neither and a test that failed for that would
+ * fail for everyone. `TEISTRO_TEIMERIS_ADAPTER` names the library — the
+ * same variable `crates/ffi/tests/abi.rs` reads for the same reason.
+ */
+test('an ephemeris is plugged in by naming its platform binary', () => {
+  const plugin = process.env.TEISTRO_TEIMERIS_ADAPTER;
+  if (!plugin) {
+    console.log('skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
+    return;
+  }
+  // `dispose()` in a `finally`, not `using`: the explicit resource
+  // management syntax needs Node 24 and this suite runs on 20.
+  const ctx = new Context({
+    profile: 'parashari-classical',
+    ephemeris: { plugin },
+  });
+  try {
+    const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+    // The Sun at J2000 is near 280.4°, which is astronomy rather than
+    // this package: what is being tested is that a real engine answered.
+    assert.ok(
+      Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5,
+      `the Sun at J2000 came back as ${sky.at(0, 0).longitude}`,
+    );
+    // And its own functions came with it, which no SDK operation offers.
+    assert.equal(ctx.engine.manifest.engine, 'teimeris');
+    assert.equal(ctx.engine.call('tm_body_name', { body: 0 }).buf, 'Sun');
+  } finally {
+    ctx.dispose();
+  }
+});
+
+/**
+ * A chain is **ordered and explicit** (ADR-0029): tried in order, and a
+ * refusal names every entry that failed rather than only the last, which
+ * would hide the one the caller actually wanted. Needs no adapter.
+ */
+test('an ephemeris chain is tried in order and refuses naming each', () => {
+  // An adapter that is not there, then the built-in: the fallback the
+  // caller wrote down.
+  const fellBack = new Context({
+    profile: 'parashari-classical',
+    ephemeris: [{ plugin: '/nowhere/adapter.so' }, 'builtin'],
+  });
+  try {
+    const sky = fellBack.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+    assert.ok(Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5);
+  } finally {
+    fellBack.dispose();
+  }
+
+  // Nothing in the chain opening is one refusal that names each.
+  assert.throws(
+    () => new Context({ ephemeris: [{ plugin: '/a.so' }, { plugin: '/b.so' }] }),
+    (error) => /a\.so/u.test(error.message) && /b\.so/u.test(error.message),
+  );
+
+  // A chain of none names nothing, which is a mistake rather than a
+  // default; and a descriptor without a `plugin` is not a descriptor.
+  assert.throws(() => new Context({ ephemeris: [] }), /names nothing/u);
+  assert.throws(() => new Context({ ephemeris: [{ config: {} }] }), /descriptor/u);
+});
+
+/**
+ * `provider` and `ephemeris` each answer one question, so both together
+ * is a refusal rather than one silently winning.
+ */
+test('a provider and a named ephemeris together are refused', () => {
+  assert.throws(
+    () =>
+      new Context({
+        ephemeris: 'builtin',
+        provider: { name: 'x', bodies: [], positions: () => null },
+      }),
+    /give one of them/u,
+  );
 });
 
 test('a context without an ephemeris says so', () => {
   const bare = new Context({ profile: 'nepali-default' });
-  assert.throws(() => bare.ephemeris);
+  assert.throws(() => bare.engine);
 });

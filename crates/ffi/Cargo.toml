@@ -21,15 +21,21 @@ crate-type = ["rlib", "cdylib", "staticlib"]
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# The Rust consumer surface, which composes the crates this boundary
+# used to compose itself (`03-design/rust-consumer-surface.md` §3). The
+# boundary keeps what only a C caller needs -- the handles, the
+# `struct_size` handshake, the blob writer, the panic guard, the
+# `last_error` slot -- and the composition has one home.
+teistro = { path = "../sdk", default-features = false }
 teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
-teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
 teistro-idl = { path = "../idl", default-features = false }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
+libloading = "0.8"
 teistro-time = { path = "../time" }
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still
@@ -42,18 +48,14 @@ teistro-time = { path = "../time" }
 # in force rather than a conflict.
 [features]
 default = ["builtin-ephemeris"]
-builtin-ephemeris = [
-  "dep:teistro-ephemeris-builtin",
-  "teistro-ephemeris-builtin/standard",
-]
-builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
-builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
-builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
+# Forwarded to the façade, which is where the built-in is now reached
+# from: the boundary no longer holds that crate, so a tier is a feature
+# of one crate rather than of two that could disagree.
+builtin-ephemeris = ["teistro/builtin-ephemeris"]
+builtin-compact = ["teistro/builtin-compact"]
+builtin-standard = ["teistro/builtin-standard"]
+builtin-full = ["teistro/builtin-full"]
 
-# The build script builds the SDK's locale bundles from `i18n/` so the
-# library carries its own messages (ADR-0010).
-[build-dependencies]
-teistro-intl = { path = "../intl", default-features = false }
 
 [dev-dependencies]
 teistro-idl = { path = "../idl" }

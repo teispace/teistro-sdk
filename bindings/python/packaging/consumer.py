@@ -17,7 +17,7 @@ def main() -> None:
     print(f"sdk {teistro.version}")
 
     with teistro.context(test_provider=True) as ctx:
-        bs = ctx.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
+        bs = ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
         assert (bs.year, bs.month, bs.day) == (2072, 1, 1), bs
         print(f"bs {bs.year}-{bs.month}-{bs.day}")
 

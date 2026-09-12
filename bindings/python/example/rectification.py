@@ -13,7 +13,7 @@ once, and the day each instant belongs to is reckoned against the same
 sunrise. Founding them one at a time would give the same numbers and pay
 the setup for every one of them.
 
-``test_provider=True`` selects the analytic ephemeris the SDK carries, so
+``Ephemeris.BUILTIN`` selects the analytic ephemeris the SDK carries, so
 this file runs anywhere.
 """
 
@@ -22,6 +22,7 @@ from __future__ import annotations
 from teistro import (
     Altitude,
     Calendar,
+    Ephemeris,
     Latitude,
     Longitude,
     Observer,
@@ -46,7 +47,7 @@ def main() -> None:
     # (`03-design/topocentric-measured.md`), so the analytic one below is
     # enough, and the steps printed at the end name it.
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # The record: a Bikram Sambat date, a place, and an hour nobody
         # is sure of. Everything below narrows the last of those.
@@ -60,13 +61,13 @@ def main() -> None:
         # One resolution fixes the zone and the offset; the candidates
         # are then arithmetic on the instant, which is what a Julian day
         # is for.
-        start = ctx.resolve(at(born, hour=FROM_HOUR), iana_zone("Asia/Kathmandu"))
+        start = ctx.time.resolve(at(born, hour=FROM_HOUR), iana_zone("Asia/Kathmandu"))
         step = EVERY_MINUTES / (24 * 60)
         count = (TO_HOUR - FROM_HOUR) * 60 // EVERY_MINUTES
         instants = [start.instant_jd_utc + i * step for i in range(count)]
 
         # ── One crossing for every candidate ──────────────────────────
-        charts = ctx.found_many(
+        charts = ctx.chart.found_many(
             instants=instants,
             place=place,
             utc_offset_seconds=start.offset_seconds,
@@ -88,7 +89,7 @@ def main() -> None:
         for chart in charts:
             sign = int(chart.lagna_deg // 30)
             moon = next(g for g in chart.grahas if g.graha is Graha.MOON)
-            rashi = ctx.entity(Rashi(sign).full_key)
+            rashi = ctx.intl.entity(Rashi(sign).full_key)
             minutes = FROM_HOUR * 60 + chart.index * EVERY_MINUTES
             changed = "   ← lagna changes sign" if previous not in (None, sign) else ""
             print(
@@ -115,7 +116,7 @@ def main() -> None:
         # A batch of one is the ordinary case, and `found` is the same
         # crossing with the batch unwrapped: the answer is a chart, not a
         # list of one.
-        single = ctx.found(
+        single = ctx.chart.found(
             instant=start.instant_jd_utc,
             place=place,
             utc_offset_seconds=start.offset_seconds,

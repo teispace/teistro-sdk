@@ -17,7 +17,7 @@ which is thin on purpose.
 | `lib/index.js`, `lib/index.d.ts` | the layer a consumer uses: where the addon is, validation at the door, defaults, errors with their field and hint, results decoded on first use | by hand |
 | `native/src/provider.rs` | the port adapter: an ephemeris written in JavaScript bound into the port's vtable | by hand |
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |
-| `typecheck/` | a consumer, the layer's declarations and the typed accessors at maximum strictness, where every wrong usage is a compile error the file asserts, a swapped latitude and longitude among them | by hand |
+| `typecheck/` | a consumer, the layer's declarations and the typed accessors at maximum strictness, where every wrong usage is a compile error the file asserts, a swapped latitude and longitude among them; its `package.json` pins the compiler every type-check gate in this repository runs | by hand |
 | `parity.mjs` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Dart binding's | by hand |
 | `packaging/consumer.mjs` | a consumer that imports the published package by name, run by `cargo xtask check-package` inside a project that installed it | by hand |
 
@@ -60,8 +60,12 @@ what the binding does. Start with
 ```js
 import { Body, Calendar, Context, at, date, ianaZone } from '@teistro/sdk';
 
-const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP', testProvider: true });
-const bs = ctx.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
+const ctx = new Context({
+  profile: 'nepali-default',
+  locale: 'ne-Deva-NP',
+  ephemeris: 'builtin',
+});
+const bs = ctx.calendar.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
 const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
 console.log(bs.year, sky.at(0, 0).longitude, sky.provenance.settings_hash);
 ctx.dispose();
@@ -75,12 +79,42 @@ frame is tropical**, so a Vedic chart asks for a sidereal one and the SDK
 completes it.
 
 A context frees its native memory when it is collected, so `dispose()` is
-the explicit form rather than the only one (ADR-0007) — and `using ctx =
-new Context(...)` calls it for you.
+the explicit form rather than the only one (ADR-0007). `using ctx = new
+Context(...)` calls it for you where the runtime has explicit resource
+management — that is **Node 24 and above**, so this package's own tests
+use `try`/`finally` instead and so should anything that has to run on the
+Node 20 this package supports.
 
-A context with no provider computes calendars, times and messages;
-positions need one, and `{ testProvider: true }` selects the SDK's
-analytic provider for examples and tests.
+## Which ephemeris
+
+A context with no ephemeris computes calendars, times and messages;
+positions need one. `ephemeris` names it, or names an **ordered chain**
+tried in order (ADR-0029):
+
+```js
+import teimeris from '@teistro/ephemeris-teimeris';
+
+const ctx = new Context({
+  // A real engine, and the SDK's own only if it is not there.
+  ephemeris: [teimeris({ dataDir: './ephe' }), 'builtin'],
+});
+```
+
+**That is the intended path.** In most cases a consumer should be on a
+real engine — Teimeris, Swiss Ephemeris — installed as its own package
+under its own licence, and the SDK's `'builtin'` is the fallback that
+makes a chart compute with nothing else installed. `'test'` (or the older
+`{ testProvider: true }`) selects the analytic test provider, whose
+positions are **not astronomy**.
+
+A chain is a caller *saying* they will accept the fallback: one entry is
+one entry, and a context asked for an engine and given the built-in
+without being told is the silence this refuses. Nothing in the chain
+opening is one refusal naming each entry that failed.
+
+An engine brings its own operations with it, beyond the eight the SDK
+names, at `ctx.engine` — and the adapter's package carries a typed façade
+over them.
 
 ## An ephemeris of your own
 
@@ -121,13 +155,15 @@ cargo xtask check-parity
 
 The first builds the addon, copies it where the loader looks, writes blob
 fixtures through the C ABI, runs the tests with Node, and type-checks the
-consumer when a TypeScript compiler is on the machine (`npm install
-typescript` in `typecheck/`, or set `TSC`). It needs Node, so it runs by
-hand and in the nightly matrix; the fast check needs the Rust toolchain
-and nothing else (ADR-0014). The second walks one scenario through this
-binding and the Dart binding and compares the ninety values they report,
-so a difference between the two layers is a failed gate rather than
-something a reader has to notice.
+consumer. The compiler is **pinned** in `typecheck/package.json` and the
+gate installs it from the lock file beside it on first run, so every
+machine and every runner type-checks with the same one; `TSC` overrides
+it, and an `npx`-resolvable `tsc` is the last resort. It needs Node, so
+it runs by hand and in the nightly matrix; the fast check needs the Rust
+toolchain and nothing else (ADR-0014). The second walks one scenario through this
+binding and the Dart and Python bindings and compares every value they report,
+so a difference between any two of the three is a failed gate rather
+than something a reader has to notice.
 
 Never edit what the generator writes: change the Rust source and
 regenerate.

@@ -18,10 +18,11 @@ Three things this example is really about:
     steps applied and a provenance envelope with the settings hash — the
     two things a cache key and an audit trail are made of.
 
-Honest about the provider: the SDK's analytic test provider is a smooth
-model, so nothing in it ever turns retrograde except the lunar node,
-which always is. The scan below therefore looks for **sign ingresses**,
-which do occur, and shows where a retrograde scan would go.
+``Ephemeris.BUILTIN`` computes with the analytic ephemeris the SDK
+carries, so this file runs anywhere with nothing installed. It is the
+fallback rather than the intended path — most consumers should be on a
+real engine — but it is astronomy: the scans below find sign ingresses
+and retrograde stations because the sky has them.
 
 Run it:
 
@@ -33,7 +34,7 @@ from __future__ import annotations
 import dataclasses
 import json
 
-from teistro import Body, Context, Teistro
+from teistro import Body, Context, Ephemeris, Teistro
 from teistro.catalogue import Ayanamsha, Graha, Rashi
 
 #: A year from the start of 2025, one sample a day at noon UTC.
@@ -66,10 +67,26 @@ def ingresses(longitudes: object, day_count: int, stride: int, column: int) -> l
     return found
 
 
+def stations(speeds: object, day_count: int, stride: int, column: int) -> list[tuple[int, str]]:
+    """Every day on which a body turned, direct to retrograde or back.
+
+    The same shape as `ingresses` over a different column: a station is a
+    sign change in `lon_speed` rather than in `lon`. One grid answers
+    both, which is the reason to ask for a grid.
+    """
+    found: list[tuple[int, str]] = []
+    for day in range(1, day_count):
+        before = speeds[(day - 1) * stride + column]  # type: ignore[index]
+        after = speeds[day * stride + column]  # type: ignore[index]
+        if (before < 0) != (after < 0):
+            found.append((day, "retrograde" if after < 0 else "direct"))
+    return found
+
+
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # ── Which build am I talking to? ──────────────────────────────
         # A service checks this once at start-up. The binding already
@@ -109,28 +126,22 @@ def main() -> None:
         # ── What the columns are for ──────────────────────────────────
         print()
         for column, (body, graha) in enumerate(BODIES):
-            name = ctx.entity(graha.full_key).name
+            name = ctx.intl.entity(graha.full_key).name
             crossings = ingresses(cells.lon, DAYS, sky.body_count, column)
+            turns = stations(cells.lon_speed, DAYS, sky.body_count, column)
             speed = cells.lon_speed[column]
             direction = "retrograde" if speed < 0 else "direct"
             print(
                 f"  {body.key:10} {name:8} {direction:10} at {speed:+8.4f}°/day,"
-                f" {len(crossings)} sign change(s)"
+                f" {len(crossings)} sign change(s), {len(turns)} station(s)"
             )
             for day, sign in crossings[:3]:
-                sign_name = ctx.entity(sign.full_key).name
+                sign_name = ctx.intl.entity(sign.full_key).name
                 print(f"      day {day:3}  enters {sign.key:12} {sign_name}")
             if len(crossings) > 3:
                 print(f"      … and {len(crossings) - 3} more")
-
-        # The node is the only body here that ever moves backwards, and
-        # it always does. A real ephemeris would put Mars into retrograde
-        # for about ten weeks every two years, and the scan for it is the
-        # same shape as the one above:
-        #
-        #     turns = [d for d in range(1, DAYS)
-        #              if (speeds[d * stride + column] < 0)
-        #              != (speeds[(d - 1) * stride + column] < 0)]
+            for day, into in turns:
+                print(f"      day {day:3}  turns  {into}")
 
         # ── What the answer says about itself ─────────────────────────
         print()

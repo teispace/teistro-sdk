@@ -63,7 +63,14 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         os: "darwin",
         cpu: "x64",
         libc: None,
-        runner: "macos-13",
+        // Intel macOS. Not `macos-13`: GitHub retired that image, and a
+        // retired label does not fail, it queues -- eleven dispatches of
+        // the verify matrix on 2026-09-12 never reached a conclusion
+        // because this one row waited for a runner that does not exist.
+        // `check-lints`'s `runner-matches-the-platform-table` holds the
+        // workflows to this field now, because the correction had to be
+        // made in three places and one of them was missed.
+        runner: "macos-15-intel",
     },
     Platform {
         triple: "x86_64-pc-windows-msvc",
@@ -164,6 +171,18 @@ impl Platform {
         self.is_windows().then(|| format!("{stem}.dll.lib"))
     }
 
+    /// The directory a Python virtual environment puts its executables
+    /// in: `Scripts` on Windows and `bin` everywhere else.
+    ///
+    /// A platform fact, so it is a row of this table rather than a
+    /// `cfg!` in the gate that makes a virtual environment. `check-c`
+    /// had been failing in the same job for long enough that nothing had
+    /// ever reached the `.venv/bin` this hard-coded, and `pip` is not
+    /// there on Windows.
+    pub(crate) fn venv_bin(&self) -> &'static str {
+        if self.is_windows() { "Scripts" } else { "bin" }
+    }
+
     /// The npm package that carries this platform's addon.
     pub(crate) fn npm_package(&self) -> String {
         format!("{NPM_SCOPE}-{}", self.name())
@@ -220,6 +239,14 @@ mod tests {
                 "the host is a row of the table"
             );
         }
+    }
+
+    #[test]
+    fn a_virtual_environment_is_laid_out_by_the_operating_system() {
+        let linux = Platform::by_name("linux-x64").expect("a shipped platform");
+        assert_eq!(linux.venv_bin(), "bin");
+        let windows = Platform::by_name("win32-x64").expect("a shipped platform");
+        assert_eq!(windows.venv_bin(), "Scripts");
     }
 
     #[test]

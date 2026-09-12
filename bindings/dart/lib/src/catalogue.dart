@@ -18,7 +18,7 @@ const int generatedAbiVersion = 1;
 const String generatedSdkVersion = '0.0.0';
 
 /// The ABI version of the vtable layout.
-const int vtableAbiVersion = 2;
+const int vtableAbiVersion = 3;
 
 /// A context flag: use the SDK's analytic test provider when no provider
 /// vtable is given. For tests and examples only; its positions are not

@@ -17,11 +17,11 @@
 //    steps applied and a provenance envelope with the settings hash —
 //    the two things a cache key and an audit trail are made of.
 //
-// Honest about the provider: the SDK's analytic test provider is a
-// smooth model, so nothing in it ever turns retrograde except the lunar
-// node, which always is. The scan below therefore looks for **sign
-// ingresses**, which do occur, and shows where a retrograde scan would
-// go.
+// `Ephemeris.builtin` computes with the analytic ephemeris the SDK
+// carries, so this file runs anywhere with nothing installed. It is the
+// fallback rather than the intended path — most consumers should be on a
+// real engine — but it is astronomy: the scans below find sign ingresses
+// and retrograde stations because the sky has them.
 
 import 'dart:convert';
 import 'dart:typed_data';
@@ -62,12 +62,34 @@ List<(int, Rashi)> ingresses(
   return found;
 }
 
+/// Every day on which a body turned, direct to retrograde or back.
+///
+/// The same shape as [ingresses] over a different column: a station is a
+/// sign change in `lonSpeed` rather than in `lon`. One grid answers
+/// both, which is the reason to ask for a grid.
+List<(int, String)> stations(
+  Float64List speeds,
+  int dayCount,
+  int stride,
+  int column,
+) {
+  final found = <(int, String)>[];
+  for (var day = 1; day < dayCount; day++) {
+    final before = speeds[(day - 1) * stride + column];
+    final after = speeds[day * stride + column];
+    if ((before < 0) != (after < 0)) {
+      found.add((day, after < 0 ? 'retrograde' : 'direct'));
+    }
+  }
+  return found;
+}
+
 void main() {
   final teistro = Teistro.open();
   final ctx = teistro.context(
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    testProvider: true,
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
   // ── Which build am I talking to? ───────────────────────────────────
@@ -115,18 +137,19 @@ void main() {
   print('');
   for (var column = 0; column < bodies.length; column++) {
     final (body, graha) = bodies[column];
-    final name = ctx.entity(graha.fullKey).name;
+    final name = ctx.intl.entity(graha.fullKey).name;
     final crossings = ingresses(cells.lon, days, sky.bodyCount, column);
+    final turns = stations(cells.lonSpeed, days, sky.bodyCount, column);
     final speed = cells.lonSpeed[column];
     final direction = speed < 0 ? 'retrograde' : 'direct';
     print(
       '  ${body.key.padRight(10)} ${name.padRight(8)}'
       ' ${direction.padRight(10)} at'
       ' ${speed >= 0 ? '+' : ''}${speed.toStringAsFixed(4).padLeft(7)}°/day,'
-      ' ${crossings.length} sign change(s)',
+      ' ${crossings.length} sign change(s), ${turns.length} station(s)',
     );
     for (final (day, sign) in crossings.take(3)) {
-      final signName = ctx.entity(sign.fullKey).name;
+      final signName = ctx.intl.entity(sign.fullKey).name;
       print(
         '      day ${day.toString().padLeft(3)}'
         '  enters ${sign.key.padRight(12)} $signName',
@@ -135,12 +158,10 @@ void main() {
     if (crossings.length > 3) {
       print('      … and ${crossings.length - 3} more');
     }
+    for (final (day, into) in turns) {
+      print('      day ${day.toString().padLeft(3)}  turns  $into');
+    }
   }
-
-  // The node is the only body here that ever moves backwards, and it
-  // always does. A real ephemeris would put Mars into retrograde for
-  // about ten weeks every two years, and the scan for it is the same
-  // shape as the one above, over `cells.lonSpeed` instead of `cells.lon`.
 
   // ── What the answer says about itself ──────────────────────────────
   print('');

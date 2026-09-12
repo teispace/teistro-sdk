@@ -22,7 +22,7 @@ use teistro_intl::{ClockTime, Ghati, Params, Value};
 use crate::blob::TsBlob;
 use crate::context::{TsContext, unknown_locale};
 use crate::schemas;
-use crate::strings::TsStr;
+use crate::string::TsStr;
 use crate::support::{bytes, c_struct, optional_text, text, with_context, write_out, write_plain};
 
 /// What a loaded pack or bundle carried.

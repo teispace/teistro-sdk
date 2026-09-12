@@ -33,7 +33,7 @@ use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{ChartFoundation, Founder};
 use teistro_core::catalogue::{Ayanamsha, ChartKind};
-use teistro_core::envelope::{Provenance, content_hash};
+use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
@@ -690,13 +690,7 @@ pub unsafe extern "C" fn ts_chart_found(
         }
         // SAFETY: non-null; the caller promises a readable request.
         let asked = unsafe { *request };
-        let provider = ctx.provider().ok_or_else(|| {
-            Error::new(
-                Status::Capability,
-                "the context has no ephemeris: pass a provider vtable to ts_context_new, or the TS_CONTEXT_TEST_PROVIDER flag for tests",
-            )
-            .with_field("provider")
-        })?;
+        let provider = ctx.provider().ok_or_else(crate::support::no_ephemeris)?;
         let resolved = ctx.resolved();
         let settings = &resolved.settings;
         let place = Place::new(
@@ -760,14 +754,13 @@ pub unsafe extern "C" fn ts_chart_found(
             ctx.delta_t(),
         )
         .found(&instants, &place, kind)?;
-        let mut provenance = founded.provenance;
-        // The founder leaves the placeholder; the boundary fills it, as
-        // `ts_positions` does. Whether the producers should seal instead
-        // is `serial-and-the-envelope.md` §8's open question, and this is
-        // the first place it shows: a Rust caller's envelope still
-        // carries the placeholder where a binding's blob carries a hash.
-        provenance.content_hash = content_hash(&founded.value);
-        let encoded = encode(&founded.value, &place, kind, &provenance)?;
+        // The founder **seals**: the envelope it answers already carries
+        // the hash of its own value, so the boundary encodes the stamp
+        // it was given rather than mending it.
+        // `serial-and-the-envelope.md` §8 asked whether the producers
+        // should, and four callers each writing the same line was the
+        // answer.
+        let encoded = encode(&founded.value, &place, kind, &founded.provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -846,7 +839,6 @@ mod tests {
         Place,
         Provenance,
     ) {
-        use teistro_core::envelope::content_hash;
         use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
         use teistro_port_ephemeris::test_provider::TestProvider;
 
@@ -888,9 +880,7 @@ mod tests {
             ChartKind::Natal,
         )
         .expect("two founded charts");
-        let mut provenance = founded.provenance;
-        provenance.content_hash = content_hash(&founded.value);
-        (founded.value, place, provenance)
+        (founded.value, place, founded.provenance)
     }
 
     /// A batch of founded charts crosses, and reads back as what was

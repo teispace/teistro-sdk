@@ -126,7 +126,7 @@ const ctx = new Context({
 
 // ── 1. The record, as it would be written on a form ────────────────────
 const birthDay = date(Calendar.BikramSambat, 2042, 9, 17);
-const gregorian = ctx.convert(birthDay, Calendar.Gregorian);
+const gregorian = ctx.calendar.convert(birthDay, Calendar.Gregorian);
 console.log(
   `born  BS ${birthDay.year}-${two(birthDay.month)}-${two(birthDay.day)}` +
     `  (${gregorian.year}-${two(gregorian.month)}-${two(gregorian.day)})` +
@@ -134,7 +134,7 @@ console.log(
 );
 
 // ── 2. The instant, with the zone's own history ────────────────────────
-const when = ctx.resolve(at(birthDay, { hour: 0, minute: 20 }), ianaZone('Asia/Kathmandu'));
+const when = ctx.time.resolve(at(birthDay, { hour: 0, minute: 20 }), ianaZone('Asia/Kathmandu'));
 const offset = when.offsetSeconds;
 console.log(
   `      JD ${when.instantJdUtc.toFixed(6)} UTC` +
@@ -155,9 +155,9 @@ console.log('');
 console.log('graha            sign               deg  nakshatra      pada');
 console.log('─'.repeat(62));
 for (const placed of placements) {
-  const graha = ctx.entity(placed.graha);
-  const rashi = ctx.entity(placed.rashi);
-  const nakshatra = ctx.entity(placed.nakshatra);
+  const graha = ctx.intl.entity(placed.graha);
+  const rashi = ctx.intl.entity(placed.rashi);
+  const nakshatra = ctx.intl.entity(placed.nakshatra);
   console.log(
     `${graha.name.padEnd(12)} ${(graha.glyph ?? '').padEnd(2)} ` +
       `${placed.retrograde ? '℞' : ' '} ` +
@@ -198,7 +198,7 @@ for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
     settings: policy ? { time: { unknown_time: policy } } : undefined,
   });
   try {
-    const resolved = scoped.resolve(noTime, ianaZone('Asia/Kathmandu'));
+    const resolved = scoped.time.resolve(noTime, ianaZone('Asia/Kathmandu'));
     console.log(
       `${(policy ?? 'refuse').padEnd(9)} JD ${resolved.instantJdUtc.toFixed(6)}` +
         `  time known ${resolved.timeKnown}` +

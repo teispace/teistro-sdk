@@ -1,0 +1,57 @@
+---
+title: ts_provider_load
+description: "Opens an adapter and the provider inside it."
+---
+
+Opens an adapter and the provider inside it.
+
+`path` is the adapter's platform binary — the file its package ships. `config_json` is that adapter's own options, or null; what they mean is the adapter's to say and its package's to type.
+
+`UNSUPPORTED` when the file is not an adapter of this version, `DATA_MISSING` when it is and its data is not there, `INVALID_ARG` when its configuration is wrong — each of them the adapter's own judgement, passed through with its message rather than replaced.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_string * out_error);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+provider_load(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.providerLoad(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `path` | `const char *` | a string read | — |
+| `config_json` | `const char *` | a string read | — |
+| `out_provider` | `ts_provider * *` | receives a handle | — |
+| `out_error` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`error`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+Every pointer must be null or valid for the access its documentation describes, for the duration of the call. Loading a library runs its initialisers, so `path` must be a file the caller trusts.
+
+Declared in `crates/ffi/src/provider.rs`.

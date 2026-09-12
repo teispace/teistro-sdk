@@ -42,6 +42,10 @@ bindings/**/node_modules/
 # The Dart package is a library, so its resolution is not checked in
 # (`cargo xtask check-dart` runs `dart pub get`).
 bindings/dart/pubspec.lock
+# The adapter's lock file, for the same reason: the package is not
+# published and its dependency on the SDK is a path, so a lock is one
+# machine's resolution and not a fact about the package.
+adapters/**/pubspec.lock
 
 # Spikes: built addons and Dart tool output; results are kept
 spikes/**/native/index.node

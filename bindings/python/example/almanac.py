@@ -16,7 +16,7 @@ What the shape teaches, and what a reader should copy:
   * A value a day may not have is **absent**, never a sentinel: no
     sankranti is `None`, not Julian day zero.
 
-``test_provider=True`` selects the analytic ephemeris the SDK carries, so
+``Ephemeris.BUILTIN`` selects the analytic ephemeris the SDK carries, so
 this file runs anywhere.
 """
 
@@ -27,6 +27,7 @@ from typing import Any
 from teistro import (
     Altitude,
     Calendar,
+    Ephemeris,
     Latitude,
     Longitude,
     Observer,
@@ -49,7 +50,7 @@ def clock(jd: float) -> str:
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="parashari-classical", locale="ne-Deva-NP", test_provider=True
+        profile="parashari-classical", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
 
         def name(key: str) -> str:
@@ -61,7 +62,7 @@ def main() -> None:
             print.
             """
             try:
-                return ctx.entity(key).name
+                return ctx.intl.entity(key).name
             except TeistroError:
                 return key.split(".", 1)[1].lower().replace("_", " ")
 
@@ -72,7 +73,7 @@ def main() -> None:
         )
 
         # ── One crossing for the whole week ───────────────────────────
-        week = ctx.almanac(
+        week = ctx.almanac.of(
             from_date=date(Calendar.GREGORIAN, 2024, 6, 17),
             to_date=date(Calendar.GREGORIAN, 2024, 6, 23),
             place=place,
@@ -163,7 +164,7 @@ def main() -> None:
 
         # A day on its own is the range of one unwrapped: same crossing,
         # and the answer is a day rather than a list of one.
-        one = ctx.almanac_day(
+        one = ctx.almanac.day(
             date=date(Calendar.GREGORIAN, 2024, 6, 21),
             place=place,
             utc_offset_seconds=OFFSET_SECONDS,

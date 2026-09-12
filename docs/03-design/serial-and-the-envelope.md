@@ -41,6 +41,14 @@ That is a shape problem rather than a bug in a producer: a value and its
 stamp are built separately and joined at the end, so the one field that
 *cannot* be filled until the value exists is the one everybody forgets.
 
+**Fixed, and by the shape rather than by remembering.** `Envelope::sealing`
+is the join — it takes the value and the stamp and computes the hash,
+because it is the only place that has both — and `chart` and `panchanga`
+use it. The measured page's *every producer stamps the hash of the value
+it produced* now **holds**, 0 of 4, where it recorded 2 of 4 falsified.
+§8 has the argument that decided it: the same mending line was written
+in four callers.
+
 **The canonical form is canonical.** Keys in code-point order at every
 depth over the corpus's 55 documents, the same bytes twice, and the same
 bytes however the value's own maps were ordered.
@@ -266,11 +274,31 @@ than the values.
   canonical form's own pass now records the round trip as holding at 0
   of 193 366 where it had recorded 22 188 falsified — a measurement that
   had been taken and not read.
-- **Whether the producers should seal.** `chart` and `panchanga` return
-  an `Envelope`; sealing at the boundary means the hash is right in the
-  document but still empty on the envelope a Rust caller holds. Sealing
-  in the producers would fix both and is a change to two crates'
-  behaviour, which wants its own measurement.
+- **~~Whether the producers should seal.~~ They do.** What settled it
+  was not a measurement but a count of callers: the same line —
+  `provenance.content_hash = content_hash(&value)` — was written in
+  **four** places, the C boundary's chart and panchanga entry points and
+  the Rust façade's two areas, each mending a stamp the producer had
+  left empty. A field four callers have to remember is a field the
+  producer should fill, and the producer is the only place that knows
+  both the value and the stamp.
+
+  `Envelope::sealing` is the join, and `Founder::found` and
+  `Almanac::between` and `day` use it. The four callers dropped their
+  lines; the boundary now encodes the stamp it was given rather than
+  mending it, and a Rust consumer's envelope carries a hash where it
+  used to carry a hash of nothing. The property is asserted on the
+  surface a consumer holds
+  (`crates/sdk/tests/surface.rs`): every one of the four envelopes a
+  context can produce carries the hash of **its own** value.
+
+  Which settled a second thing the boundary could not have noticed.
+  `chart().found` and `almanac().day` are the batch and the range of one
+  **unwrapped**, and they used to carry the batch's stamp — the hash of a
+  list of one, on an envelope holding a chart. They re-seal now, so
+  `found(one)` and `found_many([one])` carry different content hashes,
+  which is right: they carry different values. The boundary never saw
+  this because it encodes the batch either way.
 - **A gate for knobs with no reader.** Three have now been found in as
   many modules — `state.combustion_orbs`, `houses.module_overrides`,
   `output.precision` — which is a pattern rather than an accident, and

@@ -18,27 +18,27 @@ void main() {
     final ctx = context();
     addTearDown(ctx.dispose);
     expect(
-      ctx.messages.sdk.reason.grahaInBhava(
+      ctx.intl.messages.sdk.reason.grahaInBhava(
         graha: intl.GrahaKey.jupiter,
         bhava: 7,
       ),
-      ctx.render('sdk.reason.grahaInBhava', {
+      ctx.intl.render('sdk.reason.grahaInBhava', {
         'graha': {r'$entity': 'graha.JUPITER'},
         'bhava': 7,
       }).text,
       reason: 'the accessor wraps the entity as the engine takes it',
     );
     expect(
-      ctx.messages.sdk.reason.grahaInBhava(
+      ctx.intl.messages.sdk.reason.grahaInBhava(
         graha: intl.GrahaKey.jupiter,
         bhava: 7,
       ),
       contains('७'),
     );
 
-    ctx.locale = 'en-Latn';
+    ctx.intl.locale = 'en-Latn';
     expect(
-      ctx.messages.sdk.calendar.bikramSambat.date.long(
+      ctx.intl.messages.sdk.calendar.bikramSambat.date.long(
         day: 1,
         monthName: 'Baisakh',
         year: 2072,
@@ -46,7 +46,7 @@ void main() {
       '1 Baisakh 2072 BS',
     );
     expect(
-      ctx.messages.sdk.calendar.gregorian.date.numeric(
+      ctx.intl.messages.sdk.calendar.gregorian.date.numeric(
         day: 14,
         month: 4,
         year: 2015,
@@ -58,27 +58,27 @@ void main() {
   test("an entity's forms come from the locale, not from the caller", () {
     final ctx = context();
     addTearDown(ctx.dispose);
-    final sun = ctx.entity('graha.SUN');
+    final sun = ctx.intl.entity('graha.SUN');
     expect(sun.name, 'सूर्य');
     expect(sun.iast, 'Sūrya');
     expect(sun.glyph, '☉');
     expect(sun.gender, intl.Gender.m);
     expect(
-      ctx.messages.sdk.entity.graha.sun.name,
+      ctx.intl.messages.sdk.entity.graha.sun.name,
       sun.name,
       reason: 'the accessor reads the same forms',
     );
 
-    ctx.locale = 'en-Latn';
-    expect(ctx.entity('graha.SUN').name, 'Sun');
-    expect(ctx.entity('rashi.ARIES').name, 'Aries');
+    ctx.intl.locale = 'en-Latn';
+    expect(ctx.intl.entity('graha.SUN').name, 'Sun');
+    expect(ctx.intl.entity('rashi.ARIES').name, 'Aries');
   });
 
   test('an entity the locale does not carry is refused by name', () {
     final ctx = context();
     addTearDown(ctx.dispose);
     expect(
-      () => ctx.entity('graha.PLUTO'),
+      () => ctx.intl.entity('graha.PLUTO'),
       throwsA(
         isA<TeistroException>()
             .having((e) => e.status, 'status', Status.unsupported)
@@ -90,15 +90,18 @@ void main() {
   test('a term written in one script reads in the other', () {
     final ctx = context();
     addTearDown(ctx.dispose);
-    expect(ctx.transliterate('सूर्य बृहस्पति'), 'sūrya bṛhaspati');
-    expect(ctx.transliterate(ctx.entity('graha.MARS').name), 'maṅgala');
+    expect(ctx.intl.transliterate('सूर्य बृहस्पति'), 'sūrya bṛhaspati');
     expect(
-      ctx.transliterate('Jupiter'),
+      ctx.intl.transliterate(ctx.intl.entity('graha.MARS').name),
+      'maṅgala',
+    );
+    expect(
+      ctx.intl.transliterate('Jupiter'),
       'Jupiter',
       reason: 'what is not the script passes through',
     );
     expect(
-      () => ctx.transliterate('x', from: 'iast', to: 'deva'),
+      () => ctx.intl.transliterate('x', from: 'iast', to: 'deva'),
       throwsA(
         isA<TeistroException>().having(
           (e) => e.status,
@@ -108,7 +111,7 @@ void main() {
       ),
     );
     expect(
-      () => ctx.transliterate('x', to: 'taml'),
+      () => ctx.intl.transliterate('x', to: 'taml'),
       throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'to')),
     );
   });
