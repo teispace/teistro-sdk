@@ -5,6 +5,8 @@
 // `cargo xtask check-dart` builds the shared library and runs this file;
 // `TEISTRO_LIBRARY` names it.
 
+import 'dart:io';
+
 import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
@@ -482,6 +484,55 @@ void _engineTests() {
   // passable to something that needs only that much of the SDK. That is
   // what makes the grouping worth having rather than merely tidy
   // (`03-design/surface-areas.md`).
+  /// **An engine, plugged in** (ADR-0029): the 98% path, where a
+  /// consumer names an adapter's platform binary and never sees a
+  /// vtable.
+  ///
+  /// It runs only where the adapter has been built and its data is
+  /// present, because a checkout has neither and a test that failed for
+  /// that would fail for everyone. `TEISTRO_TEIMERIS_ADAPTER` names the
+  /// library — the same variable `crates/ffi/tests/abi.rs` reads for the
+  /// same reason.
+  test('an ephemeris is plugged in by naming its platform binary', () {
+    final plugin = Platform.environment['TEISTRO_TEIMERIS_ADAPTER'];
+    if (plugin == null || plugin.isEmpty) {
+      printOnFailure('set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
+      markTestSkipped('the adapter is not built in this checkout');
+      return;
+    }
+    final ctx = teistro.context(profile: 'parashari-classical', plugin: plugin);
+    addTearDown(ctx.dispose);
+    final sky = ctx.positions(instants: [2451545.0], bodies: [Body.sun]);
+    // The Sun at J2000 is near 280.4°, which is astronomy rather than
+    // this package: what is tested is that a real engine answered.
+    expect(sky.at(0, 0).longitude, closeTo(280.37, 0.5));
+    // And its own functions came with it, which no SDK operation offers.
+    expect(ctx.engine.manifest['engine'], 'teimeris');
+    expect(
+      (ctx.engine('tm_body_name', {'body': 0}) as Map<String, Object?>)['buf'],
+      'Sun',
+    );
+  });
+
+  /// Three ways to answer one question, so two together is a refusal
+  /// rather than one silently winning. Needs no adapter.
+  test('a plugin and a named ephemeris together are refused', () {
+    expect(
+      () => teistro.context(
+        plugin: '/nowhere/adapter.so',
+        ephemeris: Ephemeris.builtin,
+      ),
+      throwsA(predicate((e) => '$e'.contains('give one of them'))),
+    );
+    expect(
+      () => teistro.context(
+        pluginConfig: const {'data_dir': '/x'},
+        testProvider: true,
+      ),
+      throwsA(predicate((e) => '$e'.contains('name one with `plugin`'))),
+    );
+  });
+
   test('an area is a value that can be held and passed', () {
     final ctx = context();
     final calendar = ctx.calendar;

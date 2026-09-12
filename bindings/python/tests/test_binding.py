@@ -9,11 +9,13 @@ back out of the one it filled.
 from __future__ import annotations
 
 import json
+import os
 import unittest
 
 from teistro import (
     Body,
     Calendar,
+    Ephemeris,
     Scale,
     Status,
     Teistro,
@@ -430,6 +432,42 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as caught:
             engine.call("tm_eclipse_when")
         self.assertIn("tm_eclipse_when", str(caught.exception))
+
+    def test_an_ephemeris_is_plugged_in_by_naming_its_platform_binary(self) -> None:
+        """**An engine, plugged in** (ADR-0029): the 98% path.
+
+        A consumer names an adapter's platform binary and never sees a
+        vtable. It runs only where the adapter has been built and its
+        data is present, because a checkout has neither and a test that
+        failed for that would fail for everyone.
+        `TEISTRO_TEIMERIS_ADAPTER` names the library -- the same variable
+        `crates/ffi/tests/abi.rs` reads for the same reason.
+        """
+        plugin = os.environ.get("TEISTRO_TEIMERIS_ADAPTER")
+        if not plugin:
+            self.skipTest("set TEISTRO_TEIMERIS_ADAPTER to the adapter's library")
+        with self.teistro.context(profile=PROFILE, plugin=plugin) as ctx:
+            sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
+            # The Sun at J2000 is near 280.4 degrees, which is astronomy
+            # rather than this package: what is tested is that a real
+            # engine answered.
+            self.assertAlmostEqual(sky.at(0, 0).longitude, 280.37, delta=0.5)
+            # And its own functions came with it, which no SDK operation
+            # offers.
+            self.assertEqual(ctx.engine.manifest["engine"], "teimeris")
+            self.assertEqual(ctx.engine.call("tm_body_name", body=0)["buf"], "Sun")
+
+    def test_a_plugin_and_a_named_ephemeris_together_are_refused(self) -> None:
+        """Three ways to answer one question, so two together is a refusal
+        rather than one silently winning. Needs no adapter."""
+        with self.assertRaises(ValueError) as caught:
+            self.teistro.context(
+                plugin="/nowhere/adapter.so", ephemeris=Ephemeris.BUILTIN
+            )
+        self.assertIn("give one of them", str(caught.exception))
+        with self.assertRaises(ValueError) as also:
+            self.teistro.context(plugin_config={"data_dir": "/x"}, test_provider=True)
+        self.assertIn("name one with `plugin`", str(also.exception))
 
     def test_a_context_without_an_ephemeris_says_so(self) -> None:
         with self.teistro.context(profile=PROFILE) as bare:

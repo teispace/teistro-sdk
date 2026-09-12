@@ -63,6 +63,7 @@ from ._ffi import (
     PanchangaRequest,
     PositionRequest,
     TeistroContext,
+    TeistroProvider,
     TeistroError,
     TeistroLibrary,
     TimeConversion,
@@ -384,6 +385,8 @@ class Teistro:
         provider: Optional[EphemerisProvider] = None,
         ephemeris: Optional[Ephemeris] = None,
         test_provider: bool = False,
+        plugin: Optional[str] = None,
+        plugin_config: Optional[Mapping[str, object]] = None,
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
 
@@ -400,15 +403,34 @@ class Teistro:
         chart compute with nothing else installed; `Ephemeris.TEST` is the
         test provider, whose positions are **not astronomy**.
 
+        `plugin` is the platform binary of an ephemeris adapter --
+        Teimeris, Swiss Ephemeris -- which is the path most consumers are
+        on (ADR-0029); the SDK's own ephemerides are the fallback rather
+        than the intended one. `plugin_config` is that adapter's own
+        options, handed over as JSON and read by the SDK not at all: what
+        they mean is the adapter's to say and its package's to type.
+
         `test_provider=True` is the older spelling of `Ephemeris.TEST` and
         still works; `ephemeris` wins when both are given (ADR-0028).
-        Naming none of the three leaves the context without an ephemeris,
-        so a request for positions is refused with `Status.CAPABILITY`.
+        Naming none of them leaves the context without an ephemeris, so a
+        request for positions is refused with `Status.CAPABILITY`.
         """
         if settings is not None and settings_json is not None:
             raise ValueError(
                 "settings and settings_json are the same patch twice; "
                 "give one of them"
+            )
+        # Three ways to answer one question, so two of them together is a
+        # refusal rather than one silently winning -- the same rule the
+        # settings patch has just above.
+        if plugin is not None and (provider is not None or ephemeris is not None):
+            raise ValueError(
+                "plugin, provider and ephemeris each name the ephemeris to "
+                "compute with; give one of them"
+            )
+        if plugin_config is not None and plugin is None:
+            raise ValueError(
+                "plugin_config configures a plugin; name one with `plugin`"
             )
         if settings is not None:
             settings_json = json.dumps(settings, separators=(",", ":"))
@@ -425,11 +447,27 @@ class Teistro:
             locale=locale,
             ephemeris=chosen,
         )
-        inner = TeistroContext._new(
-            self.library,
-            options,
-            None if host is None else host.vtable,
-        )
+        if plugin is None:
+            inner = TeistroContext._new(
+                self.library,
+                options,
+                None if host is None else host.vtable,
+            )
+        else:
+            # The context takes its own reference to the adapter, so the
+            # handle this loads is closed at once: what keeps the library
+            # loaded is the context, and a consumer holds neither.
+            loaded = TeistroProvider._new(
+                self.library,
+                plugin,
+                json.dumps({} if plugin_config is None else plugin_config),
+            )
+            try:
+                inner = TeistroContext._new_with_provider(
+                    self.library, options, loaded
+                )
+            finally:
+                loaded.close()
         return Context(self, inner, host)
 
 

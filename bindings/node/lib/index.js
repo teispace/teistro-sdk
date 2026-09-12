@@ -1504,26 +1504,61 @@ export class Context {
    * @param {object} [options.provider] an ephemeris of your own: `name`,
    *   `bodies` (their catalogue keys) and `positions(request)`, which
    *   answers with the columns; everything else has a default
+   * @param {string} [options.plugin] the platform binary of an ephemeris
+   *   adapter — Teimeris, Swiss Ephemeris — which is the path a consumer
+   *   is on in most cases (ADR-0029). The SDK's own ephemerides are the
+   *   fallback, not the intended one.
+   * @param {object} [options.pluginConfig] that adapter's own options.
+   *   What they mean is the adapter's to say and its package's to type;
+   *   the SDK hands them over as JSON and reads none of them.
    */
   constructor(options = {}) {
-    const { profile, settings, locale, ephemeris, testProvider = false, provider } = options;
+    const {
+      profile,
+      settings,
+      locale,
+      ephemeris,
+      testProvider = false,
+      provider,
+      plugin,
+      pluginConfig,
+    } = options;
+    // Three ways to answer one question, so two of them together is a
+    // refusal rather than one silently winning. The same rule the
+    // settings patch has: give one of them.
+    if (plugin !== undefined && (provider !== undefined || ephemeris !== undefined)) {
+      throw new TypeError(
+        'plugin, provider and ephemeris each name the ephemeris to compute with; give one of them',
+      );
+    }
+    if (pluginConfig !== undefined && plugin === undefined) {
+      throw new TypeError('pluginConfig configures a plugin; name one with `plugin`');
+    }
     const [info, positions, thrown] = describeProvider(provider);
     this.#thrown = thrown;
-    this.#inner = guarded(null, () =>
-      new native.Context(
-        clean({
-          // One rule, written once: a named ephemeris wins, and the
-          // older flag decides only when none was named (ADR-0028).
-          flags: 0,
-          ephemeris: ephemeris ?? (testProvider ? 'test' : 'none'),
-          profile,
-          settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
-          locale,
-        }),
-        info,
-        positions,
-      ),
-    );
+    const chosen = clean({
+      // One rule, written once: a named ephemeris wins, and the
+      // older flag decides only when none was named (ADR-0028).
+      flags: 0,
+      ephemeris: ephemeris ?? (testProvider ? 'test' : 'none'),
+      profile,
+      settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
+      locale,
+    });
+    this.#inner = guarded(null, () => {
+      if (plugin === undefined) {
+        return new native.Context(chosen, info, positions);
+      }
+      // The context takes its own reference to the adapter, so the
+      // handle this loads is freed at once: what keeps the library
+      // loaded is the context, and a consumer never holds either.
+      const loaded = new native.Provider(plugin, JSON.stringify(pluginConfig ?? {}));
+      try {
+        return native.Context.newWithProvider(chosen, loaded);
+      } finally {
+        loaded.dispose();
+      }
+    });
 
     // The areas, built once and never rebuilt: each holds the one way in
     // and nothing else, so a consumer may destructure one and keep it

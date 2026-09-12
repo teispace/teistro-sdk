@@ -596,6 +596,50 @@ test('an area is a value that can be destructured and kept', () => {
   assert.ok(Object.isFrozen(calendar), 'and nothing can be added to it');
 });
 
+/**
+ * **An engine, plugged in** (ADR-0029): the 98% path, where a consumer
+ * names an adapter's platform binary and never sees a vtable.
+ *
+ * It runs only where the adapter has been built and its data is present,
+ * because a checkout has neither and a test that failed for that would
+ * fail for everyone. `TEISTRO_TEIMERIS_ADAPTER` names the library — the
+ * same variable `crates/ffi/tests/abi.rs` reads for the same reason.
+ */
+test('an ephemeris is plugged in by naming its platform binary', () => {
+  const plugin = process.env.TEISTRO_TEIMERIS_ADAPTER;
+  if (!plugin) {
+    console.log('skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
+    return;
+  }
+  using ctx = new Context({ profile: 'parashari-classical', plugin });
+  const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+  // The Sun at J2000 is near 280.4°, which is astronomy rather than this
+  // package: what is being tested is that a real engine answered.
+  assert.ok(
+    Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5,
+    `the Sun at J2000 came back as ${sky.at(0, 0).longitude}`,
+  );
+  // And its own functions came with it, which no SDK operation offers.
+  assert.equal(ctx.engine.manifest.engine, 'teimeris');
+  assert.equal(ctx.engine.call('tm_body_name', { body: 0 }).buf, 'Sun');
+});
+
+/**
+ * Three ways to answer one question, so two of them together is a
+ * refusal rather than one silently winning. This needs no adapter, so it
+ * runs everywhere.
+ */
+test('a plugin and a named ephemeris together are refused', () => {
+  assert.throws(
+    () => new Context({ plugin: '/nowhere/adapter.so', ephemeris: 'builtin' }),
+    /give one of them/,
+  );
+  assert.throws(
+    () => new Context({ pluginConfig: { dataDir: '/x' }, testProvider: true }),
+    /name one with `plugin`/,
+  );
+});
+
 test('a context without an ephemeris says so', () => {
   const bare = new Context({ profile: 'nepali-default' });
   assert.throws(() => bare.engine);

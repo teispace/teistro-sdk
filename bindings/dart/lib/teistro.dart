@@ -195,31 +195,68 @@ final class Teistro {
     EphemerisProvider? provider,
     Ephemeris? ephemeris,
     bool testProvider = false,
+    String? plugin,
+    Map<String, Object?>? pluginConfig,
   }) {
+    // Three ways to answer one question, so two of them together is a
+    // refusal rather than one silently winning.
+    if (plugin != null && (provider != null || ephemeris != null)) {
+      throw ArgumentError(
+        'plugin, provider and ephemeris each name the ephemeris to compute '
+        'with; give one of them',
+      );
+    }
+    if (pluginConfig != null && plugin == null) {
+      throw ArgumentError(
+        'pluginConfig configures a plugin; name one with `plugin`',
+      );
+    }
     final host = provider == null ? null : HostProvider(library, provider);
     try {
-      return Context._(
-        this,
-        TeistroContext(
-          library,
-          options: ContextOptions(
-            flags: 0,
-            // One rule, written once: a named ephemeris wins, and the
-            // older flag decides only when none was named (ADR-0028).
-            ephemeris:
-                ephemeris ??
-                (testProvider && host == null
-                    ? Ephemeris.test
-                    : Ephemeris.none),
-            profile: profile,
-            settingsJson: settings == null ? null : jsonEncode(settings),
-            locale: locale,
-          ),
-          provider: host?.vtable,
-          providerUserData: host?.userData,
-        ),
-        host,
+      final options = ContextOptions(
+        flags: 0,
+        // One rule, written once: a named ephemeris wins, and the
+        // older flag decides only when none was named (ADR-0028).
+        ephemeris:
+            ephemeris ??
+            (testProvider && host == null ? Ephemeris.test : Ephemeris.none),
+        profile: profile,
+        settingsJson: settings == null ? null : jsonEncode(settings),
+        locale: locale,
       );
+      if (plugin == null) {
+        return Context._(
+          this,
+          TeistroContext(
+            library,
+            options: options,
+            provider: host?.vtable,
+            providerUserData: host?.userData,
+          ),
+          host,
+        );
+      }
+      // The context takes its own reference to the adapter, so the handle
+      // this loads is disposed at once: what keeps the library loaded is
+      // the context, and a consumer holds neither.
+      final loaded = TeistroProvider(
+        library,
+        path: plugin,
+        configJson: jsonEncode(pluginConfig ?? const <String, Object?>{}),
+      );
+      try {
+        return Context._(
+          this,
+          TeistroContext.newWithProvider(
+            library,
+            options: options,
+            provider: loaded,
+          ),
+          host,
+        );
+      } finally {
+        loaded.dispose();
+      }
     } on Object {
       host?.dispose();
       rethrow;

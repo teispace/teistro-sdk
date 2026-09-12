@@ -500,10 +500,32 @@ provider's DUT1).
    empty and the list is kept, so the next unplaced entry point has
    somewhere to be declared.
 
-   **What is left is the ergonomic half:** each hand-written layer needs
-   a plugin option (a path and the adapter's own configuration) so a
-   consumer never touches the generated `Provider` class. Until then the
-   route exists and nothing offers it.
+   **And the ergonomic half is built, so the 98% path exists in every
+   binding.** Two options in each layer, spelled the same in all three:
+   `plugin`, the adapter's platform binary, and `pluginConfig` /
+   `plugin_config`, that adapter's own options — handed over as JSON and
+   read by the SDK not at all. `plugin`, `provider` and `ephemeris` each
+   answer the same question, so two together is a refusal rather than one
+   silently winning, which is the rule the settings patch already had.
+   The loaded handle is freed at once in each layer: the context takes
+   its own reference, so what keeps the library loaded is the context and
+   a consumer holds neither.
+
+   Proven end to end, three times, against a real Teimeris built as a
+   `cdylib`: the Sun at J2000 at **280.3689°** from Node, Dart and
+   Python alike, `sdk.engine` reporting 62 operations, and
+   `tm_body_name(0)` answering `"Sun"` — a string crossing the plugin
+   boundary, through the generated marshalling, into three languages.
+   Each binding has a test for it that skips with a printed reason where
+   the adapter is not built, which is what `crates/ffi/tests/abi.rs`
+   already did with the same `TEISTRO_TEIMERIS_ADAPTER`.
+
+   **Next:** the engine's typed façade, generated into the adapter's own
+   package (ADR-0030), which is what turns `sdk.engine.call('tm_body_name',
+   { body: 0 })` into `sdk.engine.tmBodyName({ body: 0 })` with
+   completions; the adapter packages themselves, one per platform target;
+   wasm, whose ephemeris is the built-in `compact` tier; then Rust's own
+   consumer surface, the READMEs and the site.
 
    After that: the engine's typed façade, which attaches to the
    `sdk.engine` the three bindings now have and wants the adapter
