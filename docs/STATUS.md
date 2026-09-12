@@ -876,11 +876,15 @@ provider's DUT1).
      `(root)`'s `positions` four.
    - **Two of those nine are held by `crates/ffi` and by nothing
      else** — `teistro-intl` and `teistro-ephemeris-builtin` — so the
-     composition that makes a context is written once, at the C
-     boundary. That is the finding that decides the question: a Rust
-     façade would not be a convenience over crates a consumer already
-     composes, it would be the *first* place that composition exists in
-     Rust.
+     composition that makes a context is written once, inside the crate
+     whose whole purpose is the C ABI. Precisely, because the claim is
+     load-bearing and was checked rather than assumed: `TsContext::build`
+     is `pub`, and so are `settings`, `profile`, `provider` and `intl`,
+     so a Rust consumer *can* reach the composition. What they cannot
+     reach is an **operation** — converting a date is
+     `ts_calendar_convert` with three raw pointers. **Rust today has a
+     context it can build and cannot use**, which is the sharper
+     statement of the gap and points at the same façade.
    - **23 of the 46 entry points reach two or more crates**, so a façade
      over them would be composition rather than a rename; 8 reach none
      at all and are the C caller's memory. The widest are

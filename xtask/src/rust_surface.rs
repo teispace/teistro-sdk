@@ -732,7 +732,7 @@ fn claims_section(
     } else {
         let _ = writeln!(
             out,
-            "**{} of the crates a context needs are held by `crates/ffi` and by nothing else** — {} — so the composition that makes a context is written once, at the C boundary, and a Rust consumer cannot reach it without going through C. This is the finding that decides the question the page was written to ask: a Rust façade would not be a convenience over crates a consumer already composes, it would be the *first* place that composition exists in Rust.\n",
+            "**{} of the crates a context needs are held by `crates/ffi` and by nothing else** — {} — so the composition that makes a context is written once, and it is written inside the crate whose whole purpose is the C ABI. A Rust consumer *can* reach it: `TsContext::build` is `pub`, as are `settings`, `profile`, `provider` and `intl`. What they cannot reach is an operation: to convert a date they call `ts_calendar_convert` with three raw pointers. So the question the page was written to ask is answered — a Rust façade would not be a convenience over crates a consumer already composes, it would be the first place that composition sits outside a C boundary with Rust operations over it.\n",
             only_the_boundary.len(),
             named(
                 &only_the_boundary

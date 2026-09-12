@@ -33,8 +33,16 @@ which — and closed the calls over. Three results carry this design:
    re-export list.
 2. **Two of the nine crates a context needs are held by `crates/ffi` and
    by nothing else** — `teistro-intl` and `teistro-ephemeris-builtin`.
-   The composition that makes a context exists in Rust *nowhere but the
-   C boundary*.
+   The composition that makes a context is written once, inside the crate
+   whose whole purpose is the C ABI.
+
+   Precisely, because the claim is load-bearing: a Rust consumer *can*
+   reach that composition. `TsContext::build` is `pub`, and so are
+   `settings`, `profile`, `provider` and `intl`. What they cannot reach
+   is an **operation** — converting a date means `ts_calendar_convert`
+   with three raw pointers. So Rust today has a context it can build and
+   cannot use, which is a sharper statement of the gap than "cannot
+   reach it" and points at the same façade.
 3. **Eight of the forty-six entry points reach no SDK crate at all.**
    They are the C caller's memory and its handshake: `ts_string_free`,
    `ts_blob_free`, `ts_context_free`, `ts_abi_version`, `ts_build_info`
@@ -77,6 +85,12 @@ composition, it holds those two crates, and the property **holds**. The
 pass that measured the gap becomes the gate on the result — the project's
 own rule that a pass whose subject you are changing turns over when the
 change lands.
+
+And it is less invasive than it sounds, because `TsContext::build` is
+already a `pub` function whose body *is* the composition: the inversion
+moves that body into the façade and leaves `build` calling it. The
+boundary's own tests keep asserting what they assert, which is the
+property that makes step 3 safe.
 
 ## 4. A context, and areas as borrowed views
 
