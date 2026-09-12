@@ -93,6 +93,27 @@ What that buys, and what it costs:
 - **A context is neither `Send` nor `Sync`** — one context per worker,
   which every binding already says and Rust's compiler enforces. The
   part that decides it is the locale engine, not the ephemeris.
+- **The types are stricter in two places, not merely different.** A
+  date's `resolution` is a `CalendarResolution` a `match` must cover
+  where the other three hand over a string, so a resolution the SDK
+  gains is a compile error rather than a surprise; and a value a day may
+  not have is an `Option` the compiler will not let you ignore, where
+  the others give `null` and trust you to check.
+- **No `buildInfo`, and none is wanted.** Cargo resolved the versions and
+  there is no ABI between your program and the SDK, so there is nothing
+  to hand-shake. What is worth logging at start-up is the *provider* —
+  `sdk.ephemeris()?.capabilities()` gives its identity, its coverage,
+  its native frame and the operations it does natively.
+
+And an ephemeris of your own is a **trait you implement** rather than an
+object literal you hand over, which changes one thing worth knowing:
+coverage is a per-cell outcome. `bodies` is checked before you are
+called, but an instant outside your declared span reaches you, and you
+answer it with `Cell::failed(CellStatus::OutOfRange)` — so a year-long
+grid whose last day runs past your data keeps the 364 days you can
+compute. The other three reach the port through an adapter shim that
+refuses the whole batch instead, because a provider in those languages
+answers columns and not statuses.
 
 ## `sdk.engine`
 
@@ -121,12 +142,13 @@ knows which.
   ephemeris](/docs/install#choosing-an-ephemeris).
 - The [reference](/docs/reference) for every entry point of the C ABI,
   which is what all of the above is generated or written against.
-- The eight runnable examples in each binding —
+- The eight runnable examples in each of the four bindings —
   [Node](https://github.com/teispace/teistro-sdk/tree/main/bindings/node/example),
   [Dart](https://github.com/teispace/teistro-sdk/tree/main/bindings/dart/example),
-  [Python](https://github.com/teispace/teistro-sdk/tree/main/bindings/python/example)
-  — each run by a gate, so none of them can drift from what the binding
-  does.
-- For Rust, the
+  [Python](https://github.com/teispace/teistro-sdk/tree/main/bindings/python/example),
+  [Rust](https://github.com/teispace/teistro-sdk/tree/main/crates/sdk/examples)
+  — the same eight scenarios, each one run by a gate, so none of them can
+  drift from what the binding does.
+- For Rust, also the
   [crate's own page](https://github.com/teispace/teistro-sdk/tree/main/crates/sdk),
   which says what it composes and why it does not call the C ABI.

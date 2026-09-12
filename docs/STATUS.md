@@ -1243,6 +1243,40 @@ provider's DUT1).
    reproduce its own hash; and an almanac's `model` had never been
    compared at all.
 
+   **And `serial-and-the-envelope.md` §8's open question closed — the
+   producers seal.** What settled it was not a measurement but a count
+   of callers: the same line, `provenance.content_hash =
+   content_hash(&value)`, was written in **four** places — the C
+   boundary's chart and panchanga entry points, and the façade's two
+   areas — each mending a stamp the producer had left empty. A field
+   four callers have to remember is a field the producer should fill,
+   and the producer is the only place that knows both the value and the
+   stamp. `Envelope::sealing` is that join; `Founder::found` and
+   `Almanac::between`/`day` use it, and the four callers dropped their
+   lines.
+
+   It settled a second thing the boundary could not have noticed:
+   `chart().found` and `almanac().day` are the batch and the range of
+   one **unwrapped**, and they carried the batch's stamp — the hash of a
+   list of one, on an envelope holding a chart. They re-seal now, so
+   `found(one)` and `found_many([one])` carry different content hashes,
+   which is right, because they carry different values. The boundary
+   never saw it because it encodes the batch either way.
+
+   Two passes turned over with the change, which is what the rule about
+   re-aiming a pass at the built thing is for. `check-serial`'s reader
+   looked for the assignment, and would have gone on reporting two
+   producers as shipping the hash of nothing — the state the change
+   ended; it reads `Envelope::sealing` now, and *every producer stamps
+   the hash of the value it produced* **holds**, 0 of 4, where it
+   recorded 2 of 4 falsified. Its generated paragraph has two forms and
+   which one is written is the measurement. And
+   `crates/serial/tests/document.rs` asserted the placeholder — which is
+   to say it asserted the defect; it now asserts that the founder's
+   stamp arrives non-empty and that sealing the document **replaces** it
+   rather than trusting it, because a document is more than the
+   foundation it was founded from.
+
    **And step 4 is done: eight examples, and a fifth binding gate.**
    `crates/sdk/examples/` holds the same eight scenarios the other three
    bindings run, and `cargo xtask check-rust` runs every one of them
@@ -1324,6 +1358,23 @@ provider's DUT1).
    entity-name-or-key fallback. An example is a program a reader is
    invited to *copy*, and a shared `support` module would make every one
    of them un-copyable. The DRY rule applies to what ships.
+
+   **Step 5 is done too, so the whole order of work is.** The site's
+   surface page has its Rust column, and three things joined that
+   section because writing the examples is what found them worth
+   saying: the types are stricter in two places rather than merely
+   different (a `CalendarResolution` a `match` must cover, an `Option`
+   the compiler will not let a reader ignore); there is no `buildInfo`
+   and none is wanted, so what a service logs at start-up is the
+   provider's capabilities; and an ephemeris of your own is a **trait
+   you implement**, which makes coverage a per-cell outcome where the
+   other three shims refuse the batch — a difference a provider author
+   moving between bindings would otherwise meet as a surprise.
+
+   The install page's Rust section stays deliberately unwritten: the
+   crate is `0.0.0` and `publish = false`, so a `cargo add teistro`
+   would be an instruction nobody can follow. It gets its section when
+   there is a release to name.
 
    The order of work was deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to

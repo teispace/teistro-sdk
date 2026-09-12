@@ -526,17 +526,31 @@ principle:
    entity-name-or-key fallback. An example is a program a reader is
    invited to *copy*, and a shared `support` module would make every one
    of them un-copyable. The DRY rule applies to what ships.
-5. **The site.** The surface page has its Rust column — the fourth
-   spelling, an area as a borrowing view, and a section on the one thing
-   Rust does differently: it composes rather than crosses, so no
+5. ~~**The site.**~~ **Done.** The surface page has its Rust column —
+   the fourth spelling, an area as a borrowing view, and a section on
+   what Rust does differently: it composes rather than crosses, so no
    `dispose`, no blob, `positions` answering `Completed`, and a context
    that is neither `Send` nor `Sync`.
 
-   The install page's Rust section is **deliberately not written yet**.
-   The crate is `0.0.0` and `publish = false`, so a `cargo add teistro`
-   would be an instruction nobody can follow — which is the lesson that
-   page already carries about documenting what nobody has run. It gets
-   its section when there is a release to name.
+   Three things joined that section once the examples had been written,
+   because writing them is what found them worth saying. **The types are
+   stricter in two places rather than merely different**: a date's
+   resolution is an enum a `match` must cover, and a value a day may not
+   have is an `Option` the compiler will not let a reader ignore. **There
+   is no `buildInfo` and none is wanted** — Cargo resolved the versions
+   and no ABI is crossed, so what a service logs at start-up is the
+   *provider's* capabilities. And **an ephemeris of your own is a trait
+   you implement**, which makes coverage a per-cell outcome where the
+   other three shims refuse the batch; that difference is on the page
+   rather than left for a reader to discover, because a provider author
+   moving between two of these bindings would otherwise meet it as a
+   surprise.
+
+   The install page's Rust section is **deliberately still not
+   written**. The crate is `0.0.0` and `publish = false`, so a
+   `cargo add teistro` would be an instruction nobody can follow —
+   which is the lesson that page already carries about documenting what
+   nobody has run. It gets its section when there is a release to name.
 
 ## 9. What this design does not settle
 
