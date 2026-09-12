@@ -1,0 +1,41 @@
+[package]
+name = "teistro"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK for Rust: one context over the calendars, the time scales, the locale engine and the ephemeris port, with a reason attached to every number"
+readme = "README.md"
+keywords = ["astrology", "ephemeris", "calendar", "panchanga"]
+categories = ["science", "date-and-time"]
+# The name is the one `03-design/rust-consumer-surface.md` §9 leaves to
+# the maintainer, used here so the crate can be built and measured. A
+# rename is one `sed`; nothing outside this manifest spells it.
+publish = false
+
+[dependencies]
+serde_json = "1"
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-core = { path = "../core" }
+teistro-intl = { path = "../intl", default-features = false }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
+
+[build-dependencies]
+teistro-intl = { path = "../intl", default-features = false }
+
+# The SDK's own ephemeris, so a consumer who installs nothing else still
+# computes a chart (ADR-0008, ADR-0028) — the same feature the boundary
+# crate carries, and the same three tiers, because a tier is a feature of
+# the builtin crate and a consumer of this one chooses it here.
+[features]
+default = ["builtin-ephemeris"]
+builtin-ephemeris = ["teistro-ephemeris-builtin", "teistro-ephemeris-builtin/standard"]
+builtin-compact = ["teistro-ephemeris-builtin", "teistro-ephemeris-builtin/compact"]
+builtin-standard = ["builtin-ephemeris"]
+builtin-full = ["teistro-ephemeris-builtin", "teistro-ephemeris-builtin/full"]
+
+[lints]
+workspace = true

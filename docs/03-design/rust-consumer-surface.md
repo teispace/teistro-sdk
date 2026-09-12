@@ -92,6 +92,27 @@ moves that body into the façade and leaves `build` calling it. The
 boundary's own tests keep asserting what they assert, which is the
 property that makes step 3 safe.
 
+### What the measurement could not see, and the source said
+
+The locale bundles are compiled into `crates/ffi` by **its own build
+script**, from `i18n/`, so that a consumer needs no files to render the
+SDK's own messages (ADR-0010). A crate dependency reading cannot see
+that, and neither can a reading of function bodies: `BUNDLES` is a
+`pub(crate) static` written into `OUT_DIR`. It is recorded here because
+the façade needs those bundles to have a locale at all, and because a
+build script is a third place a composition can hide.
+
+It does not want a crate of its own. A build script cannot use the crate
+it builds, so `teistro-intl` cannot compile its own bundles; the façade
+can, and `teistro-ffi` then reads them from the façade — which is the
+same inversion §3 already decided, arriving a second time from a
+different direction. Until then the façade carries its own copy of a
+thirty-line script, duplicated as knowingly as the composition is.
+
+`build_info` — the commit, the target, the profile — stays with the
+boundary. It describes the C library, and nothing else has a reason to
+want it.
+
 ## 4. A context, and areas as borrowed views
 
 **Decided: one `Context`, and an area is a borrowing view of it.**
@@ -154,6 +175,37 @@ silent** — the same rule the other three keep, and the same refusal
 naming every entry that failed. A chain of one is not a chain, so its
 refusal keeps its own status, field and hint.
 
+**And a fourth kind, which the building found and this page had
+missed.** In Node, Dart and Python an entry is a *description* — a name,
+or a descriptor holding a path — so opening it can fail and a later entry
+is the fallback. In Rust an entry as decided above is an already-built
+`Box<dyn EphemerisProvider>`, which **cannot fail to open**: every chain
+of them succeeds on its first entry, and the ordering is decoration.
+Clippy said so before a test did, reporting that the function opening an
+entry returned a `Result` that could not be an error.
+
+So an entry a chain can fall back *from* is a **recipe**, not a
+provider:
+
+```rust
+.ephemeris([
+    Ephemeris::opening("teimeris", || teimeris(&dir)),
+    Ephemeris::Builtin,
+])
+```
+
+`Provider(p)` stays for the case a consumer already has one, and the two
+are not a second spelling of one thing: they answer different questions —
+*here is an ephemeris* and *here is how to get one, which may fail*.
+That is the same shape as `rules::factories`, the rule the emitters
+needed: one constructor, and more than one way in.
+
+Note what this does **not** need: a `#[cfg(not(builtin-ephemeris))]` arm
+that refuses at run time, as the C boundary has. The variant itself is
+behind the feature, so a consumer without it cannot name `Builtin` — a
+compile error rather than a refusal, which is what ADR-0023 asks for
+wherever a binding can have it.
+
 `ts_provider_load` stays a boundary concern: loading a shared library is
 what a consumer who is *not* in Rust needs, and a Rust consumer who wants
 it can still call it.
@@ -195,7 +247,12 @@ principle:
 1. **The façade crate, beside the boundary.** `Context`, the builder, the
    eight area views, the ephemeris chain — composing the crates, with
    `teistro-ffi` untouched. Composition written twice, briefly and
-   knowingly.
+   knowingly, and the locale bundles' build script with it.
+
+   Area by area rather than all eight at once, because each is
+   independently provable: the first one that compiles and reproduces a
+   fact the C smoke test already asserts has proved the whole shape, and
+   the rest are that shape again.
 2. **The parity runner**, which is what proves step 1 equals the other
    three rather than merely compiling. Red until it does.
 3. **Invert the dependency.** `teistro-ffi` calls the façade and keeps

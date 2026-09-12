@@ -44,8 +44,12 @@ const PAGE: &str = "docs/03-design/rust-consumer-surface-measured.md";
 /// Where the SDK's crates live, read for what each depends on.
 const CRATES: &str = "crates";
 
-/// The boundary crate itself, which is not a consumer.
-const FFI: &str = "ffi";
+/// The boundary crate, whose composition the façade is to take over.
+const FFI: &str = "teistro-ffi";
+
+/// The façade: the Rust consumer surface `rust-consumer-surface.md`
+/// designs, which is where that composition is to live.
+const FACADE: &str = "teistro";
 
 /// The entry points a **context's own life** needs, which no area's
 /// operations reach and every consumer uses first.
@@ -415,46 +419,44 @@ fn closure(
     out
 }
 
-/// Which SDK crates depend on each SDK crate, **not counting the
-/// boundary**.
+/// Every SDK crate, by the name its manifest gives, and the SDK crates
+/// it depends on.
 ///
-/// This is what decides whether an integration exists outside
-/// `crates/ffi`. A crate the boundary needs and nothing else depends on
-/// is one whose composition with the rest is written once, at the C
-/// boundary, and therefore reachable from Rust only through C.
-fn dependants(root: &Path) -> Result<BTreeMap<String, BTreeSet<String>>, String> {
+/// **The package's own name, not its directory's.** The façade lives in
+/// `crates/sdk` and is called `teistro`, and a reading keyed by the
+/// directory would look for a `teistro-sdk` nothing depends on and
+/// conclude the inversion had not happened when it had.
+fn manifests(root: &Path) -> Result<BTreeMap<String, BTreeSet<String>>, String> {
     let dir = root.join(CRATES);
     let entries =
         std::fs::read_dir(&dir).map_err(|error| format!("{CRATES} is not readable: {error}"))?;
     let mut out: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-    let mut found = 0_usize;
     for entry in entries.flatten() {
-        let Some(name) = entry.file_name().to_str().map(str::to_owned) else {
-            continue;
-        };
         let manifest = entry.path().join("Cargo.toml");
         if !manifest.is_file() {
             continue;
         }
-        found += 1;
-        out.entry(format!("teistro-{name}")).or_default();
-        if name == FFI {
-            continue;
-        }
         let text = std::fs::read_to_string(&manifest)
             .map_err(|error| format!("{} is not readable: {error}", manifest.display()))?;
+        let Some(name) = text
+            .lines()
+            .find_map(|line| line.strip_prefix("name = "))
+            .map(|name| name.trim().trim_matches('"').to_owned())
+        else {
+            return Err(format!("{} declares no package name", manifest.display()));
+        };
+        let mut depends = BTreeSet::new();
         for line in text.lines() {
-            let Some(depended) = line.split_whitespace().next() else {
+            let Some(first) = line.split_whitespace().next() else {
                 continue;
             };
-            if depended.starts_with("teistro-") && line.contains("path") {
-                out.entry(depended.to_owned())
-                    .or_default()
-                    .insert(name.clone());
+            if (first == "teistro" || first.starts_with("teistro-")) && line.contains("path") {
+                depends.insert(first.to_owned());
             }
         }
+        out.insert(name, depends);
     }
-    if found == 0 {
+    if out.is_empty() {
         return Err(format!("{CRATES} holds no crates"));
     }
     Ok(out)
@@ -497,10 +499,10 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
             named(&missing)
         ));
     }
-    let dependants = dependants(root)?;
+    let manifests = manifests(root)?;
     Ok(vec![Output::new(
         PAGE,
-        page(&api, &surfaces, &per_function, &dependants),
+        page(&api, &surfaces, &per_function, &manifests),
     )])
 }
 
@@ -547,7 +549,7 @@ fn page(
     api: &Api,
     surfaces: &[crate::areas::Surface],
     per_function: &BTreeMap<String, BTreeSet<String>>,
-    dependants: &BTreeMap<String, BTreeSet<String>>,
+    manifests: &BTreeMap<String, BTreeSet<String>>,
 ) -> String {
     let areas = per_area(surfaces, per_function);
 
@@ -563,20 +565,21 @@ fn page(
         }
     }
 
-    // The crates only the boundary brings together: a crate that no
-    // single SDK crate depends on beside another is assembly a Rust
-    // consumer has to do themselves, and the pair that says so loudest
-    // is the one no consumer-facing crate holds at all.
-    let mut only_the_boundary: Vec<&str> = whole
+    // What the façade does not yet own. A crate a context needs and the
+    // façade does not depend on is an area whose composition still lives
+    // only at the boundary — which is the design's acceptance test, and
+    // has to be *this* rather than "does anything else depend on it":
+    // the weaker reading went green the moment the façade declared a
+    // dependency, before any composition had moved.
+    let owned = manifests.get(FACADE);
+    let mut not_yet_owned: Vec<&str> = whole
         .iter()
         .copied()
-        .filter(|name| {
-            dependants
-                .get(&dashed(name))
-                .is_some_and(BTreeSet::is_empty)
-        })
+        .filter(|name| owned.is_none_or(|deps| !deps.contains(&dashed(name))))
         .collect();
-    only_the_boundary.sort_unstable();
+    not_yet_owned.sort_unstable();
+    // And whether the boundary has been inverted onto it at all.
+    let inverted = manifests.get(FFI).is_some_and(|deps| deps.contains(FACADE));
 
     let mut out = String::new();
     out.push_str(&header(api, surfaces, &whole));
@@ -584,7 +587,8 @@ fn page(
         api,
         &areas,
         &whole,
-        &only_the_boundary,
+        &not_yet_owned,
+        inverted,
         per_function,
     ));
     out.push_str(&areas_section(&areas));
@@ -646,12 +650,52 @@ fn tallies<'a>(
     (of(|crates| crates.len() > 1), of(BTreeSet::is_empty))
 }
 
+/// The design's acceptance test, as two claims.
+///
+/// It has to be *does the façade depend on it* rather than *does
+/// anything other than the boundary depend on it*: the weaker reading
+/// went green the moment the façade declared a dependency on
+/// `teistro-intl`, before a line of composition had moved.
+fn ownership(whole: &BTreeSet<&str>, not_yet_owned: &[&str], inverted: bool) -> [Claim; 2] {
+    [
+        Claim::counted(
+            "the façade owns the composition: every crate a context needs is one it depends on",
+            not_yet_owned.len(),
+            whole.len(),
+        )
+        .with_note(if not_yet_owned.is_empty() {
+            String::from("so every area's composition has a home outside the C boundary")
+        } else {
+            format!(
+                "not yet: {}",
+                named(
+                    &not_yet_owned
+                        .iter()
+                        .map(|name| dashed(name))
+                        .collect::<Vec<_>>()
+                )
+            )
+        }),
+        Claim::counted(
+            "and the boundary is inverted onto it, so the composition is written once",
+            usize::from(!inverted),
+            1,
+        )
+        .with_note(if inverted {
+            format!("`{FFI}` depends on `{FACADE}`")
+        } else {
+            format!("`{FFI}` does not depend on `{FACADE}` yet")
+        }),
+    ]
+}
+
 /// The properties a Rust façade would or would not be adding.
 fn claims_section(
     api: &Api,
     areas: &BTreeMap<&str, BTreeSet<String>>,
     whole: &BTreeSet<&str>,
-    only_the_boundary: &[&str],
+    not_yet_owned: &[&str],
+    inverted: bool,
     per_function: &BTreeMap<String, BTreeSet<String>>,
 ) -> String {
     let (composed, marshalling) = tallies(api, per_function);
@@ -668,6 +712,7 @@ fn claims_section(
         .map(|(name, _)| *name)
         .collect();
 
+    let [owns, inverted_claim] = ownership(whole, not_yet_owned, inverted);
     let claims = [
         Claim::counted(
             "an area's operations come from one SDK crate, so a Rust consumer already has the area",
@@ -704,38 +749,31 @@ fn claims_section(
             marshalling.len(),
             named(&marshalling)
         )),
-        Claim::counted(
-            "no crate a context needs is brought in by the boundary alone",
-            only_the_boundary.len(),
-            whole.len(),
-        )
-        .with_note(format!(
-            "only `crates/ffi` depends on {}",
-            named(
-                &only_the_boundary
-                    .iter()
-                    .map(|name| dashed(name))
-                    .collect::<Vec<_>>()
-            )
-        )),
+        owns,
+        inverted_claim,
     ];
 
     let mut out = String::new();
     let _ = writeln!(out, "## The properties\n");
     out.push_str(&table(&claims));
     let _ = writeln!(out);
-    if only_the_boundary.is_empty() {
+    if not_yet_owned.is_empty() && inverted {
         let _ = writeln!(
             out,
-            "**Every crate a context needs is composed somewhere other than the C boundary**, so a Rust consumer can assemble one with the crates alone.\n"
+            "**The composition has one home**, and it is the façade: every crate a context needs is one the façade depends on, and the boundary depends on the façade rather than composing them itself. That is the state [the design page](rust-consumer-surface.md) asks for, and these two rows are its acceptance test.\n"
+        );
+    } else if not_yet_owned.is_empty() {
+        let _ = writeln!(
+            out,
+            "**The façade owns the composition and the boundary has not been inverted onto it**, so it is written twice — knowingly, and only until step 3 of [the design page](rust-consumer-surface.md)'s order of work.\n"
         );
     } else {
         let _ = writeln!(
             out,
-            "**{} of the crates a context needs are held by `crates/ffi` and by nothing else** — {} — so the composition that makes a context is written once, and it is written inside the crate whose whole purpose is the C ABI. A Rust consumer *can* reach it: `TsContext::build` is `pub`, as are `settings`, `profile`, `provider` and `intl`. What they cannot reach is an operation: to convert a date they call `ts_calendar_convert` with three raw pointers. So the question the page was written to ask is answered — a Rust façade would not be a convenience over crates a consumer already composes, it would be the first place that composition sits outside a C boundary with Rust operations over it.\n",
-            only_the_boundary.len(),
+            "**{} of the crates a context needs are not yet the façade's** — {} — so those areas' composition still lives only at the C boundary. This is the design's acceptance test rather than a count for its own sake, and it has to be this rather than *does anything other than the boundary depend on it*: that weaker reading went green the moment the façade declared a dependency, before any composition had moved.\n",
+            not_yet_owned.len(),
             named(
-                &only_the_boundary
+                &not_yet_owned
                     .iter()
                     .map(|name| dashed(name))
                     .collect::<Vec<_>>()
@@ -827,6 +865,10 @@ fn limits_section() -> String {
     let _ = writeln!(
         out,
         "- **What each crate's public API already offers.** A crate behind an area may already expose exactly the operation, or may expose the pieces it is built from. Counting crates cannot tell the two apart."
+    );
+    let _ = writeln!(
+        out,
+        "- **What a build script composes.** The locale bundles are built into `crates/ffi` by its own build script and reach the source as a `pub(crate) static` in `OUT_DIR`, so no reading of dependencies or of function bodies sees them. The façade needs them, and [the design page](rust-consumer-surface.md) says where they go."
     );
     let _ = writeln!(
         out,

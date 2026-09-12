@@ -26,6 +26,7 @@ members = [
     "crates/intl",
     "crates/test-allocator",
     "crates/idl",
+    "crates/sdk",
     "crates/ffi",
     "bindings/node/native",
     # Spike 2 (spikes/README.md): built and linted like the rest, never published.

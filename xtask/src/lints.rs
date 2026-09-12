@@ -23,7 +23,9 @@ use std::path::{Path, PathBuf};
 
 /// The crates whose code computes an answer: what they iterate, read and
 /// round is what a chart is made of. The tooling crates (`idl`, `xtask`)
-/// and the boundary (`ffi`) are held to the compiler's lints alone.
+/// and the two surfaces (`ffi`, the C boundary, and `sdk`, the Rust
+/// façade) are held to the compiler's lints alone — a surface composes
+/// what these compute and rounds nothing itself.
 const COMPUTATION: [&str; 8] = [
     "core",
     "calendar",

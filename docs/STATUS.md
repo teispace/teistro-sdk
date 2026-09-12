@@ -945,6 +945,39 @@ provider's DUT1).
      is the whole of it, and that is the first place the Rust surface is
      smaller than the C one.
 
+   **And step 1 is begun, and the building corrected the page twice.**
+   `crates/sdk`, the crate `teistro`, carries the context, the builder,
+   the ephemeris chain and the **calendar** area — six operations, the
+   ones `surface-areas.md` puts there and no others, because
+   `check-areas` holds every binding's list to the same canonical paths.
+   Eleven tests, and the ones that matter assert what
+   `bindings/c/tests/smoke.c` asserts in the same words: 14 April 2015
+   is 1 Baisakh 2072 BS, in the Vikrama era, inside the official table.
+
+   **Clippy found a design gap before a test could.** It reported that
+   the function opening a chain entry returned a `Result` that could not
+   be an error — and it could not, because in Rust an entry as designed
+   was an already-built `Box<dyn EphemerisProvider>`, which cannot fail
+   to open. So every Rust chain succeeded on its first entry and the
+   ordering was decoration, where in the other three an entry is a
+   *description* whose opening can fail. `Ephemeris::opening(name, f)`
+   is the fourth kind: a **recipe**, which is what a chain can fall back
+   from. `Provider(p)` stays for the case a consumer already has one,
+   and the two are not a second spelling — they answer *here is an
+   ephemeris* and *here is how to get one, which may fail*, which is
+   `rules::factories` again: one constructor, more than one way in.
+
+   **And the acceptance test had to be sharpened, because it went green
+   for the wrong reason.** *No crate a context needs is brought in by
+   the boundary alone* flipped to holding the moment the façade declared
+   a dependency on `teistro-intl` — before a line of composition had
+   moved. It is two properties now, and both are honest: *the façade
+   owns the composition* (falsified 3 of 9 — `teistro-chart`,
+   `teistro-panchanga` and `teistro-time`, which are exactly the three
+   areas not yet built) and *the boundary is inverted onto it*
+   (falsified, 1 of 1). Both flip as the work lands, and neither can
+   flip without it.
+
    The order of work is deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
    the other three, and only then the dependency inversion — because the
