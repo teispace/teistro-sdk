@@ -17,6 +17,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 | an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 23 of 46 disagree; 23 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
 | the façade owns the composition: every crate a context needs is one it depends on | **holds** | 0 of 8 disagree; so every area's composition has a home outside the C boundary |
 | and the boundary is inverted onto it, so the composition is written once | **holds** | 0 of 1 disagree; `teistro-ffi` depends on `teistro` |
+| every type an area's signature names is reachable from the crate root | **holds** | 0 of 35 disagree; so one dependency is enough to call an operation and read its answer |
 
 **The composition has one home**, and it is the façade: every crate a context needs is one the façade depends on, and the boundary depends on the façade rather than composing them itself. That is the state [the design page](rust-consumer-surface.md) asks for, and these two rows are its acceptance test.
 

@@ -502,7 +502,13 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
     let manifests = manifests(root)?;
     Ok(vec![Output::new(
         PAGE,
-        page(&api, &surfaces, &per_function, &manifests),
+        page(
+            &api,
+            &surfaces,
+            &per_function,
+            &manifests,
+            reach(&signature_types(root)?, &reachable(root)?),
+        ),
     )])
 }
 
@@ -550,6 +556,7 @@ fn page(
     surfaces: &[crate::areas::Surface],
     per_function: &BTreeMap<String, BTreeSet<String>>,
     manifests: &BTreeMap<String, BTreeSet<String>>,
+    reach: Claim,
 ) -> String {
     let areas = per_area(surfaces, per_function);
 
@@ -590,6 +597,7 @@ fn page(
         &not_yet_owned,
         inverted,
         per_function,
+        reach,
     ));
     out.push_str(&areas_section(&areas));
     out.push_str(&entry_points_section(api, per_function));
@@ -697,6 +705,7 @@ fn claims_section(
     not_yet_owned: &[&str],
     inverted: bool,
     per_function: &BTreeMap<String, BTreeSet<String>>,
+    reach: Claim,
 ) -> String {
     let (composed, marshalling) = tallies(api, per_function);
     // An area whose operations all come from one crate is an area a
@@ -751,6 +760,7 @@ fn claims_section(
         )),
         owns,
         inverted_claim,
+        reach,
     ];
 
     let mut out = String::new();
@@ -892,4 +902,216 @@ fn named<T: AsRef<str>>(names: &[T]) -> String {
         .map(|name| format!("`{}`", name.as_ref()))
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+/// The façade's own source, read for the types its signatures name.
+const FACADE_SRC: &str = "crates/sdk/src";
+
+/// Names a signature may carry that no crate root should have to
+/// re-export: the language's own, and the generic parameters a
+/// signature declares for itself.
+const NOT_A_TYPE_TO_REACH: [&str; 3] = ["Self", "Error", "Context"];
+
+/// Every type an area's `pub fn` signature names, taken as the
+/// intersection of two readings.
+///
+/// **Why an intersection.** Scanning a signature for capitalised words
+/// finds `Result`, `Option` and every generic parameter; scanning a
+/// module's imports finds the types it uses only in its *body* — the
+/// founder, the solar model, the tzdb — which are implementation and
+/// not surface. Neither reading alone is the question. A type that is
+/// both imported from an SDK crate *and* named in a signature is
+/// exactly a type a consumer must be able to name.
+fn signature_types(root: &Path) -> Result<BTreeMap<String, BTreeSet<String>>, String> {
+    let mut out: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    let mut files: Vec<std::path::PathBuf> = crate::lints::sources(&root.join(FACADE_SRC));
+    files.sort();
+    for path in files {
+        let shown = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        let text = std::fs::read_to_string(&path)
+            .map_err(|error| format!("{shown} is not readable: {error}"))?;
+        // The same reader the boundary's modules get, refusing a glob
+        // for the same reason: a name a glob brought in cannot be
+        // attributed to a crate.
+        let scope = imports(&shown, &text)?;
+        let imported: BTreeSet<&String> = scope.crates.keys().collect();
+        for signature in signatures(&text) {
+            for name in imported
+                .iter()
+                .filter(|name| names_in(&signature, name))
+                .filter(|name| {
+                    name.starts_with(|letter: char| letter.is_ascii_uppercase())
+                        && name.len() > 1
+                        && !NOT_A_TYPE_TO_REACH.contains(&name.as_str())
+                })
+            {
+                out.entry((*name).clone())
+                    .or_default()
+                    .insert(shown.clone());
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// Whether a signature names an identifier, as a whole word.
+fn names_in(signature: &str, name: &str) -> bool {
+    signature.match_indices(name).any(|(at, _)| {
+        let before = signature[..at].chars().next_back();
+        let after = signature[at + name.len()..].chars().next();
+        !before.is_some_and(|letter| letter.is_alphanumeric() || letter == '_')
+            && !after.is_some_and(|letter| letter.is_alphanumeric() || letter == '_')
+    })
+}
+
+/// Every `pub fn` signature in a file, from `pub fn` to the `{` or `;`
+/// that ends it.
+///
+/// The source is `rustfmt`-clean, so a signature's last line is the one
+/// carrying that brace — which is what makes joining the lines exact
+/// rather than a guess.
+fn signatures(text: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut building: Option<String> = None;
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if building.is_none()
+            && !trimmed.starts_with("pub fn ")
+            && !trimmed.starts_with("pub const fn ")
+        {
+            continue;
+        }
+        let carrying = building.get_or_insert_with(String::new);
+        carrying.push(' ');
+        carrying.push_str(trimmed);
+        if trimmed.ends_with('{') || trimmed.ends_with(';') {
+            out.push(building.take().unwrap_or_default());
+        }
+    }
+    out
+}
+
+/// Every name the crate root makes reachable: what it re-exports by
+/// name, and the `pub` items of the modules it re-exports whole.
+fn reachable(root: &Path) -> Result<BTreeSet<String>, String> {
+    let lib = root.join(FACADE_SRC).join("lib.rs");
+    let text = std::fs::read_to_string(&lib)
+        .map_err(|error| format!("{FACADE_SRC}/lib.rs is not readable: {error}"))?;
+    let mut names: BTreeSet<String> = BTreeSet::new();
+    // Joined to the `;` first: a braced re-export of more than a few
+    // items is several lines after `rustfmt`, and reading only the
+    // first of them called `Frame` and `PositionRequest` unreachable
+    // when both are re-exported -- the reader's own bug, found by the
+    // claim it was written to make.
+    for statement in text.split(';') {
+        let Some(rest) = statement
+            .split("\npub use ")
+            .nth(1)
+            .or_else(|| statement.strip_prefix("pub use "))
+        else {
+            continue;
+        };
+        let path = rest.replace('\n', " ").trim().to_owned();
+        let path = path.as_str();
+        for item in items_of(path) {
+            if item.starts_with(|letter: char| letter.is_ascii_uppercase()) {
+                names.insert(item);
+                continue;
+            }
+            // A lower-case tail is a **module** re-export, so its own
+            // public items are reachable as `teistro::<module>::<Name>`.
+            // `catalogue`, `quantity` and `settings` carry most of what
+            // a signature names, and a page that called them unreachable
+            // would be measuring the spelling rather than the reach.
+            names.extend(module_items(root, path, &item));
+        }
+    }
+    Ok(names)
+}
+
+/// The public item names of a module a `pub use` re-exports whole.
+fn module_items(root: &Path, path: &str, module: &str) -> BTreeSet<String> {
+    let Some((crate_name, _)) = path.split_once("::") else {
+        return BTreeSet::new();
+    };
+    let directory = root
+        .join(CRATES)
+        .join(crate_name.trim_start_matches("teistro_").replace('_', "-"))
+        .join("src");
+    let file = [
+        directory.join(format!("{module}.rs")),
+        directory.join(module).join("mod.rs"),
+    ]
+    .into_iter()
+    .find(|candidate| candidate.exists());
+    let mut names = BTreeSet::new();
+    let Some(file) = file else {
+        return names;
+    };
+    // The module itself, and one level of what it re-exports: a
+    // catalogue's members are in `generated/`, reached by the module's
+    // own `pub use`.
+    let mut texts = vec![std::fs::read_to_string(&file).unwrap_or_default()];
+    if let Some(parent) = file.parent() {
+        for sibling in crate::lints::sources(parent) {
+            texts.push(std::fs::read_to_string(&sibling).unwrap_or_default());
+        }
+    }
+    for text in &texts {
+        for line in text.lines() {
+            let trimmed = line.trim();
+            for shape in [
+                "pub struct ",
+                "pub enum ",
+                "pub trait ",
+                "pub type ",
+                "pub const ",
+            ] {
+                if let Some(rest) = trimmed.strip_prefix(shape) {
+                    let name: String = rest
+                        .chars()
+                        .take_while(|letter| letter.is_alphanumeric() || *letter == '_')
+                        .collect();
+                    if !name.is_empty() {
+                        names.insert(name);
+                    }
+                }
+            }
+        }
+    }
+    names
+}
+
+/// Every type an area's signature names is reachable from the crate
+/// root.
+///
+/// **An operation answering a type a consumer cannot name is an
+/// operation whose answer cannot be matched on**, and that is what this
+/// holds. It was born red four times over: `calendar().convert` answered
+/// a `CalendarResolution`, `chart().found` an `Envelope<ChartFoundation>`
+/// and `almanac().of` an `Envelope<Vec<Panchanga>>`, and none of those
+/// four names was re-exported — so a consumer with one dependency could
+/// call the operation and not read the answer. The examples found them,
+/// which is what examples are for; this is so the fifth is found by a
+/// gate.
+fn reach(types: &BTreeMap<String, BTreeSet<String>>, reachable: &BTreeSet<String>) -> Claim {
+    let out_of_reach: Vec<&str> = types
+        .keys()
+        .filter(|name| !reachable.contains(*name))
+        .map(String::as_str)
+        .collect();
+    Claim::counted(
+        "every type an area's signature names is reachable from the crate root",
+        out_of_reach.len(),
+        types.len(),
+    )
+    .with_note(if out_of_reach.is_empty() {
+        String::from("so one dependency is enough to call an operation and read its answer")
+    } else {
+        format!("not reachable: {}", named(&out_of_reach))
+    })
 }

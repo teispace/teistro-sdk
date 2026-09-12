@@ -13,6 +13,10 @@
 //! context needs were held by the C boundary and by nothing else.
 //!
 //! ```
+//! # // The built-in ephemeris is a feature, and a doctest sees the
+//! # // crate's features, so this one compiles away with it rather than
+//! # // failing a `--no-default-features` run.
+//! # #[cfg(feature = "builtin-ephemeris")] fn run() -> Result<(), teistro::Error> {
 //! use teistro::catalogue::Calendar;
 //! use teistro::{CalendarDate, Context, Ephemeris};
 //!
@@ -26,7 +30,8 @@
 //! let day = CalendarDate::defined(Calendar::Gregorian, 2015, 4, 14);
 //! let bs = sdk.calendar().convert(&day, Calendar::BikramSambat)?;
 //! assert_eq!((bs.year, bs.month, bs.day), (2072, 1, 1));
-//! # Ok::<(), teistro::Error>(())
+//! # Ok(()) }
+//! # #[cfg(feature = "builtin-ephemeris")] run().unwrap();
 //! ```
 //!
 //! **It composes the crates; it does not call the SDK's own C ABI.** A
@@ -52,13 +57,29 @@ pub use scale::{Conversion, Scale};
 // are re-exported so a consumer needs one dependency rather than five.
 // Re-exported and **not** wrapped: a newtype over `JulianDay` would be a
 // second type with the same invariant and no new one (ADR-0023).
+//
+// The rule this list keeps is checkable rather than a judgement:
+// **every type an area's signature names is reachable from this crate
+// root.** An operation answering a `CalendarResolution` a consumer
+// cannot name is an operation whose answer cannot be matched on, and
+// the examples found four of those before this list did —
+// `CalendarResolution`, `Envelope`, `ChartFoundation` and `Panchanga`.
+// `rust-consumer-surface-measured.md`'s *every type an area's signature
+// names is reachable from the crate root* holds it now, born red on
+// exactly those four.
 pub use teistro_astro::DeltaTModel;
+pub use teistro_astro::delta_t::DeltaT;
 pub use teistro_calendar::{CalendarDate, FixedDay, Weekday};
+pub use teistro_chart::foundation::{ChartFoundation, GrahaPosition};
 pub use teistro_core::catalogue;
-pub use teistro_core::envelope::Hash;
+pub use teistro_core::envelope::{CalendarResolution, Envelope, Hash, Provenance};
 pub use teistro_core::error::{Error, Status};
+pub use teistro_core::interval::Interval;
+pub use teistro_core::key::KeyId;
 pub use teistro_core::quantity;
 pub use teistro_core::settings;
+pub use teistro_panchanga::almanac::Panchanga;
+pub use teistro_port_ephemeris::native::{NativeFunction, NativeManifest};
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a
 // namespace is in Rust — where Node writes
@@ -75,11 +96,19 @@ pub use teistro_intl::{Intl, Loaded, Params, Rendered, TypedMessage, Value, para
 // were here, which is how the gap was noticed.
 pub use teistro_astro::completion::Completed;
 pub use teistro_core::time::UtcOffset;
+// And what an ephemeris of your own needs to *implement* the port, not
+// merely to call it: writing a provider is a first-class use of this
+// crate (ADR-0029 hands a Rust consumer the adapters as `rlib`s), so a
+// consumer writing one should need this dependency and no other.
+pub use teistro_port_ephemeris::capabilities::{Astronomy, DistanceUnit, SpeedModel};
+pub use teistro_port_ephemeris::columns::{EphemerisKind, Source};
+pub use teistro_port_ephemeris::provider::validate;
 pub use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, CellStatus, EphemerisProvider, Frame, PositionColumns,
-    PositionRequest, TimeScale,
+    Body, Capabilities, Cell, CellStatus, Centre, Coordinates, Corrections, EphemerisProvider,
+    Equinox, Frame, Identity, Overrides, PositionColumns, PositionRequest, ProviderError,
+    TimeScale, Zodiac,
 };
-pub use teistro_time::{CivilDateTime, CivilTime, ZoneSpec};
+pub use teistro_time::{CivilDateTime, CivilTime, Resolved, ZoneResolution, ZoneSpec};
 
 /// The Julian day a fixed day begins at, in local time.
 ///
