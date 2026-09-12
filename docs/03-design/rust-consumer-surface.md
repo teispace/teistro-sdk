@@ -282,41 +282,68 @@ principle:
   absences that are the design working.
 
   So the gate holds the Rust report to **every key it prints**, and
-  **counts** the ones it does not on every run — the
-  `knob-has-a-reader` shape: a number a reader sees rather than a
-  silence, so a subset that stops shrinking as the surface grows is
-  visible. **Built**: `check-parity` runs the Rust example as a fourth
-  runner and reports *4 bindings agree, value for value* over its 125
-  keys, with `Rust does not print 549 of Node's keys` beside it. Proved
-  red by adding one to a day of the month.
+  names the ones it does not.
 
-  The count is a *count* and not a declared list, and that is a
-  deliberate weakening. A list would have to name every one, and most of
-  them are not §6's boundary-only keys at all — they are detail the Rust
-  runner does not print yet, a graha at a time and a muhurta at a time.
-  Completing it is mechanical and the count is what says how much is
-  left.
+  It began as a **count** rather than a declared list, and that was a
+  deliberate weakening: at 549 absences a list would have had to name
+  detail the runner simply did not print yet, a graha at a time and a
+  muhurta at a time, so the number a reader sees on every run was the
+  honest instrument — the `knob-has-a-reader` shape.
 
-  **549 → 155**, in four passes and with every added key agreeing on its
-  first run: every graha's longitude, latitude, speed, retrograde flag,
-  house and placement; all twelve bhava madhyas and sandhis of both
-  charts; every tithi, nakshatra, yoga and karana span of three days with
-  its member and bounds; each day's month, convention, ayana and disha
-  shool; and the values a day may not have, `none` in all four bindings
-  rather than nought in one.
+  **549 → 9, in five passes, and every one of the 540 keys added agreed
+  with Node on its first run.** No pass needed a second attempt, which
+  is the strongest thing to be said about the composition underneath
+  them. What went in, in order: every graha's longitude, latitude,
+  speed, retrograde flag, house and placement, and all twelve bhava
+  madhyas and sandhis, of both charts; every tithi, nakshatra, yoga and
+  karana span of three days with its member and both bounds; each day's
+  lunar month, convention, ayana and disha shool, and the values a day
+  may *not* have, `none` in all four rather than nought in one; then
+  each day's periods **item by item** — the kaalas, the first
+  choghadiya, the horas at both ends, the muhurtas and what the Moon did
+  — because a count agreeing is not the same as the items agreeing, and
+  two lists of three can hold different threes; then the chart the
+  **topocentric** profile founds, all nine grahas of it, which is the
+  completion's centre step running per body and per instant inside the
+  library and four layers agreeing on its output; then the batch's own
+  rows and both envelopes' canonical JSON, hashed; and last the
+  operation inventory.
 
-  What is left is 54 per-item day rows (kaalas, choghadiya, horas,
-  muhurtas, moon events), 36 for a topocentric scenario the Rust runner
-  does not walk, and about ten that are §6's — `abi`, `build-*`, the
-  blobs' hashes. Growing it found one real gap, which is what a gate is
-  for: `jd_of_fixed` and `fixed_of_jd` were operations the façade did not
-  have. They are free functions now, as they are in the other three,
-  because a fixed day and a Julian day are two spellings of one integer
-  and no profile or locale changes the arithmetic.
+  **So the count became a list, which is the stronger gate this section
+  was waiting for.** `RUST_ABSENCES` names all nine, and it is
+  exhaustive in both directions: an absence not on it fails, and one on
+  it that the runner has started printing fails too, so a declared
+  absence that stops being deliberate is a failed gate rather than a
+  number nobody watched. Both branches proved red.
 
-  `check-areas`'s property *every operation the layer declares is listed
-  by every parity runner* extends to the Rust runner once it exists, and
-  needs a reader for this crate's surface the way it has one for Node's.
+  The nine are of three kinds. `abi` and the six `build-*` keys are the
+  **boundary's own handshake**, and there is no boundary here and
+  nothing to hand-shake — while `sdk`, `catalogue-version` and
+  `default-profile`, which the other three *ask* the library for, this
+  runner prints from constants, because Cargo resolved the graph and a
+  resolved graph is what a `const` looks like. `provenance-fnv` is the
+  positions envelope's canonical JSON, whose input hash is of the
+  boundary's **decoded request record**; a Rust consumer holds the
+  `PositionRequest` itself, and the three fields of that envelope anyone
+  reads — the profile, the settings hash and the provider's frame — the
+  runner prints from the context and the columns. And
+  `surface.(root).dispose` is the one operation this surface cannot
+  have.
+
+  Growing it found two real gaps, which is what a gate is for.
+  `jd_of_fixed` and `fixed_of_jd` were operations the façade did not
+  have, and are free functions now, as in the other three, because a
+  fixed day and a Julian day are two spellings of one integer and no
+  profile or locale changes the arithmetic. And `canonical_json` and
+  `content_hash` were not re-exported, so a consumer could hold an
+  `Envelope` and not reproduce its own hash.
+- **`check-areas`'s property extends to the Rust runner**, which this
+  section said it would "once it exists". `RUNNERS` is four now, and the
+  Rust runner lists all 38 operations it has — a **list** and not a
+  probe, since existence here is a compile-time fact, and the list is
+  what the property reads. 155 pairs, 0 disagreeing, 1 allowed:
+  `(root).dispose`, carried as *that runner's* allowance rather than as a
+  path nobody is held to, so Node is still held to listing it.
 - **The measured page turns over**, as §3 says: its second property
   flips from falsified to holding, and that is the acceptance test for
   the refactor rather than a note in a commit message.

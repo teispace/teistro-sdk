@@ -1210,11 +1210,38 @@ provider's DUT1).
    locale or setting changes the arithmetic — an area is for what a
    context's state bears on, and this bears on none of it.
 
-   What is left of the 155 is named by kind rather than counted: 54
-   per-item day rows (kaalas, choghadiya, horas, muhurtas, moon events),
-   36 for a topocentric scenario the Rust runner does not walk, and
-   about ten that are genuinely §6's — `abi`, the `build-*` keys, the
-   blobs' hashes.
+   **And then to 665 of 674, which turned the count into a list.**
+   549 → 9 in five passes, and every one of the 540 keys added agreed
+   with Node on its first run — no pass needed a second attempt, which
+   is the strongest thing to be said about the composition underneath
+   them. The last pass added each day's periods **item by item** (a
+   count agreeing is not the same as the items agreeing: two lists of
+   three can hold different threes), the chart the **topocentric**
+   profile founds with all nine grahas of it, both envelopes' canonical
+   JSON hashed, and the operation inventory.
+
+   So `check-parity` names its absences rather than counting them, and
+   `RUST_ABSENCES` is exhaustive **both ways**: an absence not on it
+   fails, and one on it that the runner has started printing fails too.
+   Both branches proved red. The nine are `abi` and the six `build-*`
+   keys — the boundary's own handshake, and there is no boundary here,
+   while `sdk`, `catalogue-version` and `default-profile` this runner
+   prints from constants because Cargo resolved the graph —
+   `provenance-fnv`, whose input hash is of the boundary's *decoded*
+   request record, and `surface.(root).dispose`, the one operation this
+   surface cannot have.
+
+   **`check-areas` now reads four runners**, which
+   `rust-consumer-surface.md` §7 said would happen "once it exists": the
+   Rust runner lists all 38 operations it has, a list rather than a probe
+   since existence here is a compile-time fact, and the property is 155
+   pairs with 1 allowed — `(root).dispose`, carried as *that runner's*
+   allowance so Node is still held to listing it.
+
+   Two more gaps the growing found: `canonical_json` and `content_hash`
+   were not re-exported, so a consumer could hold an `Envelope` and not
+   reproduce its own hash; and an almanac's `model` had never been
+   compared at all.
 
    **And step 4 is done: eight examples, and a fifth binding gate.**
    `crates/sdk/examples/` holds the same eight scenarios the other three

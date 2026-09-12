@@ -287,20 +287,44 @@ fn tabled(source: &str) -> BTreeSet<String> {
     out
 }
 
-/// The three parity runners, whose lists of canonical paths are the only
+/// The four parity runners, whose lists of canonical paths are the only
 /// place the surface's shape is written down for all of the bindings.
 ///
 /// Each holds its own copy, in its own syntax, and `check-parity`
-/// compares what they *print* rather than what they list -- so three
+/// compares what they *print* rather than what they list -- so four
 /// runners that all forget the same new operation agree perfectly and
 /// the gate says nothing. That is the hole this property closes, and it
 /// is the same shape as several generators keeping the same private
 /// list.
-const RUNNERS: [&str; 3] = [
+///
+/// The Rust runner joined them when the façade's own examples were
+/// written, which is what `rust-consumer-surface.md` §7 said would
+/// happen "once it exists".
+const RUNNERS: [&str; 4] = [
     "bindings/node/parity.mjs",
     "bindings/dart/bin/parity.dart",
     "bindings/python/parity.py",
+    "crates/sdk/examples/parity.rs",
 ];
+
+/// The one operation a named runner is not expected to list, and why.
+///
+/// This is §6 of `rust-consumer-surface.md` arriving in this property
+/// rather than an exception to it: a `Context` is **dropped**, so the
+/// Rust surface has no `dispose` and could only list it as absent --
+/// which would be a disagreement where an absence is intended.
+///
+/// A pair and not a path, because the allowance is for *that runner*: if
+/// Node ever stopped listing `(root).dispose` this property would still
+/// hold Node to it.
+const NOT_EVERY_RUNNER: [(&str, &str); 1] = [("crates/sdk/examples/parity.rs", "(root).dispose")];
+
+/// Whether a runner is excused from listing an operation.
+fn excused(runner: &str, operation: &str) -> bool {
+    NOT_EVERY_RUNNER
+        .iter()
+        .any(|(which, path)| *which == runner && *path == operation)
+}
 
 /// The canonical paths a runner lists, whatever its language's quotes
 /// and brackets look like: the first element of each row is the path,
@@ -509,12 +533,18 @@ fn listing_claim(surfaces: &[Surface], runners: &[(&str, BTreeSet<String>)]) -> 
     let declared: BTreeSet<&str> = operations.iter().map(String::as_str).collect();
     let mut unlisted: Vec<String> = Vec::new();
     let mut stale: Vec<String> = Vec::new();
+    let mut allowed = 0_usize;
     for (runner, paths) in runners {
         let file = runner.rsplit('/').next().unwrap_or(runner);
         for operation in &operations {
-            if !paths.contains(operation) {
-                unlisted.push(format!("{operation} by {file}"));
+            if paths.contains(operation) {
+                continue;
             }
+            if excused(runner, operation) {
+                allowed += 1;
+                continue;
+            }
+            unlisted.push(format!("{operation} by {file}"));
         }
         for path in paths {
             if !declared.contains(path.as_str()) {
@@ -525,12 +555,12 @@ fn listing_claim(surfaces: &[Surface], runners: &[(&str, BTreeSet<String>)]) -> 
     Claim::counted(
         "every operation the layer declares is listed by every parity runner",
         unlisted.len() + stale.len(),
-        operations.len() * runners.len(),
+        operations.len() * runners.len() - allowed,
     )
     .with_note(match (unlisted.is_empty(), stale.is_empty()) {
-        (true, true) => {
-            String::from("so an operation added to one binding cannot go unheld in the other two")
-        }
+        (true, true) => format!(
+            "so an operation added to one binding cannot go unheld in the other three; {allowed} allowed"
+        ),
         (false, true) => format!("unlisted: {}", named(&unlisted)),
         (true, false) => format!("listed and gone: {}", named(&stale)),
         (false, false) => format!(

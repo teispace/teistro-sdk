@@ -62,23 +62,53 @@ const TOLERANCE: f64 = 2e-9;
 struct Report {
     binding: &'static str,
     lines: Vec<(String, String)>,
-    /// Whether this report is allowed to print fewer keys than the
-    /// first, which one of the four is.
+    /// The keys this report is allowed not to print, or empty when it
+    /// must print them all.
     ///
-    /// **The Rust surface cannot print the same key set, by design.**
-    /// Among the others' are `abi`, `build-commit`, `build-target` and
-    /// the result blobs' sections: a Rust consumer has none of them,
+    /// **The Rust surface cannot print the same key set, by design**: a
+    /// Rust consumer has no ABI, no build handshake and no result blob,
     /// because Cargo resolved the versions, `Drop` freed the memory and
-    /// the crates handed back their own types rather than a blob
-    /// (`03-design/rust-consumer-surface.md` §6). Its report is
-    /// therefore a **subset**, and what is gated is that every key it
-    /// does print agrees — with the count of what it does not printed
-    /// on every run, so a subset that stops shrinking is visible.
-    subset: bool,
+    /// the crates handed back their own types
+    /// (`03-design/rust-consumer-surface.md` §6).
+    ///
+    /// This was a **count** for four passes, and deliberately weaker
+    /// than a list: at 549 absences a list would have had to name detail
+    /// the runner simply did not print yet, a graha at a time. At nine
+    /// it is a list, which is the stronger gate §7 was waiting for — an
+    /// absence that stops being deliberate is now a failure rather than
+    /// a number that stopped shrinking.
+    absences: &'static [&'static str],
 }
 
+/// Every key the Rust runner does not print, and why each one is not a
+/// gap.
+///
+/// Nine, and they are of three kinds. `abi` and the `build-*` keys are
+/// the **boundary's own handshake**: there is no ABI between a Rust
+/// consumer and the SDK, and nothing to hand-shake, because Cargo
+/// resolved the graph — `sdk`, `catalogue-version` and `default-profile`
+/// the runner *does* print, from constants. `provenance-fnv` is the
+/// positions envelope's canonical JSON, whose input hash is of the
+/// boundary's **decoded** request record; a Rust consumer holds the
+/// `PositionRequest` itself, and the three fields of that envelope
+/// anyone reads — the profile, the settings hash and the provider's
+/// frame — the runner prints. And `surface.(root).dispose` is the one
+/// operation this surface cannot have: a `Context` is dropped, so
+/// listing it would be a disagreement where §6 intends an absence.
+const RUST_ABSENCES: [&str; 9] = [
+    "abi",
+    "build-abi",
+    "build-catalogue",
+    "build-commit",
+    "build-dirty",
+    "build-sdk",
+    "build-target",
+    "provenance-fnv",
+    "surface.(root).dispose",
+];
+
 impl Report {
-    fn read(binding: &'static str, output: &str, subset: bool) -> Report {
+    fn read(binding: &'static str, output: &str, absences: &'static [&'static str]) -> Report {
         let lines = output
             .lines()
             .filter_map(|line| line.split_once('\t'))
@@ -87,7 +117,7 @@ impl Report {
         Report {
             binding,
             lines,
-            subset,
+            absences,
         }
     }
 }
@@ -111,11 +141,11 @@ fn compare(left: &Report, right: &Report) -> usize {
     let mut right_keys: Vec<&str> = right.lines.iter().map(|(k, _)| k.as_str()).collect();
     left_keys.sort_unstable();
     right_keys.sort_unstable();
-    let mut absent = 0_usize;
+    let mut absent: Vec<&str> = Vec::new();
     for key in &left_keys {
         if !right_keys.contains(key) {
-            if right.subset {
-                absent += 1;
+            if right.absences.contains(key) {
+                absent.push(key);
                 continue;
             }
             println!(
@@ -125,13 +155,30 @@ fn compare(left: &Report, right: &Report) -> usize {
             differences += 1;
         }
     }
-    if absent != 0 {
-        // Counted, not silent: the Rust surface prints a subset by
-        // design (§6), and the number is on every run so a subset that
-        // stops shrinking as that surface grows is visible.
+    // Named, not counted, and **the list is exhaustive both ways**: an
+    // absence not on it failed above, and one on it that the runner has
+    // started printing fails here. A declared absence that stops being
+    // deliberate is a failed gate rather than a number nobody watched.
+    for declared in right.absences {
+        if right_keys.contains(declared) {
+            println!(
+                "      {declared}: declared absent from {} and printed anyway; take it off the list",
+                right.binding
+            );
+            differences += 1;
+        } else if !left_keys.contains(declared) {
+            println!(
+                "      {declared}: declared absent from {} and {} does not print it either; the entry is stale",
+                right.binding, left.binding
+            );
+            differences += 1;
+        }
+    }
+    if !absent.is_empty() {
         println!(
-            "      {} does not print {absent} of {}'s keys, which §6 of `03-design/rust-consumer-surface.md` accounts for",
-            right.binding, left.binding
+            "      {} does not print {}, which §6 of `03-design/rust-consumer-surface.md` accounts for",
+            right.binding,
+            absent.join(", ")
         );
     }
     for key in &right_keys {
@@ -160,11 +207,15 @@ fn compare(left: &Report, right: &Report) -> usize {
 
 /// Runs one binding's report, or `None` when the runner failed, which is
 /// printed either way. Each caller sets the directory its runner expects.
-fn run(binding: &'static str, command: &mut Command, subset: bool) -> Option<Report> {
+fn run(
+    binding: &'static str,
+    command: &mut Command,
+    absences: &'static [&'static str],
+) -> Option<Report> {
     match command.output() {
         Ok(output) if output.status.success() => {
             let text = String::from_utf8_lossy(&output.stdout).to_string();
-            let report = Report::read(binding, &text, subset);
+            let report = Report::read(binding, &text, absences);
             if report.lines.is_empty() {
                 println!("FAIL  the {binding} runner printed no report");
                 return None;
@@ -219,7 +270,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         reports.extend(run(
             "Node",
             Command::new("node").arg(NODE).current_dir(root),
-            false,
+            &[],
         ));
     } else {
         println!("skip  {NODE}: no `node` on this machine");
@@ -232,7 +283,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                 .args(["run", "bin/parity.dart"])
                 .env("TEISTRO_LIBRARY", &library)
                 .current_dir(root.join("bindings/dart")),
-            false,
+            &[],
         ));
     } else {
         println!("skip  {DART}: no `dart` on this machine");
@@ -246,7 +297,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                 .env("TEISTRO_LIBRARY", &library)
                 .env("PYTHONPATH", root.join("bindings/python"))
                 .current_dir(root.join("bindings/python")),
-            false,
+            &[],
         ));
     } else {
         println!("skip  {PYTHON}: no `{python}` on this machine");
@@ -260,7 +311,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         Command::new(crate::binding::cargo())
             .args(["run", "--quiet", "-p", "teistro", "--example", "parity"])
             .current_dir(root),
-        true,
+        &RUST_ABSENCES,
     ));
 
     if reports.len() < 2 {
@@ -275,8 +326,8 @@ pub(crate) fn check(root: &Path) -> i32 {
     for other in &reports[1..] {
         let found = compare(first, other);
         if found == 0 {
-            // The count compared, not the first report's: a subset
-            // agreeing on 125 of 674 must not read as 674.
+            // The count compared, not the first report's: a report
+            // agreeing on 665 of 674 must not read as 674.
             println!(
                 "ok    the {} and {} bindings agree on every one of {} values",
                 first.binding,

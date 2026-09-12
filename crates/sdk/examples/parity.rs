@@ -33,7 +33,9 @@
 use std::collections::BTreeMap;
 
 use teistro::catalogue::{Calendar, ChartKind, Graha};
-use teistro::{Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, TimeScale};
+use teistro::{
+    Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, Script, TimeScale,
+};
 use teistro_core::envelope::CalendarResolution;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
@@ -308,6 +310,22 @@ fn positions(report: &mut Report, sdk: &Context) {
             cell.status.code().to_string(),
         );
     }
+    // What the other three read off the positions blob's provenance
+    // envelope. **There is no envelope here**, and §6 says why: the
+    // envelope's input hash is of the boundary's own decoded request
+    // record, which a Rust consumer does not have and does not want --
+    // it holds the `PositionRequest` itself. The three fields a consumer
+    // actually reads are on the context and on the columns, and they are
+    // the same values, so the comparison still bites: a boundary
+    // computing under a different profile than the context reports would
+    // disagree here.
+    put(report, "provenance-profile", sdk.profile().to_owned());
+    put(
+        report,
+        "provenance-settings-hash",
+        sdk.settings_hash().to_string(),
+    );
+    put(report, "provenance-provider-frame", sky.columns.frame.key());
     // Built here rather than from `step_keys`, which is the astronomy
     // crate's `{:?}` and gives `PassThrough` where the report wants
     // `PASS_THROUGH` -- the spelling every generated catalogue uses.
@@ -380,6 +398,26 @@ fn the_locale(report: &mut Report, sdk: &Context) {
             .unwrap_or_else(|| String::from("none")),
     );
     put(report, "message-graha-in-bhava", rendered.text.clone());
+    put(
+        report,
+        "message-bs-date",
+        sdk.intl()
+            .render_typed(
+                &teistro::messages::sdk::calendar::bikram_sambat::date::Long {
+                    day: 1,
+                    month_name: String::from("बैशाख"),
+                    year: 2072,
+                },
+            )
+            .text,
+    );
+    put(
+        report,
+        "transliterated",
+        sdk.intl()
+            .transliterate("सूर्य बृहस्पति", Script::Devanagari, Script::Iast)
+            .expect("both scripts are shipped"),
+    );
 }
 
 /// The frame, as the report prints it.
@@ -558,6 +596,144 @@ fn one_chart_placements(
     }
 }
 
+/// Every operation this layer declares, listed.
+///
+/// The other three runners **probe** for each member and print `present`
+/// or `missing`, because in those languages an operation that is not
+/// there is a `undefined` a reader finds at run time. Here it is a
+/// compile error: every one of these is called somewhere in this file or
+/// in `crates/sdk/tests/surface.rs`, so an operation removed from the
+/// façade takes the runner with it.
+///
+/// So this section is a **list** and not a probe, and its value is the
+/// list: `check-areas`' property *every operation the layer declares is
+/// listed by every parity runner* reads these rows against the
+/// operations the Node layer wires, so an operation added to one
+/// binding and forgotten in the Rust façade is a failed gate. That was
+/// the reason the property was written and the reason it names the
+/// runners rather than the bindings.
+///
+/// The rows are pairs, in the shape `check-areas` reads in all four
+/// files: the path first and quoted, then what the runner prints for it.
+/// Every value here is `present` for the reason above.
+///
+/// `(root).dispose` is **not** here and cannot be: a `Context` is
+/// dropped. Listing it as `missing` would be a disagreement where §6 of
+/// `03-design/rust-consumer-surface.md` intends an absence, so
+/// `check-areas` carries it as this runner's one allowance.
+fn the_surface(report: &mut Report) {
+    for (path, state) in [
+        ("(root).engine", "present"),
+        ("(root).positions", "present"),
+        ("(root).profile", "present"),
+        ("(root).settings", "present"),
+        ("(root).settings_hash", "present"),
+        ("(root).settings_json", "present"),
+        ("almanac.day", "present"),
+        ("almanac.of", "present"),
+        ("calendar.convert", "present"),
+        ("calendar.date_of", "present"),
+        ("calendar.fixed_of", "present"),
+        ("calendar.is_leap", "present"),
+        ("calendar.month_length", "present"),
+        ("calendar.weekday_of", "present"),
+        ("chart.found", "present"),
+        ("chart.found_many", "present"),
+        ("engine.call", "present"),
+        ("engine.call_json", "present"),
+        ("engine.manifest", "present"),
+        ("engine.manifest_json", "present"),
+        ("engine.names", "present"),
+        ("engine.signature", "present"),
+        ("frame.canonical", "present"),
+        ("frame.pack", "present"),
+        ("frame.unpack", "present"),
+        ("intl.entity", "present"),
+        ("intl.has", "present"),
+        ("intl.load_pack", "present"),
+        ("intl.locale", "present"),
+        ("intl.messages", "present"),
+        ("intl.render", "present"),
+        ("intl.transliterate", "present"),
+        ("keys.id", "present"),
+        ("keys.name", "present"),
+        ("time.civil_of", "present"),
+        ("time.convert", "present"),
+        ("time.delta_t", "present"),
+        ("time.resolve", "present"),
+    ] {
+        put(report, &format!("surface.{path}"), state.to_owned());
+    }
+}
+
+/// What a consumer knows without asking the library, which in Rust is
+/// the versions and the default.
+///
+/// The other three read these off the boundary; here they are
+/// **constants**, because Cargo resolved the graph and a `const` is what
+/// a resolved graph looks like. `abi` and the `build-*` keys have no
+/// counterpart at all and §6 says why.
+fn the_constants(report: &mut Report) {
+    put(report, "sdk", String::from(env!("CARGO_PKG_VERSION")));
+    put(
+        report,
+        "catalogue-version",
+        teistro::catalogue::SCHEMA_VERSION.to_string(),
+    );
+    put(
+        report,
+        "default-profile",
+        teistro::settings::DEFAULT_PROFILE.to_owned(),
+    );
+}
+
+/// The chart the **topocentric** profile founds, as the report prints
+/// it.
+///
+/// `nepali-default` is topocentric — inherited from the baseline engine,
+/// and what every recorded chart in the corpus is. Until the
+/// completion's centre step this could not found a chart at all, and the
+/// refusal was what the bindings compared. Now the chart is, which is
+/// the stronger comparison: the step runs per body, per instant, inside
+/// the library, so four bindings agreeing on its output is four
+/// bindings agreeing on the whole of it.
+fn a_topocentric_chart(report: &mut Report, sdk: &Context, place: &Place, offset: UtcOffset) {
+    let placed = sdk
+        .chart()
+        .found(
+            JulianDay::<Utc>::literal(2_451_545.0),
+            place,
+            offset,
+            ChartKind::Natal,
+        )
+        .expect("the test provider under a topocentric profile");
+    put(report, "chart-under-topocentric", String::from("founded"));
+    put(report, "topocentric-steps", placed.value.steps.join(","));
+    put(report, "topocentric-lagna", number(placed.value.lagna_deg));
+    for (at, graha) in placed.value.grahas.iter().enumerate() {
+        put(
+            report,
+            &format!("topocentric-graha-{at}"),
+            graha.graha.full_key().to_owned(),
+        );
+        put(
+            report,
+            &format!("topocentric-graha-{at}-lon"),
+            number(graha.longitude_deg),
+        );
+        put(
+            report,
+            &format!("topocentric-graha-{at}-lat"),
+            number(graha.latitude_deg),
+        );
+        put(
+            report,
+            &format!("topocentric-graha-{at}-speed"),
+            number(graha.speed_deg_per_day),
+        );
+    }
+}
+
 /// A chart founded under the geocentric profile, as the report prints
 /// it.
 ///
@@ -592,8 +768,25 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         .found_many(&instants, &place, offset, ChartKind::Natal)
         .expect("the test provider");
     put(report, "chart-count", founded.value.len().to_string());
+    put(report, "chart-kind", ChartKind::Natal.full_key().to_owned());
     put(report, "chart-place-lat", number(place.latitude.get()));
     put(report, "chart-place-lon", number(place.longitude.get()));
+    // The batch's own rows: what the other three read off the blob's
+    // header, here read off the first chart, because a batch shares them
+    // by construction rather than by a header saying so.
+    if let Some(first) = founded.value.first() {
+        put(report, "chart-steps", first.steps.join(","));
+        put(report, "chart-model-fnv", fnv(&first.day.day.model));
+        put(report, "chart-graha-count", first.grahas.len().to_string());
+    }
+    // The provenance as the boundary seals it: the same canonical JSON,
+    // so the same eight hex digits. Not a re-encoding of a decoded
+    // envelope -- that was a real disagreement in two bindings once.
+    put(
+        report,
+        "chart-provenance-fnv",
+        fnv(&teistro::canonical_json(&founded.provenance)),
+    );
     put(
         report,
         "chart-provenance-profile",
@@ -763,6 +956,106 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         );
     }
     one_day_limbs(report, index, day);
+    one_day_items(report, index, day);
+}
+
+/// One day's periods, item by item: the kaalas, the first choghadiya,
+/// the horas at both ends, the muhurtas and what the Moon did.
+///
+/// Counted above and **named** here, because a count agreeing is not the
+/// same as the items agreeing: two lists of three can hold different
+/// threes. The horas are read at both ends for the same reason a chart
+/// section walks two charts -- a list built backwards agrees on its
+/// length and on nothing else.
+fn one_day_items(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
+    for (at, kaala) in day.kaalas.iter().enumerate() {
+        put(
+            report,
+            &format!("day-{index}-kaala-{at}"),
+            kaala.kaala.full_key().to_owned(),
+        );
+        put(
+            report,
+            &format!("day-{index}-kaala-{at}-from"),
+            number(kaala.at.from.get()),
+        );
+    }
+    if let Some(first) = day.horas.first() {
+        put(
+            report,
+            &format!("day-{index}-hora-0-lord"),
+            first.lord.full_key().to_owned(),
+        );
+        put(
+            report,
+            &format!("day-{index}-hora-0-start"),
+            number(first.start.get()),
+        );
+    }
+    if let Some(last) = day.horas.last() {
+        put(
+            report,
+            &format!("day-{index}-hora-23-lord"),
+            last.lord.full_key().to_owned(),
+        );
+    }
+    if let Some(first) = day.choghadiya.first() {
+        put(
+            report,
+            &format!("day-{index}-choghadiya-0"),
+            first.choghadiya.full_key().to_owned(),
+        );
+        put(
+            report,
+            &format!("day-{index}-choghadiya-0-daytime"),
+            first.is_daytime.to_string(),
+        );
+    }
+    // The other three read one flat list of thirty with a `daylight`
+    // flag, where this surface has the daylight's fifteen and the
+    // night's fifteen apart. So the count is the sum, the first is the
+    // daylight's first, and "is the last one a daylight muhurta" is
+    // "does this day have no night" -- which is the polar case and
+    // nothing else.
+    put(
+        report,
+        &format!("day-{index}-muhurta-count"),
+        (day.muhurtas.daylight.len() + day.muhurtas.night.len()).to_string(),
+    );
+    if let Some(first) = day.muhurtas.daylight.first() {
+        put(
+            report,
+            &format!("day-{index}-muhurta-0-from"),
+            number(first.from.get()),
+        );
+    }
+    put(
+        report,
+        &format!("day-{index}-muhurta-last-daylight"),
+        day.muhurtas.night.is_empty().to_string(),
+    );
+    // A rise and a set are two lists here and one discriminated list at
+    // the boundary, concatenated rises first -- so the flattening is
+    // what the other three decode, and this is it in reverse.
+    for (at, (kind, instant)) in day
+        .moon
+        .rises
+        .iter()
+        .map(|at| ("rise", at))
+        .chain(day.moon.sets.iter().map(|at| ("set", at)))
+        .enumerate()
+    {
+        put(
+            report,
+            &format!("day-{index}-moon-{at}-kind"),
+            kind.to_owned(),
+        );
+        put(
+            report,
+            &format!("day-{index}-moon-{at}-instant"),
+            number(instant.get()),
+        );
+    }
 }
 
 /// One span of one limb, flattened so the four lists can be walked as
@@ -836,6 +1129,14 @@ fn an_almanac(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffs
         .of(&from, &to, place, offset)
         .expect("the test provider");
     put(report, "almanac-days", week.value.len().to_string());
+    if let Some(first) = week.value.first() {
+        put(report, "almanac-model-fnv", fnv(&first.day.model));
+    }
+    put(
+        report,
+        "almanac-provenance-fnv",
+        fnv(&teistro::canonical_json(&week.provenance)),
+    );
     put(
         report,
         "almanac-calendar",
@@ -882,6 +1183,15 @@ fn main() {
     positions(&mut report, &sdk);
     the_locale(&mut report, &sdk);
     the_frame(&mut report, &sdk);
+    the_constants(&mut report);
+    the_surface(&mut report);
+    let place = Place::new(
+        Latitude::try_new(27.7172).expect("a latitude"),
+        Longitude::try_new(85.324).expect("a longitude"),
+        Altitude::try_new(1400.0).expect("an altitude"),
+    );
+    let offset = UtcOffset::try_from_seconds(20700).expect("+05:45");
+    a_topocentric_chart(&mut report, &sdk, &place, offset);
     let (geo, place, offset) = charts(&mut report);
     an_almanac(&mut report, &geo, &place, offset);
 

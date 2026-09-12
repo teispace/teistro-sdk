@@ -72,7 +72,12 @@ pub use teistro_astro::delta_t::DeltaT;
 pub use teistro_calendar::{CalendarDate, FixedDay, Weekday};
 pub use teistro_chart::foundation::{ChartFoundation, GrahaPosition};
 pub use teistro_core::catalogue;
-pub use teistro_core::envelope::{CalendarResolution, Envelope, Hash, Provenance};
+// `canonical_json` and `content_hash` with them: a stored chart keeps
+// the bytes the provenance was hashed from, and without these a
+// consumer could hold an `Envelope` and not reproduce its own hash.
+pub use teistro_core::envelope::{
+    CalendarResolution, Envelope, Hash, Provenance, canonical_json, content_hash,
+};
 pub use teistro_core::error::{Error, Status};
 pub use teistro_core::interval::Interval;
 pub use teistro_core::key::KeyId;
