@@ -881,9 +881,27 @@ provider's DUT1).
      façade would not be a convenience over crates a consumer already
      composes, it would be the *first* place that composition exists in
      Rust.
-   - And it would be **smaller** than the boundary, not larger: `blob`,
-     `string` and `support` are the C caller's memory and its handshake,
-     which a Rust consumer does not have.
+   - **23 of the 46 entry points reach two or more crates**, so a façade
+     over them would be composition rather than a rename; 8 reach none
+     at all and are the C caller's memory. The widest are
+     `ts_panchanga_days` at seven and `ts_chart_found` at six; the six
+     calendar operations are a clean two apiece.
+   - And it would be **smaller** than the boundary, not larger: the
+     eight that reach nothing are its memory and its handshake, which a
+     Rust consumer does not have.
+
+   The per-entry-point figures are the second reading. The first
+   attributed a whole module's imports to each of its entry points,
+   which is honest but coarse, and sharpening it found its own two
+   defects — checked against the source rather than believed. Resolving
+   calls by **bare name** across every module made a date conversion
+   reach the chart and `intl` reach `teistro-panchanga`; keeping a path
+   like `Place::new` whole as one word made every associated function
+   invisible, so `ts_chart_found` came out not reaching `teistro-chart`
+   at all. Calls are resolved through `use crate::<module>::…` and
+   `crate::<module>::<name>` now, and methods are followed because
+   `TsContext::new` *is* the assembly. The two readings agree where they
+   overlap, which is the cross-check that makes either believable.
 
    Leaving `context` and `provider` out understated it — the areas are
    operations *on* a context, and building one is where the settings,
