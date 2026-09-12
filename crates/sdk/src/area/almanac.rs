@@ -5,7 +5,7 @@ use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_core::catalogue::Ayanamsha;
-use teistro_core::envelope::{Envelope, content_hash};
+use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
 use teistro_core::settings::AyanamshaChoice;
@@ -70,7 +70,9 @@ impl<'a> AlmanacArea<'a> {
             settings.provider.overrides,
             self.context.delta_t(),
         );
-        let mut founded = Almanac::new(
+        // `Almanac::between` seals, as the founder does: the hash of
+        // the value is filled where both are known, which is the join.
+        Almanac::new(
             provider,
             resolved,
             &model,
@@ -79,12 +81,7 @@ impl<'a> AlmanacArea<'a> {
             PrecessionModel::default(),
             self.context.delta_t(),
         )
-        .between(from, to, place)?;
-        // As the chart does, and for the reason the boundary fills it:
-        // a Rust consumer's envelope should carry a hash where a
-        // binding's blob carries one.
-        founded.provenance.content_hash = content_hash(&founded.value);
-        Ok(founded)
+        .between(from, to, place)
     }
 
     /// One day: the run of one, unwrapped.
@@ -104,6 +101,9 @@ impl<'a> AlmanacArea<'a> {
                 "a range of one day answered no panchanga, which cannot happen",
             ));
         };
-        Ok(Envelope::new(one, provenance))
+        // Re-sealed, as `chart().found` is and for the same reason: the
+        // hash belongs to the value this envelope holds, and a day is
+        // not a range of one.
+        Ok(Envelope::sealing(one, provenance))
     }
 }

@@ -5,7 +5,7 @@ use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::foundation::{ChartFoundation, Founder};
 use teistro_core::catalogue::{Ayanamsha, ChartKind};
-use teistro_core::envelope::{Envelope, content_hash};
+use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
@@ -76,7 +76,12 @@ impl<'a> ChartArea<'a> {
             settings.provider.overrides,
             self.context.delta_t(),
         );
-        let mut founded = Founder::new(
+        // `Founder::found` seals: the envelope it answers carries the
+        // hash of its own value, so there is nothing for this area to
+        // fill. It was not always so -- four callers each wrote that
+        // line, which is what closed `serial-and-the-envelope.md` §8's
+        // open question in favour of the producers.
+        Founder::new(
             provider,
             resolved,
             &model,
@@ -85,14 +90,7 @@ impl<'a> ChartArea<'a> {
             PrecessionModel::default(),
             self.context.delta_t(),
         )
-        .found(instants, place, kind)?;
-        // The founder leaves the content hash a placeholder and the C
-        // boundary fills it, so a Rust consumer's envelope carried one
-        // where a binding's blob carried a hash. Filled here for the
-        // same reason the boundary fills it, which also answers the
-        // asymmetry `serial-and-the-envelope.md` §8 noticed.
-        founded.provenance.content_hash = content_hash(&founded.value);
-        Ok(founded)
+        .found(instants, place, kind)
     }
 
     /// One chart: the batch of one, unwrapped.
@@ -114,6 +112,11 @@ impl<'a> ChartArea<'a> {
                 "a batch of one instant founded no chart, which cannot happen",
             ));
         };
-        Ok(Envelope::new(one, provenance))
+        // **Re-sealed**, because the hash is the hash of *this*
+        // envelope's value. The batch's provenance claims the hash of a
+        // list of one, and this envelope holds a chart -- so `found` and
+        // `found_many([one])` carry different content hashes, which is
+        // right: they carry different values.
+        Ok(Envelope::sealing(one, provenance))
     }
 }

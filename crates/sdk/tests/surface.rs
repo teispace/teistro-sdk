@@ -14,8 +14,11 @@
     reason = "tests fail by panicking"
 )]
 
-use teistro::catalogue::{Calendar, Era};
-use teistro::{Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, TimeScale};
+use teistro::catalogue::{Calendar, ChartKind, Era};
+use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro::{
+    Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, TimeScale, UtcOffset,
+};
 use teistro_core::envelope::CalendarResolution;
 
 /// A context on the profile every binding's quickstart names.
@@ -550,4 +553,89 @@ fn an_almanac_answers_a_run_of_days_in_one_crossing() {
             .get()
             .to_bits()
     );
+}
+
+/// **An envelope carries the hash of its own value.**
+///
+/// `Provenance::new` leaves the content hash `Hash::of(&[])`, and
+/// `03-design/serial-and-the-envelope.md` §2 found why that is a shape
+/// problem rather than a bug in a producer: a value and its stamp are
+/// built separately and joined at the end, so the one field that cannot
+/// be filled until the value exists is the one everybody forgets. §8
+/// left "whether the producers should seal" open; they do now, and this
+/// is the property that says so.
+///
+/// It is asserted here rather than in `chart` and `panchanga` because
+/// this is the surface a consumer holds, and because all four of the
+/// envelopes it can obtain are reachable from one context — including
+/// the two **unwrapped** ones, whose hash is of the single value and not
+/// of the batch it came from. A `found(one)` claiming the hash of a list
+/// of one would be a stamp that describes something else.
+#[test]
+fn every_envelope_is_sealed_with_the_hash_of_its_own_value() {
+    let sdk = Context::builder()
+        .profile("parashari-classical")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a shipped profile");
+    let place = Place::new(
+        Latitude::try_new(27.7172).expect("a latitude"),
+        Longitude::try_new(85.324).expect("a longitude"),
+        Altitude::try_new(1400.0).expect("an altitude"),
+    );
+    let offset = UtcOffset::try_from_seconds(20700).expect("+05:45");
+    let instants = [
+        JulianDay::<Utc>::literal(2_460_482.5),
+        JulianDay::<Utc>::literal(2_460_600.25),
+    ];
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 17);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 18);
+
+    let charts = sdk
+        .chart()
+        .found_many(&instants, &place, offset, ChartKind::Natal)
+        .expect("the built-in ephemeris");
+    let chart = sdk
+        .chart()
+        .found(instants[0], &place, offset, ChartKind::Natal)
+        .expect("the built-in ephemeris");
+    let week = sdk
+        .almanac()
+        .of(&from, &to, &place, offset)
+        .expect("the built-in ephemeris");
+    let day = sdk
+        .almanac()
+        .day(&from, &place, offset)
+        .expect("the built-in ephemeris");
+
+    assert_eq!(
+        charts.provenance.content_hash,
+        teistro::content_hash(&charts.value)
+    );
+    assert_eq!(
+        chart.provenance.content_hash,
+        teistro::content_hash(&chart.value)
+    );
+    assert_eq!(
+        week.provenance.content_hash,
+        teistro::content_hash(&week.value)
+    );
+    assert_eq!(
+        day.provenance.content_hash,
+        teistro::content_hash(&day.value)
+    );
+
+    // And the placeholder is what it is no longer: a hash of nothing.
+    assert_ne!(
+        charts.provenance.content_hash,
+        teistro::Hash::of(&[]),
+        "the placeholder `Provenance::new` leaves"
+    );
+    // The unwrapped one is **not** the batch's, because it is not the
+    // batch's value.
+    assert_ne!(
+        chart.provenance.content_hash,
+        charts.provenance.content_hash
+    );
+    assert_ne!(day.provenance.content_hash, week.provenance.content_hash);
 }

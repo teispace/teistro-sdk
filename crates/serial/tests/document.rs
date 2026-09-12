@@ -72,11 +72,18 @@ fn every_section_of_the_layer_serialises() {
 #[test]
 fn a_sealed_document_carries_its_own_hash() {
     let (document, provenance) = whole();
-    assert_eq!(
+    // The founder **seals** its own envelope now
+    // (`03-design/serial-and-the-envelope.md` §8), so what arrives here
+    // is the hash of the *chart*, not the placeholder this test used to
+    // assert. That is the right thing to check: a stamp being carried
+    // in, describing a value that is one section of the document about
+    // to be sealed.
+    assert_ne!(
         provenance.content_hash,
         Hash::of(&[]),
-        "the founder leaves the placeholder, which is what the pass found"
+        "the founder seals, so the stamp is not the hash of nothing"
     );
+    let inherited = provenance.content_hash;
     let sealed = document.seal(provenance);
     assert!(sealed.is_intact());
     assert_ne!(sealed.content_hash(), Hash::of(&[]));
@@ -86,6 +93,11 @@ fn a_sealed_document_carries_its_own_hash() {
         sealed.content_hash(),
         Hash::of(sealed.to_hash_form().as_bytes())
     );
+    // **Sealing replaces the stamp's hash rather than trusting it**,
+    // which is the whole reason the seal exists: the document is more
+    // than the foundation it was founded from, so a hash of the
+    // foundation is not a hash of the document.
+    assert_ne!(sealed.content_hash(), inherited);
 }
 
 #[test]

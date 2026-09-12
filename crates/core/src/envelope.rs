@@ -582,6 +582,37 @@ impl<T> Envelope<T> {
         Envelope { value, provenance }
     }
 
+    /// Wraps a value and **fills the provenance's content hash with the
+    /// hash of that value**, which is what the field is for.
+    ///
+    /// `Provenance::new` leaves it `Hash::of(&[])`, and
+    /// [`serial-and-the-envelope.md`](../../../docs/03-design/serial-and-the-envelope.md)
+    /// §2 found why that is a shape problem rather than a bug in a
+    /// producer: a value and its stamp are built separately and joined
+    /// at the end, so the one field that cannot be filled until the
+    /// value exists is the one everybody forgets. §8 left "whether the
+    /// producers should seal" open; they do, and this is how — the join
+    /// is the only place that knows both, so it is the place that fills
+    /// it.
+    ///
+    /// Four callers each wrote the same line before this existed: the C
+    /// boundary's chart and panchanga entry points, and the Rust
+    /// façade's two areas. The same line in four places is the argument.
+    #[must_use]
+    pub fn sealing(value: T, provenance: Provenance) -> Envelope<T>
+    where
+        T: serde::Serialize,
+    {
+        let content_hash = content_hash(&value);
+        Envelope {
+            value,
+            provenance: Provenance {
+                content_hash,
+                ..provenance
+            },
+        }
+    }
+
     /// Maps the value, keeping the provenance.
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Envelope<U> {
         Envelope {
