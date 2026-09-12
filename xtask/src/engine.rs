@@ -639,7 +639,10 @@ fn dispatch(
                 } else {
                     p.type_ref.base.as_str()
                 };
-                format!("{{\"name\":\"{}\",\"role\":\"{role}\",\"type\":\"{declared}\"}}", p.name)
+                format!(
+                    "{{\"name\":\"{}\",\"role\":\"{role}\",\"type\":\"{declared}\"}}",
+                    p.name
+                )
             })
             .collect();
         // `returns` is a word about the answer and not about C: `status`
@@ -869,7 +872,9 @@ fn wrapped(note: &str) -> String {
 
     let mut lines: Vec<String> = vec![String::new()];
     for word in note.split_whitespace() {
-        let line = lines.last_mut().unwrap_or_else(|| unreachable!("never empty"));
+        let line = lines
+            .last_mut()
+            .unwrap_or_else(|| unreachable!("never empty"));
         if line.is_empty() {
             line.push_str(word);
         } else if line.len() + 1 + word.len() <= ROOM {
@@ -946,7 +951,11 @@ fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     }
     let _ = writeln!(out);
     if mutating > 0 {
-        let _ = writeln!(out, "### The {} that change engine state\n", spelled(mutating));
+        let _ = writeln!(
+            out,
+            "### The {} that change engine state\n",
+            spelled(mutating)
+        );
         let _ = writeln!(
             out,
             "These are **offered rather than refused**, and the column above is why the distinction is drawn at all. Reaching what the SDK has not ported is the point of the namespace; but after one of these the engine is answering under settings the SDK's own provenance does not record, so a chart cast afterwards says it was computed one way and was computed another.\n"
@@ -959,11 +968,7 @@ fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     out
 }
 
-fn queue_section(
-    rows: Option<&Vec<Row<'_>>>,
-    structs: usize,
-    vocabulary: &Vocabulary,
-) -> String {
+fn queue_section(rows: Option<&Vec<Row<'_>>>, structs: usize, vocabulary: &Vocabulary) -> String {
     let mut out = String::new();
     let Some(rows) = rows else { return out };
     let _ = writeln!(out, "## What the marshaller has not learned\n");

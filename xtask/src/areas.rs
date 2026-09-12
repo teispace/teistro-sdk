@@ -482,10 +482,7 @@ fn claims_section(
 
 /// Whether an entry point's name begins with the module it lives in.
 fn carries_its_module(function: &Function) -> bool {
-    let stem = function
-        .name
-        .strip_prefix("ts_")
-        .unwrap_or(&function.name);
+    let stem = function.name.strip_prefix("ts_").unwrap_or(&function.name);
     let module = module_of(&function.source);
     stem == module || stem.starts_with(&format!("{module}_"))
 }

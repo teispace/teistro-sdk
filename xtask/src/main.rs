@@ -114,8 +114,8 @@
 mod absence;
 mod accuracy;
 mod agreement;
-mod areas;
 mod almanac;
+mod areas;
 mod aspect;
 mod batching;
 mod bench;
@@ -193,7 +193,11 @@ const PASSES: &[Pass] = &[
     ("schema", schema::generate, schema::check_generated),
     ("almanac", almanac::generate, almanac::check_generated),
     ("lunisolar", lunisolar::generate, lunisolar::check_generated),
-    ("topocentric", topocentric::generate, topocentric::check_generated),
+    (
+        "topocentric",
+        topocentric::generate,
+        topocentric::check_generated,
+    ),
     ("batching", batching::generate, batching::check_generated),
     ("surface", surface::generate, surface::check_generated),
     ("agreement", agreement::generate, agreement::check_generated),
