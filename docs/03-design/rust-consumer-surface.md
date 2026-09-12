@@ -325,6 +325,46 @@ principle:
   future operation that pulls a tenth crate into a context shows up as a
   changed page.
 
+  It also grew a third property while the examples were being written,
+  and that property was **born red four times over**: *every type an
+  area's signature names is reachable from the crate root.* An operation
+  answering a type a consumer cannot name is an operation whose answer
+  cannot be matched on, and four were —
+  `calendar().convert` answers a `CalendarResolution`, `chart().found`
+  an `Envelope<ChartFoundation>`, `almanac().of` an
+  `Envelope<Vec<Panchanga>>`, and none of those names was re-exported.
+  So a consumer with one dependency could call the operation and not
+  read the answer, which is the opposite of what this crate is for.
+
+  It is measured as an **intersection** of two readings, because neither
+  alone is the question: scanning a signature for capitalised words
+  finds `Result`, `Option` and every generic parameter, and scanning a
+  module's imports finds the types it uses only in its *body* — the
+  founder, the solar model, the tzdb — which are implementation and not
+  surface. A type that is both imported from an SDK crate and named in a
+  `pub fn` signature is exactly one a consumer must be able to name. 35
+  of them, all reachable; the reader's own first bug was calling `Frame`
+  and `PositionRequest` unreachable because it read only the first line
+  of a braced re-export.
+- **`check-rust`, the fifth binding gate**, which runs the examples. What
+  it adds over the fast check is the thing a compiler cannot say: that
+  each program *runs*. `cargo clippy --workspace --all-targets` already
+  compiles an example, and a compiling example can still print a
+  falsehood — which is what the install page taught on 12 September, and
+  what this one proved again within the hour: the Nepali-new-year line
+  in all three other bindings' `panchanga` examples said the Sun "has
+  not quite arrived" at Aries and printed `359.9023°` short of it, when
+  the Sun had crossed two and a half hours earlier. `(360 - sun) % 360`
+  of a longitude just past zero is just under 360. Three files
+  corrected.
+
+  It is the only binding gate that needs no shared library, because
+  there is nothing to build and load (§3).
+
+  One example is left to another gate: `parity.rs` is run by
+  `check-parity` as one of the four runners, and running it here as well
+  would pay twice for one proof.
+
 ## 8. Order of work
 
 1. **The façade crate, beside the boundary.** `Context`, the builder, the
@@ -414,8 +454,51 @@ principle:
    `teistro-intl` as a dependency, because the boundary still *marshals*
    the engine's types even though it no longer composes it. The
    composition moved; the types are shared.
-4. **Examples**, the same eight scenarios the other three bindings run,
-   held by a gate the same way.
+4. ~~**Examples**, the same eight scenarios the other three bindings
+   run, held by a gate the same way.~~ **Done.** Eight files in
+   `crates/sdk/examples/`, run by `cargo xtask check-rust`, with the
+   README's table saying what each one is really teaching — the same
+   eight scenarios, and each one written as a Rust consumer would rather
+   than transcribed.
+
+   Where the surface differs, the example is what says so: a context is
+   a value with no `dispose`; `positions` answers the astronomy crate's
+   own `Vec<f64>` columns with no blob in between; `CalendarResolution`
+   is an enum a `match` must cover; an absent muhurta is an `Option` the
+   compiler will not let a reader ignore; there is no `buildInfo` to ask
+   for, because Cargo fixed the versions, so `ephemeris.rs` logs the
+   provider's `capabilities` instead; and `your_own_ephemeris.rs`
+   implements the port rather than handing over an object literal, which
+   makes coverage a **per-cell** outcome (`provider::validate` says why)
+   where the other three shims refuse the batch.
+
+   Three things the writing found, none of them in the examples:
+
+   - Four signature types were not re-exported (§7), so §7's third
+     property exists because of this step.
+   - **An almanac's provenance named no provider.** The chart foundation
+     stamps it and the almanac did not, in all four bindings, because
+     nothing had ever printed the field. `flags_used` there is empty and
+     **not** a guess: the chart passes the completion's steps, and this
+     path reaches its positions through `FrameLongitudes`, which keeps
+     no step list, so there is nothing to vouch for.
+   - **A `--no-default-features` build of the façade failed**, and had
+     always failed, on the seven examples and `tests/surface.rs` that
+     name `Ephemeris::Builtin` — a variant that exists only under
+     `builtin-ephemeris`. Nobody saw it because nothing had ever built
+     this crate without its default: the tier matrix builds
+     `teistro-ephemeris-builtin` and `teistro-ffi`, not this.
+     `required-features` on each target is the fix, the two doctests
+     that name it are `#[cfg]`-guarded, and `check-lints`'
+     `target-declares-the-feature-it-needs` holds the class by reading
+     the sources — so a target that stops naming the built-in stops
+     needing the line, and one that starts cannot be added without it.
+
+   And one thing it deliberately did **not** do: the eight files repeat
+   small helpers — a clock formatter, a sign lookup, an
+   entity-name-or-key fallback. An example is a program a reader is
+   invited to *copy*, and a shared `support` module would make every one
+   of them un-copyable. The DRY rule applies to what ships.
 5. **The site.** The surface page has its Rust column — the fourth
    spelling, an area as a borrowing view, and a section on the one thing
    Rust does differently: it composes rather than crosses, so no

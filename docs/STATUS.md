@@ -39,7 +39,15 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-09, end of the sixty-fourth session (the
+**Last updated:** 2026-09-12, end of the second session of that day
+(the Rust façade's eight examples and the fifth binding gate,
+`check-rust`; the parity runner grown from 125 keys to 519; and four
+defects the writing found — four signature types a consumer could not
+name, an almanac provenance that named no provider, a
+`--no-default-features` build that had always failed, and a
+Nepali-new-year line in the other three bindings that said the Sun had
+not reached Aries two and a half hours after it had); before that
+2026-09-09, end of the sixty-fourth session (the
 completion's topocentric centre, measured and then built. The design
 page's own description of the step — "the observer's geocentric position
 (WGS84) and the parallax" — is falsified by a residual that does not
@@ -1207,6 +1215,88 @@ provider's DUT1).
    36 for a topocentric scenario the Rust runner does not walk, and
    about ten that are genuinely §6's — `abi`, the `build-*` keys, the
    blobs' hashes.
+
+   **And step 4 is done: eight examples, and a fifth binding gate.**
+   `crates/sdk/examples/` holds the same eight scenarios the other three
+   bindings run, and `cargo xtask check-rust` runs every one of them
+   (release, because the built-in ephemeris in a debug build takes
+   minutes over a year of the sky) along with the crate's own tests and
+   doctests. What that adds over the fast check is the thing a compiler
+   cannot say: **that each program runs.** `cargo clippy --workspace
+   --all-targets` already compiles an example, and a compiling example
+   can still print a falsehood.
+
+   Which it did, within the hour, in the *other* three bindings. The
+   Nepali-new-year line of `panchanga.{mjs,dart,py}` said the Sun "has
+   not quite arrived" at Aries and printed `359.9023°` short of it — and
+   the Sun had crossed two and a half hours earlier. `(360 - sun) % 360`
+   of a longitude just past zero is just under 360, and reads as nearly
+   a whole circle still to go. Three files corrected, and the Rust one
+   prints how far *past* the crossing the moment is, which is the number
+   the sentence was reaching for.
+
+   Each example is written as a Rust consumer would rather than
+   transcribed, and where the surface differs the example is what says
+   so: a context is a value with no `dispose`; `positions` answers the
+   astronomy crate's own `Vec<f64>` columns with no blob in between;
+   `CalendarResolution` is an enum a `match` must cover where the others
+   hand over a string; an absent muhurta is an `Option` the compiler will
+   not let a reader ignore; there is no `buildInfo` to ask for, because
+   Cargo fixed the versions, so `ephemeris.rs` logs the provider's
+   `capabilities` instead; and `your_own_ephemeris.rs` implements the
+   port rather than handing over an object literal, which makes coverage
+   a **per-cell** outcome where the other three shims refuse the batch —
+   `provider::validate` says why, and the example says which is which.
+   It also shows the `Arc` newtype for a provider you keep a handle on,
+   and a chain whose first entry is a recipe so a later one can be its
+   fallback.
+
+   **Three defects the writing found, none of them in the examples.**
+
+   Four signature types were not re-exported, so `calendar().convert`
+   answered a `CalendarResolution`, `chart().found` an
+   `Envelope<ChartFoundation>` and `almanac().of` an
+   `Envelope<Vec<Panchanga>>` that a consumer with one dependency could
+   not name — it could call the operation and not read the answer, which
+   is the opposite of what the crate is for. The measured page gained a
+   third property, **born red on exactly those four**: *every type an
+   area's signature names is reachable from the crate root*, measured as
+   the **intersection** of two readings, because neither alone is the
+   question — scanning a signature for capitalised words finds `Result`
+   and every generic parameter, and scanning a module's imports finds
+   what it uses only in its body. 35 types, all reachable. The reader's
+   own first bug was calling `Frame` and `PositionRequest` unreachable
+   because it read only the first line of a braced re-export.
+
+   **An almanac's provenance named no provider**, in all four bindings,
+   because nothing had ever printed the field: the chart foundation
+   stamps it and `Almanac::provenance` did not. A stored panchangam page
+   said nothing about what computed it. `flags_used` there is empty and
+   **not** a guess — the chart passes the completion's steps, and this
+   path reaches its positions through `FrameLongitudes`, which keeps no
+   step list, so there is nothing to vouch for and an invented list
+   would be worse than an empty one.
+
+   **A `--no-default-features` build of the façade failed, and always
+   had**, on the seven examples and `tests/surface.rs` that name
+   `Ephemeris::Builtin` — a variant that exists only under
+   `builtin-ephemeris`. Nobody had seen it because nothing had ever
+   built this crate without its default: the tier matrix builds
+   `teistro-ephemeris-builtin` and `teistro-ffi`, not this.
+   `required-features` on each target is the fix, the two doctests that
+   name the variant are `#[cfg]`-guarded, and `check-lints`'
+   **`target-declares-the-feature-it-needs`** holds the class by reading
+   the sources — so a target that stops naming the built-in stops
+   needing the line, and one that starts cannot be added without it.
+   `calendar.rs` is the example that needs no feature, and that is its
+   lesson: a calendar needs no ephemeris, so it names
+   `Ephemeris::None`.
+
+   One thing the step deliberately did **not** do: the eight files
+   repeat small helpers — a clock formatter, a sign lookup, an
+   entity-name-or-key fallback. An example is a program a reader is
+   invited to *copy*, and a shared `support` module would make every one
+   of them un-copyable. The DRY rule applies to what ships.
 
    The order of work was deliberately duplication-first: the façade beside
    the boundary, then the fourth parity runner that proves it equal to
@@ -2579,6 +2669,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-12 (second session) | **The Rust façade's examples, and the four defects writing them found.** Step 4 of `03-design/rust-consumer-surface.md` is done: eight programs in `crates/sdk/examples/`, the same eight scenarios the other three bindings run, each written as a Rust consumer would rather than transcribed, and each run by the new **`cargo xtask check-rust`** on five platforms. What a gate over examples adds is the thing a compiler cannot say -- that each program *runs* -- and it earned that within the hour, in the **other three** bindings: the Nepali-new-year line of `panchanga.{mjs,dart,py}` said the Sun "has not quite arrived" at Aries and printed `359.9023°` short of it, when the Sun had crossed two and a half hours earlier, because `(360 - sun) % 360` of a longitude just past zero is just under 360. Three files corrected. **Four signature types were unreachable**: `calendar().convert` answered a `CalendarResolution`, `chart().found` an `Envelope<ChartFoundation>` and `almanac().of` an `Envelope<Vec<Panchanga>>` that a consumer with one dependency could not name -- it could call the operation and not read the answer, which is the opposite of what the crate is for. The measured page gained a third property, born red on exactly those four: *every type an area's signature names is reachable from the crate root*, measured as the **intersection** of a module's SDK-crate imports and the identifiers in its `pub fn` signatures, because a signature scan alone finds `Result` and every generic parameter and an import scan alone finds the founder and the tzdb. **An almanac's provenance named no provider** in all four bindings, because nothing had ever printed the field; `flags_used` there is empty and not a guess, since this path's positions come through `FrameLongitudes`, which keeps no step list. **And a `--no-default-features` build of the façade had always failed** on the seven examples and `tests/surface.rs` that name `Ephemeris::Builtin`, unseen because nothing had ever built this crate without its default -- the tier matrix builds the builtin crate and the boundary, not this. `required-features` per target, `#[cfg]` on the two doctests, and `check-lints`' `target-declares-the-feature-it-needs` reading the sources so the class is held rather than the instances. Also: the parity runner grew from 125 keys to **519**, in four passes with every added key agreeing on its first run, which found `jd_of_fixed` and `fixed_of_jd` missing from the façade -- free functions, because a fixed day and a Julian day are two spellings of one integer. Next: growing the last 155, and the publishing half of packaging, which waits on the maintainer. |
 | 2026-09-04 | The baseline engine analysis, Teimeris survey, competitive and platform research, docs written. Twenty-three questions compiled and decided by the maintainer the same day. Architecture revised for the astronomy layer, the built-in ephemeris and Teistro Intl; roadmap restructured into ten phases; governance and scaffolding written; the tooling made Rust-only (`xtask`) before the founding commit was finalised; repository `teispace/teistro-sdk` created public with the docs as the first commit and `main` protected. Next: spike 1, the golden-vector export from the baseline engine. |
 | 2026-09-04 (second session) | A review of the team's earlier internal planning notes for the same SDK, now retired; everything worth keeping was absorbed into this repository in its own words and the notes are not referenced. Eight decisions (Q26 to Q33, ADR-0016 to ADR-0023), five falsified kernel and arithmetic designs, the cruxes register, the clean-room policy and dependency allow list, library lints, and the corresponding revisions across the architecture, quality bar, roadmap and guidelines. The maintainer added the type-safety mandate (Q33). Next: spike 1 unchanged. |
 | 2026-09-04 (third session) | Spike 1 done: the export script written beside the baseline engine and run; 55 charts (48 chosen adversarially, 7 placed by search at classification boundaries in the topocentric frame), 115 fixtures under 13 settings profiles in `fixtures/baseline/`; the fixtures README with the schema and ten baseline conventions for the deliberate-difference registry; the provisional central tolerance file; `cargo xtask check-fixtures` in the fast check; `05-testing/01-golden-vectors.md` as the result page. Findings: the natal panchanga is topocentric while the daily one is geocentric; local mean time is rounded to the minute; Placidus above the polar circle is not flagged degenerate. Next: spike 2, the binding toolchain. |
