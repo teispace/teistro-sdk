@@ -224,7 +224,9 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 1;
     }
     let Some(checker) = type_checker(root, &python) else {
-        println!("skip  {PACKAGE}: no type checker (set MYPY, or `{python} -m pip install mypy`)");
+        println!(
+            "skip  {PACKAGE}: the pinned type checker is not installed and could not be (needs `{python} -m venv`; or set MYPY)"
+        );
         return 0;
     };
     let outcome = wrong_usages(&package, &checker)

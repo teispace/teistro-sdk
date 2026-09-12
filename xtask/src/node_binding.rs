@@ -166,8 +166,12 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 1;
     }
     let Some((tsc, args)) = typescript(root) else {
+        // The compiler is pinned in `typecheck/package.json` and this
+        // gate installs it, so reaching here means npm could not be run
+        // or the install failed -- not that the machine was expected to
+        // have brought its own.
         println!(
-            "skip  {TSCONFIG}: no TypeScript compiler (set TSC, or `npm install typescript` in bindings/node/typecheck)"
+            "skip  {TSCONFIG}: the pinned TypeScript compiler is not installed and could not be (needs `npm`; or set TSC)"
         );
         return 0;
     };
