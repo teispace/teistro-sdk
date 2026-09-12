@@ -449,10 +449,25 @@ provider's DUT1).
    `lib` functions the rule does not cover and one declared in the design
    page.
 
-   **Next: Dart, Python and Rust**, then `check-parity` gains the
-   grouping — which is what holds those three to Node's shape — then the
-   READMEs and the site. The engine's typed façade is after all of it,
-   because it attaches to the `sdk.engine` that Node now has.
+   **Dart and Python followed**, each in its own idiom — a `late final`
+   field and a `functools.cached_property`, both of which make an area a
+   value a consumer can hold — and each green on its own gate. Python's
+   `messages` stopped being eager along the way: it was built in
+   `__init__` for every context whether anything rendered or not.
+
+   And **`check-parity` gained the grouping**, which was the gap the
+   measurement named: it held three bindings to the same *values* and to
+   no *shape*, so a namespaced surface could have drifted into three
+   groupings without the gate telling a deliberate difference from a
+   mistake. Each runner now prints a `surface.<area>.<operation>` line
+   per operation, keyed by a canonical path and referencing its own
+   binding's spelling. 673 values agree across all three; proven red by
+   moving `calendar.convert` to `time.convert_date` in one runner, which
+   reported the extra key and the missing one in both comparisons.
+
+   **Next: Rust's own consumer surface, the READMEs and the site.** The
+   engine's typed façade is after those, because it attaches to the
+   `sdk.engine` the three bindings now have.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation

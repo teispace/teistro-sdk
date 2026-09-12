@@ -10,6 +10,21 @@
 //! should be: the point is that the bindings agree with **each other**, so
 //! a fact written into this file could only weaken it.
 //!
+//! # Values, and shape
+//!
+//! Most of what a runner prints is what its binding **answered**. The
+//! `surface.*` lines are what it is **shaped** like: each key is a
+//! canonical `area.operation` path and the member the runner references
+//! beside it is that binding's own spelling of it. A binding that moved
+//! an operation to another area, or renamed one, prints a key the others
+//! do not, and the comparison below reports it as missing on one side and
+//! extra on the other.
+//!
+//! That is the gap `03-design/surface-areas.md` named: three bindings held
+//! to the same values and to no shape at all, so a namespaced surface
+//! could drift into three groupings and this gate could not tell a
+//! deliberate difference from a mistake.
+//!
 //! Every report is compared against the first that ran, which is what
 //! makes the gate work on a machine with only some of the toolchains: two
 //! present are still compared, and a third joins without the others

@@ -435,6 +435,62 @@ void main() {
   put('almanac-single-agrees', oneDay.sunrise == week.at(0).sunrise);
   geo.dispose();
 
+  // ── The surface's shape ───────────────────────────────────────────
+  //
+  // The lines above compare what the bindings ANSWER. These compare
+  // where an operation LIVES: every key is the canonical
+  // `area.operation` path, and the member each binding references beside
+  // it is its own spelling of it. A binding that moved an operation to
+  // another area, or renamed one, prints a key the others do not and the
+  // gate fails — which is what `03-design/surface-areas.md` asks of this
+  // runner, and what `check-parity` could not see before.
+  //
+  // In Dart a tear-off is resolved at compile time, so a member that
+  // moved does not merely print `missing` here: the runner stops
+  // building.
+  for (final entry in <(String, Object?)>[
+    ('calendar.date_of', ctx.calendar.dateOf),
+    ('calendar.fixed_of', ctx.calendar.fixedOf),
+    ('calendar.convert', ctx.calendar.convert),
+    ('calendar.weekday_of', ctx.calendar.weekdayOf),
+    ('calendar.month_length', ctx.calendar.monthLength),
+    ('calendar.is_leap', ctx.calendar.isLeap),
+    ('time.resolve', ctx.time.resolve),
+    ('time.civil_of', ctx.time.civilOf),
+    ('time.convert', ctx.time.convert),
+    ('time.delta_t', ctx.time.deltaT),
+    ('intl.locale', ctx.intl.locale),
+    ('intl.render', ctx.intl.render),
+    ('intl.has', ctx.intl.has),
+    ('intl.transliterate', ctx.intl.transliterate),
+    ('intl.entity', ctx.intl.entity),
+    ('intl.messages', ctx.intl.messages),
+    ('intl.load_pack', ctx.intl.loadPack),
+    ('keys.id', ctx.keys.id),
+    ('keys.name', ctx.keys.name),
+    ('frame.canonical', ctx.frame.canonical),
+    ('frame.pack', ctx.frame.pack),
+    ('frame.unpack', ctx.frame.unpack),
+    ('chart.found', ctx.chart.found),
+    ('chart.found_many', ctx.chart.foundMany),
+    ('almanac.of', ctx.almanac.of),
+    ('almanac.day', ctx.almanac.day),
+    ('engine.names', ctx.engine.names),
+    ('engine.signature', ctx.engine.signature),
+    ('engine.call', ctx.engine.call),
+    ('engine.call_json', ctx.engine.callJson),
+    ('engine.manifest', ctx.engine.manifest),
+    ('engine.manifest_json', ctx.engine.manifestJson),
+    ('(root).positions', ctx.positions),
+    ('(root).profile', ctx.profile),
+    ('(root).settings', ctx.settings),
+    ('(root).settings_json', ctx.settingsJson),
+    ('(root).settings_hash', ctx.settingsHash),
+    ('(root).dispose', ctx.dispose),
+  ]) {
+    put('surface.${entry.$1}', entry.$2 == null ? 'missing' : 'present');
+  }
+
   final keys = report.keys.toList()..sort();
   for (final key in keys) {
     stdout.write('$key\t${report[key]}\n');

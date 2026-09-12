@@ -12,7 +12,7 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 |---|---|---|
 | a boundary module a consumer reaches is reached from one area | **holds** | 0 of 8 disagree; so no operation can be looked for under two names |
 | every area holds an operation that reaches the boundary | **holds** | 0 of 8 disagree |
-| no operation's name repeats its own area's | **holds** | 0 of 30 disagree; which is what the namespace is for |
+| no operation's name repeats its own area's | **holds** | 0 of 32 disagree; which is what the namespace is for |
 | every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 14 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
 | an entry point's name already carries its own module | falsified | 7 of 46 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_context_new_with_provider` |
 
@@ -30,7 +30,7 @@ Nothing else. The three that were inconsistencies were all the same one — a fu
 
 ## The areas the layer wires
 
-**8 areas over 30 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+**8 areas over 32 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
 
 ### The root — `Context`
 
@@ -88,6 +88,8 @@ Nothing else. The three that were inconsistencies were all the same one — a fu
 | operation | reaches |
 |---|---|
 | `canonical` | `ts_frame_canonical` (frame) |
+| `pack` | `ts_frame_pack` (frame) |
+| `unpack` | `ts_frame_unpack` (frame) |
 
 ### `sdk.chart` — `ChartArea`
 
@@ -137,7 +139,7 @@ Nothing else. The three that were inconsistencies were all the same one — a fu
 
 ## What this does not measure
 
-**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. `check-parity` holds all three to the same *values*; holding them to the same *shape* is what makes the other two follow this one, and it is the gate this page is waiting on.
+**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. What holds the other two to this one is `check-parity`, which compares a `surface.<area>.<operation>` line per operation from each runner: this page says what Node's shape *is*, and that gate says the other two share it.
 
 **Whether the area names are the right ones.** This holds the properties a namespaced surface must keep. `almanac` over `panchanga`, and `engine` over `ephemeris`, are arguments and not counts, and [`surface-areas.md`](surface-areas.md) makes them.
 

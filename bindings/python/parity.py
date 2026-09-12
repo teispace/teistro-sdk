@@ -428,6 +428,61 @@ def main() -> None:
         )
         put("almanac-single-agrees", one_day.sunrise == week.at(0).sunrise)
 
+    # ── The surface's shape ───────────────────────────────────────────
+    #
+    # The lines above compare what the bindings ANSWER. These compare
+    # where an operation LIVES: every key is the canonical
+    # `area.operation` path, and the member each binding references
+    # beside it is its own spelling of it. A binding that moved an
+    # operation to another area, or renamed one, prints a key the others
+    # do not and the gate fails -- which is what
+    # `03-design/surface-areas.md` asks of this runner, and what
+    # `check-parity` could not see before.
+    #
+    # Referenced rather than called, and referenced by attribute rather
+    # than by `getattr`, so the strict type check reads them too.
+    for path, member in (
+        ("calendar.date_of", ctx.calendar.date_of),
+        ("calendar.fixed_of", ctx.calendar.fixed_of),
+        ("calendar.convert", ctx.calendar.convert),
+        ("calendar.weekday_of", ctx.calendar.weekday_of),
+        ("calendar.month_length", ctx.calendar.month_length),
+        ("calendar.is_leap", ctx.calendar.is_leap),
+        ("time.resolve", ctx.time.resolve),
+        ("time.civil_of", ctx.time.civil_of),
+        ("time.convert", ctx.time.convert),
+        ("time.delta_t", ctx.time.delta_t),
+        ("intl.locale", ctx.intl.locale),
+        ("intl.render", ctx.intl.render),
+        ("intl.has", ctx.intl.has),
+        ("intl.transliterate", ctx.intl.transliterate),
+        ("intl.entity", ctx.intl.entity),
+        ("intl.messages", ctx.intl.messages),
+        ("intl.load_pack", ctx.intl.load_pack),
+        ("keys.id", ctx.keys.id),
+        ("keys.name", ctx.keys.name),
+        ("frame.canonical", ctx.frame.canonical),
+        ("frame.pack", ctx.frame.pack),
+        ("frame.unpack", ctx.frame.unpack),
+        ("chart.found", ctx.chart.found),
+        ("chart.found_many", ctx.chart.found_many),
+        ("almanac.of", ctx.almanac.of),
+        ("almanac.day", ctx.almanac.day),
+        ("engine.names", ctx.engine.names),
+        ("engine.signature", ctx.engine.signature),
+        ("engine.call", ctx.engine.call),
+        ("engine.call_json", ctx.engine.call_json),
+        ("engine.manifest", ctx.engine.manifest),
+        ("engine.manifest_json", ctx.engine.manifest_json),
+        ("(root).positions", ctx.positions),
+        ("(root).profile", ctx.profile),
+        ("(root).settings", ctx.settings),
+        ("(root).settings_json", ctx.settings_json),
+        ("(root).settings_hash", ctx.settings_hash),
+        ("(root).dispose", ctx.close),
+    ):
+        put(f"surface.{path}", "missing" if member is None else "present")
+
     for key in sorted(report):
         sys.stdout.write(f"{key}\t{report[key]}\n")
     ctx.close()

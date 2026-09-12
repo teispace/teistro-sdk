@@ -1325,6 +1325,16 @@ class FrameArea extends Area {
   canonical() {
     return this._run(() => native.frameCanonical());
   }
+
+  /** Packs a frame's fields into the bits a position request carries. */
+  pack(frame) {
+    return this._run(() => native.framePack(clean(frame)));
+  }
+
+  /** The frame a packed set of bits describes. */
+  unpack(bits) {
+    return this._run(() => native.frameUnpack(bits));
+  }
 }
 
 /** `sdk.chart` — a chart founded at an instant and a place. */

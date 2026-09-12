@@ -364,6 +364,63 @@ const oneDay = geo.almanac.day({ date: gregorian(2024, 6, 17), place, utcOffsetS
 put('almanac-single-agrees', oneDay.day.sunrise === week.at(0).day.sunrise);
 geo.dispose();
 
+// ── The surface's shape ─────────────────────────────────────────────
+//
+// The lines above compare what the bindings ANSWER. These compare where
+// an operation LIVES: every key is the canonical `area.operation` path,
+// and the member each binding references beside it is its own spelling
+// of it. A binding that moved an operation to another area, or renamed
+// one, prints a key the others do not and the gate fails — which is what
+// `03-design/surface-areas.md` asks of this runner, and what
+// `check-parity` could not see before.
+//
+// Referenced rather than called: a call needs arguments and some of them
+// need an ephemeris, and what is being compared is the shape.
+const shape = new Context({ testProvider: true, profile: 'nepali-default' });
+for (const [path, member] of [
+  ['calendar.date_of', shape.calendar.dateOf],
+  ['calendar.fixed_of', shape.calendar.fixedOf],
+  ['calendar.convert', shape.calendar.convert],
+  ['calendar.weekday_of', shape.calendar.weekdayOf],
+  ['calendar.month_length', shape.calendar.monthLength],
+  ['calendar.is_leap', shape.calendar.isLeap],
+  ['time.resolve', shape.time.resolve],
+  ['time.civil_of', shape.time.civilOf],
+  ['time.convert', shape.time.convert],
+  ['time.delta_t', shape.time.deltaT],
+  ['intl.locale', shape.intl.locale],
+  ['intl.render', shape.intl.render],
+  ['intl.has', shape.intl.has],
+  ['intl.transliterate', shape.intl.transliterate],
+  ['intl.entity', shape.intl.entity],
+  ['intl.messages', shape.intl.messages],
+  ['intl.load_pack', shape.intl.loadPack],
+  ['keys.id', shape.keys.id],
+  ['keys.name', shape.keys.name],
+  ['frame.canonical', shape.frame.canonical],
+  ['frame.pack', shape.frame.pack],
+  ['frame.unpack', shape.frame.unpack],
+  ['chart.found', shape.chart.found],
+  ['chart.found_many', shape.chart.foundMany],
+  ['almanac.of', shape.almanac.of],
+  ['almanac.day', shape.almanac.day],
+  ['engine.names', shape.engine.names],
+  ['engine.signature', shape.engine.signature],
+  ['engine.call', shape.engine.call],
+  ['engine.call_json', shape.engine.callJson],
+  ['engine.manifest', shape.engine.manifest],
+  ['engine.manifest_json', shape.engine.manifestJson],
+  ['(root).positions', shape.positions],
+  ['(root).profile', shape.profile],
+  ['(root).settings', shape.settings],
+  ['(root).settings_json', shape.settingsJson],
+  ['(root).settings_hash', shape.settingsHash],
+  ['(root).dispose', shape.dispose],
+]) {
+  put(`surface.${path}`, member === undefined || member === null ? 'missing' : 'present');
+}
+shape.dispose();
+
 for (const key of [...report.keys()].sort()) {
   process.stdout.write(`${key}\t${report.get(key)}\n`);
 }

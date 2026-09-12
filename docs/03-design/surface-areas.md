@@ -209,11 +209,20 @@ as a single key that is not there.
 - **`check-areas`** holds the measurement, so a member added to the Node
   layer appears on the page and a module that stops being reached is
   reported.
-- **`check-parity`** compares values today and not shapes. It gains the
-  grouping: every binding must answer the same operation at the same
-  `area.operation` path, so a binding that puts an operation in the wrong
-  area fails a gate rather than a review. This is the gap the measurement
-  named and the reason the pass reads only one binding today.
+- **`check-parity`** compared values and not shapes; it does both now.
+  Each runner prints a `surface.<area>.<operation>` line per operation,
+  keyed by a **canonical** path and referencing its own binding's
+  spelling of the member, so a binding that moved an operation or renamed
+  one prints a key the others do not and the gate reports it on both
+  sides. Proven red by moving `calendar.convert` to `time.convert_date`
+  in one runner: four disagreements, naming the extra key and the missing
+  one in each comparison.
+
+  Referenced rather than called, because a call needs arguments and some
+  of them need an ephemeris, and what is being compared is the shape. In
+  Dart the reference is a tear-off resolved at compile time, so a member
+  that moved does not print `missing` there — the runner stops
+  building.
 - **`check-surface`** keeps measuring the mechanical layer and is
   unaffected: areas are the ergonomic layer's shape, and nothing
   generated moves.
@@ -226,10 +235,11 @@ as a single key that is not there.
    parity runner. **Done**, and `check-parity` proved it
    behaviour-preserving: all 635 values still agree with Dart and Python,
    which had not changed.
-3. Dart, Python, Rust.
-4. `check-parity` gains the grouping, which is what holds the other three
-   to Node's shape.
-5. The READMEs and the site's prose.
+3. ~~Dart~~ and ~~Python~~, each in its own idiom — a `late final` field
+   and a `cached_property` — and each green on its own gate. **Done.**
+4. ~~`check-parity` gains the grouping~~, which is what holds all three to
+   one shape. **Done**, and proven red.
+5. Rust's own consumer surface, the READMEs and the site's prose.
 
 The measured page turned over as step 2 landed, which was expected: it
 measured a flat surface and the surface is not flat any more. It now

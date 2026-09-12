@@ -750,6 +750,10 @@ export declare class KeysArea {
 export declare class FrameArea {
   /** The SDK's canonical frame. */
   canonical(): Frame;
+  /** Packs a frame's fields into the bits a position request carries. */
+  pack(frame: Frame): number;
+  /** The frame a packed set of bits describes. */
+  unpack(bits: number): Frame;
 }
 
 /** `sdk.chart` — a chart founded at an instant and a place. */

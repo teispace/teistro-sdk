@@ -676,7 +676,7 @@ fn limits_section() -> String {
     let _ = writeln!(out, "## What this does not measure\n");
     let _ = writeln!(
         out,
-        "**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. `check-parity` holds all three to the same *values*; holding them to the same *shape* is what makes the other two follow this one, and it is the gate this page is waiting on.\n"
+        "**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. What holds the other two to this one is `check-parity`, which compares a `surface.<area>.<operation>` line per operation from each runner: this page says what Node's shape *is*, and that gate says the other two share it.\n"
     );
     let _ = writeln!(
         out,
