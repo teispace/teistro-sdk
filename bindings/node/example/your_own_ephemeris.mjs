@@ -186,7 +186,7 @@ function tableEphemeris({ wantedFrame = null, broken = false } = {}) {
 {
   const ctx = new Context({ profile: 'parashari-classical' });
   try {
-    ctx.keyId('graha.SUNN');
+    ctx.keys.id('graha.SUNN');
   } catch (error) {
     console.log('');
     console.log(`status   ${error.status}`);

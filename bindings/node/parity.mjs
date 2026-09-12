@@ -58,7 +58,7 @@ put('build-target', buildInfo.target);
 // ── A context ──────────────────────────────────────────────────────────
 const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP', testProvider: true });
 put('profile', ctx.profile);
-put('locale', ctx.locale);
+put('locale', ctx.intl.locale);
 put('settings-hash', ctx.settingsHash);
 put('settings-fnv', fnv(ctx.settingsJson));
 
@@ -74,18 +74,18 @@ const gregorian = (year, month, day) => ({
   computedDay: 0,
 });
 const date = gregorian(2015, 4, 14);
-const bs = ctx.convert(date, Calendar.BikramSambat);
+const bs = ctx.calendar.convert(date, Calendar.BikramSambat);
 put('bs-year', bs.year);
 put('bs-month', bs.month);
 put('bs-day', bs.day);
 put('bs-era', bs.era);
 put('bs-era-year', bs.eraYear);
 put('bs-resolution', bs.resolution);
-const fixed = ctx.fixedOf(date);
+const fixed = ctx.calendar.fixedOf(date);
 put('fixed', fixed);
-put('weekday', ctx.weekdayOf(date));
-put('month-length', ctx.monthLength(Calendar.Gregorian, 2024, 2));
-put('is-leap', ctx.isLeap(Calendar.Gregorian, 2024));
+put('weekday', ctx.calendar.weekdayOf(date));
+put('month-length', ctx.calendar.monthLength(Calendar.Gregorian, 2024, 2));
+put('is-leap', ctx.calendar.isLeap(Calendar.Gregorian, 2024));
 put('jd-of-fixed', julianDayOfFixed(fixed));
 const back = fixedOfJulianDay(2457126.75);
 put('fixed-of-jd', back.value);
@@ -97,7 +97,7 @@ const civil = {
   time: { hour: 0, minute: 20, second: 0, hasTime: true, nanos: 0 },
 };
 const zone = { kind: 'iana', offsetSeconds: 0, longitudeDeg: 0, zone: 'Asia/Kathmandu' };
-const resolved = ctx.resolve(civil, zone);
+const resolved = ctx.time.resolve(civil, zone);
 put('resolve-jd', resolved.instantJdUtc);
 put('resolve-offset', resolved.offsetSeconds);
 put('resolve-era', resolved.era);
@@ -105,25 +105,25 @@ put('resolve-source', resolved.source);
 put('resolve-time-known', resolved.timeKnown);
 put('resolve-tzdb', resolved.tzdbVersion);
 put('resolve-warnings', resolved.warnings.length);
-const civilBack = ctx.civilOf(resolved.instantJdUtc, zone, Calendar.Gregorian);
+const civilBack = ctx.time.civilOf(resolved.instantJdUtc, zone, Calendar.Gregorian);
 put('civil-year', civilBack.civil.date.year);
 put('civil-minute', civilBack.civil.time.minute);
 put('civil-offset', civilBack.resolution.offsetSeconds);
-const tt = ctx.convertTime(2451544.5, Scale.Utc, Scale.Tt);
+const tt = ctx.time.convert(2451544.5, Scale.Utc, Scale.Tt);
 put('tt-jd', tt.jd);
 put('tt-delta-t', tt.deltaTSeconds);
 put('tt-delta-t-source', tt.deltaTSource);
 put('tt-delta-t-model', tt.deltaTModel);
-const delta = ctx.deltaT(2451544.5);
+const delta = ctx.time.deltaT(2451544.5);
 put('delta-t-seconds', delta.seconds);
 put('delta-t-source', delta.source);
 
 // ── Keys ───────────────────────────────────────────────────────────────
-const id = ctx.keyId('graha.SUN');
+const id = ctx.keys.id('graha.SUN');
 put('key-id', id);
-put('key-name', ctx.keyName(id));
+put('key-name', ctx.keys.name(id));
 try {
-  ctx.keyId('graha.SUNN');
+  ctx.keys.id('graha.SUNN');
   put('refusal', 'none');
 } catch (error) {
   put('refusal-status', error.status);
@@ -132,7 +132,7 @@ try {
 }
 
 // ── The locale engine ──────────────────────────────────────────────────
-const rendered = ctx.render('sdk.reason.grahaInBhava', {
+const rendered = ctx.intl.render('sdk.reason.grahaInBhava', {
   graha: { $entity: 'graha.JUPITER' },
   bhava: 7,
 });
@@ -140,20 +140,20 @@ put('render-fnv', fnv(rendered.text));
 put('render-length', [...rendered.text].length);
 put('render-resolved-from', rendered.resolvedFrom);
 put('render-fallback', rendered.isFallback);
-put('has-message', ctx.has('sdk.reason.grahaInBhava'));
-put('has-missing-message', ctx.has('sdk.nope.missing'));
-put('transliterated', ctx.transliterate('सूर्य बृहस्पति'));
-put('entity-sun-name', ctx.entity('graha.SUN').name);
-put('entity-sun-iast', ctx.entity('graha.SUN').iast);
-put('entity-sun-glyph', ctx.entity('graha.SUN').glyph);
-put('entity-sun-gender', ctx.entity('graha.SUN').gender);
+put('has-message', ctx.intl.has('sdk.reason.grahaInBhava'));
+put('has-missing-message', ctx.intl.has('sdk.nope.missing'));
+put('transliterated', ctx.intl.transliterate('सूर्य बृहस्पति'));
+put('entity-sun-name', ctx.intl.entity('graha.SUN').name);
+put('entity-sun-iast', ctx.intl.entity('graha.SUN').iast);
+put('entity-sun-glyph', ctx.intl.entity('graha.SUN').glyph);
+put('entity-sun-gender', ctx.intl.entity('graha.SUN').gender);
 put(
   'message-graha-in-bhava',
-  ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }),
+  ctx.intl.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }),
 );
 put(
   'message-bs-date',
-  ctx.messages.sdk.calendar.bikramSambat.date.long({ day: 1, monthName: 'बैशाख', year: 2072 }),
+  ctx.intl.messages.sdk.calendar.bikramSambat.date.long({ day: 1, monthName: 'बैशाख', year: 2072 }),
 );
 
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
@@ -196,7 +196,7 @@ put('provenance-provider-frame', positions.provenance.provider.frame);
 // comparison: the step runs per body, per instant, inside the library, so
 // three bindings agreeing on its output is three bindings agreeing on the
 // whole of it.
-const placed = ctx.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
+const placed = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
 put('chart-under-topocentric', 'founded');
 put('topocentric-steps', placed.batch.steps.join(','));
 put('topocentric-lagna', placed.lagnaDeg);
@@ -218,7 +218,7 @@ put('geo-settings-hash', geo.settingsHash);
 // Two instants, so a per-chart section that ran charts-outermost the
 // wrong way round shows up as the second chart's values in the first's
 // place rather than as nothing at all.
-const charts = geo.foundMany({
+const charts = geo.chart.foundMany({
   instants: [2460482.5, 2460600.25],
   place,
   utcOffsetSeconds: 20700,
@@ -269,14 +269,14 @@ for (const chart of charts) {
   });
 }
 // `found` is the batch of one unwrapped, and must agree with the batch.
-const single = geo.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
+const single = geo.chart.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
 put('chart-single-lagna', single.lagnaDeg);
 put('chart-single-agrees', single.lagnaDeg === charts.at(0).lagnaDeg);
 
 // ── An almanac ─────────────────────────────────────────────────────────
 // Three days, because a day's lists are ragged and two consecutive days
 // with the same counts would not exercise the offsets.
-const week = geo.almanac({
+const week = geo.almanac.of({
   from: gregorian(2024, 6, 17),
   to: gregorian(2024, 6, 19),
   place,
@@ -360,7 +360,7 @@ for (const day of week) {
   });
 }
 // `almanacDay` is the range of one unwrapped, and must agree.
-const oneDay = geo.almanacDay({ date: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700 });
+const oneDay = geo.almanac.day({ date: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700 });
 put('almanac-single-agrees', oneDay.day.sunrise === week.at(0).day.sunrise);
 geo.dispose();
 

@@ -423,6 +423,37 @@ provider's DUT1).
    the pass table now, and `check-agreement`, `check-pluto`,
    `check-engine` and `check-areas` are wired.
 
+   **The design is written and the first two steps of it are built**
+   (`03-design/surface-areas.md`). Seven areas and a root, with one rule
+   the measurement could not supply: *an operation whose name is its own
+   area's name is a root operation and not an area of one*, which puts
+   `positions` at the root and keeps `frame` as an area. `sdk.ephemeris`
+   becomes `sdk.engine` (ADR-0030) and the area over `ts_panchanga_days`
+   is `almanac`, taking the consumer's word over the module's.
+
+   Built: the boundary's `keys.rs`/`strings.rs` renamed to match the
+   functions they hold — the **files**, because a file is not an ABI
+   symbol — and **the whole Node layer**, with its 39 tests, its eight
+   examples, its typecheck at maximum strictness and its parity runner.
+   `check-parity` proved that behaviour-preserving: all 635 values still
+   agree with Dart and Python, which had not changed. Node's dynamic
+   index signature came out, which ADR-0030 had considered and rejected
+   under ADR-0023.
+
+   The measured page turned over as Node landed, which was the point of
+   gating it: it had measured a flat surface, and now holds five
+   properties of the built grouping — a module reached from one area, no
+   empty area, no operation spelling its own area, every module reached
+   or accounted for as plumbing, and the boundary's own naming. Four
+   hold; the fifth is the boundary naming, whose seven exceptions are six
+   `lib` functions the rule does not cover and one declared in the design
+   page.
+
+   **Next: Dart, Python and Rust**, then `check-parity` gains the
+   grouping — which is what holds those three to Node's shape — then the
+   READMEs and the site. The engine's typed façade is after all of it,
+   because it attaches to the `sdk.engine` that Node now has.
+
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation
    curve holds every size claim; the theory floor does not — VSOP87's

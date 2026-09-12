@@ -13,60 +13,60 @@ const context = () =>
 test('a message is spelled by its accessor, never by its key', () => {
   const ctx = context();
   assert.equal(
-    ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }),
-    ctx.render('sdk.reason.grahaInBhava', {
+    ctx.intl.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }),
+    ctx.intl.render('sdk.reason.grahaInBhava', {
       graha: { $entity: 'graha.JUPITER' },
       bhava: 7,
     }).text,
     'the accessor wraps the entity as the engine takes it',
   );
-  assert.match(ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }), /७/u);
+  assert.match(ctx.intl.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }), /७/u);
 
-  ctx.locale = 'en-Latn';
+  ctx.intl.locale = 'en-Latn';
   assert.equal(
-    ctx.messages.sdk.calendar.bikramSambat.date.long({ day: 1, monthName: 'Baisakh', year: 2072 }),
+    ctx.intl.messages.sdk.calendar.bikramSambat.date.long({ day: 1, monthName: 'Baisakh', year: 2072 }),
     '1 Baisakh 2072 BS',
   );
   assert.equal(
-    ctx.messages.sdk.calendar.gregorian.date.numeric({ day: 14, month: 4, year: 2015 }),
+    ctx.intl.messages.sdk.calendar.gregorian.date.numeric({ day: 14, month: 4, year: 2015 }),
     '2015-04-14',
   );
 });
 
 test("an entity's forms come from the locale, not from the caller", () => {
   const ctx = context();
-  const sun = ctx.entity('graha.SUN');
+  const sun = ctx.intl.entity('graha.SUN');
   assert.equal(sun.name, 'सूर्य');
   assert.equal(sun.iast, 'Sūrya');
   assert.equal(sun.glyph, '☉');
   assert.equal(sun.gender, 'm');
-  assert.deepEqual(ctx.messages.sdk.entity.graha.sun(), sun, 'the accessor reads the same forms');
+  assert.deepEqual(ctx.intl.messages.sdk.entity.graha.sun(), sun, 'the accessor reads the same forms');
   assert.equal(Object.isFrozen(sun), true);
 
-  ctx.locale = 'en-Latn';
-  assert.equal(ctx.entity('graha.SUN').name, 'Sun');
-  assert.equal(ctx.entity('rashi.ARIES').name, 'Aries');
+  ctx.intl.locale = 'en-Latn';
+  assert.equal(ctx.intl.entity('graha.SUN').name, 'Sun');
+  assert.equal(ctx.intl.entity('rashi.ARIES').name, 'Aries');
 });
 
 test('an entity the locale does not carry is refused by name', () => {
   const ctx = context();
   assert.throws(
-    () => ctx.entity('graha.PLUTO'),
+    () => ctx.intl.entity('graha.PLUTO'),
     (error) => error.status === 'unsupported' && error.field === 'key',
   );
 });
 
 test('a term written in one script reads in the other', () => {
   const ctx = context();
-  assert.equal(ctx.transliterate('सूर्य बृहस्पति'), 'sūrya bṛhaspati');
-  assert.equal(ctx.transliterate(ctx.entity('graha.MARS').name), 'maṅgala');
-  assert.equal(ctx.transliterate('Jupiter'), 'Jupiter', 'what is not the script passes through');
+  assert.equal(ctx.intl.transliterate('सूर्य बृहस्पति'), 'sūrya bṛhaspati');
+  assert.equal(ctx.intl.transliterate(ctx.intl.entity('graha.MARS').name), 'maṅgala');
+  assert.equal(ctx.intl.transliterate('Jupiter'), 'Jupiter', 'what is not the script passes through');
   assert.throws(
-    () => ctx.transliterate('x', 'iast', 'deva'),
+    () => ctx.intl.transliterate('x', 'iast', 'deva'),
     (error) => error.status === 'unsupported',
   );
   assert.throws(
-    () => ctx.transliterate('x', 'deva', 'taml'),
+    () => ctx.intl.transliterate('x', 'deva', 'taml'),
     (error) => error.status === 'unsupported' && error.field === 'to',
   );
 });

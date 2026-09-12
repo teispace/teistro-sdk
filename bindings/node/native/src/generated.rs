@@ -68,11 +68,11 @@ fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
 }
 
 /// The text of a string the library allocated, copied and the string freed.
-fn take_string(string: &mut ffi::strings::TsString) -> String {
+fn take_string(string: &mut ffi::string::TsString) -> String {
     // SAFETY: the library wrote a NUL-terminated string, or left it null.
     let text = unsafe { lent_text(string.data.cast_const().cast()) }.unwrap_or_default();
     // SAFETY: a descriptor this call passed to the library, freed once.
-    unsafe { ffi::strings::ts_string_free(&raw mut *string) };
+    unsafe { ffi::string::ts_string_free(&raw mut *string) };
     text
 }
 /// A `Ayanamsha` from the string `catalogue.js` names it by.
@@ -2574,7 +2574,7 @@ impl Context {
         let (host_vtable, user_data) = crate::provider::parts(host.as_ref());
         let provider = host_vtable.as_ref().map_or(ptr::null(), |v| &raw const *v);
         let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
-        let mut out_error = ffi::strings::TsString::empty();
+        let mut out_error = ffi::string::TsString::empty();
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -2650,7 +2650,7 @@ impl Context {
     /// next call on the context.
     #[napi]
     pub fn profile(&self, env: Env) -> Result<String> {
-        let mut out_profile = ffi::strings::TsStr {
+        let mut out_profile = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -2667,7 +2667,7 @@ impl Context {
     /// document compute the same numbers.
     #[napi]
     pub fn settings_json(&self, env: Env) -> Result<String> {
-        let mut out_json = ffi::strings::TsString::empty();
+        let mut out_json = ffi::string::TsString::empty();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
@@ -2713,7 +2713,7 @@ impl Context {
     /// the context. An id no catalogued member has is `UNSUPPORTED`.
     #[napi]
     pub fn key_name(&self, env: Env, id: u32) -> Result<String> {
-        let mut out_key = ffi::strings::TsStr {
+        let mut out_key = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -3052,7 +3052,7 @@ impl Context {
     /// context.
     #[napi]
     pub fn intl_locale(&self, env: Env) -> Result<String> {
-        let mut out_locale = ffi::strings::TsStr {
+        let mut out_locale = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -3093,7 +3093,7 @@ impl Context {
         let text = std::ffi::CString::new(text).map_err(|e| Error::from_reason(e.to_string()))?;
         let from = std::ffi::CString::new(from).map_err(|e| Error::from_reason(e.to_string()))?;
         let to = std::ffi::CString::new(to).map_err(|e| Error::from_reason(e.to_string()))?;
-        let mut out_text = ffi::strings::TsStr {
+        let mut out_text = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -3125,7 +3125,7 @@ impl Context {
     #[napi]
     pub fn intl_entity(&self, env: Env, key: String) -> Result<String> {
         let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
-        let mut out_json = ffi::strings::TsStr {
+        let mut out_json = ffi::string::TsStr {
             data: ptr::null(),
             len: 0,
         };
@@ -3235,7 +3235,7 @@ impl Context {
     /// engine describes nothing of its own.
     #[napi]
     pub fn ephemeris_manifest(&self, env: Env) -> Result<String> {
-        let mut out_json = ffi::strings::TsString::empty();
+        let mut out_json = ffi::string::TsString::empty();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status =
@@ -3266,7 +3266,7 @@ impl Context {
             std::ffi::CString::new(function).map_err(|e| Error::from_reason(e.to_string()))?;
         let arguments_json = std::ffi::CString::new(arguments_json)
             .map_err(|e| Error::from_reason(e.to_string()))?;
-        let mut out_json = ffi::strings::TsString::empty();
+        let mut out_json = ffi::string::TsString::empty();
         self.enter(env);
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
@@ -3337,7 +3337,7 @@ impl Provider {
         let config_json =
             std::ffi::CString::new(config_json).map_err(|e| Error::from_reason(e.to_string()))?;
         let mut handle: *mut ffi::provider::TsProvider = ptr::null_mut();
-        let mut out_error = ffi::strings::TsString::empty();
+        let mut out_error = ffi::string::TsString::empty();
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {

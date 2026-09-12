@@ -1088,16 +1088,17 @@ export class Rendered extends Decoded {
  * `Object.keys` lists what the engine offers.
  */
 class Engine {
-  #context;
+  #reach;
   #manifest = null;
 
-  constructor(context) {
-    this.#context = context;
+  constructor(reach) {
+    this.#reach = reach;
+    Object.freeze(this);
   }
 
   /** The manifest as the engine wrote it. */
   get manifestJson() {
-    return this.#context.ephemerisManifestJson();
+    return this.#reach((inner) => inner.ephemerisManifest());
   }
 
   /**
@@ -1139,64 +1140,322 @@ class Engine {
    * is being handed on rather than read.
    */
   callJson(name, argumentsJson) {
-    return this.#context.ephemerisCallJson(name, argumentsJson);
+    return this.#reach((inner) => inner.ephemerisCall(name, argumentsJson));
   }
 }
 
-/** The members `Engine` itself defines, which a proxy must not shadow. */
-const ENGINE_OWN = new Set([
-  'manifest',
-  'manifestJson',
-  'names',
-  'signature',
-  'call',
-  'callJson',
-]);
+/**
+ * What every area is.
+ *
+ * A **value**, which is what makes the areas worth having rather than
+ * merely tidy: `const { calendar } = sdk` keeps working, and an area can
+ * be passed to something that only needs that much of the SDK
+ * (`03-design/surface-areas.md`).
+ *
+ * A class with prototype methods rather than a frozen object literal of
+ * arrow functions, which is what the design page first said: a literal
+ * of six closures is seven allocations per context and this is one, and
+ * the methods are shared by every context rather than rebuilt for each.
+ * The instance is frozen, so an area cannot be added to from outside.
+ *
+ * `#reach` is the only thing an area holds. It runs a call on the
+ * addon's context with the disposed check and the provider's own thrown
+ * value already applied, so no area touches the handle.
+ */
+class Area {
+  #reach;
+
+  constructor(reach) {
+    this.#reach = reach;
+    // A private field is not a property, so a subclass's own state
+    // (`IntlArea`'s memo) still works on a frozen instance.
+    Object.freeze(this);
+  }
+
+  /** @internal what the subclasses call the boundary through. */
+  _run(run) {
+    return this.#reach(run);
+  }
+}
+
+/** `sdk.calendar` — the calendars, and the fixed day they share. */
+class CalendarArea extends Area {
+  /** The date a fixed day falls on in a calendar. */
+  dateOf(calendar, fixed) {
+    return this._run((inner) => inner.calendarFromFixed(calendar, fixed));
+  }
+
+  /** The fixed day of a date. */
+  fixedOf(date) {
+    return this._run((inner) => inner.calendarToFixed(clean(date)));
+  }
+
+  /** The same date in another calendar. */
+  convert(date, into) {
+    return this._run((inner) => inner.calendarConvert(clean(date), into));
+  }
+
+  /** The weekday of a date, Monday `1` to Sunday `7`. */
+  weekdayOf(date) {
+    return this._run((inner) => inner.calendarWeekday(clean(date)));
+  }
+
+  /** The length of a month. */
+  monthLength(calendar, year, month) {
+    return this._run((inner) => inner.calendarMonthLength(calendar, year, month));
+  }
+
+  /** Whether a year is a leap year. */
+  isLeap(calendar, year) {
+    return this._run((inner) => inner.calendarIsLeap(calendar, year)) === 1;
+  }
+}
+
+/** `sdk.time` — the scales, the zones and what separates them. */
+class TimeArea extends Area {
+  /** A civil date and time in a zone, resolved to an instant with its metadata. */
+  resolve(civil, zone) {
+    return this._run((inner) => inner.timeResolve(clean(civil), clean(zone)));
+  }
+
+  /** The civil date and time of an instant in a zone. */
+  civilOf(jdUtc, zone, calendar) {
+    return this._run((inner) => inner.timeCivil(finite(jdUtc, 'jdUtc'), clean(zone), calendar));
+  }
+
+  /**
+   * Converts an instant between the time scales.
+   *
+   * `convertTime` on the flat surface, because the calendar had taken
+   * `convert`. The area carries the word now.
+   */
+  convert(jd, from, to) {
+    return this._run((inner) => inner.timeConvert(finite(jd, 'jd'), from, to));
+  }
+
+  /** Delta T at a UT1 instant, with what produced it. */
+  deltaT(jdUt1) {
+    return this._run((inner) => inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
+  }
+}
+
+/** `sdk.intl` — the locale, its messages and the scripts they are in. */
+class IntlArea extends Area {
+  #messages = null;
+
+  /** The locale every render resolves from. */
+  get locale() {
+    return this._run((inner) => inner.intlLocale());
+  }
+
+  set locale(tag) {
+    this._run((inner) => inner.intlSetLocale(tag));
+  }
+
+  /** Renders a message of the current locale with its parameters. */
+  render(key, params) {
+    const bytes = this._run((inner) =>
+      inner.intlRender(key, params === undefined ? undefined : JSON.stringify(params)),
+    );
+    return new Rendered(bytes);
+  }
+
+  /** Whether the current locale or its fallbacks have a message. */
+  has(key) {
+    return this._run((inner) => inner.intlHas(key)) === 1;
+  }
+
+  /**
+   * Text from one script into another (`deva`, `iast`), for a Sanskrit
+   * or Nepali term written in the other.
+   */
+  transliterate(text, from = 'deva', to = 'iast') {
+    return this._run((inner) => inner.intlTransliterate(text, from, to));
+  }
+
+  /**
+   * An entity's forms in the current locale or its fallbacks: its name,
+   * its prose form, its transliteration, and the glyph and gender the
+   * locale gives it.
+   */
+  entity(key) {
+    return entityForms(this._run((inner) => inner.intlEntity(key)));
+  }
+
+  /**
+   * The typed accessors: every message of the SDK's own locale as a
+   * function of its parameters, and every catalogued entity as its forms.
+   * A key is spelled once, by the generator, and never by an application.
+   *
+   * ```js
+   * sdk.intl.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 });
+   * sdk.intl.messages.entity.graha.SUN().name;
+   * ```
+   */
+  get messages() {
+    this.#messages ??= messages({
+      render: (key, params) => this.render(key, params).text,
+      entity: (key) => this.entity(key),
+    });
+    return this.#messages;
+  }
+
+  /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
+  loadPack(bytes) {
+    return this._run((inner) => inner.intlLoadPack(Buffer.from(bytes)));
+  }
+}
+
+/** `sdk.keys` — the catalogue's keys and their packed ids. */
+class KeysArea extends Area {
+  /** The packed id of a catalogue key. */
+  id(key) {
+    return this._run((inner) => inner.keyParse(key));
+  }
+
+  /** The catalogue key of a packed id. */
+  name(id) {
+    return this._run((inner) => inner.keyName(id));
+  }
+}
+
+/** `sdk.frame` — the coordinate conventions a request is expressed in. */
+class FrameArea extends Area {
+  /** The SDK's canonical frame: apparent geocentric ecliptic of date, tropical. */
+  canonical() {
+    return this._run(() => native.frameCanonical());
+  }
+}
+
+/** `sdk.chart` — a chart founded at an instant and a place. */
+class ChartArea extends Area {
+  /**
+   * Founds a chart at an instant and a place.
+   *
+   * Everything but this is the context's settings, so two charts founded
+   * under one context are comparable and the settings hash says why. The
+   * clock is here because nothing else knows it: a chart's day runs from
+   * a local sunrise and its date is a civil date, and a longitude gives
+   * local *mean* time rather than a civil offset.
+   *
+   * @param {object} request
+   * @param {number} request.instant the instant, as a Julian day (UTC)
+   * @param {object} request.place `{ latitude, longitude, altitude }` in
+   *   degrees and metres
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
+   * @returns {Chart}
+   */
+  found(request) {
+    return this.foundMany({
+      ...request,
+      instants: [finite(request.instant, 'instant')],
+    }).at(0);
+  }
+
+  /**
+   * Founds a chart at each of many instants, at one place, in one
+   * crossing.
+   *
+   * The founder shares the settings and the solar model across the
+   * batch, so a hundred instants cost one setup rather than a hundred —
+   * which is what a rectification pass wants. A batch of none is an
+   * empty result rather than an error.
+   *
+   * @param {object} request
+   * @param {ArrayLike<number>} request.instants the instants, as Julian
+   *   days (UTC): one chart each
+   * @param {object} request.place `{ latitude, longitude, altitude }` in
+   *   degrees and metres
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
+   * @returns {Charts}
+   */
+  foundMany(request) {
+    const place = request.place ?? {};
+    const bytes = this._run((inner) =>
+      inner.chartFound({
+        kind: request.kind ?? ChartKind.Natal,
+        instants: instants(request.instants, 'instants', { allowEmpty: true }),
+        latitudeDeg: finite(place.latitude, 'place.latitude'),
+        longitudeDeg: finite(place.longitude, 'place.longitude'),
+        altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+      }),
+    );
+    return new Charts(bytes);
+  }
+}
 
 /**
- * An `Engine` whose members are the engine's own operations.
+ * `sdk.almanac` — a day, or a run of days, with its limbs.
  *
- * The proxy is what keeps the promise: the names come from the manifest
- * at the moment they are asked for, so this file never holds one.
+ * The boundary calls this `panchanga` and the area takes the consumer's
+ * word: an almanac is what the operation answers, and a panchanga is one
+ * tradition's name for five of its limbs
+ * (`03-design/surface-areas.md`).
  */
-function engineProxy(context) {
-  const engine = new Engine(context);
-  return new Proxy(engine, {
-    get(target, property, _receiver) {
-      if (typeof property !== 'string' || ENGINE_OWN.has(property) || property in target) {
-        // Read with the target as the receiver, not the proxy: `Engine`
-        // keeps its context in a private field, and a getter or a method
-        // called with the proxy as `this` cannot see one. Methods are
-        // bound for the same reason.
-        const value = Reflect.get(target, property, target);
-        return typeof value === 'function' ? value.bind(target) : value;
-      }
-      if (!engine.names.includes(property)) {
-        return undefined;
-      }
-      const operation = (argumentsObject = {}) => engine.call(property, argumentsObject);
-      Object.defineProperty(operation, 'name', { value: property });
-      return operation;
-    },
-    has(target, property) {
-      return Reflect.has(target, property)
-        || (typeof property === 'string' && engine.names.includes(property));
-    },
-    ownKeys(target) {
-      return [...new Set([...Reflect.ownKeys(target), ...engine.names])];
-    },
-    getOwnPropertyDescriptor(target, property) {
-      if (typeof property === 'string' && engine.names.includes(property)) {
-        return { configurable: true, enumerable: true, value: this.get(target, property, target) };
-      }
-      return Reflect.getOwnPropertyDescriptor(target, property);
-    },
-  });
+class AlmanacArea extends Area {
+  /**
+   * The almanac of every day in a range, at one place.
+   *
+   * A **range** rather than a list of dates, because consecutive days
+   * share a boundary — day *n*'s next sunrise is day *n+1*'s sunrise —
+   * so a month of days costs much less than thirty days computed
+   * separately. A range holding more than a year and a day is refused
+   * by name.
+   *
+   * @param {object} request
+   * @param {object} request.from the first day, as `date(...)` builds one
+   * @param {object} request.to the last day, both ends included
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @returns {Almanac}
+   */
+  of(request) {
+    const place = request.place ?? {};
+    const from = request.from ?? {};
+    const to = request.to ?? from;
+    const bytes = this._run((inner) =>
+      inner.panchangaDays({
+        calendar: from.calendar,
+        fromYear: finite(from.year, 'from.year'),
+        fromMonth: finite(from.month, 'from.month'),
+        fromDay: finite(from.day, 'from.day'),
+        toYear: finite(to.year, 'to.year'),
+        toMonth: finite(to.month, 'to.month'),
+        toDay: finite(to.day, 'to.day'),
+        latitudeDeg: finite(place.latitude, 'place.latitude'),
+        longitudeDeg: finite(place.longitude, 'place.longitude'),
+        altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+      }),
+    );
+    return new Almanac(bytes);
+  }
+
+  /**
+   * The almanac of one day, which is the range of one unwrapped.
+   *
+   * @param {object} request
+   * @param {object} request.date the day, as `date(...)` builds one
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset
+   *   from UTC, east positive
+   * @returns {AlmanacDay}
+   */
+  day(request) {
+    return this.of({ ...request, from: request.date, to: request.date }).at(0);
+  }
 }
 
 export class Context {
   #inner;
-  #messages = null;
+  /** The engine's own operations, built with the areas. */
+  #engine;
   /** Where this context's own provider leaves what it threw. */
   #thrown;
   /** Whether `dispose` has already freed the handle. */
@@ -1255,29 +1514,44 @@ export class Context {
         positions,
       ),
     );
+
+    // The areas, built once and never rebuilt: each holds the one way in
+    // and nothing else, so a consumer may destructure one and keep it
+    // (ADR-0030, `03-design/surface-areas.md`).
+    const reach = (run) => this.#call(() => run(this.#inner));
+    /** The calendars, and the fixed day they share. */
+    this.calendar = new CalendarArea(reach);
+    /** The scales, the zones and what separates them. */
+    this.time = new TimeArea(reach);
+    /** The locale, its messages and the scripts they are in. */
+    this.intl = new IntlArea(reach);
+    /** The catalogue's keys and their packed ids. */
+    this.keys = new KeysArea(reach);
+    /** The coordinate conventions a request is expressed in. */
+    this.frame = new FrameArea(reach);
+    /** A chart founded at an instant and a place. */
+    this.chart = new ChartArea(reach);
+    /** A day, or a run of days, with its limbs. */
+    this.almanac = new AlmanacArea(reach);
+    this.#engine = new Engine(reach);
   }
 
   /**
    * The engine's own operations, beyond the eight the SDK names.
    *
+   * **Not `ephemeris`**: `engine` says *this particular engine, not the
+   * portable contract*, so a consumer reading their own code sees the
+   * difference between a call that survives changing provider and one
+   * that does not (ADR-0030).
+   *
    * Throws when the context has no ephemeris, or when the one it has
    * describes nothing of its own — asked now rather than at the first
    * call, so a caller learns it where they can act on it.
    */
-  get ephemeris() {
-    const engine = engineProxy(this);
-    engine.manifestJson;
-    return engine;
-  }
-
-  /** @internal the boundary call the engine proxy relays through. */
-  ephemerisManifestJson() {
-    return this.#call(() => this.#inner.ephemerisManifest());
-  }
-
-  /** @internal the boundary call the engine proxy relays through. */
-  ephemerisCallJson(name, argumentsJson) {
-    return this.#call(() => this.#inner.ephemerisCall(name, argumentsJson));
+  get engine() {
+    // Reading the manifest is what asks the question.
+    this.#engine.manifestJson;
+    return this.#engine;
   }
 
   /** The id of the profile the settings came from. */
@@ -1304,23 +1578,14 @@ export class Context {
     return Buffer.from(hash.bytes).toString('hex');
   }
 
-  /** The locale every render resolves from. */
-  get locale() {
-    return this.#call(() => this.#inner.intlLocale());
-  }
-
-  set locale(tag) {
-    this.#call(() => this.#inner.intlSetLocale(tag));
-  }
-
-  /** The SDK's canonical frame: apparent geocentric ecliptic of date, tropical. */
-  canonicalFrame() {
-    return this.#call(() => native.frameCanonical());
-  }
-
   /**
    * Positions over a grid of instants and bodies, completed into the
    * frame asked for.
+   *
+   * **On the context and not in an area**, because an operation whose
+   * name is its own area's name is a root operation: it is the SDK's one
+   * primitive over the port, and every area above is built on it
+   * (`03-design/surface-areas.md`).
    *
    * @param {object} request
    * @param {readonly number[]|Float64Array} request.instants Julian days
@@ -1331,7 +1596,7 @@ export class Context {
    * @param {object} [request.observer] the place a topocentric frame needs
    */
   positions(request) {
-    const frame = request.frame ?? this.canonicalFrame();
+    const frame = request.frame ?? this.frame.canonical();
     const bytes = this.#call(() =>
       this.#inner.positions(
         clean({
@@ -1345,233 +1610,6 @@ export class Context {
       ),
     );
     return new Positions(bytes);
-  }
-
-  /**
-   * Founds a chart at an instant and a place.
-   *
-   * Everything but this is the context's settings, so two charts founded
-   * under one context are comparable and the settings hash says why. The
-   * clock is here because nothing else knows it: a chart's day runs from
-   * a local sunrise and its date is a civil date, and a longitude gives
-   * local *mean* time rather than a civil offset.
-   *
-   * @param {object} request
-   * @param {number} request.instant the instant, as a Julian day (UTC)
-   * @param {object} request.place `{ latitude, longitude, altitude }` in
-   *   degrees and metres
-   * @param {number} request.utcOffsetSeconds the local clock's offset
-   *   from UTC, east positive
-   * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
-   * @returns {Chart}
-   */
-  found(request) {
-    return this.foundMany({
-      ...request,
-      instants: [finite(request.instant, 'instant')],
-    }).at(0);
-  }
-
-  /**
-   * Founds a chart at each of many instants, at one place, in one
-   * crossing.
-   *
-   * The founder shares the settings and the solar model across the
-   * batch, so a hundred instants cost one setup rather than a hundred —
-   * which is what a rectification pass wants. A batch of none is an
-   * empty result rather than an error.
-   *
-   * @param {object} request
-   * @param {ArrayLike<number>} request.instants the instants, as Julian
-   *   days (UTC): one chart each
-   * @param {object} request.place `{ latitude, longitude, altitude }` in
-   *   degrees and metres
-   * @param {number} request.utcOffsetSeconds the local clock's offset
-   *   from UTC, east positive
-   * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
-   * @returns {Charts}
-   */
-  foundMany(request) {
-    const place = request.place ?? {};
-    const bytes = this.#call(() =>
-      this.#inner.chartFound({
-        kind: request.kind ?? ChartKind.Natal,
-        instants: instants(request.instants, 'instants', { allowEmpty: true }),
-        latitudeDeg: finite(place.latitude, 'place.latitude'),
-        longitudeDeg: finite(place.longitude, 'place.longitude'),
-        altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
-      }),
-    );
-    return new Charts(bytes);
-  }
-
-  /**
-   * The almanac of every day in a range, at one place.
-   *
-   * A **range** rather than a list of dates, because consecutive days
-   * share a boundary — day *n*'s next sunrise is day *n+1*'s sunrise —
-   * so a month of days costs much less than thirty days computed
-   * separately. A range holding more than a year and a day is refused
-   * by name.
-   *
-   * @param {object} request
-   * @param {object} request.from the first day, as `date(...)` builds one
-   * @param {object} request.to the last day, both ends included
-   * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset
-   *   from UTC, east positive
-   * @returns {Almanac}
-   */
-  almanac(request) {
-    const place = request.place ?? {};
-    const from = request.from ?? {};
-    const to = request.to ?? from;
-    const bytes = this.#call(() =>
-      this.#inner.panchangaDays({
-        calendar: from.calendar,
-        fromYear: finite(from.year, 'from.year'),
-        fromMonth: finite(from.month, 'from.month'),
-        fromDay: finite(from.day, 'from.day'),
-        toYear: finite(to.year, 'to.year'),
-        toMonth: finite(to.month, 'to.month'),
-        toDay: finite(to.day, 'to.day'),
-        latitudeDeg: finite(place.latitude, 'place.latitude'),
-        longitudeDeg: finite(place.longitude, 'place.longitude'),
-        altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
-      }),
-    );
-    return new Almanac(bytes);
-  }
-
-  /**
-   * The almanac of one day, which is the range of one unwrapped.
-   *
-   * @param {object} request
-   * @param {object} request.date the day, as `date(...)` builds one
-   * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset
-   *   from UTC, east positive
-   * @returns {AlmanacDay}
-   */
-  almanacDay(request) {
-    return this.almanac({ ...request, from: request.date, to: request.date }).at(0);
-  }
-
-  /** Renders a message of the current locale with its parameters. */
-  render(key, params) {
-    const bytes = this.#call(() =>
-      this.#inner.intlRender(key, params === undefined ? undefined : JSON.stringify(params)),
-    );
-    return new Rendered(bytes);
-  }
-
-  /** Whether the current locale or its fallbacks have a message. */
-  has(key) {
-    return this.#call(() => this.#inner.intlHas(key)) === 1;
-  }
-
-  /**
-   * Text from one script into another (`deva`, `iast`), for a Sanskrit
-   * or Nepali term written in the other.
-   */
-  transliterate(text, from = 'deva', to = 'iast') {
-    return this.#call(() => this.#inner.intlTransliterate(text, from, to));
-  }
-
-  /**
-   * An entity's forms in the current locale or its fallbacks: its name,
-   * its prose form, its transliteration, and the glyph and gender the
-   * locale gives it.
-   */
-  entity(key) {
-    return entityForms(this.#call(() => this.#inner.intlEntity(key)));
-  }
-
-  /**
-   * The typed accessors: every message of the SDK's own locale as a
-   * function of its parameters, and every catalogued entity as its forms.
-   * A key is spelled once, by the generator, and never by an application.
-   *
-   * ```js
-   * ctx.messages.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 });
-   * ctx.messages.entity.graha.SUN().name;
-   * ```
-   */
-  get messages() {
-    this.#messages ??= messages({
-      render: (key, params) => this.render(key, params).text,
-      entity: (key) => this.entity(key),
-    });
-    return this.#messages;
-  }
-
-  /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
-  loadPack(bytes) {
-    return this.#call(() => this.#inner.intlLoadPack(Buffer.from(bytes)));
-  }
-
-  /** The date a fixed day falls on in a calendar. */
-  dateOf(calendar, fixed) {
-    return this.#call(() => this.#inner.calendarFromFixed(calendar, fixed));
-  }
-
-  /** The fixed day of a date. */
-  fixedOf(date) {
-    return this.#call(() => this.#inner.calendarToFixed(clean(date)));
-  }
-
-  /** The same date in another calendar. */
-  convert(date, into) {
-    return this.#call(() => this.#inner.calendarConvert(clean(date), into));
-  }
-
-  /** The weekday of a date, Monday `1` to Sunday `7`. */
-  weekdayOf(date) {
-    return this.#call(() => this.#inner.calendarWeekday(clean(date)));
-  }
-
-  /** The length of a month. */
-  monthLength(calendar, year, month) {
-    return this.#call(() => this.#inner.calendarMonthLength(calendar, year, month));
-  }
-
-  /** Whether a year is a leap year. */
-  isLeap(calendar, year) {
-    return this.#call(() => this.#inner.calendarIsLeap(calendar, year)) === 1;
-  }
-
-  /** A civil date and time in a zone, resolved to an instant with its metadata. */
-  resolve(civil, zone) {
-    return this.#call(() => this.#inner.timeResolve(clean(civil), clean(zone)));
-  }
-
-  /** The civil date and time of an instant in a zone. */
-  civilOf(jdUtc, zone, calendar) {
-    return this.#call(() =>
-      this.#inner.timeCivil(finite(jdUtc, 'jdUtc'), clean(zone), calendar),
-    );
-  }
-
-  /** Converts an instant between the time scales. */
-  convertTime(jd, from, to) {
-    return this.#call(() => this.#inner.timeConvert(finite(jd, 'jd'), from, to));
-  }
-
-  /** Delta T at a UT1 instant, with what produced it. */
-  deltaT(jdUt1) {
-    return this.#call(() => this.#inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
-  }
-
-  /** The packed id of a catalogue key. */
-  keyId(key) {
-    return this.#call(() => this.#inner.keyParse(key));
-  }
-
-  /** The catalogue key of a packed id. */
-  keyName(id) {
-    return this.#call(() => this.#inner.keyName(id));
   }
 
   /**

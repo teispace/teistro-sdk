@@ -61,7 +61,7 @@ what the binding does. Start with
 import { Body, Calendar, Context, at, date, ianaZone } from '@teistro/sdk';
 
 const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP', testProvider: true });
-const bs = ctx.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
+const bs = ctx.calendar.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
 const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
 console.log(bs.year, sky.at(0, 0).longitude, sky.provenance.settings_hash);
 ctx.dispose();

@@ -38,13 +38,13 @@ const window = { fromHour: 0, toHour: 3, everyMinutes: 10 };
 
 // One resolution fixes the zone and the offset; the candidates are then
 // arithmetic on the instant, which is what a Julian day is for.
-const start = ctx.resolve(at(born, { hour: window.fromHour, minute: 0 }), ianaZone('Asia/Kathmandu'));
+const start = ctx.time.resolve(at(born, { hour: window.fromHour, minute: 0 }), ianaZone('Asia/Kathmandu'));
 const step = window.everyMinutes / (24 * 60);
 const count = ((window.toHour - window.fromHour) * 60) / window.everyMinutes;
 const instants = Array.from({ length: count }, (_, i) => start.instantJdUtc + i * step);
 
 // ── One crossing for every candidate ───────────────────────────────────
-const charts = ctx.foundMany({
+const charts = ctx.chart.foundMany({
   instants,
   place,
   utcOffsetSeconds: start.offsetSeconds,
@@ -70,7 +70,7 @@ let previous = null;
 for (const chart of charts) {
   const sign = rashiOf(chart.lagnaDeg);
   const moon = chart.grahas.find((g) => g.graha === Graha.Moon);
-  const rashi = ctx.entity(RashiById.get(sign));
+  const rashi = ctx.intl.entity(RashiById.get(sign));
   console.log(
     `${clock(chart.index)}   ${chart.lagnaDeg.toFixed(4).padStart(9)}°  ` +
       `${rashi.name.padEnd(14)} ${(moon?.longitudeDeg ?? 0).toFixed(4).padStart(9)}°  ` +
@@ -93,7 +93,7 @@ console.log(`settings hash  ${ctx.settingsHash.slice(0, 16)}…`);
 
 // A batch of one is the ordinary case, and `found` is the same crossing
 // with the batch unwrapped: the answer is a chart, not a list of one.
-const single = ctx.found({
+const single = ctx.chart.found({
   instant: start.instantJdUtc,
   place,
   utcOffsetSeconds: start.offsetSeconds,

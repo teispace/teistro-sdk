@@ -113,11 +113,11 @@ fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
 }
 
 /// The text of a string the library allocated, copied and the string freed.
-fn take_string(string: &mut ffi::strings::TsString) -> String {
+fn take_string(string: &mut ffi::string::TsString) -> String {
     // SAFETY: the library wrote a NUL-terminated string, or left it null.
     let text = unsafe { lent_text(string.data.cast_const().cast()) }.unwrap_or_default();
     // SAFETY: a descriptor this call passed to the library, freed once.
-    unsafe { ffi::strings::ts_string_free(&raw mut *string) };
+    unsafe { ffi::string::ts_string_free(&raw mut *string) };
     text
 }
 ";
@@ -916,14 +916,14 @@ fn build_call(api: &Api, f: &FunctionDef) -> Call {
             Role::StringOut => {
                 let _ = writeln!(
                     setup,
-                    "        let mut {name} = ffi::strings::TsString::empty();"
+                    "        let mut {name} = ffi::string::TsString::empty();"
                 );
                 args.push(format!("&raw mut {name}"));
             }
             Role::StrOut => {
                 let _ = writeln!(
                     setup,
-                    "        let mut {name} = ffi::strings::TsStr {{ data: ptr::null(), len: 0 }};"
+                    "        let mut {name} = ffi::string::TsStr {{ data: ptr::null(), len: 0 }};"
                 );
                 args.push(format!("&raw mut {name}"));
             }

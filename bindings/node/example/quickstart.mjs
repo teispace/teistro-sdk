@@ -22,11 +22,11 @@ const ctx = new Context({
 });
 
 // 14 April 2015 is 1 Baisakh 2072 BS.
-const bs = ctx.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
+const bs = ctx.calendar.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
 console.log(`${bs.year}-${bs.month}-${bs.day} ${bs.era ?? ''}`);
 
 // A Kathmandu birth time, with the metadata a stored chart keeps.
-const resolved = ctx.resolve(
+const resolved = ctx.time.resolve(
   at(date(Calendar.Gregorian, 1986, 1, 1), { hour: 0, minute: 20 }),
   ianaZone('Asia/Kathmandu'),
 );
@@ -41,8 +41,8 @@ console.log(`the Sun at ${sky.at(0, 0).longitude.toFixed(4)} degrees`);
 
 // A message in the context's locale, by its typed accessor, and an
 // entity's name in that locale.
-const say = messages({ render: (key, params) => ctx.render(key, params).text, entity: (key) => ctx.entity(key) });
+const say = messages({ render: (key, params) => ctx.intl.render(key, params).text, entity: (key) => ctx.intl.entity(key) });
 console.log(say.sdk.reason.grahaInBhava({ graha: 'graha.JUPITER', bhava: 7 }));
-console.log(`${ctx.entity('graha.SUN').name} ${ctx.entity('graha.SUN').glyph}`);
+console.log(`${ctx.intl.entity('graha.SUN').name} ${ctx.intl.entity('graha.SUN').glyph}`);
 
 ctx.dispose();

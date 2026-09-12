@@ -34,12 +34,12 @@ assert.equal(buildInfo.sanitizer, '', 'a published addon carries no sanitizer');
 
 const ctx = new Context({ testProvider: true, profile: 'nepali-default', locale: 'ne-Deva-NP' });
 
-const bs = ctx.convert(gregorian(2015, 4, 14), Calendar.BikramSambat);
+const bs = ctx.calendar.convert(gregorian(2015, 4, 14), Calendar.BikramSambat);
 console.log(`14 April 2015 is ${bs.year}-${bs.month}-${bs.day} BS`);
 assert.deepEqual([bs.year, bs.month, bs.day], [2072, 1, 1]);
 
 const zone = { kind: ZoneKind.Iana, offsetSeconds: 0, longitudeDeg: 0, zone: 'Asia/Kathmandu' };
-const resolved = ctx.resolve(
+const resolved = ctx.time.resolve(
   { date: gregorian(1986, 1, 1), time: { hour: 0, minute: 20, second: 0, hasTime: true, nanos: 0 } },
   zone,
 );
@@ -50,7 +50,7 @@ console.log(
 assert.ok(Math.abs(resolved.instantJdUtc - 2446431.274306) < 1e-6);
 assert.equal(resolved.offsetSeconds, 20700);
 
-const rendered = ctx.render('sdk.reason.grahaInBhava', { graha: 'graha.JUPITER', bhava: 7 });
+const rendered = ctx.intl.render('sdk.reason.grahaInBhava', { graha: 'graha.JUPITER', bhava: 7 });
 console.log(`sdk.reason.grahaInBhava in ne-Deva-NP: ${rendered.text}`);
 assert.equal(rendered.text, 'गुरु ७औं भावमा');
 

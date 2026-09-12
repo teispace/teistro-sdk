@@ -59,7 +59,7 @@ Seven, and a root.
 | `frame` | `canonical` | `frame` |
 | `chart` | `found`, `foundMany` | `chart` |
 | `almanac` | `of`, `day` | `panchanga` |
-| `engine` | `names`, `signature`, `call`, `callJson`, `manifest`, `manifestJson` | `ephemeris` |
+| `engine` | `manifestJson`, `manifest`, `names`, `signature`, `call`, `callJson` | `ephemeris` |
 
 Four names change, and each is a word the namespace now carries:
 `convertTime` → `time.convert`, `canonicalFrame` → `frame.canonical`,
@@ -158,10 +158,19 @@ let calendar = sdk.calendar();              // Rust: a borrow of the context
 
 Per binding:
 
-- **Node** — a frozen plain object per area, built in the constructor.
-  Not a class, because there is nothing to inherit and a frozen literal
-  is one allocation; not a getter, because a getter that builds on every
-  read breaks destructuring's promise.
+- **Node** — a small frozen class instance per area, built in the
+  constructor. **Corrected in the building**: this page first said a
+  frozen object literal, "because there is nothing to inherit and a
+  frozen literal is one allocation". It is not one allocation — a literal
+  of six arrow functions is seven, per context — and a class puts the
+  methods on a prototype shared by every context. Each area holds one
+  closure, the way in, and nothing else. Not a getter, because a getter
+  that builds on every read breaks destructuring's promise.
+
+  Destructuring an *area* works, which is the requirement.
+  Destructuring an *operation* out of one does not, because a prototype
+  method needs its receiver — and that was already true of every method
+  on the flat surface, so nothing regresses.
 - **Dart** — a `final` field holding a small class that keeps the
   context. Dart has extension methods, and they were rejected: an
   extension is resolved statically and cannot be destructured or passed,
@@ -211,13 +220,23 @@ as a single key that is not there.
 
 ## 8. Order of work
 
-1. The boundary's two file renames, which regenerate the description and
-   the site's groups and move no ABI symbol.
-2. Node, which the measurement reads, so the page moves with the layer.
+1. ~~The boundary's two file renames~~, which regenerated the description
+   and the site's groups and moved no ABI symbol. **Done.**
+2. ~~Node~~, with its tests, its eight examples, its typecheck and its
+   parity runner. **Done**, and `check-parity` proved it
+   behaviour-preserving: all 635 values still agree with Dart and Python,
+   which had not changed.
 3. Dart, Python, Rust.
 4. `check-parity` gains the grouping, which is what holds the other three
    to Node's shape.
-5. The examples, the READMEs and the site's prose.
+5. The READMEs and the site's prose.
+
+The measured page turned over as step 2 landed, which was expected: it
+measured a flat surface and the surface is not flat any more. It now
+holds five properties of the **built** grouping — a module reached from
+one area, no empty area, no operation spelling its own area, every module
+reached or accounted for as plumbing, and the boundary's own naming — and
+the argument it used to make is kept here.
 
 The engine's typed façade is **after** all of it, because it attaches to
 `sdk.engine`, which step 2 creates.

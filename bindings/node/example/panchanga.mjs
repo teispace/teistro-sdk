@@ -107,11 +107,11 @@ const ctx = new Context({
 
 // Nepali New Year: the first day of Baisakh, BS 2082.
 const day = date(Calendar.BikramSambat, 2082, 1, 1);
-const gregorian = ctx.convert(day, Calendar.Gregorian);
+const gregorian = ctx.calendar.convert(day, Calendar.Gregorian);
 // Six in the morning stands in for sunrise, which the almanac would use
 // and which needs the rise-and-set solver.
-const when = ctx.resolve(at(day, { hour: 6 }), ianaZone('Asia/Kathmandu'));
-const found = panchangaAt(ctx, when.instantJdUtc, ctx.weekdayOf(day));
+const when = ctx.time.resolve(at(day, { hour: 6 }), ianaZone('Asia/Kathmandu'));
+const found = panchangaAt(ctx, when.instantJdUtc, ctx.calendar.weekdayOf(day));
 
 console.log(
   `BS ${day.year}-${two(day.month)}-${two(day.day)}` +
@@ -132,7 +132,7 @@ for (const [label, member] of [
   ['yoga', found.yoga],
   ['karana', found.karana],
 ]) {
-  const entity = ctx.entity(member);
+  const entity = ctx.intl.entity(member);
   // A member is its full key here (`tithi.PURNIMA`), so the bare key is
   // the tail — which is the string the other bindings call `key`.
   const key = member.split('.').at(-1);

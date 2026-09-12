@@ -84,31 +84,101 @@ fn camel(name: &str) -> String {
     out
 }
 
-/// One member of the context, as the ergonomic layer declares it.
+/// One member of a surface, as the ergonomic layer declares it.
 struct Member {
     name: String,
     /// The entry points its own body calls, in the order they appear.
     reaches: Vec<String>,
 }
 
-/// The members of Node's `Context`, and what each reaches.
+/// One thing a consumer reads members off: an area, or the context
+/// itself.
+struct Surface {
+    /// What a consumer writes — `calendar` for `sdk.calendar`, or
+    /// `(root)` for the context.
+    name: String,
+    /// The class the layer declares it with, so a reader can find it.
+    class: String,
+    members: Vec<Member>,
+}
+
+/// The name the context is read under, which is not an area.
+const ROOT: &str = "(root)";
+
+/// The layer's surfaces, and what each member of each reaches.
 ///
-/// Read rather than listed, so that a member added to the layer is a
-/// member this page reports. **Refuses** rather than guesses when the
-/// class is not where it expects: a parse that silently found nothing
-/// would report a surface of no members and call the rule proven.
-fn members(source: &str, entry_points: &[String]) -> Result<Vec<Member>, String> {
-    const OPEN: &str = "\nexport class Context {\n";
-    let start = source
-        .find(OPEN)
-        .ok_or_else(|| format!("{NODE} does not declare `export class Context`"))?
-        + OPEN.len();
-    let body = &source[start..];
+/// Read rather than listed, so that an area added to the layer is an
+/// area this page reports and an operation moved between two shows as
+/// moved. **Refuses** rather than guesses when a class is not where it
+/// expects: a parse that silently found nothing would report a surface
+/// of no members and call every rule proven.
+fn surfaces(source: &str, entry_points: &[String]) -> Result<Vec<Surface>, String> {
+    let reached: Vec<(String, String)> = entry_points
+        .iter()
+        .map(|name| (format!(".{}(", camel(name)), name.clone()))
+        .collect();
+
+    // The wiring is the mapping: the constructor says which class each
+    // area is, so the page cannot name an area the layer does not build.
+    let context = class_body(source, "export class Context {")?;
+    let mut out = vec![Surface {
+        name: ROOT.to_owned(),
+        class: "Context".to_owned(),
+        members: members_of(context, &reached)?,
+    }];
+    for line in context.lines() {
+        let Some((area, class)) = wired(line) else {
+            continue;
+        };
+        let body = class_body(source, &format!("\nclass {class} "))?;
+        out.push(Surface {
+            name: area,
+            class,
+            members: members_of(body, &reached)?,
+        });
+    }
+    if out.len() == 1 {
+        return Err(format!("{NODE} wires no areas onto its context"));
+    }
+    Ok(out)
+}
+
+/// The area a constructor line wires, and the class it wires it with.
+///
+/// `this.calendar = new CalendarArea(reach);` and the engine's
+/// `this.#engine = new Engine(reach);`, which is the same wiring behind a
+/// private field because reading it is what asks the engine a question.
+fn wired(line: &str) -> Option<(String, String)> {
+    let rest = line.trim().strip_prefix("this.")?;
+    let (name, rest) = rest.split_once(" = new ")?;
+    let class = rest.split_once('(')?.0;
+    Some((
+        name.trim_start_matches('#').to_owned(),
+        class.trim().to_owned(),
+    ))
+}
+
+/// A class's body, from the line that opens it to the `}` at column zero.
+fn class_body<'a>(source: &'a str, opens: &str) -> Result<&'a str, String> {
+    let at = source
+        .find(opens)
+        .ok_or_else(|| format!("{NODE} does not declare `{}`", opens.trim()))?;
+    let after = source
+        .get(at..)
+        .and_then(|rest| rest.find('\n').map(|line| at + line + 1))
+        .ok_or_else(|| format!("{NODE}'s `{}` has no body", opens.trim()))?;
+    let body = source
+        .get(after..)
+        .ok_or_else(|| format!("{NODE} ends inside `{}`", opens.trim()))?;
     let end = body
         .find("\n}\n")
-        .ok_or_else(|| format!("{NODE}'s `Context` class does not end at column zero"))?;
-    let body = &body[..end];
+        .ok_or_else(|| format!("{NODE}'s `{}` does not end at column zero", opens.trim()))?;
+    body.get(..end)
+        .ok_or_else(|| format!("{NODE}'s `{}` could not be read", opens.trim()))
+}
 
+/// The members a class body declares, and what each reaches.
+fn members_of(body: &str, spellings: &[(String, String)]) -> Result<Vec<Member>, String> {
     // A member is declared at one indent and nothing else in the class
     // is: a line of two spaces, a name, and either `(` for a method or
     // `=` for a field. Accessors carry `get`/`set` and are members twice,
@@ -120,25 +190,34 @@ fn members(source: &str, entry_points: &[String]) -> Result<Vec<Member>, String>
         }
     }
     if offsets.is_empty() {
-        return Err(format!("{NODE}'s `Context` class declares no members"));
+        return Err(format!("{NODE} declares a surface with no members"));
     }
-
-    let reached: Vec<(String, String)> = entry_points
-        .iter()
-        .map(|name| (format!(".{}(", camel(name)), name.clone()))
-        .collect();
-    let mut out = Vec::with_capacity(offsets.len());
+    // A constructor is not an operation, and a `get`/`set` pair is one
+    // member however many times the layer declares it: what the page is
+    // counting is what a consumer writes.
+    let mut out: Vec<Member> = Vec::with_capacity(offsets.len());
     for (index, (offset, name)) in offsets.iter().enumerate() {
+        if name == "constructor" {
+            continue;
+        }
         let stop = offsets.get(index + 1).map_or(body.len(), |(next, _)| *next);
         let text = body.get(*offset..stop).unwrap_or_default();
+        let reaches: Vec<String> = spellings
+            .iter()
+            .filter(|(spelling, _)| text.contains(spelling.as_str()))
+            .map(|(_, entry)| entry.clone())
+            .collect();
+        if let Some(already) = out.iter_mut().find(|member| member.name == *name) {
+            already.reaches.extend(reaches);
+            continue;
+        }
         out.push(Member {
             name: name.clone(),
-            reaches: reached
-                .iter()
-                .filter(|(spelling, _)| text.contains(spelling.as_str()))
-                .map(|(_, entry)| entry.clone())
-                .collect(),
+            reaches,
         });
+    }
+    if out.is_empty() {
+        return Err(format!("{NODE} declares a surface with nothing on it"));
     }
     Ok(out)
 }
@@ -188,8 +267,8 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
     let node = std::fs::read_to_string(root.join(NODE))
         .map_err(|error| format!("{NODE} is not readable: {error}"))?;
     let entry_points: Vec<String> = api.functions.iter().map(|f| f.name.clone()).collect();
-    let members = members(&node, &entry_points)?;
-    Ok(vec![Output::new(PAGE, page(&api, &members))])
+    let surfaces = surfaces(&node, &entry_points)?;
+    Ok(vec![Output::new(PAGE, page(&api, &surfaces))])
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {
@@ -212,7 +291,40 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
     }
 }
 
-fn page(api: &Api, members: &[Member]) -> String {
+/// Whether the root counts as reaching a module.
+///
+/// Two questions, and they are not the same one: "is this module reached
+/// at all" includes the root, and "can a consumer find this module's
+/// operations under two names" is about the areas alone.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Reach {
+    Anywhere,
+    AreasOnly,
+}
+
+/// What area, if any, reaches a boundary module.
+fn areas_of<'a>(
+    surfaces: &'a [Surface],
+    module: &BTreeMap<&str, &'a str>,
+    reach: Reach,
+) -> BTreeMap<&'a str, BTreeSet<&'a str>> {
+    let mut out: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
+    for surface in surfaces {
+        if reach == Reach::AreasOnly && surface.name == ROOT {
+            continue;
+        }
+        for member in &surface.members {
+            for entry in &member.reaches {
+                if let Some(found) = module.get(entry.as_str()) {
+                    out.entry(found).or_default().insert(&surface.name);
+                }
+            }
+        }
+    }
+    out
+}
+
+fn page(api: &Api, surfaces: &[Surface]) -> String {
     let module: BTreeMap<&str, &str> = api
         .functions
         .iter()
@@ -225,101 +337,108 @@ fn page(api: &Api, members: &[Member]) -> String {
             .or_default()
             .push(&function.name);
     }
-    let reached: BTreeSet<&str> = members
-        .iter()
-        .flat_map(|m| m.reaches.iter())
-        .filter_map(|entry| module.get(entry.as_str()).copied())
-        .collect();
-    let unreached: Vec<&str> = per_module
-        .keys()
-        .copied()
-        .filter(|name| !reached.contains(name))
-        .collect();
+    let by_module = areas_of(surfaces, &module, Reach::Anywhere);
+    let by_area = areas_of(surfaces, &module, Reach::AreasOnly);
 
     let mut out = String::new();
     let _ = writeln!(out, "# The surface areas, measured\n");
     let _ = writeln!(
         out,
-        "Status: `generated` by `cargo xtask areas`, gated by `check-areas`. Do not edit. Read from `{API}`, the boundary's own description, and from `{NODE}`, the one ergonomic layer whose members and the entry points they reach can both be read from one file.\n"
+        "Status: `generated` by `cargo xtask areas`, gated by `check-areas`. Do not edit. Read from `{API}`, the boundary's own description, and from `{NODE}`, the one ergonomic layer whose areas and the entry points they reach can both be read from one file.\n"
     );
     let _ = writeln!(
         out,
-        "ADR-0030 decides that the surface becomes `sdk.<area>.<operation>` and says the areas are \"derived from the boundary modules the reference site already groups by\". That is a proposal about a grouping, and this is the measurement of it — taken before four binding layers, four reference surfaces and every example are restructured around it, because the change is cheap now and breaking after v1.\n"
+        "The surface is `sdk.<area>.<operation>` (ADR-0030, designed in [`surface-areas.md`](surface-areas.md)). This measured the grouping **before** it was built, and falsified the rule the ADR words it by: five boundary modules were never reached by anything a consumer called, one member reached two, and the areas had to be chosen with the derivation as evidence rather than derived from it. That argument is made and [the design page](surface-areas.md) keeps it.\n"
+    );
+    let _ = writeln!(
+        out,
+        "What this page holds now is **the built thing**: the areas the layer wires, what each reaches, and the properties a namespaced surface has to keep as the remaining phases add to it.\n"
     );
 
-    out.push_str(&claims_section(api, members, &per_module, &unreached));
+    out.push_str(&claims_section(
+        api,
+        surfaces,
+        &per_module,
+        &by_module,
+        &by_area,
+    ));
     out.push_str(&strays_section(api));
-    out.push_str(&modules_section(&per_module, &reached, members, &module));
-    out.push_str(&members_section(members, &module));
+    out.push_str(&areas_section(surfaces, &module));
+    out.push_str(&modules_section(&per_module, &by_module));
     out.push_str(&limits_section());
     out
 }
 
-/// The rules, and what the two descriptions said about them.
+/// The four properties the surface has to keep.
 fn claims_section(
     api: &Api,
-    members: &[Member],
+    surfaces: &[Surface],
     per_module: &BTreeMap<&str, Vec<&str>>,
-    unreached: &[&str],
+    by_module: &BTreeMap<&str, BTreeSet<&str>>,
+    by_area: &BTreeMap<&str, BTreeSet<&str>>,
 ) -> String {
-    let carries_its_module = |f: &&Function| {
-        let stem = f.name.strip_prefix("ts_").unwrap_or(&f.name);
-        let module = module_of(&f.source);
-        stem == module || stem.starts_with(&format!("{module}_"))
-    };
-    let strays: Vec<&str> = api
-        .functions
-        .iter()
-        .filter(|f| !carries_its_module(f))
-        .map(|f| f.name.as_str())
-        .collect();
     let carries = api
         .functions
         .iter()
-        .filter(|f| {
-            carries_its_module(f)
-        })
+        .filter(|function| carries_its_module(function))
         .count();
-    let none = members.iter().filter(|m| m.reaches.is_empty()).count();
-    let several = members
+    let strays: Vec<&str> = api
+        .functions
         .iter()
-        .filter(|m| m.reaches.len() > 1)
-        .collect::<Vec<_>>();
-    let spread = members
+        .filter(|function| !carries_its_module(function))
+        .map(|function| function.name.as_str())
+        .collect();
+
+    let unreached: Vec<&str> = per_module
+        .keys()
+        .copied()
+        .filter(|name| !by_module.contains_key(name))
+        .collect();
+    // Over the areas alone. The root is not an area, and `positions`
+    // reaching `ts_frame_pack` from it does not give a consumer a second
+    // place to look for anything: there is no `sdk.frame.pack`.
+    let split: Vec<&str> = by_area
         .iter()
-        .filter(|m| {
-            m.reaches
-                .iter()
-                .filter_map(|entry| {
-                    api.functions
-                        .iter()
-                        .find(|f| f.name == *entry)
-                        .map(|f| module_of(&f.source))
-                })
-                .collect::<BTreeSet<_>>()
-                .len()
-                > 1
+        .filter(|(_, areas)| areas.len() > 1)
+        .map(|(module, _)| *module)
+        .collect();
+    let empty: Vec<&str> = surfaces
+        .iter()
+        .filter(|surface| {
+            surface.name != ROOT && surface.members.iter().all(|m| m.reaches.is_empty())
         })
-        .count();
+        .map(|surface| surface.name.as_str())
+        .collect();
+    let repeats = repeating(surfaces);
 
     let claims = [
         Claim::counted(
-            "every boundary module is an area a consumer sees",
-            unreached.len(),
+            "a boundary module a consumer reaches is reached from one area",
+            split.len(),
+            by_area.len(),
+        )
+        .with_note("so no operation can be looked for under two names"),
+        Claim::counted(
+            "every area holds an operation that reaches the boundary",
+            empty.len(),
+            surfaces.len() - 1,
+        ),
+        Claim::counted(
+            "no operation's name repeats its own area's",
+            repeats.len(),
+            surfaces
+                .iter()
+                .filter(|s| s.name != ROOT)
+                .map(|s| s.members.len())
+                .sum(),
+        )
+        .with_note("which is what the namespace is for"),
+        Claim::counted(
+            "every boundary module is reached, or is the caller's memory or the context's life",
+            unreached.len().saturating_sub(PLUMBING.len()),
             per_module.len(),
         )
-        .with_note(format!("never reached: {}", named(unreached))),
-        Claim::counted(
-            "every member of the context reaches the boundary",
-            none,
-            members.len(),
-        )
-        .with_note("each of them is a cached value, a decoded result or a delegate"),
-        Claim::counted(
-            "a member that reaches the boundary reaches one module",
-            spread,
-            members.len() - none,
-        ),
+        .with_note(format!("unreached: {}", named(&unreached))),
         Claim::counted(
             "an entry point's name already carries its own module",
             api.functions.len() - carries,
@@ -329,37 +448,73 @@ fn claims_section(
     ];
 
     let mut out = String::new();
-    let _ = writeln!(out, "## The rules\n");
+    let _ = writeln!(out, "## The properties\n");
     out.push_str(&table(&claims));
     let _ = writeln!(out);
-    let _ = writeln!(
-        out,
-        "**The grouping is real and the rule that derives it is not.** {} of the {} boundary modules are never reached by anything a consumer calls, and they are not an oversight: each exists for the C caller's memory or for the context's own life, which is not an operation anybody namespaces. A rule that made an area of every module would put {} of them on the surface with nothing ever to be found under them.\n",
-        unreached.len(),
-        per_module.len(),
-        unreached.len()
-    );
-    if several.is_empty() {
+    if repeats.is_empty() {
         let _ = writeln!(
             out,
-            "No member reaches more than one entry point, so nothing here has to be split between two areas.\n"
+            "**No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.\n"
         );
     } else {
         let _ = writeln!(
             out,
-            "**{} of the {} members that reach the boundary at all {} more than one entry point**, and that is where a grouping derived from the boundary does fail: {}. The failure is one of kind rather than of grouping — `ts_frame_pack` marshals the frame the request is expressed in and is not an operation a consumer would look for under an area — but the rule as ADR-0030 words it does not know that, so the areas cannot be *derived* and have to be **chosen with the derivation as evidence**.\n",
-            several.len(),
-            members.len() - none,
-            if several.len() == 1 { "reaches" } else { "reach" },
-            several
-                .iter()
-                .map(|m| {
-                    let reaches: Vec<&str> = m.reaches.iter().map(String::as_str).collect();
-                    format!("`{}` reaches {}", m.name, named(&reaches))
-                })
-                .collect::<Vec<_>>()
-                .join(", ")
+            "**{} {} its own area inside its own name**: {}. The namespace already carries the word, so saying it twice is what the flat surface had to do and this one does not.\n",
+            repeats.len(),
+            if repeats.len() == 1 {
+                "operation spells"
+            } else {
+                "operations spell"
+            },
+            named(&repeats)
         );
+    }
+    if !unreached.is_empty() {
+        let _ = writeln!(
+            out,
+            "The unreached modules are `{}`. {} of them are the plumbing the rule allows for — the C caller's memory, the context's own life, and the library itself — and a rule that made an area of each would put them on the surface with nothing ever to be found under them.\n",
+            unreached.join("`, `"),
+            PLUMBING.len()
+        );
+    }
+    out
+}
+
+/// Whether an entry point's name begins with the module it lives in.
+fn carries_its_module(function: &Function) -> bool {
+    let stem = function
+        .name
+        .strip_prefix("ts_")
+        .unwrap_or(&function.name);
+    let module = module_of(&function.source);
+    stem == module || stem.starts_with(&format!("{module}_"))
+}
+
+/// The boundary modules that exist for the C caller's memory, the
+/// context's own life, or the library itself, and are therefore not
+/// areas.
+///
+/// Named rather than discovered, because the reason is a **kind** and not
+/// a count: a module nothing happens to reach this week is not the same
+/// as one nothing should ever reach.
+const PLUMBING: [&str; 5] = ["blob", "context", "lib", "provider", "string"];
+
+/// The operations whose names still spell their own area.
+fn repeating(surfaces: &[Surface]) -> Vec<String> {
+    let mut out = Vec::new();
+    for surface in surfaces {
+        if surface.name == ROOT {
+            continue;
+        }
+        let stem = surface.name.strip_suffix('s').unwrap_or(&surface.name);
+        for member in &surface.members {
+            let spelling = member.name.to_ascii_lowercase();
+            if spelling != surface.name
+                && (spelling.contains(&surface.name) || spelling.contains(stem))
+            {
+                out.push(format!("{}.{}", surface.name, member.name));
+            }
+        }
     }
     out
 }
@@ -374,10 +529,11 @@ const DECLARED: [&str; 1] = ["ts_context_new_with_provider"];
 fn strays_section(api: &Api) -> String {
     let mut by_module: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     for function in &api.functions {
-        let stem = function.name.strip_prefix("ts_").unwrap_or(&function.name);
-        let module = module_of(&function.source);
-        if stem != module && !stem.starts_with(&format!("{module}_")) {
-            by_module.entry(module).or_default().push(&function.name);
+        if !carries_its_module(function) {
+            by_module
+                .entry(module_of(&function.source))
+                .or_default()
+                .push(&function.name);
         }
     }
     let library = by_module.get("lib").map_or(0, Vec::len);
@@ -426,120 +582,91 @@ fn strays_section(api: &Api) -> String {
     } else {
         let _ = writeln!(
             out,
-            "The remaining {} {} **{}**, and each is a line to fix while the surface is being restructured anyway: {}.\n",
+            "The remaining {} {} not accounted for: {}.\n",
             unexplained.len(),
-            if unexplained.len() == 1 { "is an" } else { "are" },
-            if unexplained.len() == 1 {
-                "inconsistency rather than an exception"
-            } else {
-                "inconsistencies rather than exceptions"
-            },
+            if unexplained.len() == 1 { "is" } else { "are" },
             named(&unexplained)
         );
     }
     out
 }
 
-fn modules_section(
-    per_module: &BTreeMap<&str, Vec<&str>>,
-    reached: &BTreeSet<&str>,
-    members: &[Member],
-    module: &BTreeMap<&str, &str>,
-) -> String {
-    let mut per_area: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
-    for member in members {
-        for entry in &member.reaches {
-            if let Some(area) = module.get(entry.as_str()) {
-                per_area.entry(area).or_default().push(&member.name);
-            }
-        }
-    }
+/// Every area, its operations, and what each reaches.
+fn areas_section(surfaces: &[Surface], module: &BTreeMap<&str, &str>) -> String {
     let mut out = String::new();
-    let _ = writeln!(out, "## What each boundary module holds\n");
+    let _ = writeln!(out, "## The areas the layer wires\n");
+    let operations: usize = surfaces
+        .iter()
+        .filter(|s| s.name != ROOT)
+        .map(|s| s.members.len())
+        .sum();
     let _ = writeln!(
         out,
-        "| module | entry points | members that reach it | an area |"
+        "**{} areas over {} operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.\n",
+        surfaces.len() - 1,
+        operations
     );
-    let _ = writeln!(out, "|---|---:|---:|---|");
-    for (name, entries) in per_module {
-        let mut reaching = per_area.get(name).cloned().unwrap_or_default();
-        reaching.sort_unstable();
-        reaching.dedup();
-        let _ = writeln!(
-            out,
-            "| `{name}` | {} | {} | {} |",
-            entries.len(),
-            reaching.len(),
-            if reached.contains(name) { "**yes**" } else { "" }
-        );
+    for surface in surfaces {
+        let title = if surface.name == ROOT {
+            format!("### The root — `{}`\n", surface.class)
+        } else {
+            format!("### `sdk.{}` — `{}`\n", surface.name, surface.class)
+        };
+        let _ = writeln!(out, "{title}");
+        let _ = writeln!(out, "| operation | reaches |");
+        let _ = writeln!(out, "|---|---|");
+        for member in &surface.members {
+            let _ = writeln!(
+                out,
+                "| `{}` | {} |",
+                member.name,
+                if member.reaches.is_empty() {
+                    String::from("—")
+                } else {
+                    member
+                        .reaches
+                        .iter()
+                        .map(|entry| {
+                            let area = module.get(entry.as_str()).copied().unwrap_or("?");
+                            format!("`{entry}` ({area})")
+                        })
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                }
+            );
+        }
+        let _ = writeln!(out);
     }
-    let _ = writeln!(out);
-    let _ = writeln!(
-        out,
-        "**Entry points are not a measure of an area's size to a consumer, and that is the second finding.** `calendar` has the most of them and `chart`, `positions` and `panchanga` have one each — and those three are the operations the SDK exists for. One entry point serves a whole family there, because a chart request carries what would otherwise have been a dozen calls. An area sized by its entry points would rank the surface almost backwards.\n"
-    );
     out
 }
 
-fn members_section(members: &[Member], module: &BTreeMap<&str, &str>) -> String {
+fn modules_section(
+    per_module: &BTreeMap<&str, Vec<&str>>,
+    by_module: &BTreeMap<&str, BTreeSet<&str>>,
+) -> String {
     let mut out = String::new();
-    let _ = writeln!(out, "## Where each member sits today\n");
-    let _ = writeln!(out, "| member | reaches | module |");
-    let _ = writeln!(out, "|---|---|---|");
-    for member in members {
-        let areas: BTreeSet<&str> = member
-            .reaches
-            .iter()
-            .filter_map(|entry| module.get(entry.as_str()).copied())
-            .collect();
+    let _ = writeln!(out, "## What each boundary module holds\n");
+    let _ = writeln!(out, "| module | entry points | reached from |");
+    let _ = writeln!(out, "|---|---:|---|");
+    for (name, entries) in per_module {
         let _ = writeln!(
             out,
-            "| `{}` | {} | {} |",
-            member.name,
-            if member.reaches.is_empty() {
-                String::from("—")
-            } else {
-                member
-                    .reaches
+            "| `{name}` | {} | {} |",
+            entries.len(),
+            by_module.get(name).map_or_else(
+                || String::from("—"),
+                |areas| areas
                     .iter()
-                    .map(|entry| format!("`{entry}`"))
+                    .map(|area| format!("`{area}`"))
                     .collect::<Vec<_>>()
                     .join(", ")
-            },
-            areas
-                .iter()
-                .map(|area| format!("`{area}`"))
-                .collect::<Vec<_>>()
-                .join(", ")
+            )
         );
     }
     let _ = writeln!(out);
-    // A member whose name is *only* its area is not repeating it: it is
-    // the operation the area is named after, and namespacing gives it a
-    // verb rather than taking one away.
-    let repeats: Vec<&Member> = members
-        .iter()
-        .filter(|member| {
-            let spelling = member.name.to_ascii_lowercase();
-            member
-                .reaches
-                .iter()
-                .filter_map(|entry| module.get(entry.as_str()).copied())
-                .any(|area| {
-                    let stem = area.strip_suffix('s').unwrap_or(area);
-                    spelling != area && (spelling.contains(area) || spelling.contains(stem))
-                })
-        })
-        .collect();
     let _ = writeln!(
         out,
-        "**{} of them already spell their own area inside their own name** — {} — which is what a flat surface costs when two areas want the same verb: `convert` was taken by the calendar, so the time's became `convertTime`. Under `sdk.<area>.<operation>` each of those loses the half that is now the namespace, and none of them needs a new word invented for it.\n",
-        repeats.len(),
-        repeats
-            .iter()
-            .map(|member| format!("`{}`", member.name))
-            .collect::<Vec<_>>()
-            .join(", ")
+        "**Entry points do not measure an area's size to a consumer.** `calendar` has the most of them and `chart`, `positions` and `panchanga` have one each — and those three are the operations the SDK exists for. One entry point serves a whole family there, because a chart request carries what would otherwise have been a dozen calls. An area sized by its entry points would rank the surface almost backwards, which is why the design page sizes none of them.\n"
     );
     out
 }
@@ -549,24 +676,24 @@ fn limits_section() -> String {
     let _ = writeln!(out, "## What this does not measure\n");
     let _ = writeln!(
         out,
-        "**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. `check-parity` already holds all three to the same values; what it does not hold them to is the same *shape*, which is the gap this namespacing closes and a thing a later pass should gate.\n"
+        "**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. `check-parity` holds all three to the same *values*; holding them to the same *shape* is what makes the other two follow this one, and it is the gate this page is waiting on.\n"
     );
     let _ = writeln!(
         out,
-        "**Whether these are the right area names.** This says which groupings the boundary supports and which it does not. `ephemeris` is the clearest case of a name the measurement cannot settle: ADR-0030 renames it `engine` on an argument about what a consumer needs to be warned of, and no count decides that.\n"
+        "**Whether the area names are the right ones.** This holds the properties a namespaced surface must keep. `almanac` over `panchanga`, and `engine` over `ephemeris`, are arguments and not counts, and [`surface-areas.md`](surface-areas.md) makes them.\n"
     );
     let _ = writeln!(
         out,
-        "**What the remaining phases add.** Every area here is one the SDK already has. Dashas, strengths, rules, interpretation and the application modules are what make a flat surface untenable, and they are not in the description yet — so this page measures the case for namespacing at its weakest, which is the honest time to make it.\n"
+        "**What the remaining phases add.** Every area here is one the SDK already has. Dashas, strengths, rules, interpretation and the application modules are what make a flat surface untenable, and an area invented before its operations exist is a slot that shapes the work to fit it.\n"
     );
     out
 }
 
 /// A list of names, as prose.
-fn named(names: &[&str]) -> String {
+fn named<T: AsRef<str>>(names: &[T]) -> String {
     names
         .iter()
-        .map(|name| format!("`{name}`"))
+        .map(|name| format!("`{}`", name.as_ref()))
         .collect::<Vec<_>>()
         .join(", ")
 }

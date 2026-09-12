@@ -30,7 +30,7 @@ const ctx = new Context({
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
 
 // ── One crossing for the whole week ───────────────────────────────────
-const week = ctx.almanac({
+const week = ctx.almanac.of({
   from: date(Calendar.Gregorian, 2024, 6, 17),
   to: date(Calendar.Gregorian, 2024, 6, 23),
   place,
@@ -48,10 +48,10 @@ const clock = (jd) => {
 // and `direction` have no entries in any of the five the SDK ships, so
 // an almanac falls back to the key rather than refusing to print. A
 // program that must have the name in the reader's language should check
-// `ctx.has(...)` and say so, rather than showing a bare key.
+// `ctx.intl.has(...)` and say so, rather than showing a bare key.
 const name = (key) => {
   try {
-    return ctx.entity(key).name;
+    return ctx.intl.entity(key).name;
   } catch {
     return key.slice(key.indexOf('.') + 1).toLowerCase().replace(/_/g, ' ');
   }
@@ -124,7 +124,7 @@ console.log(`settings hash  ${ctx.settingsHash.slice(0, 16)}…`);
 
 // A day on its own is the range of one unwrapped: same crossing, and the
 // answer is a day rather than a list of one.
-const one = ctx.almanacDay({
+const one = ctx.almanac.day({
   date: date(Calendar.Gregorian, 2024, 6, 21),
   place,
   utcOffsetSeconds: 20700,

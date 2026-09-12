@@ -101,7 +101,7 @@ console.log(
 // ── What the columns are for ───────────────────────────────────────────
 console.log('');
 for (const [column, [body, graha]] of BODIES.entries()) {
-  const name = ctx.entity(graha).name;
+  const name = ctx.intl.entity(graha).name;
   const crossings = ingresses(cells.lon, DAYS, sky.bodyCount, column);
   const speed = cells.lonSpeed[column];
   const direction = speed < 0 ? 'retrograde' : 'direct';
@@ -114,7 +114,7 @@ for (const [column, [body, graha]] of BODIES.entries()) {
   for (const [day, sign] of crossings.slice(0, 3)) {
     console.log(
       `      day ${String(day).padStart(3)}  enters` +
-        ` ${sign.split('.').at(-1).padEnd(12)} ${ctx.entity(sign).name}`,
+        ` ${sign.split('.').at(-1).padEnd(12)} ${ctx.intl.entity(sign).name}`,
     );
   }
   if (crossings.length > 3) console.log(`      … and ${crossings.length - 3} more`);

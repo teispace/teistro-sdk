@@ -1,21 +1,24 @@
 # The surface areas, measured
 
-Status: `generated` by `cargo xtask areas`, gated by `check-areas`. Do not edit. Read from `idl/api.json`, the boundary's own description, and from `bindings/node/lib/index.js`, the one ergonomic layer whose members and the entry points they reach can both be read from one file.
+Status: `generated` by `cargo xtask areas`, gated by `check-areas`. Do not edit. Read from `idl/api.json`, the boundary's own description, and from `bindings/node/lib/index.js`, the one ergonomic layer whose areas and the entry points they reach can both be read from one file.
 
-ADR-0030 decides that the surface becomes `sdk.<area>.<operation>` and says the areas are "derived from the boundary modules the reference site already groups by". That is a proposal about a grouping, and this is the measurement of it — taken before four binding layers, four reference surfaces and every example are restructured around it, because the change is cheap now and breaking after v1.
+The surface is `sdk.<area>.<operation>` (ADR-0030, designed in [`surface-areas.md`](surface-areas.md)). This measured the grouping **before** it was built, and falsified the rule the ADR words it by: five boundary modules were never reached by anything a consumer called, one member reached two, and the areas had to be chosen with the derivation as evidence rather than derived from it. That argument is made and [the design page](surface-areas.md) keeps it.
 
-## The rules
+What this page holds now is **the built thing**: the areas the layer wires, what each reaches, and the properties a namespaced surface has to keep as the remaining phases add to it.
+
+## The properties
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every boundary module is an area a consumer sees | falsified | 5 of 14 disagree; never reached: `blob`, `context`, `lib`, `provider`, `string` |
-| every member of the context reaches the boundary | falsified | 10 of 35 disagree; each of them is a cached value, a decoded result or a delegate |
-| a member that reaches the boundary reaches one module | falsified | 1 of 25 disagree |
+| a boundary module a consumer reaches is reached from one area | **holds** | 0 of 8 disagree; so no operation can be looked for under two names |
+| every area holds an operation that reaches the boundary | **holds** | 0 of 8 disagree |
+| no operation's name repeats its own area's | **holds** | 0 of 30 disagree; which is what the namespace is for |
+| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 14 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
 | an entry point's name already carries its own module | falsified | 7 of 46 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_context_new_with_provider` |
 
-**The grouping is real and the rule that derives it is not.** 5 of the 14 boundary modules are never reached by anything a consumer calls, and they are not an oversight: each exists for the C caller's memory or for the context's own life, which is not an operation anybody namespaces. A rule that made an area of every module would put 5 of them on the surface with nothing ever to be found under them.
+**No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
 
-**1 of the 25 members that reach the boundary at all reaches more than one entry point**, and that is where a grouping derived from the boundary does fail: `positions` reaches `ts_frame_pack`, `ts_positions`. The failure is one of kind rather than of grouping — `ts_frame_pack` marshals the frame the request is expressed in and is not an operation a consumer would look for under an area — but the rule as ADR-0030 words it does not know that, so the areas cannot be *derived* and have to be **chosen with the derivation as evidence**.
+The unreached modules are `blob`, `context`, `lib`, `provider`, `string`. 5 of them are the plumbing the rule allows for — the C caller's memory, the context's own life, and the library itself — and a rule that made an area of each would put them on the surface with nothing ever to be found under them.
 
 ### The names that do not carry their module
 
@@ -25,74 +28,118 @@ ADR-0030 decides that the surface becomes `sdk.<area>.<operation>` and says the 
 
 Nothing else. The three that were inconsistencies were all the same one — a function named in the singular in a file named in the plural — and were fixed by renaming the **file**, which is not an ABI symbol, rather than the function, which is.
 
+## The areas the layer wires
+
+**8 areas over 30 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+
+### The root — `Context`
+
+| operation | reaches |
+|---|---|
+| `engine` | — |
+| `profile` | — |
+| `settings` | — |
+| `settingsJson` | — |
+| `settingsHash` | — |
+| `positions` | `ts_frame_pack` (frame), `ts_positions` (positions) |
+| `dispose` | — |
+
+### `sdk.calendar` — `CalendarArea`
+
+| operation | reaches |
+|---|---|
+| `dateOf` | `ts_calendar_from_fixed` (calendar) |
+| `fixedOf` | `ts_calendar_to_fixed` (calendar) |
+| `convert` | `ts_calendar_convert` (calendar) |
+| `weekdayOf` | `ts_calendar_weekday` (calendar) |
+| `monthLength` | `ts_calendar_month_length` (calendar) |
+| `isLeap` | `ts_calendar_is_leap` (calendar) |
+
+### `sdk.time` — `TimeArea`
+
+| operation | reaches |
+|---|---|
+| `resolve` | `ts_time_resolve` (time) |
+| `civilOf` | `ts_time_civil` (time) |
+| `convert` | `ts_time_convert` (time) |
+| `deltaT` | `ts_time_delta_t` (time) |
+
+### `sdk.intl` — `IntlArea`
+
+| operation | reaches |
+|---|---|
+| `locale` | `ts_intl_locale` (intl), `ts_intl_set_locale` (intl) |
+| `render` | `ts_intl_render` (intl) |
+| `has` | `ts_intl_has` (intl) |
+| `transliterate` | `ts_intl_transliterate` (intl) |
+| `entity` | `ts_intl_entity` (intl) |
+| `messages` | — |
+| `loadPack` | `ts_intl_load_pack` (intl) |
+
+### `sdk.keys` — `KeysArea`
+
+| operation | reaches |
+|---|---|
+| `id` | `ts_key_parse` (key) |
+| `name` | `ts_key_name` (key) |
+
+### `sdk.frame` — `FrameArea`
+
+| operation | reaches |
+|---|---|
+| `canonical` | `ts_frame_canonical` (frame) |
+
+### `sdk.chart` — `ChartArea`
+
+| operation | reaches |
+|---|---|
+| `found` | — |
+| `foundMany` | `ts_chart_found` (chart) |
+
+### `sdk.almanac` — `AlmanacArea`
+
+| operation | reaches |
+|---|---|
+| `of` | `ts_panchanga_days` (panchanga) |
+| `day` | — |
+
+### `sdk.engine` — `Engine`
+
+| operation | reaches |
+|---|---|
+| `manifestJson` | `ts_ephemeris_manifest` (ephemeris) |
+| `manifest` | — |
+| `names` | — |
+| `signature` | — |
+| `call` | — |
+| `callJson` | `ts_ephemeris_call` (ephemeris) |
+
 ## What each boundary module holds
 
-| module | entry points | members that reach it | an area |
-|---|---:|---:|---|
-| `blob` | 1 | 0 |  |
-| `calendar` | 8 | 6 | **yes** |
-| `chart` | 1 | 1 | **yes** |
-| `context` | 6 | 0 |  |
-| `ephemeris` | 2 | 2 | **yes** |
-| `frame` | 3 | 2 | **yes** |
-| `intl` | 7 | 6 | **yes** |
-| `key` | 2 | 2 | **yes** |
-| `lib` | 6 | 0 |  |
-| `panchanga` | 1 | 1 | **yes** |
-| `positions` | 1 | 1 | **yes** |
-| `provider` | 3 | 0 |  |
-| `string` | 1 | 0 |  |
-| `time` | 4 | 4 | **yes** |
+| module | entry points | reached from |
+|---|---:|---|
+| `blob` | 1 | — |
+| `calendar` | 8 | `calendar` |
+| `chart` | 1 | `chart` |
+| `context` | 6 | — |
+| `ephemeris` | 2 | `engine` |
+| `frame` | 3 | `(root)`, `frame` |
+| `intl` | 7 | `intl` |
+| `key` | 2 | `keys` |
+| `lib` | 6 | — |
+| `panchanga` | 1 | `almanac` |
+| `positions` | 1 | `(root)` |
+| `provider` | 3 | — |
+| `string` | 1 | — |
+| `time` | 4 | `time` |
 
-**Entry points are not a measure of an area's size to a consumer, and that is the second finding.** `calendar` has the most of them and `chart`, `positions` and `panchanga` have one each — and those three are the operations the SDK exists for. One entry point serves a whole family there, because a chart request carries what would otherwise have been a dozen calls. An area sized by its entry points would rank the surface almost backwards.
-
-## Where each member sits today
-
-| member | reaches | module |
-|---|---|---|
-| `constructor` | — |  |
-| `ephemeris` | — |  |
-| `ephemerisManifestJson` | `ts_ephemeris_manifest` | `ephemeris` |
-| `ephemerisCallJson` | `ts_ephemeris_call` | `ephemeris` |
-| `profile` | — |  |
-| `settings` | — |  |
-| `settingsJson` | — |  |
-| `settingsHash` | — |  |
-| `locale` | `ts_intl_locale` | `intl` |
-| `locale` | `ts_intl_set_locale` | `intl` |
-| `canonicalFrame` | `ts_frame_canonical` | `frame` |
-| `positions` | `ts_frame_pack`, `ts_positions` | `frame`, `positions` |
-| `found` | — |  |
-| `foundMany` | `ts_chart_found` | `chart` |
-| `almanac` | `ts_panchanga_days` | `panchanga` |
-| `almanacDay` | — |  |
-| `render` | `ts_intl_render` | `intl` |
-| `has` | `ts_intl_has` | `intl` |
-| `transliterate` | `ts_intl_transliterate` | `intl` |
-| `entity` | `ts_intl_entity` | `intl` |
-| `messages` | — |  |
-| `loadPack` | `ts_intl_load_pack` | `intl` |
-| `dateOf` | `ts_calendar_from_fixed` | `calendar` |
-| `fixedOf` | `ts_calendar_to_fixed` | `calendar` |
-| `convert` | `ts_calendar_convert` | `calendar` |
-| `weekdayOf` | `ts_calendar_weekday` | `calendar` |
-| `monthLength` | `ts_calendar_month_length` | `calendar` |
-| `isLeap` | `ts_calendar_is_leap` | `calendar` |
-| `resolve` | `ts_time_resolve` | `time` |
-| `civilOf` | `ts_time_civil` | `time` |
-| `convertTime` | `ts_time_convert` | `time` |
-| `deltaT` | `ts_time_delta_t` | `time` |
-| `keyId` | `ts_key_parse` | `key` |
-| `keyName` | `ts_key_name` | `key` |
-| `dispose` | — |  |
-
-**6 of them already spell their own area inside their own name** — `ephemerisManifestJson`, `ephemerisCallJson`, `canonicalFrame`, `convertTime`, `keyId`, `keyName` — which is what a flat surface costs when two areas want the same verb: `convert` was taken by the calendar, so the time's became `convertTime`. Under `sdk.<area>.<operation>` each of those loses the half that is now the namespace, and none of them needs a new word invented for it.
+**Entry points do not measure an area's size to a consumer.** `calendar` has the most of them and `chart`, `positions` and `panchanga` have one each — and those three are the operations the SDK exists for. One entry point serves a whole family there, because a chart request carries what would otherwise have been a dozen calls. An area sized by its entry points would rank the surface almost backwards, which is why the design page sizes none of them.
 
 ## What this does not measure
 
-**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. `check-parity` already holds all three to the same values; what it does not hold them to is the same *shape*, which is the gap this namespacing closes and a thing a later pass should gate.
+**The Dart and Python layers.** Only one of the three declares its surface and reaches the boundary by a name derived from the entry point's own, so only one can be read this way. `check-parity` holds all three to the same *values*; holding them to the same *shape* is what makes the other two follow this one, and it is the gate this page is waiting on.
 
-**Whether these are the right area names.** This says which groupings the boundary supports and which it does not. `ephemeris` is the clearest case of a name the measurement cannot settle: ADR-0030 renames it `engine` on an argument about what a consumer needs to be warned of, and no count decides that.
+**Whether the area names are the right ones.** This holds the properties a namespaced surface must keep. `almanac` over `panchanga`, and `engine` over `ephemeris`, are arguments and not counts, and [`surface-areas.md`](surface-areas.md) makes them.
 
-**What the remaining phases add.** Every area here is one the SDK already has. Dashas, strengths, rules, interpretation and the application modules are what make a flat surface untenable, and they are not in the description yet — so this page measures the case for namespacing at its weakest, which is the honest time to make it.
+**What the remaining phases add.** Every area here is one the SDK already has. Dashas, strengths, rules, interpretation and the application modules are what make a flat surface untenable, and an area invented before its operations exist is a slot that shapes the work to fit it.
 
