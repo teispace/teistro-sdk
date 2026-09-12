@@ -37,14 +37,29 @@ jobs:
       - name: Valgrind
         # Only the Ubuntu archive, not every list the runner image has
         # added. A third-party repository the job does not use (Chrome's,
-        # in the run that prompted this) can serve a mismatched index and
-        # fail `apt-get update` for everyone; `SourceParts=/dev/null`
-        # ignores `sources.list.d` so an unrelated mirror cannot stop a
-        # benchmark.
+        # in the run that prompted the first version of this) can serve a
+        # mismatched index and fail `apt-get update` for everyone.
+        #
+        # THE FIRST VERSION DID THAT BY IGNORING `sources.list.d`
+        # ENTIRELY, and that is where this broke: on noble the Ubuntu
+        # archive itself is `sources.list.d/ubuntu.sources`, so the
+        # update skipped the one index it needed and left the image's
+        # pre-baked one — which named a `libc6-dbg` the pool no longer
+        # carries, and `valgrind` depends on it. Four runs failed with a
+        # 404 on a file every mirror had already superseded.
+        #
+        # So: remove the third-party `.list` files, which is what those
+        # repositories use, and keep `ubuntu.sources`, which is the
+        # archive. Then update for real. A second attempt follows a
+        # failure because a mirror mid-publish is a minute's problem and
+        # not a branch's.
         run: |
-          sudo apt-get update -qq -o Dir::Etc::SourceParts=/dev/null \
-            -o APT::Get::List-Cleanup=0
-          sudo apt-get install -y --no-install-recommends valgrind
+          sudo rm -f /etc/apt/sources.list.d/*.list
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends valgrind \
+            || { sleep 15; sudo apt-get update -qq; \
+                 sudo apt-get install -y --no-install-recommends valgrind; }
+          valgrind --version
 
       - name: What this branch costs
         run: cargo xtask bench head.tsv | tee head.txt
