@@ -258,6 +258,71 @@ fn member_name(line: &str) -> Option<String> {
     (after.starts_with('(') || after.starts_with('=')).then_some(name)
 }
 
+/// The three parity runners, whose lists of canonical paths are the only
+/// place the surface's shape is written down for all of the bindings.
+///
+/// Each holds its own copy, in its own syntax, and `check-parity`
+/// compares what they *print* rather than what they list -- so three
+/// runners that all forget the same new operation agree perfectly and
+/// the gate says nothing. That is the hole this property closes, and it
+/// is the same shape as several generators keeping the same private
+/// list.
+const RUNNERS: [&str; 3] = [
+    "bindings/node/parity.mjs",
+    "bindings/dart/bin/parity.dart",
+    "bindings/python/parity.py",
+];
+
+/// The canonical paths a runner lists, whatever its language's quotes
+/// and brackets look like: the first element of each row is the path,
+/// and a path is the only quoted string in these files shaped
+/// `<area>.<operation>`.
+fn listed(source: &str) -> BTreeSet<String> {
+    let mut out = BTreeSet::new();
+    for line in source.lines() {
+        // The row shape, and the same one in all three: an opening
+        // bracket for the language's tuple or array, then the path as a
+        // quoted string. Read per line and anchored at its start, because
+        // scanning the file for quotes goes out of phase on the first
+        // apostrophe in a comment.
+        let row = line.trim_start();
+        let Some(row) = row.strip_prefix('[').or_else(|| row.strip_prefix('(')) else {
+            continue;
+        };
+        let Some(quote) = row.chars().next().filter(|c| *c == '\'' || *c == '"') else {
+            continue;
+        };
+        let after = row.get(quote.len_utf8()..).unwrap_or("");
+        let Some(end) = after.find(quote) else {
+            continue;
+        };
+        let quoted = after.get(..end).unwrap_or("");
+        if quoted.contains('.')
+            && quoted
+                .chars()
+                .all(|c| c.is_ascii_lowercase() || c == '_' || c == '.' || c == '(' || c == ')')
+        {
+            out.insert(quoted.to_owned());
+        }
+    }
+    out
+}
+
+/// An operation's canonical path: the area, and the operation in the
+/// snake case the runners key by.
+fn canonical(area: &str, member: &str) -> String {
+    let mut operation = String::with_capacity(member.len() + 2);
+    for letter in member.chars() {
+        if letter.is_ascii_uppercase() {
+            operation.push('_');
+            operation.extend(letter.to_lowercase());
+        } else {
+            operation.push(letter);
+        }
+    }
+    format!("{area}.{operation}")
+}
+
 /// The page, from one reading of both files.
 fn outputs(root: &Path) -> Result<Vec<Output>, String> {
     let text = std::fs::read_to_string(root.join(API))
@@ -268,7 +333,17 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
         .map_err(|error| format!("{NODE} is not readable: {error}"))?;
     let entry_points: Vec<String> = api.functions.iter().map(|f| f.name.clone()).collect();
     let surfaces = surfaces(&node, &entry_points)?;
-    Ok(vec![Output::new(PAGE, page(&api, &surfaces))])
+    let mut runners: Vec<(&str, BTreeSet<String>)> = Vec::with_capacity(RUNNERS.len());
+    for runner in RUNNERS {
+        let text = std::fs::read_to_string(root.join(runner))
+            .map_err(|error| format!("{runner} is not readable: {error}"))?;
+        let paths = listed(&text);
+        if paths.is_empty() {
+            return Err(format!("{runner} lists no canonical surface paths"));
+        }
+        runners.push((runner, paths));
+    }
+    Ok(vec![Output::new(PAGE, page(&api, &surfaces, &runners))])
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {
@@ -324,7 +399,7 @@ fn areas_of<'a>(
     out
 }
 
-fn page(api: &Api, surfaces: &[Surface]) -> String {
+fn page(api: &Api, surfaces: &[Surface], runners: &[(&str, BTreeSet<String>)]) -> String {
     let module: BTreeMap<&str, &str> = api
         .functions
         .iter()
@@ -361,6 +436,7 @@ fn page(api: &Api, surfaces: &[Surface]) -> String {
         &per_module,
         &by_module,
         &by_area,
+        runners,
     ));
     out.push_str(&strays_section(api));
     out.push_str(&areas_section(surfaces, &module));
@@ -369,13 +445,66 @@ fn page(api: &Api, surfaces: &[Surface]) -> String {
     out
 }
 
-/// The four properties the surface has to keep.
+/// Every operation the layer declares, against every runner's list.
+///
+/// A miss is a (runner, operation) pair, because one runner having it and
+/// two not is two thirds of a gap rather than none. The other direction
+/// is counted too: a row a runner lists that the layer no longer
+/// declares is what goes stale when an operation is renamed rather than
+/// added.
+fn listing_claim(surfaces: &[Surface], runners: &[(&str, BTreeSet<String>)]) -> Claim {
+    let operations: Vec<String> = surfaces
+        .iter()
+        .flat_map(|surface| {
+            surface
+                .members
+                .iter()
+                .map(move |member| canonical(&surface.name, &member.name))
+        })
+        .collect();
+    let declared: BTreeSet<&str> = operations.iter().map(String::as_str).collect();
+    let mut unlisted: Vec<String> = Vec::new();
+    let mut stale: Vec<String> = Vec::new();
+    for (runner, paths) in runners {
+        let file = runner.rsplit('/').next().unwrap_or(runner);
+        for operation in &operations {
+            if !paths.contains(operation) {
+                unlisted.push(format!("{operation} by {file}"));
+            }
+        }
+        for path in paths {
+            if !declared.contains(path.as_str()) {
+                stale.push(format!("{path} by {file}"));
+            }
+        }
+    }
+    Claim::counted(
+        "every operation the layer declares is listed by every parity runner",
+        unlisted.len() + stale.len(),
+        operations.len() * runners.len(),
+    )
+    .with_note(match (unlisted.is_empty(), stale.is_empty()) {
+        (true, true) => {
+            String::from("so an operation added to one binding cannot go unheld in the other two")
+        }
+        (false, true) => format!("unlisted: {}", named(&unlisted)),
+        (true, false) => format!("listed and gone: {}", named(&stale)),
+        (false, false) => format!(
+            "unlisted: {}; listed and gone: {}",
+            named(&unlisted),
+            named(&stale)
+        ),
+    })
+}
+
+/// The properties the surface has to keep.
 fn claims_section(
     api: &Api,
     surfaces: &[Surface],
     per_module: &BTreeMap<&str, Vec<&str>>,
     by_module: &BTreeMap<&str, BTreeSet<&str>>,
     by_area: &BTreeMap<&str, BTreeSet<&str>>,
+    runners: &[(&str, BTreeSet<String>)],
 ) -> String {
     let carries = api
         .functions
@@ -445,6 +574,7 @@ fn claims_section(
             api.functions.len(),
         )
         .with_note(format!("the exceptions are {}", named(&strays))),
+        listing_claim(surfaces, runners),
     ];
 
     let mut out = String::new();

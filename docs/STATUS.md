@@ -706,6 +706,17 @@ provider's DUT1).
    half. One `support::no_ephemeris` now, naming the `ephemeris` option
    and hinting at the three kinds of answer it takes.
 
+   **And one more hole, in the gate that holds the three bindings to one
+   shape.** `check-parity` compares what the three runners *print*, and
+   the list of canonical `surface.<area>.<operation>` paths is written
+   out once per runner in three languages — so three runners that all
+   miss the same new operation agree perfectly and the gate is silent.
+   `check-areas` reads all three lists against the layer's own
+   declarations now, as a sixth property, and it was **born red**:
+   `(root).engine`, the accessor a consumer reads to reach the engine at
+   all, was listed by none of them. 117 pairs, 39 operations by three
+   runners, and it holds.
+
    **Next: the publishing half of packaging.** A package per adapter per
    target triple, each shipping the platform binary its host needs, so a
    consumer installs rather than builds. Everything above resolves a

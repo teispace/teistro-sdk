@@ -243,10 +243,20 @@ as a single key that is not there.
 
 The measured page turned over as step 2 landed, which was expected: it
 measured a flat surface and the surface is not flat any more. It now
-holds five properties of the **built** grouping — a module reached from
+holds six properties of the **built** grouping — a module reached from
 one area, no empty area, no operation spelling its own area, every module
-reached or accounted for as plumbing, and the boundary's own naming — and
-the argument it used to make is kept here.
+reached or accounted for as plumbing, the boundary's own naming, and
+every operation listed by every parity runner — and the argument it used
+to make is kept here.
+
+The sixth was added after the other five and was **born red**, which is
+why it is there. Step 4 gave `check-parity` the grouping, and that gate
+compares what the three runners *print*; the list of canonical paths is
+written out once per runner, in three languages, so three runners that
+all miss the same new operation agree perfectly and the gate is silent.
+The measured page reads all three lists against the layer's own
+declarations instead — and found `(root).engine`, the accessor a
+consumer reads to reach the engine at all, listed by none of them.
 
 The engine's typed façade is **after** all of it, because it attaches to
 `sdk.engine`, which step 2 creates.

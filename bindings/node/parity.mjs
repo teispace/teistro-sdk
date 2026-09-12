@@ -410,6 +410,7 @@ for (const [path, member] of [
   ['engine.call_json', shape.engine.callJson],
   ['engine.manifest', shape.engine.manifest],
   ['engine.manifest_json', shape.engine.manifestJson],
+  ['(root).engine', shape.engine],
   ['(root).positions', shape.positions],
   ['(root).profile', shape.profile],
   ['(root).settings', shape.settings],

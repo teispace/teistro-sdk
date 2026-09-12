@@ -474,6 +474,7 @@ def main() -> None:
         ("engine.call_json", ctx.engine.call_json),
         ("engine.manifest", ctx.engine.manifest),
         ("engine.manifest_json", ctx.engine.manifest_json),
+        ("(root).engine", ctx.engine),
         ("(root).positions", ctx.positions),
         ("(root).profile", ctx.profile),
         ("(root).settings", ctx.settings),
