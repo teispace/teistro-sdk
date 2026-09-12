@@ -752,6 +752,16 @@ provider's DUT1).
    correctly: it became the nearest `package.json` to those files, so
    they stopped being ES modules until it said `"type": "module"`.
 
+   The Python type checker was the same story one step behind: `mypy`
+   installed by a workflow step, unpinned, so a release of it could
+   redden CI on a day nothing here changed and a machine with an older
+   one would quietly check less. It is pinned in
+   `bindings/python/typecheck/requirements.txt`, the gate installs it
+   into `bindings/python/.venv` when it finds none — proved by moving
+   that directory away and watching the gate rebuild it — and the
+   workflow step is gone, because a gate that needs a tool should get
+   it rather than rely on the caller having read a list.
+
    **And the site now says what the API looks like**, which it did not.
    Between the install page and a generated reference of C entry points
    there was nothing telling a Node, Dart or Python consumer the shape of

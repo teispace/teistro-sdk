@@ -20,6 +20,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::binding::{blob_fixtures, library, present, python_command, step};
+use crate::platform::Platform;
 
 const PACKAGE: &str = "bindings/python";
 /// The Teimeris adapter's own package, which the SDK does not depend on
@@ -36,6 +37,20 @@ const FIXTURES: &str = "target/tsrb";
 /// `# expect:` must be reported, which is how the Python half of Phase
 /// 1's "a swapped latitude and longitude does not compile" is proved.
 const WRONG: &str = "typecheck/wrong.py";
+/// The pinned type checker, read by nothing else: the gate installs it
+/// and no workflow has a step for it.
+const REQUIREMENTS: &str = "bindings/python/typecheck/requirements.txt";
+
+/// Whether a program exists under a name an operating system gives it.
+///
+/// Windows writes `mypy.exe` where a Unix writes `mypy`, and
+/// `Path::exists` on a name without its extension misses it -- the same
+/// shape as npm's `.cmd` shims, which `binding::tool` answers for a tool
+/// that is spawned rather than looked for on disk.
+fn exists_with_extension(path: &Path) -> bool {
+    path.with_extension("exe").exists()
+}
+
 /// Where the examples live. **Every** file there is run, so a scenario
 /// added to the directory is gated by having been added — the failure a
 /// list in this file would eventually have is that someone writes an
@@ -54,8 +69,28 @@ fn type_checker(root: &Path, python: &str) -> Option<(String, Vec<String>)> {
     if let Ok(mypy) = std::env::var("MYPY") {
         return Some((mypy, Vec::new()));
     }
-    let local: PathBuf = root.join("bindings/python/.venv/bin/mypy");
-    if local.exists() {
+    let platform = Platform::host();
+    let venv = root.join("bindings/python/.venv");
+    let local = venv.join(platform.venv_bin()).join("mypy");
+    // Installed from the pinned requirements beside the typecheck when
+    // there is none, which is what `check-node` does with its own
+    // compiler: a gate that skips because the machine has no checker is
+    // a gate nobody notices skipping, and an unpinned one is a checker
+    // that differs between machines.
+    if !local.exists() && !exists_with_extension(&local) {
+        let made = python_command(python)
+            .args(["-m", "venv", ".venv"])
+            .current_dir(root.join("bindings/python"))
+            .status()
+            .is_ok_and(|status| status.success());
+        if made {
+            let _ = python_command(venv.join(platform.venv_bin()).join("pip"))
+                .args(["install", "--disable-pip-version-check", "--quiet", "-r"])
+                .arg(root.join(REQUIREMENTS))
+                .status();
+        }
+    }
+    if local.exists() || exists_with_extension(&local) {
         return Some((local.display().to_string(), Vec::new()));
     }
     let importable = python_command(python)

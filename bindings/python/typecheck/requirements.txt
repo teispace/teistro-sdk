@@ -1,0 +1,10 @@
+# The type checker `cargo xtask check-python` runs, pinned here so every
+# machine and every runner checks with the same one. Unpinned, a release
+# of mypy could redden this repository's CI on a day nothing in it
+# changed -- or, worse, a stricter release could go unnoticed on a
+# machine that happened to have an older one.
+#
+# The gate installs this into `bindings/python/.venv` when it finds no
+# mypy at all, which is why no workflow has a step for it. `MYPY` names
+# one outright where a contributor would rather use their own.
+mypy==2.3.1

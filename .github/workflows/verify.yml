@@ -53,8 +53,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: The type checker the Python binding's typecheck step needs
-        run: python -m pip install --disable-pip-version-check mypy
       - name: One version across the workspace and both packages
         run: cargo xtask check-versions
       - name: The C binding against the generated header

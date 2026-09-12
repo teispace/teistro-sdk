@@ -196,5 +196,8 @@ TEISTRO_FIXTURES=../../target/tsrb \
 PYTHONPATH=. python3 -m unittest discover -s tests -t .
 ```
 
-The type-check step needs `mypy`, which the gate skips with a note when
-the machine has none.
+The type-check step needs `mypy`, and the gate installs it: the version
+is pinned in [`typecheck/requirements.txt`](typecheck/requirements.txt)
+and goes into a `.venv` beside this file the first time the gate finds
+none, so every machine and every runner checks with the same one.
+`$MYPY` names one outright where you would rather use your own.
