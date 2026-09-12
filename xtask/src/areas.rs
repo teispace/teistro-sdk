@@ -258,6 +258,35 @@ fn member_name(line: &str) -> Option<String> {
     (after.starts_with('(') || after.starts_with('=')).then_some(name)
 }
 
+/// The site's guide to the surface, whose table of areas is the one
+/// consumer-facing statement of the grouping.
+///
+/// Prose by hand and facts gated: nothing can generate the sentence
+/// saying what `almanac` answers, and nothing should be trusted to keep
+/// a hand-written list of areas equal to the layer's.
+const GUIDE: &str = "site/content/docs/surface.mdx";
+
+/// The areas a page's table names: the first cell of each row.
+///
+/// Anchored on the row rather than on backticks anywhere, because this
+/// page has a dozen other backticked names in its prose and a reader
+/// that counted those would pass whatever the table said.
+fn tabled(source: &str) -> BTreeSet<String> {
+    let mut out = BTreeSet::new();
+    for line in source.lines() {
+        let Some(rest) = line.strip_prefix("| `") else {
+            continue;
+        };
+        let Some((name, _)) = rest.split_once('`') else {
+            continue;
+        };
+        if !name.is_empty() && name.chars().all(|c| c.is_ascii_lowercase()) {
+            out.insert(name.to_owned());
+        }
+    }
+    out
+}
+
 /// The three parity runners, whose lists of canonical paths are the only
 /// place the surface's shape is written down for all of the bindings.
 ///
@@ -343,7 +372,16 @@ fn outputs(root: &Path) -> Result<Vec<Output>, String> {
         }
         runners.push((runner, paths));
     }
-    Ok(vec![Output::new(PAGE, page(&api, &surfaces, &runners))])
+    let guide = std::fs::read_to_string(root.join(GUIDE))
+        .map_err(|error| format!("{GUIDE} is not readable: {error}"))?;
+    let named_on_the_guide = tabled(&guide);
+    if named_on_the_guide.is_empty() {
+        return Err(format!("{GUIDE} names no areas in a table"));
+    }
+    Ok(vec![Output::new(
+        PAGE,
+        page(&api, &surfaces, &runners, &named_on_the_guide),
+    )])
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {
@@ -399,7 +437,12 @@ fn areas_of<'a>(
     out
 }
 
-fn page(api: &Api, surfaces: &[Surface], runners: &[(&str, BTreeSet<String>)]) -> String {
+fn page(
+    api: &Api,
+    surfaces: &[Surface],
+    runners: &[(&str, BTreeSet<String>)],
+    guide: &BTreeSet<String>,
+) -> String {
     let module: BTreeMap<&str, &str> = api
         .functions
         .iter()
@@ -437,6 +480,7 @@ fn page(api: &Api, surfaces: &[Surface], runners: &[(&str, BTreeSet<String>)]) -
         &by_module,
         &by_area,
         runners,
+        guide,
     ));
     out.push_str(&strays_section(api));
     out.push_str(&areas_section(surfaces, &module));
@@ -497,6 +541,46 @@ fn listing_claim(surfaces: &[Surface], runners: &[(&str, BTreeSet<String>)]) -> 
     })
 }
 
+/// Every area the layer wires, against the areas the site's guide names.
+///
+/// Both directions, because they fail differently: an area the layer
+/// wires and the guide does not name is a surface a consumer cannot
+/// find, and an area the guide names and the layer does not wire is a
+/// page describing something that is not there — which is the worse of
+/// the two, and the one a reader discovers by calling it.
+fn guide_claim(surfaces: &[Surface], guide: &BTreeSet<String>) -> Claim {
+    let wired: BTreeSet<&str> = surfaces
+        .iter()
+        .map(|surface| surface.name.as_str())
+        .filter(|name| *name != ROOT)
+        .collect();
+    let unnamed: Vec<&str> = wired
+        .iter()
+        .copied()
+        .filter(|area| !guide.contains(*area))
+        .collect();
+    let invented: Vec<&str> = guide
+        .iter()
+        .map(String::as_str)
+        .filter(|area| !wired.contains(*area))
+        .collect();
+    Claim::counted(
+        "every area the layer wires is named by the site's guide, and no other",
+        unnamed.len() + invented.len(),
+        wired.len() + invented.len(),
+    )
+    .with_note(match (unnamed.is_empty(), invented.is_empty()) {
+        (true, true) => format!("{GUIDE} names all {} and nothing else", wired.len()),
+        (false, true) => format!("not on the page: {}", named(&unnamed)),
+        (true, false) => format!("on the page and not wired: {}", named(&invented)),
+        (false, false) => format!(
+            "not on the page: {}; on the page and not wired: {}",
+            named(&unnamed),
+            named(&invented)
+        ),
+    })
+}
+
 /// The properties the surface has to keep.
 fn claims_section(
     api: &Api,
@@ -505,6 +589,7 @@ fn claims_section(
     by_module: &BTreeMap<&str, BTreeSet<&str>>,
     by_area: &BTreeMap<&str, BTreeSet<&str>>,
     runners: &[(&str, BTreeSet<String>)],
+    guide: &BTreeSet<String>,
 ) -> String {
     let carries = api
         .functions
@@ -575,6 +660,7 @@ fn claims_section(
         )
         .with_note(format!("the exceptions are {}", named(&strays))),
         listing_claim(surfaces, runners),
+        guide_claim(surfaces, guide),
     ];
 
     let mut out = String::new();

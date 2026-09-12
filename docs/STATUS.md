@@ -732,6 +732,27 @@ provider's DUT1).
    once; a skip that says the machine lacks a tool it has is worse than
    a failure.
 
+   **And the site now says what the API looks like**, which it did not.
+   Between the install page and a generated reference of C entry points
+   there was nothing telling a Node, Dart or Python consumer the shape of
+   the thing they had installed — the seven areas and the root, built
+   earlier today, appeared only in the binding READMEs.
+   [`site/content/docs/surface.mdx`](../site/content/docs/surface.mdx) is
+   that page: what each area answers, why `ctx.calendar.convert` and
+   `ctx.time.convert` can both be `convert`, why `positions` is at the
+   root, that an area is a value a consumer can hold, and what
+   `sdk.engine` is for with the adapter's façade beside it.
+
+   Prose by hand and facts gated, which is the split that matters: the
+   measured page's **seventh** property reads the guide's table of areas
+   against the areas the layer actually wires, in both directions — an
+   area the layer wires and the page does not name is a surface nobody
+   can find, and an area the page names and the layer does not wire is a
+   page describing something that is not there. Proved red by renaming
+   `almanac` to `panchanga` on the page, which reported both halves.
+   `check-site` requires the page to render, as it already did for the
+   install page.
+
    **Next: the publishing half of packaging**, and it was surveyed
    rather than started, because the survey moved the cost twice — once
    down, once onto a decision that is not this assistant's to take.

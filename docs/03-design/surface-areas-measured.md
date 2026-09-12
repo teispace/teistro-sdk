@@ -16,6 +16,7 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 | every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 14 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
 | an entry point's name already carries its own module | falsified | 7 of 46 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_context_new_with_provider` |
 | every operation the layer declares is listed by every parity runner | **holds** | 0 of 117 disagree; so an operation added to one binding cannot go unheld in the other two |
+| every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 8 disagree; site/content/docs/surface.mdx names all 8 and nothing else |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
 

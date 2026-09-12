@@ -23,8 +23,13 @@ const REFERENCE: &str = "site/content/docs/reference";
 /// Where the static export writes the site.
 const OUT: &str = "site/out";
 /// Pages the build must have produced whatever else it did: the home
-/// page and the guide, so a build that silently rendered nothing fails.
-const BUILT: [&str; 2] = ["site/out/index.html", "site/out/docs/install.html"];
+/// page and both guide pages, so a build that silently rendered nothing
+/// fails.
+const BUILT: [&str; 3] = [
+    "site/out/index.html",
+    "site/out/docs/install.html",
+    "site/out/docs/surface.html",
+];
 
 pub(crate) fn check(root: &Path) -> i32 {
     let Some(npm) = tool("npm", "--version") else {
