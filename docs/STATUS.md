@@ -465,9 +465,28 @@ provider's DUT1).
    moving `calendar.convert` to `time.convert_date` in one runner, which
    reported the extra key and the missing one in both comparisons.
 
-   **Next: Rust's own consumer surface, the READMEs and the site.** The
-   engine's typed façade is after those, because it attaches to the
-   `sdk.engine` the three bindings now have.
+   **Next, and it is the 98% path rather than a tidy-up:** a consumer
+   outside Rust still cannot plug a real engine. The boundary has
+   `ts_provider_load` and `ts_context_new_with_provider`; the Node layer
+   even has a generated `Provider` class that loads an adapter. What is
+   missing is the **other half** — no generated layer wraps
+   `ts_context_new_with_provider`, so a loaded provider cannot be handed
+   to a context, and no ergonomic layer offers a plugin path at all. So
+   `sdk.engine.*` works in Node, Dart and Python against the *test*
+   provider and against nothing else, which is the reverse of the
+   maintainer's brief.
+
+   It is a generator gap rather than a design one: the entry point takes
+   a `handle` of an opaque type that is not `TsContext` beside a
+   `handle_out`, and the three emitters have not been shown that shape.
+   Teaching them, and then giving each ergonomic layer a plugin option
+   (`new Context({ ephemeris: { plugin: …, config: … } })`), is what
+   makes the 98% path exist outside Rust.
+
+   After that: the engine's typed façade, which attaches to the
+   `sdk.engine` the three bindings now have and wants the adapter
+   packages to live in; Rust's own consumer surface; the READMEs and the
+   site.
 
    Its first measurements are done and three of them falsified the plan
    they were measuring, which is what the passes are for. The truncation
