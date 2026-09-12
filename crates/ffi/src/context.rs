@@ -128,17 +128,19 @@ pub struct TsError {
 
 c_struct!(TsContextOptions, TsError);
 
-/// An opaque context: the SDK's own context, and what only a C caller
-/// needs beside it — the last error and the strings lent during the last
-/// call. Used by one thread at a time.
-///
-/// **The composition is the façade's** (`teistro::Context`), and this
-/// crate stopped keeping its own on 2026-09-12: the settings, the
-/// provider, the locale engine and the ΔT model are resolved there, so
-/// a Rust consumer and a C caller get the same context built the same
-/// way rather than two compositions that have to be kept equal.
-/// `03-design/rust-consumer-surface.md` §3 decided it and the measured
-/// page's last property is its acceptance test.
+/// An opaque context: settings, a provider, the locale engine, the last
+/// error. Used by one thread at a time.
+// **Everything above this line is the C header's documentation**, which
+// `cargo xtask gen ffi` extracts and `check-ffi` holds — so a note to
+// this repository's maintainers goes here, in a comment the generator
+// does not read, and not in the sentence a C consumer meets.
+//
+// The note: the composition is the façade's (`teistro::Context`). The
+// settings, the provider, the locale engine and the ΔT model are
+// resolved there, so a Rust consumer and a C caller get the same context
+// built the same way rather than two compositions that have to be kept
+// equal by hand. `03-design/rust-consumer-surface.md` §3 decided it, and
+// the measured page's last two properties are its acceptance test.
 pub struct TsContext {
     inner: teistro::Context,
     scratch: RefCell<Scratch>,
