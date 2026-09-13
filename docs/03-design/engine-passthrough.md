@@ -196,6 +196,23 @@ capacity was too small" arrives the same way and fills nothing. Telling
 the two apart needs the engine to say which statuses are per element,
 which it does not yet (§7).
 
+### A refusal in the engine's own words
+
+A status the engine refuses with carries its numeric code, as before, and
+now the status's name and **the message the engine recorded for the
+failure** — `tm_set_ayanamsha refused with status -1, invalid argument:
+no such ayanamsha: 15`. That is the difference between a code and knowing
+what to change.
+
+The record has to be read with care, because not every failure writes it
+(`05-testing/02-engine-findings.md` D3): a null argument refused by a
+bare return leaves the previous failure's message in place. So an arm
+with a context snapshots the record before the call — two reads when it
+is clean, which every success leaves it, and a copy only while it holds
+an earlier failure — and attaches the message only when the record
+changed across the call. Otherwise the refusal says the engine recorded
+no message, which is less than a message and never a wrong one.
+
 ## 5. What it costs a consumer
 
 The typed façade grows a named type per struct in each target, named for

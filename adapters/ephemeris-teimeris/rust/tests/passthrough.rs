@@ -540,3 +540,40 @@ fn a_search_answers_as_many_as_asked() {
     assert!(answer.get("out_count").is_none(), "{answer}");
 }
 
+
+/// A refusal carries the engine's own words for it, which is the
+/// difference between "status -1" and knowing what to change.
+#[test]
+fn a_refusal_carries_the_engine_s_own_message() {
+    let provider = provider();
+    let refused = provider
+        .native_call(
+            "tm_set_ayanamsha",
+            r#"{"mode": 9999, "t0": 2451545.0, "ayan_t0": 0.0}"#,
+        )
+        .expect_err("no ayanamsha is numbered 9999");
+    let said = refused.to_string();
+    assert!(said.contains("invalid argument"), "{said}");
+    assert!(said.contains("no such ayanamsha"), "{said}");
+}
+
+/// A failure the engine does not record is not given an earlier
+/// failure's message: the engine's record still holds that one, and
+/// repeating it as this call's would send a caller after the wrong
+/// mistake (findings register D3).
+#[test]
+fn an_earlier_failure_s_message_is_not_repeated_as_this_one_s() {
+    let provider = provider();
+    let first = provider
+        .native_call("tm_star_find", r#"{"name": "no such star"}"#)
+        .expect_err("no star has that name");
+    assert!(first.to_string().contains("no star named"), "{first}");
+    // A null datetime, which the engine refuses with a bare return and
+    // no message of its own.
+    let second = provider
+        .native_call("tm_local_to_utc", r#"{"utc_offset_hours": 5.75, "cal": 1}"#)
+        .expect_err("the engine takes no null datetime");
+    let said = second.to_string();
+    assert!(!said.contains("no star named"), "a stale message: {said}");
+    assert!(said.contains("recorded no message"), "{said}");
+}

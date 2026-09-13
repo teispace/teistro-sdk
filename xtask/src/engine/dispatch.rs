@@ -166,7 +166,7 @@ pub(crate) const PASSTHROUGH_IMPORTS: &str = "// the passthrough's helpers";
 /// file nobody edits.
 pub(crate) fn passthrough_imports(generated: &str) -> String {
     /// Every helper, with the text a use of it contains.
-    const HELPERS: [(&str, &str); 15] = [
+    const HELPERS: [(&str, &str); 17] = [
         ("Within", "Within<"),
         ("borrowed", "borrowed(answered"),
         ("extent", "extent(&["),
@@ -179,6 +179,8 @@ pub(crate) fn passthrough_imports(generated: &str) -> String {
         ("objects", "objects(args"),
         ("optional_object", "optional_object(args"),
         ("room", "room("),
+        ("checked", "checked(context"),
+        ("record", "record(context)"),
         ("status", "status(answered"),
         ("text", "text(args"),
         ("wholes", "wholes(args"),
@@ -635,6 +637,29 @@ impl<'a> Arm<'a> {
         });
     }
 
+    /// How the call's status is checked: the line that snapshots the
+    /// context's error record before the call, when there is a context to
+    /// read, and the line that checks the status after it.
+    ///
+    /// With a context the refusal carries the engine's own message, and
+    /// only when the call wrote it (`passthrough::checked`); without one
+    /// there is no record to read.
+    fn check(&self) -> (Option<String>, Option<String>) {
+        let function = self.function;
+        let name = &function.name;
+        if function.returns.base != "tm_status" {
+            return (None, None);
+        }
+        if has_role(function, "handle") {
+            (
+                Some("let before = record(context);".to_string()),
+                Some(format!("checked(context, &before, answered, \"{name}\")?;")),
+            )
+        } else {
+            (None, Some(format!("status(answered, \"{name}\")?;")))
+        }
+    }
+
     /// The arm's text: the bindings, the call through its protocol, what
     /// follows it, and the answer.
     fn finish(self) -> String {
@@ -664,18 +689,19 @@ impl<'a> Arm<'a> {
                 for line in &self.inside {
                     let _ = write!(inside, "\n                {line}");
                 }
-                let (binding, check, counted) = match count {
-                    Counted::Param(count) if returns_status => (
-                        "let answered = ",
-                        format!("\n                status(answered, \"{name}\")?;"),
-                        (*count).to_string(),
-                    ),
-                    Counted::Param(count) => ("", String::new(), (*count).to_string()),
-                    Counted::Return => ("let answered = ", String::new(), "answered".to_string()),
+                let (binding, counted) = match count {
+                    Counted::Param(count) if returns_status => ("let answered = ", *count),
+                    Counted::Param(count) => ("", *count),
+                    Counted::Return => ("let answered = ", "answered"),
                 };
+                let (before, check) = self.check();
+                let before =
+                    before.map_or_else(String::new, |line| format!("\n                {line}"));
+                let check =
+                    check.map_or_else(String::new, |line| format!("\n                {line}"));
                 let _ = writeln!(
                     out,
-                    "            let {} = gather::<{ty}>(\"{name}\", |room| {{{inside}\n                \
+                    "            let {} = gather::<{ty}>(\"{name}\", |room| {{{inside}{before}\n                \
                      {indented}\n                {binding}unsafe {{ {call} }};{check}\n                \
                      Ok({counted})\n            }})?;",
                     output.name
@@ -688,12 +714,16 @@ impl<'a> Arm<'a> {
                     "let answered = "
                 };
                 let indented = safety.replace('\n', "\n            ");
+                let (before, check) = self.check();
+                if let Some(line) = before {
+                    let _ = writeln!(out, "            {line}");
+                }
                 let _ = writeln!(
                     out,
                     "            {indented}\n            {binding}unsafe {{ {call} }};"
                 );
-                if returns_status {
-                    let _ = writeln!(out, "            status(answered, \"{name}\")?;");
+                if let Some(line) = check {
+                    let _ = writeln!(out, "            {line}");
                 }
             }
         }

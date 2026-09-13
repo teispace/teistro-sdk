@@ -498,7 +498,8 @@ fn fitted(buffer: &[u8], wanted: usize) -> Option<String> {
         .map(|written| String::from_utf8_lossy(written).into_owned())
 }
 
-/// The engine's own status, as the port's error.
+/// The engine's own status, as the port's error, for a call made without
+/// a context — which therefore has no record to read a message from.
 ///
 /// # Errors
 ///
@@ -510,10 +511,123 @@ pub(crate) fn status(code: teimeris::sys::tm_status, function: &str) -> Result<(
     if code == 0 {
         return Ok(());
     }
-    Err(ProviderError::Provider {
+    Err(refusal(code, function, Said::NoContext))
+}
+
+/// What the context's error record said **before** a call: nothing when
+/// it was clean, and a copy when it held an earlier failure.
+///
+/// A copy is needed because the record is not cleared by every call, and
+/// a failure that returns without writing it leaves the previous one's
+/// message in place (`05-testing/02-engine-findings.md` D3). Comparing
+/// against what was there before is the only way to attach a message to
+/// the call that wrote it and never to one that did not.
+pub(crate) struct Record(Option<Recorded>);
+
+/// One failure as the engine recorded it.
+#[derive(PartialEq, Eq)]
+struct Recorded {
+    status: teimeris::sys::tm_status,
+    detail: i32,
+    message: Option<String>,
+    context: Option<String>,
+}
+
+/// The context's error record as it stands.
+///
+/// Costs a copy only while the record holds a failure; a clean record,
+/// which is what every successful call leaves, costs two reads.
+#[allow(
+    unsafe_code,
+    reason = "reading the error record of the adapter's own context, which the engine \
+              documents as never null and valid until the next call"
+)]
+pub(crate) fn record(context: *const teimeris::sys::tm_context) -> Record {
+    // SAFETY: the context is the adapter's own and live; `tm_last_error`
+    // never returns null for one, and what it points at is read and
+    // copied before any other call is made.
+    let recorded = unsafe { &*teimeris::sys::tm_last_error(context) };
+    if recorded.status == 0 {
+        return Record(None);
+    }
+    Record(Some(Recorded {
+        status: recorded.status,
+        detail: recorded.detail,
+        message: borrowed(recorded.message),
+        context: borrowed(recorded.context),
+    }))
+}
+
+/// The engine's own status, as the port's error, with the engine's own
+/// message when **this** call wrote one.
+///
+/// # Errors
+///
+/// Anything but success: the engine's numeric code, the function's name,
+/// the status's name, and the message and context the engine recorded
+/// for the failure — `the output holds 1 of 2 julian days` — when the
+/// record changed across the call. When it did not, the refusal says the
+/// engine recorded nothing, rather than repeating an earlier failure's
+/// words as this one's.
+pub(crate) fn checked(
+    context: *const teimeris::sys::tm_context,
+    before: &Record,
+    code: teimeris::sys::tm_status,
+    function: &str,
+) -> Result<(), ProviderError> {
+    if code == 0 {
+        return Ok(());
+    }
+    let after = record(context);
+    let said = match (after.0, &before.0) {
+        (Some(after), Some(before)) if after == *before => Said::Unrecorded,
+        (Some(after), _) => Said::Recorded(after),
+        (None, _) => Said::Unrecorded,
+    };
+    Err(refusal(code, function, said))
+}
+
+/// What the engine is known to have said about one failure.
+enum Said {
+    /// The call had no context, so there is no record to read.
+    NoContext,
+    /// The record did not change across the call: whatever it holds is an
+    /// earlier failure's.
+    Unrecorded,
+    /// The call wrote this.
+    Recorded(Recorded),
+}
+
+/// One refusal's words: the function, the code and its name, and what the
+/// engine recorded if it is known to be this call's.
+#[allow(
+    unsafe_code,
+    reason = "naming a status through the engine's own table of static names"
+)]
+fn refusal(
+    code: teimeris::sys::tm_status,
+    function: &str,
+    said: Said,
+) -> ProviderError {
+    // SAFETY: `tm_status_name` takes any integer and answers a static
+    // string, or null for a code it does not know.
+    let name = borrowed(unsafe { teimeris::sys::tm_status_name(code) })
+        .unwrap_or_else(|| "an unnamed status".to_owned());
+    let said = match said {
+        Said::NoContext => String::new(),
+        Said::Unrecorded => "; the engine recorded no message for it".to_owned(),
+        Said::Recorded(recorded) => {
+            let message = recorded.message.unwrap_or_default();
+            match recorded.context {
+                Some(context) if !context.is_empty() => format!(": {message} ({context})"),
+                _ => format!(": {message}"),
+            }
+        }
+    };
+    ProviderError::Provider {
         code: crate::CODE_BASE + code,
-        detail: format!("`{function}` refused with status {code}"),
-    })
+        detail: format!("`{function}` refused with status {code}, {name}{said}"),
+    }
 }
 
 /// What a JSON value is, for a message that has to say so.

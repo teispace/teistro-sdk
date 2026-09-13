@@ -21,7 +21,7 @@ use serde_json::{Map, Value, json};
 use teimeris::sys;
 use teistro_port_ephemeris::ProviderError;
 
-use crate::passthrough::{Within, borrowed, extent, fill, gather, narrow, number, numbers, objects, optional_object, room, status, text, wholes};
+use crate::passthrough::{Within, borrowed, extent, fill, gather, narrow, number, numbers, objects, optional_object, room, checked, record, status, text, wholes};
 
 /// What this adapter offers of the engine's own surface, as the
 /// port's `native_manifest` answers it.
@@ -88,23 +88,25 @@ pub(crate) fn call(
                 .transpose()?;
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out_jd: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm.
             let answered = unsafe { sys::tm_julian_day(context, dt.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), cal, &raw mut out_jd) };
-            status(answered, "tm_julian_day")?;
+            checked(context, &before, answered, "tm_julian_day")?;
             Ok(json!({"out_jd": out_jd}))
         }
         "tm_calendar_date" => {
             let jd: f64 = number(args, "jd")?;
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out: sys::tm_datetime = sys::tm_datetime::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_calendar_date(context, jd, cal, &raw mut out) };
-            status(answered, "tm_calendar_date")?;
+            checked(context, &before, answered, "tm_calendar_date")?;
             Ok(json!({"out": write_tm_datetime(&out)}))
         }
         "tm_utc_to_jd" => {
@@ -114,12 +116,13 @@ pub(crate) fn call(
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out_jd_tt: f64 = 0.0;
             let mut out_jd_ut1: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm.
             let answered = unsafe { sys::tm_utc_to_jd(context, utc.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), cal, &raw mut out_jd_tt, &raw mut out_jd_ut1) };
-            status(answered, "tm_utc_to_jd")?;
+            checked(context, &before, answered, "tm_utc_to_jd")?;
             Ok(json!({"out_jd_tt": out_jd_tt, "out_jd_ut1": out_jd_ut1}))
         }
         "tm_jd_to_utc" => {
@@ -127,32 +130,35 @@ pub(crate) fn call(
             let scale: sys::tm_timescale = narrow(args, "scale")?;
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out: sys::tm_datetime = sys::tm_datetime::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_jd_to_utc(context, jd, scale, cal, &raw mut out) };
-            status(answered, "tm_jd_to_utc")?;
+            checked(context, &before, answered, "tm_jd_to_utc")?;
             Ok(json!({"out": write_tm_datetime(&out)}))
         }
         "tm_delta_t" => {
             let jd_ut1: f64 = number(args, "jd_ut1")?;
             let mut out_seconds: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_delta_t(context, jd_ut1, &raw mut out_seconds) };
-            status(answered, "tm_delta_t")?;
+            checked(context, &before, answered, "tm_delta_t")?;
             Ok(json!({"out_seconds": out_seconds}))
         }
         "tm_sidereal_time" => {
             let jd_ut1: f64 = number(args, "jd_ut1")?;
             let geo_lon_deg: f64 = number(args, "geo_lon_deg")?;
             let mut out_hours: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_sidereal_time(context, jd_ut1, geo_lon_deg, &raw mut out_hours) };
-            status(answered, "tm_sidereal_time")?;
+            checked(context, &before, answered, "tm_sidereal_time")?;
             Ok(json!({"out_hours": out_hours}))
         }
         "tm_day_of_week" => {
@@ -173,79 +179,86 @@ pub(crate) fn call(
             let dts: Vec<sys::tm_datetime> = objects(args, "dts", read_tm_datetime)?;
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out_jd: Vec<f64> = room(dts.len(), "out_jd")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_julian_day_many(context, dts.as_ptr(), dts.len(), cal, out_jd.as_mut_ptr(), out_jd.len()) };
-            status(answered, "tm_julian_day_many")?;
+            checked(context, &before, answered, "tm_julian_day_many")?;
             Ok(json!({"out_jd": out_jd}))
         }
         "tm_calendar_date_many" => {
             let jds: Vec<f64> = numbers(args, "jds")?;
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out: Vec<sys::tm_datetime> = room(jds.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_calendar_date_many(context, jds.as_ptr(), jds.len(), cal, out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_calendar_date_many")?;
+            checked(context, &before, answered, "tm_calendar_date_many")?;
             Ok(json!({"out": out.iter().map(write_tm_datetime).collect::<Vec<_>>()}))
         }
         "tm_delta_t_many" => {
             let jds_ut1: Vec<f64> = numbers(args, "jds_ut1")?;
             let mut out_seconds: Vec<f64> = room(jds_ut1.len(), "out_seconds")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_delta_t_many(context, jds_ut1.as_ptr(), jds_ut1.len(), out_seconds.as_mut_ptr(), out_seconds.len()) };
-            status(answered, "tm_delta_t_many")?;
+            checked(context, &before, answered, "tm_delta_t_many")?;
             Ok(json!({"out_seconds": out_seconds}))
         }
         "tm_sidereal_time_many" => {
             let jds_ut1: Vec<f64> = numbers(args, "jds_ut1")?;
             let geo_lon_deg: f64 = number(args, "geo_lon_deg")?;
             let mut out_hours: Vec<f64> = room(jds_ut1.len(), "out_hours")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_sidereal_time_many(context, jds_ut1.as_ptr(), jds_ut1.len(), geo_lon_deg, out_hours.as_mut_ptr(), out_hours.len()) };
-            status(answered, "tm_sidereal_time_many")?;
+            checked(context, &before, answered, "tm_sidereal_time_many")?;
             Ok(json!({"out_hours": out_hours}))
         }
         "tm_equation_of_time" => {
             let jd_ut1: f64 = number(args, "jd_ut1")?;
             let mut out_seconds: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_equation_of_time(context, jd_ut1, &raw mut out_seconds) };
-            status(answered, "tm_equation_of_time")?;
+            checked(context, &before, answered, "tm_equation_of_time")?;
             Ok(json!({"out_seconds": out_seconds}))
         }
         "tm_local_mean_to_apparent" => {
             let jd_local_mean: f64 = number(args, "jd_local_mean")?;
             let geo_lon_deg: f64 = number(args, "geo_lon_deg")?;
             let mut out_jd_local_apparent: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_local_mean_to_apparent(context, jd_local_mean, geo_lon_deg, &raw mut out_jd_local_apparent) };
-            status(answered, "tm_local_mean_to_apparent")?;
+            checked(context, &before, answered, "tm_local_mean_to_apparent")?;
             Ok(json!({"out_jd_local_apparent": out_jd_local_apparent}))
         }
         "tm_local_apparent_to_mean" => {
             let jd_local_apparent: f64 = number(args, "jd_local_apparent")?;
             let geo_lon_deg: f64 = number(args, "geo_lon_deg")?;
             let mut out_jd_local_mean: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_local_apparent_to_mean(context, jd_local_apparent, geo_lon_deg, &raw mut out_jd_local_mean) };
-            status(answered, "tm_local_apparent_to_mean")?;
+            checked(context, &before, answered, "tm_local_apparent_to_mean")?;
             Ok(json!({"out_jd_local_mean": out_jd_local_mean}))
         }
         "tm_local_to_utc" => {
@@ -255,13 +268,14 @@ pub(crate) fn call(
             let utc_offset_hours: f64 = number(args, "utc_offset_hours")?;
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out_utc: sys::tm_datetime = sys::tm_datetime::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every struct
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_local_to_utc(context, local.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), utc_offset_hours, cal, &raw mut out_utc) };
-            status(answered, "tm_local_to_utc")?;
+            checked(context, &before, answered, "tm_local_to_utc")?;
             Ok(json!({"out_utc": write_tm_datetime(&out_utc)}))
         }
         "tm_utc_to_local" => {
@@ -271,13 +285,14 @@ pub(crate) fn call(
             let utc_offset_hours: f64 = number(args, "utc_offset_hours")?;
             let cal: sys::tm_calendar = narrow(args, "cal")?;
             let mut out_local: sys::tm_datetime = sys::tm_datetime::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every struct
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_utc_to_local(context, utc.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), utc_offset_hours, cal, &raw mut out_local) };
-            status(answered, "tm_utc_to_local")?;
+            checked(context, &before, answered, "tm_utc_to_local")?;
             Ok(json!({"out_local": write_tm_datetime(&out_local)}))
         }
         "tm_position_value" => {
@@ -287,11 +302,12 @@ pub(crate) fn call(
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let field: sys::tm_position_field = narrow(args, "field")?;
             let mut out: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_position_value(context, jd, scale, body, flags, field, &raw mut out) };
-            status(answered, "tm_position_value")?;
+            checked(context, &before, answered, "tm_position_value")?;
             Ok(json!({"out": out}))
         }
         "tm_position_calc_grid" => {
@@ -303,6 +319,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_position> = room(extent(&[bodies.len(), jds.len()], "out")?, "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every input
@@ -310,7 +327,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_position_calc_grid(context, bodies.as_ptr(), bodies.len(), jds.as_ptr(), jds.len(), scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_position_calc_grid")?;
+            checked(context, &before, answered, "tm_position_calc_grid")?;
             Ok(json!({"out": out.iter().map(write_tm_position).collect::<Vec<_>>()}))
         }
         "tm_house_cusp_count" => {
@@ -341,11 +358,12 @@ pub(crate) fn call(
             let lon_deg: f64 = number(args, "lon_deg")?;
             let lat_deg: f64 = number(args, "lat_deg")?;
             let mut out_house: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_house_position(context, armc, geo_lat_deg, obliquity_deg, sys, lon_deg, lat_deg, &raw mut out_house) };
-            status(answered, "tm_house_position")?;
+            checked(context, &before, answered, "tm_house_position")?;
             Ok(json!({"out_house": out_house}))
         }
         "tm_chart_default_bodies" => {
@@ -359,11 +377,12 @@ pub(crate) fn call(
         }
         "tm_set_jpl_file" => {
             let filename = text(args, "filename")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every string argument is a `CString` that outlives the
             // call.
             let answered = unsafe { sys::tm_set_jpl_file(context, filename.as_ptr()) };
-            status(answered, "tm_set_jpl_file")?;
+            checked(context, &before, answered, "tm_set_jpl_file")?;
             Ok(json!({}))
         }
         "tm_jpl_info" => {
@@ -371,21 +390,23 @@ pub(crate) fn call(
             let mut out_jd_start: f64 = 0.0;
             let mut out_jd_end: f64 = 0.0;
             let mut out_segment_days: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_jpl_info(context, &raw mut out_denum, &raw mut out_jd_start, &raw mut out_jd_end, &raw mut out_segment_days) };
-            status(answered, "tm_jpl_info")?;
+            checked(context, &before, answered, "tm_jpl_info")?;
             Ok(json!({"out_denum": out_denum, "out_jd_start": out_jd_start, "out_jd_end": out_jd_end, "out_segment_days": out_segment_days}))
         }
         "tm_set_ayanamsha" => {
             let mode: sys::tm_ayanamsha = narrow(args, "mode")?;
             let t0: f64 = number(args, "t0")?;
             let ayan_t0: f64 = number(args, "ayan_t0")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_set_ayanamsha(context, mode, t0, ayan_t0) };
-            status(answered, "tm_set_ayanamsha")?;
+            checked(context, &before, answered, "tm_set_ayanamsha")?;
             Ok(json!({}))
         }
         "tm_ayanamsha_value" => {
@@ -393,11 +414,12 @@ pub(crate) fn call(
             let scale: sys::tm_timescale = narrow(args, "scale")?;
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let mut out_degrees: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_ayanamsha_value(context, jd, scale, flags, &raw mut out_degrees) };
-            status(answered, "tm_ayanamsha_value")?;
+            checked(context, &before, answered, "tm_ayanamsha_value")?;
             Ok(json!({"out_degrees": out_degrees}))
         }
         "tm_ayanamsha_name" => {
@@ -416,20 +438,22 @@ pub(crate) fn call(
         "tm_set_model" => {
             let kind: sys::tm_model_kind = narrow(args, "kind")?;
             let model: i32 = narrow(args, "model")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_set_model(context, kind, model) };
-            status(answered, "tm_set_model")?;
+            checked(context, &before, answered, "tm_set_model")?;
             Ok(json!({}))
         }
         "tm_get_model" => {
             let kind: sys::tm_model_kind = narrow(args, "kind")?;
             let mut out_model: i32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_get_model(context, kind, &raw mut out_model) };
-            status(answered, "tm_get_model")?;
+            checked(context, &before, answered, "tm_get_model")?;
             Ok(json!({"out_model": out_model}))
         }
         "tm_model_name" => {
@@ -456,69 +480,77 @@ pub(crate) fn call(
         }
         "tm_set_tidal_acceleration" => {
             let arcsec_per_century2: f64 = number(args, "arcsec_per_century2")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_set_tidal_acceleration(context, arcsec_per_century2) };
-            status(answered, "tm_set_tidal_acceleration")?;
+            checked(context, &before, answered, "tm_set_tidal_acceleration")?;
             Ok(json!({}))
         }
         "tm_clear_tidal_acceleration" => {
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_clear_tidal_acceleration(context) };
-            status(answered, "tm_clear_tidal_acceleration")?;
+            checked(context, &before, answered, "tm_clear_tidal_acceleration")?;
             Ok(json!({}))
         }
         "tm_get_tidal_acceleration" => {
             let mut out_value: f64 = 0.0;
             let mut out_is_set: i32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_get_tidal_acceleration(context, &raw mut out_value, &raw mut out_is_set) };
-            status(answered, "tm_get_tidal_acceleration")?;
+            checked(context, &before, answered, "tm_get_tidal_acceleration")?;
             Ok(json!({"out_value": out_value, "out_is_set": out_is_set}))
         }
         "tm_set_delta_t_override" => {
             let seconds: f64 = number(args, "seconds")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_set_delta_t_override(context, seconds) };
-            status(answered, "tm_set_delta_t_override")?;
+            checked(context, &before, answered, "tm_set_delta_t_override")?;
             Ok(json!({}))
         }
         "tm_clear_delta_t_override" => {
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_clear_delta_t_override(context) };
-            status(answered, "tm_clear_delta_t_override")?;
+            checked(context, &before, answered, "tm_clear_delta_t_override")?;
             Ok(json!({}))
         }
         "tm_get_delta_t_override" => {
             let mut out_seconds: f64 = 0.0;
             let mut out_is_set: i32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_get_delta_t_override(context, &raw mut out_seconds, &raw mut out_is_set) };
-            status(answered, "tm_get_delta_t_override")?;
+            checked(context, &before, answered, "tm_get_delta_t_override")?;
             Ok(json!({"out_seconds": out_seconds, "out_is_set": out_is_set}))
         }
         "tm_set_nutation_interpolation" => {
             let enable: i32 = narrow(args, "enable")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_set_nutation_interpolation(context, enable) };
-            status(answered, "tm_set_nutation_interpolation")?;
+            checked(context, &before, answered, "tm_set_nutation_interpolation")?;
             Ok(json!({}))
         }
         "tm_get_nutation_interpolation" => {
             let mut out: i32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares.
             let answered = unsafe { sys::tm_get_nutation_interpolation(context, &raw mut out) };
-            status(answered, "tm_get_nutation_interpolation")?;
+            checked(context, &before, answered, "tm_get_nutation_interpolation")?;
             Ok(json!({"out": out}))
         }
         "tm_atmosphere_init_sized" => {
@@ -542,13 +574,14 @@ pub(crate) fn call(
                 .map(|within| read_tm_atmosphere(&within))
                 .transpose()?;
             let mut out: sys::tm_refraction = sys::tm_refraction::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every struct
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_refract(context, model, dir, altitude_deg, obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atm.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
-            status(answered, "tm_refract")?;
+            checked(context, &before, answered, "tm_refract")?;
             Ok(json!({"out": write_tm_refraction(&out)}))
         }
         "tm_refract_many" => {
@@ -562,6 +595,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_atmosphere(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_refraction> = room(altitudes_deg.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every input
@@ -569,18 +603,19 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_refract_many(context, model, dir, altitudes_deg.as_ptr(), altitudes_deg.len(), obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atm.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_refract_many")?;
+            checked(context, &before, answered, "tm_refract_many")?;
             Ok(json!({"out": out.iter().map(write_tm_refraction).collect::<Vec<_>>()}))
         }
         "tm_obliquity_calc" => {
             let jd: f64 = number(args, "jd")?;
             let scale: sys::tm_timescale = narrow(args, "scale")?;
             let mut out: sys::tm_obliquity = sys::tm_obliquity::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_obliquity_calc(context, jd, scale, &raw mut out) };
-            status(answered, "tm_obliquity_calc")?;
+            checked(context, &before, answered, "tm_obliquity_calc")?;
             Ok(json!({"out": write_tm_obliquity(&out)}))
         }
         "tm_coord_rotate" => {
@@ -588,12 +623,13 @@ pub(crate) fn call(
             let obliquity_deg: f64 = number(args, "obliquity_deg")?;
             let positions: Vec<sys::tm_position> = objects(args, "positions", read_tm_position)?;
             let mut out: Vec<sys::tm_position> = room(positions.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_coord_rotate(context, direction, obliquity_deg, positions.as_ptr(), positions.len(), out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_coord_rotate")?;
+            checked(context, &before, answered, "tm_coord_rotate")?;
             Ok(json!({"out": out.iter().map(write_tm_position).collect::<Vec<_>>()}))
         }
         "tm_to_horizontal" => {
@@ -609,13 +645,14 @@ pub(crate) fn call(
             let lon_deg: f64 = number(args, "lon_deg")?;
             let lat_deg: f64 = number(args, "lat_deg")?;
             let mut out: sys::tm_horizontal = sys::tm_horizontal::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every struct
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_to_horizontal(context, jd, scale, system, obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atm.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), lon_deg, lat_deg, &raw mut out) };
-            status(answered, "tm_to_horizontal")?;
+            checked(context, &before, answered, "tm_to_horizontal")?;
             Ok(json!({"out": write_tm_horizontal(&out)}))
         }
         "tm_to_horizontal_many" => {
@@ -630,6 +667,7 @@ pub(crate) fn call(
                 .transpose()?;
             let coords: Vec<sys::tm_coord> = objects(args, "coords", read_tm_coord)?;
             let mut out: Vec<sys::tm_horizontal> = room(coords.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every input
@@ -637,7 +675,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_to_horizontal_many(context, jd, scale, system, obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atm.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), coords.as_ptr(), coords.len(), out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_to_horizontal_many")?;
+            checked(context, &before, answered, "tm_to_horizontal_many")?;
             Ok(json!({"out": out.iter().map(write_tm_horizontal).collect::<Vec<_>>()}))
         }
         "tm_from_horizontal" => {
@@ -651,12 +689,13 @@ pub(crate) fn call(
             let altitude_deg: f64 = number(args, "altitude_deg")?;
             let mut out_lon_deg: f64 = 0.0;
             let mut out_lat_deg: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm.
             let answered = unsafe { sys::tm_from_horizontal(context, jd, scale, system, obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), azimuth_deg, altitude_deg, &raw mut out_lon_deg, &raw mut out_lat_deg) };
-            status(answered, "tm_from_horizontal")?;
+            checked(context, &before, answered, "tm_from_horizontal")?;
             Ok(json!({"out_lon_deg": out_lon_deg, "out_lat_deg": out_lat_deg}))
         }
         "tm_embedded_coverage" => {
@@ -671,27 +710,30 @@ pub(crate) fn call(
         "tm_body_coverage" => {
             let body: sys::tm_body = narrow(args, "body")?;
             let mut out: sys::tm_coverage = sys::tm_coverage::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_body_coverage(context, body, &raw mut out) };
-            status(answered, "tm_body_coverage")?;
+            checked(context, &before, answered, "tm_body_coverage")?;
             Ok(json!({"out": write_tm_coverage(&out)}))
         }
         "tm_fallback_stats_get" => {
             let mut out: sys::tm_fallback_stats = sys::tm_fallback_stats::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_fallback_stats_get(context, &raw mut out) };
-            status(answered, "tm_fallback_stats_get")?;
+            checked(context, &before, answered, "tm_fallback_stats_get")?;
             Ok(json!({"out": write_tm_fallback_stats(&out)}))
         }
         "tm_fallback_stats_reset" => {
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call.
             let answered = unsafe { sys::tm_fallback_stats_reset(context) };
-            status(answered, "tm_fallback_stats_reset")?;
+            checked(context, &before, answered, "tm_fallback_stats_reset")?;
             Ok(json!({}))
         }
         "tm_cache_dir_default" => {
@@ -713,13 +755,14 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: sys::tm_nodes_apsides = sys::tm_nodes_apsides::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every struct
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_nodes_apsides_calc(context, jd, scale, body, flags, method, apsis, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
-            status(answered, "tm_nodes_apsides_calc")?;
+            checked(context, &before, answered, "tm_nodes_apsides_calc")?;
             Ok(json!({"out": write_tm_nodes_apsides(&out)}))
         }
         "tm_nodes_apsides_calc_many" => {
@@ -733,6 +776,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_nodes_apsides> = room(bodies.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every input
@@ -740,7 +784,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_nodes_apsides_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, method, apsis, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_nodes_apsides_calc_many")?;
+            checked(context, &before, answered, "tm_nodes_apsides_calc_many")?;
             Ok(json!({"out": out.iter().map(write_tm_nodes_apsides).collect::<Vec<_>>()}))
         }
         "tm_orbital_elements_calc" => {
@@ -750,11 +794,12 @@ pub(crate) fn call(
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let masses: sys::tm_mass_model = narrow(args, "masses")?;
             let mut out: sys::tm_orbital_elements = sys::tm_orbital_elements::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_orbital_elements_calc(context, jd, scale, body, flags, masses, &raw mut out) };
-            status(answered, "tm_orbital_elements_calc")?;
+            checked(context, &before, answered, "tm_orbital_elements_calc")?;
             Ok(json!({"out": write_tm_orbital_elements(&out)}))
         }
         "tm_orbital_elements_calc_many" => {
@@ -764,12 +809,13 @@ pub(crate) fn call(
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let masses: sys::tm_mass_model = narrow(args, "masses")?;
             let mut out: Vec<sys::tm_orbital_elements> = room(bodies.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_orbital_elements_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, masses, out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_orbital_elements_calc_many")?;
+            checked(context, &before, answered, "tm_orbital_elements_calc_many")?;
             Ok(json!({"out": out.iter().map(write_tm_orbital_elements).collect::<Vec<_>>()}))
         }
         "tm_orbit_distances_calc" => {
@@ -778,11 +824,12 @@ pub(crate) fn call(
             let body: sys::tm_body = narrow(args, "body")?;
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let mut out: sys::tm_orbit_distances = sys::tm_orbit_distances::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_orbit_distances_calc(context, jd, scale, body, flags, &raw mut out) };
-            status(answered, "tm_orbit_distances_calc")?;
+            checked(context, &before, answered, "tm_orbit_distances_calc")?;
             Ok(json!({"out": write_tm_orbit_distances(&out)}))
         }
         "tm_orbit_distances_calc_many" => {
@@ -791,12 +838,13 @@ pub(crate) fn call(
             let bodies: Vec<sys::tm_body> = wholes(args, "bodies")?;
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let mut out: Vec<sys::tm_orbit_distances> = room(bodies.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_orbit_distances_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_orbit_distances_calc_many")?;
+            checked(context, &before, answered, "tm_orbit_distances_calc_many")?;
             Ok(json!({"out": out.iter().map(write_tm_orbit_distances).collect::<Vec<_>>()}))
         }
         "tm_phenomena_calc" => {
@@ -808,13 +856,14 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: sys::tm_phenomena = sys::tm_phenomena::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every struct
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_phenomena_calc(context, jd, scale, body, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
-            status(answered, "tm_phenomena_calc")?;
+            checked(context, &before, answered, "tm_phenomena_calc")?;
             Ok(json!({"out": write_tm_phenomena(&out)}))
         }
         "tm_phenomena_calc_many" => {
@@ -826,6 +875,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_phenomena> = room(bodies.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every input
@@ -833,7 +883,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_phenomena_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_phenomena_calc_many")?;
+            checked(context, &before, answered, "tm_phenomena_calc_many")?;
             Ok(json!({"out": out.iter().map(write_tm_phenomena).collect::<Vec<_>>()}))
         }
         "tm_star_name" => {
@@ -866,11 +916,12 @@ pub(crate) fn call(
         }
         "tm_star_load_catalogue" => {
             let path = text(args, "path")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every string argument is a `CString` that outlives the
             // call.
             let answered = unsafe { sys::tm_star_load_catalogue(context, path.as_ptr()) };
-            status(answered, "tm_star_load_catalogue")?;
+            checked(context, &before, answered, "tm_star_load_catalogue")?;
             Ok(json!({}))
         }
         "tm_star_count" => {
@@ -882,25 +933,27 @@ pub(crate) fn call(
         "tm_star_find" => {
             let name = text(args, "name")?;
             let mut out: sys::tm_star = sys::tm_star::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every string argument is a `CString` that outlives the
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_star_find(context, name.as_ptr(), &raw mut out) };
-            status(answered, "tm_star_find")?;
+            checked(context, &before, answered, "tm_star_find")?;
             Ok(json!({"out": write_tm_star(&out)}))
         }
         "tm_star_find_all" => {
             let name = text(args, "name")?;
             let out = gather::<sys::tm_star>("tm_star_find_all", |room| {
                 let mut out_count: usize = 0;
+                let before = record(context);
                 // SAFETY: the context is the adapter's own and live for this
                 // call; every out-parameter is a local of the width the engine
                 // declares; every string argument is a `CString` that outlives
                 // the call; the output room is the gather protocol's own,
                 // passed with its own length.
                 let answered = unsafe { sys::tm_star_find_all(context, name.as_ptr(), room.as_mut_ptr(), room.len(), &raw mut out_count) };
-                status(answered, "tm_star_find_all")?;
+                checked(context, &before, answered, "tm_star_find_all")?;
                 Ok(out_count)
             })?;
             Ok(json!({"out": out.iter().map(write_tm_star).collect::<Vec<_>>()}))
@@ -914,6 +967,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: sys::tm_position = sys::tm_position::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every string argument is a `CString` that outlives the
             // call; every struct argument is a local of the type the
@@ -921,7 +975,7 @@ pub(crate) fn call(
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_star_calc(context, jd, scale, name.as_ptr(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
-            status(answered, "tm_star_calc")?;
+            checked(context, &before, answered, "tm_star_calc")?;
             Ok(json!({"out": write_tm_position(&out)}))
         }
         "tm_star_calc_many" => {
@@ -933,6 +987,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_position> = room(stars.len(), "out")?;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every input
@@ -940,7 +995,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_star_calc_many(context, jd, scale, stars.as_ptr(), stars.len(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            status(answered, "tm_star_calc_many")?;
+            checked(context, &before, answered, "tm_star_calc_many")?;
             Ok(json!({"out": out.iter().map(write_tm_position).collect::<Vec<_>>()}))
         }
         "tm_eclipse_type_name" => {
@@ -957,12 +1012,13 @@ pub(crate) fn call(
             let mut out_location: sys::tm_eclipse_location = sys::tm_eclipse_location::default();
             let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
             let mut out_type: u32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct out-parameter is a local of the type
             // the engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_solar_eclipse_where(context, jd, scale, flags, &raw mut out_location, &raw mut out_attributes, &raw mut out_type) };
-            status(answered, "tm_solar_eclipse_where")?;
+            checked(context, &before, answered, "tm_solar_eclipse_where")?;
             Ok(json!({"out_location": write_tm_eclipse_location(&out_location), "out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
         }
         "tm_occultation_where" => {
@@ -974,13 +1030,14 @@ pub(crate) fn call(
             let mut out_location: sys::tm_eclipse_location = sys::tm_eclipse_location::default();
             let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
             let mut out_type: u32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every string argument is a `CString` that outlives
             // the call; every struct out-parameter is a local of the type
             // the engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_occultation_where(context, jd, scale, body, star.as_ptr(), flags, &raw mut out_location, &raw mut out_attributes, &raw mut out_type) };
-            status(answered, "tm_occultation_where")?;
+            checked(context, &before, answered, "tm_occultation_where")?;
             Ok(json!({"out_location": write_tm_eclipse_location(&out_location), "out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
         }
         "tm_solar_eclipse_how" => {
@@ -992,6 +1049,7 @@ pub(crate) fn call(
                 .transpose()?;
             let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
             let mut out_type: u32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
@@ -999,7 +1057,7 @@ pub(crate) fn call(
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_solar_eclipse_how(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_attributes, &raw mut out_type) };
-            status(answered, "tm_solar_eclipse_how")?;
+            checked(context, &before, answered, "tm_solar_eclipse_how")?;
             Ok(json!({"out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
         }
         "tm_occultation_how" => {
@@ -1013,6 +1071,7 @@ pub(crate) fn call(
                 .transpose()?;
             let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
             let mut out_type: u32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every string argument is a `CString` that outlives
@@ -1021,7 +1080,7 @@ pub(crate) fn call(
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_occultation_how(context, jd, scale, body, star.as_ptr(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_attributes, &raw mut out_type) };
-            status(answered, "tm_occultation_how")?;
+            checked(context, &before, answered, "tm_occultation_how")?;
             Ok(json!({"out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
         }
         "tm_lunar_eclipse_how" => {
@@ -1033,6 +1092,7 @@ pub(crate) fn call(
                 .transpose()?;
             let mut out_attributes: sys::tm_lunar_eclipse_attributes = sys::tm_lunar_eclipse_attributes::default();
             let mut out_type: u32 = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
@@ -1040,7 +1100,7 @@ pub(crate) fn call(
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_lunar_eclipse_how(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_attributes, &raw mut out_type) };
-            status(answered, "tm_lunar_eclipse_how")?;
+            checked(context, &before, answered, "tm_lunar_eclipse_how")?;
             Ok(json!({"out_attributes": write_tm_lunar_eclipse_attributes(&out_attributes), "out_type": out_type}))
         }
         "tm_event_kind_name" => {
@@ -1066,13 +1126,14 @@ pub(crate) fn call(
                 .map(|within| read_tm_atmosphere(&within))
                 .transpose()?;
             let mut out_sector: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every string argument is a `CString` that outlives
             // the call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm.
             let answered = unsafe { sys::tm_gauquelin_sector(context, jd, scale, body, star.as_ptr(), flags, method, refraction, disc_center, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_sector) };
-            status(answered, "tm_gauquelin_sector")?;
+            checked(context, &before, answered, "tm_gauquelin_sector")?;
             Ok(json!({"out_sector": out_sector}))
         }
         "tm_visibility_defaults" => {
@@ -1105,6 +1166,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer_eye(&within))
                 .transpose()?;
             let mut out: sys::tm_visibility = sys::tm_visibility::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every string argument is a `CString` that outlives the
             // call; every struct argument is a local of the type the
@@ -1112,7 +1174,7 @@ pub(crate) fn call(
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_visibility_limit(context, jd, scale, body, star.as_ptr(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), eye.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
-            status(answered, "tm_visibility_limit")?;
+            checked(context, &before, answered, "tm_visibility_limit")?;
             Ok(json!({"out": write_tm_visibility(&out)}))
         }
         "tm_visibility_arcus" => {
@@ -1135,12 +1197,13 @@ pub(crate) fn call(
             let moon_altitude_deg: f64 = number(args, "moon_altitude_deg")?;
             let moon_azimuth_deg: f64 = number(args, "moon_azimuth_deg")?;
             let mut out_arcus_deg: f64 = 0.0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm.
             let answered = unsafe { sys::tm_visibility_arcus(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), eye.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), magnitude, object_altitude_deg, object_azimuth_deg, sun_azimuth_deg, moon_altitude_deg, moon_azimuth_deg, &raw mut out_arcus_deg) };
-            status(answered, "tm_visibility_arcus")?;
+            checked(context, &before, answered, "tm_visibility_arcus")?;
             Ok(json!({"out_arcus_deg": out_arcus_deg}))
         }
         "tm_visibility_best_altitude" => {
@@ -1162,13 +1225,14 @@ pub(crate) fn call(
             let moon_altitude_deg: f64 = number(args, "moon_altitude_deg")?;
             let moon_azimuth_deg: f64 = number(args, "moon_azimuth_deg")?;
             let mut out: sys::tm_visibility_best = sys::tm_visibility_best::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
             // engine declares, its extent filled by the arm; every struct
             // out-parameter is a local of the type the engine declares,
             // its extent filled by `default`.
             let answered = unsafe { sys::tm_visibility_best_altitude(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), eye.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), magnitude, object_azimuth_deg, sun_azimuth_deg, moon_altitude_deg, moon_azimuth_deg, &raw mut out) };
-            status(answered, "tm_visibility_best_altitude")?;
+            checked(context, &before, answered, "tm_visibility_best_altitude")?;
             Ok(json!({"out": write_tm_visibility_best(&out)}))
         }
         "tm_crossing_request_init_sized" => {
@@ -1187,6 +1251,7 @@ pub(crate) fn call(
             let out_capacity: usize = narrow(args, "out_capacity")?;
             let mut out: Vec<sys::tm_crossing> = room(out_capacity, "out")?;
             let mut out_count: usize = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
@@ -1194,7 +1259,7 @@ pub(crate) fn call(
             // array is a `Vec` the arm sized to the engine's stated
             // extent, passed with its own length.
             let answered = unsafe { sys::tm_crossing_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
-            status(answered, "tm_crossing_search")?;
+            checked(context, &before, answered, "tm_crossing_search")?;
             out.truncate(out_count);
             Ok(json!({"out": out.iter().map(write_tm_crossing).collect::<Vec<_>>()}))
         }
@@ -1205,6 +1270,7 @@ pub(crate) fn call(
             let out_capacity: usize = narrow(args, "out_capacity")?;
             let mut out: Vec<sys::tm_crossing> = room(out_capacity, "out")?;
             let mut out_count: usize = 0;
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every out-parameter is a local of the width the engine
             // declares; every struct argument is a local of the type the
@@ -1212,7 +1278,7 @@ pub(crate) fn call(
             // array is a `Vec` the arm sized to the engine's stated
             // extent, passed with its own length.
             let answered = unsafe { sys::tm_node_crossing_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
-            status(answered, "tm_node_crossing_search")?;
+            checked(context, &before, answered, "tm_node_crossing_search")?;
             out.truncate(out_count);
             Ok(json!({"out": out.iter().map(write_tm_crossing).collect::<Vec<_>>()}))
         }
@@ -1325,11 +1391,12 @@ pub(crate) fn call(
             let deg: f64 = number(args, "deg")?;
             let options: u32 = narrow(args, "options")?;
             let mut out: sys::tm_angle_parts = sys::tm_angle_parts::default();
+            let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct out-parameter is a local of the type the
             // engine declares, its extent filled by `default`.
             let answered = unsafe { sys::tm_angle_split(context, deg, options, &raw mut out) };
-            status(answered, "tm_angle_split")?;
+            checked(context, &before, answered, "tm_angle_split")?;
             Ok(json!({"out": write_tm_angle_parts(&out)}))
         }
         "tm_angle_format" => {
