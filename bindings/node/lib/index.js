@@ -37,6 +37,7 @@ import {
   NakshatraById,
   PakshaById,
   PanchakaById,
+  PointById,
   RashiById,
   StrengthById,
   VargaById,
@@ -661,6 +662,36 @@ export class Chart {
           signDeg: d.aspects.toSignDeg[i],
           nakshatraDeg: d.aspects.toNakshatraDeg[i],
           padaDeg: d.aspects.toPadaDeg[i],
+        },
+      };
+    });
+  }
+
+  /**
+   * The derived points — the upagrahas and the special lagnas — or an
+   * empty list unless `points: true` asked for them.
+   *
+   * Each is `{ point, longitudeDeg, sign, boundaries }`. Gulika and
+   * Mandi are Saturn's eighth of the day's arc, so they are the two a
+   * chart with no arc to divide cannot have — which is why the section
+   * is ragged.
+   */
+  get points() {
+    const d = this.#batch.decoded;
+    const counts = d.cast.pointCount;
+    let from = 0;
+    for (let i = 0; i < this.#index; i += 1) from += counts[i];
+    const count = counts[this.#index] ?? 0;
+    return Array.from({ length: count }, (_, k) => {
+      const i = from + k;
+      return {
+        point: PointById.get(d.points.point[i]) ?? 'unknown',
+        longitudeDeg: d.points.longitudeDeg[i],
+        sign: RashiById.get(d.points.sign[i]) ?? 'unknown',
+        boundaries: {
+          signDeg: d.points.signDeg[i],
+          nakshatraDeg: d.points.nakshatraDeg[i],
+          padaDeg: d.points.padaDeg[i],
         },
       };
     });
@@ -1476,6 +1507,8 @@ class ChartArea extends Area {
    *   not pay for twenty-one of them
    * @param {boolean} [request.aspects] whether to compute the drishti —
    *   which body looks at which, and how strongly; false by default
+   * @param {boolean} [request.points] whether to compute the derived
+   *   points — the upagrahas and the special lagnas; false by default
    * @returns {Charts}
    */
   foundMany(request) {
@@ -1492,7 +1525,9 @@ class ChartArea extends Area {
         // bit set and nothing here writes as one
         // (`03-design/chart-reading.md` §5): a named option each, and
         // one more as each crosses.
-        sections: request.aspects === true ? SECTION_ASPECTS : 0,
+        sections:
+          (request.aspects === true ? SECTION_ASPECTS : 0) |
+          (request.points === true ? SECTION_POINTS : 0),
         vargas: vargaKeys(request.vargas),
       }),
     );
@@ -1507,6 +1542,9 @@ class ChartArea extends Area {
  * `aspects: true` (`03-design/chart-reading.md` §5).
  */
 const SECTION_ASPECTS = 4;
+
+/** `TS_CHART_POINTS`, the derived points. */
+const SECTION_POINTS = 8;
 
 /**
  * The divisional charts a request asked for, checked.

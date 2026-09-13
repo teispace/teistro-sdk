@@ -412,6 +412,11 @@ fn chart_cast_section(id: u32) -> SectionSchema {
                 "How far through that arc the instant is, 0 to 1.",
             ),
             ColumnDef::new(
+                "point_count",
+                Scalar::U32,
+                "How many rows of the `points` section belong to this chart. Zero when the derived points were not asked for.\n\nRagged for the reason `aspect_count` is: a chart's points depend on what its day allows — Saturn's eighth needs an arc to divide, which a polar day has not — so the count is a per-chart fact and not a batch one.",
+            ),
+            ColumnDef::new(
                 "aspect_count",
                 Scalar::U32,
                 "How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.\n\nA **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.",
@@ -543,29 +548,11 @@ pub fn charts() -> BlobSchema {
                 "provenance",
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
             ),
-            SectionSchema::columns(
-                13,
-                "vargas",
-                "One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).",
-                vec![
-                    ColumnDef::new("varga", Scalar::U16, "Which divisional chart.").of_enum("Varga"),
-                    ColumnDef::new("lagna_rashi", Scalar::U16, "The sign the lagna stands in, in the rashi chart.").of_enum("Rashi"),
-                    ColumnDef::new("lagna_part", Scalar::U16, "Which part of that sign the lagna falls in, counted from zero."),
-                    ColumnDef::new("lagna_sign", Scalar::U16, "The sign the divisional chart puts the lagna in.").of_enum("Rashi"),
-                ],
-            ),
+            chart_vargas_section(13),
+            chart_varga_grahas_section(14),
             chart_aspects_section(15),
             chart_drishti_table_section(16),
-            SectionSchema::columns(
-                14,
-                "varga_grahas",
-                "One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.",
-                vec![
-                    ColumnDef::new("rashi", Scalar::U16, "The sign the graha stands in, in the rashi chart.").of_enum("Rashi"),
-                    ColumnDef::new("part", Scalar::U16, "Which part of that sign it falls in, counted from zero."),
-                    ColumnDef::new("sign", Scalar::U16, "The sign the divisional chart puts it in.").of_enum("Rashi"),
-                ],
-            ),
+            chart_points_section(17),
         ],
     }
 }
@@ -634,6 +621,104 @@ fn chart_drishti_table_section(id: u32) -> SectionSchema {
         id,
         "drishti_table",
         "UTF-8 text: the drishti table the settings named, which every aspect above was read under. Empty when the aspects were not asked for.",
+    )
+}
+
+/// Every chart's derived points: the upagrahas and the special lagnas.
+///
+/// **Ragged**, as the drishti are, and for a reason of its own: Saturn's
+/// eighth needs an arc to divide, so a chart whose day has none carries
+/// two points fewer.
+#[must_use]
+fn chart_points_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "points",
+        "Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have.",
+        vec![
+            ColumnDef::new("point", Scalar::U16, "Which point.").of_enum("Point"),
+            ColumnDef::new(
+                "longitude_deg",
+                Scalar::F64,
+                "Its longitude in the chart's zodiac, degrees.",
+            ),
+            ColumnDef::new("sign", Scalar::U16, "The sign it falls in.").of_enum("Rashi"),
+            ColumnDef::new(
+                "sign_deg",
+                Scalar::F64,
+                "How near it stands to a sign edge, degrees.",
+            ),
+            ColumnDef::new(
+                "nakshatra_deg",
+                Scalar::F64,
+                "How near it stands to a nakshatra edge, degrees.",
+            ),
+            ColumnDef::new(
+                "pada_deg",
+                Scalar::F64,
+                "How near it stands to a pada edge, degrees.",
+            ),
+        ],
+    )
+}
+
+/// One row per divisional chart per chart: which chart, and where its
+/// lagna falls.
+#[must_use]
+fn chart_vargas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "vargas",
+        "One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).",
+        vec![
+            ColumnDef::new("varga", Scalar::U16, "Which divisional chart.").of_enum("Varga"),
+            ColumnDef::new(
+                "lagna_rashi",
+                Scalar::U16,
+                "The sign the lagna stands in, in the rashi chart.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new(
+                "lagna_part",
+                Scalar::U16,
+                "Which part of that sign the lagna falls in, counted from zero.",
+            ),
+            ColumnDef::new(
+                "lagna_sign",
+                Scalar::U16,
+                "The sign the divisional chart puts the lagna in.",
+            )
+            .of_enum("Rashi"),
+        ],
+    )
+}
+
+/// Every graha of every divisional chart.
+#[must_use]
+fn chart_varga_grahas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "varga_grahas",
+        "One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.",
+        vec![
+            ColumnDef::new(
+                "rashi",
+                Scalar::U16,
+                "The sign the graha stands in, in the rashi chart.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new(
+                "part",
+                Scalar::U16,
+                "Which part of that sign it falls in, counted from zero.",
+            ),
+            ColumnDef::new(
+                "sign",
+                Scalar::U16,
+                "The sign the divisional chart puts it in.",
+            )
+            .of_enum("Rashi"),
+        ],
     )
 }
 

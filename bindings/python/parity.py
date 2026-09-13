@@ -257,6 +257,7 @@ def main() -> None:
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
             aspects=True,
+            points=True,
         )
         put("chart-varga-count", charts.decoded.varga_count)
         put("chart-drishti-table", charts.decoded.drishti_table)
@@ -292,6 +293,13 @@ def main() -> None:
             put(f"chart-{i}-vipala", chart_columns.timing.vipala[i])
             put(f"chart-{i}-hora-number", chart_columns.timing.hora_number[i])
             put(f"chart-{i}-hora-lord", chart.hora_lord.full_key)
+            found = chart.points
+            put(f"chart-{i}-point-count", len(found))
+            for k, derived in enumerate(found):
+                put(f"chart-{i}-point-{k}", derived.point.full_key)
+                put(f"chart-{i}-point-{k}-lon", derived.longitude_deg)
+                put(f"chart-{i}-point-{k}-sign", derived.sign.full_key)
+                put(f"chart-{i}-point-{k}-sign-edge", derived.boundaries.sign_deg)
             # Every drishti, because the count differs from chart to
             # chart -- which is why the section is ragged.
             drishti = chart.aspects

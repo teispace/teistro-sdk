@@ -258,7 +258,15 @@ by all four runners.
    `Strength` crosses as `TsStrength`, the boundary's own enum, because
    it is a property of a relation rather than a thing with a key.
 
-   **Four bindings agree on 1 273 values**, 599 of them new and every one
+   **And the derived points**, the third, which took the drishti's
+   lesson as read: ragged from the start, because Saturn's eighth needs
+   an arc to divide and a chart whose day has none carries two points
+   fewer. That is the second reason a section's length can vary, and it
+   is not the first — the drishti vary with *where* the bodies stand and
+   the points with *what the day allows* — so the rule §5 now states
+   covers both.
+
+   **Four bindings agree on 1 379 values**, 705 of them new and every one
    right on its first run. The runners ask for **two** charts over
    **two** instants deliberately: the layout is charts outermost, so one
    of each would pass a transposed stride; and they print **every**

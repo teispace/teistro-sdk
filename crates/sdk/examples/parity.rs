@@ -771,7 +771,8 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     let asked = ChartRequest::at(place, offset)
         .with_kind(ChartKind::Natal)
         .with_vargas([Varga::D9, Varga::D10])
-        .with_aspects();
+        .with_aspects()
+        .with_points();
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -794,6 +795,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     );
     for (index, document) in read.value.iter().enumerate() {
         one_varga_chart(report, index, document);
+        the_points(report, index, document);
         the_drishti(report, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
@@ -907,6 +909,29 @@ fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Docume
             put(report, &row("-part"), placed.at.part.to_string());
             put(report, &row("-sign"), placed.at.sign.full_key().to_owned());
         }
+    }
+}
+
+/// One chart's derived points, as the report prints them.
+fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(points) = document.points.as_ref() else {
+        return;
+    };
+    put(
+        report,
+        &format!("chart-{index}-point-count"),
+        points.all().len().to_string(),
+    );
+    for (at, found) in points.all().iter().enumerate() {
+        let key = |what: &str| format!("chart-{index}-point-{at}{what}");
+        put(report, &key(""), found.point.full_key().to_owned());
+        put(report, &key("-lon"), number(found.longitude_deg));
+        put(report, &key("-sign"), found.sign.full_key().to_owned());
+        put(
+            report,
+            &key("-sign-edge"),
+            number(found.boundaries.sign_deg),
+        );
     }
 }
 

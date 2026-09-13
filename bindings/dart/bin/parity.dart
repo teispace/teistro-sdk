@@ -260,6 +260,7 @@ void main() {
     utcOffsetSeconds: 20700,
     vargas: <Varga>[Varga.d9, Varga.d10],
     aspects: true,
+    points: true,
   );
   put('chart-varga-count', charts.vargaCount);
   put('chart-drishti-table', charts.drishtiTable);
@@ -296,6 +297,15 @@ void main() {
     put('chart-$i-vipala', charts.timing.vipala[i]);
     put('chart-$i-hora-number', charts.timing.horaNumber[i]);
     put('chart-$i-hora-lord', chart.horaLord.fullKey);
+    final found = chart.points;
+    put('chart-$i-point-count', found.length);
+    for (var k = 0; k < found.length; k += 1) {
+      final one = found[k];
+      put('chart-$i-point-$k', one.point.fullKey);
+      put('chart-$i-point-$k-lon', one.longitudeDeg);
+      put('chart-$i-point-$k-sign', one.sign.fullKey);
+      put('chart-$i-point-$k-sign-edge', one.boundaries.signDeg);
+    }
     // Every drishti, because the count differs from chart to chart --
     // which is why the section is ragged.
     final drishti = chart.aspects;

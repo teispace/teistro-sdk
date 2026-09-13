@@ -671,6 +671,73 @@ impl AspectColumns {
     }
 }
 
+/// The derived points of a batch, as the section carries them.
+///
+/// **Ragged**, as the drishti are: a chart's points depend on what its
+/// day allows — Saturn's eighth needs an arc to divide — so the count is
+/// a per-chart fact. The drishti taught that lesson by refusing a batch
+/// (`03-design/chart-reading.md` §5); this one takes it as read.
+struct PointColumns {
+    counts: Vec<u32>,
+    point: Vec<u16>,
+    longitude: Vec<f64>,
+    sign: Vec<u16>,
+    sign_deg: Vec<f64>,
+    nakshatra_deg: Vec<f64>,
+    pada_deg: Vec<f64>,
+}
+
+impl PointColumns {
+    fn of(documents: &[Document]) -> PointColumns {
+        let rows: usize = documents
+            .iter()
+            .map(|d| d.points.as_ref().map_or(0, |p| p.all().len()))
+            .sum();
+        let mut columns = PointColumns {
+            counts: Vec::with_capacity(documents.len()),
+            point: Vec::with_capacity(rows),
+            longitude: Vec::with_capacity(rows),
+            sign: Vec::with_capacity(rows),
+            sign_deg: Vec::with_capacity(rows),
+            nakshatra_deg: Vec::with_capacity(rows),
+            pada_deg: Vec::with_capacity(rows),
+        };
+        for document in documents {
+            let Some(points) = document.points.as_ref() else {
+                columns.counts.push(0);
+                continue;
+            };
+            columns
+                .counts
+                .push(u32::try_from(points.all().len()).unwrap_or(u32::MAX));
+            for found in points.all() {
+                columns.point.push(found.point.id());
+                columns.longitude.push(found.longitude_deg);
+                columns.sign.push(found.sign.id());
+                columns.sign_deg.push(found.boundaries.sign_deg);
+                columns.nakshatra_deg.push(found.boundaries.nakshatra_deg);
+                columns.pada_deg.push(found.boundaries.pada_deg);
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "points",
+            self.point.len(),
+            &[
+                ColumnData::U16(&self.point),
+                ColumnData::F64(&self.longitude),
+                ColumnData::U16(&self.sign),
+                ColumnData::F64(&self.sign_deg),
+                ColumnData::F64(&self.nakshatra_deg),
+                ColumnData::F64(&self.pada_deg),
+            ],
+        )
+    }
+}
+
 /// The divisional charts of a batch, as the two sections carry them.
 ///
 /// **Charts outermost, then charts asked for, then grahas** — the same
@@ -778,7 +845,11 @@ impl VargaColumns {
 
 /// One row per chart, in the order `cast` declares its columns.
 #[must_use]
-fn chart_rows(charts: &[&ChartFoundation], aspect_counts: &[u32]) -> Vec<Vec<FixedValue>> {
+fn chart_rows(
+    charts: &[&ChartFoundation],
+    point_counts: &[u32],
+    aspect_counts: &[u32],
+) -> Vec<Vec<FixedValue>> {
     charts
         .iter()
         .enumerate()
@@ -790,6 +861,7 @@ fn chart_rows(charts: &[&ChartFoundation], aspect_counts: &[u32]) -> Vec<Vec<Fix
                 chart.zodiac.offset_deg.into(),
                 (TsDayPart::from(chart.day.part) as u64).into(),
                 chart.day.elapsed.into(),
+                u64::from(point_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(aspect_counts.get(at).copied().unwrap_or(0)).into(),
             ]
         })
@@ -934,6 +1006,7 @@ pub fn encode(
     let once = BatchOnce::of(charts.first().copied());
     let vargas = VargaColumns::of(documents, graha_count)?;
     let aspects = AspectColumns::of(documents);
+    let points = PointColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -946,7 +1019,7 @@ pub fn encode(
                 vargas.count,
             ),
         )?;
-        writer.rows("cast", &chart_rows(charts, &aspects.counts))?;
+        writer.rows("cast", &chart_rows(charts, &points.counts, &aspects.counts))?;
         writer.columns(
             "grahas",
             charts.len() * graha_count,
@@ -1002,6 +1075,7 @@ pub fn encode(
         )?;
         vargas.write(&mut writer)?;
         aspects.write(&mut writer)?;
+        points.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

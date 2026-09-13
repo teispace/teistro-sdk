@@ -200,6 +200,12 @@ export interface ChartsCast {
    */
   readonly dayElapsed: Float64Array;
   /**
+   * How many rows of the `points` section belong to this chart. Zero when the derived points were not asked for.
+   *
+   * Ragged for the reason `aspect_count` is: a chart's points depend on what its day allows — Saturn's eighth needs an arc to divide, which a polar day has not — so the count is a per-chart fact and not a batch one.
+   */
+  readonly pointCount: Uint32Array;
+  /**
    * How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.
    *
    * A **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.
@@ -398,6 +404,31 @@ export interface ChartsVargas {
 }
 
 /**
+ * The `varga_grahas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+ */
+export interface ChartsVargaGrahas {
+  /**
+   * The sign the graha stands in, in the rashi chart.
+   * The values are `Rashi` ids.
+   */
+  readonly rashi: Uint16Array;
+  /**
+   * Which part of that sign it falls in, counted from zero.
+   */
+  readonly part: Uint16Array;
+  /**
+   * The sign the divisional chart puts it in.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The `aspects` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
@@ -452,26 +483,38 @@ export interface ChartsAspects {
 }
 
 /**
- * The `varga_grahas` section of a Charts blob: one typed array per column, each a
+ * The `points` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+ * Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have.
  */
-export interface ChartsVargaGrahas {
+export interface ChartsPoints {
   /**
-   * The sign the graha stands in, in the rashi chart.
-   * The values are `Rashi` ids.
+   * Which point.
+   * The values are `Point` ids.
    */
-  readonly rashi: Uint16Array;
+  readonly point: Uint16Array;
   /**
-   * Which part of that sign it falls in, counted from zero.
+   * Its longitude in the chart's zodiac, degrees.
    */
-  readonly part: Uint16Array;
+  readonly longitudeDeg: Float64Array;
   /**
-   * The sign the divisional chart puts it in.
+   * The sign it falls in.
    * The values are `Rashi` ids.
    */
   readonly sign: Uint16Array;
+  /**
+   * How near it stands to a sign edge, degrees.
+   */
+  readonly signDeg: Float64Array;
+  /**
+   * How near it stands to a nakshatra edge, degrees.
+   */
+  readonly nakshatraDeg: Float64Array;
+  /**
+   * How near it stands to a pada edge, degrees.
+   */
+  readonly padaDeg: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -683,6 +726,10 @@ export interface Charts {
    */
   readonly vargas: ChartsVargas;
   /**
+   * One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+   */
+  readonly vargaGrahas: ChartsVargaGrahas;
+  /**
    * Every chart's drishti, concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.aspect_count` and run for its own, ordered by the looking body and then by the body looked at, in the foundation's own order. Empty when the aspects were not asked for. `from_*` and `to_*` say how near each end stands to a boundary, which is what an ayanamsha that moved would change.
    */
   readonly aspects: ChartsAspects;
@@ -691,9 +738,9 @@ export interface Charts {
    */
   readonly drishtiTable: string;
   /**
-   * One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+   * Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have.
    */
-  readonly vargaGrahas: ChartsVargaGrahas;
+  readonly points: ChartsPoints;
 }
 
 /**

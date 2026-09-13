@@ -118,6 +118,7 @@ from .catalogue import (
     Panchaka,
     Rashi,
     Tithi,
+    Point,
     Vara,
     Varga,
     Strength,
@@ -206,6 +207,7 @@ __all__ = [
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
     "Varga",
+    "DerivedPoint",
     "Drishti",
     "EdgeDistance",
     "Strength",
@@ -866,6 +868,7 @@ class ChartArea(_Area):
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         aspects: bool = False,
+        points: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
 
@@ -887,6 +890,7 @@ class ChartArea(_Area):
             kind=kind,
             vargas=vargas,
             aspects=aspects,
+            points=points,
         ).at(0)
 
     def found_many(
@@ -898,6 +902,7 @@ class ChartArea(_Area):
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         aspects: bool = False,
+        points: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
         crossing.
@@ -924,7 +929,8 @@ class ChartArea(_Area):
             # a bit set and nothing here writes as one
             # (`03-design/chart-reading.md` §5): a named argument each,
             # and one more as each crosses.
-            sections=_SECTION_ASPECTS if aspects else 0,
+            sections=(_SECTION_ASPECTS if aspects else 0)
+            | (_SECTION_POINTS if points else 0),
             vargas=list(vargas),
         )
         return ChartBatch(
@@ -1201,6 +1207,9 @@ class Placement:
 #: `aspects=True` (`03-design/chart-reading.md` §5).
 _SECTION_ASPECTS = 4
 
+#: `TS_CHART_POINTS`, the derived points.
+_SECTION_POINTS = 8
+
 
 @dataclass(frozen=True)
 class EdgeDistance:
@@ -1215,6 +1224,23 @@ class EdgeDistance:
 
     pada_deg: float
     """To the nearer edge of its pada, degrees."""
+
+
+@dataclass(frozen=True)
+class DerivedPoint:
+    """One derived point: an upagraha or a special lagna."""
+
+    point: Point
+    """Which point."""
+
+    longitude_deg: float
+    """Its longitude in the chart's zodiac, degrees."""
+
+    sign: Rashi
+    """The sign it falls in."""
+
+    boundaries: EdgeDistance
+    """How near it stands to a sign, nakshatra or pada edge."""
 
 
 @dataclass(frozen=True)
@@ -1402,6 +1428,33 @@ class Chart:
     def hora_lord(self) -> Graha:
         """The graha that rules the hora holding the instant."""
         return Graha(self.batch.decoded.timing.hora_lord[self.index])
+
+    @property
+    def points(self) -> list[DerivedPoint]:
+        """The derived points — the upagrahas and the special lagnas — or
+        an empty list unless `points=True` asked for them.
+
+        Gulika and Mandi are Saturn's eighth of the day's arc, so they
+        are the two a chart with no arc to divide cannot have — which is
+        why the section is ragged.
+        """
+        decoded = self.batch.decoded
+        counts = decoded.cast.point_count
+        start = sum(counts[i] for i in range(self.index))
+        columns = decoded.points
+        return [
+            DerivedPoint(
+                point=Point(columns.point[i]),
+                longitude_deg=columns.longitude_deg[i],
+                sign=Rashi(columns.sign[i]),
+                boundaries=EdgeDistance(
+                    sign_deg=columns.sign_deg[i],
+                    nakshatra_deg=columns.nakshatra_deg[i],
+                    pada_deg=columns.pada_deg[i],
+                ),
+            )
+            for i in range(start, start + counts[self.index])
+        ]
 
     @property
     def aspects(self) -> list[Drishti]:

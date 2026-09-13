@@ -369,6 +369,7 @@ final class ChartsCast {
     required this.ayanamshaOffsetDeg,
     required this.dayPart,
     required this.dayElapsed,
+    required this.pointCount,
     required this.aspectCount,
     required this.length,
   });
@@ -390,6 +391,11 @@ final class ChartsCast {
 
   /// How far through that arc the instant is, 0 to 1.
   final Float64List dayElapsed;
+
+  /// How many rows of the `points` section belong to this chart. Zero when the derived points were not asked for.
+  ///
+  /// Ragged for the reason `aspect_count` is: a chart's points depend on what its day allows — Saturn's eighth needs an arc to divide, which a polar day has not — so the count is a per-chart fact and not a batch one.
+  final Uint32List pointCount;
 
   /// How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.
   ///
@@ -589,6 +595,31 @@ final class ChartsVargas {
   final int length;
 }
 
+/// The `varga_grahas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+final class ChartsVargaGrahas {
+  const ChartsVargaGrahas({
+    required this.rashi,
+    required this.part,
+    required this.sign,
+    required this.length,
+  });
+
+  /// The sign the graha stands in, in the rashi chart.
+  final Uint16List rashi;
+
+  /// Which part of that sign it falls in, counted from zero.
+  final Uint16List part;
+
+  /// The sign the divisional chart puts it in.
+  final Uint16List sign;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `aspects` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -642,26 +673,38 @@ final class ChartsAspects {
   final int length;
 }
 
-/// The `varga_grahas` section of a Charts blob: one typed list per column, each a
+/// The `points` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
-final class ChartsVargaGrahas {
-  const ChartsVargaGrahas({
-    required this.rashi,
-    required this.part,
+/// Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have.
+final class ChartsPoints {
+  const ChartsPoints({
+    required this.point,
+    required this.longitudeDeg,
     required this.sign,
+    required this.signDeg,
+    required this.nakshatraDeg,
+    required this.padaDeg,
     required this.length,
   });
 
-  /// The sign the graha stands in, in the rashi chart.
-  final Uint16List rashi;
+  /// Which point.
+  final Uint16List point;
 
-  /// Which part of that sign it falls in, counted from zero.
-  final Uint16List part;
+  /// Its longitude in the chart's zodiac, degrees.
+  final Float64List longitudeDeg;
 
-  /// The sign the divisional chart puts it in.
+  /// The sign it falls in.
   final Uint16List sign;
+
+  /// How near it stands to a sign edge, degrees.
+  final Float64List signDeg;
+
+  /// How near it stands to a nakshatra edge, degrees.
+  final Float64List nakshatraDeg;
+
+  /// How near it stands to a pada edge, degrees.
+  final Float64List padaDeg;
 
   /// The number of rows every column holds.
   final int length;
@@ -783,9 +826,10 @@ final class Charts {
     required this.steps,
     required this.provenance,
     required this.vargas,
+    required this.vargaGrahas,
     required this.aspects,
     required this.drishtiTable,
-    required this.vargaGrahas,
+    required this.points,
   });
 
   /// What kind of chart these are.
@@ -866,14 +910,17 @@ final class Charts {
   /// One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
   final ChartsVargas vargas;
 
+  /// One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+  final ChartsVargaGrahas vargaGrahas;
+
   /// Every chart's drishti, concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.aspect_count` and run for its own, ordered by the looking body and then by the body looked at, in the foundation's own order. Empty when the aspects were not asked for. `from_*` and `to_*` say how near each end stands to a boundary, which is what an ayanamsha that moved would change.
   final ChartsAspects aspects;
 
   /// UTF-8 text: the drishti table the settings named, which every aspect above was read under. Empty when the aspects were not asked for.
   final String drishtiTable;
 
-  /// One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
-  final ChartsVargaGrahas vargaGrahas;
+  /// Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have.
+  final ChartsPoints points;
 
 }
 
@@ -895,9 +942,10 @@ Charts decodeCharts(Uint8List bytes) {
   final atSteps = blob.section(11, 'steps');
   final atProvenance = blob.section(12, 'provenance');
   final atVargas = blob.section(13, 'vargas');
+  final atVargaGrahas = blob.section(14, 'varga_grahas');
   final atAspects = blob.section(15, 'aspects');
   final atDrishtiTable = blob.section(16, 'drishti_table');
-  final atVargaGrahas = blob.section(14, 'varga_grahas');
+  final atPoints = blob.section(17, 'points');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -937,10 +985,15 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atCast, 5),
         blob.columnOffset(atCast, 5) + atCast.count * 8,
       ),
-      aspectCount: Uint32List.sublistView(
+      pointCount: Uint32List.sublistView(
         blob.bytes,
         blob.columnOffset(atCast, 6),
         blob.columnOffset(atCast, 6) + atCast.count * 4,
+      ),
+      aspectCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 7),
+        blob.columnOffset(atCast, 7) + atCast.count * 4,
       ),
       length: atCast.count,
     ),
@@ -1219,6 +1272,24 @@ Charts decodeCharts(Uint8List bytes) {
       ),
       length: atVargas.count,
     ),
+    vargaGrahas: ChartsVargaGrahas(
+      rashi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargaGrahas, 0),
+        blob.columnOffset(atVargaGrahas, 0) + atVargaGrahas.count * 2,
+      ),
+      part: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargaGrahas, 1),
+        blob.columnOffset(atVargaGrahas, 1) + atVargaGrahas.count * 2,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargaGrahas, 2),
+        blob.columnOffset(atVargaGrahas, 2) + atVargaGrahas.count * 2,
+      ),
+      length: atVargaGrahas.count,
+    ),
     aspects: ChartsAspects(
       from: Uint16List.sublistView(
         blob.bytes,
@@ -1273,23 +1344,38 @@ Charts decodeCharts(Uint8List bytes) {
       length: atAspects.count,
     ),
     drishtiTable: blob.text(atDrishtiTable),
-    vargaGrahas: ChartsVargaGrahas(
-      rashi: Uint16List.sublistView(
+    points: ChartsPoints(
+      point: Uint16List.sublistView(
         blob.bytes,
-        blob.columnOffset(atVargaGrahas, 0),
-        blob.columnOffset(atVargaGrahas, 0) + atVargaGrahas.count * 2,
+        blob.columnOffset(atPoints, 0),
+        blob.columnOffset(atPoints, 0) + atPoints.count * 2,
       ),
-      part: Uint16List.sublistView(
+      longitudeDeg: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atVargaGrahas, 1),
-        blob.columnOffset(atVargaGrahas, 1) + atVargaGrahas.count * 2,
+        blob.columnOffset(atPoints, 1),
+        blob.columnOffset(atPoints, 1) + atPoints.count * 8,
       ),
       sign: Uint16List.sublistView(
         blob.bytes,
-        blob.columnOffset(atVargaGrahas, 2),
-        blob.columnOffset(atVargaGrahas, 2) + atVargaGrahas.count * 2,
+        blob.columnOffset(atPoints, 2),
+        blob.columnOffset(atPoints, 2) + atPoints.count * 2,
       ),
-      length: atVargaGrahas.count,
+      signDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoints, 3),
+        blob.columnOffset(atPoints, 3) + atPoints.count * 8,
+      ),
+      nakshatraDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoints, 4),
+        blob.columnOffset(atPoints, 4) + atPoints.count * 8,
+      ),
+      padaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoints, 5),
+        blob.columnOffset(atPoints, 5) + atPoints.count * 8,
+      ),
+      length: atPoints.count,
     ),
   );
 }

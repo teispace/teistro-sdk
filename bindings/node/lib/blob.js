@@ -215,7 +215,8 @@ export function decodeCharts(bytes) {
       ayanamshaOffsetDeg: column(blob, at, 3, 'f64', at.count),
       dayPart: column(blob, at, 4, 'u8', at.count),
       dayElapsed: column(blob, at, 5, 'f64', at.count),
-      aspectCount: column(blob, at, 6, 'u32', at.count),
+      pointCount: column(blob, at, 6, 'u32', at.count),
+      aspectCount: column(blob, at, 7, 'u32', at.count),
       length: at.count,
     };
   }
@@ -332,6 +333,15 @@ export function decodeCharts(bytes) {
     };
   }
   {
+    const at = section(blob, 14, 'varga_grahas');
+    out.vargaGrahas = {
+      rashi: column(blob, at, 0, 'u16', at.count),
+      part: column(blob, at, 1, 'u16', at.count),
+      sign: column(blob, at, 2, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
     const at = section(blob, 15, 'aspects');
     out.aspects = {
       from: column(blob, at, 0, 'u16', at.count),
@@ -352,11 +362,14 @@ export function decodeCharts(bytes) {
     out.drishtiTable = text(blob, at);
   }
   {
-    const at = section(blob, 14, 'varga_grahas');
-    out.vargaGrahas = {
-      rashi: column(blob, at, 0, 'u16', at.count),
-      part: column(blob, at, 1, 'u16', at.count),
+    const at = section(blob, 17, 'points');
+    out.points = {
+      point: column(blob, at, 0, 'u16', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
       sign: column(blob, at, 2, 'u16', at.count),
+      signDeg: column(blob, at, 3, 'f64', at.count),
+      nakshatraDeg: column(blob, at, 4, 'f64', at.count),
+      padaDeg: column(blob, at, 5, 'f64', at.count),
       length: at.count,
     };
   }

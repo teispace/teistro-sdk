@@ -599,6 +599,9 @@ final class FrameArea extends _Area {
 /// writes `aspects: true` (`03-design/chart-reading.md` §5).
 const int _sectionAspects = 4;
 
+/// `TS_CHART_POINTS`, the derived points.
+const int _sectionPoints = 8;
+
 /// `sdk.chart` — a chart founded at an instant and a place.
 final class ChartArea extends _Area {
   const ChartArea._(super.context);
@@ -621,6 +624,7 @@ final class ChartArea extends _Area {
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     bool aspects = false,
+    bool points = false,
   }) => foundMany(
     instants: <double>[instant],
     place: place,
@@ -628,6 +632,7 @@ final class ChartArea extends _Area {
     kind: kind,
     vargas: vargas,
     aspects: aspects,
+    points: points,
   ).at(0);
 
   /// Founds a chart at each of many instants, at one place, in one
@@ -648,6 +653,7 @@ final class ChartArea extends _Area {
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     bool aspects = false,
+    bool points = false,
   }) => decodeCharts(
     _context._guarded(
       () => _context._inner.chartFound(
@@ -662,7 +668,8 @@ final class ChartArea extends _Area {
           // a bit set and nothing here writes as one
           // (`03-design/chart-reading.md` §5): a named argument each,
           // and one more as each crosses.
-          sections: aspects ? _sectionAspects : 0,
+          sections:
+              (aspects ? _sectionAspects : 0) | (points ? _sectionPoints : 0),
           vargas: vargas,
         ),
       ),
@@ -1224,6 +1231,28 @@ final class EdgeDistance {
   final double padaDeg;
 }
 
+/// One derived point: an upagraha or a special lagna.
+final class DerivedPoint {
+  const DerivedPoint({
+    required this.point,
+    required this.longitudeDeg,
+    required this.sign,
+    required this.boundaries,
+  });
+
+  /// Which point.
+  final Point point;
+
+  /// Its longitude in the chart's zodiac, degrees.
+  final double longitudeDeg;
+
+  /// The sign it falls in.
+  final Rashi sign;
+
+  /// How near it stands to a sign, nakshatra or pada edge.
+  final EdgeDistance boundaries;
+}
+
 /// One body looking at another.
 final class Drishti {
   const Drishti({
@@ -1408,6 +1437,34 @@ final class Chart {
 
   /// The graha that rules the hora holding the instant.
   Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+
+  /// The derived points — the upagrahas and the special lagnas — or an
+  /// empty list unless `points: true` asked for them.
+  ///
+  /// Gulika and Mandi are Saturn's eighth of the day's arc, so they are
+  /// the two a chart with no arc to divide cannot have — which is why
+  /// the section is ragged.
+  List<DerivedPoint> get points {
+    final counts = batch.cast.pointCount;
+    var from = 0;
+    for (var i = 0; i < index; i += 1) {
+      from += counts[i];
+    }
+    final p = batch.points;
+    return List<DerivedPoint>.generate(counts[index], (k) {
+      final i = from + k;
+      return DerivedPoint(
+        point: Point.byId(p.point[i]),
+        longitudeDeg: p.longitudeDeg[i],
+        sign: Rashi.byId(p.sign[i]),
+        boundaries: EdgeDistance(
+          signDeg: p.signDeg[i],
+          nakshatraDeg: p.nakshatraDeg[i],
+          padaDeg: p.padaDeg[i],
+        ),
+      );
+    });
+  }
 
   /// The drishti this chart casts, strongest first among those a body
   /// casts; empty unless `aspects: true` asked for them.

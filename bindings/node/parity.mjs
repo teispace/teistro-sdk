@@ -229,6 +229,7 @@ const charts = geo.chart.foundMany({
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
   aspects: true,
+  points: true,
 });
 put('chart-varga-count', charts.vargaCount);
 put('chart-drishti-table', charts.drishtiTable);
@@ -259,6 +260,13 @@ for (const chart of charts) {
   put(`chart-${i}-vipala`, chart.timing.vipala);
   put(`chart-${i}-hora-number`, chart.timing.horaNumber);
   put(`chart-${i}-hora-lord`, chart.timing.horaLord);
+  chart.points.forEach((found, k) => {
+    put(`chart-${i}-point-${k}`, found.point);
+    put(`chart-${i}-point-${k}-lon`, found.longitudeDeg);
+    put(`chart-${i}-point-${k}-sign`, found.sign);
+    put(`chart-${i}-point-${k}-sign-edge`, found.boundaries.signDeg);
+  });
+  put(`chart-${i}-point-count`, chart.points.length);
   // **Every drishti**, because the count differs from chart to chart —
   // which is why the section is ragged — so a runner that printed only
   // the count would agree while the rows disagreed.
