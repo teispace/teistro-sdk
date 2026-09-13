@@ -153,10 +153,22 @@ extension TeimerisEngine on Engine {
     return TmDatetime.fromJson(answered['out_local']! as Map<String, Object?>);
   }
 
+  /// `tm_position_calc`.
+  TmPosition tmPositionCalc({TmPositionRequest? req}) {
+    final answered = (call('tm_position_calc', <String, Object?>{'req': req?.toJson()})) as Map<String, Object?>;
+    return TmPosition.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
   /// `tm_position_value`.
   double tmPositionValue({required double jd, required int scale, required int body, required int flags, required int field}) {
     final answered = (call('tm_position_value', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'flags': flags, 'field': field})) as Map<String, Object?>;
     return (answered['out']! as num).toDouble();
+  }
+
+  /// `tm_position_calc_many`.
+  List<TmPosition> tmPositionCalcMany({required List<TmPositionRequest> reqs}) {
+    final answered = (call('tm_position_calc_many', <String, Object?>{'reqs': reqs.map((one) => one.toJson()).toList()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmPosition.fromJson(one! as Map<String, Object?>)).toList();
   }
 
   /// `tm_position_calc_grid`.
@@ -262,6 +274,12 @@ extension TeimerisEngine on Engine {
   int tmModelCount({required int kind}) {
     final answered = (call('tm_model_count', <String, Object?>{'kind': kind})) as Map<String, Object?>;
     return (answered['return']! as num).toInt();
+  }
+
+  /// `tm_model_info`.
+  TmModelDetails tmModelInfo({required int kind, required int index}) {
+    final answered = (call('tm_model_info', <String, Object?>{'kind': kind, 'index': index})) as Map<String, Object?>;
+    return TmModelDetails.fromJson(answered['out']! as Map<String, Object?>);
   }
 
   /// `tm_set_tidal_acceleration`.
@@ -377,6 +395,18 @@ extension TeimerisEngine on Engine {
     return TmCoverage.fromJson(answered['out']! as Map<String, Object?>);
   }
 
+  /// `tm_loaded_files`.
+  List<TmLoadedFile> tmLoadedFiles() {
+    final answered = (call('tm_loaded_files', const <String, Object?>{})) as Map<String, Object?>;
+    return (answered['out_files']! as List<Object?>).map((one) => TmLoadedFile.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_last_loaded_file`.
+  TmLoadedFile tmLastLoadedFile() {
+    final answered = (call('tm_last_loaded_file', const <String, Object?>{})) as Map<String, Object?>;
+    return TmLoadedFile.fromJson(answered['out_file']! as Map<String, Object?>);
+  }
+
   /// `tm_fallback_stats_get`.
   TmFallbackStats tmFallbackStatsGet() {
     final answered = (call('tm_fallback_stats_get', const <String, Object?>{})) as Map<String, Object?>;
@@ -479,6 +509,18 @@ extension TeimerisEngine on Engine {
     return (answered['out']! as List<Object?>).map((one) => TmStar.fromJson(one! as Map<String, Object?>)).toList();
   }
 
+  /// `tm_star_query_init_sized`.
+  TmStarQuery tmStarQueryInitSized() {
+    final answered = (call('tm_star_query_init_sized', const <String, Object?>{})) as Map<String, Object?>;
+    return TmStarQuery.fromJson(answered['q']! as Map<String, Object?>);
+  }
+
+  /// `tm_star_search`.
+  List<TmStar> tmStarSearch({TmStarQuery? query}) {
+    final answered = (call('tm_star_search', <String, Object?>{'query': query?.toJson()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmStar.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_star_calc`.
   TmPosition tmStarCalc({required double jd, required int scale, required String name, required int flags, TmObserver? observer}) {
     final answered = (call('tm_star_calc', <String, Object?>{'jd': jd, 'scale': scale, 'name': name, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
@@ -495,6 +537,48 @@ extension TeimerisEngine on Engine {
   String tmEclipseTypeName({required int bit}) {
     final answered = (call('tm_eclipse_type_name', <String, Object?>{'bit': bit})) as Map<String, Object?>;
     return answered['return']! as String;
+  }
+
+  /// `tm_eclipse_request_init_sized`.
+  TmEclipseRequest tmEclipseRequestInitSized() {
+    final answered = (call('tm_eclipse_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
+    return TmEclipseRequest.fromJson(answered['req']! as Map<String, Object?>);
+  }
+
+  /// `tm_solar_eclipse_search`.
+  List<TmSolarEclipse> tmSolarEclipseSearch({TmEclipseRequest? req, required int outCapacity}) {
+    final answered = (call('tm_solar_eclipse_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmSolarEclipse.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_lunar_eclipse_search`.
+  List<TmLunarEclipse> tmLunarEclipseSearch({TmEclipseRequest? req, required int outCapacity}) {
+    final answered = (call('tm_lunar_eclipse_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmLunarEclipse.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_occultation_search`.
+  List<TmOccultation> tmOccultationSearch({TmEclipseRequest? req, required int outCapacity}) {
+    final answered = (call('tm_occultation_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmOccultation.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_solar_eclipse_search_local`.
+  List<TmSolarEclipseLocal> tmSolarEclipseSearchLocal({TmEclipseRequest? req, required int outCapacity}) {
+    final answered = (call('tm_solar_eclipse_search_local', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmSolarEclipseLocal.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_lunar_eclipse_search_local`.
+  List<TmLunarEclipseLocal> tmLunarEclipseSearchLocal({TmEclipseRequest? req, required int outCapacity}) {
+    final answered = (call('tm_lunar_eclipse_search_local', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmLunarEclipseLocal.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_occultation_search_local`.
+  List<TmOccultationLocal> tmOccultationSearchLocal({TmEclipseRequest? req, required int outCapacity}) {
+    final answered = (call('tm_occultation_search_local', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmOccultationLocal.fromJson(one! as Map<String, Object?>)).toList();
   }
 
   /// `tm_solar_eclipse_where`.
@@ -533,6 +617,18 @@ extension TeimerisEngine on Engine {
     return answered['return']! as String;
   }
 
+  /// `tm_event_request_init_sized`.
+  TmEventRequest tmEventRequestInitSized() {
+    final answered = (call('tm_event_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
+    return TmEventRequest.fromJson(answered['req']! as Map<String, Object?>);
+  }
+
+  /// `tm_event_search`.
+  List<TmEvent> tmEventSearch({TmEventRequest? req, required int outCapacity}) {
+    final answered = (call('tm_event_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmEvent.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_gauquelin_sector`.
   double tmGauquelinSector({required double jd, required int scale, required int body, required String star, required int flags, required int method, required int refraction, required int discCenter, TmObserver? observer, TmAtmosphere? atmosphere}) {
     final answered = (call('tm_gauquelin_sector', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'star': star, 'flags': flags, 'method': method, 'refraction': refraction, 'disc_center': discCenter, 'observer': observer?.toJson(), 'atmosphere': atmosphere?.toJson()})) as Map<String, Object?>;
@@ -563,6 +659,24 @@ extension TeimerisEngine on Engine {
     return TmVisibilityBest.fromJson(answered['out']! as Map<String, Object?>);
   }
 
+  /// `tm_heliacal_request_init_sized`.
+  TmHeliacalRequest tmHeliacalRequestInitSized() {
+    final answered = (call('tm_heliacal_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
+    return TmHeliacalRequest.fromJson(answered['req']! as Map<String, Object?>);
+  }
+
+  /// `tm_heliacal_search`.
+  List<TmHeliacal> tmHeliacalSearch({TmHeliacalRequest? req, required int outCapacity}) {
+    final answered = (call('tm_heliacal_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmHeliacal.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_heliacal_detail`.
+  TmHeliacalDetails tmHeliacalDetail({TmHeliacalRequest? req}) {
+    final answered = (call('tm_heliacal_detail', <String, Object?>{'req': req?.toJson()})) as Map<String, Object?>;
+    return TmHeliacalDetails.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
   /// `tm_crossing_request_init_sized`.
   TmCrossingRequest tmCrossingRequestInitSized() {
     final answered = (call('tm_crossing_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
@@ -579,6 +693,24 @@ extension TeimerisEngine on Engine {
   List<TmCrossing> tmNodeCrossingSearch({TmCrossingRequest? req, required int outCapacity}) {
     final answered = (call('tm_node_crossing_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
     return (answered['out']! as List<Object?>).map((one) => TmCrossing.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_calendar_request_init_sized`.
+  TmCalendarRequest tmCalendarRequestInitSized() {
+    final answered = (call('tm_calendar_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
+    return TmCalendarRequest.fromJson(answered['req']! as Map<String, Object?>);
+  }
+
+  /// `tm_scan_request_init_sized`.
+  TmScanRequest tmScanRequestInitSized() {
+    final answered = (call('tm_scan_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
+    return TmScanRequest.fromJson(answered['req']! as Map<String, Object?>);
+  }
+
+  /// `tm_scan_grid`.
+  ({List<TmBracket> out, int outSamples, double outJdReached}) tmScanGrid({TmScanRequest? req, required int outCapacity}) {
+    final answered = (call('tm_scan_grid', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (out: (answered['out']! as List<Object?>).map((one) => TmBracket.fromJson(one! as Map<String, Object?>)).toList(), outSamples: (answered['out_samples']! as num).toInt(), outJdReached: (answered['out_jd_reached']! as num).toDouble());
   }
 
   /// `tm_angle_normalize_deg`.
@@ -699,6 +831,12 @@ extension TeimerisEngine on Engine {
   int tmChartBlobSize({required int bodyCount, required int cuspCount, required int withCuspSpeeds, required int withAngles}) {
     final answered = (call('tm_chart_blob_size', <String, Object?>{'body_count': bodyCount, 'cusp_count': cuspCount, 'with_cusp_speeds': withCuspSpeeds, 'with_angles': withAngles})) as Map<String, Object?>;
     return (answered['return']! as num).toInt();
+  }
+
+  /// `tm_ayanamsha_info`.
+  TmAyanamshaDetails tmAyanamshaInfo({required int mode}) {
+    final answered = (call('tm_ayanamsha_info', <String, Object?>{'mode': mode})) as Map<String, Object?>;
+    return TmAyanamshaDetails.fromJson(answered['out']! as Map<String, Object?>);
   }
 
 }
@@ -827,6 +965,99 @@ final class TmPosition {
         'dist_speed': distSpeed,
         'flags_used': flagsUsed,
         'status': status,
+      };
+}
+
+/// `tm_position_request`, as the engine declares it. Every field is required.
+final class TmPositionRequest {
+  /// Every field, named.
+  const TmPositionRequest({required this.jd, required this.scale, required this.body, required this.flags, required this.observer, required this.center, required this.ayanamsha, required this.ayanamshaSet});
+
+  /// Read from the object the engine answers with.
+  factory TmPositionRequest.fromJson(Map<String, Object?> json) => TmPositionRequest(
+        jd: (json['jd']! as num).toDouble(),
+        scale: (json['scale']! as num).toInt(),
+        body: (json['body']! as num).toInt(),
+        flags: (json['flags']! as num).toInt(),
+        observer: json['observer'] == null ? null : TmObserver.fromJson(json['observer']! as Map<String, Object?>),
+        center: (json['center']! as num).toInt(),
+        ayanamsha: (json['ayanamsha']! as num).toInt(),
+        ayanamshaSet: (json['ayanamsha_set']! as num).toInt(),
+      );
+
+  /// `jd`.
+  final double jd;
+
+  /// `scale`.
+  final int scale;
+
+  /// `body`.
+  final int body;
+
+  /// `flags`.
+  final int flags;
+
+  /// `observer`.
+  final TmObserver? observer;
+
+  /// `center`.
+  final int center;
+
+  /// `ayanamsha`.
+  final int ayanamsha;
+
+  /// `ayanamsha_set`.
+  final int ayanamshaSet;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd': jd,
+        'scale': scale,
+        'body': body,
+        'flags': flags,
+        'observer': observer?.toJson(),
+        'center': center,
+        'ayanamsha': ayanamsha,
+        'ayanamsha_set': ayanamshaSet,
+      };
+}
+
+/// `tm_model_details`, as the engine declares it. Every field is required.
+final class TmModelDetails {
+  /// Every field, named.
+  const TmModelDetails({required this.value, required this.name, required this.implemented, required this.isDefaultCompatible, required this.isDefaultMax});
+
+  /// Read from the object the engine answers with.
+  factory TmModelDetails.fromJson(Map<String, Object?> json) => TmModelDetails(
+        value: (json['value']! as num).toInt(),
+        name: json['name'] == null ? null : json['name']! as String,
+        implemented: (json['implemented']! as num).toInt(),
+        isDefaultCompatible: (json['is_default_compatible']! as num).toInt(),
+        isDefaultMax: (json['is_default_max']! as num).toInt(),
+      );
+
+  /// `value`.
+  final int value;
+
+  /// `name`.
+  final String? name;
+
+  /// `implemented`.
+  final int implemented;
+
+  /// `is_default_compatible`.
+  final int isDefaultCompatible;
+
+  /// `is_default_max`.
+  final int isDefaultMax;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'value': value,
+        'name': name,
+        'implemented': implemented,
+        'is_default_compatible': isDefaultCompatible,
+        'is_default_max': isDefaultMax,
       };
 }
 
@@ -1021,6 +1252,65 @@ final class TmCoverage {
         'jd_end': jdEnd,
         'contiguous': contiguous,
         'file_count': fileCount,
+      };
+}
+
+/// `tm_loaded_file`, as the engine declares it. Every field is required.
+final class TmLoadedFile {
+  /// Every field, named.
+  const TmLoadedFile({required this.name, required this.internalName, required this.jdStart, required this.jdEnd, required this.denum, required this.version, required this.bodyCount, required this.origin, required this.crcVerified});
+
+  /// Read from the object the engine answers with.
+  factory TmLoadedFile.fromJson(Map<String, Object?> json) => TmLoadedFile(
+        name: json['name'] == null ? null : json['name']! as String,
+        internalName: json['internal_name'] == null ? null : json['internal_name']! as String,
+        jdStart: (json['jd_start']! as num).toDouble(),
+        jdEnd: (json['jd_end']! as num).toDouble(),
+        denum: (json['denum']! as num).toInt(),
+        version: (json['version']! as num).toInt(),
+        bodyCount: (json['body_count']! as num).toInt(),
+        origin: (json['origin']! as num).toInt(),
+        crcVerified: (json['crc_verified']! as num).toInt(),
+      );
+
+  /// `name`.
+  final String? name;
+
+  /// `internal_name`.
+  final String? internalName;
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `jd_end`.
+  final double jdEnd;
+
+  /// `denum`.
+  final int denum;
+
+  /// `version`.
+  final int version;
+
+  /// `body_count`.
+  final int bodyCount;
+
+  /// `origin`.
+  final int origin;
+
+  /// `crc_verified`.
+  final int crcVerified;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'name': name,
+        'internal_name': internalName,
+        'jd_start': jdStart,
+        'jd_end': jdEnd,
+        'denum': denum,
+        'version': version,
+        'body_count': bodyCount,
+        'origin': origin,
+        'crc_verified': crcVerified,
       };
 }
 
@@ -1373,6 +1663,55 @@ final class TmStar {
       };
 }
 
+/// `tm_star_query`, as the engine declares it. Every field is required.
+final class TmStarQuery {
+  /// Every field, named.
+  const TmStarQuery({required this.useMagnitude, required this.magnitudeMin, required this.magnitudeMax, required this.raDeg, required this.decDeg, required this.radiusDeg, required this.nameContains});
+
+  /// Read from the object the engine answers with.
+  factory TmStarQuery.fromJson(Map<String, Object?> json) => TmStarQuery(
+        useMagnitude: (json['use_magnitude']! as num).toInt(),
+        magnitudeMin: (json['magnitude_min']! as num).toDouble(),
+        magnitudeMax: (json['magnitude_max']! as num).toDouble(),
+        raDeg: (json['ra_deg']! as num).toDouble(),
+        decDeg: (json['dec_deg']! as num).toDouble(),
+        radiusDeg: (json['radius_deg']! as num).toDouble(),
+        nameContains: json['name_contains'] == null ? null : json['name_contains']! as String,
+      );
+
+  /// `use_magnitude`.
+  final int useMagnitude;
+
+  /// `magnitude_min`.
+  final double magnitudeMin;
+
+  /// `magnitude_max`.
+  final double magnitudeMax;
+
+  /// `ra_deg`.
+  final double raDeg;
+
+  /// `dec_deg`.
+  final double decDeg;
+
+  /// `radius_deg`.
+  final double radiusDeg;
+
+  /// `name_contains`.
+  final String? nameContains;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'use_magnitude': useMagnitude,
+        'magnitude_min': magnitudeMin,
+        'magnitude_max': magnitudeMax,
+        'ra_deg': raDeg,
+        'dec_deg': decDeg,
+        'radius_deg': radiusDeg,
+        'name_contains': nameContains,
+      };
+}
+
 /// `tm_eclipse_attributes`, as the engine declares it. Every field is required.
 final class TmEclipseAttributes {
   /// Every field, named.
@@ -1562,6 +1901,597 @@ final class TmEclipseLocation {
         'axis_distance_km': axisDistanceKm,
         'umbra_fundamental_km': umbraFundamentalKm,
         'penumbra_fundamental_km': penumbraFundamentalKm,
+      };
+}
+
+/// `tm_solar_eclipse`, as the engine declares it. Every field is required.
+final class TmSolarEclipse {
+  /// Every field, named.
+  const TmSolarEclipse({required this.type, required this.maximum, required this.localNoon, required this.begin, required this.end, required this.totalBegin, required this.totalEnd, required this.centerBegin, required this.centerEnd, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmSolarEclipse.fromJson(Map<String, Object?> json) => TmSolarEclipse(
+        type: (json['type']! as num).toInt(),
+        maximum: (json['maximum']! as num).toDouble(),
+        localNoon: (json['local_noon']! as num).toDouble(),
+        begin: (json['begin']! as num).toDouble(),
+        end: (json['end']! as num).toDouble(),
+        totalBegin: (json['total_begin']! as num).toDouble(),
+        totalEnd: (json['total_end']! as num).toDouble(),
+        centerBegin: (json['center_begin']! as num).toDouble(),
+        centerEnd: (json['center_end']! as num).toDouble(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `type`.
+  final int type;
+
+  /// `maximum`.
+  final double maximum;
+
+  /// `local_noon`.
+  final double localNoon;
+
+  /// `begin`.
+  final double begin;
+
+  /// `end`.
+  final double end;
+
+  /// `total_begin`.
+  final double totalBegin;
+
+  /// `total_end`.
+  final double totalEnd;
+
+  /// `center_begin`.
+  final double centerBegin;
+
+  /// `center_end`.
+  final double centerEnd;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'type': type,
+        'maximum': maximum,
+        'local_noon': localNoon,
+        'begin': begin,
+        'end': end,
+        'total_begin': totalBegin,
+        'total_end': totalEnd,
+        'center_begin': centerBegin,
+        'center_end': centerEnd,
+        'status': status,
+      };
+}
+
+/// `tm_lunar_eclipse`, as the engine declares it. Every field is required.
+final class TmLunarEclipse {
+  /// Every field, named.
+  const TmLunarEclipse({required this.type, required this.maximum, required this.partialBegin, required this.partialEnd, required this.totalBegin, required this.totalEnd, required this.penumbralBegin, required this.penumbralEnd, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmLunarEclipse.fromJson(Map<String, Object?> json) => TmLunarEclipse(
+        type: (json['type']! as num).toInt(),
+        maximum: (json['maximum']! as num).toDouble(),
+        partialBegin: (json['partial_begin']! as num).toDouble(),
+        partialEnd: (json['partial_end']! as num).toDouble(),
+        totalBegin: (json['total_begin']! as num).toDouble(),
+        totalEnd: (json['total_end']! as num).toDouble(),
+        penumbralBegin: (json['penumbral_begin']! as num).toDouble(),
+        penumbralEnd: (json['penumbral_end']! as num).toDouble(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `type`.
+  final int type;
+
+  /// `maximum`.
+  final double maximum;
+
+  /// `partial_begin`.
+  final double partialBegin;
+
+  /// `partial_end`.
+  final double partialEnd;
+
+  /// `total_begin`.
+  final double totalBegin;
+
+  /// `total_end`.
+  final double totalEnd;
+
+  /// `penumbral_begin`.
+  final double penumbralBegin;
+
+  /// `penumbral_end`.
+  final double penumbralEnd;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'type': type,
+        'maximum': maximum,
+        'partial_begin': partialBegin,
+        'partial_end': partialEnd,
+        'total_begin': totalBegin,
+        'total_end': totalEnd,
+        'penumbral_begin': penumbralBegin,
+        'penumbral_end': penumbralEnd,
+        'status': status,
+      };
+}
+
+/// `tm_occultation`, as the engine declares it. Every field is required.
+final class TmOccultation {
+  /// Every field, named.
+  const TmOccultation({required this.type, required this.maximum, required this.localNoon, required this.begin, required this.end, required this.totalBegin, required this.totalEnd, required this.centerBegin, required this.centerEnd, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmOccultation.fromJson(Map<String, Object?> json) => TmOccultation(
+        type: (json['type']! as num).toInt(),
+        maximum: (json['maximum']! as num).toDouble(),
+        localNoon: (json['local_noon']! as num).toDouble(),
+        begin: (json['begin']! as num).toDouble(),
+        end: (json['end']! as num).toDouble(),
+        totalBegin: (json['total_begin']! as num).toDouble(),
+        totalEnd: (json['total_end']! as num).toDouble(),
+        centerBegin: (json['center_begin']! as num).toDouble(),
+        centerEnd: (json['center_end']! as num).toDouble(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `type`.
+  final int type;
+
+  /// `maximum`.
+  final double maximum;
+
+  /// `local_noon`.
+  final double localNoon;
+
+  /// `begin`.
+  final double begin;
+
+  /// `end`.
+  final double end;
+
+  /// `total_begin`.
+  final double totalBegin;
+
+  /// `total_end`.
+  final double totalEnd;
+
+  /// `center_begin`.
+  final double centerBegin;
+
+  /// `center_end`.
+  final double centerEnd;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'type': type,
+        'maximum': maximum,
+        'local_noon': localNoon,
+        'begin': begin,
+        'end': end,
+        'total_begin': totalBegin,
+        'total_end': totalEnd,
+        'center_begin': centerBegin,
+        'center_end': centerEnd,
+        'status': status,
+      };
+}
+
+/// `tm_solar_eclipse_local`, as the engine declares it. Every field is required.
+final class TmSolarEclipseLocal {
+  /// Every field, named.
+  const TmSolarEclipseLocal({required this.type, required this.phasesVisible, required this.visible, required this.maximum, required this.firstContact, required this.secondContact, required this.thirdContact, required this.fourthContact, required this.sunrise, required this.sunset, required this.attributes, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmSolarEclipseLocal.fromJson(Map<String, Object?> json) => TmSolarEclipseLocal(
+        type: (json['type']! as num).toInt(),
+        phasesVisible: (json['phases_visible']! as num).toInt(),
+        visible: (json['visible']! as num).toInt(),
+        maximum: (json['maximum']! as num).toDouble(),
+        firstContact: (json['first_contact']! as num).toDouble(),
+        secondContact: (json['second_contact']! as num).toDouble(),
+        thirdContact: (json['third_contact']! as num).toDouble(),
+        fourthContact: (json['fourth_contact']! as num).toDouble(),
+        sunrise: (json['sunrise']! as num).toDouble(),
+        sunset: (json['sunset']! as num).toDouble(),
+        attributes: TmEclipseAttributes.fromJson(json['attributes']! as Map<String, Object?>),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `type`.
+  final int type;
+
+  /// `phases_visible`.
+  final int phasesVisible;
+
+  /// `visible`.
+  final int visible;
+
+  /// `maximum`.
+  final double maximum;
+
+  /// `first_contact`.
+  final double firstContact;
+
+  /// `second_contact`.
+  final double secondContact;
+
+  /// `third_contact`.
+  final double thirdContact;
+
+  /// `fourth_contact`.
+  final double fourthContact;
+
+  /// `sunrise`.
+  final double sunrise;
+
+  /// `sunset`.
+  final double sunset;
+
+  /// `attributes`.
+  final TmEclipseAttributes attributes;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'type': type,
+        'phases_visible': phasesVisible,
+        'visible': visible,
+        'maximum': maximum,
+        'first_contact': firstContact,
+        'second_contact': secondContact,
+        'third_contact': thirdContact,
+        'fourth_contact': fourthContact,
+        'sunrise': sunrise,
+        'sunset': sunset,
+        'attributes': attributes.toJson(),
+        'status': status,
+      };
+}
+
+/// `tm_lunar_eclipse_local`, as the engine declares it. Every field is required.
+final class TmLunarEclipseLocal {
+  /// Every field, named.
+  const TmLunarEclipseLocal({required this.type, required this.phasesVisible, required this.visible, required this.maximum, required this.partialBegin, required this.partialEnd, required this.totalBegin, required this.totalEnd, required this.penumbralBegin, required this.penumbralEnd, required this.moonrise, required this.moonset, required this.attributes, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmLunarEclipseLocal.fromJson(Map<String, Object?> json) => TmLunarEclipseLocal(
+        type: (json['type']! as num).toInt(),
+        phasesVisible: (json['phases_visible']! as num).toInt(),
+        visible: (json['visible']! as num).toInt(),
+        maximum: (json['maximum']! as num).toDouble(),
+        partialBegin: (json['partial_begin']! as num).toDouble(),
+        partialEnd: (json['partial_end']! as num).toDouble(),
+        totalBegin: (json['total_begin']! as num).toDouble(),
+        totalEnd: (json['total_end']! as num).toDouble(),
+        penumbralBegin: (json['penumbral_begin']! as num).toDouble(),
+        penumbralEnd: (json['penumbral_end']! as num).toDouble(),
+        moonrise: (json['moonrise']! as num).toDouble(),
+        moonset: (json['moonset']! as num).toDouble(),
+        attributes: TmLunarEclipseAttributes.fromJson(json['attributes']! as Map<String, Object?>),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `type`.
+  final int type;
+
+  /// `phases_visible`.
+  final int phasesVisible;
+
+  /// `visible`.
+  final int visible;
+
+  /// `maximum`.
+  final double maximum;
+
+  /// `partial_begin`.
+  final double partialBegin;
+
+  /// `partial_end`.
+  final double partialEnd;
+
+  /// `total_begin`.
+  final double totalBegin;
+
+  /// `total_end`.
+  final double totalEnd;
+
+  /// `penumbral_begin`.
+  final double penumbralBegin;
+
+  /// `penumbral_end`.
+  final double penumbralEnd;
+
+  /// `moonrise`.
+  final double moonrise;
+
+  /// `moonset`.
+  final double moonset;
+
+  /// `attributes`.
+  final TmLunarEclipseAttributes attributes;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'type': type,
+        'phases_visible': phasesVisible,
+        'visible': visible,
+        'maximum': maximum,
+        'partial_begin': partialBegin,
+        'partial_end': partialEnd,
+        'total_begin': totalBegin,
+        'total_end': totalEnd,
+        'penumbral_begin': penumbralBegin,
+        'penumbral_end': penumbralEnd,
+        'moonrise': moonrise,
+        'moonset': moonset,
+        'attributes': attributes.toJson(),
+        'status': status,
+      };
+}
+
+/// `tm_occultation_local`, as the engine declares it. Every field is required.
+final class TmOccultationLocal {
+  /// Every field, named.
+  const TmOccultationLocal({required this.type, required this.phasesVisible, required this.daylight, required this.visible, required this.maximum, required this.firstContact, required this.secondContact, required this.thirdContact, required this.fourthContact, required this.bodyRise, required this.bodySet, required this.attributes, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmOccultationLocal.fromJson(Map<String, Object?> json) => TmOccultationLocal(
+        type: (json['type']! as num).toInt(),
+        phasesVisible: (json['phases_visible']! as num).toInt(),
+        daylight: (json['daylight']! as num).toInt(),
+        visible: (json['visible']! as num).toInt(),
+        maximum: (json['maximum']! as num).toDouble(),
+        firstContact: (json['first_contact']! as num).toDouble(),
+        secondContact: (json['second_contact']! as num).toDouble(),
+        thirdContact: (json['third_contact']! as num).toDouble(),
+        fourthContact: (json['fourth_contact']! as num).toDouble(),
+        bodyRise: (json['body_rise']! as num).toDouble(),
+        bodySet: (json['body_set']! as num).toDouble(),
+        attributes: TmEclipseAttributes.fromJson(json['attributes']! as Map<String, Object?>),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `type`.
+  final int type;
+
+  /// `phases_visible`.
+  final int phasesVisible;
+
+  /// `daylight`.
+  final int daylight;
+
+  /// `visible`.
+  final int visible;
+
+  /// `maximum`.
+  final double maximum;
+
+  /// `first_contact`.
+  final double firstContact;
+
+  /// `second_contact`.
+  final double secondContact;
+
+  /// `third_contact`.
+  final double thirdContact;
+
+  /// `fourth_contact`.
+  final double fourthContact;
+
+  /// `body_rise`.
+  final double bodyRise;
+
+  /// `body_set`.
+  final double bodySet;
+
+  /// `attributes`.
+  final TmEclipseAttributes attributes;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'type': type,
+        'phases_visible': phasesVisible,
+        'daylight': daylight,
+        'visible': visible,
+        'maximum': maximum,
+        'first_contact': firstContact,
+        'second_contact': secondContact,
+        'third_contact': thirdContact,
+        'fourth_contact': fourthContact,
+        'body_rise': bodyRise,
+        'body_set': bodySet,
+        'attributes': attributes.toJson(),
+        'status': status,
+      };
+}
+
+/// `tm_eclipse_request`, as the engine declares it. Every field is required.
+final class TmEclipseRequest {
+  /// Every field, named.
+  const TmEclipseRequest({required this.jdStart, required this.scale, required this.flags, required this.want, required this.backward, required this.observer, required this.body, required this.star, required this.oneTry, required this.jdEnd});
+
+  /// Read from the object the engine answers with.
+  factory TmEclipseRequest.fromJson(Map<String, Object?> json) => TmEclipseRequest(
+        jdStart: (json['jd_start']! as num).toDouble(),
+        scale: (json['scale']! as num).toInt(),
+        flags: (json['flags']! as num).toInt(),
+        want: (json['want']! as num).toInt(),
+        backward: (json['backward']! as num).toInt(),
+        observer: json['observer'] == null ? null : TmObserver.fromJson(json['observer']! as Map<String, Object?>),
+        body: (json['body']! as num).toInt(),
+        star: json['star'] == null ? null : json['star']! as String,
+        oneTry: (json['one_try']! as num).toInt(),
+        jdEnd: (json['jd_end']! as num).toDouble(),
+      );
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `scale`.
+  final int scale;
+
+  /// `flags`.
+  final int flags;
+
+  /// `want`.
+  final int want;
+
+  /// `backward`.
+  final int backward;
+
+  /// `observer`.
+  final TmObserver? observer;
+
+  /// `body`.
+  final int body;
+
+  /// `star`.
+  final String? star;
+
+  /// `one_try`.
+  final int oneTry;
+
+  /// `jd_end`.
+  final double jdEnd;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_start': jdStart,
+        'scale': scale,
+        'flags': flags,
+        'want': want,
+        'backward': backward,
+        'observer': observer?.toJson(),
+        'body': body,
+        'star': star,
+        'one_try': oneTry,
+        'jd_end': jdEnd,
+      };
+}
+
+/// `tm_event_request`, as the engine declares it. Every field is required.
+final class TmEventRequest {
+  /// Every field, named.
+  const TmEventRequest({required this.jdStart, required this.scale, required this.body, required this.star, required this.flags, required this.kind, required this.options, required this.observer, required this.atmosphere, required this.horizonHeightDeg, required this.jdEnd});
+
+  /// Read from the object the engine answers with.
+  factory TmEventRequest.fromJson(Map<String, Object?> json) => TmEventRequest(
+        jdStart: (json['jd_start']! as num).toDouble(),
+        scale: (json['scale']! as num).toInt(),
+        body: (json['body']! as num).toInt(),
+        star: json['star'] == null ? null : json['star']! as String,
+        flags: (json['flags']! as num).toInt(),
+        kind: (json['kind']! as num).toInt(),
+        options: (json['options']! as num).toInt(),
+        observer: json['observer'] == null ? null : TmObserver.fromJson(json['observer']! as Map<String, Object?>),
+        atmosphere: json['atmosphere'] == null ? null : TmAtmosphere.fromJson(json['atmosphere']! as Map<String, Object?>),
+        horizonHeightDeg: (json['horizon_height_deg']! as num).toDouble(),
+        jdEnd: (json['jd_end']! as num).toDouble(),
+      );
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `scale`.
+  final int scale;
+
+  /// `body`.
+  final int body;
+
+  /// `star`.
+  final String? star;
+
+  /// `flags`.
+  final int flags;
+
+  /// `kind`.
+  final int kind;
+
+  /// `options`.
+  final int options;
+
+  /// `observer`.
+  final TmObserver? observer;
+
+  /// `atmosphere`.
+  final TmAtmosphere? atmosphere;
+
+  /// `horizon_height_deg`.
+  final double horizonHeightDeg;
+
+  /// `jd_end`.
+  final double jdEnd;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_start': jdStart,
+        'scale': scale,
+        'body': body,
+        'star': star,
+        'flags': flags,
+        'kind': kind,
+        'options': options,
+        'observer': observer?.toJson(),
+        'atmosphere': atmosphere?.toJson(),
+        'horizon_height_deg': horizonHeightDeg,
+        'jd_end': jdEnd,
+      };
+}
+
+/// `tm_event`, as the engine declares it. Every field is required.
+final class TmEvent {
+  /// Every field, named.
+  const TmEvent({required this.jd, required this.found, required this.fastMethod, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmEvent.fromJson(Map<String, Object?> json) => TmEvent(
+        jd: (json['jd']! as num).toDouble(),
+        found: (json['found']! as num).toInt(),
+        fastMethod: (json['fast_method']! as num).toInt(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `jd`.
+  final double jd;
+
+  /// `found`.
+  final int found;
+
+  /// `fast_method`.
+  final int fastMethod;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd': jd,
+        'found': found,
+        'fast_method': fastMethod,
+        'status': status,
       };
 }
 
@@ -1756,6 +2686,293 @@ final class TmVisibilityBest {
       };
 }
 
+/// `tm_heliacal_request`, as the engine declares it. Every field is required.
+final class TmHeliacalRequest {
+  /// Every field, named.
+  const TmHeliacalRequest({required this.jdStart, required this.scale, required this.body, required this.star, required this.flags, required this.kind, required this.options, required this.observer, required this.atmosphere, required this.eye, required this.jdEnd});
+
+  /// Read from the object the engine answers with.
+  factory TmHeliacalRequest.fromJson(Map<String, Object?> json) => TmHeliacalRequest(
+        jdStart: (json['jd_start']! as num).toDouble(),
+        scale: (json['scale']! as num).toInt(),
+        body: (json['body']! as num).toInt(),
+        star: json['star'] == null ? null : json['star']! as String,
+        flags: (json['flags']! as num).toInt(),
+        kind: (json['kind']! as num).toInt(),
+        options: (json['options']! as num).toInt(),
+        observer: json['observer'] == null ? null : TmObserver.fromJson(json['observer']! as Map<String, Object?>),
+        atmosphere: json['atmosphere'] == null ? null : TmVisibilityAtmosphere.fromJson(json['atmosphere']! as Map<String, Object?>),
+        eye: json['eye'] == null ? null : TmObserverEye.fromJson(json['eye']! as Map<String, Object?>),
+        jdEnd: (json['jd_end']! as num).toDouble(),
+      );
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `scale`.
+  final int scale;
+
+  /// `body`.
+  final int body;
+
+  /// `star`.
+  final String? star;
+
+  /// `flags`.
+  final int flags;
+
+  /// `kind`.
+  final int kind;
+
+  /// `options`.
+  final int options;
+
+  /// `observer`.
+  final TmObserver? observer;
+
+  /// `atmosphere`.
+  final TmVisibilityAtmosphere? atmosphere;
+
+  /// `eye`.
+  final TmObserverEye? eye;
+
+  /// `jd_end`.
+  final double jdEnd;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_start': jdStart,
+        'scale': scale,
+        'body': body,
+        'star': star,
+        'flags': flags,
+        'kind': kind,
+        'options': options,
+        'observer': observer?.toJson(),
+        'atmosphere': atmosphere?.toJson(),
+        'eye': eye?.toJson(),
+        'jd_end': jdEnd,
+      };
+}
+
+/// `tm_heliacal`, as the engine declares it. Every field is required.
+final class TmHeliacal {
+  /// Every field, named.
+  const TmHeliacal({required this.begin, required this.optimum, required this.end, required this.uncertain, required this.found, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmHeliacal.fromJson(Map<String, Object?> json) => TmHeliacal(
+        begin: (json['begin']! as num).toDouble(),
+        optimum: (json['optimum']! as num).toDouble(),
+        end: (json['end']! as num).toDouble(),
+        uncertain: (json['uncertain']! as num).toInt(),
+        found: (json['found']! as num).toInt(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `begin`.
+  final double begin;
+
+  /// `optimum`.
+  final double optimum;
+
+  /// `end`.
+  final double end;
+
+  /// `uncertain`.
+  final int uncertain;
+
+  /// `found`.
+  final int found;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'begin': begin,
+        'optimum': optimum,
+        'end': end,
+        'uncertain': uncertain,
+        'found': found,
+        'status': status,
+      };
+}
+
+/// `tm_heliacal_details`, as the engine declares it. Every field is required.
+final class TmHeliacalDetails {
+  /// Every field, named.
+  const TmHeliacalDetails({required this.objectAltitude, required this.objectApparentAltitude, required this.objectGeocentricAltitude, required this.objectAzimuth, required this.sunAltitude, required this.sunAzimuth, required this.parallax, required this.magnitude, required this.arcusVisionisTopocentric, required this.arcusVisionis, required this.azimuthDifference, required this.arcusLucis, required this.arcusVisionisMin, required this.extinction, required this.hasVisibleFirst, required this.visibleFirst, required this.hasVisibleBest, required this.visibleBest, required this.hasVisibleLast, required this.visibleLast, required this.visibleDuration, required this.hasVisibleBestYallop, required this.visibleBestYallop, required this.objectRiseset, required this.sunRiseset, required this.lag, required this.moonCrescentWidth, required this.moonCrescentLength, required this.yallopQ, required this.yallopCriterion, required this.elongation, required this.illuminationPct});
+
+  /// Read from the object the engine answers with.
+  factory TmHeliacalDetails.fromJson(Map<String, Object?> json) => TmHeliacalDetails(
+        objectAltitude: (json['object_altitude']! as num).toDouble(),
+        objectApparentAltitude: (json['object_apparent_altitude']! as num).toDouble(),
+        objectGeocentricAltitude: (json['object_geocentric_altitude']! as num).toDouble(),
+        objectAzimuth: (json['object_azimuth']! as num).toDouble(),
+        sunAltitude: (json['sun_altitude']! as num).toDouble(),
+        sunAzimuth: (json['sun_azimuth']! as num).toDouble(),
+        parallax: (json['parallax']! as num).toDouble(),
+        magnitude: (json['magnitude']! as num).toDouble(),
+        arcusVisionisTopocentric: (json['arcus_visionis_topocentric']! as num).toDouble(),
+        arcusVisionis: (json['arcus_visionis']! as num).toDouble(),
+        azimuthDifference: (json['azimuth_difference']! as num).toDouble(),
+        arcusLucis: (json['arcus_lucis']! as num).toDouble(),
+        arcusVisionisMin: (json['arcus_visionis_min']! as num).toDouble(),
+        extinction: (json['extinction']! as num).toDouble(),
+        hasVisibleFirst: (json['has_visible_first']! as num).toInt(),
+        visibleFirst: (json['visible_first']! as num).toDouble(),
+        hasVisibleBest: (json['has_visible_best']! as num).toInt(),
+        visibleBest: (json['visible_best']! as num).toDouble(),
+        hasVisibleLast: (json['has_visible_last']! as num).toInt(),
+        visibleLast: (json['visible_last']! as num).toDouble(),
+        visibleDuration: (json['visible_duration']! as num).toDouble(),
+        hasVisibleBestYallop: (json['has_visible_best_yallop']! as num).toInt(),
+        visibleBestYallop: (json['visible_best_yallop']! as num).toDouble(),
+        objectRiseset: (json['object_riseset']! as num).toDouble(),
+        sunRiseset: (json['sun_riseset']! as num).toDouble(),
+        lag: (json['lag']! as num).toDouble(),
+        moonCrescentWidth: (json['moon_crescent_width']! as num).toDouble(),
+        moonCrescentLength: (json['moon_crescent_length']! as num).toDouble(),
+        yallopQ: (json['yallop_q']! as num).toDouble(),
+        yallopCriterion: (json['yallop_criterion']! as num).toInt(),
+        elongation: (json['elongation']! as num).toDouble(),
+        illuminationPct: (json['illumination_pct']! as num).toDouble(),
+      );
+
+  /// `object_altitude`.
+  final double objectAltitude;
+
+  /// `object_apparent_altitude`.
+  final double objectApparentAltitude;
+
+  /// `object_geocentric_altitude`.
+  final double objectGeocentricAltitude;
+
+  /// `object_azimuth`.
+  final double objectAzimuth;
+
+  /// `sun_altitude`.
+  final double sunAltitude;
+
+  /// `sun_azimuth`.
+  final double sunAzimuth;
+
+  /// `parallax`.
+  final double parallax;
+
+  /// `magnitude`.
+  final double magnitude;
+
+  /// `arcus_visionis_topocentric`.
+  final double arcusVisionisTopocentric;
+
+  /// `arcus_visionis`.
+  final double arcusVisionis;
+
+  /// `azimuth_difference`.
+  final double azimuthDifference;
+
+  /// `arcus_lucis`.
+  final double arcusLucis;
+
+  /// `arcus_visionis_min`.
+  final double arcusVisionisMin;
+
+  /// `extinction`.
+  final double extinction;
+
+  /// `has_visible_first`.
+  final int hasVisibleFirst;
+
+  /// `visible_first`.
+  final double visibleFirst;
+
+  /// `has_visible_best`.
+  final int hasVisibleBest;
+
+  /// `visible_best`.
+  final double visibleBest;
+
+  /// `has_visible_last`.
+  final int hasVisibleLast;
+
+  /// `visible_last`.
+  final double visibleLast;
+
+  /// `visible_duration`.
+  final double visibleDuration;
+
+  /// `has_visible_best_yallop`.
+  final int hasVisibleBestYallop;
+
+  /// `visible_best_yallop`.
+  final double visibleBestYallop;
+
+  /// `object_riseset`.
+  final double objectRiseset;
+
+  /// `sun_riseset`.
+  final double sunRiseset;
+
+  /// `lag`.
+  final double lag;
+
+  /// `moon_crescent_width`.
+  final double moonCrescentWidth;
+
+  /// `moon_crescent_length`.
+  final double moonCrescentLength;
+
+  /// `yallop_q`.
+  final double yallopQ;
+
+  /// `yallop_criterion`.
+  final int yallopCriterion;
+
+  /// `elongation`.
+  final double elongation;
+
+  /// `illumination_pct`.
+  final double illuminationPct;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'object_altitude': objectAltitude,
+        'object_apparent_altitude': objectApparentAltitude,
+        'object_geocentric_altitude': objectGeocentricAltitude,
+        'object_azimuth': objectAzimuth,
+        'sun_altitude': sunAltitude,
+        'sun_azimuth': sunAzimuth,
+        'parallax': parallax,
+        'magnitude': magnitude,
+        'arcus_visionis_topocentric': arcusVisionisTopocentric,
+        'arcus_visionis': arcusVisionis,
+        'azimuth_difference': azimuthDifference,
+        'arcus_lucis': arcusLucis,
+        'arcus_visionis_min': arcusVisionisMin,
+        'extinction': extinction,
+        'has_visible_first': hasVisibleFirst,
+        'visible_first': visibleFirst,
+        'has_visible_best': hasVisibleBest,
+        'visible_best': visibleBest,
+        'has_visible_last': hasVisibleLast,
+        'visible_last': visibleLast,
+        'visible_duration': visibleDuration,
+        'has_visible_best_yallop': hasVisibleBestYallop,
+        'visible_best_yallop': visibleBestYallop,
+        'object_riseset': objectRiseset,
+        'sun_riseset': sunRiseset,
+        'lag': lag,
+        'moon_crescent_width': moonCrescentWidth,
+        'moon_crescent_length': moonCrescentLength,
+        'yallop_q': yallopQ,
+        'yallop_criterion': yallopCriterion,
+        'elongation': elongation,
+        'illumination_pct': illuminationPct,
+      };
+}
+
 /// `tm_crossing_request`, as the engine declares it. Every field is required.
 final class TmCrossingRequest {
   /// Every field, named.
@@ -1864,6 +3081,173 @@ final class TmCrossing {
       };
 }
 
+/// `tm_calendar_request`, as the engine declares it. Every field is required.
+final class TmCalendarRequest {
+  /// Every field, named.
+  const TmCalendarRequest({required this.jdStart, required this.dayCount, required this.anchor, required this.observer, required this.anchorBody, required this.flags, required this.options, required this.atmosphere, required this.horizonHeightDeg});
+
+  /// Read from the object the engine answers with.
+  factory TmCalendarRequest.fromJson(Map<String, Object?> json) => TmCalendarRequest(
+        jdStart: (json['jd_start']! as num).toDouble(),
+        dayCount: (json['day_count']! as num).toInt(),
+        anchor: (json['anchor']! as num).toInt(),
+        observer: json['observer'] == null ? null : TmObserver.fromJson(json['observer']! as Map<String, Object?>),
+        anchorBody: (json['anchor_body']! as num).toInt(),
+        flags: (json['flags']! as num).toInt(),
+        options: (json['options']! as num).toInt(),
+        atmosphere: json['atmosphere'] == null ? null : TmAtmosphere.fromJson(json['atmosphere']! as Map<String, Object?>),
+        horizonHeightDeg: (json['horizon_height_deg']! as num).toDouble(),
+      );
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `day_count`.
+  final int dayCount;
+
+  /// `anchor`.
+  final int anchor;
+
+  /// `observer`.
+  final TmObserver? observer;
+
+  /// `anchor_body`.
+  final int anchorBody;
+
+  /// `flags`.
+  final int flags;
+
+  /// `options`.
+  final int options;
+
+  /// `atmosphere`.
+  final TmAtmosphere? atmosphere;
+
+  /// `horizon_height_deg`.
+  final double horizonHeightDeg;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_start': jdStart,
+        'day_count': dayCount,
+        'anchor': anchor,
+        'observer': observer?.toJson(),
+        'anchor_body': anchorBody,
+        'flags': flags,
+        'options': options,
+        'atmosphere': atmosphere?.toJson(),
+        'horizon_height_deg': horizonHeightDeg,
+      };
+}
+
+/// `tm_scan_request`, as the engine declares it. Every field is required.
+final class TmScanRequest {
+  /// Every field, named.
+  const TmScanRequest({required this.jdStart, required this.jdEnd, required this.stepDays, required this.scale, required this.body, required this.bodyB, required this.quantity, required this.direction, required this.threshold, required this.flags, required this.observer});
+
+  /// Read from the object the engine answers with.
+  factory TmScanRequest.fromJson(Map<String, Object?> json) => TmScanRequest(
+        jdStart: (json['jd_start']! as num).toDouble(),
+        jdEnd: (json['jd_end']! as num).toDouble(),
+        stepDays: (json['step_days']! as num).toDouble(),
+        scale: (json['scale']! as num).toInt(),
+        body: (json['body']! as num).toInt(),
+        bodyB: (json['body_b']! as num).toInt(),
+        quantity: (json['quantity']! as num).toInt(),
+        direction: (json['direction']! as num).toInt(),
+        threshold: (json['threshold']! as num).toDouble(),
+        flags: (json['flags']! as num).toInt(),
+        observer: json['observer'] == null ? null : TmObserver.fromJson(json['observer']! as Map<String, Object?>),
+      );
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `jd_end`.
+  final double jdEnd;
+
+  /// `step_days`.
+  final double stepDays;
+
+  /// `scale`.
+  final int scale;
+
+  /// `body`.
+  final int body;
+
+  /// `body_b`.
+  final int bodyB;
+
+  /// `quantity`.
+  final int quantity;
+
+  /// `direction`.
+  final int direction;
+
+  /// `threshold`.
+  final double threshold;
+
+  /// `flags`.
+  final int flags;
+
+  /// `observer`.
+  final TmObserver? observer;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_start': jdStart,
+        'jd_end': jdEnd,
+        'step_days': stepDays,
+        'scale': scale,
+        'body': body,
+        'body_b': bodyB,
+        'quantity': quantity,
+        'direction': direction,
+        'threshold': threshold,
+        'flags': flags,
+        'observer': observer?.toJson(),
+      };
+}
+
+/// `tm_bracket`, as the engine declares it. Every field is required.
+final class TmBracket {
+  /// Every field, named.
+  const TmBracket({required this.jdLo, required this.jdHi, required this.valueLo, required this.valueHi, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmBracket.fromJson(Map<String, Object?> json) => TmBracket(
+        jdLo: (json['jd_lo']! as num).toDouble(),
+        jdHi: (json['jd_hi']! as num).toDouble(),
+        valueLo: (json['value_lo']! as num).toDouble(),
+        valueHi: (json['value_hi']! as num).toDouble(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `jd_lo`.
+  final double jdLo;
+
+  /// `jd_hi`.
+  final double jdHi;
+
+  /// `value_lo`.
+  final double valueLo;
+
+  /// `value_hi`.
+  final double valueHi;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_lo': jdLo,
+        'jd_hi': jdHi,
+        'value_lo': valueLo,
+        'value_hi': valueHi,
+        'status': status,
+      };
+}
+
 /// `tm_angle_parts`, as the engine declares it. Every field is required.
 final class TmAngleParts {
   /// Every field, named.
@@ -1915,5 +3299,54 @@ final class TmAngleParts {
         'zodiac_sign': zodiacSign,
         'nakshatra': nakshatra,
         'pada': pada,
+      };
+}
+
+/// `tm_ayanamsha_details`, as the engine declares it. Every field is required.
+final class TmAyanamshaDetails {
+  /// Every field, named.
+  const TmAyanamshaDetails({required this.name, required this.t0, required this.ayanT0, required this.t0IsUt, required this.needsEphemeris, required this.isFrame, required this.fittedPrecession});
+
+  /// Read from the object the engine answers with.
+  factory TmAyanamshaDetails.fromJson(Map<String, Object?> json) => TmAyanamshaDetails(
+        name: json['name'] == null ? null : json['name']! as String,
+        t0: (json['t0']! as num).toDouble(),
+        ayanT0: (json['ayan_t0']! as num).toDouble(),
+        t0IsUt: (json['t0_is_ut']! as num).toInt(),
+        needsEphemeris: (json['needs_ephemeris']! as num).toInt(),
+        isFrame: (json['is_frame']! as num).toInt(),
+        fittedPrecession: (json['fitted_precession']! as num).toInt(),
+      );
+
+  /// `name`.
+  final String? name;
+
+  /// `t0`.
+  final double t0;
+
+  /// `ayan_t0`.
+  final double ayanT0;
+
+  /// `t0_is_ut`.
+  final int t0IsUt;
+
+  /// `needs_ephemeris`.
+  final int needsEphemeris;
+
+  /// `is_frame`.
+  final int isFrame;
+
+  /// `fitted_precession`.
+  final int fittedPrecession;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'name': name,
+        't0': t0,
+        'ayan_t0': ayanT0,
+        't0_is_ut': t0IsUt,
+        'needs_ephemeris': needsEphemeris,
+        'is_frame': isFrame,
+        'fitted_precession': fittedPrecession,
       };
 }

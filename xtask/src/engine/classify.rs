@@ -3,7 +3,7 @@
 
 use core::fmt;
 
-use super::idl::{Extent, Function, Made, Param, TypeRef, Vocabulary};
+use super::idl::{Extent, Field, Function, Made, Param, TypeRef, Vocabulary};
 
 /// What the SDK owns and a caller must not take from it.
 ///
@@ -334,11 +334,6 @@ pub(crate) fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standin
 /// promise that learning the easy one released it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Blocker {
-    /// A struct carrying a string, which must outlive the call going in
-    /// and be copied coming out.
-    StringStruct,
-    /// A struct pointing at another: a nested object that may be absent.
-    PointerStruct,
     /// An output array whose length the description does not state in
     /// terms of the call's own inputs.
     UnsizedOutput,
@@ -358,9 +353,7 @@ pub(crate) enum Blocker {
 impl Blocker {
     /// Every blocker, in rank order, which is the order the page lists
     /// them in.
-    pub(crate) const ALL: [Self; 8] = [
-        Self::StringStruct,
-        Self::PointerStruct,
+    pub(crate) const ALL: [Self; 6] = [
         Self::UnsizedOutput,
         Self::ParallelOutput,
         Self::HandleOut,
@@ -380,8 +373,6 @@ impl Blocker {
     /// What the page's table calls it.
     pub(crate) fn wording(self) -> &'static str {
         match self {
-            Self::StringStruct => "a struct carrying a string",
-            Self::PointerStruct => "a struct pointing at another",
             Self::UnsizedOutput => "an output whose length it cannot compute",
             Self::ParallelOutput => "an optional output parallel to another",
             Self::HandleOut => "a handle it creates",
@@ -391,12 +382,12 @@ impl Blocker {
         }
     }
 
-    /// What stands in the way of a struct, if anything does.
+    /// What stands in the way of a struct, if anything does: only a field
+    /// no JSON object describes. Numbers, strings and pointers to other
+    /// structs all cross.
     const fn of_struct(made: Made) -> Option<Self> {
         match made {
-            Made::Plain => None,
-            Made::Strings => Some(Self::StringStruct),
-            Made::Pointers => Some(Self::PointerStruct),
+            Made::Plain | Made::Strings | Made::Pointers => None,
             Made::Other => Some(Self::OtherStruct),
         }
     }
@@ -452,12 +443,35 @@ pub(crate) struct Declared<'a> {
     pub(crate) base: &'a str,
     /// Whether the value is an array of `base`.
     pub(crate) list: bool,
+    /// Whether the value may be null: a struct field that is a pointer.
+    pub(crate) nullable: bool,
 }
 
 impl<'a> Declared<'a> {
     /// One value of a type.
     pub(crate) const fn one(base: &'a str) -> Self {
-        Self { base, list: false }
+        Self {
+            base,
+            list: false,
+            nullable: false,
+        }
+    }
+
+    /// A struct field's type: a `const char *` is a string and a pointer
+    /// to a struct is that struct, both of which may be null; anything
+    /// else is itself.
+    pub(crate) fn field(field: &'a Field) -> Self {
+        match (field.pointer, field.base.as_str()) {
+            (1, "char") => Self {
+                nullable: true,
+                ..Self::one("string")
+            },
+            (1, base) => Self {
+                nullable: true,
+                ..Self::one(base)
+            },
+            _ => Self::one(&field.base),
+        }
     }
 }
 
@@ -504,8 +518,8 @@ pub(crate) fn declared_type(param: &Param) -> Declared<'_> {
     match param.role.as_str() {
         "string_in" | "string_out" => Declared::one("string"),
         "array_in" | "array_out" => Declared {
-            base: &param.type_ref.base,
             list: true,
+            ..Declared::one(&param.type_ref.base)
         },
         _ => Declared::one(&param.type_ref.base),
     }

@@ -577,3 +577,141 @@ fn an_earlier_failure_s_message_is_not_repeated_as_this_one_s() {
     assert!(!said.contains("no star named"), "a stale message: {said}");
     assert!(said.contains("recorded no message"), "{said}");
 }
+
+/// A string the engine writes into a struct it fills comes back as a
+/// string, copied before anything else can move it.
+#[test]
+fn a_string_inside_an_answer_arrives() {
+    let provider = provider();
+    let answer = called(
+        &provider,
+        "tm_model_info",
+        &serde_json::json!({ "kind": 0, "index": 0 }),
+    );
+    let name = answer["out"]["name"].as_str().expect("a name");
+    assert!(!name.is_empty(), "{answer}");
+    assert!(answer["out"].get("struct_size").is_none(), "{answer}");
+}
+
+/// A request pointing at an observer crosses as a nested object, and
+/// null says "no observer"; a pointer left out is refused by its path,
+/// because a key forgotten is a mistake and null is a choice.
+#[test]
+fn a_pointer_inside_a_request_is_an_object_or_null() {
+    let provider = provider();
+    let request = |flags: u32, observer: Value| {
+        serde_json::json!({ "req": {
+            "jd": 2_451_545.0, "scale": 1, "body": 1, "flags": flags, "observer": observer,
+            "center": 0, "ayanamsha": 0, "ayanamsha_set": 0,
+        }})
+    };
+    let geocentric = called(&provider, "tm_position_calc", &request(0, Value::Null));
+    // TM_TOPOCENTRIC, from Kathmandu: the Moon moves by up to its
+    // parallax, about a degree, so the two must differ.
+    let topocentric = called(
+        &provider,
+        "tm_position_calc",
+        &request(
+            1 << 5,
+            serde_json::json!({ "longitude_deg": 85.324, "latitude_deg": 27.7172, "altitude_m": 1400.0 }),
+        ),
+    );
+    let lon = |answer: &Value| answer["out"]["lon"].as_f64().expect("a longitude");
+    let apart = (lon(&geocentric) - lon(&topocentric)).abs();
+    assert!(apart > 0.01 && apart < 2.0, "{apart}: {geocentric} {topocentric}");
+
+    let mut forgotten = request(0, Value::Null);
+    forgotten["req"]
+        .as_object_mut()
+        .expect("an object")
+        .remove("observer");
+    let refused = provider
+        .native_call("tm_position_calc", &forgotten.to_string())
+        .expect_err("a pointer field left out is refused");
+    assert!(
+        refused.to_string().contains("`req.observer` is required; pass null"),
+        "{refused}"
+    );
+}
+
+/// A string inside a request reaches the engine, and a default request
+/// with null pointers round-trips: asked for, changed, passed back.
+#[test]
+fn a_default_request_round_trips_with_a_string_in_it() {
+    let provider = provider();
+    let mut query = called(&provider, "tm_star_query_init_sized", &serde_json::json!({}))["q"].clone();
+    assert!(query["name_contains"].is_null(), "no name by default: {query}");
+    query["name_contains"] = "Aldeb".into();
+    let found = called(&provider, "tm_star_search", &serde_json::json!({ "query": query }));
+    let stars = found["out"].as_array().expect("an array");
+    assert!(!stars.is_empty(), "Aldebaran contains Aldeb: {found}");
+}
+
+/// An array of requests each pointing at its own observer: every
+/// pointer stays valid until the call returns, however many there are.
+#[test]
+fn an_array_of_requests_keeps_every_pointer_alive() {
+    let provider = provider();
+    let reqs: Vec<Value> = (0..40)
+        .map(|at| {
+            serde_json::json!({
+                "jd": 2_451_545.0, "scale": 1, "body": 1, "flags": 1 << 5,
+                "observer": { "longitude_deg": f64::from(at) * 9.0, "latitude_deg": 0.0, "altitude_m": 0.0 },
+                "center": 0, "ayanamsha": 0, "ayanamsha_set": 0,
+            })
+        })
+        .collect();
+    let answer = called(&provider, "tm_position_calc_many", &serde_json::json!({ "reqs": reqs }));
+    let out = answer["out"].as_array().expect("an array");
+    assert_eq!(out.len(), 40);
+    for (at, position) in out.iter().enumerate() {
+        assert_eq!(position["status"], 0, "element {at}: {position}");
+    }
+    let first = out[0]["lon"].as_f64().expect("a longitude");
+    assert!(
+        out.iter().any(|position| (position["lon"].as_f64().unwrap_or(first) - first).abs() > 0.1),
+        "forty observers round the equator see the Moon in different places"
+    );
+}
+
+/// A batch with one bad element answers every element, each with its own
+/// status, instead of discarding the ones that succeeded.
+#[test]
+fn a_batch_with_one_bad_element_answers_the_rest() {
+    let provider = provider();
+    let request = |body: i32| {
+        serde_json::json!({
+            "jd": 2_451_545.0, "scale": 1, "body": body, "flags": 0, "observer": null,
+            "center": 0, "ayanamsha": 0, "ayanamsha_set": 0,
+        })
+    };
+    let answer = called(
+        &provider,
+        "tm_position_calc_many",
+        &serde_json::json!({ "reqs": [request(0), request(9999), request(1)] }),
+    );
+    let out = answer["out"].as_array().expect("an array");
+    assert_eq!(out.len(), 3, "{answer}");
+    assert_eq!(out[0]["status"], 0, "{answer}");
+    assert_ne!(out[1]["status"], 0, "no body is numbered 9999: {answer}");
+    assert_eq!(out[2]["status"], 0, "{answer}");
+    assert!(out[2]["lon"].as_f64().is_some_and(|lon| lon > 0.0), "{answer}");
+}
+
+/// A batch that succeeds never hands a caller the mark the marshaller
+/// used to see which elements were written.
+#[test]
+fn a_successful_batch_carries_no_mark() {
+    let provider = provider();
+    let position = serde_json::json!({
+        "lon": 10.0, "lat": 1.0, "dist": 1.0, "lon_speed": 0.0, "lat_speed": 0.0,
+        "dist_speed": 0.0, "flags_used": 0, "status": 0,
+    });
+    let answer = called(
+        &provider,
+        "tm_coord_rotate",
+        &serde_json::json!({ "direction": 0, "obliquity_deg": 23.44, "positions": [position] }),
+    );
+    let status = &answer["out"][0]["status"];
+    assert_eq!(status, 0, "{answer}");
+}

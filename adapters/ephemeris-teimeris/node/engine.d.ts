@@ -44,6 +44,27 @@ export interface TmPosition {
   readonly status: number;
 }
 
+/** `tm_position_request`, as the engine declares it. Every field is required. */
+export interface TmPositionRequest {
+  readonly jd: number;
+  readonly scale: number;
+  readonly body: number;
+  readonly flags: number;
+  readonly observer: TmObserver | null;
+  readonly center: number;
+  readonly ayanamsha: number;
+  readonly ayanamshaSet: number;
+}
+
+/** `tm_model_details`, as the engine declares it. Every field is required. */
+export interface TmModelDetails {
+  readonly value: number;
+  readonly name: string | null;
+  readonly implemented: number;
+  readonly isDefaultCompatible: number;
+  readonly isDefaultMax: number;
+}
+
 /** `tm_atmosphere`, as the engine declares it. Every field is required. */
 export interface TmAtmosphere {
   readonly pressureMbar: number;
@@ -88,6 +109,19 @@ export interface TmCoverage {
   readonly jdEnd: number;
   readonly contiguous: number;
   readonly fileCount: number;
+}
+
+/** `tm_loaded_file`, as the engine declares it. Every field is required. */
+export interface TmLoadedFile {
+  readonly name: string | null;
+  readonly internalName: string | null;
+  readonly jdStart: number;
+  readonly jdEnd: number;
+  readonly denum: number;
+  readonly version: number;
+  readonly bodyCount: number;
+  readonly origin: number;
+  readonly crcVerified: number;
 }
 
 /** `tm_fallback_stats`, as the engine declares it. Every field is required. */
@@ -167,6 +201,17 @@ export interface TmStar {
   readonly parallaxArcsec: number;
 }
 
+/** `tm_star_query`, as the engine declares it. Every field is required. */
+export interface TmStarQuery {
+  readonly useMagnitude: number;
+  readonly magnitudeMin: number;
+  readonly magnitudeMax: number;
+  readonly raDeg: number;
+  readonly decDeg: number;
+  readonly radiusDeg: number;
+  readonly nameContains: string | null;
+}
+
 /** `tm_eclipse_attributes`, as the engine declares it. Every field is required. */
 export interface TmEclipseAttributes {
   readonly magnitude: number;
@@ -207,6 +252,135 @@ export interface TmEclipseLocation {
   readonly axisDistanceKm: number;
   readonly umbraFundamentalKm: number;
   readonly penumbraFundamentalKm: number;
+}
+
+/** `tm_solar_eclipse`, as the engine declares it. Every field is required. */
+export interface TmSolarEclipse {
+  readonly type: number;
+  readonly maximum: number;
+  readonly localNoon: number;
+  readonly begin: number;
+  readonly end: number;
+  readonly totalBegin: number;
+  readonly totalEnd: number;
+  readonly centerBegin: number;
+  readonly centerEnd: number;
+  readonly status: number;
+}
+
+/** `tm_lunar_eclipse`, as the engine declares it. Every field is required. */
+export interface TmLunarEclipse {
+  readonly type: number;
+  readonly maximum: number;
+  readonly partialBegin: number;
+  readonly partialEnd: number;
+  readonly totalBegin: number;
+  readonly totalEnd: number;
+  readonly penumbralBegin: number;
+  readonly penumbralEnd: number;
+  readonly status: number;
+}
+
+/** `tm_occultation`, as the engine declares it. Every field is required. */
+export interface TmOccultation {
+  readonly type: number;
+  readonly maximum: number;
+  readonly localNoon: number;
+  readonly begin: number;
+  readonly end: number;
+  readonly totalBegin: number;
+  readonly totalEnd: number;
+  readonly centerBegin: number;
+  readonly centerEnd: number;
+  readonly status: number;
+}
+
+/** `tm_solar_eclipse_local`, as the engine declares it. Every field is required. */
+export interface TmSolarEclipseLocal {
+  readonly type: number;
+  readonly phasesVisible: number;
+  readonly visible: number;
+  readonly maximum: number;
+  readonly firstContact: number;
+  readonly secondContact: number;
+  readonly thirdContact: number;
+  readonly fourthContact: number;
+  readonly sunrise: number;
+  readonly sunset: number;
+  readonly attributes: TmEclipseAttributes;
+  readonly status: number;
+}
+
+/** `tm_lunar_eclipse_local`, as the engine declares it. Every field is required. */
+export interface TmLunarEclipseLocal {
+  readonly type: number;
+  readonly phasesVisible: number;
+  readonly visible: number;
+  readonly maximum: number;
+  readonly partialBegin: number;
+  readonly partialEnd: number;
+  readonly totalBegin: number;
+  readonly totalEnd: number;
+  readonly penumbralBegin: number;
+  readonly penumbralEnd: number;
+  readonly moonrise: number;
+  readonly moonset: number;
+  readonly attributes: TmLunarEclipseAttributes;
+  readonly status: number;
+}
+
+/** `tm_occultation_local`, as the engine declares it. Every field is required. */
+export interface TmOccultationLocal {
+  readonly type: number;
+  readonly phasesVisible: number;
+  readonly daylight: number;
+  readonly visible: number;
+  readonly maximum: number;
+  readonly firstContact: number;
+  readonly secondContact: number;
+  readonly thirdContact: number;
+  readonly fourthContact: number;
+  readonly bodyRise: number;
+  readonly bodySet: number;
+  readonly attributes: TmEclipseAttributes;
+  readonly status: number;
+}
+
+/** `tm_eclipse_request`, as the engine declares it. Every field is required. */
+export interface TmEclipseRequest {
+  readonly jdStart: number;
+  readonly scale: number;
+  readonly flags: number;
+  readonly want: number;
+  readonly backward: number;
+  readonly observer: TmObserver | null;
+  readonly body: number;
+  readonly star: string | null;
+  readonly oneTry: number;
+  readonly jdEnd: number;
+}
+
+/** `tm_event_request`, as the engine declares it. Every field is required. */
+export interface TmEventRequest {
+  readonly jdStart: number;
+  readonly scale: number;
+  readonly body: number;
+  readonly star: string | null;
+  readonly flags: number;
+  readonly kind: number;
+  readonly options: number;
+  readonly observer: TmObserver | null;
+  readonly atmosphere: TmAtmosphere | null;
+  readonly horizonHeightDeg: number;
+  readonly jdEnd: number;
+}
+
+/** `tm_event`, as the engine declares it. Every field is required. */
+export interface TmEvent {
+  readonly jd: number;
+  readonly found: number;
+  readonly fastMethod: number;
+  readonly status: number;
 }
 
 /** `tm_visibility_atmosphere`, as the engine declares it. Every field is required. */
@@ -252,6 +426,67 @@ export interface TmVisibilityBest {
   readonly sunAltitude: number;
 }
 
+/** `tm_heliacal_request`, as the engine declares it. Every field is required. */
+export interface TmHeliacalRequest {
+  readonly jdStart: number;
+  readonly scale: number;
+  readonly body: number;
+  readonly star: string | null;
+  readonly flags: number;
+  readonly kind: number;
+  readonly options: number;
+  readonly observer: TmObserver | null;
+  readonly atmosphere: TmVisibilityAtmosphere | null;
+  readonly eye: TmObserverEye | null;
+  readonly jdEnd: number;
+}
+
+/** `tm_heliacal`, as the engine declares it. Every field is required. */
+export interface TmHeliacal {
+  readonly begin: number;
+  readonly optimum: number;
+  readonly end: number;
+  readonly uncertain: number;
+  readonly found: number;
+  readonly status: number;
+}
+
+/** `tm_heliacal_details`, as the engine declares it. Every field is required. */
+export interface TmHeliacalDetails {
+  readonly objectAltitude: number;
+  readonly objectApparentAltitude: number;
+  readonly objectGeocentricAltitude: number;
+  readonly objectAzimuth: number;
+  readonly sunAltitude: number;
+  readonly sunAzimuth: number;
+  readonly parallax: number;
+  readonly magnitude: number;
+  readonly arcusVisionisTopocentric: number;
+  readonly arcusVisionis: number;
+  readonly azimuthDifference: number;
+  readonly arcusLucis: number;
+  readonly arcusVisionisMin: number;
+  readonly extinction: number;
+  readonly hasVisibleFirst: number;
+  readonly visibleFirst: number;
+  readonly hasVisibleBest: number;
+  readonly visibleBest: number;
+  readonly hasVisibleLast: number;
+  readonly visibleLast: number;
+  readonly visibleDuration: number;
+  readonly hasVisibleBestYallop: number;
+  readonly visibleBestYallop: number;
+  readonly objectRiseset: number;
+  readonly sunRiseset: number;
+  readonly lag: number;
+  readonly moonCrescentWidth: number;
+  readonly moonCrescentLength: number;
+  readonly yallopQ: number;
+  readonly yallopCriterion: number;
+  readonly elongation: number;
+  readonly illuminationPct: number;
+}
+
 /** `tm_crossing_request`, as the engine declares it. Every field is required. */
 export interface TmCrossingRequest {
   readonly jdStart: number;
@@ -276,6 +511,43 @@ export interface TmCrossing {
   readonly status: number;
 }
 
+/** `tm_calendar_request`, as the engine declares it. Every field is required. */
+export interface TmCalendarRequest {
+  readonly jdStart: number;
+  readonly dayCount: number;
+  readonly anchor: number;
+  readonly observer: TmObserver | null;
+  readonly anchorBody: number;
+  readonly flags: number;
+  readonly options: number;
+  readonly atmosphere: TmAtmosphere | null;
+  readonly horizonHeightDeg: number;
+}
+
+/** `tm_scan_request`, as the engine declares it. Every field is required. */
+export interface TmScanRequest {
+  readonly jdStart: number;
+  readonly jdEnd: number;
+  readonly stepDays: number;
+  readonly scale: number;
+  readonly body: number;
+  readonly bodyB: number;
+  readonly quantity: number;
+  readonly direction: number;
+  readonly threshold: number;
+  readonly flags: number;
+  readonly observer: TmObserver | null;
+}
+
+/** `tm_bracket`, as the engine declares it. Every field is required. */
+export interface TmBracket {
+  readonly jdLo: number;
+  readonly jdHi: number;
+  readonly valueLo: number;
+  readonly valueHi: number;
+  readonly status: number;
+}
+
 /** `tm_angle_parts`, as the engine declares it. Every field is required. */
 export interface TmAngleParts {
   readonly negative: number;
@@ -286,6 +558,17 @@ export interface TmAngleParts {
   readonly zodiacSign: number;
   readonly nakshatra: number;
   readonly pada: number;
+}
+
+/** `tm_ayanamsha_details`, as the engine declares it. Every field is required. */
+export interface TmAyanamshaDetails {
+  readonly name: string | null;
+  readonly t0: number;
+  readonly ayanT0: number;
+  readonly t0IsUt: number;
+  readonly needsEphemeris: number;
+  readonly isFrame: number;
+  readonly fittedPrecession: number;
 }
 
 /** The engine's own operations, typed. */
@@ -379,9 +662,17 @@ export declare class TeimerisEngine {
    */
   tmUtcToLocal(args: { readonly utc?: TmDatetime | null; readonly utcOffsetHours: number; readonly cal: number }): TmDatetime;
   /**
+   * `tm_position_calc`.
+   */
+  tmPositionCalc(args: { readonly req?: TmPositionRequest | null }): TmPosition;
+  /**
    * `tm_position_value`.
    */
   tmPositionValue(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly field: number }): number;
+  /**
+   * `tm_position_calc_many`.
+   */
+  tmPositionCalcMany(args: { readonly reqs: readonly TmPositionRequest[] }): readonly TmPosition[];
   /**
    * `tm_position_calc_grid`.
    */
@@ -456,6 +747,10 @@ export declare class TeimerisEngine {
    * `tm_model_count`.
    */
   tmModelCount(args: { readonly kind: number }): number;
+  /**
+   * `tm_model_info`.
+   */
+  tmModelInfo(args: { readonly kind: number; readonly index: number }): TmModelDetails;
   /**
    * `tm_set_tidal_acceleration`.
    *
@@ -539,6 +834,14 @@ export declare class TeimerisEngine {
    */
   tmBodyCoverage(args: { readonly body: number }): TmCoverage;
   /**
+   * `tm_loaded_files`.
+   */
+  tmLoadedFiles(): readonly TmLoadedFile[];
+  /**
+   * `tm_last_loaded_file`.
+   */
+  tmLastLoadedFile(): TmLoadedFile;
+  /**
    * `tm_fallback_stats_get`.
    */
   tmFallbackStatsGet(): TmFallbackStats;
@@ -609,6 +912,14 @@ export declare class TeimerisEngine {
    */
   tmStarFindAll(args: { readonly name: string }): readonly TmStar[];
   /**
+   * `tm_star_query_init_sized`.
+   */
+  tmStarQueryInitSized(): TmStarQuery;
+  /**
+   * `tm_star_search`.
+   */
+  tmStarSearch(args: { readonly query?: TmStarQuery | null }): readonly TmStar[];
+  /**
    * `tm_star_calc`.
    */
   tmStarCalc(args: { readonly jd: number; readonly scale: number; readonly name: string; readonly flags: number; readonly observer?: TmObserver | null }): TmPosition;
@@ -620,6 +931,34 @@ export declare class TeimerisEngine {
    * `tm_eclipse_type_name`.
    */
   tmEclipseTypeName(args: { readonly bit: number }): string;
+  /**
+   * `tm_eclipse_request_init_sized`.
+   */
+  tmEclipseRequestInitSized(): TmEclipseRequest;
+  /**
+   * `tm_solar_eclipse_search`.
+   */
+  tmSolarEclipseSearch(args: { readonly req?: TmEclipseRequest | null; readonly outCapacity: number }): readonly TmSolarEclipse[];
+  /**
+   * `tm_lunar_eclipse_search`.
+   */
+  tmLunarEclipseSearch(args: { readonly req?: TmEclipseRequest | null; readonly outCapacity: number }): readonly TmLunarEclipse[];
+  /**
+   * `tm_occultation_search`.
+   */
+  tmOccultationSearch(args: { readonly req?: TmEclipseRequest | null; readonly outCapacity: number }): readonly TmOccultation[];
+  /**
+   * `tm_solar_eclipse_search_local`.
+   */
+  tmSolarEclipseSearchLocal(args: { readonly req?: TmEclipseRequest | null; readonly outCapacity: number }): readonly TmSolarEclipseLocal[];
+  /**
+   * `tm_lunar_eclipse_search_local`.
+   */
+  tmLunarEclipseSearchLocal(args: { readonly req?: TmEclipseRequest | null; readonly outCapacity: number }): readonly TmLunarEclipseLocal[];
+  /**
+   * `tm_occultation_search_local`.
+   */
+  tmOccultationSearchLocal(args: { readonly req?: TmEclipseRequest | null; readonly outCapacity: number }): readonly TmOccultationLocal[];
   /**
    * `tm_solar_eclipse_where`.
    */
@@ -645,6 +984,14 @@ export declare class TeimerisEngine {
    */
   tmEventKindName(args: { readonly kind: number }): string;
   /**
+   * `tm_event_request_init_sized`.
+   */
+  tmEventRequestInitSized(): TmEventRequest;
+  /**
+   * `tm_event_search`.
+   */
+  tmEventSearch(args: { readonly req?: TmEventRequest | null; readonly outCapacity: number }): readonly TmEvent[];
+  /**
    * `tm_gauquelin_sector`.
    */
   tmGauquelinSector(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly star: string; readonly flags: number; readonly method: number; readonly refraction: number; readonly discCenter: number; readonly observer?: TmObserver | null; readonly atmosphere?: TmAtmosphere | null }): number;
@@ -665,6 +1012,18 @@ export declare class TeimerisEngine {
    */
   tmVisibilityBestAltitude(args: { readonly jd: number; readonly scale: number; readonly flags: number; readonly observer?: TmObserver | null; readonly atmosphere?: TmVisibilityAtmosphere | null; readonly eye?: TmObserverEye | null; readonly magnitude: number; readonly objectAzimuthDeg: number; readonly sunAzimuthDeg: number; readonly moonAltitudeDeg: number; readonly moonAzimuthDeg: number }): TmVisibilityBest;
   /**
+   * `tm_heliacal_request_init_sized`.
+   */
+  tmHeliacalRequestInitSized(): TmHeliacalRequest;
+  /**
+   * `tm_heliacal_search`.
+   */
+  tmHeliacalSearch(args: { readonly req?: TmHeliacalRequest | null; readonly outCapacity: number }): readonly TmHeliacal[];
+  /**
+   * `tm_heliacal_detail`.
+   */
+  tmHeliacalDetail(args: { readonly req?: TmHeliacalRequest | null }): TmHeliacalDetails;
+  /**
    * `tm_crossing_request_init_sized`.
    */
   tmCrossingRequestInitSized(): TmCrossingRequest;
@@ -676,6 +1035,18 @@ export declare class TeimerisEngine {
    * `tm_node_crossing_search`.
    */
   tmNodeCrossingSearch(args: { readonly req?: TmCrossingRequest | null; readonly outCapacity: number }): readonly TmCrossing[];
+  /**
+   * `tm_calendar_request_init_sized`.
+   */
+  tmCalendarRequestInitSized(): TmCalendarRequest;
+  /**
+   * `tm_scan_request_init_sized`.
+   */
+  tmScanRequestInitSized(): TmScanRequest;
+  /**
+   * `tm_scan_grid`.
+   */
+  tmScanGrid(args: { readonly req?: TmScanRequest | null; readonly outCapacity: number }): { readonly out: readonly TmBracket[]; readonly outSamples: number; readonly outJdReached: number };
   /**
    * `tm_angle_normalize_deg`.
    */
@@ -756,6 +1127,10 @@ export declare class TeimerisEngine {
    * `tm_chart_blob_size`.
    */
   tmChartBlobSize(args: { readonly bodyCount: number; readonly cuspCount: number; readonly withCuspSpeeds: number; readonly withAngles: number }): number;
+  /**
+   * `tm_ayanamsha_info`.
+   */
+  tmAyanamshaInfo(args: { readonly mode: number }): TmAyanamshaDetails;
 }
 
 /** The engine's own operations, typed. Pass `sdk.engine`. */

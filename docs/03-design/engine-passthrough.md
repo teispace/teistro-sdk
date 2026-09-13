@@ -122,6 +122,43 @@ habit that caught the drishti section's shared count. One struct in the
 tranche nests at all (`tm_nodes_apsides`, four `tm_position`s), so the
 assertion is cheap and the day it fires it will be the only warning.
 
+### A string or a pointer inside a struct
+
+> **A `const char *` field is a string or `null`; a pointer to a struct
+> is that struct as a nested object, or `null`. Both are required — `null`
+> is how "none" is said, and a key left out is still refused by its
+> path.**
+
+Required-and-nullable, not omittable, for the reason rule 2 gives every
+field: C has no absent field, so a missing key is nearly always a
+mistake — a caller who forgot `observer` should be told
+`req.observer is required; pass null for none` rather than handed a
+geocentric answer to a topocentric question. The defaults a caller asks
+for (`tm_star_query_init_sized` and the rest) come back with every
+pointer already `null`, so the usual path — ask for the defaults, change
+two fields, pass it back — never spells one.
+
+**Going in, what a field points at must outlive the call and must not
+move.** An arm whose arguments point at anything binds one `Keep` first,
+and the struct's reader puts each string and each pointed-at struct into
+it. `Keep` releases every allocation into a raw pointer at once
+(`CString::into_raw`, `Box::into_raw`) and reclaims each exactly once
+when the arm returns: a pointer taken from a `Box` or a `CString` is
+invalidated when its owner moves, and pushing onto a `Vec` of them moves
+every element. A struct that holds neither is read without a `Keep`, so
+the common case carries no arena it does not use. An array of requests
+each pointing at its own observer shares the one `Keep`, and a test holds
+forty of them alive through one call.
+
+**Coming out, a string field is copied at once**, because it points into
+the engine's context; a pointer field is followed, and `null` stays
+`null` rather than becoming a struct of zeros.
+
+A field named for a Rust keyword — `tm_solar_eclipse.type` — is spelled
+`r#type` in the generated code, from the Rust list the SDK's other
+emitters' reserved words already live beside
+(`teistro_idl::emit::reserved::rust_ident`).
+
 ## 4. How an array crosses
 
 > **An array crosses as a JSON array of whatever its element crosses
@@ -185,16 +222,35 @@ The count an output is cut to is not reported beside it: it is the
 array's length. A count that is not an output's — `tm_scan_grid`'s
 `out_samples` — is still an answer.
 
-### What it does not do
+### A batch answers the elements that succeeded
 
-A batch whose engine status is not `OK` is refused whole, as a scalar
-call is. The engine's batches keep computing after an element fails and
-record each element's own status, so this discards the elements that
-succeeded; answering them with the call's status beside them is the
-right shape, and it is not built because a status that means "the
-capacity was too small" arrives the same way and fills nothing. Telling
-the two apart needs the engine to say which statuses are per element,
-which it does not yet (§7).
+The engine's batches and searches keep computing after an element
+fails, record each element's own status, and return the first failure as
+the call's. Refusing the whole call on that status would throw away every
+element that succeeded — a dead end for a thousand-instant batch with one
+epoch out of range.
+
+But a status that means "nothing was filled" — a null request, an
+allocation that failed — arrives the same way, and the engine does not
+say which is which. So the marshaller **proves** it instead of being told:
+
+1. Before the call, every element's `status` is set to a mark no engine
+   function writes (`i32::MIN`; the engine's statuses are 0 to −8).
+2. After a refusal, if every element (up to the count, for a search) has
+   been written, the call answers them — each carrying its own status —
+   and the refusal is forgiven. If any element is still marked, or there
+   are none, the refusal stands.
+3. After a success, an element still marked is one the engine had no
+   status to give — a rotation copies a position rather than computing it
+   — and a call that succeeded succeeded for it, so it reads `0`. The mark
+   never reaches a caller.
+
+An output is marked when its element holds a `status` of `tm_status`.
+That is read from the fields rather than listed, unlike an extent,
+because nothing rests on it being right: the marks are checked, and a
+wrong guess costs a refusal, never a wrong answer. Nineteen callable
+functions settle this way; a batch of plain numbers, which has nowhere to
+record an element's status, is still refused whole.
 
 ### A refusal in the engine's own words
 
@@ -252,9 +308,9 @@ exact because the queue groups a function by its hardest blocker.
 |---|---:|---|
 | before | 62 | |
 | plain structs | 95 | §3 |
-| **arrays** | **112** | §4 |
-| a struct carrying a string | 118 | a `CString` that outlives the call |
-| a struct pointing at another | 135 | a nullable nested object |
+| arrays | 112 | §4 |
+| a struct carrying a string | 118 | §3, one step with the next |
+| **a struct pointing at another** | **135** | §3 |
 | an output sized by another call, and a parallel output | 139 | `tm_house_cusp_count()`, `req.day_count`; an optional twin |
 
 The last ten are genuinely different: three carry opaque bytes, four a
@@ -287,10 +343,17 @@ easiest.
   same values its scalar twin does, an array of structs round-trips and
   a bad element is refused by index, a grid is bodies-by-epochs long and
   body-major, an output the engine counts is gathered, and a search
-  answers exactly as many as asked.
+  answers exactly as many as asked; a string inside an answer arrives, an
+  observer pointer changes the Moon by its parallax and a forgotten one
+  is refused by path, a default request round-trips with a string set in
+  it, forty requests keep forty pointers alive, a batch with one bad body
+  answers the other two, and a successful batch carries no mark; and a
+  refusal carries the engine's message while an earlier failure's message
+  is never repeated.
 - The helpers' unit tests, for what the real engine never reaches: a
   gather that must ask twice and one whose answer grows, room past the
-  bound, and a product that overflows.
+  bound, a product that overflows, a `Keep` whose first pointers survive
+  a thousand later ones, and a batch settled in each of its outcomes.
 - The façades' consumer files (`typecheck/consumer.ts`,
   `typecheck/consumer.py`, `example/consumer.dart`) call a struct both
   ways and leave an optional one out, under `tsc`, `mypy --strict` and
@@ -301,11 +364,12 @@ easiest.
 
 ## 8. Open questions
 
-- **A batch's per-element statuses** (§4). Answering the elements that
-  succeeded beside the call's status needs the engine to say which of its
-  statuses are per element and which mean nothing was filled.
-- **A struct pointing at another** (§6) has to say what a `null` *field*
-  means, where rule 5 settled a null *argument*.
+- **An output sized by another call** (§6): the house cusps are as long as
+  `tm_house_cusp_count()` of the requested system, and the calendar grid
+  as long as a field of its request. Both are expressible — an extent that
+  names a function, or a field — and neither is yet.
+- **The engine's error record** (D3) is fixed in the engine only once its
+  123 null-check prologues record their own failures.
 
 ADR-0030's rule that what proves universal is promoted into the port
 applies to all of it.

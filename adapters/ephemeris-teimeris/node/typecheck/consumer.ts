@@ -8,7 +8,7 @@
 // adapter's platform binary, because a type is not a call.
 
 import { Context } from '@teistro/sdk';
-import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosition } from '../index.js';
+import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosition, type TmStar } from '../index.js';
 
 // The descriptor is what an `ephemeris` chain takes.
 const sdk = new Context({
@@ -47,6 +47,17 @@ const grid: readonly TmPosition[] = typed.tmPositionCalcGrid({
 });
 const defaults: readonly number[] = typed.tmChartDefaultBodies();
 
+// A struct that points at another takes it as a nested object, or null;
+// a batch answers each element with its own status.
+const moon: TmPosition = typed.tmPositionCalc({
+  req: {
+    jd: 2451545, scale: 1, body: 1, flags: 0, center: 0, ayanamsha: 0, ayanamshaSet: 0,
+    observer: { longitudeDeg: 85.324, latitudeDeg: 27.7172, altitudeM: 1400 },
+  },
+});
+const query = typed.tmStarQueryInitSized();
+const stars: readonly TmStar[] = typed.tmStarSearch({ query: { ...query, nameContains: 'Aldeb' } });
+
 // And nothing comes back as nothing.
 const nothing: void = typed.tmFallbackStatsReset();
 
@@ -55,4 +66,4 @@ const packaged: string = platformPackage();
 
 sdk.dispose();
 
-export { name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, nothing, where, packaged };
+export { name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, moon, stars, nothing, where, packaged };

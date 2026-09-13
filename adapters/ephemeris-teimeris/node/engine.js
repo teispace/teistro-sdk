@@ -31,6 +31,18 @@ const readTmPosition = (value) => ({ lon: value.lon, lat: value.lat, dist: value
 /** `tm_position` as a consumer writes it, keyed as the engine reads it. */
 const writeTmPosition = (value) => ({ lon: value.lon, lat: value.lat, dist: value.dist, lon_speed: value.lonSpeed, lat_speed: value.latSpeed, dist_speed: value.distSpeed, flags_used: value.flagsUsed, status: value.status });
 
+/** `tm_position_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmPositionRequest = (value) => ({ jd: value.jd, scale: value.scale, body: value.body, flags: value.flags, observer: value.observer == null ? null : readTmObserver(value.observer), center: value.center, ayanamsha: value.ayanamsha, ayanamshaSet: value.ayanamsha_set });
+
+/** `tm_position_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmPositionRequest = (value) => ({ jd: value.jd, scale: value.scale, body: value.body, flags: value.flags, observer: value.observer == null ? null : writeTmObserver(value.observer), center: value.center, ayanamsha: value.ayanamsha, ayanamsha_set: value.ayanamshaSet });
+
+/** `tm_model_details` as the engine answers it, spelled as a consumer reads it. */
+const readTmModelDetails = (value) => ({ value: value.value, name: value.name, implemented: value.implemented, isDefaultCompatible: value.is_default_compatible, isDefaultMax: value.is_default_max });
+
+/** `tm_model_details` as a consumer writes it, keyed as the engine reads it. */
+const writeTmModelDetails = (value) => ({ value: value.value, name: value.name, implemented: value.implemented, is_default_compatible: value.isDefaultCompatible, is_default_max: value.isDefaultMax });
+
 /** `tm_atmosphere` as the engine answers it, spelled as a consumer reads it. */
 const readTmAtmosphere = (value) => ({ pressureMbar: value.pressure_mbar, temperatureC: value.temperature_c, lapseRateKPerM: value.lapse_rate_k_per_m });
 
@@ -66,6 +78,12 @@ const readTmCoverage = (value) => ({ jdStart: value.jd_start, jdEnd: value.jd_en
 
 /** `tm_coverage` as a consumer writes it, keyed as the engine reads it. */
 const writeTmCoverage = (value) => ({ jd_start: value.jdStart, jd_end: value.jdEnd, contiguous: value.contiguous, file_count: value.fileCount });
+
+/** `tm_loaded_file` as the engine answers it, spelled as a consumer reads it. */
+const readTmLoadedFile = (value) => ({ name: value.name, internalName: value.internal_name, jdStart: value.jd_start, jdEnd: value.jd_end, denum: value.denum, version: value.version, bodyCount: value.body_count, origin: value.origin, crcVerified: value.crc_verified });
+
+/** `tm_loaded_file` as a consumer writes it, keyed as the engine reads it. */
+const writeTmLoadedFile = (value) => ({ name: value.name, internal_name: value.internalName, jd_start: value.jdStart, jd_end: value.jdEnd, denum: value.denum, version: value.version, body_count: value.bodyCount, origin: value.origin, crc_verified: value.crcVerified });
 
 /** `tm_fallback_stats` as the engine answers it, spelled as a consumer reads it. */
 const readTmFallbackStats = (value) => ({ moshierCalls: value.moshier_calls, refusedCalls: value.refused_calls, lastBody: value.last_body, lastJd: value.last_jd });
@@ -103,6 +121,12 @@ const readTmStar = (value) => ({ id: value.id, catalogueGeneration: value.catalo
 /** `tm_star` as a consumer writes it, keyed as the engine reads it. */
 const writeTmStar = (value) => ({ id: value.id, catalogue_generation: value.catalogueGeneration, magnitude: value.magnitude, epoch: value.epoch, ra_deg: value.raDeg, dec_deg: value.decDeg, pm_ra_arcsec_per_century: value.pmRaArcsecPerCentury, pm_dec_arcsec_per_century: value.pmDecArcsecPerCentury, radial_velocity_au_per_century: value.radialVelocityAuPerCentury, parallax_arcsec: value.parallaxArcsec });
 
+/** `tm_star_query` as the engine answers it, spelled as a consumer reads it. */
+const readTmStarQuery = (value) => ({ useMagnitude: value.use_magnitude, magnitudeMin: value.magnitude_min, magnitudeMax: value.magnitude_max, raDeg: value.ra_deg, decDeg: value.dec_deg, radiusDeg: value.radius_deg, nameContains: value.name_contains });
+
+/** `tm_star_query` as a consumer writes it, keyed as the engine reads it. */
+const writeTmStarQuery = (value) => ({ use_magnitude: value.useMagnitude, magnitude_min: value.magnitudeMin, magnitude_max: value.magnitudeMax, ra_deg: value.raDeg, dec_deg: value.decDeg, radius_deg: value.radiusDeg, name_contains: value.nameContains });
+
 /** `tm_eclipse_attributes` as the engine answers it, spelled as a consumer reads it. */
 const readTmEclipseAttributes = (value) => ({ magnitude: value.magnitude, diameterRatio: value.diameter_ratio, obscuration: value.obscuration, coreShadowKm: value.core_shadow_km, azimuth: value.azimuth, azimuthNorth: value.azimuth_north, altitudeTrue: value.altitude_true, altitudeApparent: value.altitude_apparent, separation: value.separation, magnitudeNasa: value.magnitude_nasa, sarosKnown: value.saros_known, sarosSeries: value.saros_series, sarosMember: value.saros_member });
 
@@ -120,6 +144,60 @@ const readTmEclipseLocation = (value) => ({ longitude: value.longitude, latitude
 
 /** `tm_eclipse_location` as a consumer writes it, keyed as the engine reads it. */
 const writeTmEclipseLocation = (value) => ({ longitude: value.longitude, latitude: value.latitude, core_shadow_km: value.coreShadowKm, penumbra_km: value.penumbraKm, axis_distance_km: value.axisDistanceKm, umbra_fundamental_km: value.umbraFundamentalKm, penumbra_fundamental_km: value.penumbraFundamentalKm });
+
+/** `tm_solar_eclipse` as the engine answers it, spelled as a consumer reads it. */
+const readTmSolarEclipse = (value) => ({ type: value.type, maximum: value.maximum, localNoon: value.local_noon, begin: value.begin, end: value.end, totalBegin: value.total_begin, totalEnd: value.total_end, centerBegin: value.center_begin, centerEnd: value.center_end, status: value.status });
+
+/** `tm_solar_eclipse` as a consumer writes it, keyed as the engine reads it. */
+const writeTmSolarEclipse = (value) => ({ type: value.type, maximum: value.maximum, local_noon: value.localNoon, begin: value.begin, end: value.end, total_begin: value.totalBegin, total_end: value.totalEnd, center_begin: value.centerBegin, center_end: value.centerEnd, status: value.status });
+
+/** `tm_lunar_eclipse` as the engine answers it, spelled as a consumer reads it. */
+const readTmLunarEclipse = (value) => ({ type: value.type, maximum: value.maximum, partialBegin: value.partial_begin, partialEnd: value.partial_end, totalBegin: value.total_begin, totalEnd: value.total_end, penumbralBegin: value.penumbral_begin, penumbralEnd: value.penumbral_end, status: value.status });
+
+/** `tm_lunar_eclipse` as a consumer writes it, keyed as the engine reads it. */
+const writeTmLunarEclipse = (value) => ({ type: value.type, maximum: value.maximum, partial_begin: value.partialBegin, partial_end: value.partialEnd, total_begin: value.totalBegin, total_end: value.totalEnd, penumbral_begin: value.penumbralBegin, penumbral_end: value.penumbralEnd, status: value.status });
+
+/** `tm_occultation` as the engine answers it, spelled as a consumer reads it. */
+const readTmOccultation = (value) => ({ type: value.type, maximum: value.maximum, localNoon: value.local_noon, begin: value.begin, end: value.end, totalBegin: value.total_begin, totalEnd: value.total_end, centerBegin: value.center_begin, centerEnd: value.center_end, status: value.status });
+
+/** `tm_occultation` as a consumer writes it, keyed as the engine reads it. */
+const writeTmOccultation = (value) => ({ type: value.type, maximum: value.maximum, local_noon: value.localNoon, begin: value.begin, end: value.end, total_begin: value.totalBegin, total_end: value.totalEnd, center_begin: value.centerBegin, center_end: value.centerEnd, status: value.status });
+
+/** `tm_solar_eclipse_local` as the engine answers it, spelled as a consumer reads it. */
+const readTmSolarEclipseLocal = (value) => ({ type: value.type, phasesVisible: value.phases_visible, visible: value.visible, maximum: value.maximum, firstContact: value.first_contact, secondContact: value.second_contact, thirdContact: value.third_contact, fourthContact: value.fourth_contact, sunrise: value.sunrise, sunset: value.sunset, attributes: readTmEclipseAttributes(value.attributes), status: value.status });
+
+/** `tm_solar_eclipse_local` as a consumer writes it, keyed as the engine reads it. */
+const writeTmSolarEclipseLocal = (value) => ({ type: value.type, phases_visible: value.phasesVisible, visible: value.visible, maximum: value.maximum, first_contact: value.firstContact, second_contact: value.secondContact, third_contact: value.thirdContact, fourth_contact: value.fourthContact, sunrise: value.sunrise, sunset: value.sunset, attributes: writeTmEclipseAttributes(value.attributes), status: value.status });
+
+/** `tm_lunar_eclipse_local` as the engine answers it, spelled as a consumer reads it. */
+const readTmLunarEclipseLocal = (value) => ({ type: value.type, phasesVisible: value.phases_visible, visible: value.visible, maximum: value.maximum, partialBegin: value.partial_begin, partialEnd: value.partial_end, totalBegin: value.total_begin, totalEnd: value.total_end, penumbralBegin: value.penumbral_begin, penumbralEnd: value.penumbral_end, moonrise: value.moonrise, moonset: value.moonset, attributes: readTmLunarEclipseAttributes(value.attributes), status: value.status });
+
+/** `tm_lunar_eclipse_local` as a consumer writes it, keyed as the engine reads it. */
+const writeTmLunarEclipseLocal = (value) => ({ type: value.type, phases_visible: value.phasesVisible, visible: value.visible, maximum: value.maximum, partial_begin: value.partialBegin, partial_end: value.partialEnd, total_begin: value.totalBegin, total_end: value.totalEnd, penumbral_begin: value.penumbralBegin, penumbral_end: value.penumbralEnd, moonrise: value.moonrise, moonset: value.moonset, attributes: writeTmLunarEclipseAttributes(value.attributes), status: value.status });
+
+/** `tm_occultation_local` as the engine answers it, spelled as a consumer reads it. */
+const readTmOccultationLocal = (value) => ({ type: value.type, phasesVisible: value.phases_visible, daylight: value.daylight, visible: value.visible, maximum: value.maximum, firstContact: value.first_contact, secondContact: value.second_contact, thirdContact: value.third_contact, fourthContact: value.fourth_contact, bodyRise: value.body_rise, bodySet: value.body_set, attributes: readTmEclipseAttributes(value.attributes), status: value.status });
+
+/** `tm_occultation_local` as a consumer writes it, keyed as the engine reads it. */
+const writeTmOccultationLocal = (value) => ({ type: value.type, phases_visible: value.phasesVisible, daylight: value.daylight, visible: value.visible, maximum: value.maximum, first_contact: value.firstContact, second_contact: value.secondContact, third_contact: value.thirdContact, fourth_contact: value.fourthContact, body_rise: value.bodyRise, body_set: value.bodySet, attributes: writeTmEclipseAttributes(value.attributes), status: value.status });
+
+/** `tm_eclipse_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmEclipseRequest = (value) => ({ jdStart: value.jd_start, scale: value.scale, flags: value.flags, want: value.want, backward: value.backward, observer: value.observer == null ? null : readTmObserver(value.observer), body: value.body, star: value.star, oneTry: value.one_try, jdEnd: value.jd_end });
+
+/** `tm_eclipse_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmEclipseRequest = (value) => ({ jd_start: value.jdStart, scale: value.scale, flags: value.flags, want: value.want, backward: value.backward, observer: value.observer == null ? null : writeTmObserver(value.observer), body: value.body, star: value.star, one_try: value.oneTry, jd_end: value.jdEnd });
+
+/** `tm_event_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmEventRequest = (value) => ({ jdStart: value.jd_start, scale: value.scale, body: value.body, star: value.star, flags: value.flags, kind: value.kind, options: value.options, observer: value.observer == null ? null : readTmObserver(value.observer), atmosphere: value.atmosphere == null ? null : readTmAtmosphere(value.atmosphere), horizonHeightDeg: value.horizon_height_deg, jdEnd: value.jd_end });
+
+/** `tm_event_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmEventRequest = (value) => ({ jd_start: value.jdStart, scale: value.scale, body: value.body, star: value.star, flags: value.flags, kind: value.kind, options: value.options, observer: value.observer == null ? null : writeTmObserver(value.observer), atmosphere: value.atmosphere == null ? null : writeTmAtmosphere(value.atmosphere), horizon_height_deg: value.horizonHeightDeg, jd_end: value.jdEnd });
+
+/** `tm_event` as the engine answers it, spelled as a consumer reads it. */
+const readTmEvent = (value) => ({ jd: value.jd, found: value.found, fastMethod: value.fast_method, status: value.status });
+
+/** `tm_event` as a consumer writes it, keyed as the engine reads it. */
+const writeTmEvent = (value) => ({ jd: value.jd, found: value.found, fast_method: value.fastMethod, status: value.status });
 
 /** `tm_visibility_atmosphere` as the engine answers it, spelled as a consumer reads it. */
 const readTmVisibilityAtmosphere = (value) => ({ pressureMbar: value.pressure_mbar, temperatureC: value.temperature_c, humidityPct: value.humidity_pct, haze: value.haze });
@@ -145,6 +223,24 @@ const readTmVisibilityBest = (value) => ({ objectAltitude: value.object_altitude
 /** `tm_visibility_best` as a consumer writes it, keyed as the engine reads it. */
 const writeTmVisibilityBest = (value) => ({ object_altitude: value.objectAltitude, arcus: value.arcus, sun_altitude: value.sunAltitude });
 
+/** `tm_heliacal_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmHeliacalRequest = (value) => ({ jdStart: value.jd_start, scale: value.scale, body: value.body, star: value.star, flags: value.flags, kind: value.kind, options: value.options, observer: value.observer == null ? null : readTmObserver(value.observer), atmosphere: value.atmosphere == null ? null : readTmVisibilityAtmosphere(value.atmosphere), eye: value.eye == null ? null : readTmObserverEye(value.eye), jdEnd: value.jd_end });
+
+/** `tm_heliacal_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmHeliacalRequest = (value) => ({ jd_start: value.jdStart, scale: value.scale, body: value.body, star: value.star, flags: value.flags, kind: value.kind, options: value.options, observer: value.observer == null ? null : writeTmObserver(value.observer), atmosphere: value.atmosphere == null ? null : writeTmVisibilityAtmosphere(value.atmosphere), eye: value.eye == null ? null : writeTmObserverEye(value.eye), jd_end: value.jdEnd });
+
+/** `tm_heliacal` as the engine answers it, spelled as a consumer reads it. */
+const readTmHeliacal = (value) => ({ begin: value.begin, optimum: value.optimum, end: value.end, uncertain: value.uncertain, found: value.found, status: value.status });
+
+/** `tm_heliacal` as a consumer writes it, keyed as the engine reads it. */
+const writeTmHeliacal = (value) => ({ begin: value.begin, optimum: value.optimum, end: value.end, uncertain: value.uncertain, found: value.found, status: value.status });
+
+/** `tm_heliacal_details` as the engine answers it, spelled as a consumer reads it. */
+const readTmHeliacalDetails = (value) => ({ objectAltitude: value.object_altitude, objectApparentAltitude: value.object_apparent_altitude, objectGeocentricAltitude: value.object_geocentric_altitude, objectAzimuth: value.object_azimuth, sunAltitude: value.sun_altitude, sunAzimuth: value.sun_azimuth, parallax: value.parallax, magnitude: value.magnitude, arcusVisionisTopocentric: value.arcus_visionis_topocentric, arcusVisionis: value.arcus_visionis, azimuthDifference: value.azimuth_difference, arcusLucis: value.arcus_lucis, arcusVisionisMin: value.arcus_visionis_min, extinction: value.extinction, hasVisibleFirst: value.has_visible_first, visibleFirst: value.visible_first, hasVisibleBest: value.has_visible_best, visibleBest: value.visible_best, hasVisibleLast: value.has_visible_last, visibleLast: value.visible_last, visibleDuration: value.visible_duration, hasVisibleBestYallop: value.has_visible_best_yallop, visibleBestYallop: value.visible_best_yallop, objectRiseset: value.object_riseset, sunRiseset: value.sun_riseset, lag: value.lag, moonCrescentWidth: value.moon_crescent_width, moonCrescentLength: value.moon_crescent_length, yallopQ: value.yallop_q, yallopCriterion: value.yallop_criterion, elongation: value.elongation, illuminationPct: value.illumination_pct });
+
+/** `tm_heliacal_details` as a consumer writes it, keyed as the engine reads it. */
+const writeTmHeliacalDetails = (value) => ({ object_altitude: value.objectAltitude, object_apparent_altitude: value.objectApparentAltitude, object_geocentric_altitude: value.objectGeocentricAltitude, object_azimuth: value.objectAzimuth, sun_altitude: value.sunAltitude, sun_azimuth: value.sunAzimuth, parallax: value.parallax, magnitude: value.magnitude, arcus_visionis_topocentric: value.arcusVisionisTopocentric, arcus_visionis: value.arcusVisionis, azimuth_difference: value.azimuthDifference, arcus_lucis: value.arcusLucis, arcus_visionis_min: value.arcusVisionisMin, extinction: value.extinction, has_visible_first: value.hasVisibleFirst, visible_first: value.visibleFirst, has_visible_best: value.hasVisibleBest, visible_best: value.visibleBest, has_visible_last: value.hasVisibleLast, visible_last: value.visibleLast, visible_duration: value.visibleDuration, has_visible_best_yallop: value.hasVisibleBestYallop, visible_best_yallop: value.visibleBestYallop, object_riseset: value.objectRiseset, sun_riseset: value.sunRiseset, lag: value.lag, moon_crescent_width: value.moonCrescentWidth, moon_crescent_length: value.moonCrescentLength, yallop_q: value.yallopQ, yallop_criterion: value.yallopCriterion, elongation: value.elongation, illumination_pct: value.illuminationPct });
+
 /** `tm_crossing_request` as the engine answers it, spelled as a consumer reads it. */
 const readTmCrossingRequest = (value) => ({ jdStart: value.jd_start, scale: value.scale, body: value.body, targetDeg: value.target_deg, flags: value.flags, backward: value.backward, jdEnd: value.jd_end, quantity: value.quantity, stepDeg: value.step_deg, bodyB: value.body_b, coeffA: value.coeff_a, coeffB: value.coeff_b });
 
@@ -157,11 +253,35 @@ const readTmCrossing = (value) => ({ jd: value.jd, longitude: value.longitude, l
 /** `tm_crossing` as a consumer writes it, keyed as the engine reads it. */
 const writeTmCrossing = (value) => ({ jd: value.jd, longitude: value.longitude, latitude: value.latitude, status: value.status });
 
+/** `tm_calendar_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmCalendarRequest = (value) => ({ jdStart: value.jd_start, dayCount: value.day_count, anchor: value.anchor, observer: value.observer == null ? null : readTmObserver(value.observer), anchorBody: value.anchor_body, flags: value.flags, options: value.options, atmosphere: value.atmosphere == null ? null : readTmAtmosphere(value.atmosphere), horizonHeightDeg: value.horizon_height_deg });
+
+/** `tm_calendar_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmCalendarRequest = (value) => ({ jd_start: value.jdStart, day_count: value.dayCount, anchor: value.anchor, observer: value.observer == null ? null : writeTmObserver(value.observer), anchor_body: value.anchorBody, flags: value.flags, options: value.options, atmosphere: value.atmosphere == null ? null : writeTmAtmosphere(value.atmosphere), horizon_height_deg: value.horizonHeightDeg });
+
+/** `tm_scan_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmScanRequest = (value) => ({ jdStart: value.jd_start, jdEnd: value.jd_end, stepDays: value.step_days, scale: value.scale, body: value.body, bodyB: value.body_b, quantity: value.quantity, direction: value.direction, threshold: value.threshold, flags: value.flags, observer: value.observer == null ? null : readTmObserver(value.observer) });
+
+/** `tm_scan_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmScanRequest = (value) => ({ jd_start: value.jdStart, jd_end: value.jdEnd, step_days: value.stepDays, scale: value.scale, body: value.body, body_b: value.bodyB, quantity: value.quantity, direction: value.direction, threshold: value.threshold, flags: value.flags, observer: value.observer == null ? null : writeTmObserver(value.observer) });
+
+/** `tm_bracket` as the engine answers it, spelled as a consumer reads it. */
+const readTmBracket = (value) => ({ jdLo: value.jd_lo, jdHi: value.jd_hi, valueLo: value.value_lo, valueHi: value.value_hi, status: value.status });
+
+/** `tm_bracket` as a consumer writes it, keyed as the engine reads it. */
+const writeTmBracket = (value) => ({ jd_lo: value.jdLo, jd_hi: value.jdHi, value_lo: value.valueLo, value_hi: value.valueHi, status: value.status });
+
 /** `tm_angle_parts` as the engine answers it, spelled as a consumer reads it. */
 const readTmAngleParts = (value) => ({ negative: value.negative, degrees: value.degrees, minutes: value.minutes, seconds: value.seconds, secondFraction: value.second_fraction, zodiacSign: value.zodiac_sign, nakshatra: value.nakshatra, pada: value.pada });
 
 /** `tm_angle_parts` as a consumer writes it, keyed as the engine reads it. */
 const writeTmAngleParts = (value) => ({ negative: value.negative, degrees: value.degrees, minutes: value.minutes, seconds: value.seconds, second_fraction: value.secondFraction, zodiac_sign: value.zodiacSign, nakshatra: value.nakshatra, pada: value.pada });
+
+/** `tm_ayanamsha_details` as the engine answers it, spelled as a consumer reads it. */
+const readTmAyanamshaDetails = (value) => ({ name: value.name, t0: value.t0, ayanT0: value.ayan_t0, t0IsUt: value.t0_is_ut, needsEphemeris: value.needs_ephemeris, isFrame: value.is_frame, fittedPrecession: value.fitted_precession });
+
+/** `tm_ayanamsha_details` as a consumer writes it, keyed as the engine reads it. */
+const writeTmAyanamshaDetails = (value) => ({ name: value.name, t0: value.t0, ayan_t0: value.ayanT0, t0_is_ut: value.t0IsUt, needs_ephemeris: value.needsEphemeris, is_frame: value.isFrame, fitted_precession: value.fittedPrecession });
 
 export class TeimerisEngine {
   #engine;
@@ -328,10 +448,24 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_position_calc`.
+   */
+  tmPositionCalc({ req }) {
+    return readTmPosition(this.#engine.call('tm_position_calc', { req: req == null ? null : writeTmPositionRequest(req) }).out);
+  }
+
+  /**
    * `tm_position_value`.
    */
   tmPositionValue({ jd, scale, body, flags, field }) {
     return this.#engine.call('tm_position_value', { jd, scale, body, flags, field }).out;
+  }
+
+  /**
+   * `tm_position_calc_many`.
+   */
+  tmPositionCalcMany({ reqs }) {
+    return this.#engine.call('tm_position_calc_many', { reqs: reqs.map(writeTmPositionRequest) }).out.map(readTmPosition);
   }
 
   /**
@@ -458,6 +592,13 @@ export class TeimerisEngine {
    */
   tmModelCount({ kind }) {
     return this.#engine.call('tm_model_count', { kind }).return;
+  }
+
+  /**
+   * `tm_model_info`.
+   */
+  tmModelInfo({ kind, index }) {
+    return readTmModelDetails(this.#engine.call('tm_model_info', { kind, index }).out);
   }
 
   /**
@@ -601,6 +742,20 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_loaded_files`.
+   */
+  tmLoadedFiles() {
+    return this.#engine.call('tm_loaded_files', {}).out_files.map(readTmLoadedFile);
+  }
+
+  /**
+   * `tm_last_loaded_file`.
+   */
+  tmLastLoadedFile() {
+    return readTmLoadedFile(this.#engine.call('tm_last_loaded_file', {}).out_file);
+  }
+
+  /**
    * `tm_fallback_stats_get`.
    */
   tmFallbackStatsGet() {
@@ -722,6 +877,20 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_star_query_init_sized`.
+   */
+  tmStarQueryInitSized() {
+    return readTmStarQuery(this.#engine.call('tm_star_query_init_sized', {}).q);
+  }
+
+  /**
+   * `tm_star_search`.
+   */
+  tmStarSearch({ query }) {
+    return this.#engine.call('tm_star_search', { query: query == null ? null : writeTmStarQuery(query) }).out.map(readTmStar);
+  }
+
+  /**
    * `tm_star_calc`.
    */
   tmStarCalc({ jd, scale, name, flags, observer }) {
@@ -740,6 +909,55 @@ export class TeimerisEngine {
    */
   tmEclipseTypeName({ bit }) {
     return this.#engine.call('tm_eclipse_type_name', { bit }).return;
+  }
+
+  /**
+   * `tm_eclipse_request_init_sized`.
+   */
+  tmEclipseRequestInitSized() {
+    return readTmEclipseRequest(this.#engine.call('tm_eclipse_request_init_sized', {}).req);
+  }
+
+  /**
+   * `tm_solar_eclipse_search`.
+   */
+  tmSolarEclipseSearch({ req, outCapacity }) {
+    return this.#engine.call('tm_solar_eclipse_search', { req: req == null ? null : writeTmEclipseRequest(req), out_capacity: outCapacity }).out.map(readTmSolarEclipse);
+  }
+
+  /**
+   * `tm_lunar_eclipse_search`.
+   */
+  tmLunarEclipseSearch({ req, outCapacity }) {
+    return this.#engine.call('tm_lunar_eclipse_search', { req: req == null ? null : writeTmEclipseRequest(req), out_capacity: outCapacity }).out.map(readTmLunarEclipse);
+  }
+
+  /**
+   * `tm_occultation_search`.
+   */
+  tmOccultationSearch({ req, outCapacity }) {
+    return this.#engine.call('tm_occultation_search', { req: req == null ? null : writeTmEclipseRequest(req), out_capacity: outCapacity }).out.map(readTmOccultation);
+  }
+
+  /**
+   * `tm_solar_eclipse_search_local`.
+   */
+  tmSolarEclipseSearchLocal({ req, outCapacity }) {
+    return this.#engine.call('tm_solar_eclipse_search_local', { req: req == null ? null : writeTmEclipseRequest(req), out_capacity: outCapacity }).out.map(readTmSolarEclipseLocal);
+  }
+
+  /**
+   * `tm_lunar_eclipse_search_local`.
+   */
+  tmLunarEclipseSearchLocal({ req, outCapacity }) {
+    return this.#engine.call('tm_lunar_eclipse_search_local', { req: req == null ? null : writeTmEclipseRequest(req), out_capacity: outCapacity }).out.map(readTmLunarEclipseLocal);
+  }
+
+  /**
+   * `tm_occultation_search_local`.
+   */
+  tmOccultationSearchLocal({ req, outCapacity }) {
+    return this.#engine.call('tm_occultation_search_local', { req: req == null ? null : writeTmEclipseRequest(req), out_capacity: outCapacity }).out.map(readTmOccultationLocal);
   }
 
   /**
@@ -790,6 +1008,20 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_event_request_init_sized`.
+   */
+  tmEventRequestInitSized() {
+    return readTmEventRequest(this.#engine.call('tm_event_request_init_sized', {}).req);
+  }
+
+  /**
+   * `tm_event_search`.
+   */
+  tmEventSearch({ req, outCapacity }) {
+    return this.#engine.call('tm_event_search', { req: req == null ? null : writeTmEventRequest(req), out_capacity: outCapacity }).out.map(readTmEvent);
+  }
+
+  /**
    * `tm_gauquelin_sector`.
    */
   tmGauquelinSector({ jd, scale, body, star, flags, method, refraction, discCenter, observer, atmosphere }) {
@@ -826,6 +1058,27 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_heliacal_request_init_sized`.
+   */
+  tmHeliacalRequestInitSized() {
+    return readTmHeliacalRequest(this.#engine.call('tm_heliacal_request_init_sized', {}).req);
+  }
+
+  /**
+   * `tm_heliacal_search`.
+   */
+  tmHeliacalSearch({ req, outCapacity }) {
+    return this.#engine.call('tm_heliacal_search', { req: req == null ? null : writeTmHeliacalRequest(req), out_capacity: outCapacity }).out.map(readTmHeliacal);
+  }
+
+  /**
+   * `tm_heliacal_detail`.
+   */
+  tmHeliacalDetail({ req }) {
+    return readTmHeliacalDetails(this.#engine.call('tm_heliacal_detail', { req: req == null ? null : writeTmHeliacalRequest(req) }).out);
+  }
+
+  /**
    * `tm_crossing_request_init_sized`.
    */
   tmCrossingRequestInitSized() {
@@ -844,6 +1097,28 @@ export class TeimerisEngine {
    */
   tmNodeCrossingSearch({ req, outCapacity }) {
     return this.#engine.call('tm_node_crossing_search', { req: req == null ? null : writeTmCrossingRequest(req), out_capacity: outCapacity }).out.map(readTmCrossing);
+  }
+
+  /**
+   * `tm_calendar_request_init_sized`.
+   */
+  tmCalendarRequestInitSized() {
+    return readTmCalendarRequest(this.#engine.call('tm_calendar_request_init_sized', {}).req);
+  }
+
+  /**
+   * `tm_scan_request_init_sized`.
+   */
+  tmScanRequestInitSized() {
+    return readTmScanRequest(this.#engine.call('tm_scan_request_init_sized', {}).req);
+  }
+
+  /**
+   * `tm_scan_grid`.
+   */
+  tmScanGrid({ req, outCapacity }) {
+    const answered = this.#engine.call('tm_scan_grid', { req: req == null ? null : writeTmScanRequest(req), out_capacity: outCapacity });
+    return { out: answered.out.map(readTmBracket), outSamples: answered.out_samples, outJdReached: answered.out_jd_reached };
   }
 
   /**
@@ -984,6 +1259,13 @@ export class TeimerisEngine {
    */
   tmChartBlobSize({ bodyCount, cuspCount, withCuspSpeeds, withAngles }) {
     return this.#engine.call('tm_chart_blob_size', { body_count: bodyCount, cusp_count: cuspCount, with_cusp_speeds: withCuspSpeeds, with_angles: withAngles }).return;
+  }
+
+  /**
+   * `tm_ayanamsha_info`.
+   */
+  tmAyanamshaInfo({ mode }) {
+    return readTmAyanamshaDetails(this.#engine.call('tm_ayanamsha_info', { mode }).out);
   }
 
 }

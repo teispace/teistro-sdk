@@ -214,6 +214,12 @@ impl Vocabulary {
         self.structs.get(base)
     }
 
+    /// Whether reading a struct needs somewhere to keep what it points at:
+    /// a string or a pointer in it, or in a struct it holds by value.
+    pub(crate) fn needs_keep(&self, base: &str) -> bool {
+        self.structs.contains_key(base) && self.made_of(base) != Made::Plain
+    }
+
     /// What a struct is made of; `Other` for a name that is not one.
     pub(crate) fn made_of(&self, base: &str) -> Made {
         self.made_within(base, &mut Vec::new())

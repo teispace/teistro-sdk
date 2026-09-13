@@ -4,11 +4,10 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 
 use super::classify::{
-    Blocker, Sizing, Standing, blocked_by, carries, carries_a_string, carries_a_struct,
-    carries_an_array, describe, fills_a_string, has_role, mutates_engine_state, returns_a_string,
-    sizing,
+    Blocker, Sizing, Standing, carries, carries_a_string, carries_a_struct, carries_an_array,
+    describe, fills_a_string, has_role, mutates_engine_state, returns_a_string, sizing,
 };
-use super::idl::{Extent, Function, Idl, Vocabulary};
+use super::idl::{Extent, Function, Idl};
 use super::{DISPATCH, IDL};
 use crate::measure::{count, spelled};
 
@@ -41,11 +40,7 @@ pub(crate) fn count_where(rows: &[Row<'_>], predicate: impl Fn(&Function) -> boo
 }
 
 /// The measurement, from a reading already done.
-pub(crate) fn page(
-    idl: &Idl,
-    classified: &[(&Function, Standing, &'static str)],
-    vocabulary: &Vocabulary,
-) -> String {
+pub(crate) fn page(idl: &Idl, classified: &[(&Function, Standing, &'static str)]) -> String {
     let mut by_standing: BTreeMap<Standing, Vec<Row<'_>>> = BTreeMap::new();
     for (function, standing, why) in classified {
         by_standing
@@ -95,10 +90,7 @@ pub(crate) fn page(
 
     out.push_str(&owned_section(by_standing.get(&Standing::Owned)));
     out.push_str(&callable_section(by_standing.get(&Standing::Callable)));
-    out.push_str(&queue_section(
-        by_standing.get(&Standing::Unlearned),
-        vocabulary,
-    ));
+    out.push_str(&queue_section(by_standing.get(&Standing::Unlearned)));
     out.push_str(&facade_section(
         by_standing
             .get(&Standing::Callable)
@@ -288,7 +280,7 @@ pub(crate) fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     out
 }
 
-pub(crate) fn queue_section(rows: Option<&Vec<Row<'_>>>, vocabulary: &Vocabulary) -> String {
+pub(crate) fn queue_section(rows: Option<&Vec<Row<'_>>>) -> String {
     let mut out = String::new();
     let Some(rows) = rows else { return out };
     let _ = writeln!(out, "## What the marshaller has not learned\n");
@@ -317,18 +309,9 @@ pub(crate) fn queue_section(rows: Option<&Vec<Row<'_>>>, vocabulary: &Vocabulary
         let _ = writeln!(out, "| {why} | {} | {} |", names.len(), examples.join(", "));
     }
     let _ = writeln!(out);
-    let struct_rows = count_where(rows, |function| {
-        function.params.iter().any(|param| {
-            matches!(
-                blocked_by(function, param, vocabulary),
-                Some(Blocker::StringStruct | Blocker::PointerStruct | Blocker::OtherStruct)
-            )
-        })
-    });
     let _ = writeln!(
         out,
-        "**{struct_rows} of the {} still touch a struct that is not plain**, and that is the work ahead: a struct carrying a string, one pointing at another, and the few no JSON object describes. The order of work, with what each step releases, is in `03-design/engine-passthrough.md` §6; the figures there were measured by the same classification as this table.\n",
-        rows.len()
+        "The order of work, with what each step releases, is in `03-design/engine-passthrough.md` §6; the figures there were measured by the same classification as this table.\n"
     );
     out.push_str(&unsized_section(rows));
     out

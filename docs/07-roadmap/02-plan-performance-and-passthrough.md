@@ -749,10 +749,12 @@ the emitted code is verified in its own language.
     tranche at a time, in the order `03-design/engine-passthrough.md` §6
     measured — strings (*done*), plain structs (*done*, 62 → 95), arrays
     (*done*, 95 → 112, one step and not two, sized by the output extents
-    the engine's IDL gained for them), then a struct carrying a string
-    (118), a struct pointing at another (135), and an output sized by
-    another call with its parallel twin (139). The last ten are a
-    different kind of work and are not queued.
+    the engine's IDL gained for them), strings and pointers inside structs
+    (*done*, 112 → 135, one step), and with them refusals in the engine's
+    own words and batches that answer the elements that succeeded; then an
+    output sized by another call with its parallel twin (139). The last ten
+    are a different kind of work and are not queued. Beside it, an engine
+    task: D3, the error record 123 null-check prologues leave stale.
 11. **B3** `libffi` dispatch behind a feature.
 12. **C1** one spelling per name — *done*.
 

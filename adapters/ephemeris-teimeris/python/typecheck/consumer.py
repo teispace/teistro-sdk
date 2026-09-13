@@ -55,3 +55,15 @@ def main() -> None:
         grid = typed.tm_position_calc_grid(bodies=[0, 1], jds=[2451545.0], scale=1, flags=0)
         defaults: list[int] = typed.tm_chart_default_bodies()
         print(f"{deltas[0]} s, the Sun at {grid[0]['lon']}, {len(defaults)} default bodies")
+
+        # A struct that points at another takes it as a nested dict, or None.
+        query = typed.tm_star_query_init_sized()
+        query["name_contains"] = "Aldeb"
+        stars = typed.tm_star_search(query=query)
+        moon = typed.tm_position_calc(
+            req={
+                "jd": 2451545.0, "scale": 1, "body": 1, "flags": 0, "center": 0,
+                "ayanamsha": 0, "ayanamsha_set": 0, "observer": None,
+            }
+        )
+        print(f"{len(stars)} stars, the Moon at {moon['lon']}")

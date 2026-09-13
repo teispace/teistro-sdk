@@ -21,7 +21,7 @@ use serde_json::{Map, Value, json};
 use teimeris::sys;
 use teistro_port_ephemeris::ProviderError;
 
-use crate::passthrough::{Within, borrowed, extent, fill, gather, narrow, number, numbers, objects, optional_object, room, checked, record, status, text, wholes};
+use crate::passthrough::{Within, Keep, borrowed, extent, fill, gather, narrow, number, numbers, objects, optional_object, pointed, room, settled, unwritten, checked, record, status, text, wholes};
 
 /// What this adapter offers of the engine's own surface, as the
 /// port's `native_manifest` answers it.
@@ -29,7 +29,7 @@ use crate::passthrough::{Within, borrowed, extent, fill, gather, narrow, number,
 /// `mutatesEngineState` is the flag a consumer needs and no other
 /// manifest would carry: after such a call the engine answers under
 /// settings the SDK's provenance does not record.
-pub(crate) const MANIFEST: &str = r#"{"engine":"teimeris","version":"0.1.0","functions":[{"name":"tm_status_name","params":[{"name":"s","role":"in","type":"tm_status"}],"returns":"string","mutatesEngineState":false},{"name":"tm_context_release_caches","params":[],"returns":"void","mutatesEngineState":false},{"name":"tm_version_string","params":[],"returns":"string","mutatesEngineState":false},{"name":"tm_version","params":[{"name":"major","role":"out","type":"int"},{"name":"minor","role":"out","type":"int"},{"name":"patch","role":"out","type":"int"}],"returns":"void","mutatesEngineState":false},{"name":"tm_body_name","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_julian_day","params":[{"name":"dt","role":"in","type":"tm_datetime","optional":true},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_calendar_date","params":[{"name":"jd","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_utc_to_jd","params":[{"name":"utc","role":"in","type":"tm_datetime","optional":true},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd_tt","role":"out","type":"double"},{"name":"out_jd_ut1","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_jd_to_utc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_delta_t","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_day_of_week","params":[{"name":"jd","role":"in","type":"double"}],"returns":"tm_weekday","mutatesEngineState":false},{"name":"tm_weekday_name","params":[{"name":"day","role":"in","type":"tm_weekday"}],"returns":"string","mutatesEngineState":false},{"name":"tm_julian_day_many","params":[{"name":"dts","role":"in","type":"tm_datetime[]"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd","role":"out","type":"double[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_calendar_date_many","params":[{"name":"jds","role":"in","type":"double[]"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_delta_t_many","params":[{"name":"jds_ut1","role":"in","type":"double[]"},{"name":"out_seconds","role":"out","type":"double[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time_many","params":[{"name":"jds_ut1","role":"in","type":"double[]"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_equation_of_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_mean_to_apparent","params":[{"name":"jd_local_mean","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_apparent","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_apparent_to_mean","params":[{"name":"jd_local_apparent","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_mean","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_to_utc","params":[{"name":"local","role":"in","type":"tm_datetime","optional":true},{"name":"utc_offset_hours","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_utc","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_utc_to_local","params":[{"name":"utc","role":"in","type":"tm_datetime","optional":true},{"name":"utc_offset_hours","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_local","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"field","role":"in","type":"tm_position_field"},{"name":"out","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_calc_grid","params":[{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"jds","role":"in","type":"double[]"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_position[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_house_cusp_count","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_system_name","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"string","mutatesEngineState":false},{"name":"tm_house_system_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_position","params":[{"name":"armc","role":"in","type":"double"},{"name":"geo_lat_deg","role":"in","type":"double"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"sys","role":"in","type":"tm_house_system"},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out_house","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_chart_default_bodies","params":[{"name":"out_bodies","role":"out","type":"tm_body[]"}],"returns":"void","mutatesEngineState":false},{"name":"tm_set_jpl_file","params":[{"name":"filename","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_jpl_info","params":[{"name":"out_denum","role":"out","type":"int32_t"},{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"},{"name":"out_segment_days","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_ayanamsha","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"},{"name":"t0","role":"in","type":"double"},{"name":"ayan_t0","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_ayanamsha_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_degrees","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_ayanamsha_name","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"}],"returns":"string","mutatesEngineState":false},{"name":"tm_ayanamsha_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"out_model","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_model_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_kind_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_count","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_tidal_acceleration","params":[{"name":"arcsec_per_century2","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_tidal_acceleration","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_tidal_acceleration","params":[{"name":"out_value","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_delta_t_override","params":[{"name":"seconds","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_delta_t_override","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_delta_t_override","params":[{"name":"out_seconds","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_nutation_interpolation","params":[{"name":"enable","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_nutation_interpolation","params":[{"name":"out","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_atmosphere_init_sized","params":[{"name":"altitude_m","role":"in","type":"double"},{"name":"struct_size","role":"in","type":"size_t"},{"name":"atm","role":"out","type":"tm_atmosphere"}],"returns":"status","mutatesEngineState":false},{"name":"tm_refract","params":[{"name":"model","role":"in","type":"tm_refraction_model"},{"name":"dir","role":"in","type":"tm_refraction_direction"},{"name":"altitude_deg","role":"in","type":"double"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"out","role":"out","type":"tm_refraction"}],"returns":"status","mutatesEngineState":false},{"name":"tm_refract_many","params":[{"name":"model","role":"in","type":"tm_refraction_model"},{"name":"dir","role":"in","type":"tm_refraction_direction"},{"name":"altitudes_deg","role":"in","type":"double[]"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"out","role":"out","type":"tm_refraction[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_obliquity_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"out","role":"out","type":"tm_obliquity"}],"returns":"status","mutatesEngineState":false},{"name":"tm_coord_rotate","params":[{"name":"direction","role":"in","type":"tm_frame_rotation"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"positions","role":"in","type":"tm_position[]"},{"name":"out","role":"out","type":"tm_position[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_to_horizontal","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out","role":"out","type":"tm_horizontal"}],"returns":"status","mutatesEngineState":false},{"name":"tm_to_horizontal_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"coords","role":"in","type":"tm_coord[]"},{"name":"out","role":"out","type":"tm_horizontal[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_from_horizontal","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"azimuth_deg","role":"in","type":"double"},{"name":"altitude_deg","role":"in","type":"double"},{"name":"out_lon_deg","role":"out","type":"double"},{"name":"out_lat_deg","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_embedded_coverage","params":[{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_body_coverage","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"out","role":"out","type":"tm_coverage"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_get","params":[{"name":"out","role":"out","type":"tm_fallback_stats"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_reset","params":[],"returns":"status","mutatesEngineState":false},{"name":"tm_cache_dir_default","params":[{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_nodes_apsides_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_nodes_method"},{"name":"apsis","role":"in","type":"tm_apsis_point"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_nodes_apsides"}],"returns":"status","mutatesEngineState":false},{"name":"tm_nodes_apsides_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_nodes_method"},{"name":"apsis","role":"in","type":"tm_apsis_point"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_nodes_apsides[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbital_elements_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"masses","role":"in","type":"tm_mass_model"},{"name":"out","role":"out","type":"tm_orbital_elements"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbital_elements_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"masses","role":"in","type":"tm_mass_model"},{"name":"out","role":"out","type":"tm_orbital_elements[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbit_distances_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out","role":"out","type":"tm_orbit_distances"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbit_distances_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out","role":"out","type":"tm_orbit_distances[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_phenomena_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_phenomena"}],"returns":"status","mutatesEngineState":false},{"name":"tm_phenomena_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_phenomena[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_name","params":[{"name":"star","role":"in","type":"tm_star","optional":true},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_designation","params":[{"name":"star","role":"in","type":"tm_star","optional":true},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_load_catalogue","params":[{"name":"path","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_star_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_star_find","params":[{"name":"name","role":"in","type":"string"},{"name":"out","role":"out","type":"tm_star"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_find_all","params":[{"name":"name","role":"in","type":"string"},{"name":"out","role":"out","type":"tm_star[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"name","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_position"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"stars","role":"in","type":"tm_star[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_position[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_eclipse_type_name","params":[{"name":"bit","role":"in","type":"tm_eclipse_type"}],"returns":"string","mutatesEngineState":false},{"name":"tm_solar_eclipse_where","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_location","role":"out","type":"tm_eclipse_location"},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_where","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_location","role":"out","type":"tm_eclipse_location"},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_solar_eclipse_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_lunar_eclipse_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_lunar_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_event_kind_name","params":[{"name":"kind","role":"in","type":"tm_event_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_gauquelin_sector","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_gauquelin_method"},{"name":"refraction","role":"in","type":"int32_t"},{"name":"disc_center","role":"in","type":"int32_t"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_atmosphere","optional":true},{"name":"out_sector","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_defaults","params":[{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"out","type":"tm_visibility_atmosphere"},{"name":"eye","role":"out","type":"tm_observer_eye"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_limit","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"out","role":"out","type":"tm_visibility"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_arcus","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"magnitude","role":"in","type":"double"},{"name":"object_altitude_deg","role":"in","type":"double"},{"name":"object_azimuth_deg","role":"in","type":"double"},{"name":"sun_azimuth_deg","role":"in","type":"double"},{"name":"moon_altitude_deg","role":"in","type":"double"},{"name":"moon_azimuth_deg","role":"in","type":"double"},{"name":"out_arcus_deg","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_best_altitude","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"magnitude","role":"in","type":"double"},{"name":"object_azimuth_deg","role":"in","type":"double"},{"name":"sun_azimuth_deg","role":"in","type":"double"},{"name":"moon_altitude_deg","role":"in","type":"double"},{"name":"moon_azimuth_deg","role":"in","type":"double"},{"name":"out","role":"out","type":"tm_visibility_best"}],"returns":"status","mutatesEngineState":false},{"name":"tm_crossing_request_init_sized","params":[{"name":"req","role":"out","type":"tm_crossing_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_crossing_search","params":[{"name":"req","role":"in","type":"tm_crossing_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_crossing[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_node_crossing_search","params":[{"name":"req","role":"in","type":"tm_crossing_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_crossing[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_angle_normalize_deg","params":[{"name":"deg","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_normalize_rad","params":[{"name":"rad","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg_positive","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_degrees_to_centiseconds","params":[{"name":"deg","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_to_degrees","params":[{"name":"centiseconds","role":"in","type":"int32_t"}],"returns":"double","mutatesEngineState":false},{"name":"tm_centiseconds_normalize","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff_signed","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_round_seconds","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_round_half_away","params":[{"name":"x","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_angle_split","params":[{"name":"deg","role":"in","type":"double"},{"name":"options","role":"in","type":"uint32_t"},{"name":"out","role":"out","type":"tm_angle_parts"}],"returns":"status","mutatesEngineState":false},{"name":"tm_angle_format","params":[{"name":"deg","role":"in","type":"double"},{"name":"style","role":"in","type":"tm_angle_style"},{"name":"decimals","role":"in","type":"int32_t"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_zodiac_sign_name","params":[{"name":"sign","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_name","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_lord","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_chart_blob_size","params":[{"name":"body_count","role":"in","type":"size_t"},{"name":"cusp_count","role":"in","type":"size_t"},{"name":"with_cusp_speeds","role":"in","type":"int32_t"},{"name":"with_angles","role":"in","type":"int32_t"}],"returns":"size_t","mutatesEngineState":false}]}"#;
+pub(crate) const MANIFEST: &str = r#"{"engine":"teimeris","version":"0.1.0","functions":[{"name":"tm_status_name","params":[{"name":"s","role":"in","type":"tm_status"}],"returns":"string","mutatesEngineState":false},{"name":"tm_context_release_caches","params":[],"returns":"void","mutatesEngineState":false},{"name":"tm_version_string","params":[],"returns":"string","mutatesEngineState":false},{"name":"tm_version","params":[{"name":"major","role":"out","type":"int"},{"name":"minor","role":"out","type":"int"},{"name":"patch","role":"out","type":"int"}],"returns":"void","mutatesEngineState":false},{"name":"tm_body_name","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_julian_day","params":[{"name":"dt","role":"in","type":"tm_datetime","optional":true},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_calendar_date","params":[{"name":"jd","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_utc_to_jd","params":[{"name":"utc","role":"in","type":"tm_datetime","optional":true},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd_tt","role":"out","type":"double"},{"name":"out_jd_ut1","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_jd_to_utc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_delta_t","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_day_of_week","params":[{"name":"jd","role":"in","type":"double"}],"returns":"tm_weekday","mutatesEngineState":false},{"name":"tm_weekday_name","params":[{"name":"day","role":"in","type":"tm_weekday"}],"returns":"string","mutatesEngineState":false},{"name":"tm_julian_day_many","params":[{"name":"dts","role":"in","type":"tm_datetime[]"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd","role":"out","type":"double[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_calendar_date_many","params":[{"name":"jds","role":"in","type":"double[]"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_delta_t_many","params":[{"name":"jds_ut1","role":"in","type":"double[]"},{"name":"out_seconds","role":"out","type":"double[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time_many","params":[{"name":"jds_ut1","role":"in","type":"double[]"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_equation_of_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_mean_to_apparent","params":[{"name":"jd_local_mean","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_apparent","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_apparent_to_mean","params":[{"name":"jd_local_apparent","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_mean","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_to_utc","params":[{"name":"local","role":"in","type":"tm_datetime","optional":true},{"name":"utc_offset_hours","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_utc","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_utc_to_local","params":[{"name":"utc","role":"in","type":"tm_datetime","optional":true},{"name":"utc_offset_hours","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_local","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_calc","params":[{"name":"req","role":"in","type":"tm_position_request","optional":true},{"name":"out","role":"out","type":"tm_position"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"field","role":"in","type":"tm_position_field"},{"name":"out","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_calc_many","params":[{"name":"reqs","role":"in","type":"tm_position_request[]"},{"name":"out","role":"out","type":"tm_position[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_calc_grid","params":[{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"jds","role":"in","type":"double[]"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_position[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_house_cusp_count","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_system_name","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"string","mutatesEngineState":false},{"name":"tm_house_system_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_position","params":[{"name":"armc","role":"in","type":"double"},{"name":"geo_lat_deg","role":"in","type":"double"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"sys","role":"in","type":"tm_house_system"},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out_house","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_chart_default_bodies","params":[{"name":"out_bodies","role":"out","type":"tm_body[]"}],"returns":"void","mutatesEngineState":false},{"name":"tm_set_jpl_file","params":[{"name":"filename","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_jpl_info","params":[{"name":"out_denum","role":"out","type":"int32_t"},{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"},{"name":"out_segment_days","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_ayanamsha","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"},{"name":"t0","role":"in","type":"double"},{"name":"ayan_t0","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_ayanamsha_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_degrees","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_ayanamsha_name","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"}],"returns":"string","mutatesEngineState":false},{"name":"tm_ayanamsha_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"out_model","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_model_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_kind_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_count","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_model_info","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"index","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_model_details"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_tidal_acceleration","params":[{"name":"arcsec_per_century2","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_tidal_acceleration","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_tidal_acceleration","params":[{"name":"out_value","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_delta_t_override","params":[{"name":"seconds","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_delta_t_override","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_delta_t_override","params":[{"name":"out_seconds","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_nutation_interpolation","params":[{"name":"enable","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_nutation_interpolation","params":[{"name":"out","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_atmosphere_init_sized","params":[{"name":"altitude_m","role":"in","type":"double"},{"name":"struct_size","role":"in","type":"size_t"},{"name":"atm","role":"out","type":"tm_atmosphere"}],"returns":"status","mutatesEngineState":false},{"name":"tm_refract","params":[{"name":"model","role":"in","type":"tm_refraction_model"},{"name":"dir","role":"in","type":"tm_refraction_direction"},{"name":"altitude_deg","role":"in","type":"double"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"out","role":"out","type":"tm_refraction"}],"returns":"status","mutatesEngineState":false},{"name":"tm_refract_many","params":[{"name":"model","role":"in","type":"tm_refraction_model"},{"name":"dir","role":"in","type":"tm_refraction_direction"},{"name":"altitudes_deg","role":"in","type":"double[]"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"out","role":"out","type":"tm_refraction[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_obliquity_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"out","role":"out","type":"tm_obliquity"}],"returns":"status","mutatesEngineState":false},{"name":"tm_coord_rotate","params":[{"name":"direction","role":"in","type":"tm_frame_rotation"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"positions","role":"in","type":"tm_position[]"},{"name":"out","role":"out","type":"tm_position[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_to_horizontal","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out","role":"out","type":"tm_horizontal"}],"returns":"status","mutatesEngineState":false},{"name":"tm_to_horizontal_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"coords","role":"in","type":"tm_coord[]"},{"name":"out","role":"out","type":"tm_horizontal[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_from_horizontal","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"azimuth_deg","role":"in","type":"double"},{"name":"altitude_deg","role":"in","type":"double"},{"name":"out_lon_deg","role":"out","type":"double"},{"name":"out_lat_deg","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_embedded_coverage","params":[{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_body_coverage","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"out","role":"out","type":"tm_coverage"}],"returns":"status","mutatesEngineState":false},{"name":"tm_loaded_files","params":[{"name":"out_files","role":"out","type":"tm_loaded_file[]"}],"returns":"void","mutatesEngineState":false},{"name":"tm_last_loaded_file","params":[{"name":"out_file","role":"out","type":"tm_loaded_file"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_get","params":[{"name":"out","role":"out","type":"tm_fallback_stats"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_reset","params":[],"returns":"status","mutatesEngineState":false},{"name":"tm_cache_dir_default","params":[{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_nodes_apsides_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_nodes_method"},{"name":"apsis","role":"in","type":"tm_apsis_point"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_nodes_apsides"}],"returns":"status","mutatesEngineState":false},{"name":"tm_nodes_apsides_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_nodes_method"},{"name":"apsis","role":"in","type":"tm_apsis_point"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_nodes_apsides[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbital_elements_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"masses","role":"in","type":"tm_mass_model"},{"name":"out","role":"out","type":"tm_orbital_elements"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbital_elements_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"masses","role":"in","type":"tm_mass_model"},{"name":"out","role":"out","type":"tm_orbital_elements[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbit_distances_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out","role":"out","type":"tm_orbit_distances"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbit_distances_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out","role":"out","type":"tm_orbit_distances[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_phenomena_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_phenomena"}],"returns":"status","mutatesEngineState":false},{"name":"tm_phenomena_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"bodies","role":"in","type":"tm_body[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_phenomena[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_name","params":[{"name":"star","role":"in","type":"tm_star","optional":true},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_designation","params":[{"name":"star","role":"in","type":"tm_star","optional":true},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_load_catalogue","params":[{"name":"path","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_star_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_star_find","params":[{"name":"name","role":"in","type":"string"},{"name":"out","role":"out","type":"tm_star"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_find_all","params":[{"name":"name","role":"in","type":"string"},{"name":"out","role":"out","type":"tm_star[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_query_init_sized","params":[{"name":"q","role":"out","type":"tm_star_query"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_search","params":[{"name":"query","role":"in","type":"tm_star_query","optional":true},{"name":"out","role":"out","type":"tm_star[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"name","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_position"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_calc_many","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"stars","role":"in","type":"tm_star[]"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_position[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_eclipse_type_name","params":[{"name":"bit","role":"in","type":"tm_eclipse_type"}],"returns":"string","mutatesEngineState":false},{"name":"tm_eclipse_request_init_sized","params":[{"name":"req","role":"out","type":"tm_eclipse_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_solar_eclipse_search","params":[{"name":"req","role":"in","type":"tm_eclipse_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_solar_eclipse[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_lunar_eclipse_search","params":[{"name":"req","role":"in","type":"tm_eclipse_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_lunar_eclipse[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_search","params":[{"name":"req","role":"in","type":"tm_eclipse_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_occultation[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_solar_eclipse_search_local","params":[{"name":"req","role":"in","type":"tm_eclipse_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_solar_eclipse_local[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_lunar_eclipse_search_local","params":[{"name":"req","role":"in","type":"tm_eclipse_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_lunar_eclipse_local[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_search_local","params":[{"name":"req","role":"in","type":"tm_eclipse_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_occultation_local[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_solar_eclipse_where","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_location","role":"out","type":"tm_eclipse_location"},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_where","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_location","role":"out","type":"tm_eclipse_location"},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_solar_eclipse_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_lunar_eclipse_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_lunar_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_event_kind_name","params":[{"name":"kind","role":"in","type":"tm_event_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_event_request_init_sized","params":[{"name":"req","role":"out","type":"tm_event_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_event_search","params":[{"name":"req","role":"in","type":"tm_event_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_event[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_gauquelin_sector","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_gauquelin_method"},{"name":"refraction","role":"in","type":"int32_t"},{"name":"disc_center","role":"in","type":"int32_t"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_atmosphere","optional":true},{"name":"out_sector","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_defaults","params":[{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"out","type":"tm_visibility_atmosphere"},{"name":"eye","role":"out","type":"tm_observer_eye"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_limit","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"out","role":"out","type":"tm_visibility"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_arcus","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"magnitude","role":"in","type":"double"},{"name":"object_altitude_deg","role":"in","type":"double"},{"name":"object_azimuth_deg","role":"in","type":"double"},{"name":"sun_azimuth_deg","role":"in","type":"double"},{"name":"moon_altitude_deg","role":"in","type":"double"},{"name":"moon_azimuth_deg","role":"in","type":"double"},{"name":"out_arcus_deg","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_best_altitude","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"magnitude","role":"in","type":"double"},{"name":"object_azimuth_deg","role":"in","type":"double"},{"name":"sun_azimuth_deg","role":"in","type":"double"},{"name":"moon_altitude_deg","role":"in","type":"double"},{"name":"moon_azimuth_deg","role":"in","type":"double"},{"name":"out","role":"out","type":"tm_visibility_best"}],"returns":"status","mutatesEngineState":false},{"name":"tm_heliacal_request_init_sized","params":[{"name":"req","role":"out","type":"tm_heliacal_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_heliacal_search","params":[{"name":"req","role":"in","type":"tm_heliacal_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_heliacal[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_heliacal_detail","params":[{"name":"req","role":"in","type":"tm_heliacal_request","optional":true},{"name":"out","role":"out","type":"tm_heliacal_details"}],"returns":"status","mutatesEngineState":false},{"name":"tm_crossing_request_init_sized","params":[{"name":"req","role":"out","type":"tm_crossing_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_crossing_search","params":[{"name":"req","role":"in","type":"tm_crossing_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_crossing[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_node_crossing_search","params":[{"name":"req","role":"in","type":"tm_crossing_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_crossing[]"}],"returns":"status","mutatesEngineState":false},{"name":"tm_calendar_request_init_sized","params":[{"name":"req","role":"out","type":"tm_calendar_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_scan_request_init_sized","params":[{"name":"req","role":"out","type":"tm_scan_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_scan_grid","params":[{"name":"req","role":"in","type":"tm_scan_request","optional":true},{"name":"out_capacity","role":"in","type":"size_t"},{"name":"out","role":"out","type":"tm_bracket[]"},{"name":"out_samples","role":"out","type":"size_t"},{"name":"out_jd_reached","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_angle_normalize_deg","params":[{"name":"deg","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_normalize_rad","params":[{"name":"rad","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg_positive","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_degrees_to_centiseconds","params":[{"name":"deg","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_to_degrees","params":[{"name":"centiseconds","role":"in","type":"int32_t"}],"returns":"double","mutatesEngineState":false},{"name":"tm_centiseconds_normalize","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff_signed","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_round_seconds","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_round_half_away","params":[{"name":"x","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_angle_split","params":[{"name":"deg","role":"in","type":"double"},{"name":"options","role":"in","type":"uint32_t"},{"name":"out","role":"out","type":"tm_angle_parts"}],"returns":"status","mutatesEngineState":false},{"name":"tm_angle_format","params":[{"name":"deg","role":"in","type":"double"},{"name":"style","role":"in","type":"tm_angle_style"},{"name":"decimals","role":"in","type":"int32_t"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_zodiac_sign_name","params":[{"name":"sign","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_name","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_lord","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_chart_blob_size","params":[{"name":"body_count","role":"in","type":"size_t"},{"name":"cusp_count","role":"in","type":"size_t"},{"name":"with_cusp_speeds","role":"in","type":"int32_t"},{"name":"with_angles","role":"in","type":"int32_t"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_ayanamsha_info","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"},{"name":"out","role":"out","type":"tm_ayanamsha_details"}],"returns":"status","mutatesEngineState":false}]}"#;
 
 /// Calls one of them by name.
 ///
@@ -295,6 +295,22 @@ pub(crate) fn call(
             checked(context, &before, answered, "tm_utc_to_local")?;
             Ok(json!({"out_local": write_tm_datetime(&out_local)}))
         }
+        "tm_position_calc" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_position_request(&within, &keep))
+                .transpose()?;
+            let mut out: sys::tm_position = sys::tm_position::default();
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_position_calc(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
+            checked(context, &before, answered, "tm_position_calc")?;
+            Ok(json!({"out": write_tm_position(&out)}))
+        }
         "tm_position_value" => {
             let jd: f64 = number(args, "jd")?;
             let scale: sys::tm_timescale = narrow(args, "scale")?;
@@ -310,6 +326,20 @@ pub(crate) fn call(
             checked(context, &before, answered, "tm_position_value")?;
             Ok(json!({"out": out}))
         }
+        "tm_position_calc_many" => {
+            let keep = Keep::default();
+            let reqs: Vec<sys::tm_position_request> = objects(args, "reqs", |within| read_tm_position_request(within, &keep))?;
+            let mut out: Vec<sys::tm_position> = room(reqs.len(), "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every input array is a `Vec` the arm owns, passed with
+            // its own length; every output array is a `Vec` the arm sized
+            // to the engine's stated extent, passed with its own length.
+            let answered = unsafe { sys::tm_position_calc_many(context, reqs.as_ptr(), reqs.len(), out.as_mut_ptr(), out.len()) };
+            settled(checked(context, &before, answered, "tm_position_calc_many"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_position).collect::<Vec<_>>()}))
+        }
         "tm_position_calc_grid" => {
             let bodies: Vec<sys::tm_body> = wholes(args, "bodies")?;
             let jds: Vec<f64> = numbers(args, "jds")?;
@@ -319,6 +349,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_position> = room(extent(&[bodies.len(), jds.len()], "out")?, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
@@ -327,7 +358,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_position_calc_grid(context, bodies.as_ptr(), bodies.len(), jds.as_ptr(), jds.len(), scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            checked(context, &before, answered, "tm_position_calc_grid")?;
+            settled(checked(context, &before, answered, "tm_position_calc_grid"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_position).collect::<Vec<_>>()}))
         }
         "tm_house_cusp_count" => {
@@ -478,6 +509,18 @@ pub(crate) fn call(
             let answered = unsafe { sys::tm_model_count(kind) };
             Ok(json!({"return": answered}))
         }
+        "tm_model_info" => {
+            let kind: sys::tm_model_kind = narrow(args, "kind")?;
+            let index: usize = narrow(args, "index")?;
+            let mut out: sys::tm_model_details = sys::tm_model_details::default();
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_model_info(context, kind, index, &raw mut out) };
+            checked(context, &before, answered, "tm_model_info")?;
+            Ok(json!({"out": write_tm_model_details(&out)}))
+        }
         "tm_set_tidal_acceleration" => {
             let arcsec_per_century2: f64 = number(args, "arcsec_per_century2")?;
             let before = record(context);
@@ -623,13 +666,14 @@ pub(crate) fn call(
             let obliquity_deg: f64 = number(args, "obliquity_deg")?;
             let positions: Vec<sys::tm_position> = objects(args, "positions", read_tm_position)?;
             let mut out: Vec<sys::tm_position> = room(positions.len(), "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_coord_rotate(context, direction, obliquity_deg, positions.as_ptr(), positions.len(), out.as_mut_ptr(), out.len()) };
-            checked(context, &before, answered, "tm_coord_rotate")?;
+            settled(checked(context, &before, answered, "tm_coord_rotate"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_position).collect::<Vec<_>>()}))
         }
         "tm_to_horizontal" => {
@@ -718,6 +762,26 @@ pub(crate) fn call(
             checked(context, &before, answered, "tm_body_coverage")?;
             Ok(json!({"out": write_tm_coverage(&out)}))
         }
+        "tm_loaded_files" => {
+            let out_files = gather::<sys::tm_loaded_file>("tm_loaded_files", |room| {
+                // SAFETY: the context is the adapter's own and live for this
+                // call; the output room is the gather protocol's own, passed
+                // with its own length.
+                let answered = unsafe { sys::tm_loaded_files(context, room.as_mut_ptr(), room.len()) };
+                Ok(answered)
+            })?;
+            Ok(json!({"out_files": out_files.iter().map(write_tm_loaded_file).collect::<Vec<_>>()}))
+        }
+        "tm_last_loaded_file" => {
+            let mut out_file: sys::tm_loaded_file = sys::tm_loaded_file::default();
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_last_loaded_file(context, &raw mut out_file) };
+            checked(context, &before, answered, "tm_last_loaded_file")?;
+            Ok(json!({"out_file": write_tm_loaded_file(&out_file)}))
+        }
         "tm_fallback_stats_get" => {
             let mut out: sys::tm_fallback_stats = sys::tm_fallback_stats::default();
             let before = record(context);
@@ -776,6 +840,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_nodes_apsides> = room(bodies.len(), "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
@@ -784,7 +849,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_nodes_apsides_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, method, apsis, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            checked(context, &before, answered, "tm_nodes_apsides_calc_many")?;
+            settled(checked(context, &before, answered, "tm_nodes_apsides_calc_many"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_nodes_apsides).collect::<Vec<_>>()}))
         }
         "tm_orbital_elements_calc" => {
@@ -809,13 +874,14 @@ pub(crate) fn call(
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let masses: sys::tm_mass_model = narrow(args, "masses")?;
             let mut out: Vec<sys::tm_orbital_elements> = room(bodies.len(), "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_orbital_elements_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, masses, out.as_mut_ptr(), out.len()) };
-            checked(context, &before, answered, "tm_orbital_elements_calc_many")?;
+            settled(checked(context, &before, answered, "tm_orbital_elements_calc_many"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_orbital_elements).collect::<Vec<_>>()}))
         }
         "tm_orbit_distances_calc" => {
@@ -838,13 +904,14 @@ pub(crate) fn call(
             let bodies: Vec<sys::tm_body> = wholes(args, "bodies")?;
             let flags: sys::tm_flags = narrow(args, "flags")?;
             let mut out: Vec<sys::tm_orbit_distances> = room(bodies.len(), "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every input array is a `Vec` the arm owns, passed with
             // its own length; every output array is a `Vec` the arm sized
             // to the engine's stated extent, passed with its own length.
             let answered = unsafe { sys::tm_orbit_distances_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, out.as_mut_ptr(), out.len()) };
-            checked(context, &before, answered, "tm_orbit_distances_calc_many")?;
+            settled(checked(context, &before, answered, "tm_orbit_distances_calc_many"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_orbit_distances).collect::<Vec<_>>()}))
         }
         "tm_phenomena_calc" => {
@@ -875,6 +942,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_phenomena> = room(bodies.len(), "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
@@ -883,7 +951,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_phenomena_calc_many(context, jd, scale, bodies.as_ptr(), bodies.len(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            checked(context, &before, answered, "tm_phenomena_calc_many")?;
+            settled(checked(context, &before, answered, "tm_phenomena_calc_many"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_phenomena).collect::<Vec<_>>()}))
         }
         "tm_star_name" => {
@@ -958,6 +1026,35 @@ pub(crate) fn call(
             })?;
             Ok(json!({"out": out.iter().map(write_tm_star).collect::<Vec<_>>()}))
         }
+        "tm_star_query_init_sized" => {
+            let mut q: sys::tm_star_query = sys::tm_star_query::default();
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`; the
+            // extent passed is the size of that local.
+            let answered = unsafe { sys::tm_star_query_init_sized(&raw mut q, core::mem::size_of_val(&q)) };
+            status(answered, "tm_star_query_init_sized")?;
+            Ok(json!({"q": write_tm_star_query(&q)}))
+        }
+        "tm_star_search" => {
+            let keep = Keep::default();
+            let query = optional_object(args, "query")?
+                .map(|within| read_tm_star_query(&within, &keep))
+                .transpose()?;
+            let out = gather::<sys::tm_star>("tm_star_search", |room| {
+                let mut out_count: usize = 0;
+                let before = record(context);
+                // SAFETY: the context is the adapter's own and live for this
+                // call; every out-parameter is a local of the width the engine
+                // declares; every struct argument is a local of the type the
+                // engine declares, its extent filled by the arm; the output
+                // room is the gather protocol's own, passed with its own
+                // length.
+                let answered = unsafe { sys::tm_star_search(context, query.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), room.as_mut_ptr(), room.len(), &raw mut out_count) };
+                checked(context, &before, answered, "tm_star_search")?;
+                Ok(out_count)
+            })?;
+            Ok(json!({"out": out.iter().map(write_tm_star).collect::<Vec<_>>()}))
+        }
         "tm_star_calc" => {
             let jd: f64 = number(args, "jd")?;
             let scale: sys::tm_timescale = narrow(args, "scale")?;
@@ -987,6 +1084,7 @@ pub(crate) fn call(
                 .map(|within| read_tm_observer(&within))
                 .transpose()?;
             let mut out: Vec<sys::tm_position> = room(stars.len(), "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
             // call; every struct argument is a local of the type the
@@ -995,7 +1093,7 @@ pub(crate) fn call(
             // every output array is a `Vec` the arm sized to the engine's
             // stated extent, passed with its own length.
             let answered = unsafe { sys::tm_star_calc_many(context, jd, scale, stars.as_ptr(), stars.len(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len()) };
-            checked(context, &before, answered, "tm_star_calc_many")?;
+            settled(checked(context, &before, answered, "tm_star_calc_many"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_position).collect::<Vec<_>>()}))
         }
         "tm_eclipse_type_name" => {
@@ -1004,6 +1102,141 @@ pub(crate) fn call(
             // engine declares.
             let answered = unsafe { sys::tm_eclipse_type_name(bit) };
             Ok(json!({"return": borrowed(answered)}))
+        }
+        "tm_eclipse_request_init_sized" => {
+            let mut req: sys::tm_eclipse_request = sys::tm_eclipse_request::default();
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`; the
+            // extent passed is the size of that local.
+            let answered = unsafe { sys::tm_eclipse_request_init_sized(&raw mut req, core::mem::size_of_val(&req)) };
+            status(answered, "tm_eclipse_request_init_sized")?;
+            Ok(json!({"req": write_tm_eclipse_request(&req)}))
+        }
+        "tm_solar_eclipse_search" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_eclipse_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_solar_eclipse> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_solar_eclipse_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_solar_eclipse_search"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_solar_eclipse).collect::<Vec<_>>()}))
+        }
+        "tm_lunar_eclipse_search" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_eclipse_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_lunar_eclipse> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_lunar_eclipse_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_lunar_eclipse_search"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_lunar_eclipse).collect::<Vec<_>>()}))
+        }
+        "tm_occultation_search" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_eclipse_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_occultation> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_occultation_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_occultation_search"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_occultation).collect::<Vec<_>>()}))
+        }
+        "tm_solar_eclipse_search_local" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_eclipse_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_solar_eclipse_local> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_solar_eclipse_search_local(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_solar_eclipse_search_local"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_solar_eclipse_local).collect::<Vec<_>>()}))
+        }
+        "tm_lunar_eclipse_search_local" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_eclipse_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_lunar_eclipse_local> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_lunar_eclipse_search_local(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_lunar_eclipse_search_local"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_lunar_eclipse_local).collect::<Vec<_>>()}))
+        }
+        "tm_occultation_search_local" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_eclipse_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_occultation_local> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_occultation_search_local(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_occultation_search_local"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_occultation_local).collect::<Vec<_>>()}))
         }
         "tm_solar_eclipse_where" => {
             let jd: f64 = number(args, "jd")?;
@@ -1109,6 +1342,36 @@ pub(crate) fn call(
             // engine declares.
             let answered = unsafe { sys::tm_event_kind_name(kind) };
             Ok(json!({"return": borrowed(answered)}))
+        }
+        "tm_event_request_init_sized" => {
+            let mut req: sys::tm_event_request = sys::tm_event_request::default();
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`; the
+            // extent passed is the size of that local.
+            let answered = unsafe { sys::tm_event_request_init_sized(&raw mut req, core::mem::size_of_val(&req)) };
+            status(answered, "tm_event_request_init_sized")?;
+            Ok(json!({"req": write_tm_event_request(&req)}))
+        }
+        "tm_event_search" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_event_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_event> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_event_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_event_search"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_event).collect::<Vec<_>>()}))
         }
         "tm_gauquelin_sector" => {
             let jd: f64 = number(args, "jd")?;
@@ -1235,6 +1498,52 @@ pub(crate) fn call(
             checked(context, &before, answered, "tm_visibility_best_altitude")?;
             Ok(json!({"out": write_tm_visibility_best(&out)}))
         }
+        "tm_heliacal_request_init_sized" => {
+            let mut req: sys::tm_heliacal_request = sys::tm_heliacal_request::default();
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`; the
+            // extent passed is the size of that local.
+            let answered = unsafe { sys::tm_heliacal_request_init_sized(&raw mut req, core::mem::size_of_val(&req)) };
+            status(answered, "tm_heliacal_request_init_sized")?;
+            Ok(json!({"req": write_tm_heliacal_request(&req)}))
+        }
+        "tm_heliacal_search" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_heliacal_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_heliacal> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_heliacal_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_heliacal_search"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_heliacal).collect::<Vec<_>>()}))
+        }
+        "tm_heliacal_detail" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_heliacal_request(&within, &keep))
+                .transpose()?;
+            let mut out: sys::tm_heliacal_details = sys::tm_heliacal_details::default();
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_heliacal_detail(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
+            checked(context, &before, answered, "tm_heliacal_detail")?;
+            Ok(json!({"out": write_tm_heliacal_details(&out)}))
+        }
         "tm_crossing_request_init_sized" => {
             let mut req: sys::tm_crossing_request = sys::tm_crossing_request::default();
             // SAFETY: every struct out-parameter is a local of the type
@@ -1250,6 +1559,7 @@ pub(crate) fn call(
                 .transpose()?;
             let out_capacity: usize = narrow(args, "out_capacity")?;
             let mut out: Vec<sys::tm_crossing> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let mut out_count: usize = 0;
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
@@ -1259,8 +1569,8 @@ pub(crate) fn call(
             // array is a `Vec` the arm sized to the engine's stated
             // extent, passed with its own length.
             let answered = unsafe { sys::tm_crossing_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
-            checked(context, &before, answered, "tm_crossing_search")?;
             out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_crossing_search"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_crossing).collect::<Vec<_>>()}))
         }
         "tm_node_crossing_search" => {
@@ -1269,6 +1579,7 @@ pub(crate) fn call(
                 .transpose()?;
             let out_capacity: usize = narrow(args, "out_capacity")?;
             let mut out: Vec<sys::tm_crossing> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
             let mut out_count: usize = 0;
             let before = record(context);
             // SAFETY: the context is the adapter's own and live for this
@@ -1278,9 +1589,50 @@ pub(crate) fn call(
             // array is a `Vec` the arm sized to the engine's stated
             // extent, passed with its own length.
             let answered = unsafe { sys::tm_node_crossing_search(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count) };
-            checked(context, &before, answered, "tm_node_crossing_search")?;
             out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_node_crossing_search"), &mut out, |one| &mut one.status)?;
             Ok(json!({"out": out.iter().map(write_tm_crossing).collect::<Vec<_>>()}))
+        }
+        "tm_calendar_request_init_sized" => {
+            let mut req: sys::tm_calendar_request = sys::tm_calendar_request::default();
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`; the
+            // extent passed is the size of that local.
+            let answered = unsafe { sys::tm_calendar_request_init_sized(&raw mut req, core::mem::size_of_val(&req)) };
+            status(answered, "tm_calendar_request_init_sized")?;
+            Ok(json!({"req": write_tm_calendar_request(&req)}))
+        }
+        "tm_scan_request_init_sized" => {
+            let mut req: sys::tm_scan_request = sys::tm_scan_request::default();
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`; the
+            // extent passed is the size of that local.
+            let answered = unsafe { sys::tm_scan_request_init_sized(&raw mut req, core::mem::size_of_val(&req)) };
+            status(answered, "tm_scan_request_init_sized")?;
+            Ok(json!({"req": write_tm_scan_request(&req)}))
+        }
+        "tm_scan_grid" => {
+            let keep = Keep::default();
+            let req = optional_object(args, "req")?
+                .map(|within| read_tm_scan_request(&within, &keep))
+                .transpose()?;
+            let out_capacity: usize = narrow(args, "out_capacity")?;
+            let mut out: Vec<sys::tm_bracket> = room(out_capacity, "out")?;
+            unwritten(&mut out, |one| &mut one.status);
+            let mut out_count: usize = 0;
+            let mut out_samples: usize = 0;
+            let mut out_jd_reached: f64 = 0.0;
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every output
+            // array is a `Vec` the arm sized to the engine's stated
+            // extent, passed with its own length.
+            let answered = unsafe { sys::tm_scan_grid(context, req.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), out.as_mut_ptr(), out.len(), &raw mut out_count, &raw mut out_samples, &raw mut out_jd_reached) };
+            out.truncate(out_count);
+            settled(checked(context, &before, answered, "tm_scan_grid"), &mut out, |one| &mut one.status)?;
+            Ok(json!({"out": out.iter().map(write_tm_bracket).collect::<Vec<_>>(), "out_samples": out_samples, "out_jd_reached": out_jd_reached}))
         }
         "tm_angle_normalize_deg" => {
             let deg: f64 = number(args, "deg")?;
@@ -1442,6 +1794,17 @@ pub(crate) fn call(
             let answered = unsafe { sys::tm_chart_blob_size(body_count, cusp_count, with_cusp_speeds, with_angles) };
             Ok(json!({"return": answered}))
         }
+        "tm_ayanamsha_info" => {
+            let mode: sys::tm_ayanamsha = narrow(args, "mode")?;
+            let mut out: sys::tm_ayanamsha_details = sys::tm_ayanamsha_details::default();
+            let before = record(context);
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_ayanamsha_info(context, mode, &raw mut out) };
+            checked(context, &before, answered, "tm_ayanamsha_info")?;
+            Ok(json!({"out": write_tm_ayanamsha_details(&out)}))
+        }
         other => Err(ProviderError::unsupported(format!(
             "the engine offers no `{other}` through this adapter; \
              `native_manifest` lists what it does"
@@ -1487,6 +1850,21 @@ fn read_tm_position(within: &Within<'_>) -> Result<sys::tm_position, ProviderErr
     })
 }
 
+/// A `tm_position_request` read out of the object a caller passed.
+fn read_tm_position_request(within: &Within<'_>, keep: &Keep) -> Result<sys::tm_position_request, ProviderError> {
+    Ok(sys::tm_position_request {
+        struct_size: core::mem::size_of::<sys::tm_position_request>(),
+        jd: within.number("jd")?,
+        scale: within.narrow("scale")?,
+        body: within.narrow("body")?,
+        flags: within.narrow("flags")?,
+        observer: within.pointer("observer", keep, read_tm_observer)?,
+        center: within.narrow("center")?,
+        ayanamsha: within.narrow("ayanamsha")?,
+        ayanamsha_set: within.narrow("ayanamsha_set")?,
+    })
+}
+
 /// A `tm_atmosphere` read out of the object a caller passed.
 fn read_tm_atmosphere(within: &Within<'_>) -> Result<sys::tm_atmosphere, ProviderError> {
     Ok(sys::tm_atmosphere {
@@ -1522,6 +1900,55 @@ fn read_tm_star(within: &Within<'_>) -> Result<sys::tm_star, ProviderError> {
     })
 }
 
+/// A `tm_star_query` read out of the object a caller passed.
+fn read_tm_star_query(within: &Within<'_>, keep: &Keep) -> Result<sys::tm_star_query, ProviderError> {
+    Ok(sys::tm_star_query {
+        struct_size: core::mem::size_of::<sys::tm_star_query>(),
+        use_magnitude: within.narrow("use_magnitude")?,
+        magnitude_min: within.number("magnitude_min")?,
+        magnitude_max: within.number("magnitude_max")?,
+        ra_deg: within.number("ra_deg")?,
+        dec_deg: within.number("dec_deg")?,
+        radius_deg: within.number("radius_deg")?,
+        name_contains: within.text("name_contains", keep)?,
+    })
+}
+
+/// A `tm_eclipse_request` read out of the object a caller passed.
+fn read_tm_eclipse_request(within: &Within<'_>, keep: &Keep) -> Result<sys::tm_eclipse_request, ProviderError> {
+    Ok(sys::tm_eclipse_request {
+        struct_size: core::mem::size_of::<sys::tm_eclipse_request>(),
+        jd_start: within.number("jd_start")?,
+        scale: within.narrow("scale")?,
+        flags: within.narrow("flags")?,
+        want: within.narrow("want")?,
+        backward: within.narrow("backward")?,
+        observer: within.pointer("observer", keep, read_tm_observer)?,
+        body: within.narrow("body")?,
+        star: within.text("star", keep)?,
+        one_try: within.narrow("one_try")?,
+        jd_end: within.number("jd_end")?,
+    })
+}
+
+/// A `tm_event_request` read out of the object a caller passed.
+fn read_tm_event_request(within: &Within<'_>, keep: &Keep) -> Result<sys::tm_event_request, ProviderError> {
+    Ok(sys::tm_event_request {
+        struct_size: core::mem::size_of::<sys::tm_event_request>(),
+        jd_start: within.number("jd_start")?,
+        scale: within.narrow("scale")?,
+        body: within.narrow("body")?,
+        star: within.text("star", keep)?,
+        flags: within.narrow("flags")?,
+        kind: within.narrow("kind")?,
+        options: within.narrow("options")?,
+        observer: within.pointer("observer", keep, read_tm_observer)?,
+        atmosphere: within.pointer("atmosphere", keep, read_tm_atmosphere)?,
+        horizon_height_deg: within.number("horizon_height_deg")?,
+        jd_end: within.number("jd_end")?,
+    })
+}
+
 /// A `tm_visibility_atmosphere` read out of the object a caller passed.
 fn read_tm_visibility_atmosphere(within: &Within<'_>) -> Result<sys::tm_visibility_atmosphere, ProviderError> {
     Ok(sys::tm_visibility_atmosphere {
@@ -1547,6 +1974,24 @@ fn read_tm_observer_eye(within: &Within<'_>) -> Result<sys::tm_observer_eye, Pro
     })
 }
 
+/// A `tm_heliacal_request` read out of the object a caller passed.
+fn read_tm_heliacal_request(within: &Within<'_>, keep: &Keep) -> Result<sys::tm_heliacal_request, ProviderError> {
+    Ok(sys::tm_heliacal_request {
+        struct_size: core::mem::size_of::<sys::tm_heliacal_request>(),
+        jd_start: within.number("jd_start")?,
+        scale: within.narrow("scale")?,
+        body: within.narrow("body")?,
+        star: within.text("star", keep)?,
+        flags: within.narrow("flags")?,
+        kind: within.narrow("kind")?,
+        options: within.narrow("options")?,
+        observer: within.pointer("observer", keep, read_tm_observer)?,
+        atmosphere: within.pointer("atmosphere", keep, read_tm_visibility_atmosphere)?,
+        eye: within.pointer("eye", keep, read_tm_observer_eye)?,
+        jd_end: within.number("jd_end")?,
+    })
+}
+
 /// A `tm_crossing_request` read out of the object a caller passed.
 fn read_tm_crossing_request(within: &Within<'_>) -> Result<sys::tm_crossing_request, ProviderError> {
     Ok(sys::tm_crossing_request {
@@ -1566,6 +2011,24 @@ fn read_tm_crossing_request(within: &Within<'_>) -> Result<sys::tm_crossing_requ
     })
 }
 
+/// A `tm_scan_request` read out of the object a caller passed.
+fn read_tm_scan_request(within: &Within<'_>, keep: &Keep) -> Result<sys::tm_scan_request, ProviderError> {
+    Ok(sys::tm_scan_request {
+        struct_size: core::mem::size_of::<sys::tm_scan_request>(),
+        jd_start: within.number("jd_start")?,
+        jd_end: within.number("jd_end")?,
+        step_days: within.number("step_days")?,
+        scale: within.narrow("scale")?,
+        body: within.narrow("body")?,
+        body_b: within.narrow("body_b")?,
+        quantity: within.narrow("quantity")?,
+        direction: within.narrow("direction")?,
+        threshold: within.number("threshold")?,
+        flags: within.narrow("flags")?,
+        observer: within.pointer("observer", keep, read_tm_observer)?,
+    })
+}
+
 /// A `tm_datetime` as the object a caller gets back.
 fn write_tm_datetime(value: &sys::tm_datetime) -> Value {
     json!({
@@ -1575,6 +2038,15 @@ fn write_tm_datetime(value: &sys::tm_datetime) -> Value {
         "hour": value.hour,
         "minute": value.minute,
         "second": value.second,
+    })
+}
+
+/// A `tm_observer` as the object a caller gets back.
+fn write_tm_observer(value: &sys::tm_observer) -> Value {
+    json!({
+        "longitude_deg": value.longitude_deg,
+        "latitude_deg": value.latitude_deg,
+        "altitude_m": value.altitude_m,
     })
 }
 
@@ -1589,6 +2061,17 @@ fn write_tm_position(value: &sys::tm_position) -> Value {
         "dist_speed": value.dist_speed,
         "flags_used": value.flags_used,
         "status": value.status,
+    })
+}
+
+/// A `tm_model_details` as the object a caller gets back.
+fn write_tm_model_details(value: &sys::tm_model_details) -> Value {
+    json!({
+        "value": value.value,
+        "name": borrowed(value.name),
+        "implemented": value.implemented,
+        "is_default_compatible": value.is_default_compatible,
+        "is_default_max": value.is_default_max,
     })
 }
 
@@ -1639,6 +2122,21 @@ fn write_tm_coverage(value: &sys::tm_coverage) -> Value {
         "jd_end": value.jd_end,
         "contiguous": value.contiguous,
         "file_count": value.file_count,
+    })
+}
+
+/// A `tm_loaded_file` as the object a caller gets back.
+fn write_tm_loaded_file(value: &sys::tm_loaded_file) -> Value {
+    json!({
+        "name": borrowed(value.name),
+        "internal_name": borrowed(value.internal_name),
+        "jd_start": value.jd_start,
+        "jd_end": value.jd_end,
+        "denum": value.denum,
+        "version": value.version,
+        "body_count": value.body_count,
+        "origin": value.origin,
+        "crc_verified": value.crc_verified,
     })
 }
 
@@ -1731,6 +2229,19 @@ fn write_tm_star(value: &sys::tm_star) -> Value {
     })
 }
 
+/// A `tm_star_query` as the object a caller gets back.
+fn write_tm_star_query(value: &sys::tm_star_query) -> Value {
+    json!({
+        "use_magnitude": value.use_magnitude,
+        "magnitude_min": value.magnitude_min,
+        "magnitude_max": value.magnitude_max,
+        "ra_deg": value.ra_deg,
+        "dec_deg": value.dec_deg,
+        "radius_deg": value.radius_deg,
+        "name_contains": borrowed(value.name_contains),
+    })
+}
+
 /// A `tm_eclipse_attributes` as the object a caller gets back.
 fn write_tm_eclipse_attributes(value: &sys::tm_eclipse_attributes) -> Value {
     json!({
@@ -1776,6 +2287,153 @@ fn write_tm_eclipse_location(value: &sys::tm_eclipse_location) -> Value {
         "axis_distance_km": value.axis_distance_km,
         "umbra_fundamental_km": value.umbra_fundamental_km,
         "penumbra_fundamental_km": value.penumbra_fundamental_km,
+    })
+}
+
+/// A `tm_solar_eclipse` as the object a caller gets back.
+fn write_tm_solar_eclipse(value: &sys::tm_solar_eclipse) -> Value {
+    json!({
+        "type": value.r#type,
+        "maximum": value.maximum,
+        "local_noon": value.local_noon,
+        "begin": value.begin,
+        "end": value.end,
+        "total_begin": value.total_begin,
+        "total_end": value.total_end,
+        "center_begin": value.center_begin,
+        "center_end": value.center_end,
+        "status": value.status,
+    })
+}
+
+/// A `tm_lunar_eclipse` as the object a caller gets back.
+fn write_tm_lunar_eclipse(value: &sys::tm_lunar_eclipse) -> Value {
+    json!({
+        "type": value.r#type,
+        "maximum": value.maximum,
+        "partial_begin": value.partial_begin,
+        "partial_end": value.partial_end,
+        "total_begin": value.total_begin,
+        "total_end": value.total_end,
+        "penumbral_begin": value.penumbral_begin,
+        "penumbral_end": value.penumbral_end,
+        "status": value.status,
+    })
+}
+
+/// A `tm_occultation` as the object a caller gets back.
+fn write_tm_occultation(value: &sys::tm_occultation) -> Value {
+    json!({
+        "type": value.r#type,
+        "maximum": value.maximum,
+        "local_noon": value.local_noon,
+        "begin": value.begin,
+        "end": value.end,
+        "total_begin": value.total_begin,
+        "total_end": value.total_end,
+        "center_begin": value.center_begin,
+        "center_end": value.center_end,
+        "status": value.status,
+    })
+}
+
+/// A `tm_solar_eclipse_local` as the object a caller gets back.
+fn write_tm_solar_eclipse_local(value: &sys::tm_solar_eclipse_local) -> Value {
+    json!({
+        "type": value.r#type,
+        "phases_visible": value.phases_visible,
+        "visible": value.visible,
+        "maximum": value.maximum,
+        "first_contact": value.first_contact,
+        "second_contact": value.second_contact,
+        "third_contact": value.third_contact,
+        "fourth_contact": value.fourth_contact,
+        "sunrise": value.sunrise,
+        "sunset": value.sunset,
+        "attributes": write_tm_eclipse_attributes(&value.attributes),
+        "status": value.status,
+    })
+}
+
+/// A `tm_lunar_eclipse_local` as the object a caller gets back.
+fn write_tm_lunar_eclipse_local(value: &sys::tm_lunar_eclipse_local) -> Value {
+    json!({
+        "type": value.r#type,
+        "phases_visible": value.phases_visible,
+        "visible": value.visible,
+        "maximum": value.maximum,
+        "partial_begin": value.partial_begin,
+        "partial_end": value.partial_end,
+        "total_begin": value.total_begin,
+        "total_end": value.total_end,
+        "penumbral_begin": value.penumbral_begin,
+        "penumbral_end": value.penumbral_end,
+        "moonrise": value.moonrise,
+        "moonset": value.moonset,
+        "attributes": write_tm_lunar_eclipse_attributes(&value.attributes),
+        "status": value.status,
+    })
+}
+
+/// A `tm_occultation_local` as the object a caller gets back.
+fn write_tm_occultation_local(value: &sys::tm_occultation_local) -> Value {
+    json!({
+        "type": value.r#type,
+        "phases_visible": value.phases_visible,
+        "daylight": value.daylight,
+        "visible": value.visible,
+        "maximum": value.maximum,
+        "first_contact": value.first_contact,
+        "second_contact": value.second_contact,
+        "third_contact": value.third_contact,
+        "fourth_contact": value.fourth_contact,
+        "body_rise": value.body_rise,
+        "body_set": value.body_set,
+        "attributes": write_tm_eclipse_attributes(&value.attributes),
+        "status": value.status,
+    })
+}
+
+/// A `tm_eclipse_request` as the object a caller gets back.
+fn write_tm_eclipse_request(value: &sys::tm_eclipse_request) -> Value {
+    json!({
+        "jd_start": value.jd_start,
+        "scale": value.scale,
+        "flags": value.flags,
+        "want": value.want,
+        "backward": value.backward,
+        "observer": pointed(value.observer, write_tm_observer),
+        "body": value.body,
+        "star": borrowed(value.star),
+        "one_try": value.one_try,
+        "jd_end": value.jd_end,
+    })
+}
+
+/// A `tm_event_request` as the object a caller gets back.
+fn write_tm_event_request(value: &sys::tm_event_request) -> Value {
+    json!({
+        "jd_start": value.jd_start,
+        "scale": value.scale,
+        "body": value.body,
+        "star": borrowed(value.star),
+        "flags": value.flags,
+        "kind": value.kind,
+        "options": value.options,
+        "observer": pointed(value.observer, write_tm_observer),
+        "atmosphere": pointed(value.atmosphere, write_tm_atmosphere),
+        "horizon_height_deg": value.horizon_height_deg,
+        "jd_end": value.jd_end,
+    })
+}
+
+/// A `tm_event` as the object a caller gets back.
+fn write_tm_event(value: &sys::tm_event) -> Value {
+    json!({
+        "jd": value.jd,
+        "found": value.found,
+        "fast_method": value.fast_method,
+        "status": value.status,
     })
 }
 
@@ -1830,6 +2488,73 @@ fn write_tm_visibility_best(value: &sys::tm_visibility_best) -> Value {
     })
 }
 
+/// A `tm_heliacal_request` as the object a caller gets back.
+fn write_tm_heliacal_request(value: &sys::tm_heliacal_request) -> Value {
+    json!({
+        "jd_start": value.jd_start,
+        "scale": value.scale,
+        "body": value.body,
+        "star": borrowed(value.star),
+        "flags": value.flags,
+        "kind": value.kind,
+        "options": value.options,
+        "observer": pointed(value.observer, write_tm_observer),
+        "atmosphere": pointed(value.atmosphere, write_tm_visibility_atmosphere),
+        "eye": pointed(value.eye, write_tm_observer_eye),
+        "jd_end": value.jd_end,
+    })
+}
+
+/// A `tm_heliacal` as the object a caller gets back.
+fn write_tm_heliacal(value: &sys::tm_heliacal) -> Value {
+    json!({
+        "begin": value.begin,
+        "optimum": value.optimum,
+        "end": value.end,
+        "uncertain": value.uncertain,
+        "found": value.found,
+        "status": value.status,
+    })
+}
+
+/// A `tm_heliacal_details` as the object a caller gets back.
+fn write_tm_heliacal_details(value: &sys::tm_heliacal_details) -> Value {
+    json!({
+        "object_altitude": value.object_altitude,
+        "object_apparent_altitude": value.object_apparent_altitude,
+        "object_geocentric_altitude": value.object_geocentric_altitude,
+        "object_azimuth": value.object_azimuth,
+        "sun_altitude": value.sun_altitude,
+        "sun_azimuth": value.sun_azimuth,
+        "parallax": value.parallax,
+        "magnitude": value.magnitude,
+        "arcus_visionis_topocentric": value.arcus_visionis_topocentric,
+        "arcus_visionis": value.arcus_visionis,
+        "azimuth_difference": value.azimuth_difference,
+        "arcus_lucis": value.arcus_lucis,
+        "arcus_visionis_min": value.arcus_visionis_min,
+        "extinction": value.extinction,
+        "has_visible_first": value.has_visible_first,
+        "visible_first": value.visible_first,
+        "has_visible_best": value.has_visible_best,
+        "visible_best": value.visible_best,
+        "has_visible_last": value.has_visible_last,
+        "visible_last": value.visible_last,
+        "visible_duration": value.visible_duration,
+        "has_visible_best_yallop": value.has_visible_best_yallop,
+        "visible_best_yallop": value.visible_best_yallop,
+        "object_riseset": value.object_riseset,
+        "sun_riseset": value.sun_riseset,
+        "lag": value.lag,
+        "moon_crescent_width": value.moon_crescent_width,
+        "moon_crescent_length": value.moon_crescent_length,
+        "yallop_q": value.yallop_q,
+        "yallop_criterion": value.yallop_criterion,
+        "elongation": value.elongation,
+        "illumination_pct": value.illumination_pct,
+    })
+}
+
 /// A `tm_crossing_request` as the object a caller gets back.
 fn write_tm_crossing_request(value: &sys::tm_crossing_request) -> Value {
     json!({
@@ -1858,6 +2583,49 @@ fn write_tm_crossing(value: &sys::tm_crossing) -> Value {
     })
 }
 
+/// A `tm_calendar_request` as the object a caller gets back.
+fn write_tm_calendar_request(value: &sys::tm_calendar_request) -> Value {
+    json!({
+        "jd_start": value.jd_start,
+        "day_count": value.day_count,
+        "anchor": value.anchor,
+        "observer": pointed(value.observer, write_tm_observer),
+        "anchor_body": value.anchor_body,
+        "flags": value.flags,
+        "options": value.options,
+        "atmosphere": pointed(value.atmosphere, write_tm_atmosphere),
+        "horizon_height_deg": value.horizon_height_deg,
+    })
+}
+
+/// A `tm_scan_request` as the object a caller gets back.
+fn write_tm_scan_request(value: &sys::tm_scan_request) -> Value {
+    json!({
+        "jd_start": value.jd_start,
+        "jd_end": value.jd_end,
+        "step_days": value.step_days,
+        "scale": value.scale,
+        "body": value.body,
+        "body_b": value.body_b,
+        "quantity": value.quantity,
+        "direction": value.direction,
+        "threshold": value.threshold,
+        "flags": value.flags,
+        "observer": pointed(value.observer, write_tm_observer),
+    })
+}
+
+/// A `tm_bracket` as the object a caller gets back.
+fn write_tm_bracket(value: &sys::tm_bracket) -> Value {
+    json!({
+        "jd_lo": value.jd_lo,
+        "jd_hi": value.jd_hi,
+        "value_lo": value.value_lo,
+        "value_hi": value.value_hi,
+        "status": value.status,
+    })
+}
+
 /// A `tm_angle_parts` as the object a caller gets back.
 fn write_tm_angle_parts(value: &sys::tm_angle_parts) -> Value {
     json!({
@@ -1869,5 +2637,18 @@ fn write_tm_angle_parts(value: &sys::tm_angle_parts) -> Value {
         "zodiac_sign": value.zodiac_sign,
         "nakshatra": value.nakshatra,
         "pada": value.pada,
+    })
+}
+
+/// A `tm_ayanamsha_details` as the object a caller gets back.
+fn write_tm_ayanamsha_details(value: &sys::tm_ayanamsha_details) -> Value {
+    json!({
+        "name": borrowed(value.name),
+        "t0": value.t0,
+        "ayan_t0": value.ayan_t0,
+        "t0_is_ut": value.t0_is_ut,
+        "needs_ephemeris": value.needs_ephemeris,
+        "is_frame": value.is_frame,
+        "fitted_precession": value.fitted_precession,
     })
 }

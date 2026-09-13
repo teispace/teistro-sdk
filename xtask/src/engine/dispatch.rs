@@ -7,6 +7,8 @@ use super::classify::{
     Counted, Crossing, Sizing, Standing, crossing, declared_return, describe, fills_a_string,
     has_role, returns_a_string, returns_the_count, sizing, totals,
 };
+use teistro_idl::emit::reserved::rust_ident;
+
 use super::idl::{Function, Idl, Param, STRUCT_SIZE, Shape, Vocabulary};
 
 /// The Rust spelling of an IDL type, as the `sys` crate names it.
@@ -166,9 +168,10 @@ pub(crate) const PASSTHROUGH_IMPORTS: &str = "// the passthrough's helpers";
 /// file nobody edits.
 pub(crate) fn passthrough_imports(generated: &str) -> String {
     /// Every helper, with the text a use of it contains.
-    const HELPERS: [(&str, &str); 17] = [
+    const HELPERS: [(&str, &str); 21] = [
         ("Within", "Within<"),
-        ("borrowed", "borrowed(answered"),
+        ("Keep", "Keep::default()"),
+        ("borrowed", "borrowed("),
         ("extent", "extent(&["),
         ("fill", "fill(\""),
         ("gather", "gather::<"),
@@ -178,7 +181,10 @@ pub(crate) fn passthrough_imports(generated: &str) -> String {
         ("object", " object(args"),
         ("objects", "objects(args"),
         ("optional_object", "optional_object(args"),
+        ("pointed", "pointed("),
         ("room", "room("),
+        ("settled", "settled("),
+        ("unwritten", "unwritten(&mut"),
         ("checked", "checked(context"),
         ("record", "record(context)"),
         ("status", "status(answered"),
@@ -222,11 +228,13 @@ pub(crate) fn reached<'v>(
             continue;
         };
         if names.insert(&shape.name) {
+            // By value and by pointer alike: a struct an argument points at
+            // is read and written as surely as one it holds.
             pending.extend(
                 shape
                     .fields
                     .iter()
-                    .filter(|field| field.pointer == 0)
+                    .filter(|field| field.pointer <= 1)
                     .map(|field| field.base.as_str()),
             );
         }
@@ -264,6 +272,11 @@ pub(crate) fn marshalling(callable: &[&Function], vocabulary: &Vocabulary) -> St
 
 /// One struct read out of the object a caller passed, every field
 /// required.
+///
+/// A struct that holds a string or a pointer — itself or in a struct it
+/// holds — is read against a `Keep`, which owns what it points at until
+/// the call returns; one that holds neither is read without one, so the
+/// common case carries no arena it does not use.
 pub(crate) fn reader(shape: &Shape, vocabulary: &Vocabulary) -> String {
     let name = &shape.name;
     let mut fields = Vec::new();
@@ -274,40 +287,73 @@ pub(crate) fn reader(shape: &Shape, vocabulary: &Vocabulary) -> String {
     }
     for field in shape.crossing() {
         let key = &field.name;
-        let read = if vocabulary.shape(&field.base).is_some() {
-            format!("read_{}(&within.nested(\"{key}\")?)?", field.base)
-        } else if vocabulary.is_float(&field.base) {
-            let ty = rust_type(&field.base);
-            if ty == "f64" {
-                format!("within.number(\"{key}\")?")
-            } else {
-                format!("within.number(\"{key}\")? as {ty}")
+        let ident = rust_ident(key);
+        let base = &field.base;
+        let read = match (field.pointer, vocabulary.shape(base).is_some()) {
+            (0, true) => format!(
+                "read_{base}(&within.nested(\"{key}\")?{})?",
+                kept(base, vocabulary)
+            ),
+            // A reader that needs no arena is passed as itself; a closure
+            // around it would be one clippy asks to remove.
+            (1, true) if vocabulary.needs_keep(base) => {
+                format!("within.pointer(\"{key}\", keep, |within| read_{base}(within, keep))?")
             }
-        } else {
-            format!("within.narrow(\"{key}\")?")
+            (1, true) => format!("within.pointer(\"{key}\", keep, read_{base})?"),
+            (1, false) => format!("within.text(\"{key}\", keep)?"),
+            _ if vocabulary.is_float(base) => {
+                let ty = rust_type(base);
+                if ty == "f64" {
+                    format!("within.number(\"{key}\")?")
+                } else {
+                    format!("within.number(\"{key}\")? as {ty}")
+                }
+            }
+            _ => format!("within.narrow(\"{key}\")?"),
         };
-        fields.push(format!("        {key}: {read},"));
+        fields.push(format!("        {ident}: {read},"));
     }
+    let keep = if vocabulary.needs_keep(name) {
+        ", keep: &Keep"
+    } else {
+        ""
+    };
     format!(
         "\n/// A `{name}` read out of the object a caller passed.\n\
-         fn read_{name}(within: &Within<'_>) -> Result<sys::{name}, ProviderError> {{\n    \
+         fn read_{name}(within: &Within<'_>{keep}) -> Result<sys::{name}, ProviderError> {{\n    \
          Ok(sys::{name} {{\n{}\n    }})\n}}\n",
         fields.join("\n")
     )
 }
 
+/// The `keep` argument a struct's reader takes, if it takes one.
+fn kept(base: &str, vocabulary: &Vocabulary) -> &'static str {
+    if vocabulary.needs_keep(base) {
+        ", keep"
+    } else {
+        ""
+    }
+}
+
 /// One struct written into the object a caller gets back.
+///
+/// A string field is copied at once, because what it points at belongs to
+/// the engine; a pointer field is followed, and null stays null.
 pub(crate) fn writer(shape: &Shape, vocabulary: &Vocabulary) -> String {
     let name = &shape.name;
     let fields: Vec<String> = shape
         .crossing()
         .map(|field| {
             let key = &field.name;
-            if vocabulary.shape(&field.base).is_some() {
-                format!("        \"{key}\": write_{}(&value.{key}),", field.base)
-            } else {
-                format!("        \"{key}\": value.{key},")
-            }
+            let ident = rust_ident(key);
+            let base = &field.base;
+            let value = match (field.pointer, vocabulary.shape(base).is_some()) {
+                (0, true) => format!("write_{base}(&value.{ident})"),
+                (1, true) => format!("pointed(value.{ident}, write_{base})"),
+                (1, false) => format!("borrowed(value.{ident})"),
+                _ => format!("value.{ident}"),
+            };
+            format!("        \"{key}\": {value},")
         })
         .collect();
     format!(
@@ -370,22 +416,37 @@ struct Arm<'a> {
     inside: Vec<String>,
     /// The call's arguments, in parameter order.
     call_args: Vec<String>,
-    /// Lines after the call has succeeded.
+    /// Lines after the call, before its status is checked.
     after: Vec<String>,
+    /// The output whose elements each carry their own status, if the
+    /// call's refusal is to be forgiven once every one of them is written.
+    settles: Option<&'a str>,
     /// The answer, as `"key": expression` pairs.
     answers: Vec<String>,
 }
 
 impl<'a> Arm<'a> {
     fn new(function: &'a Function, vocabulary: &'a Vocabulary) -> Self {
+        // One arena for every argument that points at something, bound
+        // first so it outlives the call.
+        let keeps = function.params.iter().any(|param| {
+            matches!(param.role.as_str(), "struct_in" | "array_in")
+                && vocabulary.needs_keep(&param.type_ref.base)
+        });
+        let before = if keeps {
+            "            let keep = Keep::default();\n".to_string()
+        } else {
+            String::new()
+        };
         Self {
             function,
             vocabulary,
             protocol: Protocol::of(function),
-            before: String::new(),
+            before,
             inside: Vec::new(),
             call_args: Vec::new(),
             after: Vec::new(),
+            settles: None,
             answers: Vec::new(),
         }
     }
@@ -510,7 +571,8 @@ impl<'a> Arm<'a> {
                 // and a datetime never is. Both are the engine's refusal.
                 self.bind(&format!(
                     "let {name} = optional_object(args, \"{name}\")?\n                \
-                     .map(|within| read_{base}(&within))\n                .transpose()?;"
+                     .map(|within| read_{base}(&within{kept}))\n                .transpose()?;",
+                    kept = self.keep_arg(base)
                 ));
                 self.call_args.push(format!(
                     "{name}.as_ref().map_or(core::ptr::null(), core::ptr::from_ref)"
@@ -518,7 +580,8 @@ impl<'a> Arm<'a> {
             }
             "struct_in" => {
                 self.bind(&format!(
-                    "let {name} = read_{base}(&object(args, \"{name}\")?)?;"
+                    "let {name} = read_{base}(&object(args, \"{name}\")?{})?;",
+                    self.keep_arg(base)
                 ));
                 self.call_args.push(format!("&raw const {name}"));
             }
@@ -555,6 +618,39 @@ impl<'a> Arm<'a> {
         }
     }
 
+    /// The arena argument an arm passes a struct's reader: its own
+    /// `keep`, when the struct points at anything.
+    fn keep_arg(&self, base: &str) -> &'static str {
+        if self.vocabulary.needs_keep(base) {
+            ", &keep"
+        } else {
+            ""
+        }
+    }
+
+    /// Marks a batch's room when its elements each carry a status, so a
+    /// refusal that filled every one of them answers them instead.
+    ///
+    /// Read from the element's own fields — a `status` of `tm_status` —
+    /// rather than listed, unlike an output's extent, because nothing is
+    /// believed: the marks are checked after the call, and an element the
+    /// engine did not write keeps the refusal standing.
+    fn mark(&mut self, param: &'a Param) {
+        let carries_status = self
+            .vocabulary
+            .shape(&param.type_ref.base)
+            .is_some_and(|shape| {
+                shape.fields.iter().any(|field| {
+                    field.name == "status" && field.base == "tm_status" && field.pointer == 0
+                })
+            });
+        if carries_status && self.settles.is_none() {
+            let name = &param.name;
+            self.bind(&format!("unwritten(&mut {name}, |one| &mut one.status);"));
+            self.settles = Some(&param.name);
+        }
+    }
+
     /// The Rust type of one element of an array.
     fn element(&self, param: &Param) -> String {
         let base = &param.type_ref.base;
@@ -572,7 +668,11 @@ impl<'a> Arm<'a> {
         let base = &param.type_ref.base;
         let ty = self.element(param);
         let read = if self.vocabulary.shape(base).is_some() {
-            format!("objects(args, \"{name}\", read_{base})?")
+            if self.vocabulary.needs_keep(base) {
+                format!("objects(args, \"{name}\", |within| read_{base}(within, &keep))?")
+            } else {
+                format!("objects(args, \"{name}\", read_{base})?")
+            }
         } else if !self.vocabulary.is_float(base) {
             format!("wholes(args, \"{name}\")?")
         } else if ty == "f64" {
@@ -605,6 +705,7 @@ impl<'a> Arm<'a> {
                 self.bind(&format!(
                     "let mut {name}: Vec<{ty}> = room({length}, \"{name}\")?;"
                 ));
+                self.mark(param);
                 self.call_args.push(format!("{name}.as_mut_ptr()"));
             }
             Some(Sizing::Asked { capacity, count }) => {
@@ -614,6 +715,7 @@ impl<'a> Arm<'a> {
                 self.bind(&format!(
                     "let mut {name}: Vec<{ty}> = room({capacity}, \"{name}\")?;"
                 ));
+                self.mark(param);
                 self.call_args.push(format!("{name}.as_mut_ptr()"));
                 // `truncate` and not a slice: the engine never writes more
                 // than it was given room for, and a count that claimed to
@@ -722,13 +824,25 @@ impl<'a> Arm<'a> {
                     out,
                     "            {indented}\n            {binding}unsafe {{ {call} }};"
                 );
+                for line in &self.after {
+                    let _ = writeln!(out, "            {line}");
+                }
                 if let Some(line) = check {
+                    let line = match self.settles {
+                        Some(settles) => format!(
+                            "settled({}, &mut {settles}, |one| &mut one.status)?;",
+                            line.trim_end_matches("?;")
+                        ),
+                        None => line,
+                    };
                     let _ = writeln!(out, "            {line}");
                 }
             }
         }
-        for line in &self.after {
-            let _ = writeln!(out, "            {line}");
+        if !matches!(self.protocol, Protocol::Direct) {
+            for line in &self.after {
+                let _ = writeln!(out, "            {line}");
+            }
         }
         let fields = answer(function, self.answers, &self.protocol);
         let _ = writeln!(

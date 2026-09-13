@@ -96,6 +96,8 @@ struct Words {
     /// type: Python takes any `Sequence`, because its `list` is invariant
     /// and `list[int]` would not be accepted where `list[float]` is.
     list_taken: &'static str,
+    /// A value that may be null, with `{}` where its word goes.
+    nullable: &'static str,
 }
 
 impl Words {
@@ -108,6 +110,7 @@ impl Words {
         integer: "number",
         list: "readonly {}[]",
         list_taken: "readonly {}[]",
+        nullable: "{} | null",
     };
     const DART: Self = Self {
         text: "String",
@@ -115,6 +118,7 @@ impl Words {
         integer: "int",
         list: "List<{}>",
         list_taken: "List<{}>",
+        nullable: "{}?",
     };
     const PYTHON: Self = Self {
         text: "str",
@@ -122,6 +126,7 @@ impl Words {
         integer: "int",
         list: "list[{}]",
         list_taken: "Sequence[{}]",
+        nullable: "{} | None",
     };
 
     /// What one declared type is called here.
@@ -153,10 +158,15 @@ impl Words {
             Kind::Integer => self.integer.to_string(),
             Kind::Struct => pascal(declared.base),
         };
-        if declared.list {
+        let listed = if declared.list {
             list.replace("{}", &one)
         } else {
             one
+        };
+        if declared.nullable {
+            self.nullable.replace("{}", &listed)
+        } else {
+            listed
         }
     }
 }
@@ -385,6 +395,10 @@ fn node_convert(
 ) -> String {
     match (vocabulary.shape(declared.base).is_some(), declared.list) {
         (false, _) => expression.to_string(),
+        (true, false) if declared.nullable => format!(
+            "{expression} == null ? null : {}({expression})",
+            converter(declared.base)
+        ),
         (true, false) => format!("{}({expression})", converter(declared.base)),
         (true, true) => format!("{expression}.map({})", converter(declared.base)),
     }
@@ -445,10 +459,10 @@ fn node_fields(shape: &Shape, vocabulary: &Vocabulary, toward: Toward) -> String
                 Toward::Engine => (camel(&field.name), field.name.clone()),
             };
             let value = format!("value.{from}");
-            let value = match (vocabulary.shape(&field.base).is_some(), toward) {
-                (false, _) => value,
-                (true, Toward::Consumer) => format!("{}({value})", node_reader(&field.base)),
-                (true, Toward::Engine) => format!("{}({value})", node_writer(&field.base)),
+            let declared = Declared::field(field);
+            let value = match toward {
+                Toward::Consumer => node_read(&value, &declared, vocabulary),
+                Toward::Engine => node_write(&value, &declared, vocabulary),
             };
             format!("{to}: {value}")
         })
@@ -472,7 +486,7 @@ fn node_types(
                 format!(
                     "  readonly {}: {};",
                     camel(&field.name),
-                    Words::TYPESCRIPT.of(&Declared::one(&field.base), vocabulary, &shape.name)
+                    Words::TYPESCRIPT.of(&Declared::field(field), vocabulary, &shape.name)
                 )
             })
             .collect::<Vec<_>>()
@@ -565,13 +579,18 @@ fn dart_read(
             pascal(declared.base)
         ),
     };
-    if declared.list {
+    let read = if declared.list {
         format!(
             "({lookup}! as List<Object?>).map((one) => {}).toList()",
             one("one!")
         )
     } else {
         one(&format!("{lookup}!"))
+    };
+    if declared.nullable {
+        format!("{lookup} == null ? null : {read}")
+    } else {
+        read
     }
 }
 
@@ -751,7 +770,7 @@ fn dart_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
             .crossing()
             .map(|field| (field.name.as_str(), camel(&field.name)))
             .collect();
-        let bases: Vec<&str> = shape.crossing().map(|field| field.base.as_str()).collect();
+        let bases: Vec<Declared<'_>> = shape.crossing().map(Declared::field).collect();
         let parameters = fields
             .iter()
             .map(|(_, spelling)| format!("required this.{spelling}"))
@@ -763,12 +782,7 @@ fn dart_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
             .map(|((key, spelling), base)| {
                 format!(
                     "        {spelling}: {},",
-                    dart_read(
-                        &format!("json['{key}']"),
-                        &Declared::one(base),
-                        vocabulary,
-                        whose
-                    )
+                    dart_read(&format!("json['{key}']"), base, vocabulary, whose)
                 )
             })
             .collect::<Vec<_>>()
@@ -779,7 +793,7 @@ fn dart_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
             .map(|((key, spelling), base)| {
                 format!(
                     "  /// `{key}`.\n  final {} {spelling};",
-                    Words::DART.of(&Declared::one(base), vocabulary, whose)
+                    Words::DART.of(base, vocabulary, whose)
                 )
             })
             .collect::<Vec<_>>()
@@ -788,11 +802,10 @@ fn dart_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
             .iter()
             .zip(&bases)
             .map(|((key, spelling), base)| {
-                if vocabulary.shape(base).is_some() {
-                    format!("        '{key}': {spelling}.toJson(),")
-                } else {
-                    format!("        '{key}': {spelling},")
-                }
+                format!(
+                    "        '{key}': {},",
+                    dart_write(spelling, base, base.nullable, vocabulary)
+                )
             })
             .collect::<Vec<_>>()
             .join("\n");
@@ -933,7 +946,7 @@ fn python_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
                 out,
                 "    {}: {}",
                 field.name,
-                Words::PYTHON.of(&Declared::one(&field.base), vocabulary, &shape.name)
+                Words::PYTHON.of(&Declared::field(field), vocabulary, &shape.name)
             );
         }
         let _ = writeln!(out);

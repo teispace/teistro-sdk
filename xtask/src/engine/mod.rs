@@ -70,7 +70,7 @@ pub(crate) fn outputs(root: &Path) -> Result<Vec<Output>, String> {
         .map(|(function, _, _)| *function)
         .collect();
     let mut outputs = vec![
-        Output::new(PAGE, page::page(&idl, &classified, &vocabulary)),
+        Output::new(PAGE, page::page(&idl, &classified)),
         Output::new(DISPATCH, dispatch::dispatch(&idl, &classified, &vocabulary)),
     ];
     // The typed façades, from the same reading: a façade that typed an

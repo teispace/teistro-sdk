@@ -86,6 +86,33 @@ pub const TYPESCRIPT: &[&str] = &[
     "yield",
 ];
 
+/// Rust's keywords, strict and reserved, which an identifier may be only
+/// as a raw identifier.
+pub const RUST: &[&str] = &[
+    "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern",
+    "false", "fn", "for", "gen", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut",
+    "pub", "ref", "return", "self", "static", "struct", "super", "trait", "true", "try", "type",
+    "unsafe", "use", "where", "while", "abstract", "become", "box", "do", "final", "macro",
+    "override", "priv", "typeof", "unsized", "virtual", "yield",
+];
+
+/// The four Rust keywords a raw identifier cannot spell.
+const RUST_NOT_RAWABLE: &[&str] = &["self", "Self", "super", "crate"];
+
+/// A C name spelled so Rust accepts it: `r#type` for a keyword, and a
+/// trailing underscore for the four a raw identifier cannot be — the
+/// spelling the engine's own Rust binding gives the same fields.
+#[must_use]
+pub fn rust_ident(name: &str) -> String {
+    if is_reserved(name, RUST_NOT_RAWABLE) {
+        format!("{name}_")
+    } else if is_reserved(name, RUST) {
+        format!("r#{name}")
+    } else {
+        name.to_string()
+    }
+}
+
 /// Whether a name is one of a target's reserved words.
 #[must_use]
 pub fn is_reserved(name: &str, list: &[&str]) -> bool {
@@ -105,7 +132,20 @@ pub fn renamed(name: &str, list: &[&str], suffix: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{DART, PYTHON, PYTHON_ENUM, PYTHON_SOFT, TYPESCRIPT, is_reserved, renamed};
+    use super::{
+        DART, PYTHON, PYTHON_ENUM, PYTHON_SOFT, RUST, TYPESCRIPT, is_reserved, renamed, rust_ident,
+    };
+
+    /// A keyword becomes a raw identifier, and the four that cannot be
+    /// raw take the underscore — matching the engine's own Rust binding,
+    /// whose field a generated struct literal has to name exactly.
+    #[test]
+    fn a_rust_keyword_is_spelled_raw() {
+        assert!(is_reserved("type", RUST));
+        assert_eq!(rust_ident("type"), "r#type");
+        assert_eq!(rust_ident("self"), "self_");
+        assert_eq!(rust_ident("lon"), "lon");
+    }
 
     #[test]
     fn every_list_is_sorted_within_itself_and_free_of_repeats() {

@@ -73,5 +73,32 @@ void main() {
     '${deltas.first} s, the Sun at ${grid.first.lon}, ${defaults.length} bodies',
   );
 
+  // A struct that points at another takes it as a nested object, or null.
+  final query = ctx.engine.tmStarQueryInitSized();
+  final List<TmStar> stars = ctx.engine.tmStarSearch(
+    query: TmStarQuery(
+      useMagnitude: query.useMagnitude,
+      magnitudeMin: query.magnitudeMin,
+      magnitudeMax: query.magnitudeMax,
+      raDeg: query.raDeg,
+      decDeg: query.decDeg,
+      radiusDeg: query.radiusDeg,
+      nameContains: 'Aldeb',
+    ),
+  );
+  final TmPosition moon = ctx.engine.tmPositionCalc(
+    req: const TmPositionRequest(
+      jd: 2451545,
+      scale: 1,
+      body: 1,
+      flags: 0,
+      observer: null,
+      center: 0,
+      ayanamsha: 0,
+      ayanamshaSet: 0,
+    ),
+  );
+  print('${stars.length} stars, the Moon at ${moon.lon}');
+
   ctx.dispose();
 }
