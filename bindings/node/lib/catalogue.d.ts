@@ -5578,6 +5578,37 @@ export declare const Reading: {
 export declare const ReadingById: ReadonlyMap<number, Reading>;
 
 /**
+ * Which third of the wheel a bhava stands in.
+ *
+ * The houses crate's own `Quadrant`, which is not a catalogue member —
+ * it is a classification of a number rather than a thing with a key —
+ * so it crosses as this boundary's own enum, as `TsStrength` does.
+ */
+export type Quadrant = 'kendra' | 'panapara' | 'apoklima';
+
+/** Every Quadrant by name; the values are the strings the union accepts. */
+export declare const Quadrant: {
+  /**
+   * Angular: the 1st, 4th, 7th and 10th.
+   */
+  readonly Kendra: 'kendra';
+  /**
+   * Succedent: the 2nd, 5th, 8th and 11th.
+   */
+  readonly Panapara: 'panapara';
+  /**
+   * Cadent: the 3rd, 6th, 9th and 12th.
+   */
+  readonly Apoklima: 'apoklima';
+};
+
+/**
+ * Every Quadrant by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const QuadrantById: ReadonlyMap<number, Quadrant>;
+
+/**
  * How strongly one body looks at another.
  *
  * The aspect crate's own `Strength`, which is not a catalogue member —

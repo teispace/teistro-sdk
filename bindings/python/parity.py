@@ -258,6 +258,7 @@ def main() -> None:
             vargas=[Varga.D9, Varga.D10],
             aspects=True,
             points=True,
+            houses=True,
         )
         put("chart-varga-count", charts.decoded.varga_count)
         put("chart-drishti-table", charts.decoded.drishti_table)
@@ -293,6 +294,10 @@ def main() -> None:
             put(f"chart-{i}-vipala", chart_columns.timing.vipala[i])
             put(f"chart-{i}-hora-number", chart_columns.timing.hora_number[i])
             put(f"chart-{i}-hora-lord", chart.hora_lord.full_key)
+            for bhava in chart.bhavas:
+                put(f"chart-{i}-bhava-{bhava.number}-sign", bhava.sign.full_key)
+                put(f"chart-{i}-bhava-{bhava.number}-lord", bhava.lord.full_key)
+                put(f"chart-{i}-bhava-{bhava.number}-quadrant", bhava.quadrant.key)
             found = chart.points
             put(f"chart-{i}-point-count", len(found))
             for k, derived in enumerate(found):

@@ -3395,6 +3395,24 @@ class Reading(Member):
     """From one madhya to the next: the bhava as a span between centres."""
 
 
+class Quadrant(Member):
+    """Which third of the wheel a bhava stands in.
+
+    The houses crate's own `Quadrant`, which is not a catalogue member —
+    it is a classification of a number rather than a thing with a key —
+    so it crosses as this boundary's own enum, as `TsStrength` does.
+    """
+
+    KENDRA = 0
+    """Angular: the 1st, 4th, 7th and 10th."""
+
+    PANAPARA = 1
+    """Succedent: the 2nd, 5th, 8th and 11th."""
+
+    APOKLIMA = 2
+    """Cadent: the 3rd, 6th, 9th and 12th."""
+
+
 class Strength(Member):
     """How strongly one body looks at another.
 
@@ -4792,6 +4810,11 @@ _KEYS: dict[str, dict[int, str]] = {
     "Reading": {
         0: "sandhi",
         1: "madhya",
+    },
+    "Quadrant": {
+        0: "kendra",
+        1: "panapara",
+        2: "apoklima",
     },
     "Strength": {
         0: "none",

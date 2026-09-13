@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 2 exported constants, 93 enums of 954 members in
+The description carries 2 exported constants, 94 enums of 957 members in
 all, 2 opaque handle types, 10 callback types, 27 structs, 46 entry
 points and 4 result-blob schemas, extracted from 19 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
@@ -67,18 +67,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1304 | 1 | 0 | 0 | 0 |
+| Dart | 1307 | 1 | 0 | 0 | 0 |
 | TypeScript | 350 | 0 | 0 | 1 | 0 |
-| Python | 1304 | 0 | 1 | 2 | 0 |
+| Python | 1307 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1304 looked at |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1307 looked at |
 | no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 350 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1304 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1304 disagree |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1307 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1307 disagree |
 | renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 350 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1304 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1307 disagree |
 
 What Dart renames:
 
@@ -169,8 +169,8 @@ the class of mistake a generated binding exists to make impossible.
 
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
-| `u8` | `c_uint8` | `B` | 67 | 45 |
-| `u16` | `c_uint16` | `H` | 19 | 50 |
+| `u8` | `c_uint8` | `B` | 67 | 46 |
+| `u16` | `c_uint16` | `H` | 19 | 52 |
 | `u32` | `c_uint32` | `I` | 48 | 26 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
 | `i8` | `c_int8` | `b` | 0 | 0 |
@@ -187,7 +187,7 @@ the class of mistake a generated binding exists to make impossible.
 |---|---|---|
 | every scalar has a fixed-width `ctypes` type and a format code | **holds** | 0 of 13 disagree |
 | every scalar the boundary uses is one of the thirteen | **holds** | 8 of 13 appear |
-| every blob column's scalar has a format code | **holds** | 0 of 225 disagree |
+| every blob column's scalar has a format code | **holds** | 0 of 228 disagree |
 
 ## 5. What a binding can say about a value
 

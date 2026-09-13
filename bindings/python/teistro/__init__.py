@@ -119,6 +119,7 @@ from .catalogue import (
     Rashi,
     Tithi,
     Point,
+    Quadrant,
     Vara,
     Varga,
     Strength,
@@ -209,6 +210,8 @@ __all__ = [
     "Varga",
     "DerivedPoint",
     "Drishti",
+    "Quadrant",
+    "ServiceBhava",
     "EdgeDistance",
     "Strength",
     "VargaChart",
@@ -869,6 +872,7 @@ class ChartArea(_Area):
         vargas: Sequence[Varga] = (),
         aspects: bool = False,
         points: bool = False,
+        houses: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
 
@@ -891,6 +895,7 @@ class ChartArea(_Area):
             vargas=vargas,
             aspects=aspects,
             points=points,
+            houses=houses,
         ).at(0)
 
     def found_many(
@@ -903,6 +908,7 @@ class ChartArea(_Area):
         vargas: Sequence[Varga] = (),
         aspects: bool = False,
         points: bool = False,
+        houses: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
         crossing.
@@ -930,7 +936,8 @@ class ChartArea(_Area):
             # (`03-design/chart-reading.md` §5): a named argument each,
             # and one more as each crosses.
             sections=(_SECTION_ASPECTS if aspects else 0)
-            | (_SECTION_POINTS if points else 0),
+            | (_SECTION_POINTS if points else 0)
+            | (_SECTION_HOUSES if houses else 0),
             vargas=list(vargas),
         )
         return ChartBatch(
@@ -1210,6 +1217,9 @@ _SECTION_ASPECTS = 4
 #: `TS_CHART_POINTS`, the derived points.
 _SECTION_POINTS = 8
 
+#: `TS_CHART_HOUSES`, the houses service.
+_SECTION_HOUSES = 16
+
 
 @dataclass(frozen=True)
 class EdgeDistance:
@@ -1224,6 +1234,24 @@ class EdgeDistance:
 
     pada_deg: float
     """To the nearer edge of its pada, degrees."""
+
+
+@dataclass(frozen=True)
+class ServiceBhava:
+    """One bhava as the houses service reads it."""
+
+    number: int
+    """The bhava, 1 to 12."""
+
+    sign: Rashi
+    """The sign its **middle** falls in, which under an unequal division
+    is not the sign it begins in."""
+
+    lord: Graha
+    """The lord of that sign."""
+
+    quadrant: Quadrant
+    """Which third of the wheel it stands in."""
 
 
 @dataclass(frozen=True)
@@ -1428,6 +1456,24 @@ class Chart:
     def hora_lord(self) -> Graha:
         """The graha that rules the hora holding the instant."""
         return Graha(self.batch.decoded.timing.hora_lord[self.index])
+
+    @property
+    def bhavas(self) -> list[ServiceBhava]:
+        """The twelve bhavas as the houses service reads them, or an
+        empty list unless `houses=True` asked for them."""
+        columns = self.batch.decoded.bhavas
+        if len(columns.sign) == 0:
+            return []
+        base = self.index * 12
+        return [
+            ServiceBhava(
+                number=j + 1,
+                sign=Rashi(columns.sign[base + j]),
+                lord=Graha(columns.lord[base + j]),
+                quadrant=Quadrant(columns.quadrant[base + j]),
+            )
+            for j in range(12)
+        ]
 
     @property
     def points(self) -> list[DerivedPoint]:

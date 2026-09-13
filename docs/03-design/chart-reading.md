@@ -266,7 +266,26 @@ by all four runners.
    the points with *what the day allows* — so the rule §5 now states
    covers both.
 
-   **Four bindings agree on 1 379 values**, 705 of them new and every one
+   **And the houses service**, the fourth, which is the case that says
+   why §5's rule is about the *values* and not about the section: a chart
+   that has bhavas has twelve, always, so the section is fixed and an
+   empty one can only mean "not asked for".
+
+   What crosses is **what is not elsewhere**. The madhya and the sandhi
+   are already in `houses` and `chalit`; which bhava each body falls in
+   is already in `grahas`; the systems are already in `readings`. What
+   only this service computes is the sign a bhava's *middle* falls in —
+   which under an unequal division is not the sign it begins in — its
+   lord, and its quadrant. That is `chart-at-the-boundary.md` §3's rule
+   applied: describe each shape once.
+
+   The `outcome` a chart's houses were computed under does **not**
+   cross, and the reason is the type's own: it is a fact about the
+   computation that made the foundation, which the foundation does not
+   carry, so `Houses::of` takes `Defined` and the boundary would have
+   nothing truer to send.
+
+   **Four bindings agree on 1 451 values**, 777 of them new and every one
    right on its first run. The runners ask for **two** charts over
    **two** instants deliberately: the layout is charts outermost, so one
    of each would pass a transposed stride; and they print **every**

@@ -602,6 +602,9 @@ const int _sectionAspects = 4;
 /// `TS_CHART_POINTS`, the derived points.
 const int _sectionPoints = 8;
 
+/// `TS_CHART_HOUSES`, the houses service.
+const int _sectionHouses = 16;
+
 /// `sdk.chart` — a chart founded at an instant and a place.
 final class ChartArea extends _Area {
   const ChartArea._(super.context);
@@ -625,6 +628,7 @@ final class ChartArea extends _Area {
     List<Varga> vargas = const <Varga>[],
     bool aspects = false,
     bool points = false,
+    bool houses = false,
   }) => foundMany(
     instants: <double>[instant],
     place: place,
@@ -633,6 +637,7 @@ final class ChartArea extends _Area {
     vargas: vargas,
     aspects: aspects,
     points: points,
+    houses: houses,
   ).at(0);
 
   /// Founds a chart at each of many instants, at one place, in one
@@ -654,6 +659,7 @@ final class ChartArea extends _Area {
     List<Varga> vargas = const <Varga>[],
     bool aspects = false,
     bool points = false,
+    bool houses = false,
   }) => decodeCharts(
     _context._guarded(
       () => _context._inner.chartFound(
@@ -669,7 +675,9 @@ final class ChartArea extends _Area {
           // (`03-design/chart-reading.md` §5): a named argument each,
           // and one more as each crosses.
           sections:
-              (aspects ? _sectionAspects : 0) | (points ? _sectionPoints : 0),
+              (aspects ? _sectionAspects : 0) |
+              (points ? _sectionPoints : 0) |
+              (houses ? _sectionHouses : 0),
           vargas: vargas,
         ),
       ),
@@ -1231,6 +1239,28 @@ final class EdgeDistance {
   final double padaDeg;
 }
 
+/// One bhava as the houses service reads it.
+final class ServiceBhava {
+  const ServiceBhava({
+    required this.number,
+    required this.sign,
+    required this.lord,
+    required this.quadrant,
+  });
+
+  /// The bhava, 1 to 12.
+  final int number;
+
+  /// The sign its **middle** falls in.
+  final Rashi sign;
+
+  /// The lord of that sign.
+  final Graha lord;
+
+  /// Which third of the wheel it stands in.
+  final Quadrant quadrant;
+}
+
 /// One derived point: an upagraha or a special lagna.
 final class DerivedPoint {
   const DerivedPoint({
@@ -1437,6 +1467,28 @@ final class Chart {
 
   /// The graha that rules the hora holding the instant.
   Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+
+  /// The twelve bhavas as the houses service reads them, or an empty
+  /// list unless `houses: true` asked for them.
+  ///
+  /// `sign` is the sign the bhava's **middle** falls in, which under an
+  /// unequal division is not the sign it begins in.
+  List<ServiceBhava> get bhavas {
+    final b = batch.bhavas;
+    if (b.length == 0) {
+      return const <ServiceBhava>[];
+    }
+    final base = index * 12;
+    return List<ServiceBhava>.generate(
+      12,
+      (j) => ServiceBhava(
+        number: j + 1,
+        sign: Rashi.byId(b.sign[base + j]),
+        lord: Graha.byId(b.lord[base + j]),
+        quadrant: Quadrant.byId(b.quadrant[base + j]),
+      ),
+    );
+  }
 
   /// The derived points — the upagrahas and the special lagnas — or an
   /// empty list unless `points: true` asked for them.

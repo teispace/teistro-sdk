@@ -4215,6 +4215,46 @@ enum Reading {
   }
 }
 
+/// Which third of the wheel a bhava stands in.
+///
+/// The houses crate's own `Quadrant`, which is not a catalogue member —
+/// it is a classification of a number rather than a thing with a key —
+/// so it crosses as this boundary's own enum, as `TsStrength` does.
+enum Quadrant {
+  /// Angular: the 1st, 4th, 7th and 10th.
+  kendra(0, 'kendra'),
+  /// Succedent: the 2nd, 5th, 8th and 11th.
+  panapara(1, 'panapara'),
+  /// Cadent: the 3rd, 6th, 9th and 12th.
+  apoklima(2, 'apoklima');
+
+  const Quadrant(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Quadrant byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Quadrant'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Quadrant? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// How strongly one body looks at another.
 ///
 /// The aspect crate's own `Strength`, which is not a catalogue member —

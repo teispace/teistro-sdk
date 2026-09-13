@@ -772,7 +772,8 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         .with_kind(ChartKind::Natal)
         .with_vargas([Varga::D9, Varga::D10])
         .with_aspects()
-        .with_points();
+        .with_points()
+        .with_houses();
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -795,6 +796,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     );
     for (index, document) in read.value.iter().enumerate() {
         one_varga_chart(report, index, document);
+        the_bhavas(report, index, document);
         the_points(report, index, document);
         the_drishti(report, index, document);
     }
@@ -909,6 +911,26 @@ fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Docume
             put(report, &row("-part"), placed.at.part.to_string());
             put(report, &row("-sign"), placed.at.sign.full_key().to_owned());
         }
+    }
+}
+
+/// One chart's bhavas as the houses service reads them.
+fn the_bhavas(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(houses) = document.houses.as_ref() else {
+        return;
+    };
+    for number in 1..=12_u8 {
+        let Some(bhava) = houses.bhava(number) else {
+            continue;
+        };
+        let key = |what: &str| format!("chart-{index}-bhava-{number}{what}");
+        put(report, &key("-sign"), bhava.sign.full_key().to_owned());
+        put(report, &key("-lord"), bhava.lord.full_key().to_owned());
+        put(
+            report,
+            &key("-quadrant"),
+            kebab(&format!("{:?}", bhava.quadrant)),
+        );
     }
 }
 

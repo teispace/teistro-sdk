@@ -373,6 +373,15 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 18, 'bhavas');
+    out.bhavas = {
+      sign: column(blob, at, 0, 'u16', at.count),
+      lord: column(blob, at, 1, 'u16', at.count),
+      quadrant: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

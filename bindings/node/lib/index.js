@@ -38,6 +38,7 @@ import {
   PakshaById,
   PanchakaById,
   PointById,
+  QuadrantById,
   RashiById,
   StrengthById,
   VargaById,
@@ -695,6 +696,27 @@ export class Chart {
         },
       };
     });
+  }
+
+  /**
+   * The twelve bhavas as the houses service reads them, or an empty
+   * list unless `houses: true` asked for them.
+   *
+   * Each is `{ number, sign, lord, quadrant }`, where `sign` is the sign
+   * the bhava's **middle** falls in — which under an unequal division is
+   * not the sign it begins in. The madhya and the sandhi are on
+   * `bhavaBounds`; this is what only the houses service computes.
+   */
+  get bhavas() {
+    const d = this.#batch.decoded;
+    const base = this.#index * 12;
+    if (d.bhavas.length === 0) return [];
+    return Array.from({ length: 12 }, (_, j) => ({
+      number: j + 1,
+      sign: RashiById.get(d.bhavas.sign[base + j]) ?? 'unknown',
+      lord: GrahaById.get(d.bhavas.lord[base + j]) ?? 'unknown',
+      quadrant: QuadrantById.get(d.bhavas.quadrant[base + j]) ?? 'unknown',
+    }));
   }
 
   get grahas() {
@@ -1509,6 +1531,9 @@ class ChartArea extends Area {
    *   which body looks at which, and how strongly; false by default
    * @param {boolean} [request.points] whether to compute the derived
    *   points — the upagrahas and the special lagnas; false by default
+   * @param {boolean} [request.houses] whether to compute the houses
+   *   service — each bhava's sign, its lord and its quadrant; false by
+   *   default
    * @returns {Charts}
    */
   foundMany(request) {
@@ -1527,7 +1552,8 @@ class ChartArea extends Area {
         // one more as each crosses.
         sections:
           (request.aspects === true ? SECTION_ASPECTS : 0) |
-          (request.points === true ? SECTION_POINTS : 0),
+          (request.points === true ? SECTION_POINTS : 0) |
+          (request.houses === true ? SECTION_HOUSES : 0),
         vargas: vargaKeys(request.vargas),
       }),
     );
@@ -1545,6 +1571,9 @@ const SECTION_ASPECTS = 4;
 
 /** `TS_CHART_POINTS`, the derived points. */
 const SECTION_POINTS = 8;
+
+/** `TS_CHART_HOUSES`, the houses service. */
+const SECTION_HOUSES = 16;
 
 /**
  * The divisional charts a request asked for, checked.

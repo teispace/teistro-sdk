@@ -520,6 +520,32 @@ export interface ChartsPoints {
 }
 
 /**
+ * The `bhavas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.
+ */
+export interface ChartsBhavas {
+  /**
+   * The sign the bhava's **middle** falls in, which is the sign the tradition means by "the house's sign": under an unequal division a house can begin in one sign and be centred in another.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * The lord of that sign.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * Which third of the wheel it stands in.
+   * The values are `Quadrant` ids.
+   */
+  readonly quadrant: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -741,6 +767,10 @@ export interface Charts {
    * Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have.
    */
   readonly points: ChartsPoints;
+  /**
+   * Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.
+   */
+  readonly bhavas: ChartsBhavas;
 }
 
 /**

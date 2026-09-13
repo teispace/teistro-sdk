@@ -553,6 +553,7 @@ pub fn charts() -> BlobSchema {
             chart_aspects_section(15),
             chart_drishti_table_section(16),
             chart_points_section(17),
+            chart_bhavas_section(18),
         ],
     }
 }
@@ -718,6 +719,43 @@ fn chart_varga_grahas_section(id: u32) -> SectionSchema {
                 "The sign the divisional chart puts it in.",
             )
             .of_enum("Rashi"),
+        ],
+    )
+}
+
+/// The twelve bhavas of each chart, as the houses service reads them.
+///
+/// **What is here is what is not elsewhere.** The madhya and the sandhi
+/// are already in `houses` and `chalit`; which bhava each body falls in
+/// is already in `grahas`; the systems are already in `readings`. What
+/// only this service computes is the sign a bhava's *middle* falls in —
+/// which under an unequal division is not the sign it begins in — its
+/// lord, and which third of the wheel it stands in
+/// (`03-design/chart-at-the-boundary.md` §3: describe each shape once).
+///
+/// Fixed at twelve per chart, so no count is needed: a chart that has
+/// bhavas has twelve of them, which is what makes an empty section
+/// unambiguously "not asked for".
+#[must_use]
+fn chart_bhavas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "bhavas",
+        "Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.",
+        vec![
+            ColumnDef::new(
+                "sign",
+                Scalar::U16,
+                "The sign the bhava's **middle** falls in, which is the sign the tradition means by \"the house's sign\": under an unequal division a house can begin in one sign and be centred in another.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new("lord", Scalar::U16, "The lord of that sign.").of_enum("Graha"),
+            ColumnDef::new(
+                "quadrant",
+                Scalar::U8,
+                "Which third of the wheel it stands in.",
+            )
+            .of_enum("TsQuadrant"),
         ],
     )
 }

@@ -1438,6 +1438,18 @@ Which bound of a bhava a placement was read against.
 | `TS_READING_SANDHI` | 0 | From one sandhi to the next: the bhava as a span between cusps. |
 | `TS_READING_MADHYA` | 1 | From one madhya to the next: the bhava as a span between centres. |
 
+## ts_quadrant
+
+Which third of the wheel a bhava stands in.
+
+The houses crate's own `Quadrant`, which is not a catalogue member — it is a classification of a number rather than a thing with a key — so it crosses as this boundary's own enum, as `TsStrength` does.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_QUADRANT_KENDRA` | 0 | Angular: the 1st, 4th, 7th and 10th. |
+| `TS_QUADRANT_PANAPARA` | 1 | Succedent: the 2nd, 5th, 8th and 11th. |
+| `TS_QUADRANT_APOKLIMA` | 2 | Cadent: the 3rd, 6th, 9th and 12th. |
+
 ## ts_strength
 
 How strongly one body looks at another.

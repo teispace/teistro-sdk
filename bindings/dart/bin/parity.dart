@@ -261,6 +261,7 @@ void main() {
     vargas: <Varga>[Varga.d9, Varga.d10],
     aspects: true,
     points: true,
+    houses: true,
   );
   put('chart-varga-count', charts.vargaCount);
   put('chart-drishti-table', charts.drishtiTable);
@@ -297,6 +298,11 @@ void main() {
     put('chart-$i-vipala', charts.timing.vipala[i]);
     put('chart-$i-hora-number', charts.timing.horaNumber[i]);
     put('chart-$i-hora-lord', chart.horaLord.fullKey);
+    for (final bhava in chart.bhavas) {
+      put('chart-$i-bhava-${bhava.number}-sign', bhava.sign.fullKey);
+      put('chart-$i-bhava-${bhava.number}-lord', bhava.lord.fullKey);
+      put('chart-$i-bhava-${bhava.number}-quadrant', bhava.quadrant.key);
+    }
     final found = chart.points;
     put('chart-$i-point-count', found.length);
     for (var k = 0; k < found.length; k += 1) {

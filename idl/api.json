@@ -6018,6 +6018,29 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsQuadrant",
+      "doc": "Which third of the wheel a bhava stands in.\n\nThe houses crate's own `Quadrant`, which is not a catalogue member —\nit is a classification of a number rather than a thing with a key —\nso it crosses as this boundary's own enum, as `TsStrength` does.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Kendra",
+          "value": 0,
+          "doc": "Angular: the 1st, 4th, 7th and 10th."
+        },
+        {
+          "name": "Panapara",
+          "value": 1,
+          "doc": "Succedent: the 2nd, 5th, 8th and 11th."
+        },
+        {
+          "name": "Apoklima",
+          "value": 2,
+          "doc": "Cadent: the 3rd, 6th, 9th and 12th."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsStrength",
       "doc": "How strongly one body looks at another.\n\nThe aspect crate's own `Strength`, which is not a catalogue member —\nit is a property of a relation rather than a thing with a key — so it\ncrosses as this boundary's own enum, as `TsReading` and `TsDayPart`\ndo.",
       "repr": "u8",
@@ -12682,6 +12705,32 @@
               "name": "pada_deg",
               "scalar": "f64",
               "doc": "How near it stands to a pada edge, degrees."
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "bhavas",
+          "doc": "Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign the bhava's **middle** falls in, which is the sign the tradition means by \"the house's sign\": under an unequal division a house can begin in one sign and be centred in another.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "The lord of that sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "quadrant",
+              "scalar": "u8",
+              "doc": "Which third of the wheel it stands in.",
+              "enum": "TsQuadrant"
             }
           ]
         }

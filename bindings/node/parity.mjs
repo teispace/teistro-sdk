@@ -230,6 +230,7 @@ const charts = geo.chart.foundMany({
   vargas: [Varga.D9, Varga.D10],
   aspects: true,
   points: true,
+  houses: true,
 });
 put('chart-varga-count', charts.vargaCount);
 put('chart-drishti-table', charts.drishtiTable);
@@ -260,6 +261,11 @@ for (const chart of charts) {
   put(`chart-${i}-vipala`, chart.timing.vipala);
   put(`chart-${i}-hora-number`, chart.timing.horaNumber);
   put(`chart-${i}-hora-lord`, chart.timing.horaLord);
+  chart.bhavas.forEach((bhava) => {
+    put(`chart-${i}-bhava-${bhava.number}-sign`, bhava.sign);
+    put(`chart-${i}-bhava-${bhava.number}-lord`, bhava.lord);
+    put(`chart-${i}-bhava-${bhava.number}-quadrant`, bhava.quadrant);
+  });
   chart.points.forEach((found, k) => {
     put(`chart-${i}-point-${k}`, found.point);
     put(`chart-${i}-point-${k}-lon`, found.longitudeDeg);

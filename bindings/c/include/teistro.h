@@ -4205,6 +4205,28 @@ typedef enum ts_reading {
 } ts_reading;
 
 /**
+ * Which third of the wheel a bhava stands in.
+ *
+ * The houses crate's own `Quadrant`, which is not a catalogue member —
+ * it is a classification of a number rather than a thing with a key —
+ * so it crosses as this boundary's own enum, as `TsStrength` does.
+ */
+typedef enum ts_quadrant {
+    /**
+     * Angular: the 1st, 4th, 7th and 10th.
+     */
+    TS_QUADRANT_KENDRA = 0,
+    /**
+     * Succedent: the 2nd, 5th, 8th and 11th.
+     */
+    TS_QUADRANT_PANAPARA = 1,
+    /**
+     * Cadent: the 3rd, 6th, 9th and 12th.
+     */
+    TS_QUADRANT_APOKLIMA = 2,
+} ts_quadrant;
+
+/**
  * How strongly one body looks at another.
  *
  * The aspect crate's own `Strength`, which is not a catalogue member —

@@ -581,6 +581,27 @@ class ChartsPoints:
 
 
 @dataclass(frozen=True)
+class ChartsBhavas:
+    """The `bhavas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.
+    """
+
+    sign: memoryview[int]
+    """The sign the bhava's **middle** falls in, which is the sign the tradition means by "the house's sign": under an unequal division a house can begin in one sign and be centred in another."""
+
+    lord: memoryview[int]
+    """The lord of that sign."""
+
+    quadrant: memoryview[int]
+    """Which third of the wheel it stands in."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -743,6 +764,9 @@ class Charts:
     points: ChartsPoints
     """Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have."""
 
+    bhavas: ChartsBhavas
+    """Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -769,6 +793,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_aspects = blob.section(15, "aspects")
     at_drishti_table = blob.section(16, "drishti_table")
     at_points = blob.section(17, "points")
+    at_bhavas = blob.section(18, "bhavas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -959,6 +984,12 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("d"),
             pada_deg=blob.column(at_points, 5, 8, at_points.count).cast("d"),
             length=at_points.count,
+        ),
+        bhavas=ChartsBhavas(
+            sign=blob.column(at_bhavas, 0, 2, at_bhavas.count).cast("H"),
+            lord=blob.column(at_bhavas, 1, 2, at_bhavas.count).cast("H"),
+            quadrant=blob.column(at_bhavas, 2, 1, at_bhavas.count).cast("B"),
+            length=at_bhavas.count,
         ),
     )
 

@@ -36,6 +36,7 @@ use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::time::UtcOffset;
+use teistro_houses::classify::Quadrant;
 use teistro_idl::blob::{ColumnData, FixedValue, Writer};
 use teistro_serial::Document;
 
@@ -60,6 +61,32 @@ impl From<Reading> for TsReading {
         match reading {
             Reading::Sandhi => TsReading::Sandhi,
             Reading::Madhya => TsReading::Madhya,
+        }
+    }
+}
+
+/// Which third of the wheel a bhava stands in.
+///
+/// The houses crate's own `Quadrant`, which is not a catalogue member —
+/// it is a classification of a number rather than a thing with a key —
+/// so it crosses as this boundary's own enum, as `TsStrength` does.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsQuadrant {
+    /// Angular: the 1st, 4th, 7th and 10th.
+    Kendra = 0,
+    /// Succedent: the 2nd, 5th, 8th and 11th.
+    Panapara = 1,
+    /// Cadent: the 3rd, 6th, 9th and 12th.
+    Apoklima = 2,
+}
+
+impl From<Quadrant> for TsQuadrant {
+    fn from(quadrant: Quadrant) -> TsQuadrant {
+        match quadrant {
+            Quadrant::Kendra => TsQuadrant::Kendra,
+            Quadrant::Panapara => TsQuadrant::Panapara,
+            Quadrant::Apoklima => TsQuadrant::Apoklima,
         }
     }
 }
@@ -671,6 +698,57 @@ impl AspectColumns {
     }
 }
 
+/// The twelve bhavas of each chart, as the houses service reads them.
+///
+/// **Not ragged**, and this is the case that says why the rule is about
+/// the values rather than about the section: a chart that has bhavas has
+/// twelve, always, so the count is a constant and an empty section can
+/// only mean "not asked for".
+struct BhavaColumns {
+    sign: Vec<u16>,
+    lord: Vec<u16>,
+    quadrant: Vec<u8>,
+}
+
+impl BhavaColumns {
+    fn of(documents: &[Document]) -> BhavaColumns {
+        let rows = documents.len() * 12;
+        let mut columns = BhavaColumns {
+            sign: Vec::with_capacity(rows),
+            lord: Vec::with_capacity(rows),
+            quadrant: Vec::with_capacity(rows),
+        };
+        for document in documents {
+            let Some(houses) = document.houses.as_ref() else {
+                continue;
+            };
+            for number in 1..=12_u8 {
+                let Some(bhava) = houses.bhava(number) else {
+                    continue;
+                };
+                columns.sign.push(bhava.sign.id());
+                columns.lord.push(bhava.lord.id());
+                columns
+                    .quadrant
+                    .push(TsQuadrant::from(bhava.quadrant) as u8);
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "bhavas",
+            self.sign.len(),
+            &[
+                ColumnData::U16(&self.sign),
+                ColumnData::U16(&self.lord),
+                ColumnData::U8(&self.quadrant),
+            ],
+        )
+    }
+}
+
 /// The derived points of a batch, as the section carries them.
 ///
 /// **Ragged**, as the drishti are: a chart's points depend on what its
@@ -1007,6 +1085,7 @@ pub fn encode(
     let vargas = VargaColumns::of(documents, graha_count)?;
     let aspects = AspectColumns::of(documents);
     let points = PointColumns::of(documents);
+    let bhavas = BhavaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1076,6 +1155,7 @@ pub fn encode(
         vargas.write(&mut writer)?;
         aspects.write(&mut writer)?;
         points.write(&mut writer)?;
+        bhavas.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

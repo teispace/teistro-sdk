@@ -710,6 +710,31 @@ final class ChartsPoints {
   final int length;
 }
 
+/// The `bhavas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.
+final class ChartsBhavas {
+  const ChartsBhavas({
+    required this.sign,
+    required this.lord,
+    required this.quadrant,
+    required this.length,
+  });
+
+  /// The sign the bhava's **middle** falls in, which is the sign the tradition means by "the house's sign": under an unequal division a house can begin in one sign and be centred in another.
+  final Uint16List sign;
+
+  /// The lord of that sign.
+  final Uint16List lord;
+
+  /// Which third of the wheel it stands in.
+  final Uint8List quadrant;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -830,6 +855,7 @@ final class Charts {
     required this.aspects,
     required this.drishtiTable,
     required this.points,
+    required this.bhavas,
   });
 
   /// What kind of chart these are.
@@ -922,6 +948,9 @@ final class Charts {
   /// Every chart's derived points — the upagrahas and the special lagnas — concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.point_count` and run for its own. Empty when the points were not asked for. Gulika and Mandi are Saturn's eighth of the day's arc and are the two a chart with no arc to divide cannot have.
   final ChartsPoints points;
 
+  /// Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.
+  final ChartsBhavas bhavas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -946,6 +975,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atAspects = blob.section(15, 'aspects');
   final atDrishtiTable = blob.section(16, 'drishti_table');
   final atPoints = blob.section(17, 'points');
+  final atBhavas = blob.section(18, 'bhavas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -1376,6 +1406,24 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atPoints, 5) + atPoints.count * 8,
       ),
       length: atPoints.count,
+    ),
+    bhavas: ChartsBhavas(
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavas, 0),
+        blob.columnOffset(atBhavas, 0) + atBhavas.count * 2,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavas, 1),
+        blob.columnOffset(atBhavas, 1) + atBhavas.count * 2,
+      ),
+      quadrant: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavas, 2),
+        blob.columnOffset(atBhavas, 2) + atBhavas.count * 1,
+      ),
+      length: atBhavas.count,
     ),
   );
 }

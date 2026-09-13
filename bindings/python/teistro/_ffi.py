@@ -83,6 +83,7 @@ from .catalogue import (
     PolarDayPolicy,
     PolarKind,
     ProviderCode,
+    Quadrant,
     Rashi,
     Reading,
     Relationship,
