@@ -219,8 +219,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// evaluate, a provider that cannot answer for the window, or a
     /// muhurta yoga table the SDK does not ship.
     pub fn day(&self, date: &CalendarDate, place: &Place) -> Result<Envelope<Panchanga>, Error> {
-        let value = self.value(date, place)?;
-        let frame = self.frame(value.window.from)?;
+        let (value, frame) = self.value(date, place)?;
         let provenance = self.provenance(
             content_hash(&Input {
                 date: date.to_string(),
@@ -280,16 +279,20 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             .with_field("to"));
         }
         let mut values = Vec::with_capacity(count);
+        // The frame is the first day's: the batch asks the provider for
+        // one frame, so one is what the stamp names -- and it comes back
+        // from the day that computed it rather than being computed
+        // again.
+        let mut frame = None;
         for step in 0..count {
             let offset = i64::try_from(step).unwrap_or(0);
             let date = self.calendar.date_of(first.plus_days(offset))?;
-            values.push(self.value(&date, place)?);
+            let (value, asked) = self.value(&date, place)?;
+            frame = frame.or(Some(asked));
+            values.push(value);
         }
-        // The frame is the first day's: the batch asks the provider for
-        // one frame, so one is what the stamp names.
-        let frame = match values.first() {
-            Some(first) => self.frame(first.window.from)?,
-            None => return Err(Error::internal("a range of days answered no day")),
+        let Some(frame) = frame else {
+            return Err(Error::internal("a range of days answered no day"));
         };
         let provenance = self.provenance(
             content_hash(&RangeInput {
@@ -304,8 +307,16 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(Envelope::sealing(values, provenance))
     }
 
-    /// One day's value, unstamped.
-    fn value(&self, date: &CalendarDate, place: &Place) -> Result<Panchanga, Error> {
+    /// One day's value, unstamped, **and the frame it asked the provider
+    /// for** — which the stamp needs and which this is the only place
+    /// that computes.
+    ///
+    /// Handed back rather than recomputed. Asking `self.frame` a second
+    /// time for the stamp cost `panchanga` **8.95%** of its instructions
+    /// and the instruction-count gate refused it at a 3% budget: a frame
+    /// is an ayanamsha at an instant, so it is a precession evaluation
+    /// and not a field read.
+    fn value(&self, date: &CalendarDate, place: &Place) -> Result<(Panchanga, Frame), Error> {
         let settings = self.settings();
         // The date is taken through the calendar and back, so that a day
         // asked for by a date a caller wrote and the same day reached
@@ -326,19 +337,21 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let night = Interval::new(day.sunset, day.next_sunrise)?;
 
         let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
-        let frame = self.frame(window.from)?;
+        // One ayanamsha evaluation for the day; everything below reads
+        // it rather than asking again at the same instant.
+        let (frame, zodiac) = self.at_instant(window.from)?;
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(*place);
         }
-        let limbs = limb::limbs(&longitudes, window, self.zodiac(window.from)?)?;
+        let limbs = limb::limbs(&longitudes, window, zodiac)?;
 
         let horas = hora::horas(&day, settings.day.hora_reckoning.try_into()?)?;
         let previous_night = self.previous_night(place, &date)?;
         let muhurtas = period::muhurtas(daylight, night, previous_night, day.vara);
-        let month = self.month(&longitudes, window, &limbs)?;
-        let moon = self.moon(&completion, place, &day, window)?;
-        let sun = sky::sun_day(self.signs(&longitudes, Body::Sun, window)?);
+        let month = self.month(&longitudes, window, &limbs, zodiac)?;
+        let moon = self.moon(&completion, place, &day, window, frame, zodiac)?;
+        let sun = sky::sun_day(Self::signs(&longitudes, Body::Sun, window, zodiac)?);
         let omens = Omens {
             panchaka: omen::panchaka(&limbs.nakshatra),
             yogas: omen::yogas(
@@ -349,19 +362,22 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             )?,
             disha_shool: omen::disha_shool(day.vara),
         };
-        Ok(Panchanga {
-            kaalas: period::kaalas(daylight, day.vara),
-            choghadiya: period::choghadiya(daylight, night, day.vara),
-            horas,
-            muhurtas,
-            month,
-            moon,
-            sun,
-            omens,
-            limbs,
-            window,
-            day,
-        })
+        Ok((
+            Panchanga {
+                kaalas: period::kaalas(daylight, day.vara),
+                choghadiya: period::choghadiya(daylight, night, day.vara),
+                horas,
+                muhurtas,
+                month,
+                moon,
+                sun,
+                omens,
+                limbs,
+                window,
+                day,
+            },
+            frame,
+        ))
     }
 
     /// The window the day's limbs are clipped to: the arc under a sunrise
@@ -411,38 +427,43 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(Interval::new(before.sunset, before.next_sunrise).ok())
     }
 
-    /// The frame the day's limbs are read in.
+    /// **One ayanamsha evaluation for a day**, and the two things read
+    /// off it: the frame to ask the provider for, and the zodiac the
+    /// limbs are measured from.
     ///
-    /// Always tropical: the shift is applied by the limb kernel at each
-    /// instant, so the elongation, the Moon's longitude and their sum are
-    /// all measured from one ayanamsha. The centre is
-    /// `panchanga.centre`, which is geocentric by default however the
-    /// chart is computed — an almanac is geocentric everywhere.
-    fn frame(&self, at: JulianDay<Utc>) -> Result<Frame, Error> {
-        let zodiac = ChartZodiac::of(
-            self.settings(),
-            tt(at, self.delta_t)?,
-            self.precession,
-            self.delta_t,
-        )?;
-        Ok(Frame {
-            centre: match self.settings().panchanga.centre {
-                Centre::Topocentric => teistro_port_ephemeris::Centre::Topocentric,
-                _ => teistro_port_ephemeris::Centre::Geocentric,
-            },
-            ..zodiac.request
-        })
-    }
-
-    /// The ayanamsha the limbs are measured from.
-    fn zodiac(&self, at: JulianDay<Utc>) -> Result<Zodiac, Error> {
+    /// The frame is always tropical — the shift is applied by the limb
+    /// kernel at each instant, so the elongation, the Moon's longitude
+    /// and their sum are all measured from one ayanamsha — and its
+    /// centre is `panchanga.centre`, geocentric by default however the
+    /// chart is computed, because an almanac is geocentric everywhere.
+    ///
+    /// The two used to be separate calls, and a day asked for one or the
+    /// other **six times** at the same instant: the frame for the
+    /// provider, the zodiac for the limbs, the zodiac again for the
+    /// month, and the zodiac once more for each of the Sun's and the
+    /// Moon's signs — plus a frame inside the Moon's own day. Every one
+    /// of them ran `ChartZodiac::of`, which is a precession evaluation
+    /// rather than a field read, and every one of them returned the same
+    /// answer because the instant is the same.
+    ///
+    /// One evaluation, passed down. The instruction-count gate is what
+    /// made the waste visible, by refusing an unrelated 8.95% and
+    /// sending a reader through this path.
+    fn at_instant(&self, at: JulianDay<Utc>) -> Result<(Frame, Zodiac), Error> {
         let chart = ChartZodiac::of(
             self.settings(),
             tt(at, self.delta_t)?,
             self.precession,
             self.delta_t,
         )?;
-        Ok(Zodiac {
+        let frame = Frame {
+            centre: match self.settings().panchanga.centre {
+                Centre::Topocentric => teistro_port_ephemeris::Centre::Topocentric,
+                _ => teistro_port_ephemeris::Centre::Geocentric,
+            },
+            ..chart.request
+        };
+        let zodiac = Zodiac {
             ayanamsha: chart.ayanamsha,
             basis: if self.settings().frame.ayanamsha_basis == AyanamshaBasis::True {
                 Basis::True
@@ -451,7 +472,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             },
             precession: self.precession,
             delta_t: self.delta_t,
-        })
+        };
+        Ok((frame, zodiac))
     }
 
     /// The lunar month: the amanta month the new moon's solar sign names,
@@ -472,13 +494,13 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         longitudes: &S,
         window: Interval,
         limbs: &Limbs,
+        zodiac: Zodiac,
     ) -> Result<LunarMonth, Error> {
         let at_sunrise = limbs
             .tithi
             .first()
             .map(|span| span.member)
             .ok_or_else(|| Error::internal("a day with no tithi"))?;
-        let zodiac = self.zodiac(window.from)?;
         let span = limb::lunar_month_span(longitudes, window, zodiac)?;
         let amanta = limb::masa_at(longitudes, span.from, zodiac)?;
         let kind = teistro_calendar::lunisolar::kind_of(self.model, span.from, span.to)?;
@@ -492,12 +514,19 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
 
     /// The Moon's day: its rises and sets in the window the profile
     /// names, and the signs it stood in.
+    ///
+    /// The frame is **passed in**, not computed: its caller has already
+    /// asked for the same one, and a frame is an ayanamsha at an instant
+    /// rather than a field read. Recomputing it here was a third
+    /// precession evaluation per day that nothing needed.
     fn moon(
         &self,
         completion: &Completion<'_, P>,
         place: &Place,
         day: &LocalDay,
         window: Interval,
+        frame: Frame,
+        zodiac: Zodiac,
     ) -> Result<MoonDay, Error> {
         let search = match self.settings().panchanga.moon_events {
             // The engine's reading: the first rise and set at or after
@@ -517,23 +546,23 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         );
         let rises = events(&solver, HorizonEventKind::Rise, search)?;
         let sets = events(&solver, HorizonEventKind::Set, search)?;
-        let longitudes = completion.longitudes(self.frame(window.from)?);
+        let longitudes = completion.longitudes(frame);
         Ok(MoonDay {
             rises,
             sets,
-            signs: self.signs(&longitudes, Body::Moon, window)?,
+            signs: Self::signs(&longitudes, Body::Moon, window, zodiac)?,
             window: search,
         })
     }
 
     /// The signs a body stood in over the window.
     fn signs<S: teistro_astro::events::Longitudes + ?Sized>(
-        &self,
         longitudes: &S,
         body: Body,
         window: Interval,
+        zodiac: Zodiac,
     ) -> Result<Vec<Span<Rashi>>, Error> {
-        limb::signs(longitudes, body, window, self.zodiac(window.from)?)
+        limb::signs(longitudes, body, window, zodiac)
     }
 
     /// The stamp every value carries.
