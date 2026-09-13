@@ -452,7 +452,10 @@ class AnEngine(WithLibrary):
         """
         plugin = os.environ.get("TEISTRO_TEIMERIS_ADAPTER")
         if not plugin:
-            self.skipTest("set TEISTRO_TEIMERIS_ADAPTER to the adapter's library")
+            self.skipTest(
+                "the adapter is built separately; "
+                "set TEISTRO_TEIMERIS_ADAPTER to its library"
+            )
         with self.teistro.context(profile=PROFILE, ephemeris=Plugin(plugin)) as ctx:
             sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
             # The Sun at J2000 is near 280.4 degrees, which is astronomy

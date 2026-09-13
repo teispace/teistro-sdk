@@ -353,7 +353,9 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     let Some(path) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
         // A checkout has neither the adapter built nor the engine's data,
         // and a test that failed for that would fail for everyone.
-        println!("skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter's library");
+        println!(
+            "skipped: the adapter is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library"
+        );
         return;
     };
     let path = CString::new(path.to_string_lossy().as_ref()).unwrap();

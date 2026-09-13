@@ -256,7 +256,9 @@ fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform)
         return Ok(());
     };
     let Some(library) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
-        println!("skip  the adapter package: set TEISTRO_TEIMERIS_ADAPTER to the built adapter");
+        println!(
+            "skip  the adapter package: it is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library"
+        );
         return Ok(());
     };
     let into = check.join("adapter-node");

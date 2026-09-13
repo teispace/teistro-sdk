@@ -499,7 +499,9 @@ void _engineTests() {
   test('an ephemeris is plugged in by naming its platform binary', () {
     final plugin = Platform.environment['TEISTRO_TEIMERIS_ADAPTER'];
     if (plugin == null || plugin.isEmpty) {
-      printOnFailure('set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
+      printOnFailure(
+        'the adapter is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library',
+      );
       markTestSkipped('the adapter is not built in this checkout');
       return;
     }

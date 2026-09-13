@@ -614,7 +614,9 @@ test('an area is a value that can be destructured and kept', () => {
 test('an ephemeris is plugged in by naming its platform binary', () => {
   const plugin = process.env.TEISTRO_TEIMERIS_ADAPTER;
   if (!plugin) {
-    console.log('skipped: set TEISTRO_TEIMERIS_ADAPTER to the adapter\'s library');
+    console.log(
+      "skipped: the adapter is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library",
+    );
     return;
   }
   // `dispose()` in a `finally`, not `using`: the explicit resource
