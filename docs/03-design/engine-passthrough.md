@@ -260,9 +260,11 @@ failure** — `tm_set_ayanamsha refused with status -1, invalid argument:
 no such ayanamsha: 15`. That is the difference between a code and knowing
 what to change.
 
-The record has to be read with care, because not every failure writes it
+The record has to be read with care, because not every failure wrote it
 (`05-testing/02-engine-findings.md` D3): a null argument refused by a
-bare return leaves the previous failure's message in place. So an arm
+bare return left the previous failure's message in place. The engine is
+fixed (`7de669e`), and the guard stays, because a null context and the
+functions that take no context still return with nothing written. So an arm
 with a context snapshots the record before the call — two reads when it
 is clean, which every success leaves it, and a copy only while it holds
 an earlier failure — and attaches the message only when the record
@@ -368,8 +370,6 @@ easiest.
   `tm_house_cusp_count()` of the requested system, and the calendar grid
   as long as a field of its request. Both are expressible — an extent that
   names a function, or a field — and neither is yet.
-- **The engine's error record** (D3) is fixed in the engine only once its
-  123 null-check prologues record their own failures.
 
 ADR-0030's rule that what proves universal is promoted into the port
 applies to all of it.

@@ -557,10 +557,11 @@ fn a_refusal_carries_the_engine_s_own_message() {
     assert!(said.contains("no such ayanamsha"), "{said}");
 }
 
-/// A failure the engine does not record is not given an earlier
-/// failure's message: the engine's record still holds that one, and
-/// repeating it as this call's would send a caller after the wrong
-/// mistake (findings register D3).
+/// A failure is never given an earlier failure's message (findings
+/// register D3). An engine from before its fix leaves the previous record
+/// in place, and the passthrough says it recorded nothing; one after the
+/// fix writes its own, naming the null argument. Either is true; the star's
+/// message never is.
 #[test]
 fn an_earlier_failure_s_message_is_not_repeated_as_this_one_s() {
     let provider = provider();
@@ -575,7 +576,10 @@ fn an_earlier_failure_s_message_is_not_repeated_as_this_one_s() {
         .expect_err("the engine takes no null datetime");
     let said = second.to_string();
     assert!(!said.contains("no star named"), "a stale message: {said}");
-    assert!(said.contains("recorded no message"), "{said}");
+    assert!(
+        said.contains("is null") || said.contains("recorded no message"),
+        "this failure's own words, or none: {said}"
+    );
 }
 
 /// A string the engine writes into a struct it fills comes back as a
