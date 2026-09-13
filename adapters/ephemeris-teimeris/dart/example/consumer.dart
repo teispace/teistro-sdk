@@ -33,5 +33,29 @@ void main() {
   final ({int major, int minor, int patch}) version = ctx.engine.tmVersion();
   print('$name, $seconds seconds, engine $version');
 
+  // A struct crosses as a class, both ways; one the engine takes a null
+  // for may be left out.
+  final TmDatetime utc = ctx.engine.tmLocalToUtc(
+    local: const TmDatetime(
+      year: 2026,
+      month: 9,
+      day: 13,
+      hour: 6,
+      minute: 30,
+      second: 0,
+    ),
+    utcOffsetHours: 5.75,
+    cal: 1,
+  );
+  final orbit = ctx.engine.tmNodesApsidesCalc(
+    jd: 2461296.5,
+    scale: 1,
+    body: 4,
+    flags: 0,
+    method: 0,
+    apsis: 0,
+  );
+  print('${utc.hour}:${utc.minute} UTC, perihelion ${orbit.perihelion.lon}');
+
   ctx.dispose();
 }

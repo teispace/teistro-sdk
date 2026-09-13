@@ -20,16 +20,7 @@ use teistro_port_ephemeris::ProviderError;
 /// Naming it matters: a call through this route is written by hand
 /// against a manifest, so the mistake is nearly always a name.
 pub(crate) fn number(args: &Map<String, Value>, name: &str) -> Result<f64, ProviderError> {
-    match args.get(name) {
-        Some(Value::Number(found)) => found.as_f64().ok_or_else(|| {
-            ProviderError::invalid(format!("`{name}` is a number this engine cannot take"))
-        }),
-        Some(other) => Err(ProviderError::invalid(format!(
-            "`{name}` must be a number; it is {}",
-            kind(other)
-        ))),
-        None => Err(ProviderError::invalid(format!("`{name}` is required"))),
-    }
+    number_of(args.get(name), name)
 }
 
 /// An argument that must be a whole number, as an `i64`.
@@ -47,28 +38,9 @@ pub(crate) fn number(args: &Map<String, Value>, name: &str) -> Result<f64, Provi
 ///
 /// `Invalid` naming the argument when it is missing, not a number, or not
 /// whole.
+#[cfg(test)]
 pub(crate) fn integer(args: &Map<String, Value>, name: &str) -> Result<i64, ProviderError> {
-    match args.get(name) {
-        Some(Value::Bool(flag)) => Ok(i64::from(*flag)),
-        Some(Value::Number(found)) => {
-            if let Some(whole) = found.as_i64() {
-                return Ok(whole);
-            }
-            if let Some(unsigned) = found.as_u64() {
-                return i64::try_from(unsigned).map_err(|_| {
-                    ProviderError::invalid(format!("`{name}` is larger than this engine takes"))
-                });
-            }
-            Err(ProviderError::invalid(format!(
-                "`{name}` must be a whole number; it is {found}"
-            )))
-        }
-        Some(other) => Err(ProviderError::invalid(format!(
-            "`{name}` must be a whole number; it is {}",
-            kind(other)
-        ))),
-        None => Err(ProviderError::invalid(format!("`{name}` is required"))),
-    }
+    integer_of(args.get(name), name)
 }
 
 /// A whole-number argument narrowed to the width the engine declares.
@@ -85,13 +57,159 @@ pub(crate) fn narrow<T>(args: &Map<String, Value>, name: &str) -> Result<T, Prov
 where
     T: TryFrom<i64>,
 {
-    let whole = integer(args, name)?;
+    narrow_of(args.get(name), name)
+}
+
+/// An argument that must be an object: a struct, as the engine's own
+/// field names key it.
+///
+/// # Errors
+///
+/// `Invalid` naming the argument when it is missing or not an object.
+#[allow(
+    dead_code,
+    reason = "the generator emits it for a struct the engine does not mark optional, and this \
+              engine marks every struct input optional; kept so the next one compiles"
+)]
+pub(crate) fn object<'a>(
+    args: &'a Map<String, Value>,
+    name: &str,
+) -> Result<Within<'a>, ProviderError> {
+    object_of(args.get(name), name.to_owned())
+}
+
+/// An argument that may be an object, or left out, or null — the three
+/// ways a caller says "no struct here", which crosses as a null pointer.
+///
+/// # Errors
+///
+/// `Invalid` naming the argument when it is present and neither null nor
+/// an object: a number where an observer belongs is a mistake, not an
+/// absence.
+pub(crate) fn optional_object<'a>(
+    args: &'a Map<String, Value>,
+    name: &str,
+) -> Result<Option<Within<'a>>, ProviderError> {
+    match args.get(name) {
+        None | Some(Value::Null) => Ok(None),
+        found => object_of(found, name.to_owned()).map(Some),
+    }
+}
+
+/// The object a struct's fields are read from, and the path a refusal
+/// names them by.
+///
+/// A struct crosses as a nested object, so the key a field is looked up
+/// under and the name a message must print are no longer one string: the
+/// field is `year` and the caller wrote `local.year`. One type carries
+/// both down through the nesting, so every refusal names the whole path.
+pub(crate) struct Within<'a> {
+    object: &'a Map<String, Value>,
+    path: String,
+}
+
+impl<'a> Within<'a> {
+    /// A field's full path, as the caller wrote it.
+    fn at(&self, name: &str) -> String {
+        format!("{}.{name}", self.path)
+    }
+
+    /// A field that must be a number.
+    ///
+    /// # Errors
+    ///
+    /// As [`number`], naming the field's whole path.
+    pub(crate) fn number(&self, name: &str) -> Result<f64, ProviderError> {
+        number_of(self.object.get(name), &self.at(name))
+    }
+
+    /// A whole-number field narrowed to the width the engine declares.
+    ///
+    /// # Errors
+    ///
+    /// As [`narrow`], naming the field's whole path.
+    pub(crate) fn narrow<T>(&self, name: &str) -> Result<T, ProviderError>
+    where
+        T: TryFrom<i64>,
+    {
+        narrow_of(self.object.get(name), &self.at(name))
+    }
+
+    /// A field that is itself a struct.
+    ///
+    /// # Errors
+    ///
+    /// `Invalid` naming the field's whole path when it is missing or not
+    /// an object.
+    #[allow(
+        dead_code,
+        reason = "the generator emits it for a struct passed in that nests another; no such \
+                  function is callable at this engine version"
+    )]
+    pub(crate) fn nested(&self, name: &str) -> Result<Within<'a>, ProviderError> {
+        object_of(self.object.get(name), self.at(name))
+    }
+}
+
+fn number_of(found: Option<&Value>, path: &str) -> Result<f64, ProviderError> {
+    match found {
+        Some(Value::Number(found)) => found.as_f64().ok_or_else(|| {
+            ProviderError::invalid(format!("`{path}` is a number this engine cannot take"))
+        }),
+        Some(other) => Err(ProviderError::invalid(format!(
+            "`{path}` must be a number; it is {}",
+            kind(other)
+        ))),
+        None => Err(ProviderError::invalid(format!("`{path}` is required"))),
+    }
+}
+
+fn integer_of(found: Option<&Value>, path: &str) -> Result<i64, ProviderError> {
+    match found {
+        Some(Value::Bool(flag)) => Ok(i64::from(*flag)),
+        Some(Value::Number(found)) => {
+            if let Some(whole) = found.as_i64() {
+                return Ok(whole);
+            }
+            if let Some(unsigned) = found.as_u64() {
+                return i64::try_from(unsigned).map_err(|_| {
+                    ProviderError::invalid(format!("`{path}` is larger than this engine takes"))
+                });
+            }
+            Err(ProviderError::invalid(format!(
+                "`{path}` must be a whole number; it is {found}"
+            )))
+        }
+        Some(other) => Err(ProviderError::invalid(format!(
+            "`{path}` must be a whole number; it is {}",
+            kind(other)
+        ))),
+        None => Err(ProviderError::invalid(format!("`{path}` is required"))),
+    }
+}
+
+fn narrow_of<T>(found: Option<&Value>, path: &str) -> Result<T, ProviderError>
+where
+    T: TryFrom<i64>,
+{
+    let whole = integer_of(found, path)?;
     T::try_from(whole).map_err(|_| {
         ProviderError::invalid(format!(
-            "`{name}` is {whole}, which does not fit the {} this engine declares",
+            "`{path}` is {whole}, which does not fit the {} this engine declares",
             core::any::type_name::<T>()
         ))
     })
+}
+
+fn object_of(found: Option<&Value>, path: String) -> Result<Within<'_>, ProviderError> {
+    match found {
+        Some(Value::Object(object)) => Ok(Within { object, path }),
+        Some(other) => Err(ProviderError::invalid(format!(
+            "`{path}` must be an object; it is {}",
+            kind(other)
+        ))),
+        None => Err(ProviderError::invalid(format!("`{path}` is required"))),
+    }
 }
 
 /// An argument that must be a string, as the C string the engine takes.
@@ -134,7 +252,11 @@ pub(crate) fn borrowed(pointer: *const c_char) -> Option<String> {
     }
     // SAFETY: the caller passes a pointer the engine returned from a
     // function declared to return a NUL-terminated string.
-    Some(unsafe { CStr::from_ptr(pointer) }.to_string_lossy().into_owned())
+    Some(
+        unsafe { CStr::from_ptr(pointer) }
+            .to_string_lossy()
+            .into_owned(),
+    )
 }
 
 /// A string the engine fills a buffer with, by the engine's own
@@ -239,17 +361,17 @@ mod tests {
         reason = "a test fails by panicking"
     )]
 
-    use super::{borrowed, fill, integer, number, text};
+    use super::{borrowed, fill, integer, narrow, number, object, optional_object, text};
     use core::ffi::c_char;
     use serde_json::json;
 
-    fn args(value: serde_json::Value) -> serde_json::Map<String, serde_json::Value> {
+    fn args(value: &serde_json::Value) -> serde_json::Map<String, serde_json::Value> {
         value.as_object().expect("an object").clone()
     }
 
     #[test]
     fn a_number_is_read_and_a_missing_one_is_named() {
-        let map = args(json!({ "jd": 2_451_545.5 }));
+        let map = args(&json!({ "jd": 2_451_545.5 }));
         assert!((number(&map, "jd").unwrap() - 2_451_545.5).abs() < 1e-9);
         let error = number(&map, "jd_ut1").unwrap_err();
         assert!(
@@ -263,7 +385,7 @@ mod tests {
     /// members, and 2.7 becoming 2 answers a question nobody asked.
     #[test]
     fn a_fraction_is_refused_where_a_whole_number_is_wanted() {
-        let map = args(json!({ "system": 2.7, "count": 3, "flag": true }));
+        let map = args(&json!({ "system": 2.7, "count": 3, "flag": true }));
         let error = integer(&map, "system").unwrap_err();
         assert!(error.to_string().contains("whole"), "{error}");
         assert_eq!(integer(&map, "count").unwrap(), 3);
@@ -274,12 +396,57 @@ mod tests {
         );
     }
 
+    /// A struct's field is refused by its whole path, because the field's
+    /// own name alone — `year` — would not say which of a call's structs
+    /// it belongs to.
+    #[test]
+    fn a_field_is_named_by_its_whole_path() {
+        let map = args(&json!({
+            "local": { "year": 2026, "month": 9.5, "at": { "lon": "east" } },
+            "flat": 3,
+        }));
+        let local = object(&map, "local").unwrap();
+        assert_eq!(local.narrow::<i32>("year").unwrap(), 2026);
+        let month = local.narrow::<i32>("month").unwrap_err();
+        assert!(month.to_string().contains("`local.month`"), "{month}");
+        let missing = local.number("day").unwrap_err();
+        assert!(
+            missing.to_string().contains("`local.day` is required"),
+            "{missing}"
+        );
+        let deep = local.nested("at").unwrap().number("lon").unwrap_err();
+        assert!(deep.to_string().contains("`local.at.lon`"), "{deep}");
+        let flat = object(&map, "flat")
+            .err()
+            .expect("a number is not an object");
+        assert!(flat.to_string().contains("must be an object"), "{flat}");
+        let wide = narrow::<u8>(&map, "flat").unwrap();
+        assert_eq!(wide, 3);
+    }
+
+    /// Left out and null are both "no struct"; a value of the wrong kind
+    /// is a mistake and is said to be one.
+    #[test]
+    fn an_optional_struct_is_absent_or_null_and_nothing_else() {
+        let map = args(&json!({ "observer": null, "eye": 4, "atm": {} }));
+        assert!(optional_object(&map, "missing").unwrap().is_none());
+        assert!(optional_object(&map, "observer").unwrap().is_none());
+        assert!(optional_object(&map, "atm").unwrap().is_some());
+        let error = optional_object(&map, "eye")
+            .err()
+            .expect("a number is not a struct");
+        assert!(
+            error.to_string().contains("`eye` must be an object"),
+            "{error}"
+        );
+    }
+
     /// The wrong kind is named as what it is, because a caller writing
     /// against a manifest has usually passed the right name and the wrong
     /// shape.
     #[test]
     fn the_wrong_kind_is_named() {
-        let map = args(json!({ "jd": "2451545.5" }));
+        let map = args(&json!({ "jd": "2451545.5" }));
         let error = number(&map, "jd").unwrap_err();
         assert!(error.to_string().contains("a string"), "{error}");
     }
@@ -289,7 +456,7 @@ mod tests {
     /// shortened, and the engine would answer about a different file.
     #[test]
     fn a_nul_inside_a_string_is_refused() {
-        let map = args(json!({ "path": "de441.eph", "cut": "de441\u{0}.eph" }));
+        let map = args(&json!({ "path": "de441.eph", "cut": "de441\u{0}.eph" }));
         assert_eq!(text(&map, "path").unwrap().to_str().unwrap(), "de441.eph");
         let error = text(&map, "cut").unwrap_err();
         assert!(error.to_string().contains("cut"), "{error}");
@@ -325,11 +492,7 @@ mod tests {
                 // the capacity it says; `take` is inside it.
                 #[allow(unsafe_code, reason = "a fake engine, filling as C does")]
                 unsafe {
-                    core::ptr::copy_nonoverlapping(
-                        answer.as_ptr(),
-                        buffer.cast::<u8>(),
-                        take,
-                    );
+                    core::ptr::copy_nonoverlapping(answer.as_ptr(), buffer.cast::<u8>(), take);
                     buffer.add(take).write(0);
                 }
             }

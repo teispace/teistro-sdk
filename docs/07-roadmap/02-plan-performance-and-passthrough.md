@@ -745,8 +745,14 @@ the emitted code is verified in its own language.
    cap at 2.2×, and a provider per thread costs 43.8 ms against a batch
    of 8 174 calls, so a pool that outlives many batches is the shape and
    it is the consumer's, which the SDK already allows.
-10. **B3** `libffi` dispatch behind a feature.
-11. **C1** one spelling per name — *done*.
+10. **B2′** teach the generated dispatch the engine's shapes, one
+    tranche at a time, in the order `03-design/engine-passthrough.md` §5
+    measured — strings (*done*), plain structs (*done*, 62 → 95), then an
+    array of numbers (99), an array of structs (114), a struct carrying a
+    string (120) and a struct pointing at another (139). The last ten are
+    a different kind of work and are not queued.
+11. **B3** `libffi` dispatch behind a feature.
+12. **C1** one spelling per name — *done*.
 
 Each step regenerates the measured page, so the numbers move in public
 and a regression is a failed gate rather than a memory.

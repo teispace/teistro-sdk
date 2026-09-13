@@ -124,9 +124,11 @@ fn a_string_the_engine_fills_comes_back_under_its_parameter_name() {
         .expect("the engine answers");
     let formatted: Value = serde_json::from_str(&formatted).expect("it parses");
     let text = formatted["buf"].as_str().expect("buf");
+    // The engine's header documents the zodiacal style as `12 Ari
+    // 34'56"`: the sign is abbreviated.
     assert!(
-        text.contains("Taurus") && text.contains("30"),
-        "35.5 degrees is 5 Taurus 30, not {text}"
+        text.contains("5 Tau") && text.contains("30'"),
+        "35.5 degrees is 5 Tau 30', not {text}"
     );
 }
 
@@ -288,4 +290,112 @@ fn the_route_shares_the_context_that_computes() {
         .native_call("tm_set_model", &format!(r#"{{"kind": 0, "model": {before}}}"#))
         .expect("setting it to what it already is");
     assert_eq!(read(0), before, "the same context answered both times");
+}
+
+/// A struct crosses as an object keyed by the engine's own field names,
+/// in both directions, and its extent crosses in neither.
+///
+/// A local time shifted to UTC is the call, because its answer is known
+/// without an ephemeris: 06:30 at +05:45 is 00:45 the same day.
+#[test]
+fn a_struct_crosses_as_an_object_both_ways() {
+    let provider = provider();
+    let answer = provider
+        .native_call(
+            "tm_local_to_utc",
+            r#"{"local": {"year": 2026, "month": 9, "day": 13, "hour": 6, "minute": 30,
+                "second": 0}, "utc_offset_hours": 5.75, "cal": 1}"#,
+        )
+        .expect("the engine answers");
+    let answer: Value = serde_json::from_str(&answer).expect("it parses");
+    let utc = &answer["out_utc"];
+    assert_eq!(
+        (&utc["year"], &utc["month"], &utc["day"], &utc["hour"], &utc["minute"]),
+        (&Value::from(2026), &Value::from(9), &Value::from(13), &Value::from(0), &Value::from(45)),
+        "{answer}"
+    );
+    assert!(
+        utc.get("struct_size").is_none(),
+        "the extent is the arm's, and is not reported: {answer}"
+    );
+}
+
+/// A field is refused by its whole path, because a call may take more
+/// than one struct and `month` alone would not say whose.
+#[test]
+fn a_struct_field_is_refused_by_its_whole_path() {
+    let provider = provider();
+    let missing = provider
+        .native_call(
+            "tm_local_to_utc",
+            r#"{"local": {"year": 2026, "day": 13, "hour": 6, "minute": 30, "second": 0},
+                "utc_offset_hours": 5.75, "cal": 1}"#,
+        )
+        .expect_err("a struct with a field left out is refused");
+    assert!(
+        missing.to_string().contains("`local.month` is required"),
+        "{missing}"
+    );
+    let fractional = provider
+        .native_call(
+            "tm_local_to_utc",
+            r#"{"local": {"year": 2026.5, "month": 9, "day": 13, "hour": 6, "minute": 30,
+                "second": 0}, "utc_offset_hours": 5.75, "cal": 1}"#,
+        )
+        .expect_err("a fractional year is refused rather than truncated");
+    assert!(fractional.to_string().contains("`local.year`"), "{fractional}");
+}
+
+/// A struct input left out crosses as null, and the engine — not the
+/// marshaller — decides whether it takes one: a datetime it does not,
+/// and refuses with its own status.
+#[test]
+fn a_struct_left_out_is_null_and_the_engine_decides() {
+    let provider = provider();
+    let refused = provider
+        .native_call(
+            "tm_local_to_utc",
+            r#"{"utc_offset_hours": 5.75, "cal": 1}"#,
+        )
+        .expect_err("the engine takes no null datetime");
+    assert!(
+        refused.to_string().contains("tm_local_to_utc refused")
+            || refused.to_string().contains("`tm_local_to_utc` refused"),
+        "the engine's own refusal, not the marshaller's: {refused}"
+    );
+}
+
+/// A sized struct's defaults come back with every field and without the
+/// extent, and an extent a caller passes is not read: the arm measures
+/// the struct it declared.
+#[test]
+fn an_extent_is_the_arms_and_never_the_callers() {
+    let provider = provider();
+    let answer = provider
+        .native_call("tm_crossing_request_init_sized", r#"{"struct_size": 1}"#)
+        .expect("the engine answers, whatever extent the caller named");
+    let answer: Value = serde_json::from_str(&answer).expect("it parses");
+    let request = answer["req"].as_object().expect("an object");
+    assert!(request.contains_key("jd_start"), "{answer}");
+    assert!(!request.contains_key("struct_size"), "{answer}");
+}
+
+/// A struct nested in another comes back nested: the four points of an
+/// orbit are each a position.
+#[test]
+fn a_nested_struct_comes_back_nested() {
+    let provider = provider();
+    // Mars (4), UT1 (1), no flags, the mean method and the aphelion; no
+    // observer, because the answer is not topocentric.
+    let answer = provider
+        .native_call(
+            "tm_nodes_apsides_calc",
+            r#"{"jd": 2461296.5, "scale": 1, "body": 4, "flags": 0, "method": 0, "apsis": 0}"#,
+        )
+        .expect("the engine answers");
+    let answer: Value = serde_json::from_str(&answer).expect("it parses");
+    let perihelion = &answer["out"]["perihelion"];
+    let lon = perihelion["lon"].as_f64().expect("a longitude");
+    assert!((0.0..360.0).contains(&lon), "{answer}");
+    assert!(perihelion.get("struct_size").is_none(), "{answer}");
 }

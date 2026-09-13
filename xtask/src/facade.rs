@@ -25,11 +25,12 @@
 //!
 //! # What the shape of the answer is measured from
 //!
-//! **Forty-six of the sixty-two callable functions answer with exactly
-//! one value**, eleven with none, and five with more than one. So a
-//! façade method hands back that one value *as itself* — a `double`, a
-//! `String` — rather than an object a caller has to index; the five get
-//! a record apiece, and the eleven answer with nothing.
+//! **Most callable functions answer with exactly one value** — the
+//! measured page counts them, and the count is regenerated with it — so
+//! a façade method hands back that one value *as itself* — a `double`, a
+//! `String`, a struct's own type — rather than an object a caller has to
+//! index; the few with more get a record apiece, and those with none
+//! answer with nothing.
 //!
 //! The same measurement settles a question every target would otherwise
 //! have raised: `return`, the key a function's own return value comes
@@ -38,7 +39,7 @@
 
 use std::fmt::Write as _;
 
-use crate::engine::{Described, Function, Vocabulary, describe};
+use crate::engine::{Described, Function, Shape, Vocabulary, describe, reached};
 use crate::generated::Output;
 
 /// Where the adapter's packages live. One directory per target beside
@@ -72,14 +73,16 @@ fn camel(name: &str) -> String {
     out
 }
 
-/// The three words a target has for the three kinds of value the engine
-/// declares.
+/// The three words a target has for the three kinds of scalar the engine
+/// declares, and the one rule for the fourth kind, a struct.
 ///
-/// **There is no fourth kind**, and that is what makes a façade possible
+/// **There is no fifth kind**, and that is what makes a façade possible
 /// without a type table per target: an enum member, a body id and a flag
-/// set all cross as integers. So one decision is made here, and each
-/// target supplies its own vocabulary for it — rather than three
-/// closures that could quietly disagree about which kind a type is.
+/// set all cross as integers, and a struct is named for itself in every
+/// target — `tm_datetime` is `TmDatetime` everywhere. So one decision is
+/// made here, and each target supplies its own vocabulary for it, rather
+/// than four closures that could quietly disagree about which kind a
+/// type is.
 struct Words {
     text: &'static str,
     /// A number with a fractional part.
@@ -115,23 +118,47 @@ impl Words {
     /// type-checks a wrong call. The Dart constructor emitter refuses an
     /// unknown *role* for the same reason and says so: a generator that
     /// quietly guesses writes code that compiles and is wrong.
-    fn of(&self, declared: &str, vocabulary: &Vocabulary, whose: &str) -> &'static str {
-        if declared == "string" {
-            return self.text;
-        }
-        assert!(
-            vocabulary.is_number(declared),
-            "the façade generator cannot type `{declared}` on `{whose}`: the engine's \
-             description does not classify it as a number, and typing it as one would \
-             make a call that type-checks and fails. Teach `Words` that kind, or leave \
-             the function out of the callable set."
-        );
-        if vocabulary.is_float(declared) {
-            self.fractional
-        } else {
-            self.integer
+    fn of(&self, declared: &str, vocabulary: &Vocabulary, whose: &str) -> String {
+        match kind(declared, vocabulary, whose) {
+            Kind::Text => self.text.to_string(),
+            Kind::Fractional => self.fractional.to_string(),
+            Kind::Integer => self.integer.to_string(),
+            Kind::Struct => pascal(declared),
         }
     }
+}
+
+/// Which of the four kinds a declared type is.
+///
+/// The same in every target; only the words for each kind differ.
+fn kind(declared: &str, vocabulary: &Vocabulary, whose: &str) -> Kind {
+    if declared == "string" {
+        return Kind::Text;
+    }
+    if vocabulary.shape(declared).is_some() {
+        return Kind::Struct;
+    }
+    assert!(
+        vocabulary.is_number(declared),
+        "the façade generator cannot type `{declared}` on `{whose}`: the engine's \
+             description does not classify it as a number or a struct, and typing it as \
+             one would make a call that type-checks and fails. Teach `Words` that kind, or \
+             leave the function out of the callable set."
+    );
+    if vocabulary.is_float(declared) {
+        Kind::Fractional
+    } else {
+        Kind::Integer
+    }
+}
+
+/// The four kinds a value crosses as.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Kind {
+    Text,
+    Fractional,
+    Integer,
+    Struct,
 }
 
 /// The façades, from one reading of the description.
@@ -141,11 +168,18 @@ pub(crate) fn outputs(
     vocabulary: &Vocabulary,
 ) -> Vec<Output> {
     let described: Vec<Described<'_>> = callable.iter().map(|f| describe(f)).collect();
+    // Every struct a callable function passes either way, with what it
+    // nests, in declaration order. One list for all four targets, so no
+    // façade names a struct another does not.
+    let structs = reached(callable, &["struct_in", "struct_out"], vocabulary);
     vec![
-        Output::new(NODE, node(version, &described)),
-        Output::new(NODE_TYPES, node_types(version, &described, vocabulary)),
-        Output::new(DART, dart(version, &described, vocabulary)),
-        Output::new(PYTHON, python(version, &described, vocabulary)),
+        Output::new(NODE, node(version, &described, &structs, vocabulary)),
+        Output::new(
+            NODE_TYPES,
+            node_types(version, &described, &structs, vocabulary),
+        ),
+        Output::new(DART, dart(version, &described, &structs, vocabulary)),
+        Output::new(PYTHON, python(version, &described, &structs, vocabulary)),
     ]
 }
 
@@ -200,8 +234,14 @@ fn arguments<'a>(described: &'a Described<'a>) -> Vec<(String, &'a str)> {
 /// A class with prototype methods rather than an object of closures, for
 /// the reason the SDK's own areas are classes: the methods are shared by
 /// every wrapper rather than rebuilt for each.
-fn node(version: &str, described: &[Described<'_>]) -> String {
+fn node(
+    version: &str,
+    described: &[Described<'_>],
+    structs: &[&Shape],
+    vocabulary: &Vocabulary,
+) -> String {
     let mut out = header(version, "//");
+    out.push_str(&node_structs(structs, vocabulary));
     // Exported, because the `.d.ts` beside this declares it and a
     // consumer holding one wants its type to have a name.
     let _ = writeln!(
@@ -224,13 +264,24 @@ fn node(version: &str, described: &[Described<'_>]) -> String {
                 format!(
                     "{{ {} }}",
                     args.iter()
-                        .map(|(spelling, key)| if spelling == key {
-                            // The engine's own key and this language's
-                            // spelling of it agree, so the shorthand is
-                            // the honest form.
-                            spelling.clone()
-                        } else {
-                            format!("{key}: {spelling}")
+                        .zip(one.takes.iter())
+                        .map(|((spelling, key), (_, declared))| {
+                            if one.nullable(key) {
+                                // Left out and null both cross as null.
+                                format!(
+                                    "{key}: {spelling} == null ? null : {}({spelling})",
+                                    node_writer(declared)
+                                )
+                            } else if vocabulary.shape(declared).is_some() {
+                                format!("{key}: {}({spelling})", node_writer(declared))
+                            } else if spelling == key {
+                                // The engine's own key and this language's
+                                // spelling of it agree, so the shorthand is
+                                // the honest form.
+                                spelling.clone()
+                            } else {
+                                format!("{key}: {spelling}")
+                            }
                         })
                         .collect::<Vec<_>>()
                         .join(", ")
@@ -240,11 +291,20 @@ fn node(version: &str, described: &[Described<'_>]) -> String {
         let call = format!("this.#engine.call('{}', {keys})", one.name);
         let body = match one.gives.as_slice() {
             [] => format!("    {call};"),
-            [(only, _)] => format!("    return {call}.{only};"),
+            [(only, declared)] => format!(
+                "    return {};",
+                node_read(&format!("{call}.{only}"), declared, vocabulary)
+            ),
             many => {
                 let fields = many
                     .iter()
-                    .map(|(key, _)| format!("{}: answered.{key}", camel(key)))
+                    .map(|(key, declared)| {
+                        format!(
+                            "{}: {}",
+                            camel(key),
+                            node_read(&format!("answered.{key}"), declared, vocabulary)
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join(", ");
                 format!("    const answered = {call};\n    return {{ {fields} }};")
@@ -269,12 +329,113 @@ fn node(version: &str, described: &[Described<'_>]) -> String {
     out
 }
 
+/// A value read out of an answer, in Node: a struct is converted to the
+/// spelling a consumer writes, and anything else is itself.
+fn node_read(expression: &str, declared: &str, vocabulary: &Vocabulary) -> String {
+    if vocabulary.shape(declared).is_some() {
+        format!("{}({expression})", node_reader(declared))
+    } else {
+        expression.to_string()
+    }
+}
+
+/// The name of the function that reads a struct out of an answer.
+fn node_reader(declared: &str) -> String {
+    format!("read{}", pascal(declared))
+}
+
+/// The name of the function that writes a struct into a call.
+fn node_writer(declared: &str) -> String {
+    format!("write{}", pascal(declared))
+}
+
+/// The converters between a struct's engine keys and the camelCase a
+/// Node consumer writes.
+///
+/// Generated per struct rather than a generic key-mapper, because a
+/// generic one would camel-case whatever it was handed: a key the engine
+/// does not declare would cross silently and the engine would never see
+/// the field the caller meant. These read exactly the declared fields,
+/// and a missing one reaches the dispatch as missing, which refuses it by
+/// its whole path.
+fn node_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
+    let mut out = String::new();
+    for shape in structs {
+        let _ = writeln!(
+            out,
+            "\n/** `{0}` as the engine answers it, spelled as a consumer reads it. */\nconst {1} = (value) => ({{ {2} }});\n\n/** `{0}` as a consumer writes it, keyed as the engine reads it. */\nconst {3} = (value) => ({{ {4} }});",
+            shape.name,
+            node_reader(&shape.name),
+            node_fields(shape, vocabulary, Toward::Consumer),
+            node_writer(&shape.name),
+            node_fields(shape, vocabulary, Toward::Engine),
+        );
+    }
+    out
+}
+
+/// Which way a Node converter runs.
+#[derive(Clone, Copy)]
+enum Toward {
+    /// Engine keys in, camelCase out.
+    Consumer,
+    /// camelCase in, engine keys out.
+    Engine,
+}
+
+/// One converter's object literal: every declared field, renamed, with a
+/// nested struct converted by its own converter.
+fn node_fields(shape: &Shape, vocabulary: &Vocabulary, toward: Toward) -> String {
+    shape
+        .crossing()
+        .map(|field| {
+            let (from, to) = match toward {
+                Toward::Consumer => (field.name.clone(), camel(&field.name)),
+                Toward::Engine => (camel(&field.name), field.name.clone()),
+            };
+            let value = format!("value.{from}");
+            let value = match (vocabulary.shape(&field.base).is_some(), toward) {
+                (false, _) => value,
+                (true, Toward::Consumer) => format!("{}({value})", node_reader(&field.base)),
+                (true, Toward::Engine) => format!("{}({value})", node_writer(&field.base)),
+            };
+            format!("{to}: {value}")
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 /// The Node façade's types, which are the half a consumer reads.
-fn node_types(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
+fn node_types(
+    version: &str,
+    described: &[Described<'_>],
+    structs: &[&Shape],
+    vocabulary: &Vocabulary,
+) -> String {
     let mut out = header(version, "//");
+    let _ = writeln!(out, "\nimport type {{ Engine }} from '@teistro/sdk';");
+    for shape in structs {
+        let fields = shape
+            .crossing()
+            .map(|field| {
+                format!(
+                    "  readonly {}: {};",
+                    camel(&field.name),
+                    Words::TYPESCRIPT.of(&field.base, vocabulary, &shape.name)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        let _ = writeln!(
+            out,
+            "\n/** `{}`, as the engine declares it. Every field is required. */\nexport interface {} {{\n{fields}\n}}",
+            shape.name,
+            pascal(&shape.name)
+        );
+    }
     let _ = writeln!(
         out,
-        "\nimport type {{ Engine }} from '@teistro/sdk';\n\n/** The engine's own operations, typed. */\nexport declare class TeimerisEngine {{"
+        "\n/** The engine's own operations, typed. */\nexport declare class TeimerisEngine {{"
     );
     for one in described {
         let args = arguments(one);
@@ -285,19 +446,21 @@ fn node_types(version: &str, described: &[Described<'_>], vocabulary: &Vocabular
                 "args: {{ {} }}",
                 args.iter()
                     .zip(one.takes.iter())
-                    .map(|((spelling, _), (_, declared))| format!(
-                        "readonly {spelling}: {}",
-                        Words::TYPESCRIPT.of(declared, vocabulary, one.name)
-                    ))
+                    .map(|((spelling, key), (_, declared))| {
+                        let named = Words::TYPESCRIPT.of(declared, vocabulary, one.name);
+                        if one.nullable(key) {
+                            format!("readonly {spelling}?: {named} | null")
+                        } else {
+                            format!("readonly {spelling}: {named}")
+                        }
+                    })
                     .collect::<Vec<_>>()
                     .join("; ")
             )
         };
         let returns = match one.gives.as_slice() {
             [] => String::from("void"),
-            [(_, declared)] => Words::TYPESCRIPT
-                .of(declared, vocabulary, one.name)
-                .to_string(),
+            [(_, declared)] => Words::TYPESCRIPT.of(declared, vocabulary, one.name),
             many => format!(
                 "{{ {} }}",
                 many.iter()
@@ -342,10 +505,14 @@ fn dart_read(
     vocabulary: &Vocabulary,
     whose: &str,
 ) -> String {
-    match Words::DART.of(declared, vocabulary, whose) {
-        "String" => format!("{from}['{key}']! as String"),
-        "double" => format!("({from}['{key}']! as num).toDouble()"),
-        _ => format!("({from}['{key}']! as num).toInt()"),
+    match kind(declared, vocabulary, whose) {
+        Kind::Text => format!("{from}['{key}']! as String"),
+        Kind::Fractional => format!("({from}['{key}']! as num).toDouble()"),
+        Kind::Integer => format!("({from}['{key}']! as num).toInt()"),
+        Kind::Struct => format!(
+            "{}.fromJson({from}['{key}']! as Map<String, Object?>)",
+            pascal(declared)
+        ),
     }
 }
 
@@ -356,7 +523,12 @@ fn dart_read(
 /// The one target where an augmentation is honest, because a Dart
 /// extension method has a body and is resolved statically: it is typed
 /// and installed at once, and needs no wrapper to take.
-fn dart(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
+fn dart(
+    version: &str,
+    described: &[Described<'_>],
+    structs: &[&Shape],
+    vocabulary: &Vocabulary,
+) -> String {
     let mut out = header(version, "//");
     // The same directive the SDK's own generated Dart carries, for the
     // same reason: the generator lays the file out, so `dart format .`
@@ -368,28 +540,22 @@ fn dart(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> 
     );
     for one in described {
         let args = arguments(one);
-        let params = if args.is_empty() {
-            String::new()
-        } else {
-            format!(
-                "{{{}}}",
-                args.iter()
-                    .zip(one.takes.iter())
-                    .map(|((spelling, _), (_, declared))| format!(
-                        "required {} {spelling}",
-                        Words::DART.of(declared, vocabulary, one.name)
-                    ))
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            )
-        };
+        let params = dart_parameters(one, &args, vocabulary);
         let keys = if args.is_empty() {
             String::from("const <String, Object?>{}")
         } else {
             format!(
                 "<String, Object?>{{{}}}",
                 args.iter()
-                    .map(|(spelling, key)| format!("'{key}': {spelling}"))
+                    .zip(one.takes.iter())
+                    .map(|((spelling, key), (_, declared))| {
+                        if vocabulary.shape(declared).is_some() {
+                            let nullable = if one.nullable(key) { "?" } else { "" };
+                            format!("'{key}': {spelling}{nullable}.toJson()")
+                        } else {
+                            format!("'{key}': {spelling}")
+                        }
+                    })
                     .collect::<Vec<_>>()
                     .join(", ")
             )
@@ -398,7 +564,7 @@ fn dart(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> 
         let (returns, body) = match one.gives.as_slice() {
             [] => (String::from("void"), format!("    {call};")),
             [(only, declared)] => (
-                Words::DART.of(declared, vocabulary, one.name).to_string(),
+                Words::DART.of(declared, vocabulary, one.name),
                 format!(
                     "    final answered = ({call}) as Map<String, Object?>;\n    return {};",
                     dart_read(only, declared, "answered", vocabulary, one.name)
@@ -453,6 +619,98 @@ fn dart(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> 
         );
     }
     let _ = writeln!(out, "}}");
+    out.push_str(&dart_structs(structs, vocabulary));
+    out
+}
+
+/// A Dart method's named parameters: required, or nullable and
+/// omittable where the engine takes a null.
+fn dart_parameters(
+    one: &Described<'_>,
+    args: &[(String, &str)],
+    vocabulary: &Vocabulary,
+) -> String {
+    if args.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "{{{}}}",
+            args.iter()
+                .zip(one.takes.iter())
+                .map(|((spelling, key), (_, declared))| {
+                    let named = Words::DART.of(declared, vocabulary, one.name);
+                    if one.nullable(key) {
+                        format!("{named}? {spelling}")
+                    } else {
+                        format!("required {named} {spelling}")
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    }
+}
+
+/// A class per struct, in Dart: named fields, and the two conversions to
+/// and from the object that crosses.
+///
+/// A class rather than a record, because a record cannot carry a
+/// `fromJson` and every struct has to be built from an answer as well as
+/// written into a call.
+fn dart_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
+    let mut out = String::new();
+    for shape in structs {
+        let class = pascal(&shape.name);
+        let whose = shape.name.as_str();
+        let fields: Vec<(&str, String)> = shape
+            .crossing()
+            .map(|field| (field.name.as_str(), camel(&field.name)))
+            .collect();
+        let bases: Vec<&str> = shape.crossing().map(|field| field.base.as_str()).collect();
+        let parameters = fields
+            .iter()
+            .map(|(_, spelling)| format!("required this.{spelling}"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let reads = fields
+            .iter()
+            .zip(&bases)
+            .map(|((key, spelling), base)| {
+                format!(
+                    "        {spelling}: {},",
+                    dart_read(key, base, "json", vocabulary, whose)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        let declarations = fields
+            .iter()
+            .zip(&bases)
+            .map(|((key, spelling), base)| {
+                format!(
+                    "  /// `{key}`.\n  final {} {spelling};",
+                    Words::DART.of(base, vocabulary, whose)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n");
+        let writes = fields
+            .iter()
+            .zip(&bases)
+            .map(|((key, spelling), base)| {
+                if vocabulary.shape(base).is_some() {
+                    format!("        '{key}': {spelling}.toJson(),")
+                } else {
+                    format!("        '{key}': {spelling},")
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        let _ = writeln!(
+            out,
+            "\n/// `{whose}`, as the engine declares it. Every field is required.\nfinal class {class} {{\n  /// Every field, named.\n  const {class}({{{parameters}}});\n\n  /// Read from the object the engine answers with.\n  factory {class}.fromJson(Map<String, Object?> json) => {class}(\n{reads}\n      );\n\n{declarations}\n\n  /// The object the engine reads, keyed by its own field names.\n  Map<String, Object?> toJson() => <String, Object?>{{\n{writes}\n      }};\n}}"
+        );
+    }
     out
 }
 
@@ -466,19 +724,56 @@ fn dart(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> 
 /// are the engine's own, because Python spells them the same way the
 /// engine does and a translation nobody needs is a translation to get
 /// wrong.
-fn python(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -> String {
+fn python(
+    version: &str,
+    described: &[Described<'_>],
+    structs: &[&Shape],
+    vocabulary: &Vocabulary,
+) -> String {
     let mut out = header(version, "#");
     let _ = writeln!(
         out,
         "\nfrom __future__ import annotations\n\nfrom typing import TypedDict, cast\n\nfrom teistro import Engine\n"
     );
-    // The five answers with more than one value, as the types they are.
+    // The structs first, because a record below may hold one and a
+    // `TypedDict` must be declared before it is named. The engine's
+    // declaration order is already an order that works, and `reached`
+    // asserts it.
+    for shape in structs {
+        let _ = writeln!(
+            out,
+            "\nclass {}(TypedDict):\n    \"\"\"`{}`, as the engine declares it. Every field is required.\"\"\"\n",
+            pascal(&shape.name),
+            shape.name
+        );
+        for field in shape.crossing() {
+            let _ = writeln!(
+                out,
+                "    {}: {}",
+                field.name,
+                Words::PYTHON.of(&field.base, vocabulary, &shape.name)
+            );
+        }
+        let _ = writeln!(out);
+    }
+    // The answers with more than one value, as the types they are.
     // Named for the operation, because that is the only thing they have
     // in common with each other.
     for one in described {
         if one.gives.len() < 2 {
             continue;
         }
+        // A record is named for its operation and a struct for itself, in
+        // one namespace; the engine has no struct named like an operation
+        // that answers a record, and this is where the day it does is
+        // caught rather than shadowed.
+        assert!(
+            !structs
+                .iter()
+                .any(|shape| pascal(&shape.name) == pascal(one.name)),
+            "`{}` answers a record whose Python name is also a struct's",
+            one.name
+        );
         let _ = writeln!(
             out,
             "\nclass {}(TypedDict):\n    \"\"\"What `{}` answers with.\"\"\"\n",
@@ -499,17 +794,7 @@ fn python(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -
         "\n\nclass TeimerisEngine:\n    \"\"\"The engine's own operations, typed.\n\n    Pass `sdk.engine`; every method calls the engine by its own name.\n    \"\"\"\n\n    __slots__ = (\"_engine\",)\n\n    def __init__(self, engine: Engine) -> None:\n        self._engine = engine"
     );
     for one in described {
-        // Built rather than collected: Python's parameters are the
-        // engine's own names, so there is nothing to join between them
-        // and each carries its own leading comma.
-        let mut params = String::new();
-        for (name, declared) in &one.takes {
-            let _ = write!(
-                params,
-                ", {name}: {}",
-                Words::PYTHON.of(declared, vocabulary, one.name)
-            );
-        }
+        let params = python_parameters(one, vocabulary);
         let keys = one
             .takes
             .iter()
@@ -527,13 +812,13 @@ fn python(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -
                 // whole-valued double arrives as an `int` and a cast
                 // would be a lie a type checker believed.
                 let named = Words::PYTHON.of(declared, vocabulary, one.name);
-                let read = match named {
-                    "float" => format!("float(cast(float, answered[\"{only}\"]))"),
-                    "str" => format!("cast(str, answered[\"{only}\"])"),
-                    _ => format!("int(cast(int, answered[\"{only}\"]))"),
+                let read = match kind(declared, vocabulary, one.name) {
+                    Kind::Fractional => format!("float(cast(float, answered[\"{only}\"]))"),
+                    Kind::Text | Kind::Struct => format!("cast({named}, answered[\"{only}\"])"),
+                    Kind::Integer => format!("int(cast(int, answered[\"{only}\"]))"),
                 };
                 (
-                    named.to_string(),
+                    named,
                     format!(
                         "        answered = cast(dict[str, object], {call})\n        return {read}"
                     ),
@@ -560,6 +845,29 @@ fn python(version: &str, described: &[Described<'_>], vocabulary: &Vocabulary) -
         "\n\ndef teimeris(engine: Engine) -> TeimerisEngine:\n    \"\"\"The engine's own operations, typed. Pass `sdk.engine`.\"\"\"\n    return TeimerisEngine(engine)"
     );
     out
+}
+
+/// A Python method's parameters after `self`.
+///
+/// Built rather than collected: Python's parameters are the engine's own
+/// names, so there is nothing to join between them and each carries its
+/// own leading comma.
+fn python_parameters(one: &Described<'_>, vocabulary: &Vocabulary) -> String {
+    let mut params = String::new();
+    for (at, (name, declared)) in one.takes.iter().enumerate() {
+        let named = Words::PYTHON.of(declared, vocabulary, one.name);
+        // A default only where every parameter after it has one too,
+        // which is the one place Python allows it; before a required
+        // parameter an optional struct is still `None`-able, only not
+        // omittable.
+        let rest_nullable = one.takes.iter().skip(at).all(|(key, _)| one.nullable(key));
+        let _ = match (one.nullable(name), rest_nullable) {
+            (true, true) => write!(params, ", {name}: {named} | None = None"),
+            (true, false) => write!(params, ", {name}: {named} | None"),
+            _ => write!(params, ", {name}: {named}"),
+        };
+    }
+    params
 }
 
 /// `snake_case` to `PascalCase`, for the name of a result type.

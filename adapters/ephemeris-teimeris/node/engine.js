@@ -13,6 +13,144 @@
 // named engine and does not survive changing it — which is why it is
 // taken as a value rather than laid over `sdk.engine` (ADR-0030).
 
+/** `tm_datetime` as the engine answers it, spelled as a consumer reads it. */
+const readTmDatetime = (value) => ({ year: value.year, month: value.month, day: value.day, hour: value.hour, minute: value.minute, second: value.second });
+
+/** `tm_datetime` as a consumer writes it, keyed as the engine reads it. */
+const writeTmDatetime = (value) => ({ year: value.year, month: value.month, day: value.day, hour: value.hour, minute: value.minute, second: value.second });
+
+/** `tm_observer` as the engine answers it, spelled as a consumer reads it. */
+const readTmObserver = (value) => ({ longitudeDeg: value.longitude_deg, latitudeDeg: value.latitude_deg, altitudeM: value.altitude_m });
+
+/** `tm_observer` as a consumer writes it, keyed as the engine reads it. */
+const writeTmObserver = (value) => ({ longitude_deg: value.longitudeDeg, latitude_deg: value.latitudeDeg, altitude_m: value.altitudeM });
+
+/** `tm_position` as the engine answers it, spelled as a consumer reads it. */
+const readTmPosition = (value) => ({ lon: value.lon, lat: value.lat, dist: value.dist, lonSpeed: value.lon_speed, latSpeed: value.lat_speed, distSpeed: value.dist_speed, flagsUsed: value.flags_used, status: value.status });
+
+/** `tm_position` as a consumer writes it, keyed as the engine reads it. */
+const writeTmPosition = (value) => ({ lon: value.lon, lat: value.lat, dist: value.dist, lon_speed: value.lonSpeed, lat_speed: value.latSpeed, dist_speed: value.distSpeed, flags_used: value.flagsUsed, status: value.status });
+
+/** `tm_atmosphere` as the engine answers it, spelled as a consumer reads it. */
+const readTmAtmosphere = (value) => ({ pressureMbar: value.pressure_mbar, temperatureC: value.temperature_c, lapseRateKPerM: value.lapse_rate_k_per_m });
+
+/** `tm_atmosphere` as a consumer writes it, keyed as the engine reads it. */
+const writeTmAtmosphere = (value) => ({ pressure_mbar: value.pressureMbar, temperature_c: value.temperatureC, lapse_rate_k_per_m: value.lapseRateKPerM });
+
+/** `tm_refraction` as the engine answers it, spelled as a consumer reads it. */
+const readTmRefraction = (value) => ({ altitudeTrue: value.altitude_true, altitudeApparent: value.altitude_apparent, refraction: value.refraction, horizonDip: value.horizon_dip, observable: value.observable });
+
+/** `tm_refraction` as a consumer writes it, keyed as the engine reads it. */
+const writeTmRefraction = (value) => ({ altitude_true: value.altitudeTrue, altitude_apparent: value.altitudeApparent, refraction: value.refraction, horizon_dip: value.horizonDip, observable: value.observable });
+
+/** `tm_obliquity` as the engine answers it, spelled as a consumer reads it. */
+const readTmObliquity = (value) => ({ trueObliquity: value.true_obliquity, meanObliquity: value.mean_obliquity, nutationLon: value.nutation_lon, nutationObl: value.nutation_obl });
+
+/** `tm_obliquity` as a consumer writes it, keyed as the engine reads it. */
+const writeTmObliquity = (value) => ({ true_obliquity: value.trueObliquity, mean_obliquity: value.meanObliquity, nutation_lon: value.nutationLon, nutation_obl: value.nutationObl });
+
+/** `tm_horizontal` as the engine answers it, spelled as a consumer reads it. */
+const readTmHorizontal = (value) => ({ azimuth: value.azimuth, azimuthNorth: value.azimuth_north, altitudeTrue: value.altitude_true, altitudeApparent: value.altitude_apparent });
+
+/** `tm_horizontal` as a consumer writes it, keyed as the engine reads it. */
+const writeTmHorizontal = (value) => ({ azimuth: value.azimuth, azimuth_north: value.azimuthNorth, altitude_true: value.altitudeTrue, altitude_apparent: value.altitudeApparent });
+
+/** `tm_coverage` as the engine answers it, spelled as a consumer reads it. */
+const readTmCoverage = (value) => ({ jdStart: value.jd_start, jdEnd: value.jd_end, contiguous: value.contiguous, fileCount: value.file_count });
+
+/** `tm_coverage` as a consumer writes it, keyed as the engine reads it. */
+const writeTmCoverage = (value) => ({ jd_start: value.jdStart, jd_end: value.jdEnd, contiguous: value.contiguous, file_count: value.fileCount });
+
+/** `tm_fallback_stats` as the engine answers it, spelled as a consumer reads it. */
+const readTmFallbackStats = (value) => ({ moshierCalls: value.moshier_calls, refusedCalls: value.refused_calls, lastBody: value.last_body, lastJd: value.last_jd });
+
+/** `tm_fallback_stats` as a consumer writes it, keyed as the engine reads it. */
+const writeTmFallbackStats = (value) => ({ moshier_calls: value.moshierCalls, refused_calls: value.refusedCalls, last_body: value.lastBody, last_jd: value.lastJd });
+
+/** `tm_nodes_apsides` as the engine answers it, spelled as a consumer reads it. */
+const readTmNodesApsides = (value) => ({ ascending: readTmPosition(value.ascending), descending: readTmPosition(value.descending), perihelion: readTmPosition(value.perihelion), aphelion: readTmPosition(value.aphelion), usedMean: value.used_mean, flagsUsed: value.flags_used, status: value.status });
+
+/** `tm_nodes_apsides` as a consumer writes it, keyed as the engine reads it. */
+const writeTmNodesApsides = (value) => ({ ascending: writeTmPosition(value.ascending), descending: writeTmPosition(value.descending), perihelion: writeTmPosition(value.perihelion), aphelion: writeTmPosition(value.aphelion), used_mean: value.usedMean, flags_used: value.flagsUsed, status: value.status });
+
+/** `tm_orbital_elements` as the engine answers it, spelled as a consumer reads it. */
+const readTmOrbitalElements = (value) => ({ semiMajorAxis: value.semi_major_axis, eccentricity: value.eccentricity, inclination: value.inclination, node: value.node, argPerihelion: value.arg_perihelion, lonPerihelion: value.lon_perihelion, meanAnomaly: value.mean_anomaly, trueAnomaly: value.true_anomaly, eccentricAnomaly: value.eccentric_anomaly, meanLongitude: value.mean_longitude, periodSidereal: value.period_sidereal, dailyMotion: value.daily_motion, periodTropical: value.period_tropical, periodSynodic: value.period_synodic, perihelionTime: value.perihelion_time, perihelionDistance: value.perihelion_distance, aphelionDistance: value.aphelion_distance, status: value.status });
+
+/** `tm_orbital_elements` as a consumer writes it, keyed as the engine reads it. */
+const writeTmOrbitalElements = (value) => ({ semi_major_axis: value.semiMajorAxis, eccentricity: value.eccentricity, inclination: value.inclination, node: value.node, arg_perihelion: value.argPerihelion, lon_perihelion: value.lonPerihelion, mean_anomaly: value.meanAnomaly, true_anomaly: value.trueAnomaly, eccentric_anomaly: value.eccentricAnomaly, mean_longitude: value.meanLongitude, period_sidereal: value.periodSidereal, daily_motion: value.dailyMotion, period_tropical: value.periodTropical, period_synodic: value.periodSynodic, perihelion_time: value.perihelionTime, perihelion_distance: value.perihelionDistance, aphelion_distance: value.aphelionDistance, status: value.status });
+
+/** `tm_orbit_distances` as the engine answers it, spelled as a consumer reads it. */
+const readTmOrbitDistances = (value) => ({ maxDistance: value.max_distance, minDistance: value.min_distance, trueDistance: value.true_distance, status: value.status });
+
+/** `tm_orbit_distances` as a consumer writes it, keyed as the engine reads it. */
+const writeTmOrbitDistances = (value) => ({ max_distance: value.maxDistance, min_distance: value.minDistance, true_distance: value.trueDistance, status: value.status });
+
+/** `tm_phenomena` as the engine answers it, spelled as a consumer reads it. */
+const readTmPhenomena = (value) => ({ phaseAngle: value.phase_angle, phase: value.phase, elongation: value.elongation, diameter: value.diameter, magnitude: value.magnitude, horizontalParallax: value.horizontal_parallax, magnitudeOutOfRange: value.magnitude_out_of_range, flagsUsed: value.flags_used, status: value.status, magnitudeState: value.magnitude_state });
+
+/** `tm_phenomena` as a consumer writes it, keyed as the engine reads it. */
+const writeTmPhenomena = (value) => ({ phase_angle: value.phaseAngle, phase: value.phase, elongation: value.elongation, diameter: value.diameter, magnitude: value.magnitude, horizontal_parallax: value.horizontalParallax, magnitude_out_of_range: value.magnitudeOutOfRange, flags_used: value.flagsUsed, status: value.status, magnitude_state: value.magnitudeState });
+
+/** `tm_star` as the engine answers it, spelled as a consumer reads it. */
+const readTmStar = (value) => ({ id: value.id, catalogueGeneration: value.catalogue_generation, magnitude: value.magnitude, epoch: value.epoch, raDeg: value.ra_deg, decDeg: value.dec_deg, pmRaArcsecPerCentury: value.pm_ra_arcsec_per_century, pmDecArcsecPerCentury: value.pm_dec_arcsec_per_century, radialVelocityAuPerCentury: value.radial_velocity_au_per_century, parallaxArcsec: value.parallax_arcsec });
+
+/** `tm_star` as a consumer writes it, keyed as the engine reads it. */
+const writeTmStar = (value) => ({ id: value.id, catalogue_generation: value.catalogueGeneration, magnitude: value.magnitude, epoch: value.epoch, ra_deg: value.raDeg, dec_deg: value.decDeg, pm_ra_arcsec_per_century: value.pmRaArcsecPerCentury, pm_dec_arcsec_per_century: value.pmDecArcsecPerCentury, radial_velocity_au_per_century: value.radialVelocityAuPerCentury, parallax_arcsec: value.parallaxArcsec });
+
+/** `tm_eclipse_attributes` as the engine answers it, spelled as a consumer reads it. */
+const readTmEclipseAttributes = (value) => ({ magnitude: value.magnitude, diameterRatio: value.diameter_ratio, obscuration: value.obscuration, coreShadowKm: value.core_shadow_km, azimuth: value.azimuth, azimuthNorth: value.azimuth_north, altitudeTrue: value.altitude_true, altitudeApparent: value.altitude_apparent, separation: value.separation, magnitudeNasa: value.magnitude_nasa, sarosKnown: value.saros_known, sarosSeries: value.saros_series, sarosMember: value.saros_member });
+
+/** `tm_eclipse_attributes` as a consumer writes it, keyed as the engine reads it. */
+const writeTmEclipseAttributes = (value) => ({ magnitude: value.magnitude, diameter_ratio: value.diameterRatio, obscuration: value.obscuration, core_shadow_km: value.coreShadowKm, azimuth: value.azimuth, azimuth_north: value.azimuthNorth, altitude_true: value.altitudeTrue, altitude_apparent: value.altitudeApparent, separation: value.separation, magnitude_nasa: value.magnitudeNasa, saros_known: value.sarosKnown, saros_series: value.sarosSeries, saros_member: value.sarosMember });
+
+/** `tm_lunar_eclipse_attributes` as the engine answers it, spelled as a consumer reads it. */
+const readTmLunarEclipseAttributes = (value) => ({ umbralMagnitude: value.umbral_magnitude, penumbralMagnitude: value.penumbral_magnitude, azimuth: value.azimuth, azimuthNorth: value.azimuth_north, altitudeTrue: value.altitude_true, altitudeApparent: value.altitude_apparent, opposition: value.opposition, sarosKnown: value.saros_known, sarosSeries: value.saros_series, sarosMember: value.saros_member });
+
+/** `tm_lunar_eclipse_attributes` as a consumer writes it, keyed as the engine reads it. */
+const writeTmLunarEclipseAttributes = (value) => ({ umbral_magnitude: value.umbralMagnitude, penumbral_magnitude: value.penumbralMagnitude, azimuth: value.azimuth, azimuth_north: value.azimuthNorth, altitude_true: value.altitudeTrue, altitude_apparent: value.altitudeApparent, opposition: value.opposition, saros_known: value.sarosKnown, saros_series: value.sarosSeries, saros_member: value.sarosMember });
+
+/** `tm_eclipse_location` as the engine answers it, spelled as a consumer reads it. */
+const readTmEclipseLocation = (value) => ({ longitude: value.longitude, latitude: value.latitude, coreShadowKm: value.core_shadow_km, penumbraKm: value.penumbra_km, axisDistanceKm: value.axis_distance_km, umbraFundamentalKm: value.umbra_fundamental_km, penumbraFundamentalKm: value.penumbra_fundamental_km });
+
+/** `tm_eclipse_location` as a consumer writes it, keyed as the engine reads it. */
+const writeTmEclipseLocation = (value) => ({ longitude: value.longitude, latitude: value.latitude, core_shadow_km: value.coreShadowKm, penumbra_km: value.penumbraKm, axis_distance_km: value.axisDistanceKm, umbra_fundamental_km: value.umbraFundamentalKm, penumbra_fundamental_km: value.penumbraFundamentalKm });
+
+/** `tm_visibility_atmosphere` as the engine answers it, spelled as a consumer reads it. */
+const readTmVisibilityAtmosphere = (value) => ({ pressureMbar: value.pressure_mbar, temperatureC: value.temperature_c, humidityPct: value.humidity_pct, haze: value.haze });
+
+/** `tm_visibility_atmosphere` as a consumer writes it, keyed as the engine reads it. */
+const writeTmVisibilityAtmosphere = (value) => ({ pressure_mbar: value.pressureMbar, temperature_c: value.temperatureC, humidity_pct: value.humidityPct, haze: value.haze });
+
+/** `tm_observer_eye` as the engine answers it, spelled as a consumer reads it. */
+const readTmObserverEye = (value) => ({ ageYears: value.age_years, snellen: value.snellen, monocular: value.monocular, useOptics: value.use_optics, magnification: value.magnification, apertureMm: value.aperture_mm, transmission: value.transmission });
+
+/** `tm_observer_eye` as a consumer writes it, keyed as the engine reads it. */
+const writeTmObserverEye = (value) => ({ age_years: value.ageYears, snellen: value.snellen, monocular: value.monocular, use_optics: value.useOptics, magnification: value.magnification, aperture_mm: value.apertureMm, transmission: value.transmission });
+
+/** `tm_visibility` as the engine answers it, spelled as a consumer reads it. */
+const readTmVisibility = (value) => ({ limitingMagnitude: value.limiting_magnitude, objectMagnitude: value.object_magnitude, objectAltitude: value.object_altitude, objectAzimuth: value.object_azimuth, objectAzimuthNorth: value.object_azimuth_north, sunAltitude: value.sun_altitude, sunAzimuth: value.sun_azimuth, moonAltitude: value.moon_altitude, moonAzimuth: value.moon_azimuth, scotopic: value.scotopic, nearSwitch: value.near_switch, aboveHorizon: value.above_horizon, status: value.status });
+
+/** `tm_visibility` as a consumer writes it, keyed as the engine reads it. */
+const writeTmVisibility = (value) => ({ limiting_magnitude: value.limitingMagnitude, object_magnitude: value.objectMagnitude, object_altitude: value.objectAltitude, object_azimuth: value.objectAzimuth, object_azimuth_north: value.objectAzimuthNorth, sun_altitude: value.sunAltitude, sun_azimuth: value.sunAzimuth, moon_altitude: value.moonAltitude, moon_azimuth: value.moonAzimuth, scotopic: value.scotopic, near_switch: value.nearSwitch, above_horizon: value.aboveHorizon, status: value.status });
+
+/** `tm_visibility_best` as the engine answers it, spelled as a consumer reads it. */
+const readTmVisibilityBest = (value) => ({ objectAltitude: value.object_altitude, arcus: value.arcus, sunAltitude: value.sun_altitude });
+
+/** `tm_visibility_best` as a consumer writes it, keyed as the engine reads it. */
+const writeTmVisibilityBest = (value) => ({ object_altitude: value.objectAltitude, arcus: value.arcus, sun_altitude: value.sunAltitude });
+
+/** `tm_crossing_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmCrossingRequest = (value) => ({ jdStart: value.jd_start, scale: value.scale, body: value.body, targetDeg: value.target_deg, flags: value.flags, backward: value.backward, jdEnd: value.jd_end, quantity: value.quantity, stepDeg: value.step_deg, bodyB: value.body_b, coeffA: value.coeff_a, coeffB: value.coeff_b });
+
+/** `tm_crossing_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmCrossingRequest = (value) => ({ jd_start: value.jdStart, scale: value.scale, body: value.body, target_deg: value.targetDeg, flags: value.flags, backward: value.backward, jd_end: value.jdEnd, quantity: value.quantity, step_deg: value.stepDeg, body_b: value.bodyB, coeff_a: value.coeffA, coeff_b: value.coeffB });
+
+/** `tm_angle_parts` as the engine answers it, spelled as a consumer reads it. */
+const readTmAngleParts = (value) => ({ negative: value.negative, degrees: value.degrees, minutes: value.minutes, seconds: value.seconds, secondFraction: value.second_fraction, zodiacSign: value.zodiac_sign, nakshatra: value.nakshatra, pada: value.pada });
+
+/** `tm_angle_parts` as a consumer writes it, keyed as the engine reads it. */
+const writeTmAngleParts = (value) => ({ negative: value.negative, degrees: value.degrees, minutes: value.minutes, seconds: value.seconds, second_fraction: value.secondFraction, zodiac_sign: value.zodiacSign, nakshatra: value.nakshatra, pada: value.pada });
+
 export class TeimerisEngine {
   #engine;
 
@@ -55,6 +193,35 @@ export class TeimerisEngine {
    */
   tmBodyName({ body }) {
     return this.#engine.call('tm_body_name', { body }).buf;
+  }
+
+  /**
+   * `tm_julian_day`.
+   */
+  tmJulianDay({ dt, cal }) {
+    return this.#engine.call('tm_julian_day', { dt: dt == null ? null : writeTmDatetime(dt), cal }).out_jd;
+  }
+
+  /**
+   * `tm_calendar_date`.
+   */
+  tmCalendarDate({ jd, cal }) {
+    return readTmDatetime(this.#engine.call('tm_calendar_date', { jd, cal }).out);
+  }
+
+  /**
+   * `tm_utc_to_jd`.
+   */
+  tmUtcToJd({ utc, cal }) {
+    const answered = this.#engine.call('tm_utc_to_jd', { utc: utc == null ? null : writeTmDatetime(utc), cal });
+    return { outJdTt: answered.out_jd_tt, outJdUt1: answered.out_jd_ut1 };
+  }
+
+  /**
+   * `tm_jd_to_utc`.
+   */
+  tmJdToUtc({ jd, scale, cal }) {
+    return readTmDatetime(this.#engine.call('tm_jd_to_utc', { jd, scale, cal }).out);
   }
 
   /**
@@ -104,6 +271,20 @@ export class TeimerisEngine {
    */
   tmLocalApparentToMean({ jdLocalApparent, geoLonDeg }) {
     return this.#engine.call('tm_local_apparent_to_mean', { jd_local_apparent: jdLocalApparent, geo_lon_deg: geoLonDeg }).out_jd_local_mean;
+  }
+
+  /**
+   * `tm_local_to_utc`.
+   */
+  tmLocalToUtc({ local, utcOffsetHours, cal }) {
+    return readTmDatetime(this.#engine.call('tm_local_to_utc', { local: local == null ? null : writeTmDatetime(local), utc_offset_hours: utcOffsetHours, cal }).out_utc);
+  }
+
+  /**
+   * `tm_utc_to_local`.
+   */
+  tmUtcToLocal({ utc, utcOffsetHours, cal }) {
+    return readTmDatetime(this.#engine.call('tm_utc_to_local', { utc: utc == null ? null : writeTmDatetime(utc), utc_offset_hours: utcOffsetHours, cal }).out_local);
   }
 
   /**
@@ -294,11 +475,61 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_atmosphere_init_sized`.
+   */
+  tmAtmosphereInitSized({ altitudeM, structSize }) {
+    return readTmAtmosphere(this.#engine.call('tm_atmosphere_init_sized', { altitude_m: altitudeM, struct_size: structSize }).atm);
+  }
+
+  /**
+   * `tm_refract`.
+   */
+  tmRefract({ model, dir, altitudeDeg, obs, atm }) {
+    return readTmRefraction(this.#engine.call('tm_refract', { model, dir, altitude_deg: altitudeDeg, obs: obs == null ? null : writeTmObserver(obs), atm: atm == null ? null : writeTmAtmosphere(atm) }).out);
+  }
+
+  /**
+   * `tm_obliquity_calc`.
+   */
+  tmObliquityCalc({ jd, scale }) {
+    return readTmObliquity(this.#engine.call('tm_obliquity_calc', { jd, scale }).out);
+  }
+
+  /**
+   * `tm_to_horizontal`.
+   */
+  tmToHorizontal({ jd, scale, system, obs, atm, lonDeg, latDeg }) {
+    return readTmHorizontal(this.#engine.call('tm_to_horizontal', { jd, scale, system, obs: obs == null ? null : writeTmObserver(obs), atm: atm == null ? null : writeTmAtmosphere(atm), lon_deg: lonDeg, lat_deg: latDeg }).out);
+  }
+
+  /**
+   * `tm_from_horizontal`.
+   */
+  tmFromHorizontal({ jd, scale, system, obs, azimuthDeg, altitudeDeg }) {
+    const answered = this.#engine.call('tm_from_horizontal', { jd, scale, system, obs: obs == null ? null : writeTmObserver(obs), azimuth_deg: azimuthDeg, altitude_deg: altitudeDeg });
+    return { outLonDeg: answered.out_lon_deg, outLatDeg: answered.out_lat_deg };
+  }
+
+  /**
    * `tm_embedded_coverage`.
    */
   tmEmbeddedCoverage() {
     const answered = this.#engine.call('tm_embedded_coverage', {});
     return { outJdStart: answered.out_jd_start, outJdEnd: answered.out_jd_end };
+  }
+
+  /**
+   * `tm_body_coverage`.
+   */
+  tmBodyCoverage({ body }) {
+    return readTmCoverage(this.#engine.call('tm_body_coverage', { body }).out);
+  }
+
+  /**
+   * `tm_fallback_stats_get`.
+   */
+  tmFallbackStatsGet() {
+    return readTmFallbackStats(this.#engine.call('tm_fallback_stats_get', {}).out);
   }
 
   /**
@@ -313,6 +544,48 @@ export class TeimerisEngine {
    */
   tmCacheDirDefault() {
     return this.#engine.call('tm_cache_dir_default', {}).buf;
+  }
+
+  /**
+   * `tm_nodes_apsides_calc`.
+   */
+  tmNodesApsidesCalc({ jd, scale, body, flags, method, apsis, observer }) {
+    return readTmNodesApsides(this.#engine.call('tm_nodes_apsides_calc', { jd, scale, body, flags, method, apsis, observer: observer == null ? null : writeTmObserver(observer) }).out);
+  }
+
+  /**
+   * `tm_orbital_elements_calc`.
+   */
+  tmOrbitalElementsCalc({ jd, scale, body, flags, masses }) {
+    return readTmOrbitalElements(this.#engine.call('tm_orbital_elements_calc', { jd, scale, body, flags, masses }).out);
+  }
+
+  /**
+   * `tm_orbit_distances_calc`.
+   */
+  tmOrbitDistancesCalc({ jd, scale, body, flags }) {
+    return readTmOrbitDistances(this.#engine.call('tm_orbit_distances_calc', { jd, scale, body, flags }).out);
+  }
+
+  /**
+   * `tm_phenomena_calc`.
+   */
+  tmPhenomenaCalc({ jd, scale, body, flags, observer }) {
+    return readTmPhenomena(this.#engine.call('tm_phenomena_calc', { jd, scale, body, flags, observer: observer == null ? null : writeTmObserver(observer) }).out);
+  }
+
+  /**
+   * `tm_star_name`.
+   */
+  tmStarName({ star }) {
+    return this.#engine.call('tm_star_name', { star: star == null ? null : writeTmStar(star) }).buf;
+  }
+
+  /**
+   * `tm_star_designation`.
+   */
+  tmStarDesignation({ star }) {
+    return this.#engine.call('tm_star_designation', { star: star == null ? null : writeTmStar(star) }).buf;
   }
 
   /**
@@ -332,6 +605,20 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_star_find`.
+   */
+  tmStarFind({ name }) {
+    return readTmStar(this.#engine.call('tm_star_find', { name }).out);
+  }
+
+  /**
+   * `tm_star_calc`.
+   */
+  tmStarCalc({ jd, scale, name, flags, observer }) {
+    return readTmPosition(this.#engine.call('tm_star_calc', { jd, scale, name, flags, observer: observer == null ? null : writeTmObserver(observer) }).out);
+  }
+
+  /**
    * `tm_eclipse_type_name`.
    */
   tmEclipseTypeName({ bit }) {
@@ -339,10 +626,93 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_solar_eclipse_where`.
+   */
+  tmSolarEclipseWhere({ jd, scale, flags }) {
+    const answered = this.#engine.call('tm_solar_eclipse_where', { jd, scale, flags });
+    return { outLocation: readTmEclipseLocation(answered.out_location), outAttributes: readTmEclipseAttributes(answered.out_attributes), outType: answered.out_type };
+  }
+
+  /**
+   * `tm_occultation_where`.
+   */
+  tmOccultationWhere({ jd, scale, body, star, flags }) {
+    const answered = this.#engine.call('tm_occultation_where', { jd, scale, body, star, flags });
+    return { outLocation: readTmEclipseLocation(answered.out_location), outAttributes: readTmEclipseAttributes(answered.out_attributes), outType: answered.out_type };
+  }
+
+  /**
+   * `tm_solar_eclipse_how`.
+   */
+  tmSolarEclipseHow({ jd, scale, flags, observer }) {
+    const answered = this.#engine.call('tm_solar_eclipse_how', { jd, scale, flags, observer: observer == null ? null : writeTmObserver(observer) });
+    return { outAttributes: readTmEclipseAttributes(answered.out_attributes), outType: answered.out_type };
+  }
+
+  /**
+   * `tm_occultation_how`.
+   */
+  tmOccultationHow({ jd, scale, body, star, flags, observer }) {
+    const answered = this.#engine.call('tm_occultation_how', { jd, scale, body, star, flags, observer: observer == null ? null : writeTmObserver(observer) });
+    return { outAttributes: readTmEclipseAttributes(answered.out_attributes), outType: answered.out_type };
+  }
+
+  /**
+   * `tm_lunar_eclipse_how`.
+   */
+  tmLunarEclipseHow({ jd, scale, flags, observer }) {
+    const answered = this.#engine.call('tm_lunar_eclipse_how', { jd, scale, flags, observer: observer == null ? null : writeTmObserver(observer) });
+    return { outAttributes: readTmLunarEclipseAttributes(answered.out_attributes), outType: answered.out_type };
+  }
+
+  /**
    * `tm_event_kind_name`.
    */
   tmEventKindName({ kind }) {
     return this.#engine.call('tm_event_kind_name', { kind }).return;
+  }
+
+  /**
+   * `tm_gauquelin_sector`.
+   */
+  tmGauquelinSector({ jd, scale, body, star, flags, method, refraction, discCenter, observer, atmosphere }) {
+    return this.#engine.call('tm_gauquelin_sector', { jd, scale, body, star, flags, method, refraction, disc_center: discCenter, observer: observer == null ? null : writeTmObserver(observer), atmosphere: atmosphere == null ? null : writeTmAtmosphere(atmosphere) }).out_sector;
+  }
+
+  /**
+   * `tm_visibility_defaults`.
+   */
+  tmVisibilityDefaults({ observer }) {
+    const answered = this.#engine.call('tm_visibility_defaults', { observer: observer == null ? null : writeTmObserver(observer) });
+    return { atmosphere: readTmVisibilityAtmosphere(answered.atmosphere), eye: readTmObserverEye(answered.eye) };
+  }
+
+  /**
+   * `tm_visibility_limit`.
+   */
+  tmVisibilityLimit({ jd, scale, body, star, flags, observer, atmosphere, eye }) {
+    return readTmVisibility(this.#engine.call('tm_visibility_limit', { jd, scale, body, star, flags, observer: observer == null ? null : writeTmObserver(observer), atmosphere: atmosphere == null ? null : writeTmVisibilityAtmosphere(atmosphere), eye: eye == null ? null : writeTmObserverEye(eye) }).out);
+  }
+
+  /**
+   * `tm_visibility_arcus`.
+   */
+  tmVisibilityArcus({ jd, scale, flags, observer, atmosphere, eye, magnitude, objectAltitudeDeg, objectAzimuthDeg, sunAzimuthDeg, moonAltitudeDeg, moonAzimuthDeg }) {
+    return this.#engine.call('tm_visibility_arcus', { jd, scale, flags, observer: observer == null ? null : writeTmObserver(observer), atmosphere: atmosphere == null ? null : writeTmVisibilityAtmosphere(atmosphere), eye: eye == null ? null : writeTmObserverEye(eye), magnitude, object_altitude_deg: objectAltitudeDeg, object_azimuth_deg: objectAzimuthDeg, sun_azimuth_deg: sunAzimuthDeg, moon_altitude_deg: moonAltitudeDeg, moon_azimuth_deg: moonAzimuthDeg }).out_arcus_deg;
+  }
+
+  /**
+   * `tm_visibility_best_altitude`.
+   */
+  tmVisibilityBestAltitude({ jd, scale, flags, observer, atmosphere, eye, magnitude, objectAzimuthDeg, sunAzimuthDeg, moonAltitudeDeg, moonAzimuthDeg }) {
+    return readTmVisibilityBest(this.#engine.call('tm_visibility_best_altitude', { jd, scale, flags, observer: observer == null ? null : writeTmObserver(observer), atmosphere: atmosphere == null ? null : writeTmVisibilityAtmosphere(atmosphere), eye: eye == null ? null : writeTmObserverEye(eye), magnitude, object_azimuth_deg: objectAzimuthDeg, sun_azimuth_deg: sunAzimuthDeg, moon_altitude_deg: moonAltitudeDeg, moon_azimuth_deg: moonAzimuthDeg }).out);
+  }
+
+  /**
+   * `tm_crossing_request_init_sized`.
+   */
+  tmCrossingRequestInitSized() {
+    return readTmCrossingRequest(this.#engine.call('tm_crossing_request_init_sized', {}).req);
   }
 
   /**
@@ -441,6 +811,13 @@ export class TeimerisEngine {
    */
   tmRoundHalfAway({ x }) {
     return this.#engine.call('tm_round_half_away', { x }).return;
+  }
+
+  /**
+   * `tm_angle_split`.
+   */
+  tmAngleSplit({ deg, options }) {
+    return readTmAngleParts(this.#engine.call('tm_angle_split', { deg, options }).out);
   }
 
   /**

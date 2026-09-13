@@ -4,6 +4,9 @@
 import type { EphemerisChoice } from '@teistro/sdk';
 
 export { teimeris as engine, TeimerisEngine } from './engine.js';
+// Every struct the façade names, so a consumer can type a variable as
+// one without reaching into a file the package does not export.
+export type * from './engine.js';
 
 /**
  * The npm package that carries this host's prebuilt adapter, as

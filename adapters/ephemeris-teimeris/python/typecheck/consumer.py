@@ -36,3 +36,15 @@ def main() -> None:
         seconds: float = typed.tm_delta_t(jd_ut1=2451545.0)
         version = typed.tm_version()
         print(f"{name}, {seconds} seconds, engine {version['major']}")
+
+        # A struct crosses as a TypedDict, both ways; one the engine takes
+        # a null for may be left out.
+        utc = typed.tm_local_to_utc(
+            local={"year": 2026, "month": 9, "day": 13, "hour": 6, "minute": 30, "second": 0},
+            utc_offset_hours=5.75,
+            cal=1,
+        )
+        orbit = typed.tm_nodes_apsides_calc(
+            jd=2461296.5, scale=1, body=4, flags=0, method=0, apsis=0
+        )
+        print(f"{utc['hour']}:{utc['minute']} UTC, perihelion {orbit['perihelion']['lon']}")

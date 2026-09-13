@@ -51,6 +51,30 @@ extension TeimerisEngine on Engine {
     return answered['buf']! as String;
   }
 
+  /// `tm_julian_day`.
+  double tmJulianDay({TmDatetime? dt, required int cal}) {
+    final answered = (call('tm_julian_day', <String, Object?>{'dt': dt?.toJson(), 'cal': cal})) as Map<String, Object?>;
+    return (answered['out_jd']! as num).toDouble();
+  }
+
+  /// `tm_calendar_date`.
+  TmDatetime tmCalendarDate({required double jd, required int cal}) {
+    final answered = (call('tm_calendar_date', <String, Object?>{'jd': jd, 'cal': cal})) as Map<String, Object?>;
+    return TmDatetime.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_utc_to_jd`.
+  ({double outJdTt, double outJdUt1}) tmUtcToJd({TmDatetime? utc, required int cal}) {
+    final answered = (call('tm_utc_to_jd', <String, Object?>{'utc': utc?.toJson(), 'cal': cal})) as Map<String, Object?>;
+    return (outJdTt: (answered['out_jd_tt']! as num).toDouble(), outJdUt1: (answered['out_jd_ut1']! as num).toDouble());
+  }
+
+  /// `tm_jd_to_utc`.
+  TmDatetime tmJdToUtc({required double jd, required int scale, required int cal}) {
+    final answered = (call('tm_jd_to_utc', <String, Object?>{'jd': jd, 'scale': scale, 'cal': cal})) as Map<String, Object?>;
+    return TmDatetime.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
   /// `tm_delta_t`.
   double tmDeltaT({required double jdUt1}) {
     final answered = (call('tm_delta_t', <String, Object?>{'jd_ut1': jdUt1})) as Map<String, Object?>;
@@ -91,6 +115,18 @@ extension TeimerisEngine on Engine {
   double tmLocalApparentToMean({required double jdLocalApparent, required double geoLonDeg}) {
     final answered = (call('tm_local_apparent_to_mean', <String, Object?>{'jd_local_apparent': jdLocalApparent, 'geo_lon_deg': geoLonDeg})) as Map<String, Object?>;
     return (answered['out_jd_local_mean']! as num).toDouble();
+  }
+
+  /// `tm_local_to_utc`.
+  TmDatetime tmLocalToUtc({TmDatetime? local, required double utcOffsetHours, required int cal}) {
+    final answered = (call('tm_local_to_utc', <String, Object?>{'local': local?.toJson(), 'utc_offset_hours': utcOffsetHours, 'cal': cal})) as Map<String, Object?>;
+    return TmDatetime.fromJson(answered['out_utc']! as Map<String, Object?>);
+  }
+
+  /// `tm_utc_to_local`.
+  TmDatetime tmUtcToLocal({TmDatetime? utc, required double utcOffsetHours, required int cal}) {
+    final answered = (call('tm_utc_to_local', <String, Object?>{'utc': utc?.toJson(), 'utc_offset_hours': utcOffsetHours, 'cal': cal})) as Map<String, Object?>;
+    return TmDatetime.fromJson(answered['out_local']! as Map<String, Object?>);
   }
 
   /// `tm_position_value`.
@@ -245,10 +281,52 @@ extension TeimerisEngine on Engine {
     return (answered['out']! as num).toInt();
   }
 
+  /// `tm_atmosphere_init_sized`.
+  TmAtmosphere tmAtmosphereInitSized({required double altitudeM, required int structSize}) {
+    final answered = (call('tm_atmosphere_init_sized', <String, Object?>{'altitude_m': altitudeM, 'struct_size': structSize})) as Map<String, Object?>;
+    return TmAtmosphere.fromJson(answered['atm']! as Map<String, Object?>);
+  }
+
+  /// `tm_refract`.
+  TmRefraction tmRefract({required int model, required int dir, required double altitudeDeg, TmObserver? obs, TmAtmosphere? atm}) {
+    final answered = (call('tm_refract', <String, Object?>{'model': model, 'dir': dir, 'altitude_deg': altitudeDeg, 'obs': obs?.toJson(), 'atm': atm?.toJson()})) as Map<String, Object?>;
+    return TmRefraction.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_obliquity_calc`.
+  TmObliquity tmObliquityCalc({required double jd, required int scale}) {
+    final answered = (call('tm_obliquity_calc', <String, Object?>{'jd': jd, 'scale': scale})) as Map<String, Object?>;
+    return TmObliquity.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_to_horizontal`.
+  TmHorizontal tmToHorizontal({required double jd, required int scale, required int system, TmObserver? obs, TmAtmosphere? atm, required double lonDeg, required double latDeg}) {
+    final answered = (call('tm_to_horizontal', <String, Object?>{'jd': jd, 'scale': scale, 'system': system, 'obs': obs?.toJson(), 'atm': atm?.toJson(), 'lon_deg': lonDeg, 'lat_deg': latDeg})) as Map<String, Object?>;
+    return TmHorizontal.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_from_horizontal`.
+  ({double outLonDeg, double outLatDeg}) tmFromHorizontal({required double jd, required int scale, required int system, TmObserver? obs, required double azimuthDeg, required double altitudeDeg}) {
+    final answered = (call('tm_from_horizontal', <String, Object?>{'jd': jd, 'scale': scale, 'system': system, 'obs': obs?.toJson(), 'azimuth_deg': azimuthDeg, 'altitude_deg': altitudeDeg})) as Map<String, Object?>;
+    return (outLonDeg: (answered['out_lon_deg']! as num).toDouble(), outLatDeg: (answered['out_lat_deg']! as num).toDouble());
+  }
+
   /// `tm_embedded_coverage`.
   ({double outJdStart, double outJdEnd}) tmEmbeddedCoverage() {
     final answered = (call('tm_embedded_coverage', const <String, Object?>{})) as Map<String, Object?>;
     return (outJdStart: (answered['out_jd_start']! as num).toDouble(), outJdEnd: (answered['out_jd_end']! as num).toDouble());
+  }
+
+  /// `tm_body_coverage`.
+  TmCoverage tmBodyCoverage({required int body}) {
+    final answered = (call('tm_body_coverage', <String, Object?>{'body': body})) as Map<String, Object?>;
+    return TmCoverage.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_fallback_stats_get`.
+  TmFallbackStats tmFallbackStatsGet() {
+    final answered = (call('tm_fallback_stats_get', const <String, Object?>{})) as Map<String, Object?>;
+    return TmFallbackStats.fromJson(answered['out']! as Map<String, Object?>);
   }
 
   /// `tm_fallback_stats_reset`.
@@ -259,6 +337,42 @@ extension TeimerisEngine on Engine {
   /// `tm_cache_dir_default`.
   String tmCacheDirDefault() {
     final answered = (call('tm_cache_dir_default', const <String, Object?>{})) as Map<String, Object?>;
+    return answered['buf']! as String;
+  }
+
+  /// `tm_nodes_apsides_calc`.
+  TmNodesApsides tmNodesApsidesCalc({required double jd, required int scale, required int body, required int flags, required int method, required int apsis, TmObserver? observer}) {
+    final answered = (call('tm_nodes_apsides_calc', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'flags': flags, 'method': method, 'apsis': apsis, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return TmNodesApsides.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_orbital_elements_calc`.
+  TmOrbitalElements tmOrbitalElementsCalc({required double jd, required int scale, required int body, required int flags, required int masses}) {
+    final answered = (call('tm_orbital_elements_calc', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'flags': flags, 'masses': masses})) as Map<String, Object?>;
+    return TmOrbitalElements.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_orbit_distances_calc`.
+  TmOrbitDistances tmOrbitDistancesCalc({required double jd, required int scale, required int body, required int flags}) {
+    final answered = (call('tm_orbit_distances_calc', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'flags': flags})) as Map<String, Object?>;
+    return TmOrbitDistances.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_phenomena_calc`.
+  TmPhenomena tmPhenomenaCalc({required double jd, required int scale, required int body, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_phenomena_calc', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return TmPhenomena.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_star_name`.
+  String tmStarName({TmStar? star}) {
+    final answered = (call('tm_star_name', <String, Object?>{'star': star?.toJson()})) as Map<String, Object?>;
+    return answered['buf']! as String;
+  }
+
+  /// `tm_star_designation`.
+  String tmStarDesignation({TmStar? star}) {
+    final answered = (call('tm_star_designation', <String, Object?>{'star': star?.toJson()})) as Map<String, Object?>;
     return answered['buf']! as String;
   }
 
@@ -275,16 +389,94 @@ extension TeimerisEngine on Engine {
     return (answered['return']! as num).toInt();
   }
 
+  /// `tm_star_find`.
+  TmStar tmStarFind({required String name}) {
+    final answered = (call('tm_star_find', <String, Object?>{'name': name})) as Map<String, Object?>;
+    return TmStar.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_star_calc`.
+  TmPosition tmStarCalc({required double jd, required int scale, required String name, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_star_calc', <String, Object?>{'jd': jd, 'scale': scale, 'name': name, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return TmPosition.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
   /// `tm_eclipse_type_name`.
   String tmEclipseTypeName({required int bit}) {
     final answered = (call('tm_eclipse_type_name', <String, Object?>{'bit': bit})) as Map<String, Object?>;
     return answered['return']! as String;
   }
 
+  /// `tm_solar_eclipse_where`.
+  ({TmEclipseLocation outLocation, TmEclipseAttributes outAttributes, int outType}) tmSolarEclipseWhere({required double jd, required int scale, required int flags}) {
+    final answered = (call('tm_solar_eclipse_where', <String, Object?>{'jd': jd, 'scale': scale, 'flags': flags})) as Map<String, Object?>;
+    return (outLocation: TmEclipseLocation.fromJson(answered['out_location']! as Map<String, Object?>), outAttributes: TmEclipseAttributes.fromJson(answered['out_attributes']! as Map<String, Object?>), outType: (answered['out_type']! as num).toInt());
+  }
+
+  /// `tm_occultation_where`.
+  ({TmEclipseLocation outLocation, TmEclipseAttributes outAttributes, int outType}) tmOccultationWhere({required double jd, required int scale, required int body, required String star, required int flags}) {
+    final answered = (call('tm_occultation_where', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'star': star, 'flags': flags})) as Map<String, Object?>;
+    return (outLocation: TmEclipseLocation.fromJson(answered['out_location']! as Map<String, Object?>), outAttributes: TmEclipseAttributes.fromJson(answered['out_attributes']! as Map<String, Object?>), outType: (answered['out_type']! as num).toInt());
+  }
+
+  /// `tm_solar_eclipse_how`.
+  ({TmEclipseAttributes outAttributes, int outType}) tmSolarEclipseHow({required double jd, required int scale, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_solar_eclipse_how', <String, Object?>{'jd': jd, 'scale': scale, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (outAttributes: TmEclipseAttributes.fromJson(answered['out_attributes']! as Map<String, Object?>), outType: (answered['out_type']! as num).toInt());
+  }
+
+  /// `tm_occultation_how`.
+  ({TmEclipseAttributes outAttributes, int outType}) tmOccultationHow({required double jd, required int scale, required int body, required String star, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_occultation_how', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'star': star, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (outAttributes: TmEclipseAttributes.fromJson(answered['out_attributes']! as Map<String, Object?>), outType: (answered['out_type']! as num).toInt());
+  }
+
+  /// `tm_lunar_eclipse_how`.
+  ({TmLunarEclipseAttributes outAttributes, int outType}) tmLunarEclipseHow({required double jd, required int scale, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_lunar_eclipse_how', <String, Object?>{'jd': jd, 'scale': scale, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (outAttributes: TmLunarEclipseAttributes.fromJson(answered['out_attributes']! as Map<String, Object?>), outType: (answered['out_type']! as num).toInt());
+  }
+
   /// `tm_event_kind_name`.
   String tmEventKindName({required int kind}) {
     final answered = (call('tm_event_kind_name', <String, Object?>{'kind': kind})) as Map<String, Object?>;
     return answered['return']! as String;
+  }
+
+  /// `tm_gauquelin_sector`.
+  double tmGauquelinSector({required double jd, required int scale, required int body, required String star, required int flags, required int method, required int refraction, required int discCenter, TmObserver? observer, TmAtmosphere? atmosphere}) {
+    final answered = (call('tm_gauquelin_sector', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'star': star, 'flags': flags, 'method': method, 'refraction': refraction, 'disc_center': discCenter, 'observer': observer?.toJson(), 'atmosphere': atmosphere?.toJson()})) as Map<String, Object?>;
+    return (answered['out_sector']! as num).toDouble();
+  }
+
+  /// `tm_visibility_defaults`.
+  ({TmVisibilityAtmosphere atmosphere, TmObserverEye eye}) tmVisibilityDefaults({TmObserver? observer}) {
+    final answered = (call('tm_visibility_defaults', <String, Object?>{'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (atmosphere: TmVisibilityAtmosphere.fromJson(answered['atmosphere']! as Map<String, Object?>), eye: TmObserverEye.fromJson(answered['eye']! as Map<String, Object?>));
+  }
+
+  /// `tm_visibility_limit`.
+  TmVisibility tmVisibilityLimit({required double jd, required int scale, required int body, required String star, required int flags, TmObserver? observer, TmVisibilityAtmosphere? atmosphere, TmObserverEye? eye}) {
+    final answered = (call('tm_visibility_limit', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'star': star, 'flags': flags, 'observer': observer?.toJson(), 'atmosphere': atmosphere?.toJson(), 'eye': eye?.toJson()})) as Map<String, Object?>;
+    return TmVisibility.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_visibility_arcus`.
+  double tmVisibilityArcus({required double jd, required int scale, required int flags, TmObserver? observer, TmVisibilityAtmosphere? atmosphere, TmObserverEye? eye, required double magnitude, required double objectAltitudeDeg, required double objectAzimuthDeg, required double sunAzimuthDeg, required double moonAltitudeDeg, required double moonAzimuthDeg}) {
+    final answered = (call('tm_visibility_arcus', <String, Object?>{'jd': jd, 'scale': scale, 'flags': flags, 'observer': observer?.toJson(), 'atmosphere': atmosphere?.toJson(), 'eye': eye?.toJson(), 'magnitude': magnitude, 'object_altitude_deg': objectAltitudeDeg, 'object_azimuth_deg': objectAzimuthDeg, 'sun_azimuth_deg': sunAzimuthDeg, 'moon_altitude_deg': moonAltitudeDeg, 'moon_azimuth_deg': moonAzimuthDeg})) as Map<String, Object?>;
+    return (answered['out_arcus_deg']! as num).toDouble();
+  }
+
+  /// `tm_visibility_best_altitude`.
+  TmVisibilityBest tmVisibilityBestAltitude({required double jd, required int scale, required int flags, TmObserver? observer, TmVisibilityAtmosphere? atmosphere, TmObserverEye? eye, required double magnitude, required double objectAzimuthDeg, required double sunAzimuthDeg, required double moonAltitudeDeg, required double moonAzimuthDeg}) {
+    final answered = (call('tm_visibility_best_altitude', <String, Object?>{'jd': jd, 'scale': scale, 'flags': flags, 'observer': observer?.toJson(), 'atmosphere': atmosphere?.toJson(), 'eye': eye?.toJson(), 'magnitude': magnitude, 'object_azimuth_deg': objectAzimuthDeg, 'sun_azimuth_deg': sunAzimuthDeg, 'moon_altitude_deg': moonAltitudeDeg, 'moon_azimuth_deg': moonAzimuthDeg})) as Map<String, Object?>;
+    return TmVisibilityBest.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_crossing_request_init_sized`.
+  TmCrossingRequest tmCrossingRequestInitSized() {
+    final answered = (call('tm_crossing_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
+    return TmCrossingRequest.fromJson(answered['req']! as Map<String, Object?>);
   }
 
   /// `tm_angle_normalize_deg`.
@@ -371,6 +563,12 @@ extension TeimerisEngine on Engine {
     return (answered['return']! as num).toInt();
   }
 
+  /// `tm_angle_split`.
+  TmAngleParts tmAngleSplit({required double deg, required int options}) {
+    final answered = (call('tm_angle_split', <String, Object?>{'deg': deg, 'options': options})) as Map<String, Object?>;
+    return TmAngleParts.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
   /// `tm_angle_format`.
   String tmAngleFormat({required double deg, required int style, required int decimals}) {
     final answered = (call('tm_angle_format', <String, Object?>{'deg': deg, 'style': style, 'decimals': decimals})) as Map<String, Object?>;
@@ -401,4 +599,1161 @@ extension TeimerisEngine on Engine {
     return (answered['return']! as num).toInt();
   }
 
+}
+
+/// `tm_datetime`, as the engine declares it. Every field is required.
+final class TmDatetime {
+  /// Every field, named.
+  const TmDatetime({required this.year, required this.month, required this.day, required this.hour, required this.minute, required this.second});
+
+  /// Read from the object the engine answers with.
+  factory TmDatetime.fromJson(Map<String, Object?> json) => TmDatetime(
+        year: (json['year']! as num).toInt(),
+        month: (json['month']! as num).toInt(),
+        day: (json['day']! as num).toInt(),
+        hour: (json['hour']! as num).toInt(),
+        minute: (json['minute']! as num).toInt(),
+        second: (json['second']! as num).toDouble(),
+      );
+
+  /// `year`.
+  final int year;
+
+  /// `month`.
+  final int month;
+
+  /// `day`.
+  final int day;
+
+  /// `hour`.
+  final int hour;
+
+  /// `minute`.
+  final int minute;
+
+  /// `second`.
+  final double second;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'year': year,
+        'month': month,
+        'day': day,
+        'hour': hour,
+        'minute': minute,
+        'second': second,
+      };
+}
+
+/// `tm_observer`, as the engine declares it. Every field is required.
+final class TmObserver {
+  /// Every field, named.
+  const TmObserver({required this.longitudeDeg, required this.latitudeDeg, required this.altitudeM});
+
+  /// Read from the object the engine answers with.
+  factory TmObserver.fromJson(Map<String, Object?> json) => TmObserver(
+        longitudeDeg: (json['longitude_deg']! as num).toDouble(),
+        latitudeDeg: (json['latitude_deg']! as num).toDouble(),
+        altitudeM: (json['altitude_m']! as num).toDouble(),
+      );
+
+  /// `longitude_deg`.
+  final double longitudeDeg;
+
+  /// `latitude_deg`.
+  final double latitudeDeg;
+
+  /// `altitude_m`.
+  final double altitudeM;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'longitude_deg': longitudeDeg,
+        'latitude_deg': latitudeDeg,
+        'altitude_m': altitudeM,
+      };
+}
+
+/// `tm_position`, as the engine declares it. Every field is required.
+final class TmPosition {
+  /// Every field, named.
+  const TmPosition({required this.lon, required this.lat, required this.dist, required this.lonSpeed, required this.latSpeed, required this.distSpeed, required this.flagsUsed, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmPosition.fromJson(Map<String, Object?> json) => TmPosition(
+        lon: (json['lon']! as num).toDouble(),
+        lat: (json['lat']! as num).toDouble(),
+        dist: (json['dist']! as num).toDouble(),
+        lonSpeed: (json['lon_speed']! as num).toDouble(),
+        latSpeed: (json['lat_speed']! as num).toDouble(),
+        distSpeed: (json['dist_speed']! as num).toDouble(),
+        flagsUsed: (json['flags_used']! as num).toInt(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `lon`.
+  final double lon;
+
+  /// `lat`.
+  final double lat;
+
+  /// `dist`.
+  final double dist;
+
+  /// `lon_speed`.
+  final double lonSpeed;
+
+  /// `lat_speed`.
+  final double latSpeed;
+
+  /// `dist_speed`.
+  final double distSpeed;
+
+  /// `flags_used`.
+  final int flagsUsed;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'lon': lon,
+        'lat': lat,
+        'dist': dist,
+        'lon_speed': lonSpeed,
+        'lat_speed': latSpeed,
+        'dist_speed': distSpeed,
+        'flags_used': flagsUsed,
+        'status': status,
+      };
+}
+
+/// `tm_atmosphere`, as the engine declares it. Every field is required.
+final class TmAtmosphere {
+  /// Every field, named.
+  const TmAtmosphere({required this.pressureMbar, required this.temperatureC, required this.lapseRateKPerM});
+
+  /// Read from the object the engine answers with.
+  factory TmAtmosphere.fromJson(Map<String, Object?> json) => TmAtmosphere(
+        pressureMbar: (json['pressure_mbar']! as num).toDouble(),
+        temperatureC: (json['temperature_c']! as num).toDouble(),
+        lapseRateKPerM: (json['lapse_rate_k_per_m']! as num).toDouble(),
+      );
+
+  /// `pressure_mbar`.
+  final double pressureMbar;
+
+  /// `temperature_c`.
+  final double temperatureC;
+
+  /// `lapse_rate_k_per_m`.
+  final double lapseRateKPerM;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'pressure_mbar': pressureMbar,
+        'temperature_c': temperatureC,
+        'lapse_rate_k_per_m': lapseRateKPerM,
+      };
+}
+
+/// `tm_refraction`, as the engine declares it. Every field is required.
+final class TmRefraction {
+  /// Every field, named.
+  const TmRefraction({required this.altitudeTrue, required this.altitudeApparent, required this.refraction, required this.horizonDip, required this.observable});
+
+  /// Read from the object the engine answers with.
+  factory TmRefraction.fromJson(Map<String, Object?> json) => TmRefraction(
+        altitudeTrue: (json['altitude_true']! as num).toDouble(),
+        altitudeApparent: (json['altitude_apparent']! as num).toDouble(),
+        refraction: (json['refraction']! as num).toDouble(),
+        horizonDip: (json['horizon_dip']! as num).toDouble(),
+        observable: (json['observable']! as num).toInt(),
+      );
+
+  /// `altitude_true`.
+  final double altitudeTrue;
+
+  /// `altitude_apparent`.
+  final double altitudeApparent;
+
+  /// `refraction`.
+  final double refraction;
+
+  /// `horizon_dip`.
+  final double horizonDip;
+
+  /// `observable`.
+  final int observable;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'altitude_true': altitudeTrue,
+        'altitude_apparent': altitudeApparent,
+        'refraction': refraction,
+        'horizon_dip': horizonDip,
+        'observable': observable,
+      };
+}
+
+/// `tm_obliquity`, as the engine declares it. Every field is required.
+final class TmObliquity {
+  /// Every field, named.
+  const TmObliquity({required this.trueObliquity, required this.meanObliquity, required this.nutationLon, required this.nutationObl});
+
+  /// Read from the object the engine answers with.
+  factory TmObliquity.fromJson(Map<String, Object?> json) => TmObliquity(
+        trueObliquity: (json['true_obliquity']! as num).toDouble(),
+        meanObliquity: (json['mean_obliquity']! as num).toDouble(),
+        nutationLon: (json['nutation_lon']! as num).toDouble(),
+        nutationObl: (json['nutation_obl']! as num).toDouble(),
+      );
+
+  /// `true_obliquity`.
+  final double trueObliquity;
+
+  /// `mean_obliquity`.
+  final double meanObliquity;
+
+  /// `nutation_lon`.
+  final double nutationLon;
+
+  /// `nutation_obl`.
+  final double nutationObl;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'true_obliquity': trueObliquity,
+        'mean_obliquity': meanObliquity,
+        'nutation_lon': nutationLon,
+        'nutation_obl': nutationObl,
+      };
+}
+
+/// `tm_horizontal`, as the engine declares it. Every field is required.
+final class TmHorizontal {
+  /// Every field, named.
+  const TmHorizontal({required this.azimuth, required this.azimuthNorth, required this.altitudeTrue, required this.altitudeApparent});
+
+  /// Read from the object the engine answers with.
+  factory TmHorizontal.fromJson(Map<String, Object?> json) => TmHorizontal(
+        azimuth: (json['azimuth']! as num).toDouble(),
+        azimuthNorth: (json['azimuth_north']! as num).toDouble(),
+        altitudeTrue: (json['altitude_true']! as num).toDouble(),
+        altitudeApparent: (json['altitude_apparent']! as num).toDouble(),
+      );
+
+  /// `azimuth`.
+  final double azimuth;
+
+  /// `azimuth_north`.
+  final double azimuthNorth;
+
+  /// `altitude_true`.
+  final double altitudeTrue;
+
+  /// `altitude_apparent`.
+  final double altitudeApparent;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'azimuth': azimuth,
+        'azimuth_north': azimuthNorth,
+        'altitude_true': altitudeTrue,
+        'altitude_apparent': altitudeApparent,
+      };
+}
+
+/// `tm_coverage`, as the engine declares it. Every field is required.
+final class TmCoverage {
+  /// Every field, named.
+  const TmCoverage({required this.jdStart, required this.jdEnd, required this.contiguous, required this.fileCount});
+
+  /// Read from the object the engine answers with.
+  factory TmCoverage.fromJson(Map<String, Object?> json) => TmCoverage(
+        jdStart: (json['jd_start']! as num).toDouble(),
+        jdEnd: (json['jd_end']! as num).toDouble(),
+        contiguous: (json['contiguous']! as num).toInt(),
+        fileCount: (json['file_count']! as num).toInt(),
+      );
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `jd_end`.
+  final double jdEnd;
+
+  /// `contiguous`.
+  final int contiguous;
+
+  /// `file_count`.
+  final int fileCount;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_start': jdStart,
+        'jd_end': jdEnd,
+        'contiguous': contiguous,
+        'file_count': fileCount,
+      };
+}
+
+/// `tm_fallback_stats`, as the engine declares it. Every field is required.
+final class TmFallbackStats {
+  /// Every field, named.
+  const TmFallbackStats({required this.moshierCalls, required this.refusedCalls, required this.lastBody, required this.lastJd});
+
+  /// Read from the object the engine answers with.
+  factory TmFallbackStats.fromJson(Map<String, Object?> json) => TmFallbackStats(
+        moshierCalls: (json['moshier_calls']! as num).toInt(),
+        refusedCalls: (json['refused_calls']! as num).toInt(),
+        lastBody: (json['last_body']! as num).toInt(),
+        lastJd: (json['last_jd']! as num).toDouble(),
+      );
+
+  /// `moshier_calls`.
+  final int moshierCalls;
+
+  /// `refused_calls`.
+  final int refusedCalls;
+
+  /// `last_body`.
+  final int lastBody;
+
+  /// `last_jd`.
+  final double lastJd;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'moshier_calls': moshierCalls,
+        'refused_calls': refusedCalls,
+        'last_body': lastBody,
+        'last_jd': lastJd,
+      };
+}
+
+/// `tm_nodes_apsides`, as the engine declares it. Every field is required.
+final class TmNodesApsides {
+  /// Every field, named.
+  const TmNodesApsides({required this.ascending, required this.descending, required this.perihelion, required this.aphelion, required this.usedMean, required this.flagsUsed, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmNodesApsides.fromJson(Map<String, Object?> json) => TmNodesApsides(
+        ascending: TmPosition.fromJson(json['ascending']! as Map<String, Object?>),
+        descending: TmPosition.fromJson(json['descending']! as Map<String, Object?>),
+        perihelion: TmPosition.fromJson(json['perihelion']! as Map<String, Object?>),
+        aphelion: TmPosition.fromJson(json['aphelion']! as Map<String, Object?>),
+        usedMean: (json['used_mean']! as num).toInt(),
+        flagsUsed: (json['flags_used']! as num).toInt(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `ascending`.
+  final TmPosition ascending;
+
+  /// `descending`.
+  final TmPosition descending;
+
+  /// `perihelion`.
+  final TmPosition perihelion;
+
+  /// `aphelion`.
+  final TmPosition aphelion;
+
+  /// `used_mean`.
+  final int usedMean;
+
+  /// `flags_used`.
+  final int flagsUsed;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'ascending': ascending.toJson(),
+        'descending': descending.toJson(),
+        'perihelion': perihelion.toJson(),
+        'aphelion': aphelion.toJson(),
+        'used_mean': usedMean,
+        'flags_used': flagsUsed,
+        'status': status,
+      };
+}
+
+/// `tm_orbital_elements`, as the engine declares it. Every field is required.
+final class TmOrbitalElements {
+  /// Every field, named.
+  const TmOrbitalElements({required this.semiMajorAxis, required this.eccentricity, required this.inclination, required this.node, required this.argPerihelion, required this.lonPerihelion, required this.meanAnomaly, required this.trueAnomaly, required this.eccentricAnomaly, required this.meanLongitude, required this.periodSidereal, required this.dailyMotion, required this.periodTropical, required this.periodSynodic, required this.perihelionTime, required this.perihelionDistance, required this.aphelionDistance, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmOrbitalElements.fromJson(Map<String, Object?> json) => TmOrbitalElements(
+        semiMajorAxis: (json['semi_major_axis']! as num).toDouble(),
+        eccentricity: (json['eccentricity']! as num).toDouble(),
+        inclination: (json['inclination']! as num).toDouble(),
+        node: (json['node']! as num).toDouble(),
+        argPerihelion: (json['arg_perihelion']! as num).toDouble(),
+        lonPerihelion: (json['lon_perihelion']! as num).toDouble(),
+        meanAnomaly: (json['mean_anomaly']! as num).toDouble(),
+        trueAnomaly: (json['true_anomaly']! as num).toDouble(),
+        eccentricAnomaly: (json['eccentric_anomaly']! as num).toDouble(),
+        meanLongitude: (json['mean_longitude']! as num).toDouble(),
+        periodSidereal: (json['period_sidereal']! as num).toDouble(),
+        dailyMotion: (json['daily_motion']! as num).toDouble(),
+        periodTropical: (json['period_tropical']! as num).toDouble(),
+        periodSynodic: (json['period_synodic']! as num).toDouble(),
+        perihelionTime: (json['perihelion_time']! as num).toDouble(),
+        perihelionDistance: (json['perihelion_distance']! as num).toDouble(),
+        aphelionDistance: (json['aphelion_distance']! as num).toDouble(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `semi_major_axis`.
+  final double semiMajorAxis;
+
+  /// `eccentricity`.
+  final double eccentricity;
+
+  /// `inclination`.
+  final double inclination;
+
+  /// `node`.
+  final double node;
+
+  /// `arg_perihelion`.
+  final double argPerihelion;
+
+  /// `lon_perihelion`.
+  final double lonPerihelion;
+
+  /// `mean_anomaly`.
+  final double meanAnomaly;
+
+  /// `true_anomaly`.
+  final double trueAnomaly;
+
+  /// `eccentric_anomaly`.
+  final double eccentricAnomaly;
+
+  /// `mean_longitude`.
+  final double meanLongitude;
+
+  /// `period_sidereal`.
+  final double periodSidereal;
+
+  /// `daily_motion`.
+  final double dailyMotion;
+
+  /// `period_tropical`.
+  final double periodTropical;
+
+  /// `period_synodic`.
+  final double periodSynodic;
+
+  /// `perihelion_time`.
+  final double perihelionTime;
+
+  /// `perihelion_distance`.
+  final double perihelionDistance;
+
+  /// `aphelion_distance`.
+  final double aphelionDistance;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'semi_major_axis': semiMajorAxis,
+        'eccentricity': eccentricity,
+        'inclination': inclination,
+        'node': node,
+        'arg_perihelion': argPerihelion,
+        'lon_perihelion': lonPerihelion,
+        'mean_anomaly': meanAnomaly,
+        'true_anomaly': trueAnomaly,
+        'eccentric_anomaly': eccentricAnomaly,
+        'mean_longitude': meanLongitude,
+        'period_sidereal': periodSidereal,
+        'daily_motion': dailyMotion,
+        'period_tropical': periodTropical,
+        'period_synodic': periodSynodic,
+        'perihelion_time': perihelionTime,
+        'perihelion_distance': perihelionDistance,
+        'aphelion_distance': aphelionDistance,
+        'status': status,
+      };
+}
+
+/// `tm_orbit_distances`, as the engine declares it. Every field is required.
+final class TmOrbitDistances {
+  /// Every field, named.
+  const TmOrbitDistances({required this.maxDistance, required this.minDistance, required this.trueDistance, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmOrbitDistances.fromJson(Map<String, Object?> json) => TmOrbitDistances(
+        maxDistance: (json['max_distance']! as num).toDouble(),
+        minDistance: (json['min_distance']! as num).toDouble(),
+        trueDistance: (json['true_distance']! as num).toDouble(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `max_distance`.
+  final double maxDistance;
+
+  /// `min_distance`.
+  final double minDistance;
+
+  /// `true_distance`.
+  final double trueDistance;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'max_distance': maxDistance,
+        'min_distance': minDistance,
+        'true_distance': trueDistance,
+        'status': status,
+      };
+}
+
+/// `tm_phenomena`, as the engine declares it. Every field is required.
+final class TmPhenomena {
+  /// Every field, named.
+  const TmPhenomena({required this.phaseAngle, required this.phase, required this.elongation, required this.diameter, required this.magnitude, required this.horizontalParallax, required this.magnitudeOutOfRange, required this.flagsUsed, required this.status, required this.magnitudeState});
+
+  /// Read from the object the engine answers with.
+  factory TmPhenomena.fromJson(Map<String, Object?> json) => TmPhenomena(
+        phaseAngle: (json['phase_angle']! as num).toDouble(),
+        phase: (json['phase']! as num).toDouble(),
+        elongation: (json['elongation']! as num).toDouble(),
+        diameter: (json['diameter']! as num).toDouble(),
+        magnitude: (json['magnitude']! as num).toDouble(),
+        horizontalParallax: (json['horizontal_parallax']! as num).toDouble(),
+        magnitudeOutOfRange: (json['magnitude_out_of_range']! as num).toInt(),
+        flagsUsed: (json['flags_used']! as num).toInt(),
+        status: (json['status']! as num).toInt(),
+        magnitudeState: (json['magnitude_state']! as num).toInt(),
+      );
+
+  /// `phase_angle`.
+  final double phaseAngle;
+
+  /// `phase`.
+  final double phase;
+
+  /// `elongation`.
+  final double elongation;
+
+  /// `diameter`.
+  final double diameter;
+
+  /// `magnitude`.
+  final double magnitude;
+
+  /// `horizontal_parallax`.
+  final double horizontalParallax;
+
+  /// `magnitude_out_of_range`.
+  final int magnitudeOutOfRange;
+
+  /// `flags_used`.
+  final int flagsUsed;
+
+  /// `status`.
+  final int status;
+
+  /// `magnitude_state`.
+  final int magnitudeState;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'phase_angle': phaseAngle,
+        'phase': phase,
+        'elongation': elongation,
+        'diameter': diameter,
+        'magnitude': magnitude,
+        'horizontal_parallax': horizontalParallax,
+        'magnitude_out_of_range': magnitudeOutOfRange,
+        'flags_used': flagsUsed,
+        'status': status,
+        'magnitude_state': magnitudeState,
+      };
+}
+
+/// `tm_star`, as the engine declares it. Every field is required.
+final class TmStar {
+  /// Every field, named.
+  const TmStar({required this.id, required this.catalogueGeneration, required this.magnitude, required this.epoch, required this.raDeg, required this.decDeg, required this.pmRaArcsecPerCentury, required this.pmDecArcsecPerCentury, required this.radialVelocityAuPerCentury, required this.parallaxArcsec});
+
+  /// Read from the object the engine answers with.
+  factory TmStar.fromJson(Map<String, Object?> json) => TmStar(
+        id: (json['id']! as num).toInt(),
+        catalogueGeneration: (json['catalogue_generation']! as num).toInt(),
+        magnitude: (json['magnitude']! as num).toDouble(),
+        epoch: (json['epoch']! as num).toDouble(),
+        raDeg: (json['ra_deg']! as num).toDouble(),
+        decDeg: (json['dec_deg']! as num).toDouble(),
+        pmRaArcsecPerCentury: (json['pm_ra_arcsec_per_century']! as num).toDouble(),
+        pmDecArcsecPerCentury: (json['pm_dec_arcsec_per_century']! as num).toDouble(),
+        radialVelocityAuPerCentury: (json['radial_velocity_au_per_century']! as num).toDouble(),
+        parallaxArcsec: (json['parallax_arcsec']! as num).toDouble(),
+      );
+
+  /// `id`.
+  final int id;
+
+  /// `catalogue_generation`.
+  final int catalogueGeneration;
+
+  /// `magnitude`.
+  final double magnitude;
+
+  /// `epoch`.
+  final double epoch;
+
+  /// `ra_deg`.
+  final double raDeg;
+
+  /// `dec_deg`.
+  final double decDeg;
+
+  /// `pm_ra_arcsec_per_century`.
+  final double pmRaArcsecPerCentury;
+
+  /// `pm_dec_arcsec_per_century`.
+  final double pmDecArcsecPerCentury;
+
+  /// `radial_velocity_au_per_century`.
+  final double radialVelocityAuPerCentury;
+
+  /// `parallax_arcsec`.
+  final double parallaxArcsec;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'catalogue_generation': catalogueGeneration,
+        'magnitude': magnitude,
+        'epoch': epoch,
+        'ra_deg': raDeg,
+        'dec_deg': decDeg,
+        'pm_ra_arcsec_per_century': pmRaArcsecPerCentury,
+        'pm_dec_arcsec_per_century': pmDecArcsecPerCentury,
+        'radial_velocity_au_per_century': radialVelocityAuPerCentury,
+        'parallax_arcsec': parallaxArcsec,
+      };
+}
+
+/// `tm_eclipse_attributes`, as the engine declares it. Every field is required.
+final class TmEclipseAttributes {
+  /// Every field, named.
+  const TmEclipseAttributes({required this.magnitude, required this.diameterRatio, required this.obscuration, required this.coreShadowKm, required this.azimuth, required this.azimuthNorth, required this.altitudeTrue, required this.altitudeApparent, required this.separation, required this.magnitudeNasa, required this.sarosKnown, required this.sarosSeries, required this.sarosMember});
+
+  /// Read from the object the engine answers with.
+  factory TmEclipseAttributes.fromJson(Map<String, Object?> json) => TmEclipseAttributes(
+        magnitude: (json['magnitude']! as num).toDouble(),
+        diameterRatio: (json['diameter_ratio']! as num).toDouble(),
+        obscuration: (json['obscuration']! as num).toDouble(),
+        coreShadowKm: (json['core_shadow_km']! as num).toDouble(),
+        azimuth: (json['azimuth']! as num).toDouble(),
+        azimuthNorth: (json['azimuth_north']! as num).toDouble(),
+        altitudeTrue: (json['altitude_true']! as num).toDouble(),
+        altitudeApparent: (json['altitude_apparent']! as num).toDouble(),
+        separation: (json['separation']! as num).toDouble(),
+        magnitudeNasa: (json['magnitude_nasa']! as num).toDouble(),
+        sarosKnown: (json['saros_known']! as num).toInt(),
+        sarosSeries: (json['saros_series']! as num).toDouble(),
+        sarosMember: (json['saros_member']! as num).toDouble(),
+      );
+
+  /// `magnitude`.
+  final double magnitude;
+
+  /// `diameter_ratio`.
+  final double diameterRatio;
+
+  /// `obscuration`.
+  final double obscuration;
+
+  /// `core_shadow_km`.
+  final double coreShadowKm;
+
+  /// `azimuth`.
+  final double azimuth;
+
+  /// `azimuth_north`.
+  final double azimuthNorth;
+
+  /// `altitude_true`.
+  final double altitudeTrue;
+
+  /// `altitude_apparent`.
+  final double altitudeApparent;
+
+  /// `separation`.
+  final double separation;
+
+  /// `magnitude_nasa`.
+  final double magnitudeNasa;
+
+  /// `saros_known`.
+  final int sarosKnown;
+
+  /// `saros_series`.
+  final double sarosSeries;
+
+  /// `saros_member`.
+  final double sarosMember;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'magnitude': magnitude,
+        'diameter_ratio': diameterRatio,
+        'obscuration': obscuration,
+        'core_shadow_km': coreShadowKm,
+        'azimuth': azimuth,
+        'azimuth_north': azimuthNorth,
+        'altitude_true': altitudeTrue,
+        'altitude_apparent': altitudeApparent,
+        'separation': separation,
+        'magnitude_nasa': magnitudeNasa,
+        'saros_known': sarosKnown,
+        'saros_series': sarosSeries,
+        'saros_member': sarosMember,
+      };
+}
+
+/// `tm_lunar_eclipse_attributes`, as the engine declares it. Every field is required.
+final class TmLunarEclipseAttributes {
+  /// Every field, named.
+  const TmLunarEclipseAttributes({required this.umbralMagnitude, required this.penumbralMagnitude, required this.azimuth, required this.azimuthNorth, required this.altitudeTrue, required this.altitudeApparent, required this.opposition, required this.sarosKnown, required this.sarosSeries, required this.sarosMember});
+
+  /// Read from the object the engine answers with.
+  factory TmLunarEclipseAttributes.fromJson(Map<String, Object?> json) => TmLunarEclipseAttributes(
+        umbralMagnitude: (json['umbral_magnitude']! as num).toDouble(),
+        penumbralMagnitude: (json['penumbral_magnitude']! as num).toDouble(),
+        azimuth: (json['azimuth']! as num).toDouble(),
+        azimuthNorth: (json['azimuth_north']! as num).toDouble(),
+        altitudeTrue: (json['altitude_true']! as num).toDouble(),
+        altitudeApparent: (json['altitude_apparent']! as num).toDouble(),
+        opposition: (json['opposition']! as num).toDouble(),
+        sarosKnown: (json['saros_known']! as num).toInt(),
+        sarosSeries: (json['saros_series']! as num).toDouble(),
+        sarosMember: (json['saros_member']! as num).toDouble(),
+      );
+
+  /// `umbral_magnitude`.
+  final double umbralMagnitude;
+
+  /// `penumbral_magnitude`.
+  final double penumbralMagnitude;
+
+  /// `azimuth`.
+  final double azimuth;
+
+  /// `azimuth_north`.
+  final double azimuthNorth;
+
+  /// `altitude_true`.
+  final double altitudeTrue;
+
+  /// `altitude_apparent`.
+  final double altitudeApparent;
+
+  /// `opposition`.
+  final double opposition;
+
+  /// `saros_known`.
+  final int sarosKnown;
+
+  /// `saros_series`.
+  final double sarosSeries;
+
+  /// `saros_member`.
+  final double sarosMember;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'umbral_magnitude': umbralMagnitude,
+        'penumbral_magnitude': penumbralMagnitude,
+        'azimuth': azimuth,
+        'azimuth_north': azimuthNorth,
+        'altitude_true': altitudeTrue,
+        'altitude_apparent': altitudeApparent,
+        'opposition': opposition,
+        'saros_known': sarosKnown,
+        'saros_series': sarosSeries,
+        'saros_member': sarosMember,
+      };
+}
+
+/// `tm_eclipse_location`, as the engine declares it. Every field is required.
+final class TmEclipseLocation {
+  /// Every field, named.
+  const TmEclipseLocation({required this.longitude, required this.latitude, required this.coreShadowKm, required this.penumbraKm, required this.axisDistanceKm, required this.umbraFundamentalKm, required this.penumbraFundamentalKm});
+
+  /// Read from the object the engine answers with.
+  factory TmEclipseLocation.fromJson(Map<String, Object?> json) => TmEclipseLocation(
+        longitude: (json['longitude']! as num).toDouble(),
+        latitude: (json['latitude']! as num).toDouble(),
+        coreShadowKm: (json['core_shadow_km']! as num).toDouble(),
+        penumbraKm: (json['penumbra_km']! as num).toDouble(),
+        axisDistanceKm: (json['axis_distance_km']! as num).toDouble(),
+        umbraFundamentalKm: (json['umbra_fundamental_km']! as num).toDouble(),
+        penumbraFundamentalKm: (json['penumbra_fundamental_km']! as num).toDouble(),
+      );
+
+  /// `longitude`.
+  final double longitude;
+
+  /// `latitude`.
+  final double latitude;
+
+  /// `core_shadow_km`.
+  final double coreShadowKm;
+
+  /// `penumbra_km`.
+  final double penumbraKm;
+
+  /// `axis_distance_km`.
+  final double axisDistanceKm;
+
+  /// `umbra_fundamental_km`.
+  final double umbraFundamentalKm;
+
+  /// `penumbra_fundamental_km`.
+  final double penumbraFundamentalKm;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'longitude': longitude,
+        'latitude': latitude,
+        'core_shadow_km': coreShadowKm,
+        'penumbra_km': penumbraKm,
+        'axis_distance_km': axisDistanceKm,
+        'umbra_fundamental_km': umbraFundamentalKm,
+        'penumbra_fundamental_km': penumbraFundamentalKm,
+      };
+}
+
+/// `tm_visibility_atmosphere`, as the engine declares it. Every field is required.
+final class TmVisibilityAtmosphere {
+  /// Every field, named.
+  const TmVisibilityAtmosphere({required this.pressureMbar, required this.temperatureC, required this.humidityPct, required this.haze});
+
+  /// Read from the object the engine answers with.
+  factory TmVisibilityAtmosphere.fromJson(Map<String, Object?> json) => TmVisibilityAtmosphere(
+        pressureMbar: (json['pressure_mbar']! as num).toDouble(),
+        temperatureC: (json['temperature_c']! as num).toDouble(),
+        humidityPct: (json['humidity_pct']! as num).toDouble(),
+        haze: (json['haze']! as num).toDouble(),
+      );
+
+  /// `pressure_mbar`.
+  final double pressureMbar;
+
+  /// `temperature_c`.
+  final double temperatureC;
+
+  /// `humidity_pct`.
+  final double humidityPct;
+
+  /// `haze`.
+  final double haze;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'pressure_mbar': pressureMbar,
+        'temperature_c': temperatureC,
+        'humidity_pct': humidityPct,
+        'haze': haze,
+      };
+}
+
+/// `tm_observer_eye`, as the engine declares it. Every field is required.
+final class TmObserverEye {
+  /// Every field, named.
+  const TmObserverEye({required this.ageYears, required this.snellen, required this.monocular, required this.useOptics, required this.magnification, required this.apertureMm, required this.transmission});
+
+  /// Read from the object the engine answers with.
+  factory TmObserverEye.fromJson(Map<String, Object?> json) => TmObserverEye(
+        ageYears: (json['age_years']! as num).toDouble(),
+        snellen: (json['snellen']! as num).toDouble(),
+        monocular: (json['monocular']! as num).toInt(),
+        useOptics: (json['use_optics']! as num).toInt(),
+        magnification: (json['magnification']! as num).toDouble(),
+        apertureMm: (json['aperture_mm']! as num).toDouble(),
+        transmission: (json['transmission']! as num).toDouble(),
+      );
+
+  /// `age_years`.
+  final double ageYears;
+
+  /// `snellen`.
+  final double snellen;
+
+  /// `monocular`.
+  final int monocular;
+
+  /// `use_optics`.
+  final int useOptics;
+
+  /// `magnification`.
+  final double magnification;
+
+  /// `aperture_mm`.
+  final double apertureMm;
+
+  /// `transmission`.
+  final double transmission;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'age_years': ageYears,
+        'snellen': snellen,
+        'monocular': monocular,
+        'use_optics': useOptics,
+        'magnification': magnification,
+        'aperture_mm': apertureMm,
+        'transmission': transmission,
+      };
+}
+
+/// `tm_visibility`, as the engine declares it. Every field is required.
+final class TmVisibility {
+  /// Every field, named.
+  const TmVisibility({required this.limitingMagnitude, required this.objectMagnitude, required this.objectAltitude, required this.objectAzimuth, required this.objectAzimuthNorth, required this.sunAltitude, required this.sunAzimuth, required this.moonAltitude, required this.moonAzimuth, required this.scotopic, required this.nearSwitch, required this.aboveHorizon, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmVisibility.fromJson(Map<String, Object?> json) => TmVisibility(
+        limitingMagnitude: (json['limiting_magnitude']! as num).toDouble(),
+        objectMagnitude: (json['object_magnitude']! as num).toDouble(),
+        objectAltitude: (json['object_altitude']! as num).toDouble(),
+        objectAzimuth: (json['object_azimuth']! as num).toDouble(),
+        objectAzimuthNorth: (json['object_azimuth_north']! as num).toDouble(),
+        sunAltitude: (json['sun_altitude']! as num).toDouble(),
+        sunAzimuth: (json['sun_azimuth']! as num).toDouble(),
+        moonAltitude: (json['moon_altitude']! as num).toDouble(),
+        moonAzimuth: (json['moon_azimuth']! as num).toDouble(),
+        scotopic: (json['scotopic']! as num).toInt(),
+        nearSwitch: (json['near_switch']! as num).toInt(),
+        aboveHorizon: (json['above_horizon']! as num).toInt(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `limiting_magnitude`.
+  final double limitingMagnitude;
+
+  /// `object_magnitude`.
+  final double objectMagnitude;
+
+  /// `object_altitude`.
+  final double objectAltitude;
+
+  /// `object_azimuth`.
+  final double objectAzimuth;
+
+  /// `object_azimuth_north`.
+  final double objectAzimuthNorth;
+
+  /// `sun_altitude`.
+  final double sunAltitude;
+
+  /// `sun_azimuth`.
+  final double sunAzimuth;
+
+  /// `moon_altitude`.
+  final double moonAltitude;
+
+  /// `moon_azimuth`.
+  final double moonAzimuth;
+
+  /// `scotopic`.
+  final int scotopic;
+
+  /// `near_switch`.
+  final int nearSwitch;
+
+  /// `above_horizon`.
+  final int aboveHorizon;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'limiting_magnitude': limitingMagnitude,
+        'object_magnitude': objectMagnitude,
+        'object_altitude': objectAltitude,
+        'object_azimuth': objectAzimuth,
+        'object_azimuth_north': objectAzimuthNorth,
+        'sun_altitude': sunAltitude,
+        'sun_azimuth': sunAzimuth,
+        'moon_altitude': moonAltitude,
+        'moon_azimuth': moonAzimuth,
+        'scotopic': scotopic,
+        'near_switch': nearSwitch,
+        'above_horizon': aboveHorizon,
+        'status': status,
+      };
+}
+
+/// `tm_visibility_best`, as the engine declares it. Every field is required.
+final class TmVisibilityBest {
+  /// Every field, named.
+  const TmVisibilityBest({required this.objectAltitude, required this.arcus, required this.sunAltitude});
+
+  /// Read from the object the engine answers with.
+  factory TmVisibilityBest.fromJson(Map<String, Object?> json) => TmVisibilityBest(
+        objectAltitude: (json['object_altitude']! as num).toDouble(),
+        arcus: (json['arcus']! as num).toDouble(),
+        sunAltitude: (json['sun_altitude']! as num).toDouble(),
+      );
+
+  /// `object_altitude`.
+  final double objectAltitude;
+
+  /// `arcus`.
+  final double arcus;
+
+  /// `sun_altitude`.
+  final double sunAltitude;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'object_altitude': objectAltitude,
+        'arcus': arcus,
+        'sun_altitude': sunAltitude,
+      };
+}
+
+/// `tm_crossing_request`, as the engine declares it. Every field is required.
+final class TmCrossingRequest {
+  /// Every field, named.
+  const TmCrossingRequest({required this.jdStart, required this.scale, required this.body, required this.targetDeg, required this.flags, required this.backward, required this.jdEnd, required this.quantity, required this.stepDeg, required this.bodyB, required this.coeffA, required this.coeffB});
+
+  /// Read from the object the engine answers with.
+  factory TmCrossingRequest.fromJson(Map<String, Object?> json) => TmCrossingRequest(
+        jdStart: (json['jd_start']! as num).toDouble(),
+        scale: (json['scale']! as num).toInt(),
+        body: (json['body']! as num).toInt(),
+        targetDeg: (json['target_deg']! as num).toDouble(),
+        flags: (json['flags']! as num).toInt(),
+        backward: (json['backward']! as num).toInt(),
+        jdEnd: (json['jd_end']! as num).toDouble(),
+        quantity: (json['quantity']! as num).toInt(),
+        stepDeg: (json['step_deg']! as num).toDouble(),
+        bodyB: (json['body_b']! as num).toInt(),
+        coeffA: (json['coeff_a']! as num).toDouble(),
+        coeffB: (json['coeff_b']! as num).toDouble(),
+      );
+
+  /// `jd_start`.
+  final double jdStart;
+
+  /// `scale`.
+  final int scale;
+
+  /// `body`.
+  final int body;
+
+  /// `target_deg`.
+  final double targetDeg;
+
+  /// `flags`.
+  final int flags;
+
+  /// `backward`.
+  final int backward;
+
+  /// `jd_end`.
+  final double jdEnd;
+
+  /// `quantity`.
+  final int quantity;
+
+  /// `step_deg`.
+  final double stepDeg;
+
+  /// `body_b`.
+  final int bodyB;
+
+  /// `coeff_a`.
+  final double coeffA;
+
+  /// `coeff_b`.
+  final double coeffB;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_start': jdStart,
+        'scale': scale,
+        'body': body,
+        'target_deg': targetDeg,
+        'flags': flags,
+        'backward': backward,
+        'jd_end': jdEnd,
+        'quantity': quantity,
+        'step_deg': stepDeg,
+        'body_b': bodyB,
+        'coeff_a': coeffA,
+        'coeff_b': coeffB,
+      };
+}
+
+/// `tm_angle_parts`, as the engine declares it. Every field is required.
+final class TmAngleParts {
+  /// Every field, named.
+  const TmAngleParts({required this.negative, required this.degrees, required this.minutes, required this.seconds, required this.secondFraction, required this.zodiacSign, required this.nakshatra, required this.pada});
+
+  /// Read from the object the engine answers with.
+  factory TmAngleParts.fromJson(Map<String, Object?> json) => TmAngleParts(
+        negative: (json['negative']! as num).toInt(),
+        degrees: (json['degrees']! as num).toInt(),
+        minutes: (json['minutes']! as num).toInt(),
+        seconds: (json['seconds']! as num).toInt(),
+        secondFraction: (json['second_fraction']! as num).toDouble(),
+        zodiacSign: (json['zodiac_sign']! as num).toInt(),
+        nakshatra: (json['nakshatra']! as num).toInt(),
+        pada: (json['pada']! as num).toInt(),
+      );
+
+  /// `negative`.
+  final int negative;
+
+  /// `degrees`.
+  final int degrees;
+
+  /// `minutes`.
+  final int minutes;
+
+  /// `seconds`.
+  final int seconds;
+
+  /// `second_fraction`.
+  final double secondFraction;
+
+  /// `zodiac_sign`.
+  final int zodiacSign;
+
+  /// `nakshatra`.
+  final int nakshatra;
+
+  /// `pada`.
+  final int pada;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'negative': negative,
+        'degrees': degrees,
+        'minutes': minutes,
+        'seconds': seconds,
+        'second_fraction': secondFraction,
+        'zodiac_sign': zodiacSign,
+        'nakshatra': nakshatra,
+        'pada': pada,
+      };
 }

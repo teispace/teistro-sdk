@@ -658,6 +658,8 @@ export interface EngineParam {
   role: string;
   /** The engine's own spelling of its type. */
   kind?: string;
+  /** Whether a caller may leave it out, which crosses as null. */
+  optional?: boolean;
   /** What it means, when the engine says. */
   doc?: string;
 }

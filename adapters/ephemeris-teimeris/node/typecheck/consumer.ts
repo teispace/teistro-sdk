@@ -8,7 +8,7 @@
 // adapter's platform binary, because a type is not a call.
 
 import { Context } from '@teistro/sdk';
-import teimeris, { engine, binary, platformPackage } from '../index.js';
+import teimeris, { engine, binary, platformPackage, type TmDatetime } from '../index.js';
 
 // The descriptor is what an `ephemeris` chain takes.
 const sdk = new Context({
@@ -27,6 +27,17 @@ const formatted: string = typed.tmAngleFormat({ deg: 35.5, style: 1, decimals: 0
 const version: { readonly major: number; readonly minor: number; readonly patch: number } =
   typed.tmVersion();
 
+// A struct crosses as an interface, both ways, spelled as Node spells
+// things; one the engine takes a null for may be left out.
+const utc: TmDatetime = typed.tmLocalToUtc({
+  local: { year: 2026, month: 9, day: 13, hour: 6, minute: 30, second: 0 },
+  utcOffsetHours: 5.75,
+  cal: 1,
+});
+const perihelion: number = typed.tmNodesApsidesCalc({
+  jd: 2461296.5, scale: 1, body: 4, flags: 0, method: 0, apsis: 0,
+}).perihelion.lonSpeed;
+
 // And nothing comes back as nothing.
 const nothing: void = typed.tmFallbackStatsReset();
 
@@ -35,4 +46,4 @@ const packaged: string = platformPackage();
 
 sdk.dispose();
 
-export { name, seconds, formatted, version, nothing, where, packaged };
+export { name, seconds, formatted, version, utc, perihelion, nothing, where, packaged };

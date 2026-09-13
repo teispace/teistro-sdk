@@ -15,6 +15,265 @@
 
 import type { Engine } from '@teistro/sdk';
 
+/** `tm_datetime`, as the engine declares it. Every field is required. */
+export interface TmDatetime {
+  readonly year: number;
+  readonly month: number;
+  readonly day: number;
+  readonly hour: number;
+  readonly minute: number;
+  readonly second: number;
+}
+
+/** `tm_observer`, as the engine declares it. Every field is required. */
+export interface TmObserver {
+  readonly longitudeDeg: number;
+  readonly latitudeDeg: number;
+  readonly altitudeM: number;
+}
+
+/** `tm_position`, as the engine declares it. Every field is required. */
+export interface TmPosition {
+  readonly lon: number;
+  readonly lat: number;
+  readonly dist: number;
+  readonly lonSpeed: number;
+  readonly latSpeed: number;
+  readonly distSpeed: number;
+  readonly flagsUsed: number;
+  readonly status: number;
+}
+
+/** `tm_atmosphere`, as the engine declares it. Every field is required. */
+export interface TmAtmosphere {
+  readonly pressureMbar: number;
+  readonly temperatureC: number;
+  readonly lapseRateKPerM: number;
+}
+
+/** `tm_refraction`, as the engine declares it. Every field is required. */
+export interface TmRefraction {
+  readonly altitudeTrue: number;
+  readonly altitudeApparent: number;
+  readonly refraction: number;
+  readonly horizonDip: number;
+  readonly observable: number;
+}
+
+/** `tm_obliquity`, as the engine declares it. Every field is required. */
+export interface TmObliquity {
+  readonly trueObliquity: number;
+  readonly meanObliquity: number;
+  readonly nutationLon: number;
+  readonly nutationObl: number;
+}
+
+/** `tm_horizontal`, as the engine declares it. Every field is required. */
+export interface TmHorizontal {
+  readonly azimuth: number;
+  readonly azimuthNorth: number;
+  readonly altitudeTrue: number;
+  readonly altitudeApparent: number;
+}
+
+/** `tm_coverage`, as the engine declares it. Every field is required. */
+export interface TmCoverage {
+  readonly jdStart: number;
+  readonly jdEnd: number;
+  readonly contiguous: number;
+  readonly fileCount: number;
+}
+
+/** `tm_fallback_stats`, as the engine declares it. Every field is required. */
+export interface TmFallbackStats {
+  readonly moshierCalls: number;
+  readonly refusedCalls: number;
+  readonly lastBody: number;
+  readonly lastJd: number;
+}
+
+/** `tm_nodes_apsides`, as the engine declares it. Every field is required. */
+export interface TmNodesApsides {
+  readonly ascending: TmPosition;
+  readonly descending: TmPosition;
+  readonly perihelion: TmPosition;
+  readonly aphelion: TmPosition;
+  readonly usedMean: number;
+  readonly flagsUsed: number;
+  readonly status: number;
+}
+
+/** `tm_orbital_elements`, as the engine declares it. Every field is required. */
+export interface TmOrbitalElements {
+  readonly semiMajorAxis: number;
+  readonly eccentricity: number;
+  readonly inclination: number;
+  readonly node: number;
+  readonly argPerihelion: number;
+  readonly lonPerihelion: number;
+  readonly meanAnomaly: number;
+  readonly trueAnomaly: number;
+  readonly eccentricAnomaly: number;
+  readonly meanLongitude: number;
+  readonly periodSidereal: number;
+  readonly dailyMotion: number;
+  readonly periodTropical: number;
+  readonly periodSynodic: number;
+  readonly perihelionTime: number;
+  readonly perihelionDistance: number;
+  readonly aphelionDistance: number;
+  readonly status: number;
+}
+
+/** `tm_orbit_distances`, as the engine declares it. Every field is required. */
+export interface TmOrbitDistances {
+  readonly maxDistance: number;
+  readonly minDistance: number;
+  readonly trueDistance: number;
+  readonly status: number;
+}
+
+/** `tm_phenomena`, as the engine declares it. Every field is required. */
+export interface TmPhenomena {
+  readonly phaseAngle: number;
+  readonly phase: number;
+  readonly elongation: number;
+  readonly diameter: number;
+  readonly magnitude: number;
+  readonly horizontalParallax: number;
+  readonly magnitudeOutOfRange: number;
+  readonly flagsUsed: number;
+  readonly status: number;
+  readonly magnitudeState: number;
+}
+
+/** `tm_star`, as the engine declares it. Every field is required. */
+export interface TmStar {
+  readonly id: number;
+  readonly catalogueGeneration: number;
+  readonly magnitude: number;
+  readonly epoch: number;
+  readonly raDeg: number;
+  readonly decDeg: number;
+  readonly pmRaArcsecPerCentury: number;
+  readonly pmDecArcsecPerCentury: number;
+  readonly radialVelocityAuPerCentury: number;
+  readonly parallaxArcsec: number;
+}
+
+/** `tm_eclipse_attributes`, as the engine declares it. Every field is required. */
+export interface TmEclipseAttributes {
+  readonly magnitude: number;
+  readonly diameterRatio: number;
+  readonly obscuration: number;
+  readonly coreShadowKm: number;
+  readonly azimuth: number;
+  readonly azimuthNorth: number;
+  readonly altitudeTrue: number;
+  readonly altitudeApparent: number;
+  readonly separation: number;
+  readonly magnitudeNasa: number;
+  readonly sarosKnown: number;
+  readonly sarosSeries: number;
+  readonly sarosMember: number;
+}
+
+/** `tm_lunar_eclipse_attributes`, as the engine declares it. Every field is required. */
+export interface TmLunarEclipseAttributes {
+  readonly umbralMagnitude: number;
+  readonly penumbralMagnitude: number;
+  readonly azimuth: number;
+  readonly azimuthNorth: number;
+  readonly altitudeTrue: number;
+  readonly altitudeApparent: number;
+  readonly opposition: number;
+  readonly sarosKnown: number;
+  readonly sarosSeries: number;
+  readonly sarosMember: number;
+}
+
+/** `tm_eclipse_location`, as the engine declares it. Every field is required. */
+export interface TmEclipseLocation {
+  readonly longitude: number;
+  readonly latitude: number;
+  readonly coreShadowKm: number;
+  readonly penumbraKm: number;
+  readonly axisDistanceKm: number;
+  readonly umbraFundamentalKm: number;
+  readonly penumbraFundamentalKm: number;
+}
+
+/** `tm_visibility_atmosphere`, as the engine declares it. Every field is required. */
+export interface TmVisibilityAtmosphere {
+  readonly pressureMbar: number;
+  readonly temperatureC: number;
+  readonly humidityPct: number;
+  readonly haze: number;
+}
+
+/** `tm_observer_eye`, as the engine declares it. Every field is required. */
+export interface TmObserverEye {
+  readonly ageYears: number;
+  readonly snellen: number;
+  readonly monocular: number;
+  readonly useOptics: number;
+  readonly magnification: number;
+  readonly apertureMm: number;
+  readonly transmission: number;
+}
+
+/** `tm_visibility`, as the engine declares it. Every field is required. */
+export interface TmVisibility {
+  readonly limitingMagnitude: number;
+  readonly objectMagnitude: number;
+  readonly objectAltitude: number;
+  readonly objectAzimuth: number;
+  readonly objectAzimuthNorth: number;
+  readonly sunAltitude: number;
+  readonly sunAzimuth: number;
+  readonly moonAltitude: number;
+  readonly moonAzimuth: number;
+  readonly scotopic: number;
+  readonly nearSwitch: number;
+  readonly aboveHorizon: number;
+  readonly status: number;
+}
+
+/** `tm_visibility_best`, as the engine declares it. Every field is required. */
+export interface TmVisibilityBest {
+  readonly objectAltitude: number;
+  readonly arcus: number;
+  readonly sunAltitude: number;
+}
+
+/** `tm_crossing_request`, as the engine declares it. Every field is required. */
+export interface TmCrossingRequest {
+  readonly jdStart: number;
+  readonly scale: number;
+  readonly body: number;
+  readonly targetDeg: number;
+  readonly flags: number;
+  readonly backward: number;
+  readonly jdEnd: number;
+  readonly quantity: number;
+  readonly stepDeg: number;
+  readonly bodyB: number;
+  readonly coeffA: number;
+  readonly coeffB: number;
+}
+
+/** `tm_angle_parts`, as the engine declares it. Every field is required. */
+export interface TmAngleParts {
+  readonly negative: number;
+  readonly degrees: number;
+  readonly minutes: number;
+  readonly seconds: number;
+  readonly secondFraction: number;
+  readonly zodiacSign: number;
+  readonly nakshatra: number;
+  readonly pada: number;
+}
+
 /** The engine's own operations, typed. */
 export declare class TeimerisEngine {
   /**
@@ -37,6 +296,22 @@ export declare class TeimerisEngine {
    * `tm_body_name`.
    */
   tmBodyName(args: { readonly body: number }): string;
+  /**
+   * `tm_julian_day`.
+   */
+  tmJulianDay(args: { readonly dt?: TmDatetime | null; readonly cal: number }): number;
+  /**
+   * `tm_calendar_date`.
+   */
+  tmCalendarDate(args: { readonly jd: number; readonly cal: number }): TmDatetime;
+  /**
+   * `tm_utc_to_jd`.
+   */
+  tmUtcToJd(args: { readonly utc?: TmDatetime | null; readonly cal: number }): { readonly outJdTt: number; readonly outJdUt1: number };
+  /**
+   * `tm_jd_to_utc`.
+   */
+  tmJdToUtc(args: { readonly jd: number; readonly scale: number; readonly cal: number }): TmDatetime;
   /**
    * `tm_delta_t`.
    */
@@ -65,6 +340,14 @@ export declare class TeimerisEngine {
    * `tm_local_apparent_to_mean`.
    */
   tmLocalApparentToMean(args: { readonly jdLocalApparent: number; readonly geoLonDeg: number }): number;
+  /**
+   * `tm_local_to_utc`.
+   */
+  tmLocalToUtc(args: { readonly local?: TmDatetime | null; readonly utcOffsetHours: number; readonly cal: number }): TmDatetime;
+  /**
+   * `tm_utc_to_local`.
+   */
+  tmUtcToLocal(args: { readonly utc?: TmDatetime | null; readonly utcOffsetHours: number; readonly cal: number }): TmDatetime;
   /**
    * `tm_position_value`.
    */
@@ -178,9 +461,37 @@ export declare class TeimerisEngine {
    */
   tmGetNutationInterpolation(): number;
   /**
+   * `tm_atmosphere_init_sized`.
+   */
+  tmAtmosphereInitSized(args: { readonly altitudeM: number; readonly structSize: number }): TmAtmosphere;
+  /**
+   * `tm_refract`.
+   */
+  tmRefract(args: { readonly model: number; readonly dir: number; readonly altitudeDeg: number; readonly obs?: TmObserver | null; readonly atm?: TmAtmosphere | null }): TmRefraction;
+  /**
+   * `tm_obliquity_calc`.
+   */
+  tmObliquityCalc(args: { readonly jd: number; readonly scale: number }): TmObliquity;
+  /**
+   * `tm_to_horizontal`.
+   */
+  tmToHorizontal(args: { readonly jd: number; readonly scale: number; readonly system: number; readonly obs?: TmObserver | null; readonly atm?: TmAtmosphere | null; readonly lonDeg: number; readonly latDeg: number }): TmHorizontal;
+  /**
+   * `tm_from_horizontal`.
+   */
+  tmFromHorizontal(args: { readonly jd: number; readonly scale: number; readonly system: number; readonly obs?: TmObserver | null; readonly azimuthDeg: number; readonly altitudeDeg: number }): { readonly outLonDeg: number; readonly outLatDeg: number };
+  /**
    * `tm_embedded_coverage`.
    */
   tmEmbeddedCoverage(): { readonly outJdStart: number; readonly outJdEnd: number };
+  /**
+   * `tm_body_coverage`.
+   */
+  tmBodyCoverage(args: { readonly body: number }): TmCoverage;
+  /**
+   * `tm_fallback_stats_get`.
+   */
+  tmFallbackStatsGet(): TmFallbackStats;
   /**
    * `tm_fallback_stats_reset`.
    */
@@ -189,6 +500,30 @@ export declare class TeimerisEngine {
    * `tm_cache_dir_default`.
    */
   tmCacheDirDefault(): string;
+  /**
+   * `tm_nodes_apsides_calc`.
+   */
+  tmNodesApsidesCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly method: number; readonly apsis: number; readonly observer?: TmObserver | null }): TmNodesApsides;
+  /**
+   * `tm_orbital_elements_calc`.
+   */
+  tmOrbitalElementsCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly masses: number }): TmOrbitalElements;
+  /**
+   * `tm_orbit_distances_calc`.
+   */
+  tmOrbitDistancesCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number }): TmOrbitDistances;
+  /**
+   * `tm_phenomena_calc`.
+   */
+  tmPhenomenaCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly observer?: TmObserver | null }): TmPhenomena;
+  /**
+   * `tm_star_name`.
+   */
+  tmStarName(args: { readonly star?: TmStar | null }): string;
+  /**
+   * `tm_star_designation`.
+   */
+  tmStarDesignation(args: { readonly star?: TmStar | null }): string;
   /**
    * `tm_star_load_catalogue`.
    *
@@ -200,13 +535,65 @@ export declare class TeimerisEngine {
    */
   tmStarCount(): number;
   /**
+   * `tm_star_find`.
+   */
+  tmStarFind(args: { readonly name: string }): TmStar;
+  /**
+   * `tm_star_calc`.
+   */
+  tmStarCalc(args: { readonly jd: number; readonly scale: number; readonly name: string; readonly flags: number; readonly observer?: TmObserver | null }): TmPosition;
+  /**
    * `tm_eclipse_type_name`.
    */
   tmEclipseTypeName(args: { readonly bit: number }): string;
   /**
+   * `tm_solar_eclipse_where`.
+   */
+  tmSolarEclipseWhere(args: { readonly jd: number; readonly scale: number; readonly flags: number }): { readonly outLocation: TmEclipseLocation; readonly outAttributes: TmEclipseAttributes; readonly outType: number };
+  /**
+   * `tm_occultation_where`.
+   */
+  tmOccultationWhere(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly star: string; readonly flags: number }): { readonly outLocation: TmEclipseLocation; readonly outAttributes: TmEclipseAttributes; readonly outType: number };
+  /**
+   * `tm_solar_eclipse_how`.
+   */
+  tmSolarEclipseHow(args: { readonly jd: number; readonly scale: number; readonly flags: number; readonly observer?: TmObserver | null }): { readonly outAttributes: TmEclipseAttributes; readonly outType: number };
+  /**
+   * `tm_occultation_how`.
+   */
+  tmOccultationHow(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly star: string; readonly flags: number; readonly observer?: TmObserver | null }): { readonly outAttributes: TmEclipseAttributes; readonly outType: number };
+  /**
+   * `tm_lunar_eclipse_how`.
+   */
+  tmLunarEclipseHow(args: { readonly jd: number; readonly scale: number; readonly flags: number; readonly observer?: TmObserver | null }): { readonly outAttributes: TmLunarEclipseAttributes; readonly outType: number };
+  /**
    * `tm_event_kind_name`.
    */
   tmEventKindName(args: { readonly kind: number }): string;
+  /**
+   * `tm_gauquelin_sector`.
+   */
+  tmGauquelinSector(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly star: string; readonly flags: number; readonly method: number; readonly refraction: number; readonly discCenter: number; readonly observer?: TmObserver | null; readonly atmosphere?: TmAtmosphere | null }): number;
+  /**
+   * `tm_visibility_defaults`.
+   */
+  tmVisibilityDefaults(args: { readonly observer?: TmObserver | null }): { readonly atmosphere: TmVisibilityAtmosphere; readonly eye: TmObserverEye };
+  /**
+   * `tm_visibility_limit`.
+   */
+  tmVisibilityLimit(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly star: string; readonly flags: number; readonly observer?: TmObserver | null; readonly atmosphere?: TmVisibilityAtmosphere | null; readonly eye?: TmObserverEye | null }): TmVisibility;
+  /**
+   * `tm_visibility_arcus`.
+   */
+  tmVisibilityArcus(args: { readonly jd: number; readonly scale: number; readonly flags: number; readonly observer?: TmObserver | null; readonly atmosphere?: TmVisibilityAtmosphere | null; readonly eye?: TmObserverEye | null; readonly magnitude: number; readonly objectAltitudeDeg: number; readonly objectAzimuthDeg: number; readonly sunAzimuthDeg: number; readonly moonAltitudeDeg: number; readonly moonAzimuthDeg: number }): number;
+  /**
+   * `tm_visibility_best_altitude`.
+   */
+  tmVisibilityBestAltitude(args: { readonly jd: number; readonly scale: number; readonly flags: number; readonly observer?: TmObserver | null; readonly atmosphere?: TmVisibilityAtmosphere | null; readonly eye?: TmObserverEye | null; readonly magnitude: number; readonly objectAzimuthDeg: number; readonly sunAzimuthDeg: number; readonly moonAltitudeDeg: number; readonly moonAzimuthDeg: number }): TmVisibilityBest;
+  /**
+   * `tm_crossing_request_init_sized`.
+   */
+  tmCrossingRequestInitSized(): TmCrossingRequest;
   /**
    * `tm_angle_normalize_deg`.
    */
@@ -263,6 +650,10 @@ export declare class TeimerisEngine {
    * `tm_round_half_away`.
    */
   tmRoundHalfAway(args: { readonly x: number }): number;
+  /**
+   * `tm_angle_split`.
+   */
+  tmAngleSplit(args: { readonly deg: number; readonly options: number }): TmAngleParts;
   /**
    * `tm_angle_format`.
    */

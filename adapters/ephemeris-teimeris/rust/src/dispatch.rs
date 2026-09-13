@@ -21,7 +21,7 @@ use serde_json::{Map, Value, json};
 use teimeris::sys;
 use teistro_port_ephemeris::ProviderError;
 
-use crate::passthrough::{borrowed, fill, narrow, number, status, text};
+use crate::passthrough::{Within, borrowed, fill, narrow, number, optional_object, status, text};
 
 /// What this adapter offers of the engine's own surface, as the
 /// port's `native_manifest` answers it.
@@ -29,7 +29,7 @@ use crate::passthrough::{borrowed, fill, narrow, number, status, text};
 /// `mutatesEngineState` is the flag a consumer needs and no other
 /// manifest would carry: after such a call the engine answers under
 /// settings the SDK's provenance does not record.
-pub(crate) const MANIFEST: &str = r#"{"engine":"teimeris","version":"0.1.0","functions":[{"name":"tm_status_name","params":[{"name":"s","role":"in","type":"tm_status"}],"returns":"string","mutatesEngineState":false},{"name":"tm_context_release_caches","params":[],"returns":"void","mutatesEngineState":false},{"name":"tm_version_string","params":[],"returns":"string","mutatesEngineState":false},{"name":"tm_version","params":[{"name":"major","role":"out","type":"int"},{"name":"minor","role":"out","type":"int"},{"name":"patch","role":"out","type":"int"}],"returns":"void","mutatesEngineState":false},{"name":"tm_body_name","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_delta_t","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_day_of_week","params":[{"name":"jd","role":"in","type":"double"}],"returns":"tm_weekday","mutatesEngineState":false},{"name":"tm_weekday_name","params":[{"name":"day","role":"in","type":"tm_weekday"}],"returns":"string","mutatesEngineState":false},{"name":"tm_equation_of_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_mean_to_apparent","params":[{"name":"jd_local_mean","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_apparent","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_apparent_to_mean","params":[{"name":"jd_local_apparent","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_mean","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"field","role":"in","type":"tm_position_field"},{"name":"out","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_house_cusp_count","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_system_name","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"string","mutatesEngineState":false},{"name":"tm_house_system_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_position","params":[{"name":"armc","role":"in","type":"double"},{"name":"geo_lat_deg","role":"in","type":"double"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"sys","role":"in","type":"tm_house_system"},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out_house","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_jpl_file","params":[{"name":"filename","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_jpl_info","params":[{"name":"out_denum","role":"out","type":"int32_t"},{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"},{"name":"out_segment_days","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_ayanamsha","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"},{"name":"t0","role":"in","type":"double"},{"name":"ayan_t0","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_ayanamsha_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_degrees","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_ayanamsha_name","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"}],"returns":"string","mutatesEngineState":false},{"name":"tm_ayanamsha_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"out_model","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_model_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_kind_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_count","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_tidal_acceleration","params":[{"name":"arcsec_per_century2","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_tidal_acceleration","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_tidal_acceleration","params":[{"name":"out_value","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_delta_t_override","params":[{"name":"seconds","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_delta_t_override","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_delta_t_override","params":[{"name":"out_seconds","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_nutation_interpolation","params":[{"name":"enable","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_nutation_interpolation","params":[{"name":"out","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_embedded_coverage","params":[{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_reset","params":[],"returns":"status","mutatesEngineState":false},{"name":"tm_cache_dir_default","params":[{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_load_catalogue","params":[{"name":"path","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_star_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_eclipse_type_name","params":[{"name":"bit","role":"in","type":"tm_eclipse_type"}],"returns":"string","mutatesEngineState":false},{"name":"tm_event_kind_name","params":[{"name":"kind","role":"in","type":"tm_event_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_angle_normalize_deg","params":[{"name":"deg","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_normalize_rad","params":[{"name":"rad","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg_positive","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_degrees_to_centiseconds","params":[{"name":"deg","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_to_degrees","params":[{"name":"centiseconds","role":"in","type":"int32_t"}],"returns":"double","mutatesEngineState":false},{"name":"tm_centiseconds_normalize","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff_signed","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_round_seconds","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_round_half_away","params":[{"name":"x","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_angle_format","params":[{"name":"deg","role":"in","type":"double"},{"name":"style","role":"in","type":"tm_angle_style"},{"name":"decimals","role":"in","type":"int32_t"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_zodiac_sign_name","params":[{"name":"sign","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_name","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_lord","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_chart_blob_size","params":[{"name":"body_count","role":"in","type":"size_t"},{"name":"cusp_count","role":"in","type":"size_t"},{"name":"with_cusp_speeds","role":"in","type":"int32_t"},{"name":"with_angles","role":"in","type":"int32_t"}],"returns":"size_t","mutatesEngineState":false}]}"#;
+pub(crate) const MANIFEST: &str = r#"{"engine":"teimeris","version":"0.1.0","functions":[{"name":"tm_status_name","params":[{"name":"s","role":"in","type":"tm_status"}],"returns":"string","mutatesEngineState":false},{"name":"tm_context_release_caches","params":[],"returns":"void","mutatesEngineState":false},{"name":"tm_version_string","params":[],"returns":"string","mutatesEngineState":false},{"name":"tm_version","params":[{"name":"major","role":"out","type":"int"},{"name":"minor","role":"out","type":"int"},{"name":"patch","role":"out","type":"int"}],"returns":"void","mutatesEngineState":false},{"name":"tm_body_name","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_julian_day","params":[{"name":"dt","role":"in","type":"tm_datetime","optional":true},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_calendar_date","params":[{"name":"jd","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_utc_to_jd","params":[{"name":"utc","role":"in","type":"tm_datetime","optional":true},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_jd_tt","role":"out","type":"double"},{"name":"out_jd_ut1","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_jd_to_utc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_delta_t","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_sidereal_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_hours","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_day_of_week","params":[{"name":"jd","role":"in","type":"double"}],"returns":"tm_weekday","mutatesEngineState":false},{"name":"tm_weekday_name","params":[{"name":"day","role":"in","type":"tm_weekday"}],"returns":"string","mutatesEngineState":false},{"name":"tm_equation_of_time","params":[{"name":"jd_ut1","role":"in","type":"double"},{"name":"out_seconds","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_mean_to_apparent","params":[{"name":"jd_local_mean","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_apparent","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_apparent_to_mean","params":[{"name":"jd_local_apparent","role":"in","type":"double"},{"name":"geo_lon_deg","role":"in","type":"double"},{"name":"out_jd_local_mean","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_local_to_utc","params":[{"name":"local","role":"in","type":"tm_datetime","optional":true},{"name":"utc_offset_hours","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_utc","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_utc_to_local","params":[{"name":"utc","role":"in","type":"tm_datetime","optional":true},{"name":"utc_offset_hours","role":"in","type":"double"},{"name":"cal","role":"in","type":"tm_calendar"},{"name":"out_local","role":"out","type":"tm_datetime"}],"returns":"status","mutatesEngineState":false},{"name":"tm_position_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"field","role":"in","type":"tm_position_field"},{"name":"out","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_house_cusp_count","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_system_name","params":[{"name":"sys","role":"in","type":"tm_house_system"}],"returns":"string","mutatesEngineState":false},{"name":"tm_house_system_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_house_position","params":[{"name":"armc","role":"in","type":"double"},{"name":"geo_lat_deg","role":"in","type":"double"},{"name":"obliquity_deg","role":"in","type":"double"},{"name":"sys","role":"in","type":"tm_house_system"},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out_house","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_jpl_file","params":[{"name":"filename","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_jpl_info","params":[{"name":"out_denum","role":"out","type":"int32_t"},{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"},{"name":"out_segment_days","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_ayanamsha","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"},{"name":"t0","role":"in","type":"double"},{"name":"ayan_t0","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_ayanamsha_value","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_degrees","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_ayanamsha_name","params":[{"name":"mode","role":"in","type":"tm_ayanamsha"}],"returns":"string","mutatesEngineState":false},{"name":"tm_ayanamsha_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_model","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"out_model","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_model_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"},{"name":"model","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_kind_name","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_model_count","params":[{"name":"kind","role":"in","type":"tm_model_kind"}],"returns":"size_t","mutatesEngineState":false},{"name":"tm_set_tidal_acceleration","params":[{"name":"arcsec_per_century2","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_tidal_acceleration","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_tidal_acceleration","params":[{"name":"out_value","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_delta_t_override","params":[{"name":"seconds","role":"in","type":"double"}],"returns":"status","mutatesEngineState":true},{"name":"tm_clear_delta_t_override","params":[],"returns":"status","mutatesEngineState":true},{"name":"tm_get_delta_t_override","params":[{"name":"out_seconds","role":"out","type":"double"},{"name":"out_is_set","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_set_nutation_interpolation","params":[{"name":"enable","role":"in","type":"int32_t"}],"returns":"status","mutatesEngineState":true},{"name":"tm_get_nutation_interpolation","params":[{"name":"out","role":"out","type":"int32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_atmosphere_init_sized","params":[{"name":"altitude_m","role":"in","type":"double"},{"name":"struct_size","role":"in","type":"size_t"},{"name":"atm","role":"out","type":"tm_atmosphere"}],"returns":"status","mutatesEngineState":false},{"name":"tm_refract","params":[{"name":"model","role":"in","type":"tm_refraction_model"},{"name":"dir","role":"in","type":"tm_refraction_direction"},{"name":"altitude_deg","role":"in","type":"double"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"out","role":"out","type":"tm_refraction"}],"returns":"status","mutatesEngineState":false},{"name":"tm_obliquity_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"out","role":"out","type":"tm_obliquity"}],"returns":"status","mutatesEngineState":false},{"name":"tm_to_horizontal","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"atm","role":"in","type":"tm_atmosphere","optional":true},{"name":"lon_deg","role":"in","type":"double"},{"name":"lat_deg","role":"in","type":"double"},{"name":"out","role":"out","type":"tm_horizontal"}],"returns":"status","mutatesEngineState":false},{"name":"tm_from_horizontal","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"system","role":"in","type":"tm_horizontal_system"},{"name":"obs","role":"in","type":"tm_observer","optional":true},{"name":"azimuth_deg","role":"in","type":"double"},{"name":"altitude_deg","role":"in","type":"double"},{"name":"out_lon_deg","role":"out","type":"double"},{"name":"out_lat_deg","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_embedded_coverage","params":[{"name":"out_jd_start","role":"out","type":"double"},{"name":"out_jd_end","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_body_coverage","params":[{"name":"body","role":"in","type":"tm_body"},{"name":"out","role":"out","type":"tm_coverage"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_get","params":[{"name":"out","role":"out","type":"tm_fallback_stats"}],"returns":"status","mutatesEngineState":false},{"name":"tm_fallback_stats_reset","params":[],"returns":"status","mutatesEngineState":false},{"name":"tm_cache_dir_default","params":[{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_nodes_apsides_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_nodes_method"},{"name":"apsis","role":"in","type":"tm_apsis_point"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_nodes_apsides"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbital_elements_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"masses","role":"in","type":"tm_mass_model"},{"name":"out","role":"out","type":"tm_orbital_elements"}],"returns":"status","mutatesEngineState":false},{"name":"tm_orbit_distances_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out","role":"out","type":"tm_orbit_distances"}],"returns":"status","mutatesEngineState":false},{"name":"tm_phenomena_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_phenomena"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_name","params":[{"name":"star","role":"in","type":"tm_star","optional":true},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_designation","params":[{"name":"star","role":"in","type":"tm_star","optional":true},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_star_load_catalogue","params":[{"name":"path","role":"in","type":"string"}],"returns":"status","mutatesEngineState":true},{"name":"tm_star_count","params":[],"returns":"size_t","mutatesEngineState":false},{"name":"tm_star_find","params":[{"name":"name","role":"in","type":"string"},{"name":"out","role":"out","type":"tm_star"}],"returns":"status","mutatesEngineState":false},{"name":"tm_star_calc","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"name","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out","role":"out","type":"tm_position"}],"returns":"status","mutatesEngineState":false},{"name":"tm_eclipse_type_name","params":[{"name":"bit","role":"in","type":"tm_eclipse_type"}],"returns":"string","mutatesEngineState":false},{"name":"tm_solar_eclipse_where","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_location","role":"out","type":"tm_eclipse_location"},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_where","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"out_location","role":"out","type":"tm_eclipse_location"},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_solar_eclipse_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_occultation_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_lunar_eclipse_how","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"out_attributes","role":"out","type":"tm_lunar_eclipse_attributes"},{"name":"out_type","role":"out","type":"uint32_t"}],"returns":"status","mutatesEngineState":false},{"name":"tm_event_kind_name","params":[{"name":"kind","role":"in","type":"tm_event_kind"}],"returns":"string","mutatesEngineState":false},{"name":"tm_gauquelin_sector","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"method","role":"in","type":"tm_gauquelin_method"},{"name":"refraction","role":"in","type":"int32_t"},{"name":"disc_center","role":"in","type":"int32_t"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_atmosphere","optional":true},{"name":"out_sector","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_defaults","params":[{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"out","type":"tm_visibility_atmosphere"},{"name":"eye","role":"out","type":"tm_observer_eye"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_limit","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"body","role":"in","type":"tm_body"},{"name":"star","role":"in","type":"string"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"out","role":"out","type":"tm_visibility"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_arcus","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"magnitude","role":"in","type":"double"},{"name":"object_altitude_deg","role":"in","type":"double"},{"name":"object_azimuth_deg","role":"in","type":"double"},{"name":"sun_azimuth_deg","role":"in","type":"double"},{"name":"moon_altitude_deg","role":"in","type":"double"},{"name":"moon_azimuth_deg","role":"in","type":"double"},{"name":"out_arcus_deg","role":"out","type":"double"}],"returns":"status","mutatesEngineState":false},{"name":"tm_visibility_best_altitude","params":[{"name":"jd","role":"in","type":"double"},{"name":"scale","role":"in","type":"tm_timescale"},{"name":"flags","role":"in","type":"tm_flags"},{"name":"observer","role":"in","type":"tm_observer","optional":true},{"name":"atmosphere","role":"in","type":"tm_visibility_atmosphere","optional":true},{"name":"eye","role":"in","type":"tm_observer_eye","optional":true},{"name":"magnitude","role":"in","type":"double"},{"name":"object_azimuth_deg","role":"in","type":"double"},{"name":"sun_azimuth_deg","role":"in","type":"double"},{"name":"moon_altitude_deg","role":"in","type":"double"},{"name":"moon_azimuth_deg","role":"in","type":"double"},{"name":"out","role":"out","type":"tm_visibility_best"}],"returns":"status","mutatesEngineState":false},{"name":"tm_crossing_request_init_sized","params":[{"name":"req","role":"out","type":"tm_crossing_request"}],"returns":"status","mutatesEngineState":false},{"name":"tm_angle_normalize_deg","params":[{"name":"deg","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_normalize_rad","params":[{"name":"rad","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_deg_positive","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_diff_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_deg","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_angle_midpoint_rad","params":[{"name":"a","role":"in","type":"double"},{"name":"b","role":"in","type":"double"}],"returns":"double","mutatesEngineState":false},{"name":"tm_degrees_to_centiseconds","params":[{"name":"deg","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_to_degrees","params":[{"name":"centiseconds","role":"in","type":"int32_t"}],"returns":"double","mutatesEngineState":false},{"name":"tm_centiseconds_normalize","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_diff_signed","params":[{"name":"a","role":"in","type":"int32_t"},{"name":"b","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_centiseconds_round_seconds","params":[{"name":"cs","role":"in","type":"int32_t"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_round_half_away","params":[{"name":"x","role":"in","type":"double"}],"returns":"int32_t","mutatesEngineState":false},{"name":"tm_angle_split","params":[{"name":"deg","role":"in","type":"double"},{"name":"options","role":"in","type":"uint32_t"},{"name":"out","role":"out","type":"tm_angle_parts"}],"returns":"status","mutatesEngineState":false},{"name":"tm_angle_format","params":[{"name":"deg","role":"in","type":"double"},{"name":"style","role":"in","type":"tm_angle_style"},{"name":"decimals","role":"in","type":"int32_t"},{"name":"buf","role":"out","type":"string"}],"returns":"void","mutatesEngineState":false},{"name":"tm_zodiac_sign_name","params":[{"name":"sign","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_name","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_nakshatra_lord","params":[{"name":"nakshatra","role":"in","type":"int32_t"}],"returns":"string","mutatesEngineState":false},{"name":"tm_chart_blob_size","params":[{"name":"body_count","role":"in","type":"size_t"},{"name":"cusp_count","role":"in","type":"size_t"},{"name":"with_cusp_speeds","role":"in","type":"int32_t"},{"name":"with_angles","role":"in","type":"int32_t"}],"returns":"size_t","mutatesEngineState":false}]}"#;
 
 /// Calls one of them by name.
 ///
@@ -81,6 +81,58 @@ pub(crate) fn call(
                 unsafe { sys::tm_body_name(context, body, buffer, capacity) }
             })?;
             Ok(json!({"buf": buf}))
+        }
+        "tm_julian_day" => {
+            let dt = optional_object(args, "dt")?
+                .map(|within| read_tm_datetime(&within))
+                .transpose()?;
+            let cal: sys::tm_calendar = narrow(args, "cal")?;
+            let mut out_jd: f64 = 0.0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm.
+            let answered = unsafe { sys::tm_julian_day(context, dt.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), cal, &raw mut out_jd) };
+            status(answered, "tm_julian_day")?;
+            Ok(json!({"out_jd": out_jd}))
+        }
+        "tm_calendar_date" => {
+            let jd: f64 = number(args, "jd")?;
+            let cal: sys::tm_calendar = narrow(args, "cal")?;
+            let mut out: sys::tm_datetime = sys::tm_datetime::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_calendar_date(context, jd, cal, &raw mut out) };
+            status(answered, "tm_calendar_date")?;
+            Ok(json!({"out": write_tm_datetime(&out)}))
+        }
+        "tm_utc_to_jd" => {
+            let utc = optional_object(args, "utc")?
+                .map(|within| read_tm_datetime(&within))
+                .transpose()?;
+            let cal: sys::tm_calendar = narrow(args, "cal")?;
+            let mut out_jd_tt: f64 = 0.0;
+            let mut out_jd_ut1: f64 = 0.0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm.
+            let answered = unsafe { sys::tm_utc_to_jd(context, utc.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), cal, &raw mut out_jd_tt, &raw mut out_jd_ut1) };
+            status(answered, "tm_utc_to_jd")?;
+            Ok(json!({"out_jd_tt": out_jd_tt, "out_jd_ut1": out_jd_ut1}))
+        }
+        "tm_jd_to_utc" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let cal: sys::tm_calendar = narrow(args, "cal")?;
+            let mut out: sys::tm_datetime = sys::tm_datetime::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_jd_to_utc(context, jd, scale, cal, &raw mut out) };
+            status(answered, "tm_jd_to_utc")?;
+            Ok(json!({"out": write_tm_datetime(&out)}))
         }
         "tm_delta_t" => {
             let jd_ut1: f64 = number(args, "jd_ut1")?;
@@ -148,6 +200,38 @@ pub(crate) fn call(
             let answered = unsafe { sys::tm_local_apparent_to_mean(context, jd_local_apparent, geo_lon_deg, &raw mut out_jd_local_mean) };
             status(answered, "tm_local_apparent_to_mean")?;
             Ok(json!({"out_jd_local_mean": out_jd_local_mean}))
+        }
+        "tm_local_to_utc" => {
+            let local = optional_object(args, "local")?
+                .map(|within| read_tm_datetime(&within))
+                .transpose()?;
+            let utc_offset_hours: f64 = number(args, "utc_offset_hours")?;
+            let cal: sys::tm_calendar = narrow(args, "cal")?;
+            let mut out_utc: sys::tm_datetime = sys::tm_datetime::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_local_to_utc(context, local.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), utc_offset_hours, cal, &raw mut out_utc) };
+            status(answered, "tm_local_to_utc")?;
+            Ok(json!({"out_utc": write_tm_datetime(&out_utc)}))
+        }
+        "tm_utc_to_local" => {
+            let utc = optional_object(args, "utc")?
+                .map(|within| read_tm_datetime(&within))
+                .transpose()?;
+            let utc_offset_hours: f64 = number(args, "utc_offset_hours")?;
+            let cal: sys::tm_calendar = narrow(args, "cal")?;
+            let mut out_local: sys::tm_datetime = sys::tm_datetime::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_utc_to_local(context, utc.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), utc_offset_hours, cal, &raw mut out_local) };
+            status(answered, "tm_utc_to_local")?;
+            Ok(json!({"out_local": write_tm_datetime(&out_local)}))
         }
         "tm_position_value" => {
             let jd: f64 = number(args, "jd")?;
@@ -362,6 +446,88 @@ pub(crate) fn call(
             status(answered, "tm_get_nutation_interpolation")?;
             Ok(json!({"out": out}))
         }
+        "tm_atmosphere_init_sized" => {
+            let mut atm: sys::tm_atmosphere = sys::tm_atmosphere::default();
+            let altitude_m: f64 = number(args, "altitude_m")?;
+            let struct_size: usize = narrow(args, "struct_size")?;
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_atmosphere_init_sized(&raw mut atm, altitude_m, struct_size) };
+            status(answered, "tm_atmosphere_init_sized")?;
+            Ok(json!({"atm": write_tm_atmosphere(&atm)}))
+        }
+        "tm_refract" => {
+            let model: sys::tm_refraction_model = narrow(args, "model")?;
+            let dir: sys::tm_refraction_direction = narrow(args, "dir")?;
+            let altitude_deg: f64 = number(args, "altitude_deg")?;
+            let obs = optional_object(args, "obs")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let atm = optional_object(args, "atm")?
+                .map(|within| read_tm_atmosphere(&within))
+                .transpose()?;
+            let mut out: sys::tm_refraction = sys::tm_refraction::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_refract(context, model, dir, altitude_deg, obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atm.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
+            status(answered, "tm_refract")?;
+            Ok(json!({"out": write_tm_refraction(&out)}))
+        }
+        "tm_obliquity_calc" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let mut out: sys::tm_obliquity = sys::tm_obliquity::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_obliquity_calc(context, jd, scale, &raw mut out) };
+            status(answered, "tm_obliquity_calc")?;
+            Ok(json!({"out": write_tm_obliquity(&out)}))
+        }
+        "tm_to_horizontal" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let system: sys::tm_horizontal_system = narrow(args, "system")?;
+            let obs = optional_object(args, "obs")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let atm = optional_object(args, "atm")?
+                .map(|within| read_tm_atmosphere(&within))
+                .transpose()?;
+            let lon_deg: f64 = number(args, "lon_deg")?;
+            let lat_deg: f64 = number(args, "lat_deg")?;
+            let mut out: sys::tm_horizontal = sys::tm_horizontal::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_to_horizontal(context, jd, scale, system, obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atm.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), lon_deg, lat_deg, &raw mut out) };
+            status(answered, "tm_to_horizontal")?;
+            Ok(json!({"out": write_tm_horizontal(&out)}))
+        }
+        "tm_from_horizontal" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let system: sys::tm_horizontal_system = narrow(args, "system")?;
+            let obs = optional_object(args, "obs")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let azimuth_deg: f64 = number(args, "azimuth_deg")?;
+            let altitude_deg: f64 = number(args, "altitude_deg")?;
+            let mut out_lon_deg: f64 = 0.0;
+            let mut out_lat_deg: f64 = 0.0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm.
+            let answered = unsafe { sys::tm_from_horizontal(context, jd, scale, system, obs.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), azimuth_deg, altitude_deg, &raw mut out_lon_deg, &raw mut out_lat_deg) };
+            status(answered, "tm_from_horizontal")?;
+            Ok(json!({"out_lon_deg": out_lon_deg, "out_lat_deg": out_lat_deg}))
+        }
         "tm_embedded_coverage" => {
             let mut out_jd_start: f64 = 0.0;
             let mut out_jd_end: f64 = 0.0;
@@ -370,6 +536,25 @@ pub(crate) fn call(
             let answered = unsafe { sys::tm_embedded_coverage(&raw mut out_jd_start, &raw mut out_jd_end) };
             status(answered, "tm_embedded_coverage")?;
             Ok(json!({"out_jd_start": out_jd_start, "out_jd_end": out_jd_end}))
+        }
+        "tm_body_coverage" => {
+            let body: sys::tm_body = narrow(args, "body")?;
+            let mut out: sys::tm_coverage = sys::tm_coverage::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_body_coverage(context, body, &raw mut out) };
+            status(answered, "tm_body_coverage")?;
+            Ok(json!({"out": write_tm_coverage(&out)}))
+        }
+        "tm_fallback_stats_get" => {
+            let mut out: sys::tm_fallback_stats = sys::tm_fallback_stats::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_fallback_stats_get(context, &raw mut out) };
+            status(answered, "tm_fallback_stats_get")?;
+            Ok(json!({"out": write_tm_fallback_stats(&out)}))
         }
         "tm_fallback_stats_reset" => {
             // SAFETY: the context is the adapter's own and live for this
@@ -383,6 +568,99 @@ pub(crate) fn call(
                 // SAFETY: the buffer and its capacity are the fill protocol's
                 // own, and it passes the length of what it allocated.
                 unsafe { sys::tm_cache_dir_default(buffer, capacity) }
+            })?;
+            Ok(json!({"buf": buf}))
+        }
+        "tm_nodes_apsides_calc" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let method: sys::tm_nodes_method = narrow(args, "method")?;
+            let apsis: sys::tm_apsis_point = narrow(args, "apsis")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let mut out: sys::tm_nodes_apsides = sys::tm_nodes_apsides::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_nodes_apsides_calc(context, jd, scale, body, flags, method, apsis, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
+            status(answered, "tm_nodes_apsides_calc")?;
+            Ok(json!({"out": write_tm_nodes_apsides(&out)}))
+        }
+        "tm_orbital_elements_calc" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let masses: sys::tm_mass_model = narrow(args, "masses")?;
+            let mut out: sys::tm_orbital_elements = sys::tm_orbital_elements::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_orbital_elements_calc(context, jd, scale, body, flags, masses, &raw mut out) };
+            status(answered, "tm_orbital_elements_calc")?;
+            Ok(json!({"out": write_tm_orbital_elements(&out)}))
+        }
+        "tm_orbit_distances_calc" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let mut out: sys::tm_orbit_distances = sys::tm_orbit_distances::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_orbit_distances_calc(context, jd, scale, body, flags, &raw mut out) };
+            status(answered, "tm_orbit_distances_calc")?;
+            Ok(json!({"out": write_tm_orbit_distances(&out)}))
+        }
+        "tm_phenomena_calc" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let mut out: sys::tm_phenomena = sys::tm_phenomena::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_phenomena_calc(context, jd, scale, body, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
+            status(answered, "tm_phenomena_calc")?;
+            Ok(json!({"out": write_tm_phenomena(&out)}))
+        }
+        "tm_star_name" => {
+            let star = optional_object(args, "star")?
+                .map(|within| read_tm_star(&within))
+                .transpose()?;
+            let buf = fill("tm_star_name", |buffer, capacity| {
+                // SAFETY: the context is the adapter's own and live for this
+                // call; every struct argument is a local of the type the
+                // engine declares, its extent filled by the arm; the buffer
+                // and its capacity are the fill protocol's own, and it passes
+                // the length of what it allocated.
+                unsafe { sys::tm_star_name(context, star.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), buffer, capacity) }
+            })?;
+            Ok(json!({"buf": buf}))
+        }
+        "tm_star_designation" => {
+            let star = optional_object(args, "star")?
+                .map(|within| read_tm_star(&within))
+                .transpose()?;
+            let buf = fill("tm_star_designation", |buffer, capacity| {
+                // SAFETY: the context is the adapter's own and live for this
+                // call; every struct argument is a local of the type the
+                // engine declares, its extent filled by the arm; the buffer
+                // and its capacity are the fill protocol's own, and it passes
+                // the length of what it allocated.
+                unsafe { sys::tm_star_designation(context, star.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), buffer, capacity) }
             })?;
             Ok(json!({"buf": buf}))
         }
@@ -401,6 +679,36 @@ pub(crate) fn call(
             let answered = unsafe { sys::tm_star_count(context) };
             Ok(json!({"return": answered}))
         }
+        "tm_star_find" => {
+            let name = text(args, "name")?;
+            let mut out: sys::tm_star = sys::tm_star::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every string argument is a `CString` that outlives the
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_star_find(context, name.as_ptr(), &raw mut out) };
+            status(answered, "tm_star_find")?;
+            Ok(json!({"out": write_tm_star(&out)}))
+        }
+        "tm_star_calc" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let name = text(args, "name")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let mut out: sys::tm_position = sys::tm_position::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every string argument is a `CString` that outlives the
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_star_calc(context, jd, scale, name.as_ptr(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
+            status(answered, "tm_star_calc")?;
+            Ok(json!({"out": write_tm_position(&out)}))
+        }
         "tm_eclipse_type_name" => {
             let bit: sys::tm_eclipse_type = narrow(args, "bit")?;
             // SAFETY: the call takes nothing but values of the widths the
@@ -408,12 +716,235 @@ pub(crate) fn call(
             let answered = unsafe { sys::tm_eclipse_type_name(bit) };
             Ok(json!({"return": borrowed(answered)}))
         }
+        "tm_solar_eclipse_where" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let mut out_location: sys::tm_eclipse_location = sys::tm_eclipse_location::default();
+            let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
+            let mut out_type: u32 = 0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_solar_eclipse_where(context, jd, scale, flags, &raw mut out_location, &raw mut out_attributes, &raw mut out_type) };
+            status(answered, "tm_solar_eclipse_where")?;
+            Ok(json!({"out_location": write_tm_eclipse_location(&out_location), "out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
+        }
+        "tm_occultation_where" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let star = text(args, "star")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let mut out_location: sys::tm_eclipse_location = sys::tm_eclipse_location::default();
+            let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
+            let mut out_type: u32 = 0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every string argument is a `CString` that outlives
+            // the call; every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_occultation_where(context, jd, scale, body, star.as_ptr(), flags, &raw mut out_location, &raw mut out_attributes, &raw mut out_type) };
+            status(answered, "tm_occultation_where")?;
+            Ok(json!({"out_location": write_tm_eclipse_location(&out_location), "out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
+        }
+        "tm_solar_eclipse_how" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
+            let mut out_type: u32 = 0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_solar_eclipse_how(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_attributes, &raw mut out_type) };
+            status(answered, "tm_solar_eclipse_how")?;
+            Ok(json!({"out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
+        }
+        "tm_occultation_how" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let star = text(args, "star")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let mut out_attributes: sys::tm_eclipse_attributes = sys::tm_eclipse_attributes::default();
+            let mut out_type: u32 = 0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every string argument is a `CString` that outlives
+            // the call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_occultation_how(context, jd, scale, body, star.as_ptr(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_attributes, &raw mut out_type) };
+            status(answered, "tm_occultation_how")?;
+            Ok(json!({"out_attributes": write_tm_eclipse_attributes(&out_attributes), "out_type": out_type}))
+        }
+        "tm_lunar_eclipse_how" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let mut out_attributes: sys::tm_lunar_eclipse_attributes = sys::tm_lunar_eclipse_attributes::default();
+            let mut out_type: u32 = 0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_lunar_eclipse_how(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_attributes, &raw mut out_type) };
+            status(answered, "tm_lunar_eclipse_how")?;
+            Ok(json!({"out_attributes": write_tm_lunar_eclipse_attributes(&out_attributes), "out_type": out_type}))
+        }
         "tm_event_kind_name" => {
             let kind: sys::tm_event_kind = narrow(args, "kind")?;
             // SAFETY: the call takes nothing but values of the widths the
             // engine declares.
             let answered = unsafe { sys::tm_event_kind_name(kind) };
             Ok(json!({"return": borrowed(answered)}))
+        }
+        "tm_gauquelin_sector" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let star = text(args, "star")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let method: sys::tm_gauquelin_method = narrow(args, "method")?;
+            let refraction: i32 = narrow(args, "refraction")?;
+            let disc_center: i32 = narrow(args, "disc_center")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let atmosphere = optional_object(args, "atmosphere")?
+                .map(|within| read_tm_atmosphere(&within))
+                .transpose()?;
+            let mut out_sector: f64 = 0.0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every string argument is a `CString` that outlives
+            // the call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm.
+            let answered = unsafe { sys::tm_gauquelin_sector(context, jd, scale, body, star.as_ptr(), flags, method, refraction, disc_center, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out_sector) };
+            status(answered, "tm_gauquelin_sector")?;
+            Ok(json!({"out_sector": out_sector}))
+        }
+        "tm_visibility_defaults" => {
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let mut atmosphere: sys::tm_visibility_atmosphere = sys::tm_visibility_atmosphere::default();
+            let mut eye: sys::tm_observer_eye = sys::tm_observer_eye::default();
+            // SAFETY: every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_visibility_defaults(observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut atmosphere, &raw mut eye) };
+            status(answered, "tm_visibility_defaults")?;
+            Ok(json!({"atmosphere": write_tm_visibility_atmosphere(&atmosphere), "eye": write_tm_observer_eye(&eye)}))
+        }
+        "tm_visibility_limit" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let body: sys::tm_body = narrow(args, "body")?;
+            let star = text(args, "star")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let atmosphere = optional_object(args, "atmosphere")?
+                .map(|within| read_tm_visibility_atmosphere(&within))
+                .transpose()?;
+            let eye = optional_object(args, "eye")?
+                .map(|within| read_tm_observer_eye(&within))
+                .transpose()?;
+            let mut out: sys::tm_visibility = sys::tm_visibility::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every string argument is a `CString` that outlives the
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_visibility_limit(context, jd, scale, body, star.as_ptr(), flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), eye.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), &raw mut out) };
+            status(answered, "tm_visibility_limit")?;
+            Ok(json!({"out": write_tm_visibility(&out)}))
+        }
+        "tm_visibility_arcus" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let atmosphere = optional_object(args, "atmosphere")?
+                .map(|within| read_tm_visibility_atmosphere(&within))
+                .transpose()?;
+            let eye = optional_object(args, "eye")?
+                .map(|within| read_tm_observer_eye(&within))
+                .transpose()?;
+            let magnitude: f64 = number(args, "magnitude")?;
+            let object_altitude_deg: f64 = number(args, "object_altitude_deg")?;
+            let object_azimuth_deg: f64 = number(args, "object_azimuth_deg")?;
+            let sun_azimuth_deg: f64 = number(args, "sun_azimuth_deg")?;
+            let moon_altitude_deg: f64 = number(args, "moon_altitude_deg")?;
+            let moon_azimuth_deg: f64 = number(args, "moon_azimuth_deg")?;
+            let mut out_arcus_deg: f64 = 0.0;
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every out-parameter is a local of the width the engine
+            // declares; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm.
+            let answered = unsafe { sys::tm_visibility_arcus(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), eye.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), magnitude, object_altitude_deg, object_azimuth_deg, sun_azimuth_deg, moon_altitude_deg, moon_azimuth_deg, &raw mut out_arcus_deg) };
+            status(answered, "tm_visibility_arcus")?;
+            Ok(json!({"out_arcus_deg": out_arcus_deg}))
+        }
+        "tm_visibility_best_altitude" => {
+            let jd: f64 = number(args, "jd")?;
+            let scale: sys::tm_timescale = narrow(args, "scale")?;
+            let flags: sys::tm_flags = narrow(args, "flags")?;
+            let observer = optional_object(args, "observer")?
+                .map(|within| read_tm_observer(&within))
+                .transpose()?;
+            let atmosphere = optional_object(args, "atmosphere")?
+                .map(|within| read_tm_visibility_atmosphere(&within))
+                .transpose()?;
+            let eye = optional_object(args, "eye")?
+                .map(|within| read_tm_observer_eye(&within))
+                .transpose()?;
+            let magnitude: f64 = number(args, "magnitude")?;
+            let object_azimuth_deg: f64 = number(args, "object_azimuth_deg")?;
+            let sun_azimuth_deg: f64 = number(args, "sun_azimuth_deg")?;
+            let moon_altitude_deg: f64 = number(args, "moon_altitude_deg")?;
+            let moon_azimuth_deg: f64 = number(args, "moon_azimuth_deg")?;
+            let mut out: sys::tm_visibility_best = sys::tm_visibility_best::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct argument is a local of the type the
+            // engine declares, its extent filled by the arm; every struct
+            // out-parameter is a local of the type the engine declares,
+            // its extent filled by `default`.
+            let answered = unsafe { sys::tm_visibility_best_altitude(context, jd, scale, flags, observer.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), atmosphere.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), eye.as_ref().map_or(core::ptr::null(), core::ptr::from_ref), magnitude, object_azimuth_deg, sun_azimuth_deg, moon_altitude_deg, moon_azimuth_deg, &raw mut out) };
+            status(answered, "tm_visibility_best_altitude")?;
+            Ok(json!({"out": write_tm_visibility_best(&out)}))
+        }
+        "tm_crossing_request_init_sized" => {
+            let mut req: sys::tm_crossing_request = sys::tm_crossing_request::default();
+            // SAFETY: every struct out-parameter is a local of the type
+            // the engine declares, its extent filled by `default`; the
+            // extent passed is the size of that local.
+            let answered = unsafe { sys::tm_crossing_request_init_sized(&raw mut req, core::mem::size_of_val(&req)) };
+            status(answered, "tm_crossing_request_init_sized")?;
+            Ok(json!({"req": write_tm_crossing_request(&req)}))
         }
         "tm_angle_normalize_deg" => {
             let deg: f64 = number(args, "deg")?;
@@ -520,6 +1051,17 @@ pub(crate) fn call(
             let answered = unsafe { sys::tm_round_half_away(x) };
             Ok(json!({"return": answered}))
         }
+        "tm_angle_split" => {
+            let deg: f64 = number(args, "deg")?;
+            let options: u32 = narrow(args, "options")?;
+            let mut out: sys::tm_angle_parts = sys::tm_angle_parts::default();
+            // SAFETY: the context is the adapter's own and live for this
+            // call; every struct out-parameter is a local of the type the
+            // engine declares, its extent filled by `default`.
+            let answered = unsafe { sys::tm_angle_split(context, deg, options, &raw mut out) };
+            status(answered, "tm_angle_split")?;
+            Ok(json!({"out": write_tm_angle_parts(&out)}))
+        }
         "tm_angle_format" => {
             let deg: f64 = number(args, "deg")?;
             let style: sys::tm_angle_style = narrow(args, "style")?;
@@ -568,4 +1110,375 @@ pub(crate) fn call(
              `native_manifest` lists what it does"
         ))),
     }
+}
+
+/// A `tm_datetime` read out of the object a caller passed.
+fn read_tm_datetime(within: &Within<'_>) -> Result<sys::tm_datetime, ProviderError> {
+    Ok(sys::tm_datetime {
+        struct_size: core::mem::size_of::<sys::tm_datetime>(),
+        year: within.narrow("year")?,
+        month: within.narrow("month")?,
+        day: within.narrow("day")?,
+        hour: within.narrow("hour")?,
+        minute: within.narrow("minute")?,
+        second: within.number("second")?,
+    })
+}
+
+/// A `tm_observer` read out of the object a caller passed.
+fn read_tm_observer(within: &Within<'_>) -> Result<sys::tm_observer, ProviderError> {
+    Ok(sys::tm_observer {
+        struct_size: core::mem::size_of::<sys::tm_observer>(),
+        longitude_deg: within.number("longitude_deg")?,
+        latitude_deg: within.number("latitude_deg")?,
+        altitude_m: within.number("altitude_m")?,
+    })
+}
+
+/// A `tm_atmosphere` read out of the object a caller passed.
+fn read_tm_atmosphere(within: &Within<'_>) -> Result<sys::tm_atmosphere, ProviderError> {
+    Ok(sys::tm_atmosphere {
+        struct_size: core::mem::size_of::<sys::tm_atmosphere>(),
+        pressure_mbar: within.number("pressure_mbar")?,
+        temperature_c: within.number("temperature_c")?,
+        lapse_rate_k_per_m: within.number("lapse_rate_k_per_m")?,
+    })
+}
+
+/// A `tm_star` read out of the object a caller passed.
+fn read_tm_star(within: &Within<'_>) -> Result<sys::tm_star, ProviderError> {
+    Ok(sys::tm_star {
+        struct_size: core::mem::size_of::<sys::tm_star>(),
+        id: within.narrow("id")?,
+        catalogue_generation: within.narrow("catalogue_generation")?,
+        magnitude: within.number("magnitude")?,
+        epoch: within.number("epoch")?,
+        ra_deg: within.number("ra_deg")?,
+        dec_deg: within.number("dec_deg")?,
+        pm_ra_arcsec_per_century: within.number("pm_ra_arcsec_per_century")?,
+        pm_dec_arcsec_per_century: within.number("pm_dec_arcsec_per_century")?,
+        radial_velocity_au_per_century: within.number("radial_velocity_au_per_century")?,
+        parallax_arcsec: within.number("parallax_arcsec")?,
+    })
+}
+
+/// A `tm_visibility_atmosphere` read out of the object a caller passed.
+fn read_tm_visibility_atmosphere(within: &Within<'_>) -> Result<sys::tm_visibility_atmosphere, ProviderError> {
+    Ok(sys::tm_visibility_atmosphere {
+        struct_size: core::mem::size_of::<sys::tm_visibility_atmosphere>(),
+        pressure_mbar: within.number("pressure_mbar")?,
+        temperature_c: within.number("temperature_c")?,
+        humidity_pct: within.number("humidity_pct")?,
+        haze: within.number("haze")?,
+    })
+}
+
+/// A `tm_observer_eye` read out of the object a caller passed.
+fn read_tm_observer_eye(within: &Within<'_>) -> Result<sys::tm_observer_eye, ProviderError> {
+    Ok(sys::tm_observer_eye {
+        struct_size: core::mem::size_of::<sys::tm_observer_eye>(),
+        age_years: within.number("age_years")?,
+        snellen: within.number("snellen")?,
+        monocular: within.narrow("monocular")?,
+        use_optics: within.narrow("use_optics")?,
+        magnification: within.number("magnification")?,
+        aperture_mm: within.number("aperture_mm")?,
+        transmission: within.number("transmission")?,
+    })
+}
+
+/// A `tm_datetime` as the object a caller gets back.
+fn write_tm_datetime(value: &sys::tm_datetime) -> Value {
+    json!({
+        "year": value.year,
+        "month": value.month,
+        "day": value.day,
+        "hour": value.hour,
+        "minute": value.minute,
+        "second": value.second,
+    })
+}
+
+/// A `tm_position` as the object a caller gets back.
+fn write_tm_position(value: &sys::tm_position) -> Value {
+    json!({
+        "lon": value.lon,
+        "lat": value.lat,
+        "dist": value.dist,
+        "lon_speed": value.lon_speed,
+        "lat_speed": value.lat_speed,
+        "dist_speed": value.dist_speed,
+        "flags_used": value.flags_used,
+        "status": value.status,
+    })
+}
+
+/// A `tm_atmosphere` as the object a caller gets back.
+fn write_tm_atmosphere(value: &sys::tm_atmosphere) -> Value {
+    json!({
+        "pressure_mbar": value.pressure_mbar,
+        "temperature_c": value.temperature_c,
+        "lapse_rate_k_per_m": value.lapse_rate_k_per_m,
+    })
+}
+
+/// A `tm_refraction` as the object a caller gets back.
+fn write_tm_refraction(value: &sys::tm_refraction) -> Value {
+    json!({
+        "altitude_true": value.altitude_true,
+        "altitude_apparent": value.altitude_apparent,
+        "refraction": value.refraction,
+        "horizon_dip": value.horizon_dip,
+        "observable": value.observable,
+    })
+}
+
+/// A `tm_obliquity` as the object a caller gets back.
+fn write_tm_obliquity(value: &sys::tm_obliquity) -> Value {
+    json!({
+        "true_obliquity": value.true_obliquity,
+        "mean_obliquity": value.mean_obliquity,
+        "nutation_lon": value.nutation_lon,
+        "nutation_obl": value.nutation_obl,
+    })
+}
+
+/// A `tm_horizontal` as the object a caller gets back.
+fn write_tm_horizontal(value: &sys::tm_horizontal) -> Value {
+    json!({
+        "azimuth": value.azimuth,
+        "azimuth_north": value.azimuth_north,
+        "altitude_true": value.altitude_true,
+        "altitude_apparent": value.altitude_apparent,
+    })
+}
+
+/// A `tm_coverage` as the object a caller gets back.
+fn write_tm_coverage(value: &sys::tm_coverage) -> Value {
+    json!({
+        "jd_start": value.jd_start,
+        "jd_end": value.jd_end,
+        "contiguous": value.contiguous,
+        "file_count": value.file_count,
+    })
+}
+
+/// A `tm_fallback_stats` as the object a caller gets back.
+fn write_tm_fallback_stats(value: &sys::tm_fallback_stats) -> Value {
+    json!({
+        "moshier_calls": value.moshier_calls,
+        "refused_calls": value.refused_calls,
+        "last_body": value.last_body,
+        "last_jd": value.last_jd,
+    })
+}
+
+/// A `tm_nodes_apsides` as the object a caller gets back.
+fn write_tm_nodes_apsides(value: &sys::tm_nodes_apsides) -> Value {
+    json!({
+        "ascending": write_tm_position(&value.ascending),
+        "descending": write_tm_position(&value.descending),
+        "perihelion": write_tm_position(&value.perihelion),
+        "aphelion": write_tm_position(&value.aphelion),
+        "used_mean": value.used_mean,
+        "flags_used": value.flags_used,
+        "status": value.status,
+    })
+}
+
+/// A `tm_orbital_elements` as the object a caller gets back.
+fn write_tm_orbital_elements(value: &sys::tm_orbital_elements) -> Value {
+    json!({
+        "semi_major_axis": value.semi_major_axis,
+        "eccentricity": value.eccentricity,
+        "inclination": value.inclination,
+        "node": value.node,
+        "arg_perihelion": value.arg_perihelion,
+        "lon_perihelion": value.lon_perihelion,
+        "mean_anomaly": value.mean_anomaly,
+        "true_anomaly": value.true_anomaly,
+        "eccentric_anomaly": value.eccentric_anomaly,
+        "mean_longitude": value.mean_longitude,
+        "period_sidereal": value.period_sidereal,
+        "daily_motion": value.daily_motion,
+        "period_tropical": value.period_tropical,
+        "period_synodic": value.period_synodic,
+        "perihelion_time": value.perihelion_time,
+        "perihelion_distance": value.perihelion_distance,
+        "aphelion_distance": value.aphelion_distance,
+        "status": value.status,
+    })
+}
+
+/// A `tm_orbit_distances` as the object a caller gets back.
+fn write_tm_orbit_distances(value: &sys::tm_orbit_distances) -> Value {
+    json!({
+        "max_distance": value.max_distance,
+        "min_distance": value.min_distance,
+        "true_distance": value.true_distance,
+        "status": value.status,
+    })
+}
+
+/// A `tm_phenomena` as the object a caller gets back.
+fn write_tm_phenomena(value: &sys::tm_phenomena) -> Value {
+    json!({
+        "phase_angle": value.phase_angle,
+        "phase": value.phase,
+        "elongation": value.elongation,
+        "diameter": value.diameter,
+        "magnitude": value.magnitude,
+        "horizontal_parallax": value.horizontal_parallax,
+        "magnitude_out_of_range": value.magnitude_out_of_range,
+        "flags_used": value.flags_used,
+        "status": value.status,
+        "magnitude_state": value.magnitude_state,
+    })
+}
+
+/// A `tm_star` as the object a caller gets back.
+fn write_tm_star(value: &sys::tm_star) -> Value {
+    json!({
+        "id": value.id,
+        "catalogue_generation": value.catalogue_generation,
+        "magnitude": value.magnitude,
+        "epoch": value.epoch,
+        "ra_deg": value.ra_deg,
+        "dec_deg": value.dec_deg,
+        "pm_ra_arcsec_per_century": value.pm_ra_arcsec_per_century,
+        "pm_dec_arcsec_per_century": value.pm_dec_arcsec_per_century,
+        "radial_velocity_au_per_century": value.radial_velocity_au_per_century,
+        "parallax_arcsec": value.parallax_arcsec,
+    })
+}
+
+/// A `tm_eclipse_attributes` as the object a caller gets back.
+fn write_tm_eclipse_attributes(value: &sys::tm_eclipse_attributes) -> Value {
+    json!({
+        "magnitude": value.magnitude,
+        "diameter_ratio": value.diameter_ratio,
+        "obscuration": value.obscuration,
+        "core_shadow_km": value.core_shadow_km,
+        "azimuth": value.azimuth,
+        "azimuth_north": value.azimuth_north,
+        "altitude_true": value.altitude_true,
+        "altitude_apparent": value.altitude_apparent,
+        "separation": value.separation,
+        "magnitude_nasa": value.magnitude_nasa,
+        "saros_known": value.saros_known,
+        "saros_series": value.saros_series,
+        "saros_member": value.saros_member,
+    })
+}
+
+/// A `tm_lunar_eclipse_attributes` as the object a caller gets back.
+fn write_tm_lunar_eclipse_attributes(value: &sys::tm_lunar_eclipse_attributes) -> Value {
+    json!({
+        "umbral_magnitude": value.umbral_magnitude,
+        "penumbral_magnitude": value.penumbral_magnitude,
+        "azimuth": value.azimuth,
+        "azimuth_north": value.azimuth_north,
+        "altitude_true": value.altitude_true,
+        "altitude_apparent": value.altitude_apparent,
+        "opposition": value.opposition,
+        "saros_known": value.saros_known,
+        "saros_series": value.saros_series,
+        "saros_member": value.saros_member,
+    })
+}
+
+/// A `tm_eclipse_location` as the object a caller gets back.
+fn write_tm_eclipse_location(value: &sys::tm_eclipse_location) -> Value {
+    json!({
+        "longitude": value.longitude,
+        "latitude": value.latitude,
+        "core_shadow_km": value.core_shadow_km,
+        "penumbra_km": value.penumbra_km,
+        "axis_distance_km": value.axis_distance_km,
+        "umbra_fundamental_km": value.umbra_fundamental_km,
+        "penumbra_fundamental_km": value.penumbra_fundamental_km,
+    })
+}
+
+/// A `tm_visibility_atmosphere` as the object a caller gets back.
+fn write_tm_visibility_atmosphere(value: &sys::tm_visibility_atmosphere) -> Value {
+    json!({
+        "pressure_mbar": value.pressure_mbar,
+        "temperature_c": value.temperature_c,
+        "humidity_pct": value.humidity_pct,
+        "haze": value.haze,
+    })
+}
+
+/// A `tm_observer_eye` as the object a caller gets back.
+fn write_tm_observer_eye(value: &sys::tm_observer_eye) -> Value {
+    json!({
+        "age_years": value.age_years,
+        "snellen": value.snellen,
+        "monocular": value.monocular,
+        "use_optics": value.use_optics,
+        "magnification": value.magnification,
+        "aperture_mm": value.aperture_mm,
+        "transmission": value.transmission,
+    })
+}
+
+/// A `tm_visibility` as the object a caller gets back.
+fn write_tm_visibility(value: &sys::tm_visibility) -> Value {
+    json!({
+        "limiting_magnitude": value.limiting_magnitude,
+        "object_magnitude": value.object_magnitude,
+        "object_altitude": value.object_altitude,
+        "object_azimuth": value.object_azimuth,
+        "object_azimuth_north": value.object_azimuth_north,
+        "sun_altitude": value.sun_altitude,
+        "sun_azimuth": value.sun_azimuth,
+        "moon_altitude": value.moon_altitude,
+        "moon_azimuth": value.moon_azimuth,
+        "scotopic": value.scotopic,
+        "near_switch": value.near_switch,
+        "above_horizon": value.above_horizon,
+        "status": value.status,
+    })
+}
+
+/// A `tm_visibility_best` as the object a caller gets back.
+fn write_tm_visibility_best(value: &sys::tm_visibility_best) -> Value {
+    json!({
+        "object_altitude": value.object_altitude,
+        "arcus": value.arcus,
+        "sun_altitude": value.sun_altitude,
+    })
+}
+
+/// A `tm_crossing_request` as the object a caller gets back.
+fn write_tm_crossing_request(value: &sys::tm_crossing_request) -> Value {
+    json!({
+        "jd_start": value.jd_start,
+        "scale": value.scale,
+        "body": value.body,
+        "target_deg": value.target_deg,
+        "flags": value.flags,
+        "backward": value.backward,
+        "jd_end": value.jd_end,
+        "quantity": value.quantity,
+        "step_deg": value.step_deg,
+        "body_b": value.body_b,
+        "coeff_a": value.coeff_a,
+        "coeff_b": value.coeff_b,
+    })
+}
+
+/// A `tm_angle_parts` as the object a caller gets back.
+fn write_tm_angle_parts(value: &sys::tm_angle_parts) -> Value {
+    json!({
+        "negative": value.negative,
+        "degrees": value.degrees,
+        "minutes": value.minutes,
+        "seconds": value.seconds,
+        "second_fraction": value.second_fraction,
+        "zodiac_sign": value.zodiac_sign,
+        "nakshatra": value.nakshatra,
+        "pada": value.pada,
+    })
 }

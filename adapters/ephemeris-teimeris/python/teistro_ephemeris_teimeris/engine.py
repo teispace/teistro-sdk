@@ -20,12 +20,301 @@ from typing import TypedDict, cast
 from teistro import Engine
 
 
+class TmDatetime(TypedDict):
+    """`tm_datetime`, as the engine declares it. Every field is required."""
+
+    year: int
+    month: int
+    day: int
+    hour: int
+    minute: int
+    second: float
+
+
+class TmObserver(TypedDict):
+    """`tm_observer`, as the engine declares it. Every field is required."""
+
+    longitude_deg: float
+    latitude_deg: float
+    altitude_m: float
+
+
+class TmPosition(TypedDict):
+    """`tm_position`, as the engine declares it. Every field is required."""
+
+    lon: float
+    lat: float
+    dist: float
+    lon_speed: float
+    lat_speed: float
+    dist_speed: float
+    flags_used: int
+    status: int
+
+
+class TmAtmosphere(TypedDict):
+    """`tm_atmosphere`, as the engine declares it. Every field is required."""
+
+    pressure_mbar: float
+    temperature_c: float
+    lapse_rate_k_per_m: float
+
+
+class TmRefraction(TypedDict):
+    """`tm_refraction`, as the engine declares it. Every field is required."""
+
+    altitude_true: float
+    altitude_apparent: float
+    refraction: float
+    horizon_dip: float
+    observable: int
+
+
+class TmObliquity(TypedDict):
+    """`tm_obliquity`, as the engine declares it. Every field is required."""
+
+    true_obliquity: float
+    mean_obliquity: float
+    nutation_lon: float
+    nutation_obl: float
+
+
+class TmHorizontal(TypedDict):
+    """`tm_horizontal`, as the engine declares it. Every field is required."""
+
+    azimuth: float
+    azimuth_north: float
+    altitude_true: float
+    altitude_apparent: float
+
+
+class TmCoverage(TypedDict):
+    """`tm_coverage`, as the engine declares it. Every field is required."""
+
+    jd_start: float
+    jd_end: float
+    contiguous: int
+    file_count: int
+
+
+class TmFallbackStats(TypedDict):
+    """`tm_fallback_stats`, as the engine declares it. Every field is required."""
+
+    moshier_calls: int
+    refused_calls: int
+    last_body: int
+    last_jd: float
+
+
+class TmNodesApsides(TypedDict):
+    """`tm_nodes_apsides`, as the engine declares it. Every field is required."""
+
+    ascending: TmPosition
+    descending: TmPosition
+    perihelion: TmPosition
+    aphelion: TmPosition
+    used_mean: int
+    flags_used: int
+    status: int
+
+
+class TmOrbitalElements(TypedDict):
+    """`tm_orbital_elements`, as the engine declares it. Every field is required."""
+
+    semi_major_axis: float
+    eccentricity: float
+    inclination: float
+    node: float
+    arg_perihelion: float
+    lon_perihelion: float
+    mean_anomaly: float
+    true_anomaly: float
+    eccentric_anomaly: float
+    mean_longitude: float
+    period_sidereal: float
+    daily_motion: float
+    period_tropical: float
+    period_synodic: float
+    perihelion_time: float
+    perihelion_distance: float
+    aphelion_distance: float
+    status: int
+
+
+class TmOrbitDistances(TypedDict):
+    """`tm_orbit_distances`, as the engine declares it. Every field is required."""
+
+    max_distance: float
+    min_distance: float
+    true_distance: float
+    status: int
+
+
+class TmPhenomena(TypedDict):
+    """`tm_phenomena`, as the engine declares it. Every field is required."""
+
+    phase_angle: float
+    phase: float
+    elongation: float
+    diameter: float
+    magnitude: float
+    horizontal_parallax: float
+    magnitude_out_of_range: int
+    flags_used: int
+    status: int
+    magnitude_state: int
+
+
+class TmStar(TypedDict):
+    """`tm_star`, as the engine declares it. Every field is required."""
+
+    id: int
+    catalogue_generation: int
+    magnitude: float
+    epoch: float
+    ra_deg: float
+    dec_deg: float
+    pm_ra_arcsec_per_century: float
+    pm_dec_arcsec_per_century: float
+    radial_velocity_au_per_century: float
+    parallax_arcsec: float
+
+
+class TmEclipseAttributes(TypedDict):
+    """`tm_eclipse_attributes`, as the engine declares it. Every field is required."""
+
+    magnitude: float
+    diameter_ratio: float
+    obscuration: float
+    core_shadow_km: float
+    azimuth: float
+    azimuth_north: float
+    altitude_true: float
+    altitude_apparent: float
+    separation: float
+    magnitude_nasa: float
+    saros_known: int
+    saros_series: float
+    saros_member: float
+
+
+class TmLunarEclipseAttributes(TypedDict):
+    """`tm_lunar_eclipse_attributes`, as the engine declares it. Every field is required."""
+
+    umbral_magnitude: float
+    penumbral_magnitude: float
+    azimuth: float
+    azimuth_north: float
+    altitude_true: float
+    altitude_apparent: float
+    opposition: float
+    saros_known: int
+    saros_series: float
+    saros_member: float
+
+
+class TmEclipseLocation(TypedDict):
+    """`tm_eclipse_location`, as the engine declares it. Every field is required."""
+
+    longitude: float
+    latitude: float
+    core_shadow_km: float
+    penumbra_km: float
+    axis_distance_km: float
+    umbra_fundamental_km: float
+    penumbra_fundamental_km: float
+
+
+class TmVisibilityAtmosphere(TypedDict):
+    """`tm_visibility_atmosphere`, as the engine declares it. Every field is required."""
+
+    pressure_mbar: float
+    temperature_c: float
+    humidity_pct: float
+    haze: float
+
+
+class TmObserverEye(TypedDict):
+    """`tm_observer_eye`, as the engine declares it. Every field is required."""
+
+    age_years: float
+    snellen: float
+    monocular: int
+    use_optics: int
+    magnification: float
+    aperture_mm: float
+    transmission: float
+
+
+class TmVisibility(TypedDict):
+    """`tm_visibility`, as the engine declares it. Every field is required."""
+
+    limiting_magnitude: float
+    object_magnitude: float
+    object_altitude: float
+    object_azimuth: float
+    object_azimuth_north: float
+    sun_altitude: float
+    sun_azimuth: float
+    moon_altitude: float
+    moon_azimuth: float
+    scotopic: int
+    near_switch: int
+    above_horizon: int
+    status: int
+
+
+class TmVisibilityBest(TypedDict):
+    """`tm_visibility_best`, as the engine declares it. Every field is required."""
+
+    object_altitude: float
+    arcus: float
+    sun_altitude: float
+
+
+class TmCrossingRequest(TypedDict):
+    """`tm_crossing_request`, as the engine declares it. Every field is required."""
+
+    jd_start: float
+    scale: int
+    body: int
+    target_deg: float
+    flags: int
+    backward: int
+    jd_end: float
+    quantity: int
+    step_deg: float
+    body_b: int
+    coeff_a: float
+    coeff_b: float
+
+
+class TmAngleParts(TypedDict):
+    """`tm_angle_parts`, as the engine declares it. Every field is required."""
+
+    negative: int
+    degrees: int
+    minutes: int
+    seconds: int
+    second_fraction: float
+    zodiac_sign: int
+    nakshatra: int
+    pada: int
+
+
 class TmVersion(TypedDict):
     """What `tm_version` answers with."""
 
     major: int
     minor: int
     patch: int
+
+
+class TmUtcToJd(TypedDict):
+    """What `tm_utc_to_jd` answers with."""
+
+    out_jd_tt: float
+    out_jd_ut1: float
 
 
 class TmJplInfo(TypedDict):
@@ -51,11 +340,62 @@ class TmGetDeltaTOverride(TypedDict):
     out_is_set: int
 
 
+class TmFromHorizontal(TypedDict):
+    """What `tm_from_horizontal` answers with."""
+
+    out_lon_deg: float
+    out_lat_deg: float
+
+
 class TmEmbeddedCoverage(TypedDict):
     """What `tm_embedded_coverage` answers with."""
 
     out_jd_start: float
     out_jd_end: float
+
+
+class TmSolarEclipseWhere(TypedDict):
+    """What `tm_solar_eclipse_where` answers with."""
+
+    out_location: TmEclipseLocation
+    out_attributes: TmEclipseAttributes
+    out_type: int
+
+
+class TmOccultationWhere(TypedDict):
+    """What `tm_occultation_where` answers with."""
+
+    out_location: TmEclipseLocation
+    out_attributes: TmEclipseAttributes
+    out_type: int
+
+
+class TmSolarEclipseHow(TypedDict):
+    """What `tm_solar_eclipse_how` answers with."""
+
+    out_attributes: TmEclipseAttributes
+    out_type: int
+
+
+class TmOccultationHow(TypedDict):
+    """What `tm_occultation_how` answers with."""
+
+    out_attributes: TmEclipseAttributes
+    out_type: int
+
+
+class TmLunarEclipseHow(TypedDict):
+    """What `tm_lunar_eclipse_how` answers with."""
+
+    out_attributes: TmLunarEclipseAttributes
+    out_type: int
+
+
+class TmVisibilityDefaults(TypedDict):
+    """What `tm_visibility_defaults` answers with."""
+
+    atmosphere: TmVisibilityAtmosphere
+    eye: TmObserverEye
 
 
 
@@ -98,6 +438,29 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_body_name", body=body))
         return cast(str, answered["buf"])
 
+    def tm_julian_day(self, dt: TmDatetime | None, cal: int) -> float:
+        """`tm_julian_day`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_julian_day", dt=dt, cal=cal))
+        return float(cast(float, answered["out_jd"]))
+
+    def tm_calendar_date(self, jd: float, cal: int) -> TmDatetime:
+        """`tm_calendar_date`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_calendar_date", jd=jd, cal=cal))
+        return cast(TmDatetime, answered["out"])
+
+    def tm_utc_to_jd(self, utc: TmDatetime | None, cal: int) -> TmUtcToJd:
+        """`tm_utc_to_jd`.
+        """
+        return cast(TmUtcToJd, self._engine.call("tm_utc_to_jd", utc=utc, cal=cal))
+
+    def tm_jd_to_utc(self, jd: float, scale: int, cal: int) -> TmDatetime:
+        """`tm_jd_to_utc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_jd_to_utc", jd=jd, scale=scale, cal=cal))
+        return cast(TmDatetime, answered["out"])
+
     def tm_delta_t(self, jd_ut1: float) -> float:
         """`tm_delta_t`.
         """
@@ -139,6 +502,18 @@ class TeimerisEngine:
         """
         answered = cast(dict[str, object], self._engine.call("tm_local_apparent_to_mean", jd_local_apparent=jd_local_apparent, geo_lon_deg=geo_lon_deg))
         return float(cast(float, answered["out_jd_local_mean"]))
+
+    def tm_local_to_utc(self, local: TmDatetime | None, utc_offset_hours: float, cal: int) -> TmDatetime:
+        """`tm_local_to_utc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_local_to_utc", local=local, utc_offset_hours=utc_offset_hours, cal=cal))
+        return cast(TmDatetime, answered["out_utc"])
+
+    def tm_utc_to_local(self, utc: TmDatetime | None, utc_offset_hours: float, cal: int) -> TmDatetime:
+        """`tm_utc_to_local`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_utc_to_local", utc=utc, utc_offset_hours=utc_offset_hours, cal=cal))
+        return cast(TmDatetime, answered["out_local"])
 
     def tm_position_value(self, jd: float, scale: int, body: int, flags: int, field: int) -> float:
         """`tm_position_value`.
@@ -289,10 +664,51 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_get_nutation_interpolation"))
         return int(cast(int, answered["out"]))
 
+    def tm_atmosphere_init_sized(self, altitude_m: float, struct_size: int) -> TmAtmosphere:
+        """`tm_atmosphere_init_sized`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_atmosphere_init_sized", altitude_m=altitude_m, struct_size=struct_size))
+        return cast(TmAtmosphere, answered["atm"])
+
+    def tm_refract(self, model: int, dir: int, altitude_deg: float, obs: TmObserver | None = None, atm: TmAtmosphere | None = None) -> TmRefraction:
+        """`tm_refract`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_refract", model=model, dir=dir, altitude_deg=altitude_deg, obs=obs, atm=atm))
+        return cast(TmRefraction, answered["out"])
+
+    def tm_obliquity_calc(self, jd: float, scale: int) -> TmObliquity:
+        """`tm_obliquity_calc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_obliquity_calc", jd=jd, scale=scale))
+        return cast(TmObliquity, answered["out"])
+
+    def tm_to_horizontal(self, jd: float, scale: int, system: int, obs: TmObserver | None, atm: TmAtmosphere | None, lon_deg: float, lat_deg: float) -> TmHorizontal:
+        """`tm_to_horizontal`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_to_horizontal", jd=jd, scale=scale, system=system, obs=obs, atm=atm, lon_deg=lon_deg, lat_deg=lat_deg))
+        return cast(TmHorizontal, answered["out"])
+
+    def tm_from_horizontal(self, jd: float, scale: int, system: int, obs: TmObserver | None, azimuth_deg: float, altitude_deg: float) -> TmFromHorizontal:
+        """`tm_from_horizontal`.
+        """
+        return cast(TmFromHorizontal, self._engine.call("tm_from_horizontal", jd=jd, scale=scale, system=system, obs=obs, azimuth_deg=azimuth_deg, altitude_deg=altitude_deg))
+
     def tm_embedded_coverage(self) -> TmEmbeddedCoverage:
         """`tm_embedded_coverage`.
         """
         return cast(TmEmbeddedCoverage, self._engine.call("tm_embedded_coverage"))
+
+    def tm_body_coverage(self, body: int) -> TmCoverage:
+        """`tm_body_coverage`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_body_coverage", body=body))
+        return cast(TmCoverage, answered["out"])
+
+    def tm_fallback_stats_get(self) -> TmFallbackStats:
+        """`tm_fallback_stats_get`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_fallback_stats_get"))
+        return cast(TmFallbackStats, answered["out"])
 
     def tm_fallback_stats_reset(self) -> None:
         """`tm_fallback_stats_reset`.
@@ -303,6 +719,42 @@ class TeimerisEngine:
         """`tm_cache_dir_default`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_cache_dir_default"))
+        return cast(str, answered["buf"])
+
+    def tm_nodes_apsides_calc(self, jd: float, scale: int, body: int, flags: int, method: int, apsis: int, observer: TmObserver | None = None) -> TmNodesApsides:
+        """`tm_nodes_apsides_calc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_nodes_apsides_calc", jd=jd, scale=scale, body=body, flags=flags, method=method, apsis=apsis, observer=observer))
+        return cast(TmNodesApsides, answered["out"])
+
+    def tm_orbital_elements_calc(self, jd: float, scale: int, body: int, flags: int, masses: int) -> TmOrbitalElements:
+        """`tm_orbital_elements_calc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_orbital_elements_calc", jd=jd, scale=scale, body=body, flags=flags, masses=masses))
+        return cast(TmOrbitalElements, answered["out"])
+
+    def tm_orbit_distances_calc(self, jd: float, scale: int, body: int, flags: int) -> TmOrbitDistances:
+        """`tm_orbit_distances_calc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_orbit_distances_calc", jd=jd, scale=scale, body=body, flags=flags))
+        return cast(TmOrbitDistances, answered["out"])
+
+    def tm_phenomena_calc(self, jd: float, scale: int, body: int, flags: int, observer: TmObserver | None = None) -> TmPhenomena:
+        """`tm_phenomena_calc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_phenomena_calc", jd=jd, scale=scale, body=body, flags=flags, observer=observer))
+        return cast(TmPhenomena, answered["out"])
+
+    def tm_star_name(self, star: TmStar | None = None) -> str:
+        """`tm_star_name`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_star_name", star=star))
+        return cast(str, answered["buf"])
+
+    def tm_star_designation(self, star: TmStar | None = None) -> str:
+        """`tm_star_designation`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_star_designation", star=star))
         return cast(str, answered["buf"])
 
     def tm_star_load_catalogue(self, path: str) -> None:
@@ -318,17 +770,89 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_star_count"))
         return int(cast(int, answered["return"]))
 
+    def tm_star_find(self, name: str) -> TmStar:
+        """`tm_star_find`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_star_find", name=name))
+        return cast(TmStar, answered["out"])
+
+    def tm_star_calc(self, jd: float, scale: int, name: str, flags: int, observer: TmObserver | None = None) -> TmPosition:
+        """`tm_star_calc`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_star_calc", jd=jd, scale=scale, name=name, flags=flags, observer=observer))
+        return cast(TmPosition, answered["out"])
+
     def tm_eclipse_type_name(self, bit: int) -> str:
         """`tm_eclipse_type_name`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_eclipse_type_name", bit=bit))
         return cast(str, answered["return"])
 
+    def tm_solar_eclipse_where(self, jd: float, scale: int, flags: int) -> TmSolarEclipseWhere:
+        """`tm_solar_eclipse_where`.
+        """
+        return cast(TmSolarEclipseWhere, self._engine.call("tm_solar_eclipse_where", jd=jd, scale=scale, flags=flags))
+
+    def tm_occultation_where(self, jd: float, scale: int, body: int, star: str, flags: int) -> TmOccultationWhere:
+        """`tm_occultation_where`.
+        """
+        return cast(TmOccultationWhere, self._engine.call("tm_occultation_where", jd=jd, scale=scale, body=body, star=star, flags=flags))
+
+    def tm_solar_eclipse_how(self, jd: float, scale: int, flags: int, observer: TmObserver | None = None) -> TmSolarEclipseHow:
+        """`tm_solar_eclipse_how`.
+        """
+        return cast(TmSolarEclipseHow, self._engine.call("tm_solar_eclipse_how", jd=jd, scale=scale, flags=flags, observer=observer))
+
+    def tm_occultation_how(self, jd: float, scale: int, body: int, star: str, flags: int, observer: TmObserver | None = None) -> TmOccultationHow:
+        """`tm_occultation_how`.
+        """
+        return cast(TmOccultationHow, self._engine.call("tm_occultation_how", jd=jd, scale=scale, body=body, star=star, flags=flags, observer=observer))
+
+    def tm_lunar_eclipse_how(self, jd: float, scale: int, flags: int, observer: TmObserver | None = None) -> TmLunarEclipseHow:
+        """`tm_lunar_eclipse_how`.
+        """
+        return cast(TmLunarEclipseHow, self._engine.call("tm_lunar_eclipse_how", jd=jd, scale=scale, flags=flags, observer=observer))
+
     def tm_event_kind_name(self, kind: int) -> str:
         """`tm_event_kind_name`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_event_kind_name", kind=kind))
         return cast(str, answered["return"])
+
+    def tm_gauquelin_sector(self, jd: float, scale: int, body: int, star: str, flags: int, method: int, refraction: int, disc_center: int, observer: TmObserver | None = None, atmosphere: TmAtmosphere | None = None) -> float:
+        """`tm_gauquelin_sector`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_gauquelin_sector", jd=jd, scale=scale, body=body, star=star, flags=flags, method=method, refraction=refraction, disc_center=disc_center, observer=observer, atmosphere=atmosphere))
+        return float(cast(float, answered["out_sector"]))
+
+    def tm_visibility_defaults(self, observer: TmObserver | None = None) -> TmVisibilityDefaults:
+        """`tm_visibility_defaults`.
+        """
+        return cast(TmVisibilityDefaults, self._engine.call("tm_visibility_defaults", observer=observer))
+
+    def tm_visibility_limit(self, jd: float, scale: int, body: int, star: str, flags: int, observer: TmObserver | None = None, atmosphere: TmVisibilityAtmosphere | None = None, eye: TmObserverEye | None = None) -> TmVisibility:
+        """`tm_visibility_limit`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_visibility_limit", jd=jd, scale=scale, body=body, star=star, flags=flags, observer=observer, atmosphere=atmosphere, eye=eye))
+        return cast(TmVisibility, answered["out"])
+
+    def tm_visibility_arcus(self, jd: float, scale: int, flags: int, observer: TmObserver | None, atmosphere: TmVisibilityAtmosphere | None, eye: TmObserverEye | None, magnitude: float, object_altitude_deg: float, object_azimuth_deg: float, sun_azimuth_deg: float, moon_altitude_deg: float, moon_azimuth_deg: float) -> float:
+        """`tm_visibility_arcus`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_visibility_arcus", jd=jd, scale=scale, flags=flags, observer=observer, atmosphere=atmosphere, eye=eye, magnitude=magnitude, object_altitude_deg=object_altitude_deg, object_azimuth_deg=object_azimuth_deg, sun_azimuth_deg=sun_azimuth_deg, moon_altitude_deg=moon_altitude_deg, moon_azimuth_deg=moon_azimuth_deg))
+        return float(cast(float, answered["out_arcus_deg"]))
+
+    def tm_visibility_best_altitude(self, jd: float, scale: int, flags: int, observer: TmObserver | None, atmosphere: TmVisibilityAtmosphere | None, eye: TmObserverEye | None, magnitude: float, object_azimuth_deg: float, sun_azimuth_deg: float, moon_altitude_deg: float, moon_azimuth_deg: float) -> TmVisibilityBest:
+        """`tm_visibility_best_altitude`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_visibility_best_altitude", jd=jd, scale=scale, flags=flags, observer=observer, atmosphere=atmosphere, eye=eye, magnitude=magnitude, object_azimuth_deg=object_azimuth_deg, sun_azimuth_deg=sun_azimuth_deg, moon_altitude_deg=moon_altitude_deg, moon_azimuth_deg=moon_azimuth_deg))
+        return cast(TmVisibilityBest, answered["out"])
+
+    def tm_crossing_request_init_sized(self) -> TmCrossingRequest:
+        """`tm_crossing_request_init_sized`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_crossing_request_init_sized"))
+        return cast(TmCrossingRequest, answered["req"])
 
     def tm_angle_normalize_deg(self, deg: float) -> float:
         """`tm_angle_normalize_deg`.
@@ -413,6 +937,12 @@ class TeimerisEngine:
         """
         answered = cast(dict[str, object], self._engine.call("tm_round_half_away", x=x))
         return int(cast(int, answered["return"]))
+
+    def tm_angle_split(self, deg: float, options: int) -> TmAngleParts:
+        """`tm_angle_split`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_angle_split", deg=deg, options=options))
+        return cast(TmAngleParts, answered["out"])
 
     def tm_angle_format(self, deg: float, style: int, decimals: int) -> str:
         """`tm_angle_format`.

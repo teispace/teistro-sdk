@@ -102,6 +102,19 @@ pub(crate) struct Param {
     type_ref: TypeRef,
     #[serde(default)]
     role: String,
+    /// Whether the engine takes a null here. Its extractor marks every
+    /// single struct input so, because whether null is allowed is in the
+    /// header's prose and not in the type — and the engine refuses a null
+    /// it does not allow with its own status, so passing one is safe.
+    #[serde(default)]
+    optional: bool,
+}
+
+impl Param {
+    /// Whether a caller may leave this out, which crosses as null.
+    fn nullable(&self) -> bool {
+        self.optional && self.role == "struct_in"
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -114,6 +127,65 @@ pub(crate) struct Function {
 #[derive(Debug, Deserialize)]
 struct Named {
     name: String,
+}
+
+/// One field of a public struct, as the engine describes it.
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct Field {
+    pub(crate) name: String,
+    #[serde(rename = "type")]
+    pub(crate) base: String,
+    #[serde(default)]
+    pub(crate) pointer: u32,
+    #[serde(default, rename = "const")]
+    pub(crate) constant: bool,
+}
+
+/// A public struct, with the field list its marshalling is generated
+/// from.
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct Shape {
+    pub(crate) name: String,
+    #[serde(default)]
+    pub(crate) fields: Vec<Field>,
+}
+
+impl Shape {
+    /// The fields that cross, which is every field but the struct's own
+    /// extent (`03-design/engine-passthrough.md` §2).
+    pub(crate) fn crossing(&self) -> impl Iterator<Item = &Field> {
+        self.fields.iter().filter(|field| field.name != STRUCT_SIZE)
+    }
+
+    /// Whether the struct carries its own extent as its first field.
+    fn sized(&self) -> bool {
+        self.fields
+            .first()
+            .is_some_and(|field| field.name == STRUCT_SIZE)
+    }
+}
+
+/// The field a versioned struct carries its own extent in.
+///
+/// **Bookkeeping, and never crosses.** The engine reads a struct only as
+/// far as this says, so a caller who could set it could tell the engine
+/// the struct was larger than the one on the stack. Its only correct
+/// value is the size of the struct the generated arm declared, which the
+/// arm already knows.
+const STRUCT_SIZE: &str = "struct_size";
+
+/// What a struct's fields are made of: its **worst** field, because a
+/// struct crosses only as completely as its hardest field does.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum Made {
+    /// Numbers, enums, and nested structs that are plain themselves.
+    Plain,
+    /// A string, which has to outlive the call or be copied out of it.
+    Strings,
+    /// A pointer to another struct: an optional nested object.
+    Pointers,
+    /// A function pointer, a list of strings, or bytes: not an object.
+    Other,
 }
 
 /// A public typedef over a plain arithmetic type, as the engine
@@ -139,7 +211,7 @@ struct Idl {
     #[serde(default)]
     aliases: Vec<Alias>,
     #[serde(default)]
-    structs: Vec<Named>,
+    structs: Vec<Shape>,
     #[serde(default)]
     enums: Vec<Named>,
     #[serde(default)]
@@ -191,6 +263,9 @@ const SCALARS: [&str; 11] = [
 pub(crate) struct Vocabulary {
     enums: Vec<String>,
     aliases: BTreeMap<String, String>,
+    structs: BTreeMap<String, Shape>,
+    /// The structs' names in declaration order, which a map forgets.
+    order: Vec<String>,
 }
 
 impl Vocabulary {
@@ -202,6 +277,61 @@ impl Vocabulary {
                 .iter()
                 .map(|a| (a.name.clone(), a.base.clone()))
                 .collect(),
+            structs: idl
+                .structs
+                .iter()
+                .map(|shape| (shape.name.clone(), shape.clone()))
+                .collect(),
+            order: idl.structs.iter().map(|shape| shape.name.clone()).collect(),
+        }
+    }
+
+    /// Every struct, in the order the engine declares them.
+    pub(crate) fn declared(&self) -> impl Iterator<Item = &Shape> {
+        self.order.iter().filter_map(|name| self.structs.get(name))
+    }
+
+    /// The struct a base names, if it names one.
+    pub(crate) fn shape(&self, base: &str) -> Option<&Shape> {
+        self.structs.get(base)
+    }
+
+    /// What a struct is made of; `Other` for a name that is not one.
+    pub(crate) fn made_of(&self, base: &str) -> Made {
+        self.made_within(base, &mut Vec::new())
+    }
+
+    fn made_within<'a>(&'a self, base: &str, seen: &mut Vec<&'a str>) -> Made {
+        let Some(shape) = self.structs.get(base) else {
+            return Made::Other;
+        };
+        // A struct that contains itself has no finite JSON object. The
+        // engine has none; the guard keeps this total rather than a
+        // stack overflow the day one appears.
+        if seen.contains(&shape.name.as_str()) {
+            return Made::Other;
+        }
+        seen.push(&shape.name);
+        let worst = shape
+            .fields
+            .iter()
+            .map(|field| self.made_of_field(field, seen))
+            .max()
+            .unwrap_or(Made::Plain);
+        seen.pop();
+        worst
+    }
+
+    fn made_of_field<'a>(&'a self, field: &Field, seen: &mut Vec<&'a str>) -> Made {
+        let base = field.base.as_str();
+        match field.pointer {
+            0 if self.is_number(base) => Made::Plain,
+            0 if self.structs.contains_key(base) => self.made_within(base, seen),
+            1 if base == "char" && field.constant => Made::Strings,
+            1 if self.structs.contains_key(base) => {
+                Made::Pointers.max(self.made_within(base, seen))
+            }
+            _ => Made::Other,
         }
     }
 
@@ -235,20 +365,23 @@ fn scalar_out(type_ref: &TypeRef, vocabulary: &Vocabulary) -> bool {
 /// One list, read by the classifier and by nothing else: a role added
 /// here without an arm in [`arm`] would generate code that does not
 /// compile, which is the failure mode to want.
-const ROLES_KNOWN: [&str; 6] = [
+const ROLES_KNOWN: [&str; 9] = [
     "handle",
     "value",
     "scalar_out",
     "string_in",
     "string_out",
     "string_cap",
+    "struct_in",
+    "struct_out",
+    "out_struct_size",
 ];
 
 /// Whether a parameter is one the marshaller does not report and the
 /// caller does not pass: the context it is called on, and the capacity
 /// of a buffer the marshalling itself sizes.
 fn bookkeeping(role: &str) -> bool {
-    matches!(role, "handle" | "string_cap")
+    matches!(role, "handle" | "string_cap" | "out_struct_size")
 }
 
 /// Where one function stands, and why.
@@ -333,69 +466,102 @@ fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standing, &'static
 /// The order is the point: a function held up by several of these is
 /// held up by the hardest, and grouping it under an easier one would
 /// promise that learning the easy one released it.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Blocker {
     /// An array whose elements are numbers: the fill protocol the string
     /// tranche already runs, with a width instead of a byte.
     NumberArray,
+    /// An array of plain structs: the array protocol over a shape the
+    /// marshaller already carries.
+    StructArray,
+    /// A struct carrying a string, which must outlive the call going in
+    /// and be copied coming out.
+    StringStruct,
+    /// A struct pointing at another: a nested object that may be absent.
+    PointerStruct,
     /// A handle the caller would then have to hold and eventually free.
     HandleOut,
     /// Bytes with no meaning of their own.
     Opaque,
-    /// A struct, whether passed alone or as an array's element.
-    Struct,
+    /// A struct carrying a function pointer, a list of strings or bytes,
+    /// which no JSON object describes.
+    OtherStruct,
     /// Something the description says and this generator has never seen.
     Unknown,
 }
 
 impl Blocker {
+    /// Every blocker, in rank order, which is the order the page lists
+    /// them in.
+    const ALL: [Self; 8] = [
+        Self::NumberArray,
+        Self::StructArray,
+        Self::StringStruct,
+        Self::PointerStruct,
+        Self::HandleOut,
+        Self::Opaque,
+        Self::OtherStruct,
+        Self::Unknown,
+    ];
+
     /// How hard, for choosing between several on one function.
-    fn rank(self) -> u8 {
-        match self {
-            Self::NumberArray => 0,
-            Self::HandleOut => 1,
-            Self::Opaque => 2,
-            Self::Struct => 3,
-            Self::Unknown => 4,
-        }
+    fn rank(self) -> usize {
+        Self::ALL
+            .iter()
+            .position(|one| *one == self)
+            .unwrap_or_else(|| unreachable!("every blocker is in ALL"))
     }
 
     /// What the page's table calls it.
     fn wording(self) -> &'static str {
         match self {
             Self::NumberArray => "an array of numbers",
+            Self::StructArray => "an array of structs",
+            Self::StringStruct => "a struct carrying a string",
+            Self::PointerStruct => "a struct pointing at another",
             Self::HandleOut => "a handle it creates",
             Self::Opaque => "opaque bytes",
-            Self::Struct => "a struct",
+            Self::OtherStruct => "a struct no JSON object describes",
             Self::Unknown => "a role the marshaller does not know",
+        }
+    }
+
+    /// What stands in the way of a struct, if anything does.
+    const fn of_struct(made: Made) -> Option<Self> {
+        match made {
+            Made::Plain => None,
+            Made::Strings => Some(Self::StringStruct),
+            Made::Pointers => Some(Self::PointerStruct),
+            Made::Other => Some(Self::OtherStruct),
         }
     }
 }
 
 /// What stands in the way of one parameter, if anything does.
 fn blocked_by(param: &Param, vocabulary: &Vocabulary) -> Option<Blocker> {
-    if ROLES_KNOWN.contains(&param.role.as_str()) {
-        return None;
-    }
-    Some(match param.role.as_str() {
-        "struct_in" | "struct_out" | "out_struct_size" => Blocker::Struct,
+    let base = param.type_ref.base.as_str();
+    match param.role.as_str() {
+        // A struct crosses when every field does, so what blocks it is
+        // its worst field: that is the shape the generator would learn
+        // next. "A struct" alone was one row over eighty-one functions
+        // and four different jobs.
+        "struct_in" | "struct_out" => Blocker::of_struct(vocabulary.made_of(base)),
         // An array is its elements. One of numbers is the protocol
-        // already running; one of structs is the struct job wearing a
-        // count, and belongs in that group where its size can be seen.
-        "array_in" | "array_out" | "array_out_parallel" => {
-            if vocabulary.is_number(&param.type_ref.base) {
-                Blocker::NumberArray
-            } else {
-                Blocker::Struct
-            }
-        }
+        // already running; one of structs is blocked by its element's
+        // worst field, or by the array protocol once that is plain.
+        "array_in" | "array_out" | "array_out_parallel" => Some(if vocabulary.is_number(base) {
+            Blocker::NumberArray
+        } else {
+            Blocker::of_struct(vocabulary.made_of(base)).unwrap_or(Blocker::StructArray)
+        }),
         // A length or a capacity is the marshaller's own bookkeeping and
         // never the reason: whatever it counts is beside it and says so.
-        "array_len" | "array_cap" => Blocker::NumberArray,
-        "handle_out" => Blocker::HandleOut,
-        "opaque" => Blocker::Opaque,
-        _ => Blocker::Unknown,
-    })
+        "array_len" | "array_cap" => Some(Blocker::NumberArray),
+        "handle_out" => Some(Blocker::HandleOut),
+        "opaque" => Some(Blocker::Opaque),
+        known if ROLES_KNOWN.contains(&known) => None,
+        _ => Some(Blocker::Unknown),
+    }
 }
 
 /// One callable function as **the manifest describes it**, which is the
@@ -417,6 +583,15 @@ pub(crate) struct Described<'a> {
     /// Whether a call changes engine state the SDK's provenance does not
     /// record.
     pub(crate) mutates: bool,
+    /// The keys in `takes` a caller may leave out or pass as null.
+    nullable: Vec<&'a str>,
+}
+
+impl Described<'_> {
+    /// Whether a key in `takes` may be left out.
+    pub(crate) fn nullable(&self, key: &str) -> bool {
+        self.nullable.contains(&key)
+    }
 }
 
 /// The manifest's word for a parameter's type.
@@ -449,12 +624,19 @@ fn declared_return(function: &Function) -> &str {
 pub(crate) fn describe(function: &Function) -> Described<'_> {
     let mut takes = Vec::new();
     let mut gives = Vec::new();
+    let mut nullable = Vec::new();
     for param in &function.params {
         if bookkeeping(&param.role) {
             continue;
         }
+        if param.nullable() {
+            nullable.push(param.name.as_str());
+        }
         let entry = (param.name.as_str(), declared_type(param));
-        if matches!(param.role.as_str(), "scalar_out" | "string_out") {
+        if matches!(
+            param.role.as_str(),
+            "scalar_out" | "string_out" | "struct_out"
+        ) {
             gives.push(entry);
         } else {
             takes.push(entry);
@@ -469,6 +651,7 @@ pub(crate) fn describe(function: &Function) -> Described<'_> {
         takes,
         gives,
         mutates: mutates_engine_state(&function.name),
+        nullable,
     }
 }
 
@@ -481,16 +664,6 @@ fn returns_a_string(function: &Function) -> bool {
 fn fills_a_string(function: &Function) -> bool {
     has_role(function, "string_out")
 }
-
-/// The roles that describe an array, for the one question the page asks
-/// that the classifier does not.
-const ARRAY_ROLES: [&str; 5] = [
-    "array_in",
-    "array_len",
-    "array_out",
-    "array_cap",
-    "array_out_parallel",
-];
 
 /// Whether any parameter plays the given role.
 fn has_role(function: &Function, role: &str) -> bool {
@@ -511,17 +684,28 @@ fn count_where(rows: &[Row<'_>], predicate: impl Fn(&Function) -> bool) -> usize
 ///
 /// Read from the description rather than from the arm, so the column
 /// cannot describe code that is no longer generated.
-fn carries(function: &Function) -> &'static str {
-    match (
-        has_role(function, "string_in"),
-        fills_a_string(function),
-        returns_a_string(function),
-    ) {
-        (true, _, _) => "a string it reads",
-        (_, true, _) => "a string it fills",
-        (_, _, true) => "a string it lends",
-        _ => "",
-    }
+fn carries(function: &Function) -> String {
+    [
+        (has_role(function, "string_in"), "a string it reads"),
+        (fills_a_string(function), "a string it fills"),
+        (returns_a_string(function), "a string it lends"),
+        (has_role(function, "struct_in"), "a struct it reads"),
+        (has_role(function, "struct_out"), "a struct it fills"),
+    ]
+    .into_iter()
+    .filter_map(|(yes, clause)| yes.then_some(clause))
+    .collect::<Vec<_>>()
+    .join(", ")
+}
+
+/// Whether a function carries a string in any of the three ways.
+fn carries_a_string(function: &Function) -> bool {
+    has_role(function, "string_in") || fills_a_string(function) || returns_a_string(function)
+}
+
+/// Whether a function carries a struct either way.
+fn carries_a_struct(function: &Function) -> bool {
+    has_role(function, "struct_in") || has_role(function, "struct_out")
 }
 
 /// The page and the marshalling, from one reading of the description, so
@@ -635,7 +819,6 @@ fn page(
     out.push_str(&callable_section(by_standing.get(&Standing::Callable)));
     out.push_str(&queue_section(
         by_standing.get(&Standing::Unlearned),
-        idl.structs.len(),
         vocabulary,
     ));
     out.push_str(&facade_section(
@@ -683,7 +866,7 @@ fn facade_section(rows: &[Row<'_>]) -> String {
     let _ = writeln!(out, "|---:|---:|---|");
     let _ = writeln!(
         out,
-        "| 1 | {one} | **the value itself** — a number, a string |"
+        "| 1 | {one} | **the value itself** — a number, a string, a struct |"
     );
     let _ = writeln!(out, "| 0 | {none} | nothing |");
     let _ = writeln!(
@@ -767,7 +950,7 @@ fn dispatch(
          use teimeris::sys;\n\
          use teistro_port_ephemeris::ProviderError;\n\
          \n\
-         use crate::passthrough::{{borrowed, fill, narrow, number, status, text}};\n",
+         {PASSTHROUGH_IMPORTS}\n",
         idl.version
     );
 
@@ -783,7 +966,14 @@ fn dispatch(
             .takes
             .iter()
             .map(|(name, declared)| {
-                format!("{{\"name\":\"{name}\",\"role\":\"in\",\"type\":\"{declared}\"}}")
+                // `optional` only where it is true, so the manifest of a
+                // function with none reads as it always has.
+                let optional = if described.nullable(name) {
+                    ",\"optional\":true"
+                } else {
+                    ""
+                };
+                format!("{{\"name\":\"{name}\",\"role\":\"in\",\"type\":\"{declared}\"{optional}}}")
             })
             .chain(
                 described
@@ -843,7 +1033,164 @@ fn dispatch(
          }}\n\
          }}"
     );
+    out.push_str(&marshalling(&callable, vocabulary));
+    out.replace(PASSTHROUGH_IMPORTS, &passthrough_imports(&out))
+}
+
+/// Where the `use` of the passthrough's helpers goes, filled in once the
+/// file is written.
+const PASSTHROUGH_IMPORTS: &str = "// the passthrough's helpers";
+
+/// The helpers the generated file actually calls, and only those.
+///
+/// Read off the file rather than kept in step with the arms by hand: a
+/// helper an engine version never needs — `object`, when every struct it
+/// takes is optional — would otherwise be an unused import in the one
+/// file nobody edits.
+fn passthrough_imports(generated: &str) -> String {
+    /// Every helper, with the text a use of it contains.
+    const HELPERS: [(&str, &str); 9] = [
+        ("Within", "Within<"),
+        ("borrowed", "borrowed(answered"),
+        ("fill", "fill(\""),
+        ("narrow", "narrow(args"),
+        ("number", "number(args"),
+        ("object", " object(args"),
+        ("optional_object", "optional_object(args"),
+        ("status", "status(answered"),
+        ("text", "text(args"),
+    ];
+    let used: Vec<&str> = HELPERS
+        .iter()
+        .filter(|(_, marker)| generated.contains(marker))
+        .map(|(name, _)| *name)
+        .collect();
+    format!("use crate::passthrough::{{{}}};", used.join(", "))
+}
+
+/// The structs one role reaches, with every struct they nest, in the
+/// order the engine declares them.
+///
+/// Emitted for exactly these and no others, so a reader is generated
+/// only where something reads one: a struct nothing callable mentions
+/// would be dead code in the adapter and a name in four façades.
+///
+/// # Panics
+///
+/// When a struct nests one the engine declares after it. The façades
+/// that need declaration order rely on the engine's header order, and
+/// this is where that assumption is checked rather than believed.
+pub(crate) fn reached<'v>(
+    callable: &[&Function],
+    roles: &[&str],
+    vocabulary: &'v Vocabulary,
+) -> Vec<&'v Shape> {
+    let mut names: std::collections::BTreeSet<&str> = std::collections::BTreeSet::new();
+    let mut pending: Vec<&str> = callable
+        .iter()
+        .flat_map(|function| function.params.iter())
+        .filter(|param| roles.contains(&param.role.as_str()))
+        .map(|param| param.type_ref.base.as_str())
+        .collect();
+    while let Some(name) = pending.pop() {
+        let Some(shape) = vocabulary.shape(name) else {
+            continue;
+        };
+        if names.insert(&shape.name) {
+            pending.extend(
+                shape
+                    .fields
+                    .iter()
+                    .filter(|field| field.pointer == 0)
+                    .map(|field| field.base.as_str()),
+            );
+        }
+    }
+    let ordered: Vec<&Shape> = vocabulary
+        .declared()
+        .filter(|shape| names.contains(shape.name.as_str()))
+        .collect();
+    for (at, shape) in ordered.iter().enumerate() {
+        for field in shape.fields.iter().filter(|field| field.pointer == 0) {
+            if let Some(nested) = ordered.iter().position(|one| one.name == field.base) {
+                assert!(
+                    nested < at,
+                    "`{}` nests `{}`, which the engine declares after it",
+                    shape.name,
+                    field.base
+                );
+            }
+        }
+    }
+    ordered
+}
+
+/// A reader and a writer for every struct a callable function passes.
+fn marshalling(callable: &[&Function], vocabulary: &Vocabulary) -> String {
+    let mut out = String::new();
+    for shape in reached(callable, &["struct_in"], vocabulary) {
+        out.push_str(&reader(shape, vocabulary));
+    }
+    for shape in reached(callable, &["struct_out"], vocabulary) {
+        out.push_str(&writer(shape, vocabulary));
+    }
     out
+}
+
+/// One struct read out of the object a caller passed, every field
+/// required.
+fn reader(shape: &Shape, vocabulary: &Vocabulary) -> String {
+    let name = &shape.name;
+    let mut fields = Vec::new();
+    if shape.sized() {
+        fields.push(format!(
+            "        {STRUCT_SIZE}: core::mem::size_of::<sys::{name}>(),"
+        ));
+    }
+    for field in shape.crossing() {
+        let key = &field.name;
+        let read = if vocabulary.shape(&field.base).is_some() {
+            format!("read_{}(&within.nested(\"{key}\")?)?", field.base)
+        } else if vocabulary.is_float(&field.base) {
+            let ty = rust_type(&field.base);
+            if ty == "f64" {
+                format!("within.number(\"{key}\")?")
+            } else {
+                format!("within.number(\"{key}\")? as {ty}")
+            }
+        } else {
+            format!("within.narrow(\"{key}\")?")
+        };
+        fields.push(format!("        {key}: {read},"));
+    }
+    format!(
+        "\n/// A `{name}` read out of the object a caller passed.\n\
+         fn read_{name}(within: &Within<'_>) -> Result<sys::{name}, ProviderError> {{\n    \
+         Ok(sys::{name} {{\n{}\n    }})\n}}\n",
+        fields.join("\n")
+    )
+}
+
+/// One struct written into the object a caller gets back.
+fn writer(shape: &Shape, vocabulary: &Vocabulary) -> String {
+    let name = &shape.name;
+    let fields: Vec<String> = shape
+        .crossing()
+        .map(|field| {
+            let key = &field.name;
+            if vocabulary.shape(&field.base).is_some() {
+                format!("        \"{key}\": write_{}(&value.{key}),", field.base)
+            } else {
+                format!("        \"{key}\": value.{key},")
+            }
+        })
+        .collect();
+    format!(
+        "\n/// A `{name}` as the object a caller gets back.\n\
+         fn write_{name}(value: &sys::{name}) -> Value {{\n    \
+         json!({{\n{}\n    }})\n}}\n",
+        fields.join("\n")
+    )
 }
 
 /// One function's arm: read the arguments, call, answer.
@@ -853,7 +1200,13 @@ fn arm(function: &Function, vocabulary: &Vocabulary) -> String {
     let _ = writeln!(out, "        \"{name}\" => {{");
 
     let mut call_args: Vec<String> = Vec::new();
-    let mut outs: Vec<&str> = Vec::new();
+    // Each out-parameter as the answer's `"key": expression`.
+    let mut outs: Vec<String> = Vec::new();
+    let structs: Vec<&Param> = function
+        .params
+        .iter()
+        .filter(|p| matches!(p.role.as_str(), "struct_in" | "struct_out"))
+        .collect();
     // The buffer of a fill, if there is one: its name is what the string
     // comes back under, and the call is made inside a closure so the
     // protocol can run it twice.
@@ -913,7 +1266,10 @@ fn arm(function: &Function, vocabulary: &Vocabulary) -> String {
                 };
                 let _ = writeln!(out, "            let mut {}: {ty} = {zero};", param.name);
                 call_args.push(format!("&raw mut {}", param.name));
-                outs.push(param.name.as_str());
+                outs.push(format!("\"{0}\": {0}", param.name));
+            }
+            "struct_in" | "struct_out" | "out_struct_size" => {
+                struct_param(param, &structs, &mut out, &mut call_args, &mut outs);
             }
             other => unreachable!("a callable function has no `{other}` parameter"),
         }
@@ -945,13 +1301,19 @@ fn arm(function: &Function, vocabulary: &Vocabulary) -> String {
             let _ = writeln!(out, "            status(answered, \"{name}\")?;");
         }
     }
-    let mut fields: Vec<String> = outs
-        .iter()
-        // No cast at all: `serde_json` serialises every primitive
-        // numeric, and the widths here are the engine's own. A cast would
-        // be a claim about which of them was declared.
-        .map(|name| format!("\"{name}\": {name}"))
-        .collect();
+    let fields = answer(function, outs, buffer);
+    let _ = writeln!(out, "            Ok(json!({{{}}}))", fields.join(", "));
+    let _ = writeln!(out, "        }}");
+    out
+}
+
+/// What an arm answers with, as `"key": expression` pairs: its
+/// out-parameters, then a filled string or the function's own return.
+fn answer(function: &Function, outs: Vec<String>, buffer: Option<&str>) -> Vec<String> {
+    // No cast on a number: `serde_json` serialises every primitive
+    // numeric, and the widths here are the engine's own. A cast would be
+    // a claim about which of them was declared.
+    let mut fields = outs;
     // A filled string comes back under its parameter's own name, like
     // every other out-parameter. The length the function answered is the
     // protocol's and is not reported: the string it describes is already
@@ -965,9 +1327,66 @@ fn arm(function: &Function, vocabulary: &Vocabulary) -> String {
     } else if !matches!(function.returns.base.as_str(), "tm_status" | "void") {
         fields.push("\"return\": answered".to_string());
     }
-    let _ = writeln!(out, "            Ok(json!({{{}}}))", fields.join(", "));
-    let _ = writeln!(out, "        }}");
-    out
+    fields
+}
+
+/// One struct parameter's part of an arm: the local it binds, what the
+/// call is passed, and what the answer reports.
+fn struct_param(
+    param: &Param,
+    structs: &[&Param],
+    out: &mut String,
+    call_args: &mut Vec<String>,
+    outs: &mut Vec<String>,
+) {
+    let name = &param.name;
+    let base = &param.type_ref.base;
+    match param.role.as_str() {
+        "struct_in" if param.nullable() => {
+            // Left out or null crosses as a null pointer, and the engine
+            // decides whether that is allowed: an observer is optional
+            // unless the flags ask for a topocentric answer, and a
+            // datetime never is. Both are the engine's refusal to make.
+            let _ = writeln!(
+                out,
+                "            let {name} = optional_object(args, \"{name}\")?\n                \
+                 .map(|within| read_{base}(&within))\n                .transpose()?;"
+            );
+            call_args.push(format!(
+                "{name}.as_ref().map_or(core::ptr::null(), core::ptr::from_ref)"
+            ));
+        }
+        "struct_in" => {
+            let _ = writeln!(
+                out,
+                "            let {name} = read_{base}(&object(args, \"{name}\")?)?;"
+            );
+            call_args.push(format!("&raw const {name}"));
+        }
+        "struct_out" => {
+            // `default()` and not zeroed: it is the binding's own way of
+            // filling the extent the engine reads before it writes.
+            let _ = writeln!(
+                out,
+                "            let mut {name}: sys::{base} = sys::{base}::default();"
+            );
+            call_args.push(format!("&raw mut {name}"));
+            outs.push(format!("\"{name}\": write_{base}(&{name})"));
+        }
+        // The one struct an extent measures. Asserted rather than
+        // guessed: a function with two structs and one extent would have
+        // to say which, and none does.
+        _ => {
+            let [measured] = structs else {
+                panic!(
+                    "`{name}` passes a struct's extent beside {} structs; the generator knows \
+                     which struct it measures only when there is one",
+                    structs.len()
+                );
+            };
+            call_args.push(format!("core::mem::size_of_val(&{})", measured.name));
+        }
+    }
 }
 
 /// The SAFETY note for one arm, naming **what that arm actually
@@ -987,6 +1406,15 @@ fn safety(function: &Function) -> String {
     }
     if has_role(function, "string_in") {
         clauses.push("every string argument is a `CString` that outlives the call");
+    }
+    if has_role(function, "struct_in") {
+        clauses.push("every struct argument is a local of the type the engine declares, its extent filled by the arm");
+    }
+    if has_role(function, "struct_out") {
+        clauses.push("every struct out-parameter is a local of the type the engine declares, its extent filled by `default`");
+    }
+    if has_role(function, "out_struct_size") {
+        clauses.push("the extent passed is the size of that local");
     }
     if fills_a_string(function) {
         clauses.push(
@@ -1066,16 +1494,31 @@ fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     let takes = count_where(rows, |function| has_role(function, "string_in"));
     let fills = count_where(rows, fills_a_string);
     let lends = count_where(rows, returns_a_string);
-    let scalar_only = rows.len() - takes - fills - lends;
+    let strings = count_where(rows, carries_a_string);
+    let structs = count_where(rows, carries_a_struct);
+    let both = count_where(rows, |function| {
+        carries_a_string(function) && carries_a_struct(function)
+    });
+    let scalar_only = rows.len() - strings - structs + both;
     let _ = writeln!(
         out,
-        "**{} functions**. {} of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else. The other {} carry a string: {} read one the caller passes, {} fill a buffer of the marshaller's, and {} answer with one the engine lends and the marshaller copies before anything else can move it.\n",
+        "**{} functions**. {} of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else.\n",
         spelled(rows.len()),
         spelled(scalar_only),
-        spelled(takes + fills + lends),
+    );
+    let _ = writeln!(
+        out,
+        "{} carry a string: {} read one the caller passes, {} fill a buffer of the marshaller's, and {} answer with one the engine lends and the marshaller copies before anything else can move it.\n",
+        spelled(strings),
         spelled(takes),
         spelled(fills),
         spelled(lends),
+    );
+    let _ = writeln!(
+        out,
+        "{} carry a struct, which crosses as a JSON object keyed by the engine's own field names, nested as the struct nests; {} of them carry a string as well. Every field is required going in, and the struct's own `struct_size` crosses in neither direction — the arm fills it, because the engine reads the struct only as far as it says (`03-design/engine-passthrough.md`).\n",
+        spelled(structs),
+        spelled(both),
     );
     let _ = writeln!(out, "| function | carries | changes engine state |");
     let _ = writeln!(out, "|---|---|---|");
@@ -1107,51 +1550,56 @@ fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     out
 }
 
-fn queue_section(rows: Option<&Vec<Row<'_>>>, structs: usize, vocabulary: &Vocabulary) -> String {
+fn queue_section(rows: Option<&Vec<Row<'_>>>, vocabulary: &Vocabulary) -> String {
     let mut out = String::new();
     let Some(rows) = rows else { return out };
     let _ = writeln!(out, "## What the marshaller has not learned\n");
-    let mut by_reason: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    let mut by_reason: BTreeMap<(usize, &str), Vec<&str>> = BTreeMap::new();
     for row in rows {
-        by_reason.entry(row.why).or_default().push(row.name());
+        // In rank order, easiest first, so the table reads as the order
+        // of work; a reason that is not a blocker comes after them all.
+        let rank = Blocker::ALL
+            .iter()
+            .position(|blocker| blocker.wording() == row.why)
+            .unwrap_or(Blocker::ALL.len());
+        by_reason
+            .entry((rank, row.why))
+            .or_default()
+            .push(row.name());
     }
     let _ = writeln!(
         out,
-        "**{} functions**, grouped by what stands in the way. This is a queue rather than a refusal: each group is one shape the generator has to learn, and learning one brings its whole group in at once.\n",
+        "**{} functions**, grouped by the hardest thing in the way and listed easiest first. This is a queue rather than a refusal: each group is one shape the generator has to learn, and learning one brings its whole group in at once.\n",
         spelled(rows.len())
     );
     let _ = writeln!(out, "| what it takes or returns | functions | examples |");
     let _ = writeln!(out, "|---|---:|---|");
-    for (why, names) in &by_reason {
+    for ((_, why), names) in &by_reason {
         let examples: Vec<String> = names.iter().take(3).map(|n| format!("`{n}`")).collect();
         let _ = writeln!(out, "| {why} | {} | {} |", names.len(), examples.join(", "));
     }
     let _ = writeln!(out);
-    // Grouped by the HARDEST thing in the way, which is what makes the
-    // sizes mean anything: an array of structs counted as an array told
-    // this page that arrays were the next tranche and nearly free, and
-    // the payoff would have been three functions.
-    let by_struct = by_reason.get("a struct").map_or(0, Vec::len);
-    let by_array = by_reason.get("an array of numbers").map_or(0, Vec::len);
-    let _ = writeln!(
-        out,
-        "**{} of the {} are behind structs**, and that is the finding. Nothing else in the queue is a tranche: an array of numbers would release {}, and the rest are ones and twos. A struct is the largest group because it is the largest job — {} field lists, each read out of the description and written into and out of a JSON object, several carrying a `struct_size` the engine reads before it writes — and it is now also the *only* group whose learning changes the shape of this page.\n",
-        by_struct,
-        rows.len(),
-        spelled(by_array),
-        spelled(structs)
-    );
-    // Counted from the rows: a function grouped under structs that also
-    // has an array parameter is one this grouping moved.
-    let moved = count_where(rows, |function| {
+    let struct_rows = count_where(rows, |function| {
         function.params.iter().any(|param| {
-            ARRAY_ROLES.contains(&param.role.as_str())
-                && blocked_by(param, vocabulary) == Some(Blocker::Struct)
+            matches!(
+                blocked_by(param, vocabulary),
+                Some(
+                    Blocker::StructArray
+                        | Blocker::StringStruct
+                        | Blocker::PointerStruct
+                        | Blocker::OtherStruct
+                )
+            )
         })
     });
     let _ = writeln!(
         out,
-        "This table used to group an array by the fact that it was an array, and said on that basis that arrays were the next tranche and nearly free. They are nearly free and they are not a tranche: **{moved} of them are arrays of structs**, which is the struct job wearing a count. Grouping by the hardest thing in the way rather than by the first one in parameter order is what made that visible.\n"
+        "**{struct_rows} of the {} still touch a struct**, and they are no longer one group. This table used to have a row reading *a struct* over eighty-one functions, because the classifier knew a struct only by the word. Reading each struct's field list split that row by the worst field in the way — and the largest of the pieces, the structs made of numbers alone, was also the easiest, and is callable above.\n",
+        rows.len()
+    );
+    let _ = writeln!(
+        out,
+        "The order of work that follows is in `03-design/engine-passthrough.md` §5, with what each step releases; the figures there were measured by the same classification as this table.\n"
     );
     out
 }
