@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Varga, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -665,6 +665,35 @@ export interface ChartRequest {
    * @example 20700
    */
   readonly utcOffsetSeconds: number;
+  /**
+   * Which of the document's sections to compute beside the
+   * foundation, as a bit set: 1 the day's almanac, 2 the planetary
+   * states, 4 the aspects, 8 the derived points, 16 the houses
+   * service. Zero for the foundation alone, which is what every
+   * caller compiled against an earlier header passes by not passing
+   * it at all.
+   *
+   * A bit set here and a named option in every ergonomic layer, which
+   * is the split `ts_frame_pack` already has: nothing but a generated
+   * layer writes bits (`03-design/chart-reading.md` §5).
+   * @example 0
+   */
+  readonly sections: number;
+  /**
+   * Which divisional charts to compute, as catalogue ids, in the
+   * order they should be answered in; null with a count of zero for
+   * none, as `instants` takes a grid of none.
+   *
+   * **Not `nullable`**, and that is the description's word rather
+   * than a promise about the pointer: `nullable` makes the generated
+   * field an `Option` of the whole parameter, and an optional *array
+   * of enum members* is a shape no emitter has been shown — it mapped
+   * the option's contents where it meant to map the array's. An empty
+   * array says "none" without needing one, which is what `instants`
+   * already does.
+   * @enum Varga
+   */
+  readonly vargas: readonly Varga[];
 }
 
 /**

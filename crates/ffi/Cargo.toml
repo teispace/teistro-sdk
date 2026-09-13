@@ -35,6 +35,8 @@ teistro-idl = { path = "../idl", default-features = false }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-serial = { path = "../serial" }
+teistro-vargas = { path = "../vargas" }
 libloading = "0.8"
 teistro-time = { path = "../time" }
 

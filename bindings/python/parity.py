@@ -29,6 +29,7 @@ from teistro import (
     Scale,
     Teistro,
     TeistroError,
+    Varga,
     at,
     date,
     iana_zone,
@@ -247,11 +248,16 @@ def main() -> None:
         # Two instants, so a per-chart section that ran charts-outermost
         # the wrong way round shows up as the second chart's values in
         # the first's place rather than as nothing at all.
+        # Two divisional charts asked for, and two rather than one
+        # because the layout is charts outermost then charts asked for:
+        # only two of each can catch a transposed stride.
         charts = geo.chart.found_many(
             instants=[2460482.5, 2460600.25],
             place=place,
             utc_offset_seconds=20700,
+            vargas=[Varga.D9, Varga.D10],
         )
+        put("chart-varga-count", charts.decoded.varga_count)
         put("chart-count", len(charts))
         put("chart-kind", charts.kind.full_key)
         put("chart-place-lat", charts.place.latitude_deg)
@@ -284,6 +290,16 @@ def main() -> None:
             put(f"chart-{i}-vipala", chart_columns.timing.vipala[i])
             put(f"chart-{i}-hora-number", chart_columns.timing.hora_number[i])
             put(f"chart-{i}-hora-lord", chart.hora_lord.full_key)
+            for v, varga in enumerate(chart.vargas):
+                put(f"chart-{i}-varga-{v}", varga.varga.full_key)
+                put(f"chart-{i}-varga-{v}-lagna-rashi", varga.lagna.rashi.full_key)
+                put(f"chart-{i}-varga-{v}-lagna-part", varga.lagna.part)
+                put(f"chart-{i}-varga-{v}-lagna-sign", varga.lagna.sign.full_key)
+                for j, in_varga in enumerate(varga.grahas):
+                    put(f"chart-{i}-varga-{v}-graha-{j}", in_varga.graha.full_key)
+                    put(f"chart-{i}-varga-{v}-graha-{j}-rashi", in_varga.at.rashi.full_key)
+                    put(f"chart-{i}-varga-{v}-graha-{j}-part", in_varga.at.part)
+                    put(f"chart-{i}-varga-{v}-graha-{j}-sign", in_varga.at.sign.full_key)
             for j, graha in enumerate(chart.grahas):
                 put(f"chart-{i}-graha-{j}", graha.graha.full_key)
                 put(f"chart-{i}-graha-{j}-lon", graha.longitude_deg)

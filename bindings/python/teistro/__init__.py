@@ -119,6 +119,7 @@ from .catalogue import (
     Rashi,
     Tithi,
     Vara,
+    Varga,
     Yoga,
     Coordinates,
     Era,
@@ -201,6 +202,12 @@ __all__ = [
     "library_file_name",
     "local_mean_zone",
     "when_unknown",
+    # The divisional charts: the catalogue member a caller names and the
+    # three shapes a chart's `vargas` answers with.
+    "Varga",
+    "VargaChart",
+    "VargaPlacement",
+    "PlacedInVarga",
 ]
 
 #: The environment variable that names the shared library, which wins over
@@ -853,6 +860,7 @@ class ChartArea(_Area):
         place: Observer,
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
+        vargas: Sequence[Varga] = (),
     ) -> Chart:
         """Founds a chart at an instant and a place.
 
@@ -872,6 +880,7 @@ class ChartArea(_Area):
             place=place,
             utc_offset_seconds=utc_offset_seconds,
             kind=kind,
+            vargas=vargas,
         ).at(0)
 
     def found_many(
@@ -881,6 +890,7 @@ class ChartArea(_Area):
         place: Observer,
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
+        vargas: Sequence[Varga] = (),
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
         crossing.
@@ -889,6 +899,11 @@ class ChartArea(_Area):
         batch, so a hundred instants cost one setup rather than a hundred
         — which is what a rectification pass wants. A batch of none is an
         empty result rather than an error.
+
+        `vargas` names the divisional charts to compute, in the order to
+        answer them; none by default, because a caller who wants a birth
+        chart should not pay for twenty-one of them
+        (`03-design/chart-reading.md` §4).
         """
         request = ChartRequest(
             kind=kind,
@@ -897,6 +912,12 @@ class ChartArea(_Area):
             longitude_deg=place.longitude_deg,
             altitude_m=place.altitude_m,
             utc_offset_seconds=utc_offset_seconds,
+            # The sections beside the foundation, which the SDK takes as
+            # a bit set and nothing here writes as one
+            # (`03-design/chart-reading.md` §5). Each becomes a named
+            # argument as it crosses.
+            sections=0,
+            vargas=list(vargas),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request)))
@@ -1167,6 +1188,54 @@ class Placement:
 
 
 @dataclass(frozen=True)
+class VargaPlacement:
+    """Where one body stands in a divisional chart."""
+
+    rashi: Rashi
+    """The sign the body stands in, in the rashi chart."""
+
+    part: int
+    """Which part of that sign it falls in, counted from zero."""
+
+    sign: Rashi
+    """The sign the divisional chart puts it in."""
+
+    @property
+    def keeps_its_sign(self) -> bool:
+        """Whether the divisional chart leaves the body where it was.
+
+        In the navamsha this is **vargottama**, the term the texts use;
+        in another chart it is the same fact without the name.
+        """
+        return self.sign == self.rashi
+
+
+@dataclass(frozen=True)
+class PlacedInVarga:
+    """Where one graha stands in a divisional chart."""
+
+    graha: Graha
+    """Which graha."""
+
+    at: VargaPlacement
+    """Where it stands."""
+
+
+@dataclass(frozen=True)
+class VargaChart:
+    """One divisional chart of one founded moment."""
+
+    varga: Varga
+    """Which divisional chart."""
+
+    lagna: VargaPlacement
+    """Where the lagna falls in it."""
+
+    grahas: list[PlacedInVarga]
+    """Every graha, in the order the foundation carries them."""
+
+
+@dataclass(frozen=True)
 class PlacedGraha:
     """One graha of a chart, read out of the batch's columns."""
 
@@ -1279,6 +1348,46 @@ class Chart:
     def hora_lord(self) -> Graha:
         """The graha that rules the hora holding the instant."""
         return Graha(self.batch.decoded.timing.hora_lord[self.index])
+
+    @property
+    def vargas(self) -> list[VargaChart]:
+        """The divisional charts asked for, in the order they were asked.
+
+        Empty unless `vargas` named some: a caller who wants a birth
+        chart does not pay for twenty-one of them
+        (`03-design/chart-reading.md` §4).
+        """
+        decoded = self.batch.decoded
+        count = decoded.varga_count
+        graha_count = decoded.graha_count
+        charts = decoded.vargas
+        placed = decoded.varga_grahas
+        out: list[VargaChart] = []
+        for at in range(count):
+            row = self.index * count + at
+            base = row * graha_count
+            out.append(
+                VargaChart(
+                    varga=Varga(charts.varga[row]),
+                    lagna=VargaPlacement(
+                        rashi=Rashi(charts.lagna_rashi[row]),
+                        part=charts.lagna_part[row],
+                        sign=Rashi(charts.lagna_sign[row]),
+                    ),
+                    grahas=[
+                        PlacedInVarga(
+                            graha=Graha(decoded.grahas.graha[self.index * graha_count + j]),
+                            at=VargaPlacement(
+                                rashi=Rashi(placed.rashi[base + j]),
+                                part=placed.part[base + j],
+                                sign=Rashi(placed.sign[base + j]),
+                            ),
+                        )
+                        for j in range(graha_count)
+                    ],
+                )
+            )
+        return out
 
     @property
     def grahas(self) -> list[PlacedGraha]:

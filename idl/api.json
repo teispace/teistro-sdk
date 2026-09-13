@@ -8864,6 +8864,51 @@
           },
           "doc": "Reserved; write zero.",
           "meta": {}
+        },
+        {
+          "name": "sections",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "reserved_sections",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "doc": "Reserved; write zero.",
+          "meta": {}
+        },
+        {
+          "name": "vargas",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u16"
+            },
+            "mutable": false
+          },
+          "doc": "Which divisional charts to compute, as catalogue ids, in the\norder they should be answered in; null with a count of zero for\nnone, as `instants` takes a grid of none.\n\n**Not `nullable`**, and that is the description's word rather\nthan a promise about the pointer: `nullable` makes the generated\nfield an `Option` of the whole parameter, and an optional *array\nof enum members* is a shape no emitter has been shown — it mapped\nthe option's contents where it meant to map the array's. An empty\narray says \"none\" without needing one, which is what `instants`\nalready does.",
+          "meta": {
+            "enum": "Varga",
+            "len": "varga_count"
+          }
+        },
+        {
+          "name": "varga_count",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "doc": "How many divisional charts `vargas` points at.",
+          "meta": {}
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -12004,6 +12049,11 @@
               "doc": "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."
             },
             {
+              "name": "varga_count",
+              "scalar": "u32",
+              "doc": "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."
+            },
+            {
               "name": "latitude_deg",
               "scalar": "f64",
               "doc": "The place's latitude, degrees north."
@@ -12427,6 +12477,62 @@
           "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
           "kind": "bytes",
           "fields": []
+        },
+        {
+          "id": 13,
+          "name": "vargas",
+          "doc": "One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "varga",
+              "scalar": "u16",
+              "doc": "Which divisional chart.",
+              "enum": "Varga"
+            },
+            {
+              "name": "lagna_rashi",
+              "scalar": "u16",
+              "doc": "The sign the lagna stands in, in the rashi chart.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "lagna_part",
+              "scalar": "u16",
+              "doc": "Which part of that sign the lagna falls in, counted from zero."
+            },
+            {
+              "name": "lagna_sign",
+              "scalar": "u16",
+              "doc": "The sign the divisional chart puts the lagna in.",
+              "enum": "Rashi"
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "name": "varga_grahas",
+          "doc": "One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "rashi",
+              "scalar": "u16",
+              "doc": "The sign the graha stands in, in the rashi chart.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "part",
+              "scalar": "u16",
+              "doc": "Which part of that sign it falls in, counted from zero."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign the divisional chart puts it in.",
+              "enum": "Rashi"
+            }
+          ]
         }
       ]
     },

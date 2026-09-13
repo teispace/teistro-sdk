@@ -484,6 +484,7 @@ pub fn charts() -> BlobSchema {
                     ColumnDef::new("kind", Scalar::U16, "What kind of chart these are.").of_enum("ChartKind"),
                     ColumnDef::new("chart_count", Scalar::U32, "How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold."),
                     ColumnDef::new("graha_count", Scalar::U32, "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."),
+                    ColumnDef::new("varga_count", Scalar::U32, "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."),
                     ColumnDef::new("latitude_deg", Scalar::F64, "The place's latitude, degrees north."),
                     ColumnDef::new("longitude_deg", Scalar::F64, "The place's longitude, degrees east."),
                     ColumnDef::new("altitude_m", Scalar::F64, "The place's altitude, metres."),
@@ -536,6 +537,27 @@ pub fn charts() -> BlobSchema {
                 12,
                 "provenance",
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
+            ),
+            SectionSchema::columns(
+                13,
+                "vargas",
+                "One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).",
+                vec![
+                    ColumnDef::new("varga", Scalar::U16, "Which divisional chart.").of_enum("Varga"),
+                    ColumnDef::new("lagna_rashi", Scalar::U16, "The sign the lagna stands in, in the rashi chart.").of_enum("Rashi"),
+                    ColumnDef::new("lagna_part", Scalar::U16, "Which part of that sign the lagna falls in, counted from zero."),
+                    ColumnDef::new("lagna_sign", Scalar::U16, "The sign the divisional chart puts the lagna in.").of_enum("Rashi"),
+                ],
+            ),
+            SectionSchema::columns(
+                14,
+                "varga_grahas",
+                "One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.",
+                vec![
+                    ColumnDef::new("rashi", Scalar::U16, "The sign the graha stands in, in the rashi chart.").of_enum("Rashi"),
+                    ColumnDef::new("part", Scalar::U16, "Which part of that sign it falls in, counted from zero."),
+                    ColumnDef::new("sign", Scalar::U16, "The sign the divisional chart puts it in.").of_enum("Rashi"),
+                ],
             ),
         ],
     }

@@ -227,9 +227,38 @@ by all four runners.
    can see.
 2. **The boundary**: the five sections described, encoded and gated by
    `check-ffi`, with `cargo xtask gen ffi` writing the four decoders.
+
+   **The divisional charts have crossed**, which is the first of the
+   five and the one that proves the rest. `TsChartRequest` grew
+   `sections` and a varga list; `ts_chart_found` builds a `ChartRequest`
+   and calls the façade's `readings`; the blob grew `vargas` and
+   `varga_grahas` beside a `varga_count` in the summary; and all four
+   ergonomic layers offer `vargas` and answer with a list of charts,
+   each graha placed as `{rashi, part, sign}` — where `sign == rashi` is
+   the body keeping its sign, which in the navamsha is *vargottama*.
+
+   **Four bindings agree on 835 values**, 161 of them new and every one
+   right on its first run. The runners ask for **two** charts over
+   **two** instants deliberately: the layout is charts outermost then
+   charts asked for, so one of each would pass a transposed stride.
+
+   Three things the crossing found. `ts_chart_found` and
+   `ts_panchanga_days` still **composed their own founder and almanac** —
+   the second copy of each, left behind by the dependency inversion —
+   and now call the façade. Both request structs carried a `struct_size`
+   that **nothing read**, so a caller compiled against an older header
+   would have read past the end of a grown struct rather than met a
+   `SCHEMA_VERSION` refusal; eleven of the thirteen boundary structs
+   were registered and these two were not. And `nullable` on an *array
+   of enum members* is a shape no emitter has been shown — it mapped the
+   option's contents where it meant to map the array's — so the varga
+   list is not nullable, as `instants` is not: an empty array says
+   "none" without needing one.
 3. **The ergonomic layers**, one per binding, each with its own tests.
+   Done for the divisional charts, and the pattern for the other four.
 4. **Parity and the examples**: the sections' values compared across four
-   runners, and a ninth example in each binding.
+   runners, and a ninth example in each binding. The parity half is done
+   for the divisional charts.
 5. **The JSON Schema emitter**, which `serial-and-the-envelope.md` §8
    says waits for a whole document to describe.
 

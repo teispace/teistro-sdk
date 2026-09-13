@@ -362,6 +362,61 @@ export interface ChartsTiming {
 }
 
 /**
+ * The `vargas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
+ */
+export interface ChartsVargas {
+  /**
+   * Which divisional chart.
+   * The values are `Varga` ids.
+   */
+  readonly varga: Uint16Array;
+  /**
+   * The sign the lagna stands in, in the rashi chart.
+   * The values are `Rashi` ids.
+   */
+  readonly lagnaRashi: Uint16Array;
+  /**
+   * Which part of that sign the lagna falls in, counted from zero.
+   */
+  readonly lagnaPart: Uint16Array;
+  /**
+   * The sign the divisional chart puts the lagna in.
+   * The values are `Rashi` ids.
+   */
+  readonly lagnaSign: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `varga_grahas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+ */
+export interface ChartsVargaGrahas {
+  /**
+   * The sign the graha stands in, in the rashi chart.
+   * The values are `Rashi` ids.
+   */
+  readonly rashi: Uint16Array;
+  /**
+   * Which part of that sign it falls in, counted from zero.
+   */
+  readonly part: Uint16Array;
+  /**
+   * The sign the divisional chart puts it in.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -469,6 +524,10 @@ export interface Charts {
    */
   readonly grahaCount: number;
   /**
+   * How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`.
+   */
+  readonly vargaCount: number;
+  /**
    * The place's latitude, degrees north.
    */
   readonly latitudeDeg: number;
@@ -559,6 +618,14 @@ export interface Charts {
    * UTF-8 JSON: the provenance envelope of the result, canonical.
    */
   readonly provenance: string;
+  /**
+   * One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
+   */
+  readonly vargas: ChartsVargas;
+  /**
+   * One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+   */
+  readonly vargaGrahas: ChartsVargaGrahas;
 }
 
 /**

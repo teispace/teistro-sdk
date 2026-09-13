@@ -613,11 +613,13 @@ final class ChartArea extends _Area {
     required Observer place,
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
+    List<Varga> vargas = const <Varga>[],
   }) => foundMany(
     instants: <double>[instant],
     place: place,
     utcOffsetSeconds: utcOffsetSeconds,
     kind: kind,
+    vargas: vargas,
   ).at(0);
 
   /// Founds a chart at each of many instants, at one place, in one
@@ -627,11 +629,16 @@ final class ChartArea extends _Area {
   /// batch, so a hundred instants cost one setup rather than a hundred —
   /// which is what a rectification pass wants. A batch of none is an
   /// empty result rather than an error.
+  /// `vargas` names the divisional charts to compute, in the order to
+  /// answer them; none by default, because a caller who wants a birth
+  /// chart should not pay for twenty-one of them
+  /// (`03-design/chart-reading.md` §4).
   Charts foundMany({
     required List<double> instants,
     required Observer place,
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
+    List<Varga> vargas = const <Varga>[],
   }) => decodeCharts(
     _context._guarded(
       () => _context._inner.chartFound(
@@ -642,6 +649,12 @@ final class ChartArea extends _Area {
           longitudeDeg: place.longitudeDeg,
           altitudeM: place.altitudeM,
           utcOffsetSeconds: utcOffsetSeconds,
+          // The sections beside the foundation, which the SDK takes as
+          // a bit set and nothing here writes as one
+          // (`03-design/chart-reading.md` §5). Each becomes a named
+          // argument as it crosses.
+          sections: 0,
+          vargas: vargas,
         ),
       ),
     ),
@@ -1183,6 +1196,60 @@ final class Placement {
 }
 
 /// One graha of a chart, read out of the batch's columns.
+/// Where one body stands in a divisional chart.
+///
+/// `sign == rashi` is the body keeping the sign it was already in, which
+/// in the navamsha is **vargottama** and in another chart is the same
+/// fact without the name.
+final class VargaPlacement {
+  const VargaPlacement({
+    required this.rashi,
+    required this.part,
+    required this.sign,
+  });
+
+  /// The sign the body stands in, in the rashi chart.
+  final Rashi rashi;
+
+  /// Which part of that sign it falls in, counted from zero.
+  final int part;
+
+  /// The sign the divisional chart puts it in.
+  final Rashi sign;
+
+  /// Whether the divisional chart leaves the body in the sign it was in.
+  bool get keepsItsSign => sign == rashi;
+}
+
+/// Where one graha stands in a divisional chart.
+final class PlacedInVarga {
+  const PlacedInVarga({required this.graha, required this.at});
+
+  /// Which graha.
+  final Graha graha;
+
+  /// Where it stands.
+  final VargaPlacement at;
+}
+
+/// One divisional chart of one founded moment.
+final class VargaChart {
+  const VargaChart({
+    required this.varga,
+    required this.lagna,
+    required this.grahas,
+  });
+
+  /// Which divisional chart.
+  final Varga varga;
+
+  /// Where the lagna falls in it.
+  final VargaPlacement lagna;
+
+  /// Every graha, in the order the foundation carries them.
+  final List<PlacedInVarga> grahas;
+}
+
 final class PlacedGraha {
   const PlacedGraha({
     required this.graha,
@@ -1282,6 +1349,41 @@ final class Chart {
 
   /// The graha that rules the hora holding the instant.
   Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+
+  /// The divisional charts asked for, in the order they were asked.
+  ///
+  /// Empty unless `vargas` named some: a caller who wants a birth chart
+  /// does not pay for twenty-one of them
+  /// (`03-design/chart-reading.md` §4).
+  List<VargaChart> get vargas {
+    final count = batch.vargaCount;
+    final grahaCount = batch.grahaCount;
+    final v = batch.vargas;
+    final g = batch.vargaGrahas;
+    return List<VargaChart>.generate(count, (at) {
+      final row = index * count + at;
+      final from = row * grahaCount;
+      return VargaChart(
+        varga: Varga.byId(v.varga[row]),
+        lagna: VargaPlacement(
+          rashi: Rashi.byId(v.lagnaRashi[row]),
+          part: v.lagnaPart[row],
+          sign: Rashi.byId(v.lagnaSign[row]),
+        ),
+        grahas: List<PlacedInVarga>.generate(
+          grahaCount,
+          (j) => PlacedInVarga(
+            graha: Graha.byId(batch.grahas.graha[index * grahaCount + j]),
+            at: VargaPlacement(
+              rashi: Rashi.byId(g.rashi[from + j]),
+              part: g.part[from + j],
+              sign: Rashi.byId(g.sign[from + j]),
+            ),
+          ),
+        ),
+      );
+    });
+  }
 
   /// The grahas, in the catalogue's order, one object each.
   ///

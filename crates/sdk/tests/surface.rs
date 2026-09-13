@@ -17,7 +17,7 @@
 use teistro::catalogue::{Calendar, Catalogued, ChartKind, Era, Point, Varga};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Reading, Scale, TimeScale,
+    Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, TimeScale,
     UtcOffset,
 };
 use teistro_core::envelope::CalendarResolution;
@@ -675,14 +675,14 @@ fn a_reading_carries_the_sections_it_was_asked_for() {
     // not pay for twenty-one divisional charts.
     let bare = sdk
         .chart()
-        .reading(instant, &Reading::at(place, offset))
+        .reading(instant, &ChartRequest::at(place, offset))
         .expect("the built-in ephemeris");
     assert_eq!(bare.value.sections(), vec!["foundation"]);
 
     // And everything, which is what a consumer storing a chart wants.
     let whole = sdk
         .chart()
-        .reading(instant, &Reading::at(place, offset).with_everything())
+        .reading(instant, &ChartRequest::at(place, offset).with_everything())
         .expect("the built-in ephemeris");
     assert_eq!(
         whole.value.sections(),
@@ -766,7 +766,7 @@ fn a_reading_carries_the_sections_it_was_asked_for() {
     // does — and the seal is of *this* document rather than of the list.
     let batch = sdk
         .chart()
-        .readings(&[instant], &Reading::at(place, offset).with_houses())
+        .readings(&[instant], &ChartRequest::at(place, offset).with_houses())
         .expect("the built-in ephemeris");
     assert_eq!(batch.value.len(), 1);
     assert_ne!(batch.provenance.content_hash, whole.provenance.content_hash);

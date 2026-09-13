@@ -185,6 +185,64 @@ pub fn ayanamsha_to_str(value: u16) -> String {
     .to_string()
 }
 
+/// A `Varga` from the string `catalogue.js` names it by.
+pub fn varga_from_str(value: &str) -> Result<u16> {
+    match value {
+        "varga.D1" => Ok(0),
+        "varga.D2" => Ok(1),
+        "varga.D3" => Ok(2),
+        "varga.D4" => Ok(3),
+        "varga.D5" => Ok(4),
+        "varga.D6" => Ok(5),
+        "varga.D7" => Ok(6),
+        "varga.D8" => Ok(7),
+        "varga.D9" => Ok(8),
+        "varga.D10" => Ok(9),
+        "varga.D11" => Ok(10),
+        "varga.D12" => Ok(11),
+        "varga.D16" => Ok(12),
+        "varga.D20" => Ok(13),
+        "varga.D24" => Ok(14),
+        "varga.D27" => Ok(15),
+        "varga.D30" => Ok(16),
+        "varga.D40" => Ok(17),
+        "varga.D45" => Ok(18),
+        "varga.D60" => Ok(19),
+        "varga.D150" => Ok(20),
+        other => Err(Error::from_reason(format!("`{other}` is not a Varga"))),
+    }
+}
+
+/// The string for a `Varga`; a value from a newer library is
+/// `unknown`.
+pub fn varga_to_str(value: u16) -> String {
+    match value {
+        0 => "varga.D1",
+        1 => "varga.D2",
+        2 => "varga.D3",
+        3 => "varga.D4",
+        4 => "varga.D5",
+        5 => "varga.D6",
+        6 => "varga.D7",
+        7 => "varga.D8",
+        8 => "varga.D9",
+        9 => "varga.D10",
+        10 => "varga.D11",
+        11 => "varga.D12",
+        12 => "varga.D16",
+        13 => "varga.D20",
+        14 => "varga.D24",
+        15 => "varga.D27",
+        16 => "varga.D30",
+        17 => "varga.D40",
+        18 => "varga.D45",
+        19 => "varga.D60",
+        20 => "varga.D150",
+        _ => "unknown",
+    }
+    .to_string()
+}
+
 /// A `ChartKind` from the string `catalogue.js` names it by.
 pub fn chart_kind_from_str(value: &str) -> Result<u16> {
     match value {
@@ -1693,6 +1751,31 @@ pub struct ChartRequest {
     /// clock the day's date is read in.
     /// Unit: s. Range: [-64800,64800]. Example: 20700.
     pub utc_offset_seconds: i32,
+    /// Which of the document's sections to compute beside the
+    /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
+    /// states, 4 the aspects, 8 the derived points, 16 the houses
+    /// service. Zero for the foundation alone, which is what every
+    /// caller compiled against an earlier header passes by not passing
+    /// it at all.
+    ///
+    /// A bit set here and a named option in every ergonomic layer, which
+    /// is the split `ts_frame_pack` already has: nothing but a generated
+    /// layer writes bits (`03-design/chart-reading.md` §5).
+    /// Example: 0.
+    pub sections: u32,
+    /// Which divisional charts to compute, as catalogue ids, in the
+    /// order they should be answered in; null with a count of zero for
+    /// none, as `instants` takes a grid of none.
+    ///
+    /// **Not `nullable`**, and that is the description's word rather
+    /// than a promise about the pointer: `nullable` makes the generated
+    /// field an `Option` of the whole parameter, and an optional *array
+    /// of enum members* is a shape no emitter has been shown — it mapped
+    /// the option's contents where it meant to map the array's. An empty
+    /// array says "none" without needing one, which is what `instants`
+    /// already does.
+    /// Enum: Varga.
+    pub vargas: Vec<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1704,6 +1787,8 @@ pub struct HeldChartRequest {
     longitude_deg: f64,
     altitude_m: f64,
     utc_offset_seconds: i32,
+    sections: u32,
+    vargas: Vec<u16>,
 }
 
 impl HeldChartRequest {
@@ -1720,6 +1805,10 @@ impl HeldChartRequest {
             altitude_m: self.altitude_m,
             utc_offset_seconds: self.utc_offset_seconds,
             reserved_tail: Default::default(),
+            sections: self.sections,
+            reserved_sections: Default::default(),
+            vargas: self.vargas.as_ptr(),
+            varga_count: self.vargas.len(),
         }
     }
 }
@@ -1734,6 +1823,12 @@ impl ChartRequest {
             longitude_deg: self.longitude_deg as f64,
             altitude_m: self.altitude_m as f64,
             utc_offset_seconds: self.utc_offset_seconds as i32,
+            sections: self.sections as u32,
+            vargas: self
+                .vargas
+                .iter()
+                .map(|v| varga_from_str(v))
+                .collect::<Result<Vec<_>>>()?,
         })
     }
 
@@ -1754,6 +1849,11 @@ impl ChartRequest {
             longitude_deg: raw.longitude_deg as _,
             altitude_m: raw.altitude_m as _,
             utc_offset_seconds: raw.utc_offset_seconds as _,
+            sections: raw.sections as _,
+            vargas: unsafe { slice_or_empty(raw.vargas, raw.varga_count) }
+                .iter()
+                .map(|v| varga_to_str(*v))
+                .collect(),
         }
     }
 }

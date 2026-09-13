@@ -23,7 +23,7 @@ use teistro_vargas::chart::{Axis, chart as varga_chart};
 use crate::area::system_of;
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
-use crate::reading::{Reading, Sections};
+use crate::reading::{ChartRequest, Sections};
 
 /// `sdk.chart`: the foundation every reading is built on — the lagna,
 /// the day's lagna, the ayanamsha applied, the day part, the grahas
@@ -175,7 +175,7 @@ impl<'a> ChartArea<'a> {
     pub fn readings(
         self,
         instants: &[JulianDay<Utc>],
-        request: &Reading,
+        request: &ChartRequest,
     ) -> Result<Envelope<Vec<Document>>, Error> {
         let place = request.place();
         let founded = self.founding(request.offset(), |founder| {
@@ -197,7 +197,7 @@ impl<'a> ChartArea<'a> {
     pub fn reading(
         self,
         instant: JulianDay<Utc>,
-        request: &Reading,
+        request: &ChartRequest,
     ) -> Result<Envelope<Document>, Error> {
         let many = self.readings(&[instant], request)?;
         let Envelope { value, provenance } = many;
@@ -219,7 +219,7 @@ impl<'a> ChartArea<'a> {
         self,
         founder: &Founder<'_, dyn EphemerisProvider + '_>,
         foundation: &ChartFoundation,
-        request: &Reading,
+        request: &ChartRequest,
     ) -> Result<Document, Error> {
         let settings = self.context.settings();
         let mut document = Document::of(foundation.clone());

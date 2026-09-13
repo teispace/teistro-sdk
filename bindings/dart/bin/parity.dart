@@ -251,11 +251,16 @@ void main() {
   // Two instants, so a per-chart section that ran charts-outermost the
   // wrong way round shows up as the second chart's values in the first's
   // place rather than as nothing at all.
+  // Two divisional charts asked for, and two rather than one because
+  // the layout is charts outermost then charts asked for: only two of
+  // each can catch a transposed stride.
   final charts = geo.chart.foundMany(
     instants: <double>[2460482.5, 2460600.25],
     place: place,
     utcOffsetSeconds: 20700,
+    vargas: <Varga>[Varga.d9, Varga.d10],
   );
+  put('chart-varga-count', charts.vargaCount);
   put('chart-count', charts.chartCount);
   put('chart-kind', ChartKind.byId(charts.kind).fullKey);
   put('chart-place-lat', charts.latitudeDeg);
@@ -289,6 +294,21 @@ void main() {
     put('chart-$i-vipala', charts.timing.vipala[i]);
     put('chart-$i-hora-number', charts.timing.horaNumber[i]);
     put('chart-$i-hora-lord', chart.horaLord.fullKey);
+    final vargas = chart.vargas;
+    for (var v = 0; v < vargas.length; v += 1) {
+      final varga = vargas[v];
+      put('chart-$i-varga-$v', varga.varga.fullKey);
+      put('chart-$i-varga-$v-lagna-rashi', varga.lagna.rashi.fullKey);
+      put('chart-$i-varga-$v-lagna-part', varga.lagna.part);
+      put('chart-$i-varga-$v-lagna-sign', varga.lagna.sign.fullKey);
+      for (var j = 0; j < varga.grahas.length; j += 1) {
+        final placed = varga.grahas[j];
+        put('chart-$i-varga-$v-graha-$j', placed.graha.fullKey);
+        put('chart-$i-varga-$v-graha-$j-rashi', placed.at.rashi.fullKey);
+        put('chart-$i-varga-$v-graha-$j-part', placed.at.part);
+        put('chart-$i-varga-$v-graha-$j-sign', placed.at.sign.fullKey);
+      }
+    }
     final grahas = chart.grahas;
     for (var j = 0; j < grahas.length; j += 1) {
       final graha = grahas[j];

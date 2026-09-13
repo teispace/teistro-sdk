@@ -821,6 +821,42 @@ final class ChartRequestStruct extends ffi.Struct {
   @ffi.Int32()
   external int reservedTail;
 
+  /// Which of the document's sections to compute beside the
+  /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
+  /// states, 4 the aspects, 8 the derived points, 16 the houses
+  /// service. Zero for the foundation alone, which is what every
+  /// caller compiled against an earlier header passes by not passing
+  /// it at all.
+  ///
+  /// A bit set here and a named option in every ergonomic layer, which
+  /// is the split `ts_frame_pack` already has: nothing but a generated
+  /// layer writes bits (`03-design/chart-reading.md` §5).
+  /// Example: 0.
+  @ffi.Uint32()
+  external int sections;
+
+  /// Reserved; write zero.
+  @ffi.Uint32()
+  external int reservedSections;
+
+  /// Which divisional charts to compute, as catalogue ids, in the
+  /// order they should be answered in; null with a count of zero for
+  /// none, as `instants` takes a grid of none.
+  ///
+  /// **Not `nullable`**, and that is the description's word rather
+  /// than a promise about the pointer: `nullable` makes the generated
+  /// field an `Option` of the whole parameter, and an optional *array
+  /// of enum members* is a shape no emitter has been shown — it mapped
+  /// the option's contents where it meant to map the array's. An empty
+  /// array says "none" without needing one, which is what `instants`
+  /// already does.
+  /// Enum: Varga.
+  external ffi.Pointer<ffi.Uint16> vargas;
+
+  /// How many divisional charts `vargas` points at.
+  @ffi.Size()
+  external int vargaCount;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2575,7 +2611,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2608,6 +2644,33 @@ final class ChartRequest {
   /// Unit: s. Range: [-64800,64800]. Example: 20700.
   final int utcOffsetSeconds;
 
+  /// Which of the document's sections to compute beside the
+  /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
+  /// states, 4 the aspects, 8 the derived points, 16 the houses
+  /// service. Zero for the foundation alone, which is what every
+  /// caller compiled against an earlier header passes by not passing
+  /// it at all.
+  ///
+  /// A bit set here and a named option in every ergonomic layer, which
+  /// is the split `ts_frame_pack` already has: nothing but a generated
+  /// layer writes bits (`03-design/chart-reading.md` §5).
+  /// Example: 0.
+  final int sections;
+
+  /// Which divisional charts to compute, as catalogue ids, in the
+  /// order they should be answered in; null with a count of zero for
+  /// none, as `instants` takes a grid of none.
+  ///
+  /// **Not `nullable`**, and that is the description's word rather
+  /// than a promise about the pointer: `nullable` makes the generated
+  /// field an `Option` of the whole parameter, and an optional *array
+  /// of enum members* is a shape no emitter has been shown — it mapped
+  /// the option's contents where it meant to map the array's. An empty
+  /// array says "none" without needing one, which is what `instants`
+  /// already does.
+  /// Enum: Varga.
+  final List<Varga> vargas;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2628,6 +2691,13 @@ final class ChartRequest {
     raw.longitudeDeg = longitudeDeg;
     raw.altitudeM = altitudeM;
     raw.utcOffsetSeconds = utcOffsetSeconds;
+    raw.sections = sections;
+    final vargasBuffer = arena<ffi.Uint16>(vargas.length);
+    for (var i = 0; i < vargas.length; i++) {
+      vargasBuffer[i] = vargas[i].id;
+    }
+    raw.vargas = vargasBuffer;
+    raw.vargaCount = vargas.length;
   }
 
   /// Reads the value a call filled in.
@@ -2643,6 +2713,10 @@ final class ChartRequest {
         longitudeDeg: raw.longitudeDeg,
         altitudeM: raw.altitudeM,
         utcOffsetSeconds: raw.utcOffsetSeconds,
+        sections: raw.sections,
+        vargas: [
+          for (var i = 0; i < raw.vargaCount; i++) Varga.byId(raw.vargas[i]),
+        ],
       );
 }
 

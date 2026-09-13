@@ -41,7 +41,7 @@ use teistro_panchanga::span::Span;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
-use crate::support::{with_context, write_plain};
+use crate::support::{c_struct, read_in, with_context, write_plain};
 
 /// Which lunar-month convention a day's month leads with.
 #[repr(u8)]
@@ -176,6 +176,18 @@ pub struct TsPanchangaRequest {
     /// Reserved; write zero.
     pub reserved_tail: i32,
 }
+
+// **The handshake, which this struct carried and nothing read.**
+// `struct_size` is documented as "`sizeof(ts_panchanga_request)` as the
+// caller compiled it", and the entry point below dereferenced the
+// pointer raw: a caller compiled against an older header passed a
+// shorter struct and the library read past it, which is undefined
+// behaviour rather than the `SCHEMA_VERSION` refusal the field exists to
+// give. Eleven of the thirteen boundary structs with the field were
+// registered; this and `TsChartRequest` were not, and they are the two
+// biggest requests. `check-lints`' `handshake-is-checked` holds the
+// class now.
+c_struct!(TsPanchangaRequest);
 
 /// A day's own values, in the order `days` declares them.
 #[must_use]
@@ -567,11 +579,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
     out_blob: *mut TsBlob,
 ) -> Status {
     with_context(context, |ctx| {
-        if request.is_null() {
-            return Err(crate::support::null("request"));
-        }
-        // SAFETY: non-null; the caller promises a readable request.
-        let asked = unsafe { *request };
+        // SAFETY: the caller promises a readable request; `read_in`
+        // checks the handshake before anything else reads a field.
+        let asked = *unsafe { read_in(request, "request") }?;
         let place = Place::new(
             Latitude::try_new(asked.latitude_deg)
                 .map_err(|e| Error::from(e).with_field("latitude_deg"))?,

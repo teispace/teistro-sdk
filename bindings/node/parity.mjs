@@ -24,6 +24,7 @@ import {
   packFrame,
   sdkVersion,
   unpackFrame,
+  Varga,
 } from './lib/index.js';
 
 const report = new Map();
@@ -218,11 +219,17 @@ put('geo-settings-hash', geo.settingsHash);
 // Two instants, so a per-chart section that ran charts-outermost the
 // wrong way round shows up as the second chart's values in the first's
 // place rather than as nothing at all.
+// **Two divisional charts asked for**, and two rather than one because
+// the layout is charts outermost then charts asked for: one varga over
+// two instants and one instant over two vargas are the same number of
+// rows, and only asking for two of each can catch a transposed stride.
 const charts = geo.chart.foundMany({
   instants: [2460482.5, 2460600.25],
   place,
   utcOffsetSeconds: 20700,
+  vargas: [Varga.D9, Varga.D10],
 });
+put('chart-varga-count', charts.vargaCount);
 put('chart-count', charts.length);
 put('chart-kind', charts.kind);
 put('chart-place-lat', charts.place.latitude);
@@ -250,6 +257,18 @@ for (const chart of charts) {
   put(`chart-${i}-vipala`, chart.timing.vipala);
   put(`chart-${i}-hora-number`, chart.timing.horaNumber);
   put(`chart-${i}-hora-lord`, chart.timing.horaLord);
+  chart.vargas.forEach((varga, v) => {
+    put(`chart-${i}-varga-${v}`, varga.varga);
+    put(`chart-${i}-varga-${v}-lagna-rashi`, varga.lagna.rashi);
+    put(`chart-${i}-varga-${v}-lagna-part`, varga.lagna.part);
+    put(`chart-${i}-varga-${v}-lagna-sign`, varga.lagna.sign);
+    varga.grahas.forEach((placed, j) => {
+      put(`chart-${i}-varga-${v}-graha-${j}`, placed.graha);
+      put(`chart-${i}-varga-${v}-graha-${j}-rashi`, placed.rashi);
+      put(`chart-${i}-varga-${v}-graha-${j}-part`, placed.part);
+      put(`chart-${i}-varga-${v}-graha-${j}-sign`, placed.sign);
+    });
+  });
   chart.grahas.forEach((graha, j) => {
     put(`chart-${i}-graha-${j}`, graha.graha);
     put(`chart-${i}-graha-${j}-lon`, graha.longitudeDeg);

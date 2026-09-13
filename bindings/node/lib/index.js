@@ -38,6 +38,7 @@ import {
   PakshaById,
   PanchakaById,
   RashiById,
+  VargaById,
   SDK_VERSION,
   TithiById,
   TimeScaleById,
@@ -467,6 +468,11 @@ export class Charts extends Decoded {
     for (let i = 0; i < this.length; i += 1) yield this.at(i);
   }
 
+  /** How many divisional charts each chart of the batch holds. */
+  get vargaCount() {
+    return this.decoded.vargaCount;
+  }
+
   /** The steps the SDK applied, each `{ name, implementation }`. */
   get steps() {
     return JSON.parse(this.decoded.steps);
@@ -577,6 +583,43 @@ export class Chart {
    * outermost; this reads this chart's stride out of them into the shape
    * an application wants, which is a row.
    */
+  /**
+   * The divisional charts asked for, in the order they were asked.
+   *
+   * Empty unless `vargas` named some: a caller who wants a birth chart
+   * does not pay for twenty-one of them
+   * (`03-design/chart-reading.md` §4).
+   *
+   * Each is `{ varga, lagna, grahas }`, where a placement is
+   * `{ rashi, part, sign }` — the sign the body stands in, which part of
+   * it, and the sign the divisional chart puts it in. `sign === rashi` is
+   * the body keeping its sign, which in the navamsha is **vargottama**.
+   */
+  get vargas() {
+    const d = this.#batch.decoded;
+    const count = d.vargaCount;
+    const grahaCount = d.grahaCount;
+    const base = this.#index * count;
+    return Array.from({ length: count }, (_, v) => {
+      const row = base + v;
+      const from = row * grahaCount;
+      return {
+        varga: VargaById.get(d.vargas.varga[row]) ?? 'unknown',
+        lagna: {
+          rashi: RashiById.get(d.vargas.lagnaRashi[row]) ?? 'unknown',
+          part: d.vargas.lagnaPart[row],
+          sign: RashiById.get(d.vargas.lagnaSign[row]) ?? 'unknown',
+        },
+        grahas: Array.from({ length: grahaCount }, (_, j) => ({
+          graha: GrahaById.get(d.grahas.graha[this.#index * grahaCount + j]) ?? 'unknown',
+          rashi: RashiById.get(d.vargaGrahas.rashi[from + j]) ?? 'unknown',
+          part: d.vargaGrahas.part[from + j],
+          sign: RashiById.get(d.vargaGrahas.sign[from + j]) ?? 'unknown',
+        })),
+      };
+    });
+  }
+
   get grahas() {
     const g = this.#batch.decoded.grahas;
     const count = this.#batch.decoded.grahaCount;
@@ -1381,6 +1424,10 @@ class ChartArea extends Area {
    * @param {number} request.utcOffsetSeconds the local clock's offset
    *   from UTC, east positive
    * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
+   * @param {ReadonlyArray<string>} [request.vargas] the divisional
+   *   charts to compute, as `Varga` keys, in the order to answer them;
+   *   none by default, because a caller who wants a birth chart should
+   *   not pay for twenty-one of them
    * @returns {Charts}
    */
   foundMany(request) {
@@ -1393,10 +1440,40 @@ class ChartArea extends Area {
         longitudeDeg: finite(place.longitude, 'place.longitude'),
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
         utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+        // The sections beside the foundation, which the SDK takes as a
+        // bit set and nothing here writes as one
+        // (`03-design/chart-reading.md` §5). None are offered yet
+        // beyond the divisional charts; each becomes a named option as
+        // it crosses.
+        sections: 0,
+        vargas: vargaKeys(request.vargas),
       }),
     );
     return new Charts(bytes);
   }
+}
+
+/**
+ * The divisional charts a request asked for, checked.
+ *
+ * An absent list is none, which is the default: the sections are
+ * "pay for what you ask for" (`03-design/chart-reading.md` §4).
+ *
+ * @param {ReadonlyArray<string>|undefined} asked
+ * @returns {string[]}
+ */
+function vargaKeys(asked) {
+  if (asked === undefined || asked === null) return [];
+  const list = ArrayBuffer.isView(asked) ? Array.from(asked) : asked;
+  if (!Array.isArray(list)) {
+    throw new TypeError('vargas: expected an array of Varga keys');
+  }
+  return list.map((key, at) => {
+    if (typeof key !== 'string') {
+      throw new TypeError(`vargas[${at}]: expected a Varga key`);
+    }
+    return key;
+  });
 }
 
 /**

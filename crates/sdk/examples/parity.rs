@@ -32,11 +32,13 @@
 
 use std::collections::BTreeMap;
 
-use teistro::catalogue::{Calendar, ChartKind, Graha};
+use teistro::catalogue::{Calendar, ChartKind, Graha, Varga};
 use teistro::{
-    Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, Script, TimeScale,
+    Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
+    TimeScale,
 };
 use teistro_core::envelope::CalendarResolution;
+use teistro_core::envelope::Envelope;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::time::UtcOffset;
@@ -763,10 +765,38 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         JulianDay::<Utc>::literal(2_460_482.5),
         JulianDay::<Utc>::literal(2_460_600.25),
     ];
-    let founded = geo
+    // Two divisional charts asked for, and two rather than one because
+    // the layout the other three decode is charts outermost then charts
+    // asked for: only two of each can catch a transposed stride.
+    let asked = ChartRequest::at(place, offset)
+        .with_kind(ChartKind::Natal)
+        .with_vargas([Varga::D9, Varga::D10]);
+    let read = geo
         .chart()
-        .found_many(&instants, &place, offset, ChartKind::Natal)
+        .readings(&instants, &asked)
         .expect("the test provider");
+    put(
+        report,
+        "chart-varga-count",
+        read.value
+            .first()
+            .map_or(0, |document| document.vargas.len())
+            .to_string(),
+    );
+    for (index, document) in read.value.iter().enumerate() {
+        one_varga_chart(report, index, document);
+    }
+    // **One call, as the other three make one.** The foundations are the
+    // reading's own, and the provenance below is the reading's too --
+    // which is what the blob carries, and what made this row disagree
+    // when it was still hashing a separate `found_many`'s envelope.
+    let founded = Envelope::new(
+        read.value
+            .iter()
+            .map(|document| document.foundation.clone())
+            .collect::<Vec<_>>(),
+        read.provenance.clone(),
+    );
     put(report, "chart-count", founded.value.len().to_string());
     put(report, "chart-kind", ChartKind::Natal.full_key().to_owned());
     put(report, "chart-place-lat", number(place.latitude.get()));
@@ -816,6 +846,58 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
             .to_string(),
     );
     (geo, place, offset)
+}
+
+/// One chart's divisional charts, as the report prints them.
+///
+/// The grahas are named from the **foundation's** own list rather than
+/// from the divisional chart's, because the two are the same list in the
+/// same order and the other three bindings read the name from the
+/// foundation's column: a runner that read it from its own section would
+/// agree with them and prove less.
+fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Document) {
+    for (at, varga) in document.vargas.iter().enumerate() {
+        let key = |what: &str| format!("chart-{index}-varga-{at}{what}");
+        put(
+            report,
+            &key(""),
+            varga
+                .axis
+                .grahas
+                .varga
+                .map_or_else(|| String::from("none"), |v| v.full_key().to_owned()),
+        );
+        put(
+            report,
+            &key("-lagna-rashi"),
+            varga.lagna.rashi.full_key().to_owned(),
+        );
+        put(report, &key("-lagna-part"), varga.lagna.part.to_string());
+        put(
+            report,
+            &key("-lagna-sign"),
+            varga.lagna.sign.full_key().to_owned(),
+        );
+        for (j, placed) in varga.grahas.iter().enumerate() {
+            let row = |what: &str| format!("chart-{index}-varga-{at}-graha-{j}{what}");
+            put(
+                report,
+                &row(""),
+                document
+                    .foundation
+                    .grahas
+                    .get(j)
+                    .map_or_else(|| String::from("none"), |g| g.graha.full_key().to_owned()),
+            );
+            put(
+                report,
+                &row("-rashi"),
+                placed.at.rashi.full_key().to_owned(),
+            );
+            put(report, &row("-part"), placed.at.part.to_string());
+            put(report, &row("-sign"), placed.at.sign.full_key().to_owned());
+        }
+    }
 }
 
 /// One day of the almanac, as the report prints it.

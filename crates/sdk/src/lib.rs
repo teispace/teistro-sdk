@@ -52,7 +52,7 @@ pub use area::{
 };
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
-pub use reading::Reading;
+pub use reading::ChartRequest;
 pub use scale::{Conversion, Scale};
 
 // The types an operation takes and answers with are the crates' own, and

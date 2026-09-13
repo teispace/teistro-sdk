@@ -5492,6 +5492,43 @@ struct ts_chart_request {
      * Reserved; write zero.
      */
     int32_t reserved_tail;
+    /**
+     * Which of the document's sections to compute beside the
+     * foundation, as a bit set: 1 the day's almanac, 2 the planetary
+     * states, 4 the aspects, 8 the derived points, 16 the houses
+     * service. Zero for the foundation alone, which is what every
+     * caller compiled against an earlier header passes by not passing
+     * it at all.
+     *
+     * A bit set here and a named option in every ergonomic layer, which
+     * is the split `ts_frame_pack` already has: nothing but a generated
+     * layer writes bits (`03-design/chart-reading.md` §5).
+     * Example: 0.
+     */
+    uint32_t sections;
+    /**
+     * Reserved; write zero.
+     */
+    uint32_t reserved_sections;
+    /**
+     * Which divisional charts to compute, as catalogue ids, in the
+     * order they should be answered in; null with a count of zero for
+     * none, as `instants` takes a grid of none.
+     *
+     * **Not `nullable`**, and that is the description's word rather
+     * than a promise about the pointer: `nullable` makes the generated
+     * field an `Option` of the whole parameter, and an optional *array
+     * of enum members* is a shape no emitter has been shown — it mapped
+     * the option's contents where it meant to map the array's. An empty
+     * array says "none" without needing one, which is what `instants`
+     * already does.
+     * Enum: ts_varga. Points at `varga_count` elements.
+     */
+    const uint16_t * vargas;
+    /**
+     * How many divisional charts `vargas` points at.
+     */
+    size_t varga_count;
 };
 
 /**
@@ -6343,7 +6380,7 @@ _Static_assert(sizeof(ts_context_options) == 40, "ts_context_options is 40 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 56, "ts_chart_request is 56 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 80, "ts_chart_request is 80 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

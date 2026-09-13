@@ -554,6 +554,60 @@ final class ChartsTiming {
   final int length;
 }
 
+/// The `vargas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
+final class ChartsVargas {
+  const ChartsVargas({
+    required this.varga,
+    required this.lagnaRashi,
+    required this.lagnaPart,
+    required this.lagnaSign,
+    required this.length,
+  });
+
+  /// Which divisional chart.
+  final Uint16List varga;
+
+  /// The sign the lagna stands in, in the rashi chart.
+  final Uint16List lagnaRashi;
+
+  /// Which part of that sign the lagna falls in, counted from zero.
+  final Uint16List lagnaPart;
+
+  /// The sign the divisional chart puts the lagna in.
+  final Uint16List lagnaSign;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `varga_grahas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+final class ChartsVargaGrahas {
+  const ChartsVargaGrahas({
+    required this.rashi,
+    required this.part,
+    required this.sign,
+    required this.length,
+  });
+
+  /// The sign the graha stands in, in the rashi chart.
+  final Uint16List rashi;
+
+  /// Which part of that sign it falls in, counted from zero.
+  final Uint16List part;
+
+  /// The sign the divisional chart puts it in.
+  final Uint16List sign;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -647,6 +701,7 @@ final class Charts {
     required this.kind,
     required this.chartCount,
     required this.grahaCount,
+    required this.vargaCount,
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.altitudeM,
@@ -668,6 +723,8 @@ final class Charts {
     required this.model,
     required this.steps,
     required this.provenance,
+    required this.vargas,
+    required this.vargaGrahas,
   });
 
   /// What kind of chart these are.
@@ -678,6 +735,9 @@ final class Charts {
 
   /// How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows.
   final int grahaCount;
+
+  /// How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`.
+  final int vargaCount;
 
   /// The place's latitude, degrees north.
   final double latitudeDeg;
@@ -742,6 +802,12 @@ final class Charts {
   /// UTF-8 JSON: the provenance envelope of the result, canonical.
   final String provenance;
 
+  /// One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
+  final ChartsVargas vargas;
+
+  /// One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+  final ChartsVargaGrahas vargaGrahas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -761,13 +827,16 @@ Charts decodeCharts(Uint8List bytes) {
   final atModel = blob.section(10, 'model');
   final atSteps = blob.section(11, 'steps');
   final atProvenance = blob.section(12, 'provenance');
+  final atVargas = blob.section(13, 'vargas');
+  final atVargaGrahas = blob.section(14, 'varga_grahas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
     grahaCount: blob.data.getUint32(atSummary.offset + 16, Endian.little),
-    latitudeDeg: blob.data.getFloat64(atSummary.offset + 24, Endian.little),
-    longitudeDeg: blob.data.getFloat64(atSummary.offset + 32, Endian.little),
-    altitudeM: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
+    vargaCount: blob.data.getUint32(atSummary.offset + 24, Endian.little),
+    latitudeDeg: blob.data.getFloat64(atSummary.offset + 32, Endian.little),
+    longitudeDeg: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
+    altitudeM: blob.data.getFloat64(atSummary.offset + 48, Endian.little),
     cast: ChartsCast(
       instant: Float64List.sublistView(
         blob.bytes,
@@ -1053,6 +1122,47 @@ Charts decodeCharts(Uint8List bytes) {
     model: blob.text(atModel),
     steps: blob.text(atSteps),
     provenance: blob.text(atProvenance),
+    vargas: ChartsVargas(
+      varga: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargas, 0),
+        blob.columnOffset(atVargas, 0) + atVargas.count * 2,
+      ),
+      lagnaRashi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargas, 1),
+        blob.columnOffset(atVargas, 1) + atVargas.count * 2,
+      ),
+      lagnaPart: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargas, 2),
+        blob.columnOffset(atVargas, 2) + atVargas.count * 2,
+      ),
+      lagnaSign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargas, 3),
+        blob.columnOffset(atVargas, 3) + atVargas.count * 2,
+      ),
+      length: atVargas.count,
+    ),
+    vargaGrahas: ChartsVargaGrahas(
+      rashi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargaGrahas, 0),
+        blob.columnOffset(atVargaGrahas, 0) + atVargaGrahas.count * 2,
+      ),
+      part: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargaGrahas, 1),
+        blob.columnOffset(atVargaGrahas, 1) + atVargaGrahas.count * 2,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVargaGrahas, 2),
+        blob.columnOffset(atVargaGrahas, 2) + atVargaGrahas.count * 2,
+      ),
+      length: atVargaGrahas.count,
+    ),
   );
 }
 

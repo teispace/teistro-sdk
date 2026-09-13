@@ -146,7 +146,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 56,
+    "ts_chart_request": 80,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -176,7 +176,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 48,
+    "ts_chart_request": 64,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -554,6 +554,10 @@ class _ChartRequestStruct(ctypes.Structure):
         ("altitude_m", ctypes.c_double),
         ("utc_offset_seconds", ctypes.c_int32),
         ("reserved_tail", ctypes.c_int32),
+        ("sections", ctypes.c_uint32),
+        ("reserved_sections", ctypes.c_uint32),
+        ("vargas", ctypes.POINTER(ctypes.c_uint16)),
+        ("varga_count", ctypes.c_size_t),
     ]
 
 
@@ -2017,6 +2021,35 @@ class ChartRequest:
     Unit: s. Range: [-64800,64800]. Example: 20700.
     """
 
+    sections: int
+    """Which of the document's sections to compute beside the
+    foundation, as a bit set: 1 the day's almanac, 2 the planetary
+    states, 4 the aspects, 8 the derived points, 16 the houses
+    service. Zero for the foundation alone, which is what every
+    caller compiled against an earlier header passes by not passing
+    it at all.
+
+    A bit set here and a named option in every ergonomic layer, which
+    is the split `ts_frame_pack` already has: nothing but a generated
+    layer writes bits (`03-design/chart-reading.md` §5).
+    Example: 0.
+    """
+
+    vargas: Sequence[Varga]
+    """Which divisional charts to compute, as catalogue ids, in the
+    order they should be answered in; null with a count of zero for
+    none, as `instants` takes a grid of none.
+
+    **Not `nullable`**, and that is the description's word rather
+    than a promise about the pointer: `nullable` makes the generated
+    field an `Option` of the whole parameter, and an optional *array
+    of enum members* is a shape no emitter has been shown — it mapped
+    the option's contents where it meant to map the array's. An empty
+    array says "none" without needing one, which is what `instants`
+    already does.
+    Enum: Varga.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2036,6 +2069,13 @@ class ChartRequest:
         raw.longitude_deg = _c_value(self.longitude_deg)
         raw.altitude_m = _c_value(self.altitude_m)
         raw.utc_offset_seconds = _c_value(self.utc_offset_seconds)
+        raw.sections = _c_value(self.sections)
+        _vargas = (ctypes.c_uint16 * len(self.vargas))(
+            *(_c_value(_v) for _v in self.vargas)
+        )
+        owned.append(_vargas)
+        raw.vargas = ctypes.cast(_vargas, ctypes.POINTER(ctypes.c_uint16))
+        raw.varga_count = len(self.vargas)
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2060,6 +2100,12 @@ class ChartRequest:
             longitude_deg=float(raw.longitude_deg),
             altitude_m=float(raw.altitude_m),
             utc_offset_seconds=raw.utc_offset_seconds,
+            sections=raw.sections,
+            vargas=[
+                Varga(raw.vargas[_i]) for _i in range(raw.varga_count)
+            ]
+            if raw.vargas
+            else [],
         )
 
 

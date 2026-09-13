@@ -31,7 +31,7 @@ use teistro_core::time::UtcOffset;
 /// port's own `Overrides`.
 ///
 /// Private, because a consumer names its members one at a time through
-/// [`Reading`]'s builder and never as a set: the names are the
+/// [`ChartRequest`]'s builder and never as a set: the names are the
 /// documentation.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct Sections(u32);
@@ -59,7 +59,14 @@ impl Sections {
     }
 }
 
-/// A chart reading: the record it is cast for, and what to read from it.
+/// What a chart reading asks for: the record it is cast for, and what to
+/// read from it.
+///
+/// Named for the **request** and not the answer, as `PositionRequest`
+/// is, and renamed from `Reading` when it met `teistro_chart::Reading`
+/// in the boundary's own `use` list — which is a bhava's reading, sandhi
+/// or madhya, and a word this domain had already spent. The answer is a
+/// `Document` and the operation is `reading`.
 ///
 /// **Nothing but the foundation is on by default**, which is the "pay
 /// for what you ask for" half of the maintainer's no-dead-ends rule. A
@@ -76,14 +83,14 @@ impl Sections {
 /// ```
 /// use teistro::catalogue::{ChartKind, Varga};
 /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
-/// use teistro::{Reading, UtcOffset};
+/// use teistro::{ChartRequest, UtcOffset};
 ///
 /// let place = Place::new(
 ///     Latitude::try_new(27.7172)?,
 ///     Longitude::try_new(85.324)?,
 ///     Altitude::try_new(1400.0)?,
 /// );
-/// let request = Reading::at(place, UtcOffset::try_from_seconds(20700)?)
+/// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700)?)
 ///     .with_kind(ChartKind::Natal)
 ///     .with_vargas([Varga::D9, Varga::D10])
 ///     .with_state()
@@ -92,7 +99,7 @@ impl Sections {
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, PartialEq)]
-pub struct Reading {
+pub struct ChartRequest {
     place: Place,
     offset: UtcOffset,
     kind: ChartKind,
@@ -100,12 +107,12 @@ pub struct Reading {
     pub(crate) sections: Sections,
 }
 
-impl Reading {
+impl ChartRequest {
     /// A reading at a place, under a local clock: the foundation and
     /// nothing else.
     #[must_use]
-    pub fn at(place: Place, offset: UtcOffset) -> Reading {
-        Reading {
+    pub fn at(place: Place, offset: UtcOffset) -> ChartRequest {
+        ChartRequest {
             place,
             offset,
             kind: ChartKind::Natal,
@@ -116,7 +123,7 @@ impl Reading {
 
     /// The kind of chart to found; `Natal` unless said otherwise.
     #[must_use]
-    pub const fn with_kind(mut self, kind: ChartKind) -> Reading {
+    pub const fn with_kind(mut self, kind: ChartKind) -> ChartRequest {
         self.kind = kind;
         self
     }
@@ -127,14 +134,14 @@ impl Reading {
     /// a builder that accumulated would make `with_vargas([])` mean
     /// nothing at all, and "none" has to be sayable.
     #[must_use]
-    pub fn with_vargas(mut self, vargas: impl IntoIterator<Item = Varga>) -> Reading {
+    pub fn with_vargas(mut self, vargas: impl IntoIterator<Item = Varga>) -> ChartRequest {
         self.vargas = vargas.into_iter().collect();
         self
     }
 
     /// Every divisional chart the catalogue ships.
     #[must_use]
-    pub fn with_every_varga(self) -> Reading {
+    pub fn with_every_varga(self) -> ChartRequest {
         self.with_vargas(Varga::all().iter().copied())
     }
 
@@ -144,7 +151,7 @@ impl Reading {
     /// searches for sunrise, the Moon's rises and the limbs' boundaries,
     /// where every other section is arithmetic on the foundation.
     #[must_use]
-    pub const fn with_panchanga(mut self) -> Reading {
+    pub const fn with_panchanga(mut self) -> ChartRequest {
         self.sections = self.sections.with(Sections::PANCHANGA);
         self
     }
@@ -152,7 +159,7 @@ impl Reading {
     /// What each graha is, as opposed to where it is: the avasthas, the
     /// combustion, the planetary war.
     #[must_use]
-    pub const fn with_state(mut self) -> Reading {
+    pub const fn with_state(mut self) -> ChartRequest {
         self.sections = self.sections.with(Sections::STATE);
         self
     }
@@ -160,7 +167,7 @@ impl Reading {
     /// Which bodies reach which, under the drishti table the settings
     /// name.
     #[must_use]
-    pub const fn with_aspects(mut self) -> Reading {
+    pub const fn with_aspects(mut self) -> ChartRequest {
         self.sections = self.sections.with(Sections::ASPECTS);
         self
     }
@@ -173,7 +180,7 @@ impl Reading {
     /// not the birth is what it needs and what `Founder::ascendant_at`
     /// answers.
     #[must_use]
-    pub const fn with_points(mut self) -> Reading {
+    pub const fn with_points(mut self) -> ChartRequest {
         self.sections = self.sections.with(Sections::POINTS);
         self
     }
@@ -181,7 +188,7 @@ impl Reading {
     /// The twelve bhavas under both readings, with every body placed in
     /// each.
     #[must_use]
-    pub const fn with_houses(mut self) -> Reading {
+    pub const fn with_houses(mut self) -> ChartRequest {
         self.sections = self.sections.with(Sections::HOUSES);
         self
     }
@@ -191,7 +198,7 @@ impl Reading {
     /// What a consumer storing a chart for later wants, and what the
     /// parity runner asks for: the widest document the SDK can produce.
     #[must_use]
-    pub fn with_everything(self) -> Reading {
+    pub fn with_everything(self) -> ChartRequest {
         self.with_every_varga()
             .with_panchanga()
             .with_state()

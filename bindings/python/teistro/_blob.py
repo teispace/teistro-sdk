@@ -452,6 +452,51 @@ class ChartsTiming:
 
 
 @dataclass(frozen=True)
+class ChartsVargas:
+    """The `vargas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
+    """
+
+    varga: memoryview[int]
+    """Which divisional chart."""
+
+    lagna_rashi: memoryview[int]
+    """The sign the lagna stands in, in the rashi chart."""
+
+    lagna_part: memoryview[int]
+    """Which part of that sign the lagna falls in, counted from zero."""
+
+    lagna_sign: memoryview[int]
+    """The sign the divisional chart puts the lagna in."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsVargaGrahas:
+    """The `varga_grahas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
+    """
+
+    rashi: memoryview[int]
+    """The sign the graha stands in, in the rashi chart."""
+
+    part: memoryview[int]
+    """Which part of that sign it falls in, counted from zero."""
+
+    sign: memoryview[int]
+    """The sign the divisional chart puts it in."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -533,6 +578,9 @@ class Charts:
     graha_count: int
     """How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."""
 
+    varga_count: int
+    """How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."""
+
     latitude_deg: float
     """The place's latitude, degrees north."""
 
@@ -596,6 +644,12 @@ class Charts:
     provenance: str
     """UTF-8 JSON: the provenance envelope of the result, canonical."""
 
+    vargas: ChartsVargas
+    """One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5)."""
+
+    varga_grahas: ChartsVargaGrahas
+    """One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -617,13 +671,16 @@ def decode_charts(raw: bytes) -> Charts:
     at_model = blob.section(10, "model")
     at_steps = blob.section(11, "steps")
     at_provenance = blob.section(12, "provenance")
+    at_vargas = blob.section(13, "vargas")
+    at_varga_grahas = blob.section(14, "varga_grahas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
         graha_count=int(blob.fixed(at_summary, 2, "I")),
-        latitude_deg=blob.fixed(at_summary, 3, "d"),
-        longitude_deg=blob.fixed(at_summary, 4, "d"),
-        altitude_m=blob.fixed(at_summary, 5, "d"),
+        varga_count=int(blob.fixed(at_summary, 3, "I")),
+        latitude_deg=blob.fixed(at_summary, 4, "d"),
+        longitude_deg=blob.fixed(at_summary, 5, "d"),
+        altitude_m=blob.fixed(at_summary, 6, "d"),
         cast=ChartsCast(
             instant=blob.column(at_cast, 0, 8, at_cast.count).cast("d"),
             lagna_deg=blob.column(at_cast, 1, 8, at_cast.count).cast("d"),
@@ -745,6 +802,27 @@ def decode_charts(raw: bytes) -> Charts:
         model=blob.text(at_model),
         steps=blob.text(at_steps),
         provenance=blob.text(at_provenance),
+        vargas=ChartsVargas(
+            varga=blob.column(at_vargas, 0, 2, at_vargas.count).cast("H"),
+            lagna_rashi=blob.column(
+                at_vargas, 1, 2, at_vargas.count
+            ).cast("H"),
+            lagna_part=blob.column(at_vargas, 2, 2, at_vargas.count).cast("H"),
+            lagna_sign=blob.column(at_vargas, 3, 2, at_vargas.count).cast("H"),
+            length=at_vargas.count,
+        ),
+        varga_grahas=ChartsVargaGrahas(
+            rashi=blob.column(
+                at_varga_grahas, 0, 2, at_varga_grahas.count
+            ).cast("H"),
+            part=blob.column(
+                at_varga_grahas, 1, 2, at_varga_grahas.count
+            ).cast("H"),
+            sign=blob.column(
+                at_varga_grahas, 2, 2, at_varga_grahas.count
+            ).cast("H"),
+            length=at_varga_grahas.count,
+        ),
     )
 
 

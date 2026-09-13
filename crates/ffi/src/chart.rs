@@ -26,19 +26,21 @@
 //! over the knob's own `ALL`: adding a member fails it by name rather
 //! than shipping a wrong id.
 
+use teistro::ChartRequest;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::ChartKind;
+use teistro_core::catalogue::{ChartKind, Varga};
 use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_idl::blob::{ColumnData, FixedValue, Writer};
+use teistro_serial::Document;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
-use crate::support::{with_context, write_plain};
+use crate::support::{c_struct, read_in, with_context, write_plain};
 use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
 use teistro_time::local_day::{DayState, PolarKind};
 
@@ -283,6 +285,77 @@ pub struct TsChartRequest {
     pub utc_offset_seconds: i32,
     /// Reserved; write zero.
     pub reserved_tail: i32,
+    /// Which of the document's sections to compute beside the
+    /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
+    /// states, 4 the aspects, 8 the derived points, 16 the houses
+    /// service. Zero for the foundation alone, which is what every
+    /// caller compiled against an earlier header passes by not passing
+    /// it at all.
+    ///
+    /// A bit set here and a named option in every ergonomic layer, which
+    /// is the split `ts_frame_pack` already has: nothing but a generated
+    /// layer writes bits (`03-design/chart-reading.md` §5).
+    /// `api: example=0`
+    pub sections: u32,
+    /// Reserved; write zero.
+    pub reserved_sections: u32,
+    /// Which divisional charts to compute, as catalogue ids, in the
+    /// order they should be answered in; null with a count of zero for
+    /// none, as `instants` takes a grid of none.
+    ///
+    /// **Not `nullable`**, and that is the description's word rather
+    /// than a promise about the pointer: `nullable` makes the generated
+    /// field an `Option` of the whole parameter, and an optional *array
+    /// of enum members* is a shape no emitter has been shown — it mapped
+    /// the option's contents where it meant to map the array's. An empty
+    /// array says "none" without needing one, which is what `instants`
+    /// already does.
+    /// `api: len=varga_count enum=Varga`
+    pub vargas: *const u16,
+    /// How many divisional charts `vargas` points at.
+    pub varga_count: usize,
+}
+
+// **The handshake, which this struct carried and nothing read.**
+// `struct_size` is documented as "`sizeof(ts_chart_request)` as the caller compiled
+// it", and the entry point below dereferenced the pointer raw: a caller
+// compiled against an older header passed a shorter struct and the
+// library read past it, which is undefined behaviour rather than the
+// `SCHEMA_VERSION` refusal the field exists to give. Eleven of the
+// thirteen boundary structs with the field were registered here; these
+// two were not, and they are the two biggest requests.
+// `check-lints`' `handshake-is-checked` holds the class now.
+c_struct!(TsChartRequest);
+
+/// Which document sections a `sections` bit set asks for, as the
+/// request's own vocabulary.
+///
+/// **The bits are the boundary's and the names are the façade's**, and
+/// the translation is here rather than in `teistro` on purpose: these
+/// five values are in `teistro.h` and are therefore an ABI, while the
+/// façade's own set is an implementation detail that must stay free to
+/// change. A `Reading` is built by naming what is wanted, which is what
+/// makes an unknown bit a silent no rather than a wrong section — and
+/// what makes the table below the only place the mapping is written
+/// (`03-design/chart-reading.md` §5).
+type SectionBit = (u32, fn(ChartRequest) -> ChartRequest);
+
+const SECTION_BITS: [SectionBit; 5] = [
+    (1, ChartRequest::with_panchanga),
+    (2, ChartRequest::with_state),
+    (4, ChartRequest::with_aspects),
+    (8, ChartRequest::with_points),
+    (16, ChartRequest::with_houses),
+];
+
+/// The reading a bit set asks for, added to a request.
+fn sections_of(bits: u32, mut request: ChartRequest) -> ChartRequest {
+    for (bit, add) in SECTION_BITS {
+        if bits & bit == bit {
+            request = add(request);
+        }
+    }
+    request
 }
 
 /// The day's seventeen-and-three values, in the order `day_section`
@@ -375,7 +448,7 @@ impl GrahaColumns {
     /// The columns of every chart's grahas, charts outermost: row
     /// `chart * graha_count + g` is graha `g` of chart `chart`, the same
     /// order the positions blob puts its cells in.
-    fn of(charts: &[ChartFoundation]) -> GrahaColumns {
+    fn of(charts: &[&ChartFoundation]) -> GrahaColumns {
         let rows: Vec<&teistro_chart::foundation::GrahaPosition> =
             charts.iter().flat_map(|c| c.grahas.iter()).collect();
         GrahaColumns {
@@ -409,20 +482,146 @@ fn summary_values(
     kind: ChartKind,
     chart_count: u32,
     graha_count: u32,
+    varga_count: u32,
 ) -> Vec<FixedValue> {
     vec![
         u64::from(kind.id()).into(),
         u64::from(chart_count).into(),
         u64::from(graha_count).into(),
+        u64::from(varga_count).into(),
         place.latitude.get().into(),
         place.longitude.get().into(),
         place.altitude.get().into(),
     ]
 }
 
+/// How many grahas every chart in the batch holds, or `INTERNAL` for a
+/// batch that mixes sizes.
+///
+/// The blob's layout is one count for the batch, and only this crate
+/// could have built a value that disagrees with itself.
+fn one_size(charts: &[&ChartFoundation]) -> Result<usize, Error> {
+    let graha_count = charts.first().map_or(0, |c| c.grahas.len());
+    if let Some(odd) = charts.iter().find(|c| c.grahas.len() != graha_count) {
+        return Err(Error::new(
+            Status::Internal,
+            format!(
+                "the batch mixes chart sizes: {graha_count} grahas and {}, though every chart is the same kind",
+                odd.grahas.len()
+            ),
+        ));
+    }
+    Ok(graha_count)
+}
+
+/// The divisional charts of a batch, as the two sections carry them.
+///
+/// **Charts outermost, then charts asked for, then grahas** — the same
+/// ordering rule every per-chart section in this blob follows, so a
+/// decoder slices by arithmetic rather than by searching.
+///
+/// A batch whose documents hold different numbers of divisional charts
+/// is `INTERNAL` for the reason a batch of differing graha counts is:
+/// the layout is one count for the batch, and only this crate could have
+/// built such a value.
+struct VargaColumns {
+    /// How many divisional charts each document holds.
+    count: u32,
+    ids: Vec<u16>,
+    lagna_rashi: Vec<u16>,
+    lagna_part: Vec<u16>,
+    lagna_sign: Vec<u16>,
+    rashi: Vec<u16>,
+    part: Vec<u16>,
+    sign: Vec<u16>,
+}
+
+impl VargaColumns {
+    fn of(documents: &[Document], graha_count: usize) -> Result<VargaColumns, Error> {
+        let count = documents.first().map_or(0, |d| d.vargas.len());
+        if let Some(odd) = documents.iter().find(|d| d.vargas.len() != count) {
+            return Err(Error::new(
+                Status::Internal,
+                format!(
+                    "the batch mixes divisional chart counts: {count} and {}, though every document was read from one request",
+                    odd.vargas.len()
+                ),
+            ));
+        }
+        let charts = documents.len() * count;
+        let mut columns = VargaColumns {
+            count: u32::try_from(count).unwrap_or(u32::MAX),
+            ids: Vec::with_capacity(charts),
+            lagna_rashi: Vec::with_capacity(charts),
+            lagna_part: Vec::with_capacity(charts),
+            lagna_sign: Vec::with_capacity(charts),
+            rashi: Vec::with_capacity(charts * graha_count),
+            part: Vec::with_capacity(charts * graha_count),
+            sign: Vec::with_capacity(charts * graha_count),
+        };
+        for document in documents {
+            for varga in &document.vargas {
+                // The axis's own chart, which for every axis this
+                // boundary can ask for is one catalogued member: the
+                // request takes `Varga` ids, so a mixed axis or an
+                // arbitrary D-N is reachable in Rust and not here
+                // (`03-design/chart-reading.md` §8).
+                columns.ids.push(
+                    varga
+                        .axis
+                        .grahas
+                        .varga
+                        .map_or(u16::MAX, teistro_core::catalogue::Catalogued::id),
+                );
+                columns.lagna_rashi.push(varga.lagna.rashi.id());
+                columns.lagna_part.push(varga.lagna.part);
+                columns.lagna_sign.push(varga.lagna.sign.id());
+                if varga.grahas.len() != graha_count {
+                    return Err(Error::new(
+                        Status::Internal,
+                        format!(
+                            "a divisional chart holds {} grahas where the foundation holds {graha_count}",
+                            varga.grahas.len()
+                        ),
+                    ));
+                }
+                for placed in &varga.grahas {
+                    columns.rashi.push(placed.at.rashi.id());
+                    columns.part.push(placed.at.part);
+                    columns.sign.push(placed.at.sign.id());
+                }
+            }
+        }
+        Ok(columns)
+    }
+
+    /// Both sections, written where the schema declares them.
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "vargas",
+            self.ids.len(),
+            &[
+                ColumnData::U16(&self.ids),
+                ColumnData::U16(&self.lagna_rashi),
+                ColumnData::U16(&self.lagna_part),
+                ColumnData::U16(&self.lagna_sign),
+            ],
+        )?;
+        writer.columns(
+            "varga_grahas",
+            self.rashi.len(),
+            &[
+                ColumnData::U16(&self.rashi),
+                ColumnData::U16(&self.part),
+                ColumnData::U16(&self.sign),
+            ],
+        )
+    }
+}
+
 /// One row per chart, in the order `cast` declares its columns.
 #[must_use]
-fn chart_rows(charts: &[ChartFoundation]) -> Vec<Vec<FixedValue>> {
+fn chart_rows(charts: &[&ChartFoundation]) -> Vec<Vec<FixedValue>> {
     charts
         .iter()
         .map(|chart| {
@@ -442,7 +641,7 @@ fn chart_rows(charts: &[ChartFoundation]) -> Vec<Vec<FixedValue>> {
 /// both want them.
 #[must_use]
 fn bhava_columns(
-    charts: &[ChartFoundation],
+    charts: &[&ChartFoundation],
     of: fn(&ChartFoundation) -> &teistro_chart::bhava::Bhavas,
 ) -> (Vec<f64>, Vec<f64>) {
     let madhya = charts.iter().flat_map(|c| of(c).madhya).collect();
@@ -556,31 +755,25 @@ impl BatchOnce {
 /// counts are `INTERNAL`, since the blob's layout is one count for the
 /// batch.
 pub fn encode(
-    charts: &[ChartFoundation],
+    documents: &[Document],
     place: &Place,
     kind: ChartKind,
     provenance: &Provenance,
 ) -> Result<Vec<u8>, Error> {
+    let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
+    let charts = charts.as_slice();
     let schema = crate::schemas::charts();
     let mut writer = Writer::new(&schema);
     let chart_count = u32::try_from(charts.len()).unwrap_or(u32::MAX);
-    let graha_count = charts.first().map_or(0, |c| c.grahas.len());
-    if let Some(odd) = charts.iter().find(|c| c.grahas.len() != graha_count) {
-        return Err(Error::new(
-            Status::Internal,
-            format!(
-                "the batch mixes chart sizes: {graha_count} grahas and {}, though every chart is the same kind",
-                odd.grahas.len()
-            ),
-        ));
-    }
+    let graha_count = one_size(charts)?;
     let columns = GrahaColumns::of(charts);
     let (house_madhya, house_sandhi) = bhava_columns(charts, |c| &c.houses);
     let (chalit_madhya, chalit_sandhi) = bhava_columns(charts, |c| &c.chalit);
     let day_rows: Vec<Vec<FixedValue>> = charts.iter().map(|c| day_values(&c.day.day)).collect();
     let timing_rows: Vec<Vec<FixedValue>> =
         charts.iter().map(|c| timing_values(&c.timing)).collect();
-    let once = BatchOnce::of(charts.first());
+    let once = BatchOnce::of(charts.first().copied());
+    let vargas = VargaColumns::of(documents, graha_count)?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -590,6 +783,7 @@ pub fn encode(
                 kind,
                 chart_count,
                 u32::try_from(graha_count).unwrap_or(u32::MAX),
+                vargas.count,
             ),
         )?;
         writer.rows("cast", &chart_rows(charts))?;
@@ -646,6 +840,7 @@ pub fn encode(
             "provenance",
             teistro_core::envelope::canonical_json(provenance).as_bytes(),
         )?;
+        vargas.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -681,11 +876,9 @@ pub unsafe extern "C" fn ts_chart_found(
     out_blob: *mut TsBlob,
 ) -> Status {
     with_context(context, |ctx| {
-        if request.is_null() {
-            return Err(crate::support::null("request"));
-        }
-        // SAFETY: non-null; the caller promises a readable request.
-        let asked = unsafe { *request };
+        // SAFETY: the caller promises a readable request; `read_in`
+        // checks the handshake before anything else reads a field.
+        let asked = *unsafe { read_in(request, "request") }?;
         let place = Place::new(
             Latitude::try_new(asked.latitude_deg)
                 .map_err(|e| Error::from(e).with_field("latitude_deg"))?,
@@ -713,8 +906,28 @@ pub unsafe extern "C" fn ts_chart_found(
                 .iter()
                 .map(|jd| JulianDay::<Utc>::literal(*jd))
                 .collect();
-        // **The façade founds it**, which is what the dependency
-        // inversion was for: `rust-consumer-surface.md` moved the SDK's
+        if asked.vargas.is_null() && asked.varga_count != 0 {
+            return Err(crate::support::null("vargas"));
+        }
+        // SAFETY: as above, for `varga_count` readable `u16`s.
+        let asked_vargas = unsafe { core::slice::from_raw_parts(asked.vargas, asked.varga_count) };
+        let mut vargas = Vec::with_capacity(asked_vargas.len());
+        for id in asked_vargas {
+            vargas.push(Varga::from_id(*id).ok_or_else(|| {
+                Error::new(
+                    Status::InvalidArg,
+                    format!("no divisional chart with id {id}"),
+                )
+                .with_field("vargas")
+            })?);
+        }
+        let request = sections_of(
+            asked.sections,
+            ChartRequest::at(place, clock).with_kind(kind),
+        )
+        .with_vargas(vargas);
+        // **The façade reads it**, which is what the dependency inversion
+        // was for: `rust-consumer-surface.md` moved the SDK's
         // composition into `teistro` and had this crate depend on it, and
         // `TsContext::build` became a call into the builder — but this
         // entry point went on resolving the calendar, substituting the
@@ -724,10 +937,7 @@ pub unsafe extern "C" fn ts_chart_found(
         //
         // It also seals, so there is nothing left for the boundary to do
         // but encode what it was given.
-        let founded = ctx
-            .sdk()
-            .chart()
-            .found_many(&instants, &place, clock, kind)?;
+        let founded = ctx.sdk().chart().readings(&instants, &request)?;
         let encoded = encode(&founded.value, &place, kind, &founded.provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
@@ -760,8 +970,9 @@ mod tests {
     use teistro_chart::bhava::Reading;
     use teistro_chart::day::DayPart;
     use teistro_chart::foundation::Founder;
-    use teistro_core::catalogue::Ayanamsha;
+    use teistro_core::catalogue::{Ayanamsha, Varga};
     use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
+    use teistro_serial::Document;
     use teistro_time::local_day::{DayState, PolarKind};
 
     /// Every member of every knob crosses, and crosses to an id of its
@@ -874,8 +1085,22 @@ mod tests {
         use teistro_idl::blob::Reader;
 
         let (charts, place, provenance) = founded();
+        // The **navamsha asked for**, because a section that is only
+        // ever empty is a section nothing tests: the blob's layout for a
+        // divisional chart is charts outermost then charts asked for,
+        // and one varga over two charts is the smallest grid that can
+        // come out transposed.
+        let documents: Vec<Document> = charts
+            .iter()
+            .map(|chart| {
+                Document::of(chart.clone()).with_varga(
+                    teistro_vargas::chart::chart(chart, teistro_vargas::chart::Axis::of(Varga::D9))
+                        .expect("a navamsha"),
+                )
+            })
+            .collect();
         let bytes =
-            super::encode(&charts, &place, ChartKind::Natal, &provenance).expect("it encodes");
+            super::encode(&documents, &place, ChartKind::Natal, &provenance).expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
         let graha_count = charts[0].grahas.len();
@@ -884,7 +1109,31 @@ mod tests {
         assert_eq!(summary[0].as_i64(), i64::from(ChartKind::Natal.id()));
         assert_eq!(summary[1].as_i64(), charts.len() as i64);
         assert_eq!(summary[2].as_i64(), graha_count as i64);
-        assert_eq!(summary[3].as_f64(), place.latitude.get());
+        assert_eq!(summary[3].as_i64(), 1, "the one divisional chart asked for");
+        assert_eq!(summary[4].as_f64(), place.latitude.get());
+
+        // The navamsha, read back: one row per chart and the graha rows
+        // charts-outermost then vargas-outermost, which is the ordering
+        // a decoder slices by.
+        let asked = reader.column("vargas", "varga").expect("the vargas");
+        assert_eq!(asked.len(), charts.len());
+        assert!(
+            asked
+                .iter()
+                .all(|id| id.as_i64() == i64::from(Varga::D9.id()))
+        );
+        let signs = reader.column("varga_grahas", "sign").expect("the signs");
+        assert_eq!(signs.len(), charts.len() * graha_count);
+        for (index, document) in documents.iter().enumerate() {
+            let navamsha = &document.vargas[0];
+            for (at, placed) in navamsha.grahas.iter().enumerate() {
+                assert_eq!(
+                    signs[index * graha_count + at].as_i64(),
+                    i64::from(placed.at.sign.id()),
+                    "chart {index}, graha {at}"
+                );
+            }
+        }
 
         let instants = reader.column("cast", "instant").expect("the instants");
         let lagnas = reader.column("cast", "lagna_deg").expect("the lagnas");
@@ -956,7 +1205,12 @@ mod tests {
         assert_eq!(summary[0].as_i64(), i64::from(ChartKind::Natal.id()));
         assert_eq!(summary[1].as_i64(), 0, "no charts");
         assert_eq!(summary[2].as_i64(), 0, "and so no grahas each");
-        assert_eq!(summary[3].as_f64(), place.latitude.get(), "but a place");
+        assert_eq!(summary[3].as_i64(), 0, "and no divisional charts");
+        assert_eq!(summary[4].as_f64(), place.latitude.get(), "but a place");
+        assert!(
+            reader.column("vargas", "varga").expect("empty").is_empty(),
+            "a section nobody asked for is written and empty"
+        );
         assert!(reader.column("cast", "instant").expect("empty").is_empty());
         assert!(reader.column("day", "sunrise").expect("empty").is_empty());
         assert_eq!(reader.bytes("model").expect("the model"), b"");

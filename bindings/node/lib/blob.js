@@ -201,9 +201,10 @@ export function decodeCharts(bytes) {
     out.kind = READERS.u16(blob.dv, at.offset + 0);
     out.chartCount = READERS.u32(blob.dv, at.offset + 8);
     out.grahaCount = READERS.u32(blob.dv, at.offset + 16);
-    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 24);
-    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 32);
-    out.altitudeM = READERS.f64(blob.dv, at.offset + 40);
+    out.vargaCount = READERS.u32(blob.dv, at.offset + 24);
+    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 32);
+    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 40);
+    out.altitudeM = READERS.f64(blob.dv, at.offset + 48);
   }
   {
     const at = section(blob, 2, 'cast');
@@ -318,6 +319,25 @@ export function decodeCharts(bytes) {
   {
     const at = section(blob, 12, 'provenance');
     out.provenance = text(blob, at);
+  }
+  {
+    const at = section(blob, 13, 'vargas');
+    out.vargas = {
+      varga: column(blob, at, 0, 'u16', at.count),
+      lagnaRashi: column(blob, at, 1, 'u16', at.count),
+      lagnaPart: column(blob, at, 2, 'u16', at.count),
+      lagnaSign: column(blob, at, 3, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 14, 'varga_grahas');
+    out.vargaGrahas = {
+      rashi: column(blob, at, 0, 'u16', at.count),
+      part: column(blob, at, 1, 'u16', at.count),
+      sign: column(blob, at, 2, 'u16', at.count),
+      length: at.count,
+    };
   }
   return out;
 }
