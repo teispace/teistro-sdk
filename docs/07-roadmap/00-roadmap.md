@@ -200,6 +200,18 @@ rather than 1, because a fitted Moon alone is 3.76 MB.
 
 ## Phase 4: Chart core and panchanga day (now, beside Phase 3)
 
+**The chart document is whole at the boundary** (2026-09-13,
+[`03-design/chart-reading.md`](../03-design/chart-reading.md)). All seven
+sections cross — foundation, panchanga, vargas, state, aspects, points,
+houses — so every binding can ask for a divisional chart, a graha's
+dignity, the drishti, the upagrahas and the houses service, which is what
+each binding's README said they could not. `sdk.chart().reading()`
+assembles the document in the façade, where the composition lives, and
+the boundary encodes what it was given. The four bindings agree on
+**1 757 values**. What this unblocks is the JSON Schema emitter, which
+`serial-and-the-envelope.md` §8 said waits for a whole document to
+describe.
+
 `chart` foundation with the mixed-chart axis, `houses` with named
 Bhava-Chalit variants (a short falsification pass over the four methods
 first), `vargas` as the single table-driven evaluator with every
