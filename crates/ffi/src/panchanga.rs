@@ -26,20 +26,17 @@
 //! lists a merged section's row came from, the second is the kind half of
 //! a tagged enum whose payload fields sit beside it.
 
-use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_calendar::shipped;
-use teistro_calendar::solar::drik::DrikSun;
-use teistro_core::catalogue::{Ayanamsha, Calendar};
-use teistro_core::envelope::{Envelope, Provenance};
+use teistro_core::catalogue::Calendar;
+use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
-use teistro_core::settings::{AyanamshaChoice, LunarMonth};
+use teistro_core::settings::LunarMonth;
 use teistro_core::time::UtcOffset;
 use teistro_idl::blob::{FixedValue, Writer};
-use teistro_panchanga::almanac::{Almanac, Panchanga};
+use teistro_panchanga::almanac::Panchanga;
 use teistro_panchanga::span::Span;
 
 use crate::blob::TsBlob;
@@ -575,9 +572,6 @@ pub unsafe extern "C" fn ts_panchanga_days(
         }
         // SAFETY: non-null; the caller promises a readable request.
         let asked = unsafe { *request };
-        let provider = ctx.provider().ok_or_else(crate::support::no_ephemeris)?;
-        let resolved = ctx.resolved();
-        let settings = &resolved.settings;
         let place = Place::new(
             Latitude::try_new(asked.latitude_deg)
                 .map_err(|e| Error::from(e).with_field("latitude_deg"))?,
@@ -593,26 +587,8 @@ pub unsafe extern "C" fn ts_panchanga_days(
             )
             .with_field("calendar")
         })?;
-        let calendar = shipped(asked_calendar).ok_or_else(|| {
-            Error::new(
-                Status::Unsupported,
-                format!("the SDK does not ship the `{asked_calendar}` calendar"),
-            )
-            .with_field("calendar")
-        })?;
         let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
             .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
-        let ayanamsha = match settings.frame.ayanamsha {
-            AyanamshaChoice::Catalogued { id } => id,
-            AyanamshaChoice::Custom { .. } => Ayanamsha::Lahiri,
-        };
-        let model = DrikSun::new(
-            provider,
-            ayanamsha,
-            settings.day.sunrise,
-            settings.provider.overrides,
-            ctx.delta_t(),
-        );
         let from = CalendarDate::defined(
             asked_calendar,
             asked.from_year,
@@ -620,20 +596,14 @@ pub unsafe extern "C" fn ts_panchanga_days(
             asked.from_day,
         );
         let to = CalendarDate::defined(asked_calendar, asked.to_year, asked.to_month, asked.to_day);
-        let founded = Almanac::new(
-            provider,
-            resolved,
-            &model,
-            calendar,
-            &clock,
-            PrecessionModel::default(),
-            ctx.delta_t(),
-        )
-        .between(&from, &to, &place)?;
-        // Sealed here, as `ts_chart_found` seals and for the reason it
-        // gives: the join belongs where the value is published.
-        let sealed = Envelope::sealing(founded.value, founded.provenance);
-        let encoded = encode(&sealed.value, &place, asked_calendar, &sealed.provenance)?;
+        // **The façade computes it**, as `ts_chart_found` has it found:
+        // this entry point was the almanac's second composition, and the
+        // calendar it resolved by hand is the one `AlmanacArea::of`
+        // takes from the range's own `from.calendar` — which is
+        // `asked_calendar`, so the two agreed by construction and by
+        // nothing enforcing it.
+        let founded = ctx.sdk().almanac().of(&from, &to, &place, clock)?;
+        let encoded = encode(&founded.value, &place, asked_calendar, &founded.provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -650,18 +620,22 @@ mod tests {
         reason = "a test fails by panicking, indexes its own blob and compares the numbers it wrote"
     )]
 
-    use super::{Almanac, Panchanga, TsLunarMonth, TsMoonEvent, TsYogaCause};
+    use super::{Panchanga, TsLunarMonth, TsMoonEvent, TsYogaCause};
+    // As in `chart`'s own tests: the entry point computes through the
+    // façade now, and a test of the *encoder* builds the almanac itself.
     use teistro_astro::delta_t::DeltaTModel;
     use teistro_astro::precession::PrecessionModel;
     use teistro_calendar::solar::drik::DrikSun;
     use teistro_calendar::{CalendarDate, Gregorian};
-    use teistro_core::catalogue::{Ayanamsha, Calendar};
+    use teistro_core::catalogue::Ayanamsha;
+    use teistro_core::catalogue::Calendar;
     use teistro_core::envelope::Provenance;
     use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
     use teistro_core::settings::{
         DEFAULT_PROFILE, LunarMonth, OverridePolicy, Profile, SettingsPatch, Sunrise,
     };
     use teistro_core::time::UtcOffset;
+    use teistro_panchanga::almanac::Almanac;
     use teistro_port_ephemeris::test_provider::TestProvider;
 
     /// Kathmandu, where the corpus's own charts are.

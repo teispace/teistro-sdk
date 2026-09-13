@@ -26,17 +26,13 @@
 //! over the knob's own `ALL`: adding a member fails it by name rather
 //! than shipping a wrong id.
 
-use teistro_astro::precession::PrecessionModel;
-use teistro_calendar::shipped;
-use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
-use teistro_chart::foundation::{ChartFoundation, Founder};
-use teistro_core::catalogue::{Ayanamsha, ChartKind};
-use teistro_core::envelope::{Envelope, Provenance};
+use teistro_chart::foundation::ChartFoundation;
+use teistro_core::catalogue::ChartKind;
+use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro_core::settings::AyanamshaChoice;
 use teistro_core::time::UtcOffset;
 use teistro_idl::blob::{ColumnData, FixedValue, Writer};
 
@@ -690,9 +686,6 @@ pub unsafe extern "C" fn ts_chart_found(
         }
         // SAFETY: non-null; the caller promises a readable request.
         let asked = unsafe { *request };
-        let provider = ctx.provider().ok_or_else(crate::support::no_ephemeris)?;
-        let resolved = ctx.resolved();
-        let settings = &resolved.settings;
         let place = Place::new(
             Latitude::try_new(asked.latitude_deg)
                 .map_err(|e| Error::from(e).with_field("latitude_deg"))?,
@@ -710,30 +703,6 @@ pub unsafe extern "C" fn ts_chart_found(
         })?;
         let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
             .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
-        // The knob's own deferral said it "gains a reader when `serial`
-        // or a binding builds a chart from a settings document alone".
-        // This is that reader.
-        let calendar = shipped(settings.calendars.civil_calendar).ok_or_else(|| {
-            Error::new(
-                Status::Unsupported,
-                format!(
-                    "the SDK does not ship the `{}` calendar",
-                    settings.calendars.civil_calendar
-                ),
-            )
-            .with_field("calendars.civil_calendar")
-        })?;
-        let ayanamsha = match settings.frame.ayanamsha {
-            AyanamshaChoice::Catalogued { id } => id,
-            AyanamshaChoice::Custom { .. } => Ayanamsha::Lahiri,
-        };
-        let model = DrikSun::new(
-            provider,
-            ayanamsha,
-            settings.day.sunrise,
-            settings.provider.overrides,
-            ctx.delta_t(),
-        );
         if asked.instants.is_null() && asked.instant_count != 0 {
             return Err(crate::support::null("instants"));
         }
@@ -744,26 +713,22 @@ pub unsafe extern "C" fn ts_chart_found(
                 .iter()
                 .map(|jd| JulianDay::<Utc>::literal(*jd))
                 .collect();
-        let founded = Founder::new(
-            provider,
-            resolved,
-            &model,
-            calendar,
-            &clock,
-            PrecessionModel::default(),
-            ctx.delta_t(),
-        )
-        .found(&instants, &place, kind)?;
-        // **Sealed here**, because this is where the value is published.
-        // `serial-and-the-envelope.md` §8 asked whether the producers
-        // should seal instead; they should not, and the reason is
-        // measured — sealing in `Founder::found` charged every caller a
-        // full canonical serialisation for a field many discard, and put
-        // `panchanga` 8.8% over the instruction budget. `Envelope::sealing`
-        // is the shared join the four publishing callers use, which is
-        // what answers the same-line-in-four-places objection.
-        let sealed = Envelope::sealing(founded.value, founded.provenance);
-        let encoded = encode(&sealed.value, &place, kind, &sealed.provenance)?;
+        // **The façade founds it**, which is what the dependency
+        // inversion was for: `rust-consumer-surface.md` moved the SDK's
+        // composition into `teistro` and had this crate depend on it, and
+        // `TsContext::build` became a call into the builder — but this
+        // entry point went on resolving the calendar, substituting the
+        // ayanamsha and building the solar model itself. That was the
+        // second copy of the chart composition, kept equal to the first
+        // by hand and by nothing else.
+        //
+        // It also seals, so there is nothing left for the boundary to do
+        // but encode what it was given.
+        let founded = ctx
+            .sdk()
+            .chart()
+            .found_many(&instants, &place, clock, kind)?;
+        let encoded = encode(&founded.value, &place, kind, &founded.provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -781,12 +746,21 @@ mod tests {
     )]
 
     use super::{
-        Altitude, Ayanamsha, ChartKind, DrikSun, Founder, JulianDay, Latitude, Longitude, Place,
-        PrecessionModel, Provenance, TsDayPart, TsDayState, TsGhatiReckoning, TsHoraReckoning,
-        TsPolarDayPolicy, TsPolarKind, TsReading, TsSunrise, Utc, UtcOffset, shipped,
+        Altitude, ChartKind, JulianDay, Latitude, Longitude, Place, Provenance, TsDayPart,
+        TsDayState, TsGhatiReckoning, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind, TsReading,
+        TsSunrise, Utc, UtcOffset,
     };
+    // The founder and the solar model, which this module builds by hand:
+    // the entry point above founds through the façade now, and a test of
+    // the *encoder* wants a founding it can control rather than a
+    // context.
+    use teistro_astro::precession::PrecessionModel;
+    use teistro_calendar::shipped;
+    use teistro_calendar::solar::drik::DrikSun;
     use teistro_chart::bhava::Reading;
     use teistro_chart::day::DayPart;
+    use teistro_chart::foundation::Founder;
+    use teistro_core::catalogue::Ayanamsha;
     use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
     use teistro_time::local_day::{DayState, PolarKind};
 
