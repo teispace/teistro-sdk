@@ -743,6 +743,30 @@ impl<'b, 's> Reader<'b, 's> {
             .collect()
     }
 
+    /// **One field of a fixed section, by name.**
+    ///
+    /// [`Reader::fixed`] answers with a vector in declaration order, and
+    /// a caller that indexes it is pinned to that order: inserting a
+    /// field ahead of another silently moves every reader of the ones
+    /// after it. That happened twice in one session while the chart
+    /// blob's summary grew a count, and both times it showed up as a
+    /// latitude of 1.0 — a value that is a plausible latitude, which is
+    /// the worst kind of wrong.
+    ///
+    /// The schema names its fields and a column section is already read
+    /// by name; this is the same for a fixed one.
+    ///
+    /// # Errors
+    ///
+    /// A section or field the schema lacks, or a truncated one.
+    pub fn field(&self, name: &str, field: &str) -> Result<ScalarValue, BlobError> {
+        let (section, entry) = self.section(name, SectionKind::Fixed)?;
+        let (index, declared) = section
+            .field(field)
+            .ok_or_else(|| BlobError::UnknownSection(format!("{name}.{field}")))?;
+        self.scalar_at(entry.offset + index * SLOT, declared.scalar, SLOT)
+    }
+
     /// One column of a column section, decoded.
     ///
     /// # Errors

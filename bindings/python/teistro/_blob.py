@@ -318,6 +318,12 @@ class ChartsCast:
     day_elapsed: memoryview[float]
     """How far through that arc the instant is, 0 to 1."""
 
+    aspect_count: memoryview[int]
+    """How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.
+
+    A **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.
+    """
+
     length: int
     """The number of rows every column holds."""
 
@@ -470,6 +476,48 @@ class ChartsVargas:
 
     lagna_sign: memoryview[int]
     """The sign the divisional chart puts the lagna in."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsAspects:
+    """The `aspects` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's drishti, concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.aspect_count` and run for its own, ordered by the looking body and then by the body looked at, in the foundation's own order. Empty when the aspects were not asked for. `from_*` and `to_*` say how near each end stands to a boundary, which is what an ayanamsha that moved would change.
+    """
+
+    from_: memoryview[int]
+    """The body looking."""
+
+    to: memoryview[int]
+    """The body looked at."""
+
+    houses: memoryview[int]
+    """Which house of the first's sign the second stands in, counting inclusively from one."""
+
+    strength: memoryview[int]
+    """How strongly."""
+
+    from_sign_deg: memoryview[float]
+    """How near the looking body stands to a sign edge, degrees."""
+
+    from_nakshatra_deg: memoryview[float]
+    """How near it stands to a nakshatra edge, degrees."""
+
+    from_pada_deg: memoryview[float]
+    """How near it stands to a pada edge, degrees."""
+
+    to_sign_deg: memoryview[float]
+    """How near the body looked at stands to a sign edge, degrees."""
+
+    to_nakshatra_deg: memoryview[float]
+    """How near it stands to a nakshatra edge, degrees."""
+
+    to_pada_deg: memoryview[float]
+    """How near it stands to a pada edge, degrees."""
 
     length: int
     """The number of rows every column holds."""
@@ -647,6 +695,12 @@ class Charts:
     vargas: ChartsVargas
     """One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5)."""
 
+    aspects: ChartsAspects
+    """Every chart's drishti, concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.aspect_count` and run for its own, ordered by the looking body and then by the body looked at, in the foundation's own order. Empty when the aspects were not asked for. `from_*` and `to_*` say how near each end stands to a boundary, which is what an ayanamsha that moved would change."""
+
+    drishti_table: str
+    """UTF-8 text: the drishti table the settings named, which every aspect above was read under. Empty when the aspects were not asked for."""
+
     varga_grahas: ChartsVargaGrahas
     """One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for."""
 
@@ -672,6 +726,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_steps = blob.section(11, "steps")
     at_provenance = blob.section(12, "provenance")
     at_vargas = blob.section(13, "vargas")
+    at_aspects = blob.section(15, "aspects")
+    at_drishti_table = blob.section(16, "drishti_table")
     at_varga_grahas = blob.section(14, "varga_grahas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
@@ -690,6 +746,7 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("d"),
             day_part=blob.column(at_cast, 4, 1, at_cast.count).cast("B"),
             day_elapsed=blob.column(at_cast, 5, 8, at_cast.count).cast("d"),
+            aspect_count=blob.column(at_cast, 6, 4, at_cast.count).cast("I"),
             length=at_cast.count,
         ),
         grahas=ChartsGrahas(
@@ -811,6 +868,32 @@ def decode_charts(raw: bytes) -> Charts:
             lagna_sign=blob.column(at_vargas, 3, 2, at_vargas.count).cast("H"),
             length=at_vargas.count,
         ),
+        aspects=ChartsAspects(
+            from_=blob.column(at_aspects, 0, 2, at_aspects.count).cast("H"),
+            to=blob.column(at_aspects, 1, 2, at_aspects.count).cast("H"),
+            houses=blob.column(at_aspects, 2, 1, at_aspects.count).cast("B"),
+            strength=blob.column(at_aspects, 3, 1, at_aspects.count).cast("B"),
+            from_sign_deg=blob.column(
+                at_aspects, 4, 8, at_aspects.count
+            ).cast("d"),
+            from_nakshatra_deg=blob.column(
+                at_aspects, 5, 8, at_aspects.count
+            ).cast("d"),
+            from_pada_deg=blob.column(
+                at_aspects, 6, 8, at_aspects.count
+            ).cast("d"),
+            to_sign_deg=blob.column(
+                at_aspects, 7, 8, at_aspects.count
+            ).cast("d"),
+            to_nakshatra_deg=blob.column(
+                at_aspects, 8, 8, at_aspects.count
+            ).cast("d"),
+            to_pada_deg=blob.column(
+                at_aspects, 9, 8, at_aspects.count
+            ).cast("d"),
+            length=at_aspects.count,
+        ),
+        drishti_table=blob.text(at_drishti_table),
         varga_grahas=ChartsVargaGrahas(
             rashi=blob.column(
                 at_varga_grahas, 0, 2, at_varga_grahas.count

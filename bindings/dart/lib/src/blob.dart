@@ -369,6 +369,7 @@ final class ChartsCast {
     required this.ayanamshaOffsetDeg,
     required this.dayPart,
     required this.dayElapsed,
+    required this.aspectCount,
     required this.length,
   });
 
@@ -389,6 +390,11 @@ final class ChartsCast {
 
   /// How far through that arc the instant is, 0 to 1.
   final Float64List dayElapsed;
+
+  /// How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.
+  ///
+  /// A **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.
+  final Uint32List aspectCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -583,6 +589,59 @@ final class ChartsVargas {
   final int length;
 }
 
+/// The `aspects` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's drishti, concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.aspect_count` and run for its own, ordered by the looking body and then by the body looked at, in the foundation's own order. Empty when the aspects were not asked for. `from_*` and `to_*` say how near each end stands to a boundary, which is what an ayanamsha that moved would change.
+final class ChartsAspects {
+  const ChartsAspects({
+    required this.from,
+    required this.to,
+    required this.houses,
+    required this.strength,
+    required this.fromSignDeg,
+    required this.fromNakshatraDeg,
+    required this.fromPadaDeg,
+    required this.toSignDeg,
+    required this.toNakshatraDeg,
+    required this.toPadaDeg,
+    required this.length,
+  });
+
+  /// The body looking.
+  final Uint16List from;
+
+  /// The body looked at.
+  final Uint16List to;
+
+  /// Which house of the first's sign the second stands in, counting inclusively from one.
+  final Uint8List houses;
+
+  /// How strongly.
+  final Uint8List strength;
+
+  /// How near the looking body stands to a sign edge, degrees.
+  final Float64List fromSignDeg;
+
+  /// How near it stands to a nakshatra edge, degrees.
+  final Float64List fromNakshatraDeg;
+
+  /// How near it stands to a pada edge, degrees.
+  final Float64List fromPadaDeg;
+
+  /// How near the body looked at stands to a sign edge, degrees.
+  final Float64List toSignDeg;
+
+  /// How near it stands to a nakshatra edge, degrees.
+  final Float64List toNakshatraDeg;
+
+  /// How near it stands to a pada edge, degrees.
+  final Float64List toPadaDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `varga_grahas` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -724,6 +783,8 @@ final class Charts {
     required this.steps,
     required this.provenance,
     required this.vargas,
+    required this.aspects,
+    required this.drishtiTable,
     required this.vargaGrahas,
   });
 
@@ -805,6 +866,12 @@ final class Charts {
   /// One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
   final ChartsVargas vargas;
 
+  /// Every chart's drishti, concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.aspect_count` and run for its own, ordered by the looking body and then by the body looked at, in the foundation's own order. Empty when the aspects were not asked for. `from_*` and `to_*` say how near each end stands to a boundary, which is what an ayanamsha that moved would change.
+  final ChartsAspects aspects;
+
+  /// UTF-8 text: the drishti table the settings named, which every aspect above was read under. Empty when the aspects were not asked for.
+  final String drishtiTable;
+
   /// One row per graha per divisional chart per chart, charts outermost then charts asked for: row `(i * varga_count + v) * graha_count + j` is chart `i`, the `v`th divisional chart, graha `j` in the `grahas` section's own order. Empty when no divisional chart was asked for.
   final ChartsVargaGrahas vargaGrahas;
 
@@ -828,6 +895,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atSteps = blob.section(11, 'steps');
   final atProvenance = blob.section(12, 'provenance');
   final atVargas = blob.section(13, 'vargas');
+  final atAspects = blob.section(15, 'aspects');
+  final atDrishtiTable = blob.section(16, 'drishti_table');
   final atVargaGrahas = blob.section(14, 'varga_grahas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
@@ -867,6 +936,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCast, 5),
         blob.columnOffset(atCast, 5) + atCast.count * 8,
+      ),
+      aspectCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 6),
+        blob.columnOffset(atCast, 6) + atCast.count * 4,
       ),
       length: atCast.count,
     ),
@@ -1145,6 +1219,60 @@ Charts decodeCharts(Uint8List bytes) {
       ),
       length: atVargas.count,
     ),
+    aspects: ChartsAspects(
+      from: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 0),
+        blob.columnOffset(atAspects, 0) + atAspects.count * 2,
+      ),
+      to: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 1),
+        blob.columnOffset(atAspects, 1) + atAspects.count * 2,
+      ),
+      houses: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 2),
+        blob.columnOffset(atAspects, 2) + atAspects.count * 1,
+      ),
+      strength: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 3),
+        blob.columnOffset(atAspects, 3) + atAspects.count * 1,
+      ),
+      fromSignDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 4),
+        blob.columnOffset(atAspects, 4) + atAspects.count * 8,
+      ),
+      fromNakshatraDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 5),
+        blob.columnOffset(atAspects, 5) + atAspects.count * 8,
+      ),
+      fromPadaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 6),
+        blob.columnOffset(atAspects, 6) + atAspects.count * 8,
+      ),
+      toSignDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 7),
+        blob.columnOffset(atAspects, 7) + atAspects.count * 8,
+      ),
+      toNakshatraDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 8),
+        blob.columnOffset(atAspects, 8) + atAspects.count * 8,
+      ),
+      toPadaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAspects, 9),
+        blob.columnOffset(atAspects, 9) + atAspects.count * 8,
+      ),
+      length: atAspects.count,
+    ),
+    drishtiTable: blob.text(atDrishtiTable),
     vargaGrahas: ChartsVargaGrahas(
       rashi: Uint16List.sublistView(
         blob.bytes,

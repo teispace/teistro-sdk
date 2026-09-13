@@ -33,7 +33,7 @@ envelope exists to carry.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every published value carries the hash of itself | **holds** | 0 of 5 disagree; so nothing reaches a consumer claiming the hash of the empty string, and a producer's caller that wants only the numbers pays for nothing |
+| every value leaves the SDK carrying the hash of itself | **holds** | 0 of 3 disagree; so nothing reaches a consumer claiming the hash of the empty string, and a producer's caller that wants only the numbers pays for nothing |
 | every field the envelope documents is filled by someone | falsified | 5 of 10 disagree |
 
 | producer | fills |
@@ -43,7 +43,7 @@ envelope exists to carry.
 | `crates/panchanga/src/almanac.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
 | `crates/serial/src/seal.rs` | `content_hash` |
 
-**`content_hash` is the hash of nothing on none of the 5 places a value
+**`content_hash` is the hash of nothing on none of the 3 places a value
 is published.** `Provenance::new` still sets it to `Hash::of(&[])` as a
 placeholder, and the shape problem this section found is answered the
 way `crates/serial` answered it: a value and its stamp are joined by a

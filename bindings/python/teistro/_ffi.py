@@ -97,6 +97,7 @@ from .catalogue import (
     StarClass,
     State,
     Status,
+    Strength,
     Sunrise,
     Tatwa,
     TimeScale,

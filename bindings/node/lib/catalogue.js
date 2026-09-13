@@ -2648,6 +2648,27 @@ export const ReadingById = new Map([
   [1, 'madhya'],
 ]);
 
+/** Every Strength by name. */
+export const Strength = Object.freeze({
+  None: 'none',
+  Quarter: 'quarter',
+  Half: 'half',
+  ThreeQuarters: 'three-quarters',
+  Full: 'full',
+});
+
+/**
+ * Every Strength by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const StrengthById = new Map([
+  [0, 'none'],
+  [1, 'quarter'],
+  [2, 'half'],
+  [3, 'three-quarters'],
+  [4, 'full'],
+]);
+
 /** Every DayPart by name. */
 export const DayPart = Object.freeze({
   Daylight: 'daylight',

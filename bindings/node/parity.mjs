@@ -228,8 +228,10 @@ const charts = geo.chart.foundMany({
   place,
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
+  aspects: true,
 });
 put('chart-varga-count', charts.vargaCount);
+put('chart-drishti-table', charts.drishtiTable);
 put('chart-count', charts.length);
 put('chart-kind', charts.kind);
 put('chart-place-lat', charts.place.latitude);
@@ -257,6 +259,17 @@ for (const chart of charts) {
   put(`chart-${i}-vipala`, chart.timing.vipala);
   put(`chart-${i}-hora-number`, chart.timing.horaNumber);
   put(`chart-${i}-hora-lord`, chart.timing.horaLord);
+  // **Every drishti**, because the count differs from chart to chart —
+  // which is why the section is ragged — so a runner that printed only
+  // the count would agree while the rows disagreed.
+  put(`chart-${i}-aspect-count`, chart.aspects.length);
+  chart.aspects.forEach((drishti, k) => {
+    put(`chart-${i}-aspect-${k}`, `${drishti.from}>${drishti.to}`);
+    put(`chart-${i}-aspect-${k}-houses`, drishti.houses);
+    put(`chart-${i}-aspect-${k}-strength`, drishti.strength);
+    put(`chart-${i}-aspect-${k}-from-sign`, drishti.fromEdge.signDeg);
+    put(`chart-${i}-aspect-${k}-to-sign`, drishti.toEdge.signDeg);
+  });
   chart.vargas.forEach((varga, v) => {
     put(`chart-${i}-varga-${v}`, varga.varga);
     put(`chart-${i}-varga-${v}-lagna-rashi`, varga.lagna.rashi);

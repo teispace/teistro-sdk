@@ -3395,6 +3395,31 @@ class Reading(Member):
     """From one madhya to the next: the bhava as a span between centres."""
 
 
+class Strength(Member):
+    """How strongly one body looks at another.
+
+    The aspect crate's own `Strength`, which is not a catalogue member —
+    it is a property of a relation rather than a thing with a key — so it
+    crosses as this boundary's own enum, as `TsReading` and `TsDayPart`
+    do.
+    """
+
+    NONE = 0
+    """No aspect at all."""
+
+    QUARTER = 1
+    """A quarter aspect: the third and tenth."""
+
+    HALF = 2
+    """A half aspect: the fifth and ninth."""
+
+    THREE_QUARTERS = 3
+    """A three-quarter aspect: the fourth and eighth."""
+
+    FULL = 4
+    """A full aspect: the seventh, and a special graha's own two houses."""
+
+
 class DayPart(Member):
     """Which arc of its day an instant falls in."""
 
@@ -4767,6 +4792,13 @@ _KEYS: dict[str, dict[int, str]] = {
     "Reading": {
         0: "sandhi",
         1: "madhya",
+    },
+    "Strength": {
+        0: "none",
+        1: "quarter",
+        2: "half",
+        3: "three-quarters",
+        4: "full",
     },
     "DayPart": {
         0: "daylight",

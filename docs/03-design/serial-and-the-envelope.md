@@ -44,12 +44,16 @@ stamp are built separately and joined at the end, so the one field that
 **Fixed, and by the shape rather than by remembering.**
 `Envelope::sealing` is the join — it takes the value and the stamp and
 computes the hash, because it is the only place that has both — and the
-five places a value is **published** use it. The measured page's claim
-is now *every published value carries the hash of itself*, and it holds
-0 of 5.
+three places a value is **sealed** use it. The measured page's claim is
+now *every value leaves the SDK carrying the hash of itself*, and it
+holds 0 of 3.
 
-The word that changed is *published*, and it was the instruction-count
-gate that changed it: see §8.
+The word that changed is *sealed* rather than *produced*, and it was the
+instruction-count gate that changed it: see §8. The count then fell from
+five to three when the dependency inversion reached the boundary's chart
+and panchanga entry points — they encode a stamp the façade sealed now,
+rather than mending one themselves, so a blob still cannot carry the
+hash of nothing and two fewer files have to remember.
 
 **The canonical form is canonical.** Keys in code-point order at every
 depth over the corpus's 55 documents, the same bytes twice, and the same

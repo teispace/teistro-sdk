@@ -45,8 +45,8 @@ const PRODUCERS: [&str; 4] = [
     "crates/serial/src/seal.rs",
 ];
 
-/// The places a value is **published** — handed to a consumer as a blob
-/// or as an envelope — and so must carry the hash of itself.
+/// The places a provenance is **sealed** — where the hash of the value
+/// is filled, before the value leaves the SDK.
 ///
 /// This is a different question from who *produces* a provenance, and
 /// separating the two is what the instruction-count gate forced. A
@@ -54,12 +54,18 @@ const PRODUCERS: [&str; 4] = [
 /// inside `Founder::found` and `Almanac::between` charged every one of
 /// them a full canonical serialisation of the value: `panchanga` went
 /// **8.8% over** its base for ten days of it, against a 3% budget. So
-/// the producers hand over the placeholder and the publishers fill it,
-/// through one shared constructor rather than four hand-written lines.
-const PUBLISHERS: [&str; 5] = [
+/// the producers hand over the placeholder and these fill it, through
+/// one shared constructor rather than a hand-written line each.
+///
+/// **Three, and it was five.** `crates/ffi`'s chart and panchanga entry
+/// points sealed until the dependency inversion reached them: they call
+/// `ctx.sdk()` now, so the façade's areas seal and the boundary encodes
+/// a stamp it was given. This property lost two rows by the composition
+/// moving, which is the pass turning over rather than the property
+/// weakening — a blob still cannot carry the hash of nothing, because
+/// the envelope it encodes was sealed before it arrived.
+const SEALERS: [&str; 3] = [
     "crates/ffi/src/positions.rs",
-    "crates/ffi/src/chart.rs",
-    "crates/ffi/src/panchanga.rs",
     "crates/sdk/src/area/chart.rs",
     "crates/sdk/src/area/almanac.rs",
 ];
@@ -298,9 +304,9 @@ fn the_hash_of_nothing(missing: &[&str], producers: usize) -> String {
         let _ = write!(
             out,
             "\n**`content_hash` is the hash of nothing on {} of the {} places a\n\
-             value is published.**\n\
+             value is sealed.**\n\
              `Provenance::new` sets it to `Hash::of(&[])` as a placeholder, and\n\
-             a publisher that does not replace it hands over a value carrying\n\
+             a sealer that does not replace it hands over a value carrying\n\
              the hash of the empty string where its own hash should be — the\n\
              field is documented as \"the hash of the canonical serialisation\n\
              of the value\" and on those it is not that. They are: {}.\n\n\
@@ -330,16 +336,16 @@ fn stamped(root: &Path) -> Result<String, String> {
             never.push(field);
         }
     }
-    let unsealed: Vec<&str> = PUBLISHERS
+    let unsealed: Vec<&str> = SEALERS
         .iter()
-        .filter(|publisher| !seals(root, publisher))
+        .filter(|sealer| !seals(root, sealer))
         .copied()
         .collect();
     let claims = [
         Claim::counted(
-            "every published value carries the hash of itself",
+            "every value leaves the SDK carrying the hash of itself",
             unsealed.len(),
-            PUBLISHERS.len(),
+            SEALERS.len(),
         )
         .with_note(if unsealed.is_empty() {
             String::from(
@@ -381,7 +387,7 @@ fn stamped(root: &Path) -> Result<String, String> {
         };
         let _ = writeln!(out, "| `{producer}` | {shown} |");
     }
-    out.push_str(&the_hash_of_nothing(&unsealed, PUBLISHERS.len()));
+    out.push_str(&the_hash_of_nothing(&unsealed, SEALERS.len()));
     if !never.is_empty() {
         let _ = write!(
             out,

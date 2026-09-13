@@ -770,7 +770,8 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     // asked for: only two of each can catch a transposed stride.
     let asked = ChartRequest::at(place, offset)
         .with_kind(ChartKind::Natal)
-        .with_vargas([Varga::D9, Varga::D10]);
+        .with_vargas([Varga::D9, Varga::D10])
+        .with_aspects();
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -783,8 +784,17 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
             .map_or(0, |document| document.vargas.len())
             .to_string(),
     );
+    put(
+        report,
+        "chart-drishti-table",
+        read.value
+            .first()
+            .and_then(|d| d.aspects.as_ref())
+            .map_or_else(String::new, |a| a.table().to_owned()),
+    );
     for (index, document) in read.value.iter().enumerate() {
         one_varga_chart(report, index, document);
+        the_drishti(report, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -897,6 +907,43 @@ fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Docume
             put(report, &row("-part"), placed.at.part.to_string());
             put(report, &row("-sign"), placed.at.sign.full_key().to_owned());
         }
+    }
+}
+
+/// One chart's drishti, as the report prints them.
+///
+/// **Every one**, because the count differs from chart to chart -- two
+/// charts of the same nine grahas hold 47 relations and 40 -- so a
+/// runner that printed only the count would agree with the others while
+/// the rows disagreed. It is why the boundary's section is ragged.
+fn the_drishti(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(aspects) = document.aspects.as_ref() else {
+        return;
+    };
+    put(
+        report,
+        &format!("chart-{index}-aspect-count"),
+        aspects.all().len().to_string(),
+    );
+    for (at, drishti) in aspects.all().iter().enumerate() {
+        let key = |what: &str| format!("chart-{index}-aspect-{at}{what}");
+        put(
+            report,
+            &key(""),
+            format!("{}>{}", drishti.from.full_key(), drishti.to.full_key()),
+        );
+        put(report, &key("-houses"), drishti.houses.to_string());
+        put(
+            report,
+            &key("-strength"),
+            kebab(&format!("{:?}", drishti.strength)),
+        );
+        put(
+            report,
+            &key("-from-sign"),
+            number(drishti.from_edge.sign_deg),
+        );
+        put(report, &key("-to-sign"), number(drishti.to_edge.sign_deg));
     }
 }
 

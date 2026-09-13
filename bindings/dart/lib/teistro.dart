@@ -593,6 +593,12 @@ final class FrameArea extends _Area {
   Frame unpack(int bits) => _context._teistro.unpackFrame(bits);
 }
 
+/// `TS_CHART_ASPECTS`, the one section bit this layer offers so far.
+///
+/// The bits are the C ABI's vocabulary; a consumer of this binding
+/// writes `aspects: true` (`03-design/chart-reading.md` §5).
+const int _sectionAspects = 4;
+
 /// `sdk.chart` — a chart founded at an instant and a place.
 final class ChartArea extends _Area {
   const ChartArea._(super.context);
@@ -614,12 +620,14 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    bool aspects = false,
   }) => foundMany(
     instants: <double>[instant],
     place: place,
     utcOffsetSeconds: utcOffsetSeconds,
     kind: kind,
     vargas: vargas,
+    aspects: aspects,
   ).at(0);
 
   /// Founds a chart at each of many instants, at one place, in one
@@ -632,13 +640,14 @@ final class ChartArea extends _Area {
   /// `vargas` names the divisional charts to compute, in the order to
   /// answer them; none by default, because a caller who wants a birth
   /// chart should not pay for twenty-one of them
-  /// (`03-design/chart-reading.md` §4).
+  /// (`03-design/chart-reading.md` §4). `aspects` asks for the drishti.
   Charts foundMany({
     required List<double> instants,
     required Observer place,
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    bool aspects = false,
   }) => decodeCharts(
     _context._guarded(
       () => _context._inner.chartFound(
@@ -651,9 +660,9 @@ final class ChartArea extends _Area {
           utcOffsetSeconds: utcOffsetSeconds,
           // The sections beside the foundation, which the SDK takes as
           // a bit set and nothing here writes as one
-          // (`03-design/chart-reading.md` §5). Each becomes a named
-          // argument as it crosses.
-          sections: 0,
+          // (`03-design/chart-reading.md` §5): a named argument each,
+          // and one more as each crosses.
+          sections: aspects ? _sectionAspects : 0,
           vargas: vargas,
         ),
       ),
@@ -1196,6 +1205,56 @@ final class Placement {
 }
 
 /// One graha of a chart, read out of the batch's columns.
+/// How near a body stands to a boundary, which is what an ayanamsha
+/// that moved would change.
+final class EdgeDistance {
+  const EdgeDistance({
+    required this.signDeg,
+    required this.nakshatraDeg,
+    required this.padaDeg,
+  });
+
+  /// To the nearer edge of its sign, degrees.
+  final double signDeg;
+
+  /// To the nearer edge of its nakshatra, degrees.
+  final double nakshatraDeg;
+
+  /// To the nearer edge of its pada, degrees.
+  final double padaDeg;
+}
+
+/// One body looking at another.
+final class Drishti {
+  const Drishti({
+    required this.from,
+    required this.to,
+    required this.houses,
+    required this.strength,
+    required this.fromEdge,
+    required this.toEdge,
+  });
+
+  /// The body looking.
+  final Graha from;
+
+  /// The body looked at.
+  final Graha to;
+
+  /// Which house of the first's sign the second stands in, counting
+  /// inclusively from one.
+  final int houses;
+
+  /// How strongly.
+  final Strength strength;
+
+  /// How near the looking body stands to a boundary.
+  final EdgeDistance fromEdge;
+
+  /// How near the body looked at stands to one.
+  final EdgeDistance toEdge;
+}
+
 /// Where one body stands in a divisional chart.
 ///
 /// `sign == rashi` is the body keeping the sign it was already in, which
@@ -1349,6 +1408,42 @@ final class Chart {
 
   /// The graha that rules the hora holding the instant.
   Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+
+  /// The drishti this chart casts, strongest first among those a body
+  /// casts; empty unless `aspects: true` asked for them.
+  ///
+  /// The section is **ragged**: a chart's relations depend on where the
+  /// bodies stand rather than on how many there are, so two charts of
+  /// the same nine grahas hold different numbers of them, and
+  /// `cast.aspect_count` is what says where each chart's begin.
+  List<Drishti> get aspects {
+    final counts = batch.cast.aspectCount;
+    var from = 0;
+    for (var i = 0; i < index; i += 1) {
+      from += counts[i];
+    }
+    final count = counts[index];
+    final a = batch.aspects;
+    return List<Drishti>.generate(count, (k) {
+      final i = from + k;
+      return Drishti(
+        from: Graha.byId(a.from[i]),
+        to: Graha.byId(a.to[i]),
+        houses: a.houses[i],
+        strength: Strength.byId(a.strength[i]),
+        fromEdge: EdgeDistance(
+          signDeg: a.fromSignDeg[i],
+          nakshatraDeg: a.fromNakshatraDeg[i],
+          padaDeg: a.fromPadaDeg[i],
+        ),
+        toEdge: EdgeDistance(
+          signDeg: a.toSignDeg[i],
+          nakshatraDeg: a.toNakshatraDeg[i],
+          padaDeg: a.toPadaDeg[i],
+        ),
+      );
+    });
+  }
 
   /// The divisional charts asked for, in the order they were asked.
   ///

@@ -173,6 +173,14 @@ than gaining five entry points beside it, for three reasons:
   stitched back together by a consumer, and the stitching would be
   written four times.
 
+**A per-chart section is ragged where its length varies with the
+values.** The divisional charts are one count for the batch — a chart
+asked for is a chart for every instant — and the drishti are not, which
+the encoder's own check found by refusing a batch of 47 and 40. So the
+rule is: a count in `summary` where the request fixes it, a column of
+`cast` where the values do, and the panchanga blob's prefix sum either
+way.
+
 **An unasked section is an empty section**, and the format needs no
 change to say so. `blob::Writer::finish` refuses a blob with a section
 missing, so every section is always written; a section not asked for is
@@ -237,10 +245,25 @@ by all four runners.
    each graha placed as `{rashi, part, sign}` — where `sign == rashi` is
    the body keeping its sign, which in the navamsha is *vargottama*.
 
-   **Four bindings agree on 835 values**, 161 of them new and every one
+   **And the drishti**, the second of the five, which found the thing
+   §5 got wrong. A chart's relations are a function of **where** the
+   bodies stand rather than of how many there are: two charts of the
+   same nine grahas at one place hold 47 and 40. So the aspects section
+   is **ragged** — the rows concatenated, `cast.aspect_count` saying
+   where each chart's begin, which is the panchanga blob's own rule —
+   and §5's "one count for the batch" was true of the divisional charts
+   and false here. The check that would have enforced it is what found
+   out, which is why it was written as a check rather than assumed.
+
+   `Strength` crosses as `TsStrength`, the boundary's own enum, because
+   it is a property of a relation rather than a thing with a key.
+
+   **Four bindings agree on 1 273 values**, 599 of them new and every one
    right on its first run. The runners ask for **two** charts over
-   **two** instants deliberately: the layout is charts outermost then
-   charts asked for, so one of each would pass a transposed stride.
+   **two** instants deliberately: the layout is charts outermost, so one
+   of each would pass a transposed stride; and they print **every**
+   drishti rather than the count, because a count that agrees while the
+   rows disagree is exactly what a ragged section risks.
 
    Three things the crossing found. `ts_chart_found` and
    `ts_panchanga_days` still **composed their own founder and almanac** —

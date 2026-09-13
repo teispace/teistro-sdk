@@ -27,6 +27,7 @@
 //! than shipping a wrong id.
 
 use teistro::ChartRequest;
+use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
@@ -59,6 +60,39 @@ impl From<Reading> for TsReading {
         match reading {
             Reading::Sandhi => TsReading::Sandhi,
             Reading::Madhya => TsReading::Madhya,
+        }
+    }
+}
+
+/// How strongly one body looks at another.
+///
+/// The aspect crate's own `Strength`, which is not a catalogue member —
+/// it is a property of a relation rather than a thing with a key — so it
+/// crosses as this boundary's own enum, as `TsReading` and `TsDayPart`
+/// do.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsStrength {
+    /// No aspect at all.
+    None = 0,
+    /// A quarter aspect: the third and tenth.
+    Quarter = 1,
+    /// A half aspect: the fifth and ninth.
+    Half = 2,
+    /// A three-quarter aspect: the fourth and eighth.
+    ThreeQuarters = 3,
+    /// A full aspect: the seventh, and a special graha's own two houses.
+    Full = 4,
+}
+
+impl From<Strength> for TsStrength {
+    fn from(strength: Strength) -> TsStrength {
+        match strength {
+            Strength::None => TsStrength::None,
+            Strength::Quarter => TsStrength::Quarter,
+            Strength::Half => TsStrength::Half,
+            Strength::ThreeQuarters => TsStrength::ThreeQuarters,
+            Strength::Full => TsStrength::Full,
         }
     }
 }
@@ -340,12 +374,28 @@ c_struct!(TsChartRequest);
 /// (`03-design/chart-reading.md` §5).
 type SectionBit = (u32, fn(ChartRequest) -> ChartRequest);
 
+/// `TS_CHART_ASPECTS`, the bit a caller sets for the drishti.
+///
+/// Declared here beside the table and named in the header, because the
+/// bits are the boundary's vocabulary: a consumer of the C ABI writes
+/// `TS_CHART_ASPECTS`, and every generated layer writes a named option
+/// instead (`03-design/chart-reading.md` §5).
+pub const TS_CHART_PANCHANGA: u32 = 1;
+/// The planetary states.
+pub const TS_CHART_STATE: u32 = 2;
+/// The drishti.
+pub const TS_CHART_ASPECTS: u32 = 4;
+/// The derived points.
+pub const TS_CHART_POINTS: u32 = 8;
+/// The houses service.
+pub const TS_CHART_HOUSES: u32 = 16;
+
 const SECTION_BITS: [SectionBit; 5] = [
-    (1, ChartRequest::with_panchanga),
-    (2, ChartRequest::with_state),
-    (4, ChartRequest::with_aspects),
-    (8, ChartRequest::with_points),
-    (16, ChartRequest::with_houses),
+    (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
+    (TS_CHART_STATE, ChartRequest::with_state),
+    (TS_CHART_ASPECTS, ChartRequest::with_aspects),
+    (TS_CHART_POINTS, ChartRequest::with_points),
+    (TS_CHART_HOUSES, ChartRequest::with_houses),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -514,6 +564,113 @@ fn one_size(charts: &[&ChartFoundation]) -> Result<usize, Error> {
     Ok(graha_count)
 }
 
+/// The drishti of a batch, as the section carries them.
+///
+/// **Charts outermost**, as every per-chart section here is, and a batch
+/// whose charts hold different numbers of relations is `INTERNAL` for
+/// the reason a batch of differing graha counts is: the layout is one
+/// count for the batch. That is not a restriction in practice — the
+/// relations are a function of the grahas' signs, and a batch founded
+/// from one request over one place has the same nine bodies in every
+/// chart — but it is a fact the layout depends on, so it is checked
+/// rather than assumed.
+struct AspectColumns {
+    /// How many relations each chart holds, one entry per chart.
+    ///
+    /// **Per chart and not one for the batch**, and the check that would
+    /// have enforced a batch-wide count is what found out: a chart's
+    /// drishti are a function of where the bodies stand rather than of
+    /// how many there are, and two charts of the same nine grahas at one
+    /// place hold 47 relations and 40. So the rows are concatenated and
+    /// a reader prefix-sums these, which is the panchanga blob's own
+    /// rule for a ragged list.
+    counts: Vec<u32>,
+    /// The drishti table every one of them was read under, which is one
+    /// to a batch because it is a setting.
+    table: String,
+    from: Vec<u16>,
+    to: Vec<u16>,
+    houses: Vec<u8>,
+    strength: Vec<u8>,
+    from_sign: Vec<f64>,
+    from_nakshatra: Vec<f64>,
+    from_pada: Vec<f64>,
+    to_sign: Vec<f64>,
+    to_nakshatra: Vec<f64>,
+    to_pada: Vec<f64>,
+}
+
+impl AspectColumns {
+    fn of(documents: &[Document]) -> AspectColumns {
+        let rows: usize = documents
+            .iter()
+            .map(|d| d.aspects.as_ref().map_or(0, |a| a.all().len()))
+            .sum();
+        let mut columns = AspectColumns {
+            counts: Vec::with_capacity(documents.len()),
+            table: documents
+                .first()
+                .and_then(|d| d.aspects.as_ref())
+                .map_or_else(String::new, |a| a.table().to_owned()),
+            from: Vec::with_capacity(rows),
+            to: Vec::with_capacity(rows),
+            houses: Vec::with_capacity(rows),
+            strength: Vec::with_capacity(rows),
+            from_sign: Vec::with_capacity(rows),
+            from_nakshatra: Vec::with_capacity(rows),
+            from_pada: Vec::with_capacity(rows),
+            to_sign: Vec::with_capacity(rows),
+            to_nakshatra: Vec::with_capacity(rows),
+            to_pada: Vec::with_capacity(rows),
+        };
+        for document in documents {
+            let Some(aspects) = document.aspects.as_ref() else {
+                columns.counts.push(0);
+                continue;
+            };
+            columns
+                .counts
+                .push(u32::try_from(aspects.all().len()).unwrap_or(u32::MAX));
+            for drishti in aspects.all() {
+                columns.from.push(drishti.from.id());
+                columns.to.push(drishti.to.id());
+                columns.houses.push(drishti.houses);
+                columns
+                    .strength
+                    .push(TsStrength::from(drishti.strength) as u8);
+                columns.from_sign.push(drishti.from_edge.sign_deg);
+                columns.from_nakshatra.push(drishti.from_edge.nakshatra_deg);
+                columns.from_pada.push(drishti.from_edge.pada_deg);
+                columns.to_sign.push(drishti.to_edge.sign_deg);
+                columns.to_nakshatra.push(drishti.to_edge.nakshatra_deg);
+                columns.to_pada.push(drishti.to_edge.pada_deg);
+            }
+        }
+        columns
+    }
+
+    /// The section and the table it was read under.
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "aspects",
+            self.from.len(),
+            &[
+                ColumnData::U16(&self.from),
+                ColumnData::U16(&self.to),
+                ColumnData::U8(&self.houses),
+                ColumnData::U8(&self.strength),
+                ColumnData::F64(&self.from_sign),
+                ColumnData::F64(&self.from_nakshatra),
+                ColumnData::F64(&self.from_pada),
+                ColumnData::F64(&self.to_sign),
+                ColumnData::F64(&self.to_nakshatra),
+                ColumnData::F64(&self.to_pada),
+            ],
+        )?;
+        writer.bytes("drishti_table", self.table.as_bytes())
+    }
+}
+
 /// The divisional charts of a batch, as the two sections carry them.
 ///
 /// **Charts outermost, then charts asked for, then grahas** — the same
@@ -621,10 +778,11 @@ impl VargaColumns {
 
 /// One row per chart, in the order `cast` declares its columns.
 #[must_use]
-fn chart_rows(charts: &[&ChartFoundation]) -> Vec<Vec<FixedValue>> {
+fn chart_rows(charts: &[&ChartFoundation], aspect_counts: &[u32]) -> Vec<Vec<FixedValue>> {
     charts
         .iter()
-        .map(|chart| {
+        .enumerate()
+        .map(|(at, chart)| {
             vec![
                 chart.instant.get().into(),
                 chart.lagna_deg.into(),
@@ -632,6 +790,7 @@ fn chart_rows(charts: &[&ChartFoundation]) -> Vec<Vec<FixedValue>> {
                 chart.zodiac.offset_deg.into(),
                 (TsDayPart::from(chart.day.part) as u64).into(),
                 chart.day.elapsed.into(),
+                u64::from(aspect_counts.get(at).copied().unwrap_or(0)).into(),
             ]
         })
         .collect()
@@ -774,6 +933,7 @@ pub fn encode(
         charts.iter().map(|c| timing_values(&c.timing)).collect();
     let once = BatchOnce::of(charts.first().copied());
     let vargas = VargaColumns::of(documents, graha_count)?;
+    let aspects = AspectColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -786,7 +946,7 @@ pub fn encode(
                 vargas.count,
             ),
         )?;
-        writer.rows("cast", &chart_rows(charts))?;
+        writer.rows("cast", &chart_rows(charts, &aspects.counts))?;
         writer.columns(
             "grahas",
             charts.len() * graha_count,
@@ -841,6 +1001,7 @@ pub fn encode(
             teistro_core::envelope::canonical_json(provenance).as_bytes(),
         )?;
         vargas.write(&mut writer)?;
+        aspects.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1085,6 +1246,11 @@ mod tests {
         use teistro_idl::blob::Reader;
 
         let (charts, place, provenance) = founded();
+        let resolved =
+            teistro_core::settings::Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
+                .expect("the default profile")
+                .resolve(&teistro_core::settings::SettingsPatch::default())
+                .expect("it resolves");
         // The **navamsha asked for**, because a section that is only
         // ever empty is a section nothing tests: the blob's layout for a
         // divisional chart is charts outermost then charts asked for,
@@ -1093,10 +1259,18 @@ mod tests {
         let documents: Vec<Document> = charts
             .iter()
             .map(|chart| {
-                Document::of(chart.clone()).with_varga(
-                    teistro_vargas::chart::chart(chart, teistro_vargas::chart::Axis::of(Varga::D9))
+                Document::of(chart.clone())
+                    .with_varga(
+                        teistro_vargas::chart::chart(
+                            chart,
+                            teistro_vargas::chart::Axis::of(Varga::D9),
+                        )
                         .expect("a navamsha"),
-                )
+                    )
+                    .with_aspects(
+                        teistro_aspect::Aspects::of(chart, &resolved.settings)
+                            .expect("the drishti"),
+                    )
             })
             .collect();
         let bytes =
@@ -1105,12 +1279,16 @@ mod tests {
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
         let graha_count = charts[0].grahas.len();
 
-        let summary = reader.fixed("summary").expect("the summary");
-        assert_eq!(summary[0].as_i64(), i64::from(ChartKind::Natal.id()));
-        assert_eq!(summary[1].as_i64(), charts.len() as i64);
-        assert_eq!(summary[2].as_i64(), graha_count as i64);
-        assert_eq!(summary[3].as_i64(), 1, "the one divisional chart asked for");
-        assert_eq!(summary[4].as_f64(), place.latitude.get());
+        // **By name, not by position.** The summary has grown a count
+        // twice in one session, and a positional read of it reported a
+        // latitude of 1.0 both times — a plausible latitude, which is
+        // the worst kind of wrong.
+        let field = |name: &str| reader.field("summary", name).expect(name);
+        assert_eq!(field("kind").as_i64(), i64::from(ChartKind::Natal.id()));
+        assert_eq!(field("chart_count").as_i64(), charts.len() as i64);
+        assert_eq!(field("graha_count").as_i64(), graha_count as i64);
+        assert_eq!(field("varga_count").as_i64(), 1, "the one asked for");
+        assert_eq!(field("latitude_deg").as_f64(), place.latitude.get());
 
         // The navamsha, read back: one row per chart and the graha rows
         // charts-outermost then vargas-outermost, which is the ordering
@@ -1186,12 +1364,80 @@ mod tests {
         assert_eq!(model, charts[0].day.day.model.as_bytes());
     }
 
+    /// **The drishti, and the ragged layout that carries them.**
+    ///
+    /// A section of its own because what it proves is its own: two
+    /// charts of the same nine grahas hold *different* numbers of
+    /// relations — 47 and 40 — which the check that would have enforced
+    /// one count for the batch is what found out. A chart's drishti are
+    /// a function of where the bodies stand rather than of how many
+    /// there are, so the rows are concatenated and a reader prefix-sums
+    /// `cast.aspect_count`, which is the panchanga blob's own rule for a
+    /// ragged list.
+    #[test]
+    fn the_drishti_are_ragged_and_the_counts_say_where_each_chart_begins() {
+        use teistro_idl::blob::Reader;
+
+        let (charts, place, provenance) = founded();
+        let resolved =
+            teistro_core::settings::Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
+                .expect("the default profile")
+                .resolve(&teistro_core::settings::SettingsPatch::default())
+                .expect("it resolves");
+        let documents: Vec<Document> = charts
+            .iter()
+            .map(|chart| {
+                Document::of(chart.clone()).with_aspects(
+                    teistro_aspect::Aspects::of(chart, &resolved.settings).expect("the drishti"),
+                )
+            })
+            .collect();
+        let bytes =
+            super::encode(&documents, &place, ChartKind::Natal, &provenance).expect("it encodes");
+        let schema = crate::schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
+
+        // **The drishti, and the ragged layout that carries them.** Two
+        // charts of the same nine grahas hold different numbers of
+        // relations — the check that would have enforced one count for
+        // the batch is what found that out — so the rows are
+        // concatenated and a reader prefix-sums `cast.aspect_count`.
+        let counts = reader.column("cast", "aspect_count").expect("the counts");
+        let from = reader.column("aspects", "from").expect("the drishti");
+        assert_eq!(counts.len(), charts.len());
+        assert!(counts.iter().all(|n| n.as_i64() > 0), "a chart has drishti");
+        assert_ne!(
+            counts[0].as_i64(),
+            counts[1].as_i64(),
+            "these two charts differ, which is why the section is ragged"
+        );
+        let mut at = 0_usize;
+        for (index, document) in documents.iter().enumerate() {
+            let relations = document.aspects.as_ref().expect("asked for").all();
+            assert_eq!(counts[index].as_i64(), relations.len() as i64);
+            for (k, drishti) in relations.iter().enumerate() {
+                assert_eq!(
+                    from[at + k].as_i64(),
+                    i64::from(drishti.from.id()),
+                    "chart {index}, drishti {k}"
+                );
+            }
+            at += relations.len();
+        }
+        assert_eq!(from.len(), at, "the rows are exactly the counts");
+        assert!(
+            !reader.bytes("drishti_table").expect("the table").is_empty(),
+            "the table every relation was read under"
+        );
+    }
+
     /// A batch of none is a blob, not an error.
     ///
     /// A caller that filtered a list to nothing gets an empty answer
     /// rather than a refusal, which is what lets a binding pass a list
     /// straight through. What the request knows is still written; what
     /// only founding could tell is zero, and `chart_count` says so.
+
     #[test]
     fn a_batch_of_no_charts_is_still_a_well_formed_blob() {
         use teistro_idl::blob::Reader;
@@ -1201,12 +1447,16 @@ mod tests {
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 
-        let summary = reader.fixed("summary").expect("the summary");
-        assert_eq!(summary[0].as_i64(), i64::from(ChartKind::Natal.id()));
-        assert_eq!(summary[1].as_i64(), 0, "no charts");
-        assert_eq!(summary[2].as_i64(), 0, "and so no grahas each");
-        assert_eq!(summary[3].as_i64(), 0, "and no divisional charts");
-        assert_eq!(summary[4].as_f64(), place.latitude.get(), "but a place");
+        let field = |name: &str| reader.field("summary", name).expect(name);
+        assert_eq!(field("kind").as_i64(), i64::from(ChartKind::Natal.id()));
+        assert_eq!(field("chart_count").as_i64(), 0, "no charts");
+        assert_eq!(field("graha_count").as_i64(), 0, "and so no grahas each");
+        assert_eq!(field("varga_count").as_i64(), 0, "and no divisional charts");
+        assert_eq!(
+            field("latitude_deg").as_f64(),
+            place.latitude.get(),
+            "but a place"
+        );
         assert!(
             reader.column("vargas", "varga").expect("empty").is_empty(),
             "a section nobody asked for is written and empty"

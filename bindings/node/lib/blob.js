@@ -215,6 +215,7 @@ export function decodeCharts(bytes) {
       ayanamshaOffsetDeg: column(blob, at, 3, 'f64', at.count),
       dayPart: column(blob, at, 4, 'u8', at.count),
       dayElapsed: column(blob, at, 5, 'f64', at.count),
+      aspectCount: column(blob, at, 6, 'u32', at.count),
       length: at.count,
     };
   }
@@ -329,6 +330,26 @@ export function decodeCharts(bytes) {
       lagnaSign: column(blob, at, 3, 'u16', at.count),
       length: at.count,
     };
+  }
+  {
+    const at = section(blob, 15, 'aspects');
+    out.aspects = {
+      from: column(blob, at, 0, 'u16', at.count),
+      to: column(blob, at, 1, 'u16', at.count),
+      houses: column(blob, at, 2, 'u8', at.count),
+      strength: column(blob, at, 3, 'u8', at.count),
+      fromSignDeg: column(blob, at, 4, 'f64', at.count),
+      fromNakshatraDeg: column(blob, at, 5, 'f64', at.count),
+      fromPadaDeg: column(blob, at, 6, 'f64', at.count),
+      toSignDeg: column(blob, at, 7, 'f64', at.count),
+      toNakshatraDeg: column(blob, at, 8, 'f64', at.count),
+      toPadaDeg: column(blob, at, 9, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 16, 'drishti_table');
+    out.drishtiTable = text(blob, at);
   }
   {
     const at = section(blob, 14, 'varga_grahas');

@@ -4205,6 +4205,37 @@ typedef enum ts_reading {
 } ts_reading;
 
 /**
+ * How strongly one body looks at another.
+ *
+ * The aspect crate's own `Strength`, which is not a catalogue member —
+ * it is a property of a relation rather than a thing with a key — so it
+ * crosses as this boundary's own enum, as `TsReading` and `TsDayPart`
+ * do.
+ */
+typedef enum ts_strength {
+    /**
+     * No aspect at all.
+     */
+    TS_STRENGTH_NONE = 0,
+    /**
+     * A quarter aspect: the third and tenth.
+     */
+    TS_STRENGTH_QUARTER = 1,
+    /**
+     * A half aspect: the fifth and ninth.
+     */
+    TS_STRENGTH_HALF = 2,
+    /**
+     * A three-quarter aspect: the fourth and eighth.
+     */
+    TS_STRENGTH_THREE_QUARTERS = 3,
+    /**
+     * A full aspect: the seventh, and a special graha's own two houses.
+     */
+    TS_STRENGTH_FULL = 4,
+} ts_strength;
+
+/**
  * Which arc of its day an instant falls in.
  */
 typedef enum ts_day_part {

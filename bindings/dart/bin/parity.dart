@@ -259,8 +259,10 @@ void main() {
     place: place,
     utcOffsetSeconds: 20700,
     vargas: <Varga>[Varga.d9, Varga.d10],
+    aspects: true,
   );
   put('chart-varga-count', charts.vargaCount);
+  put('chart-drishti-table', charts.drishtiTable);
   put('chart-count', charts.chartCount);
   put('chart-kind', ChartKind.byId(charts.kind).fullKey);
   put('chart-place-lat', charts.latitudeDeg);
@@ -294,6 +296,18 @@ void main() {
     put('chart-$i-vipala', charts.timing.vipala[i]);
     put('chart-$i-hora-number', charts.timing.horaNumber[i]);
     put('chart-$i-hora-lord', chart.horaLord.fullKey);
+    // Every drishti, because the count differs from chart to chart --
+    // which is why the section is ragged.
+    final drishti = chart.aspects;
+    put('chart-$i-aspect-count', drishti.length);
+    for (var k = 0; k < drishti.length; k += 1) {
+      final one = drishti[k];
+      put('chart-$i-aspect-$k', '${one.from.fullKey}>${one.to.fullKey}');
+      put('chart-$i-aspect-$k-houses', one.houses);
+      put('chart-$i-aspect-$k-strength', one.strength.key);
+      put('chart-$i-aspect-$k-from-sign', one.fromEdge.signDeg);
+      put('chart-$i-aspect-$k-to-sign', one.toEdge.signDeg);
+    }
     final vargas = chart.vargas;
     for (var v = 0; v < vargas.length; v += 1) {
       final varga = vargas[v];

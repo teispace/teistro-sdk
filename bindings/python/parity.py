@@ -256,8 +256,10 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
+            aspects=True,
         )
         put("chart-varga-count", charts.decoded.varga_count)
+        put("chart-drishti-table", charts.decoded.drishti_table)
         put("chart-count", len(charts))
         put("chart-kind", charts.kind.full_key)
         put("chart-place-lat", charts.place.latitude_deg)
@@ -290,6 +292,16 @@ def main() -> None:
             put(f"chart-{i}-vipala", chart_columns.timing.vipala[i])
             put(f"chart-{i}-hora-number", chart_columns.timing.hora_number[i])
             put(f"chart-{i}-hora-lord", chart.hora_lord.full_key)
+            # Every drishti, because the count differs from chart to
+            # chart -- which is why the section is ragged.
+            drishti = chart.aspects
+            put(f"chart-{i}-aspect-count", len(drishti))
+            for k, one in enumerate(drishti):
+                put(f"chart-{i}-aspect-{k}", f"{one.from_graha.full_key}>{one.to.full_key}")
+                put(f"chart-{i}-aspect-{k}-houses", one.houses)
+                put(f"chart-{i}-aspect-{k}-strength", one.strength.key)
+                put(f"chart-{i}-aspect-{k}-from-sign", one.from_edge.sign_deg)
+                put(f"chart-{i}-aspect-{k}-to-sign", one.to_edge.sign_deg)
             for v, varga in enumerate(chart.vargas):
                 put(f"chart-{i}-varga-{v}", varga.varga.full_key)
                 put(f"chart-{i}-varga-{v}-lagna-rashi", varga.lagna.rashi.full_key)

@@ -411,6 +411,11 @@ fn chart_cast_section(id: u32) -> SectionSchema {
                 Scalar::F64,
                 "How far through that arc the instant is, 0 to 1.",
             ),
+            ColumnDef::new(
+                "aspect_count",
+                Scalar::U32,
+                "How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.\n\nA **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.",
+            ),
         ],
     )
 }
@@ -549,6 +554,8 @@ pub fn charts() -> BlobSchema {
                     ColumnDef::new("lagna_sign", Scalar::U16, "The sign the divisional chart puts the lagna in.").of_enum("Rashi"),
                 ],
             ),
+            chart_aspects_section(15),
+            chart_drishti_table_section(16),
             SectionSchema::columns(
                 14,
                 "varga_grahas",
@@ -561,6 +568,73 @@ pub fn charts() -> BlobSchema {
             ),
         ],
     }
+}
+
+/// Every chart's drishti: which body looks at which, how strongly, and
+/// how near each end stands to a boundary.
+///
+/// **Ragged**, and `cast.aspect_count` is what says where each chart's
+/// rows begin: a chart's relations are a function of where the bodies
+/// stand rather than of how many there are, so two charts of the same
+/// nine grahas hold 47 and 40 of them.
+#[must_use]
+fn chart_aspects_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "aspects",
+        "Every chart's drishti, concatenated charts outermost and **ragged**: chart `i`'s rows begin at the sum of every earlier chart's `cast.aspect_count` and run for its own, ordered by the looking body and then by the body looked at, in the foundation's own order. Empty when the aspects were not asked for. `from_*` and `to_*` say how near each end stands to a boundary, which is what an ayanamsha that moved would change.",
+        vec![
+            ColumnDef::new("from", Scalar::U16, "The body looking.").of_enum("Graha"),
+            ColumnDef::new("to", Scalar::U16, "The body looked at.").of_enum("Graha"),
+            ColumnDef::new(
+                "houses",
+                Scalar::U8,
+                "Which house of the first's sign the second stands in, counting inclusively from one.",
+            ),
+            ColumnDef::new("strength", Scalar::U8, "How strongly.").of_enum("TsStrength"),
+            ColumnDef::new(
+                "from_sign_deg",
+                Scalar::F64,
+                "How near the looking body stands to a sign edge, degrees.",
+            ),
+            ColumnDef::new(
+                "from_nakshatra_deg",
+                Scalar::F64,
+                "How near it stands to a nakshatra edge, degrees.",
+            ),
+            ColumnDef::new(
+                "from_pada_deg",
+                Scalar::F64,
+                "How near it stands to a pada edge, degrees.",
+            ),
+            ColumnDef::new(
+                "to_sign_deg",
+                Scalar::F64,
+                "How near the body looked at stands to a sign edge, degrees.",
+            ),
+            ColumnDef::new(
+                "to_nakshatra_deg",
+                Scalar::F64,
+                "How near it stands to a nakshatra edge, degrees.",
+            ),
+            ColumnDef::new(
+                "to_pada_deg",
+                Scalar::F64,
+                "How near it stands to a pada edge, degrees.",
+            ),
+        ],
+    )
+}
+
+/// The drishti table every relation was read under, which is one to a
+/// batch because it is a setting.
+#[must_use]
+fn chart_drishti_table_section(id: u32) -> SectionSchema {
+    SectionSchema::bytes(
+        id,
+        "drishti_table",
+        "UTF-8 text: the drishti table the settings named, which every aspect above was read under. Empty when the aspects were not asked for.",
+    )
 }
 
 /// A list of spans of one catalogue's members, clipped to a day.

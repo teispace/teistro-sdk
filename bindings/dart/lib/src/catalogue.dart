@@ -4215,6 +4215,51 @@ enum Reading {
   }
 }
 
+/// How strongly one body looks at another.
+///
+/// The aspect crate's own `Strength`, which is not a catalogue member —
+/// it is a property of a relation rather than a thing with a key — so it
+/// crosses as this boundary's own enum, as `TsReading` and `TsDayPart`
+/// do.
+enum Strength {
+  /// No aspect at all.
+  none(0, 'none'),
+  /// A quarter aspect: the third and tenth.
+  quarter(1, 'quarter'),
+  /// A half aspect: the fifth and ninth.
+  half(2, 'half'),
+  /// A three-quarter aspect: the fourth and eighth.
+  threeQuarters(3, 'three-quarters'),
+  /// A full aspect: the seventh, and a special graha's own two houses.
+  full(4, 'full');
+
+  const Strength(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Strength byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Strength'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Strength? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which arc of its day an instant falls in.
 enum DayPart {
   /// Between sunrise and sunset.

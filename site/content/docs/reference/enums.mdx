@@ -1438,6 +1438,20 @@ Which bound of a bhava a placement was read against.
 | `TS_READING_SANDHI` | 0 | From one sandhi to the next: the bhava as a span between cusps. |
 | `TS_READING_MADHYA` | 1 | From one madhya to the next: the bhava as a span between centres. |
 
+## ts_strength
+
+How strongly one body looks at another.
+
+The aspect crate's own `Strength`, which is not a catalogue member — it is a property of a relation rather than a thing with a key — so it crosses as this boundary's own enum, as `TsReading` and `TsDayPart` do.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_STRENGTH_NONE` | 0 | No aspect at all. |
+| `TS_STRENGTH_QUARTER` | 1 | A quarter aspect: the third and tenth. |
+| `TS_STRENGTH_HALF` | 2 | A half aspect: the fifth and ninth. |
+| `TS_STRENGTH_THREE_QUARTERS` | 3 | A three-quarter aspect: the fourth and eighth. |
+| `TS_STRENGTH_FULL` | 4 | A full aspect: the seventh, and a special graha's own two houses. |
+
 ## ts_day_part
 
 Which arc of its day an instant falls in.

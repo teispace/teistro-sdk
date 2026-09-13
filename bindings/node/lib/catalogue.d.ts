@@ -5578,6 +5578,46 @@ export declare const Reading: {
 export declare const ReadingById: ReadonlyMap<number, Reading>;
 
 /**
+ * How strongly one body looks at another.
+ *
+ * The aspect crate's own `Strength`, which is not a catalogue member —
+ * it is a property of a relation rather than a thing with a key — so it
+ * crosses as this boundary's own enum, as `TsReading` and `TsDayPart`
+ * do.
+ */
+export type Strength = 'none' | 'quarter' | 'half' | 'three-quarters' | 'full';
+
+/** Every Strength by name; the values are the strings the union accepts. */
+export declare const Strength: {
+  /**
+   * No aspect at all.
+   */
+  readonly None: 'none';
+  /**
+   * A quarter aspect: the third and tenth.
+   */
+  readonly Quarter: 'quarter';
+  /**
+   * A half aspect: the fifth and ninth.
+   */
+  readonly Half: 'half';
+  /**
+   * A three-quarter aspect: the fourth and eighth.
+   */
+  readonly ThreeQuarters: 'three-quarters';
+  /**
+   * A full aspect: the seventh, and a special graha's own two houses.
+   */
+  readonly Full: 'full';
+};
+
+/**
+ * Every Strength by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const StrengthById: ReadonlyMap<number, Strength>;
+
+/**
  * Which arc of its day an instant falls in.
  */
 export type DayPart = 'daylight' | 'night';

@@ -38,6 +38,7 @@ import {
   PakshaById,
   PanchakaById,
   RashiById,
+  StrengthById,
   VargaById,
   SDK_VERSION,
   TithiById,
@@ -473,6 +474,11 @@ export class Charts extends Decoded {
     return this.decoded.vargaCount;
   }
 
+  /** The drishti table every aspect was read under; empty if none were asked for. */
+  get drishtiTable() {
+    return this.decoded.drishtiTable;
+  }
+
   /** The steps the SDK applied, each `{ name, implementation }`. */
   get steps() {
     return JSON.parse(this.decoded.steps);
@@ -616,6 +622,46 @@ export class Chart {
           part: d.vargaGrahas.part[from + j],
           sign: RashiById.get(d.vargaGrahas.sign[from + j]) ?? 'unknown',
         })),
+      };
+    });
+  }
+
+  /**
+   * The drishti this chart casts, strongest first among those a body
+   * casts; empty unless `aspects: true` asked for them.
+   *
+   * Each is `{ from, to, houses, strength, fromEdge, toEdge }`, where an
+   * edge is `{ signDeg, nakshatraDeg, padaDeg }` — how near that end
+   * stands to a boundary, which is what an ayanamsha that moved would
+   * change.
+   *
+   * The section is **ragged**: a chart's relations depend on where the
+   * bodies stand rather than on how many there are, so two charts of the
+   * same nine grahas hold different numbers of them.
+   */
+  get aspects() {
+    const d = this.#batch.decoded;
+    const counts = d.cast.aspectCount;
+    let from = 0;
+    for (let i = 0; i < this.#index; i += 1) from += counts[i];
+    const count = counts[this.#index] ?? 0;
+    return Array.from({ length: count }, (_, k) => {
+      const i = from + k;
+      return {
+        from: GrahaById.get(d.aspects.from[i]) ?? 'unknown',
+        to: GrahaById.get(d.aspects.to[i]) ?? 'unknown',
+        houses: d.aspects.houses[i],
+        strength: StrengthById.get(d.aspects.strength[i]) ?? 'unknown',
+        fromEdge: {
+          signDeg: d.aspects.fromSignDeg[i],
+          nakshatraDeg: d.aspects.fromNakshatraDeg[i],
+          padaDeg: d.aspects.fromPadaDeg[i],
+        },
+        toEdge: {
+          signDeg: d.aspects.toSignDeg[i],
+          nakshatraDeg: d.aspects.toNakshatraDeg[i],
+          padaDeg: d.aspects.toPadaDeg[i],
+        },
       };
     });
   }
@@ -1428,6 +1474,8 @@ class ChartArea extends Area {
    *   charts to compute, as `Varga` keys, in the order to answer them;
    *   none by default, because a caller who wants a birth chart should
    *   not pay for twenty-one of them
+   * @param {boolean} [request.aspects] whether to compute the drishti —
+   *   which body looks at which, and how strongly; false by default
    * @returns {Charts}
    */
   foundMany(request) {
@@ -1442,16 +1490,23 @@ class ChartArea extends Area {
         utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
         // The sections beside the foundation, which the SDK takes as a
         // bit set and nothing here writes as one
-        // (`03-design/chart-reading.md` §5). None are offered yet
-        // beyond the divisional charts; each becomes a named option as
-        // it crosses.
-        sections: 0,
+        // (`03-design/chart-reading.md` §5): a named option each, and
+        // one more as each crosses.
+        sections: request.aspects === true ? SECTION_ASPECTS : 0,
         vargas: vargaKeys(request.vargas),
       }),
     );
     return new Charts(bytes);
   }
 }
+
+/**
+ * `TS_CHART_ASPECTS`, the one section bit this layer offers so far.
+ *
+ * The bits are the C ABI's vocabulary; a consumer of this binding writes
+ * `aspects: true` (`03-design/chart-reading.md` §5).
+ */
+const SECTION_ASPECTS = 4;
 
 /**
  * The divisional charts a request asked for, checked.

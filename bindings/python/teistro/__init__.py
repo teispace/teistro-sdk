@@ -120,6 +120,7 @@ from .catalogue import (
     Tithi,
     Vara,
     Varga,
+    Strength,
     Yoga,
     Coordinates,
     Era,
@@ -205,6 +206,9 @@ __all__ = [
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
     "Varga",
+    "Drishti",
+    "EdgeDistance",
+    "Strength",
     "VargaChart",
     "VargaPlacement",
     "PlacedInVarga",
@@ -861,6 +865,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        aspects: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
 
@@ -881,6 +886,7 @@ class ChartArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             kind=kind,
             vargas=vargas,
+            aspects=aspects,
         ).at(0)
 
     def found_many(
@@ -891,6 +897,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        aspects: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
         crossing.
@@ -903,7 +910,8 @@ class ChartArea(_Area):
         `vargas` names the divisional charts to compute, in the order to
         answer them; none by default, because a caller who wants a birth
         chart should not pay for twenty-one of them
-        (`03-design/chart-reading.md` §4).
+        (`03-design/chart-reading.md` §4). `aspects` asks for the
+        drishti.
         """
         request = ChartRequest(
             kind=kind,
@@ -914,9 +922,9 @@ class ChartArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             # The sections beside the foundation, which the SDK takes as
             # a bit set and nothing here writes as one
-            # (`03-design/chart-reading.md` §5). Each becomes a named
-            # argument as it crosses.
-            sections=0,
+            # (`03-design/chart-reading.md` §5): a named argument each,
+            # and one more as each crosses.
+            sections=_SECTION_ASPECTS if aspects else 0,
             vargas=list(vargas),
         )
         return ChartBatch(
@@ -1187,6 +1195,52 @@ class Placement:
     """Its distance from the bhava's centre, degrees."""
 
 
+#: `TS_CHART_ASPECTS`, the one section bit this layer offers so far.
+#:
+#: The bits are the C ABI's vocabulary; a consumer of this binding passes
+#: `aspects=True` (`03-design/chart-reading.md` §5).
+_SECTION_ASPECTS = 4
+
+
+@dataclass(frozen=True)
+class EdgeDistance:
+    """How near a body stands to a boundary, which is what an ayanamsha
+    that moved would change."""
+
+    sign_deg: float
+    """To the nearer edge of its sign, degrees."""
+
+    nakshatra_deg: float
+    """To the nearer edge of its nakshatra, degrees."""
+
+    pada_deg: float
+    """To the nearer edge of its pada, degrees."""
+
+
+@dataclass(frozen=True)
+class Drishti:
+    """One body looking at another."""
+
+    from_graha: Graha
+    """The body looking. Named `from_graha` because `from` is a keyword."""
+
+    to: Graha
+    """The body looked at."""
+
+    houses: int
+    """Which house of the first's sign the second stands in, counting
+    inclusively from one."""
+
+    strength: Strength
+    """How strongly."""
+
+    from_edge: EdgeDistance
+    """How near the looking body stands to a boundary."""
+
+    to_edge: EdgeDistance
+    """How near the body looked at stands to one."""
+
+
 @dataclass(frozen=True)
 class VargaPlacement:
     """Where one body stands in a divisional chart."""
@@ -1348,6 +1402,40 @@ class Chart:
     def hora_lord(self) -> Graha:
         """The graha that rules the hora holding the instant."""
         return Graha(self.batch.decoded.timing.hora_lord[self.index])
+
+    @property
+    def aspects(self) -> list[Drishti]:
+        """The drishti this chart casts, strongest first among those a
+        body casts; empty unless `aspects=True` asked for them.
+
+        The section is **ragged**: a chart's relations depend on where
+        the bodies stand rather than on how many there are, so two charts
+        of the same nine grahas hold different numbers of them, and
+        `cast.aspect_count` is what says where each chart's begin.
+        """
+        decoded = self.batch.decoded
+        counts = decoded.cast.aspect_count
+        start = sum(counts[i] for i in range(self.index))
+        columns = decoded.aspects
+        return [
+            Drishti(
+                from_graha=Graha(columns.from_[i]),
+                to=Graha(columns.to[i]),
+                houses=columns.houses[i],
+                strength=Strength(columns.strength[i]),
+                from_edge=EdgeDistance(
+                    sign_deg=columns.from_sign_deg[i],
+                    nakshatra_deg=columns.from_nakshatra_deg[i],
+                    pada_deg=columns.from_pada_deg[i],
+                ),
+                to_edge=EdgeDistance(
+                    sign_deg=columns.to_sign_deg[i],
+                    nakshatra_deg=columns.to_nakshatra_deg[i],
+                    pada_deg=columns.to_pada_deg[i],
+                ),
+            )
+            for i in range(start, start + counts[self.index])
+        ]
 
     @property
     def vargas(self) -> list[VargaChart]:
