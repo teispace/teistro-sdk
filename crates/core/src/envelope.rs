@@ -590,14 +590,21 @@ impl<T> Envelope<T> {
     /// §2 found why that is a shape problem rather than a bug in a
     /// producer: a value and its stamp are built separately and joined
     /// at the end, so the one field that cannot be filled until the
-    /// value exists is the one everybody forgets. §8 left "whether the
-    /// producers should seal" open; they do, and this is how — the join
-    /// is the only place that knows both, so it is the place that fills
-    /// it.
-    ///
-    /// Four callers each wrote the same line before this existed: the C
+    /// value exists is the one everybody forgets. This is the join, and
+    /// the four callers that each wrote the same mending line — the C
     /// boundary's chart and panchanga entry points, and the Rust
-    /// façade's two areas. The same line in four places is the argument.
+    /// façade's two areas — call it instead.
+    ///
+    /// **It belongs where a value is published, not where it is
+    /// produced**, and that was measured rather than argued. Sealing
+    /// inside `Founder::found` and `Almanac::between` made every caller
+    /// pay a full canonical serialisation of the value for a field many
+    /// of them discard: the instruction-count gate put `panchanga`
+    /// **8.8% over** its base for ten days of it. A producer's caller may
+    /// want the numbers and nothing else; a consumer handed an envelope
+    /// must have a true hash. So the boundary seals, the façade's areas
+    /// seal, and a crate calling a producer directly pays for what it
+    /// uses.
     #[must_use]
     pub fn sealing(value: T, provenance: Provenance) -> Envelope<T>
     where

@@ -70,9 +70,9 @@ impl<'a> AlmanacArea<'a> {
             settings.provider.overrides,
             self.context.delta_t(),
         );
-        // `Almanac::between` seals, as the founder does: the hash of
-        // the value is filled where both are known, which is the join.
-        Almanac::new(
+        // Sealed here, as the chart area seals, and for the reason it
+        // gives: the join belongs where the value is published.
+        let founded = Almanac::new(
             provider,
             resolved,
             &model,
@@ -81,7 +81,8 @@ impl<'a> AlmanacArea<'a> {
             PrecessionModel::default(),
             self.context.delta_t(),
         )
-        .between(from, to, place)
+        .between(from, to, place)?;
+        Ok(Envelope::sealing(founded.value, founded.provenance))
     }
 
     /// One day: the run of one, unwrapped.

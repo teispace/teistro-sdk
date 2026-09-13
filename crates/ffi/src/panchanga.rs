@@ -32,7 +32,7 @@ use teistro_calendar::lunisolar::MonthKind;
 use teistro_calendar::shipped;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_core::catalogue::{Ayanamsha, Calendar};
-use teistro_core::envelope::Provenance;
+use teistro_core::envelope::{Envelope, Provenance};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
@@ -630,9 +630,10 @@ pub unsafe extern "C" fn ts_panchanga_days(
             ctx.delta_t(),
         )
         .between(&from, &to, &place)?;
-        // The almanac seals, as the founder does: the boundary encodes
-        // the stamp it was given.
-        let encoded = encode(&founded.value, &place, asked_calendar, &founded.provenance)?;
+        // Sealed here, as `ts_chart_found` seals and for the reason it
+        // gives: the join belongs where the value is published.
+        let sealed = Envelope::sealing(founded.value, founded.provenance);
+        let encoded = encode(&sealed.value, &place, asked_calendar, &sealed.provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })

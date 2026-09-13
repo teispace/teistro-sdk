@@ -273,7 +273,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     ) -> Result<Envelope<ChartFoundation>, Error> {
         let chart = self.value(instant, place, kind)?;
         let provenance = self.provenance(&chart);
-        Ok(Envelope::sealing(chart, provenance))
+        Ok(Envelope::new(chart, provenance))
     }
 
     /// The foundation without its stamp, which the batch shares.
@@ -420,7 +420,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             altitude_m: place.altitude.get(),
             kind: kind.key(),
         });
-        Ok(Envelope::sealing(charts, provenance))
+        Ok(Envelope::new(charts, provenance))
     }
 
     /// The stamp of a batch that founded nothing, which still says under

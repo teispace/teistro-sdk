@@ -45,6 +45,31 @@ const PRODUCERS: [&str; 4] = [
     "crates/serial/src/seal.rs",
 ];
 
+/// The places a value is **published** — handed to a consumer as a blob
+/// or as an envelope — and so must carry the hash of itself.
+///
+/// This is a different question from who *produces* a provenance, and
+/// separating the two is what the instruction-count gate forced. A
+/// producer's caller may want the numbers and nothing else, and sealing
+/// inside `Founder::found` and `Almanac::between` charged every one of
+/// them a full canonical serialisation of the value: `panchanga` went
+/// **8.8% over** its base for ten days of it, against a 3% budget. So
+/// the producers hand over the placeholder and the publishers fill it,
+/// through one shared constructor rather than four hand-written lines.
+const PUBLISHERS: [&str; 5] = [
+    "crates/ffi/src/positions.rs",
+    "crates/ffi/src/chart.rs",
+    "crates/ffi/src/panchanga.rs",
+    "crates/sdk/src/area/chart.rs",
+    "crates/sdk/src/area/almanac.rs",
+];
+
+/// Whether a publishing file fills the content hash, by either spelling.
+fn seals(root: &Path, publisher: &str) -> bool {
+    std::fs::read_to_string(root.join(publisher))
+        .is_ok_and(|text| text.contains("Envelope::sealing(") || text.contains("content_hash ="))
+}
+
 /// The fields of the envelope a producer has to fill itself: everything
 /// `Provenance::new` leaves empty. The identifying six it takes as
 /// arguments are not in the list, because they cannot be left out.
@@ -242,41 +267,49 @@ fn assigned(root: &Path) -> Result<BTreeMap<&'static str, Vec<&'static str>>, St
 ///
 /// Two sentences, and which one is written is the measurement. The first
 /// was true for six sessions and is the reason that section exists; the
-/// second is what closed §8's open question.
+/// second is what closed §8's open question — in favour of the
+/// **publishers** rather than the producers, which the instruction-count
+/// gate decided.
 fn the_hash_of_nothing(missing: &[&str], producers: usize) -> String {
     let mut out = String::new();
     if missing.is_empty() {
         let _ = write!(
             out,
-            "\n**`content_hash` is the hash of nothing on none of the {producers}.**\n\
+            "\n**`content_hash` is the hash of nothing on none of the {producers}\n\
+             places a value is published.**\n\
              `Provenance::new` still sets it to `Hash::of(&[])` as a\n\
-             placeholder, and every producer now replaces it — but not by\n\
-             remembering to. The shape problem this section found is\n\
+             placeholder, and the shape problem this section found is\n\
              answered the way `crates/serial` answered it: a value and its\n\
              stamp are joined by a constructor that knows both, so the one\n\
              field that cannot be filled until the value exists is filled\n\
-             where it can be. `Envelope::sealing` is that join for `chart`\n\
-             and `panchanga`, and the four callers that used to mend the\n\
-             stamp afterwards — the boundary's two entry points and the\n\
-             Rust façade's two areas — no longer do. Four callers writing\n\
-             the same line is what decided it.\n\n"
+             where it can be. `Envelope::sealing` is that join, and the\n\
+             five publishing callers use it instead of each writing the\n\
+             same mending line.\n\n\
+             **Where, was measured rather than argued.** Sealing inside\n\
+             the producers — `Founder::found` and `Almanac::between` —\n\
+             charged every caller a full canonical serialisation of the\n\
+             value for a field many of them discard, and the\n\
+             instruction-count gate put `panchanga` 8.8% over its base for\n\
+             ten days of it against a 3% budget. Producing is not\n\
+             publishing: a caller who wants the numbers pays for the\n\
+             numbers, and a consumer handed an envelope gets a true hash.\n\n"
         );
     } else {
         let _ = write!(
             out,
-            "\n**`content_hash` is the hash of nothing on {} of the {}.**\n\
+            "\n**`content_hash` is the hash of nothing on {} of the {} places a\n\
+             value is published.**\n\
              `Provenance::new` sets it to `Hash::of(&[])` as a placeholder, and\n\
-             a producer that does not replace it ships a value carrying the\n\
-             hash of the empty string where its own hash should be — the field\n\
-             is documented as \"the hash of the canonical serialisation of the\n\
-             value\" and on those it is not that. They are: {}.\n\n\
-             That is not a bug in any one producer. It is a **shape** problem:\n\
+             a publisher that does not replace it hands over a value carrying\n\
+             the hash of the empty string where its own hash should be — the\n\
+             field is documented as \"the hash of the canonical serialisation\n\
+             of the value\" and on those it is not that. They are: {}.\n\n\
+             That is not a bug in any one of them. It is a **shape** problem:\n\
              a value and its stamp are built separately and joined at the end,\n\
              so the one field that cannot be filled until the value exists is\n\
              the one everybody forgets. `crates/serial`'s answer is to make the\n\
              joining the only way to build the pair, so the hash is computed by\n\
-             the constructor and never by a caller who remembers — which is\n\
-             why that crate is in the table above and fills it.\n\n",
+             the constructor and never by a caller who remembers.\n\n",
             missing.len(),
             producers,
             missing
@@ -297,16 +330,24 @@ fn stamped(root: &Path) -> Result<String, String> {
             never.push(field);
         }
     }
-    let content_hash_fillers = found
+    let unsealed: Vec<&str> = PUBLISHERS
         .iter()
-        .filter(|(_, fills)| fills.contains(&"content_hash"))
-        .count();
+        .filter(|publisher| !seals(root, publisher))
+        .copied()
+        .collect();
     let claims = [
         Claim::counted(
-            "every producer stamps the hash of the value it produced",
-            found.len() - content_hash_fillers,
-            found.len(),
-        ),
+            "every published value carries the hash of itself",
+            unsealed.len(),
+            PUBLISHERS.len(),
+        )
+        .with_note(if unsealed.is_empty() {
+            String::from(
+                "so nothing reaches a consumer claiming the hash of the empty string, and a producer's caller that wants only the numbers pays for nothing",
+            )
+        } else {
+            format!("not sealing: {}", unsealed.join(", "))
+        }),
         Claim::counted(
             "every field the envelope documents is filled by someone",
             never.len(),
@@ -340,12 +381,7 @@ fn stamped(root: &Path) -> Result<String, String> {
         };
         let _ = writeln!(out, "| `{producer}` | {shown} |");
     }
-    let missing: Vec<&str> = found
-        .iter()
-        .filter(|(_, fills)| !fills.contains(&"content_hash"))
-        .map(|(producer, _)| *producer)
-        .collect();
-    out.push_str(&the_hash_of_nothing(&missing, found.len()));
+    out.push_str(&the_hash_of_nothing(&unsealed, PUBLISHERS.len()));
     if !never.is_empty() {
         let _ = write!(
             out,

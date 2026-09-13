@@ -76,12 +76,15 @@ impl<'a> ChartArea<'a> {
             settings.provider.overrides,
             self.context.delta_t(),
         );
-        // `Founder::found` seals: the envelope it answers carries the
-        // hash of its own value, so there is nothing for this area to
-        // fill. It was not always so -- four callers each wrote that
-        // line, which is what closed `serial-and-the-envelope.md` §8's
-        // open question in favour of the producers.
-        Founder::new(
+        // **Sealed here**, because this is where the value is published:
+        // an envelope a consumer holds must carry the hash of its own
+        // value, and `Founder::found` leaves the placeholder for its
+        // caller to fill. It is not filled *in* the founder for a
+        // measured reason — sealing there charged every caller a full
+        // canonical serialisation for a field many discard, and the
+        // instruction-count gate put `panchanga` 8.8% over its base
+        // (`serial-and-the-envelope.md` §8).
+        let founded = Founder::new(
             provider,
             resolved,
             &model,
@@ -90,7 +93,8 @@ impl<'a> ChartArea<'a> {
             PrecessionModel::default(),
             self.context.delta_t(),
         )
-        .found(instants, place, kind)
+        .found(instants, place, kind)?;
+        Ok(Envelope::sealing(founded.value, founded.provenance))
     }
 
     /// One chart: the batch of one, unwrapped.

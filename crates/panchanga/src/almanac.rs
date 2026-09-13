@@ -229,7 +229,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             }),
             frame,
         );
-        Ok(Envelope::sealing(value, provenance))
+        Ok(Envelope::new(value, provenance))
     }
 
     /// The almanac of the day an instant belongs to, which before sunrise
@@ -304,7 +304,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             }),
             frame,
         );
-        Ok(Envelope::sealing(values, provenance))
+        Ok(Envelope::new(values, provenance))
     }
 
     /// One day's value, unstamped, **and the frame it asked the provider

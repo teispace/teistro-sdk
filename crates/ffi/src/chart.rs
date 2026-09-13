@@ -33,7 +33,7 @@ use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{ChartFoundation, Founder};
 use teistro_core::catalogue::{Ayanamsha, ChartKind};
-use teistro_core::envelope::Provenance;
+use teistro_core::envelope::{Envelope, Provenance};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
@@ -754,13 +754,16 @@ pub unsafe extern "C" fn ts_chart_found(
             ctx.delta_t(),
         )
         .found(&instants, &place, kind)?;
-        // The founder **seals**: the envelope it answers already carries
-        // the hash of its own value, so the boundary encodes the stamp
-        // it was given rather than mending it.
+        // **Sealed here**, because this is where the value is published.
         // `serial-and-the-envelope.md` §8 asked whether the producers
-        // should, and four callers each writing the same line was the
-        // answer.
-        let encoded = encode(&founded.value, &place, kind, &founded.provenance)?;
+        // should seal instead; they should not, and the reason is
+        // measured — sealing in `Founder::found` charged every caller a
+        // full canonical serialisation for a field many discard, and put
+        // `panchanga` 8.8% over the instruction budget. `Envelope::sealing`
+        // is the shared join the four publishing callers use, which is
+        // what answers the same-line-in-four-places objection.
+        let sealed = Envelope::sealing(founded.value, founded.provenance);
+        let encoded = encode(&sealed.value, &place, kind, &sealed.provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
