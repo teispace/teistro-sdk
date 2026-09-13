@@ -99,6 +99,30 @@ extension TeimerisEngine on Engine {
     return answered['return']! as String;
   }
 
+  /// `tm_julian_day_many`.
+  List<double> tmJulianDayMany({required List<TmDatetime> dts, required int cal}) {
+    final answered = (call('tm_julian_day_many', <String, Object?>{'dts': dts.map((one) => one.toJson()).toList(), 'cal': cal})) as Map<String, Object?>;
+    return (answered['out_jd']! as List<Object?>).map((one) => (one! as num).toDouble()).toList();
+  }
+
+  /// `tm_calendar_date_many`.
+  List<TmDatetime> tmCalendarDateMany({required List<double> jds, required int cal}) {
+    final answered = (call('tm_calendar_date_many', <String, Object?>{'jds': jds, 'cal': cal})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmDatetime.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_delta_t_many`.
+  List<double> tmDeltaTMany({required List<double> jdsUt1}) {
+    final answered = (call('tm_delta_t_many', <String, Object?>{'jds_ut1': jdsUt1})) as Map<String, Object?>;
+    return (answered['out_seconds']! as List<Object?>).map((one) => (one! as num).toDouble()).toList();
+  }
+
+  /// `tm_sidereal_time_many`.
+  List<double> tmSiderealTimeMany({required List<double> jdsUt1, required double geoLonDeg}) {
+    final answered = (call('tm_sidereal_time_many', <String, Object?>{'jds_ut1': jdsUt1, 'geo_lon_deg': geoLonDeg})) as Map<String, Object?>;
+    return (answered['out_hours']! as List<Object?>).map((one) => (one! as num).toDouble()).toList();
+  }
+
   /// `tm_equation_of_time`.
   double tmEquationOfTime({required double jdUt1}) {
     final answered = (call('tm_equation_of_time', <String, Object?>{'jd_ut1': jdUt1})) as Map<String, Object?>;
@@ -135,6 +159,12 @@ extension TeimerisEngine on Engine {
     return (answered['out']! as num).toDouble();
   }
 
+  /// `tm_position_calc_grid`.
+  List<TmPosition> tmPositionCalcGrid({required List<int> bodies, required List<double> jds, required int scale, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_position_calc_grid', <String, Object?>{'bodies': bodies, 'jds': jds, 'scale': scale, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmPosition.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_house_cusp_count`.
   int tmHouseCuspCount({required int sys}) {
     final answered = (call('tm_house_cusp_count', <String, Object?>{'sys': sys})) as Map<String, Object?>;
@@ -157,6 +187,12 @@ extension TeimerisEngine on Engine {
   double tmHousePosition({required double armc, required double geoLatDeg, required double obliquityDeg, required int sys, required double lonDeg, required double latDeg}) {
     final answered = (call('tm_house_position', <String, Object?>{'armc': armc, 'geo_lat_deg': geoLatDeg, 'obliquity_deg': obliquityDeg, 'sys': sys, 'lon_deg': lonDeg, 'lat_deg': latDeg})) as Map<String, Object?>;
     return (answered['out_house']! as num).toDouble();
+  }
+
+  /// `tm_chart_default_bodies`.
+  List<int> tmChartDefaultBodies() {
+    final answered = (call('tm_chart_default_bodies', const <String, Object?>{})) as Map<String, Object?>;
+    return (answered['out_bodies']! as List<Object?>).map((one) => (one! as num).toInt()).toList();
   }
 
   /// `tm_set_jpl_file`.
@@ -293,16 +329,34 @@ extension TeimerisEngine on Engine {
     return TmRefraction.fromJson(answered['out']! as Map<String, Object?>);
   }
 
+  /// `tm_refract_many`.
+  List<TmRefraction> tmRefractMany({required int model, required int dir, required List<double> altitudesDeg, TmObserver? obs, TmAtmosphere? atm}) {
+    final answered = (call('tm_refract_many', <String, Object?>{'model': model, 'dir': dir, 'altitudes_deg': altitudesDeg, 'obs': obs?.toJson(), 'atm': atm?.toJson()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmRefraction.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_obliquity_calc`.
   TmObliquity tmObliquityCalc({required double jd, required int scale}) {
     final answered = (call('tm_obliquity_calc', <String, Object?>{'jd': jd, 'scale': scale})) as Map<String, Object?>;
     return TmObliquity.fromJson(answered['out']! as Map<String, Object?>);
   }
 
+  /// `tm_coord_rotate`.
+  List<TmPosition> tmCoordRotate({required int direction, required double obliquityDeg, required List<TmPosition> positions}) {
+    final answered = (call('tm_coord_rotate', <String, Object?>{'direction': direction, 'obliquity_deg': obliquityDeg, 'positions': positions.map((one) => one.toJson()).toList()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmPosition.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_to_horizontal`.
   TmHorizontal tmToHorizontal({required double jd, required int scale, required int system, TmObserver? obs, TmAtmosphere? atm, required double lonDeg, required double latDeg}) {
     final answered = (call('tm_to_horizontal', <String, Object?>{'jd': jd, 'scale': scale, 'system': system, 'obs': obs?.toJson(), 'atm': atm?.toJson(), 'lon_deg': lonDeg, 'lat_deg': latDeg})) as Map<String, Object?>;
     return TmHorizontal.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_to_horizontal_many`.
+  List<TmHorizontal> tmToHorizontalMany({required double jd, required int scale, required int system, TmObserver? obs, TmAtmosphere? atm, required List<TmCoord> coords}) {
+    final answered = (call('tm_to_horizontal_many', <String, Object?>{'jd': jd, 'scale': scale, 'system': system, 'obs': obs?.toJson(), 'atm': atm?.toJson(), 'coords': coords.map((one) => one.toJson()).toList()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmHorizontal.fromJson(one! as Map<String, Object?>)).toList();
   }
 
   /// `tm_from_horizontal`.
@@ -346,10 +400,22 @@ extension TeimerisEngine on Engine {
     return TmNodesApsides.fromJson(answered['out']! as Map<String, Object?>);
   }
 
+  /// `tm_nodes_apsides_calc_many`.
+  List<TmNodesApsides> tmNodesApsidesCalcMany({required double jd, required int scale, required List<int> bodies, required int flags, required int method, required int apsis, TmObserver? observer}) {
+    final answered = (call('tm_nodes_apsides_calc_many', <String, Object?>{'jd': jd, 'scale': scale, 'bodies': bodies, 'flags': flags, 'method': method, 'apsis': apsis, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmNodesApsides.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_orbital_elements_calc`.
   TmOrbitalElements tmOrbitalElementsCalc({required double jd, required int scale, required int body, required int flags, required int masses}) {
     final answered = (call('tm_orbital_elements_calc', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'flags': flags, 'masses': masses})) as Map<String, Object?>;
     return TmOrbitalElements.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_orbital_elements_calc_many`.
+  List<TmOrbitalElements> tmOrbitalElementsCalcMany({required double jd, required int scale, required List<int> bodies, required int flags, required int masses}) {
+    final answered = (call('tm_orbital_elements_calc_many', <String, Object?>{'jd': jd, 'scale': scale, 'bodies': bodies, 'flags': flags, 'masses': masses})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmOrbitalElements.fromJson(one! as Map<String, Object?>)).toList();
   }
 
   /// `tm_orbit_distances_calc`.
@@ -358,10 +424,22 @@ extension TeimerisEngine on Engine {
     return TmOrbitDistances.fromJson(answered['out']! as Map<String, Object?>);
   }
 
+  /// `tm_orbit_distances_calc_many`.
+  List<TmOrbitDistances> tmOrbitDistancesCalcMany({required double jd, required int scale, required List<int> bodies, required int flags}) {
+    final answered = (call('tm_orbit_distances_calc_many', <String, Object?>{'jd': jd, 'scale': scale, 'bodies': bodies, 'flags': flags})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmOrbitDistances.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_phenomena_calc`.
   TmPhenomena tmPhenomenaCalc({required double jd, required int scale, required int body, required int flags, TmObserver? observer}) {
     final answered = (call('tm_phenomena_calc', <String, Object?>{'jd': jd, 'scale': scale, 'body': body, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
     return TmPhenomena.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_phenomena_calc_many`.
+  List<TmPhenomena> tmPhenomenaCalcMany({required double jd, required int scale, required List<int> bodies, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_phenomena_calc_many', <String, Object?>{'jd': jd, 'scale': scale, 'bodies': bodies, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmPhenomena.fromJson(one! as Map<String, Object?>)).toList();
   }
 
   /// `tm_star_name`.
@@ -395,10 +473,22 @@ extension TeimerisEngine on Engine {
     return TmStar.fromJson(answered['out']! as Map<String, Object?>);
   }
 
+  /// `tm_star_find_all`.
+  List<TmStar> tmStarFindAll({required String name}) {
+    final answered = (call('tm_star_find_all', <String, Object?>{'name': name})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmStar.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
   /// `tm_star_calc`.
   TmPosition tmStarCalc({required double jd, required int scale, required String name, required int flags, TmObserver? observer}) {
     final answered = (call('tm_star_calc', <String, Object?>{'jd': jd, 'scale': scale, 'name': name, 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
     return TmPosition.fromJson(answered['out']! as Map<String, Object?>);
+  }
+
+  /// `tm_star_calc_many`.
+  List<TmPosition> tmStarCalcMany({required double jd, required int scale, required List<TmStar> stars, required int flags, TmObserver? observer}) {
+    final answered = (call('tm_star_calc_many', <String, Object?>{'jd': jd, 'scale': scale, 'stars': stars.map((one) => one.toJson()).toList(), 'flags': flags, 'observer': observer?.toJson()})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmPosition.fromJson(one! as Map<String, Object?>)).toList();
   }
 
   /// `tm_eclipse_type_name`.
@@ -477,6 +567,18 @@ extension TeimerisEngine on Engine {
   TmCrossingRequest tmCrossingRequestInitSized() {
     final answered = (call('tm_crossing_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
     return TmCrossingRequest.fromJson(answered['req']! as Map<String, Object?>);
+  }
+
+  /// `tm_crossing_search`.
+  List<TmCrossing> tmCrossingSearch({TmCrossingRequest? req, required int outCapacity}) {
+    final answered = (call('tm_crossing_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmCrossing.fromJson(one! as Map<String, Object?>)).toList();
+  }
+
+  /// `tm_node_crossing_search`.
+  List<TmCrossing> tmNodeCrossingSearch({TmCrossingRequest? req, required int outCapacity}) {
+    final answered = (call('tm_node_crossing_search', <String, Object?>{'req': req?.toJson(), 'out_capacity': outCapacity})) as Map<String, Object?>;
+    return (answered['out']! as List<Object?>).map((one) => TmCrossing.fromJson(one! as Map<String, Object?>)).toList();
   }
 
   /// `tm_angle_normalize_deg`.
@@ -861,6 +963,30 @@ final class TmHorizontal {
         'azimuth_north': azimuthNorth,
         'altitude_true': altitudeTrue,
         'altitude_apparent': altitudeApparent,
+      };
+}
+
+/// `tm_coord`, as the engine declares it. Every field is required.
+final class TmCoord {
+  /// Every field, named.
+  const TmCoord({required this.lon, required this.lat});
+
+  /// Read from the object the engine answers with.
+  factory TmCoord.fromJson(Map<String, Object?> json) => TmCoord(
+        lon: (json['lon']! as num).toDouble(),
+        lat: (json['lat']! as num).toDouble(),
+      );
+
+  /// `lon`.
+  final double lon;
+
+  /// `lat`.
+  final double lat;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'lon': lon,
+        'lat': lat,
       };
 }
 
@@ -1701,6 +1827,40 @@ final class TmCrossingRequest {
         'body_b': bodyB,
         'coeff_a': coeffA,
         'coeff_b': coeffB,
+      };
+}
+
+/// `tm_crossing`, as the engine declares it. Every field is required.
+final class TmCrossing {
+  /// Every field, named.
+  const TmCrossing({required this.jd, required this.longitude, required this.latitude, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmCrossing.fromJson(Map<String, Object?> json) => TmCrossing(
+        jd: (json['jd']! as num).toDouble(),
+        longitude: (json['longitude']! as num).toDouble(),
+        latitude: (json['latitude']! as num).toDouble(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `jd`.
+  final double jd;
+
+  /// `longitude`.
+  final double longitude;
+
+  /// `latitude`.
+  final double latitude;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd': jd,
+        'longitude': longitude,
+        'latitude': latitude,
+        'status': status,
       };
 }
 

@@ -48,3 +48,10 @@ def main() -> None:
             jd=2461296.5, scale=1, body=4, flags=0, method=0, apsis=0
         )
         print(f"{utc['hour']}:{utc['minute']} UTC, perihelion {orbit['perihelion']['lon']}")
+
+        # An array crosses as a list, and any sequence is taken: as long as
+        # the inputs, as many as asked, or as many as there are.
+        deltas: list[float] = typed.tm_delta_t_many(jds_ut1=(2451545, 2461296.5))
+        grid = typed.tm_position_calc_grid(bodies=[0, 1], jds=[2451545.0], scale=1, flags=0)
+        defaults: list[int] = typed.tm_chart_default_bodies()
+        print(f"{deltas[0]} s, the Sun at {grid[0]['lon']}, {len(defaults)} default bodies")

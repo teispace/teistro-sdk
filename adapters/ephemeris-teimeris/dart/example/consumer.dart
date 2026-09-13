@@ -57,5 +57,21 @@ void main() {
   );
   print('${utc.hour}:${utc.minute} UTC, perihelion ${orbit.perihelion.lon}');
 
+  // An array crosses as a list: as long as the inputs, as many as asked,
+  // or as many as there are.
+  final List<double> deltas = ctx.engine.tmDeltaTMany(
+    jdsUt1: [2451545, 2461296.5],
+  );
+  final List<TmPosition> grid = ctx.engine.tmPositionCalcGrid(
+    bodies: [0, 1],
+    jds: [2451545],
+    scale: 1,
+    flags: 0,
+  );
+  final List<int> defaults = ctx.engine.tmChartDefaultBodies();
+  print(
+    '${deltas.first} s, the Sun at ${grid.first.lon}, ${defaults.length} bodies',
+  );
+
   ctx.dispose();
 }

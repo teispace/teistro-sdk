@@ -8,7 +8,7 @@
 // adapter's platform binary, because a type is not a call.
 
 import { Context } from '@teistro/sdk';
-import teimeris, { engine, binary, platformPackage, type TmDatetime } from '../index.js';
+import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosition } from '../index.js';
 
 // The descriptor is what an `ephemeris` chain takes.
 const sdk = new Context({
@@ -38,6 +38,15 @@ const perihelion: number = typed.tmNodesApsidesCalc({
   jd: 2461296.5, scale: 1, body: 4, flags: 0, method: 0, apsis: 0,
 }).perihelion.lonSpeed;
 
+// An array crosses as a readonly array: as long as the inputs, as many
+// as asked, or as many as there are — and no caller passes a capacity
+// for an answer whose length is already decided.
+const deltas: readonly number[] = typed.tmDeltaTMany({ jdsUt1: [2451545, 2461296.5] });
+const grid: readonly TmPosition[] = typed.tmPositionCalcGrid({
+  bodies: [0, 1], jds: [2451545], scale: 1, flags: 0,
+});
+const defaults: readonly number[] = typed.tmChartDefaultBodies();
+
 // And nothing comes back as nothing.
 const nothing: void = typed.tmFallbackStatsReset();
 
@@ -46,4 +55,4 @@ const packaged: string = platformPackage();
 
 sdk.dispose();
 
-export { name, seconds, formatted, version, utc, perihelion, nothing, where, packaged };
+export { name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, nothing, where, packaged };

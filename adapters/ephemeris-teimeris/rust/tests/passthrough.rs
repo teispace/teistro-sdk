@@ -399,3 +399,144 @@ fn a_nested_struct_comes_back_nested() {
     assert!((0.0..360.0).contains(&lon), "{answer}");
     assert!(perihelion.get("struct_size").is_none(), "{answer}");
 }
+
+/// Calls a function by name with JSON written inline, and parses what
+/// comes back.
+fn called(provider: &TeimerisProvider, function: &str, args: &Value) -> Value {
+    let answer = provider
+        .native_call(function, &args.to_string())
+        .unwrap_or_else(|error| panic!("{function}: {error}"));
+    serde_json::from_str(&answer).expect("it parses")
+}
+
+/// An output as long as its input: one answer per instant, in order, and
+/// none for none.
+#[test]
+fn an_array_answers_one_value_per_input() {
+    let provider = provider();
+    let jds = [2_451_545.0, 2_461_296.5, 2_378_497.0];
+    let answer = called(
+        &provider,
+        "tm_delta_t_many",
+        &serde_json::json!({ "jds_ut1": jds }),
+    );
+    let batch = answer["out_seconds"].as_array().expect("an array");
+    assert_eq!(batch.len(), jds.len(), "{answer}");
+    for (at, jd) in jds.iter().enumerate() {
+        let one = called(&provider, "tm_delta_t", &serde_json::json!({ "jd_ut1": jd }));
+        assert_eq!(batch.get(at), one.get("out_seconds"), "instant {at}");
+    }
+    let none = called(
+        &provider,
+        "tm_delta_t_many",
+        &serde_json::json!({ "jds_ut1": [] }),
+    );
+    assert_eq!(none["out_seconds"], serde_json::json!([]));
+    assert!(
+        answer.get("count").is_none() && answer.get("out_capacity").is_none(),
+        "a length and a capacity are the marshaller's own: {answer}"
+    );
+}
+
+/// An array of structs crosses both ways, and a bad element is refused
+/// by its index and field.
+#[test]
+fn an_array_of_structs_crosses_both_ways() {
+    let provider = provider();
+    let dates = called(
+        &provider,
+        "tm_calendar_date_many",
+        &serde_json::json!({ "jds": [2_451_545.0, 2_461_296.5], "cal": 1 }),
+    );
+    let dates = dates["out"].as_array().expect("an array").clone();
+    assert_eq!(dates.len(), 2);
+    assert_eq!(dates[0]["year"], 2000);
+    assert!(dates[0].get("struct_size").is_none(), "{dates:?}");
+
+    let back = called(
+        &provider,
+        "tm_julian_day_many",
+        &serde_json::json!({ "dts": dates, "cal": 1 }),
+    );
+    assert_eq!(back["out_jd"], serde_json::json!([2_451_545.0, 2_461_296.5]));
+
+    let refused = provider
+        .native_call(
+            "tm_julian_day_many",
+            &serde_json::json!({
+                "dts": [
+                    { "year": 2000, "month": 1, "day": 1, "hour": 12, "minute": 0, "second": 0 },
+                    { "year": 2000, "day": 1, "hour": 12, "minute": 0, "second": 0 },
+                ],
+                "cal": 1,
+            })
+            .to_string(),
+        )
+        .expect_err("an element with a field left out is refused");
+    assert!(refused.to_string().contains("`dts[1].month`"), "{refused}");
+}
+
+/// An output laid out over two inputs is as long as their product, in
+/// the layout the header states: bodies outermost.
+#[test]
+fn a_grid_is_as_long_as_its_inputs_multiplied() {
+    let provider = provider();
+    let answer = called(
+        &provider,
+        "tm_position_calc_grid",
+        &serde_json::json!({
+            "bodies": [0, 1],
+            "jds": [2_451_545.0, 2_451_546.0, 2_451_547.0],
+            "scale": 1,
+            "flags": 0,
+        }),
+    );
+    let grid = answer["out"].as_array().expect("an array");
+    assert_eq!(grid.len(), 6, "two bodies by three epochs");
+    // The Sun moves about a degree a day and the Moon about thirteen, so
+    // body-major means the first three are close together.
+    let lon = |at: usize| grid[at]["lon"].as_f64().expect("a longitude");
+    assert!((lon(1) - lon(0)).rem_euclid(360.0) < 2.0, "{answer}");
+    assert!((lon(4) - lon(3)).rem_euclid(360.0) > 10.0, "{answer}");
+}
+
+/// An output the engine counts: asked once into room that fits, and the
+/// count is the array's length rather than a second key.
+#[test]
+fn an_output_the_engine_counts_is_gathered() {
+    let provider = provider();
+    let answer = called(&provider, "tm_chart_default_bodies", &serde_json::json!({}));
+    let bodies = answer["out_bodies"].as_array().expect("an array");
+    assert!(bodies.len() >= 10, "{answer}");
+    assert_eq!(bodies[0], 0, "the Sun first: {answer}");
+    assert!(answer.get("return").is_none(), "{answer}");
+}
+
+/// A search answers as many as the caller asks for, no more, and the
+/// count it was told is the array's length.
+#[test]
+fn a_search_answers_as_many_as_asked() {
+    let provider = provider();
+    let mut request = called(
+        &provider,
+        "tm_crossing_request_init_sized",
+        &serde_json::json!({}),
+    )["req"]
+        .clone();
+    // The Sun reaching 0° from the start of 2026: each March equinox.
+    request["body"] = 0.into();
+    request["jd_start"] = 2_461_041.5.into();
+    request["target_deg"] = 0.0.into();
+    request["jd_end"] = (2_461_041.5 + 3.0 * 365.25).into();
+    let answer = called(
+        &provider,
+        "tm_crossing_search",
+        &serde_json::json!({ "req": request, "out_capacity": 2 }),
+    );
+    let found = answer["out"].as_array().expect("an array");
+    assert_eq!(found.len(), 2, "{answer}");
+    let jd = |at: usize| found[at]["jd"].as_f64().expect("an instant");
+    assert!((jd(1) - jd(0) - 365.24).abs() < 1.0, "a year apart: {answer}");
+    assert!(answer.get("out_count").is_none(), "{answer}");
+}
+

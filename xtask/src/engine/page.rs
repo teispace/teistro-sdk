@@ -4,10 +4,11 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 
 use super::classify::{
-    Blocker, Standing, blocked_by, carries, carries_a_string, carries_a_struct, describe,
-    fills_a_string, has_role, mutates_engine_state, returns_a_string,
+    Blocker, Sizing, Standing, blocked_by, carries, carries_a_string, carries_a_struct,
+    carries_an_array, describe, fills_a_string, has_role, mutates_engine_state, returns_a_string,
+    sizing,
 };
-use super::idl::{Function, Idl, Vocabulary};
+use super::idl::{Extent, Function, Idl, Vocabulary};
 use super::{DISPATCH, IDL};
 use crate::measure::{count, spelled};
 
@@ -210,7 +211,10 @@ pub(crate) fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     let both = count_where(rows, |function| {
         carries_a_string(function) && carries_a_struct(function)
     });
-    let scalar_only = rows.len() - strings - structs + both;
+    let arrays = count_where(rows, carries_an_array);
+    let scalar_only = count_where(rows, |function| {
+        !carries_a_string(function) && !carries_a_struct(function) && !carries_an_array(function)
+    });
     let _ = writeln!(
         out,
         "**{} functions**. {} of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else.\n",
@@ -230,6 +234,29 @@ pub(crate) fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
         "{} carry a struct, which crosses as a JSON object keyed by the engine's own field names, nested as the struct nests; {} of them carry a string as well. Every field is required going in, and the struct's own `struct_size` crosses in neither direction — the arm fills it, because the engine reads the struct only as far as it says (`03-design/engine-passthrough.md`).\n",
         spelled(structs),
         spelled(both),
+    );
+    let outputs = |wanted: fn(&Sizing<'_>) -> bool| {
+        rows.iter()
+            .flat_map(|row| {
+                row.function
+                    .params
+                    .iter()
+                    .filter(|param| param.role == "array_out")
+                    .filter_map(|param| sizing(row.function, param))
+            })
+            .filter(|sized| wanted(sized))
+            .count()
+    };
+    let inputs = outputs(|sized| matches!(sized, Sizing::Inputs(_)));
+    let asked = outputs(|sized| matches!(sized, Sizing::Asked { .. }));
+    let totals = outputs(|sized| matches!(sized, Sizing::Total { .. }));
+    let _ = writeln!(
+        out,
+        "{} carry an array, which crosses as a JSON array of whatever its element crosses as. The engine's description says how long each output is, and the marshaller sizes it from that and nothing else: {} are as long as the inputs they answer, {} are as long as the caller asks — how many eclipses to find, which is an argument — and cut to the count the engine gives, and {} are as long as the engine says there are, which the marshaller learns by asking and asks again when there are more than fitted. No caller passes a capacity for an answer whose length is already decided.\n",
+        spelled(arrays),
+        spelled(inputs),
+        spelled(asked),
+        spelled(totals),
     );
     let _ = writeln!(out, "| function | carries | changes engine state |");
     let _ = writeln!(out, "|---|---|---|");
@@ -293,25 +320,57 @@ pub(crate) fn queue_section(rows: Option<&Vec<Row<'_>>>, vocabulary: &Vocabulary
     let struct_rows = count_where(rows, |function| {
         function.params.iter().any(|param| {
             matches!(
-                blocked_by(param, vocabulary),
-                Some(
-                    Blocker::StructArray
-                        | Blocker::StringStruct
-                        | Blocker::PointerStruct
-                        | Blocker::OtherStruct
-                )
+                blocked_by(function, param, vocabulary),
+                Some(Blocker::StringStruct | Blocker::PointerStruct | Blocker::OtherStruct)
             )
         })
     });
     let _ = writeln!(
         out,
-        "**{struct_rows} of the {} still touch a struct**, and they are no longer one group. This table used to have a row reading *a struct* over eighty-one functions, because the classifier knew a struct only by the word. Reading each struct's field list split that row by the worst field in the way — and the largest of the pieces, the structs made of numbers alone, was also the easiest, and is callable above.\n",
+        "**{struct_rows} of the {} still touch a struct that is not plain**, and that is the work ahead: a struct carrying a string, one pointing at another, and the few no JSON object describes. The order of work, with what each step releases, is in `03-design/engine-passthrough.md` §6; the figures there were measured by the same classification as this table.\n",
         rows.len()
     );
+    out.push_str(&unsized_section(rows));
+    out
+}
+
+/// Every output array the marshaller cannot size, with the engine's own
+/// reason, so the queue's row says *why* and not only how many.
+fn unsized_section(rows: &[Row<'_>]) -> String {
+    let mut out = String::new();
+    let unsizable: Vec<(&str, &str, String)> = rows
+        .iter()
+        .flat_map(|row| {
+            row.function
+                .params
+                .iter()
+                .filter(|param| param.role == "array_out" && sizing(row.function, param).is_none())
+                .map(|param| {
+                    let why = match &param.extent {
+                        Some(Extent::Unstated { why }) => why.clone(),
+                        Some(Extent::Length { of }) => format!("as long as `{of}`, a field the marshaller would have to read before it could allocate"),
+                        Some(Extent::Product { of }) => format!("the product of `{}`, one of them a field the marshaller would have to read first", of.join("` × `")),
+                        _ => "no extent the marshaller can read".to_string(),
+                    };
+                    (row.name(), param.name.as_str(), why)
+                })
+        })
+        .collect();
+    if unsizable.is_empty() {
+        return out;
+    }
+    let _ = writeln!(out, "### The outputs it cannot size\n");
     let _ = writeln!(
         out,
-        "The order of work that follows is in `03-design/engine-passthrough.md` §5, with what each step releases; the figures there were measured by the same classification as this table.\n"
+        "**{} output arrays**, each with the engine's own account of what decides its length. None is guessed: an output sized wrongly is a truncated answer at best, and at worst a refusal the caller has no way to fix.\n",
+        spelled(unsizable.len())
     );
+    let _ = writeln!(out, "| function | output | its length is |");
+    let _ = writeln!(out, "|---|---|---|");
+    for (function, output, why) in unsizable {
+        let _ = writeln!(out, "| `{function}` | `{output}` | {why} |");
+    }
+    let _ = writeln!(out);
     out
 }
 

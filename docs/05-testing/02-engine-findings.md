@@ -41,6 +41,24 @@ re-recorded and the bounds tightened the same day.
 | F6 | The IAU 2000B nutation returns the luni-solar series alone: the model's fixed offsets in lieu of the planetary terms (−0.135 mas in longitude, +0.388 mas in obliquity; McCarthy and Luzum 2003) are not added, as in its upstream | +0.135 mas and −0.388 mas exactly at J2000.0 against the SDK's `nut00b`, where the two readings' arguments agree; 0.12 mas of sidereal time | [teimeris#6](https://github.com/teispace/teimeris/issues/6) | the engine adds the offsets under `MAX`; what remains is the two readings of the model's arguments (C43), 0.0058″ from 1700 to 2300. **Closed.** The engine's answer corrects the absolute values quoted in the issue's reproduction; the relative claim was right |
 | F5 | Star catalogue rows: Sadalbari on λ Pegasi (the IAU name is μ Pegasi's), Algedi on α¹ Capricorni (α²'s), Rigil Kentaurus with a proper motion 224 mas/yr from Hipparcos's, Sgr A*'s east proper motion with cos δ applied twice (0.4 mas/yr short), the built-in IAU 1958 galactic pole as the B1950 definition where the file's row is the ICRS transform | 4702″, 381″, 22″ a century, 0.01″ by 2026 and 1″ by 700 BCE, 0.18″ | [teimeris#5](https://github.com/teispace/teimeris/issues/5) | every row of the engine's table now compares, where five were left out: `tests/teimeris_stars.rs` asserts that none is. What remains is Gaia against Hipparcos, worst Rigil Kentaurus 6.3″ at 2100. The galactic-centre ayanamshas' bound went from 0.68″ at 700 CE to 0.05″ flat, and the IAU 1958 pole's from 0.3″ into the general 0.005″. **Closed.** The engine's answer measures Sadalbari's separation at 4695″ rather than 4702″ |
 
+## Findings in the engine's description
+
+The register above is of numbers. These are of the engine's
+**description** — the IDL its bindings and this SDK's passthrough are
+generated from — where it said too little for a generator to act on.
+They are fixed in the engine directly rather than filed, which has been
+the maintainer's rule since 2026-09-10, and each is held on this side by
+the gate that found it.
+
+| # | finding | what it cost | fixed | how the SDK holds it now |
+|---|---|---|---|---|
+| D1 | The public integer typedefs `tm_body`, `tm_flags` and `tm_ayanamsha` were described nowhere, so a generator saw a name indistinguishable from the `tm_context` handle | each of five engine generators kept its own list, and one had drifted: Dart typed `tm_flags` as a **signed** integer | `51b4345` (2026-09-12): an `aliases` list | `check-engine` reads it; five functions taking one became callable |
+| D2 | An output array's **length** was recorded nowhere: `double *out, size_t out_capacity` is one declaration for one-per-input, bodies-by-epochs, as-many-as-asked and as-many-as-there-are | a binding had to make its caller pass the capacity, and hand back that many elements whether or not the engine wrote them | `df3945e` (2026-09-13): an `extent` on each of the forty, listed in the extractor and refused when missing either way; `design_rules.py` rule 2 checks the IDL | `check-engine` sizes every output from it (`03-design/engine-passthrough.md` §4); seventeen functions became callable |
+
+Both commits are in the engine's history and not yet on its remote; the
+vendored IDL at `adapters/ephemeris-teimeris/rust/data/teimeris.idl` is
+byte-identical to the engine's own at `df3945e`.
+
 ## What the round trip taught
 
 The register's rule ends "when the upstream issue closes, the fixture is

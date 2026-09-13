@@ -25,6 +25,36 @@ pub(crate) struct Param {
     /// it does not allow with its own status, so passing one is safe.
     #[serde(default)]
     pub(crate) optional: bool,
+    /// The parameter a length or a capacity belongs to.
+    #[serde(default)]
+    pub(crate) of: Option<String>,
+    /// How long an output array is, as the engine records it.
+    #[serde(default)]
+    pub(crate) extent: Option<Extent>,
+}
+
+/// How long an output array is — which its C type cannot say, and which
+/// the engine's extractor lists for every one.
+///
+/// `double *out, size_t out_capacity` is one declaration for four
+/// contracts, and a marshaller has to know which before it can size the
+/// buffer or tell how much of it is answer.
+#[derive(Debug, Deserialize)]
+#[serde(tag = "kind", rename_all = "lowercase")]
+pub(crate) enum Extent {
+    /// As long as `of`: an input array's length, or a struct input's
+    /// field spelled `req.day_count`.
+    Length { of: String },
+    /// As long as every name in `of` multiplied, in layout order.
+    Product { of: Vec<String> },
+    /// The capacity is the caller's question — "the next N eclipses" —
+    /// and `count` receives how many were written.
+    Asked { count: String },
+    /// `count` receives, or as `return` the function returns, how many
+    /// there are, even beyond the capacity.
+    Total { count: String },
+    /// Decided by something no parameter holds, and `why` says what.
+    Unstated { why: String },
 }
 
 impl Param {

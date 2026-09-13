@@ -27,7 +27,7 @@ mod page;
 
 use std::path::Path;
 
-pub(crate) use classify::{Described, describe};
+pub(crate) use classify::{Declared, Described, describe};
 pub(crate) use dispatch::reached;
 pub(crate) use idl::{Function, Shape, Vocabulary};
 

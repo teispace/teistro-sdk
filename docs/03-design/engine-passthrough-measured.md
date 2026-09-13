@@ -8,9 +8,9 @@ The engine describes **161 functions**, beside 57 structs, 40 enums and 2 callba
 
 | standing | functions | what it means |
 |---|---:|---|
-| **callable** | 95 | offered at `sdk.engine.*` today |
+| **callable** | 112 | offered at `sdk.engine.*` today |
 | **the adapter's own** | 12 | never offered, whatever their shape |
-| **not yet marshalled** | 54 | a queue for the generator, not a refusal |
+| **not yet marshalled** | 37 | a queue for the generator, not a refusal |
 
 ## What the adapter will not hand over
 
@@ -33,11 +33,13 @@ They are named here rather than left to the marshaller to fail on, because the r
 
 ## What is callable
 
-**95 functions**. 45 of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else.
+**112 functions**. 45 of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else.
 
-25 carry a string: eight read one the caller passes, five fill a buffer of the marshaller's, and twelve answer with one the engine lends and the marshaller copies before anything else can move it.
+26 carry a string: nine read one the caller passes, five fill a buffer of the marshaller's, and twelve answer with one the engine lends and the marshaller copies before anything else can move it.
 
-33 carry a struct, which crosses as a JSON object keyed by the engine's own field names, nested as the struct nests; eight of them carry a string as well. Every field is required going in, and the struct's own `struct_size` crosses in neither direction — the arm fills it, because the engine reads the struct only as far as it says (`03-design/engine-passthrough.md`).
+41 carry a struct, which crosses as a JSON object keyed by the engine's own field names, nested as the struct nests; eight of them carry a string as well. Every field is required going in, and the struct's own `struct_size` crosses in neither direction — the arm fills it, because the engine reads the struct only as far as it says (`03-design/engine-passthrough.md`).
+
+17 carry an array, which crosses as a JSON array of whatever its element crosses as. The engine's description says how long each output is, and the marshaller sizes it from that and nothing else: 13 are as long as the inputs they answer, two are as long as the caller asks — how many eclipses to find, which is an argument — and cut to the count the engine gives, and two are as long as the engine says there are, which the marshaller learns by asking and asks again when there are more than fitted. No caller passes a capacity for an answer whose length is already decided.
 
 | function | carries | changes engine state |
 |---|---|---|
@@ -54,16 +56,22 @@ They are named here rather than left to the marshaller to fail on, because the r
 | `tm_sidereal_time` |  |  |
 | `tm_day_of_week` |  |  |
 | `tm_weekday_name` | a string it lends |  |
+| `tm_julian_day_many` | an array it reads, an array it fills |  |
+| `tm_calendar_date_many` | an array it reads, an array it fills |  |
+| `tm_delta_t_many` | an array it reads, an array it fills |  |
+| `tm_sidereal_time_many` | an array it reads, an array it fills |  |
 | `tm_equation_of_time` |  |  |
 | `tm_local_mean_to_apparent` |  |  |
 | `tm_local_apparent_to_mean` |  |  |
 | `tm_local_to_utc` | a struct it reads, a struct it fills |  |
 | `tm_utc_to_local` | a struct it reads, a struct it fills |  |
 | `tm_position_value` |  |  |
+| `tm_position_calc_grid` | a struct it reads, an array it reads, an array it fills |  |
 | `tm_house_cusp_count` |  |  |
 | `tm_house_system_name` | a string it lends |  |
 | `tm_house_system_count` |  |  |
 | `tm_house_position` |  |  |
+| `tm_chart_default_bodies` | an array it fills |  |
 | `tm_set_jpl_file` | a string it reads | **yes** |
 | `tm_jpl_info` |  |  |
 | `tm_set_ayanamsha` |  | **yes** |
@@ -85,8 +93,11 @@ They are named here rather than left to the marshaller to fail on, because the r
 | `tm_get_nutation_interpolation` |  |  |
 | `tm_atmosphere_init_sized` | a struct it fills |  |
 | `tm_refract` | a struct it reads, a struct it fills |  |
+| `tm_refract_many` | a struct it reads, an array it reads, an array it fills |  |
 | `tm_obliquity_calc` | a struct it fills |  |
+| `tm_coord_rotate` | an array it reads, an array it fills |  |
 | `tm_to_horizontal` | a struct it reads, a struct it fills |  |
+| `tm_to_horizontal_many` | a struct it reads, an array it reads, an array it fills |  |
 | `tm_from_horizontal` | a struct it reads |  |
 | `tm_embedded_coverage` |  |  |
 | `tm_body_coverage` | a struct it fills |  |
@@ -94,15 +105,21 @@ They are named here rather than left to the marshaller to fail on, because the r
 | `tm_fallback_stats_reset` |  |  |
 | `tm_cache_dir_default` | a string it fills |  |
 | `tm_nodes_apsides_calc` | a struct it reads, a struct it fills |  |
+| `tm_nodes_apsides_calc_many` | a struct it reads, an array it reads, an array it fills |  |
 | `tm_orbital_elements_calc` | a struct it fills |  |
+| `tm_orbital_elements_calc_many` | an array it reads, an array it fills |  |
 | `tm_orbit_distances_calc` | a struct it fills |  |
+| `tm_orbit_distances_calc_many` | an array it reads, an array it fills |  |
 | `tm_phenomena_calc` | a struct it reads, a struct it fills |  |
+| `tm_phenomena_calc_many` | a struct it reads, an array it reads, an array it fills |  |
 | `tm_star_name` | a string it fills, a struct it reads |  |
 | `tm_star_designation` | a string it fills, a struct it reads |  |
 | `tm_star_load_catalogue` | a string it reads | **yes** |
 | `tm_star_count` |  |  |
 | `tm_star_find` | a string it reads, a struct it fills |  |
+| `tm_star_find_all` | a string it reads, an array it fills |  |
 | `tm_star_calc` | a string it reads, a struct it reads, a struct it fills |  |
+| `tm_star_calc_many` | a struct it reads, an array it reads, an array it fills |  |
 | `tm_eclipse_type_name` | a string it lends |  |
 | `tm_solar_eclipse_where` | a struct it fills |  |
 | `tm_occultation_where` | a string it reads, a struct it fills |  |
@@ -116,6 +133,8 @@ They are named here rather than left to the marshaller to fail on, because the r
 | `tm_visibility_arcus` | a struct it reads |  |
 | `tm_visibility_best_altitude` | a struct it reads, a struct it fills |  |
 | `tm_crossing_request_init_sized` | a struct it fills |  |
+| `tm_crossing_search` | a struct it reads, an array it fills |  |
+| `tm_node_crossing_search` | a struct it reads, an array it fills |  |
 | `tm_angle_normalize_deg` |  |  |
 | `tm_angle_normalize_rad` |  |  |
 | `tm_angle_diff_deg` |  |  |
@@ -145,21 +164,35 @@ A consumer who wants the change *recorded* has the settings for it (ADR-0013's o
 
 ## What the marshaller has not learned
 
-**54 functions**, grouped by the hardest thing in the way and listed easiest first. This is a queue rather than a refusal: each group is one shape the generator has to learn, and learning one brings its whole group in at once.
+**37 functions**, grouped by the hardest thing in the way and listed easiest first. This is a queue rather than a refusal: each group is one shape the generator has to learn, and learning one brings its whole group in at once.
 
 | what it takes or returns | functions | examples |
 |---|---:|---|
-| an array of numbers | 4 | `tm_delta_t_many`, `tm_sidereal_time_many`, `tm_houses_calc` |
-| an array of structs | 15 | `tm_julian_day_many`, `tm_calendar_date_many`, `tm_position_calc_grid` |
 | a struct carrying a string | 6 | `tm_model_info`, `tm_loaded_files`, `tm_last_loaded_file` |
-| a struct pointing at another | 19 | `tm_position_calc`, `tm_position_calc_many`, `tm_chart_calc` |
-| opaque bytes | 2 | `tm_chart_blob_info`, `tm_chart_decode` |
-| a struct no JSON object describes | 5 | `tm_config_init_sized`, `tm_position_calc_grid_columns`, `tm_fetch_config_init_sized` |
+| a struct pointing at another | 17 | `tm_position_calc`, `tm_position_calc_many`, `tm_eclipse_request_init_sized` |
+| an output whose length it cannot compute | 2 | `tm_houses_calc_many`, `tm_calendar_grid` |
+| an optional output parallel to another | 2 | `tm_houses_calc`, `tm_chart_calc` |
+| opaque bytes | 3 | `tm_chart_encode`, `tm_chart_blob_info`, `tm_chart_decode` |
+| a struct no JSON object describes | 4 | `tm_config_init_sized`, `tm_position_calc_grid_columns`, `tm_fetch_config_init_sized` |
 | a pointer it returns | 3 | `tm_last_error`, `tm_embedded_files`, `tm_embedded_find` |
 
-**46 of the 54 still touch a struct**, and they are no longer one group. This table used to have a row reading *a struct* over eighty-one functions, because the classifier knew a struct only by the word. Reading each struct's field list split that row by the worst field in the way — and the largest of the pieces, the structs made of numbers alone, was also the easiest, and is callable above.
+**29 of the 37 still touch a struct that is not plain**, and that is the work ahead: a struct carrying a string, one pointing at another, and the few no JSON object describes. The order of work, with what each step releases, is in `03-design/engine-passthrough.md` §6; the figures there were measured by the same classification as this table.
 
-The order of work that follows is in `03-design/engine-passthrough.md` §5, with what each step releases; the figures there were measured by the same classification as this table.
+### The outputs it cannot size
+
+**nine output arrays**, each with the engine's own account of what decides its length. None is guessed: an output sized wrongly is a truncated answer at best, and at worst a refusal the caller has no way to fix.
+
+| function | output | its length is |
+|---|---|---|
+| `tm_houses_calc` | `cusps` | tm_house_cusp_count() of the requested system |
+| `tm_houses_calc_many` | `cusps` | count times the widest requested system's cusp count |
+| `tm_chart_calc` | `out_cusps` | tm_house_cusp_count() of the requested system |
+| `tm_calendar_grid` | `out_days` | as long as `req.day_count`, a field the marshaller would have to read before it could allocate |
+| `tm_calendar_grid` | `out_positions` | the product of `req.day_count` × `body_count`, one of them a field the marshaller would have to read first |
+| `tm_chart_encode` | `out_blob` | the encoded size, which the call returns only once it fits |
+| `tm_chart_decode` | `out_bodies` | what the blob holds; tm_chart_blob_info() |
+| `tm_chart_decode` | `out_positions` | what the blob holds; tm_chart_blob_info() |
+| `tm_chart_decode` | `out_cusps` | what the blob holds; tm_chart_blob_info() |
 
 ## What the typed façade hands back
 
@@ -167,11 +200,11 @@ ADR-0030 puts a typed façade in the **adapter's** package, generated from this 
 
 | values answered | functions | the façade's answer |
 |---:|---:|---|
-| 1 | 71 | **the value itself** — a number, a string, a struct |
+| 1 | 88 | **the value itself** — a number, a string, a struct |
 | 0 | 11 | nothing |
 | more | 13 | a record: an object, a Dart record, a `TypedDict` |
 
-**71 of the 95 answer with exactly one value**, so a façade that always returned an object would have made every one of them an indexing exercise for the sake of 13. Those 13 get a record apiece — `tm_utc_to_jd`, `tm_get_tidal_acceleration`, `tm_get_delta_t_override`, `tm_from_horizontal`, `tm_embedded_coverage`, `tm_solar_eclipse_how`, `tm_occultation_how`, `tm_lunar_eclipse_how`, `tm_visibility_defaults`, `tm_version`, `tm_solar_eclipse_where`, `tm_occultation_where`, `tm_jpl_info` — which is 13 types per target rather than 95.
+**88 of the 112 answer with exactly one value**, so a façade that always returned an object would have made every one of them an indexing exercise for the sake of 13. Those 13 get a record apiece — `tm_utc_to_jd`, `tm_get_tidal_acceleration`, `tm_get_delta_t_override`, `tm_from_horizontal`, `tm_embedded_coverage`, `tm_solar_eclipse_how`, `tm_occultation_how`, `tm_lunar_eclipse_how`, `tm_visibility_defaults`, `tm_version`, `tm_solar_eclipse_where`, `tm_occultation_where`, `tm_jpl_info` — which is 13 types per target rather than 112.
 
 The same count settles a question every target would otherwise have raised. `return` — the key a function's own return value comes back under — **never appears beside another key**: every one of those 13 is a status-returning function with out-parameters. So no record field is ever named `return`, and no target has to rename a keyword it could not spell.
 

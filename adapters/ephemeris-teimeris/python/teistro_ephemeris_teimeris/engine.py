@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TypedDict, cast
 
 from teistro import Engine
@@ -86,6 +87,13 @@ class TmHorizontal(TypedDict):
     azimuth_north: float
     altitude_true: float
     altitude_apparent: float
+
+
+class TmCoord(TypedDict):
+    """`tm_coord`, as the engine declares it. Every field is required."""
+
+    lon: float
+    lat: float
 
 
 class TmCoverage(TypedDict):
@@ -289,6 +297,15 @@ class TmCrossingRequest(TypedDict):
     coeff_b: float
 
 
+class TmCrossing(TypedDict):
+    """`tm_crossing`, as the engine declares it. Every field is required."""
+
+    jd: float
+    longitude: float
+    latitude: float
+    status: int
+
+
 class TmAngleParts(TypedDict):
     """`tm_angle_parts`, as the engine declares it. Every field is required."""
 
@@ -485,6 +502,30 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_weekday_name", day=day))
         return cast(str, answered["return"])
 
+    def tm_julian_day_many(self, dts: Sequence[TmDatetime], cal: int) -> list[float]:
+        """`tm_julian_day_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_julian_day_many", dts=dts, cal=cal))
+        return [float(one) for one in cast(list[float], answered["out_jd"])]
+
+    def tm_calendar_date_many(self, jds: Sequence[float], cal: int) -> list[TmDatetime]:
+        """`tm_calendar_date_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_calendar_date_many", jds=jds, cal=cal))
+        return cast(list[TmDatetime], answered["out"])
+
+    def tm_delta_t_many(self, jds_ut1: Sequence[float]) -> list[float]:
+        """`tm_delta_t_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_delta_t_many", jds_ut1=jds_ut1))
+        return [float(one) for one in cast(list[float], answered["out_seconds"])]
+
+    def tm_sidereal_time_many(self, jds_ut1: Sequence[float], geo_lon_deg: float) -> list[float]:
+        """`tm_sidereal_time_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_sidereal_time_many", jds_ut1=jds_ut1, geo_lon_deg=geo_lon_deg))
+        return [float(one) for one in cast(list[float], answered["out_hours"])]
+
     def tm_equation_of_time(self, jd_ut1: float) -> float:
         """`tm_equation_of_time`.
         """
@@ -521,6 +562,12 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_position_value", jd=jd, scale=scale, body=body, flags=flags, field=field))
         return float(cast(float, answered["out"]))
 
+    def tm_position_calc_grid(self, bodies: Sequence[int], jds: Sequence[float], scale: int, flags: int, observer: TmObserver | None = None) -> list[TmPosition]:
+        """`tm_position_calc_grid`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_position_calc_grid", bodies=bodies, jds=jds, scale=scale, flags=flags, observer=observer))
+        return cast(list[TmPosition], answered["out"])
+
     def tm_house_cusp_count(self, sys: int) -> int:
         """`tm_house_cusp_count`.
         """
@@ -544,6 +591,12 @@ class TeimerisEngine:
         """
         answered = cast(dict[str, object], self._engine.call("tm_house_position", armc=armc, geo_lat_deg=geo_lat_deg, obliquity_deg=obliquity_deg, sys=sys, lon_deg=lon_deg, lat_deg=lat_deg))
         return float(cast(float, answered["out_house"]))
+
+    def tm_chart_default_bodies(self) -> list[int]:
+        """`tm_chart_default_bodies`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_chart_default_bodies"))
+        return [int(one) for one in cast(list[int], answered["out_bodies"])]
 
     def tm_set_jpl_file(self, filename: str) -> None:
         """`tm_set_jpl_file`.
@@ -676,17 +729,35 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_refract", model=model, dir=dir, altitude_deg=altitude_deg, obs=obs, atm=atm))
         return cast(TmRefraction, answered["out"])
 
+    def tm_refract_many(self, model: int, dir: int, altitudes_deg: Sequence[float], obs: TmObserver | None = None, atm: TmAtmosphere | None = None) -> list[TmRefraction]:
+        """`tm_refract_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_refract_many", model=model, dir=dir, altitudes_deg=altitudes_deg, obs=obs, atm=atm))
+        return cast(list[TmRefraction], answered["out"])
+
     def tm_obliquity_calc(self, jd: float, scale: int) -> TmObliquity:
         """`tm_obliquity_calc`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_obliquity_calc", jd=jd, scale=scale))
         return cast(TmObliquity, answered["out"])
 
+    def tm_coord_rotate(self, direction: int, obliquity_deg: float, positions: Sequence[TmPosition]) -> list[TmPosition]:
+        """`tm_coord_rotate`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_coord_rotate", direction=direction, obliquity_deg=obliquity_deg, positions=positions))
+        return cast(list[TmPosition], answered["out"])
+
     def tm_to_horizontal(self, jd: float, scale: int, system: int, obs: TmObserver | None, atm: TmAtmosphere | None, lon_deg: float, lat_deg: float) -> TmHorizontal:
         """`tm_to_horizontal`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_to_horizontal", jd=jd, scale=scale, system=system, obs=obs, atm=atm, lon_deg=lon_deg, lat_deg=lat_deg))
         return cast(TmHorizontal, answered["out"])
+
+    def tm_to_horizontal_many(self, jd: float, scale: int, system: int, obs: TmObserver | None, atm: TmAtmosphere | None, coords: Sequence[TmCoord]) -> list[TmHorizontal]:
+        """`tm_to_horizontal_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_to_horizontal_many", jd=jd, scale=scale, system=system, obs=obs, atm=atm, coords=coords))
+        return cast(list[TmHorizontal], answered["out"])
 
     def tm_from_horizontal(self, jd: float, scale: int, system: int, obs: TmObserver | None, azimuth_deg: float, altitude_deg: float) -> TmFromHorizontal:
         """`tm_from_horizontal`.
@@ -727,11 +798,23 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_nodes_apsides_calc", jd=jd, scale=scale, body=body, flags=flags, method=method, apsis=apsis, observer=observer))
         return cast(TmNodesApsides, answered["out"])
 
+    def tm_nodes_apsides_calc_many(self, jd: float, scale: int, bodies: Sequence[int], flags: int, method: int, apsis: int, observer: TmObserver | None = None) -> list[TmNodesApsides]:
+        """`tm_nodes_apsides_calc_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_nodes_apsides_calc_many", jd=jd, scale=scale, bodies=bodies, flags=flags, method=method, apsis=apsis, observer=observer))
+        return cast(list[TmNodesApsides], answered["out"])
+
     def tm_orbital_elements_calc(self, jd: float, scale: int, body: int, flags: int, masses: int) -> TmOrbitalElements:
         """`tm_orbital_elements_calc`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_orbital_elements_calc", jd=jd, scale=scale, body=body, flags=flags, masses=masses))
         return cast(TmOrbitalElements, answered["out"])
+
+    def tm_orbital_elements_calc_many(self, jd: float, scale: int, bodies: Sequence[int], flags: int, masses: int) -> list[TmOrbitalElements]:
+        """`tm_orbital_elements_calc_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_orbital_elements_calc_many", jd=jd, scale=scale, bodies=bodies, flags=flags, masses=masses))
+        return cast(list[TmOrbitalElements], answered["out"])
 
     def tm_orbit_distances_calc(self, jd: float, scale: int, body: int, flags: int) -> TmOrbitDistances:
         """`tm_orbit_distances_calc`.
@@ -739,11 +822,23 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_orbit_distances_calc", jd=jd, scale=scale, body=body, flags=flags))
         return cast(TmOrbitDistances, answered["out"])
 
+    def tm_orbit_distances_calc_many(self, jd: float, scale: int, bodies: Sequence[int], flags: int) -> list[TmOrbitDistances]:
+        """`tm_orbit_distances_calc_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_orbit_distances_calc_many", jd=jd, scale=scale, bodies=bodies, flags=flags))
+        return cast(list[TmOrbitDistances], answered["out"])
+
     def tm_phenomena_calc(self, jd: float, scale: int, body: int, flags: int, observer: TmObserver | None = None) -> TmPhenomena:
         """`tm_phenomena_calc`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_phenomena_calc", jd=jd, scale=scale, body=body, flags=flags, observer=observer))
         return cast(TmPhenomena, answered["out"])
+
+    def tm_phenomena_calc_many(self, jd: float, scale: int, bodies: Sequence[int], flags: int, observer: TmObserver | None = None) -> list[TmPhenomena]:
+        """`tm_phenomena_calc_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_phenomena_calc_many", jd=jd, scale=scale, bodies=bodies, flags=flags, observer=observer))
+        return cast(list[TmPhenomena], answered["out"])
 
     def tm_star_name(self, star: TmStar | None = None) -> str:
         """`tm_star_name`.
@@ -776,11 +871,23 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_star_find", name=name))
         return cast(TmStar, answered["out"])
 
+    def tm_star_find_all(self, name: str) -> list[TmStar]:
+        """`tm_star_find_all`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_star_find_all", name=name))
+        return cast(list[TmStar], answered["out"])
+
     def tm_star_calc(self, jd: float, scale: int, name: str, flags: int, observer: TmObserver | None = None) -> TmPosition:
         """`tm_star_calc`.
         """
         answered = cast(dict[str, object], self._engine.call("tm_star_calc", jd=jd, scale=scale, name=name, flags=flags, observer=observer))
         return cast(TmPosition, answered["out"])
+
+    def tm_star_calc_many(self, jd: float, scale: int, stars: Sequence[TmStar], flags: int, observer: TmObserver | None = None) -> list[TmPosition]:
+        """`tm_star_calc_many`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_star_calc_many", jd=jd, scale=scale, stars=stars, flags=flags, observer=observer))
+        return cast(list[TmPosition], answered["out"])
 
     def tm_eclipse_type_name(self, bit: int) -> str:
         """`tm_eclipse_type_name`.
@@ -853,6 +960,18 @@ class TeimerisEngine:
         """
         answered = cast(dict[str, object], self._engine.call("tm_crossing_request_init_sized"))
         return cast(TmCrossingRequest, answered["req"])
+
+    def tm_crossing_search(self, req: TmCrossingRequest | None, out_capacity: int) -> list[TmCrossing]:
+        """`tm_crossing_search`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_crossing_search", req=req, out_capacity=out_capacity))
+        return cast(list[TmCrossing], answered["out"])
+
+    def tm_node_crossing_search(self, req: TmCrossingRequest | None, out_capacity: int) -> list[TmCrossing]:
+        """`tm_node_crossing_search`.
+        """
+        answered = cast(dict[str, object], self._engine.call("tm_node_crossing_search", req=req, out_capacity=out_capacity))
+        return cast(list[TmCrossing], answered["out"])
 
     def tm_angle_normalize_deg(self, deg: float) -> float:
         """`tm_angle_normalize_deg`.

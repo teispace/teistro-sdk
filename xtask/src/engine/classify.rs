@@ -1,7 +1,9 @@
 //! Where each function stands, and what each parameter asks of the
 //! marshaller: the classification every generated file is read from.
 
-use super::idl::{Function, Made, Param, TypeRef, Vocabulary};
+use core::fmt;
+
+use super::idl::{Extent, Function, Made, Param, TypeRef, Vocabulary};
 
 /// What the SDK owns and a caller must not take from it.
 ///
@@ -73,7 +75,7 @@ pub(crate) fn scalar_out(type_ref: &TypeRef, vocabulary: &Vocabulary) -> bool {
 /// One list, read by the classifier and by nothing else: a role added
 /// here without an arm in [`arm`] would generate code that does not
 /// compile, which is the failure mode to want.
-pub(crate) const ROLES_KNOWN: [&str; 9] = [
+pub(crate) const ROLES_KNOWN: [&str; 13] = [
     "handle",
     "value",
     "scalar_out",
@@ -83,13 +85,159 @@ pub(crate) const ROLES_KNOWN: [&str; 9] = [
     "struct_in",
     "struct_out",
     "out_struct_size",
+    "array_in",
+    "array_len",
+    "array_out",
+    "array_cap",
 ];
 
-/// Whether a parameter is one the marshaller does not report and the
-/// caller does not pass: the context it is called on, and the capacity
-/// of a buffer the marshalling itself sizes.
-pub(crate) fn bookkeeping(role: &str) -> bool {
-    matches!(role, "handle" | "string_cap" | "out_struct_size")
+/// Which side of a call a parameter is on, as a consumer sees it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Crossing {
+    /// The marshaller supplies it and never reports it: the context, a
+    /// buffer's capacity, a struct's extent, an array's length, and the
+    /// count of an array whose own length already says it.
+    Bookkeeping,
+    /// The caller supplies it.
+    Takes,
+    /// The answer reports it.
+    Gives,
+}
+
+/// Which side of a call one parameter is on.
+///
+/// Per function and not per role, because two roles change sides with
+/// the output beside them: an `asked` output's capacity is the caller's
+/// question — how many eclipses to find — and an output count is
+/// bookkeeping exactly when it counts an array the answer already holds.
+pub(crate) fn crossing(function: &Function, param: &Param) -> Crossing {
+    match param.role.as_str() {
+        "handle" | "string_cap" | "out_struct_size" | "array_len" => Crossing::Bookkeeping,
+        "array_cap" => {
+            let asked = output_of(function, param)
+                .and_then(|output| sizing(function, output))
+                .is_some_and(|sized| matches!(sized, Sizing::Asked { .. }));
+            if asked {
+                Crossing::Takes
+            } else {
+                Crossing::Bookkeeping
+            }
+        }
+        "scalar_out" if counts_an_output(function, &param.name) => Crossing::Bookkeeping,
+        "scalar_out" | "string_out" | "struct_out" | "array_out" => Crossing::Gives,
+        _ => Crossing::Takes,
+    }
+}
+
+/// The output array a capacity belongs to.
+fn output_of<'a>(function: &'a Function, capacity: &Param) -> Option<&'a Param> {
+    let of = capacity.of.as_deref()?;
+    function
+        .params
+        .iter()
+        .find(|param| param.role == "array_out" && param.name == of)
+}
+
+/// Whether a scalar out-parameter is the count of an output array.
+fn counts_an_output(function: &Function, name: &str) -> bool {
+    function.params.iter().any(|param| {
+        matches!(
+            &param.extent,
+            Some(Extent::Asked { count } | Extent::Total { count }) if count == name
+        )
+    })
+}
+
+/// Whether the function's return value is the count of an output array.
+pub(crate) fn returns_the_count(function: &Function) -> bool {
+    counts_an_output(function, RETURN)
+}
+
+/// The extent's spelling of "the function's own return value".
+const RETURN: &str = "return";
+
+/// How the marshaller sizes one output array.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum Sizing<'a> {
+    /// As long as these input arrays' lengths multiplied, in order.
+    Inputs(Vec<&'a str>),
+    /// The caller says how many to find, under `capacity`, and `count`
+    /// receives how many were.
+    Asked { capacity: &'a str, count: &'a str },
+    /// The engine says how many there are; the marshaller asks again
+    /// when there are more than it made room for.
+    Total { count: Counted<'a> },
+}
+
+/// Where a `total` output's count comes back.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Counted<'a> {
+    /// In a scalar out-parameter of that name.
+    Param(&'a str),
+    /// As the function's own return value.
+    Return,
+}
+
+/// How to size an output array, or `None` when the marshaller cannot.
+///
+/// `None` for an extent the engine leaves unstated, and for a length it
+/// states in terms this marshaller cannot evaluate without calling
+/// something else first — a struct input's field, or a value. Both are
+/// queued rather than guessed: an output sized wrongly is a truncated
+/// answer at best and a refusal the caller cannot fix at worst.
+pub(crate) fn sizing<'a>(function: &'a Function, output: &'a Param) -> Option<Sizing<'a>> {
+    let capacity = || {
+        function
+            .params
+            .iter()
+            .find(|param| param.role == "array_cap" && param.of.as_deref() == Some(&output.name))
+            .map(|param| param.name.as_str())
+    };
+    match output.extent.as_ref()? {
+        Extent::Length { of } => input_lengths(function, core::slice::from_ref(of)),
+        Extent::Product { of } => input_lengths(function, of),
+        Extent::Asked { count } => Some(Sizing::Asked {
+            capacity: capacity()?,
+            count,
+        }),
+        Extent::Total { count } => Some(Sizing::Total {
+            count: if count == RETURN {
+                Counted::Return
+            } else {
+                Counted::Param(count)
+            },
+        }),
+        Extent::Unstated { .. } => None,
+    }
+}
+
+/// The input arrays whose lengths an extent names, when every name is an
+/// input array's length.
+fn input_lengths<'a>(function: &'a Function, names: &'a [String]) -> Option<Sizing<'a>> {
+    names
+        .iter()
+        .map(|name| {
+            function
+                .params
+                .iter()
+                .find(|param| param.role == "array_len" && &param.name == name)
+                .and_then(|length| length.of.as_deref())
+        })
+        .collect::<Option<Vec<&str>>>()
+        .map(Sizing::Inputs)
+}
+
+/// The outputs an engine sizes by being asked twice, which the arm can
+/// run at most once per call.
+pub(crate) fn totals(function: &Function) -> impl Iterator<Item = (&Param, Counted<'_>)> {
+    function
+        .params
+        .iter()
+        .filter(|param| param.role == "array_out")
+        .filter_map(|param| match sizing(function, param) {
+            Some(Sizing::Total { count }) => Some((param, count)),
+            _ => None,
+        })
 }
 
 /// Where one function stands, and why.
@@ -120,7 +268,7 @@ pub(crate) fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standin
     if let Some(reason) = function
         .params
         .iter()
-        .filter_map(|param| blocked_by(param, vocabulary))
+        .filter_map(|param| blocked_by(function, param, vocabulary))
         .max_by_key(|reason| reason.rank())
     {
         return (Standing::Unlearned, reason.wording());
@@ -158,6 +306,16 @@ pub(crate) fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standin
     } else if roles.contains(&"string_cap") {
         return (Standing::Unlearned, "a capacity with no buffer beside it");
     }
+    // Asking again is a protocol that reruns the whole call, so a call can
+    // run it for one thing: a filled string, or one output of unknown
+    // length. None asks for two; one that did would be queued here rather
+    // than generated with one of them wrong.
+    if totals(function).count() + usize::from(fills_a_string(function)) > 1 {
+        return (
+            Standing::Unlearned,
+            "two outputs that each need the call run again",
+        );
+    }
     let returns_known = returns_plain || returns_a_string(function);
     if args_plain && outs_plain && strings_plain && returns_known {
         (Standing::Callable, "shapes the marshaller carries")
@@ -176,17 +334,16 @@ pub(crate) fn standing(function: &Function, vocabulary: &Vocabulary) -> (Standin
 /// promise that learning the easy one released it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Blocker {
-    /// An array whose elements are numbers: the fill protocol the string
-    /// tranche already runs, with a width instead of a byte.
-    NumberArray,
-    /// An array of plain structs: the array protocol over a shape the
-    /// marshaller already carries.
-    StructArray,
     /// A struct carrying a string, which must outlive the call going in
     /// and be copied coming out.
     StringStruct,
     /// A struct pointing at another: a nested object that may be absent.
     PointerStruct,
+    /// An output array whose length the description does not state in
+    /// terms of the call's own inputs.
+    UnsizedOutput,
+    /// An output written beside another at the same length, and optional.
+    ParallelOutput,
     /// A handle the caller would then have to hold and eventually free.
     HandleOut,
     /// Bytes with no meaning of their own.
@@ -202,10 +359,10 @@ impl Blocker {
     /// Every blocker, in rank order, which is the order the page lists
     /// them in.
     pub(crate) const ALL: [Self; 8] = [
-        Self::NumberArray,
-        Self::StructArray,
         Self::StringStruct,
         Self::PointerStruct,
+        Self::UnsizedOutput,
+        Self::ParallelOutput,
         Self::HandleOut,
         Self::Opaque,
         Self::OtherStruct,
@@ -223,10 +380,10 @@ impl Blocker {
     /// What the page's table calls it.
     pub(crate) fn wording(self) -> &'static str {
         match self {
-            Self::NumberArray => "an array of numbers",
-            Self::StructArray => "an array of structs",
             Self::StringStruct => "a struct carrying a string",
             Self::PointerStruct => "a struct pointing at another",
+            Self::UnsizedOutput => "an output whose length it cannot compute",
+            Self::ParallelOutput => "an optional output parallel to another",
             Self::HandleOut => "a handle it creates",
             Self::Opaque => "opaque bytes",
             Self::OtherStruct => "a struct no JSON object describes",
@@ -243,10 +400,27 @@ impl Blocker {
             Made::Other => Some(Self::OtherStruct),
         }
     }
+
+    /// What stands in the way of an array's element, if anything does:
+    /// a number crosses, a struct crosses as structs do, and anything
+    /// else — a byte of an encoded blob — is bytes.
+    fn of_element(base: &str, vocabulary: &Vocabulary) -> Option<Self> {
+        if vocabulary.is_number(base) {
+            None
+        } else if vocabulary.shape(base).is_some() {
+            Self::of_struct(vocabulary.made_of(base))
+        } else {
+            Some(Self::Opaque)
+        }
+    }
 }
 
 /// What stands in the way of one parameter, if anything does.
-pub(crate) fn blocked_by(param: &Param, vocabulary: &Vocabulary) -> Option<Blocker> {
+pub(crate) fn blocked_by(
+    function: &Function,
+    param: &Param,
+    vocabulary: &Vocabulary,
+) -> Option<Blocker> {
     let base = param.type_ref.base.as_str();
     match param.role.as_str() {
         // A struct crosses when every field does, so what blocks it is
@@ -254,21 +428,45 @@ pub(crate) fn blocked_by(param: &Param, vocabulary: &Vocabulary) -> Option<Block
         // next. "A struct" alone was one row over eighty-one functions
         // and four different jobs.
         "struct_in" | "struct_out" => Blocker::of_struct(vocabulary.made_of(base)),
-        // An array is its elements. One of numbers is the protocol
-        // already running; one of structs is blocked by its element's
-        // worst field, or by the array protocol once that is plain.
-        "array_in" | "array_out" | "array_out_parallel" => Some(if vocabulary.is_number(base) {
-            Blocker::NumberArray
-        } else {
-            Blocker::of_struct(vocabulary.made_of(base)).unwrap_or(Blocker::StructArray)
+        // An array is its elements, and an output array is also its
+        // length: one the marshaller cannot size cannot be allocated.
+        "array_in" => Blocker::of_element(base, vocabulary),
+        "array_out" => Blocker::of_element(base, vocabulary).or_else(|| {
+            sizing(function, param)
+                .is_none()
+                .then_some(Blocker::UnsizedOutput)
         }),
-        // A length or a capacity is the marshaller's own bookkeeping and
-        // never the reason: whatever it counts is beside it and says so.
-        "array_len" | "array_cap" => Some(Blocker::NumberArray),
+        "array_out_parallel" => Some(Blocker::ParallelOutput),
         "handle_out" => Some(Blocker::HandleOut),
         "opaque" => Some(Blocker::Opaque),
         known if ROLES_KNOWN.contains(&known) => None,
         _ => Some(Blocker::Unknown),
+    }
+}
+
+/// A type as the manifest and the façades name it: the engine's own
+/// word, and whether a list of them crosses.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct Declared<'a> {
+    /// The engine's word — `double`, `tm_datetime` — or `string`.
+    pub(crate) base: &'a str,
+    /// Whether the value is an array of `base`.
+    pub(crate) list: bool,
+}
+
+impl<'a> Declared<'a> {
+    /// One value of a type.
+    pub(crate) const fn one(base: &'a str) -> Self {
+        Self { base, list: false }
+    }
+}
+
+impl fmt::Display for Declared<'_> {
+    /// `double`, or `double[]` for a list, which is what the manifest
+    /// says a parameter's type is.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let suffix = if self.list { "[]" } else { "" };
+        write!(f, "{}{suffix}", self.base)
     }
 }
 
@@ -282,12 +480,11 @@ pub(crate) fn blocked_by(param: &Param, vocabulary: &Vocabulary) -> Option<Block
 pub(crate) struct Described<'a> {
     /// The engine's own name, which `call` takes.
     pub(crate) name: &'a str,
-    /// What the caller supplies: the key, and the manifest's word for
-    /// its type.
-    pub(crate) takes: Vec<(&'a str, &'a str)>,
+    /// What the caller supplies: the key, and its type.
+    pub(crate) takes: Vec<(&'a str, Declared<'a>)>,
     /// What comes back, keyed as the answer keys it. `return` is in here
     /// when the function's own return value is reported.
-    pub(crate) gives: Vec<(&'a str, &'a str)>,
+    pub(crate) gives: Vec<(&'a str, Declared<'a>)>,
     /// Whether a call changes engine state the SDK's provenance does not
     /// record.
     pub(crate) mutates: bool,
@@ -303,23 +500,29 @@ impl Described<'_> {
 }
 
 /// The manifest's word for a parameter's type.
-pub(crate) fn declared_type(param: &Param) -> &str {
-    if matches!(param.role.as_str(), "string_in" | "string_out") {
-        "string"
-    } else {
-        param.type_ref.base.as_str()
+pub(crate) fn declared_type(param: &Param) -> Declared<'_> {
+    match param.role.as_str() {
+        "string_in" | "string_out" => Declared::one("string"),
+        "array_in" | "array_out" => Declared {
+            base: &param.type_ref.base,
+            list: true,
+        },
+        _ => Declared::one(&param.type_ref.base),
     }
 }
 
 /// The manifest's word for what a function answers with.
 ///
 /// A word about the answer and not about C: `status` is already not a
-/// type name, and a function whose return the fill protocol consumes
-/// puts nothing under `return` either.
+/// type name, and a function whose return a protocol consumes — the fill
+/// protocol's length, an output's count — puts nothing under `return`.
 pub(crate) fn declared_return(function: &Function) -> &str {
     if function.returns.base == "tm_status" {
         "status"
-    } else if function.returns.base == "void" || fills_a_string(function) {
+    } else if function.returns.base == "void"
+        || fills_a_string(function)
+        || returns_the_count(function)
+    {
         "void"
     } else if returns_a_string(function) {
         "string"
@@ -334,25 +537,21 @@ pub(crate) fn describe(function: &Function) -> Described<'_> {
     let mut gives = Vec::new();
     let mut nullable = Vec::new();
     for param in &function.params {
-        if bookkeeping(&param.role) {
-            continue;
-        }
-        if param.nullable() {
-            nullable.push(param.name.as_str());
-        }
         let entry = (param.name.as_str(), declared_type(param));
-        if matches!(
-            param.role.as_str(),
-            "scalar_out" | "string_out" | "struct_out"
-        ) {
-            gives.push(entry);
-        } else {
-            takes.push(entry);
+        match crossing(function, param) {
+            Crossing::Bookkeeping => {}
+            Crossing::Takes => {
+                if param.nullable() {
+                    nullable.push(param.name.as_str());
+                }
+                takes.push(entry);
+            }
+            Crossing::Gives => gives.push(entry),
         }
     }
     let returns = declared_return(function);
     if !matches!(returns, "status" | "void") {
-        gives.push(("return", returns));
+        gives.push(("return", Declared::one(returns)));
     }
     Described {
         name: &function.name,
@@ -389,6 +588,8 @@ pub(crate) fn carries(function: &Function) -> String {
         (returns_a_string(function), "a string it lends"),
         (has_role(function, "struct_in"), "a struct it reads"),
         (has_role(function, "struct_out"), "a struct it fills"),
+        (has_role(function, "array_in"), "an array it reads"),
+        (has_role(function, "array_out"), "an array it fills"),
     ]
     .into_iter()
     .filter_map(|(yes, clause)| yes.then_some(clause))
@@ -404,4 +605,9 @@ pub(crate) fn carries_a_string(function: &Function) -> bool {
 /// Whether a function carries a struct either way.
 pub(crate) fn carries_a_struct(function: &Function) -> bool {
     has_role(function, "struct_in") || has_role(function, "struct_out")
+}
+
+/// Whether a function carries an array either way.
+pub(crate) fn carries_an_array(function: &Function) -> bool {
+    has_role(function, "array_in") || has_role(function, "array_out")
 }

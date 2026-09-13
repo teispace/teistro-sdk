@@ -96,6 +96,182 @@ pub(crate) fn optional_object<'a>(
     }
 }
 
+/// An argument that must be an array of numbers.
+///
+/// # Errors
+///
+/// `Invalid` naming the argument when it is missing or not an array, and
+/// naming the element — `jds[3]` — when one is not a number.
+pub(crate) fn numbers(args: &Map<String, Value>, name: &str) -> Result<Vec<f64>, ProviderError> {
+    each(args, name, number_of)
+}
+
+/// An argument that must be an array of whole numbers, each narrowed to
+/// the width the engine declares and refused rather than truncated.
+///
+/// # Errors
+///
+/// As [`numbers`], and naming the element that does not fit.
+pub(crate) fn wholes<T>(args: &Map<String, Value>, name: &str) -> Result<Vec<T>, ProviderError>
+where
+    T: TryFrom<i64>,
+{
+    each(args, name, |found, path| narrow_of(found, path))
+}
+
+/// An argument that must be an array of objects, each read as a struct
+/// by `read`.
+///
+/// # Errors
+///
+/// As [`numbers`], and naming the element — `dts[2].month` — whose field
+/// is missing or wrong.
+pub(crate) fn objects<T>(
+    args: &Map<String, Value>,
+    name: &str,
+    read: impl Fn(&Within<'_>) -> Result<T, ProviderError>,
+) -> Result<Vec<T>, ProviderError> {
+    each(args, name, |found, path| {
+        read(&object_of(found, path.to_owned())?)
+    })
+}
+
+/// Every element of an array argument, read by one rule and named by
+/// its index when the rule refuses it.
+fn each<T>(
+    args: &Map<String, Value>,
+    name: &str,
+    read: impl Fn(Option<&Value>, &str) -> Result<T, ProviderError>,
+) -> Result<Vec<T>, ProviderError> {
+    let items = match args.get(name) {
+        Some(Value::Array(items)) => items,
+        Some(other) => {
+            return Err(ProviderError::invalid(format!(
+                "`{name}` must be an array; it is {}",
+                kind(other)
+            )));
+        }
+        None => return Err(ProviderError::invalid(format!("`{name}` is required"))),
+    };
+    items
+        .iter()
+        .enumerate()
+        .map(|(at, item)| read(Some(item), &format!("{name}[{at}]")))
+        .collect()
+}
+
+/// The most one output array may take, in bytes.
+///
+/// A bound and not a tuning knob. The room for an answer is sized by the
+/// caller's own inputs, or — for a search — by the number the caller asks
+/// for, and a caller who asks for ten billion eclipses must be told so
+/// rather than have the process aborted by an allocation that cannot be
+/// met. 256 MiB is about three million positions, which is far past
+/// anything a JSON answer is a sensible shape for.
+const MOST_BYTES: usize = 256 << 20;
+
+/// Room for `length` elements the engine will write, each as `default`
+/// makes it.
+///
+/// `default` and not zeroed, because a struct's default is the binding's
+/// own way of declaring its extent, and the engine reads **every
+/// element's** `struct_size` to learn the stride it writes at.
+///
+/// # Errors
+///
+/// `Invalid` naming the output when the room would pass [`MOST_BYTES`],
+/// and `Refused` when the allocation itself fails — both rather than an
+/// abort, because the length can come from the caller.
+pub(crate) fn room<T>(length: usize, name: &str) -> Result<Vec<T>, ProviderError>
+where
+    T: Clone + Default,
+{
+    let bytes = length.saturating_mul(core::mem::size_of::<T>());
+    if bytes > MOST_BYTES {
+        return Err(ProviderError::invalid(format!(
+            "`{name}` would hold {length} elements, {bytes} bytes; this adapter makes at most \
+             {MOST_BYTES} bytes of room for one answer"
+        )));
+    }
+    let mut room = Vec::new();
+    room.try_reserve_exact(length)
+        .map_err(|_| ProviderError::Refused {
+            detail: format!("`{name}` could not be given room for {length} elements"),
+        })?;
+    room.resize(length, T::default());
+    Ok(room)
+}
+
+/// The length of an output laid out over several inputs — bodies by
+/// epochs — as their product.
+///
+/// # Errors
+///
+/// `Invalid` naming the output when the product does not fit a `usize`.
+pub(crate) fn extent(lengths: &[usize], name: &str) -> Result<usize, ProviderError> {
+    lengths
+        .iter()
+        .try_fold(1_usize, |so_far, length| so_far.checked_mul(*length))
+        .ok_or_else(|| {
+            ProviderError::invalid(format!(
+                "`{name}` would be {} elements long, which no buffer can be",
+                lengths
+                    .iter()
+                    .map(usize::to_string)
+                    .collect::<Vec<_>>()
+                    .join(" × ")
+            ))
+        })
+}
+
+/// An output the engine says the length of, by the engine's own
+/// protocol: the call writes what fits and reports **how many there
+/// are**.
+///
+/// The same shape as [`fill`] for an array: the first call is made into
+/// room for [`ROOMY_ELEMENTS`], which is every answer these functions
+/// usually have, and only an answer that did not fit is asked for again
+/// into room for exactly what it said. `call` runs at most twice and must
+/// be the same call both times.
+///
+/// # Errors
+///
+/// Whatever `call` refuses with, and `Refused` when the second call
+/// reported more than the first — an answer that changed underneath the
+/// protocol, which a caller must be told about rather than handed a
+/// truncation.
+pub(crate) fn gather<T>(
+    function: &str,
+    mut call: impl FnMut(&mut [T]) -> Result<usize, ProviderError>,
+) -> Result<Vec<T>, ProviderError>
+where
+    T: Clone + Default,
+{
+    /// Room for the answers these functions usually give — a chart's
+    /// default bodies, the stars sharing a name — in one call.
+    const ROOMY_ELEMENTS: usize = 64;
+
+    let first = ROOMY_ELEMENTS.min(MOST_BYTES / core::mem::size_of::<T>().max(1));
+    let mut answer = room::<T>(first, function)?;
+    let there = call(&mut answer)?;
+    if there <= answer.len() {
+        answer.truncate(there);
+        return Ok(answer);
+    }
+    let mut answer = room::<T>(there, function)?;
+    let again = call(&mut answer)?;
+    if again > answer.len() {
+        return Err(ProviderError::Refused {
+            detail: format!(
+                "`{function}` said there were {there} and then {again}; its answer changed \
+                 between the two calls"
+            ),
+        });
+    }
+    answer.truncate(again);
+    Ok(answer)
+}
+
 /// The object a struct's fields are read from, and the path a refusal
 /// names them by.
 ///
@@ -361,7 +537,10 @@ mod tests {
         reason = "a test fails by panicking"
     )]
 
-    use super::{borrowed, fill, integer, narrow, number, object, optional_object, text};
+    use super::{
+        MOST_BYTES, borrowed, extent, fill, gather, integer, narrow, number, numbers, object,
+        objects, optional_object, room, text, wholes,
+    };
     use core::ffi::c_char;
     use serde_json::json;
 
@@ -524,6 +703,93 @@ mod tests {
         let Err(error) = fill("growing", |buffer, capacity| {
             calls += 1;
             engine(&"y".repeat(200 * calls as usize), buffer, capacity)
+        }) else {
+            panic!("an answer that keeps growing must be refused");
+        };
+        assert!(error.to_string().contains("growing"), "{error}");
+    }
+
+    /// An array is refused by the element that is wrong, because a batch
+    /// of a thousand dates with one bad month is a needle otherwise.
+    #[test]
+    fn an_array_is_refused_by_the_element_that_is_wrong() {
+        let map = args(&json!({
+            "jds": [2_451_545.0, 2_451_546],
+            "bodies": [0, 1, 4_294_967_296_i64],
+            "dts": [{ "year": 2026 }, { "year": "2027" }],
+            "flat": 3,
+        }));
+        assert_eq!(
+            numbers(&map, "jds").unwrap(),
+            vec![2_451_545.0, 2_451_546.0]
+        );
+        let wide = wholes::<i32>(&map, "bodies").unwrap_err();
+        assert!(wide.to_string().contains("`bodies[2]`"), "{wide}");
+        let read = |within: &super::Within<'_>| within.narrow::<i32>("year");
+        let bad = objects(&map, "dts", read).unwrap_err();
+        assert!(bad.to_string().contains("`dts[1].year`"), "{bad}");
+        let flat = numbers(&map, "flat").unwrap_err();
+        assert!(flat.to_string().contains("must be an array"), "{flat}");
+        let missing = numbers(&map, "none").unwrap_err();
+        assert!(
+            missing.to_string().contains("`none` is required"),
+            "{missing}"
+        );
+        assert!(
+            numbers(&args(&json!({ "empty": [] })), "empty")
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    /// Room is refused past the bound and by the output's name, rather
+    /// than an allocation the caller sized aborting the process.
+    #[test]
+    fn room_is_bounded_and_its_product_checked() {
+        let small: Vec<f64> = room(3, "out").unwrap();
+        assert_eq!(small, vec![0.0; 3]);
+        let huge = room::<f64>(MOST_BYTES, "out").unwrap_err();
+        assert!(huge.to_string().contains("`out`"), "{huge}");
+        assert_eq!(extent(&[3, 4], "out").unwrap(), 12);
+        assert_eq!(extent(&[], "out").unwrap(), 1);
+        let overflow = extent(&[usize::MAX, 2], "out").unwrap_err();
+        assert!(overflow.to_string().contains("no buffer"), "{overflow}");
+    }
+
+    /// The gather protocol in all three of its outcomes, against a fake
+    /// engine that writes what fits and reports how many there are.
+    #[test]
+    fn a_gather_asks_twice_only_when_there_were_more() {
+        fn engine(there: usize, room: &mut [u32]) -> usize {
+            for (at, slot) in room.iter_mut().take(there).enumerate() {
+                *slot = u32::try_from(at).unwrap();
+            }
+            there
+        }
+
+        let mut calls = 0;
+        let few = gather("few", |room| {
+            calls += 1;
+            Ok(engine(3, room))
+        })
+        .unwrap();
+        assert_eq!((few, calls), (vec![0, 1, 2], 1));
+
+        let mut calls = 0;
+        let many = gather("many", |room| {
+            calls += 1;
+            Ok(engine(100, room))
+        })
+        .unwrap();
+        assert_eq!(
+            (many.len(), many.last().copied(), calls),
+            (100, Some(99), 2)
+        );
+
+        let mut calls = 0_usize;
+        let Err(error) = gather::<u32>("growing", |_| {
+            calls += 1;
+            Ok(100 * calls)
         }) else {
             panic!("an answer that keeps growing must be refused");
         };

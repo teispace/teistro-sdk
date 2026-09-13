@@ -5587,7 +5587,11 @@
       "scalar": "f64"
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -5662,7 +5666,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -5727,7 +5735,11 @@
       "scalar": "f64"
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -5802,7 +5814,11 @@
       "scalar": "f64"
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -6257,7 +6273,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -6375,7 +6395,14 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "product",
+      "of": [
+       "body_count",
+       "jd_count"
+      ]
+     }
     },
     {
      "name": "out_capacity",
@@ -6598,7 +6625,11 @@
       "scalar": "f64"
      },
      "role": "array_out",
-     "cap_param": "cusp_capacity"
+     "cap_param": "cusp_capacity",
+     "extent": {
+      "kind": "unstated",
+      "why": "tm_house_cusp_count() of the requested system"
+     }
     },
     {
      "name": "cusp_capacity",
@@ -6685,7 +6716,11 @@
       "scalar": "f64"
      },
      "role": "array_out",
-     "cap_param": "cusps_capacity"
+     "cap_param": "cusps_capacity",
+     "extent": {
+      "kind": "unstated",
+      "why": "count times the widest requested system's cusp count"
+     }
     },
     {
      "name": "cusps_capacity",
@@ -6707,7 +6742,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "angles_capacity"
+     "cap_param": "angles_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "angles_capacity",
@@ -6831,7 +6870,11 @@
       "scalar": "i32"
      },
      "role": "array_out",
-     "cap_param": "body_capacity"
+     "cap_param": "body_capacity",
+     "extent": {
+      "kind": "total",
+      "count": "return"
+     }
     },
     {
      "name": "body_capacity",
@@ -6907,7 +6950,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "position_capacity"
+     "cap_param": "position_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "body_count"
+     }
     },
     {
      "name": "position_capacity",
@@ -6929,7 +6976,11 @@
       "scalar": "f64"
      },
      "role": "array_out",
-     "cap_param": "cusp_capacity"
+     "cap_param": "cusp_capacity",
+     "extent": {
+      "kind": "unstated",
+      "why": "tm_house_cusp_count() of the requested system"
+     }
     },
     {
      "name": "cusp_capacity",
@@ -7871,7 +7922,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -8007,7 +8062,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -8227,7 +8286,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "count"
+     }
     },
     {
      "name": "out_capacity",
@@ -8845,7 +8908,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "file_capacity"
+     "cap_param": "file_capacity",
+     "extent": {
+      "kind": "total",
+      "count": "return"
+     }
     },
     {
      "name": "file_capacity",
@@ -9294,7 +9361,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "body_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -9480,7 +9551,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "body_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -9646,7 +9721,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "body_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -9834,7 +9913,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "body_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10088,7 +10171,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "total",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10184,7 +10271,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "total",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10382,7 +10473,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "star_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10489,7 +10584,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10553,7 +10652,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10617,7 +10720,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10681,7 +10788,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10745,7 +10856,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -10809,7 +10924,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -11374,7 +11493,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -12057,7 +12180,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -12195,7 +12322,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -12259,7 +12390,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -12377,7 +12512,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "day_capacity"
+     "cap_param": "day_capacity",
+     "extent": {
+      "kind": "length",
+      "of": "req.day_count"
+     }
     },
     {
      "name": "day_capacity",
@@ -12399,7 +12538,14 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "position_capacity"
+     "cap_param": "position_capacity",
+     "extent": {
+      "kind": "product",
+      "of": [
+       "req.day_count",
+       "body_count"
+      ]
+     }
     },
     {
      "name": "position_capacity",
@@ -12485,7 +12631,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "out_capacity"
+     "cap_param": "out_capacity",
+     "extent": {
+      "kind": "asked",
+      "count": "out_count"
+     }
     },
     {
      "name": "out_capacity",
@@ -13249,7 +13399,11 @@
       "scalar": "u8"
      },
      "role": "array_out",
-     "cap_param": "blob_capacity"
+     "cap_param": "blob_capacity",
+     "extent": {
+      "kind": "unstated",
+      "why": "the encoded size, which the call returns only once it fits"
+     }
     },
     {
      "name": "blob_capacity",
@@ -13363,7 +13517,11 @@
       "scalar": "i32"
      },
      "role": "array_out",
-     "cap_param": "body_capacity"
+     "cap_param": "body_capacity",
+     "extent": {
+      "kind": "unstated",
+      "why": "what the blob holds; tm_chart_blob_info()"
+     }
     },
     {
      "name": "body_capacity",
@@ -13385,7 +13543,11 @@
       "scalar": null
      },
      "role": "array_out",
-     "cap_param": "position_capacity"
+     "cap_param": "position_capacity",
+     "extent": {
+      "kind": "unstated",
+      "why": "what the blob holds; tm_chart_blob_info()"
+     }
     },
     {
      "name": "position_capacity",
@@ -13407,7 +13569,11 @@
       "scalar": "f64"
      },
      "role": "array_out",
-     "cap_param": "cusp_capacity"
+     "cap_param": "cusp_capacity",
+     "extent": {
+      "kind": "unstated",
+      "why": "what the blob holds; tm_chart_blob_info()"
+     }
     },
     {
      "name": "cusp_capacity",

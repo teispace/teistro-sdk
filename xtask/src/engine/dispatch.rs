@@ -4,7 +4,8 @@
 use std::fmt::Write as _;
 
 use super::classify::{
-    Standing, declared_return, describe, fills_a_string, has_role, returns_a_string,
+    Counted, Crossing, Sizing, Standing, crossing, declared_return, describe, fills_a_string,
+    has_role, returns_a_string, returns_the_count, sizing, totals,
 };
 use super::idl::{Function, Idl, Param, STRUCT_SIZE, Shape, Vocabulary};
 
@@ -165,16 +166,22 @@ pub(crate) const PASSTHROUGH_IMPORTS: &str = "// the passthrough's helpers";
 /// file nobody edits.
 pub(crate) fn passthrough_imports(generated: &str) -> String {
     /// Every helper, with the text a use of it contains.
-    const HELPERS: [(&str, &str); 9] = [
+    const HELPERS: [(&str, &str); 15] = [
         ("Within", "Within<"),
         ("borrowed", "borrowed(answered"),
+        ("extent", "extent(&["),
         ("fill", "fill(\""),
+        ("gather", "gather::<"),
         ("narrow", "narrow(args"),
         ("number", "number(args"),
+        ("numbers", "numbers(args"),
         ("object", " object(args"),
+        ("objects", "objects(args"),
         ("optional_object", "optional_object(args"),
+        ("room", "room("),
         ("status", "status(answered"),
         ("text", "text(args"),
+        ("wholes", "wholes(args"),
     ];
     let used: Vec<&str> = HELPERS
         .iter()
@@ -244,10 +251,10 @@ pub(crate) fn reached<'v>(
 /// A reader and a writer for every struct a callable function passes.
 pub(crate) fn marshalling(callable: &[&Function], vocabulary: &Vocabulary) -> String {
     let mut out = String::new();
-    for shape in reached(callable, &["struct_in"], vocabulary) {
+    for shape in reached(callable, &["struct_in", "array_in"], vocabulary) {
         out.push_str(&reader(shape, vocabulary));
     }
-    for shape in reached(callable, &["struct_out"], vocabulary) {
+    for shape in reached(callable, &["struct_out", "array_out"], vocabulary) {
         out.push_str(&writer(shape, vocabulary));
     }
     out
@@ -311,198 +318,418 @@ pub(crate) fn writer(shape: &Shape, vocabulary: &Vocabulary) -> String {
 
 /// One function's arm: read the arguments, call, answer.
 pub(crate) fn arm(function: &Function, vocabulary: &Vocabulary) -> String {
-    let mut out = String::new();
-    let name = &function.name;
-    let _ = writeln!(out, "        \"{name}\" => {{");
-
-    let mut call_args: Vec<String> = Vec::new();
-    // Each out-parameter as the answer's `"key": expression`.
-    let mut outs: Vec<String> = Vec::new();
-    let structs: Vec<&Param> = function
-        .params
-        .iter()
-        .filter(|p| matches!(p.role.as_str(), "struct_in" | "struct_out"))
-        .collect();
-    // The buffer of a fill, if there is one: its name is what the string
-    // comes back under, and the call is made inside a closure so the
-    // protocol can run it twice.
-    let mut buffer: Option<&str> = None;
+    let mut arm = Arm::new(function, vocabulary);
     for param in &function.params {
+        arm.param(param);
+    }
+    arm.finish()
+}
+
+/// How an arm makes its call.
+enum Protocol<'a> {
+    /// Once, straight through.
+    Direct,
+    /// Through the fill protocol, into a buffer it owns; the string
+    /// comes back under the buffer parameter's name.
+    Fill { buffer: &'a str },
+    /// Through the gather protocol, into a room it owns, run again when
+    /// the engine says there are more than fitted.
+    Gather {
+        output: &'a Param,
+        count: Counted<'a>,
+    },
+}
+
+impl<'a> Protocol<'a> {
+    /// The protocol a function's parameters call for. The classifier
+    /// has already refused a function that would need two.
+    fn of(function: &'a Function) -> Self {
+        if let Some(buffer) = function.params.iter().find(|p| p.role == "string_out") {
+            return Self::Fill {
+                buffer: &buffer.name,
+            };
+        }
+        match totals(function).next() {
+            Some((output, count)) => Self::Gather { output, count },
+            None => Self::Direct,
+        }
+    }
+}
+
+/// One arm, as it is assembled: what is bound before the call, what the
+/// call is passed, and what the answer holds.
+struct Arm<'a> {
+    function: &'a Function,
+    vocabulary: &'a Vocabulary,
+    protocol: Protocol<'a>,
+    /// Lines before the call, in parameter order.
+    before: String,
+    /// Lines inside the protocol's closure, before the call.
+    inside: Vec<String>,
+    /// The call's arguments, in parameter order.
+    call_args: Vec<String>,
+    /// Lines after the call has succeeded.
+    after: Vec<String>,
+    /// The answer, as `"key": expression` pairs.
+    answers: Vec<String>,
+}
+
+impl<'a> Arm<'a> {
+    fn new(function: &'a Function, vocabulary: &'a Vocabulary) -> Self {
+        Self {
+            function,
+            vocabulary,
+            protocol: Protocol::of(function),
+            before: String::new(),
+            inside: Vec::new(),
+            call_args: Vec::new(),
+            after: Vec::new(),
+            answers: Vec::new(),
+        }
+    }
+
+    /// One line bound before the call.
+    fn bind(&mut self, line: &str) {
+        let _ = writeln!(self.before, "            {line}");
+    }
+
+    /// Whether this parameter is the output the gather protocol owns.
+    fn gathered(&self, param: &Param) -> bool {
+        matches!(self.protocol, Protocol::Gather { output, .. } if output.name == param.name)
+    }
+
+    fn param(&mut self, param: &'a Param) {
+        let name = param.name.as_str();
         match param.role.as_str() {
-            "handle" => call_args.push("context".to_string()),
+            "handle" => self.call_args.push("context".to_string()),
             "string_in" => {
                 // Bound, not inlined: the `CString` must outlive the call
                 // and a temporary would be dropped at the semicolon.
-                let _ = writeln!(
-                    out,
-                    "            let {} = text(args, \"{}\")?;",
-                    param.name, param.name
-                );
-                call_args.push(format!("{}.as_ptr()", param.name));
+                self.bind(&format!("let {name} = text(args, \"{name}\")?;"));
+                self.call_args.push(format!("{name}.as_ptr()"));
             }
-            "string_out" => {
-                buffer = Some(param.name.as_str());
-                call_args.push("buffer".to_string());
-            }
-            "string_cap" => call_args.push("capacity".to_string()),
-            "value" => {
-                let ty = rust_type(&param.type_ref.base);
-                // A float is read as one; anything else is **narrowed** to
-                // the width the engine declares, and refused when it does
-                // not fit rather than silently keeping the low bits.
-                let _ = if vocabulary.is_float(&param.type_ref.base) {
-                    // `number` answers `f64` already; only a `float`
-                    // parameter needs narrowing, and that one is lossy by
-                    // the engine's own declaration rather than by ours.
-                    let cast = if ty == "f64" {
-                        String::new()
-                    } else {
-                        format!(" as {ty}")
-                    };
-                    writeln!(
-                        out,
-                        "            let {}: {ty} = number(args, \"{}\")?{cast};",
-                        param.name, param.name
+            "string_out" => self.call_args.push("buffer".to_string()),
+            "string_cap" => self.call_args.push("capacity".to_string()),
+            "value" => self.value(param),
+            "scalar_out" => self.scalar_out(param),
+            "struct_in" | "struct_out" | "out_struct_size" => self.structure(param),
+            "array_in" => self.array_in(param),
+            "array_len" => {
+                let of = param.of.as_deref().unwrap_or_else(|| {
+                    panic!(
+                        "`{name}` on `{}` is a length of nothing",
+                        self.function.name
                     )
-                } else {
-                    writeln!(
-                        out,
-                        "            let {}: {ty} = narrow(args, \"{}\")?;",
-                        param.name, param.name
+                });
+                self.call_args.push(format!("{of}.len()"));
+            }
+            "array_out" => self.array_out(param),
+            "array_cap" => {
+                let of = param.of.as_deref().unwrap_or_else(|| {
+                    panic!(
+                        "`{name}` on `{}` is a capacity of nothing",
+                        self.function.name
                     )
-                };
-                call_args.push(param.name.clone());
-            }
-            "scalar_out" => {
-                let ty = rust_type(&param.type_ref.base);
-                let zero = if vocabulary.is_float(&param.type_ref.base) {
-                    "0.0"
+                });
+                self.call_args.push(if self.gathered_name(of) {
+                    "room.len()".to_string()
                 } else {
-                    "0"
-                };
-                let _ = writeln!(out, "            let mut {}: {ty} = {zero};", param.name);
-                call_args.push(format!("&raw mut {}", param.name));
-                outs.push(format!("\"{0}\": {0}", param.name));
-            }
-            "struct_in" | "struct_out" | "out_struct_size" => {
-                struct_param(param, &structs, &mut out, &mut call_args, &mut outs);
+                    format!("{of}.len()")
+                });
             }
             other => unreachable!("a callable function has no `{other}` parameter"),
         }
     }
 
-    let call = format!("sys::{name}({})", call_args.join(", "));
-    let safety = safety(function);
-    if let Some(buffer) = buffer {
-        // The fill protocol owns the buffer and the count, and runs the
-        // call again only if the first answer did not fit.
-        let indented = safety.replace('\n', "\n                ");
-        let _ = writeln!(
-            out,
-            "            let {buffer} = fill(\"{name}\", |buffer, capacity| {{\n                \
-             {indented}\n                unsafe {{ {call} }}\n            }})?;"
-        );
-    } else {
-        let binding = if function.returns.base == "void" {
-            String::new()
+    fn gathered_name(&self, name: &str) -> bool {
+        matches!(self.protocol, Protocol::Gather { output, .. } if output.name == name)
+    }
+
+    /// A number the caller passes.
+    fn value(&mut self, param: &Param) {
+        let name = &param.name;
+        let base = &param.type_ref.base;
+        let ty = rust_type(base);
+        // A float is read as one; anything else is **narrowed** to the
+        // width the engine declares, and refused when it does not fit
+        // rather than silently keeping the low bits.
+        if self.vocabulary.is_float(base) {
+            // `number` answers `f64` already; only a `float` parameter
+            // needs narrowing, and that one is lossy by the engine's own
+            // declaration rather than by ours.
+            let cast = if ty == "f64" {
+                String::new()
+            } else {
+                format!(" as {ty}")
+            };
+            self.bind(&format!(
+                "let {name}: {ty} = number(args, \"{name}\")?{cast};"
+            ));
         } else {
-            "let answered = ".to_string()
+            self.bind(&format!("let {name}: {ty} = narrow(args, \"{name}\")?;"));
+        }
+        self.call_args.push(name.clone());
+    }
+
+    /// A number the engine writes: reported, unless it is the count of an
+    /// output whose own length already says it.
+    fn scalar_out(&mut self, param: &Param) {
+        let name = &param.name;
+        let base = &param.type_ref.base;
+        let ty = rust_type(base);
+        let zero = if self.vocabulary.is_float(base) {
+            "0.0"
+        } else {
+            "0"
         };
-        let indented = safety.replace('\n', "\n            ");
-        let _ = writeln!(
-            out,
-            "            {indented}\n            {binding}unsafe {{ {call} }};"
-        );
-        if function.returns.base == "tm_status" {
-            let _ = writeln!(out, "            status(answered, \"{name}\")?;");
+        let line = format!("let mut {name}: {ty} = {zero};");
+        let counted_by_gather = matches!(self.protocol, Protocol::Gather { count: Counted::Param(count), .. } if count == name);
+        if counted_by_gather {
+            self.inside.push(line);
+        } else {
+            self.bind(&line);
+        }
+        self.call_args.push(format!("&raw mut {name}"));
+        if crossing(self.function, param) == Crossing::Gives {
+            self.answers.push(format!("\"{name}\": {name}"));
         }
     }
-    let fields = answer(function, outs, buffer);
-    let _ = writeln!(out, "            Ok(json!({{{}}}))", fields.join(", "));
-    let _ = writeln!(out, "        }}");
-    out
+
+    /// One struct parameter: the local it binds, what the call is passed,
+    /// and what the answer reports.
+    fn structure(&mut self, param: &Param) {
+        let name = &param.name;
+        let base = &param.type_ref.base;
+        match param.role.as_str() {
+            "struct_in" if param.nullable() => {
+                // Left out or null crosses as a null pointer, and the
+                // engine decides whether that is allowed: an observer is
+                // optional unless the flags ask for a topocentric answer,
+                // and a datetime never is. Both are the engine's refusal.
+                self.bind(&format!(
+                    "let {name} = optional_object(args, \"{name}\")?\n                \
+                     .map(|within| read_{base}(&within))\n                .transpose()?;"
+                ));
+                self.call_args.push(format!(
+                    "{name}.as_ref().map_or(core::ptr::null(), core::ptr::from_ref)"
+                ));
+            }
+            "struct_in" => {
+                self.bind(&format!(
+                    "let {name} = read_{base}(&object(args, \"{name}\")?)?;"
+                ));
+                self.call_args.push(format!("&raw const {name}"));
+            }
+            "struct_out" => {
+                // `default()` and not zeroed: it is the binding's own way
+                // of filling the extent the engine reads before it writes.
+                self.bind(&format!(
+                    "let mut {name}: sys::{base} = sys::{base}::default();"
+                ));
+                self.call_args.push(format!("&raw mut {name}"));
+                self.answers
+                    .push(format!("\"{name}\": write_{base}(&{name})"));
+            }
+            // The one struct an extent measures. Asserted rather than
+            // guessed: a function with two structs and one extent would
+            // have to say which, and none does.
+            _ => {
+                let structs: Vec<&Param> = self
+                    .function
+                    .params
+                    .iter()
+                    .filter(|p| matches!(p.role.as_str(), "struct_in" | "struct_out"))
+                    .collect();
+                let [measured] = structs.as_slice() else {
+                    panic!(
+                        "`{name}` passes a struct's extent beside {} structs; the generator \
+                         knows which struct it measures only when there is one",
+                        structs.len()
+                    );
+                };
+                self.call_args
+                    .push(format!("core::mem::size_of_val(&{})", measured.name));
+            }
+        }
+    }
+
+    /// The Rust type of one element of an array.
+    fn element(&self, param: &Param) -> String {
+        let base = &param.type_ref.base;
+        if self.vocabulary.shape(base).is_some() {
+            format!("sys::{base}")
+        } else {
+            rust_type(base)
+        }
+    }
+
+    /// An array the caller passes, read element by element and refused
+    /// by the element's own path.
+    fn array_in(&mut self, param: &Param) {
+        let name = &param.name;
+        let base = &param.type_ref.base;
+        let ty = self.element(param);
+        let read = if self.vocabulary.shape(base).is_some() {
+            format!("objects(args, \"{name}\", read_{base})?")
+        } else if !self.vocabulary.is_float(base) {
+            format!("wholes(args, \"{name}\")?")
+        } else if ty == "f64" {
+            format!("numbers(args, \"{name}\")?")
+        } else {
+            format!("numbers(args, \"{name}\")?.into_iter().map(|one| one as {ty}).collect()")
+        };
+        self.bind(&format!("let {name}: Vec<{ty}> = {read};"));
+        self.call_args.push(format!("{name}.as_ptr()"));
+    }
+
+    /// An array the engine writes: sized by its extent, and reported in
+    /// full, or cut to the count the engine gave.
+    fn array_out(&mut self, param: &'a Param) {
+        let name = &param.name;
+        let base = &param.type_ref.base;
+        let ty = self.element(param);
+        match sizing(self.function, param) {
+            Some(Sizing::Inputs(inputs)) => {
+                let length = match inputs.as_slice() {
+                    [one] => format!("{one}.len()"),
+                    many => format!(
+                        "extent(&[{}], \"{name}\")?",
+                        many.iter()
+                            .map(|input| format!("{input}.len()"))
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    ),
+                };
+                self.bind(&format!(
+                    "let mut {name}: Vec<{ty}> = room({length}, \"{name}\")?;"
+                ));
+                self.call_args.push(format!("{name}.as_mut_ptr()"));
+            }
+            Some(Sizing::Asked { capacity, count }) => {
+                self.bind(&format!(
+                    "let {capacity}: usize = narrow(args, \"{capacity}\")?;"
+                ));
+                self.bind(&format!(
+                    "let mut {name}: Vec<{ty}> = room({capacity}, \"{name}\")?;"
+                ));
+                self.call_args.push(format!("{name}.as_mut_ptr()"));
+                // `truncate` and not a slice: the engine never writes more
+                // than it was given room for, and a count that claimed to
+                // would keep what is there rather than panic.
+                self.after.push(format!("{name}.truncate({count});"));
+            }
+            Some(Sizing::Total { .. }) if self.gathered(param) => {
+                self.call_args.push("room.as_mut_ptr()".to_string());
+            }
+            _ => unreachable!(
+                "`{name}` on `{}` is an output the classifier cannot size",
+                self.function.name
+            ),
+        }
+        self.answers.push(if self.vocabulary.shape(base).is_some() {
+            format!("\"{name}\": {name}.iter().map(write_{base}).collect::<Vec<_>>()")
+        } else {
+            // No cast: `serde_json` serialises a `Vec` of any primitive
+            // numeric, at the width the engine declared.
+            format!("\"{name}\": {name}")
+        });
+    }
+
+    /// The arm's text: the bindings, the call through its protocol, what
+    /// follows it, and the answer.
+    fn finish(self) -> String {
+        let function = self.function;
+        let name = &function.name;
+        let call = format!("sys::{name}({})", self.call_args.join(", "));
+        let safety = safety(function);
+        let returns_status = function.returns.base == "tm_status";
+        let mut out = format!("        \"{name}\" => {{\n{}", self.before);
+        match &self.protocol {
+            Protocol::Fill { buffer } => {
+                // The fill protocol owns the buffer and the count, and runs
+                // the call again only if the first answer did not fit.
+                let indented = safety.replace('\n', "\n                ");
+                let _ = writeln!(
+                    out,
+                    "            let {buffer} = fill(\"{name}\", |buffer, capacity| {{\n                \
+                     {indented}\n                unsafe {{ {call} }}\n            }})?;"
+                );
+            }
+            Protocol::Gather { output, count } => {
+                // The gather protocol owns the room and asks again only if
+                // the engine said there were more than fitted.
+                let ty = self.element(output);
+                let indented = safety.replace('\n', "\n                ");
+                let mut inside = String::new();
+                for line in &self.inside {
+                    let _ = write!(inside, "\n                {line}");
+                }
+                let (binding, check, counted) = match count {
+                    Counted::Param(count) if returns_status => (
+                        "let answered = ",
+                        format!("\n                status(answered, \"{name}\")?;"),
+                        (*count).to_string(),
+                    ),
+                    Counted::Param(count) => ("", String::new(), (*count).to_string()),
+                    Counted::Return => ("let answered = ", String::new(), "answered".to_string()),
+                };
+                let _ = writeln!(
+                    out,
+                    "            let {} = gather::<{ty}>(\"{name}\", |room| {{{inside}\n                \
+                     {indented}\n                {binding}unsafe {{ {call} }};{check}\n                \
+                     Ok({counted})\n            }})?;",
+                    output.name
+                );
+            }
+            Protocol::Direct => {
+                let binding = if function.returns.base == "void" {
+                    ""
+                } else {
+                    "let answered = "
+                };
+                let indented = safety.replace('\n', "\n            ");
+                let _ = writeln!(
+                    out,
+                    "            {indented}\n            {binding}unsafe {{ {call} }};"
+                );
+                if returns_status {
+                    let _ = writeln!(out, "            status(answered, \"{name}\")?;");
+                }
+            }
+        }
+        for line in &self.after {
+            let _ = writeln!(out, "            {line}");
+        }
+        let fields = answer(function, self.answers, &self.protocol);
+        let _ = writeln!(
+            out,
+            "            Ok(json!({{{}}}))\n        }}",
+            fields.join(", ")
+        );
+        out
+    }
 }
 
 /// What an arm answers with, as `"key": expression` pairs: its
 /// out-parameters, then a filled string or the function's own return.
-pub(crate) fn answer(function: &Function, outs: Vec<String>, buffer: Option<&str>) -> Vec<String> {
-    // No cast on a number: `serde_json` serialises every primitive
-    // numeric, and the widths here are the engine's own. A cast would be
-    // a claim about which of them was declared.
+fn answer(function: &Function, outs: Vec<String>, protocol: &Protocol<'_>) -> Vec<String> {
     let mut fields = outs;
     // A filled string comes back under its parameter's own name, like
     // every other out-parameter. The length the function answered is the
     // protocol's and is not reported: the string it describes is already
     // here in full.
-    if let Some(buffer) = buffer {
+    if let Protocol::Fill { buffer } = protocol {
         fields.push(format!("\"{buffer}\": {buffer}"));
     } else if returns_a_string(function) {
         // `None` for null, which is how the engine says there is no such
         // name, and which JSON has a word for.
         fields.push("\"return\": borrowed(answered)".to_string());
-    } else if !matches!(function.returns.base.as_str(), "tm_status" | "void") {
+    } else if !matches!(function.returns.base.as_str(), "tm_status" | "void")
+        && !returns_the_count(function)
+    {
         fields.push("\"return\": answered".to_string());
     }
     fields
-}
-
-/// One struct parameter's part of an arm: the local it binds, what the
-/// call is passed, and what the answer reports.
-pub(crate) fn struct_param(
-    param: &Param,
-    structs: &[&Param],
-    out: &mut String,
-    call_args: &mut Vec<String>,
-    outs: &mut Vec<String>,
-) {
-    let name = &param.name;
-    let base = &param.type_ref.base;
-    match param.role.as_str() {
-        "struct_in" if param.nullable() => {
-            // Left out or null crosses as a null pointer, and the engine
-            // decides whether that is allowed: an observer is optional
-            // unless the flags ask for a topocentric answer, and a
-            // datetime never is. Both are the engine's refusal to make.
-            let _ = writeln!(
-                out,
-                "            let {name} = optional_object(args, \"{name}\")?\n                \
-                 .map(|within| read_{base}(&within))\n                .transpose()?;"
-            );
-            call_args.push(format!(
-                "{name}.as_ref().map_or(core::ptr::null(), core::ptr::from_ref)"
-            ));
-        }
-        "struct_in" => {
-            let _ = writeln!(
-                out,
-                "            let {name} = read_{base}(&object(args, \"{name}\")?)?;"
-            );
-            call_args.push(format!("&raw const {name}"));
-        }
-        "struct_out" => {
-            // `default()` and not zeroed: it is the binding's own way of
-            // filling the extent the engine reads before it writes.
-            let _ = writeln!(
-                out,
-                "            let mut {name}: sys::{base} = sys::{base}::default();"
-            );
-            call_args.push(format!("&raw mut {name}"));
-            outs.push(format!("\"{name}\": write_{base}(&{name})"));
-        }
-        // The one struct an extent measures. Asserted rather than
-        // guessed: a function with two structs and one extent would have
-        // to say which, and none does.
-        _ => {
-            let [measured] = structs else {
-                panic!(
-                    "`{name}` passes a struct's extent beside {} structs; the generator knows \
-                     which struct it measures only when there is one",
-                    structs.len()
-                );
-            };
-            call_args.push(format!("core::mem::size_of_val(&{})", measured.name));
-        }
-    }
 }
 
 /// The SAFETY note for one arm, naming **what that arm actually
@@ -536,6 +763,21 @@ pub(crate) fn safety(function: &Function) -> String {
         clauses.push(
             "the buffer and its capacity are the fill protocol's own, and it passes the length \
              of what it allocated",
+        );
+    }
+    if has_role(function, "array_in") {
+        clauses.push("every input array is a `Vec` the arm owns, passed with its own length");
+    }
+    if totals(function).next().is_some() {
+        clauses.push("the output room is the gather protocol's own, passed with its own length");
+    }
+    let sized_here = function.params.iter().any(|param| {
+        param.role == "array_out" && !matches!(sizing(function, param), Some(Sizing::Total { .. }))
+    });
+    if sized_here {
+        clauses.push(
+            "every output array is a `Vec` the arm sized to the engine's stated extent, passed \
+             with its own length",
         );
     }
     if clauses.is_empty() {

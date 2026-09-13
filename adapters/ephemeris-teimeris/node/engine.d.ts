@@ -76,6 +76,12 @@ export interface TmHorizontal {
   readonly altitudeApparent: number;
 }
 
+/** `tm_coord`, as the engine declares it. Every field is required. */
+export interface TmCoord {
+  readonly lon: number;
+  readonly lat: number;
+}
+
 /** `tm_coverage`, as the engine declares it. Every field is required. */
 export interface TmCoverage {
   readonly jdStart: number;
@@ -262,6 +268,14 @@ export interface TmCrossingRequest {
   readonly coeffB: number;
 }
 
+/** `tm_crossing`, as the engine declares it. Every field is required. */
+export interface TmCrossing {
+  readonly jd: number;
+  readonly longitude: number;
+  readonly latitude: number;
+  readonly status: number;
+}
+
 /** `tm_angle_parts`, as the engine declares it. Every field is required. */
 export interface TmAngleParts {
   readonly negative: number;
@@ -329,6 +343,22 @@ export declare class TeimerisEngine {
    */
   tmWeekdayName(args: { readonly day: number }): string;
   /**
+   * `tm_julian_day_many`.
+   */
+  tmJulianDayMany(args: { readonly dts: readonly TmDatetime[]; readonly cal: number }): readonly number[];
+  /**
+   * `tm_calendar_date_many`.
+   */
+  tmCalendarDateMany(args: { readonly jds: readonly number[]; readonly cal: number }): readonly TmDatetime[];
+  /**
+   * `tm_delta_t_many`.
+   */
+  tmDeltaTMany(args: { readonly jdsUt1: readonly number[] }): readonly number[];
+  /**
+   * `tm_sidereal_time_many`.
+   */
+  tmSiderealTimeMany(args: { readonly jdsUt1: readonly number[]; readonly geoLonDeg: number }): readonly number[];
+  /**
    * `tm_equation_of_time`.
    */
   tmEquationOfTime(args: { readonly jdUt1: number }): number;
@@ -353,6 +383,10 @@ export declare class TeimerisEngine {
    */
   tmPositionValue(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly field: number }): number;
   /**
+   * `tm_position_calc_grid`.
+   */
+  tmPositionCalcGrid(args: { readonly bodies: readonly number[]; readonly jds: readonly number[]; readonly scale: number; readonly flags: number; readonly observer?: TmObserver | null }): readonly TmPosition[];
+  /**
    * `tm_house_cusp_count`.
    */
   tmHouseCuspCount(args: { readonly sys: number }): number;
@@ -368,6 +402,10 @@ export declare class TeimerisEngine {
    * `tm_house_position`.
    */
   tmHousePosition(args: { readonly armc: number; readonly geoLatDeg: number; readonly obliquityDeg: number; readonly sys: number; readonly lonDeg: number; readonly latDeg: number }): number;
+  /**
+   * `tm_chart_default_bodies`.
+   */
+  tmChartDefaultBodies(): readonly number[];
   /**
    * `tm_set_jpl_file`.
    *
@@ -469,13 +507,25 @@ export declare class TeimerisEngine {
    */
   tmRefract(args: { readonly model: number; readonly dir: number; readonly altitudeDeg: number; readonly obs?: TmObserver | null; readonly atm?: TmAtmosphere | null }): TmRefraction;
   /**
+   * `tm_refract_many`.
+   */
+  tmRefractMany(args: { readonly model: number; readonly dir: number; readonly altitudesDeg: readonly number[]; readonly obs?: TmObserver | null; readonly atm?: TmAtmosphere | null }): readonly TmRefraction[];
+  /**
    * `tm_obliquity_calc`.
    */
   tmObliquityCalc(args: { readonly jd: number; readonly scale: number }): TmObliquity;
   /**
+   * `tm_coord_rotate`.
+   */
+  tmCoordRotate(args: { readonly direction: number; readonly obliquityDeg: number; readonly positions: readonly TmPosition[] }): readonly TmPosition[];
+  /**
    * `tm_to_horizontal`.
    */
   tmToHorizontal(args: { readonly jd: number; readonly scale: number; readonly system: number; readonly obs?: TmObserver | null; readonly atm?: TmAtmosphere | null; readonly lonDeg: number; readonly latDeg: number }): TmHorizontal;
+  /**
+   * `tm_to_horizontal_many`.
+   */
+  tmToHorizontalMany(args: { readonly jd: number; readonly scale: number; readonly system: number; readonly obs?: TmObserver | null; readonly atm?: TmAtmosphere | null; readonly coords: readonly TmCoord[] }): readonly TmHorizontal[];
   /**
    * `tm_from_horizontal`.
    */
@@ -505,17 +555,33 @@ export declare class TeimerisEngine {
    */
   tmNodesApsidesCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly method: number; readonly apsis: number; readonly observer?: TmObserver | null }): TmNodesApsides;
   /**
+   * `tm_nodes_apsides_calc_many`.
+   */
+  tmNodesApsidesCalcMany(args: { readonly jd: number; readonly scale: number; readonly bodies: readonly number[]; readonly flags: number; readonly method: number; readonly apsis: number; readonly observer?: TmObserver | null }): readonly TmNodesApsides[];
+  /**
    * `tm_orbital_elements_calc`.
    */
   tmOrbitalElementsCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly masses: number }): TmOrbitalElements;
+  /**
+   * `tm_orbital_elements_calc_many`.
+   */
+  tmOrbitalElementsCalcMany(args: { readonly jd: number; readonly scale: number; readonly bodies: readonly number[]; readonly flags: number; readonly masses: number }): readonly TmOrbitalElements[];
   /**
    * `tm_orbit_distances_calc`.
    */
   tmOrbitDistancesCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number }): TmOrbitDistances;
   /**
+   * `tm_orbit_distances_calc_many`.
+   */
+  tmOrbitDistancesCalcMany(args: { readonly jd: number; readonly scale: number; readonly bodies: readonly number[]; readonly flags: number }): readonly TmOrbitDistances[];
+  /**
    * `tm_phenomena_calc`.
    */
   tmPhenomenaCalc(args: { readonly jd: number; readonly scale: number; readonly body: number; readonly flags: number; readonly observer?: TmObserver | null }): TmPhenomena;
+  /**
+   * `tm_phenomena_calc_many`.
+   */
+  tmPhenomenaCalcMany(args: { readonly jd: number; readonly scale: number; readonly bodies: readonly number[]; readonly flags: number; readonly observer?: TmObserver | null }): readonly TmPhenomena[];
   /**
    * `tm_star_name`.
    */
@@ -539,9 +605,17 @@ export declare class TeimerisEngine {
    */
   tmStarFind(args: { readonly name: string }): TmStar;
   /**
+   * `tm_star_find_all`.
+   */
+  tmStarFindAll(args: { readonly name: string }): readonly TmStar[];
+  /**
    * `tm_star_calc`.
    */
   tmStarCalc(args: { readonly jd: number; readonly scale: number; readonly name: string; readonly flags: number; readonly observer?: TmObserver | null }): TmPosition;
+  /**
+   * `tm_star_calc_many`.
+   */
+  tmStarCalcMany(args: { readonly jd: number; readonly scale: number; readonly stars: readonly TmStar[]; readonly flags: number; readonly observer?: TmObserver | null }): readonly TmPosition[];
   /**
    * `tm_eclipse_type_name`.
    */
@@ -594,6 +668,14 @@ export declare class TeimerisEngine {
    * `tm_crossing_request_init_sized`.
    */
   tmCrossingRequestInitSized(): TmCrossingRequest;
+  /**
+   * `tm_crossing_search`.
+   */
+  tmCrossingSearch(args: { readonly req?: TmCrossingRequest | null; readonly outCapacity: number }): readonly TmCrossing[];
+  /**
+   * `tm_node_crossing_search`.
+   */
+  tmNodeCrossingSearch(args: { readonly req?: TmCrossingRequest | null; readonly outCapacity: number }): readonly TmCrossing[];
   /**
    * `tm_angle_normalize_deg`.
    */

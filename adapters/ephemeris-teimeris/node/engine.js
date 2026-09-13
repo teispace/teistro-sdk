@@ -55,6 +55,12 @@ const readTmHorizontal = (value) => ({ azimuth: value.azimuth, azimuthNorth: val
 /** `tm_horizontal` as a consumer writes it, keyed as the engine reads it. */
 const writeTmHorizontal = (value) => ({ azimuth: value.azimuth, azimuth_north: value.azimuthNorth, altitude_true: value.altitudeTrue, altitude_apparent: value.altitudeApparent });
 
+/** `tm_coord` as the engine answers it, spelled as a consumer reads it. */
+const readTmCoord = (value) => ({ lon: value.lon, lat: value.lat });
+
+/** `tm_coord` as a consumer writes it, keyed as the engine reads it. */
+const writeTmCoord = (value) => ({ lon: value.lon, lat: value.lat });
+
 /** `tm_coverage` as the engine answers it, spelled as a consumer reads it. */
 const readTmCoverage = (value) => ({ jdStart: value.jd_start, jdEnd: value.jd_end, contiguous: value.contiguous, fileCount: value.file_count });
 
@@ -144,6 +150,12 @@ const readTmCrossingRequest = (value) => ({ jdStart: value.jd_start, scale: valu
 
 /** `tm_crossing_request` as a consumer writes it, keyed as the engine reads it. */
 const writeTmCrossingRequest = (value) => ({ jd_start: value.jdStart, scale: value.scale, body: value.body, target_deg: value.targetDeg, flags: value.flags, backward: value.backward, jd_end: value.jdEnd, quantity: value.quantity, step_deg: value.stepDeg, body_b: value.bodyB, coeff_a: value.coeffA, coeff_b: value.coeffB });
+
+/** `tm_crossing` as the engine answers it, spelled as a consumer reads it. */
+const readTmCrossing = (value) => ({ jd: value.jd, longitude: value.longitude, latitude: value.latitude, status: value.status });
+
+/** `tm_crossing` as a consumer writes it, keyed as the engine reads it. */
+const writeTmCrossing = (value) => ({ jd: value.jd, longitude: value.longitude, latitude: value.latitude, status: value.status });
 
 /** `tm_angle_parts` as the engine answers it, spelled as a consumer reads it. */
 const readTmAngleParts = (value) => ({ negative: value.negative, degrees: value.degrees, minutes: value.minutes, seconds: value.seconds, secondFraction: value.second_fraction, zodiacSign: value.zodiac_sign, nakshatra: value.nakshatra, pada: value.pada });
@@ -253,6 +265,34 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_julian_day_many`.
+   */
+  tmJulianDayMany({ dts, cal }) {
+    return this.#engine.call('tm_julian_day_many', { dts: dts.map(writeTmDatetime), cal }).out_jd;
+  }
+
+  /**
+   * `tm_calendar_date_many`.
+   */
+  tmCalendarDateMany({ jds, cal }) {
+    return this.#engine.call('tm_calendar_date_many', { jds, cal }).out.map(readTmDatetime);
+  }
+
+  /**
+   * `tm_delta_t_many`.
+   */
+  tmDeltaTMany({ jdsUt1 }) {
+    return this.#engine.call('tm_delta_t_many', { jds_ut1: jdsUt1 }).out_seconds;
+  }
+
+  /**
+   * `tm_sidereal_time_many`.
+   */
+  tmSiderealTimeMany({ jdsUt1, geoLonDeg }) {
+    return this.#engine.call('tm_sidereal_time_many', { jds_ut1: jdsUt1, geo_lon_deg: geoLonDeg }).out_hours;
+  }
+
+  /**
    * `tm_equation_of_time`.
    */
   tmEquationOfTime({ jdUt1 }) {
@@ -295,6 +335,13 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_position_calc_grid`.
+   */
+  tmPositionCalcGrid({ bodies, jds, scale, flags, observer }) {
+    return this.#engine.call('tm_position_calc_grid', { bodies, jds, scale, flags, observer: observer == null ? null : writeTmObserver(observer) }).out.map(readTmPosition);
+  }
+
+  /**
    * `tm_house_cusp_count`.
    */
   tmHouseCuspCount({ sys }) {
@@ -320,6 +367,13 @@ export class TeimerisEngine {
    */
   tmHousePosition({ armc, geoLatDeg, obliquityDeg, sys, lonDeg, latDeg }) {
     return this.#engine.call('tm_house_position', { armc, geo_lat_deg: geoLatDeg, obliquity_deg: obliquityDeg, sys, lon_deg: lonDeg, lat_deg: latDeg }).out_house;
+  }
+
+  /**
+   * `tm_chart_default_bodies`.
+   */
+  tmChartDefaultBodies() {
+    return this.#engine.call('tm_chart_default_bodies', {}).out_bodies;
   }
 
   /**
@@ -489,6 +543,13 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_refract_many`.
+   */
+  tmRefractMany({ model, dir, altitudesDeg, obs, atm }) {
+    return this.#engine.call('tm_refract_many', { model, dir, altitudes_deg: altitudesDeg, obs: obs == null ? null : writeTmObserver(obs), atm: atm == null ? null : writeTmAtmosphere(atm) }).out.map(readTmRefraction);
+  }
+
+  /**
    * `tm_obliquity_calc`.
    */
   tmObliquityCalc({ jd, scale }) {
@@ -496,10 +557,24 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_coord_rotate`.
+   */
+  tmCoordRotate({ direction, obliquityDeg, positions }) {
+    return this.#engine.call('tm_coord_rotate', { direction, obliquity_deg: obliquityDeg, positions: positions.map(writeTmPosition) }).out.map(readTmPosition);
+  }
+
+  /**
    * `tm_to_horizontal`.
    */
   tmToHorizontal({ jd, scale, system, obs, atm, lonDeg, latDeg }) {
     return readTmHorizontal(this.#engine.call('tm_to_horizontal', { jd, scale, system, obs: obs == null ? null : writeTmObserver(obs), atm: atm == null ? null : writeTmAtmosphere(atm), lon_deg: lonDeg, lat_deg: latDeg }).out);
+  }
+
+  /**
+   * `tm_to_horizontal_many`.
+   */
+  tmToHorizontalMany({ jd, scale, system, obs, atm, coords }) {
+    return this.#engine.call('tm_to_horizontal_many', { jd, scale, system, obs: obs == null ? null : writeTmObserver(obs), atm: atm == null ? null : writeTmAtmosphere(atm), coords: coords.map(writeTmCoord) }).out.map(readTmHorizontal);
   }
 
   /**
@@ -554,10 +629,24 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_nodes_apsides_calc_many`.
+   */
+  tmNodesApsidesCalcMany({ jd, scale, bodies, flags, method, apsis, observer }) {
+    return this.#engine.call('tm_nodes_apsides_calc_many', { jd, scale, bodies, flags, method, apsis, observer: observer == null ? null : writeTmObserver(observer) }).out.map(readTmNodesApsides);
+  }
+
+  /**
    * `tm_orbital_elements_calc`.
    */
   tmOrbitalElementsCalc({ jd, scale, body, flags, masses }) {
     return readTmOrbitalElements(this.#engine.call('tm_orbital_elements_calc', { jd, scale, body, flags, masses }).out);
+  }
+
+  /**
+   * `tm_orbital_elements_calc_many`.
+   */
+  tmOrbitalElementsCalcMany({ jd, scale, bodies, flags, masses }) {
+    return this.#engine.call('tm_orbital_elements_calc_many', { jd, scale, bodies, flags, masses }).out.map(readTmOrbitalElements);
   }
 
   /**
@@ -568,10 +657,24 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_orbit_distances_calc_many`.
+   */
+  tmOrbitDistancesCalcMany({ jd, scale, bodies, flags }) {
+    return this.#engine.call('tm_orbit_distances_calc_many', { jd, scale, bodies, flags }).out.map(readTmOrbitDistances);
+  }
+
+  /**
    * `tm_phenomena_calc`.
    */
   tmPhenomenaCalc({ jd, scale, body, flags, observer }) {
     return readTmPhenomena(this.#engine.call('tm_phenomena_calc', { jd, scale, body, flags, observer: observer == null ? null : writeTmObserver(observer) }).out);
+  }
+
+  /**
+   * `tm_phenomena_calc_many`.
+   */
+  tmPhenomenaCalcMany({ jd, scale, bodies, flags, observer }) {
+    return this.#engine.call('tm_phenomena_calc_many', { jd, scale, bodies, flags, observer: observer == null ? null : writeTmObserver(observer) }).out.map(readTmPhenomena);
   }
 
   /**
@@ -612,10 +715,24 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_star_find_all`.
+   */
+  tmStarFindAll({ name }) {
+    return this.#engine.call('tm_star_find_all', { name }).out.map(readTmStar);
+  }
+
+  /**
    * `tm_star_calc`.
    */
   tmStarCalc({ jd, scale, name, flags, observer }) {
     return readTmPosition(this.#engine.call('tm_star_calc', { jd, scale, name, flags, observer: observer == null ? null : writeTmObserver(observer) }).out);
+  }
+
+  /**
+   * `tm_star_calc_many`.
+   */
+  tmStarCalcMany({ jd, scale, stars, flags, observer }) {
+    return this.#engine.call('tm_star_calc_many', { jd, scale, stars: stars.map(writeTmStar), flags, observer: observer == null ? null : writeTmObserver(observer) }).out.map(readTmPosition);
   }
 
   /**
@@ -713,6 +830,20 @@ export class TeimerisEngine {
    */
   tmCrossingRequestInitSized() {
     return readTmCrossingRequest(this.#engine.call('tm_crossing_request_init_sized', {}).req);
+  }
+
+  /**
+   * `tm_crossing_search`.
+   */
+  tmCrossingSearch({ req, outCapacity }) {
+    return this.#engine.call('tm_crossing_search', { req: req == null ? null : writeTmCrossingRequest(req), out_capacity: outCapacity }).out.map(readTmCrossing);
+  }
+
+  /**
+   * `tm_node_crossing_search`.
+   */
+  tmNodeCrossingSearch({ req, outCapacity }) {
+    return this.#engine.call('tm_node_crossing_search', { req: req == null ? null : writeTmCrossingRequest(req), out_capacity: outCapacity }).out.map(readTmCrossing);
   }
 
   /**

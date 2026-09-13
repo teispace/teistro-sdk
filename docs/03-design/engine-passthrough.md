@@ -34,7 +34,7 @@ correctly (the adapter's own tests against the engine).
 > **A value whose wrong answer is a memory-safety bug, and whose right
 > answer the marshaller already knows, is bookkeeping and never crosses.**
 
-Three of them, and the rule was read off the first before the other two
+Five of them, and the rule was read off the first before the others
 existed:
 
 | what | role or field | who supplies it |
@@ -42,9 +42,16 @@ existed:
 | the context | `handle` | the adapter's own, held for the call |
 | a buffer's capacity | `string_cap` | the fill protocol, which allocated it |
 | a struct's extent | `out_struct_size`, and the `struct_size` **field** | `size_of` of the struct the arm declared |
+| an array's length | `array_len` | the length of the array the caller passed |
+| an output's capacity and its count | `array_cap`, and the `scalar_out` an extent names | the room the arm made, and the length of the array the answer holds |
 
-The third is the one this tranche adds, and it is the strongest case of
-the three. Teimeris's public structs each carry a `struct_size` first
+One of these changes sides with the output beside it, which is why the
+rule is per function and not per role: the capacity of a **search** is
+not bookkeeping. "The next `out_capacity` eclipses" is the caller's
+question, so for an output whose extent is `asked` the capacity is an
+argument (§4).
+
+The struct's extent is the strongest case of them. Teimeris's public structs each carry a `struct_size` first
 field so the library can tell which version of the struct it was handed;
 the engine **reads past that field only as far as it says**. A consumer
 who could set it could tell the engine a `tm_datetime` is larger than
@@ -115,7 +122,81 @@ habit that caught the drishti section's shared count. One struct in the
 tranche nests at all (`tm_nodes_apsides`, four `tm_position`s), so the
 assertion is cheap and the day it fires it will be the only warning.
 
-## 4. What it costs a consumer
+## 4. How an array crosses
+
+> **An array crosses as a JSON array of whatever its element crosses
+> as, and an output array is sized by what the engine says its length
+> is — never by a capacity the caller passes for an answer whose length
+> is already decided.**
+
+The element rules are the ones already written: a number narrows and is
+refused rather than truncated, a struct is an object with every field
+required. A bad element is refused by its index and its path —
+`dts[1].month is required` — through the same helpers the scalar roles
+use, because the path is what makes a thousand-element batch debuggable.
+
+### What the engine did not say, and now does
+
+An output array is the one shape the engine's description could not
+size. `double *out, size_t out_capacity` is one C declaration for four
+contracts, and the extractor recorded none of them — so the engine's own
+Node generator makes the caller pass `capacity` and hands back that many
+elements whether or not the engine wrote them. That is a dead end twice
+over: the caller has to know a length the engine already knows, and an
+over-large guess returns zeroed elements that look like answers.
+
+It is fixed where it belongs, in the engine (`df3945e`,
+`05-testing/02-engine-findings.md` D2): every one of the forty output
+arrays now carries an `extent`, listed in `tools/idl/extract.py` rather
+than inferred, because "one length in, so the output is that long"
+holds for every `_many` function and is wrong for
+`tm_houses_calc_many`. The extractor refuses an output with no entry and
+an entry with no output.
+
+| extent | of the forty | the room | the answer |
+|---|---:|---|---|
+| `length` | 16 | the named input's length | all of it |
+| `product` | 2 | the named inputs' lengths, multiplied in layout order | all of it |
+| `asked` | 11 | the caller's `out_capacity`, an argument | cut to the count the engine gives |
+| `total` | 4 | 64, then exactly what the engine reported | all of it |
+| `unstated` | 7 | — | — |
+
+A `length` or `product` that names a struct input's field
+(`req.day_count`) is sized by nothing this marshaller reads, and is
+queued with the `unstated` ones; the measured page lists all nine with
+the engine's own reason.
+
+### Three rules the room follows
+
+1. **Every element of a struct output is `default`**, not zeroed. The
+   engine reads each element's `struct_size` to learn the stride it
+   writes at (`core/src/tm_out.h`, "every output struct must arrive with
+   `struct_size` set"), and `default` is the binding's way of setting it.
+2. **The room is bounded at 256 MiB, and the allocation is fallible.** An
+   `asked` capacity comes from the caller, and a caller who asks for ten
+   billion eclipses is told so by name rather than having the process
+   aborted. A product that overflows `usize` is refused the same way.
+3. **`total` asks at most twice**, the fill protocol's shape for an
+   array: into room for 64, and only if the engine reported more, again
+   into exactly that. A second report larger than the first is refused
+   as an answer that changed underneath the call, never truncated.
+
+The count an output is cut to is not reported beside it: it is the
+array's length. A count that is not an output's — `tm_scan_grid`'s
+`out_samples` — is still an answer.
+
+### What it does not do
+
+A batch whose engine status is not `OK` is refused whole, as a scalar
+call is. The engine's batches keep computing after an element fails and
+record each element's own status, so this discards the elements that
+succeeded; answering them with the call's status beside them is the
+right shape, and it is not built because a status that means "the
+capacity was too small" arrives the same way and fills nothing. Telling
+the two apart needs the engine to say which statuses are per element,
+which it does not yet (§7).
+
+## 5. What it costs a consumer
 
 The typed façade grows a named type per struct in each target, named for
 the struct — `tm_datetime` is `TmDatetime` everywhere:
@@ -135,29 +216,40 @@ missing and is refused by its whole path — `local.month`, not `month`,
 because the key a field is looked up under and the name a refusal must
 print stop being the same string the moment structs nest.
 
-Twenty-three of the forty plain structs are reachable from a callable
-function, and only those get a type: a generator that emitted all
-fifty-seven would put names in four languages for structs no method
-mentions.
+A list is `readonly T[]` in TypeScript, `List<T>` in Dart, and in
+Python `list[T]` coming back and any `Sequence[T]` going in — because
+Python's `list` is invariant, and `list[int]` would be refused where
+`list[float]` is taken.
 
-## 5. What this tranche releases, and what it does not
+Only the structs a callable function reaches get a type: a generator
+that emitted all fifty-seven would put names in four languages for
+structs no method mentions.
 
-Measured, not estimated — the figures are on the measured page and are
-computed from the same reading that writes the code.
+## 6. What each step releases
+
+Measured, not estimated — each figure is the measured page's, computed
+from the same reading that writes the code, and each later step's is
+exact because the queue groups a function by its hardest blocker.
 
 | step | callable | what it adds |
 |---|---:|---|
 | before | 62 | |
-| **plain structs** | **95** | this page |
-| an array of numbers | 99 | the fill protocol with a width |
-| an array of structs | 114 | the two above, together |
-| a struct carrying a string | 120 | a `CString` that outlives the call |
-| a struct pointing at another | 139 | a nullable nested object |
+| plain structs | 95 | §3 |
+| **arrays** | **112** | §4 |
+| a struct carrying a string | 118 | a `CString` that outlives the call |
+| a struct pointing at another | 135 | a nullable nested object |
+| an output sized by another call, and a parallel output | 139 | `tm_house_cusp_count()`, `req.day_count`; an optional twin |
 
-The last ten are genuinely different: two carry opaque bytes, five carry
-a function-pointer vtable or a `char**`, and three return a pointer into
+The last ten are genuinely different: three carry opaque bytes, four a
+function-pointer vtable or a `char**`, and three return a pointer into
 the engine's own memory whose lifetime the JSON boundary has no way to
 state.
+
+The plan this table replaced said an array of numbers would reach 99 and
+an array of structs 114, as two steps. They are one step, because the
+shape is the array and not its element, and it reached 112: the two
+house functions whose cusps are sized by the house system were counted
+as arrays and are a different job, which reading their extents showed.
 
 This replaces the sentence the measured page used to carry — *81 of the
 87 are behind structs* — which was true and was not actionable. Eighty-one
@@ -166,7 +258,7 @@ was one row because the classifier knew a struct only by the word
 different jobs behind them, and the largest of the four was also the
 easiest.
 
-## 6. How it is held
+## 7. How it is held
 
 - `check-engine` regenerates the page, the dispatch and the four façades
   and fails on any byte of difference.
@@ -174,7 +266,14 @@ easiest.
   struct crosses both ways and its extent in neither, a field is refused
   by its whole path, a struct left out is null and the engine's refusal
   is the engine's, an extent a caller names is not read, and a nested
-  struct comes back nested.
+  struct comes back nested; an array answers one value per input and the
+  same values its scalar twin does, an array of structs round-trips and
+  a bad element is refused by index, a grid is bodies-by-epochs long and
+  body-major, an output the engine counts is gathered, and a search
+  answers exactly as many as asked.
+- The helpers' unit tests, for what the real engine never reaches: a
+  gather that must ask twice and one whose answer grows, room past the
+  bound, and a product that overflows.
 - The façades' consumer files (`typecheck/consumer.ts`,
   `typecheck/consumer.py`, `example/consumer.dart`) call a struct both
   ways and leave an optional one out, under `tsc`, `mypy --strict` and
@@ -183,11 +282,13 @@ easiest.
   be believed: nesting follows declaration order, and no Python record
   shares a struct's name.
 
-## 7. Open questions
+## 8. Open questions
 
-None new. The step after an array of numbers is an array of structs,
-which is both learned shapes together; the first step that needs a new
-decision is a struct pointing at another (§5), which has to say what a
-`null` *field* means where rule 5 settled a null *argument*. ADR-0030's
-rule that what proves universal is promoted into the port applies to all
-of it.
+- **A batch's per-element statuses** (§4). Answering the elements that
+  succeeded beside the call's status needs the engine to say which of its
+  statuses are per element and which mean nothing was filled.
+- **A struct pointing at another** (§6) has to say what a `null` *field*
+  means, where rule 5 settled a null *argument*.
+
+ADR-0030's rule that what proves universal is promoted into the port
+applies to all of it.

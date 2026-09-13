@@ -39,7 +39,7 @@
 
 use std::fmt::Write as _;
 
-use crate::engine::{Described, Function, Shape, Vocabulary, describe, reached};
+use crate::engine::{Declared, Described, Function, Shape, Vocabulary, describe, reached};
 use crate::generated::Output;
 
 /// Where the adapter's packages live. One directory per target beside
@@ -89,6 +89,13 @@ struct Words {
     fractional: &'static str,
     /// A whole number: a count, an id, an enum member, a flag set.
     integer: &'static str,
+    /// A list of one of the above, as an answer hands it back, with `{}`
+    /// where the element's word goes.
+    list: &'static str,
+    /// A list as an argument takes it, which may be wider than the answer
+    /// type: Python takes any `Sequence`, because its `list` is invariant
+    /// and `list[int]` would not be accepted where `list[float]` is.
+    list_taken: &'static str,
 }
 
 impl Words {
@@ -99,16 +106,22 @@ impl Words {
         text: "string",
         fractional: "number",
         integer: "number",
+        list: "readonly {}[]",
+        list_taken: "readonly {}[]",
     };
     const DART: Self = Self {
         text: "String",
         fractional: "double",
         integer: "int",
+        list: "List<{}>",
+        list_taken: "List<{}>",
     };
     const PYTHON: Self = Self {
         text: "str",
         fractional: "float",
         integer: "int",
+        list: "list[{}]",
+        list_taken: "Sequence[{}]",
     };
 
     /// What one declared type is called here.
@@ -118,12 +131,32 @@ impl Words {
     /// type-checks a wrong call. The Dart constructor emitter refuses an
     /// unknown *role* for the same reason and says so: a generator that
     /// quietly guesses writes code that compiles and is wrong.
-    fn of(&self, declared: &str, vocabulary: &Vocabulary, whose: &str) -> String {
-        match kind(declared, vocabulary, whose) {
+    fn of(&self, declared: &Declared<'_>, vocabulary: &Vocabulary, whose: &str) -> String {
+        self.word(declared, vocabulary, whose, self.list)
+    }
+
+    /// What an argument of a declared type is called here.
+    fn taken(&self, declared: &Declared<'_>, vocabulary: &Vocabulary, whose: &str) -> String {
+        self.word(declared, vocabulary, whose, self.list_taken)
+    }
+
+    fn word(
+        &self,
+        declared: &Declared<'_>,
+        vocabulary: &Vocabulary,
+        whose: &str,
+        list: &str,
+    ) -> String {
+        let one = match kind(declared.base, vocabulary, whose) {
             Kind::Text => self.text.to_string(),
             Kind::Fractional => self.fractional.to_string(),
             Kind::Integer => self.integer.to_string(),
-            Kind::Struct => pascal(declared),
+            Kind::Struct => pascal(declared.base),
+        };
+        if declared.list {
+            list.replace("{}", &one)
+        } else {
+            one
         }
     }
 }
@@ -171,7 +204,11 @@ pub(crate) fn outputs(
     // Every struct a callable function passes either way, with what it
     // nests, in declaration order. One list for all four targets, so no
     // façade names a struct another does not.
-    let structs = reached(callable, &["struct_in", "struct_out"], vocabulary);
+    let structs = reached(
+        callable,
+        &["struct_in", "struct_out", "array_in", "array_out"],
+        vocabulary,
+    );
     vec![
         Output::new(NODE, node(version, &described, &structs, vocabulary)),
         Output::new(
@@ -266,14 +303,12 @@ fn node(
                     args.iter()
                         .zip(one.takes.iter())
                         .map(|((spelling, key), (_, declared))| {
+                            let written = node_write(spelling, declared, vocabulary);
                             if one.nullable(key) {
                                 // Left out and null both cross as null.
-                                format!(
-                                    "{key}: {spelling} == null ? null : {}({spelling})",
-                                    node_writer(declared)
-                                )
-                            } else if vocabulary.shape(declared).is_some() {
-                                format!("{key}: {}({spelling})", node_writer(declared))
+                                format!("{key}: {spelling} == null ? null : {written}")
+                            } else if written != *spelling {
+                                format!("{key}: {written}")
                             } else if spelling == key {
                                 // The engine's own key and this language's
                                 // spelling of it agree, so the shorthand is
@@ -330,12 +365,28 @@ fn node(
 }
 
 /// A value read out of an answer, in Node: a struct is converted to the
-/// spelling a consumer writes, and anything else is itself.
-fn node_read(expression: &str, declared: &str, vocabulary: &Vocabulary) -> String {
-    if vocabulary.shape(declared).is_some() {
-        format!("{}({expression})", node_reader(declared))
-    } else {
-        expression.to_string()
+/// spelling a consumer writes, a list of them element by element, and
+/// anything else is itself.
+fn node_read(expression: &str, declared: &Declared<'_>, vocabulary: &Vocabulary) -> String {
+    node_convert(expression, declared, vocabulary, &node_reader)
+}
+
+/// A value written into a call, in Node: the reverse of [`node_read`].
+fn node_write(expression: &str, declared: &Declared<'_>, vocabulary: &Vocabulary) -> String {
+    node_convert(expression, declared, vocabulary, &node_writer)
+}
+
+/// One conversion, applied to a struct or to each struct of a list.
+fn node_convert(
+    expression: &str,
+    declared: &Declared<'_>,
+    vocabulary: &Vocabulary,
+    converter: &dyn Fn(&str) -> String,
+) -> String {
+    match (vocabulary.shape(declared.base).is_some(), declared.list) {
+        (false, _) => expression.to_string(),
+        (true, false) => format!("{}({expression})", converter(declared.base)),
+        (true, true) => format!("{expression}.map({})", converter(declared.base)),
     }
 }
 
@@ -421,7 +472,7 @@ fn node_types(
                 format!(
                     "  readonly {}: {};",
                     camel(&field.name),
-                    Words::TYPESCRIPT.of(&field.base, vocabulary, &shape.name)
+                    Words::TYPESCRIPT.of(&Declared::one(&field.base), vocabulary, &shape.name)
                 )
             })
             .collect::<Vec<_>>()
@@ -447,7 +498,7 @@ fn node_types(
                 args.iter()
                     .zip(one.takes.iter())
                     .map(|((spelling, key), (_, declared))| {
-                        let named = Words::TYPESCRIPT.of(declared, vocabulary, one.name);
+                        let named = Words::TYPESCRIPT.taken(declared, vocabulary, one.name);
                         if one.nullable(key) {
                             format!("readonly {spelling}?: {named} | null")
                         } else {
@@ -492,27 +543,53 @@ fn node_types(
     out
 }
 
-/// Reading one value out of the answer, in Dart.
+/// Reading one value out of the answer, in Dart, from an expression
+/// that looks it up.
 ///
 /// A number goes through `num` rather than straight to `double`: JSON
 /// carries no distinction the engine's `double` and `int32_t` keep, so a
 /// whole-valued double would decode as an `int` and `as double` would
 /// throw on it. `toDouble()` accepts either and costs nothing.
 fn dart_read(
-    key: &str,
-    declared: &str,
-    from: &str,
+    lookup: &str,
+    declared: &Declared<'_>,
     vocabulary: &Vocabulary,
     whose: &str,
 ) -> String {
-    match kind(declared, vocabulary, whose) {
-        Kind::Text => format!("{from}['{key}']! as String"),
-        Kind::Fractional => format!("({from}['{key}']! as num).toDouble()"),
-        Kind::Integer => format!("({from}['{key}']! as num).toInt()"),
+    let one = |value: &str| match kind(declared.base, vocabulary, whose) {
+        Kind::Text => format!("{value} as String"),
+        Kind::Fractional => format!("({value} as num).toDouble()"),
+        Kind::Integer => format!("({value} as num).toInt()"),
         Kind::Struct => format!(
-            "{}.fromJson({from}['{key}']! as Map<String, Object?>)",
-            pascal(declared)
+            "{}.fromJson({value} as Map<String, Object?>)",
+            pascal(declared.base)
         ),
+    };
+    if declared.list {
+        format!(
+            "({lookup}! as List<Object?>).map((one) => {}).toList()",
+            one("one!")
+        )
+    } else {
+        one(&format!("{lookup}!"))
+    }
+}
+
+/// Writing one argument into a call, in Dart: a struct as its object, a
+/// list of them element by element, anything else as itself.
+fn dart_write(
+    spelling: &str,
+    declared: &Declared<'_>,
+    nullable: bool,
+    vocabulary: &Vocabulary,
+) -> String {
+    if vocabulary.shape(declared.base).is_none() {
+        return spelling.to_string();
+    }
+    match (declared.list, nullable) {
+        (true, _) => format!("{spelling}.map((one) => one.toJson()).toList()"),
+        (false, true) => format!("{spelling}?.toJson()"),
+        (false, false) => format!("{spelling}.toJson()"),
     }
 }
 
@@ -549,12 +626,10 @@ fn dart(
                 args.iter()
                     .zip(one.takes.iter())
                     .map(|((spelling, key), (_, declared))| {
-                        if vocabulary.shape(declared).is_some() {
-                            let nullable = if one.nullable(key) { "?" } else { "" };
-                            format!("'{key}': {spelling}{nullable}.toJson()")
-                        } else {
-                            format!("'{key}': {spelling}")
-                        }
+                        format!(
+                            "'{key}': {}",
+                            dart_write(spelling, declared, one.nullable(key), vocabulary)
+                        )
                     })
                     .collect::<Vec<_>>()
                     .join(", ")
@@ -567,7 +642,12 @@ fn dart(
                 Words::DART.of(declared, vocabulary, one.name),
                 format!(
                     "    final answered = ({call}) as Map<String, Object?>;\n    return {};",
-                    dart_read(only, declared, "answered", vocabulary, one.name)
+                    dart_read(
+                        &format!("answered['{only}']"),
+                        declared,
+                        vocabulary,
+                        one.name
+                    )
                 ),
             ),
             many => {
@@ -588,7 +668,12 @@ fn dart(
                         format!(
                             "{}: {}",
                             camel(key),
-                            dart_read(key, declared, "answered", vocabulary, one.name)
+                            dart_read(
+                                &format!("answered['{key}']"),
+                                declared,
+                                vocabulary,
+                                one.name
+                            )
                         )
                     })
                     .collect::<Vec<_>>()
@@ -638,7 +723,7 @@ fn dart_parameters(
             args.iter()
                 .zip(one.takes.iter())
                 .map(|((spelling, key), (_, declared))| {
-                    let named = Words::DART.of(declared, vocabulary, one.name);
+                    let named = Words::DART.taken(declared, vocabulary, one.name);
                     if one.nullable(key) {
                         format!("{named}? {spelling}")
                     } else {
@@ -678,7 +763,12 @@ fn dart_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
             .map(|((key, spelling), base)| {
                 format!(
                     "        {spelling}: {},",
-                    dart_read(key, base, "json", vocabulary, whose)
+                    dart_read(
+                        &format!("json['{key}']"),
+                        &Declared::one(base),
+                        vocabulary,
+                        whose
+                    )
                 )
             })
             .collect::<Vec<_>>()
@@ -689,7 +779,7 @@ fn dart_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
             .map(|((key, spelling), base)| {
                 format!(
                     "  /// `{key}`.\n  final {} {spelling};",
-                    Words::DART.of(base, vocabulary, whose)
+                    Words::DART.of(&Declared::one(base), vocabulary, whose)
                 )
             })
             .collect::<Vec<_>>()
@@ -733,29 +823,9 @@ fn python(
     let mut out = header(version, "#");
     let _ = writeln!(
         out,
-        "\nfrom __future__ import annotations\n\nfrom typing import TypedDict, cast\n\nfrom teistro import Engine\n"
+        "\nfrom __future__ import annotations\n\nfrom collections.abc import Sequence\nfrom typing import TypedDict, cast\n\nfrom teistro import Engine\n"
     );
-    // The structs first, because a record below may hold one and a
-    // `TypedDict` must be declared before it is named. The engine's
-    // declaration order is already an order that works, and `reached`
-    // asserts it.
-    for shape in structs {
-        let _ = writeln!(
-            out,
-            "\nclass {}(TypedDict):\n    \"\"\"`{}`, as the engine declares it. Every field is required.\"\"\"\n",
-            pascal(&shape.name),
-            shape.name
-        );
-        for field in shape.crossing() {
-            let _ = writeln!(
-                out,
-                "    {}: {}",
-                field.name,
-                Words::PYTHON.of(&field.base, vocabulary, &shape.name)
-            );
-        }
-        let _ = writeln!(out);
-    }
+    out.push_str(&python_structs(structs, vocabulary));
     // The answers with more than one value, as the types they are.
     // Named for the operation, because that is the only thing they have
     // in common with each other.
@@ -806,17 +876,14 @@ fn python(
         let (returns, body) = match one.gives.as_slice() {
             [] => (String::from("None"), format!("        {call}")),
             [(only, declared)] => {
-                // `float(...)` rather than a cast, for the reason
-                // `dart_read` explains: JSON keeps no distinction
-                // between the engine's `double` and its `int32_t`, so a
-                // whole-valued double arrives as an `int` and a cast
-                // would be a lie a type checker believed.
                 let named = Words::PYTHON.of(declared, vocabulary, one.name);
-                let read = match kind(declared, vocabulary, one.name) {
-                    Kind::Fractional => format!("float(cast(float, answered[\"{only}\"]))"),
-                    Kind::Text | Kind::Struct => format!("cast({named}, answered[\"{only}\"])"),
-                    Kind::Integer => format!("int(cast(int, answered[\"{only}\"]))"),
-                };
+                let read = python_read(
+                    &format!("answered[\"{only}\"]"),
+                    declared,
+                    &named,
+                    vocabulary,
+                    one.name,
+                );
                 (
                     named,
                     format!(
@@ -847,6 +914,55 @@ fn python(
     out
 }
 
+/// A `TypedDict` per struct, in Python.
+///
+/// First in the file, because a record may hold one and a `TypedDict`
+/// must be declared before it is named. The engine's declaration order
+/// is already an order that works, and `reached` asserts it.
+fn python_structs(structs: &[&Shape], vocabulary: &Vocabulary) -> String {
+    let mut out = String::new();
+    for shape in structs {
+        let _ = writeln!(
+            out,
+            "\nclass {}(TypedDict):\n    \"\"\"`{}`, as the engine declares it. Every field is required.\"\"\"\n",
+            pascal(&shape.name),
+            shape.name
+        );
+        for field in shape.crossing() {
+            let _ = writeln!(
+                out,
+                "    {}: {}",
+                field.name,
+                Words::PYTHON.of(&Declared::one(&field.base), vocabulary, &shape.name)
+            );
+        }
+        let _ = writeln!(out);
+    }
+    out
+}
+
+/// Reading one value out of the answer, in Python.
+///
+/// `float(...)` rather than a cast, for the reason `dart_read` explains:
+/// JSON keeps no distinction between the engine's `double` and its
+/// `int32_t`, so a whole-valued double arrives as an `int` and a cast
+/// would be a lie a type checker believed.
+fn python_read(
+    value: &str,
+    declared: &Declared<'_>,
+    named: &str,
+    vocabulary: &Vocabulary,
+    whose: &str,
+) -> String {
+    match (kind(declared.base, vocabulary, whose), declared.list) {
+        (Kind::Text | Kind::Struct, _) => format!("cast({named}, {value})"),
+        (Kind::Fractional, false) => format!("float(cast(float, {value}))"),
+        (Kind::Integer, false) => format!("int(cast(int, {value}))"),
+        (Kind::Fractional, true) => format!("[float(one) for one in cast(list[float], {value})]"),
+        (Kind::Integer, true) => format!("[int(one) for one in cast(list[int], {value})]"),
+    }
+}
+
 /// A Python method's parameters after `self`.
 ///
 /// Built rather than collected: Python's parameters are the engine's own
@@ -855,7 +971,7 @@ fn python(
 fn python_parameters(one: &Described<'_>, vocabulary: &Vocabulary) -> String {
     let mut params = String::new();
     for (at, (name, declared)) in one.takes.iter().enumerate() {
-        let named = Words::PYTHON.of(declared, vocabulary, one.name);
+        let named = Words::PYTHON.taken(declared, vocabulary, one.name);
         // A default only where every parameter after it has one too,
         // which is the one place Python allows it; before a required
         // parameter an optional struct is still `None`-able, only not
