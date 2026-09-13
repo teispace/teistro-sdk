@@ -472,6 +472,41 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         Ok((cusps, built.system))
     }
 
+    /// The ascendant at an instant, in the zodiac of a chart founded
+    /// here — the founder's own lagna, for a caller who needs one at an
+    /// instant that is not the birth.
+    ///
+    /// **Saturn's eighth is what needs it.** `points` divides the day's
+    /// arc into eighths and asks for the ascendant at each division
+    /// (`03-design/derived-points.md`), which is why `Points::of` takes
+    /// an `Ascendant`; and the ascendant it must ask for is *this
+    /// chart's* — the same house system, the same polar policy, the same
+    /// zodiac — or the eighth would be read off a different chart than
+    /// the one it belongs to.
+    ///
+    /// The zodiac is taken rather than recomputed, because a chart is
+    /// measured in one ayanamsha throughout and the caller holding the
+    /// foundation holds the one it was founded in
+    /// (`03-design/chart-reading.md` §2). `ChartZodiac::of` would answer
+    /// with the ayanamsha at *this* instant, which for a division eight
+    /// hours away is a different number.
+    ///
+    /// # Errors
+    ///
+    /// Whatever the house computation refuses: an instant outside the
+    /// Delta T model's range, or a degenerate chart under a polar policy
+    /// that refuses one.
+    pub fn ascendant_at(
+        &self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+    ) -> Result<f64, Error> {
+        let ut1 = JulianDay::<Ut1>::literal(at.get());
+        let (tt, _) = tt_of(ut1, self.delta_t)?;
+        self.lagna(ut1, tt, place, zodiac)
+    }
+
     /// The ascendant at an instant, in the chart's zodiac.
     fn lagna(
         &self,

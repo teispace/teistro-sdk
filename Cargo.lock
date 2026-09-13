@@ -1247,15 +1247,21 @@ name = "teistro"
 version = "0.0.0"
 dependencies = [
  "serde_json",
+ "teistro-aspect",
  "teistro-astro",
  "teistro-calendar",
  "teistro-chart",
  "teistro-core",
  "teistro-ephemeris-builtin",
+ "teistro-houses",
  "teistro-intl",
  "teistro-panchanga",
+ "teistro-points",
  "teistro-port-ephemeris",
+ "teistro-serial",
+ "teistro-state",
  "teistro-time",
+ "teistro-vargas",
 ]
 
 [[package]]

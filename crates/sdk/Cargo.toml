@@ -16,14 +16,20 @@ publish = false
 
 [dependencies]
 serde_json = "1"
+teistro-aspect = { path = "../aspect" }
 teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
+teistro-houses = { path = "../houses" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
+teistro-points = { path = "../points" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-serial = { path = "../serial" }
+teistro-state = { path = "../state" }
 teistro-time = { path = "../time" }
+teistro-vargas = { path = "../vargas" }
 teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
 
 [build-dependencies]

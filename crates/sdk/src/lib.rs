@@ -44,6 +44,7 @@
 mod area;
 mod context;
 mod ephemeris;
+mod reading;
 mod scale;
 
 pub use area::{
@@ -51,6 +52,7 @@ pub use area::{
 };
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
+pub use reading::Reading;
 pub use scale::{Conversion, Scale};
 
 // The types an operation takes and answers with are the crates' own, and
@@ -84,7 +86,16 @@ pub use teistro_core::key::KeyId;
 pub use teistro_core::quantity;
 pub use teistro_core::settings;
 pub use teistro_panchanga::almanac::Panchanga;
+// What a reading answers with, and the sections it holds: the document
+// is `teistro-serial`'s, and an operation that answers one must let a
+// consumer name it and every section of it.
+pub use teistro_aspect::{Aspects, Drishti};
+pub use teistro_houses::Houses;
+pub use teistro_points::Points;
 pub use teistro_port_ephemeris::native::{NativeFunction, NativeManifest};
+pub use teistro_serial::{Document, Sealed};
+pub use teistro_state::GrahaState;
+pub use teistro_vargas::chart::{Axis, VargaChart};
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a
 // namespace is in Rust — where Node writes

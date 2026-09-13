@@ -14,10 +14,11 @@
     reason = "tests fail by panicking"
 )]
 
-use teistro::catalogue::{Calendar, ChartKind, Era};
+use teistro::catalogue::{Calendar, Catalogued, ChartKind, Era, Point, Varga};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Scale, TimeScale, UtcOffset,
+    Body, CalendarDate, Context, Ephemeris, Frame, PositionRequest, Reading, Scale, TimeScale,
+    UtcOffset,
 };
 use teistro_core::envelope::CalendarResolution;
 
@@ -638,4 +639,139 @@ fn every_envelope_is_sealed_with_the_hash_of_its_own_value() {
         charts.provenance.content_hash
     );
     assert_ne!(day.provenance.content_hash, week.provenance.content_hash);
+}
+
+/// **A reading is a founding plus arithmetic**, and every section it
+/// asks for is there.
+///
+/// The assembly `03-design/chart-reading.md` exists for: the document
+/// type has been built since `crates/serial` was written and the only
+/// code that put one together was an example of that crate, so a
+/// consumer could not ask for a divisional chart in any language,
+/// including this one.
+///
+/// What is asserted is the shape rather than the numbers: every
+/// section's own values are held by its own crate's baseline tests
+/// against the corpus, and repeating them here would be a second copy of
+/// a fixture. What no other test can say is that the *façade* asks each
+/// producer for the right thing and puts the answer in the right field.
+#[test]
+fn a_reading_carries_the_sections_it_was_asked_for() {
+    let sdk = Context::builder()
+        .profile("parashari-classical")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a shipped profile");
+    let place = Place::new(
+        Latitude::try_new(27.7172).expect("a latitude"),
+        Longitude::try_new(85.324).expect("a longitude"),
+        Altitude::try_new(1400.0).expect("an altitude"),
+    );
+    let offset = UtcOffset::try_from_seconds(20700).expect("+05:45");
+    let instant = JulianDay::<Utc>::literal(2_460_482.5);
+
+    // Nothing but the foundation, which is the default and the reason
+    // the default is what it is: a caller who wants a birth chart does
+    // not pay for twenty-one divisional charts.
+    let bare = sdk
+        .chart()
+        .reading(instant, &Reading::at(place, offset))
+        .expect("the built-in ephemeris");
+    assert_eq!(bare.value.sections(), vec!["foundation"]);
+
+    // And everything, which is what a consumer storing a chart wants.
+    let whole = sdk
+        .chart()
+        .reading(instant, &Reading::at(place, offset).with_everything())
+        .expect("the built-in ephemeris");
+    assert_eq!(
+        whole.value.sections(),
+        vec![
+            "foundation",
+            "panchanga",
+            "vargas",
+            "state",
+            "aspects",
+            "points",
+            "houses"
+        ],
+        "every section `teistro-serial`'s document declares"
+    );
+
+    // The foundation is the same chart either way: the sections are
+    // derived from it and none of them can move it.
+    assert_eq!(
+        bare.value.foundation.lagna_deg.to_bits(),
+        whole.value.foundation.lagna_deg.to_bits()
+    );
+
+    // Each section, asked of the producer the design page names.
+    assert_eq!(whole.value.vargas.len(), Varga::all().len());
+    assert_eq!(
+        whole.value.state.as_ref().map(Vec::len),
+        Some(whole.value.foundation.grahas.len()),
+        "one state per graha the foundation carries"
+    );
+    assert!(
+        whole
+            .value
+            .houses
+            .as_ref()
+            .is_some_and(|houses| houses.bhava(1).is_some() && houses.bhava(12).is_some()),
+        "twelve bhavas, which is why zero rows cannot mean `asked for and empty`"
+    );
+    assert!(
+        whole
+            .value
+            .points
+            .as_ref()
+            .is_some_and(|points| !points.all().is_empty()),
+        "the upagrahas and the special lagnas"
+    );
+    assert!(
+        whole
+            .value
+            .aspects
+            .as_ref()
+            .is_some_and(|aspects| !aspects.all().is_empty()),
+        "a chart of nine grahas has drishti in it"
+    );
+    assert_eq!(
+        whole
+            .value
+            .panchanga
+            .as_ref()
+            .map(|day| day.day.date.clone()),
+        Some(whole.value.foundation.day.day.date.clone()),
+        "the almanac of the day the *chart* belongs to, which before sunrise is not the instant's civil date"
+    );
+
+    // **Gulika and Mandi are what say the new primitive was threaded
+    // through.** They are Saturn's eighth of the day's arc, and the
+    // eighth asks for the ascendant at each division — so
+    // `Points::from_longitudes`, which is what `crates/serial`'s own
+    // sample uses and all that was reachable before this, gives every
+    // other point and not these two. Naming them is a sharper assertion
+    // than a count: a count would pass on eleven.
+    let named: Vec<Point> = whole
+        .value
+        .points
+        .as_ref()
+        .map(|points| points.all().iter().map(|found| found.point).collect())
+        .unwrap_or_default();
+    assert!(named.contains(&Point::Gulika), "{named:?}");
+    assert!(named.contains(&Point::Mandi), "{named:?}");
+
+    // A batch of one agrees with the one, bit for bit, as the founding
+    // does — and the seal is of *this* document rather than of the list.
+    let batch = sdk
+        .chart()
+        .readings(&[instant], &Reading::at(place, offset).with_houses())
+        .expect("the built-in ephemeris");
+    assert_eq!(batch.value.len(), 1);
+    assert_ne!(batch.provenance.content_hash, whole.provenance.content_hash);
+    assert_eq!(
+        batch.provenance.content_hash,
+        teistro::content_hash(&batch.value)
+    );
 }
