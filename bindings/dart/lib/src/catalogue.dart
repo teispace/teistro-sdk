@@ -4215,6 +4215,42 @@ enum Reading {
   }
 }
 
+/// How badly the Sun burns a body.
+enum Burning {
+  /// Far enough from the Sun to be itself.
+  none(0, 'none'),
+  /// Combust.
+  combust(1, 'combust'),
+  /// Deeply combust; only a table that gives a deeper orb reaches it.
+  deep(2, 'deep');
+
+  const Burning(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Burning byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Burning'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Burning? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which third of the wheel a bhava stands in.
 ///
 /// The houses crate's own `Quadrant`, which is not a catalogue member —

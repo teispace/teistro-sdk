@@ -382,6 +382,46 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 19, 'states');
+    out.states = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      sign: column(blob, at, 1, 'u16', at.count),
+      house: column(blob, at, 2, 'u8', at.count),
+      dignity: column(blob, at, 3, 'u16', at.count),
+      natural: column(blob, at, 4, 'u16', at.count),
+      temporary: column(blob, at, 5, 'u16', at.count),
+      compound: column(blob, at, 6, 'u16', at.count),
+      hasDispositor: column(blob, at, 7, 'u8', at.count),
+      dispositor: column(blob, at, 8, 'u16', at.count),
+      burning: column(blob, at, 9, 'u8', at.count),
+      hasFromSun: column(blob, at, 10, 'u8', at.count),
+      fromSunDeg: column(blob, at, 11, 'f64', at.count),
+      hasOrbs: column(blob, at, 12, 'u8', at.count),
+      orbDeg: column(blob, at, 13, 'f64', at.count),
+      hasDeepOrb: column(blob, at, 14, 'u8', at.count),
+      deepOrbDeg: column(blob, at, 15, 'f64', at.count),
+      age: column(blob, at, 16, 'u16', at.count),
+      wakefulness: column(blob, at, 17, 'u16', at.count),
+      hasDeeptadi: column(blob, at, 18, 'u8', at.count),
+      deeptadi: column(blob, at, 19, 'u16', at.count),
+      lajjitadiHolding: column(blob, at, 20, 'u32', at.count),
+      lajjitadiRuledOut: column(blob, at, 21, 'u32', at.count),
+      lajjitadiUndecided: column(blob, at, 22, 'u32', at.count),
+      hasWar: column(blob, at, 23, 'u8', at.count),
+      warOpponent: column(blob, at, 24, 'u16', at.count),
+      warWon: column(blob, at, 25, 'u8', at.count),
+      warApartDeg: column(blob, at, 26, 'f64', at.count),
+      signDeg: column(blob, at, 27, 'f64', at.count),
+      nakshatraDeg: column(blob, at, 28, 'f64', at.count),
+      padaDeg: column(blob, at, 29, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 20, 'combustion_orbs');
+    out.combustionOrbs = text(blob, at);
+  }
   return out;
 }
 

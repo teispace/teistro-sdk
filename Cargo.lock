@@ -1373,6 +1373,7 @@ dependencies = [
  "teistro-panchanga",
  "teistro-port-ephemeris",
  "teistro-serial",
+ "teistro-state",
  "teistro-time",
  "teistro-vargas",
 ]

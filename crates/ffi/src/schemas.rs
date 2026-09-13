@@ -554,6 +554,12 @@ pub fn charts() -> BlobSchema {
             chart_drishti_table_section(16),
             chart_points_section(17),
             chart_bhavas_section(18),
+            chart_states_section(19),
+            SectionSchema::bytes(
+                20,
+                "combustion_orbs",
+                "UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.",
+            ),
         ],
     }
 }
@@ -756,6 +762,172 @@ fn chart_bhavas_section(id: u32) -> SectionSchema {
                 "Which third of the wheel it stands in.",
             )
             .of_enum("TsQuadrant"),
+        ],
+    )
+}
+
+/// What each graha **is**, as opposed to where it is.
+///
+/// One row per graha per chart, the same stride as `grahas`, because
+/// every chart of a batch carries the same bodies: a state is a reading
+/// of a placement, so there is exactly one per placement and no count is
+/// needed.
+///
+/// **The three lajjitadi lists are bit sets**, one bit per member of a
+/// six-member enum, rather than three ragged sections with three counts.
+/// A set over a small closed enum is a set; making it a list would put
+/// three prefix sums in every decoder for a value that fits in a byte
+/// (`03-design/chart-reading.md` §5).
+///
+/// Every `*_present` column beside a value is the panchanga blob's own
+/// rule: a value a row may not have crosses as a flag beside it, because
+/// an absent distance and a distance of zero are different facts and no
+/// sentinel tells them apart.
+#[must_use]
+#[expect(
+    clippy::too_many_lines,
+    reason = "one declaration per column of the widest section in the blob; splitting it would hide the shape it exists to show"
+)]
+fn chart_states_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "states",
+        "One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.\n\nThe **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new("sign", Scalar::U16, "The sign it stands in.").of_enum("Rashi"),
+            ColumnDef::new(
+                "house",
+                Scalar::U8,
+                "The bhava it falls in, under the chart's placement system.",
+            ),
+            ColumnDef::new("dignity", Scalar::U16, "Its dignity.").of_enum("Dignity"),
+            ColumnDef::new(
+                "natural",
+                Scalar::U16,
+                "How it stands to its dispositor by the table's own reading.",
+            )
+            .of_enum("Relationship"),
+            ColumnDef::new(
+                "temporary",
+                Scalar::U16,
+                "How it stands to its dispositor by where that body stands.",
+            )
+            .of_enum("Relationship"),
+            ColumnDef::new(
+                "compound",
+                Scalar::U16,
+                "The five-fold compound of the two.",
+            )
+            .of_enum("Relationship"),
+            ColumnDef::new(
+                "has_dispositor",
+                Scalar::U8,
+                "1 when the sign has a lord; 0 only for a body the catalogue gives no sign.",
+            ),
+            ColumnDef::new(
+                "dispositor",
+                Scalar::U16,
+                "The lord of the sign, which all three relationships are with.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new("burning", Scalar::U8, "What the Sun does to it.").of_enum("TsBurning"),
+            ColumnDef::new(
+                "has_from_sun",
+                Scalar::U8,
+                "1 when the chart carries a Sun to measure from; 0 when it does not, in which case nothing is burnt and this says why rather than claiming the sky is clear.",
+            ),
+            ColumnDef::new(
+                "from_sun_deg",
+                Scalar::F64,
+                "How far from the Sun it stands, degrees; read only when `has_from_sun`.",
+            ),
+            ColumnDef::new(
+                "has_orbs",
+                Scalar::U8,
+                "1 when the table gives this body an orb; 0 for a body that does not burn at all.",
+            ),
+            ColumnDef::new(
+                "orb_deg",
+                Scalar::F64,
+                "Combust inside this, degrees; read only when `has_orbs`.",
+            ),
+            ColumnDef::new(
+                "has_deep_orb",
+                Scalar::U8,
+                "1 when the table gives a deeper orb as well.",
+            ),
+            ColumnDef::new(
+                "deep_orb_deg",
+                Scalar::F64,
+                "Deeply combust inside this, degrees; read only when `has_deep_orb`.",
+            ),
+            ColumnDef::new("age", Scalar::U16, "Which fifth of its sign it stands in.")
+                .of_enum("AvasthaBaladi"),
+            ColumnDef::new("wakefulness", Scalar::U16, "Awake, dreaming or asleep.")
+                .of_enum("AvasthaJagradadi"),
+            ColumnDef::new(
+                "has_deeptadi",
+                Scalar::U8,
+                "1 when the SDK can decide a bright state.",
+            ),
+            ColumnDef::new(
+                "deeptadi",
+                Scalar::U16,
+                "The bright state; read only when `has_deeptadi`.",
+            )
+            .of_enum("AvasthaDeeptadi"),
+            ColumnDef::new(
+                "lajjitadi_holding",
+                Scalar::U32,
+                "The lajjitadi that hold, as a bit set: bit `n` is the member with catalogue id `n`.",
+            ),
+            ColumnDef::new(
+                "lajjitadi_ruled_out",
+                Scalar::U32,
+                "The lajjitadi that certainly do not hold, because the tradition's own necessary condition fails, as a bit set.",
+            ),
+            ColumnDef::new(
+                "lajjitadi_undecided",
+                Scalar::U32,
+                "The lajjitadi nothing decides: the necessary condition holds and what narrows it further is not in the chart. A bit set, so a caller can tell a short list from an empty one.",
+            ),
+            ColumnDef::new(
+                "has_war",
+                Scalar::U8,
+                "1 when the body is in a planetary war.",
+            ),
+            ColumnDef::new(
+                "war_opponent",
+                Scalar::U16,
+                "The other body; read only when `has_war`.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "war_won",
+                Scalar::U8,
+                "1 when this body won it; read only when `has_war`.",
+            ),
+            ColumnDef::new(
+                "war_apart_deg",
+                Scalar::F64,
+                "How far apart they stand, degrees; read only when `has_war`.",
+            ),
+            ColumnDef::new(
+                "sign_deg",
+                Scalar::F64,
+                "How near it stands to a sign edge, degrees.",
+            ),
+            ColumnDef::new(
+                "nakshatra_deg",
+                Scalar::F64,
+                "How near it stands to a nakshatra edge, degrees.",
+            ),
+            ColumnDef::new(
+                "pada_deg",
+                Scalar::F64,
+                "How near it stands to a pada edge, degrees.",
+            ),
         ],
     )
 }

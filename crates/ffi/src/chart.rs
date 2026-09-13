@@ -39,6 +39,7 @@ use teistro_core::time::UtcOffset;
 use teistro_houses::classify::Quadrant;
 use teistro_idl::blob::{ColumnData, FixedValue, Writer};
 use teistro_serial::Document;
+use teistro_state::burn::Burning;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
@@ -61,6 +62,28 @@ impl From<Reading> for TsReading {
         match reading {
             Reading::Sandhi => TsReading::Sandhi,
             Reading::Madhya => TsReading::Madhya,
+        }
+    }
+}
+
+/// How badly the Sun burns a body.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsBurning {
+    /// Far enough from the Sun to be itself.
+    None = 0,
+    /// Combust.
+    Combust = 1,
+    /// Deeply combust; only a table that gives a deeper orb reaches it.
+    Deep = 2,
+}
+
+impl From<Burning> for TsBurning {
+    fn from(burning: Burning) -> TsBurning {
+        match burning {
+            Burning::None => TsBurning::None,
+            Burning::Combust => TsBurning::Combust,
+            Burning::Deep => TsBurning::Deep,
         }
     }
 }
@@ -698,6 +721,112 @@ impl AspectColumns {
     }
 }
 
+/// What each graha is, as the section carries it.
+///
+/// One row per graha per chart and no count: a state is a reading of a
+/// placement, so there is one per placement.
+struct StateColumns {
+    /// The combustion table every `burning` was judged against, one to a
+    /// batch because it is a setting.
+    table: String,
+    rows: Vec<Vec<FixedValue>>,
+}
+
+/// A set of catalogue members as a bit set: bit `n` is the member with
+/// id `n`.
+///
+/// Six members in the only enum this is used for, so a `u32` holds any
+/// of the three lists with room to spare — and a set stays a set rather
+/// than becoming three ragged sections with three prefix sums.
+fn bits_of<M: teistro_core::catalogue::Catalogued>(members: &[M]) -> u64 {
+    members
+        .iter()
+        .fold(0_u64, |set, member| set | (1_u64 << member.id()))
+}
+
+impl StateColumns {
+    fn of(documents: &[Document]) -> StateColumns {
+        let mut columns = StateColumns {
+            table: String::new(),
+            rows: Vec::new(),
+        };
+        for document in documents {
+            let Some(states) = document.state.as_ref() else {
+                continue;
+            };
+            for state in states {
+                columns.rows.push(state_values(state));
+            }
+        }
+        if documents.iter().any(|d| d.state.is_some()) {
+            // The table is the settings', and every state in the batch
+            // was judged against the same one.
+            columns.table = String::from("settings.state.combustion_orbs");
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.rows("states", &self.rows)?;
+        writer.bytes("combustion_orbs", self.table.as_bytes())
+    }
+}
+
+/// One graha's state, in the order `states` declares its columns.
+#[must_use]
+fn state_values(state: &teistro_state::GrahaState) -> Vec<FixedValue> {
+    let flag = |yes: bool| FixedValue::from(u64::from(yes));
+    let friendship = &state.friendship;
+    let war = state.war;
+    vec![
+        u64::from(state.graha.id()).into(),
+        u64::from(state.sign.id()).into(),
+        u64::from(state.house).into(),
+        u64::from(state.dignity.id()).into(),
+        u64::from(friendship.natural.id()).into(),
+        u64::from(friendship.temporary.id()).into(),
+        u64::from(friendship.compound.id()).into(),
+        flag(friendship.dispositor.is_some()),
+        u64::from(
+            friendship
+                .dispositor
+                .map_or(0, teistro_core::catalogue::Graha::id),
+        )
+        .into(),
+        (TsBurning::from(state.combustion.burning) as u64).into(),
+        flag(state.combustion.from_sun_deg.is_some()),
+        state.combustion.from_sun_deg.unwrap_or(0.0).into(),
+        flag(state.combustion.orbs.is_some()),
+        state.combustion.orbs.map_or(0.0, |o| o.orb_deg).into(),
+        flag(state.combustion.orbs.is_some_and(|o| o.deep_deg.is_some())),
+        state
+            .combustion
+            .orbs
+            .and_then(|o| o.deep_deg)
+            .unwrap_or(0.0)
+            .into(),
+        u64::from(state.age.id()).into(),
+        u64::from(state.wakefulness.id()).into(),
+        flag(state.deeptadi.is_some()),
+        u64::from(
+            state
+                .deeptadi
+                .map_or(0, teistro_core::catalogue::AvasthaDeeptadi::id),
+        )
+        .into(),
+        bits_of(&state.lajjitadi.holding).into(),
+        bits_of(&state.lajjitadi.ruled_out).into(),
+        bits_of(&state.lajjitadi.undecided).into(),
+        flag(war.is_some()),
+        u64::from(war.map_or(0, |w| w.opponent.id())).into(),
+        flag(war.is_some_and(|w| w.is_winner)),
+        war.map_or(0.0, |w| w.apart_deg).into(),
+        state.boundaries.sign_deg.into(),
+        state.boundaries.nakshatra_deg.into(),
+        state.boundaries.pada_deg.into(),
+    ]
+}
+
 /// The twelve bhavas of each chart, as the houses service reads them.
 ///
 /// **Not ragged**, and this is the case that says why the rule is about
@@ -1086,6 +1215,7 @@ pub fn encode(
     let aspects = AspectColumns::of(documents);
     let points = PointColumns::of(documents);
     let bhavas = BhavaColumns::of(documents);
+    let states = StateColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1156,6 +1286,7 @@ pub fn encode(
         aspects.write(&mut writer)?;
         points.write(&mut writer)?;
         bhavas.write(&mut writer)?;
+        states.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

@@ -546,6 +546,151 @@ export interface ChartsBhavas {
 }
 
 /**
+ * The `states` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.
+
+The **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.
+ */
+export interface ChartsStates {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * The sign it stands in.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * The bhava it falls in, under the chart's placement system.
+   */
+  readonly house: Uint8Array;
+  /**
+   * Its dignity.
+   * The values are `Dignity` ids.
+   */
+  readonly dignity: Uint16Array;
+  /**
+   * How it stands to its dispositor by the table's own reading.
+   * The values are `Relationship` ids.
+   */
+  readonly natural: Uint16Array;
+  /**
+   * How it stands to its dispositor by where that body stands.
+   * The values are `Relationship` ids.
+   */
+  readonly temporary: Uint16Array;
+  /**
+   * The five-fold compound of the two.
+   * The values are `Relationship` ids.
+   */
+  readonly compound: Uint16Array;
+  /**
+   * 1 when the sign has a lord; 0 only for a body the catalogue gives no sign.
+   */
+  readonly hasDispositor: Uint8Array;
+  /**
+   * The lord of the sign, which all three relationships are with.
+   * The values are `Graha` ids.
+   */
+  readonly dispositor: Uint16Array;
+  /**
+   * What the Sun does to it.
+   * The values are `Burning` ids.
+   */
+  readonly burning: Uint8Array;
+  /**
+   * 1 when the chart carries a Sun to measure from; 0 when it does not, in which case nothing is burnt and this says why rather than claiming the sky is clear.
+   */
+  readonly hasFromSun: Uint8Array;
+  /**
+   * How far from the Sun it stands, degrees; read only when `has_from_sun`.
+   */
+  readonly fromSunDeg: Float64Array;
+  /**
+   * 1 when the table gives this body an orb; 0 for a body that does not burn at all.
+   */
+  readonly hasOrbs: Uint8Array;
+  /**
+   * Combust inside this, degrees; read only when `has_orbs`.
+   */
+  readonly orbDeg: Float64Array;
+  /**
+   * 1 when the table gives a deeper orb as well.
+   */
+  readonly hasDeepOrb: Uint8Array;
+  /**
+   * Deeply combust inside this, degrees; read only when `has_deep_orb`.
+   */
+  readonly deepOrbDeg: Float64Array;
+  /**
+   * Which fifth of its sign it stands in.
+   * The values are `AvasthaBaladi` ids.
+   */
+  readonly age: Uint16Array;
+  /**
+   * Awake, dreaming or asleep.
+   * The values are `AvasthaJagradadi` ids.
+   */
+  readonly wakefulness: Uint16Array;
+  /**
+   * 1 when the SDK can decide a bright state.
+   */
+  readonly hasDeeptadi: Uint8Array;
+  /**
+   * The bright state; read only when `has_deeptadi`.
+   * The values are `AvasthaDeeptadi` ids.
+   */
+  readonly deeptadi: Uint16Array;
+  /**
+   * The lajjitadi that hold, as a bit set: bit `n` is the member with catalogue id `n`.
+   */
+  readonly lajjitadiHolding: Uint32Array;
+  /**
+   * The lajjitadi that certainly do not hold, because the tradition's own necessary condition fails, as a bit set.
+   */
+  readonly lajjitadiRuledOut: Uint32Array;
+  /**
+   * The lajjitadi nothing decides: the necessary condition holds and what narrows it further is not in the chart. A bit set, so a caller can tell a short list from an empty one.
+   */
+  readonly lajjitadiUndecided: Uint32Array;
+  /**
+   * 1 when the body is in a planetary war.
+   */
+  readonly hasWar: Uint8Array;
+  /**
+   * The other body; read only when `has_war`.
+   * The values are `Graha` ids.
+   */
+  readonly warOpponent: Uint16Array;
+  /**
+   * 1 when this body won it; read only when `has_war`.
+   */
+  readonly warWon: Uint8Array;
+  /**
+   * How far apart they stand, degrees; read only when `has_war`.
+   */
+  readonly warApartDeg: Float64Array;
+  /**
+   * How near it stands to a sign edge, degrees.
+   */
+  readonly signDeg: Float64Array;
+  /**
+   * How near it stands to a nakshatra edge, degrees.
+   */
+  readonly nakshatraDeg: Float64Array;
+  /**
+   * How near it stands to a pada edge, degrees.
+   */
+  readonly padaDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -771,6 +916,16 @@ export interface Charts {
    * Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.
    */
   readonly bhavas: ChartsBhavas;
+  /**
+   * One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.
+   *
+   * The **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.
+   */
+  readonly states: ChartsStates;
+  /**
+   * UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.
+   */
+  readonly combustionOrbs: string;
 }
 
 /**

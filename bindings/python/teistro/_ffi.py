@@ -32,6 +32,7 @@ from .catalogue import (
     BalaScheme,
     Body,
     BodyClass,
+    Burning,
     Calendar,
     Centre,
     CharaKaraka,

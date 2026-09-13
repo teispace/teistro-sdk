@@ -118,8 +118,15 @@ from .catalogue import (
     Panchaka,
     Rashi,
     Tithi,
+    AvasthaBaladi,
+    AvasthaDeeptadi,
+    AvasthaJagradadi,
+    AvasthaLajjitadi,
+    Burning,
+    Dignity,
     Point,
     Quadrant,
+    Relationship,
     Vara,
     Varga,
     Strength,
@@ -210,8 +217,20 @@ __all__ = [
     "Varga",
     "DerivedPoint",
     "Drishti",
+    "AvasthaBaladi",
+    "AvasthaDeeptadi",
+    "AvasthaJagradadi",
+    "AvasthaLajjitadi",
+    "Burning",
+    "Combustion",
+    "Dignity",
+    "Friendship",
+    "GrahaState",
+    "Lajjitadi",
     "Quadrant",
+    "Relationship",
     "ServiceBhava",
+    "War",
     "EdgeDistance",
     "Strength",
     "VargaChart",
@@ -873,6 +892,7 @@ class ChartArea(_Area):
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
+        state: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
 
@@ -896,6 +916,7 @@ class ChartArea(_Area):
             aspects=aspects,
             points=points,
             houses=houses,
+            state=state,
         ).at(0)
 
     def found_many(
@@ -909,6 +930,7 @@ class ChartArea(_Area):
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
+        state: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
         crossing.
@@ -937,7 +959,8 @@ class ChartArea(_Area):
             # and one more as each crosses.
             sections=(_SECTION_ASPECTS if aspects else 0)
             | (_SECTION_POINTS if points else 0)
-            | (_SECTION_HOUSES if houses else 0),
+            | (_SECTION_HOUSES if houses else 0)
+            | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
         )
         return ChartBatch(
@@ -1220,6 +1243,9 @@ _SECTION_POINTS = 8
 #: `TS_CHART_HOUSES`, the houses service.
 _SECTION_HOUSES = 16
 
+#: `TS_CHART_STATE`, the planetary states.
+_SECTION_STATE = 2
+
 
 @dataclass(frozen=True)
 class EdgeDistance:
@@ -1234,6 +1260,114 @@ class EdgeDistance:
 
     pada_deg: float
     """To the nearer edge of its pada, degrees."""
+
+
+@dataclass(frozen=True)
+class Combustion:
+    """What the Sun does to a body."""
+
+    burning: Burning
+    """How badly it burns."""
+
+    from_sun_deg: float | None
+    """How far from the Sun it stands, degrees, or None when the chart
+    carries no Sun — in which case nothing is burnt and this says why
+    rather than claiming the sky is clear."""
+
+    orb_deg: float | None
+    """Combust inside this, degrees, or None for a body that does not
+    burn at all."""
+
+    deep_orb_deg: float | None
+    """Deeply combust inside this, degrees, where the table gives one."""
+
+
+@dataclass(frozen=True)
+class Friendship:
+    """How a body stands to its dispositor, three ways."""
+
+    natural: Relationship
+    """The table's own reading."""
+
+    temporary: Relationship
+    """Where the dispositor stands."""
+
+    compound: Relationship
+    """The five-fold compound of the two."""
+
+    dispositor: Graha | None
+    """The lord of the sign, which all three are with; None only for a
+    body the catalogue gives no sign."""
+
+
+@dataclass(frozen=True)
+class Lajjitadi:
+    """The lajjitadi a body holds, is ruled out of, and nothing decides."""
+
+    holding: list[AvasthaLajjitadi]
+    """The states that hold."""
+
+    ruled_out: list[AvasthaLajjitadi]
+    """The states that certainly do not hold."""
+
+    undecided: list[AvasthaLajjitadi]
+    """The states nothing decides: the necessary condition holds and what
+    narrows it further is not in the chart."""
+
+
+@dataclass(frozen=True)
+class War:
+    """A planetary war a body is in."""
+
+    opponent: Graha
+    """The other body."""
+
+    is_winner: bool
+    """Whether this body won it."""
+
+    apart_deg: float
+    """How far apart they stand, degrees."""
+
+
+@dataclass(frozen=True)
+class GrahaState:
+    """What one graha **is**, as opposed to where it is."""
+
+    graha: Graha
+    """Which graha."""
+
+    sign: Rashi
+    """The sign it stands in."""
+
+    house: int
+    """The bhava it falls in, under the chart's placement system."""
+
+    dignity: Dignity
+    """Its dignity."""
+
+    friendship: Friendship
+    """How it stands to its dispositor."""
+
+    combustion: Combustion
+    """What the Sun does to it."""
+
+    age: AvasthaBaladi
+    """Which fifth of its sign it stands in."""
+
+    wakefulness: AvasthaJagradadi
+    """Awake, dreaming or asleep."""
+
+    deeptadi: AvasthaDeeptadi | None
+    """The bright state, where the SDK can decide one."""
+
+    lajjitadi: Lajjitadi
+    """The lajjitadi that hold, and the ones nothing decides."""
+
+    war: War | None
+    """The war it is in, if it is in one."""
+
+    boundaries: EdgeDistance
+    """How near it stands to a classification boundary."""
 
 
 @dataclass(frozen=True)
@@ -1456,6 +1590,73 @@ class Chart:
     def hora_lord(self) -> Graha:
         """The graha that rules the hora holding the instant."""
         return Graha(self.batch.decoded.timing.hora_lord[self.index])
+
+    @property
+    def states(self) -> list[GrahaState]:
+        """What each graha **is**, as opposed to where it is — or an
+        empty list unless `state=True` asked for it.
+
+        The motion is not here: `grahas[j].retrograde` already says it.
+        """
+        decoded = self.batch.decoded
+        columns = decoded.states
+        if len(columns.graha) == 0:
+            return []
+        count = decoded.graha_count
+        base = self.index * count
+
+        def members(bits: int) -> list[AvasthaLajjitadi]:
+            # `>= 0` skips the generated `UNKNOWN = -1` sentinel every
+            # catalogue enum carries: a bit set is over the members the
+            # catalogue has, and shifting by a negative is an error
+            # rather than a miss.
+            return [one for one in AvasthaLajjitadi if one.id >= 0 and bits & (1 << one.id)]
+
+        return [
+            GrahaState(
+                graha=Graha(columns.graha[i]),
+                sign=Rashi(columns.sign[i]),
+                house=columns.house[i],
+                dignity=Dignity(columns.dignity[i]),
+                friendship=Friendship(
+                    natural=Relationship(columns.natural[i]),
+                    temporary=Relationship(columns.temporary[i]),
+                    compound=Relationship(columns.compound[i]),
+                    dispositor=Graha(columns.dispositor[i])
+                    if columns.has_dispositor[i]
+                    else None,
+                ),
+                combustion=Combustion(
+                    burning=Burning(columns.burning[i]),
+                    from_sun_deg=columns.from_sun_deg[i] if columns.has_from_sun[i] else None,
+                    orb_deg=columns.orb_deg[i] if columns.has_orbs[i] else None,
+                    deep_orb_deg=columns.deep_orb_deg[i] if columns.has_deep_orb[i] else None,
+                ),
+                age=AvasthaBaladi(columns.age[i]),
+                wakefulness=AvasthaJagradadi(columns.wakefulness[i]),
+                deeptadi=AvasthaDeeptadi(columns.deeptadi[i])
+                if columns.has_deeptadi[i]
+                else None,
+                lajjitadi=Lajjitadi(
+                    holding=members(columns.lajjitadi_holding[i]),
+                    ruled_out=members(columns.lajjitadi_ruled_out[i]),
+                    undecided=members(columns.lajjitadi_undecided[i]),
+                ),
+                war=War(
+                    opponent=Graha(columns.war_opponent[i]),
+                    is_winner=bool(columns.war_won[i]),
+                    apart_deg=columns.war_apart_deg[i],
+                )
+                if columns.has_war[i]
+                else None,
+                boundaries=EdgeDistance(
+                    sign_deg=columns.sign_deg[i],
+                    nakshatra_deg=columns.nakshatra_deg[i],
+                    pada_deg=columns.pada_deg[i],
+                ),
+            )
+            for i in range(base, base + count)
+        ]
 
     @property
     def bhavas(self) -> list[ServiceBhava]:

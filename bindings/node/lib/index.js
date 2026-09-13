@@ -37,6 +37,13 @@ import {
   NakshatraById,
   PakshaById,
   PanchakaById,
+  AvasthaBaladiById,
+  AvasthaDeeptadiById,
+  AvasthaJagradadiById,
+  AvasthaLajjitadiById,
+  BurningById,
+  DignityById,
+  RelationshipById,
   PointById,
   QuadrantById,
   RashiById,
@@ -717,6 +724,73 @@ export class Chart {
       lord: GrahaById.get(d.bhavas.lord[base + j]) ?? 'unknown',
       quadrant: QuadrantById.get(d.bhavas.quadrant[base + j]) ?? 'unknown',
     }));
+  }
+
+  /**
+   * What each graha **is**, as opposed to where it is — or an empty list
+   * unless `state: true` asked for it.
+   *
+   * One per graha, in the same order as `grahas`. The three lajjitadi
+   * lists cross as bit sets and are handed back as arrays of keys,
+   * because a set over six members is a set and not three ragged lists.
+   *
+   * The motion is not here: `grahas[j].retrograde` already says it.
+   */
+  get states() {
+    const d = this.#batch.decoded;
+    if (d.states.length === 0) return [];
+    const count = d.grahaCount;
+    const base = this.#index * count;
+    // `id >= 0` skips the generated `UNKNOWN = -1` sentinel every
+    // catalogue map carries, and `Array.from` because `Map.entries()`
+    // is an iterator: an iterator's `map` answers an iterator, and a
+    // caller wants a list.
+    const set = (bits) =>
+      Array.from(AvasthaLajjitadiById.entries())
+        .filter(([id]) => id >= 0 && (bits & (1 << id)) !== 0)
+        .map(([, key]) => key);
+    return Array.from({ length: count }, (_, j) => {
+      const i = base + j;
+      const s = d.states;
+      return {
+        graha: GrahaById.get(s.graha[i]) ?? 'unknown',
+        sign: RashiById.get(s.sign[i]) ?? 'unknown',
+        house: s.house[i],
+        dignity: DignityById.get(s.dignity[i]) ?? 'unknown',
+        friendship: {
+          natural: RelationshipById.get(s.natural[i]) ?? 'unknown',
+          temporary: RelationshipById.get(s.temporary[i]) ?? 'unknown',
+          compound: RelationshipById.get(s.compound[i]) ?? 'unknown',
+          dispositor: s.hasDispositor[i] ? (GrahaById.get(s.dispositor[i]) ?? 'unknown') : null,
+        },
+        combustion: {
+          burning: BurningById.get(s.burning[i]) ?? 'unknown',
+          fromSunDeg: s.hasFromSun[i] ? s.fromSunDeg[i] : null,
+          orbDeg: s.hasOrbs[i] ? s.orbDeg[i] : null,
+          deepOrbDeg: s.hasDeepOrb[i] ? s.deepOrbDeg[i] : null,
+        },
+        age: AvasthaBaladiById.get(s.age[i]) ?? 'unknown',
+        wakefulness: AvasthaJagradadiById.get(s.wakefulness[i]) ?? 'unknown',
+        deeptadi: s.hasDeeptadi[i] ? (AvasthaDeeptadiById.get(s.deeptadi[i]) ?? 'unknown') : null,
+        lajjitadi: {
+          holding: set(s.lajjitadiHolding[i]),
+          ruledOut: set(s.lajjitadiRuledOut[i]),
+          undecided: set(s.lajjitadiUndecided[i]),
+        },
+        war: s.hasWar[i]
+          ? {
+              opponent: GrahaById.get(s.warOpponent[i]) ?? 'unknown',
+              isWinner: s.warWon[i] !== 0,
+              apartDeg: s.warApartDeg[i],
+            }
+          : null,
+        boundaries: {
+          signDeg: s.signDeg[i],
+          nakshatraDeg: s.nakshatraDeg[i],
+          padaDeg: s.padaDeg[i],
+        },
+      };
+    });
   }
 
   get grahas() {
@@ -1534,6 +1608,9 @@ class ChartArea extends Area {
    * @param {boolean} [request.houses] whether to compute the houses
    *   service — each bhava's sign, its lord and its quadrant; false by
    *   default
+   * @param {boolean} [request.state] whether to compute what each graha
+   *   *is* — its dignity, its friendships, what the Sun does to it, its
+   *   avasthas and any war it is in; false by default
    * @returns {Charts}
    */
   foundMany(request) {
@@ -1553,7 +1630,8 @@ class ChartArea extends Area {
         sections:
           (request.aspects === true ? SECTION_ASPECTS : 0) |
           (request.points === true ? SECTION_POINTS : 0) |
-          (request.houses === true ? SECTION_HOUSES : 0),
+          (request.houses === true ? SECTION_HOUSES : 0) |
+          (request.state === true ? SECTION_STATE : 0),
         vargas: vargaKeys(request.vargas),
       }),
     );
@@ -1574,6 +1652,9 @@ const SECTION_POINTS = 8;
 
 /** `TS_CHART_HOUSES`, the houses service. */
 const SECTION_HOUSES = 16;
+
+/** `TS_CHART_STATE`, the planetary states. */
+const SECTION_STATE = 2;
 
 /**
  * The divisional charts a request asked for, checked.

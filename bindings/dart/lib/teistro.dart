@@ -605,6 +605,9 @@ const int _sectionPoints = 8;
 /// `TS_CHART_HOUSES`, the houses service.
 const int _sectionHouses = 16;
 
+/// `TS_CHART_STATE`, the planetary states.
+const int _sectionState = 2;
+
 /// `sdk.chart` — a chart founded at an instant and a place.
 final class ChartArea extends _Area {
   const ChartArea._(super.context);
@@ -629,6 +632,7 @@ final class ChartArea extends _Area {
     bool aspects = false,
     bool points = false,
     bool houses = false,
+    bool state = false,
   }) => foundMany(
     instants: <double>[instant],
     place: place,
@@ -638,6 +642,7 @@ final class ChartArea extends _Area {
     aspects: aspects,
     points: points,
     houses: houses,
+    state: state,
   ).at(0);
 
   /// Founds a chart at each of many instants, at one place, in one
@@ -660,6 +665,7 @@ final class ChartArea extends _Area {
     bool aspects = false,
     bool points = false,
     bool houses = false,
+    bool state = false,
   }) => decodeCharts(
     _context._guarded(
       () => _context._inner.chartFound(
@@ -677,7 +683,8 @@ final class ChartArea extends _Area {
           sections:
               (aspects ? _sectionAspects : 0) |
               (points ? _sectionPoints : 0) |
-              (houses ? _sectionHouses : 0),
+              (houses ? _sectionHouses : 0) |
+              (state ? _sectionState : 0),
           vargas: vargas,
         ),
       ),
@@ -1239,6 +1246,144 @@ final class EdgeDistance {
   final double padaDeg;
 }
 
+/// What the Sun does to a body.
+final class Combustion {
+  const Combustion({
+    required this.burning,
+    required this.fromSunDeg,
+    required this.orbDeg,
+    required this.deepOrbDeg,
+  });
+
+  /// How badly it burns.
+  final Burning burning;
+
+  /// How far from the Sun it stands, degrees, or null when the chart
+  /// carries no Sun — in which case nothing is burnt and this says why
+  /// rather than claiming the sky is clear.
+  final double? fromSunDeg;
+
+  /// Combust inside this, degrees, or null for a body that does not burn.
+  final double? orbDeg;
+
+  /// Deeply combust inside this, degrees, where the table gives one.
+  final double? deepOrbDeg;
+}
+
+/// How a body stands to its dispositor, three ways.
+final class Friendship {
+  const Friendship({
+    required this.natural,
+    required this.temporary,
+    required this.compound,
+    required this.dispositor,
+  });
+
+  /// The table's own reading.
+  final Relationship natural;
+
+  /// Where the dispositor stands.
+  final Relationship temporary;
+
+  /// The five-fold compound of the two.
+  final Relationship compound;
+
+  /// The lord of the sign, which all three are with; null only for a
+  /// body the catalogue gives no sign.
+  final Graha? dispositor;
+}
+
+/// The lajjitadi a body holds, is ruled out of, and nothing decides.
+final class Lajjitadi {
+  const Lajjitadi({
+    required this.holding,
+    required this.ruledOut,
+    required this.undecided,
+  });
+
+  /// The states that hold.
+  final List<AvasthaLajjitadi> holding;
+
+  /// The states that certainly do not hold.
+  final List<AvasthaLajjitadi> ruledOut;
+
+  /// The states nothing decides: the necessary condition holds and what
+  /// narrows it further is not in the chart.
+  final List<AvasthaLajjitadi> undecided;
+}
+
+/// A planetary war a body is in.
+final class War {
+  const War({
+    required this.opponent,
+    required this.isWinner,
+    required this.apartDeg,
+  });
+
+  /// The other body.
+  final Graha opponent;
+
+  /// Whether this body won it.
+  final bool isWinner;
+
+  /// How far apart they stand, degrees.
+  final double apartDeg;
+}
+
+/// What one graha **is**, as opposed to where it is.
+final class GrahaState {
+  const GrahaState({
+    required this.graha,
+    required this.sign,
+    required this.house,
+    required this.dignity,
+    required this.friendship,
+    required this.combustion,
+    required this.age,
+    required this.wakefulness,
+    required this.deeptadi,
+    required this.lajjitadi,
+    required this.war,
+    required this.boundaries,
+  });
+
+  /// Which graha.
+  final Graha graha;
+
+  /// The sign it stands in.
+  final Rashi sign;
+
+  /// The bhava it falls in, under the chart's placement system.
+  final int house;
+
+  /// Its dignity.
+  final Dignity dignity;
+
+  /// How it stands to its dispositor.
+  final Friendship friendship;
+
+  /// What the Sun does to it.
+  final Combustion combustion;
+
+  /// Which fifth of its sign it stands in.
+  final AvasthaBaladi age;
+
+  /// Awake, dreaming or asleep.
+  final AvasthaJagradadi wakefulness;
+
+  /// The bright state, where the SDK can decide one.
+  final AvasthaDeeptadi? deeptadi;
+
+  /// The lajjitadi that hold, and the ones nothing decides.
+  final Lajjitadi lajjitadi;
+
+  /// The war it is in, if it is in one.
+  final War? war;
+
+  /// How near it stands to a classification boundary.
+  final EdgeDistance boundaries;
+}
+
 /// One bhava as the houses service reads it.
 final class ServiceBhava {
   const ServiceBhava({
@@ -1467,6 +1612,71 @@ final class Chart {
 
   /// The graha that rules the hora holding the instant.
   Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+
+  /// What each graha **is**, as opposed to where it is — or an empty
+  /// list unless `state: true` asked for it.
+  ///
+  /// The motion is not here: `grahas[j].retrograde` already says it.
+  List<GrahaState> get states {
+    final st = batch.states;
+    if (st.length == 0) {
+      return const <GrahaState>[];
+    }
+    final count = batch.grahaCount;
+    final base = index * count;
+    // `id >= 0` skips the generated unknown sentinel every catalogue
+    // enum carries: a bit set is over the members the catalogue has.
+    List<AvasthaLajjitadi> set(int bits) => <AvasthaLajjitadi>[
+      for (final member in AvasthaLajjitadi.values)
+        if (member.id >= 0 && bits & (1 << member.id) != 0) member,
+    ];
+    return List<GrahaState>.generate(count, (j) {
+      final i = base + j;
+      return GrahaState(
+        graha: Graha.byId(st.graha[i]),
+        sign: Rashi.byId(st.sign[i]),
+        house: st.house[i],
+        dignity: Dignity.byId(st.dignity[i]),
+        friendship: Friendship(
+          natural: Relationship.byId(st.natural[i]),
+          temporary: Relationship.byId(st.temporary[i]),
+          compound: Relationship.byId(st.compound[i]),
+          dispositor:
+              st.hasDispositor[i] != 0 ? Graha.byId(st.dispositor[i]) : null,
+        ),
+        combustion: Combustion(
+          burning: Burning.byId(st.burning[i]),
+          fromSunDeg: st.hasFromSun[i] != 0 ? st.fromSunDeg[i] : null,
+          orbDeg: st.hasOrbs[i] != 0 ? st.orbDeg[i] : null,
+          deepOrbDeg: st.hasDeepOrb[i] != 0 ? st.deepOrbDeg[i] : null,
+        ),
+        age: AvasthaBaladi.byId(st.age[i]),
+        wakefulness: AvasthaJagradadi.byId(st.wakefulness[i]),
+        deeptadi:
+            st.hasDeeptadi[i] != 0
+                ? AvasthaDeeptadi.byId(st.deeptadi[i])
+                : null,
+        lajjitadi: Lajjitadi(
+          holding: set(st.lajjitadiHolding[i]),
+          ruledOut: set(st.lajjitadiRuledOut[i]),
+          undecided: set(st.lajjitadiUndecided[i]),
+        ),
+        war:
+            st.hasWar[i] != 0
+                ? War(
+                  opponent: Graha.byId(st.warOpponent[i]),
+                  isWinner: st.warWon[i] != 0,
+                  apartDeg: st.warApartDeg[i],
+                )
+                : null,
+        boundaries: EdgeDistance(
+          signDeg: st.signDeg[i],
+          nakshatraDeg: st.nakshatraDeg[i],
+          padaDeg: st.padaDeg[i],
+        ),
+      );
+    });
+  }
 
   /// The twelve bhavas as the houses service reads them, or an empty
   /// list unless `houses: true` asked for them.

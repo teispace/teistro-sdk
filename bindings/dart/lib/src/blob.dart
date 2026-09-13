@@ -735,6 +735,141 @@ final class ChartsBhavas {
   final int length;
 }
 
+/// The `states` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.
+///
+/// The **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.
+final class ChartsStates {
+  const ChartsStates({
+    required this.graha,
+    required this.sign,
+    required this.house,
+    required this.dignity,
+    required this.natural,
+    required this.temporary,
+    required this.compound,
+    required this.hasDispositor,
+    required this.dispositor,
+    required this.burning,
+    required this.hasFromSun,
+    required this.fromSunDeg,
+    required this.hasOrbs,
+    required this.orbDeg,
+    required this.hasDeepOrb,
+    required this.deepOrbDeg,
+    required this.age,
+    required this.wakefulness,
+    required this.hasDeeptadi,
+    required this.deeptadi,
+    required this.lajjitadiHolding,
+    required this.lajjitadiRuledOut,
+    required this.lajjitadiUndecided,
+    required this.hasWar,
+    required this.warOpponent,
+    required this.warWon,
+    required this.warApartDeg,
+    required this.signDeg,
+    required this.nakshatraDeg,
+    required this.padaDeg,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// The sign it stands in.
+  final Uint16List sign;
+
+  /// The bhava it falls in, under the chart's placement system.
+  final Uint8List house;
+
+  /// Its dignity.
+  final Uint16List dignity;
+
+  /// How it stands to its dispositor by the table's own reading.
+  final Uint16List natural;
+
+  /// How it stands to its dispositor by where that body stands.
+  final Uint16List temporary;
+
+  /// The five-fold compound of the two.
+  final Uint16List compound;
+
+  /// 1 when the sign has a lord; 0 only for a body the catalogue gives no sign.
+  final Uint8List hasDispositor;
+
+  /// The lord of the sign, which all three relationships are with.
+  final Uint16List dispositor;
+
+  /// What the Sun does to it.
+  final Uint8List burning;
+
+  /// 1 when the chart carries a Sun to measure from; 0 when it does not, in which case nothing is burnt and this says why rather than claiming the sky is clear.
+  final Uint8List hasFromSun;
+
+  /// How far from the Sun it stands, degrees; read only when `has_from_sun`.
+  final Float64List fromSunDeg;
+
+  /// 1 when the table gives this body an orb; 0 for a body that does not burn at all.
+  final Uint8List hasOrbs;
+
+  /// Combust inside this, degrees; read only when `has_orbs`.
+  final Float64List orbDeg;
+
+  /// 1 when the table gives a deeper orb as well.
+  final Uint8List hasDeepOrb;
+
+  /// Deeply combust inside this, degrees; read only when `has_deep_orb`.
+  final Float64List deepOrbDeg;
+
+  /// Which fifth of its sign it stands in.
+  final Uint16List age;
+
+  /// Awake, dreaming or asleep.
+  final Uint16List wakefulness;
+
+  /// 1 when the SDK can decide a bright state.
+  final Uint8List hasDeeptadi;
+
+  /// The bright state; read only when `has_deeptadi`.
+  final Uint16List deeptadi;
+
+  /// The lajjitadi that hold, as a bit set: bit `n` is the member with catalogue id `n`.
+  final Uint32List lajjitadiHolding;
+
+  /// The lajjitadi that certainly do not hold, because the tradition's own necessary condition fails, as a bit set.
+  final Uint32List lajjitadiRuledOut;
+
+  /// The lajjitadi nothing decides: the necessary condition holds and what narrows it further is not in the chart. A bit set, so a caller can tell a short list from an empty one.
+  final Uint32List lajjitadiUndecided;
+
+  /// 1 when the body is in a planetary war.
+  final Uint8List hasWar;
+
+  /// The other body; read only when `has_war`.
+  final Uint16List warOpponent;
+
+  /// 1 when this body won it; read only when `has_war`.
+  final Uint8List warWon;
+
+  /// How far apart they stand, degrees; read only when `has_war`.
+  final Float64List warApartDeg;
+
+  /// How near it stands to a sign edge, degrees.
+  final Float64List signDeg;
+
+  /// How near it stands to a nakshatra edge, degrees.
+  final Float64List nakshatraDeg;
+
+  /// How near it stands to a pada edge, degrees.
+  final Float64List padaDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -856,6 +991,8 @@ final class Charts {
     required this.drishtiTable,
     required this.points,
     required this.bhavas,
+    required this.states,
+    required this.combustionOrbs,
   });
 
   /// What kind of chart these are.
@@ -951,6 +1088,14 @@ final class Charts {
   /// Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes.
   final ChartsBhavas bhavas;
 
+  /// One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.
+  ///
+  /// The **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.
+  final ChartsStates states;
+
+  /// UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.
+  final String combustionOrbs;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -976,6 +1121,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atDrishtiTable = blob.section(16, 'drishti_table');
   final atPoints = blob.section(17, 'points');
   final atBhavas = blob.section(18, 'bhavas');
+  final atStates = blob.section(19, 'states');
+  final atCombustionOrbs = blob.section(20, 'combustion_orbs');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -1425,6 +1572,160 @@ Charts decodeCharts(Uint8List bytes) {
       ),
       length: atBhavas.count,
     ),
+    states: ChartsStates(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 0),
+        blob.columnOffset(atStates, 0) + atStates.count * 2,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 1),
+        blob.columnOffset(atStates, 1) + atStates.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 2),
+        blob.columnOffset(atStates, 2) + atStates.count * 1,
+      ),
+      dignity: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 3),
+        blob.columnOffset(atStates, 3) + atStates.count * 2,
+      ),
+      natural: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 4),
+        blob.columnOffset(atStates, 4) + atStates.count * 2,
+      ),
+      temporary: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 5),
+        blob.columnOffset(atStates, 5) + atStates.count * 2,
+      ),
+      compound: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 6),
+        blob.columnOffset(atStates, 6) + atStates.count * 2,
+      ),
+      hasDispositor: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 7),
+        blob.columnOffset(atStates, 7) + atStates.count * 1,
+      ),
+      dispositor: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 8),
+        blob.columnOffset(atStates, 8) + atStates.count * 2,
+      ),
+      burning: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 9),
+        blob.columnOffset(atStates, 9) + atStates.count * 1,
+      ),
+      hasFromSun: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 10),
+        blob.columnOffset(atStates, 10) + atStates.count * 1,
+      ),
+      fromSunDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 11),
+        blob.columnOffset(atStates, 11) + atStates.count * 8,
+      ),
+      hasOrbs: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 12),
+        blob.columnOffset(atStates, 12) + atStates.count * 1,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 13),
+        blob.columnOffset(atStates, 13) + atStates.count * 8,
+      ),
+      hasDeepOrb: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 14),
+        blob.columnOffset(atStates, 14) + atStates.count * 1,
+      ),
+      deepOrbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 15),
+        blob.columnOffset(atStates, 15) + atStates.count * 8,
+      ),
+      age: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 16),
+        blob.columnOffset(atStates, 16) + atStates.count * 2,
+      ),
+      wakefulness: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 17),
+        blob.columnOffset(atStates, 17) + atStates.count * 2,
+      ),
+      hasDeeptadi: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 18),
+        blob.columnOffset(atStates, 18) + atStates.count * 1,
+      ),
+      deeptadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 19),
+        blob.columnOffset(atStates, 19) + atStates.count * 2,
+      ),
+      lajjitadiHolding: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 20),
+        blob.columnOffset(atStates, 20) + atStates.count * 4,
+      ),
+      lajjitadiRuledOut: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 21),
+        blob.columnOffset(atStates, 21) + atStates.count * 4,
+      ),
+      lajjitadiUndecided: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 22),
+        blob.columnOffset(atStates, 22) + atStates.count * 4,
+      ),
+      hasWar: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 23),
+        blob.columnOffset(atStates, 23) + atStates.count * 1,
+      ),
+      warOpponent: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 24),
+        blob.columnOffset(atStates, 24) + atStates.count * 2,
+      ),
+      warWon: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 25),
+        blob.columnOffset(atStates, 25) + atStates.count * 1,
+      ),
+      warApartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 26),
+        blob.columnOffset(atStates, 26) + atStates.count * 8,
+      ),
+      signDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 27),
+        blob.columnOffset(atStates, 27) + atStates.count * 8,
+      ),
+      nakshatraDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 28),
+        blob.columnOffset(atStates, 28) + atStates.count * 8,
+      ),
+      padaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 29),
+        blob.columnOffset(atStates, 29) + atStates.count * 8,
+      ),
+      length: atStates.count,
+    ),
+    combustionOrbs: blob.text(atCombustionOrbs),
   );
 }
 

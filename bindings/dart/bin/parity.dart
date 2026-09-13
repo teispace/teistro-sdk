@@ -262,6 +262,7 @@ void main() {
     aspects: true,
     points: true,
     houses: true,
+    state: true,
   );
   put('chart-varga-count', charts.vargaCount);
   put('chart-drishti-table', charts.drishtiTable);
@@ -298,6 +299,43 @@ void main() {
     put('chart-$i-vipala', charts.timing.vipala[i]);
     put('chart-$i-hora-number', charts.timing.horaNumber[i]);
     put('chart-$i-hora-lord', chart.horaLord.fullKey);
+    final states = chart.states;
+    for (var j = 0; j < states.length; j += 1) {
+      final state = states[j];
+      final key = 'chart-$i-state-$j';
+      put(key, state.graha.fullKey);
+      put('$key-sign', state.sign.fullKey);
+      put('$key-house', state.house);
+      put('$key-dignity', state.dignity.fullKey);
+      put('$key-natural', state.friendship.natural.fullKey);
+      put('$key-compound', state.friendship.compound.fullKey);
+      put('$key-dispositor', state.friendship.dispositor?.fullKey ?? 'none');
+      put('$key-burning', state.combustion.burning.key);
+      put('$key-from-sun', state.combustion.fromSunDeg ?? 'none');
+      put('$key-orb', state.combustion.orbDeg ?? 'none');
+      put('$key-age', state.age.fullKey);
+      put('$key-wakefulness', state.wakefulness.fullKey);
+      put('$key-deeptadi', state.deeptadi?.fullKey ?? 'none');
+      put(
+        '$key-holding',
+        state.lajjitadi.holding.isEmpty
+            ? 'none'
+            : state.lajjitadi.holding.map((m) => m.fullKey).join(','),
+      );
+      put(
+        '$key-undecided',
+        state.lajjitadi.undecided.isEmpty
+            ? 'none'
+            : state.lajjitadi.undecided.map((m) => m.fullKey).join(','),
+      );
+      put(
+        '$key-war',
+        state.war == null
+            ? 'none'
+            : '${state.war!.opponent.fullKey}:${state.war!.isWinner}',
+      );
+      put('$key-sign-edge', state.boundaries.signDeg);
+    }
     for (final bhava in chart.bhavas) {
       put('chart-$i-bhava-${bhava.number}-sign', bhava.sign.fullKey);
       put('chart-$i-bhava-${bhava.number}-lord', bhava.lord.fullKey);

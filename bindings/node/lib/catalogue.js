@@ -2648,6 +2648,23 @@ export const ReadingById = new Map([
   [1, 'madhya'],
 ]);
 
+/** Every Burning by name. */
+export const Burning = Object.freeze({
+  None: 'none',
+  Combust: 'combust',
+  Deep: 'deep',
+});
+
+/**
+ * Every Burning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BurningById = new Map([
+  [0, 'none'],
+  [1, 'combust'],
+  [2, 'deep'],
+]);
+
 /** Every Quadrant by name. */
 export const Quadrant = Object.freeze({
   Kendra: 'kendra',

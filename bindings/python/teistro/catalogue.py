@@ -3395,6 +3395,19 @@ class Reading(Member):
     """From one madhya to the next: the bhava as a span between centres."""
 
 
+class Burning(Member):
+    """How badly the Sun burns a body."""
+
+    NONE = 0
+    """Far enough from the Sun to be itself."""
+
+    COMBUST = 1
+    """Combust."""
+
+    DEEP = 2
+    """Deeply combust; only a table that gives a deeper orb reaches it."""
+
+
 class Quadrant(Member):
     """Which third of the wheel a bhava stands in.
 
@@ -4810,6 +4823,11 @@ _KEYS: dict[str, dict[int, str]] = {
     "Reading": {
         0: "sandhi",
         1: "madhya",
+    },
+    "Burning": {
+        0: "none",
+        1: "combust",
+        2: "deep",
     },
     "Quadrant": {
         0: "kendra",

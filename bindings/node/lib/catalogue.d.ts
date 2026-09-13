@@ -5578,6 +5578,33 @@ export declare const Reading: {
 export declare const ReadingById: ReadonlyMap<number, Reading>;
 
 /**
+ * How badly the Sun burns a body.
+ */
+export type Burning = 'none' | 'combust' | 'deep';
+
+/** Every Burning by name; the values are the strings the union accepts. */
+export declare const Burning: {
+  /**
+   * Far enough from the Sun to be itself.
+   */
+  readonly None: 'none';
+  /**
+   * Combust.
+   */
+  readonly Combust: 'combust';
+  /**
+   * Deeply combust; only a table that gives a deeper orb reaches it.
+   */
+  readonly Deep: 'deep';
+};
+
+/**
+ * Every Burning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BurningById: ReadonlyMap<number, Burning>;
+
+/**
  * Which third of the wheel a bhava stands in.
  *
  * The houses crate's own `Quadrant`, which is not a catalogue member —

@@ -233,8 +233,8 @@ by all four runners.
    without that rule a setter and its getter want the same word and the
    crate ends up with `kind` beside `chart_kind` for no reason a reader
    can see.
-2. **The boundary**: the five sections described, encoded and gated by
-   `check-ffi`, with `cargo xtask gen ffi` writing the four decoders.
+2. ~~**The boundary**: the five sections described, encoded and gated by
+   `check-ffi`.~~ **Done — all five.**
 
    **The divisional charts have crossed**, which is the first of the
    five and the one that proves the rest. `TsChartRequest` grew
@@ -285,8 +285,30 @@ by all four runners.
    carry, so `Houses::of` takes `Defined` and the boundary would have
    nothing truer to send.
 
-   **Four bindings agree on 1 451 values**, 777 of them new and every one
-   right on its first run. The runners ask for **two** charts over
+   **And the planetary states**, the fifth and last: what each graha
+   *is* rather than where it is — its dignity, its three friendships with
+   its dispositor, what the Sun does to it and against which orbs, its
+   avasthas, and any war it is in.
+
+   Three decisions in it. The three **lajjitadi lists are bit sets**,
+   one bit per member of a six-member enum, rather than three ragged
+   sections with three counts: a set over a small closed enum is a set,
+   and making it a list would put three prefix sums in every decoder for
+   a value that fits in a byte. Every value a row may not have crosses
+   as a **flag beside it**, which is the panchanga blob's own rule —
+   an absent distance from the Sun and a distance of zero are different
+   facts. And the **motion does not cross**, because
+   `grahas.speed_deg_per_day` already carries it and retrograde is its
+   sign: §3's "describe each shape once" applies to a section that would
+   restate another's.
+
+   The bit sets found one thing worth naming: every generated catalogue
+   enum carries an `UNKNOWN = -1` sentinel, so a set built by iterating
+   the enum must skip it — Python raised `negative shift count` and the
+   other two would have missed silently.
+
+   **Four bindings agree on 1 757 values**, 1 083 of them new and every
+   one right on its first run. The runners ask for **two** charts over
    **two** instants deliberately: the layout is charts outermost, so one
    of each would pass a transposed stride; and they print **every**
    drishti rather than the count, because a count that agrees while the
@@ -304,11 +326,11 @@ by all four runners.
    option's contents where it meant to map the array's — so the varga
    list is not nullable, as `instants` is not: an empty array says
    "none" without needing one.
-3. **The ergonomic layers**, one per binding, each with its own tests.
-   Done for the divisional charts, and the pattern for the other four.
+3. ~~**The ergonomic layers**, one per binding.~~ **Done**, all four for
+   all five sections.
 4. **Parity and the examples**: the sections' values compared across four
-   runners, and a ninth example in each binding. The parity half is done
-   for the divisional charts.
+   runners — **done**, 1 757 values — and a ninth example in each
+   binding, which is what is left.
 5. **The JSON Schema emitter**, which `serial-and-the-envelope.md` §8
    says waits for a whole document to describe.
 

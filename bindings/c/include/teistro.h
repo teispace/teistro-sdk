@@ -4205,6 +4205,24 @@ typedef enum ts_reading {
 } ts_reading;
 
 /**
+ * How badly the Sun burns a body.
+ */
+typedef enum ts_burning {
+    /**
+     * Far enough from the Sun to be itself.
+     */
+    TS_BURNING_NONE = 0,
+    /**
+     * Combust.
+     */
+    TS_BURNING_COMBUST = 1,
+    /**
+     * Deeply combust; only a table that gives a deeper orb reaches it.
+     */
+    TS_BURNING_DEEP = 2,
+} ts_burning;
+
+/**
  * Which third of the wheel a bhava stands in.
  *
  * The houses crate's own `Quadrant`, which is not a catalogue member —

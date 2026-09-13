@@ -602,6 +602,110 @@ class ChartsBhavas:
 
 
 @dataclass(frozen=True)
+class ChartsStates:
+    """The `states` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.
+
+    The **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    sign: memoryview[int]
+    """The sign it stands in."""
+
+    house: memoryview[int]
+    """The bhava it falls in, under the chart's placement system."""
+
+    dignity: memoryview[int]
+    """Its dignity."""
+
+    natural: memoryview[int]
+    """How it stands to its dispositor by the table's own reading."""
+
+    temporary: memoryview[int]
+    """How it stands to its dispositor by where that body stands."""
+
+    compound: memoryview[int]
+    """The five-fold compound of the two."""
+
+    has_dispositor: memoryview[int]
+    """1 when the sign has a lord; 0 only for a body the catalogue gives no sign."""
+
+    dispositor: memoryview[int]
+    """The lord of the sign, which all three relationships are with."""
+
+    burning: memoryview[int]
+    """What the Sun does to it."""
+
+    has_from_sun: memoryview[int]
+    """1 when the chart carries a Sun to measure from; 0 when it does not, in which case nothing is burnt and this says why rather than claiming the sky is clear."""
+
+    from_sun_deg: memoryview[float]
+    """How far from the Sun it stands, degrees; read only when `has_from_sun`."""
+
+    has_orbs: memoryview[int]
+    """1 when the table gives this body an orb; 0 for a body that does not burn at all."""
+
+    orb_deg: memoryview[float]
+    """Combust inside this, degrees; read only when `has_orbs`."""
+
+    has_deep_orb: memoryview[int]
+    """1 when the table gives a deeper orb as well."""
+
+    deep_orb_deg: memoryview[float]
+    """Deeply combust inside this, degrees; read only when `has_deep_orb`."""
+
+    age: memoryview[int]
+    """Which fifth of its sign it stands in."""
+
+    wakefulness: memoryview[int]
+    """Awake, dreaming or asleep."""
+
+    has_deeptadi: memoryview[int]
+    """1 when the SDK can decide a bright state."""
+
+    deeptadi: memoryview[int]
+    """The bright state; read only when `has_deeptadi`."""
+
+    lajjitadi_holding: memoryview[int]
+    """The lajjitadi that hold, as a bit set: bit `n` is the member with catalogue id `n`."""
+
+    lajjitadi_ruled_out: memoryview[int]
+    """The lajjitadi that certainly do not hold, because the tradition's own necessary condition fails, as a bit set."""
+
+    lajjitadi_undecided: memoryview[int]
+    """The lajjitadi nothing decides: the necessary condition holds and what narrows it further is not in the chart. A bit set, so a caller can tell a short list from an empty one."""
+
+    has_war: memoryview[int]
+    """1 when the body is in a planetary war."""
+
+    war_opponent: memoryview[int]
+    """The other body; read only when `has_war`."""
+
+    war_won: memoryview[int]
+    """1 when this body won it; read only when `has_war`."""
+
+    war_apart_deg: memoryview[float]
+    """How far apart they stand, degrees; read only when `has_war`."""
+
+    sign_deg: memoryview[float]
+    """How near it stands to a sign edge, degrees."""
+
+    nakshatra_deg: memoryview[float]
+    """How near it stands to a nakshatra edge, degrees."""
+
+    pada_deg: memoryview[float]
+    """How near it stands to a pada edge, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -767,6 +871,15 @@ class Charts:
     bhavas: ChartsBhavas
     """Twelve rows per chart, charts outermost: row `i * 12 + j` is chart `i`, bhava `j + 1`. Empty when the houses were not asked for, which is unambiguous because a chart that has bhavas has twelve. The madhya and the sandhi are in `houses` and `chalit`; this is what only the houses service computes."""
 
+    states: ChartsStates
+    """One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.
+
+    The **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.
+    """
+
+    combustion_orbs: str
+    """UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -794,6 +907,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_drishti_table = blob.section(16, "drishti_table")
     at_points = blob.section(17, "points")
     at_bhavas = blob.section(18, "bhavas")
+    at_states = blob.section(19, "states")
+    at_combustion_orbs = blob.section(20, "combustion_orbs")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -991,6 +1106,66 @@ def decode_charts(raw: bytes) -> Charts:
             quadrant=blob.column(at_bhavas, 2, 1, at_bhavas.count).cast("B"),
             length=at_bhavas.count,
         ),
+        states=ChartsStates(
+            graha=blob.column(at_states, 0, 2, at_states.count).cast("H"),
+            sign=blob.column(at_states, 1, 2, at_states.count).cast("H"),
+            house=blob.column(at_states, 2, 1, at_states.count).cast("B"),
+            dignity=blob.column(at_states, 3, 2, at_states.count).cast("H"),
+            natural=blob.column(at_states, 4, 2, at_states.count).cast("H"),
+            temporary=blob.column(at_states, 5, 2, at_states.count).cast("H"),
+            compound=blob.column(at_states, 6, 2, at_states.count).cast("H"),
+            has_dispositor=blob.column(
+                at_states, 7, 1, at_states.count
+            ).cast("B"),
+            dispositor=blob.column(at_states, 8, 2, at_states.count).cast("H"),
+            burning=blob.column(at_states, 9, 1, at_states.count).cast("B"),
+            has_from_sun=blob.column(
+                at_states, 10, 1, at_states.count
+            ).cast("B"),
+            from_sun_deg=blob.column(
+                at_states, 11, 8, at_states.count
+            ).cast("d"),
+            has_orbs=blob.column(at_states, 12, 1, at_states.count).cast("B"),
+            orb_deg=blob.column(at_states, 13, 8, at_states.count).cast("d"),
+            has_deep_orb=blob.column(
+                at_states, 14, 1, at_states.count
+            ).cast("B"),
+            deep_orb_deg=blob.column(
+                at_states, 15, 8, at_states.count
+            ).cast("d"),
+            age=blob.column(at_states, 16, 2, at_states.count).cast("H"),
+            wakefulness=blob.column(
+                at_states, 17, 2, at_states.count
+            ).cast("H"),
+            has_deeptadi=blob.column(
+                at_states, 18, 1, at_states.count
+            ).cast("B"),
+            deeptadi=blob.column(at_states, 19, 2, at_states.count).cast("H"),
+            lajjitadi_holding=blob.column(
+                at_states, 20, 4, at_states.count
+            ).cast("I"),
+            lajjitadi_ruled_out=blob.column(
+                at_states, 21, 4, at_states.count
+            ).cast("I"),
+            lajjitadi_undecided=blob.column(
+                at_states, 22, 4, at_states.count
+            ).cast("I"),
+            has_war=blob.column(at_states, 23, 1, at_states.count).cast("B"),
+            war_opponent=blob.column(
+                at_states, 24, 2, at_states.count
+            ).cast("H"),
+            war_won=blob.column(at_states, 25, 1, at_states.count).cast("B"),
+            war_apart_deg=blob.column(
+                at_states, 26, 8, at_states.count
+            ).cast("d"),
+            sign_deg=blob.column(at_states, 27, 8, at_states.count).cast("d"),
+            nakshatra_deg=blob.column(
+                at_states, 28, 8, at_states.count
+            ).cast("d"),
+            pada_deg=blob.column(at_states, 29, 8, at_states.count).cast("d"),
+            length=at_states.count,
+        ),
+        combustion_orbs=blob.text(at_combustion_orbs),
     )
 
 

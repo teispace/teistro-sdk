@@ -6018,6 +6018,29 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsBurning",
+      "doc": "How badly the Sun burns a body.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "None",
+          "value": 0,
+          "doc": "Far enough from the Sun to be itself."
+        },
+        {
+          "name": "Combust",
+          "value": 1,
+          "doc": "Combust."
+        },
+        {
+          "name": "Deep",
+          "value": 2,
+          "doc": "Deeply combust; only a table that gives a deeper orb reaches it."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsQuadrant",
       "doc": "Which third of the wheel a bhava stands in.\n\nThe houses crate's own `Quadrant`, which is not a catalogue member —\nit is a classification of a number rather than a thing with a key —\nso it crosses as this boundary's own enum, as `TsStrength` does.",
       "repr": "u8",
@@ -12733,6 +12756,183 @@
               "enum": "TsQuadrant"
             }
           ]
+        },
+        {
+          "id": 19,
+          "name": "states",
+          "doc": "One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, in the `grahas` section's own order. Empty when the states were not asked for, which is unambiguous because a chart that has states has one per graha.\n\nThe **motion** is not here: `grahas.speed_deg_per_day` already carries it and retrograde is its sign, and describing a shape twice is what `03-design/chart-at-the-boundary.md` §3 exists to prevent.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it stands in.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The bhava it falls in, under the chart's placement system."
+            },
+            {
+              "name": "dignity",
+              "scalar": "u16",
+              "doc": "Its dignity.",
+              "enum": "Dignity"
+            },
+            {
+              "name": "natural",
+              "scalar": "u16",
+              "doc": "How it stands to its dispositor by the table's own reading.",
+              "enum": "Relationship"
+            },
+            {
+              "name": "temporary",
+              "scalar": "u16",
+              "doc": "How it stands to its dispositor by where that body stands.",
+              "enum": "Relationship"
+            },
+            {
+              "name": "compound",
+              "scalar": "u16",
+              "doc": "The five-fold compound of the two.",
+              "enum": "Relationship"
+            },
+            {
+              "name": "has_dispositor",
+              "scalar": "u8",
+              "doc": "1 when the sign has a lord; 0 only for a body the catalogue gives no sign."
+            },
+            {
+              "name": "dispositor",
+              "scalar": "u16",
+              "doc": "The lord of the sign, which all three relationships are with.",
+              "enum": "Graha"
+            },
+            {
+              "name": "burning",
+              "scalar": "u8",
+              "doc": "What the Sun does to it.",
+              "enum": "TsBurning"
+            },
+            {
+              "name": "has_from_sun",
+              "scalar": "u8",
+              "doc": "1 when the chart carries a Sun to measure from; 0 when it does not, in which case nothing is burnt and this says why rather than claiming the sky is clear."
+            },
+            {
+              "name": "from_sun_deg",
+              "scalar": "f64",
+              "doc": "How far from the Sun it stands, degrees; read only when `has_from_sun`."
+            },
+            {
+              "name": "has_orbs",
+              "scalar": "u8",
+              "doc": "1 when the table gives this body an orb; 0 for a body that does not burn at all."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "Combust inside this, degrees; read only when `has_orbs`."
+            },
+            {
+              "name": "has_deep_orb",
+              "scalar": "u8",
+              "doc": "1 when the table gives a deeper orb as well."
+            },
+            {
+              "name": "deep_orb_deg",
+              "scalar": "f64",
+              "doc": "Deeply combust inside this, degrees; read only when `has_deep_orb`."
+            },
+            {
+              "name": "age",
+              "scalar": "u16",
+              "doc": "Which fifth of its sign it stands in.",
+              "enum": "AvasthaBaladi"
+            },
+            {
+              "name": "wakefulness",
+              "scalar": "u16",
+              "doc": "Awake, dreaming or asleep.",
+              "enum": "AvasthaJagradadi"
+            },
+            {
+              "name": "has_deeptadi",
+              "scalar": "u8",
+              "doc": "1 when the SDK can decide a bright state."
+            },
+            {
+              "name": "deeptadi",
+              "scalar": "u16",
+              "doc": "The bright state; read only when `has_deeptadi`.",
+              "enum": "AvasthaDeeptadi"
+            },
+            {
+              "name": "lajjitadi_holding",
+              "scalar": "u32",
+              "doc": "The lajjitadi that hold, as a bit set: bit `n` is the member with catalogue id `n`."
+            },
+            {
+              "name": "lajjitadi_ruled_out",
+              "scalar": "u32",
+              "doc": "The lajjitadi that certainly do not hold, because the tradition's own necessary condition fails, as a bit set."
+            },
+            {
+              "name": "lajjitadi_undecided",
+              "scalar": "u32",
+              "doc": "The lajjitadi nothing decides: the necessary condition holds and what narrows it further is not in the chart. A bit set, so a caller can tell a short list from an empty one."
+            },
+            {
+              "name": "has_war",
+              "scalar": "u8",
+              "doc": "1 when the body is in a planetary war."
+            },
+            {
+              "name": "war_opponent",
+              "scalar": "u16",
+              "doc": "The other body; read only when `has_war`.",
+              "enum": "Graha"
+            },
+            {
+              "name": "war_won",
+              "scalar": "u8",
+              "doc": "1 when this body won it; read only when `has_war`."
+            },
+            {
+              "name": "war_apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart they stand, degrees; read only when `has_war`."
+            },
+            {
+              "name": "sign_deg",
+              "scalar": "f64",
+              "doc": "How near it stands to a sign edge, degrees."
+            },
+            {
+              "name": "nakshatra_deg",
+              "scalar": "f64",
+              "doc": "How near it stands to a nakshatra edge, degrees."
+            },
+            {
+              "name": "pada_deg",
+              "scalar": "f64",
+              "doc": "How near it stands to a pada edge, degrees."
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "name": "combustion_orbs",
+          "doc": "UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.",
+          "kind": "bytes",
+          "fields": []
         }
       ]
     },

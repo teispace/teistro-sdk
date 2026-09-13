@@ -773,7 +773,8 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         .with_vargas([Varga::D9, Varga::D10])
         .with_aspects()
         .with_points()
-        .with_houses();
+        .with_houses()
+        .with_state();
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -796,6 +797,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     );
     for (index, document) in read.value.iter().enumerate() {
         one_varga_chart(report, index, document);
+        the_states(report, index, document);
         the_bhavas(report, index, document);
         the_points(report, index, document);
         the_drishti(report, index, document);
@@ -911,6 +913,100 @@ fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Docume
             put(report, &row("-part"), placed.at.part.to_string());
             put(report, &row("-sign"), placed.at.sign.full_key().to_owned());
         }
+    }
+}
+
+/// One chart's planetary states, as the report prints them.
+fn the_states(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(states) = document.state.as_ref() else {
+        return;
+    };
+    let members = |set: &[teistro::catalogue::AvasthaLajjitadi]| {
+        if set.is_empty() {
+            String::from("none")
+        } else {
+            set.iter()
+                .map(|m| m.full_key().to_owned())
+                .collect::<Vec<_>>()
+                .join(",")
+        }
+    };
+    let or_none = |value: Option<f64>| value.map_or_else(|| String::from("none"), number);
+    for (at, state) in states.iter().enumerate() {
+        let key = |what: &str| format!("chart-{index}-state-{at}{what}");
+        put(report, &key(""), state.graha.full_key().to_owned());
+        put(report, &key("-sign"), state.sign.full_key().to_owned());
+        put(report, &key("-house"), state.house.to_string());
+        put(
+            report,
+            &key("-dignity"),
+            state.dignity.full_key().to_owned(),
+        );
+        put(
+            report,
+            &key("-natural"),
+            state.friendship.natural.full_key().to_owned(),
+        );
+        put(
+            report,
+            &key("-compound"),
+            state.friendship.compound.full_key().to_owned(),
+        );
+        put(
+            report,
+            &key("-dispositor"),
+            state
+                .friendship
+                .dispositor
+                .map_or_else(|| String::from("none"), |g| g.full_key().to_owned()),
+        );
+        put(
+            report,
+            &key("-burning"),
+            kebab(&format!("{:?}", state.combustion.burning)),
+        );
+        put(
+            report,
+            &key("-from-sun"),
+            or_none(state.combustion.from_sun_deg),
+        );
+        put(
+            report,
+            &key("-orb"),
+            or_none(state.combustion.orbs.map(|o| o.orb_deg)),
+        );
+        put(report, &key("-age"), state.age.full_key().to_owned());
+        put(
+            report,
+            &key("-wakefulness"),
+            state.wakefulness.full_key().to_owned(),
+        );
+        put(
+            report,
+            &key("-deeptadi"),
+            state
+                .deeptadi
+                .map_or_else(|| String::from("none"), |d| d.full_key().to_owned()),
+        );
+        put(report, &key("-holding"), members(&state.lajjitadi.holding));
+        put(
+            report,
+            &key("-undecided"),
+            members(&state.lajjitadi.undecided),
+        );
+        put(
+            report,
+            &key("-war"),
+            state.war.map_or_else(
+                || String::from("none"),
+                |w| format!("{}:{}", w.opponent.full_key(), w.is_winner),
+            ),
+        );
+        put(
+            report,
+            &key("-sign-edge"),
+            number(state.boundaries.sign_deg),
+        );
     }
 }
 

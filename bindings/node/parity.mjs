@@ -231,6 +231,7 @@ const charts = geo.chart.foundMany({
   aspects: true,
   points: true,
   houses: true,
+  state: true,
 });
 put('chart-varga-count', charts.vargaCount);
 put('chart-drishti-table', charts.drishtiTable);
@@ -261,6 +262,26 @@ for (const chart of charts) {
   put(`chart-${i}-vipala`, chart.timing.vipala);
   put(`chart-${i}-hora-number`, chart.timing.horaNumber);
   put(`chart-${i}-hora-lord`, chart.timing.horaLord);
+  chart.states.forEach((state, j) => {
+    const key = `chart-${i}-state-${j}`;
+    put(key, state.graha);
+    put(`${key}-sign`, state.sign);
+    put(`${key}-house`, state.house);
+    put(`${key}-dignity`, state.dignity);
+    put(`${key}-natural`, state.friendship.natural);
+    put(`${key}-compound`, state.friendship.compound);
+    put(`${key}-dispositor`, state.friendship.dispositor ?? 'none');
+    put(`${key}-burning`, state.combustion.burning);
+    put(`${key}-from-sun`, state.combustion.fromSunDeg ?? 'none');
+    put(`${key}-orb`, state.combustion.orbDeg ?? 'none');
+    put(`${key}-age`, state.age);
+    put(`${key}-wakefulness`, state.wakefulness);
+    put(`${key}-deeptadi`, state.deeptadi ?? 'none');
+    put(`${key}-holding`, state.lajjitadi.holding.join(',') || 'none');
+    put(`${key}-undecided`, state.lajjitadi.undecided.join(',') || 'none');
+    put(`${key}-war`, state.war ? `${state.war.opponent}:${state.war.isWinner}` : 'none');
+    put(`${key}-sign-edge`, state.boundaries.signDeg);
+  });
   chart.bhavas.forEach((bhava) => {
     put(`chart-${i}-bhava-${bhava.number}-sign`, bhava.sign);
     put(`chart-${i}-bhava-${bhava.number}-lord`, bhava.lord);
