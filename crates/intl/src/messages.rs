@@ -776,8 +776,24 @@ pub mod sdk {
         pub mod avastha_baladi {
         }
 
+        /// The `avastha_deeptadi` group.
+        pub mod avastha_deeptadi {
+        }
+
+        /// The `avastha_jagradadi` group.
+        pub mod avastha_jagradadi {
+        }
+
+        /// The `avastha_lajjitadi` group.
+        pub mod avastha_lajjitadi {
+        }
+
         /// The `ayana` group.
         pub mod ayana {
+        }
+
+        /// The `ayanamsha` group.
+        pub mod ayanamsha {
         }
 
         /// The `chara_karaka` group.
@@ -796,6 +812,10 @@ pub mod sdk {
         pub mod dignity {
         }
 
+        /// The `direction` group.
+        pub mod direction {
+        }
+
         /// The `era` group.
         pub mod era {
         }
@@ -808,12 +828,20 @@ pub mod sdk {
         pub mod graha {
         }
 
+        /// The `house_system` group.
+        pub mod house_system {
+        }
+
         /// The `kaala` group.
         pub mod kaala {
         }
 
         /// The `karana` group.
         pub mod karana {
+        }
+
+        /// The `masa` group.
+        pub mod masa {
         }
 
         /// The `muhurta_yoga` group.

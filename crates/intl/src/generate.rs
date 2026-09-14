@@ -42,6 +42,19 @@ pub struct MessageModel {
     pub rich: bool,
 }
 
+/// The forms a binding types as always present: a record that lacks one
+/// renders it as an empty string.
+///
+/// **Declared, not inferred.** The set used to be whatever forms every
+/// base-locale record happened to carry, so a data change could change a
+/// public type: importing ayanamshas whose Western names have no Sanskrit
+/// transliteration made `iast` optional, which turned Dart's `entity.iast`
+/// nullable and broke an example that pads it
+/// (`docs/03-design/entity-names.md` §3). The bindings' tests already held
+/// `iast` to always being a string; this is that promise, written where
+/// the generators read it.
+pub const GUARANTEED_FORMS: [&str; 3] = [crate::source::NAME_FORM, "prose", "iast"];
+
 /// What the generators emit from.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Model {
@@ -51,8 +64,9 @@ pub struct Model {
     pub contexts: BTreeMap<String, Vec<String>>,
     /// Entity kinds with their bare keys, in source order.
     pub kinds: BTreeMap<String, Vec<String>>,
-    /// The forms every entity of the base locale has, and the forms only
-    /// some have.
+    /// The forms every binding types as always present ([`GUARANTEED_FORMS`],
+    /// an empty string when a record lacks one), and the other forms the base
+    /// locale's records carry.
     pub forms: (BTreeSet<String>, BTreeSet<String>),
     /// The accessor tree, rooted at the first namespace segments.
     pub root: Group,
@@ -72,7 +86,6 @@ impl Model {
             contexts: base.meta.contexts.clone(),
             ..Model::default()
         };
-        let mut common: Option<BTreeSet<String>> = None;
         let mut all: BTreeSet<String> = BTreeSet::new();
         for (namespace, ns) in &base.namespaces {
             for (key, entry) in ns.in_source_order() {
@@ -98,20 +111,19 @@ impl Model {
                                     .push(bare.to_string());
                             }
                         }
-                        let forms: BTreeSet<String> = entity.forms.keys().cloned().collect();
-                        all.extend(forms.iter().cloned());
-                        common = Some(match common.take() {
-                            Some(c) => c.intersection(&forms).cloned().collect(),
-                            None => forms,
-                        });
+                        all.extend(entity.forms.keys().cloned());
                         Node::Entity(key.clone())
                     }
                 };
                 insert(&mut model.root, &full, node);
             }
         }
-        let common = common.unwrap_or_default();
-        model.forms = (common.clone(), all.difference(&common).cloned().collect());
+        let guaranteed: BTreeSet<String> =
+            GUARANTEED_FORMS.iter().map(|f| (*f).to_owned()).collect();
+        model.forms = (
+            guaranteed.clone(),
+            all.difference(&guaranteed).cloned().collect(),
+        );
         Ok(model)
     }
 }
@@ -1128,10 +1140,15 @@ mod tests {
         );
         assert!(dart.contains("enum NakshatraKey {\n  ashwini('nakshatra.ASHWINI')"));
         assert!(dart.contains("SdkReasonStrength get strength"));
-        // Every record has a name and a prose form; the short form and the
-        // transliteration are the records' own where the sources have them.
-        assert!(model.forms.0.contains("name") && model.forms.0.contains("prose"));
+        // A name, a prose form and a transliteration are always typed as
+        // present, whether or not every record carries them; the short form
+        // is a record's own where its source has one.
+        assert_eq!(
+            model.forms.0,
+            GUARANTEED_FORMS.iter().map(|f| (*f).to_owned()).collect()
+        );
         assert!(model.forms.1.contains("short"), "{:?}", model.forms.1);
+        assert!(!model.forms.1.contains("iast"), "{:?}", model.forms.1);
         assert!(ts.contains("export type TithiKey = 'tithi.SHUKLA_PRATIPADA'"));
         assert!(dart.contains("enum SamvatsaraKey {"));
     }

@@ -1,0 +1,142 @@
+{
+  "house_system.PLACIDUS": {
+    "name": "Placidus",
+    "prose": "Placidus"
+  },
+  "house_system.KOCH": {
+    "name": "Koch (Birthplace)",
+    "prose": "Koch (Birthplace)"
+  },
+  "house_system.REGIOMONTANUS": {
+    "name": "Regiomontanus",
+    "prose": "Regiomontanus"
+  },
+  "house_system.CAMPANUS": {
+    "name": "Campanus",
+    "prose": "Campanus"
+  },
+  "house_system.ALCABITIUS": {
+    "name": "Alcabitius",
+    "prose": "Alcabitius"
+  },
+  "house_system.PORPHYRY": {
+    "name": "Porphyry",
+    "prose": "Porphyry"
+  },
+  "house_system.TOPOCENTRIC": {
+    "name": "Topocentric (Polich-Page)",
+    "prose": "Topocentric (Polich-Page)"
+  },
+  "house_system.MORINUS": {
+    "name": "Morinus",
+    "prose": "Morinus"
+  },
+  "house_system.VEHLOW": {
+    "name": "Vehlow Equal",
+    "prose": "Vehlow Equal"
+  },
+  "house_system.CARTER": {
+    "name": "Carter Poli-Equatorial",
+    "prose": "Carter Poli-Equatorial"
+  },
+  "house_system.SUNSHINE": {
+    "name": "Sunshine (Makransky)",
+    "prose": "Sunshine (Makransky)"
+  },
+  "house_system.PULLEN_SD": {
+    "name": "Pullen SD (Sinusoidal Delta)",
+    "prose": "Pullen SD (Sinusoidal Delta)"
+  },
+  "house_system.PULLEN_SR": {
+    "name": "Pullen SR (Sinusoidal Ratio)",
+    "prose": "Pullen SR (Sinusoidal Ratio)"
+  },
+  "house_system.KRUSINSKI": {
+    "name": "Krusinski-Pisa-Goelzer",
+    "prose": "Krusinski-Pisa-Goelzer"
+  },
+  "ayanamsha.FAGAN_BRADLEY": {
+    "name": "Fagan-Bradley",
+    "prose": "Fagan-Bradley"
+  },
+  "ayanamsha.DELUCE": {
+    "name": "De Luce",
+    "prose": "De Luce"
+  },
+  "ayanamsha.RAMAN": {
+    "name": "B. V. Raman",
+    "prose": "B. V. Raman"
+  },
+  "ayanamsha.DJWHAL_KHUL": {
+    "name": "Djwhal Khul",
+    "prose": "Djwhal Khul"
+  },
+  "ayanamsha.JN_BHASIN": {
+    "name": "J. N. Bhasin",
+    "prose": "J. N. Bhasin"
+  },
+  "ayanamsha.BABYL_KUGLER1": {
+    "name": "Babylonian (Kugler 1)",
+    "prose": "Babylonian (Kugler 1)"
+  },
+  "ayanamsha.BABYL_KUGLER2": {
+    "name": "Babylonian (Kugler 2)",
+    "prose": "Babylonian (Kugler 2)"
+  },
+  "ayanamsha.BABYL_KUGLER3": {
+    "name": "Babylonian (Kugler 3)",
+    "prose": "Babylonian (Kugler 3)"
+  },
+  "ayanamsha.BABYL_HUBER": {
+    "name": "Babylonian (Huber)",
+    "prose": "Babylonian (Huber)"
+  },
+  "ayanamsha.BABYL_ETPSC": {
+    "name": "Babylonian (Eta Piscium)",
+    "prose": "Babylonian (Eta Piscium)"
+  },
+  "ayanamsha.HIPPARCHOS": {
+    "name": "Hipparchos",
+    "prose": "Hipparchos"
+  },
+  "ayanamsha.SASSANIAN": {
+    "name": "Sassanian",
+    "prose": "Sassanian"
+  },
+  "ayanamsha.TRUE_CHITRA": {
+    "name": "True Chitra (Spica)",
+    "prose": "True Chitra (Spica)"
+  },
+  "ayanamsha.GALCENT_RGILBRAND": {
+    "name": "Galactic Centre (Gil Brand)",
+    "prose": "Galactic Centre (Gil Brand)"
+  },
+  "ayanamsha.GALALIGN_MARDYKS": {
+    "name": "Galactic Alignment (Mardyks)",
+    "prose": "Galactic Alignment (Mardyks)"
+  },
+  "ayanamsha.GALCENT_MULA_WILHELM": {
+    "name": "Galactic Centre in Mula (Wilhelm)",
+    "prose": "Galactic Centre in Mula (Wilhelm)"
+  },
+  "ayanamsha.BABYL_BRITTON": {
+    "name": "Babylonian (Britton)",
+    "prose": "Babylonian (Britton)"
+  },
+  "ayanamsha.TRUE_SHEORAN": {
+    "name": "True Sheoran",
+    "prose": "True Sheoran"
+  },
+  "ayanamsha.GALCENT_COCHRANE": {
+    "name": "Galactic Centre (Cochrane)",
+    "prose": "Galactic Centre (Cochrane)"
+  },
+  "ayanamsha.GALEQU_FIORENZA": {
+    "name": "Galactic Equator (Fiorenza)",
+    "prose": "Galactic Equator (Fiorenza)"
+  },
+  "ayanamsha.VALENS_MOON": {
+    "name": "Vettius Valens (Moon)",
+    "prose": "Vettius Valens (Moon)"
+  }
+}

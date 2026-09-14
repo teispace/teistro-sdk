@@ -85,7 +85,8 @@
         "VRIDDHA",
         "MRITA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "avastha_baladi"
     },
     "AvasthaDeeptadi": {
       "description": "A key of the `avastha_deeptadi` catalogue.",
@@ -100,7 +101,8 @@
         "KHALA",
         "KOPA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "avastha_deeptadi"
     },
     "AvasthaJagradadi": {
       "description": "A key of the `avastha_jagradadi` catalogue.",
@@ -109,7 +111,8 @@
         "SWAPNA",
         "SUSHUPTI"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "avastha_jagradadi"
     },
     "AvasthaLajjitadi": {
       "description": "A key of the `avastha_lajjitadi` catalogue.",
@@ -121,7 +124,8 @@
         "MUDITA",
         "KSHOBHITA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "avastha_lajjitadi"
     },
     "Axis": {
       "description": "Which chart the grahas are read in, and which the lagna is.",
@@ -147,7 +151,8 @@
         "UTTARAYANA",
         "DAKSHINAYANA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "ayana"
     },
     "Ayanamsha": {
       "description": "A key of the `ayanamsha` catalogue.",
@@ -200,7 +205,8 @@
         "KRISHNAMURTI_VP291",
         "LAHIRI_ICRC"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "ayanamsha"
     },
     "AyanamshaChoice": {
       "description": "Which ayanamsha: a catalogued one, or a custom definition.",
@@ -451,7 +457,8 @@
         "BIKRAM_SAMBAT",
         "INDIAN_LUNISOLAR"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "calendar"
     },
     "CalendarDate": {
       "description": "A date in a calendar. Years are astronomical (1 BCE is 0); an era is attached for presentation only.",
@@ -750,7 +757,8 @@
         "RELOCATED",
         "COMPOSITE"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "chart_kind"
     },
     "ChartZodiac": {
       "description": "The zodiac of one chart: what to ask the provider for, and how far to shift what comes back.",
@@ -793,7 +801,8 @@
         "SHUBHA",
         "ROG"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "choghadiya"
     },
     "Classifier": {
       "description": "How a sign is sorted into groups, each with its own rule.",
@@ -1051,7 +1060,8 @@
         "DEBILITATED",
         "DEEP_DEBILITATED"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "dignity"
     },
     "Direction": {
       "description": "A key of the `direction` catalogue.",
@@ -1065,7 +1075,8 @@
         "SOUTHEAST",
         "SOUTHWEST"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "direction"
     },
     "Document": {
       "description": "One chart, with whichever of the layer's readings were asked for.",
@@ -1210,7 +1221,8 @@
         "COMMON_ERA",
         "BEFORE_COMMON_ERA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "era"
     },
     "EraNumber": {
       "description": "A year in an era, for presentation.",
@@ -1379,7 +1391,8 @@
         "NEPTUNE",
         "PLUTO"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "graha"
     },
     "GrahaPlacement": {
       "description": "Where one graha stands in a divisional chart.",
@@ -1635,7 +1648,8 @@
         "KRUSINSKI",
         "APC"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "house_system"
     },
     "Houses": {
       "description": "The houses of one founded chart, under both readings.",
@@ -1732,7 +1746,8 @@
         "YAMAGHANDA",
         "GULIKA_KAALA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "kaala"
     },
     "Kaalas": {
       "description": "One inauspicious eighth of the daylight.",
@@ -1767,7 +1782,8 @@
         "NAGA",
         "KIMSTUGHNA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "karana"
     },
     "KaranaSpan": {
       "description": "One member of a limb, and when it ran.",
@@ -2016,7 +2032,8 @@
         "MAGHA",
         "PHALGUNA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "masa"
     },
     "MonthDay": {
       "description": "A month and a day inside a year, for a divergence report.",
@@ -2127,7 +2144,8 @@
         "DWIPUSHKAR",
         "TRIPUSHKAR"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "muhurta_yoga"
     },
     "Muhurtas": {
       "description": "The thirty muhurtas of a day, with the two that have names.",
@@ -2211,7 +2229,8 @@
         "UTTARA_BHADRAPADA",
         "REVATI"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "nakshatra"
     },
     "NakshatraSpan": {
       "description": "One member of a limb, and when it ran.",
@@ -2349,7 +2368,8 @@
         "SHUKLA",
         "KRISHNA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "paksha"
     },
     "Panchaka": {
       "description": "A key of the `panchaka` catalogue.",
@@ -2360,7 +2380,8 @@
         "CHORA",
         "ROGA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "panchaka"
     },
     "PanchakaSpan": {
       "description": "One member of a limb, and when it ran.",
@@ -2622,7 +2643,8 @@
         "A11",
         "A12"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "point"
     },
     "Points": {
       "description": "Every derived point the SDK can compute for one founded chart.",
@@ -2905,7 +2927,8 @@
         "AQUARIUS",
         "PISCES"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "rashi"
     },
     "RashiSpan": {
       "description": "One member of a limb, and when it ran.",
@@ -2954,7 +2977,8 @@
         "ENEMY",
         "GREAT_ENEMY"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "relationship"
     },
     "Scheme": {
       "description": "A divisional chart's rule.",
@@ -3255,7 +3279,8 @@
         "KRISHNA_CHATURDASHI",
         "AMAVASYA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "tithi"
     },
     "TithiSpan": {
       "description": "One member of a limb, and when it ran.",
@@ -3291,7 +3316,8 @@
         "SHUKRAVARA",
         "SHANIVARA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "vara"
     },
     "Varga": {
       "description": "A key of the `varga` catalogue.",
@@ -3318,7 +3344,8 @@
         "D60",
         "D150"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "varga"
     },
     "VargaChart": {
       "description": "One divisional chart of one founded moment.",
@@ -3498,7 +3525,8 @@
         "VAIDHRITI",
         "VISHKAMBA"
       ],
-      "type": "string"
+      "type": "string",
+      "x-teistro-kind": "yoga"
     },
     "YogaCause": {
       "description": "What made a muhurta yoga hold.",

@@ -792,7 +792,9 @@ mod tests {
         assert!(kind("graha").present >= 9 && kind("graha").total == 12);
         assert_eq!(kind("rashi").present, 12);
         assert_eq!(kind("nakshatra").present, 27);
-        assert_eq!(kind("point").present, 1);
+        // The lagna, and the seven upagrahas the baseline engine names
+        // (`docs/03-design/entity-names.md`).
+        assert_eq!(kind("point").present, 8);
         assert_eq!(kind("era").present, 9);
         for (name, total) in [
             ("tithi", 30),
@@ -811,6 +813,14 @@ mod tests {
             ("yoni", 14),
             ("paksha", 2),
             ("ayana", 2),
+            // Imported whole from the baseline engine's vetted name tables.
+            ("ayanamsha", 47),
+            ("house_system", 22),
+            ("masa", 12),
+            ("direction", 8),
+            ("avastha_deeptadi", 9),
+            ("avastha_lajjitadi", 6),
+            ("avastha_jagradadi", 3),
         ] {
             assert_eq!(
                 (kind(name).present, kind(name).total),
@@ -820,7 +830,6 @@ mod tests {
         }
         // The engine names 27 of the catalogue's 37 deities.
         assert!(kind("deity").present == 27 && kind("deity").total == 37);
-        assert!(kind("masa").present == 0 && kind("masa").total == 12);
         assert_eq!(report.coverage.len(), 5, "four written, `sa-Latn` derived");
         assert!(
             !report.catalogue.contains_key("rule"),

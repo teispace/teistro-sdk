@@ -92,3 +92,4 @@ the rise and set solver when the port was promoted.
 | `matching.md`, `prashna.md`, `rectification.md`, `longevity.md`, `remedies.md`, `numerology.md`, `lalkitab.md`, `pakshi.md`, `namakarana.md`, `rashifal.md`, `research.md` | 6 |
 | `serial-json-dossier-blob.md`, `chart-geometry.md` | 7 |
 | `western-*.md`, `hellenistic-*.md` | v1.x |
+| [`entity-names.md`](entity-names.md) | names for the catalogue members a chart document carries: 192 unnamed in the strict locales, 114 imported from the baseline engine's vetted four-language tables (loaded, not transcribed), the derived `sa-Latn`'s transliterated Western names overridden with the source's English, and a `check-intl` rule that every member a document carries is named or listed with its reason, the list failing both ways at 78; built |
