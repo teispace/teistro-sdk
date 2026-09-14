@@ -13,6 +13,7 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
 use teistro_core::time::UtcOffset;
+use teistro_geometry::draw;
 use teistro_houses::Houses;
 use teistro_points::Points;
 use teistro_port_ephemeris::EphemerisProvider;
@@ -237,6 +238,23 @@ impl<'a> ChartArea<'a> {
         }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
+        }
+        for (index, (layout, varga)) in request.drawings().iter().enumerate() {
+            let at = format!("drawings[{index}]");
+            let row = self.context.layouts().by_id(*layout).ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "{layout} is not a layout this context knows; the shipped ones are the \
+                     `chart_layout` catalogue, and a consumer's own is given to the builder"
+                ))
+                .with_field(at.clone())
+            })?;
+            let drawing = draw(row, foundation, *varga).map_err(|error| {
+                let field = error
+                    .field()
+                    .map_or_else(|| at.clone(), |inner| format!("{at}.{inner}"));
+                error.with_field(field)
+            })?;
+            document = document.with_drawing(drawing);
         }
         if request.sections.has(Sections::PANCHANGA) {
             // The day the **chart** belongs to, which before sunrise is

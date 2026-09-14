@@ -14,6 +14,7 @@ and where its label and its bodies go. The core still never draws.
 | [`layout`](src/layout.rs) | a layout as a row, and the checks that refuse a wrong one by the cell it gets wrong |
 | [`rows`](src/rows.rs) | North, South and East Indian, each held to the figure it cites, the Nepali lotus, the Sudarshan Chakra and the Western wheel |
 | [`registry`](src/registry.rs) | the shipped layouts and a consumer's own: the same checks, and a shipped key cannot be taken over |
+| [`drawing`](src/drawing.rs) | one chart, founded or divisional, drawn in one layout, which is what a chart document carries; a pair that cannot be drawn is refused by name |
 | [`clock`](src/clock.rs) | the directions a radial layout needs, built from square roots so they are bit for bit the same on every platform |
 | [`place`](src/place.rs) | a chart placed in a layout, every cell carrying both its sign and its house |
 

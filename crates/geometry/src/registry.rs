@@ -102,6 +102,15 @@ impl Layouts {
             .or_else(|| self.registered.get(key).map(|(layout, _)| layout))
     }
 
+    /// The layout with an id: a shipped member's, or one this registry gave.
+    #[must_use]
+    pub fn by_id(&self, id: KeyId) -> Option<&Layout> {
+        match ChartLayout::try_from(id) {
+            Ok(member) => self.get(member.key()),
+            Err(_) => self.registered.by_id(id),
+        }
+    }
+
     /// Every layout, the shipped ones first in catalogue order.
     pub fn iter(&self) -> impl Iterator<Item = &Layout> {
         self.shipped

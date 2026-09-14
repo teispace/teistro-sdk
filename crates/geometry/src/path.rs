@@ -12,8 +12,12 @@
 use serde::{Deserialize, Serialize};
 
 /// A point in the unit square, y downwards.
+///
+/// Its schema is named `UnitPoint`, because a document also carries the
+/// catalogue's `Point`, the derived points, and the schema has one namespace.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "UnitPoint"))]
 pub struct Point {
     /// From the left edge, 0 to 1.
     pub x: f64,

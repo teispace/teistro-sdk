@@ -15,7 +15,10 @@
 //! it a setter and its getter want the same word, and the codebase ends
 //! up with `kind` beside `chart_kind` for no reason a reader can see.
 
+#[cfg(doc)]
+use teistro_core::catalogue::ChartLayout;
 use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
+use teistro_core::key::KeyId;
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
 
@@ -104,6 +107,7 @@ pub struct ChartRequest {
     offset: UtcOffset,
     kind: ChartKind,
     vargas: Vec<Varga>,
+    drawings: Vec<(KeyId, Varga)>,
     pub(crate) sections: Sections,
 }
 
@@ -117,6 +121,7 @@ impl ChartRequest {
             offset,
             kind: ChartKind::Natal,
             vargas: Vec::new(),
+            drawings: Vec::new(),
             sections: Sections::default(),
         }
     }
@@ -193,10 +198,46 @@ impl ChartRequest {
         self
     }
 
+    /// The charts to draw, each a layout and which chart to place in it,
+    /// in the order given: `D1` for the founded chart, or a divisional one.
+    ///
+    /// A layout is a shipped [`ChartLayout`] or the id of one the context was
+    /// built with (`ContextBuilder::layout`). Pairs rather than a list of
+    /// layouts, so drawing the D9 in North Indian does not also draw every
+    /// other chart in it, and a pair that cannot be drawn (a Western wheel of
+    /// the D9, which has no degrees) is refused by name when the reading runs.
+    ///
+    /// Replaces rather than accumulates, as every setter here does.
+    ///
+    /// ```
+    /// use teistro::catalogue::{ChartLayout, Varga};
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700)?)
+    ///     .with_drawings([(ChartLayout::NorthIndian, Varga::D1), (ChartLayout::NorthIndian, Varga::D9)]);
+    /// assert_eq!(request.drawings().len(), 2);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_drawings<L: Into<KeyId>>(
+        mut self,
+        drawings: impl IntoIterator<Item = (L, Varga)>,
+    ) -> ChartRequest {
+        self.drawings = drawings
+            .into_iter()
+            .map(|(layout, varga)| (layout.into(), varga))
+            .collect();
+        self
+    }
+
     /// Every section, and every divisional chart.
     ///
     /// What a consumer storing a chart for later wants, and what the
     /// parity runner asks for: the widest document the SDK can produce.
+    /// **No drawings**: those are named pairs, and every layout times every
+    /// chart is a hundred and twenty-six placements nobody asked for.
     #[must_use]
     pub fn with_everything(self) -> ChartRequest {
         self.with_every_varga()
@@ -229,5 +270,11 @@ impl ChartRequest {
     #[must_use]
     pub fn vargas(&self) -> &[Varga] {
         &self.vargas
+    }
+
+    /// The charts to draw, as layout ids and the chart drawn in each.
+    #[must_use]
+    pub fn drawings(&self) -> &[(KeyId, Varga)] {
+        &self.drawings
     }
 }

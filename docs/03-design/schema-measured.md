@@ -16,7 +16,7 @@ and reads the source for what the values cannot say about themselves.
 
 The sample is built rather than recorded, by `cargo run -p
 teistro-serial --example documents`: 3 documents over the analytic test
-provider, 238 distinct paths between them. A recorded sample would go
+provider, 270 distinct paths between them. A recorded sample would go
 stale the first time a section gained a field and the pass would not
 notice.
 
@@ -28,12 +28,12 @@ Sections 3 and 4 decide it.
 
 | sample | what it holds | sections | paths |
 |---|---|---|---|
-| `whole` | every section the layer can produce | 7 | 238 |
+| `whole` | every section the layer can produce | 8 | 270 |
 | `day` | a foundation and the almanac of its day | 2 | 156 |
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-7 boolean, 38 integer, 6 null, 93 number, 99 string.
+10 boolean, 49 integer, 6 null, 112 number, 106 string.
 
 ## 3. A whole double is written as an integer
 
@@ -46,16 +46,24 @@ that really is a count.
 
 | numeric paths | integer in every sample | decimal somewhere | both, across samples |
 |---|---|---|---|
-| 128 | 35 | 90 | 3 |
+| 150 | 38 | 101 | 11 |
 
-The ambiguity is not theoretical. 3 path iss written both ways within
+The ambiguity is not theoretical. 11 paths are written both ways within
 the same sample set:
 
+- `.drawings[].placed.cells[].outline.segments[].to.x`
+- `.drawings[].placed.cells[].outline.segments[].to.y`
+- `.drawings[].placed.cells[].outline.start.x`
+- `.drawings[].placed.cells[].outline.start.y`
+- `.drawings[].placed.frame[].segments[].to.x`
+- `.drawings[].placed.frame[].segments[].to.y`
+- `.drawings[].placed.frame[].start.x`
+- `.drawings[].placed.frame[].start.y`
 - `.foundation.grahas[].latitude_deg`
 - `.foundation.houses.madhya[]`
 - `.foundation.houses.sandhi[]`
 
-So a schema derived from the documents alone would type 35 paths on the
+So a schema derived from the documents alone would type 38 paths on the
 evidence of a sample that cannot tell a count from a round number. Some
 of them really are counts — a day of the month, a bhava — and some
 are doubles that happened to land on a whole value. Nothing in the JSON
@@ -68,9 +76,9 @@ the schema comes from.
 
 | string paths | drawn from the catalogue | free text |
 |---|---|---|
-| 99 | 94 | 5 |
+| 106 | 97 | 9 |
 
-A schema would constrain each of those 94 with an `enum`, and it cannot
+A schema would constrain each of those 97 with an `enum`, and it cannot
 get the members from the documents: the widest of them shows 12 values,
 where the catalogue's own list is longer for every one. A sample proves
 a member exists; it never proves a member does not.
@@ -90,9 +98,9 @@ samples:
 
 | paths in every sample | paths in some | top-level sections |
 |---|---|---|
-| 72 | 166 | 7 |
+| 72 | 198 | 8 |
 
-The top-level sections of the widest document are `aspects`,
+The top-level sections of the widest document are `aspects`, `drawings`,
 `foundation`, `houses`, `panchanga`, `points`, `state`, `vargas`. Only
 `foundation` is in all three, which is what the module says it intends;
 the measurement agrees with the intention here rather than contradicting
@@ -186,7 +194,7 @@ exponent.
 
 | sample | largest number | decimals resolved there | numbers | a correct parser moves | this build's parser moves |
 |---|---|---|---|---|---|
-| `whole` | 2460506 | 10 | 938 | 0 | 0 |
+| `whole` | 2460506 | 10 | 1596 | 0 | 0 |
 | `day` | 2460506 | 10 | 409 | 0 | 0 |
 | `bare` | 2460483 | 10 | 171 | 0 | 0 |
 
@@ -220,12 +228,12 @@ for, and that is where a fixed count of decimals ran out.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the schema can be derived from the documents | falsified | 35 of 128 numeric paths are ambiguous |
+| the schema can be derived from the documents | falsified | 38 of 150 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
 | the layer's types read back, so a round trip can gate the schema | **holds** | 60 types derive `Deserialize` |
 | one casing convention covers every enum in a document | falsified | 2 conventions declared |
-| every number the form writes reads back as the same double | **holds** | 0 of 1518 move under a correct parser |
-| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 1518 |
+| every number the form writes reads back as the same double | **holds** | 0 of 2176 move under a correct parser |
+| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 2176 |
 
 The measurement falsifies 3 of the 6 proposed rules. Those three say the
 same thing about **where** a schema comes from: the description, beside

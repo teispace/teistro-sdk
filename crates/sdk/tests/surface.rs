@@ -11,7 +11,8 @@
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::panic,
-    reason = "tests fail by panicking"
+    clippy::indexing_slicing,
+    reason = "tests fail by panicking and index what they asked for"
 )]
 
 use teistro::catalogue::{Calendar, Catalogued, ChartKind, Era, Point, Varga};
@@ -774,4 +775,150 @@ fn a_reading_carries_the_sections_it_was_asked_for() {
         batch.provenance.content_hash,
         teistro::content_hash(&batch.value)
     );
+}
+
+/// A drawing is the founded chart, or one of its divisional charts, placed in
+/// a layout; this is what proves the geometry crate's placement is fed the
+/// right chart, which its own tests cannot.
+#[test]
+fn a_reading_draws_the_charts_it_was_asked_for() {
+    use teistro::catalogue::ChartLayout;
+
+    let sdk = context();
+    let (place, offset) = kathmandu();
+    let instant = JulianDay::<Utc>::literal(2_460_482.5);
+    let request = ChartRequest::at(place, offset)
+        .with_vargas([Varga::D9])
+        .with_drawings([
+            (ChartLayout::NorthIndian, Varga::D1),
+            (ChartLayout::SouthIndian, Varga::D9),
+            (ChartLayout::WesternWheel, Varga::D1),
+        ]);
+    let document = sdk
+        .chart()
+        .reading(instant, &request)
+        .expect("a reading")
+        .value;
+    assert!(document.sections().contains(&"drawings"));
+    assert_eq!(document.drawings.len(), 3);
+
+    // D1 in North Indian: house 1 is the top diamond and shows the lagna's
+    // sign; every graha is in the cell of the sign the foundation puts it in.
+    let north = &document.drawings[0];
+    let foundation = &document.foundation;
+    assert_eq!(
+        (north.varga, north.placed.layout.as_str()),
+        (Varga::D1, "NORTH_INDIAN")
+    );
+    let first = &north.placed.cells[0];
+    assert_eq!(
+        (first.house, u16::from(foundation.lagna_sign_index())),
+        (1, first.sign.id())
+    );
+    for position in &foundation.grahas {
+        let cell = north
+            .placed
+            .cells
+            .iter()
+            .find(|cell| cell.bodies.contains(&position.graha.key_id()))
+            .expect("every graha is drawn");
+        assert_eq!(
+            cell.sign.id(),
+            u16::from(position.sign_index()),
+            "{:?}",
+            position.graha
+        );
+    }
+
+    // D9 in South Indian: the navamsha's own lagna, and its grahas by their
+    // navamsha signs, which is the divisional chart the document carries.
+    let navamsha = &document.vargas[0];
+    let south = &document.drawings[1];
+    assert_eq!(south.varga, Varga::D9);
+    let lagna_cell = south
+        .placed
+        .cells
+        .iter()
+        .find(|cell| cell.lagna)
+        .expect("a lagna");
+    assert_eq!(
+        (lagna_cell.sign, lagna_cell.house),
+        (navamsha.lagna.sign, 1)
+    );
+    for placed in &navamsha.grahas {
+        let cell = south
+            .placed
+            .cells
+            .iter()
+            .find(|cell| cell.bodies.contains(&placed.graha.key_id()))
+            .expect("every graha is drawn");
+        assert_eq!(cell.sign, placed.at.sign, "{:?}", placed.graha);
+    }
+
+    // The wheel: each graha in the house the foundation's own bhavas give it,
+    // and a mark for each at its degree.
+    let wheel = &document.drawings[2];
+    assert_eq!(wheel.placed.marks.len(), foundation.grahas.len());
+    for position in &foundation.grahas {
+        let cell = wheel
+            .placed
+            .cells
+            .iter()
+            .find(|cell| cell.ring == 0 && cell.bodies.contains(&position.graha.key_id()))
+            .expect("every graha is in a house");
+        assert_eq!(cell.house, position.house.bhava, "{:?}", position.graha);
+    }
+}
+
+#[test]
+fn a_drawing_that_cannot_be_drawn_is_refused_by_its_place_in_the_request() {
+    use teistro::catalogue::ChartLayout;
+
+    let sdk = context();
+    let (place, offset) = kathmandu();
+    let instant = JulianDay::<Utc>::literal(2_460_482.5);
+    // A Western wheel of the navamsha, which has signs and no degrees.
+    let request = ChartRequest::at(place, offset).with_drawings([
+        (ChartLayout::NorthIndian, Varga::D1),
+        (ChartLayout::WesternWheel, Varga::D9),
+    ]);
+    let error = sdk
+        .chart()
+        .reading(instant, &request)
+        .expect_err("a wheel of the D9");
+    assert_eq!(error.field(), Some("drawings[1].varga"));
+    assert!(
+        error.message.contains("WESTERN_WHEEL") && error.message.contains("D9"),
+        "{error}"
+    );
+}
+
+#[test]
+fn a_consumer_s_own_layout_is_drawn_and_a_shipped_one_is_not_replaced() {
+    let mut odia = teistro::geometry::rows::east_indian();
+    odia.key = String::from("ACME_ODIA");
+    let sdk = Context::builder()
+        .profile("nepali-default")
+        .ephemeris([Ephemeris::Builtin])
+        .layout(odia)
+        .build()
+        .expect("a valid layout of the consumer's own");
+    let (id, _) = sdk
+        .layouts()
+        .iter()
+        .zip(0u16..)
+        .find(|(layout, _)| layout.key == "ACME_ODIA")
+        .map(|(layout, index)| (layout.key.clone(), index))
+        .expect("registered");
+    assert_eq!(id, "ACME_ODIA");
+    assert!(sdk.layouts().get("NORTH_INDIAN").is_some());
+
+    let mut takeover = teistro::geometry::rows::east_indian();
+    takeover.key = String::from("NORTH_INDIAN");
+    let refused = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .layout(takeover)
+        .build()
+        .expect_err("a shipped key");
+    assert_eq!(refused.field(), Some("key"));
 }

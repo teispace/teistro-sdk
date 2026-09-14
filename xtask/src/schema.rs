@@ -526,9 +526,10 @@ fn numbers(
     } else {
         let _ = write!(
             out,
-            "The ambiguity is not theoretical. {} written both ways within\n\
+            "The ambiguity is not theoretical. {} {} written both ways within\n\
              the same sample set:\n\n",
-            crate::measure::plural(both.len(), "path is")
+            crate::measure::plural(both.len(), "path"),
+            if both.len() == 1 { "is" } else { "are" }
         );
         for path in &both {
             let _ = writeln!(out, "- `{path}`");

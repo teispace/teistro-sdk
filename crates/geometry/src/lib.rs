@@ -49,12 +49,14 @@
 //! ```
 
 pub mod clock;
+pub mod drawing;
 pub mod layout;
 pub mod path;
 pub mod place;
 pub mod registry;
 pub mod rows;
 
+pub use drawing::{Drawing, draw};
 pub use layout::{Cell, Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
 pub use path::{Path, Point, Segment};
 pub use place::{Body, Mark, Placed, PlacedCell, Placements, place};

@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use teistro_aspect::Aspects;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::envelope::Provenance;
+use teistro_geometry::Drawing;
 use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
@@ -51,6 +52,13 @@ pub struct Document {
     /// The twelve bhavas under both readings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub houses: Option<Houses>,
+    /// The charts drawn in the layouts asked for: which chart, placed in
+    /// which layout (`03-design/chart-geometry.md`).
+    ///
+    /// `default` for the reason `vargas` has it: an absent key is "none
+    /// were asked for", which a `Vec` has to be told.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub drawings: Vec<Drawing>,
 }
 
 impl Document {
@@ -65,6 +73,7 @@ impl Document {
             aspects: None,
             points: None,
             houses: None,
+            drawings: Vec::new(),
         }
     }
 
@@ -103,6 +112,13 @@ impl Document {
         self
     }
 
+    /// With a chart drawn in a layout, which may be asked for more than once.
+    #[must_use]
+    pub fn with_drawing(mut self, drawing: Drawing) -> Document {
+        self.drawings.push(drawing);
+        self
+    }
+
     /// With the houses under both readings.
     #[must_use]
     pub fn with_houses(mut self, houses: Houses) -> Document {
@@ -132,6 +148,9 @@ impl Document {
         }
         if self.houses.is_some() {
             found.push("houses");
+        }
+        if !self.drawings.is_empty() {
+            found.push("drawings");
         }
         found
     }

@@ -1092,6 +1092,13 @@
           ],
           "description": "Which bodies reach which."
         },
+        "drawings": {
+          "description": "The charts drawn in the layouts asked for: which chart, placed in which layout (`03-design/chart-geometry.md`).",
+          "items": {
+            "$ref": "#/$defs/Drawing"
+          },
+          "type": "array"
+        },
         "foundation": {
           "$ref": "#/$defs/ChartFoundation",
           "description": "What every other section is computed from."
@@ -1149,6 +1156,24 @@
       },
       "required": [
         "foundation"
+      ],
+      "type": "object"
+    },
+    "Drawing": {
+      "description": "One chart placed in one layout.",
+      "properties": {
+        "placed": {
+          "$ref": "#/$defs/Placed",
+          "description": "The chart, placed."
+        },
+        "varga": {
+          "$ref": "#/$defs/Varga",
+          "description": "Which chart is drawn: `D1` for the founded chart, or a divisional one."
+        }
+      },
+      "required": [
+        "varga",
+        "placed"
       ],
       "type": "object"
     },
@@ -1808,6 +1833,11 @@
       ],
       "type": "object"
     },
+    "KeyId": {
+      "description": "A catalogue key, as `kind.KEY` or `kind#id`.",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[A-Z][A-Z0-9_]{0,47}|#[0-9]{1,5})$",
+      "type": "string"
+    },
     "Lajjitadi": {
       "description": "The lajjitadi a chart decides, the ones it rules out, and the ones it cannot decide either way.",
       "properties": {
@@ -2015,6 +2045,38 @@
           "type": "object"
         }
       ]
+    },
+    "Mark": {
+      "description": "A body drawn where it stands on a wheel: at its own longitude, not stacked in a cell.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/UnitPoint",
+          "description": "Where it is drawn."
+        },
+        "body": {
+          "$ref": "#/$defs/KeyId",
+          "description": "The body."
+        },
+        "longitude_deg": {
+          "description": "The longitude that put it there, degrees.",
+          "format": "double",
+          "type": "number"
+        },
+        "ring": {
+          "description": "The ring it is drawn in.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "body",
+        "ring",
+        "at",
+        "longitude_deg"
+      ],
+      "type": "object"
     },
     "Masa": {
       "description": "A key of the `masa` catalogue.",
@@ -2567,6 +2629,27 @@
       ],
       "type": "object"
     },
+    "Path": {
+      "description": "A closed outline: a start and the segments that return to it.",
+      "properties": {
+        "segments": {
+          "description": "The steps around it.",
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "type": "array"
+        },
+        "start": {
+          "$ref": "#/$defs/UnitPoint",
+          "description": "Where the outline starts."
+        }
+      },
+      "required": [
+        "start",
+        "segments"
+      ],
+      "type": "object"
+    },
     "Place": {
       "description": "A place on Earth.",
       "properties": {
@@ -2587,6 +2670,100 @@
         "latitude",
         "longitude",
         "altitude"
+      ],
+      "type": "object"
+    },
+    "Placed": {
+      "description": "A chart placed in a layout: what a renderer draws, in any language.",
+      "properties": {
+        "cells": {
+          "description": "The cells, in the layout's order.",
+          "items": {
+            "$ref": "#/$defs/PlacedCell"
+          },
+          "type": "array"
+        },
+        "frame": {
+          "description": "The lines drawn that hold nothing.",
+          "items": {
+            "$ref": "#/$defs/Path"
+          },
+          "type": "array"
+        },
+        "layout": {
+          "description": "The layout's key.",
+          "type": "string"
+        },
+        "marks": {
+          "description": "The bodies at their longitudes, for a layout with a ring drawn by longitude; empty otherwise.",
+          "items": {
+            "$ref": "#/$defs/Mark"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "layout",
+        "cells",
+        "frame",
+        "marks"
+      ],
+      "type": "object"
+    },
+    "PlacedCell": {
+      "description": "One cell of a placed chart.",
+      "properties": {
+        "anchor": {
+          "$ref": "#/$defs/UnitPoint",
+          "description": "Where the bodies are stacked about."
+        },
+        "bodies": {
+          "description": "The bodies standing in the cell, in the chart's order.",
+          "items": {
+            "$ref": "#/$defs/KeyId"
+          },
+          "type": "array"
+        },
+        "house": {
+          "description": "The house the cell shows, 1 to 12.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "label": {
+          "$ref": "#/$defs/UnitPoint",
+          "description": "Where the sign or house number is drawn."
+        },
+        "lagna": {
+          "description": "Whether the lagna stands in this cell.",
+          "type": "boolean"
+        },
+        "outline": {
+          "$ref": "#/$defs/Path",
+          "description": "The cell's outline."
+        },
+        "ring": {
+          "description": "The ring the cell belongs to, innermost 0; a grid's cells are all 0.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "sign": {
+          "$ref": "#/$defs/Rashi",
+          "description": "The sign the cell shows; for a house between cusps, the sign its cusp is in."
+        }
+      },
+      "required": [
+        "outline",
+        "sign",
+        "house",
+        "lagna",
+        "ring",
+        "label",
+        "anchor",
+        "bodies"
       ],
       "type": "object"
     },
@@ -3020,6 +3197,80 @@
       ],
       "type": "object"
     },
+    "Segment": {
+      "description": "One step of an outline, from wherever the previous step ended.",
+      "oneOf": [
+        {
+          "description": "A straight line to a point.",
+          "properties": {
+            "kind": {
+              "const": "line",
+              "type": "string"
+            },
+            "to": {
+              "$ref": "#/$defs/UnitPoint",
+              "description": "Where the line ends."
+            }
+          },
+          "required": [
+            "kind",
+            "to"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A quadratic Bézier curve to a point, pulled towards its control.",
+          "properties": {
+            "control": {
+              "$ref": "#/$defs/UnitPoint",
+              "description": "The control point."
+            },
+            "kind": {
+              "const": "quad",
+              "type": "string"
+            },
+            "to": {
+              "$ref": "#/$defs/UnitPoint",
+              "description": "Where the curve ends."
+            }
+          },
+          "required": [
+            "kind",
+            "control",
+            "to"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A circular arc about a centre, from where the previous step ended to a point the same distance from it, the short way or the long way as `clockwise` says. What a radial layout's sectors are bounded by.",
+          "properties": {
+            "centre": {
+              "$ref": "#/$defs/UnitPoint",
+              "description": "The circle's centre."
+            },
+            "clockwise": {
+              "description": "Which way the arc runs, as a reader sees it.",
+              "type": "boolean"
+            },
+            "kind": {
+              "const": "arc",
+              "type": "string"
+            },
+            "to": {
+              "$ref": "#/$defs/UnitPoint",
+              "description": "Where the arc ends."
+            }
+          },
+          "required": [
+            "kind",
+            "centre",
+            "clockwise",
+            "to"
+          ],
+          "type": "object"
+        }
+      ]
+    },
     "SignBase": {
       "description": "The multiplier a stepping rule puts on the sign.",
       "oneOf": [
@@ -3302,6 +3553,26 @@
         "member",
         "whole",
         "inside"
+      ],
+      "type": "object"
+    },
+    "UnitPoint": {
+      "description": "A point in the unit square, y downwards.",
+      "properties": {
+        "x": {
+          "description": "From the left edge, 0 to 1.",
+          "format": "double",
+          "type": "number"
+        },
+        "y": {
+          "description": "From the top edge, 0 to 1.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
       ],
       "type": "object"
     },

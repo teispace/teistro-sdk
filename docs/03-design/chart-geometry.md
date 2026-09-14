@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `building` — steps 1 to 4 built 2026-09-14; the document section and the renderer follow. It builds the first two parts of
+Status: `building` — steps 1 to 4 and the Rust half of step 5 built 2026-09-14; the boundary and the renderer follow. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is §8's later step. The research this page rests on was
@@ -258,6 +258,35 @@ where that is won or lost.
   section's 24 024 values hash to the same digest on Linux x86-64, Linux
   aarch64 and macOS aarch64, so the wheel's rounding holds on real
   hardware and not only by argument.
+
+## 7d. The document section, in Rust
+
+- **A request names drawings as pairs**: `with_drawings([(layout, varga)])`,
+  where `D1` is the founded chart. A list of layouts times the vargas asked
+  for would multiply what nobody wanted, and `with_everything` draws
+  nothing, since every layout times every chart is 126 placements.
+- **A pair that cannot be drawn is refused by its place in the request.**
+  A Western wheel of the D9 is refused as `drawings[1].varga`, naming both
+  and hinting at a grid or the chakra. It is not refused by the missing
+  degree it would otherwise fail on.
+- **The layout is a `KeyId`**, so a shipped `ChartLayout` and a consumer's
+  own are one type. The context owns a sealed `Layouts`, and
+  `ContextBuilder::layout` registers into it under the same checks,
+  refusing a shipped key at build.
+- **`Document.drawings`** carries each drawing as the varga and the placed
+  chart. `teistro::geometry` and `Drawing`, `Layout`, `Layouts` and `Placed`
+  are re-exported by the façade.
+- **What building found:**
+  - The schema's numbered-name guard refused the first build: geometry's
+    `Point` met the catalogue's `Point` (the derived points) in one
+    namespace. Its schema name is now `UnitPoint`.
+  - The document samples gained a North Indian and a Western wheel drawing,
+    so the round trip and the schema see straight edges, arcs, marks and
+    rounded coordinates, and both read back byte for byte.
+- **Tested against real founded charts** in the façade:
+  - D1 in North Indian matches the foundation's signs;
+  - D9 in South Indian matches the navamsha's own lagna and signs;
+  - each graha's wheel house equals the foundation's own bhava.
 
 ## 8. Order of work
 

@@ -99,6 +99,10 @@ pub use teistro_serial::{Document, Sealed};
 pub use teistro_serial::schema;
 pub use teistro_state::GrahaState;
 pub use teistro_vargas::chart::{Axis, VargaChart};
+// Chart geometry: the layouts a chart is drawn in, a consumer's own, and a
+// chart placed in one (`03-design/chart-geometry.md`).
+pub use teistro_geometry as geometry;
+pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a
 // namespace is in Rust — where Node writes

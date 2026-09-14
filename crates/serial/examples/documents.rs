@@ -41,6 +41,7 @@ use teistro_core::envelope::{Envelope, Provenance};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::settings::{OverridePolicy, Profile, Settings, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
+use teistro_geometry::{draw, rows};
 use teistro_houses::Houses;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_points::Points;
@@ -145,7 +146,15 @@ pub fn whole() -> (Document, Provenance) {
         .with_state(state(&foundation, &settings).expect("a state"))
         .with_aspects(Aspects::of(&foundation, &settings).expect("the aspects"))
         .with_points(Points::from_longitudes(&foundation).expect("the points"))
-        .with_houses(Houses::of(&foundation).expect("the houses"));
+        .with_houses(Houses::of(&foundation).expect("the houses"))
+        // A drawing in a grid and one in the wheel, so the schema and the
+        // round trip see straight edges, arcs, marks and rounded coordinates.
+        .with_drawing(
+            draw(&rows::north_indian(), &foundation, Varga::D1).expect("a North Indian D1"),
+        )
+        .with_drawing(
+            draw(&rows::western_wheel(), &foundation, Varga::D1).expect("a Western wheel"),
+        );
     (document, provenance)
 }
 

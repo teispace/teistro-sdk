@@ -10,6 +10,7 @@ use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
 };
+use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
 use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest};
@@ -48,6 +49,10 @@ pub struct Context {
     ///
     /// Read by `time()`, and by `positions` when it lands.
     delta_t: DeltaTModel,
+    /// The layouts a chart can be drawn in: the shipped ones and any the
+    /// builder was given, sealed, so nothing changes under a context that
+    /// draws.
+    layouts: Layouts,
 }
 
 impl core::fmt::Debug for Context {
@@ -236,6 +241,13 @@ impl Context {
     pub fn delta_t(&self) -> DeltaTModel {
         self.delta_t
     }
+
+    /// The layouts this context can draw a chart in: the shipped ones, then
+    /// any the builder was given.
+    #[must_use]
+    pub const fn layouts(&self) -> &Layouts {
+        &self.layouts
+    }
 }
 
 /// A context under construction.
@@ -251,6 +263,7 @@ pub struct ContextBuilder {
     settings_json: Option<String>,
     locale: Option<String>,
     chain: Option<Vec<Ephemeris>>,
+    layouts: Vec<Layout>,
 }
 
 impl core::fmt::Debug for ContextBuilder {
@@ -264,6 +277,18 @@ impl core::fmt::Debug for ContextBuilder {
 }
 
 impl ContextBuilder {
+    /// A chart layout of the consumer's own, a regional chart the SDK does
+    /// not ship, to draw in beside the shipped ones (ADR-0026 §1).
+    ///
+    /// Checked when the context is built, by the same rules a shipped layout
+    /// passes; a key the SDK ships is refused, so a layout is added and never
+    /// replaced.
+    #[must_use]
+    pub fn layout(mut self, layout: Layout) -> ContextBuilder {
+        self.layouts.push(layout);
+        self
+    }
+
     /// The shipped profile to resolve the settings from.
     #[must_use]
     pub fn profile(mut self, id: impl Into<String>) -> ContextBuilder {
@@ -354,11 +379,17 @@ impl ContextBuilder {
         let chain = self.chain.unwrap_or_else(|| vec![Ephemeris::None]);
         let opened = ephemeris::open(chain)?;
         let provider = remembering(opened, settings.settings.provider.cache_cells);
+        let mut layouts = Layouts::new();
+        for layout in self.layouts {
+            layouts.register(layout)?;
+        }
+        layouts.seal();
         Ok(Context {
             settings,
             provider,
             intl: RefCell::new(intl),
             delta_t,
+            layouts,
         })
     }
 }

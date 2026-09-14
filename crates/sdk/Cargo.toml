@@ -27,6 +27,7 @@ teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-serial = { path = "../serial" }
+teistro-geometry = { path = "../geometry" }
 teistro-state = { path = "../state" }
 teistro-time = { path = "../time" }
 teistro-vargas = { path = "../vargas" }
