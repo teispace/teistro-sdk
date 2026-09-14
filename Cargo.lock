@@ -1583,6 +1583,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-geometry"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-vargas",
+]
+
+[[package]]
 name = "teistro-houses"
 version = "0.0.0"
 dependencies = [

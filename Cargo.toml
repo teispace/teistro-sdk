@@ -19,6 +19,7 @@ members = [
     "crates/aspect",
     "crates/points",
     "crates/houses",
+    "crates/geometry",
     "crates/serial",
     "crates/ephemeris-builtin",
     "crates/ephemeris-kit",

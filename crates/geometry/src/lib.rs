@@ -1,0 +1,54 @@
+//! Chart layouts as data, and a chart placed in one (ADR-0026,
+//! `03-design/chart-geometry.md`).
+//!
+//! A developer who can compute a chart and cannot draw one has not finished
+//! evaluating the SDK. This crate is the part of drawing that is chart data:
+//! which region of the page belongs to which sign or house, and where its
+//! label and its bodies go. The core still never draws; a renderer, the
+//! SDK's own or a consumer's, reads [`Placed`].
+//!
+//! - [`path`]: points and outlines in the unit square, y downwards, with the
+//!   curves the lotus needs;
+//! - [`layout`]: a layout as a row, and the checks that refuse a wrong one
+//!   by the cell it gets wrong;
+//! - [`rows`]: the North, South and East Indian charts and the Nepali lotus,
+//!   each cited;
+//! - [`place`]: a chart placed in a layout, every cell carrying both its sign
+//!   and its house.
+//!
+//! Three things the research found (§2):
+//!
+//! - **"Bengali" is the East Indian chart**, which every source names the
+//!   Bengali, Odia or Assamese chart, so it is one row and not two.
+//! - **Layouts are two kinds.** The square charts are cells fixed in the
+//!   row; a Western wheel's houses are as wide as the chart's cusps, so its
+//!   regions are computed per chart, which is the later radial kind.
+//! - **The lotus is the North Indian chart drawn as petals**, the same
+//!   houses in the same places with curved edges.
+//!
+//! ```
+//! use teistro_core::catalogue::{Catalogued, Graha, Rashi};
+//! use teistro_geometry::{Placements, place, rows};
+//!
+//! // Every shipped layout passes the checks a consumer's own would.
+//! for layout in rows::shipped() {
+//!     layout.validate().expect("a shipped layout is valid");
+//! }
+//!
+//! // In the South Indian chart the signs stay put: Aries is always the
+//! // second cell of the top row, and with a Leo lagna it is the ninth house.
+//! let chart = Placements { lagna: Rashi::Leo, bodies: vec![(Graha::Mars.key_id(), Rashi::Aries)] };
+//! let placed = place(&rows::south_indian(), &chart);
+//! let aries = placed.cells.iter().find(|cell| cell.sign == Rashi::Aries).unwrap();
+//! assert_eq!(aries.house, 9);
+//! assert_eq!(aries.bodies, vec![Graha::Mars.key_id()]);
+//! ```
+
+pub mod layout;
+pub mod path;
+pub mod place;
+pub mod rows;
+
+pub use layout::{Cell, Direction, Grid, Holds, Layout};
+pub use path::{Path, Point, Segment};
+pub use place::{Placed, PlacedCell, Placements, place};
