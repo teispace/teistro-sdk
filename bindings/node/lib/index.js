@@ -488,7 +488,7 @@ export class Charts extends Decoded {
     return this.decoded.drishtiTable;
   }
 
-  /** The steps the SDK applied, each `{ name, implementation }`. */
+  /** The steps the SDK applied, in order, each `name:Implementation`. */
   get steps() {
     return JSON.parse(this.decoded.steps);
   }
@@ -591,13 +591,6 @@ export class Chart {
     return { ...timing, horaLord: GrahaById.get(timing.horaLord) ?? 'unknown' };
   }
 
-  /**
-   * The grahas, in the catalogue's order, one object each.
-   *
-   * The columns underneath are views over the blob's bytes, charts
-   * outermost; this reads this chart's stride out of them into the shape
-   * an application wants, which is a row.
-   */
   /**
    * The divisional charts asked for, in the order they were asked.
    *
@@ -793,6 +786,13 @@ export class Chart {
     });
   }
 
+  /**
+   * The grahas, in the catalogue's order, one object each.
+   *
+   * The columns underneath are views over the blob's bytes, charts
+   * outermost; this reads this chart's stride out of them into the shape
+   * an application wants, which is a row.
+   */
   get grahas() {
     const g = this.#batch.decoded.grahas;
     const count = this.#batch.decoded.grahaCount;
@@ -1172,7 +1172,6 @@ export class Positions extends Decoded {
     return Array.from(this.decoded.bodies.body, (id) => BodyById.get(id) ?? 'unknown');
   }
 
-  /** The bodies as the ids the blob carries, without a copy. */
   /**
    * How many instants the grid covers, which is the stride a caller
    * needs to read a column: cell `i * bodyCount + j` is instant `i`,
@@ -1187,6 +1186,7 @@ export class Positions extends Decoded {
     return this.decoded.bodyCount;
   }
 
+  /** The bodies as the ids the blob carries, without a copy. */
   get bodyIds() {
     return this.decoded.bodies.body;
   }

@@ -17,7 +17,8 @@ import type {
   PositionsRequest,
   Scale,
 } from '../lib/index.js';
-import { altitude, latitude, longitude } from '../lib/catalogue.js';
+import { Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
+import type { Graha } from '../lib/catalogue.js';
 import type { CalendarDate } from '../lib/index.js';
 
 declare const build: BuildInfo;
@@ -180,6 +181,48 @@ function charts(): string {
 }
 
 void charts;
+
+/**
+ * The chart reading, typed: every section a request can ask for, read the
+ * way an application reads it. `typecheck/surface.mjs` proves each member
+ * exists at run time; this proves a consumer can name and use them.
+ */
+function reading(): string {
+  const read: Chart = ctx.chart.found({
+    instant: 2460482.5,
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+    vargas: [Varga.D9, Varga.D10],
+    aspects: true,
+    points: true,
+    houses: true,
+    state: true,
+  });
+  const navamsha = read.vargas[0];
+  const vargottama: boolean = navamsha !== undefined && navamsha.lagna.sign === navamsha.lagna.rashi;
+  const part: number = navamsha?.grahas[0]?.part ?? -1;
+  const drishti = read.aspects.map((one) => `${one.from}>${one.to}:${one.houses}:${one.strength}`);
+  const edge: number = read.aspects[0]?.toEdge.nakshatraDeg ?? 0;
+  const gulika = read.points.find((one) => one.point === Point.Gulika);
+  const lord: Graha | 'unknown' = read.bhavas[9]?.lord ?? 'unknown';
+  const sun = read.states[0];
+  const dispositor: string = sun?.friendship.dispositor ?? 'none';
+  const orb: number | null = sun?.combustion.orbDeg ?? null;
+  const holding: readonly string[] = sun?.lajjitadi.holding ?? [];
+  const war: boolean = sun?.war?.isWinner ?? false;
+  // @ts-expect-error a section is read, never replaced
+  read.states = [];
+  // @ts-expect-error a war is a record, not a number
+  const apart: number = sun?.war;
+  // @ts-expect-error the varga list takes members of the catalogue, not their names
+  ctx.chart.found({ instant: 2460482.5, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, vargas: ['navamsha'] });
+  return [
+    vargottama, part, drishti.length, edge, gulika?.longitudeDeg ?? 'none', lord,
+    dispositor, orb, holding.length, war, apart, read.bhavas.length,
+  ].join(' ');
+}
+
+void reading;
 
 /** The almanac layer, typed: a range of days and one of them. */
 function almanac(): string {

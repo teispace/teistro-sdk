@@ -7,12 +7,18 @@
 // decode on first use, and the error.
 
 import type {
+  AvasthaBaladi,
+  AvasthaDeeptadi,
+  AvasthaJagradadi,
+  AvasthaLajjitadi,
   Ayana,
   Body,
+  Burning,
   Calendar,
   ChartKind,
   Choghadiya,
   DayPart,
+  Dignity,
   Direction,
   Graha,
   HouseSystem,
@@ -25,12 +31,17 @@ import type {
   Nakshatra,
   Paksha,
   Panchaka,
+  Point,
+  Quadrant,
   Rashi,
+  Relationship,
   Scale,
   Status,
+  Strength,
   Tithi,
   TimeScale,
   Vara,
+  Varga,
   Yoga,
 } from './catalogue.js';
 import type {
@@ -123,6 +134,14 @@ export declare class Positions extends Decoded<DecodedPositions> {
   readonly bodies: readonly Body[];
   /** The bodies as the ids the blob carries, without a copy. */
   readonly bodyIds: Uint16Array;
+  /**
+   * How many instants the grid covers: with `bodyCount`, the stride a
+   * caller needs to read a column — cell `i * bodyCount + j` is instant
+   * `i`, body `j`.
+   */
+  readonly jdCount: number;
+  /** How many bodies the grid covers. */
+  readonly bodyCount: number;
   /** The time scale the instants are on. */
   readonly scale: TimeScale | 'unknown';
   /** The cells, instants outermost, as typed arrays over the blob. */
@@ -177,6 +196,127 @@ export interface Bhava {
   readonly sandhiDeg: number;
 }
 
+/**
+ * How near a longitude stands to the boundaries that would change how it
+ * reads, degrees: the edge of its sign, its nakshatra and its pada. What an
+ * ayanamsha that moved would change first.
+ */
+export interface Boundaries {
+  /** Degrees to the nearer edge of its sign. */
+  readonly signDeg: number;
+  /** Degrees to the nearer edge of its nakshatra. */
+  readonly nakshatraDeg: number;
+  /** Degrees to the nearer edge of its pada. */
+  readonly padaDeg: number;
+}
+
+/** Where a divisional chart puts one longitude. */
+export interface DivisionalPlacement {
+  /** The sign the longitude stands in. */
+  readonly rashi: Rashi | 'unknown';
+  /** Which part of that sign, counted from zero. */
+  readonly part: number;
+  /** The sign the divisional chart puts it in; the same as `rashi` is vargottama in the navamsha. */
+  readonly sign: Rashi | 'unknown';
+}
+
+/** One divisional chart of a founded chart. */
+export interface DivisionalChart {
+  /** Which divisional chart. */
+  readonly varga: Varga | 'unknown';
+  /** Where it puts the lagna. */
+  readonly lagna: DivisionalPlacement;
+  /** Where it puts each graha, in the chart's graha order. */
+  readonly grahas: readonly (DivisionalPlacement & { readonly graha: Graha | 'unknown' })[];
+}
+
+/** One drishti a graha casts. */
+export interface Drishti {
+  /** The graha casting it. */
+  readonly from: Graha | 'unknown';
+  /** The graha it reaches. */
+  readonly to: Graha | 'unknown';
+  /** Which house from the casting graha's sign the other stands in, counting inclusively from one. */
+  readonly houses: number;
+  /** How strongly, under the chart's drishti table. */
+  readonly strength: Strength | 'unknown';
+  /** How near the casting graha stands to a boundary. */
+  readonly fromEdge: Boundaries;
+  /** How near the graha reached stands to a boundary. */
+  readonly toEdge: Boundaries;
+}
+
+/** One derived point: an upagraha or a special lagna. */
+export interface DerivedPoint {
+  /** Which point. */
+  readonly point: Point | 'unknown';
+  /** Its longitude in the chart's zodiac, degrees. */
+  readonly longitudeDeg: number;
+  /** The sign it stands in. */
+  readonly sign: Rashi | 'unknown';
+  /** How near it stands to a boundary. */
+  readonly boundaries: Boundaries;
+}
+
+/** One of the twelve bhavas as the houses service reads it. */
+export interface HouseReading {
+  /** The bhava, 1 to 12. */
+  readonly number: number;
+  /** The sign its middle falls in, which under an unequal division is not always the sign it opens in. */
+  readonly sign: Rashi | 'unknown';
+  /** The graha that rules that sign. */
+  readonly lord: Graha | 'unknown';
+  /** Which kind of house it is. */
+  readonly quadrant: Quadrant | 'unknown';
+}
+
+/** What one graha **is**, as opposed to where it is. */
+export interface GrahaState {
+  /** Which graha. */
+  readonly graha: Graha | 'unknown';
+  /** The sign it stands in. */
+  readonly sign: Rashi | 'unknown';
+  /** The whole-sign house it stands in, 1 to 12. */
+  readonly house: number;
+  /** Its dignity in that sign. */
+  readonly dignity: Dignity | 'unknown';
+  /** Its relationships to the lord of the sign it stands in. */
+  readonly friendship: {
+    readonly natural: Relationship | 'unknown';
+    readonly temporary: Relationship | 'unknown';
+    readonly compound: Relationship | 'unknown';
+    /** The lord of its sign, or `null` for a graha that has none. */
+    readonly dispositor: Graha | 'unknown' | null;
+  };
+  /** Whether the Sun burns it, and by how much; a value it may not have is `null`. */
+  readonly combustion: {
+    readonly burning: Burning | 'unknown';
+    readonly fromSunDeg: number | null;
+    readonly orbDeg: number | null;
+    readonly deepOrbDeg: number | null;
+  };
+  /** Its age: the baladi avastha. */
+  readonly age: AvasthaBaladi | 'unknown';
+  /** Its wakefulness: the jagradadi avastha. */
+  readonly wakefulness: AvasthaJagradadi | 'unknown';
+  /** Its deeptadi avastha, or `null` where the scheme gives none. */
+  readonly deeptadi: AvasthaDeeptadi | 'unknown' | null;
+  /** The lajjitadi avasthas: those it holds, those ruled out, and those undecided. */
+  readonly lajjitadi: {
+    readonly holding: readonly AvasthaLajjitadi[];
+    readonly ruledOut: readonly AvasthaLajjitadi[];
+    readonly undecided: readonly AvasthaLajjitadi[];
+  };
+  /** The planetary war it is in, or `null`. */
+  readonly war: {
+    readonly opponent: Graha | 'unknown';
+    readonly isWinner: boolean;
+    readonly apartDeg: number;
+  } | null;
+  /** How near it stands to a boundary. */
+  readonly boundaries: Boundaries;
+}
+
 /** The place a chart was founded at. */
 export interface ChartPlace {
   /** Degrees north. */
@@ -198,6 +338,10 @@ export declare class Charts extends Decoded<DecodedCharts> {
   readonly kind: ChartKind | 'unknown';
   /** The place they were all founded at. */
   readonly place: ChartPlace;
+  /** How many divisional charts each chart of the batch holds. */
+  readonly vargaCount: number;
+  /** The drishti table every aspect was read under; empty when none were asked for. */
+  readonly drishtiTable: string;
   /**
    * The completion steps the SDK applied, in order, each
    * `name:Implementation`. A positions result spells the same steps as
@@ -253,6 +397,20 @@ export declare class Chart {
   > & { readonly horaLord: Graha | 'unknown' };
   /** The grahas, in the catalogue's order, one object each. */
   readonly grahas: readonly PlacedGraha[];
+  /** The divisional charts asked for, in the order asked; empty unless `vargas` named some. */
+  readonly vargas: readonly DivisionalChart[];
+  /**
+   * The drishti the chart's grahas cast; empty unless `aspects` asked. The
+   * count differs from chart to chart, because relations depend on where
+   * the grahas stand.
+   */
+  readonly aspects: readonly Drishti[];
+  /** The upagrahas and special lagnas; empty unless `points` asked. */
+  readonly points: readonly DerivedPoint[];
+  /** The twelve bhavas as the houses service reads them; empty unless `houses` asked. */
+  readonly bhavas: readonly HouseReading[];
+  /** What each graha is, in `grahas` order; empty unless `state` asked. */
+  readonly states: readonly GrahaState[];
   /** The twelve bhavas for "which house is it in", first to twelfth. */
   readonly houses: readonly Bhava[];
   /** The twelve bhavas of the chart's chalit. */
@@ -475,6 +633,19 @@ export interface ChartRequest {
   readonly utcOffsetSeconds: number;
   /** A chart kind; `ChartKind.Natal` by default. */
   readonly kind?: ChartKind;
+  /**
+   * The divisional charts to compute, in the order wanted; none by default,
+   * so a caller who wants a birth chart does not pay for twenty-one.
+   */
+  readonly vargas?: readonly Varga[];
+  /** Whether to compute the drishti; false by default. */
+  readonly aspects?: boolean;
+  /** Whether to compute the upagrahas and special lagnas; false by default. */
+  readonly points?: boolean;
+  /** Whether to read the bhavas through the houses service; false by default. */
+  readonly houses?: boolean;
+  /** Whether to compute what each graha is — its dignity, avasthas, combustion and war; false by default. */
+  readonly state?: boolean;
 }
 
 /** What `Context.foundMany` needs to found a batch at one place. */
