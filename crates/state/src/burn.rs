@@ -152,6 +152,23 @@ pub enum Burning {
     Deep,
 }
 
+impl Burning {
+    /// Every member, least burnt first.
+    pub const ALL: [Burning; 3] = [Burning::None, Burning::Combust, Burning::Deep];
+
+    /// The key the document and the settings spell it with, as serde
+    /// writes it: the spelling every domain enum's `key()` uses. The
+    /// bindings' boundary enums spell the same member in kebab case.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Burning::None => "NONE",
+            Burning::Combust => "COMBUST",
+            Burning::Deep => "DEEP",
+        }
+    }
+}
+
 /// What the Sun does to one body.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Combustion {
@@ -254,6 +271,19 @@ mod tests {
         combustion, table,
     };
     use teistro_core::catalogue::Graha;
+
+    /// A member's key is its serialised form, so a document and a caller
+    /// printing `key()` never spell it two ways.
+    #[test]
+    fn a_key_is_what_serde_writes() {
+        for burning in Burning::ALL {
+            assert_eq!(
+                serde_json::to_value(burning).unwrap(),
+                burning.key(),
+                "{burning:?}"
+            );
+        }
+    }
 
     #[test]
     fn a_deep_orb_is_inside_its_own_and_every_body_has_both() {

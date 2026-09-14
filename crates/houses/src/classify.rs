@@ -63,6 +63,18 @@ impl Quadrant {
     /// Every quadrant, in the order the wheel meets them.
     pub const ALL: [Quadrant; 3] = [Quadrant::Kendra, Quadrant::Panapara, Quadrant::Apoklima];
 
+    /// The key the document and the settings spell it with, as serde
+    /// writes it: the spelling every domain enum's `key()` uses. The
+    /// bindings' boundary enums spell the same member in kebab case.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Quadrant::Kendra => "KENDRA",
+            Quadrant::Panapara => "PANAPARA",
+            Quadrant::Apoklima => "APOKLIMA",
+        }
+    }
+
     /// The houses this quadrant holds.
     #[must_use]
     pub const fn houses(self) -> [u8; 4] {
@@ -131,6 +143,19 @@ mod tests {
         is_trikona, is_upachaya, lord_of, quadrant,
     };
     use teistro_core::catalogue::{Graha, Rashi};
+
+    /// A member's key is its serialised form, so a document and a caller
+    /// printing `key()` never spell it two ways.
+    #[test]
+    fn a_key_is_what_serde_writes() {
+        for member in Quadrant::ALL {
+            assert_eq!(
+                serde_json::to_value(member).unwrap(),
+                member.key(),
+                "{member:?}"
+            );
+        }
+    }
 
     #[test]
     fn the_three_quadrants_partition_the_twelve() {

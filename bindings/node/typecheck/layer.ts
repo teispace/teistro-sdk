@@ -200,7 +200,7 @@ function reading(): string {
   });
   const navamsha = read.vargas[0];
   const vargottama: boolean = navamsha !== undefined && navamsha.lagna.sign === navamsha.lagna.rashi;
-  const part: number = navamsha?.grahas[0]?.part ?? -1;
+  const part: number = navamsha?.grahas[0]?.at.part ?? -1;
   const drishti = read.aspects.map((one) => `${one.from}>${one.to}:${one.houses}:${one.strength}`);
   const edge: number = read.aspects[0]?.toEdge.nakshatraDeg ?? 0;
   const gulika = read.points.find((one) => one.point === Point.Gulika);

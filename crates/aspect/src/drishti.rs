@@ -79,6 +79,20 @@ impl Strength {
         Strength::Full,
     ];
 
+    /// The key the document and the settings spell it with, as serde
+    /// writes it: the spelling every domain enum's `key()` uses. The
+    /// bindings' boundary enums spell the same member in kebab case.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Strength::None => "NONE",
+            Strength::Quarter => "QUARTER",
+            Strength::Half => "HALF",
+            Strength::ThreeQuarters => "THREE_QUARTERS",
+            Strength::Full => "FULL",
+        }
+    }
+
     /// The quarters of a full aspect this is, 0 to 4.
     #[must_use]
     pub const fn quarters(self) -> u8 {
@@ -328,6 +342,19 @@ mod tests {
     };
     use teistro_core::catalogue::{Graha, Rashi};
     use teistro_core::settings::NodeAspects;
+
+    /// A member's key is its serialised form, so a document and a caller
+    /// printing `key()` never spell it two ways.
+    #[test]
+    fn a_key_is_what_serde_writes() {
+        for member in Strength::ALL {
+            assert_eq!(
+                serde_json::to_value(member).unwrap(),
+                member.key(),
+                "{member:?}"
+            );
+        }
+    }
 
     #[test]
     fn the_table_is_the_classical_one() {

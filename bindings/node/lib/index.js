@@ -598,10 +598,12 @@ export class Chart {
    * does not pay for twenty-one of them
    * (`03-design/chart-reading.md` §4).
    *
-   * Each is `{ varga, lagna, grahas }`, where a placement is
-   * `{ rashi, part, sign }` — the sign the body stands in, which part of
-   * it, and the sign the divisional chart puts it in. `sign === rashi` is
-   * the body keeping its sign, which in the navamsha is **vargottama**.
+   * Each is `{ varga, lagna, grahas }`, where the lagna is a placement
+   * `{ rashi, part, sign }` — the sign it stands in, which part of it, and
+   * the sign the divisional chart puts it in — and each graha is
+   * `{ graha, at }` with `at` the same placement: the shape the Rust, Dart
+   * and Python surfaces give it. `at.sign === at.rashi` is the body keeping
+   * its sign, which in the navamsha is **vargottama**.
    */
   get vargas() {
     const d = this.#batch.decoded;
@@ -620,9 +622,11 @@ export class Chart {
         },
         grahas: Array.from({ length: grahaCount }, (_, j) => ({
           graha: GrahaById.get(d.grahas.graha[this.#index * grahaCount + j]) ?? 'unknown',
-          rashi: RashiById.get(d.vargaGrahas.rashi[from + j]) ?? 'unknown',
-          part: d.vargaGrahas.part[from + j],
-          sign: RashiById.get(d.vargaGrahas.sign[from + j]) ?? 'unknown',
+          at: {
+            rashi: RashiById.get(d.vargaGrahas.rashi[from + j]) ?? 'unknown',
+            part: d.vargaGrahas.part[from + j],
+            sign: RashiById.get(d.vargaGrahas.sign[from + j]) ?? 'unknown',
+          },
         })),
       };
     });

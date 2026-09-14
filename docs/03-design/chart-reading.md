@@ -328,9 +328,15 @@ by all four runners.
    "none" without needing one.
 3. ~~**The ergonomic layers**, one per binding.~~ **Done**, all four for
    all five sections.
-4. **Parity and the examples**: the sections' values compared across four
-   runners — **done**, 1 757 values — and a ninth example in each
-   binding, which is what is left.
+4. ~~**Parity and the examples**~~ **Done**: the sections' values
+   compared across four runners, 1 757 values, and a ninth example,
+   `chart_reading`, in each binding, whose four outputs are identical
+   line for line. Writing it found three shape gaps no value gate
+   could: Node nested a divisional placement's sign beside the graha
+   where the other three nest it under `at`; Node's declarations lacked
+   eleven members its runtime had, now held by `typecheck/surface.mjs`;
+   and three Rust domain enums (`Burning`, `Quadrant`, `Strength`) had
+   no `key()` to print what their serde form writes.
 5. **The JSON Schema emitter**, which `serial-and-the-envelope.md` §8
    says waits for a whole document to describe.
 

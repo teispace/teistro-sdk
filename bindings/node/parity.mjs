@@ -312,9 +312,9 @@ for (const chart of charts) {
     put(`chart-${i}-varga-${v}-lagna-sign`, varga.lagna.sign);
     varga.grahas.forEach((placed, j) => {
       put(`chart-${i}-varga-${v}-graha-${j}`, placed.graha);
-      put(`chart-${i}-varga-${v}-graha-${j}-rashi`, placed.rashi);
-      put(`chart-${i}-varga-${v}-graha-${j}-part`, placed.part);
-      put(`chart-${i}-varga-${v}-graha-${j}-sign`, placed.sign);
+      put(`chart-${i}-varga-${v}-graha-${j}-rashi`, placed.at.rashi);
+      put(`chart-${i}-varga-${v}-graha-${j}-part`, placed.at.part);
+      put(`chart-${i}-varga-${v}-graha-${j}-sign`, placed.at.sign);
     });
   });
   chart.grahas.forEach((graha, j) => {

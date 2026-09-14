@@ -227,7 +227,12 @@ export interface DivisionalChart {
   /** Where it puts the lagna. */
   readonly lagna: DivisionalPlacement;
   /** Where it puts each graha, in the chart's graha order. */
-  readonly grahas: readonly (DivisionalPlacement & { readonly graha: Graha | 'unknown' })[];
+  readonly grahas: readonly {
+    /** Which graha. */
+    readonly graha: Graha | 'unknown';
+    /** Where the divisional chart puts it. */
+    readonly at: DivisionalPlacement;
+  }[];
 }
 
 /** One drishti a graha casts. */

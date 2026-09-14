@@ -78,6 +78,10 @@ name = "birth_chart"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
+name = "chart_reading"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
 name = "ephemeris"
 required-features = ["builtin-ephemeris"]
 

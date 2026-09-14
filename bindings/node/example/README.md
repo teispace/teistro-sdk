@@ -19,6 +19,7 @@ node example/birth_chart.mjs
 | [`ephemeris.mjs`](ephemeris.mjs) | a year of the sky in one call | the grid is one crossing, not 366; a column is a `Float64Array` over the blob, not an array of objects; and the provenance's settings hash is the cache key |
 | [`rectification.mjs`](rectification.mjs) | a birth time known only to the hour, narrowed by lagna | `foundMany` founds a hundred candidate charts in **one crossing**, sharing the settings, the solar model and the day's sunrise; a chart is a view over the batch, not a copy; and `found(one)` is the same crossing unwrapped |
 | [`almanac.mjs`](almanac.mjs) | a week's panchangam: the five limbs of each day, and its periods | a limb is a **span**, not a name — most days have two tithis, and the SDK gives both with the instant each gives way; a span carries its own bounds as well as the clipped ones; and a value a day may not have is `null`, never a sentinel |
+| [`chart_reading.mjs`](chart_reading.mjs) | the same birth record read in full: divisional charts, houses, states, drishti and derived points | every section is **asked for** and off by default, and all of them come from one founded chart in one call; vargottama is a comparison of two signs, not a flag; a dignity and a house are different sections answering different questions; and the drishti are ragged, because relations depend on where the grahas stand. Its output is the other three bindings' `chart_reading`, line for line |
 | [`your_own_ephemeris.mjs`](your_own_ephemeris.mjs) | putting your own engine behind the SDK | the provider contract in full — one call per grid, refusing a frame so the SDK completes it, coverage checked before you are asked, and an exception that reaches the caller |
 
 ## What these examples do not do
@@ -31,8 +32,8 @@ its own licence and named the same way. Do that, or hand in an ephemeris of
 your own as [`your_own_ephemeris.mjs`](your_own_ephemeris.mjs) shows, and
 every one of these programs is unchanged, which is what the port is for.
 
-They also stop where the C boundary does. Houses, divisional charts,
-planetary states, aspects and dashas are computed by the SDK's Rust
-crates and do not yet cross the boundary, so a binding cannot ask for
-them. What a binding *can* do is everything above, which is most of what
-an application actually shows.
+They also stop where the C boundary does, and it is further out than it
+was: houses, divisional charts, planetary states, aspects and derived
+points all cross, and [`chart_reading.mjs`](chart_reading.mjs) asks for
+every one of them. Dashas do not, because nothing computes one yet
+(Phase 5), so a binding cannot ask for them.
