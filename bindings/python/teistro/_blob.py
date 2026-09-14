@@ -706,6 +706,93 @@ class ChartsStates:
 
 
 @dataclass(frozen=True)
+class ChartsDashas:
+    """The `dashas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+    """
+
+    system: memoryview[int]
+    """Which system."""
+
+    seed: memoryview[int]
+    """The nakshatra the Moon stood in, which seeds it."""
+
+    first_lord: memoryview[int]
+    """The lord it starts with."""
+
+    overflow: memoryview[int]
+    """1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it."""
+
+    balance: memoryview[int]
+    """How the balance was measured."""
+
+    remaining: memoryview[float]
+    """The fraction of the first lord's period still to run at birth, 0 to 1."""
+
+    balance_days: memoryview[float]
+    """That fraction of the first lord's years, in days."""
+
+    balance_years: memoryview[int]
+    """The balance's whole years of the year length."""
+
+    balance_months: memoryview[int]
+    """Its whole months of a twelfth of the year length."""
+
+    balance_day_count: memoryview[int]
+    """Its whole days."""
+
+    balance_hours: memoryview[int]
+    """Its hours, the rest rounded to the minute."""
+
+    balance_minutes: memoryview[int]
+    """Its minutes, rounded."""
+
+    moon_span_from: memoryview[float]
+    """When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span."""
+
+    moon_span_to: memoryview[float]
+    """When it left, a Julian day (UTC); NaN when no span was read."""
+
+    depth: memoryview[int]
+    """How many levels the periods go down, 1 to 6."""
+
+    period_count: memoryview[int]
+    """How many rows of `dasha_periods` are this dasha's."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDashaPeriods:
+    """The `dasha_periods` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+    """
+
+    level: memoryview[int]
+    """How deep: 1 for a mahadasha."""
+
+    index: memoryview[int]
+    """Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0."""
+
+    lord: memoryview[int]
+    """Its lord."""
+
+    from_jd: memoryview[float]
+    """When it begins, a Julian day (UTC)."""
+
+    to_jd: memoryview[float]
+    """When it ends, a Julian day (UTC)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -789,6 +876,9 @@ class Charts:
 
     varga_count: int
     """How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."""
+
+    dasha_count: int
+    """How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows."""
 
     latitude_deg: float
     """The place's latitude, degrees north."""
@@ -886,6 +976,12 @@ class Charts:
     svgs: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given."""
 
+    dashas: ChartsDashas
+    """Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for."""
+
+    dasha_periods: ChartsDashaPeriods
+    """Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -917,14 +1013,17 @@ def decode_charts(raw: bytes) -> Charts:
     at_combustion_orbs = blob.section(20, "combustion_orbs")
     at_drawings = blob.section(21, "drawings")
     at_svgs = blob.section(22, "svgs")
+    at_dashas = blob.section(23, "dashas")
+    at_dasha_periods = blob.section(24, "dasha_periods")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
         graha_count=int(blob.fixed(at_summary, 2, "I")),
         varga_count=int(blob.fixed(at_summary, 3, "I")),
-        latitude_deg=blob.fixed(at_summary, 4, "d"),
-        longitude_deg=blob.fixed(at_summary, 5, "d"),
-        altitude_m=blob.fixed(at_summary, 6, "d"),
+        dasha_count=int(blob.fixed(at_summary, 4, "I")),
+        latitude_deg=blob.fixed(at_summary, 5, "d"),
+        longitude_deg=blob.fixed(at_summary, 6, "d"),
+        altitude_m=blob.fixed(at_summary, 7, "d"),
         cast=ChartsCast(
             instant=blob.column(at_cast, 0, 8, at_cast.count).cast("d"),
             lagna_deg=blob.column(at_cast, 1, 8, at_cast.count).cast("d"),
@@ -1176,6 +1275,61 @@ def decode_charts(raw: bytes) -> Charts:
         combustion_orbs=blob.text(at_combustion_orbs),
         drawings=blob.text(at_drawings),
         svgs=blob.text(at_svgs),
+        dashas=ChartsDashas(
+            system=blob.column(at_dashas, 0, 2, at_dashas.count).cast("H"),
+            seed=blob.column(at_dashas, 1, 2, at_dashas.count).cast("H"),
+            first_lord=blob.column(at_dashas, 2, 2, at_dashas.count).cast("H"),
+            overflow=blob.column(at_dashas, 3, 1, at_dashas.count).cast("B"),
+            balance=blob.column(at_dashas, 4, 1, at_dashas.count).cast("B"),
+            remaining=blob.column(at_dashas, 5, 8, at_dashas.count).cast("d"),
+            balance_days=blob.column(
+                at_dashas, 6, 8, at_dashas.count
+            ).cast("d"),
+            balance_years=blob.column(
+                at_dashas, 7, 4, at_dashas.count
+            ).cast("I"),
+            balance_months=blob.column(
+                at_dashas, 8, 1, at_dashas.count
+            ).cast("B"),
+            balance_day_count=blob.column(
+                at_dashas, 9, 1, at_dashas.count
+            ).cast("B"),
+            balance_hours=blob.column(
+                at_dashas, 10, 1, at_dashas.count
+            ).cast("B"),
+            balance_minutes=blob.column(
+                at_dashas, 11, 1, at_dashas.count
+            ).cast("B"),
+            moon_span_from=blob.column(
+                at_dashas, 12, 8, at_dashas.count
+            ).cast("d"),
+            moon_span_to=blob.column(
+                at_dashas, 13, 8, at_dashas.count
+            ).cast("d"),
+            depth=blob.column(at_dashas, 14, 1, at_dashas.count).cast("B"),
+            period_count=blob.column(
+                at_dashas, 15, 4, at_dashas.count
+            ).cast("I"),
+            length=at_dashas.count,
+        ),
+        dasha_periods=ChartsDashaPeriods(
+            level=blob.column(
+                at_dasha_periods, 0, 1, at_dasha_periods.count
+            ).cast("B"),
+            index=blob.column(
+                at_dasha_periods, 1, 1, at_dasha_periods.count
+            ).cast("B"),
+            lord=blob.column(
+                at_dasha_periods, 2, 2, at_dasha_periods.count
+            ).cast("H"),
+            from_jd=blob.column(
+                at_dasha_periods, 3, 8, at_dasha_periods.count
+            ).cast("d"),
+            to_jd=blob.column(
+                at_dasha_periods, 4, 8, at_dasha_periods.count
+            ).cast("d"),
+            length=at_dasha_periods.count,
+        ),
     )
 
 

@@ -32,7 +32,7 @@
 
 use std::collections::BTreeMap;
 
-use teistro::catalogue::{Calendar, ChartKind, ChartLayout, Graha, Varga};
+use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Varga};
 use teistro::{
     Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
     TimeScale,
@@ -807,6 +807,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_bhavas(report, index, document);
         the_points(report, index, document);
         the_drishti(report, index, document);
+        the_dashas(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -877,12 +878,13 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
 /// same order and the other three bindings read the name from the
 /// foundation's column: a runner that read it from its own section would
 /// agree with them and prove less.
-/// The request every runner makes: two divisional charts, three drawings and
-/// every section.
+/// The request every runner makes: two divisional charts, a dasha, four
+/// drawings and every section.
 fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) -> ChartRequest {
     ChartRequest::at(place, offset)
         .with_kind(ChartKind::Natal)
         .with_vargas([Varga::D9, Varga::D10])
+        .with_dashas([DashaSystem::Vimshottari])
         .with_drawings([
             (ChartLayout::NorthIndian.key_id(), Varga::D1),
             (ChartLayout::SouthIndian.key_id(), Varga::D9),
@@ -1163,6 +1165,86 @@ fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
 /// charts of the same nine grahas hold 47 relations and 40 -- so a
 /// runner that printed only the count would agree with the others while
 /// the rows disagreed. It is why the boundary's section is ragged.
+/// Every dasha the request named: its seed, its balance, every period to the
+/// settings' depth and the chain running 5000 days after birth, the chain
+/// asked of the cursor rebuilt from the document where the other three walk
+/// the periods they decoded.
+fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    put(
+        report,
+        &format!("chart-{index}-dasha-count"),
+        document.dashas.len().to_string(),
+    );
+    for (at, dasha) in document.dashas.iter().enumerate() {
+        let key = |what: &str| format!("chart-{index}-dasha-{at}{what}");
+        put(report, &key(""), dasha.system.full_key().to_owned());
+        put(report, &key("-seed"), dasha.seed.full_key().to_owned());
+        put(
+            report,
+            &key("-first-lord"),
+            dasha.first_lord.full_key().to_owned(),
+        );
+        put(report, &key("-overflow"), dasha.overflow.to_string());
+        let balance = &dasha.balance;
+        put(
+            report,
+            &key("-balance"),
+            kebab(&format!("{:?}", balance.method)),
+        );
+        put(report, &key("-remaining"), number(balance.remaining));
+        put(report, &key("-balance-days"), number(balance.days));
+        let w = balance.written;
+        put(
+            report,
+            &key("-balance-written"),
+            format!(
+                "{},{},{},{},{}",
+                w.years, w.months, w.days, w.hours, w.minutes
+            ),
+        );
+        let span = |end: fn(&Interval) -> f64| {
+            dasha
+                .moon_span
+                .as_ref()
+                .map_or_else(|| String::from("null"), |span| number(end(span)))
+        };
+        put(report, &key("-moon-span-from"), span(|s| s.from.get()));
+        put(report, &key("-moon-span-to"), span(|s| s.to.get()));
+        put(report, &key("-depth"), dasha.depth.get().to_string());
+        put(report, &key("-periods"), dasha.periods.len().to_string());
+        for (k, period) in dasha.periods.iter().enumerate() {
+            put(
+                report,
+                &key(&format!("-period-{k}")),
+                format!("{} {}", period.path, period.lord.full_key()),
+            );
+            put(
+                report,
+                &key(&format!("-period-{k}-from")),
+                number(period.interval.from.get()),
+            );
+            put(
+                report,
+                &key(&format!("-period-{k}-to")),
+                number(period.interval.to.get()),
+            );
+        }
+        let chain = sdk.chart().dasha(document, dasha.system).map_or_else(
+            |error| format!("refused: {error}"),
+            |cursor| {
+                let instant = JulianDay::literal(document.foundation.instant.get() + 5000.0);
+                cursor
+                    .at(instant, dasha.depth)
+                    .iter()
+                    .map(|period| period.path.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            },
+        );
+        put(report, &key("-at"), chain);
+    }
+}
+
 fn the_drishti(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(aspects) = document.aspects.as_ref() else {
         return;

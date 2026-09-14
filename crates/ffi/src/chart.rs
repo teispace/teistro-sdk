@@ -34,7 +34,7 @@ use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{ChartKind, Kind, Varga};
+use teistro_core::catalogue::{ChartKind, DashaSystem, Kind, Varga};
 use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::key::KeyId;
@@ -148,6 +148,28 @@ impl From<Strength> for TsStrength {
             Strength::Half => TsStrength::Half,
             Strength::ThreeQuarters => TsStrength::ThreeQuarters,
             Strength::Full => TsStrength::Full,
+        }
+    }
+}
+
+/// How a dasha's balance at birth was measured.
+///
+/// The settings' own `Balance`, which is a knob and not a catalogue member,
+/// so it crosses as this boundary's own enum, as `TsStrength` does.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsBalance {
+    /// By the elapsed part of the Moon's window of nakshatras.
+    Spatial = 0,
+    /// By the elapsed part of the Moon's stay in its nakshatra.
+    Temporal = 1,
+}
+
+impl From<teistro_core::settings::Balance> for TsBalance {
+    fn from(balance: teistro_core::settings::Balance) -> TsBalance {
+        match balance {
+            teistro_core::settings::Balance::Temporal => TsBalance::Temporal,
+            _ => TsBalance::Spatial,
         }
     }
 }
@@ -415,6 +437,13 @@ pub struct TsChartRequest {
     pub drawings: *const u32,
     /// How many drawings `drawings` points at.
     pub drawing_count: usize,
+    /// Which dashas to compute, as catalogue ids, in the order they should be
+    /// answered in: each one's balance and its periods to the settings'
+    /// `dasha.depth`. Null with a count of zero for none.
+    /// `api: len=dasha_count enum=DashaSystem`
+    pub dashas: *const u16,
+    /// How many dashas `dashas` points at.
+    pub dasha_count: usize,
     /// A theme to write every drawing as SVG in, as JSON: an object of
     /// `style` and `content` naming only what it changes, over the light
     /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
@@ -608,12 +637,14 @@ fn summary_values(
     chart_count: u32,
     graha_count: u32,
     varga_count: u32,
+    dasha_count: u32,
 ) -> Vec<FixedValue> {
     vec![
         u64::from(kind.id()).into(),
         u64::from(chart_count).into(),
         u64::from(graha_count).into(),
         u64::from(varga_count).into(),
+        u64::from(dasha_count).into(),
         place.latitude.get().into(),
         place.longitude.get().into(),
         place.altitude.get().into(),
@@ -1147,6 +1178,156 @@ fn timing_values(timing: &teistro_chart::foundation::BirthTiming) -> Vec<FixedVa
 /// and `summary.chart_count` is what says they mean nothing; the
 /// provenance envelope still carries the settings hash that would have
 /// produced them.
+/// The dashas of a batch, as the two sections carry them: one row a chart
+/// a system, and every period of each, concatenated in the same order and
+/// **ragged** by `period_count`, since a dasha's depth is the settings' and
+/// an elapsed birth period has fewer children than a compressed one.
+struct DashaColumns {
+    /// How many systems each chart holds: one for the batch, since every
+    /// chart answers the same request.
+    count: u32,
+    system: Vec<u16>,
+    seed: Vec<u16>,
+    first_lord: Vec<u16>,
+    overflow: Vec<u8>,
+    balance: Vec<u8>,
+    remaining: Vec<f64>,
+    days: Vec<f64>,
+    years: Vec<u32>,
+    months: Vec<u8>,
+    whole_days: Vec<u8>,
+    hours: Vec<u8>,
+    minutes: Vec<u8>,
+    span_from: Vec<f64>,
+    span_to: Vec<f64>,
+    depth: Vec<u8>,
+    period_count: Vec<u32>,
+    level: Vec<u8>,
+    index: Vec<u8>,
+    lord: Vec<u16>,
+    from: Vec<f64>,
+    to: Vec<f64>,
+}
+
+impl DashaColumns {
+    fn of(documents: &[Document]) -> Result<DashaColumns, Error> {
+        let count = documents.first().map_or(0, |d| d.dashas.len());
+        if documents.iter().any(|d| d.dashas.len() != count) {
+            return Err(Error::internal(
+                "the batch's charts hold different numbers of dashas, though one request asked for them",
+            ));
+        }
+        let rows = documents.len() * count;
+        let periods: usize = documents
+            .iter()
+            .flat_map(|d| &d.dashas)
+            .map(|reading| reading.periods.len())
+            .sum();
+        let mut columns = DashaColumns {
+            count: u32::try_from(count).unwrap_or(u32::MAX),
+            system: Vec::with_capacity(rows),
+            seed: Vec::with_capacity(rows),
+            first_lord: Vec::with_capacity(rows),
+            overflow: Vec::with_capacity(rows),
+            balance: Vec::with_capacity(rows),
+            remaining: Vec::with_capacity(rows),
+            days: Vec::with_capacity(rows),
+            years: Vec::with_capacity(rows),
+            months: Vec::with_capacity(rows),
+            whole_days: Vec::with_capacity(rows),
+            hours: Vec::with_capacity(rows),
+            minutes: Vec::with_capacity(rows),
+            span_from: Vec::with_capacity(rows),
+            span_to: Vec::with_capacity(rows),
+            depth: Vec::with_capacity(rows),
+            period_count: Vec::with_capacity(rows),
+            level: Vec::with_capacity(periods),
+            index: Vec::with_capacity(periods),
+            lord: Vec::with_capacity(periods),
+            from: Vec::with_capacity(periods),
+            to: Vec::with_capacity(periods),
+        };
+        for reading in documents.iter().flat_map(|d| &d.dashas) {
+            columns.system.push(reading.system.id());
+            columns.seed.push(reading.seed.id());
+            columns.first_lord.push(reading.first_lord.id());
+            columns.overflow.push(u8::from(reading.overflow));
+            columns
+                .balance
+                .push(TsBalance::from(reading.balance.method) as u8);
+            columns.remaining.push(reading.balance.remaining);
+            columns.days.push(reading.balance.days);
+            let written = reading.balance.written;
+            columns.years.push(written.years);
+            columns.months.push(written.months);
+            columns.whole_days.push(written.days);
+            columns.hours.push(written.hours);
+            columns.minutes.push(written.minutes);
+            columns
+                .span_from
+                .push(reading.moon_span.map_or(f64::NAN, |span| span.from.get()));
+            columns
+                .span_to
+                .push(reading.moon_span.map_or(f64::NAN, |span| span.to.get()));
+            columns.depth.push(reading.depth.get());
+            columns
+                .period_count
+                .push(u32::try_from(reading.periods.len()).unwrap_or(u32::MAX));
+            for period in &reading.periods {
+                let places: Vec<u8> = period
+                    .path
+                    .split('/')
+                    .map(|step| step.parse().unwrap_or(u8::MAX))
+                    .collect();
+                columns
+                    .level
+                    .push(u8::try_from(places.len()).unwrap_or(u8::MAX));
+                columns.index.push(places.last().copied().unwrap_or(0));
+                columns.lord.push(period.lord.id());
+                columns.from.push(period.interval.from.get());
+                columns.to.push(period.interval.to.get());
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "dashas",
+            self.system.len(),
+            &[
+                ColumnData::U16(&self.system),
+                ColumnData::U16(&self.seed),
+                ColumnData::U16(&self.first_lord),
+                ColumnData::U8(&self.overflow),
+                ColumnData::U8(&self.balance),
+                ColumnData::F64(&self.remaining),
+                ColumnData::F64(&self.days),
+                ColumnData::U32(&self.years),
+                ColumnData::U8(&self.months),
+                ColumnData::U8(&self.whole_days),
+                ColumnData::U8(&self.hours),
+                ColumnData::U8(&self.minutes),
+                ColumnData::F64(&self.span_from),
+                ColumnData::F64(&self.span_to),
+                ColumnData::U8(&self.depth),
+                ColumnData::U32(&self.period_count),
+            ],
+        )?;
+        writer.columns(
+            "dasha_periods",
+            self.lord.len(),
+            &[
+                ColumnData::U8(&self.level),
+                ColumnData::U8(&self.index),
+                ColumnData::U16(&self.lord),
+                ColumnData::F64(&self.from),
+                ColumnData::F64(&self.to),
+            ],
+        )
+    }
+}
+
 struct BatchOnce {
     readings: Vec<FixedValue>,
     frame_bits: u32,
@@ -1231,8 +1412,6 @@ pub fn encode(
     let chart_count = u32::try_from(charts.len()).unwrap_or(u32::MAX);
     let graha_count = one_size(charts)?;
     let columns = GrahaColumns::of(charts);
-    let (house_madhya, house_sandhi) = bhava_columns(charts, |c| &c.houses);
-    let (chalit_madhya, chalit_sandhi) = bhava_columns(charts, |c| &c.chalit);
     let day_rows: Vec<Vec<FixedValue>> = charts.iter().map(|c| day_values(&c.day.day)).collect();
     let timing_rows: Vec<Vec<FixedValue>> =
         charts.iter().map(|c| timing_values(&c.timing)).collect();
@@ -1242,6 +1421,7 @@ pub fn encode(
     let points = PointColumns::of(documents);
     let bhavas = BhavaColumns::of(documents);
     let states = StateColumns::of(documents);
+    let dashas = DashaColumns::of(documents)?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1252,6 +1432,7 @@ pub fn encode(
                 chart_count,
                 u32::try_from(graha_count).unwrap_or(u32::MAX),
                 vargas.count,
+                dashas.count,
             ),
         )?;
         writer.rows("cast", &chart_rows(charts, &points.counts, &aspects.counts))?;
@@ -1276,22 +1457,8 @@ pub fn encode(
             ],
         )?;
         writer.fixed("readings", &once.readings)?;
-        writer.columns(
-            "houses",
-            charts.len() * 12,
-            &[
-                ColumnData::F64(&house_madhya),
-                ColumnData::F64(&house_sandhi),
-            ],
-        )?;
-        writer.columns(
-            "chalit",
-            charts.len() * 12,
-            &[
-                ColumnData::F64(&chalit_madhya),
-                ColumnData::F64(&chalit_sandhi),
-            ],
-        )?;
+        write_bhavas(&mut writer, "houses", charts, |c| &c.houses)?;
+        write_bhavas(&mut writer, "chalit", charts, |c| &c.chalit)?;
         writer.fixed(
             "zodiac",
             &[
@@ -1315,6 +1482,7 @@ pub fn encode(
         states.write(&mut writer)?;
         writer.bytes("drawings", drawings_json(documents).as_bytes())?;
         writer.bytes("svgs", svgs.as_bytes())?;
+        dashas.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1323,6 +1491,21 @@ pub fn encode(
             format!("the chart blob could not be written: {error}"),
         )
     })
+}
+
+/// One of the two twelve-bhava sections, charts outermost.
+fn write_bhavas(
+    writer: &mut Writer<'_>,
+    name: &str,
+    charts: &[&ChartFoundation],
+    pick: fn(&ChartFoundation) -> &teistro_chart::bhava::Bhavas,
+) -> Result<(), teistro_idl::blob::BlobError> {
+    let (madhya, sandhi) = bhava_columns(charts, pick);
+    writer.columns(
+        name,
+        charts.len() * 12,
+        &[ColumnData::F64(&madhya), ColumnData::F64(&sandhi)],
+    )
 }
 
 /// Every chart's drawings as the canonical JSON the `drawings` section
@@ -1452,6 +1635,15 @@ pub unsafe extern "C" fn ts_chart_found(
                 .with_field("vargas")
             })?);
         }
+        // SAFETY: as above, for `dasha_count` readable `u16`s.
+        let asked_dashas = unsafe { slice(asked.dashas, asked.dasha_count, "dashas") }?;
+        let mut dashas = Vec::with_capacity(asked_dashas.len());
+        for (index, id) in asked_dashas.iter().enumerate() {
+            dashas.push(DashaSystem::from_id(*id).ok_or_else(|| {
+                Error::invalid_arg(format!("no dasha system with id {id}"))
+                    .with_field(format!("dashas[{index}]"))
+            })?);
+        }
         // SAFETY: as above, for `drawing_count` readable `u32`s.
         let asked_drawings = unsafe { slice(asked.drawings, asked.drawing_count, "drawings") }?;
         let mut drawings = Vec::with_capacity(asked_drawings.len());
@@ -1474,7 +1666,8 @@ pub unsafe extern "C" fn ts_chart_found(
             ChartRequest::at(place, clock).with_kind(kind),
         )
         .with_vargas(vargas)
-        .with_drawings(drawings);
+        .with_drawings(drawings)
+        .with_dashas(dashas);
         // **The façade reads it**, which is what the dependency inversion
         // was for: `rust-consumer-surface.md` moved the SDK's
         // composition into `teistro` and had this crate depend on it, and

@@ -268,6 +268,7 @@ void main() {
     place: place,
     utcOffsetSeconds: 20700,
     vargas: <Varga>[Varga.d9, Varga.d10],
+    dashas: [DashaSystem.vimshottari],
     drawings: [
       (ChartLayout.northIndian, Varga.d1),
       (ChartLayout.southIndian, Varga.d9),
@@ -422,6 +423,36 @@ void main() {
         put('$at-at', '${number(mark.at.x)},${number(mark.at.y)}');
         put('$at-lon', mark.longitudeDeg);
       }
+    }
+    put('chart-$i-dasha-count', chart.dashas.length);
+    for (final (j, dasha) in chart.dashas.indexed) {
+      final key = 'chart-$i-dasha-$j';
+      put(key, dasha.system.fullKey);
+      put('$key-seed', dasha.seed.fullKey);
+      put('$key-first-lord', dasha.firstLord.fullKey);
+      put('$key-overflow', dasha.overflow);
+      put('$key-balance', dasha.balance.method.key);
+      put('$key-remaining', dasha.balance.remaining);
+      put('$key-balance-days', dasha.balance.days);
+      final w = dasha.balance.written;
+      put(
+        '$key-balance-written',
+        '${w.years},${w.months},${w.days},${w.hours},${w.minutes}',
+      );
+      put('$key-moon-span-from', dasha.moonSpan?.from);
+      put('$key-moon-span-to', dasha.moonSpan?.to);
+      put('$key-depth', dasha.depth);
+      put('$key-periods', dasha.periods.length);
+      for (final (k, period) in dasha.periods.indexed) {
+        put('$key-period-$k', '${period.path} ${period.lord.fullKey}');
+        put('$key-period-$k-from', period.from);
+        put('$key-period-$k-to', period.to);
+      }
+      put(
+        '$key-at',
+        [for (final period in dasha.at(chart.instant + 5000)) period.path]
+            .join(','),
+      );
     }
     final vargas = chart.vargas;
     for (var v = 0; v < vargas.length; v += 1) {

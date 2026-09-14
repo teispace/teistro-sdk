@@ -15,9 +15,11 @@ from typing import Optional
 
 from teistro import (
     Altitude,
+    Balance,
     Body,
     Calendar,
     ChartLayout,
+    DashaSystem,
     Drawing,
     LayoutRow,
     Ephemeris,
@@ -600,6 +602,47 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as unknown:
             found("sepia")  # type: ignore[arg-type]
         self.assertEqual(unknown.exception.field, "theme_json.extends")
+
+    def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
+        """A chart's dashas cross whole: the balance, the periods to the
+        settings' depth with their paths, and the chain at an instant read
+        off them (`03-design/dasha-kernels.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(
+            instant=2451545.0, place=observer, utc_offset_seconds=20700, dashas=[DashaSystem.VIMSHOTTARI]
+        )
+        self.assertEqual(
+            self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).dashas, []
+        )
+        (dasha,) = chart.dashas
+        self.assertIs(dasha.system, DashaSystem.VIMSHOTTARI)
+        self.assertIs(dasha.balance.method, Balance.SPATIAL)
+        self.assertTrue(0 < dasha.balance.remaining <= 1)
+        self.assertIsNone(dasha.moon_span)
+        self.assertEqual(dasha.depth, 3)
+        self.assertEqual(len(dasha.periods), 9 + 81 + 729)
+        first, second = dasha.periods[:2]
+        self.assertEqual((first.path, first.level, first.span.from_jd), ("0", 1, 2451545.0))
+        self.assertIs(first.lord, dasha.first_lord)
+        self.assertEqual((second.path, second.level, second.lord), ("0/0", 2, dasha.first_lord))
+        self.assertEqual(dasha.periods[-1].path, "8/8/8")
+
+        instant = 2451545.0 + 5000
+        chain = dasha.at(instant)
+        self.assertEqual([period.level for period in chain], [1, 2, 3])
+        self.assertTrue(all(p.span.from_jd <= instant < p.span.to_jd for p in chain))
+        self.assertEqual(dasha.at(2451544.0), [], "before birth")
+
+        with self.assertRaises(TeistroError) as caught:
+            self.ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=0,
+                dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.ASHTOTTARI],
+            )
+        self.assertEqual(caught.exception.field, "dashas[1]")
 
     def test_a_layout_of_your_own_is_registered_drawn_by_its_key_and_refused_by_its_field(self) -> None:
         """A shipped row copied, renamed and registered, drawn by its key,

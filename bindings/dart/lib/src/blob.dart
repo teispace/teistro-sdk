@@ -870,6 +870,116 @@ final class ChartsStates {
   final int length;
 }
 
+/// The `dashas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+final class ChartsDashas {
+  const ChartsDashas({
+    required this.system,
+    required this.seed,
+    required this.firstLord,
+    required this.overflow,
+    required this.balance,
+    required this.remaining,
+    required this.balanceDays,
+    required this.balanceYears,
+    required this.balanceMonths,
+    required this.balanceDayCount,
+    required this.balanceHours,
+    required this.balanceMinutes,
+    required this.moonSpanFrom,
+    required this.moonSpanTo,
+    required this.depth,
+    required this.periodCount,
+    required this.length,
+  });
+
+  /// Which system.
+  final Uint16List system;
+
+  /// The nakshatra the Moon stood in, which seeds it.
+  final Uint16List seed;
+
+  /// The lord it starts with.
+  final Uint16List firstLord;
+
+  /// 1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it.
+  final Uint8List overflow;
+
+  /// How the balance was measured.
+  final Uint8List balance;
+
+  /// The fraction of the first lord's period still to run at birth, 0 to 1.
+  final Float64List remaining;
+
+  /// That fraction of the first lord's years, in days.
+  final Float64List balanceDays;
+
+  /// The balance's whole years of the year length.
+  final Uint32List balanceYears;
+
+  /// Its whole months of a twelfth of the year length.
+  final Uint8List balanceMonths;
+
+  /// Its whole days.
+  final Uint8List balanceDayCount;
+
+  /// Its hours, the rest rounded to the minute.
+  final Uint8List balanceHours;
+
+  /// Its minutes, rounded.
+  final Uint8List balanceMinutes;
+
+  /// When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span.
+  final Float64List moonSpanFrom;
+
+  /// When it left, a Julian day (UTC); NaN when no span was read.
+  final Float64List moonSpanTo;
+
+  /// How many levels the periods go down, 1 to 6.
+  final Uint8List depth;
+
+  /// How many rows of `dasha_periods` are this dasha's.
+  final Uint32List periodCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dasha_periods` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+final class ChartsDashaPeriods {
+  const ChartsDashaPeriods({
+    required this.level,
+    required this.index,
+    required this.lord,
+    required this.fromJd,
+    required this.toJd,
+    required this.length,
+  });
+
+  /// How deep: 1 for a mahadasha.
+  final Uint8List level;
+
+  /// Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
+  final Uint8List index;
+
+  /// Its lord.
+  final Uint16List lord;
+
+  /// When it begins, a Julian day (UTC).
+  final Float64List fromJd;
+
+  /// When it ends, a Julian day (UTC).
+  final Float64List toJd;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -964,6 +1074,7 @@ final class Charts {
     required this.chartCount,
     required this.grahaCount,
     required this.vargaCount,
+    required this.dashaCount,
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.altitudeM,
@@ -995,6 +1106,8 @@ final class Charts {
     required this.combustionOrbs,
     required this.drawings,
     required this.svgs,
+    required this.dashas,
+    required this.dashaPeriods,
   });
 
   /// What kind of chart these are.
@@ -1008,6 +1121,9 @@ final class Charts {
 
   /// How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`.
   final int vargaCount;
+
+  /// How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows.
+  final int dashaCount;
 
   /// The place's latitude, degrees north.
   final double latitudeDeg;
@@ -1104,6 +1220,12 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.
   final String svgs;
 
+  /// Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+  final ChartsDashas dashas;
+
+  /// Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+  final ChartsDashaPeriods dashaPeriods;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1133,14 +1255,17 @@ Charts decodeCharts(Uint8List bytes) {
   final atCombustionOrbs = blob.section(20, 'combustion_orbs');
   final atDrawings = blob.section(21, 'drawings');
   final atSvgs = blob.section(22, 'svgs');
+  final atDashas = blob.section(23, 'dashas');
+  final atDashaPeriods = blob.section(24, 'dasha_periods');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
     grahaCount: blob.data.getUint32(atSummary.offset + 16, Endian.little),
     vargaCount: blob.data.getUint32(atSummary.offset + 24, Endian.little),
-    latitudeDeg: blob.data.getFloat64(atSummary.offset + 32, Endian.little),
-    longitudeDeg: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
-    altitudeM: blob.data.getFloat64(atSummary.offset + 48, Endian.little),
+    dashaCount: blob.data.getUint32(atSummary.offset + 32, Endian.little),
+    latitudeDeg: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
+    longitudeDeg: blob.data.getFloat64(atSummary.offset + 48, Endian.little),
+    altitudeM: blob.data.getFloat64(atSummary.offset + 56, Endian.little),
     cast: ChartsCast(
       instant: Float64List.sublistView(
         blob.bytes,
@@ -1738,6 +1863,117 @@ Charts decodeCharts(Uint8List bytes) {
     combustionOrbs: blob.text(atCombustionOrbs),
     drawings: blob.text(atDrawings),
     svgs: blob.text(atSvgs),
+    dashas: ChartsDashas(
+      system: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 0),
+        blob.columnOffset(atDashas, 0) + atDashas.count * 2,
+      ),
+      seed: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 1),
+        blob.columnOffset(atDashas, 1) + atDashas.count * 2,
+      ),
+      firstLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 2),
+        blob.columnOffset(atDashas, 2) + atDashas.count * 2,
+      ),
+      overflow: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 3),
+        blob.columnOffset(atDashas, 3) + atDashas.count * 1,
+      ),
+      balance: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 4),
+        blob.columnOffset(atDashas, 4) + atDashas.count * 1,
+      ),
+      remaining: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 5),
+        blob.columnOffset(atDashas, 5) + atDashas.count * 8,
+      ),
+      balanceDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 6),
+        blob.columnOffset(atDashas, 6) + atDashas.count * 8,
+      ),
+      balanceYears: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 7),
+        blob.columnOffset(atDashas, 7) + atDashas.count * 4,
+      ),
+      balanceMonths: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 8),
+        blob.columnOffset(atDashas, 8) + atDashas.count * 1,
+      ),
+      balanceDayCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 9),
+        blob.columnOffset(atDashas, 9) + atDashas.count * 1,
+      ),
+      balanceHours: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 10),
+        blob.columnOffset(atDashas, 10) + atDashas.count * 1,
+      ),
+      balanceMinutes: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 11),
+        blob.columnOffset(atDashas, 11) + atDashas.count * 1,
+      ),
+      moonSpanFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 12),
+        blob.columnOffset(atDashas, 12) + atDashas.count * 8,
+      ),
+      moonSpanTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 13),
+        blob.columnOffset(atDashas, 13) + atDashas.count * 8,
+      ),
+      depth: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 14),
+        blob.columnOffset(atDashas, 14) + atDashas.count * 1,
+      ),
+      periodCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 15),
+        blob.columnOffset(atDashas, 15) + atDashas.count * 4,
+      ),
+      length: atDashas.count,
+    ),
+    dashaPeriods: ChartsDashaPeriods(
+      level: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 0),
+        blob.columnOffset(atDashaPeriods, 0) + atDashaPeriods.count * 1,
+      ),
+      index: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 1),
+        blob.columnOffset(atDashaPeriods, 1) + atDashaPeriods.count * 1,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 2),
+        blob.columnOffset(atDashaPeriods, 2) + atDashaPeriods.count * 2,
+      ),
+      fromJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 3),
+        blob.columnOffset(atDashaPeriods, 3) + atDashaPeriods.count * 8,
+      ),
+      toJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 4),
+        blob.columnOffset(atDashaPeriods, 4) + atDashaPeriods.count * 8,
+      ),
+      length: atDashaPeriods.count,
+    ),
   );
 }
 

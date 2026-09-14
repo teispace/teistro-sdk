@@ -30,6 +30,7 @@ from .catalogue import (
     Ayanamsha,
     AyanamshaCategory,
     BalaScheme,
+    Balance,
     Body,
     BodyClass,
     Burning,
@@ -150,7 +151,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 104,
+    "ts_chart_request": 120,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -180,7 +181,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 80,
+    "ts_chart_request": 88,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -571,6 +572,8 @@ class _ChartRequestStruct(ctypes.Structure):
         ("varga_count", ctypes.c_size_t),
         ("drawings", ctypes.POINTER(ctypes.c_uint32)),
         ("drawing_count", ctypes.c_size_t),
+        ("dashas", ctypes.POINTER(ctypes.c_uint16)),
+        ("dasha_count", ctypes.c_size_t),
         ("theme_json", ctypes.c_char_p),
     ]
 
@@ -2096,6 +2099,13 @@ class ChartRequest:
     layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
     """
 
+    dashas: Sequence[DashaSystem]
+    """Which dashas to compute, as catalogue ids, in the order they should be
+    answered in: each one's balance and its periods to the settings'
+    `dasha.depth`. Null with a count of zero for none.
+    Enum: DashaSystem.
+    """
+
     theme_json: Optional[str] = None
     """A theme to write every drawing as SVG in, as JSON: an object of
     `style` and `content` naming only what it changes, over the light
@@ -2138,6 +2148,12 @@ class ChartRequest:
         owned.append(_drawings)
         raw.drawings = ctypes.cast(_drawings, ctypes.POINTER(ctypes.c_uint32))
         raw.drawing_count = len(self.drawings)
+        _dashas = (ctypes.c_uint16 * len(self.dashas))(
+            *(_c_value(_v) for _v in self.dashas)
+        )
+        owned.append(_dashas)
+        raw.dashas = ctypes.cast(_dashas, ctypes.POINTER(ctypes.c_uint16))
+        raw.dasha_count = len(self.dashas)
         _theme_json = None if self.theme_json is None else self.theme_json.encode("utf-8")
         owned.append(_theme_json)
         raw.theme_json = _theme_json
@@ -2173,6 +2189,11 @@ class ChartRequest:
             else [],
             drawings=[raw.drawings[_i] for _i in range(raw.drawing_count)]
             if raw.drawings
+            else [],
+            dashas=[
+                DashaSystem(raw.dashas[_i]) for _i in range(raw.dasha_count)
+            ]
+            if raw.dashas
             else [],
             theme_json=_text(raw.theme_json),
         )

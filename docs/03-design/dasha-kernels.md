@@ -77,6 +77,29 @@ boundary 1.4e-9 days). Building it corrected the schema once more:
   tables; reading the chain at an instant, at any depth and in any cycle,
   allocates nothing (`tests/allocations.rs`).
 
+## At the boundary and in the bindings
+
+A chart request names its systems (`TsChartRequest.dashas`, catalogue ids,
+each refused by its place when no row implements it) and the charts blob
+answers in two sections. `dashas` (23) holds one fixed row per chart per
+system, charts outermost: the seed, first lord, overflow, the balance with
+its method (the boundary's own `TsBalance`, since the settings' `Balance`
+is a knob and not a catalogue member) and written form, the Moon's span
+(NaN when the balance was spatial), the depth and `period_count`.
+`dasha_periods` (24) is **ragged** by `period_count`: each period as its
+`level`, its `index` under its parent, its lord and its span, depth first.
+A path is not carried as text: it is the index appended to the path of the
+nearest earlier period one level up, which each binding rebuilds while it
+decodes, and the chain at an instant is one walk over the same rows. The
+batch's `dasha_count` is one number because the request settles it, and
+the encoder refuses a batch whose charts disagree rather than writing a
+stride that lies.
+
+Node (`chart.dashas`), Python (`Chart.dashas`) and Dart (`Chart.dashas`)
+decode the sections once per batch, and `check-parity` holds all four
+surfaces, Rust included, to the same seeds, balances, 819 periods per
+chart and chains.
+
 ## Kernels
 
 | kernel | family | shape |

@@ -495,6 +495,7 @@ pub fn charts() -> BlobSchema {
                     ColumnDef::new("chart_count", Scalar::U32, "How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold."),
                     ColumnDef::new("graha_count", Scalar::U32, "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."),
                     ColumnDef::new("varga_count", Scalar::U32, "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."),
+                    ColumnDef::new("dasha_count", Scalar::U32, "How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows."),
                     ColumnDef::new("latitude_deg", Scalar::F64, "The place's latitude, degrees north."),
                     ColumnDef::new("longitude_deg", Scalar::F64, "The place's longitude, degrees east."),
                     ColumnDef::new("altitude_m", Scalar::F64, "The place's altitude, metres."),
@@ -570,8 +571,108 @@ pub fn charts() -> BlobSchema {
                 "svgs",
                 "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.",
             ),
+            chart_dashas_section(23),
+            chart_dasha_periods_section(24),
         ],
     }
+}
+
+/// Every chart's dashas: one row a chart a system, charts outermost and the
+/// systems in the order asked (`03-design/dasha-kernels.md`).
+fn chart_dashas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "dashas",
+        "Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.",
+        vec![
+            ColumnDef::new("system", Scalar::U16, "Which system.").of_enum("DashaSystem"),
+            ColumnDef::new(
+                "seed",
+                Scalar::U16,
+                "The nakshatra the Moon stood in, which seeds it.",
+            )
+            .of_enum("Nakshatra"),
+            ColumnDef::new("first_lord", Scalar::U16, "The lord it starts with.").of_enum("Graha"),
+            ColumnDef::new(
+                "overflow",
+                Scalar::U8,
+                "1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it.",
+            ),
+            ColumnDef::new("balance", Scalar::U8, "How the balance was measured.")
+                .of_enum("TsBalance"),
+            ColumnDef::new(
+                "remaining",
+                Scalar::F64,
+                "The fraction of the first lord's period still to run at birth, 0 to 1.",
+            ),
+            ColumnDef::new(
+                "balance_days",
+                Scalar::F64,
+                "That fraction of the first lord's years, in days.",
+            ),
+            ColumnDef::new(
+                "balance_years",
+                Scalar::U32,
+                "The balance's whole years of the year length.",
+            ),
+            ColumnDef::new(
+                "balance_months",
+                Scalar::U8,
+                "Its whole months of a twelfth of the year length.",
+            ),
+            ColumnDef::new("balance_day_count", Scalar::U8, "Its whole days."),
+            ColumnDef::new(
+                "balance_hours",
+                Scalar::U8,
+                "Its hours, the rest rounded to the minute.",
+            ),
+            ColumnDef::new("balance_minutes", Scalar::U8, "Its minutes, rounded."),
+            ColumnDef::new(
+                "moon_span_from",
+                Scalar::F64,
+                "When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span.",
+            ),
+            ColumnDef::new(
+                "moon_span_to",
+                Scalar::F64,
+                "When it left, a Julian day (UTC); NaN when no span was read.",
+            ),
+            ColumnDef::new(
+                "depth",
+                Scalar::U8,
+                "How many levels the periods go down, 1 to 6.",
+            ),
+            ColumnDef::new(
+                "period_count",
+                Scalar::U32,
+                "How many rows of `dasha_periods` are this dasha's.",
+            ),
+        ],
+    )
+}
+
+/// Every dasha's periods, depth first in time order.
+fn chart_dasha_periods_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "dasha_periods",
+        "Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.",
+        vec![
+            ColumnDef::new("level", Scalar::U8, "How deep: 1 for a mahadasha."),
+            ColumnDef::new(
+                "index",
+                Scalar::U8,
+                "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.",
+            ),
+            ColumnDef::new("lord", Scalar::U16, "Its lord.").of_enum("Graha"),
+            ColumnDef::new(
+                "from_jd",
+                Scalar::F64,
+                "When it begins, a Julian day (UTC).",
+            ),
+            ColumnDef::new("to_jd", Scalar::F64, "When it ends, a Julian day (UTC)."),
+        ],
+    )
 }
 
 /// Every chart's drishti: which body looks at which, how strongly, and

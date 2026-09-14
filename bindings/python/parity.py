@@ -24,6 +24,7 @@ from teistro import (
     Calendar,
     ChartLayout,
     ChartKind,
+    DashaSystem,
     LayoutRow,
     Latitude,
     Longitude,
@@ -263,6 +264,7 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
+            dashas=[DashaSystem.VIMSHOTTARI],
             drawings=[
                 (ChartLayout.NORTH_INDIAN, Varga.D1),
                 (ChartLayout.SOUTH_INDIAN, Varga.D9),
@@ -402,6 +404,27 @@ def main() -> None:
                     put(where, mark.body)
                     put(f"{where}-at", f"{number(mark.at.x)},{number(mark.at.y)}")
                     put(f"{where}-lon", mark.longitude_deg)
+            put(f"chart-{i}-dasha-count", len(chart.dashas))
+            for j, dasha in enumerate(chart.dashas):
+                key = f"chart-{i}-dasha-{j}"
+                put(key, dasha.system.full_key)
+                put(f"{key}-seed", dasha.seed.full_key)
+                put(f"{key}-first-lord", dasha.first_lord.full_key)
+                put(f"{key}-overflow", dasha.overflow)
+                put(f"{key}-balance", dasha.balance.method.key)
+                put(f"{key}-remaining", dasha.balance.remaining)
+                put(f"{key}-balance-days", dasha.balance.days)
+                w = dasha.balance.written
+                put(f"{key}-balance-written", f"{w.years},{w.months},{w.days},{w.hours},{w.minutes}")
+                put(f"{key}-moon-span-from", dasha.moon_span.from_jd if dasha.moon_span else None)
+                put(f"{key}-moon-span-to", dasha.moon_span.to_jd if dasha.moon_span else None)
+                put(f"{key}-depth", dasha.depth)
+                put(f"{key}-periods", len(dasha.periods))
+                for k, period in enumerate(dasha.periods):
+                    put(f"{key}-period-{k}", f"{period.path} {period.lord.full_key}")
+                    put(f"{key}-period-{k}-from", period.span.from_jd)
+                    put(f"{key}-period-{k}-to", period.span.to_jd)
+                put(f"{key}-at", ",".join(period.path for period in dasha.at(chart.instant + 5000)))
             for v, varga in enumerate(chart.vargas):
                 put(f"chart-{i}-varga-{v}", varga.varga.full_key)
                 put(f"chart-{i}-varga-{v}-lagna-rashi", varga.lagna.rashi.full_key)

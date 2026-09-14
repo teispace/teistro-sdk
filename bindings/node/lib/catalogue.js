@@ -2728,6 +2728,21 @@ export const StrengthById = new Map([
   [4, 'full'],
 ]);
 
+/** Every Balance by name. */
+export const Balance = Object.freeze({
+  Spatial: 'spatial',
+  Temporal: 'temporal',
+});
+
+/**
+ * Every Balance by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BalanceById = new Map([
+  [0, 'spatial'],
+  [1, 'temporal'],
+]);
+
 /** Every DayPart by name. */
 export const DayPart = Object.freeze({
   Daylight: 'daylight',

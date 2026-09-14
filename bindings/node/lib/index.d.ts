@@ -18,6 +18,7 @@ import type {
   ChartKind,
   ChartLayout,
   Choghadiya,
+  DashaSystem,
   DayPart,
   Dignity,
   Direction,
@@ -267,6 +268,60 @@ export interface DrawnCell {
 }
 
 /** A chart drawn in a layout (`03-design/chart-geometry.md`). */
+/** One period of a dasha. */
+export interface DashaPeriod {
+  /** Its place at each level from the mahadasha down, joined by `/`: `2/5/3`. */
+  readonly path: string;
+  /** How deep: 1 for a mahadasha. */
+  readonly level: number;
+  /** Its lord. */
+  readonly lord: Graha;
+  /** When it begins, a Julian day (UTC). */
+  readonly from: number;
+  /** When it ends, a Julian day (UTC). */
+  readonly to: number;
+}
+
+/** A dasha of a founded chart: its balance at birth and its periods. */
+export interface Dasha {
+  /** Which system. */
+  readonly system: DashaSystem;
+  /** The nakshatra the Moon stood in, which seeds it. */
+  readonly seed: Nakshatra;
+  /** The lord it starts with. */
+  readonly firstLord: Graha;
+  /** Whether the seed lay outside a conditional system's nakshatras. */
+  readonly overflow: boolean;
+  /** What remained of the first period at birth. */
+  readonly balance: {
+    /** How it was measured. */
+    readonly method: 'spatial' | 'temporal';
+    /** The fraction still to run, 0 to 1. */
+    readonly remaining: number;
+    /** That fraction of the first lord's years, in days. */
+    readonly days: number;
+    /** The same written as years, months, days, hours and minutes. */
+    readonly written: {
+      readonly years: number;
+      readonly months: number;
+      readonly days: number;
+      readonly hours: number;
+      readonly minutes: number;
+    };
+  };
+  /** The Moon's stay in its nakshatra, when the balance read one. */
+  readonly moonSpan: { readonly from: number; readonly to: number } | null;
+  /** How many levels the periods go down. */
+  readonly depth: number;
+  /** Every period of the birth cycle to `depth`, depth first in time order. */
+  readonly periods: readonly DashaPeriod[];
+  /**
+   * The periods running at a Julian day (UTC), from the mahadasha down to
+   * `depth`; empty before birth and past the end of the cycle.
+   */
+  at(jd: number): readonly DashaPeriod[];
+}
+
 /** A registered layout's full key, as the context that registered it resolves it. */
 export type LayoutKey = `chart_layout.${string}`;
 
@@ -609,6 +664,8 @@ export declare class Chart {
   readonly vargas: readonly DivisionalChart[];
   /** The charts drawn in the layouts asked for, in the order asked; empty unless `drawings` named some. */
   readonly drawings: readonly Drawing[];
+  /** The dashas asked for, in the order asked; empty unless `dashas` named some. */
+  readonly dashas: readonly Dasha[];
   /**
    * The drishti the chart's grahas cast; empty unless `aspects` asked. The
    * count differs from chart to chart, because relations depend on where
@@ -848,6 +905,12 @@ export interface ChartRequest {
    * so a caller who wants a birth chart does not pay for twenty-one.
    */
   readonly vargas?: readonly Varga[];
+  /**
+   * The dashas to compute, a system each, in the order wanted; none by
+   * default. A system the catalogue names and this build does not compute
+   * is refused by its place in the request.
+   */
+  readonly dashas?: readonly DashaSystem[];
   /**
    * The charts to draw, each a layout and which chart to place in it
    * (`Varga.D1` for the founded chart), in the order wanted; none by default.

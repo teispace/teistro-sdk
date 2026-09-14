@@ -475,8 +475,10 @@ is untouched (every record uses 365.25 days) and C48 is new. **The K-udu
 kernel and the cursor are built** (`crates/dasha`), Vimshottari the first
 row, reproducing every recorded answer and allocation-free to read, and
 **a chart reading carries its dashas** (`ChartRequest::with_dashas`), the
-temporal balance searched in the chart's own frame. Next: the dasha section
-at the boundary and in the bindings.
+temporal balance searched in the chart's own frame, and **crosses the
+boundary into every binding**, the four surfaces agreeing value for value.
+Next: the other udu rows as their golden vectors arrive, then the rashi
+and Kalachakra kernels and the strength schemes.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

@@ -25,7 +25,7 @@ use core::ptr;
 use std::ffi::CString;
 
 use teistro_core::Status;
-use teistro_core::catalogue::{Calendar, Era, Graha, Varga};
+use teistro_core::catalogue::{Calendar, DashaSystem, Era, Graha, Varga};
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
 use teistro_ffi::calendar::{
     TsCalendarDate, TsResolution, ts_calendar_convert, ts_calendar_fixed_of_jd,
@@ -1384,6 +1384,8 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
     // Drawn by that id, the chart comes back placed in the consumer's row.
     let instants = [2_451_545.0];
     let drawings = [((id & 0xFFFF) << 16) | u32::from(Varga::D1.id())];
+    // And a dasha beside the drawing, so the ragged sections cross too.
+    let dashas = [DashaSystem::Vimshottari.id()];
     let request = sized(
         TsChartRequest {
             struct_size: 0,
@@ -1402,6 +1404,8 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             varga_count: 0,
             drawings: drawings.as_ptr(),
             drawing_count: drawings.len(),
+            dashas: dashas.as_ptr(),
+            dasha_count: dashas.len(),
             theme_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
@@ -1422,6 +1426,29 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
     let reader = Reader::parse(&bytes, &schema).unwrap();
     let drawn = reader.text("drawings").unwrap();
     assert!(drawn.contains("\"layout\":\"ACME_KERALA\""), "{drawn}");
+
+    // One dasha row, whose periods are the next `period_count` rows: nine
+    // mahadashas, 81 antardashas and 729 below them at the default depth.
+    assert_eq!(
+        reader.fixed("summary").unwrap()[4].as_i64(),
+        1,
+        "dasha_count"
+    );
+    assert_eq!(reader.count("dashas"), Some(1));
+    let period_count = reader.column("dashas", "period_count").unwrap()[0].as_i64();
+    assert_eq!(period_count, 9 + 81 + 729);
+    assert_eq!(reader.count("dasha_periods"), Some(819));
+    let levels = reader.column("dasha_periods", "level").unwrap();
+    assert_eq!(
+        (levels[0].as_i64(), levels[1].as_i64(), levels[2].as_i64()),
+        (1, 2, 3)
+    );
+    let from = reader.column("dasha_periods", "from_jd").unwrap();
+    assert_eq!(
+        from[0].as_f64(),
+        2_451_545.0,
+        "the first mahadasha runs from birth"
+    );
 
     // A row is refused by its place and field: a shipped key, a misspelt
     // field, and a row the checks refuse.

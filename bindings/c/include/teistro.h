@@ -4319,6 +4319,23 @@ typedef enum ts_strength {
 } ts_strength;
 
 /**
+ * How a dasha's balance at birth was measured.
+ *
+ * The settings' own `Balance`, which is a knob and not a catalogue member,
+ * so it crosses as this boundary's own enum, as `TsStrength` does.
+ */
+typedef enum ts_balance {
+    /**
+     * By the elapsed part of the Moon's window of nakshatras.
+     */
+    TS_BALANCE_SPATIAL = 0,
+    /**
+     * By the elapsed part of the Moon's stay in its nakshatra.
+     */
+    TS_BALANCE_TEMPORAL = 1,
+} ts_balance;
+
+/**
  * Which arc of its day an instant falls in.
  */
 typedef enum ts_day_part {
@@ -5676,6 +5693,17 @@ struct ts_chart_request {
      */
     size_t drawing_count;
     /**
+     * Which dashas to compute, as catalogue ids, in the order they should be
+     * answered in: each one's balance and its periods to the settings'
+     * `dasha.depth`. Null with a count of zero for none.
+     * Enum: ts_dasha_system. Points at `dasha_count` elements.
+     */
+    const uint16_t * dashas;
+    /**
+     * How many dashas `dashas` points at.
+     */
+    size_t dasha_count;
+    /**
      * A theme to write every drawing as SVG in, as JSON: an object of
      * `style` and `content` naming only what it changes, over the light
      * theme or the shipped one its `extends` names (`{"extends": "dark"}`).
@@ -6560,7 +6588,7 @@ _Static_assert(sizeof(ts_context_options) == 48, "ts_context_options is 48 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 104, "ts_chart_request is 104 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 120, "ts_chart_request is 120 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

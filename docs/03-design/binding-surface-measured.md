@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 2 exported constants, 96 enums of 967 members in
+The description carries 2 exported constants, 97 enums of 969 members in
 all, 2 opaque handle types, 10 callback types, 27 structs, 48 entry
 points and 4 result-blob schemas, extracted from 19 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
@@ -69,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1328 | 1 | 0 | 0 | 0 |
-| TypeScript | 361 | 0 | 0 | 1 | 0 |
-| Python | 1328 | 0 | 1 | 2 | 0 |
+| Dart | 1332 | 1 | 0 | 0 | 0 |
+| TypeScript | 363 | 0 | 0 | 1 | 0 |
+| Python | 1332 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1328 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 361 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1328 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1328 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 361 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1328 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1332 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 363 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1332 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1332 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 363 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1332 disagree |
 
 What Dart renames:
 
@@ -139,7 +139,7 @@ against them on the machine the library was actually built for.
 | `ts_error` | 56 | 8 | 36 | yes |
 | `ts_frame` | 16 | 4 | same | no |
 | `ts_calendar_date` | 24 | 4 | same | no |
-| `ts_chart_request` | 104 | 8 | 80 | yes |
+| `ts_chart_request` | 120 | 8 | 88 | yes |
 | `ts_civil_time` | 12 | 4 | same | no |
 | `ts_civil_date_time` | 44 | 4 | same | no |
 | `ts_zone_spec` | 32 | 8 | same | yes |
@@ -171,17 +171,17 @@ the class of mistake a generated binding exists to make impossible.
 
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
-| `u8` | `c_uint8` | `B` | 67 | 55 |
-| `u16` | `c_uint16` | `H` | 19 | 63 |
-| `u32` | `c_uint32` | `I` | 49 | 29 |
+| `u8` | `c_uint8` | `B` | 67 | 64 |
+| `u16` | `c_uint16` | `H` | 20 | 67 |
+| `u32` | `c_uint32` | `I` | 49 | 32 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
 | `i8` | `c_int8` | `b` | 0 | 0 |
 | `i16` | `c_int16` | `h` | 0 | 0 |
 | `i32` | `c_int32` | `i` | 17 | 5 |
 | `i64` | `c_int64` | `q` | 4 | 0 |
 | `f32` | `c_float` | `f` | 0 | 0 |
-| `f64` | `c_double` | `d` | 49 | 106 |
-| `usize` | `c_size_t` | `n` | 15 | 0 |
+| `f64` | `c_double` | `d` | 49 | 112 |
+| `usize` | `c_size_t` | `n` | 16 | 0 |
 | `isize` | `c_ssize_t` | `N` | 0 | 0 |
 | `bool` | `c_bool` | `?` | 0 | 0 |
 
@@ -189,24 +189,24 @@ the class of mistake a generated binding exists to make impossible.
 |---|---|---|
 | every scalar has a fixed-width `ctypes` type and a format code | **holds** | 0 of 13 disagree |
 | every scalar the boundary uses is one of the thirteen | **holds** | 8 of 13 appear |
-| every blob column's scalar has a format code | **holds** | 0 of 258 disagree |
+| every blob column's scalar has a format code | **holds** | 0 of 280 disagree |
 
 ## 5. What a binding can say about a value
 
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 190 of 190 visible struct fields
+much of that there is to reach for: 192 of 192 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
 |---|---|
 | `bitset` | 1 |
 | `brand` | 4 |
-| `enum` | 25 |
+| `enum` | 26 |
 | `example` | 89 |
 | `flag` | 15 |
-| `len` | 16 |
+| `len` | 17 |
 | `nullable` | 13 |
 | `present_if` | 1 |
 | `range` | 33 |
@@ -214,8 +214,8 @@ carry a doc comment.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 190 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 190 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 192 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 192 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

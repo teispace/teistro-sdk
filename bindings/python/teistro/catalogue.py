@@ -3481,6 +3481,20 @@ class Strength(Member):
     """A full aspect: the seventh, and a special graha's own two houses."""
 
 
+class Balance(Member):
+    """How a dasha's balance at birth was measured.
+
+    The settings' own `Balance`, which is a knob and not a catalogue member,
+    so it crosses as this boundary's own enum, as `TsStrength` does.
+    """
+
+    SPATIAL = 0
+    """By the elapsed part of the Moon's window of nakshatras."""
+
+    TEMPORAL = 1
+    """By the elapsed part of the Moon's stay in its nakshatra."""
+
+
 class DayPart(Member):
     """Which arc of its day an instant falls in."""
 
@@ -4880,6 +4894,10 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "half",
         3: "three-quarters",
         4: "full",
+    },
+    "Balance": {
+        0: "spatial",
+        1: "temporal",
     },
     "DayPart": {
         0: "daylight",

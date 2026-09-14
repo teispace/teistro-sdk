@@ -49,6 +49,8 @@ import {
   QuadrantById,
   RashiById,
   StrengthById,
+  BalanceById,
+  DashaSystemById,
   VargaById,
   SDK_VERSION,
   TithiById,
@@ -695,6 +697,15 @@ export class Chart {
         },
       };
     });
+  }
+
+  /**
+   * The dashas asked for (`dashas: [DashaSystem.Vimshottari]`), each with its
+   * balance at birth and its periods to the settings' depth, in the order
+   * asked; empty unless some were.
+   */
+  get dashas() {
+    return dashasOf(this.#batch)[this.#index] ?? [];
   }
 
   /**
@@ -1685,13 +1696,101 @@ class ChartArea extends Area {
           (request.points === true ? SECTION_POINTS : 0) |
           (request.houses === true ? SECTION_HOUSES : 0) |
           (request.state === true ? SECTION_STATE : 0),
-        vargas: vargaKeys(request.vargas),
+        vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
+        dashas: catalogueKeys(request.dashas, 'dashas', 'DashaSystem'),
         drawings: drawingBits(request.drawings, this.#registered),
         themeJson: themeJson(request.theme),
       }),
     );
     return new Charts(bytes);
   }
+}
+
+/** Each batch's dashas, decoded once however many charts read them. */
+const DASHAS = new WeakMap();
+
+/**
+ * Every chart's dashas in a batch: `dashas` holds a row a chart a system and
+ * `dasha_periods` each row's periods, ragged by `period_count`
+ * (`03-design/dasha-kernels.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function dashasOf(batch) {
+  let decoded = DASHAS.get(batch);
+  if (decoded === undefined) {
+    const d = batch.decoded;
+    const per = d.dashaCount;
+    const charts = per === 0 ? 0 : d.dashas.length / per;
+    let start = 0;
+    decoded = Array.from({ length: charts }, (_, chart) =>
+      Array.from({ length: per }, (_, j) => {
+        const row = chart * per + j;
+        const count = d.dashas.periodCount[row];
+        const dasha = dashaFrom(d, row, start, count);
+        start += count;
+        return dasha;
+      }),
+    );
+    DASHAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** One dasha row and its periods, in this layer's shape. */
+function dashaFrom(d, row, start, count) {
+  const rows = d.dashas;
+  const periods = [];
+  const path = [];
+  for (let k = 0; k < count; k += 1) {
+    const i = start + k;
+    const level = d.dashaPeriods.level[i];
+    path.length = level - 1;
+    path.push(d.dashaPeriods.index[i]);
+    periods.push(
+      Object.freeze({
+        path: path.join('/'),
+        level,
+        lord: GrahaById.get(d.dashaPeriods.lord[i]) ?? 'unknown',
+        from: d.dashaPeriods.fromJd[i],
+        to: d.dashaPeriods.toJd[i],
+      }),
+    );
+  }
+  const spanFrom = rows.moonSpanFrom[row];
+  return Object.freeze({
+    system: DashaSystemById.get(rows.system[row]) ?? 'unknown',
+    seed: NakshatraById.get(rows.seed[row]) ?? 'unknown',
+    firstLord: GrahaById.get(rows.firstLord[row]) ?? 'unknown',
+    overflow: rows.overflow[row] !== 0,
+    balance: Object.freeze({
+      method: BalanceById.get(rows.balance[row]) ?? 'unknown',
+      remaining: rows.remaining[row],
+      days: rows.balanceDays[row],
+      written: Object.freeze({
+        years: rows.balanceYears[row],
+        months: rows.balanceMonths[row],
+        days: rows.balanceDayCount[row],
+        hours: rows.balanceHours[row],
+        minutes: rows.balanceMinutes[row],
+      }),
+    }),
+    moonSpan: Number.isNaN(spanFrom) ? null : Object.freeze({ from: spanFrom, to: rows.moonSpanTo[row] }),
+    depth: rows.depth[row],
+    periods: Object.freeze(periods),
+    /**
+     * The periods running at a Julian day (UTC), from the mahadasha down to
+     * the depth the periods go; empty before birth and past the cycle.
+     */
+    at(jd) {
+      const chain = [];
+      for (const period of periods) {
+        if (period.level === chain.length + 1 && period.from <= jd && jd < period.to) chain.push(period);
+      }
+      return chain;
+    },
+  });
 }
 
 /** Each batch's drawings, parsed once however many charts read them. */
@@ -1845,15 +1944,15 @@ const SECTION_STATE = 2;
  * @param {ReadonlyArray<string>|undefined} asked
  * @returns {string[]}
  */
-function vargaKeys(asked) {
+function catalogueKeys(asked, field, kind) {
   if (asked === undefined || asked === null) return [];
   const list = ArrayBuffer.isView(asked) ? Array.from(asked) : asked;
   if (!Array.isArray(list)) {
-    throw new TypeError('vargas: expected an array of Varga keys');
+    throw new TypeError(`${field}: expected an array of ${kind} keys`);
   }
   return list.map((key, at) => {
     if (typeof key !== 'string') {
-      throw new TypeError(`vargas[${at}]: expected a Varga key`);
+      throw new TypeError(`${field}[${at}]: expected a ${kind} key`);
     }
     return key;
   });

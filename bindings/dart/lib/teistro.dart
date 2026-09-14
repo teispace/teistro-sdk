@@ -652,6 +652,7 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    List<DashaSystem> dashas = const <DashaSystem>[],
     List<(KeyOf<ChartLayout>, Varga)> drawings =
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
@@ -665,6 +666,7 @@ final class ChartArea extends _Area {
     utcOffsetSeconds: utcOffsetSeconds,
     kind: kind,
     vargas: vargas,
+    dashas: dashas,
     drawings: drawings,
     theme: theme,
     aspects: aspects,
@@ -687,6 +689,8 @@ final class ChartArea extends _Area {
   /// a `(ChartLayout, Varga)` pair with `Varga.d1` the founded chart, in the
   /// order to answer them. `theme` writes each drawing as SVG in the
   /// context's locale, read back as `Drawing.svg`; none by default.
+  /// `dashas` names the dasha systems to compute, their periods to the
+  /// settings' `dasha.depth` (`03-design/dasha-kernels.md`).
   /// `aspects` asks for the drishti.
   Charts foundMany({
     required List<double> instants,
@@ -694,6 +698,7 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    List<DashaSystem> dashas = const <DashaSystem>[],
     List<(KeyOf<ChartLayout>, Varga)> drawings =
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
@@ -721,6 +726,7 @@ final class ChartArea extends _Area {
               (houses ? _sectionHouses : 0) |
               (state ? _sectionState : 0),
           vargas: vargas,
+          dashas: dashas,
           drawings: _drawingBits(drawings, _context._registeredLayouts),
           themeJson: theme?._json,
         ),
@@ -1506,6 +1512,137 @@ final class Drishti {
   final EdgeDistance toEdge;
 }
 
+/// One period of a dasha.
+final class DashaPeriod {
+  const DashaPeriod({
+    required this.path,
+    required this.level,
+    required this.lord,
+    required this.from,
+    required this.to,
+  });
+
+  /// Its place at each level from the mahadasha down, joined by `/`:
+  /// `2/5/3`.
+  final String path;
+
+  /// How deep: 1 for a mahadasha.
+  final int level;
+
+  /// Its lord.
+  final Graha lord;
+
+  /// When it begins, a Julian day (UTC).
+  final double from;
+
+  /// When it ends, a Julian day (UTC).
+  final double to;
+}
+
+/// A balance written as a reader writes it.
+final class WrittenBalance {
+  const WrittenBalance({
+    required this.years,
+    required this.months,
+    required this.days,
+    required this.hours,
+    required this.minutes,
+  });
+
+  /// Whole years of the year length.
+  final int years;
+
+  /// Whole months of a twelfth of it.
+  final int months;
+
+  /// Whole days.
+  final int days;
+
+  /// Hours.
+  final int hours;
+
+  /// Minutes, rounded.
+  final int minutes;
+}
+
+/// What remained of a dasha's first period at birth.
+final class DashaBalance {
+  const DashaBalance({
+    required this.method,
+    required this.remaining,
+    required this.days,
+    required this.written,
+  });
+
+  /// How it was measured.
+  final Balance method;
+
+  /// The fraction still to run, 0 to 1.
+  final double remaining;
+
+  /// That fraction of the first lord's years, in days.
+  final double days;
+
+  /// The same in years, months, days, hours and minutes.
+  final WrittenBalance written;
+}
+
+/// A dasha of a founded chart: its balance at birth and its periods.
+final class Dasha {
+  const Dasha({
+    required this.system,
+    required this.seed,
+    required this.firstLord,
+    required this.overflow,
+    required this.balance,
+    required this.moonSpan,
+    required this.depth,
+    required this.periods,
+  });
+
+  /// Which system.
+  final DashaSystem system;
+
+  /// The nakshatra the Moon stood in, which seeds it.
+  final Nakshatra seed;
+
+  /// The lord it starts with.
+  final Graha firstLord;
+
+  /// Whether the seed lay outside a conditional system's nakshatras.
+  final bool overflow;
+
+  /// What remained of the first period at birth.
+  final DashaBalance balance;
+
+  /// The Moon's stay in its nakshatra, when the balance read one.
+  final Interval? moonSpan;
+
+  /// How many levels the periods go down.
+  final int depth;
+
+  /// Every period of the birth cycle to [depth], depth first in time
+  /// order: a mahadasha, then its antardashas and theirs, then the next.
+  final List<DashaPeriod> periods;
+
+  /// The periods running at a Julian day (UTC), from the mahadasha down to
+  /// [depth]; empty before birth and past the end of the cycle.
+  ///
+  /// Depth first order means a period's children follow it, so one walk
+  /// that takes the next level's running period finds the chain.
+  List<DashaPeriod> at(double jd) {
+    final chain = <DashaPeriod>[];
+    for (final period in periods) {
+      if (period.level == chain.length + 1 &&
+          period.from <= jd &&
+          jd < period.to) {
+        chain.add(period);
+      }
+    }
+    return chain;
+  }
+}
+
 /// Where one body stands in a divisional chart.
 ///
 /// `sign == rashi` is the body keeping the sign it was already in, which
@@ -2213,6 +2350,75 @@ final class Drawing {
   }
 }
 
+/// Each batch's dashas, decoded once however many charts read them.
+final Expando<List<List<Dasha>>> _dashas = Expando<List<List<Dasha>>>('dashas');
+
+List<List<Dasha>> _dashasOf(Charts batch) =>
+    _dashas[batch] ??= _decodeDashas(batch);
+
+/// Every chart's dashas: the periods are **ragged** by each dasha's
+/// `periodCount`, so a chart's begin where the one before it ends.
+List<List<Dasha>> _decodeDashas(Charts batch) {
+  final per = batch.dashaCount;
+  if (per == 0) return const <List<Dasha>>[];
+  var start = 0;
+  return List<List<Dasha>>.generate(
+    batch.dashas.length ~/ per,
+    (chart) => List<Dasha>.generate(per, (j) {
+      final row = chart * per + j;
+      final count = batch.dashas.periodCount[row];
+      final dasha = _dashaOf(batch, row, start, count);
+      start += count;
+      return dasha;
+    }),
+  );
+}
+
+/// One dasha row and its periods, in this layer's shape. A period's path is
+/// its index below the nearest earlier period one level up.
+Dasha _dashaOf(Charts batch, int row, int start, int count) {
+  final d = batch.dashas;
+  final p = batch.dashaPeriods;
+  final path = <int>[];
+  final periods = List<DashaPeriod>.generate(count, (k) {
+    final i = start + k;
+    final level = p.level[i];
+    path
+      ..length = level - 1
+      ..add(p.index[i]);
+    return DashaPeriod(
+      path: path.join('/'),
+      level: level,
+      lord: Graha.byId(p.lord[i]),
+      from: p.fromJd[i],
+      to: p.toJd[i],
+    );
+  }, growable: false);
+  final spanFrom = d.moonSpanFrom[row];
+  return Dasha(
+    system: DashaSystem.byId(d.system[row]),
+    seed: Nakshatra.byId(d.seed[row]),
+    firstLord: Graha.byId(d.firstLord[row]),
+    overflow: d.overflow[row] != 0,
+    balance: DashaBalance(
+      method: Balance.byId(d.balance[row]),
+      remaining: d.remaining[row],
+      days: d.balanceDays[row],
+      written: WrittenBalance(
+        years: d.balanceYears[row],
+        months: d.balanceMonths[row],
+        days: d.balanceDayCount[row],
+        hours: d.balanceHours[row],
+        minutes: d.balanceMinutes[row],
+      ),
+    ),
+    moonSpan:
+        spanFrom.isNaN ? null : Interval(from: spanFrom, to: d.moonSpanTo[row]),
+    depth: d.depth[row],
+    periods: List<DashaPeriod>.unmodifiable(periods),
+  );
+}
+
 /// Each batch's drawings, parsed once however many charts read them.
 final Expando<List<List<Drawing>>> _drawings = Expando<List<List<Drawing>>>(
   'drawings',
@@ -2533,6 +2739,13 @@ final class Chart {
         ),
       );
     });
+  }
+
+  /// The dashas asked for, in the order asked; empty unless `dashas` named
+  /// some (`03-design/dasha-kernels.md`).
+  List<Dasha> get dashas {
+    final all = _dashasOf(batch);
+    return index < all.length ? all[index] : const <Dasha>[];
   }
 
   /// The charts drawn in the layouts asked for, in the order asked; empty

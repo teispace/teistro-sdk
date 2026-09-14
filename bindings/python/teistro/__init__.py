@@ -22,6 +22,7 @@ from __future__ import annotations
 import ctypes
 import ctypes.util
 import json
+import math
 import os
 import sys
 from dataclasses import dataclass
@@ -97,12 +98,14 @@ from ._prebuilt import PREBUILT_VERSION
 from .catalogue import (
     Ayana,
     Ayanamsha,
+    Balance,
     Body,
     Calendar,
     Centre,
     ChartKind,
     ChartLayout,
     Choghadiya,
+    DashaSystem,
     DayPart,
     Direction,
     Ephemeris,
@@ -233,6 +236,13 @@ __all__ = [
     "ArcSegment",
     "DerivedPoint",
     "Drishti",
+    # The dashas: the system a caller names and what a chart answers with.
+    "Balance",
+    "Dasha",
+    "DashaBalance",
+    "DashaPeriod",
+    "DashaSystem",
+    "WrittenBalance",
     "AvasthaBaladi",
     "AvasthaDeeptadi",
     "AvasthaJagradadi",
@@ -938,6 +948,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        dashas: Sequence[DashaSystem] = (),
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         aspects: bool = False,
@@ -964,6 +975,7 @@ class ChartArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             kind=kind,
             vargas=vargas,
+            dashas=dashas,
             drawings=drawings,
             theme=theme,
             aspects=aspects,
@@ -980,6 +992,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        dashas: Sequence[DashaSystem] = (),
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         aspects: bool = False,
@@ -1000,7 +1013,9 @@ class ChartArea(_Area):
         chart should not pay for twenty-one of them
         (`03-design/chart-reading.md` §4). `drawings` names charts to draw,
         each a `(ChartLayout, Varga)` pair with `Varga.D1` the founded chart,
-        in the order to answer them. `aspects` asks for the drishti.
+        in the order to answer them. `dashas` names the dasha systems to
+        compute, their periods to the settings' `dasha.depth`
+        (`03-design/dasha-kernels.md`). `aspects` asks for the drishti.
         """
         request = ChartRequest(
             kind=kind,
@@ -1018,6 +1033,7 @@ class ChartArea(_Area):
             | (_SECTION_HOUSES if houses else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
+            dashas=list(dashas),
             drawings=_drawing_bits(drawings, self._context._registered_layouts),
             theme_json=_theme_json(theme),
         )
@@ -1494,6 +1510,104 @@ class Drishti:
 
     to_edge: EdgeDistance
     """How near the body looked at stands to one."""
+
+
+@dataclass(frozen=True)
+class DashaPeriod:
+    """One period of a dasha."""
+
+    path: str
+    """Its place at each level from the mahadasha down, joined by `/`:
+    `2/5/3`."""
+
+    level: int
+    """How deep: 1 for a mahadasha."""
+
+    lord: Graha
+    """Its lord."""
+
+    span: Interval
+    """When it runs."""
+
+
+@dataclass(frozen=True)
+class WrittenBalance:
+    """A balance written as a reader writes it."""
+
+    years: int
+    """Whole years of the year length."""
+
+    months: int
+    """Whole months of a twelfth of it."""
+
+    days: int
+    """Whole days."""
+
+    hours: int
+    """Hours."""
+
+    minutes: int
+    """Minutes, rounded."""
+
+
+@dataclass(frozen=True)
+class DashaBalance:
+    """What remained of a dasha's first period at birth."""
+
+    method: Balance
+    """How it was measured."""
+
+    remaining: float
+    """The fraction still to run, 0 to 1."""
+
+    days: float
+    """That fraction of the first lord's years, in days."""
+
+    written: WrittenBalance
+    """The same in years, months, days, hours and minutes."""
+
+
+@dataclass(frozen=True)
+class Dasha:
+    """A dasha of a founded chart: its balance at birth and its periods."""
+
+    system: DashaSystem
+    """Which system."""
+
+    seed: Nakshatra
+    """The nakshatra the Moon stood in, which seeds it."""
+
+    first_lord: Graha
+    """The lord it starts with."""
+
+    overflow: bool
+    """Whether the seed lay outside a conditional system's nakshatras."""
+
+    balance: DashaBalance
+    """What remained of the first period at birth."""
+
+    moon_span: Optional[Interval]
+    """The Moon's stay in its nakshatra, when the balance read one."""
+
+    depth: int
+    """How many levels the periods go down."""
+
+    periods: Tuple[DashaPeriod, ...]
+    """Every period of the birth cycle to `depth`, depth first in time
+    order: a mahadasha, then its antardashas and theirs, then the next."""
+
+    def at(self, jd: float) -> list[DashaPeriod]:
+        """The periods running at a Julian day (UTC), from the mahadasha
+        down to `depth`; empty before birth and past the end of the cycle.
+
+        Depth first order means a period's children follow it, so one walk
+        that takes the next level's running period finds the chain.
+        """
+        chain: list[DashaPeriod] = []
+        for period in self.periods:
+            if period.level == len(chain) + 1 and period.span.from_jd <= jd < period.span.to_jd:
+                chain.append(period)
+        return chain
 
 
 @dataclass(frozen=True)
@@ -2166,6 +2280,13 @@ class Chart:
         ]
 
     @property
+    def dashas(self) -> list[Dasha]:
+        """The dashas asked for, in the order asked; empty unless `dashas`
+        named some (`03-design/dasha-kernels.md`)."""
+        parsed = self.batch._dashas
+        return parsed[self.index] if self.index < len(parsed) else []
+
+    @property
     def drawings(self) -> list[Drawing]:
         """The charts drawn in the layouts asked for, in the order asked;
         empty unless `drawings` named some (`03-design/chart-geometry.md`).
@@ -2296,6 +2417,29 @@ class ChartBatch:
             for chart, drawings in enumerate(json.loads(text))
         ]
 
+    @cached_property
+    def _dashas(self) -> list[list[Dasha]]:
+        """Every chart's dashas, decoded once however many charts read them.
+
+        The periods are **ragged** by each dasha's `period_count`, so a
+        chart's begin where the one before it ends.
+        """
+        decoded = self.decoded
+        per = decoded.dasha_count
+        if per == 0:
+            return []
+        out: list[list[Dasha]] = []
+        start = 0
+        for chart in range(decoded.dashas.length // per):
+            row_dashas: list[Dasha] = []
+            for j in range(per):
+                row = chart * per + j
+                count = decoded.dashas.period_count[row]
+                row_dashas.append(_dasha(decoded, row, start, count))
+                start += count
+            out.append(row_dashas)
+        return out
+
     def at(self, index: int) -> Chart:
         """One chart of the batch, by index."""
         if not 0 <= index < len(self):
@@ -2338,6 +2482,52 @@ class ChartBatch:
     def provenance(self) -> str:
         """The provenance envelope, as the canonical JSON it is stamped as."""
         return self.decoded.provenance
+
+def _dasha(decoded: Charts, row: int, start: int, count: int) -> Dasha:
+    """One dasha row and its periods, in this layer's shape.
+
+    A period's path is its index below the nearest earlier period one level
+    up, so it is rebuilt by truncating the path to the level before it.
+    """
+    rows = decoded.dashas
+    cells = decoded.dasha_periods
+    periods: list[DashaPeriod] = []
+    path: list[str] = []
+    for i in range(start, start + count):
+        level = cells.level[i]
+        del path[level - 1 :]
+        path.append(str(cells.index[i]))
+        periods.append(
+            DashaPeriod(
+                path="/".join(path),
+                level=level,
+                lord=Graha(cells.lord[i]),
+                span=Interval(from_jd=cells.from_jd[i], to_jd=cells.to_jd[i]),
+            )
+        )
+    span_from = rows.moon_span_from[row]
+    return Dasha(
+        system=DashaSystem(rows.system[row]),
+        seed=Nakshatra(rows.seed[row]),
+        first_lord=Graha(rows.first_lord[row]),
+        overflow=rows.overflow[row] != 0,
+        balance=DashaBalance(
+            method=Balance(rows.balance[row]),
+            remaining=rows.remaining[row],
+            days=rows.balance_days[row],
+            written=WrittenBalance(
+                years=rows.balance_years[row],
+                months=rows.balance_months[row],
+                days=rows.balance_day_count[row],
+                hours=rows.balance_hours[row],
+                minutes=rows.balance_minutes[row],
+            ),
+        ),
+        moon_span=None if math.isnan(span_from) else Interval(from_jd=span_from, to_jd=rows.moon_span_to[row]),
+        depth=rows.depth[row],
+        periods=tuple(periods),
+    )
+
 
 @dataclass(frozen=True)
 class Interval:

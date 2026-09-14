@@ -278,6 +278,8 @@ Everything else is the context's settings, which is what makes two calls under o
 | `varga_count` | `size_t` | How many divisional charts `vargas` points at. |
 | `drawings` | `const uint32_t *` | Which charts to draw, and in which layouts, in the order they should be answered in: each `layout_id << 16 \| varga_id`, a `chart_layout` catalogue id and a `Varga` id, `D1` for the founded chart. Null with a count of zero for none.  Packed, as `sections` is a bit set, so the request carries one array and one count rather than two arrays that must agree; every ergonomic layer takes named pairs and writes the bits (`03-design/chart-geometry.md`). |
 | `drawing_count` | `size_t` | How many drawings `drawings` points at. |
+| `dashas` | `const uint16_t *` | Which dashas to compute, as catalogue ids, in the order they should be answered in: each one's balance and its periods to the settings' `dasha.depth`. Null with a count of zero for none. One of `ts_dasha_system`. |
+| `dasha_count` | `size_t` | How many dashas `dashas` points at. |
 | `theme_json` | `const char *` | A theme to write every drawing as SVG in, as JSON: an object of `style` and `content` naming only what it changes, over the light theme or the shipped one its `extends` names (`{"extends": "dark"}`). The SVGs come back in the blob's `svgs` section, in the context's locale. Null for none, which costs nothing (`03-design/render-svg.md`). Example `{"extends":"dark"}`. |
 
 ## ts_civil_time

@@ -712,4 +712,65 @@ void _engineTests() {
       field('options.layouts_json[0].sources'),
     );
   });
+
+  /// A chart's dashas cross whole: the balance, the periods to the
+  /// settings' depth with their paths, and the chain at an instant read off
+  /// them.
+  test('a chart carries its dashas, their periods and the chain', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dashas: [DashaSystem.vimshottari],
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .dashas,
+      isEmpty,
+    );
+    final [dasha] = chart.dashas;
+    expect(dasha.system, DashaSystem.vimshottari);
+    expect(dasha.balance.method, Balance.spatial);
+    expect(
+      dasha.balance.remaining,
+      allOf(greaterThan(0), lessThanOrEqualTo(1)),
+    );
+    expect(dasha.moonSpan, isNull);
+    expect(dasha.depth, 3);
+    expect(dasha.periods, hasLength(9 + 81 + 729));
+    final [first, second, ...] = dasha.periods;
+    expect((first.path, first.level, first.from), ('0', 1, 2451545.0));
+    expect(first.lord, dasha.firstLord);
+    expect(
+      (second.path, second.level, second.lord),
+      ('0/0', 2, dasha.firstLord),
+    );
+    expect(dasha.periods.last.path, '8/8/8');
+
+    const instant = 2451545.0 + 5000;
+    final chain = dasha.at(instant);
+    expect([for (final p in chain) p.level], [1, 2, 3]);
+    expect(chain.every((p) => p.from <= instant && instant < p.to), isTrue);
+    expect(dasha.at(2451544), isEmpty, reason: 'before birth');
+
+    expect(
+      () => ctx.chart.found(
+        instant: 2451545.0,
+        place: place,
+        utcOffsetSeconds: 0,
+        dashas: [DashaSystem.vimshottari, DashaSystem.ashtottari],
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'dashas[1]'),
+      ),
+    );
+    ctx.dispose();
+  });
 }

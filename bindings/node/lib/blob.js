@@ -202,9 +202,10 @@ export function decodeCharts(bytes) {
     out.chartCount = READERS.u32(blob.dv, at.offset + 8);
     out.grahaCount = READERS.u32(blob.dv, at.offset + 16);
     out.vargaCount = READERS.u32(blob.dv, at.offset + 24);
-    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 32);
-    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 40);
-    out.altitudeM = READERS.f64(blob.dv, at.offset + 48);
+    out.dashaCount = READERS.u32(blob.dv, at.offset + 32);
+    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 40);
+    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 48);
+    out.altitudeM = READERS.f64(blob.dv, at.offset + 56);
   }
   {
     const at = section(blob, 2, 'cast');
@@ -429,6 +430,39 @@ export function decodeCharts(bytes) {
   {
     const at = section(blob, 22, 'svgs');
     out.svgs = text(blob, at);
+  }
+  {
+    const at = section(blob, 23, 'dashas');
+    out.dashas = {
+      system: column(blob, at, 0, 'u16', at.count),
+      seed: column(blob, at, 1, 'u16', at.count),
+      firstLord: column(blob, at, 2, 'u16', at.count),
+      overflow: column(blob, at, 3, 'u8', at.count),
+      balance: column(blob, at, 4, 'u8', at.count),
+      remaining: column(blob, at, 5, 'f64', at.count),
+      balanceDays: column(blob, at, 6, 'f64', at.count),
+      balanceYears: column(blob, at, 7, 'u32', at.count),
+      balanceMonths: column(blob, at, 8, 'u8', at.count),
+      balanceDayCount: column(blob, at, 9, 'u8', at.count),
+      balanceHours: column(blob, at, 10, 'u8', at.count),
+      balanceMinutes: column(blob, at, 11, 'u8', at.count),
+      moonSpanFrom: column(blob, at, 12, 'f64', at.count),
+      moonSpanTo: column(blob, at, 13, 'f64', at.count),
+      depth: column(blob, at, 14, 'u8', at.count),
+      periodCount: column(blob, at, 15, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 24, 'dasha_periods');
+    out.dashaPeriods = {
+      level: column(blob, at, 0, 'u8', at.count),
+      index: column(blob, at, 1, 'u8', at.count),
+      lord: column(blob, at, 2, 'u16', at.count),
+      fromJd: column(blob, at, 3, 'f64', at.count),
+      toJd: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
   }
   return out;
 }

@@ -4650,6 +4650,43 @@ enum Strength {
   }
 }
 
+/// How a dasha's balance at birth was measured.
+///
+/// The settings' own `Balance`, which is a knob and not a catalogue member,
+/// so it crosses as this boundary's own enum, as `TsStrength` does.
+enum Balance {
+  /// By the elapsed part of the Moon's window of nakshatras.
+  spatial(0, 'spatial'),
+  /// By the elapsed part of the Moon's stay in its nakshatra.
+  temporal(1, 'temporal');
+
+  const Balance(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Balance byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Balance'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Balance? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which arc of its day an instant falls in.
 enum DayPart {
   /// Between sunrise and sunset.

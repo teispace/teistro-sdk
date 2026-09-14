@@ -25,6 +25,7 @@ import {
   sdkVersion,
   unpackFrame,
   ChartLayout,
+  DashaSystem,
   Varga,
 } from './lib/index.js';
 
@@ -235,6 +236,7 @@ const charts = geo.chart.foundMany({
   place,
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
+  dashas: [DashaSystem.Vimshottari],
   // A grid of the founded chart, a grid of a divisional one, and the wheel:
   // straight edges, a divisional chart's own lagna, arcs, marks and the
   // rounded coordinates the wheel's trigonometry leaves.
@@ -349,6 +351,29 @@ for (const chart of charts) {
       put(`${at}-at`, `${number(mark.at.x)},${number(mark.at.y)}`);
       put(`${at}-lon`, mark.longitudeDeg);
     });
+  });
+  put(`chart-${i}-dasha-count`, chart.dashas.length);
+  chart.dashas.forEach((dasha, j) => {
+    const key = `chart-${i}-dasha-${j}`;
+    put(key, dasha.system);
+    put(`${key}-seed`, dasha.seed);
+    put(`${key}-first-lord`, dasha.firstLord);
+    put(`${key}-overflow`, dasha.overflow);
+    put(`${key}-balance`, dasha.balance.method);
+    put(`${key}-remaining`, dasha.balance.remaining);
+    put(`${key}-balance-days`, dasha.balance.days);
+    const w = dasha.balance.written;
+    put(`${key}-balance-written`, [w.years, w.months, w.days, w.hours, w.minutes].join(','));
+    put(`${key}-moon-span-from`, dasha.moonSpan?.from ?? null);
+    put(`${key}-moon-span-to`, dasha.moonSpan?.to ?? null);
+    put(`${key}-depth`, dasha.depth);
+    put(`${key}-periods`, dasha.periods.length);
+    dasha.periods.forEach((period, k) => {
+      put(`${key}-period-${k}`, `${period.path} ${period.lord}`);
+      put(`${key}-period-${k}-from`, period.from);
+      put(`${key}-period-${k}-to`, period.to);
+    });
+    put(`${key}-at`, dasha.at(chart.instant + 5000).map((period) => period.path).join(','));
   });
   chart.vargas.forEach((varga, v) => {
     put(`chart-${i}-varga-${v}`, varga.varga);

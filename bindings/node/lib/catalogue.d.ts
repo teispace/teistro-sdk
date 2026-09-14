@@ -5727,6 +5727,32 @@ export declare const Strength: {
 export declare const StrengthById: ReadonlyMap<number, Strength>;
 
 /**
+ * How a dasha's balance at birth was measured.
+ *
+ * The settings' own `Balance`, which is a knob and not a catalogue member,
+ * so it crosses as this boundary's own enum, as `TsStrength` does.
+ */
+export type Balance = 'spatial' | 'temporal';
+
+/** Every Balance by name; the values are the strings the union accepts. */
+export declare const Balance: {
+  /**
+   * By the elapsed part of the Moon's window of nakshatras.
+   */
+  readonly Spatial: 'spatial';
+  /**
+   * By the elapsed part of the Moon's stay in its nakshatra.
+   */
+  readonly Temporal: 'temporal';
+};
+
+/**
+ * Every Balance by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BalanceById: ReadonlyMap<number, Balance>;
+
+/**
  * Which arc of its day an instant falls in.
  */
 export type DayPart = 'daylight' | 'night';

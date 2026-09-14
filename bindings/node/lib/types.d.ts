@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Varga, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Varga, DashaSystem, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -723,6 +723,13 @@ export interface ChartRequest {
    * layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
    */
   readonly drawings: Uint32Array | readonly number[];
+  /**
+   * Which dashas to compute, as catalogue ids, in the order they should be
+   * answered in: each one's balance and its periods to the settings'
+   * `dasha.depth`. Null with a count of zero for none.
+   * @enum DashaSystem
+   */
+  readonly dashas: readonly DashaSystem[];
   /**
    * A theme to write every drawing as SVG in, as JSON: an object of
    * `style` and `content` naming only what it changes, over the light

@@ -6155,6 +6155,24 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsBalance",
+      "doc": "How a dasha's balance at birth was measured.\n\nThe settings' own `Balance`, which is a knob and not a catalogue member,\nso it crosses as this boundary's own enum, as `TsStrength` does.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Spatial",
+          "value": 0,
+          "doc": "By the elapsed part of the Moon's window of nakshatras."
+        },
+        {
+          "name": "Temporal",
+          "value": 1,
+          "doc": "By the elapsed part of the Moon's stay in its nakshatra."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsDayPart",
       "doc": "Which arc of its day an instant falls in.",
       "repr": "u8",
@@ -9083,6 +9101,31 @@
             "scalar": "usize"
           },
           "doc": "How many drawings `drawings` points at.",
+          "meta": {}
+        },
+        {
+          "name": "dashas",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u16"
+            },
+            "mutable": false
+          },
+          "doc": "Which dashas to compute, as catalogue ids, in the order they should be\nanswered in: each one's balance and its periods to the settings'\n`dasha.depth`. Null with a count of zero for none.",
+          "meta": {
+            "enum": "DashaSystem",
+            "len": "dasha_count"
+          }
+        },
+        {
+          "name": "dasha_count",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "doc": "How many dashas `dashas` points at.",
           "meta": {}
         },
         {
@@ -12317,6 +12360,11 @@
               "doc": "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."
             },
             {
+              "name": "dasha_count",
+              "scalar": "u32",
+              "doc": "How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows."
+            },
+            {
               "name": "latitude_deg",
               "scalar": "f64",
               "doc": "The place's latitude, degrees north."
@@ -13131,6 +13179,132 @@
           "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.",
           "kind": "bytes",
           "fields": []
+        },
+        {
+          "id": 23,
+          "name": "dashas",
+          "doc": "Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "system",
+              "scalar": "u16",
+              "doc": "Which system.",
+              "enum": "DashaSystem"
+            },
+            {
+              "name": "seed",
+              "scalar": "u16",
+              "doc": "The nakshatra the Moon stood in, which seeds it.",
+              "enum": "Nakshatra"
+            },
+            {
+              "name": "first_lord",
+              "scalar": "u16",
+              "doc": "The lord it starts with.",
+              "enum": "Graha"
+            },
+            {
+              "name": "overflow",
+              "scalar": "u8",
+              "doc": "1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it."
+            },
+            {
+              "name": "balance",
+              "scalar": "u8",
+              "doc": "How the balance was measured.",
+              "enum": "TsBalance"
+            },
+            {
+              "name": "remaining",
+              "scalar": "f64",
+              "doc": "The fraction of the first lord's period still to run at birth, 0 to 1."
+            },
+            {
+              "name": "balance_days",
+              "scalar": "f64",
+              "doc": "That fraction of the first lord's years, in days."
+            },
+            {
+              "name": "balance_years",
+              "scalar": "u32",
+              "doc": "The balance's whole years of the year length."
+            },
+            {
+              "name": "balance_months",
+              "scalar": "u8",
+              "doc": "Its whole months of a twelfth of the year length."
+            },
+            {
+              "name": "balance_day_count",
+              "scalar": "u8",
+              "doc": "Its whole days."
+            },
+            {
+              "name": "balance_hours",
+              "scalar": "u8",
+              "doc": "Its hours, the rest rounded to the minute."
+            },
+            {
+              "name": "balance_minutes",
+              "scalar": "u8",
+              "doc": "Its minutes, rounded."
+            },
+            {
+              "name": "moon_span_from",
+              "scalar": "f64",
+              "doc": "When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span."
+            },
+            {
+              "name": "moon_span_to",
+              "scalar": "f64",
+              "doc": "When it left, a Julian day (UTC); NaN when no span was read."
+            },
+            {
+              "name": "depth",
+              "scalar": "u8",
+              "doc": "How many levels the periods go down, 1 to 6."
+            },
+            {
+              "name": "period_count",
+              "scalar": "u32",
+              "doc": "How many rows of `dasha_periods` are this dasha's."
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "name": "dasha_periods",
+          "doc": "Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "level",
+              "scalar": "u8",
+              "doc": "How deep: 1 for a mahadasha."
+            },
+            {
+              "name": "index",
+              "scalar": "u8",
+              "doc": "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0."
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "Its lord.",
+              "enum": "Graha"
+            },
+            {
+              "name": "from_jd",
+              "scalar": "f64",
+              "doc": "When it begins, a Julian day (UTC)."
+            },
+            {
+              "name": "to_jd",
+              "scalar": "f64",
+              "doc": "When it ends, a Julian day (UTC)."
+            }
+          ]
         }
       ]
     },

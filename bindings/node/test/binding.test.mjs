@@ -11,6 +11,7 @@ import {
   Body,
   Calendar,
   ChartLayout,
+  DashaSystem,
   Varga,
   altitude,
   at,
@@ -508,8 +509,9 @@ test('every catalogue enum has a complete id table', () => {
   // per-enum check above cannot see. It moves whenever the catalogue or
   // the boundary gains a member, which is a deliberate change: the
   // description's own page reports the same figure.
-  // 967 since chart_layout joined the catalogue: six layouts and its UNKNOWN.
-  assert.equal(entries, 967, 'every member of every enum is in a table');
+  // 967 since chart_layout joined the catalogue: six layouts and its UNKNOWN;
+  // 969 since the dasha balance crossed as `TsBalance`, spatial and temporal.
+  assert.equal(entries, 969, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -849,4 +851,49 @@ test('a layout of your own is registered, drawn by its key, and refused by its f
     'a misspelt field',
   );
   assert.throws(() => context({ layouts: kerala }), /layouts: expected an array/u);
+});
+
+/**
+ * A chart's dashas cross whole: the balance, the periods to the settings'
+ * depth with their paths, and the chain at an instant read off them.
+ */
+test('a chart carries its dashas, their periods, and the chain at an instant', () => {
+  const ctx = context();
+  const chart = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    dashas: [DashaSystem.Vimshottari],
+  });
+  assert.equal(ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 }).dashas.length, 0);
+  const [dasha] = chart.dashas;
+  assert.equal(dasha.system, DashaSystem.Vimshottari);
+  assert.equal(dasha.balance.method, 'spatial');
+  assert.ok(dasha.balance.remaining > 0 && dasha.balance.remaining <= 1);
+  assert.equal(dasha.moonSpan, null);
+  assert.equal(dasha.depth, 3);
+  assert.equal(dasha.periods.length, 9 + 81 + 729);
+  const [first, second] = dasha.periods;
+  assert.deepEqual([first.path, first.level, first.from], ['0', 1, 2451545]);
+  assert.equal(first.lord, dasha.firstLord);
+  assert.deepEqual([second.path, second.level, second.lord], ['0/0', 2, dasha.firstLord]);
+  assert.equal(dasha.periods.at(-1).path, '8/8/8');
+
+  const chain = dasha.at(2451545 + 5000);
+  assert.equal(chain.length, 3);
+  assert.ok(chain.every((period) => period.from <= 2451545 + 5000 && 2451545 + 5000 < period.to));
+  assert.equal(chain[2].path.split('/').length, 3);
+  assert.deepEqual(dasha.at(2451544), [], 'before birth');
+
+  assert.throws(
+    () =>
+      ctx.chart.found({
+        instant: 2451545,
+        place: { latitude: 0, longitude: 0 },
+        utcOffsetSeconds: 0,
+        dashas: [DashaSystem.Vimshottari, DashaSystem.Ashtottari],
+      }),
+    (error) => error instanceof TeistroError && error.field === 'dashas[1]',
+  );
+  ctx.dispose();
 });

@@ -691,6 +691,117 @@ export interface ChartsStates {
 }
 
 /**
+ * The `dashas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+ */
+export interface ChartsDashas {
+  /**
+   * Which system.
+   * The values are `DashaSystem` ids.
+   */
+  readonly system: Uint16Array;
+  /**
+   * The nakshatra the Moon stood in, which seeds it.
+   * The values are `Nakshatra` ids.
+   */
+  readonly seed: Uint16Array;
+  /**
+   * The lord it starts with.
+   * The values are `Graha` ids.
+   */
+  readonly firstLord: Uint16Array;
+  /**
+   * 1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it.
+   */
+  readonly overflow: Uint8Array;
+  /**
+   * How the balance was measured.
+   * The values are `Balance` ids.
+   */
+  readonly balance: Uint8Array;
+  /**
+   * The fraction of the first lord's period still to run at birth, 0 to 1.
+   */
+  readonly remaining: Float64Array;
+  /**
+   * That fraction of the first lord's years, in days.
+   */
+  readonly balanceDays: Float64Array;
+  /**
+   * The balance's whole years of the year length.
+   */
+  readonly balanceYears: Uint32Array;
+  /**
+   * Its whole months of a twelfth of the year length.
+   */
+  readonly balanceMonths: Uint8Array;
+  /**
+   * Its whole days.
+   */
+  readonly balanceDayCount: Uint8Array;
+  /**
+   * Its hours, the rest rounded to the minute.
+   */
+  readonly balanceHours: Uint8Array;
+  /**
+   * Its minutes, rounded.
+   */
+  readonly balanceMinutes: Uint8Array;
+  /**
+   * When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span.
+   */
+  readonly moonSpanFrom: Float64Array;
+  /**
+   * When it left, a Julian day (UTC); NaN when no span was read.
+   */
+  readonly moonSpanTo: Float64Array;
+  /**
+   * How many levels the periods go down, 1 to 6.
+   */
+  readonly depth: Uint8Array;
+  /**
+   * How many rows of `dasha_periods` are this dasha's.
+   */
+  readonly periodCount: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dasha_periods` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+ */
+export interface ChartsDashaPeriods {
+  /**
+   * How deep: 1 for a mahadasha.
+   */
+  readonly level: Uint8Array;
+  /**
+   * Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
+   */
+  readonly index: Uint8Array;
+  /**
+   * Its lord.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * When it begins, a Julian day (UTC).
+   */
+  readonly fromJd: Float64Array;
+  /**
+   * When it ends, a Julian day (UTC).
+   */
+  readonly toJd: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -801,6 +912,10 @@ export interface Charts {
    * How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`.
    */
   readonly vargaCount: number;
+  /**
+   * How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows.
+   */
+  readonly dashaCount: number;
   /**
    * The place's latitude, degrees north.
    */
@@ -934,6 +1049,14 @@ export interface Charts {
    * UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.
    */
   readonly svgs: string;
+  /**
+   * Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+   */
+  readonly dashas: ChartsDashas;
+  /**
+   * Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+   */
+  readonly dashaPeriods: ChartsDashaPeriods;
 }
 
 /**

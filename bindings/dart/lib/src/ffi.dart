@@ -887,6 +887,16 @@ final class ChartRequestStruct extends ffi.Struct {
   @ffi.Size()
   external int drawingCount;
 
+  /// Which dashas to compute, as catalogue ids, in the order they should be
+  /// answered in: each one's balance and its periods to the settings'
+  /// `dasha.depth`. Null with a count of zero for none.
+  /// Enum: DashaSystem.
+  external ffi.Pointer<ffi.Uint16> dashas;
+
+  /// How many dashas `dashas` points at.
+  @ffi.Size()
+  external int dashaCount;
+
   /// A theme to write every drawing as SVG in, as JSON: an object of
   /// `style` and `content` naming only what it changes, over the light
   /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
@@ -2693,7 +2703,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, this.themeJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2763,6 +2773,12 @@ final class ChartRequest {
   /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
   final List<int> drawings;
 
+  /// Which dashas to compute, as catalogue ids, in the order they should be
+  /// answered in: each one's balance and its periods to the settings'
+  /// `dasha.depth`. Null with a count of zero for none.
+  /// Enum: DashaSystem.
+  final List<DashaSystem> dashas;
+
   /// A theme to write every drawing as SVG in, as JSON: an object of
   /// `style` and `content` naming only what it changes, over the light
   /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
@@ -2805,6 +2821,12 @@ final class ChartRequest {
     }
     raw.drawings = drawingsBuffer;
     raw.drawingCount = drawings.length;
+    final dashasBuffer = arena<ffi.Uint16>(dashas.length);
+    for (var i = 0; i < dashas.length; i++) {
+      dashasBuffer[i] = dashas[i].id;
+    }
+    raw.dashas = dashasBuffer;
+    raw.dashaCount = dashas.length;
     raw.themeJson = themeJson == null
         ? ffi.nullptr
         : themeJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
@@ -2829,6 +2851,9 @@ final class ChartRequest {
         ],
         drawings: [
           for (var i = 0; i < raw.drawingCount; i++) raw.drawings[i],
+        ],
+        dashas: [
+          for (var i = 0; i < raw.dashaCount; i++) DashaSystem.byId(raw.dashas[i]),
         ],
         themeJson: raw.themeJson == ffi.nullptr
             ? null
