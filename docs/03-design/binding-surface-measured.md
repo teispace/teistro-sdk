@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 2 exported constants, 95 enums of 960 members in
+The description carries 2 exported constants, 96 enums of 967 members in
 all, 2 opaque handle types, 10 callback types, 27 structs, 47 entry
 points and 4 result-blob schemas, extracted from 19 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
@@ -69,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1313 | 1 | 0 | 0 | 0 |
+| Dart | 1320 | 1 | 0 | 0 | 0 |
 | TypeScript | 353 | 0 | 0 | 1 | 0 |
-| Python | 1313 | 0 | 1 | 2 | 0 |
+| Python | 1320 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1313 looked at |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1320 looked at |
 | no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 353 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1313 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1313 disagree |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1320 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1320 disagree |
 | renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 353 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1313 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1320 disagree |
 
 What Dart renames:
 

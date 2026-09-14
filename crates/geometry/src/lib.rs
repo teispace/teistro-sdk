@@ -16,7 +16,8 @@
 //! - [`clock`]: the directions a radial layout needs, the same on every
 //!   platform;
 //! - [`place`]: a chart placed in a layout, every cell carrying both its sign
-//!   and its house.
+//!   and its house;
+//! - [`registry`]: the shipped layouts and a consumer's own, looked up by key.
 //!
 //! Three things the research found (§2):
 //!
@@ -51,8 +52,10 @@ pub mod clock;
 pub mod layout;
 pub mod path;
 pub mod place;
+pub mod registry;
 pub mod rows;
 
 pub use layout::{Cell, Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
 pub use path::{Path, Point, Segment};
 pub use place::{Body, Mark, Placed, PlacedCell, Placements, place};
+pub use registry::Layouts;

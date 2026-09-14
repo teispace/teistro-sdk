@@ -144,7 +144,9 @@ enum Kind {
   /// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
   panchaka(60, 'panchaka'),
   /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
-  muhurtaYoga(61, 'muhurta_yoga');
+  muhurtaYoga(61, 'muhurta_yoga'),
+  /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
+  chartLayout(62, 'chart_layout');
 
   const Kind(this.id, this.key);
 
@@ -3676,6 +3678,51 @@ enum MuhurtaYoga {
 
   /// The member with a key, or `null` for one this build does not know.
   static MuhurtaYoga? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.
+enum ChartLayout {
+  /// The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise
+  northIndian(0, 'NORTH_INDIAN'),
+  /// The South Indian chart: signs fixed, Pisces top-left, running clockwise
+  southIndian(1, 'SOUTH_INDIAN'),
+  /// The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise
+  eastIndian(2, 'EAST_INDIAN'),
+  /// The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+  nepaliLotus(3, 'NEPALI_LOTUS'),
+  /// The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun
+  sudarshanChakra(4, 'SUDARSHAN_CHAKRA'),
+  /// The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
+  westernWheel(5, 'WESTERN_WHEEL'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const ChartLayout(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  String get fullKey => 'chart_layout.$key';
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static ChartLayout byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => ChartLayout.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ChartLayout? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

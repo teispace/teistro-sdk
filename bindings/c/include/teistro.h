@@ -278,6 +278,10 @@ typedef enum ts_kind {
      * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
      */
     TS_KIND_MUHURTA_YOGA = 61,
+    /**
+     * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
+     */
+    TS_KIND_CHART_LAYOUT = 62,
 } ts_kind;
 
 /**
@@ -3879,6 +3883,38 @@ typedef enum ts_muhurta_yoga {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_MUHURTA_YOGA_UNKNOWN = -1,
 } ts_muhurta_yoga;
+
+/**
+ * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.
+ */
+typedef enum ts_chart_layout {
+    /**
+     * The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise
+     */
+    TS_CHART_LAYOUT_NORTH_INDIAN = 0,
+    /**
+     * The South Indian chart: signs fixed, Pisces top-left, running clockwise
+     */
+    TS_CHART_LAYOUT_SOUTH_INDIAN = 1,
+    /**
+     * The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise
+     */
+    TS_CHART_LAYOUT_EAST_INDIAN = 2,
+    /**
+     * The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+     */
+    TS_CHART_LAYOUT_NEPALI_LOTUS = 3,
+    /**
+     * The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun
+     */
+    TS_CHART_LAYOUT_SUDARSHAN_CHAKRA = 4,
+    /**
+     * The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
+     */
+    TS_CHART_LAYOUT_WESTERN_WHEEL = 5,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_CHART_LAYOUT_UNKNOWN = -1,
+} ts_chart_layout;
 
 /**
  * The status of a call, with the code it has at the C boundary.

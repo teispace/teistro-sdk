@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `building` — steps 1 to 3 built 2026-09-14; the registry, the document section and the renderer follow. It builds the first two parts of
+Status: `building` — steps 1 to 4 built 2026-09-14; the document section and the renderer follow. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is §8's later step. The research this page rests on was
@@ -237,6 +237,27 @@ where that is won or lost.
   radial layouts over a sweep of real Placidus cusps, so the hash matrix
   compares them across three architectures. The benchmarks walk the same
   section, so its cost is tracked too.
+
+## 7c. The registry, and what the hash matrix said
+
+- **`chart_layout` is catalogue kind 62**, with the six rows as members.
+  Each is cited, and the chakra is marked `T` because its direction awaits
+  a citation (C47). The bindings gain `ChartLayout` from the same
+  generator as every other kind.
+- **`Layouts` is the registry**, and the first consumer of core's
+  `Registry` anywhere in the SDK. It holds the shipped rows and a
+  consumer's own, which pass the same `Layout::validate`. A key the SDK
+  ships is refused, so a registered row can add a layout and never
+  replace one, and sealing stops registration once a context draws.
+- **A test holds the shipped rows and the catalogue to one list, both
+  ways**, and it failed the first time it ran. Two earlier edits to
+  `rows::shipped()` had not matched after `rustfmt` reformatted it, so
+  the chakra and the wheel were built, tested one by one, and never
+  shipped. The list is now checked, not trusted.
+- **The hash matrix agrees on three architectures.** The `geometry`
+  section's 24 024 values hash to the same digest on Linux x86-64, Linux
+  aarch64 and macOS aarch64, so the wheel's rounding holds on real
+  hardware and not only by argument.
 
 ## 8. Order of work
 

@@ -13,6 +13,7 @@ and where its label and its bodies go. The core still never draws.
 | [`path`](src/path.rs) | points and closed outlines in the unit square, y downwards, with the quadratic curves the lotus needs |
 | [`layout`](src/layout.rs) | a layout as a row, and the checks that refuse a wrong one by the cell it gets wrong |
 | [`rows`](src/rows.rs) | North, South and East Indian, each held to the figure it cites, the Nepali lotus, the Sudarshan Chakra and the Western wheel |
+| [`registry`](src/registry.rs) | the shipped layouts and a consumer's own: the same checks, and a shipped key cannot be taken over |
 | [`clock`](src/clock.rs) | the directions a radial layout needs, built from square roots so they are bit for bit the same on every platform |
 | [`place`](src/place.rs) | a chart placed in a layout, every cell carrying both its sign and its house |
 
@@ -63,4 +64,8 @@ and where its label and its bodies go. The core still never draws.
   so its coordinates are rounded to a grain, and a test checks every one
   sits on it. The `geometry` section of `teistro-scenario` places both
   radial layouts over a sweep of real Placidus cusps, so the hash matrix
-  checks the rounding holds on three architectures.
+  checks the rounding holds on three architectures. It did: the same
+  digest on Linux x86-64, Linux aarch64 and macOS aarch64.
+- **The list.** A test holds `rows::shipped()` and the `chart_layout`
+  catalogue kind to the same six keys, both ways. The first run caught the
+  chakra and the wheel missing from the shipped list.

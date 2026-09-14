@@ -19451,6 +19451,122 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "chart_layout",
+      "number": 62,
+      "version": 1,
+      "doc": "The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "NORTH_INDIAN",
+          "id": 0,
+          "doc": "The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Wikipedia, Kundali (astrology)",
+              "ref": "figure Kundali_02a.png"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SOUTH_INDIAN",
+          "id": 1,
+          "doc": "The South Indian chart: signs fixed, Pisces top-left, running clockwise",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Wikipedia, Kundali (astrology)",
+              "ref": "figure Kundali_01a.png"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "EAST_INDIAN",
+          "id": 2,
+          "doc": "The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Wikipedia, Kundali (astrology)",
+              "ref": "figure Kundali_03a.png"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NEPALI_LOTUS",
+          "id": 3,
+          "doc": "The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "the application's kundali lotus frame"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SUDARSHAN_CHAKRA",
+          "id": 4,
+          "doc": "The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "tutorials on the Sudarshana chakra",
+              "ref": "the order of its rings"
+            },
+            {
+              "text": "baseline-engine",
+              "ref": "the application's Sudarshan chakra view: its proportions, start and direction (crux C47)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "WESTERN_WHEEL",
+          "id": 5,
+          "doc": "The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "tutorials on reading an astrological chart wheel",
+              "ref": "the first house's cusp at nine o'clock, the houses anticlockwise"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

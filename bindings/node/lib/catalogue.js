@@ -112,6 +112,7 @@ export const Kind = Object.freeze({
   Kaala: 'kaala',
   Panchaka: 'panchaka',
   MuhurtaYoga: 'muhurta_yoga',
+  ChartLayout: 'chart_layout',
 });
 
 /**
@@ -178,6 +179,7 @@ export const KindById = new Map([
   [59, 'kaala'],
   [60, 'panchaka'],
   [61, 'muhurta_yoga'],
+  [62, 'chart_layout'],
 ]);
 
 /** Every Graha by name. */
@@ -2391,6 +2393,29 @@ export const MuhurtaYogaById = new Map([
   [2, 'muhurta_yoga.SIDDHA'],
   [3, 'muhurta_yoga.DWIPUSHKAR'],
   [4, 'muhurta_yoga.TRIPUSHKAR'],
+]);
+
+/** Every ChartLayout by name. */
+export const ChartLayout = Object.freeze({
+  NorthIndian: 'chart_layout.NORTH_INDIAN',
+  SouthIndian: 'chart_layout.SOUTH_INDIAN',
+  EastIndian: 'chart_layout.EAST_INDIAN',
+  NepaliLotus: 'chart_layout.NEPALI_LOTUS',
+  SudarshanChakra: 'chart_layout.SUDARSHAN_CHAKRA',
+  WesternWheel: 'chart_layout.WESTERN_WHEEL',
+});
+
+/**
+ * Every ChartLayout by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChartLayoutById = new Map([
+  [0, 'chart_layout.NORTH_INDIAN'],
+  [1, 'chart_layout.SOUTH_INDIAN'],
+  [2, 'chart_layout.EAST_INDIAN'],
+  [3, 'chart_layout.NEPALI_LOTUS'],
+  [4, 'chart_layout.SUDARSHAN_CHAKRA'],
+  [5, 'chart_layout.WESTERN_WHEEL'],
 ]);
 
 /** Every Status by name. */

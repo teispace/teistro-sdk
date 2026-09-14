@@ -128,9 +128,11 @@ pub enum Kind {
     Panchaka = 60,
     /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
     MuhurtaYoga = 61,
+    /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
+    ChartLayout = 62,
 }
 
-const BY_NAME: [(&str, Kind); 60] = [
+const BY_NAME: [(&str, Kind); 61] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_deeptadi", Kind::AvasthaDeeptadi),
@@ -145,6 +147,7 @@ const BY_NAME: [(&str, Kind); 60] = [
     ("calendar", Kind::Calendar),
     ("chara_karaka", Kind::CharaKaraka),
     ("chart_kind", Kind::ChartKind),
+    ("chart_layout", Kind::ChartLayout),
     ("choghadiya", Kind::Choghadiya),
     ("dasha_family", Kind::DashaFamily),
     ("dasha_system", Kind::DashaSystem),
@@ -195,7 +198,7 @@ const BY_NAME: [(&str, Kind); 60] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 60] = [
+    pub const ALL: [Kind; 61] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -256,6 +259,7 @@ impl Kind {
         Kind::Kaala,
         Kind::Panchaka,
         Kind::MuhurtaYoga,
+        Kind::ChartLayout,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -322,6 +326,7 @@ impl Kind {
             Kind::Kaala => "kaala",
             Kind::Panchaka => "panchaka",
             Kind::MuhurtaYoga => "muhurta_yoga",
+            Kind::ChartLayout => "chart_layout",
         }
     }
 
@@ -395,6 +400,7 @@ impl Kind {
             Kind::Kaala => 3,
             Kind::Panchaka => 5,
             Kind::MuhurtaYoga => 5,
+            Kind::ChartLayout => 6,
         }
     }
 
@@ -468,6 +474,7 @@ impl Kind {
             59 => Some(Kind::Kaala),
             60 => Some(Kind::Panchaka),
             61 => Some(Kind::MuhurtaYoga),
+            62 => Some(Kind::ChartLayout),
             _ => None,
         }
     }

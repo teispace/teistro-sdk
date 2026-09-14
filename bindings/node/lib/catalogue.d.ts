@@ -112,7 +112,8 @@ export type Kind =
   | 'choghadiya'
   | 'kaala'
   | 'panchaka'
-  | 'muhurta_yoga';
+  | 'muhurta_yoga'
+  | 'chart_layout';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -352,6 +353,10 @@ export declare const Kind: {
    * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
    */
   readonly MuhurtaYoga: 'muhurta_yoga';
+  /**
+   * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
+   */
+  readonly ChartLayout: 'chart_layout';
 };
 
 /**
@@ -5103,6 +5108,52 @@ export declare const MuhurtaYoga: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const MuhurtaYogaById: ReadonlyMap<number, MuhurtaYoga>;
+
+/**
+ * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.
+ */
+export type ChartLayout =
+  | 'chart_layout.NORTH_INDIAN'
+  | 'chart_layout.SOUTH_INDIAN'
+  | 'chart_layout.EAST_INDIAN'
+  | 'chart_layout.NEPALI_LOTUS'
+  | 'chart_layout.SUDARSHAN_CHAKRA'
+  | 'chart_layout.WESTERN_WHEEL'
+  | 'unknown';
+
+/** Every ChartLayout by name; the values are the strings the union accepts. */
+export declare const ChartLayout: {
+  /**
+   * The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise
+   */
+  readonly NorthIndian: 'chart_layout.NORTH_INDIAN';
+  /**
+   * The South Indian chart: signs fixed, Pisces top-left, running clockwise
+   */
+  readonly SouthIndian: 'chart_layout.SOUTH_INDIAN';
+  /**
+   * The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise
+   */
+  readonly EastIndian: 'chart_layout.EAST_INDIAN';
+  /**
+   * The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+   */
+  readonly NepaliLotus: 'chart_layout.NEPALI_LOTUS';
+  /**
+   * The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun
+   */
+  readonly SudarshanChakra: 'chart_layout.SUDARSHAN_CHAKRA';
+  /**
+   * The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
+   */
+  readonly WesternWheel: 'chart_layout.WESTERN_WHEEL';
+};
+
+/**
+ * Every ChartLayout by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChartLayoutById: ReadonlyMap<number, ChartLayout>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

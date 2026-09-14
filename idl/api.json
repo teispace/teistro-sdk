@@ -413,6 +413,12 @@
           "value": 61,
           "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).",
           "key": "muhurta_yoga"
+        },
+        {
+          "name": "ChartLayout",
+          "value": 62,
+          "doc": "The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.",
+          "key": "chart_layout"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -5636,6 +5642,51 @@
           "value": 4,
           "doc": "Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings",
           "key": "TRIPUSHKAR"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "ChartLayout",
+      "doc": "The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.",
+      "repr": "u16",
+      "kind": "chart_layout",
+      "values": [
+        {
+          "name": "NorthIndian",
+          "value": 0,
+          "doc": "The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise",
+          "key": "NORTH_INDIAN"
+        },
+        {
+          "name": "SouthIndian",
+          "value": 1,
+          "doc": "The South Indian chart: signs fixed, Pisces top-left, running clockwise",
+          "key": "SOUTH_INDIAN"
+        },
+        {
+          "name": "EastIndian",
+          "value": 2,
+          "doc": "The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise",
+          "key": "EAST_INDIAN"
+        },
+        {
+          "name": "NepaliLotus",
+          "value": 3,
+          "doc": "The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals",
+          "key": "NEPALI_LOTUS"
+        },
+        {
+          "name": "SudarshanChakra",
+          "value": 4,
+          "doc": "The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun",
+          "key": "SUDARSHAN_CHAKRA"
+        },
+        {
+          "name": "WesternWheel",
+          "value": 5,
+          "doc": "The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock",
+          "key": "WESTERN_WHEEL"
         }
       ],
       "source": "catalogue/catalogue.json"

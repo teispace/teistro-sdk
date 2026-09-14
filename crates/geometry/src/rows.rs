@@ -19,7 +19,8 @@ use teistro_core::catalogue::Rashi;
 use crate::layout::{Cell, Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
 use crate::path::{Path, Point, Segment};
 
-/// Every layout the SDK ships, in the order a consumer is offered them.
+/// Every layout the SDK ships, in catalogue order; a test holds the two to
+/// the same list both ways.
 #[must_use]
 pub fn shipped() -> Vec<Layout> {
     vec![
@@ -27,6 +28,8 @@ pub fn shipped() -> Vec<Layout> {
         south_indian(),
         east_indian(),
         nepali_lotus(),
+        sudarshan_chakra(),
+        western_wheel(),
     ]
 }
 

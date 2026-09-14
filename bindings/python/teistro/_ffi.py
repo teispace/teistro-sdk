@@ -37,6 +37,7 @@ from .catalogue import (
     Centre,
     CharaKaraka,
     ChartKind,
+    ChartLayout,
     Choghadiya,
     Chosen,
     Coordinates,

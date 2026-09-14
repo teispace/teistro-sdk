@@ -967,5 +967,13 @@
     "SIDDHA": {},
     "DWIPUSHKAR": {},
     "TRIPUSHKAR": {}
+  },
+  "chart_layout": {
+    "NORTH_INDIAN": {},
+    "SOUTH_INDIAN": {},
+    "EAST_INDIAN": {},
+    "NEPALI_LOTUS": {},
+    "SUDARSHAN_CHAKRA": {},
+    "WESTERN_WHEEL": {}
   }
 }

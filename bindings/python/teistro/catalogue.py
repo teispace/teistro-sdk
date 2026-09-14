@@ -255,6 +255,9 @@ class Kind(Member):
     muhurta_yoga = 61
     """The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8)."""
 
+    chart_layout = 62
+    """The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3133,6 +3136,33 @@ class MuhurtaYoga(Catalogued):
     """
 
 
+class ChartLayout(Catalogued):
+    """The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`."""
+
+    NORTH_INDIAN = 0
+    """The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise"""
+
+    SOUTH_INDIAN = 1
+    """The South Indian chart: signs fixed, Pisces top-left, running clockwise"""
+
+    EAST_INDIAN = 2
+    """The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise"""
+
+    NEPALI_LOTUS = 3
+    """The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals"""
+
+    SUDARSHAN_CHAKRA = 4
+    """The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun"""
+
+    WESTERN_WHEEL = 5
+    """The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -3782,6 +3812,7 @@ _KEYS: dict[str, dict[int, str]] = {
         59: "kaala",
         60: "panchaka",
         61: "muhurta_yoga",
+        62: "chart_layout",
     },
     "Graha": {
         0: "SUN",
@@ -4742,6 +4773,15 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "TRIPUSHKAR",
         -1: "UNKNOWN",
     },
+    "ChartLayout": {
+        0: "NORTH_INDIAN",
+        1: "SOUTH_INDIAN",
+        2: "EAST_INDIAN",
+        3: "NEPALI_LOTUS",
+        4: "SUDARSHAN_CHAKRA",
+        5: "WESTERN_WHEEL",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "ok",
         -1: "invalid-arg",
@@ -4993,4 +5033,5 @@ _KINDS: dict[str, str] = {
     "Kaala": "kaala",
     "Panchaka": "panchaka",
     "MuhurtaYoga": "muhurta_yoga",
+    "ChartLayout": "chart_layout",
 }

@@ -131,6 +131,52 @@ fn holds_to(layout: &Layout, figure: &Figure) {
 }
 
 #[test]
+fn the_shipped_rows_and_the_catalogue_name_the_same_layouts() {
+    // Both ways: every catalogue member has a row, and every row's key is a
+    // catalogue member, in the same order.
+    let rows: Vec<String> = rows::shipped()
+        .into_iter()
+        .map(|layout| layout.key)
+        .collect();
+    let catalogue: Vec<&str> = teistro_core::catalogue::ChartLayout::ALL
+        .iter()
+        .map(|member| member.key())
+        .collect();
+    assert_eq!(rows, catalogue);
+}
+
+#[test]
+fn a_registered_layout_is_checked_found_and_cannot_replace_a_shipped_one() {
+    let mut layouts = teistro_geometry::Layouts::new();
+    assert_eq!(layouts.iter().count(), rows::shipped().len());
+
+    // A broken row is refused by the same checks, naming the field.
+    let mut broken = rows::south_indian();
+    broken.key = String::from("ACME_BROKEN");
+    grid(&mut broken).direction = Direction::Anticlockwise;
+    assert_eq!(
+        layouts.register(broken).unwrap_err().field(),
+        Some("shape.direction")
+    );
+
+    let mut own = rows::east_indian();
+    own.key = String::from("ACME_ODIA");
+    let id = layouts.register(own.clone()).unwrap();
+    assert!(id.is_registered());
+    assert_eq!(layouts.get("ACME_ODIA"), Some(&own));
+    assert_eq!(layouts.iter().count(), rows::shipped().len() + 1);
+
+    // Nor twice, nor a shipped key, nor after sealing.
+    assert!(layouts.register(own.clone()).is_err());
+    let mut takeover = own.clone();
+    takeover.key = String::from("WESTERN_WHEEL");
+    assert_eq!(layouts.register(takeover).unwrap_err().field(), Some("key"));
+    layouts.seal();
+    own.key = String::from("ACME_LATER");
+    assert!(layouts.register(own).is_err());
+}
+
+#[test]
 fn every_shipped_layout_is_valid_and_its_key_is_unique() {
     let shipped = rows::shipped();
     let mut keys: Vec<&str> = shipped.iter().map(|layout| layout.key.as_str()).collect();
