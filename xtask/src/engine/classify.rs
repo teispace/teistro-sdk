@@ -75,7 +75,7 @@ pub(crate) fn scalar_out(type_ref: &TypeRef, vocabulary: &Vocabulary) -> bool {
 /// One list, read by the classifier and by nothing else: a role added
 /// here without an arm in [`arm`] would generate code that does not
 /// compile, which is the failure mode to want.
-pub(crate) const ROLES_KNOWN: [&str; 13] = [
+pub(crate) const ROLES_KNOWN: [&str; 14] = [
     "handle",
     "value",
     "scalar_out",
@@ -89,6 +89,7 @@ pub(crate) const ROLES_KNOWN: [&str; 13] = [
     "array_len",
     "array_out",
     "array_cap",
+    "array_out_parallel",
 ];
 
 /// Which side of a call a parameter is on, as a consumer sees it.
@@ -124,7 +125,9 @@ pub(crate) fn crossing(function: &Function, param: &Param) -> Crossing {
             }
         }
         "scalar_out" if counts_an_output(function, &param.name) => Crossing::Bookkeeping,
-        "scalar_out" | "string_out" | "struct_out" | "array_out" => Crossing::Gives,
+        "scalar_out" | "string_out" | "struct_out" | "array_out" | "array_out_parallel" => {
+            Crossing::Gives
+        }
         _ => Crossing::Takes,
     }
 }
@@ -157,16 +160,32 @@ pub(crate) fn returns_the_count(function: &Function) -> bool {
 const RETURN: &str = "return";
 
 /// How the marshaller sizes one output array.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub(crate) enum Sizing<'a> {
-    /// As long as these input arrays' lengths multiplied, in order.
-    Inputs(Vec<&'a str>),
+    /// As long as these measures multiplied, in layout order.
+    Inputs(Vec<Measure<'a>>),
+    /// As long as `function` answers when called with `args`.
+    Called {
+        function: &'a str,
+        args: Vec<Measure<'a>>,
+    },
     /// The caller says how many to find, under `capacity`, and `count`
     /// receives how many were.
     Asked { capacity: &'a str, count: &'a str },
     /// The engine says how many there are; the marshaller asks again
     /// when there are more than it made room for.
     Total { count: Counted<'a> },
+}
+
+/// One number an output's length is computed from.
+#[derive(Clone, Debug)]
+pub(crate) enum Measure<'a> {
+    /// The length of the input array of this name.
+    Length(&'a str),
+    /// A value parameter of this name.
+    Value(&'a str),
+    /// A field of a struct input: the parameter, and the field's name.
+    Field(&'a Param, &'a str),
 }
 
 /// Where a `total` output's count comes back.
@@ -194,8 +213,17 @@ pub(crate) fn sizing<'a>(function: &'a Function, output: &'a Param) -> Option<Si
             .map(|param| param.name.as_str())
     };
     match output.extent.as_ref()? {
-        Extent::Length { of } => input_lengths(function, core::slice::from_ref(of)),
-        Extent::Product { of } => input_lengths(function, of),
+        Extent::Length { of } => {
+            measures(function, core::slice::from_ref(of), false).map(Sizing::Inputs)
+        }
+        Extent::Product { of } => measures(function, of, false).map(Sizing::Inputs),
+        Extent::Call {
+            function: called,
+            of,
+        } => measures(function, of, true).map(|args| Sizing::Called {
+            function: called,
+            args,
+        }),
         Extent::Asked { count } => Some(Sizing::Asked {
             capacity: capacity()?,
             count,
@@ -211,20 +239,41 @@ pub(crate) fn sizing<'a>(function: &'a Function, output: &'a Param) -> Option<Si
     }
 }
 
-/// The input arrays whose lengths an extent names, when every name is an
-/// input array's length.
-fn input_lengths<'a>(function: &'a Function, names: &'a [String]) -> Option<Sizing<'a>> {
-    names
+/// What each name in an extent measures, or `None` when any of them is
+/// something the marshaller cannot read before the call.
+///
+/// A length names an input array's length parameter or a field of a
+/// struct input (`req.day_count`); a call's argument names a value or a
+/// field. At most one struct input may be named, because a nullable one
+/// makes the whole measure zero when it is absent, and two would need a
+/// rule for one present and one not that no extent needs.
+fn measures<'a>(
+    function: &'a Function,
+    names: &'a [String],
+    values: bool,
+) -> Option<Vec<Measure<'a>>> {
+    let found = names
         .iter()
         .map(|name| {
-            function
-                .params
-                .iter()
-                .find(|param| param.role == "array_len" && &param.name == name)
-                .and_then(|length| length.of.as_deref())
+            let (head, field) = match name.split_once('.') {
+                Some((head, field)) => (head, Some(field)),
+                None => (name.as_str(), None),
+            };
+            let param = function.params.iter().find(|param| param.name == head)?;
+            match (field, param.role.as_str()) {
+                (Some(field), "struct_in") => Some(Measure::Field(param, field)),
+                (None, "array_len") if !values => param.of.as_deref().map(Measure::Length),
+                (None, "value") if values => Some(Measure::Value(&param.name)),
+                _ => None,
+            }
         })
-        .collect::<Option<Vec<&str>>>()
-        .map(Sizing::Inputs)
+        .collect::<Option<Vec<_>>>()?;
+    let mut roots = found.iter().filter_map(|measure| match measure {
+        Measure::Field(param, _) => Some(param.name.as_str()),
+        _ => None,
+    });
+    let first = roots.next();
+    roots.all(|root| Some(root) == first).then_some(found)
 }
 
 /// The outputs an engine sizes by being asked twice, which the arm can
@@ -427,7 +476,18 @@ pub(crate) fn blocked_by(
                 .is_none()
                 .then_some(Blocker::UnsizedOutput)
         }),
-        "array_out_parallel" => Some(Blocker::ParallelOutput),
+        // A twin written at its output's length: learned exactly when that
+        // output is sized before the call, which a gathered one is not.
+        "array_out_parallel" => Blocker::of_element(base, vocabulary).or_else(|| {
+            let twin = param
+                .of
+                .as_deref()
+                .and_then(|of| function.params.iter().find(|one| one.name == of));
+            match twin.and_then(|twin| sizing(function, twin)) {
+                Some(Sizing::Total { .. }) | None => Some(Blocker::ParallelOutput),
+                Some(_) => None,
+            }
+        }),
         "handle_out" => Some(Blocker::HandleOut),
         "opaque" => Some(Blocker::Opaque),
         known if ROLES_KNOWN.contains(&known) => None,
@@ -517,7 +577,7 @@ impl Described<'_> {
 pub(crate) fn declared_type(param: &Param) -> Declared<'_> {
     match param.role.as_str() {
         "string_in" | "string_out" => Declared::one("string"),
-        "array_in" | "array_out" => Declared {
+        "array_in" | "array_out" | "array_out_parallel" => Declared {
             list: true,
             ..Declared::one(&param.type_ref.base)
         },
@@ -603,7 +663,10 @@ pub(crate) fn carries(function: &Function) -> String {
         (has_role(function, "struct_in"), "a struct it reads"),
         (has_role(function, "struct_out"), "a struct it fills"),
         (has_role(function, "array_in"), "an array it reads"),
-        (has_role(function, "array_out"), "an array it fills"),
+        (
+            has_role(function, "array_out") || has_role(function, "array_out_parallel"),
+            "an array it fills",
+        ),
     ]
     .into_iter()
     .filter_map(|(yes, clause)| yes.then_some(clause))

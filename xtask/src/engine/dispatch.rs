@@ -4,8 +4,8 @@
 use std::fmt::Write as _;
 
 use super::classify::{
-    Counted, Crossing, Sizing, Standing, crossing, declared_return, describe, fills_a_string,
-    has_role, returns_a_string, returns_the_count, sizing, totals,
+    Counted, Crossing, Measure, Sizing, Standing, crossing, declared_return, describe,
+    fills_a_string, has_role, returns_a_string, returns_the_count, sizing, totals,
 };
 use teistro_idl::emit::reserved::rust_ident;
 
@@ -168,10 +168,11 @@ pub(crate) const PASSTHROUGH_IMPORTS: &str = "// the passthrough's helpers";
 /// file nobody edits.
 pub(crate) fn passthrough_imports(generated: &str) -> String {
     /// Every helper, with the text a use of it contains.
-    const HELPERS: [(&str, &str); 21] = [
+    const HELPERS: [(&str, &str); 22] = [
         ("Within", "Within<"),
         ("Keep", "Keep::default()"),
         ("borrowed", "borrowed("),
+        ("length", "length("),
         ("extent", "extent(&["),
         ("fill", "fill(\""),
         ("gather", "gather::<"),
@@ -487,6 +488,7 @@ impl<'a> Arm<'a> {
                 self.call_args.push(format!("{of}.len()"));
             }
             "array_out" => self.array_out(param),
+            "array_out_parallel" => self.parallel(param),
             "array_cap" => {
                 let of = param.of.as_deref().unwrap_or_else(|| {
                     panic!(
@@ -693,15 +695,50 @@ impl<'a> Arm<'a> {
         match sizing(self.function, param) {
             Some(Sizing::Inputs(inputs)) => {
                 let length = match inputs.as_slice() {
-                    [one] => format!("{one}.len()"),
+                    [one] => measured(one),
                     many => format!(
                         "extent(&[{}], \"{name}\")?",
-                        many.iter()
-                            .map(|input| format!("{input}.len()"))
-                            .collect::<Vec<_>>()
-                            .join(", ")
+                        many.iter().map(measured).collect::<Vec<_>>().join(", ")
                     ),
                 };
+                self.bind(&format!(
+                    "let mut {name}: Vec<{ty}> = room({length}, \"{name}\")?;"
+                ));
+                self.mark(param);
+                self.call_args.push(format!("{name}.as_mut_ptr()"));
+            }
+            Some(Sizing::Called { function, args }) => {
+                // The length another function answers, asked before the
+                // call it sizes; an absent struct input makes it zero, and
+                // the engine refuses the absent input itself.
+                let root = args.iter().find_map(|arg| match arg {
+                    Measure::Field(param, _) => Some(*param),
+                    _ => None,
+                });
+                let spelled = |field_of: &dyn Fn(&str) -> String| {
+                    args.iter()
+                        .map(|arg| match arg {
+                            Measure::Field(_, field) => field_of(&rust_ident(field)),
+                            Measure::Value(value) | Measure::Length(value) => (*value).to_string(),
+                        })
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                };
+                let length = match root {
+                    Some(root) if root.nullable() => format!(
+                        "{}.as_ref().map_or(0, |one| unsafe {{ sys::{function}({}) }})",
+                        root.name,
+                        spelled(&|field| format!("one.{field}"))
+                    ),
+                    Some(root) => format!(
+                        "unsafe {{ sys::{function}({}) }}",
+                        spelled(&|field| format!("{}.{field}", root.name))
+                    ),
+                    None => format!("unsafe {{ sys::{function}({}) }}", spelled(&str::to_string)),
+                };
+                self.bind(&format!(
+                    "// SAFETY: `{function}` takes values only and answers a length."
+                ));
                 self.bind(&format!(
                     "let mut {name}: Vec<{ty}> = room({length}, \"{name}\")?;"
                 ));
@@ -760,6 +797,33 @@ impl<'a> Arm<'a> {
         } else {
             (None, Some(format!("status(answered, \"{name}\")?;")))
         }
+    }
+
+    /// An output written beside another at its length: room for as many,
+    /// cut where the other is cut, and answered as a list of its own.
+    fn parallel(&mut self, param: &'a Param) {
+        let name = &param.name;
+        let ty = self.element(param);
+        let twin = param.of.as_deref().unwrap_or_else(|| {
+            panic!(
+                "`{name}` on `{}` is parallel to nothing",
+                self.function.name
+            )
+        });
+        self.bind(&format!(
+            "let mut {name}: Vec<{ty}> = room({twin}.len(), \"{name}\")?;"
+        ));
+        self.call_args.push(format!("{name}.as_mut_ptr()"));
+        let cut = self
+            .function
+            .params
+            .iter()
+            .find(|one| one.name == twin)
+            .and_then(|one| sizing(self.function, one));
+        if let Some(Sizing::Asked { count, .. }) = cut {
+            self.after.push(format!("{name}.truncate({count});"));
+        }
+        self.answers.push(format!("\"{name}\": {name}"));
     }
 
     /// The arm's text: the bindings, the call through its protocol, what
@@ -854,6 +918,29 @@ impl<'a> Arm<'a> {
     }
 }
 
+/// One measure of an output's length, as the expression that reads it.
+///
+/// A field goes through `length`, which refuses a value that is not a
+/// length rather than casting it; an absent struct input measures zero.
+fn measured(measure: &Measure<'_>) -> String {
+    match measure {
+        Measure::Length(array) => format!("{array}.len()"),
+        Measure::Value(value) => format!("length({value}, \"{value}\")?"),
+        Measure::Field(param, field) => {
+            let path = format!("{}.{field}", param.name);
+            let ident = rust_ident(field);
+            if param.nullable() {
+                format!(
+                    "{}.as_ref().map_or(Ok(0), |one| length(one.{ident}, \"{path}\"))?",
+                    param.name
+                )
+            } else {
+                format!("length({}.{ident}, \"{path}\")?", param.name)
+            }
+        }
+    }
+}
+
 /// What an arm answers with, as `"key": expression` pairs: its
 /// out-parameters, then a filled string or the function's own return.
 fn answer(function: &Function, outs: Vec<String>, protocol: &Protocol<'_>) -> Vec<String> {
@@ -916,7 +1003,8 @@ pub(crate) fn safety(function: &Function) -> String {
         clauses.push("the output room is the gather protocol's own, passed with its own length");
     }
     let sized_here = function.params.iter().any(|param| {
-        param.role == "array_out" && !matches!(sizing(function, param), Some(Sizing::Total { .. }))
+        matches!(param.role.as_str(), "array_out" | "array_out_parallel")
+            && !matches!(sizing(function, param), Some(Sizing::Total { .. }))
     });
     if sized_here {
         clauses.push(

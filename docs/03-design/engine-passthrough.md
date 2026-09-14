@@ -196,12 +196,37 @@ an entry with no output.
 | `product` | 2 | the named inputs' lengths, multiplied in layout order | all of it |
 | `asked` | 11 | the caller's `out_capacity`, an argument | cut to the count the engine gives |
 | `total` | 4 | 64, then exactly what the engine reported | all of it |
-| `unstated` | 7 | — | — |
+| `call` | 2 | what another exported function answers, asked before the call | all of it |
+| `unstated` | 5 | — | — |
 
-A `length` or `product` that names a struct input's field
-(`req.day_count`) is sized by nothing this marshaller reads, and is
-queued with the `unstated` ones; the measured page lists all nine with
-the engine's own reason.
+A `length` or `product` may name a struct input's field — the calendar
+grid is `req.day_count` days long — and is read from the request the arm
+already built, through a `length` helper that refuses a negative or
+oversized value rather than casting it; an absent request measures zero,
+and the engine refuses the absent request itself.
+
+**A `call` extent** is the house cusps: `tm_house_cusp_count()` of the
+requested system, which no parameter holds and no product states. The
+engine lists it as `{"kind": "call", "function": "tm_house_cusp_count",
+"of": ["req.system"]}`, and its extractor refuses a sizing function that
+is not exported, does not return a `size_t`, takes anything but values,
+or is named with the wrong number of arguments — values only, because a
+length that needed a context or a pointer would need the answer to ask
+the question. The arm calls it before the call it sizes. Twelve cusps
+come back for Placidus and thirty-six for Gauquelin's sectors, and a
+test holds both.
+
+**An output parallel to another** — the cusp speeds beside the cusps — is
+room for as many as its twin, cut where its twin is cut, and answered as
+its own list. It is learned exactly when its twin is sized before the
+call, which a gathered output is not.
+
+The measured page lists the outputs still unsized, each with the
+engine's own reason: the chart blob's three, whose length is what the
+blob holds; the encoded blob, whose size the call reports only once it
+fits; and `tm_houses_calc_many`'s cusps, `count` times the *widest*
+requested system's cusp count — a maximum over an array, which no extent
+kind yet says.
 
 ### Three rules the room follows
 
@@ -312,13 +337,14 @@ exact because the queue groups a function by its hardest blocker.
 | plain structs | 95 | §3 |
 | arrays | 112 | §4 |
 | a struct carrying a string | 118 | §3, one step with the next |
-| **a struct pointing at another** | **135** | §3 |
-| an output sized by another call, and a parallel output | 139 | `tm_house_cusp_count()`, `req.day_count`; an optional twin |
+| a struct pointing at another | 135 | §3 |
+| **an output sized by another call or a field, and a parallel output** | **138** | §4 |
 
-The last ten are genuinely different: three carry opaque bytes, four a
-function-pointer vtable or a `char**`, and three return a pointer into
-the engine's own memory whose lifetime the JSON boundary has no way to
-state.
+One more is a single extent away — `tm_houses_calc_many`'s cusps, a
+maximum over the requests (139). The last ten are genuinely different:
+three carry opaque bytes, four a function-pointer vtable or a `char**`,
+and three return a pointer into the engine's own memory whose lifetime
+the JSON boundary has no way to state.
 
 The plan this table replaced said an array of numbers would reach 99 and
 an array of structs 114, as two steps. They are one step, because the
@@ -351,7 +377,9 @@ easiest.
   it, forty requests keep forty pointers alive, a batch with one bad body
   answers the other two, and a successful batch carries no mark; and a
   refusal carries the engine's message while an earlier failure's message
-  is never repeated.
+  is never repeated; twelve cusps for Placidus and thirty-six for
+  Gauquelin with their speeds beside them, a chart sized by its bodies and
+  its system at once, and a calendar grid three days by two bodies long.
 - The helpers' unit tests, for what the real engine never reaches: a
   gather that must ask twice and one whose answer grows, room past the
   bound, a product that overflows, a `Keep` whose first pointers survive
@@ -366,10 +394,10 @@ easiest.
 
 ## 8. Open questions
 
-- **An output sized by another call** (§6): the house cusps are as long as
-  `tm_house_cusp_count()` of the requested system, and the calendar grid
-  as long as a field of its request. Both are expressible — an extent that
-  names a function, or a field — and neither is yet.
+- **A length that is a maximum over an array** (§4): `tm_houses_calc_many`'s
+  cusps are laid out at the widest requested system's stride. An extent
+  would have to say "the function, over each request, at most, times the
+  count"; one function needs it, so it waits for a second.
 
 ADR-0030's rule that what proves universal is promoted into the port
 applies to all of it.

@@ -317,6 +317,22 @@ pub(crate) fn extent(lengths: &[usize], name: &str) -> Result<usize, ProviderErr
         })
 }
 
+/// A value an output's length is read from — a field of a request, such
+/// as a calendar's `day_count` — as a length.
+///
+/// # Errors
+///
+/// `Invalid` naming the value's path when it is negative or too large for
+/// a length, rather than casting it into one.
+pub(crate) fn length<T>(value: T, path: &str) -> Result<usize, ProviderError>
+where
+    T: TryInto<usize> + Copy + core::fmt::Display,
+{
+    value
+        .try_into()
+        .map_err(|_| ProviderError::invalid(format!("`{path}` is {value}, which is not a length")))
+}
+
 /// An output the engine says the length of, by the engine's own
 /// protocol: the call writes what fits and reports **how many there
 /// are**.
@@ -1133,7 +1149,10 @@ mod tests {
         #[allow(unsafe_code, reason = "reading back what `Keep` holds")]
         // SAFETY: `keep` is alive and holds the array `value` points at.
         let read = unsafe { *value };
-        assert_eq!(read.map(f64::to_bits), [1.5_f64.to_bits(), 2.5_f64.to_bits()]);
+        assert_eq!(
+            read.map(f64::to_bits),
+            [1.5_f64.to_bits(), 2.5_f64.to_bits()]
+        );
 
         let map =
             args(&json!({ "req": { "star": null, "observer": { "lat": 1.0 }, "cut": "a\u{0}" } }));
@@ -1221,5 +1240,18 @@ mod tests {
         for status in -8..=0 {
             assert_ne!(status, UNWRITTEN);
         }
+    }
+
+    /// A length read from a field is refused when it is not one.
+    #[test]
+    fn a_field_that_is_not_a_length_is_refused() {
+        use super::length;
+        assert_eq!(length(12_usize, "req.day_count").unwrap(), 12);
+        assert_eq!(length(7_i32, "req.system").unwrap(), 7);
+        let negative = length(-1_i32, "req.system").unwrap_err();
+        assert!(
+            negative.to_string().contains("`req.system` is -1"),
+            "{negative}"
+        );
     }
 }

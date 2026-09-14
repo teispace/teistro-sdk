@@ -37,6 +37,24 @@ const readTmPositionRequest = (value) => ({ jd: value.jd, scale: value.scale, bo
 /** `tm_position_request` as a consumer writes it, keyed as the engine reads it. */
 const writeTmPositionRequest = (value) => ({ jd: value.jd, scale: value.scale, body: value.body, flags: value.flags, observer: value.observer == null ? null : writeTmObserver(value.observer), center: value.center, ayanamsha: value.ayanamsha, ayanamsha_set: value.ayanamshaSet });
 
+/** `tm_angles` as the engine answers it, spelled as a consumer reads it. */
+const readTmAngles = (value) => ({ ascendant: value.ascendant, midheaven: value.midheaven, armc: value.armc, vertex: value.vertex, equatorialAscendant: value.equatorial_ascendant, coAscendantKoch: value.co_ascendant_koch, coAscendantMunkasey: value.co_ascendant_munkasey, polarAscendant: value.polar_ascendant, ascendantSpeed: value.ascendant_speed, midheavenSpeed: value.midheaven_speed, armcSpeed: value.armc_speed, vertexSpeed: value.vertex_speed, systemUsed: value.system_used });
+
+/** `tm_angles` as a consumer writes it, keyed as the engine reads it. */
+const writeTmAngles = (value) => ({ ascendant: value.ascendant, midheaven: value.midheaven, armc: value.armc, vertex: value.vertex, equatorial_ascendant: value.equatorialAscendant, co_ascendant_koch: value.coAscendantKoch, co_ascendant_munkasey: value.coAscendantMunkasey, polar_ascendant: value.polarAscendant, ascendant_speed: value.ascendantSpeed, midheaven_speed: value.midheavenSpeed, armc_speed: value.armcSpeed, vertex_speed: value.vertexSpeed, system_used: value.systemUsed });
+
+/** `tm_houses_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmHousesRequest = (value) => ({ jdUt1: value.jd_ut1, geoLatDeg: value.geo_lat_deg, geoLonDeg: value.geo_lon_deg, system: value.system, flags: value.flags });
+
+/** `tm_houses_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmHousesRequest = (value) => ({ jd_ut1: value.jdUt1, geo_lat_deg: value.geoLatDeg, geo_lon_deg: value.geoLonDeg, system: value.system, flags: value.flags });
+
+/** `tm_chart_request` as the engine answers it, spelled as a consumer reads it. */
+const readTmChartRequest = (value) => ({ jd: value.jd, scale: value.scale, parts: value.parts, place: value.place == null ? null : readTmObserver(value.place), flags: value.flags, system: value.system, houseFlags: value.house_flags });
+
+/** `tm_chart_request` as a consumer writes it, keyed as the engine reads it. */
+const writeTmChartRequest = (value) => ({ jd: value.jd, scale: value.scale, parts: value.parts, place: value.place == null ? null : writeTmObserver(value.place), flags: value.flags, system: value.system, house_flags: value.houseFlags });
+
 /** `tm_model_details` as the engine answers it, spelled as a consumer reads it. */
 const readTmModelDetails = (value) => ({ value: value.value, name: value.name, implemented: value.implemented, isDefaultCompatible: value.is_default_compatible, isDefaultMax: value.is_default_max });
 
@@ -258,6 +276,12 @@ const readTmCalendarRequest = (value) => ({ jdStart: value.jd_start, dayCount: v
 
 /** `tm_calendar_request` as a consumer writes it, keyed as the engine reads it. */
 const writeTmCalendarRequest = (value) => ({ jd_start: value.jdStart, day_count: value.dayCount, anchor: value.anchor, observer: value.observer == null ? null : writeTmObserver(value.observer), anchor_body: value.anchorBody, flags: value.flags, options: value.options, atmosphere: value.atmosphere == null ? null : writeTmAtmosphere(value.atmosphere), horizon_height_deg: value.horizonHeightDeg });
+
+/** `tm_calendar_day` as the engine answers it, spelled as a consumer reads it. */
+const readTmCalendarDay = (value) => ({ jd: value.jd, found: value.found, status: value.status });
+
+/** `tm_calendar_day` as a consumer writes it, keyed as the engine reads it. */
+const writeTmCalendarDay = (value) => ({ jd: value.jd, found: value.found, status: value.status });
 
 /** `tm_scan_request` as the engine answers it, spelled as a consumer reads it. */
 const readTmScanRequest = (value) => ({ jdStart: value.jd_start, jdEnd: value.jd_end, stepDays: value.step_days, scale: value.scale, body: value.body, bodyB: value.body_b, quantity: value.quantity, direction: value.direction, threshold: value.threshold, flags: value.flags, observer: value.observer == null ? null : readTmObserver(value.observer) });
@@ -497,6 +521,14 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_houses_calc`.
+   */
+  tmHousesCalc({ req }) {
+    const answered = this.#engine.call('tm_houses_calc', { req: req == null ? null : writeTmHousesRequest(req) });
+    return { cusps: answered.cusps, cuspSpeeds: answered.cusp_speeds, outAngles: readTmAngles(answered.out_angles) };
+  }
+
+  /**
    * `tm_house_position`.
    */
   tmHousePosition({ armc, geoLatDeg, obliquityDeg, sys, lonDeg, latDeg }) {
@@ -508,6 +540,14 @@ export class TeimerisEngine {
    */
   tmChartDefaultBodies() {
     return this.#engine.call('tm_chart_default_bodies', {}).out_bodies;
+  }
+
+  /**
+   * `tm_chart_calc`.
+   */
+  tmChartCalc({ req, bodies }) {
+    const answered = this.#engine.call('tm_chart_calc', { req: req == null ? null : writeTmChartRequest(req), bodies });
+    return { outPositions: answered.out_positions.map(readTmPosition), outCusps: answered.out_cusps, outCuspSpeeds: answered.out_cusp_speeds, outAngles: readTmAngles(answered.out_angles) };
   }
 
   /**
@@ -1104,6 +1144,14 @@ export class TeimerisEngine {
    */
   tmCalendarRequestInitSized() {
     return readTmCalendarRequest(this.#engine.call('tm_calendar_request_init_sized', {}).req);
+  }
+
+  /**
+   * `tm_calendar_grid`.
+   */
+  tmCalendarGrid({ req, bodies }) {
+    const answered = this.#engine.call('tm_calendar_grid', { req: req == null ? null : writeTmCalendarRequest(req), bodies });
+    return { outDays: answered.out_days.map(readTmCalendarDay), outPositions: answered.out_positions.map(readTmPosition) };
   }
 
   /**
