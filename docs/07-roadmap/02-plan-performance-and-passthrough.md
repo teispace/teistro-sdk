@@ -753,8 +753,9 @@ the emitted code is verified in its own language.
     (*done*, 112 → 135, one step), and with them refusals in the engine's
     own words and batches that answer the elements that succeeded; outputs
     sized by another call or a field, with their parallel twins (*done*,
-    135 → 138, the engine's IDL gaining a `call` extent); then a maximum
-    over an array (139). The last ten
+    135 → 138, the engine's IDL gaining a `call` extent), and a call spread
+    over an array (*done*, 139). The last ten say in the design page
+    what each would take, and why none is next. The last ten
     are a different kind of work and are not queued. Beside it, the engine's
     D3 — a failure that wrote no error record — is fixed in the engine
     (`7de669e`).

@@ -529,6 +529,14 @@ export class TeimerisEngine {
   }
 
   /**
+   * `tm_houses_calc_many`.
+   */
+  tmHousesCalcMany({ reqs }) {
+    const answered = this.#engine.call('tm_houses_calc_many', { reqs: reqs.map(writeTmHousesRequest) });
+    return { cusps: answered.cusps, outAngles: answered.out_angles.map(readTmAngles) };
+  }
+
+  /**
    * `tm_house_position`.
    */
   tmHousePosition({ armc, geoLatDeg, obliquityDeg, sys, lonDeg, latDeg }) {

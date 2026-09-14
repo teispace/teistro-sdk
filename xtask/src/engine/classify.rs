@@ -164,10 +164,14 @@ const RETURN: &str = "return";
 pub(crate) enum Sizing<'a> {
     /// As long as these measures multiplied, in layout order.
     Inputs(Vec<Measure<'a>>),
-    /// As long as `function` answers when called with `args`.
+    /// As long as `function` answers when called with `args` — once, or
+    /// once per element of the array an `Each` argument names, taking the
+    /// largest answer and multiplying it by that array's length.
     Called {
         function: &'a str,
         args: Vec<Measure<'a>>,
+        /// The input array the answer is multiplied by the length of.
+        times: Option<&'a str>,
     },
     /// The caller says how many to find, under `capacity`, and `count`
     /// receives how many were.
@@ -186,6 +190,8 @@ pub(crate) enum Measure<'a> {
     Value(&'a str),
     /// A field of a struct input: the parameter, and the field's name.
     Field(&'a Param, &'a str),
+    /// A field of every element of an input array of structs.
+    Each(&'a Param, &'a str),
 }
 
 /// Where a `total` output's count comes back.
@@ -220,10 +226,38 @@ pub(crate) fn sizing<'a>(function: &'a Function, output: &'a Param) -> Option<Si
         Extent::Call {
             function: called,
             of,
-        } => measures(function, of, true).map(|args| Sizing::Called {
-            function: called,
-            args,
-        }),
+            reduce,
+            times,
+        } => {
+            let args = measures(function, of, true)?;
+            let spread = args.iter().any(|arg| matches!(arg, Measure::Each(..)));
+            // Only the one combination the engine states: the largest
+            // answer, times the length of the array it was taken over. An
+            // extent asking for anything else is queued, not guessed.
+            let times = match (spread, reduce.as_deref(), times) {
+                (false, None, None) => None,
+                (true, Some("max"), Some(times)) => {
+                    let array = function
+                        .params
+                        .iter()
+                        .find(|param| param.role == "array_len" && &param.name == times)?
+                        .of
+                        .as_deref()?;
+                    let over = args.iter().all(|arg| match arg {
+                        Measure::Each(param, _) => param.name == array,
+                        Measure::Value(_) => true,
+                        _ => false,
+                    });
+                    over.then_some(array)?.into()
+                }
+                _ => return None,
+            };
+            Some(Sizing::Called {
+                function: called,
+                args,
+                times,
+            })
+        }
         Extent::Asked { count } => Some(Sizing::Asked {
             capacity: capacity()?,
             count,
@@ -259,9 +293,14 @@ fn measures<'a>(
                 Some((head, field)) => (head, Some(field)),
                 None => (name.as_str(), None),
             };
+            let (head, each) = match head.strip_suffix("[]") {
+                Some(array) => (array, true),
+                None => (head, false),
+            };
             let param = function.params.iter().find(|param| param.name == head)?;
             match (field, param.role.as_str()) {
-                (Some(field), "struct_in") => Some(Measure::Field(param, field)),
+                (Some(field), "array_in") if each && values => Some(Measure::Each(param, field)),
+                (Some(field), "struct_in") if !each => Some(Measure::Field(param, field)),
                 (None, "array_len") if !values => param.of.as_deref().map(Measure::Length),
                 (None, "value") if values => Some(Measure::Value(&param.name)),
                 _ => None,
@@ -269,7 +308,7 @@ fn measures<'a>(
         })
         .collect::<Option<Vec<_>>>()?;
     let mut roots = found.iter().filter_map(|measure| match measure {
-        Measure::Field(param, _) => Some(param.name.as_str()),
+        Measure::Field(param, _) | Measure::Each(param, _) => Some(param.name.as_str()),
         _ => None,
     });
     let first = roots.next();

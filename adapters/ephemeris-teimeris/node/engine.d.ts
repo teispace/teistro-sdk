@@ -738,6 +738,10 @@ export declare class TeimerisEngine {
    */
   tmHousesCalc(args: { readonly req?: TmHousesRequest | null }): { readonly cusps: readonly number[]; readonly cuspSpeeds: readonly number[]; readonly outAngles: TmAngles };
   /**
+   * `tm_houses_calc_many`.
+   */
+  tmHousesCalcMany(args: { readonly reqs: readonly TmHousesRequest[] }): { readonly cusps: readonly number[]; readonly outAngles: readonly TmAngles[] };
+  /**
    * `tm_house_position`.
    */
   tmHousePosition(args: { readonly armc: number; readonly geoLatDeg: number; readonly obliquityDeg: number; readonly sys: number; readonly lonDeg: number; readonly latDeg: number }): number;

@@ -693,6 +693,13 @@ class TmHousesCalc(TypedDict):
     out_angles: TmAngles
 
 
+class TmHousesCalcMany(TypedDict):
+    """What `tm_houses_calc_many` answers with."""
+
+    cusps: list[float]
+    out_angles: list[TmAngles]
+
+
 class TmChartCalc(TypedDict):
     """What `tm_chart_calc` answers with."""
 
@@ -985,6 +992,11 @@ class TeimerisEngine:
         """`tm_houses_calc`.
         """
         return cast(TmHousesCalc, self._engine.call("tm_houses_calc", req=req))
+
+    def tm_houses_calc_many(self, reqs: Sequence[TmHousesRequest]) -> TmHousesCalcMany:
+        """`tm_houses_calc_many`.
+        """
+        return cast(TmHousesCalcMany, self._engine.call("tm_houses_calc_many", reqs=reqs))
 
     def tm_house_position(self, armc: float, geo_lat_deg: float, obliquity_deg: float, sys: int, lon_deg: float, lat_deg: float) -> float:
         """`tm_house_position`.

@@ -707,34 +707,49 @@ impl<'a> Arm<'a> {
                 self.mark(param);
                 self.call_args.push(format!("{name}.as_mut_ptr()"));
             }
-            Some(Sizing::Called { function, args }) => {
+            Some(Sizing::Called {
+                function,
+                args,
+                times,
+            }) => {
                 // The length another function answers, asked before the
                 // call it sizes; an absent struct input makes it zero, and
                 // the engine refuses the absent input itself.
                 let root = args.iter().find_map(|arg| match arg {
-                    Measure::Field(param, _) => Some(*param),
+                    Measure::Field(param, _) | Measure::Each(param, _) => Some(*param),
                     _ => None,
                 });
                 let spelled = |field_of: &dyn Fn(&str) -> String| {
                     args.iter()
                         .map(|arg| match arg {
-                            Measure::Field(_, field) => field_of(&rust_ident(field)),
+                            Measure::Field(_, field) | Measure::Each(_, field) => {
+                                field_of(&rust_ident(field))
+                            }
                             Measure::Value(value) | Measure::Length(value) => (*value).to_string(),
                         })
                         .collect::<Vec<_>>()
                         .join(", ")
                 };
-                let length = match root {
-                    Some(root) if root.nullable() => format!(
+                let length = match (root, times) {
+                    // Once per element, the largest answer, times the count:
+                    // a batch laid out at its widest element's stride.
+                    (Some(root), Some(array)) => format!(
+                        "extent(&[{}.iter().map(|one| unsafe {{ sys::{function}({}) }}).max().unwrap_or(0), {array}.len()], \"{name}\")?",
+                        root.name,
+                        spelled(&|field| format!("one.{field}"))
+                    ),
+                    (Some(root), None) if root.nullable() => format!(
                         "{}.as_ref().map_or(0, |one| unsafe {{ sys::{function}({}) }})",
                         root.name,
                         spelled(&|field| format!("one.{field}"))
                     ),
-                    Some(root) => format!(
+                    (Some(root), None) => format!(
                         "unsafe {{ sys::{function}({}) }}",
                         spelled(&|field| format!("{}.{field}", root.name))
                     ),
-                    None => format!("unsafe {{ sys::{function}({}) }}", spelled(&str::to_string)),
+                    (None, _) => {
+                        format!("unsafe {{ sys::{function}({}) }}", spelled(&str::to_string))
+                    }
                 };
                 self.bind(&format!(
                     "// SAFETY: `{function}` takes values only and answers a length."
@@ -925,6 +940,10 @@ impl<'a> Arm<'a> {
 fn measured(measure: &Measure<'_>) -> String {
     match measure {
         Measure::Length(array) => format!("{array}.len()"),
+        Measure::Each(param, field) => unreachable!(
+            "`{}[].{field}` measures only a call's argument, which `measured` never reads",
+            param.name
+        ),
         Measure::Value(value) => format!("length({value}, \"{value}\")?"),
         Measure::Field(param, field) => {
             let path = format!("{}.{field}", param.name);

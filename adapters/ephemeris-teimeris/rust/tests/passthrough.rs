@@ -11,7 +11,9 @@
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::panic,
-    reason = "a test fails by panicking"
+    clippy::indexing_slicing,
+    reason = "a test fails by panicking: an index into an answer's array that is out of \
+              bounds is a wrong answer, and one into a `serde_json::Value` answers `Null`"
 )]
 
 use serde_json::Value;
@@ -848,4 +850,48 @@ fn a_calendar_is_sized_by_a_field_of_its_request() {
     );
     let found = answer["out_days"][0]["found"].as_i64().unwrap_or_default();
     assert_eq!(found, 1, "the Sun rises in Kathmandu: {answer}");
+}
+
+/// A batch of house requests is laid out at its widest system's stride:
+/// two Placidus charts hold twenty-four cusps, and one Placidus beside one
+/// Gauquelin holds seventy-two, the Placidus chart's twelve at the start
+/// of its thirty-six-wide slot.
+#[test]
+fn a_house_batch_is_laid_out_at_its_widest_stride() {
+    let provider = provider();
+    let request = |system: i32| {
+        serde_json::json!({
+            "jd_ut1": 2_451_545.0, "geo_lat_deg": 27.7172, "geo_lon_deg": 85.324,
+            "system": system, "flags": 0,
+        })
+    };
+    let batch = |systems: &[i32]| {
+        let reqs: Vec<Value> = systems.iter().copied().map(request).collect();
+        called(
+            &provider,
+            "tm_houses_calc_many",
+            &serde_json::json!({ "reqs": reqs }),
+        )
+    };
+    let length = |answer: &Value, key: &str| answer[key].as_array().map_or(0, Vec::len);
+
+    let placidus = batch(&[0, 0]);
+    assert_eq!(length(&placidus, "cusps"), 24, "{placidus}");
+    assert_eq!(length(&placidus, "out_angles"), 2, "{placidus}");
+
+    let mixed = batch(&[0, 12]);
+    assert_eq!(length(&mixed, "cusps"), 72, "{mixed}");
+    let single = called(
+        &provider,
+        "tm_houses_calc",
+        &serde_json::json!({ "req": request(0) }),
+    );
+    assert_eq!(
+        mixed["cusps"]
+            .as_array()
+            .and_then(|cusps| cusps.get(..12))
+            .map(<[Value]>::to_vec),
+        single["cusps"].as_array().cloned(),
+        "the Placidus chart's cusps open its slot"
+    );
 }

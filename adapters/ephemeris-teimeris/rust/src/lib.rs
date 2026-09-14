@@ -360,7 +360,9 @@ impl TeimerisProvider {
             // `03-design/engine-passthrough-measured.md` and generated
             // into `dispatch.rs` from the same reading.
             native: true,
-            ..Capabilities::default()
+            // Every field named, and no `..Capabilities::default()`: a
+            // capability the port gains later is then a compile error here
+            // rather than a default this engine never chose.
         };
         Ok(TeimerisProvider {
             context: Mutex::new(context),

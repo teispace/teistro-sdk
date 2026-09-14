@@ -201,6 +201,12 @@ extension TeimerisEngine on Engine {
     return (cusps: (answered['cusps']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), cuspSpeeds: (answered['cusp_speeds']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), outAngles: TmAngles.fromJson(answered['out_angles']! as Map<String, Object?>));
   }
 
+  /// `tm_houses_calc_many`.
+  ({List<double> cusps, List<TmAngles> outAngles}) tmHousesCalcMany({required List<TmHousesRequest> reqs}) {
+    final answered = (call('tm_houses_calc_many', <String, Object?>{'reqs': reqs.map((one) => one.toJson()).toList()})) as Map<String, Object?>;
+    return (cusps: (answered['cusps']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), outAngles: (answered['out_angles']! as List<Object?>).map((one) => TmAngles.fromJson(one! as Map<String, Object?>)).toList());
+  }
+
   /// `tm_house_position`.
   double tmHousePosition({required double armc, required double geoLatDeg, required double obliquityDeg, required int sys, required double lonDeg, required double latDeg}) {
     final answered = (call('tm_house_position', <String, Object?>{'armc': armc, 'geo_lat_deg': geoLatDeg, 'obliquity_deg': obliquityDeg, 'sys': sys, 'lon_deg': lonDeg, 'lat_deg': latDeg})) as Map<String, Object?>;

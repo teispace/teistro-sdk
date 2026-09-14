@@ -335,7 +335,7 @@ fn unsized_section(rows: &[Row<'_>]) -> String {
                         Some(Extent::Unstated { why }) => why.clone(),
                         Some(Extent::Length { of }) => format!("as long as `{of}`, which the marshaller cannot read before the call"),
                         Some(Extent::Product { of }) => format!("the product of `{}`, which the marshaller cannot all read before the call", of.join("` × `")),
-                        Some(Extent::Call { function, of }) => format!("what `{function}({})` answers, which the marshaller cannot call before the call", of.join(", ")),
+                        Some(Extent::Call { function, of, .. }) => format!("what `{function}({})` answers, which the marshaller cannot call before the call", of.join(", ")),
                         _ => "no extent the marshaller can read".to_string(),
                     };
                     (row.name(), param.name.as_str(), why)
