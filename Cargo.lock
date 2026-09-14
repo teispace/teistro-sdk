@@ -1706,7 +1706,9 @@ version = "0.0.0"
 dependencies = [
  "teistro-astro",
  "teistro-calendar",
+ "teistro-chart",
  "teistro-core",
+ "teistro-geometry",
  "teistro-panchanga",
  "teistro-port-ephemeris",
  "teistro-siddhanta",

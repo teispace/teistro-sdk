@@ -7,6 +7,7 @@
 //! | [`east_indian`] | signs | Aries top-centre | anticlockwise | the same article, `Kundali_03a.png` |
 //! | [`nepali_lotus`] | houses | as North Indian | anticlockwise | the baseline application's lotus frame |
 //! | [`sudarshan_chakra`] | three rings of houses | house 1 starting at twelve o'clock | clockwise | the tutorials' ring order; the application's start and direction (crux C47) |
+//! | [`western_wheel`] | the cusps | the ascendant at nine o'clock | anticlockwise | tutorials on reading a chart wheel, which agree |
 //!
 //! Every coordinate of the three square figures is a half, a third or a
 //! quarter, reached by IEEE's basic operations, which every platform does
@@ -241,6 +242,39 @@ pub fn sudarshan_chakra() -> Layout {
             ],
             starts_at: 12,
             direction: Direction::Clockwise,
+        }),
+    }
+}
+
+/// The Western chart wheel: the houses as wide as their cusps make them,
+/// inside a ring of the zodiac, the ascendant at nine o'clock and the houses
+/// and signs running anticlockwise from it, which is the convention every
+/// source agrees on. The bodies are drawn at their own longitudes
+/// ([`crate::place::Mark`]), and the hub is left for the aspects a renderer
+/// draws across it.
+#[must_use]
+pub fn western_wheel() -> Layout {
+    Layout {
+        key: String::from("WESTERN_WHEEL"),
+        sources: vec![String::from(
+            "tutorials on reading an astrological chart wheel: the first house's cusp at nine \
+             o'clock, the houses numbered anticlockwise",
+        )],
+        shape: Shape::Radial(Radial {
+            rings: vec![
+                Ring {
+                    inner: 0.18,
+                    outer: 0.39,
+                    counts_from: Reference::Cusps,
+                },
+                Ring {
+                    inner: 0.39,
+                    outer: 0.48,
+                    counts_from: Reference::Zodiac,
+                },
+            ],
+            starts_at: 9,
+            direction: Direction::Anticlockwise,
         }),
     }
 }

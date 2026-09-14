@@ -11,8 +11,8 @@
 //!   curves the lotus needs;
 //! - [`layout`]: a layout as a row, and the checks that refuse a wrong one
 //!   by the cell it gets wrong;
-//! - [`rows`]: the North, South and East Indian charts, the Nepali lotus and
-//!   the Sudarshan Chakra, each cited;
+//! - [`rows`]: the North, South and East Indian charts, the Nepali lotus, the
+//!   Sudarshan Chakra and the Western wheel, each cited;
 //! - [`clock`]: the directions a radial layout needs, the same on every
 //!   platform;
 //! - [`place`]: a chart placed in a layout, every cell carrying both its sign
@@ -30,7 +30,7 @@
 //!
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
-//! use teistro_geometry::{Placements, place, rows};
+//! use teistro_geometry::{Body, Placements, place, rows};
 //!
 //! // Every shipped layout passes the checks a consumer's own would.
 //! for layout in rows::shipped() {
@@ -39,7 +39,7 @@
 //!
 //! // In the South Indian chart the signs stay put: Aries is always the
 //! // second cell of the top row, and with a Leo lagna it is the ninth house.
-//! let chart = Placements { lagna: Rashi::Leo, bodies: vec![(Graha::Mars.key_id(), Rashi::Aries)] };
+//! let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Mars.key_id(), Rashi::Aries));
 //! let placed = place(&rows::south_indian(), &chart)?;
 //! let aries = placed.cells.iter().find(|cell| cell.sign == Rashi::Aries).unwrap();
 //! assert_eq!(aries.house, 9);
@@ -55,4 +55,4 @@ pub mod rows;
 
 pub use layout::{Cell, Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
 pub use path::{Path, Point, Segment};
-pub use place::{Placed, PlacedCell, Placements, place};
+pub use place::{Body, Mark, Placed, PlacedCell, Placements, place};

@@ -1,6 +1,6 @@
 # `teistro-geometry`
 
-Status: `built` (the grid layouts and the Sudarshan Chakra), 2026-09-14. The design is
+Status: `built` (every layout ADR-0026 lists), 2026-09-14. The design is
 [`docs/03-design/chart-geometry.md`](../../docs/03-design/chart-geometry.md),
 over [ADR-0026](../../docs/08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md).
 
@@ -12,7 +12,7 @@ and where its label and its bodies go. The core still never draws.
 |---|---|
 | [`path`](src/path.rs) | points and closed outlines in the unit square, y downwards, with the quadratic curves the lotus needs |
 | [`layout`](src/layout.rs) | a layout as a row, and the checks that refuse a wrong one by the cell it gets wrong |
-| [`rows`](src/rows.rs) | North, South and East Indian, each held to the figure it cites, the Nepali lotus, and the Sudarshan Chakra |
+| [`rows`](src/rows.rs) | North, South and East Indian, each held to the figure it cites, the Nepali lotus, the Sudarshan Chakra and the Western wheel |
 | [`clock`](src/clock.rs) | the directions a radial layout needs, built from square roots so they are bit for bit the same on every platform |
 | [`place`](src/place.rs) | a chart placed in a layout, every cell carrying both its sign and its house |
 
@@ -27,8 +27,9 @@ and where its label and its bodies go. The core still never draws.
 - **Layouts are two kinds.** The square charts are cells fixed in the row.
   The Sudarshan Chakra is rings computed per chart: three rings counted from
   the lagna, the Moon and the Sun, in the tutorials' order. The application
-  draws the rings in the reverse order (crux C47). The Western wheel, whose
-  houses are as wide as the cusps, is next.
+  draws the rings in the reverse order (crux C47). The Western wheel is a
+  ring of houses between the chart's cusps inside a ring of the zodiac, the
+  ascendant at nine o'clock, with each body marked at its own degree.
 
 ## How it is held
 
@@ -49,3 +50,17 @@ and where its label and its bodies go. The core still never draws.
   begins just clockwise of twelve o'clock, no two sectors overlap, every
   anchor is inside its sector, and a chart with no Moon is refused by name
   rather than counted from the lagna.
+- **The wheel.**
+  - The ascendant's cusp is exactly at nine o'clock, and houses run
+    anticlockwise.
+  - A body is in the house the chart's own `Bhavas` put it in: the wheel
+    asks them rather than keeping a second rule.
+  - A sector is as wide as its cusps, the zodiac's signs are equal, and each
+    mark sits at its body's degree.
+  - A chart without cusps, a lagna degree or a body's degree is refused by
+    the field.
+- **Determinism.** The wheel is the one layout that uses a platform's `sin`,
+  so its coordinates are rounded to a grain, and a test checks every one
+  sits on it. The `geometry` section of `teistro-scenario` places both
+  radial layouts over a sweep of real Placidus cusps, so the hash matrix
+  checks the rounding holds on three architectures.

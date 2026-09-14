@@ -80,10 +80,18 @@ pub enum Reference {
     Moon,
     /// The Sun's sign.
     Sun,
+    /// The chart's cusps: each house a sector from its cusp to the next, as
+    /// wide as the house is, the lagna's cusp at the start hour.
+    Cusps,
+    /// The zodiac itself: twelve signs of 30° each, turned so the lagna's
+    /// degree sits at the start hour.
+    Zodiac,
 }
 
 /// One ring of a radial layout: an annulus about the square's centre, cut
-/// into twelve sectors of one clock hour each.
+/// into twelve sectors. A ring counting from a sign cuts them one clock hour
+/// each; a ring of cusps or of the zodiac cuts them where the chart's
+/// longitudes fall.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Ring {
@@ -95,13 +103,16 @@ pub struct Ring {
     pub counts_from: Reference,
 }
 
-/// A radial layout: rings of sectors, from the innermost outwards.
+/// A radial layout: rings of sectors, from the innermost outwards. The
+/// Sudarshan Chakra is three rings counting from signs; the Western wheel is
+/// a ring of cusps inside a ring of the zodiac.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Radial {
     /// The rings, innermost first.
     pub rings: Vec<Ring>,
-    /// The clock hour house 1 starts at, 1 to 12: 12 is the top.
+    /// The clock hour house 1 starts at, 1 to 12: 12 is the top, 9 the left
+    /// where a Western wheel puts its ascendant.
     pub starts_at: u8,
     /// The way the houses run from there.
     pub direction: Direction,

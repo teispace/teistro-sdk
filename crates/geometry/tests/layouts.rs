@@ -113,14 +113,7 @@ fn grid(layout: &mut Layout) -> &mut Grid {
 
 /// Every printed number lands in the cell showing that sign.
 fn holds_to(layout: &Layout, figure: &Figure) {
-    let placed = place(
-        layout,
-        &Placements {
-            lagna: figure.lagna,
-            bodies: Vec::new(),
-        },
-    )
-    .unwrap();
+    let placed = place(layout, &Placements::new(figure.lagna)).unwrap();
     for &(x, y, number) in figure.numbers {
         let point = figure.point(x, y);
         let holder = placed

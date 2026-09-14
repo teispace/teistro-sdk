@@ -37,12 +37,14 @@ use teistro_calendar::fixed::FixedDay;
 use teistro_calendar::shipped;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+use teistro_chart::bhava::{Bhavas, Chalit};
 use teistro_core::catalogue::{Ayanamsha, Calendar, Graha, HouseSystem};
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::{AyanamshaChoice, PolarPolicy};
 use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
+use teistro_geometry::{Body, Placements, Point, place, rows};
 use teistro_panchanga::Almanac;
 use teistro_port_ephemeris::TestProvider;
 use teistro_siddhanta::SuryaSiddhanta;
@@ -76,7 +78,14 @@ impl Section {
 }
 
 /// The sections in the order every report lists them.
-pub const SECTIONS: [&str; 5] = ["calendar", "astro", "houses", "siddhanta", "panchanga"];
+pub const SECTIONS: [&str; 6] = [
+    "calendar",
+    "astro",
+    "houses",
+    "siddhanta",
+    "panchanga",
+    "geometry",
+];
 
 /// One section by name, or `None` when nothing is called that.
 #[must_use]
@@ -87,6 +96,7 @@ pub fn section(name: &str) -> Option<Section> {
         "houses" => Some(houses()),
         "siddhanta" => Some(siddhanta()),
         "panchanga" => Some(panchanga()),
+        "geometry" => Some(geometry()),
         _ => None,
     }
 }
@@ -206,6 +216,67 @@ fn houses() -> Section {
                 }
                 section.push(built.angles.ascendant_deg);
                 section.push(built.angles.midheaven_deg);
+            }
+        }
+    }
+    section
+}
+
+/// The chart geometry: the two radial layouts over a sweep of ascendants
+/// with real Placidus cusps. The Western wheel is the one place a drawing
+/// takes a platform's `sin` and `cos`; its coordinates are rounded to a grain
+/// so the last unit two libraries may differ in never reaches the output,
+/// and this section is what checks that the rounding holds on every
+/// architecture (`03-design/chart-geometry.md` §7).
+fn geometry() -> Section {
+    let mut section = Section::new("geometry");
+    let mut push = |point: Point| {
+        section.push(point.x);
+        section.push(point.y);
+    };
+    let (wheel, chakra) = (rows::western_wheel(), rows::sudarshan_chakra());
+    for armc in (0..360).step_by(11) {
+        let input = Input {
+            armc_deg: f64::from(armc),
+            latitude_deg: 27.7,
+            obliquity_deg: 23.439_291_1,
+            sun_declination_deg: None,
+            sidereal_offset_deg: 0.0,
+        };
+        let Ok(built) = houses::houses(
+            HouseSystem::Placidus,
+            &input,
+            PolarPolicy::FallbackWholeSign,
+        ) else {
+            continue;
+        };
+        let ascendant = built.angles.ascendant_deg;
+        let chart = Placements {
+            lagna_deg: Some(ascendant),
+            houses: Some(Bhavas::of(Chalit::of(HouseSystem::Placidus), &built.cusps)),
+            bodies: [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Saturn]
+                .iter()
+                .zip([0.0, 97.0, 211.5, 333.3])
+                .map(|(graha, offset)| {
+                    Body::at(graha.key_id(), (ascendant + offset).rem_euclid(360.0))
+                })
+                .collect(),
+            ..Placements::new(Body::at(Graha::Sun.key_id(), ascendant).sign)
+        };
+        for layout in [&wheel, &chakra] {
+            let Ok(placed) = place(layout, &chart) else {
+                continue;
+            };
+            for cell in &placed.cells {
+                push(cell.outline.start);
+                for segment in &cell.outline.segments {
+                    push(segment.end());
+                }
+                push(cell.label);
+                push(cell.anchor);
+            }
+            for mark in &placed.marks {
+                push(mark.at);
             }
         }
     }

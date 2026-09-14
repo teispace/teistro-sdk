@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `building` — steps 1 and 2, and the chakra of step 3, built 2026-09-14. It builds the first two parts of
+Status: `building` — steps 1 to 3 built 2026-09-14; the registry, the document section and the renderer follow. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is §8's later step. The research this page rests on was
@@ -208,6 +208,35 @@ where that is won or lost.
   circles, not six, because a stroke drawn twice darkens.
 - **The ring order is the tutorials'** (lagna inner, Sun outer), which the
   application reverses. C47 records the disagreement.
+
+## 7b. What building the wheel settled
+
+- **The wheel needed no third shape.** It is a radial layout of two more
+  ring kinds:
+  - `Cusps`: houses from each cusp to the next;
+  - `Zodiac`: twelve equal signs turned so the lagna's degree sits at the
+    start hour.
+
+  Its `starts_at` is 9 and it runs anticlockwise, the convention every
+  source gives.
+- **A body is in the house the chart's own `Bhavas` put it in.**
+  `Placements` carries the chart's bhavas, not bare cusps, and the wheel
+  asks them. The first version kept its own copy of the rule, which is the
+  duplication that lets a wheel and a chart disagree about one graha's
+  house.
+- **A wheel draws bodies where they stand**, so `Placed` gained `marks`: a
+  body, its ring, its point and the longitude that put it there. The
+  grids leave it empty.
+- **Placement input grew what a wheel reads**, each piece optional because
+  a divisional chart has none of them: the lagna's degree, the bhavas, and
+  each body's degree. A ring that needs a missing piece is refused by the
+  field (`houses`, `lagna_deg`, `bodies[2].longitude_deg`).
+- **Rounding, and a row to check it.** Coordinates reached through `sin`
+  are rounded to 1e-9 of the square. A test holds every wheel coordinate to
+  that grain, and `teistro-scenario`'s new `geometry` section places both
+  radial layouts over a sweep of real Placidus cusps, so the hash matrix
+  compares them across three architectures. The benchmarks walk the same
+  section, so its cost is tracked too.
 
 ## 8. Order of work
 
