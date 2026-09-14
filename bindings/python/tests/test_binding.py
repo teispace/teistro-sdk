@@ -11,12 +11,14 @@ from __future__ import annotations
 import json
 import os
 import unittest
+from typing import Optional
 
 from teistro import (
     Altitude,
     Body,
     Calendar,
     ChartLayout,
+    Drawing,
     Ephemeris,
     EphemerisProvider,
     Latitude,
@@ -27,6 +29,7 @@ from teistro import (
     Teistro,
     TeistroError,
     TimeScale,
+    Theme,
     Varga,
     at,
     date,
@@ -563,3 +566,36 @@ class AnEngine(WithLibrary):
                     drawings=[(ChartLayout.SOUTH_INDIAN, Varga.D9), wrong],  # type: ignore[list-item]
                 )
             self.assertEqual(caught.exception.field, "drawings[1]")
+
+    def test_a_theme_writes_each_drawing_as_svg_and_a_wrong_one_is_refused(self) -> None:
+        """A theme writes every drawing as SVG in the context's locale, and
+        a wrong one is refused by its path (`03-design/render-svg.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        drawings = [(ChartLayout.NORTH_INDIAN, Varga.D1), (ChartLayout.WESTERN_WHEEL, Varga.D1)]
+
+        def found(theme: Optional[Theme]) -> list[Drawing]:
+            return self.ctx.chart.found(
+                instant=2451545.0, place=observer, utc_offset_seconds=20700, drawings=drawings, theme=theme
+            ).drawings
+
+        self.assertIsNone(found(None)[0].svg, "no theme, no SVG")
+        north, wheel = found("dark")
+        assert north.svg is not None and wheel.svg is not None
+        self.assertTrue(north.svg.startswith('<svg xmlns="http://www.w3.org/2000/svg"'))
+        self.assertIn('data-body="graha.SUN">सू', north.svg)
+        self.assertIn('fill="#121212"', north.svg)
+        self.assertIn("<line ", wheel.svg)
+
+        glyphs = found({"extends": "light", "style": {"size": 600}, "content": {"body_form": "glyph"}})[0].svg
+        assert glyphs is not None
+        self.assertIn('viewBox="0 0 600 600"', glyphs)
+        self.assertIn('data-body="graha.SUN">☉', glyphs)
+
+        with self.assertRaises(TeistroError) as wrong:
+            found({"style": {"ink": "black"}})
+        self.assertEqual(wrong.exception.field, "theme_json.style.ink")
+        with self.assertRaises(TeistroError) as unknown:
+            found("sepia")  # type: ignore[arg-type]
+        self.assertEqual(unknown.exception.field, "theme_json.extends")

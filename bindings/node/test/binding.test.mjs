@@ -730,3 +730,64 @@ test('a drawing names a layout and a varga or is refused', () => {
   );
   ctx.dispose();
 });
+
+/**
+ * A theme writes every drawing as SVG in the context's locale; every field a
+ * theme record can name is one the SDK reads, and a wrong one is refused by
+ * its path.
+ */
+test('a theme writes each drawing as SVG, and a wrong one is refused by its field', () => {
+  const ctx = context();
+  const request = {
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    drawings: [
+      { layout: ChartLayout.NorthIndian, varga: Varga.D1 },
+      { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
+    ],
+  };
+  assert.equal(ctx.chart.found(request).drawings[0].svg, undefined, 'no theme, no SVG');
+
+  const [north, wheel] = ctx.chart.found({ ...request, theme: 'dark' }).drawings;
+  assert.match(north.svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/u);
+  assert.match(north.svg, /data-body="graha\.SUN">सू/u, 'written in the locale');
+  assert.match(north.svg, /fill="#121212"/u, 'in the dark theme');
+  assert.match(wheel.svg, /<line /u, 'a wheel ticks its marks');
+
+  // Every field a record can name, so a key the SDK does not read fails here.
+  const every = {
+    extends: 'light',
+    style: {
+      size: 600,
+      background: '#fafafa',
+      ink: '#202020',
+      cell: '#ffffff',
+      lagna_cell: '#fff0d0',
+      accent: '#aa0000',
+      stroke: 0.003,
+      font_family: 'Noto Sans Devanagari, sans-serif',
+      body_size: 0.04,
+      label_size: 0.03,
+      mark_size: 0.03,
+      advance: 0.6,
+      line_height: 1.25,
+      baseline_shift: 0.35,
+    },
+    content: { body_form: 'glyph', cell_label: 'house', lagna_mark: false, retrograde_mark: null, degrees: true },
+  };
+  const custom = ctx.chart.found({ ...request, theme: every }).drawings[0].svg;
+  assert.match(custom, /viewBox="0 0 600 600"/u);
+  assert.match(custom, /data-body="graha\.SUN">☉/u);
+
+  assert.throws(
+    () => ctx.chart.found({ ...request, theme: { style: { ink: 'black' } } }),
+    (error) => error instanceof TeistroError && error.field === 'theme_json.style.ink',
+  );
+  assert.throws(
+    () => ctx.chart.found({ ...request, theme: 'sepia' }),
+    (error) => error instanceof TeistroError && error.field === 'theme_json.extends',
+  );
+  assert.throws(() => ctx.chart.found({ ...request, theme: 7 }), /theme: expected/u);
+  ctx.dispose();
+});

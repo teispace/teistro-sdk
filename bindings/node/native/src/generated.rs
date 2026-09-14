@@ -1785,6 +1785,14 @@ pub struct ChartRequest {
     /// and one count rather than two arrays that must agree; every ergonomic
     /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
     pub drawings: Vec<u32>,
+    /// A theme to write every drawing as SVG in, as JSON: an object of
+    /// `style` and `content` naming only what it changes, over the light
+    /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+    /// The SVGs come back in the blob's `svgs` section, in the context's
+    /// locale. Null for none, which costs nothing
+    /// (`03-design/render-svg.md`).
+    /// Example: {"extends":"dark"}. May be null.
+    pub theme_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1799,6 +1807,7 @@ pub struct HeldChartRequest {
     sections: u32,
     vargas: Vec<u16>,
     drawings: Vec<u32>,
+    theme_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -1821,6 +1830,7 @@ impl HeldChartRequest {
             varga_count: self.vargas.len(),
             drawings: self.drawings.as_ptr(),
             drawing_count: self.drawings.len(),
+            theme_json: self.theme_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -1842,6 +1852,11 @@ impl ChartRequest {
                 .map(|v| varga_from_str(v))
                 .collect::<Result<Vec<_>>>()?,
             drawings: self.drawings.iter().map(|v| *v as u32).collect(),
+            theme_json: self
+                .theme_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -1871,6 +1886,7 @@ impl ChartRequest {
                 .iter()
                 .map(|v| *v as _)
                 .collect(),
+            theme_json: unsafe { lent_text(raw.theme_json) },
         }
     }
 }
@@ -2796,19 +2812,29 @@ impl Context {
     }
 
     /// Turns a failed call into an error whose message is the library's
-    /// own sentence.
-    fn check(&self, status: core_::Status) -> Result<()> {
+    /// own sentence, with the call's record attached as `lastError`.
+    fn check(&self, env: &Env, status: core_::Status) -> Result<()> {
         if status == core_::Status::Ok {
             return Ok(());
         }
-        let message = self
-            .last_error()
-            .and_then(|e| e.message)
+        let record = self.last_error();
+        let message = record
+            .as_ref()
+            .and_then(|e| e.message.clone())
             .unwrap_or_else(|| {
                 // SAFETY: the library returns a static NUL-terminated string.
                 unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()
             });
-        Err(Error::from_reason(message))
+        let Some(record) = record else {
+            return Err(Error::from_reason(message));
+        };
+        let thrown = env
+            .create_error(Error::from_reason(message))
+            .and_then(|mut error| {
+                error.set_named_property("lastError", record)?;
+                Ok(Error::from(error.to_unknown()))
+            });
+        Err(thrown.unwrap_or_else(|failed| failed))
     }
 
     /// Lends the environment to the host provider for one call.
@@ -2838,7 +2864,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::context::ts_context_profile(self.handle, &raw mut out_profile) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_profile.data) }.unwrap_or_default())
     }
 
@@ -2853,7 +2879,7 @@ impl Context {
         let status =
             unsafe { ffi::context::ts_context_settings_json(self.handle, &raw mut out_json) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_string(&mut out_json))
     }
 
@@ -2870,7 +2896,7 @@ impl Context {
         let status =
             unsafe { ffi::context::ts_context_settings_hash(self.handle, &raw mut out_hash) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { Hash::write(&out_hash) })
     }
 
@@ -2885,7 +2911,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::key::ts_key_parse(self.handle, key.as_ptr(), &raw mut out_id) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_id as _)
     }
 
@@ -2901,7 +2927,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::key::ts_key_name(self.handle, id as u32, &raw mut out_key) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_key.data) }.unwrap_or_default())
     }
 
@@ -2930,7 +2956,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { CalendarDate::write(&out_date) })
     }
 
@@ -2947,7 +2973,7 @@ impl Context {
         let status =
             unsafe { ffi::calendar::ts_calendar_to_fixed(self.handle, date, &raw mut out_fixed) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_fixed as _)
     }
 
@@ -2974,7 +3000,7 @@ impl Context {
             ffi::calendar::ts_calendar_convert(self.handle, date, into, &raw mut out_date)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { CalendarDate::write(&out_date) })
     }
 
@@ -3001,7 +3027,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_length as _)
     }
 
@@ -3021,7 +3047,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_leap as _)
     }
 
@@ -3037,7 +3063,7 @@ impl Context {
         let status =
             unsafe { ffi::calendar::ts_calendar_weekday(self.handle, date, &raw mut out_weekday) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_weekday as _)
     }
 
@@ -3062,7 +3088,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::chart::ts_chart_found(self.handle, request, &raw mut out_blob) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3095,7 +3121,7 @@ impl Context {
             ffi::time::ts_time_resolve(self.handle, civil, zone, &raw mut out_resolution)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { ZoneResolution::write(&out_resolution) })
     }
 
@@ -3136,7 +3162,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(TimeCivilResult {
             civil: unsafe { CivilDateTime::write(&out_civil) },
             resolution: unsafe { ZoneResolution::write(&out_resolution) },
@@ -3167,7 +3193,7 @@ impl Context {
             ffi::time::ts_time_convert(self.handle, jd as f64, from, to, &raw mut out_conversion)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { TimeConversion::write(&out_conversion) })
     }
 
@@ -3185,7 +3211,7 @@ impl Context {
         let status =
             unsafe { ffi::time::ts_time_delta_t(self.handle, jd_ut1 as f64, &raw mut out_delta_t) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { DeltaT::write(&out_delta_t) })
     }
 
@@ -3210,7 +3236,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { IntlLoaded::write(&out_loaded) })
     }
 
@@ -3224,7 +3250,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_set_locale(self.handle, locale.as_ptr()) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(())
     }
 
@@ -3240,7 +3266,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_locale(self.handle, &raw mut out_locale) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_locale.data) }.unwrap_or_default())
     }
 
@@ -3253,7 +3279,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_has(self.handle, key.as_ptr(), &raw mut out_has) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_has as _)
     }
 
@@ -3289,7 +3315,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_text.data) }.unwrap_or_default())
     }
 
@@ -3314,7 +3340,7 @@ impl Context {
         let status =
             unsafe { ffi::intl::ts_intl_entity(self.handle, key.as_ptr(), &raw mut out_json) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_json.data) }.unwrap_or_default())
     }
 
@@ -3347,7 +3373,7 @@ impl Context {
             ffi::intl::ts_intl_render(self.handle, key.as_ptr(), params_json, &raw mut out_blob)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3367,7 +3393,7 @@ impl Context {
         let status =
             unsafe { ffi::positions::ts_positions(self.handle, request, &raw mut out_blob) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3399,7 +3425,7 @@ impl Context {
         let status =
             unsafe { ffi::panchanga::ts_panchanga_days(self.handle, request, &raw mut out_blob) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3421,7 +3447,7 @@ impl Context {
         let status =
             unsafe { ffi::ephemeris::ts_ephemeris_manifest(self.handle, &raw mut out_json) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_string(&mut out_json))
     }
 
@@ -3458,7 +3484,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_string(&mut out_json))
     }
 
@@ -3539,11 +3565,12 @@ impl Provider {
     }
 
     /// Turns a failed call into an error whose message is the library's
-    /// own sentence.
-    fn check(&self, status: core_::Status) -> Result<()> {
+    /// own sentence, with the call's record attached as `lastError`.
+    fn check(&self, env: &Env, status: core_::Status) -> Result<()> {
         if status == core_::Status::Ok {
             return Ok(());
         }
+        let _ = env;
         // SAFETY: the library returns a static NUL-terminated string.
         let message =
             unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();

@@ -5664,6 +5664,16 @@ struct ts_chart_request {
      * How many drawings `drawings` points at.
      */
     size_t drawing_count;
+    /**
+     * A theme to write every drawing as SVG in, as JSON: an object of
+     * `style` and `content` naming only what it changes, over the light
+     * theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+     * The SVGs come back in the blob's `svgs` section, in the context's
+     * locale. Null for none, which costs nothing
+     * (`03-design/render-svg.md`).
+     * Example: {"extends":"dark"}. May be null.
+     */
+    const char * theme_json;
 };
 
 /**
@@ -6526,7 +6536,7 @@ _Static_assert(sizeof(ts_context_options) == 40, "ts_context_options is 40 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 96, "ts_chart_request is 96 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 104, "ts_chart_request is 104 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

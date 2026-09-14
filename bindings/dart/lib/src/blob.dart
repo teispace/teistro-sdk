@@ -994,6 +994,7 @@ final class Charts {
     required this.states,
     required this.combustionOrbs,
     required this.drawings,
+    required this.svgs,
   });
 
   /// What kind of chart these are.
@@ -1100,6 +1101,9 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.
   final String drawings;
 
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.
+  final String svgs;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1128,6 +1132,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atStates = blob.section(19, 'states');
   final atCombustionOrbs = blob.section(20, 'combustion_orbs');
   final atDrawings = blob.section(21, 'drawings');
+  final atSvgs = blob.section(22, 'svgs');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -1732,6 +1737,7 @@ Charts decodeCharts(Uint8List bytes) {
     ),
     combustionOrbs: blob.text(atCombustionOrbs),
     drawings: blob.text(atDrawings),
+    svgs: blob.text(atSvgs),
   );
 }
 

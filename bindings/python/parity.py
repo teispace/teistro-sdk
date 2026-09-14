@@ -262,6 +262,7 @@ def main() -> None:
                 (ChartLayout.SOUTH_INDIAN, Varga.D9),
                 (ChartLayout.WESTERN_WHEEL, Varga.D1),
             ],
+            theme="dark",
             aspects=True,
             points=True,
             houses=True,
@@ -374,6 +375,7 @@ def main() -> None:
                 put(f"{key}-cells", len(drawing.cells))
                 put(f"{key}-frames", len(drawing.frame))
                 put(f"{key}-marks", len(drawing.marks))
+                put(f"{key}-svg", drawing.svg)
                 for c, drawn in enumerate(drawing.cells):
                     where = f"{key}-cell-{c}"
                     put(f"{where}-sign", drawn.sign.full_key)

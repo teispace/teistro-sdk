@@ -237,6 +237,8 @@ const charts = geo.chart.foundMany({
     { layout: ChartLayout.SouthIndian, varga: Varga.D9 },
     { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
   ],
+  // Every drawing written as SVG too, so the four agree on the bytes.
+  theme: 'dark',
   aspects: true,
   points: true,
   houses: true,
@@ -321,6 +323,7 @@ for (const chart of charts) {
     put(`${key}-cells`, drawing.cells.length);
     put(`${key}-frames`, drawing.frame.length);
     put(`${key}-marks`, drawing.marks.length);
+    put(`${key}-svg`, drawing.svg);
     drawing.cells.forEach((cell, c) => {
       const at = `${key}-cell-${c}`;
       put(`${at}-sign`, cell.sign);

@@ -711,6 +711,17 @@ export interface ChartRequest {
    * layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
    */
   readonly drawings: Uint32Array | readonly number[];
+  /**
+   * A theme to write every drawing as SVG in, as JSON: an object of
+   * `style` and `content` naming only what it changes, over the light
+   * theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+   * The SVGs come back in the blob's `svgs` section, in the context's
+   * locale. Null for none, which costs nothing
+   * (`03-design/render-svg.md`).
+   * @example {"extends":"dark"}
+   * @nullable
+   */
+  readonly themeJson?: string;
 }
 
 /**

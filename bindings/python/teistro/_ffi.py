@@ -150,7 +150,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 96,
+    "ts_chart_request": 104,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -180,7 +180,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 72,
+    "ts_chart_request": 80,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -570,6 +570,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("varga_count", ctypes.c_size_t),
         ("drawings", ctypes.POINTER(ctypes.c_uint32)),
         ("drawing_count", ctypes.c_size_t),
+        ("theme_json", ctypes.c_char_p),
     ]
 
 
@@ -2079,6 +2080,16 @@ class ChartRequest:
     layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
     """
 
+    theme_json: Optional[str] = None
+    """A theme to write every drawing as SVG in, as JSON: an object of
+    `style` and `content` naming only what it changes, over the light
+    theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+    The SVGs come back in the blob's `svgs` section, in the context's
+    locale. Null for none, which costs nothing
+    (`03-design/render-svg.md`).
+    Example: {"extends":"dark"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2111,6 +2122,9 @@ class ChartRequest:
         owned.append(_drawings)
         raw.drawings = ctypes.cast(_drawings, ctypes.POINTER(ctypes.c_uint32))
         raw.drawing_count = len(self.drawings)
+        _theme_json = None if self.theme_json is None else self.theme_json.encode("utf-8")
+        owned.append(_theme_json)
+        raw.theme_json = _theme_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2144,6 +2158,7 @@ class ChartRequest:
             drawings=[raw.drawings[_i] for _i in range(raw.drawing_count)]
             if raw.drawings
             else [],
+            theme_json=_text(raw.theme_json),
         )
 
 

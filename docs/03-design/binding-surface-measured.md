@@ -69,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1322 | 1 | 0 | 0 | 0 |
-| TypeScript | 355 | 0 | 0 | 1 | 0 |
-| Python | 1322 | 0 | 1 | 2 | 0 |
+| Dart | 1323 | 1 | 0 | 0 | 0 |
+| TypeScript | 356 | 0 | 0 | 1 | 0 |
+| Python | 1323 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1322 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 355 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1322 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1322 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 355 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1322 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1323 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 356 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1323 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1323 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 356 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1323 disagree |
 
 What Dart renames:
 
@@ -139,7 +139,7 @@ against them on the machine the library was actually built for.
 | `ts_error` | 56 | 8 | 36 | yes |
 | `ts_frame` | 16 | 4 | same | no |
 | `ts_calendar_date` | 24 | 4 | same | no |
-| `ts_chart_request` | 96 | 8 | 72 | yes |
+| `ts_chart_request` | 104 | 8 | 80 | yes |
 | `ts_civil_time` | 12 | 4 | same | no |
 | `ts_civil_date_time` | 44 | 4 | same | no |
 | `ts_zone_spec` | 32 | 8 | same | yes |
@@ -196,7 +196,7 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 188 of 188 visible struct fields
+much of that there is to reach for: 189 of 189 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -204,18 +204,18 @@ carry a doc comment.
 | `bitset` | 1 |
 | `brand` | 4 |
 | `enum` | 25 |
-| `example` | 88 |
+| `example` | 89 |
 | `flag` | 15 |
 | `len` | 16 |
-| `nullable` | 11 |
+| `nullable` | 12 |
 | `present_if` | 1 |
 | `range` | 33 |
 | `unit` | 46 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 188 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 188 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 189 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 189 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

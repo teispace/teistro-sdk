@@ -630,6 +630,7 @@ final class ChartArea extends _Area {
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     List<(ChartLayout, Varga)> drawings = const <(ChartLayout, Varga)>[],
+    ChartTheme? theme,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -641,6 +642,7 @@ final class ChartArea extends _Area {
     kind: kind,
     vargas: vargas,
     drawings: drawings,
+    theme: theme,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -659,7 +661,9 @@ final class ChartArea extends _Area {
   /// chart should not pay for twenty-one of them
   /// (`03-design/chart-reading.md` §4). `drawings` names charts to draw, each
   /// a `(ChartLayout, Varga)` pair with `Varga.d1` the founded chart, in the
-  /// order to answer them. `aspects` asks for the drishti.
+  /// order to answer them. `theme` writes each drawing as SVG in the
+  /// context's locale, read back as `Drawing.svg`; none by default.
+  /// `aspects` asks for the drishti.
   Charts foundMany({
     required List<double> instants,
     required Observer place,
@@ -667,6 +671,7 @@ final class ChartArea extends _Area {
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     List<(ChartLayout, Varga)> drawings = const <(ChartLayout, Varga)>[],
+    ChartTheme? theme,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -692,6 +697,7 @@ final class ChartArea extends _Area {
               (state ? _sectionState : 0),
           vargas: vargas,
           drawings: _drawingBits(drawings),
+          themeJson: theme?._json,
         ),
       ),
     ),
@@ -1643,6 +1649,190 @@ final class DrawnMark {
 }
 
 /// A chart drawn in a layout (`03-design/chart-geometry.md`).
+/// How a drawing looks: every field optional, over the theme it extends
+/// (`03-design/render-svg.md`).
+final class ThemeStyle {
+  const ThemeStyle({
+    this.size,
+    this.background,
+    this.ink,
+    this.cell,
+    this.lagnaCell,
+    this.accent,
+    this.stroke,
+    this.fontFamily,
+    this.bodySize,
+    this.labelSize,
+    this.markSize,
+    this.advance,
+    this.lineHeight,
+    this.baselineShift,
+  });
+
+  /// The drawing's width and height, in SVG user units.
+  final double? size;
+
+  /// The page behind the chart, as `#rrggbb`.
+  final String? background;
+
+  /// Lines and text, as `#rrggbb`.
+  final String? ink;
+
+  /// A cell's fill, as `#rrggbb`.
+  final String? cell;
+
+  /// The fill of the cell the lagna stands in, as `#rrggbb`.
+  final String? lagnaCell;
+
+  /// The lagna's own label and mark, as `#rrggbb`.
+  final String? accent;
+
+  /// Line width, as a fraction of the size.
+  final double? stroke;
+
+  /// The font family every text asks for.
+  final String? fontFamily;
+
+  /// The largest a body's label is drawn, as a fraction of the size.
+  final double? bodySize;
+
+  /// A cell's label, as a fraction of the size.
+  final double? labelSize;
+
+  /// A body at its degree on a wheel, as a fraction of the size.
+  final double? markSize;
+
+  /// The width one character is estimated at, in ems.
+  final double? advance;
+
+  /// The distance between two lines of a stack, in ems.
+  final double? lineHeight;
+
+  /// How far below a line's centre its baseline sits, in ems.
+  final double? baselineShift;
+
+  // Only what is named: an absent field is the extended theme's.
+  Map<String, Object?> _json() => <String, Object?>{
+    'size': size,
+    'background': background,
+    'ink': ink,
+    'cell': cell,
+    'lagna_cell': lagnaCell,
+    'accent': accent,
+    'stroke': stroke,
+    'font_family': fontFamily,
+    'body_size': bodySize,
+    'label_size': labelSize,
+    'mark_size': markSize,
+    'advance': advance,
+    'line_height': lineHeight,
+    'baseline_shift': baselineShift,
+  }..removeWhere((_, value) => value == null);
+}
+
+/// The locale form a drawn body is written in.
+enum BodyForm {
+  /// The locale's abbreviation: `Su`, `सू`.
+  short('short'),
+
+  /// The symbol: `☉`.
+  glyph('glyph');
+
+  const BodyForm(this.key);
+
+  /// The key the theme record spells it with.
+  final String key;
+}
+
+/// What a drawn cell's label shows.
+enum CellLabel {
+  /// The sign's number, or on a wheel the house and the sign's glyph.
+  auto('auto'),
+
+  /// The sign's number, 1 for Aries.
+  signNumber('sign_number'),
+
+  /// The sign's abbreviation.
+  signShort('sign_short'),
+
+  /// The sign's symbol.
+  signGlyph('sign_glyph'),
+
+  /// The house's number.
+  house('house'),
+
+  /// Nothing.
+  nothing('nothing');
+
+  const CellLabel(this.key);
+
+  /// The key the theme record spells it with.
+  final String key;
+}
+
+/// What a drawing says: every field optional, over the theme it extends.
+final class ThemeContent {
+  const ThemeContent({
+    this.bodyForm,
+    this.cellLabel,
+    this.lagnaMark,
+    this.retrogradeMark,
+    this.degrees,
+  });
+
+  /// The locale form a body is written in.
+  final BodyForm? bodyForm;
+
+  /// What a cell's label shows.
+  final CellLabel? cellLabel;
+
+  /// Whether the lagna is written first in the cell it stands in.
+  final bool? lagnaMark;
+
+  /// What is written after a retrograde graha's name; `''` for nothing.
+  final String? retrogradeMark;
+
+  /// Whether a graha's degree follows its name, on the founded chart.
+  final bool? degrees;
+
+  // Only what is named: an absent field is the extended theme's.
+  Map<String, Object?> _json() => <String, Object?>{
+    'body_form': bodyForm?.key,
+    'cell_label': cellLabel?.key,
+    'lagna_mark': lagnaMark,
+    'retrograde_mark': retrogradeMark,
+    'degrees': degrees,
+  }..removeWhere((_, value) => value == null);
+}
+
+/// The theme a request writes its drawings as SVG in: a shipped one, or one
+/// naming only what it changes over a shipped one (`03-design/render-svg.md`).
+final class ChartTheme {
+  const ChartTheme._(this._base, this._style, this._content);
+
+  /// Dark ink on white, as a printed patrika.
+  static const light = ChartTheme._('light', ThemeStyle(), ThemeContent());
+
+  /// Light ink on a dark page.
+  static const dark = ChartTheme._('dark', ThemeStyle(), ThemeContent());
+
+  /// This theme with what [style] and [content] name changed.
+  ChartTheme copyWith({
+    ThemeStyle style = const ThemeStyle(),
+    ThemeContent content = const ThemeContent(),
+  }) => ChartTheme._(_base, style, content);
+
+  final String _base;
+  final ThemeStyle _style;
+  final ThemeContent _content;
+
+  String get _json => jsonEncode({
+    'extends': _base,
+    'style': _style._json(),
+    'content': _content._json(),
+  });
+}
+
 final class Drawing {
   const Drawing({
     required this.layout,
@@ -1650,7 +1840,12 @@ final class Drawing {
     required this.cells,
     required this.frame,
     required this.marks,
+    this.svg,
   });
+
+  /// The drawing as SVG, in the request's theme and the context's locale;
+  /// null when the request gave no theme.
+  final String? svg;
 
   /// The layout it is drawn in.
   final ChartLayout layout;
@@ -1667,11 +1862,12 @@ final class Drawing {
   /// Each body at its own degree, on a wheel; empty for a grid.
   final List<DrawnMark> marks;
 
-  factory Drawing._of(Map<String, Object?> raw) {
+  factory Drawing._of(Map<String, Object?> raw, String? svg) {
     final placed = raw['placed']! as Map<String, Object?>;
     Map<String, Object?> object(Object? value) =>
         value! as Map<String, Object?>;
     return Drawing(
+      svg: svg,
       layout:
           ChartLayout.byKey(placed['layout']! as String) ?? ChartLayout.unknown,
       varga: Varga.byKey(raw['varga']! as String) ?? Varga.unknown,
@@ -1714,16 +1910,28 @@ final Expando<List<List<Drawing>>> _drawings = Expando<List<List<Drawing>>>(
 );
 
 List<List<Drawing>> _drawingsOf(Charts batch) =>
-    _drawings[batch] ??=
-        batch.drawings.isEmpty
-            ? const <List<Drawing>>[]
-            : [
-              for (final chart in jsonDecode(batch.drawings) as List<Object?>)
-                [
-                  for (final raw in chart! as List<Object?>)
-                    Drawing._of(raw! as Map<String, Object?>),
-                ],
-            ];
+    _drawings[batch] ??= _parseDrawings(batch);
+
+List<List<Drawing>> _parseDrawings(Charts batch) {
+  if (batch.drawings.isEmpty) return const <List<Drawing>>[];
+  final written =
+      batch.svgs.isEmpty
+          ? const <Object?>[]
+          : jsonDecode(batch.svgs) as List<Object?>;
+  final charts = jsonDecode(batch.drawings) as List<Object?>;
+  return [
+    for (var chart = 0; chart < charts.length; chart += 1)
+      [
+        for (final (index, raw) in (charts[chart]! as List<Object?>).indexed)
+          Drawing._of(
+            raw! as Map<String, Object?>,
+            chart < written.length
+                ? (written[chart]! as List<Object?>)[index]! as String
+                : null,
+          ),
+      ],
+  ];
+}
 
 /// The drawings asked for, as the packed ids the boundary takes: `layout << 16
 /// | varga` each, so a caller names pairs and nothing else writes bits

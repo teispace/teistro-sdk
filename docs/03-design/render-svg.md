@@ -1,7 +1,6 @@
 # The SVG renderer: a placed chart and a theme to a byte-stable drawing
 
-Status: `building`, designed and steps 1 to 4 built 2026-09-14; the boundary
-follows. This is step 6 of
+Status: `built`, designed and built 2026-09-14. This is step 6 of
 [`chart-geometry.md`](chart-geometry.md) §8, and the third part of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md).
 
@@ -224,6 +223,46 @@ A wheel's bodies are not stacked; each is drawn at its degree (§4).
   sign, which can lie entirely on one side of the ascendant's line. That
   is the house system, drawn faithfully, and not a fault in the wheel.
 
+## 6b. The boundary and the bindings
+
+- **A theme crosses with the request, and the SVGs come back in the same
+  crossing.** `TsChartRequest.theme_json` is nullable JSON, the convention
+  `settings_json` set. When it is given, the charts blob's section 22
+  `svgs` carries one array of strings per chart. When it is null, nothing
+  is rendered and nothing is paid. A second entry point would have to
+  found the chart again, or keep documents alive across calls, which the
+  ABI does not do.
+- **A theme names what it changes over a shipped one.** An object's
+  `extends` names `light` or `dark`, and the object is laid over it field
+  by field, so a dark theme with another accent is
+  `{"extends": "dark", "style": {"accent": "#ffcc00"}}`. Refusals are named
+  from the theme's root and the boundary calls that root `theme_json`, as
+  in `theme_json.style.ink` and `theme_json.extends`.
+- **Each binding types the record.**
+  - Node: a `Theme` union of the names and a record of `ThemeStyle` and
+    `ThemeContent`.
+  - Python: `TypedDict`s under strict mypy.
+  - Dart: `ChartTheme.light`, `ChartTheme.dark` and `copyWith`, over
+    `ThemeStyle`, `ThemeContent`, `BodyForm` and `CellLabel`.
+
+  Each reads the SVG back as `drawing.svg`. The Node test sets every field
+  a record can name, so a key the SDK does not read fails a test rather
+  than a consumer.
+- **Parity covers the bytes.** The four runners ask for the dark theme and
+  print each drawing's SVG, and they agree on every one.
+- **Building found a defect in Node's error path, older than this work.**
+  The layer read the context's last error for any exception its call
+  threw, so an argument it refused itself, before the library was reached,
+  was reported as whatever the library had refused last. The theme test
+  caught it: a `theme: 7` after a refused `"sepia"` came back as the
+  `sepia` refusal. The fix is in the addon's generator. A failed call's
+  error now carries its own record as `lastError`, as a refused handle's
+  already did, and the layer reads the context's last error only when a
+  provider threw.
+- **The hash matrix agrees.** Run 34877564969 compared the `render`
+  section's 106 705 values across Linux x86-64, Linux aarch64 and macOS
+  aarch64: none differ.
+
 ## 7. Order of work
 
 1. **This page.**
@@ -242,8 +281,9 @@ A wheel's bodies are not stacked; each is drawn at its degree (§4).
 4. **The hash matrix's `render` section** (built): the wheel and the
    chakra drawn over the geometry section's sweep of ascendants, with a
    conjunction of five, every byte compared.
-5. **The boundary and the bindings**: a theme crosses as JSON, the SVG
-   comes back as a string, and parity compares each drawing's digest.
+5. **The boundary and the bindings** (built, §6b): a theme crosses as
+   JSON, the SVGs come back in the charts blob, and parity compares every
+   byte.
 
 ## 8. What this design does not settle
 

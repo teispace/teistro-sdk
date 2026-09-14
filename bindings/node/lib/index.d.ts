@@ -267,7 +267,71 @@ export interface DrawnCell {
 }
 
 /** A chart drawn in a layout (`03-design/chart-geometry.md`). */
+/** How a drawing looks: every field optional, over the theme it extends. */
+export interface ThemeStyle {
+  /** The drawing's width and height, in SVG user units. */
+  readonly size?: number;
+  /** The page behind the chart, as `#rrggbb`. */
+  readonly background?: string;
+  /** Lines and text, as `#rrggbb`. */
+  readonly ink?: string;
+  /** A cell's fill, as `#rrggbb`. */
+  readonly cell?: string;
+  /** The fill of the cell the lagna stands in, as `#rrggbb`. */
+  readonly lagna_cell?: string;
+  /** The lagna's own label and mark, as `#rrggbb`. */
+  readonly accent?: string;
+  /** Line width, as a fraction of the size. */
+  readonly stroke?: number;
+  /** The font family every text asks for. */
+  readonly font_family?: string;
+  /** The largest a body's label is drawn, as a fraction of the size. */
+  readonly body_size?: number;
+  /** A cell's label, as a fraction of the size. */
+  readonly label_size?: number;
+  /** A body at its degree on a wheel, as a fraction of the size. */
+  readonly mark_size?: number;
+  /** The width one character is estimated at, in ems. */
+  readonly advance?: number;
+  /** The distance between two lines of a stack, in ems. */
+  readonly line_height?: number;
+  /** How far below a line's centre its baseline sits, in ems. */
+  readonly baseline_shift?: number;
+}
+
+/** What a drawing says: every field optional, over the theme it extends. */
+export interface ThemeContent {
+  /** The locale form a body is written in. */
+  readonly body_form?: 'short' | 'glyph';
+  /** What a cell's label shows; `auto` is the sign's number, or on a wheel the house and the sign's glyph. */
+  readonly cell_label?: 'auto' | 'sign_number' | 'sign_short' | 'sign_glyph' | 'house' | 'nothing';
+  /** Whether the lagna is written first in the cell it stands in. */
+  readonly lagna_mark?: boolean;
+  /** What is written after a retrograde graha's name, or null for nothing. */
+  readonly retrograde_mark?: string | null;
+  /** Whether a graha's degree follows its name, on the founded chart. */
+  readonly degrees?: boolean;
+}
+
+/**
+ * The theme a request writes its drawings as SVG in: a shipped theme's name,
+ * or a record naming only what it changes (`03-design/render-svg.md`).
+ */
+export type Theme =
+  | 'light'
+  | 'dark'
+  | {
+      readonly extends?: 'light' | 'dark';
+      readonly style?: ThemeStyle;
+      readonly content?: ThemeContent;
+    };
+
 export interface Drawing {
+  /**
+   * The drawing as SVG, in the request's theme and the context's locale;
+   * absent when the request gave no theme.
+   */
+  readonly svg?: string;
   /** The layout it is drawn in. */
   readonly layout: ChartLayout;
   /** Which chart: `varga.D1` for the founded chart, or a divisional one. */
@@ -715,6 +779,11 @@ export interface ChartRequest {
    * (`Varga.D1` for the founded chart), in the order wanted; none by default.
    */
   readonly drawings?: readonly { readonly layout: ChartLayout; readonly varga: Varga }[];
+  /**
+   * The theme to write every drawing as SVG in, read back as each drawing's
+   * `svg`; no SVG by default.
+   */
+  readonly theme?: Theme;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

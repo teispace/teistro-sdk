@@ -426,6 +426,10 @@ export function decodeCharts(bytes) {
     const at = section(blob, 21, 'drawings');
     out.drawings = text(blob, at);
   }
+  {
+    const at = section(blob, 22, 'svgs');
+    out.svgs = text(blob, at);
+  }
   return out;
 }
 

@@ -232,12 +232,27 @@ impl Theme {
         }
     }
 
+    /// A shipped theme by name: `light` or `dark`.
+    #[must_use]
+    pub fn shipped(name: &str) -> Option<Theme> {
+        match name {
+            "light" => Some(Theme::light()),
+            "dark" => Some(Theme::dark()),
+            _ => None,
+        }
+    }
+
     /// Reads a theme from JSON, refusing an unknown field or a style that
     /// cannot be drawn.
     ///
+    /// The object names only what it changes. What it changes is the light
+    /// theme, or the shipped theme its `extends` names, so a dark theme
+    /// with another accent is one field and not fourteen.
+    ///
     /// # Errors
     ///
-    /// JSON that is not a theme, or a style [`Style::validate`] refuses.
+    /// JSON that is not a theme, an `extends` that names no shipped theme,
+    /// or a style [`Style::validate`] refuses.
     ///
     /// ```
     /// use teistro_render_svg::Theme;
@@ -246,17 +261,74 @@ impl Theme {
     /// assert_eq!(theme.style.ink, "#333333");
     /// assert_eq!(theme.style.background, Theme::light().style.background);
     ///
+    /// let dark = Theme::from_json(r##"{"extends": "dark", "style": {"accent": "#ffcc00"}}"##)?;
+    /// assert_eq!(dark.style.background, Theme::dark().style.background);
+    /// assert_eq!(dark.style.accent, "#ffcc00");
+    ///
     /// let wrong = Theme::from_json(r##"{"style": {"colour": "#333333"}}"##).unwrap_err();
     /// assert!(wrong.message.contains("colour"));
     /// # Ok::<(), teistro_core::error::Error>(())
     /// ```
     pub fn from_json(text: &str) -> Result<Theme, Error> {
-        let theme: Theme = serde_json::from_str(text).map_err(|err| {
-            Error::invalid_arg(format!("the theme is not one: {err}"))
-                .with_field(String::from("theme"))
+        let not_one = |err: &dyn std::fmt::Display| {
+            refused(
+                "theme",
+                format!("the theme is not one: {err}"),
+                "an object of `style` and `content`, each naming only what it changes",
+            )
+        };
+        let serde_json::Value::Object(mut changes) =
+            serde_json::from_str(text).map_err(|err| not_one(&err))?
+        else {
+            return Err(not_one(&"it is not a JSON object"));
+        };
+        let base = match changes.remove("extends") {
+            None => Theme::light(),
+            Some(serde_json::Value::String(name)) => Theme::shipped(&name).ok_or_else(|| {
+                refused(
+                    "theme.extends",
+                    format!("{name:?} is not a shipped theme"),
+                    "extend \"light\" or \"dark\"",
+                )
+            })?,
+            Some(other) => {
+                return Err(refused(
+                    "theme.extends",
+                    format!("{other} is not a theme's name"),
+                    "extend \"light\" or \"dark\"",
+                ));
+            }
+        };
+        let mut merged = serde_json::to_value(base).map_err(|err| not_one(&err))?;
+        merge(&mut merged, serde_json::Value::Object(changes));
+        let theme: Theme = serde_json::from_value(merged).map_err(|err| not_one(&err))?;
+        // Every refusal is named from the theme's root, as the rest are.
+        theme.style.validate().map_err(|error| {
+            let field = error
+                .field()
+                .map_or_else(|| String::from("theme"), |inner| format!("theme.{inner}"));
+            error.with_field(field)
         })?;
-        theme.style.validate()?;
         Ok(theme)
+    }
+}
+
+/// Lays `changes` over `base`, object by object, so a change names only the
+/// fields it changes. A key the base does not have is kept, for the reader
+/// to refuse by name.
+fn merge(base: &mut serde_json::Value, changes: serde_json::Value) {
+    match (base, changes) {
+        (serde_json::Value::Object(base), serde_json::Value::Object(changes)) => {
+            for (key, change) in changes {
+                match base.get_mut(&key) {
+                    Some(slot) => merge(slot, change),
+                    None => {
+                        base.insert(key, change);
+                    }
+                }
+            }
+        }
+        (slot, change) => *slot = change,
     }
 }
 
@@ -338,8 +410,28 @@ mod tests {
     #[test]
     fn a_theme_that_cannot_be_drawn_is_refused_when_read() {
         let err = Theme::from_json(r#"{"style": {"ink": "red"}}"#).unwrap_err();
-        assert_eq!(err.field(), Some("style.ink"));
+        assert_eq!(err.field(), Some("theme.style.ink"));
         let err = Theme::from_json(r#"{"content": {"body": "short"}}"#).unwrap_err();
         assert_eq!(err.field(), Some("theme"));
+        assert!(err.message.contains("body"), "{}", err.message);
+        let err = Theme::from_json(r#"{"extends": "sepia"}"#).unwrap_err();
+        assert_eq!(err.field(), Some("theme.extends"));
+        let err = Theme::from_json("[]").unwrap_err();
+        assert_eq!(err.field(), Some("theme"));
+    }
+
+    #[test]
+    fn a_theme_extends_a_shipped_one_and_changes_only_what_it_names() {
+        let theme = Theme::from_json(
+            r##"{"extends": "dark", "style": {"accent": "#ffcc00"}, "content": {"degrees": true}}"##,
+        )
+        .unwrap();
+        let mut expected = Theme::dark();
+        expected.style.accent = String::from("#ffcc00");
+        expected.content.degrees = true;
+        assert_eq!(theme, expected);
+        // A retrograde mark can be turned off, which a null says.
+        let plain = Theme::from_json(r#"{"content": {"retrograde_mark": null}}"#).unwrap();
+        assert_eq!(plain.content.retrograde_mark, None);
     }
 }

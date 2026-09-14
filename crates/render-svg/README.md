@@ -1,6 +1,6 @@
 # `teistro-render-svg`
 
-Status: `building`, 2026-09-14. The design is
+Status: `built`, 2026-09-14. The design is
 [`docs/03-design/render-svg.md`](../../docs/03-design/render-svg.md), over
 [ADR-0026](../../docs/08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md).
 
@@ -42,3 +42,6 @@ astrology and no locale.
   on three architectures.
 - Numbers print as hundredths with no trailing zeros, arcs carry the right
   flags, and a style or labels are refused by the field they get wrong.
+- A request's `theme_json` writes every drawing as SVG at the boundary.
+  Node, Python and Dart read it back as `drawing.svg`, and the four parity
+  runners agree on every byte.

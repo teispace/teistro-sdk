@@ -579,4 +579,61 @@ void _engineTests() {
     expect(ctx.time.deltaT(2451545.0).seconds, greaterThan(60));
     expect(ctx.keys.name(ctx.keys.id('graha.SUN')), 'graha.SUN');
   });
+
+  test('a theme writes each drawing as SVG, and a wrong one is refused by its '
+      'field', () {
+    final ctx = context();
+    List<Drawing> found(ChartTheme? theme) =>
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              drawings: const [
+                (ChartLayout.northIndian, Varga.d1),
+                (ChartLayout.westernWheel, Varga.d1),
+              ],
+              theme: theme,
+            )
+            .drawings;
+
+    expect(found(null).first.svg, isNull, reason: 'no theme, no SVG');
+    final [north, wheel] = found(ChartTheme.dark);
+    expect(north.svg, startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
+    expect(north.svg, contains('data-body="graha.SUN">सू'));
+    expect(north.svg, contains('fill="#121212"'));
+    expect(wheel.svg, contains('<line '));
+
+    final glyphs =
+        found(
+          ChartTheme.light.copyWith(
+            style: const ThemeStyle(size: 600),
+            content: const ThemeContent(
+              bodyForm: BodyForm.glyph,
+              cellLabel: CellLabel.house,
+              retrogradeMark: '',
+            ),
+          ),
+        ).first.svg;
+    expect(glyphs, contains('viewBox="0 0 600 600"'));
+    expect(glyphs, contains('data-body="graha.SUN">☉'));
+
+    expect(
+      () => found(
+        ChartTheme.light.copyWith(style: const ThemeStyle(ink: 'black')),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'theme_json.style.ink',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
 }

@@ -264,6 +264,7 @@ void main() {
       (ChartLayout.southIndian, Varga.d9),
       (ChartLayout.westernWheel, Varga.d1),
     ],
+    theme: ChartTheme.dark,
     aspects: true,
     points: true,
     houses: true,
@@ -376,6 +377,7 @@ void main() {
       put('$key-cells', drawing.cells.length);
       put('$key-frames', drawing.frame.length);
       put('$key-marks', drawing.marks.length);
+      put('$key-svg', drawing.svg);
       for (var c = 0; c < drawing.cells.length; c += 1) {
         final cell = drawing.cells[c];
         final at = '$key-cell-$c';

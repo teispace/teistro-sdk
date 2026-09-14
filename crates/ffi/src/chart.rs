@@ -26,7 +26,10 @@
 //! over the knob's own `ALL`: adding a member fails it by name rather
 //! than shipping a wrong id.
 
+use core::ffi::c_char;
+
 use teistro::ChartRequest;
+use teistro::render_svg::Theme;
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
@@ -44,7 +47,7 @@ use teistro_state::burn::Burning;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
-use crate::support::{c_struct, read_in, with_context, write_plain};
+use crate::support::{c_struct, optional_text, read_in, with_context, write_plain};
 use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
 use teistro_time::local_day::{DayState, PolarKind};
 
@@ -411,6 +414,14 @@ pub struct TsChartRequest {
     pub drawings: *const u32,
     /// How many drawings `drawings` points at.
     pub drawing_count: usize,
+    /// A theme to write every drawing as SVG in, as JSON: an object of
+    /// `style` and `content` naming only what it changes, over the light
+    /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+    /// The SVGs come back in the blob's `svgs` section, in the context's
+    /// locale. Null for none, which costs nothing
+    /// (`03-design/render-svg.md`).
+    /// `api: nullable example={"extends":"dark"}`
+    pub theme_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -1210,6 +1221,7 @@ pub fn encode(
     place: &Place,
     kind: ChartKind,
     provenance: &Provenance,
+    svgs: &str,
 ) -> Result<Vec<u8>, Error> {
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
     let charts = charts.as_slice();
@@ -1301,6 +1313,7 @@ pub fn encode(
         bhavas.write(&mut writer)?;
         states.write(&mut writer)?;
         writer.bytes("drawings", drawings_json(documents).as_bytes())?;
+        writer.bytes("svgs", svgs.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1326,6 +1339,25 @@ fn drawings_json(documents: &[Document]) -> String {
         .map(|document| &document.drawings)
         .collect();
     teistro_core::envelope::canonical_json(&per_chart)
+}
+
+/// Every chart's drawings written as SVG in one theme, as the canonical JSON
+/// the `svgs` section carries: one array of strings per chart, in the order
+/// the drawings were asked for.
+fn svgs_json(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    theme: &Theme,
+) -> Result<String, Error> {
+    let mut per_chart = Vec::with_capacity(documents.len());
+    for document in documents {
+        let mut svgs = Vec::with_capacity(document.drawings.len());
+        for index in 0..document.drawings.len() {
+            svgs.push(sdk.chart().svg(document, index, theme)?);
+        }
+        per_chart.push(svgs);
+    }
+    Ok(teistro_core::envelope::canonical_json(&per_chart))
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:
@@ -1436,8 +1468,26 @@ pub unsafe extern "C" fn ts_chart_found(
         //
         // It also seals, so there is nothing left for the boundary to do
         // but encode what it was given.
+        // SAFETY: the entry point's contract — null, or a NUL-terminated
+        // string.
+        let theme = unsafe { optional_text(asked.theme_json, "theme_json") }?
+            .map(Theme::from_json)
+            .transpose()
+            .map_err(|error| {
+                // The theme names its fields from its own root; the request
+                // calls that root `theme_json`.
+                let field = error.field().map_or_else(
+                    || String::from("theme_json"),
+                    |inner| format!("theme_json{}", inner.strip_prefix("theme").unwrap_or(inner)),
+                );
+                error.with_field(field)
+            })?;
         let founded = ctx.sdk().chart().readings(&instants, &request)?;
-        let encoded = encode(&founded.value, &place, kind, &founded.provenance)?;
+        let svgs = match &theme {
+            Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
+            None => String::new(),
+        };
+        let encoded = encode(&founded.value, &place, kind, &founded.provenance, &svgs)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -1611,8 +1661,8 @@ mod tests {
                     )
             })
             .collect();
-        let bytes =
-            super::encode(&documents, &place, ChartKind::Natal, &provenance).expect("it encodes");
+        let bytes = super::encode(&documents, &place, ChartKind::Natal, &provenance, "")
+            .expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
         let graha_count = charts[0].grahas.len();
@@ -1730,8 +1780,8 @@ mod tests {
                 )
             })
             .collect();
-        let bytes =
-            super::encode(&documents, &place, ChartKind::Natal, &provenance).expect("it encodes");
+        let bytes = super::encode(&documents, &place, ChartKind::Natal, &provenance, "")
+            .expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 
@@ -1781,7 +1831,8 @@ mod tests {
         use teistro_idl::blob::Reader;
 
         let (_, place, provenance) = founded();
-        let bytes = super::encode(&[], &place, ChartKind::Natal, &provenance).expect("it encodes");
+        let bytes =
+            super::encode(&[], &place, ChartKind::Natal, &provenance, "").expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 

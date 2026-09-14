@@ -877,6 +877,15 @@ final class ChartRequestStruct extends ffi.Struct {
   @ffi.Size()
   external int drawingCount;
 
+  /// A theme to write every drawing as SVG in, as JSON: an object of
+  /// `style` and `content` naming only what it changes, over the light
+  /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+  /// The SVGs come back in the blob's `svgs` section, in the context's
+  /// locale. Null for none, which costs nothing
+  /// (`03-design/render-svg.md`).
+  /// Example: {"extends":"dark"}. May be null.
+  external ffi.Pointer<ffi.Char> themeJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2646,7 +2655,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, this.themeJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2716,6 +2725,15 @@ final class ChartRequest {
   /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
   final List<int> drawings;
 
+  /// A theme to write every drawing as SVG in, as JSON: an object of
+  /// `style` and `content` naming only what it changes, over the light
+  /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+  /// The SVGs come back in the blob's `svgs` section, in the context's
+  /// locale. Null for none, which costs nothing
+  /// (`03-design/render-svg.md`).
+  /// Example: {"extends":"dark"}. May be null.
+  final String? themeJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2749,6 +2767,9 @@ final class ChartRequest {
     }
     raw.drawings = drawingsBuffer;
     raw.drawingCount = drawings.length;
+    raw.themeJson = themeJson == null
+        ? ffi.nullptr
+        : themeJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -2771,6 +2792,9 @@ final class ChartRequest {
         drawings: [
           for (var i = 0; i < raw.drawingCount; i++) raw.drawings[i],
         ],
+        themeJson: raw.themeJson == ffi.nullptr
+            ? null
+            : raw.themeJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

@@ -565,6 +565,11 @@ pub fn charts() -> BlobSchema {
                 "drawings",
                 "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.",
             ),
+            SectionSchema::bytes(
+                22,
+                "svgs",
+                "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.",
+            ),
         ],
     }
 }

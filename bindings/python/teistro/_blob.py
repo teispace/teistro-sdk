@@ -883,6 +883,9 @@ class Charts:
     drawings: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for."""
 
+    svgs: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -913,6 +916,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_states = blob.section(19, "states")
     at_combustion_orbs = blob.section(20, "combustion_orbs")
     at_drawings = blob.section(21, "drawings")
+    at_svgs = blob.section(22, "svgs")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1171,6 +1175,7 @@ def decode_charts(raw: bytes) -> Charts:
         ),
         combustion_orbs=blob.text(at_combustion_orbs),
         drawings=blob.text(at_drawings),
+        svgs=blob.text(at_svgs),
     )
 
 

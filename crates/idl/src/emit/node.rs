@@ -1235,14 +1235,20 @@ fn render_check(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     // sentence; one without gets the status's, because there is nothing
     // to read it from and inventing a reader is what stopped the addon
     // compiling when the second opaque type arrived.
-    let message = if crate::rules::last_error(api, opaque).is_some() {
-        "        let message = self\n            .last_error()\n            .and_then(|e| e.message)\n            .unwrap_or_else(|| {\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()\n            });"
+    //
+    // **The record travels on the error.** The layer above used to read the
+    // context's last error for any exception its call threw, so an argument
+    // the layer itself refused before reaching the library was reported as
+    // whatever the library had refused last. An error that carries the record
+    // of the call that failed cannot be confused with one that has none.
+    let body = if crate::rules::last_error(api, opaque).is_some() {
+        "        let record = self.last_error();\n        let message = record\n            .as_ref()\n            .and_then(|e| e.message.clone())\n            .unwrap_or_else(|| {\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()\n            });\n        let Some(record) = record else {\n            return Err(Error::from_reason(message));\n        };\n        let thrown = env.create_error(Error::from_reason(message)).and_then(|mut error| {\n            error.set_named_property(\"lastError\", record)?;\n            Ok(Error::from(error.to_unknown()))\n        });\n        Err(thrown.unwrap_or_else(|failed| failed))"
     } else {
-        "        // SAFETY: the library returns a static NUL-terminated string.\n        let message =\n            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();"
+        "        let _ = env;\n        // SAFETY: the library returns a static NUL-terminated string.\n        let message =\n            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();\n        Err(Error::from_reason(message))"
     };
     let _ = writeln!(
         out,
-        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence.\n    fn check(&self, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n{message}\n        Err(Error::from_reason(message))\n    }}\n"
+        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence, with the call's record attached as `lastError`.\n    fn check(&self, env: &Env, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n{body}\n    }}\n"
     );
 }
 
@@ -1256,17 +1262,17 @@ fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, m: &FunctionDe
     // A call that may reach the host provider brackets itself: the
     // environment is lent before it and taken back after, and what the
     // provider threw is reported in place of the status it turned into.
-    let (env_param, lend, take) = if host {
-        (
-            "env: Env, ",
-            "        self.enter(env);\n",
-            "        self.leave()?;\n",
-        )
+    let (lend, take) = if host {
+        ("        self.enter(env);\n", "        self.leave()?;\n")
     } else {
-        ("", "", "")
+        ("", "")
     };
-    let body = if returns_status(api, m) {
-        format!("        let status = {called};\n{take}        self.check(status)?;")
+    // The environment is taken by a call that lends it to the provider, and
+    // by one that can fail, whose error carries its own record.
+    let status = returns_status(api, m);
+    let env_param = if host || status { "env: Env, " } else { "" };
+    let body = if status {
+        format!("        let status = {called};\n{take}        self.check(&env, status)?;")
     } else {
         format!("        let value = {called};\n{take}")
     };

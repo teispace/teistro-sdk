@@ -790,7 +790,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
             .map_or_else(String::new, |a| a.table().to_owned()),
     );
     for (index, document) in read.value.iter().enumerate() {
-        the_drawings(report, index, document);
+        the_drawings(report, &geo, index, document);
         one_varga_chart(report, index, document);
         the_states(report, index, document);
         the_bhavas(report, index, document);
@@ -886,7 +886,7 @@ fn the_chart_request(place: Place, offset: UtcOffset) -> ChartRequest {
 /// Every drawing the request named: its layout and chart, and each cell's
 /// sign, house, anchors, outline start and the kinds of its steps, and each
 /// mark, as the other three print them.
-fn the_drawings(report: &mut Report, index: usize, document: &teistro::Document) {
+fn the_drawings(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
     use teistro::geometry::{Point, Segment};
     let pair = |point: Point| format!("{},{}", number(point.x), number(point.y));
     for (d, drawing) in document.drawings.iter().enumerate() {
@@ -898,6 +898,12 @@ fn the_drawings(report: &mut Report, index: usize, document: &teistro::Document)
             &format!("{key}-varga"),
             drawing.varga.full_key().to_owned(),
         );
+        // Written as SVG in the dark theme, as the other three ask for.
+        let svg = sdk
+            .chart()
+            .svg(document, d, &teistro::render_svg::Theme::dark())
+            .unwrap_or_else(|error| format!("refused: {error}"));
+        put(report, &format!("{key}-svg"), svg);
         put(
             report,
             &format!("{key}-cells"),

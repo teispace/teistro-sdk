@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Generic, Iterator, List, Mapping, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Any, Generic, Iterator, List, Literal, Mapping, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
 
 from . import messages as intl
 from ._blob import (
@@ -219,6 +219,10 @@ __all__ = [
     # Chart geometry: the layouts a chart is drawn in, and what a drawing is.
     "ChartLayout",
     "Drawing",
+    "Theme",
+    "ThemeContent",
+    "ThemeRecord",
+    "ThemeStyle",
     "DrawnCell",
     "DrawnMark",
     "Outline",
@@ -901,6 +905,7 @@ class ChartArea(_Area):
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         drawings: Sequence[Tuple[ChartLayout, Varga]] = (),
+        theme: Optional[Theme] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -926,6 +931,7 @@ class ChartArea(_Area):
             kind=kind,
             vargas=vargas,
             drawings=drawings,
+            theme=theme,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -941,6 +947,7 @@ class ChartArea(_Area):
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         drawings: Sequence[Tuple[ChartLayout, Varga]] = (),
+        theme: Optional[Theme] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -978,6 +985,7 @@ class ChartArea(_Area):
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
             drawings=_drawing_bits(drawings),
+            theme_json=_theme_json(theme),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request)))
@@ -1643,6 +1651,65 @@ class DrawnMark:
     """The longitude that put it there, degrees."""
 
 
+class ThemeStyle(TypedDict, total=False):
+    """How a drawing looks: every field optional, over the theme it extends
+    (`03-design/render-svg.md`)."""
+
+    size: float
+    background: str
+    ink: str
+    cell: str
+    lagna_cell: str
+    accent: str
+    stroke: float
+    font_family: str
+    body_size: float
+    label_size: float
+    mark_size: float
+    advance: float
+    line_height: float
+    baseline_shift: float
+
+
+class ThemeContent(TypedDict, total=False):
+    """What a drawing says: every field optional, over the theme it extends."""
+
+    body_form: Literal["short", "glyph"]
+    cell_label: Literal["auto", "sign_number", "sign_short", "sign_glyph", "house", "nothing"]
+    lagna_mark: bool
+    retrograde_mark: Optional[str]
+    degrees: bool
+
+
+class ThemeRecord(TypedDict, total=False):
+    """A theme naming only what it changes, over the light theme or the
+    shipped one `extends` names."""
+
+    extends: Literal["light", "dark"]
+    style: ThemeStyle
+    content: ThemeContent
+
+
+Theme = Union[Literal["light", "dark"], ThemeRecord]
+"""The theme a request writes its drawings as SVG in: a shipped theme's
+name, or a record naming only what it changes."""
+
+
+def _theme_json(theme: Optional[Theme]) -> Optional[str]:
+    """The theme as the JSON the boundary reads, or nothing for no SVG."""
+    if theme is None:
+        return None
+    if isinstance(theme, str):
+        return json.dumps({"extends": theme})
+    if isinstance(theme, Mapping):
+        return json.dumps(theme)
+    raise TeistroError(
+        Status.INVALID_ARG,
+        "a theme is 'light', 'dark' or a theme record",
+        field="theme",
+    )
+
+
 @dataclass(frozen=True)
 class Drawing:
     """A chart drawn in a layout (`03-design/chart-geometry.md`)."""
@@ -1661,6 +1728,10 @@ class Drawing:
 
     marks: list[DrawnMark]
     """Each body at its own degree, on a wheel; empty for a grid."""
+
+    svg: Optional[str] = None
+    """The drawing as SVG, in the request's theme and the context's locale;
+    `None` when the request gave no theme."""
 
 
 def _member(kind: Any, key: str) -> Any:
@@ -1688,9 +1759,10 @@ def _outline(raw: Mapping[str, Any]) -> Outline:
     return Outline(start=_point(raw["start"]), segments=[_segment(step) for step in raw["segments"]])
 
 
-def _drawing(raw: Mapping[str, Any]) -> Drawing:
+def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
     placed = raw["placed"]
     return Drawing(
+        svg=svg,
         layout=_member(ChartLayout, placed["layout"]),
         varga=_member(Varga, raw["varga"]),
         cells=[
@@ -2073,7 +2145,14 @@ class ChartBatch:
         text = self.decoded.drawings
         if not text:
             return []
-        return [[_drawing(raw) for raw in chart] for chart in json.loads(text)]
+        written: list[list[str]] = json.loads(self.decoded.svgs) if self.decoded.svgs else []
+        return [
+            [
+                _drawing(raw, written[chart][index] if chart < len(written) else None)
+                for index, raw in enumerate(drawings)
+            ]
+            for chart, drawings in enumerate(json.loads(text))
+        ]
 
     def at(self, index: int) -> Chart:
         """One chart of the batch, by index."""

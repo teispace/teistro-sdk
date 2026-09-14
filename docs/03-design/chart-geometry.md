@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `building` — steps 1 to 5 built 2026-09-14; the renderer follows. It builds the first two parts of
+Status: `built` — every step built 2026-09-14, the renderer in [`render-svg.md`](render-svg.md). It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is §8's later step. The research this page rests on was
@@ -335,8 +335,7 @@ where that is won or lost.
 5. **The document section and the boundary**: `ChartRequest::with_drawings`,
    the section in all four bindings, and parity (built: §7d, §7e).
 6. **`render-svg`**: the theme record and golden SVGs, gated byte for
-   byte (built in Rust and the façade, [`render-svg.md`](render-svg.md);
-   the boundary follows).
+   byte (built, [`render-svg.md`](render-svg.md)).
 
 ## 9. What this design does not settle
 

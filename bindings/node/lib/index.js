@@ -219,8 +219,13 @@ function guarded(context, call, thrown) {
     // A context keeps its last refusal; a call that makes a handle has no
     // context to keep it on, so the addon throws it with the whole record
     // attached instead (`ffi-abi-and-api-description.md` §6.1).
-    const record = context?.lastError?.() ?? cause?.lastError;
+    // The record comes on the error the addon threw for the call that
+    // failed, and from nowhere else: reading the context's last error for
+    // any exception would report an argument this layer refused as
+    // whatever the library refused last. A provider's own throw is the one
+    // case with no such error, and there the call did reach the library.
     const own = thrown?.error;
+    const record = cause?.lastError ?? (own !== undefined ? context?.lastError?.() : undefined);
     if (own !== undefined) {
       thrown.error = undefined;
       // The boundary's refusal kept as the cause: the caller catches the
@@ -1661,6 +1666,7 @@ class ChartArea extends Area {
           (request.state === true ? SECTION_STATE : 0),
         vargas: vargaKeys(request.vargas),
         drawings: drawingBits(request.drawings),
+        themeJson: themeJson(request.theme),
       }),
     );
     return new Charts(bytes);
@@ -1681,16 +1687,25 @@ const DRAWINGS = new WeakMap();
 function drawingsOf(batch) {
   let parsed = DRAWINGS.get(batch);
   if (parsed === undefined) {
-    const text = batch.decoded.drawings;
-    parsed = text ? JSON.parse(text).map((drawings) => drawings.map(drawingFrom)) : [];
+    const { drawings, svgs } = batch.decoded;
+    const written = svgs ? JSON.parse(svgs) : [];
+    parsed = drawings
+      ? JSON.parse(drawings).map((charted, chart) =>
+          charted.map((drawing, index) => drawingFrom(drawing, written[chart]?.[index])),
+        )
+      : [];
     DRAWINGS.set(batch, parsed);
   }
   return parsed;
 }
 
-/** A drawing as the boundary's JSON writes it, in this layer's shape. */
-function drawingFrom({ varga, placed }) {
+/**
+ * A drawing as the boundary's JSON writes it, in this layer's shape, with
+ * its SVG when the request gave a theme.
+ */
+function drawingFrom({ varga, placed }, svg) {
   return Object.freeze({
+    svg,
     layout: `chart_layout.${placed.layout}`,
     varga: `varga.${varga}`,
     cells: placed.cells.map((cell) =>
@@ -1710,6 +1725,21 @@ function drawingFrom({ varga, placed }) {
       Object.freeze({ body: mark.body, ring: mark.ring, at: mark.at, longitudeDeg: mark.longitude_deg }),
     ),
   });
+}
+
+/**
+ * The theme a request draws its SVGs in, as the JSON the boundary reads: a
+ * shipped theme's name, or a record naming only what it changes over the
+ * light theme or the one its `extends` names (`03-design/render-svg.md`).
+ *
+ * @param {string|object|undefined} theme
+ * @returns {string|undefined}
+ */
+function themeJson(theme) {
+  if (theme === undefined || theme === null) return undefined;
+  if (typeof theme === 'string') return JSON.stringify({ extends: theme });
+  if (typeof theme === 'object' && !Array.isArray(theme)) return JSON.stringify(theme);
+  throw new TypeError("theme: expected 'light', 'dark' or a theme record");
 }
 
 /** Every catalogue key by its id, turned round, for a request to write ids. */
