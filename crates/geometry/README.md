@@ -1,6 +1,6 @@
 # `teistro-geometry`
 
-Status: `built` (grid layouts), 2026-09-14. The design is
+Status: `built` (the grid layouts and the Sudarshan Chakra), 2026-09-14. The design is
 [`docs/03-design/chart-geometry.md`](../../docs/03-design/chart-geometry.md),
 over [ADR-0026](../../docs/08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md).
 
@@ -12,7 +12,8 @@ and where its label and its bodies go. The core still never draws.
 |---|---|
 | [`path`](src/path.rs) | points and closed outlines in the unit square, y downwards, with the quadratic curves the lotus needs |
 | [`layout`](src/layout.rs) | a layout as a row, and the checks that refuse a wrong one by the cell it gets wrong |
-| [`rows`](src/rows.rs) | North, South and East Indian, each held to the figure it cites, and the Nepali lotus |
+| [`rows`](src/rows.rs) | North, South and East Indian, each held to the figure it cites, the Nepali lotus, and the Sudarshan Chakra |
+| [`clock`](src/clock.rs) | the directions a radial layout needs, built from square roots so they are bit for bit the same on every platform |
 | [`place`](src/place.rs) | a chart placed in a layout, every cell carrying both its sign and its house |
 
 ## What the research found
@@ -23,9 +24,11 @@ and where its label and its bodies go. The core still never draws.
 - **The lotus is the North Indian chart drawn as petals.** It is parsed from
   the application's own path strings and snaps the source's rounded thirds
   through a stated table.
-- **Layouts are two kinds.** The square charts are cells fixed in the row;
-  the wheel and the Sudarshan Chakra are rings computed per chart, which is
-  the next step.
+- **Layouts are two kinds.** The square charts are cells fixed in the row.
+  The Sudarshan Chakra is rings computed per chart: three rings counted from
+  the lagna, the Moon and the Sun, in the tutorials' order. The application
+  draws the rings in the reverse order (crux C47). The Western wheel, whose
+  houses are as wide as the cusps, is next.
 
 ## How it is held
 
@@ -41,4 +44,8 @@ and where its label and its bodies go. The core still never draws.
 - **Figures.** A ring turned by one cell passes every structural check, so
   each square chart is also held to its reference figure: every number the
   figure prints must land in the cell showing that sign.
-- **Placement.** It is checked for all twelve lagnas in all four layouts.
+- **Placement.** It is checked for all twelve lagnas in all four grid
+  layouts. For the chakra, each ring counts from its own place, house 1
+  begins just clockwise of twelve o'clock, no two sectors overlap, every
+  anchor is inside its sector, and a chart with no Moon is refused by name
+  rather than counted from the lagna.

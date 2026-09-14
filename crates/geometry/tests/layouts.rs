@@ -17,7 +17,7 @@
 )]
 
 use teistro_core::catalogue::Rashi;
-use teistro_geometry::layout::{Direction, Holds};
+use teistro_geometry::layout::{Cell, Direction, Grid, Holds, Reference};
 use teistro_geometry::path::Point;
 use teistro_geometry::{Layout, Placements, place, rows};
 
@@ -106,6 +106,11 @@ const NORTH: Figure = Figure {
     ],
 };
 
+/// A grid layout's grid, for a test to break.
+fn grid(layout: &mut Layout) -> &mut Grid {
+    layout.shape.as_grid_mut().expect("a grid layout")
+}
+
 /// Every printed number lands in the cell showing that sign.
 fn holds_to(layout: &Layout, figure: &Figure) {
     let placed = place(
@@ -114,7 +119,8 @@ fn holds_to(layout: &Layout, figure: &Figure) {
             lagna: figure.lagna,
             bodies: Vec::new(),
         },
-    );
+    )
+    .unwrap();
     for &(x, y, number) in figure.numbers {
         let point = figure.point(x, y);
         let holder = placed
@@ -158,9 +164,9 @@ fn two_adjacent_signs_swapped_are_refused_by_the_direction_they_break() {
     // once and every anchor is still inside its cell, but taken in sign
     // order the cells now step backwards once, which is what refuses it.
     let mut swapped = rows::east_indian();
-    swapped.grid.cells[1].holds = Holds::Sign(Rashi::Gemini);
-    swapped.grid.cells[2].holds = Holds::Sign(Rashi::Taurus);
-    refuses(&swapped, "grid.direction");
+    grid(&mut swapped).cells[1].holds = Holds::Sign(Rashi::Gemini);
+    grid(&mut swapped).cells[2].holds = Holds::Sign(Rashi::Taurus);
+    refuses(&swapped, "shape.direction");
 }
 
 #[test]
@@ -171,7 +177,7 @@ fn a_ring_turned_by_one_cell_passes_every_check_and_fails_its_figure() {
     // anchor is inside its cell and the cells run the declared way, so only
     // the figure can say Aries is not where it was drawn.
     let mut turned = rows::east_indian();
-    for cell in &mut turned.grid.cells {
+    for cell in &mut grid(&mut turned).cells {
         if let Holds::Sign(sign) = cell.holds {
             cell.holds = Holds::Sign(Rashi::from_id((sign.id() + 1) % 12).unwrap());
         }
@@ -188,8 +194,11 @@ fn the_lotus_is_the_north_indian_chart_drawn_as_petals() {
     // satisfied by accident.
     holds_to(&rows::nepali_lotus(), &NORTH);
     // And the petals fill the square as the diamonds do.
-    let area: f64 = rows::nepali_lotus()
-        .grid
+    let lotus = rows::nepali_lotus();
+    let area: f64 = lotus
+        .shape
+        .as_grid()
+        .unwrap()
         .cells
         .iter()
         .map(|cell| cell.outline.area())
@@ -207,45 +216,48 @@ fn refuses(broken: &Layout, field: &str) {
 fn each_check_refuses_the_row_it_should() {
     // Two signs swapped, so one is held twice.
     let mut twice = rows::south_indian();
-    twice.grid.cells[1].holds = Holds::Sign(Rashi::Aries);
-    refuses(&twice, "grid.cells[1].holds");
+    grid(&mut twice).cells[1].holds = Holds::Sign(Rashi::Aries);
+    refuses(&twice, "shape.cells[1].holds");
 
     // A mix of signs and houses.
     let mut mixed = rows::south_indian();
-    mixed.grid.cells[3].holds = Holds::House(4);
-    refuses(&mixed, "grid.cells[3].holds");
+    grid(&mut mixed).cells[3].holds = Holds::House(4);
+    refuses(&mixed, "shape.cells[3].holds");
 
     // A house that is not a house.
     let mut thirteenth = rows::north_indian();
-    thirteenth.grid.cells[0].holds = Holds::House(13);
-    refuses(&thirteenth, "grid.cells[0].holds");
+    grid(&mut thirteenth).cells[0].holds = Holds::House(13);
+    refuses(&thirteenth, "shape.cells[0].holds");
 
     // An anchor outside its cell.
     let mut astray = rows::east_indian();
-    astray.grid.cells[0].label = Point::new(0.5, 0.9);
-    refuses(&astray, "grid.cells[0].label");
+    grid(&mut astray).cells[0].label = Point::new(0.5, 0.9);
+    refuses(&astray, "shape.cells[0].label");
 
     // An outline leaving the square.
     let mut outside = rows::north_indian();
-    outside.grid.cells[2].outline.start = Point::new(-0.1, 0.0);
-    refuses(&outside, "grid.cells[2].outline");
+    grid(&mut outside).cells[2].outline.start = Point::new(-0.1, 0.0);
+    refuses(&outside, "shape.cells[2].outline");
 
     // Two cells on top of each other.
     let mut overlapping = rows::south_indian();
-    overlapping.grid.cells[5].outline = overlapping.grid.cells[4].outline.clone();
-    overlapping.grid.cells[5].label = overlapping.grid.cells[4].label;
-    overlapping.grid.cells[5].bodies = overlapping.grid.cells[4].bodies;
-    refuses(&overlapping, "grid.cells[5].outline");
+    let cells = &mut grid(&mut overlapping).cells;
+    let copied = cells[4].clone();
+    cells[5] = Cell {
+        holds: cells[5].holds,
+        ..copied
+    };
+    refuses(&overlapping, "shape.cells[5].outline");
 
     // The direction declared the wrong way round.
     let mut backwards = rows::east_indian();
-    backwards.grid.direction = Direction::Clockwise;
-    refuses(&backwards, "grid.direction");
+    grid(&mut backwards).direction = Direction::Clockwise;
+    refuses(&backwards, "shape.direction");
 
     // Eleven cells.
     let mut short = rows::north_indian();
-    short.grid.cells.pop();
-    refuses(&short, "grid.cells");
+    grid(&mut short).cells.pop();
+    refuses(&short, "shape.cells");
 
     // No source, and a key that is not one.
     let mut uncited = rows::north_indian();
@@ -254,6 +266,36 @@ fn each_check_refuses_the_row_it_should() {
     let mut unkeyed = rows::north_indian();
     unkeyed.key = String::from("north indian");
     refuses(&unkeyed, "key");
+}
+
+#[test]
+fn a_radial_layout_is_refused_by_the_ring_it_gets_wrong() {
+    let radial = |layout: &mut Layout| {
+        match &mut layout.shape {
+            teistro_geometry::Shape::Radial(radial) => radial,
+            teistro_geometry::Shape::Grid(_) => panic!("a radial layout"),
+        }
+        .clone()
+    };
+    let with = |edit: &dyn Fn(&mut teistro_geometry::Radial)| {
+        let mut layout = rows::sudarshan_chakra();
+        let mut rings = radial(&mut layout);
+        edit(&mut rings);
+        layout.shape = teistro_geometry::Shape::Radial(rings);
+        layout
+    };
+
+    refuses(&with(&|r| r.starts_at = 0), "shape.starts_at");
+    refuses(&with(&|r| r.rings.clear()), "shape.rings");
+    // Rings out of order: the Sun's inside the lagna's.
+    refuses(&with(&|r| r.rings.swap(0, 2)), "shape.rings[1]");
+    // A ring past the square's edge.
+    refuses(&with(&|r| r.rings[2].outer = 0.6), "shape.rings[2]");
+    // Two rings counting from the Moon.
+    refuses(
+        &with(&|r| r.rings[2].counts_from = Reference::Moon),
+        "shape.rings[2].counts_from",
+    );
 }
 
 #[test]

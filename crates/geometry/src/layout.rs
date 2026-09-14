@@ -1,9 +1,14 @@
 //! A layout as a row of data, and the checks that refuse a wrong one.
 //!
-//! A **grid** layout is twelve cells fixed in the row. Each cell holds a
-//! sign (a sign-fixed layout, South and East Indian) or a house (a
-//! house-fixed layout, North Indian and the lotus). Placement computes the
-//! other from the lagna ([`crate::place`]).
+//! Layouts are two kinds (`03-design/chart-geometry.md` §2):
+//!
+//! - a **grid** is twelve cells fixed in the row. Each holds a sign (a
+//!   sign-fixed layout, South and East Indian) or a house (a house-fixed
+//!   layout, North Indian and the lotus), and placement computes the other
+//!   from the lagna;
+//! - a **radial** layout is rings of twelve sectors, one clock hour each,
+//!   each ring counting its houses from a reference of its own (the lagna,
+//!   the Moon, the Sun), so its sectors are computed per chart.
 //!
 //! A row is refused, not believed. [`Layout::validate`] names the cell it
 //! gets wrong, so a consumer's regional layout fails as loudly as a shipped
@@ -64,16 +69,94 @@ pub struct Grid {
     pub direction: Direction,
 }
 
+/// What a radial ring counts its first house from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "lowercase")]
+pub enum Reference {
+    /// The lagna's sign.
+    Lagna,
+    /// The Moon's sign.
+    Moon,
+    /// The Sun's sign.
+    Sun,
+}
+
+/// One ring of a radial layout: an annulus about the square's centre, cut
+/// into twelve sectors of one clock hour each.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Ring {
+    /// The inner radius, a fraction of the square's side; 0 makes wedges.
+    pub inner: f64,
+    /// The outer radius, at most a half.
+    pub outer: f64,
+    /// What the ring counts its first house from.
+    pub counts_from: Reference,
+}
+
+/// A radial layout: rings of sectors, from the innermost outwards.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Radial {
+    /// The rings, innermost first.
+    pub rings: Vec<Ring>,
+    /// The clock hour house 1 starts at, 1 to 12: 12 is the top.
+    pub starts_at: u8,
+    /// The way the houses run from there.
+    pub direction: Direction,
+}
+
+/// The shape of a layout: fixed cells, or rings computed per chart.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "lowercase")]
+pub enum Shape {
+    /// Twelve cells fixed in the row.
+    Grid(Grid),
+    /// Rings of sectors computed from the chart.
+    Radial(Radial),
+}
+
+impl Shape {
+    /// The grid, when the layout is one.
+    #[must_use]
+    pub const fn as_grid(&self) -> Option<&Grid> {
+        match self {
+            Shape::Grid(grid) => Some(grid),
+            Shape::Radial(_) => None,
+        }
+    }
+
+    /// The grid, to change, when the layout is one.
+    #[must_use]
+    pub const fn as_grid_mut(&mut self) -> Option<&mut Grid> {
+        match self {
+            Shape::Grid(grid) => Some(grid),
+            Shape::Radial(_) => None,
+        }
+    }
+
+    /// The rings, when the layout is radial.
+    #[must_use]
+    pub const fn as_radial(&self) -> Option<&Radial> {
+        match self {
+            Shape::Radial(radial) => Some(radial),
+            Shape::Grid(_) => None,
+        }
+    }
+}
+
 /// A chart layout: a key, what cites it, and its shape.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Layout {
     /// The key (`NORTH_INDIAN`), in the key grammar.
     pub key: String,
-    /// The sources the row's cells come from.
+    /// The sources the row comes from.
     pub sources: Vec<String>,
-    /// The cells.
-    pub grid: Grid,
+    /// Its cells or its rings.
+    pub shape: Shape,
 }
 
 /// How many regions a grid layout has.
@@ -96,7 +179,7 @@ impl Layout {
     /// # Errors
     ///
     /// The first check the row fails, with the field that fails it
-    /// (`grid.cells[3].label`).
+    /// (`shape.cells[3].label`).
     pub fn validate(&self) -> Result<(), Error> {
         if !teistro_core::key::is_key_name(&self.key) {
             return Err(refused("key", format!("`{}` is not a key name", self.key)));
@@ -107,46 +190,98 @@ impl Layout {
                 "a layout names what its cells come from, as every catalogue row does",
             ));
         }
-        let grid = &self.grid;
-        if grid.cells.len() != CELLS {
+        match &self.shape {
+            Shape::Grid(grid) => validate_grid(grid),
+            Shape::Radial(radial) => validate_radial(radial),
+        }
+    }
+}
+
+fn validate_grid(grid: &Grid) -> Result<(), Error> {
+    if grid.cells.len() != CELLS {
+        return Err(refused(
+            "shape.cells",
+            format!("a grid has {CELLS} cells, not {}", grid.cells.len()),
+        ));
+    }
+    holds_each_once(&grid.cells)?;
+    for (index, cell) in grid.cells.iter().enumerate() {
+        let at = |field: &str| format!("shape.cells[{index}].{field}");
+        if cell.outline.segments.len() < 2 {
             return Err(refused(
-                "grid.cells",
-                format!("a grid has {CELLS} cells, not {}", grid.cells.len()),
+                &at("outline"),
+                "an outline needs at least three points",
             ));
         }
-        holds_each_once(&grid.cells)?;
-        for (index, cell) in grid.cells.iter().enumerate() {
-            let at = |field: &str| format!("grid.cells[{index}].{field}");
-            if cell.outline.segments.len() < 2 {
+        if let Some(outside) = cell
+            .outline
+            .flatten()
+            .into_iter()
+            .find(|p| !p.in_unit_square())
+        {
+            return Err(refused(
+                &at("outline"),
+                format!("({}, {}) is outside the unit square", outside.x, outside.y),
+            ));
+        }
+        if cell.outline.area() <= 0.0 {
+            return Err(refused(&at("outline"), "the outline encloses nothing"));
+        }
+        for (field, anchor) in [("label", cell.label), ("bodies", cell.bodies)] {
+            if !cell.outline.contains(anchor) {
                 return Err(refused(
-                    &at("outline"),
-                    "an outline needs at least three points",
+                    &at(field),
+                    format!(
+                        "({}, {}) is not inside the cell's outline",
+                        anchor.x, anchor.y
+                    ),
                 ));
-            }
-            if let Some(outside) = cell.outline.points().find(|p| !p.in_unit_square()) {
-                return Err(refused(
-                    &at("outline"),
-                    format!("({}, {}) is outside the unit square", outside.x, outside.y),
-                ));
-            }
-            if cell.outline.area() <= 0.0 {
-                return Err(refused(&at("outline"), "the outline encloses nothing"));
-            }
-            for (field, anchor) in [("label", cell.label), ("bodies", cell.bodies)] {
-                if !cell.outline.contains(anchor) {
-                    return Err(refused(
-                        &at(field),
-                        format!(
-                            "({}, {}) is not inside the cell's outline",
-                            anchor.x, anchor.y
-                        ),
-                    ));
-                }
             }
         }
-        cells_do_not_overlap(&grid.cells)?;
-        runs_the_declared_way(grid)
     }
+    cells_do_not_overlap(&grid.cells)?;
+    runs_the_declared_way(grid)
+}
+
+/// A radial layout's rings nest without overlapping inside the square, its
+/// start is a clock hour, and no two rings count from the same place.
+fn validate_radial(radial: &Radial) -> Result<(), Error> {
+    if radial.rings.is_empty() {
+        return Err(refused("shape.rings", "a radial layout needs a ring"));
+    }
+    if !(1..=12).contains(&radial.starts_at) {
+        return Err(refused(
+            "shape.starts_at",
+            format!("{} is not a clock hour, 1 to 12", radial.starts_at),
+        ));
+    }
+    let mut outside = 0.0;
+    for (index, ring) in radial.rings.iter().enumerate() {
+        let field = format!("shape.rings[{index}]");
+        if !(ring.inner >= outside && ring.inner < ring.outer && ring.outer <= 0.5) {
+            return Err(refused(
+                &field,
+                format!(
+                    "a ring runs from {} to {}; rings run innermost first, each from where \
+                     the last ended or beyond, to at most a half",
+                    ring.inner, ring.outer
+                ),
+            ));
+        }
+        if radial
+            .rings
+            .iter()
+            .take(index)
+            .any(|earlier| earlier.counts_from == ring.counts_from)
+        {
+            return Err(refused(
+                &format!("{field}.counts_from"),
+                "an earlier ring already counts from there",
+            ));
+        }
+        outside = ring.outer;
+    }
+    Ok(())
 }
 
 fn refused(field: &str, message: impl Into<String>) -> Error {
@@ -158,7 +293,7 @@ fn holds_each_once(cells: &[Cell]) -> Result<(), Error> {
     let mut seen = [false; CELLS];
     let first = cells.first().map(|cell| cell.holds);
     for (index, cell) in cells.iter().enumerate() {
-        let field = format!("grid.cells[{index}].holds");
+        let field = format!("shape.cells[{index}].holds");
         let slot = match (first, cell.holds) {
             (Some(Holds::Sign(_)), Holds::Sign(sign)) => usize::from(sign.id()),
             (Some(Holds::House(_)), Holds::House(house)) if (1..=12).contains(&house) => {
@@ -188,7 +323,7 @@ fn cells_do_not_overlap(cells: &[Cell]) -> Result<(), Error> {
     let total: f64 = cells.iter().map(|cell| cell.outline.area()).sum();
     if total > 1.0 + SHARED_AREA * 12.0 {
         return Err(refused(
-            "grid.cells",
+            "shape.cells",
             format!("the cells cover {total} of a square of area 1, so some overlap"),
         ));
     }
@@ -205,7 +340,7 @@ fn cells_do_not_overlap(cells: &[Cell]) -> Result<(), Error> {
                 .map(|(index, _)| index);
             if let (Some(a), Some(b)) = (holders.next(), holders.next()) {
                 return Err(refused(
-                    &format!("grid.cells[{b}].outline"),
+                    &format!("shape.cells[{b}].outline"),
                     format!("overlaps cell {a} at ({}, {})", point.x, point.y),
                 ));
             }
@@ -247,7 +382,7 @@ fn runs_the_declared_way(grid: &Grid) -> Result<(), Error> {
         }
         if delta * sign <= 0.0 {
             return Err(refused(
-                "grid.direction",
+                "shape.direction",
                 format!(
                     "the step from the {} to the {} cell turns the other way",
                     ordinal(step + 1),
@@ -259,7 +394,7 @@ fn runs_the_declared_way(grid: &Grid) -> Result<(), Error> {
     }
     if (turned.abs() - std::f64::consts::TAU).abs() > 1e-9 {
         return Err(refused(
-            "grid.direction",
+            "shape.direction",
             "the cells do not go once around the centre",
         ));
     }

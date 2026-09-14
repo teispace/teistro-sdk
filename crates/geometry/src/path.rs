@@ -58,6 +58,17 @@ pub enum Segment {
         /// Where the curve ends.
         to: Point,
     },
+    /// A circular arc about a centre, from where the previous step ended
+    /// to a point the same distance from it, the short way or the long way
+    /// as `clockwise` says. What a radial layout's sectors are bounded by.
+    Arc {
+        /// The circle's centre.
+        centre: Point,
+        /// Which way the arc runs, as a reader sees it.
+        clockwise: bool,
+        /// Where the arc ends.
+        to: Point,
+    },
 }
 
 impl Segment {
@@ -65,7 +76,7 @@ impl Segment {
     #[must_use]
     pub const fn end(self) -> Point {
         match self {
-            Segment::Line { to } | Segment::Quad { to, .. } => to,
+            Segment::Line { to } | Segment::Quad { to, .. } | Segment::Arc { to, .. } => to,
         }
     }
 }
@@ -118,6 +129,31 @@ impl Path {
                         let t = f64::from(piece) / f64::from(CURVE_PIECES);
                         points.push(from.lerp(control, t).lerp(control.lerp(to, t), t));
                     }
+                }
+                Segment::Arc {
+                    centre,
+                    clockwise,
+                    to,
+                } => {
+                    // With y downwards, a clockwise turn increases the angle
+                    // `atan2` measures. The check only reads these points; the
+                    // outline itself keeps its exact endpoints.
+                    let radius = (from.x - centre.x).hypot(from.y - centre.y);
+                    let begin = (from.y - centre.y).atan2(from.x - centre.x);
+                    let mut sweep = (to.y - centre.y).atan2(to.x - centre.x) - begin;
+                    if clockwise && sweep <= 0.0 {
+                        sweep += std::f64::consts::TAU;
+                    } else if !clockwise && sweep >= 0.0 {
+                        sweep -= std::f64::consts::TAU;
+                    }
+                    for piece in 1..CURVE_PIECES {
+                        let angle = begin + sweep * f64::from(piece) / f64::from(CURVE_PIECES);
+                        points.push(Point::new(
+                            centre.x + radius * angle.cos(),
+                            centre.y + radius * angle.sin(),
+                        ));
+                    }
+                    points.push(to);
                 }
             }
             from = segment.end();
@@ -172,17 +208,6 @@ impl Path {
             }
         }
         inside
-    }
-
-    /// Every point the outline is defined by, controls included.
-    pub fn points(&self) -> impl Iterator<Item = Point> + '_ {
-        std::iter::once(self.start).chain(self.segments.iter().flat_map(|segment| {
-            let (control, to) = match *segment {
-                Segment::Line { to } => (None, to),
-                Segment::Quad { control, to } => (Some(control), to),
-            };
-            control.into_iter().chain(std::iter::once(to))
-        }))
     }
 }
 

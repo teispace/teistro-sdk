@@ -6,6 +6,7 @@
 //! | [`south_indian`] | signs | Pisces top-left | clockwise | the same article, `Kundali_01a.png` |
 //! | [`east_indian`] | signs | Aries top-centre | anticlockwise | the same article, `Kundali_03a.png` |
 //! | [`nepali_lotus`] | houses | as North Indian | anticlockwise | the baseline application's lotus frame |
+//! | [`sudarshan_chakra`] | three rings of houses | house 1 starting at twelve o'clock | clockwise | the tutorials' ring order; the application's start and direction (crux C47) |
 //!
 //! Every coordinate of the three square figures is a half, a third or a
 //! quarter, reached by IEEE's basic operations, which every platform does
@@ -14,7 +15,7 @@
 
 use teistro_core::catalogue::Rashi;
 
-use crate::layout::{Cell, Direction, Grid, Holds, Layout};
+use crate::layout::{Cell, Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
 use crate::path::{Path, Point, Segment};
 
 /// Every layout the SDK ships, in the order a consumer is offered them.
@@ -105,14 +106,14 @@ pub fn north_indian() -> Layout {
     Layout {
         key: String::from("NORTH_INDIAN"),
         sources: vec![String::from(WIKIPEDIA)],
-        grid: Grid {
+        shape: Shape::Grid(Grid {
             cells: (1..=12)
                 .zip(outlines)
                 .map(|(house, points)| house_cell(house, Path::polygon(&points)))
                 .collect(),
             frame: vec![border()],
             direction: Direction::Anticlockwise,
-        },
+        }),
     }
 }
 
@@ -151,11 +152,11 @@ pub fn south_indian() -> Layout {
     Layout {
         key: String::from("SOUTH_INDIAN"),
         sources: vec![String::from(WIKIPEDIA)],
-        grid: Grid {
+        shape: Shape::Grid(Grid {
             cells,
             frame: vec![border(), square(0.25, 0.25, 0.75, 0.75)],
             direction: Direction::Clockwise,
-        },
+        }),
     }
 }
 
@@ -200,11 +201,47 @@ pub fn east_indian() -> Layout {
     Layout {
         key: String::from("EAST_INDIAN"),
         sources: vec![String::from(WIKIPEDIA)],
-        grid: Grid {
+        shape: Shape::Grid(Grid {
             cells,
             frame: vec![border()],
             direction: Direction::Anticlockwise,
-        },
+        }),
+    }
+}
+
+/// The Sudarshan Chakra: the chart read from three places at once, as three
+/// rings of twelve houses. The lagna's ring is innermost, then the Moon's,
+/// then the Sun's, which is the order every tutorial gives. The application
+/// the rings' proportions come from draws them the other way round, and its
+/// start (house 1 beginning at twelve o'clock) and direction (clockwise)
+/// have no second source, so they are this row's declared properties rather
+/// than the chakra's (crux C47).
+#[must_use]
+pub fn sudarshan_chakra() -> Layout {
+    // The application's radii, 50, 110, 165 and 220 in a 480 square.
+    let radius = |r: f64| r / 480.0;
+    let ring = |inner: f64, outer: f64, counts_from: Reference| Ring {
+        inner: radius(inner),
+        outer: radius(outer),
+        counts_from,
+    };
+    Layout {
+        key: String::from("SUDARSHAN_CHAKRA"),
+        sources: vec![
+            String::from("tutorials on the Sudarshana chakra, for the order of its rings"),
+            String::from(
+                "the baseline application's Sudarshan chakra view, for its proportions, start and direction",
+            ),
+        ],
+        shape: Shape::Radial(Radial {
+            rings: vec![
+                ring(50.0, 110.0, Reference::Lagna),
+                ring(110.0, 165.0, Reference::Moon),
+                ring(165.0, 220.0, Reference::Sun),
+            ],
+            starts_at: 12,
+            direction: Direction::Clockwise,
+        }),
     }
 }
 
@@ -287,11 +324,11 @@ pub fn nepali_lotus() -> Layout {
         sources: vec![String::from(
             "the baseline application's kundali lotus frame, as drawn to its readers",
         )],
-        grid: Grid {
+        shape: Shape::Grid(Grid {
             cells,
             frame: vec![border()],
             direction: Direction::Anticlockwise,
-        },
+        }),
     }
 }
 

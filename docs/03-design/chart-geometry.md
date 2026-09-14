@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `building` — steps 1 and 2 built, 2026-09-14. It builds the first two parts of
+Status: `building` — steps 1 and 2, and the chakra of step 3, built 2026-09-14. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is §8's later step. The research this page rests on was
@@ -191,6 +191,23 @@ where that is won or lost.
   (a cusp at 17.3°). Its coordinates are rounded to a fixed grain before
   they leave the crate, and its placement joins the hash-matrix workflow,
   which already compares what three architectures compute.
+
+## 7a. What building the chakra settled
+
+- **A sector is bounded by arcs**, so an outline gained an arc segment
+  (a centre, a direction, an end). Its endpoints are exact and only the
+  validation flattens it.
+- **A ring's start is a clock hour** (`starts_at: 12`). Every sector
+  boundary is then a multiple of 30° and every label a multiple of 15°,
+  whose sines and cosines are built from √2, √3 and √6 (`clock`). No
+  platform `sin` reaches the chakra's output.
+- **Placement can fail.** A ring counting from the Moon, for a chart that
+  lists no Moon, is refused naming `graha.MOON`. Counting it from the lagna
+  would draw a chakra that was not asked for.
+- **The frame draws each shared circle once**: three rings have four
+  circles, not six, because a stroke drawn twice darkens.
+- **The ring order is the tutorials'** (lagna inner, Sun outer), which the
+  application reverses. C47 records the disagreement.
 
 ## 8. Order of work
 
