@@ -1,19 +1,21 @@
 //! What every entry point shares: the size handshake on every boundary
 //! struct, reading and writing through caller pointers, C strings in and
-//! out, and the panic guard that turns a caught panic into `INTERNAL` and
-//! records every outcome on the context.
+//! out, the panic guard that turns a caught panic into `INTERNAL` and
+//! records every outcome on the context, and its twin for the calls that
+//! make a handle and have no context to record on.
 
 #![allow(
     unsafe_code,
     reason = "the C boundary: every block carries a SAFETY comment"
 )]
 
+use core::any::Any;
 use core::ffi::{CStr, c_char};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use teistro_core::error::{Error, Status};
 
-use crate::context::TsContext;
+use crate::context::{TsContext, TsError};
 
 /// A boundary struct that begins with `struct_size`.
 pub(crate) trait CStruct: Sized {
@@ -239,16 +241,8 @@ pub(crate) fn guarded(
     if let Some(ctx) = context {
         ctx.begin_call();
     }
-    let outcome = catch_unwind(AssertUnwindSafe(body)).unwrap_or_else(|payload| {
-        let detail = payload
-            .downcast_ref::<&str>()
-            .map(|s| (*s).to_string())
-            .or_else(|| payload.downcast_ref::<String>().cloned())
-            .unwrap_or_else(|| String::from("a panic without a message"));
-        Err(Error::internal(format!(
-            "a panic was caught at the boundary: {detail}"
-        )))
-    });
+    let outcome =
+        catch_unwind(AssertUnwindSafe(body)).unwrap_or_else(|payload| Err(caught(&*payload)));
     let status = outcome
         .as_ref()
         .map_or_else(|error| error.status, |()| Status::Ok);
@@ -256,6 +250,54 @@ pub(crate) fn guarded(
         ctx.record(outcome.err());
     }
     status
+}
+
+/// `INTERNAL` for a caught panic, carrying the panic's own message.
+fn caught(payload: &(dyn Any + Send)) -> Error {
+    let detail = payload
+        .downcast_ref::<&str>()
+        .map(|s| (*s).to_string())
+        .or_else(|| payload.downcast_ref::<String>().cloned())
+        .unwrap_or_else(|| String::from("a panic without a message"));
+    Error::internal(format!("a panic was caught at the boundary: {detail}"))
+}
+
+/// Runs a call that makes a handle: the guard's twin for the three calls
+/// with no context to record on.
+///
+/// A null `out` is refused before the body runs, a panic is `INTERNAL`,
+/// and a refusal is written **whole** into `out_error` — status, detail,
+/// message, field, hint and key, as strings the record owns until
+/// `ts_error_free` (`ffi-abi-and-api-description.md` §6.1). One body for
+/// all three, so none of them can keep less of a refusal than another.
+///
+/// # Safety
+///
+/// `out` must be null or valid for a write of a pointer; `out_error` null
+/// or a `TsError` with its `struct_size` set, valid for reads and writes.
+pub(crate) unsafe fn construct<T>(
+    out: *mut *mut T,
+    out_name: &str,
+    out_error: *mut TsError,
+    body: impl FnOnce() -> Result<T, Error>,
+) -> Status {
+    let outcome = if out.is_null() {
+        Err(null(out_name))
+    } else {
+        catch_unwind(AssertUnwindSafe(body)).unwrap_or_else(|payload| Err(caught(&*payload)))
+    };
+    match outcome {
+        Ok(made) => {
+            // SAFETY: non-null; the caller promises a writable slot.
+            unsafe { out.write(Box::into_raw(Box::new(made))) };
+            Status::Ok
+        }
+        Err(error) => {
+            // SAFETY: the caller's contract on `out_error`.
+            unsafe { crate::context::refuse_into(out_error, &error) };
+            error.status
+        }
+    }
 }
 
 /// An entry point over a context: null handle, then the guarded body.

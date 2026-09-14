@@ -20,7 +20,7 @@ use std::fmt::Write;
 
 use crate::emit::{DocStyle, field_doc_with, line_comment};
 use crate::model::{
-    Api, EnumDef, FieldDef, FunctionDef, OpaqueDef, Role, Scalar, StructDef, TypeRef,
+    Api, EnumDef, FieldDef, FunctionDef, OpaqueDef, Role, Scalar, StructDef, StructRole, TypeRef,
 };
 use crate::names::{binding_type_name, pascal, snake};
 use crate::rules::{
@@ -255,7 +255,11 @@ fn free_functions(api: &Api) -> Vec<&FunctionDef> {
             !f.params.iter().any(|p| {
                 matches!(
                     p.role,
-                    Role::Handle | Role::HandleOut | Role::BlobFree | Role::StringFree
+                    Role::Handle
+                        | Role::HandleOut
+                        | Role::BlobFree
+                        | Role::StringFree
+                        | Role::ErrorFree
                 )
             })
         })
@@ -791,13 +795,21 @@ fn render_last_error_object(out: &mut String, api: &Api) {
         return;
     };
     let (_, to) = enum_fns(status);
-    let Some(error) = api.struct_named("TsError") else {
+    let Some(error) = api.structs.iter().find(|s| s.role == StructRole::Error) else {
         return;
     };
     let c = struct_path(api, &error.name);
     let _ = writeln!(
         out,
         "/// The outcome of the last call on a context, as the ergonomic layer\n/// rethrows it: the status by name and by code, the provider's own code,\n/// and the message, detail, field, hint and message key the library gave.\n#[napi(object)]\n#[derive(Clone, Debug)]\npub struct LastError {{\n    pub status: String,\n    pub code: i32,\n    pub provider_code: i32,\n    pub message: Option<String>,\n    pub detail: Option<String>,\n    pub field: Option<String>,\n    pub hint: Option<String>,\n    pub message_key: Option<String>,\n}}\n\nimpl LastError {{\n    /// # Safety\n    ///\n    /// Every pointer in `raw` must be a string the context lent for this\n    /// call, or null.\n    unsafe fn of(raw: &{c}) -> Self {{\n        // SAFETY: the caller's contract.\n        unsafe {{\n            LastError {{\n                status: {to}(raw.status),\n                code: raw.status,\n                provider_code: raw.provider_code,\n                message: lent_text(raw.message),\n                detail: lent_text(raw.detail),\n                field: lent_text(raw.field),\n                hint: lent_text(raw.hint),\n                message_key: lent_text(raw.key),\n            }}\n        }}\n    }}\n}}\n"
+    );
+    let Some(free) = crate::rules::error_free(api) else {
+        return;
+    };
+    let _ = writeln!(
+        out,
+        "/// A refusal to build a handle, as the error this addon throws: the\n/// library's own sentence, with its whole record kept as `lastError` so\n/// the ergonomic layer rethrows it as the same `TeistroError` a context's\n/// refusal becomes. The record's strings are the library's, released here.\nfn refused(env: &Env, raw: &mut {c}) -> Error {{\n    // SAFETY: a record the library wrote for this call, or left zeroed.\n    let record = unsafe {{ LastError::of(raw) }};\n    // SAFETY: the same record, released once; a lent or zeroed one is ignored.\n    {};\n    let message = record.message.clone().unwrap_or_else(|| {{\n        // SAFETY: the library returns a static NUL-terminated string.\n        unsafe {{ lent_text(ffi::ts_status_message(record.code)) }}.unwrap_or_default()\n    }});\n    let thrown = env.create_error(Error::from_reason(message)).and_then(|mut error| {{\n        error.set_named_property(\"lastError\", record)?;\n        Ok(Error::from(error.to_unknown()))\n    }});\n    thrown.unwrap_or_else(|failed| failed)\n}}\n",
+        call_expression(free, "&raw mut *raw")
     );
 }
 
@@ -999,7 +1011,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
                 args.push(name);
             }
             Role::UserData => args.push(String::from("user_data")),
-            Role::BlobFree | Role::StringFree => {}
+            Role::BlobFree | Role::StringFree | Role::ErrorFree => {}
         }
     }
     let (returns, finish) = call_outputs(api, f);
@@ -1133,11 +1145,12 @@ fn render_dispose(out: &mut String, free: &FunctionDef) {
 }
 
 fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str, host: bool) {
-    let call = build_call(api, ctor, None);
+    let mut call = build_call(api, ctor, None);
+    call.params.insert(0, String::from("env: Env"));
     let built = if host { ", host" } else { "" };
     let _ = writeln!(
         out,
-        "{}    #[napi(constructor)]\n    pub fn new({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            let message = take_string(&mut out_error);\n            return Err(Error::from_reason(if message.is_empty() {{\n                format!(\"the context could not be built (code {{}})\", status.code())\n            }} else {{\n                message\n            }}));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
+        "{}    #[napi(constructor)]\n    pub fn new({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused(&env, &mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
         doc(&ctor.doc, "    "),
         call.params.join(", "),
         call.setup,
@@ -1160,7 +1173,8 @@ fn render_factory(
     name: &str,
     host: bool,
 ) {
-    let call = build_call(api, f, Some(&opaque.name));
+    let mut call = build_call(api, f, Some(&opaque.name));
+    call.params.insert(0, String::from("env: Env"));
     // A factory does not bind a host-implemented port: the provider it is
     // given is already a handle the boundary owns. The field is still on
     // the struct, so it is filled with nothing.
@@ -1168,7 +1182,7 @@ fn render_factory(
     let method = crate::rules::method_name(api, opaque, f);
     let _ = writeln!(
         out,
-        "{}    #[napi(factory)]\n    pub fn {method}({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            let message = take_string(&mut out_error);\n            return Err(Error::from_reason(if message.is_empty() {{\n                format!(\"the handle could not be built (code {{}})\", status.code())\n            }} else {{\n                message\n            }}));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
+        "{}    #[napi(factory)]\n    pub fn {method}({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused(&env, &mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
         doc(&f.doc, "    "),
         call.params.join(", "),
         call.setup,

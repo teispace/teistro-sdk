@@ -12,7 +12,6 @@ use core::cell::{Ref, RefCell, RefMut};
 use core::ffi::{c_char, c_void};
 use core::ptr;
 use std::ffi::CString;
-use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use teistro_astro::DeltaTModel;
 use teistro_core::Status;
@@ -21,9 +20,11 @@ use teistro_core::settings::{Resolved, Settings};
 use teistro_intl::Intl;
 use teistro_port_ephemeris::{EphemerisProvider, ProviderVtable, VtableProvider};
 
-use crate::TS_CONTEXT_TEST_PROVIDER;
 use crate::string::{TsHash, TsStr, TsString};
-use crate::support::{c_struct, optional_text, read_in, with_context, write_out, write_plain};
+use crate::support::{
+    c_struct, check_size, construct, optional_text, read_in, with_context, write_out, write_plain,
+};
+use crate::{TS_CONTEXT_TEST_PROVIDER, TS_ERROR_OWNED};
 
 /// Which of the SDK's own ephemerides a context computes with when no
 /// provider vtable is given.
@@ -95,9 +96,17 @@ pub struct TsContextOptions {
     pub ephemeris: u8,
 }
 
-/// The last error of a call on a context: the status, the detail, and the
-/// message, field, hint and message key as strings the context lends
-/// until its next call; an `OK` record has empty strings.
+/// A failure as the library describes it: the status, the provider's
+/// code, and the detail, message, field, hint and message key.
+///
+/// Read from `ts_context_last_error`, the strings are **lent** by the
+/// context until its next call and `flags` is zero; an `OK` record has
+/// null strings. Written by a call that makes a handle and failed, the
+/// strings are **owned** by the record, `flags` carries
+/// `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+/// on a lent record does nothing, so freeing every record is never wrong.
+///
+/// `api: role=error`
 #[repr(C)]
 #[derive(Debug)]
 pub struct TsError {
@@ -108,8 +117,8 @@ pub struct TsError {
     pub status: i32,
     /// The provider's own code when the status is `PROVIDER`, else zero.
     pub provider_code: i32,
-    /// Reserved, zero.
-    pub reserved: u32,
+    /// `TS_ERROR_OWNED` when the record owns its strings, else zero.
+    pub flags: u32,
     /// The detail's name (`UNKNOWN_KEY`), or null.
     /// `api: nullable`
     pub detail: *const c_char,
@@ -171,19 +180,174 @@ struct Scratch {
     lent: Vec<CString>,
 }
 
-/// An error as `ts_context_last_error` reads it.
+/// An error with its strings made C strings once, from which either kind
+/// of [`TsError`] is laid out.
 struct StoredError {
     status: Status,
     provider_code: i32,
-    detail: Option<CString>,
-    message: CString,
-    field: Option<CString>,
-    hint: Option<CString>,
-    key: Option<CString>,
+    texts: Texts<CString>,
+}
+
+/// The five strings of an error record, in whichever form a record needs
+/// them: owned, borrowed, or as the pointers C reads.
+#[derive(Clone, Copy)]
+struct Texts<S> {
+    detail: Option<S>,
+    message: S,
+    field: Option<S>,
+    hint: Option<S>,
+    key: Option<S>,
+}
+
+impl<S> Texts<S> {
+    fn map<U>(self, mut f: impl FnMut(S) -> U) -> Texts<U> {
+        Texts {
+            detail: self.detail.map(&mut f),
+            message: f(self.message),
+            field: self.field.map(&mut f),
+            hint: self.hint.map(&mut f),
+            key: self.key.map(&mut f),
+        }
+    }
 }
 
 fn c_string(text: &str) -> CString {
     CString::new(text.replace('\0', " ")).unwrap_or_default()
+}
+
+impl StoredError {
+    /// An error's strings, made C strings.
+    fn of(error: &Error, provider_code: i32) -> StoredError {
+        StoredError {
+            status: error.status,
+            provider_code,
+            texts: Texts {
+                detail: error
+                    .detail
+                    .as_ref()
+                    .and_then(|d| serde_json::to_value(d).ok())
+                    .and_then(|v| v.as_str().map(c_string)),
+                message: c_string(&error.message),
+                field: error.field().map(c_string),
+                hint: error.hint().map(c_string),
+                key: error.key().map(|k| c_string(&k.key)),
+            },
+        }
+    }
+
+    /// The record lending this error's strings for as long as it lives.
+    fn lent(&self) -> TsError {
+        let borrowed = Texts {
+            detail: self.texts.detail.as_ref(),
+            message: &self.texts.message,
+            field: self.texts.field.as_ref(),
+            hint: self.texts.hint.as_ref(),
+            key: self.texts.key.as_ref(),
+        };
+        record(
+            self.status,
+            self.provider_code,
+            0,
+            borrowed.map(|s| s.as_ptr()),
+        )
+    }
+
+    /// The record owning this error's strings, which `ts_error_free`
+    /// takes back.
+    fn owned(self) -> TsError {
+        let released = self.texts.map(|s| s.into_raw().cast_const());
+        record(self.status, self.provider_code, TS_ERROR_OWNED, released)
+    }
+}
+
+/// One layout for every kind of record, so a lent one and an owned one
+/// cannot disagree about which string goes in which field.
+fn record(status: Status, provider_code: i32, flags: u32, texts: Texts<*const c_char>) -> TsError {
+    let or_null = |s: Option<*const c_char>| s.unwrap_or(ptr::null());
+    TsError {
+        struct_size: 0,
+        status: status.code(),
+        provider_code,
+        flags,
+        detail: or_null(texts.detail),
+        message: texts.message,
+        field: or_null(texts.field),
+        hint: or_null(texts.hint),
+        key: or_null(texts.key),
+    }
+}
+
+/// Writes a refusal whole into a caller's record, which owns its strings.
+///
+/// Null is allowed and ignored. A `struct_size` this build does not know
+/// leaves the record untouched and the call still returns its own status:
+/// a `SCHEMA_VERSION` about the diagnostics would replace the refusal the
+/// caller needs (`ffi-abi-and-api-description.md` §6.1).
+///
+/// # Safety
+///
+/// `out_error` must be null or a `TsError` valid for reads and writes.
+pub(crate) unsafe fn refuse_into(out_error: *mut TsError, error: &Error) {
+    // SAFETY: the caller's contract.
+    let Some(slot) = (unsafe { out_error.as_mut() }) else {
+        return;
+    };
+    if check_size::<TsError>(slot.struct_size).is_err() {
+        return;
+    }
+    *slot = TsError {
+        struct_size: slot.struct_size,
+        ..StoredError::of(error, 0).owned()
+    };
+}
+
+/// Releases the strings of a record a failed constructor wrote, and
+/// zeroes it but for its size; null, a lent record from
+/// `ts_context_last_error`, and a record already freed are all ignored.
+///
+/// # Safety
+///
+/// `error` must be null or a `TsError` valid for reads and writes, whose
+/// strings, when `flags` carries `TS_ERROR_OWNED`, are the ones this
+/// library wrote there and are not used again.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_error_free(error: *mut TsError) {
+    // SAFETY: the entry point's contract.
+    let Some(slot) = (unsafe { error.as_mut() }) else {
+        return;
+    };
+    if slot.flags & TS_ERROR_OWNED == 0 {
+        return;
+    }
+    for text in [slot.detail, slot.message, slot.field, slot.hint, slot.key] {
+        if !text.is_null() {
+            // SAFETY: an owned record's strings came from
+            // `CString::into_raw` in `StoredError::owned`, and the flag
+            // is cleared below, so each is taken back exactly once.
+            drop(unsafe { CString::from_raw(text.cast_mut()) });
+        }
+    }
+    *slot = TsError {
+        struct_size: slot.struct_size,
+        ..TsError::ok()
+    };
+}
+
+impl TsError {
+    /// The record of a call that succeeded: `OK`, and no strings.
+    fn ok() -> TsError {
+        TsError {
+            struct_size: 0,
+            status: Status::Ok.code(),
+            provider_code: 0,
+            flags: 0,
+            detail: ptr::null(),
+            message: ptr::null(),
+            field: ptr::null(),
+            hint: ptr::null(),
+            key: ptr::null(),
+        }
+    }
 }
 
 impl TsContext {
@@ -302,18 +466,7 @@ impl TsContext {
     pub(crate) fn record(&self, error: Option<Error>) {
         let mut scratch = self.scratch.borrow_mut();
         let provider_code = scratch.provider_code;
-        scratch.error = error.map(|e| StoredError {
-            status: e.status,
-            provider_code,
-            detail: e
-                .detail
-                .and_then(|d| serde_json::to_value(d).ok())
-                .and_then(|v| v.as_str().map(c_string)),
-            message: c_string(&e.message),
-            field: e.field().map(c_string),
-            hint: e.hint().map(c_string),
-            key: e.key().map(|k| c_string(&k.key)),
-        });
+        scratch.error = error.map(|e| StoredError::of(&e, provider_code));
     }
 
     /// Lends a string to the caller until the next call on this context.
@@ -373,8 +526,9 @@ fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
 /// ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
 /// passed back to the vtable's functions untouched and must stay valid
 /// until `ts_context_free`. On success `*out_context` owns the context;
-/// on failure, when `out_error` is not null, it receives the error's
-/// message as a string to free with `ts_string_free`.
+/// on failure, when `out_error` is not null, it receives the whole
+/// refusal as a record that owns its strings, released by
+/// `ts_error_free`.
 ///
 /// # Safety
 ///
@@ -387,33 +541,13 @@ pub unsafe extern "C" fn ts_context_new(
     provider: *const ProviderVtable,
     provider_user_data: *mut c_void,
     out_context: *mut *mut TsContext,
-    out_error: *mut TsString,
+    out_error: *mut TsError,
 ) -> Status {
-    if out_context.is_null() {
-        return Status::InvalidArg;
-    }
-    let built = catch_unwind(AssertUnwindSafe(|| {
-        // SAFETY: the entry point's contract.
-        unsafe { build(options, provider, provider_user_data) }
-    }))
-    .unwrap_or_else(|_| {
-        Err(Error::internal(
-            "a panic was caught while building the context",
-        ))
-    });
-    match built {
-        Ok(context) => {
-            // SAFETY: non-null; the caller promises a writable slot.
-            unsafe { out_context.write(Box::into_raw(Box::new(context))) };
-            Status::Ok
-        }
-        Err(error) => {
-            if !out_error.is_null() {
-                // SAFETY: non-null; the caller promises a writable descriptor.
-                unsafe { out_error.write(TsString::from_string(error.to_string())) };
-            }
-            error.status
-        }
+    // SAFETY: the entry point's contract.
+    unsafe {
+        construct(out_context, "out_context", out_error, || {
+            build(options, provider, provider_user_data)
+        })
     }
 }
 
@@ -567,30 +701,11 @@ pub unsafe extern "C" fn ts_context_last_error(
         return Status::InvalidArg;
     };
     let scratch = ctx.scratch.borrow();
-    let record = scratch.error.as_ref().map_or_else(
-        || TsError {
-            struct_size: 0,
-            status: Status::Ok.code(),
-            provider_code: 0,
-            reserved: 0,
-            detail: ptr::null(),
-            message: ptr::null(),
-            field: ptr::null(),
-            hint: ptr::null(),
-            key: ptr::null(),
-        },
-        |e| TsError {
-            struct_size: 0,
-            status: e.status.code(),
-            provider_code: e.provider_code,
-            reserved: 0,
-            detail: e.detail.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-            message: e.message.as_ptr(),
-            field: e.field.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-            hint: e.hint.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-            key: e.key.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-        },
-    );
+    let record = scratch
+        .error
+        .as_ref()
+        .map_or_else(TsError::ok, StoredError::lent);
+
     // SAFETY: the entry point's contract.
     match unsafe { write_out(out_error, "out_error", record) } {
         Ok(()) => Status::Ok,

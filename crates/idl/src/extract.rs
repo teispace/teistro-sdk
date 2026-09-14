@@ -289,6 +289,7 @@ fn collect_struct(
         Some("blob") => StructRole::Blob,
         Some("vtable") => StructRole::Vtable,
         Some("columns") => StructRole::Columns,
+        Some("error") => StructRole::Error,
         Some(other) => {
             return Err(ExtractError::new(
                 &source.relative,

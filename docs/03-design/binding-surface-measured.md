@@ -8,7 +8,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 ## 1. What a binding must marshal
 
 The description carries 2 exported constants, 95 enums of 960 members in
-all, 2 opaque handle types, 10 callback types, 27 structs, 46 entry
+all, 2 opaque handle types, 10 callback types, 27 structs, 47 entry
 points and 4 result-blob schemas, extracted from 19 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
 point, which is why a third binding costs what it costs.
@@ -19,15 +19,16 @@ point, which is why a third binding costs what it costs.
 | `handle` | 31 |
 | `handle_out` | 3 |
 | `struct_in` | 12 |
-| `struct_out` | 12 |
+| `struct_out` | 15 |
 | `vtable_in` | 1 |
 | `user_data` | 1 |
 | `blob_out` | 4 |
 | `blob_free` | 1 |
 | `string_in` | 13 |
-| `string_out` | 6 |
+| `string_out` | 3 |
 | `string_free` | 1 |
 | `str_out` | 5 |
+| `error_free` | 1 |
 | `bytes_in` | 1 |
 | `array_in` | **none** |
 | `length` | 1 |
@@ -35,20 +36,21 @@ point, which is why a third binding costs what it costs.
 
 | struct role | how many |
 |---|---|
-| `object` | 22 |
+| `object` | 21 |
 | `owned_string` | 1 |
 | `borrowed_string` | 1 |
 | `blob` | 1 |
 | `vtable` | 1 |
 | `columns` | 1 |
+| `error` | 1 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every parameter role the description defines has an instance | falsified | 1 of 17 disagree; unused: array_in |
-| every struct role has an instance | **holds** | 0 of 6 disagree |
+| every parameter role the description defines has an instance | falsified | 1 of 18 disagree; unused: array_in |
+| every struct role has an instance | **holds** | 0 of 7 disagree |
 | a struct a caller fills carries the `struct_size` handshake | **holds** | 19 of 27 structs carry it |
 
-Some roles have no instance at all — 1 of 17, namely `array_in` —
+Some roles have no instance at all — 1 of 18, namely `array_in` —
 and an emitter that wrote a rule for one of them would be shipping a
 rule nothing exercises. The Python emitter **refuses** such a parameter
 by name at generation time instead, which turns a silent wrong
@@ -67,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1310 | 1 | 0 | 0 | 0 |
-| TypeScript | 350 | 0 | 0 | 1 | 0 |
-| Python | 1310 | 0 | 1 | 2 | 0 |
+| Dart | 1313 | 1 | 0 | 0 | 0 |
+| TypeScript | 353 | 0 | 0 | 1 | 0 |
+| Python | 1313 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1310 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 350 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1310 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1310 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 350 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1310 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1313 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 353 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1313 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1313 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 353 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1313 disagree |
 
 What Dart renames:
 
@@ -194,7 +196,7 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 185 of 185 visible struct fields
+much of that there is to reach for: 186 of 186 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -212,8 +214,8 @@ carry a doc comment.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 185 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 185 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 186 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 186 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

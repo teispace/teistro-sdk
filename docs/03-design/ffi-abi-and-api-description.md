@@ -58,7 +58,7 @@ load through `ts_intl_load_pack`.
 | no global state | every call but the handful of static answers (`ts_abi_version`, `ts_sdk_version`, `ts_status_message`, the fixed-day arithmetic) takes a `ts_context` first |
 | the size handshake | every boundary struct begins with `uint32_t struct_size`; a caller sets it to `sizeof` on inputs and outputs; a size this build does not know is `SCHEMA_VERSION`, before anything is read or written |
 | a status on every call | the core's `Status` (`ts_status`) with its stable codes; the message, detail, field, hint and message key of a failure are kept on the context and read by `ts_context_last_error`; a successful call leaves an `OK` record with a null message |
-| construction failures | `ts_context_new` has no context to record on, so it writes the error's sentence into an optional owned string |
+| construction failures | `ts_context_new`, `ts_context_new_with_provider` and `ts_provider_load` have no context to record on, so each writes the **whole record** into an optional caller-allocated `ts_error` whose strings it owns — marked `TS_ERROR_OWNED` and released by `ts_error_free` (§6.1) |
 | no panic escapes | every entry point's body runs under `catch_unwind`; a caught panic is `INTERNAL` with the panic's message; an `extern "C"` function can therefore never unwind into C |
 | ownership of memory | what the library allocates it frees: `ts_string` by `ts_string_free`, `ts_blob` by `ts_blob_free`; both descriptors are zeroed on free, so a second free is a no-op |
 | lent strings | `ts_str` and the `const char *` fields of result structs point into the context and stay valid until the next call on that context; a caller copies what it keeps |
@@ -241,7 +241,7 @@ Thirty-nine entry points, all in the header with their documentation:
 | group | entry points |
 |---|---|
 | static | `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message` |
-| context | `ts_context_new`, `ts_context_free`, `ts_context_last_error`, `ts_context_profile`, `ts_context_settings_json`, `ts_context_settings_hash` |
+| context | `ts_context_new`, `ts_context_free`, `ts_context_last_error`, `ts_error_free`, `ts_context_profile`, `ts_context_settings_json`, `ts_context_settings_hash` |
 | memory | `ts_string_free`, `ts_blob_free` |
 | keys | `ts_key_parse`, `ts_key_name` |
 | frame | `ts_frame_canonical`, `ts_frame_pack`, `ts_frame_unpack` |
@@ -463,6 +463,48 @@ constructor agrees (Q34).
 
 A missing message renders as its key with a warning, never an error; a
 degenerate astronomical outcome is a cell status, never an error.
+
+### 6.1 A failure with no context to keep it
+
+A refusal to **make** a handle is the one a caller meets first, and
+until this section it was the poorest: the three constructors wrote the
+error's sentence into an owned `ts_string`, so a binding raised a plain
+error with no field, no hint and no detail — `profile: "nepali-defualt"`
+arrived as a sentence while `graha: "SUNN"` one call later arrived with
+its field and `did you mean`. The status was right and everything a
+program branches on besides it was lost.
+
+Three shapes were weighed:
+
+| shape | precedent | why not, or why |
+|---|---|---|
+| a thread-local last error, read by `ts_last_error` | libgit2's `git_error_last`, OpenSSL's error queue | **global state**, which §3.1's first rule refuses; and a record read after the call is only as good as the caller's thread discipline |
+| an opaque error handle with its own accessor and free | wasmtime's `wasmtime_error_t` | a second opaque type every generator would turn into a class, and two entry points to read what `ts_error` already describes |
+| **the record the caller already reads, written by the call** | this ABI's own `ts_string`: a caller-owned descriptor, library-owned bytes, a free that zeroes it | **chosen** |
+
+So each constructor takes `ts_error *out_error`, nullable, with
+`struct_size` set as on every output. On failure the library writes the
+status, the provider's code, and the detail, message, field, hint and
+key as strings **it allocated**, and sets `TS_ERROR_OWNED` in `flags`
+(the field that was `reserved`, so the layout is unchanged).
+`ts_error_free` releases those strings and zeroes the record but its
+size.
+
+The flag is what makes the one type safe with two owners. A record read
+from `ts_context_last_error` **lends** its strings and has no flag, so
+`ts_error_free` on it is a no-op rather than a double free — a C caller
+who frees every `ts_error` they touch is never wrong, and one who frees
+none leaks only after a failed construction. A second free is a no-op
+too, because the first zeroed the flag.
+
+An `out_error` whose `struct_size` this build does not know is left
+untouched and the call still returns **its own** status: a
+`SCHEMA_VERSION` would replace the refusal the caller needs with one
+about the diagnostics.
+
+The bindings read the record with the decoder they already have for
+`ts_context_last_error` and raise the same error type from it, so a
+construction failure carries its field and hint in all four languages.
 
 ## 7. Performance budget and benchmark
 

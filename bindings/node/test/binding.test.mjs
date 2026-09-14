@@ -92,11 +92,23 @@ test('a refusal carries its status, its field and its hint', () => {
       return true;
     },
   );
+  // No context exists to keep these refusals, so the record crosses whole
+  // from the call that failed (`ffi-abi-and-api-description.md` §6.1).
   assert.throws(
     () => new Context({ profile: 'vedic-classic' }),
-    /no shipped profile `vedic-classic`/u,
+    (error) => {
+      assert.ok(error instanceof TeistroError, 'a TeistroError, not a bare Error');
+      assert.equal(error.status, 'unsupported');
+      assert.match(error.message, /no shipped profile `vedic-classic`/u);
+      assert.equal(error.field, 'profile');
+      assert.match(error.hint, /parashari-classical/u);
+      return true;
+    },
   );
-  assert.throws(() => context({ locale: 'xx-Latn' }), /ne-Deva-NP/u);
+  assert.throws(
+    () => context({ locale: 'xx-Latn' }),
+    (error) => error.field === 'locale' && /ne-Deva-NP/u.test(error.hint),
+  );
   assert.throws(
     () => ctx.calendar.fixedOf(gregorian(2023, 2, 29)),
     (error) => error.detail === 'NONEXISTENT_DATE' && error.status === 'invalid-arg',

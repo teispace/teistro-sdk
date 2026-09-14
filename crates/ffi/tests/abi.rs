@@ -35,6 +35,7 @@ use teistro_ffi::calendar::{
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
     ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
+    ts_error_free,
 };
 use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
@@ -50,9 +51,53 @@ use teistro_ffi::time::{
     TsZoneResolution, TsZoneSource, TsZoneSpec, ts_time_civil, ts_time_convert, ts_time_delta_t,
     ts_time_resolve,
 };
-use teistro_ffi::{TS_CONTEXT_TEST_PROVIDER, ts_abi_version};
+use teistro_ffi::{TS_CONTEXT_TEST_PROVIDER, TS_ERROR_OWNED, ts_abi_version};
 use teistro_idl::blob::Reader;
 use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequestC, TimeScale};
+
+/// An error record's status and strings, copied out: the status, the
+/// message, the field, the hint and the detail.
+type Record = (
+    Status,
+    String,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+);
+
+/// An empty record with this build's size, ready for a call to write.
+fn blank_error() -> TsError {
+    TsError {
+        struct_size: size_of::<TsError>() as u32,
+        status: 99,
+        provider_code: 0,
+        flags: 0,
+        detail: ptr::null(),
+        message: ptr::null(),
+        field: ptr::null(),
+        hint: ptr::null(),
+        key: ptr::null(),
+    }
+}
+
+/// A record's strings copied out, whoever owns them.
+fn read_record(error: &TsError) -> Record {
+    let text = |p: *const core::ffi::c_char| {
+        if p.is_null() {
+            None
+        } else {
+            // SAFETY: the library writes NUL-terminated strings.
+            Some(unsafe { CStr::from_ptr(p) }.to_string_lossy().into_owned())
+        }
+    };
+    (
+        Status::from_code(error.status).unwrap(),
+        text(error.message).unwrap_or_default(),
+        text(error.field),
+        text(error.hint),
+        text(error.detail),
+    )
+}
 
 /// A context with its options, freed on drop.
 #[derive(Debug)]
@@ -66,7 +111,7 @@ impl Ctx {
         profile: Option<&str>,
         settings_json: Option<&str>,
         locale: Option<&str>,
-    ) -> Result<Ctx, (Status, String)> {
+    ) -> Result<Ctx, Record> {
         Ctx::with_ephemeris(flags, TsEphemeris::None, profile, settings_json, locale)
     }
 
@@ -77,7 +122,7 @@ impl Ctx {
         profile: Option<&str>,
         settings_json: Option<&str>,
         locale: Option<&str>,
-    ) -> Result<Ctx, (Status, String)> {
+    ) -> Result<Ctx, Record> {
         let profile = profile.map(|p| CString::new(p).unwrap());
         let settings = settings_json.map(|p| CString::new(p).unwrap());
         let locale = locale.map(|p| CString::new(p).unwrap());
@@ -90,7 +135,7 @@ impl Ctx {
             ephemeris: ephemeris as u8,
         };
         let mut handle = ptr::null_mut();
-        let mut error = TsString::empty();
+        let mut error = blank_error();
         // SAFETY: valid pointers for the call.
         let status = unsafe {
             ts_context_new(
@@ -104,59 +149,30 @@ impl Ctx {
         if status == Status::Ok {
             return Ok(Ctx { handle });
         }
-        // SAFETY: the library wrote a NUL-terminated string.
-        let message = unsafe { CStr::from_ptr(error.data.cast()) }
-            .to_string_lossy()
-            .into_owned();
-        // SAFETY: a descriptor the library wrote.
-        unsafe { ts_string_free(&raw mut error) };
-        Err((status, message))
+        assert_eq!(
+            error.flags, TS_ERROR_OWNED,
+            "a constructor's record owns its strings"
+        );
+        let record = read_record(&error);
+        assert_eq!(record.0, status, "the record is the call's own refusal");
+        // SAFETY: a record the library wrote, freed once.
+        unsafe { ts_error_free(&raw mut error) };
+        Err(record)
     }
 
     fn defaults() -> Ctx {
         Ctx::new(0, None, None, None).expect("a context with every default")
     }
 
-    fn last_error(
-        &self,
-    ) -> (
-        Status,
-        String,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-    ) {
-        let mut error = TsError {
-            struct_size: size_of::<TsError>() as u32,
-            status: 99,
-            provider_code: 0,
-            reserved: 0,
-            detail: ptr::null(),
-            message: ptr::null(),
-            field: ptr::null(),
-            hint: ptr::null(),
-            key: ptr::null(),
-        };
+    fn last_error(&self) -> Record {
+        let mut error = blank_error();
         // SAFETY: a live handle and a valid struct with its size set.
         assert_eq!(
             unsafe { ts_context_last_error(self.handle, &raw mut error) },
             Status::Ok
         );
-        let text = |p: *const core::ffi::c_char| {
-            if p.is_null() {
-                None
-            } else {
-                // SAFETY: the library lends NUL-terminated strings.
-                Some(unsafe { CStr::from_ptr(p) }.to_string_lossy().into_owned())
-            }
-        };
-        (
-            Status::from_code(error.status).unwrap(),
-            text(error.message).unwrap_or_default(),
-            text(error.field),
-            text(error.hint),
-            text(error.detail),
-        )
+        assert_eq!(error.flags, 0, "a context's record lends its strings");
+        read_record(&error)
     }
 }
 
@@ -254,24 +270,106 @@ fn a_context_with_every_default_reports_its_settings() {
 }
 
 #[test]
+fn a_refused_construction_owns_its_record_and_frees_it_once() {
+    let profile = CString::new("nepali-defualt").unwrap();
+    let options = TsContextOptions {
+        struct_size: size_of::<TsContextOptions>() as u32,
+        flags: 0,
+        profile: profile.as_ptr(),
+        settings_json: ptr::null(),
+        locale: ptr::null(),
+        ephemeris: 0,
+    };
+    let new = |out: *mut *mut TsContext, error: *mut TsError| {
+        // SAFETY: valid options; the slots are the test's to pass.
+        unsafe { ts_context_new(&raw const options, ptr::null(), ptr::null_mut(), out, error) }
+    };
+    let mut handle = ptr::null_mut();
+
+    // No record asked for: the status alone.
+    assert_eq!(new(&raw mut handle, ptr::null_mut()), Status::Unsupported);
+
+    // A record of a size this build does not know is left alone, and the
+    // call still says what it refused rather than `SCHEMA_VERSION`.
+    let mut stale = blank_error();
+    stale.struct_size = 8;
+    assert_eq!(new(&raw mut handle, &raw mut stale), Status::Unsupported);
+    assert_eq!(
+        (stale.status, stale.flags, stale.message),
+        (99, 0, ptr::null())
+    );
+
+    // The whole refusal, owned.
+    let mut error = blank_error();
+    assert_eq!(new(&raw mut handle, &raw mut error), Status::Unsupported);
+    assert!(handle.is_null(), "no handle is written on failure");
+    assert_eq!(error.flags, TS_ERROR_OWNED);
+    let (_, _, field, hint, _) = read_record(&error);
+    assert_eq!(field.as_deref(), Some("profile"));
+    assert!(hint.is_some_and(|h| h.contains("nepali-default")));
+
+    // Freed, zeroed but for the size, and a second free is a no-op.
+    // SAFETY: the record the call wrote.
+    unsafe { ts_error_free(&raw mut error) };
+    assert_eq!(
+        (error.struct_size, error.status, error.flags, error.message),
+        (size_of::<TsError>() as u32, 0, 0, ptr::null())
+    );
+    // SAFETY: as above; the flag is clear now.
+    unsafe { ts_error_free(&raw mut error) };
+    // SAFETY: null is ignored.
+    unsafe { ts_error_free(ptr::null_mut()) };
+
+    // A null slot for the handle is refused, and the record names it.
+    let mut error = blank_error();
+    assert_eq!(new(ptr::null_mut(), &raw mut error), Status::InvalidArg);
+    assert_eq!(read_record(&error).2.as_deref(), Some("out_context"));
+    // SAFETY: the record the call wrote.
+    unsafe { ts_error_free(&raw mut error) };
+
+    // A lent record is not the caller's to free: freeing it does nothing,
+    // and its strings are still the context's.
+    let ctx = Ctx::defaults();
+    let mut id = 0u32;
+    let unknown = CString::new("graha.SUNN").unwrap();
+    // SAFETY: a live handle and valid slots.
+    let refused = unsafe { ts_key_parse(ctx.handle, unknown.as_ptr(), &raw mut id) };
+    assert_eq!(refused, Status::Unsupported);
+    let mut lent = blank_error();
+    // SAFETY: a live handle and a valid struct with its size set.
+    unsafe { ts_context_last_error(ctx.handle, &raw mut lent) };
+    let before = read_record(&lent);
+    // SAFETY: a lent record; the call must leave it alone.
+    unsafe { ts_error_free(&raw mut lent) };
+    assert_eq!(read_record(&lent), before);
+}
+
+#[test]
 fn a_context_refuses_what_it_cannot_build_and_says_why() {
-    let (status, message) = Ctx::new(0, Some("vedic-classic"), None, None).unwrap_err();
-    assert_eq!(status, Status::Unsupported);
-    assert!(
-        message.contains("no shipped profile `vedic-classic`")
-            && message.contains("parashari-classical"),
-        "{message}"
+    let (status, message, field, hint, _) =
+        Ctx::new(0, Some("vedic-classic"), None, None).unwrap_err();
+    assert_eq!(
+        (status, message.as_str(), field.as_deref()),
+        (
+            Status::Unsupported,
+            "no shipped profile `vedic-classic`",
+            Some("profile")
+        )
     );
-    let (status, message) =
+    assert!(hint.is_some_and(|h| h.contains("parashari-classical")));
+    let (status, message, field, ..) =
         Ctx::new(0, None, Some(r#"{"frame": {"zodiacs": "TROPICAL"}}"#), None).unwrap_err();
-    assert_eq!(status, Status::InvalidArg);
-    assert!(
-        message.contains("unknown field `zodiacs`") && message.contains("settings_json"),
-        "{message}"
+    assert_eq!(
+        (status, field.as_deref()),
+        (Status::InvalidArg, Some("settings_json"))
     );
-    let (status, message) = Ctx::new(0, None, None, Some("xx-Latn")).unwrap_err();
-    assert_eq!(status, Status::Unsupported);
-    assert!(message.contains("ne-Deva-NP"), "{message}");
+    assert!(message.contains("unknown field `zodiacs`"), "{message}");
+    let (status, _, field, hint, _) = Ctx::new(0, None, None, Some("xx-Latn")).unwrap_err();
+    assert_eq!(
+        (status, field.as_deref()),
+        (Status::Unsupported, Some("locale"))
+    );
+    assert!(hint.is_some_and(|h| h.contains("ne-Deva-NP")));
     let patched = Ctx::new(
         0,
         Some("nepali-default"),
@@ -360,7 +458,7 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     };
     let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
     let mut provider: *mut TsProvider = ptr::null_mut();
-    let mut error = TsString::empty();
+    let mut error = blank_error();
     // SAFETY: a live path and writable slots.
     let status = unsafe {
         ts_provider_load(
@@ -370,11 +468,12 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
             &raw mut error,
         )
     };
-    if status != Status::Ok {
-        // SAFETY: the library wrote a descriptor or left it empty.
-        let said = unsafe { core::slice::from_raw_parts(error.data, error.len) };
-        panic!("loading the adapter: {}", String::from_utf8_lossy(said));
-    }
+    assert_eq!(
+        status,
+        Status::Ok,
+        "loading the adapter: {:?}",
+        read_record(&error)
+    );
 
     let mut context: *mut TsContext = ptr::null_mut();
     // SAFETY: a live handle and writable slots.

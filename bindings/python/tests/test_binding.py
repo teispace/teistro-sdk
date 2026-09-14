@@ -222,6 +222,22 @@ class Keys(WithLibrary):
         self.assertNotEqual(error.status, Status.OK)
         self.assertIn("SUN", error.hint or error.message)
 
+    def test_a_context_that_cannot_be_built_says_which_field_and_why(self) -> None:
+        # No context exists to keep this refusal, so the record crosses
+        # whole from the call that failed (ffi-abi-and-api-description.md
+        # §6.1) — the same field and hint a context's refusal carries.
+        with self.assertRaises(TeistroError) as caught:
+            self.teistro.context(profile="vedic-classic")
+        error = caught.exception
+        self.assertEqual(error.status, Status.UNSUPPORTED)
+        self.assertIn("no shipped profile `vedic-classic`", error.message)
+        self.assertEqual(error.field, "profile")
+        self.assertIn("parashari-classical", error.hint)
+        with self.assertRaises(TeistroError) as caught:
+            self.teistro.context(locale="xx-Latn")
+        self.assertEqual(caught.exception.field, "locale")
+        self.assertIn("ne-Deva-NP", caught.exception.hint)
+
 
 class TheLocaleEngine(WithLibrary):
     def setUp(self) -> None:

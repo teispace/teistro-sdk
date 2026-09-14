@@ -469,9 +469,15 @@ class _ContextOptionsStruct(ctypes.Structure):
 
 
 class _ErrorStruct(ctypes.Structure):
-    """The last error of a call on a context: the status, the detail, and the
-    message, field, hint and message key as strings the context lends
-    until its next call; an `OK` record has empty strings.
+    """A failure as the library describes it: the status, the provider's
+    code, and the detail, message, field, hint and message key.
+
+    Read from `ts_context_last_error`, the strings are **lent** by the
+    context until its next call and `flags` is zero; an `OK` record has
+    null strings. Written by a call that makes a handle and failed, the
+    strings are **owned** by the record, `flags` carries
+    `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+    on a lent record does nothing, so freeing every record is never wrong.
 
     The C layout, field for field. `Error` is the value class over it.
     """
@@ -480,7 +486,7 @@ class _ErrorStruct(ctypes.Structure):
         ("struct_size", ctypes.c_uint32),
         ("status", ctypes.c_int32),
         ("provider_code", ctypes.c_int32),
-        ("reserved", ctypes.c_uint32),
+        ("flags", ctypes.c_uint32),
         ("detail", ctypes.c_char_p),
         ("message", ctypes.c_char_p),
         ("field", ctypes.c_char_p),
@@ -1704,9 +1710,15 @@ class ContextOptions:
 
 @dataclass(frozen=True)
 class Error:
-    """The last error of a call on a context: the status, the detail, and the
-    message, field, hint and message key as strings the context lends
-    until its next call; an `OK` record has empty strings.
+    """A failure as the library describes it: the status, the provider's
+    code, and the detail, message, field, hint and message key.
+
+    Read from `ts_context_last_error`, the strings are **lent** by the
+    context until its next call and `flags` is zero; an `OK` record has
+    null strings. Written by a call that makes a handle and failed, the
+    strings are **owned** by the record, `flags` carries
+    `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+    on a lent record does nothing, so freeing every record is never wrong.
     """
 
     status: Status
@@ -2800,13 +2812,18 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_blob_free.restype = None
+        self.ts_error_free: Any = library.ts_error_free
+        self.ts_error_free.argtypes = [
+            ctypes.POINTER(_ErrorStruct),
+        ]
+        self.ts_error_free.restype = None
         self.ts_context_new: Any = library.ts_context_new
         self.ts_context_new.argtypes = [
             ctypes.POINTER(_ContextOptionsStruct),
             ctypes.POINTER(_ProviderVtableStruct),
             ctypes.c_void_p,
             ctypes.POINTER(ctypes.POINTER(_Context)),
-            ctypes.POINTER(_StringStruct),
+            ctypes.POINTER(_ErrorStruct),
         ]
         self.ts_context_new.restype = ctypes.c_int32
         self.ts_context_free: Any = library.ts_context_free
@@ -3052,7 +3069,7 @@ class TeistroLibrary:
             ctypes.c_char_p,
             ctypes.c_char_p,
             ctypes.POINTER(ctypes.POINTER(_Provider)),
-            ctypes.POINTER(_StringStruct),
+            ctypes.POINTER(_ErrorStruct),
         ]
         self.ts_provider_load.restype = ctypes.c_int32
         self.ts_context_new_with_provider: Any = library.ts_context_new_with_provider
@@ -3060,7 +3077,7 @@ class TeistroLibrary:
             ctypes.POINTER(_ContextOptionsStruct),
             ctypes.POINTER(_Provider),
             ctypes.POINTER(ctypes.POINTER(_Context)),
-            ctypes.POINTER(_StringStruct),
+            ctypes.POINTER(_ErrorStruct),
         ]
         self.ts_context_new_with_provider.restype = ctypes.c_int32
         self.ts_provider_free: Any = library.ts_provider_free
@@ -3094,13 +3111,15 @@ class TeistroContext:
         ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
         passed back to the vtable's functions untouched and must stay valid
         until `ts_context_free`. On success `*out_context` owns the context;
-        on failure, when `out_error` is not null, it receives the error's
-        message as a string to free with `ts_string_free`.
+        on failure, when `out_error` is not null, it receives the whole
+        refusal as a record that owns its strings, released by
+        `ts_error_free`.
         """
         owned: list[Any] = []
         handle = ctypes.POINTER(_Context)()
         _options = options._to_c(owned)
-        _out_error = _StringStruct()
+        _out_error = _ErrorStruct()
+        _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
         status = Status(lib.ts_context_new(
             ctypes.byref(_options),
             provider,
@@ -3127,7 +3146,8 @@ class TeistroContext:
         owned: list[Any] = []
         handle = ctypes.POINTER(_Context)()
         _options = options._to_c(owned)
-        _out_error = _StringStruct()
+        _out_error = _ErrorStruct()
+        _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
         status = Status(lib.ts_context_new_with_provider(
             ctypes.byref(_options),
             provider._raw,
@@ -3172,15 +3192,7 @@ class TeistroContext:
         raw.struct_size = ctypes.sizeof(_ErrorStruct)
         if self._handle is not None:
             if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
-                found = Error._of(raw)
-                raise TeistroError(
-                    status,
-                    found.message or status.key,
-                    detail=found.detail or "",
-                    field=found.field or "",
-                    hint=found.hint or "",
-                    key=found.key or "",
-                )
+                raise _refusal(status, Error._of(raw))
         raise TeistroError(status, status.key)
 
     def last_error(self) -> Error:
@@ -3783,7 +3795,8 @@ class TeistroProvider:
         owned.append(_path)
         _config_json = config_json.encode("utf-8")
         owned.append(_config_json)
-        _out_error = _StringStruct()
+        _out_error = _ErrorStruct()
+        _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
         status = Status(lib.ts_provider_load(
             _path,
             _config_json,
@@ -3828,15 +3841,7 @@ class TeistroProvider:
         raw.struct_size = ctypes.sizeof(_ErrorStruct)
         if self._handle is not None:
             if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
-                found = Error._of(raw)
-                raise TeistroError(
-                    status,
-                    found.message or status.key,
-                    detail=found.detail or "",
-                    field=found.field or "",
-                    hint=found.hint or "",
-                    key=found.key or "",
-                )
+                raise _refusal(status, Error._of(raw))
         raise TeistroError(status, status.key)
 
 
@@ -3968,16 +3973,32 @@ def calendar_fixed_of_jd(lib: TeistroLibrary, jd: float) -> CalendarFixedOfJdRes
     return CalendarFixedOfJdResult(value=value, fraction=fraction)
 
 
-def _refuse(lib: TeistroLibrary, status: Status, detail: Any) -> None:
-    """Raises a refusal from a call with no context to ask.
-
-    `detail` is the owned string such a call fills when it has more to
-    say than a code, which is freed here whether or not it is used.
-    """
-    said = "" if detail is None else _take_string(lib, detail)
-    raise TeistroError(
-        status, said or _text(lib.ts_status_message(int(status)))
+def _refusal(status: Status, found: Error) -> TeistroError:
+    """The exception for a refusal the library described, from either kind
+    of record: one a context lent or one a failed way in wrote."""
+    return TeistroError(
+        status,
+        found.message or status.key,
+        detail=found.detail or "",
+        field=found.field or "",
+        hint=found.hint or "",
+        key=found.key or "",
     )
+
+
+def _refuse(lib: TeistroLibrary, status: Status, record: Any) -> None:
+    """Raises a refusal from a call with no context to keep it.
+
+    `record` is the failure record such a call writes whole — its field,
+    its hint and its detail as well as its sentence — and its strings are
+    the library's, released here whether or not they are used.
+    """
+    if record is not None:
+        found = Error._of(record)
+        lib.ts_error_free(ctypes.byref(record))
+        if found.message:
+            raise _refusal(status, found)
+    raise TeistroError(status, _text(lib.ts_status_message(int(status))))
 
 
 def _take_string(lib: TeistroLibrary, raw: Any) -> str:

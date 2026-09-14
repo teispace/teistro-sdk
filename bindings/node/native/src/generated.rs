@@ -2614,6 +2614,28 @@ impl LastError {
     }
 }
 
+/// A refusal to build a handle, as the error this addon throws: the
+/// library's own sentence, with its whole record kept as `lastError` so
+/// the ergonomic layer rethrows it as the same `TeistroError` a context's
+/// refusal becomes. The record's strings are the library's, released here.
+fn refused(env: &Env, raw: &mut ffi::context::TsError) -> Error {
+    // SAFETY: a record the library wrote for this call, or left zeroed.
+    let record = unsafe { LastError::of(raw) };
+    // SAFETY: the same record, released once; a lent or zeroed one is ignored.
+    unsafe { ffi::context::ts_error_free(&raw mut *raw) };
+    let message = record.message.clone().unwrap_or_else(|| {
+        // SAFETY: the library returns a static NUL-terminated string.
+        unsafe { lent_text(ffi::ts_status_message(record.code)) }.unwrap_or_default()
+    });
+    let thrown = env
+        .create_error(Error::from_reason(message))
+        .and_then(|mut error| {
+            error.set_named_property("lastError", record)?;
+            Ok(Error::from(error.to_unknown()))
+        });
+    thrown.unwrap_or_else(|failed| failed)
+}
+
 /// What `ts_calendar_fixed_of_jd` hands back.
 #[napi(object)]
 #[derive(Clone, Debug)]
@@ -2651,10 +2673,12 @@ impl Context {
     /// ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
     /// passed back to the vtable's functions untouched and must stay valid
     /// until `ts_context_free`. On success `*out_context` owns the context;
-    /// on failure, when `out_error` is not null, it receives the error's
-    /// message as a string to free with `ts_string_free`.
+    /// on failure, when `out_error` is not null, it receives the whole
+    /// refusal as a record that owns its strings, released by
+    /// `ts_error_free`.
     #[napi(constructor)]
     pub fn new(
+        env: Env,
         options: Option<ContextOptions>,
         provider: Option<crate::provider::ProviderInfo>,
         provider_positions: Option<Function<FnArgs<(PositionRequest,)>, Option<PositionColumns>>>,
@@ -2674,7 +2698,11 @@ impl Context {
         let (host_vtable, user_data) = crate::provider::parts(host.as_ref());
         let provider = host_vtable.as_ref().map_or(ptr::null(), |v| &raw const *v);
         let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
-        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_error: ffi::context::TsError = unsafe { core::mem::zeroed() };
+        out_error.struct_size = core::mem::size_of::<ffi::context::TsError>() as u32;
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -2687,12 +2715,7 @@ impl Context {
             )
         };
         if status != core_::Status::Ok {
-            let message = take_string(&mut out_error);
-            return Err(Error::from_reason(if message.is_empty() {
-                format!("the context could not be built (code {})", status.code())
-            } else {
-                message
-            }));
+            return Err(refused(&env, &mut out_error));
         }
         Ok(Context { handle, host })
     }
@@ -2707,12 +2730,20 @@ impl Context {
     /// be freed immediately afterwards or kept to found another context; the
     /// library is unloaded when the last of them goes.
     #[napi(factory)]
-    pub fn new_with_provider(options: Option<ContextOptions>, provider: &Provider) -> Result<Self> {
+    pub fn new_with_provider(
+        env: Env,
+        options: Option<ContextOptions>,
+        provider: &Provider,
+    ) -> Result<Self> {
         let held_options = options.map(|v| v.read()).transpose()?;
         let raw_options = held_options.as_ref().map(HeldContextOptions::as_c);
         let options = raw_options.as_ref().map_or(ptr::null(), |v| &raw const *v);
         let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
-        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_error: ffi::context::TsError = unsafe { core::mem::zeroed() };
+        out_error.struct_size = core::mem::size_of::<ffi::context::TsError>() as u32;
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -2724,12 +2755,7 @@ impl Context {
             )
         };
         if status != core_::Status::Ok {
-            let message = take_string(&mut out_error);
-            return Err(Error::from_reason(if message.is_empty() {
-                format!("the handle could not be built (code {})", status.code())
-            } else {
-                message
-            }));
+            return Err(refused(&env, &mut out_error));
         }
         Ok(Context { handle, host: None })
     }
@@ -3469,12 +3495,16 @@ impl Provider {
     /// when its configuration is wrong — each of them the adapter's own
     /// judgement, passed through with its message rather than replaced.
     #[napi(constructor)]
-    pub fn new(path: String, config_json: String) -> Result<Self> {
+    pub fn new(env: Env, path: String, config_json: String) -> Result<Self> {
         let path = std::ffi::CString::new(path).map_err(|e| Error::from_reason(e.to_string()))?;
         let config_json =
             std::ffi::CString::new(config_json).map_err(|e| Error::from_reason(e.to_string()))?;
         let mut handle: *mut ffi::provider::TsProvider = ptr::null_mut();
-        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_error: ffi::context::TsError = unsafe { core::mem::zeroed() };
+        out_error.struct_size = core::mem::size_of::<ffi::context::TsError>() as u32;
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -3486,12 +3516,7 @@ impl Provider {
             )
         };
         if status != core_::Status::Ok {
-            let message = take_string(&mut out_error);
-            return Err(Error::from_reason(if message.is_empty() {
-                format!("the context could not be built (code {})", status.code())
-            } else {
-                message
-            }));
+            return Err(refused(&env, &mut out_error));
         }
         Ok(Provider { handle })
     }

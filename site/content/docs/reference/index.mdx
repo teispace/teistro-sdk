@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 46 entry points over 27 structs and 95 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 47 entry points over 27 structs and 95 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -36,6 +36,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
 | entry point | what it does |
 |---|---|
+| [`ts_error_free`](context/ts_error_free) | Releases the strings of a record a failed constructor wrote, and zeroes it but for its size; null, a lent record from `ts_context_last_error`, and a record already freed are all ignored. |
 | [`ts_context_new`](context/ts_context_new) | Creates a context. |
 | [`ts_context_free`](context/ts_context_free) | Frees a context; null is ignored. |
 | [`ts_context_last_error`](context/ts_context_last_error) | The outcome of the last call on the context: its status, the provider's code, and the message, field, hint and key as strings lent until the next call other than this one. |

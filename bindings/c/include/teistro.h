@@ -32,6 +32,13 @@ extern "C" {
 #define TS_CONTEXT_TEST_PROVIDER ((uint32_t)1)
 
 /**
+ * A `TsError` flag: the record owns its strings, because the call that
+ * wrote it had no context to lend them from, and `ts_error_free`
+ * releases them.
+ */
+#define TS_ERROR_OWNED ((uint32_t)1)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -5333,9 +5340,15 @@ struct ts_context_options {
 };
 
 /**
- * The last error of a call on a context: the status, the detail, and the
- * message, field, hint and message key as strings the context lends
- * until its next call; an `OK` record has empty strings.
+ * A failure as the library describes it: the status, the provider's
+ * code, and the detail, message, field, hint and message key.
+ *
+ * Read from `ts_context_last_error`, the strings are **lent** by the
+ * context until its next call and `flags` is zero; an `OK` record has
+ * null strings. Written by a call that makes a handle and failed, the
+ * strings are **owned** by the record, `flags` carries
+ * `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+ * on a lent record does nothing, so freeing every record is never wrong.
  * Set `struct_size` to `sizeof` before passing it; the library refuses a size it does not know.
  */
 struct ts_error {
@@ -5353,9 +5366,9 @@ struct ts_error {
      */
     int32_t provider_code;
     /**
-     * Reserved, zero.
+     * `TS_ERROR_OWNED` when the record owns its strings, else zero.
      */
-    uint32_t reserved;
+    uint32_t flags;
     /**
      * The detail's name (`UNKNOWN_KEY`), or null. May be null.
      */
@@ -6046,19 +6059,30 @@ void ts_string_free(ts_string * string);
 void ts_blob_free(ts_blob * blob);
 
 /**
+ * Releases the strings of a record a failed constructor wrote, and
+ * zeroes it but for its size; null, a lent record from
+ * `ts_context_last_error`, and a record already freed are all ignored.
+ * Safety: `error` must be null or a `TsError` valid for reads and writes, whose
+ * strings, when `flags` carries `TS_ERROR_OWNED`, are the ones this
+ * library wrote there and are not used again.
+ */
+void ts_error_free(ts_error * error);
+
+/**
  * Creates a context. `options` may be null for every default; `provider`
  * may be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects
  * the analytic test provider and no flag leaves the context without an
  * ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
  * passed back to the vtable's functions untouched and must stay valid
  * until `ts_context_free`. On success `*out_context` owns the context;
- * on failure, when `out_error` is not null, it receives the error's
- * message as a string to free with `ts_string_free`.
+ * on failure, when `out_error` is not null, it receives the whole
+ * refusal as a record that owns its strings, released by
+ * `ts_error_free`.
  * Safety: Every pointer must be null or valid for the access its documentation
  * describes, for the duration of the call; a vtable's functions must be
  * callable with `provider_user_data` until the context is freed.
  */
-ts_status ts_context_new(const ts_context_options * options, /* nullable */ const ts_provider_vtable * provider, /* nullable */ void * provider_user_data, ts_context * * out_context, ts_string * out_error);
+ts_status ts_context_new(const ts_context_options * options, /* nullable */ const ts_provider_vtable * provider, /* nullable */ void * provider_user_data, ts_context * * out_context, ts_error * out_error);
 
 /**
  * Frees a context; null is ignored.
@@ -6401,7 +6425,7 @@ ts_status ts_ephemeris_call(const ts_context * context, const char * function, c
  * describes, for the duration of the call. Loading a library runs its
  * initialisers, so `path` must be a file the caller trusts.
  */
-ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_string * out_error);
+ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_error * out_error);
 
 /**
  * Creates a context that computes with a **loaded** provider.
@@ -6417,7 +6441,7 @@ ts_status ts_provider_load(const char * path, const char * config_json, ts_provi
  * other pointer must be null or valid for the access its documentation
  * describes, for the duration of the call.
  */
-ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_string * out_error);
+ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_error * out_error);
 
 /**
  * Frees a loaded provider; null is ignored.

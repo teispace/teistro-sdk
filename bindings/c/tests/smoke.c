@@ -190,20 +190,45 @@ static void a_refusal_names_its_field_and_hints(void) {
     expect(id == ((uint32_t)TS_KIND_GRAHA << 16 | TS_GRAHA_SUN), "the packed id is kind and member");
 }
 
+/* A context that cannot be built has no context to keep its refusal, so
+ * the call writes the whole record, owning its strings until freed. */
+static void a_context_that_cannot_be_built_says_why(void) {
+    ts_context_options options;
+    ts_context *none = NULL;
+    ts_error error;
+    memset(&options, 0, sizeof options);
+    options.struct_size = sizeof options;
+    options.profile = "vedic-classic";
+    memset(&error, 0, sizeof error);
+    error.struct_size = sizeof error;
+    expect(ts_context_new(&options, NULL, NULL, &none, &error) == TS_STATUS_UNSUPPORTED,
+           "an unknown profile is unsupported");
+    expect(none == NULL, "no handle on failure");
+    expect(error.flags & TS_ERROR_OWNED, "the record owns its strings");
+    expect(error.field && strcmp(error.field, "profile") == 0, "the field");
+    expect(error.hint && strstr(error.hint, "parashari-classical") != NULL,
+           "the shipped profiles as a hint");
+    ts_error_free(&error);
+    expect(error.message == NULL && error.flags == 0, "freed and zeroed");
+    ts_error_free(&error); /* a second free does nothing */
+}
+
 int main(void) {
     ts_context_options options;
-    ts_string error;
+    ts_error error;
     memset(&options, 0, sizeof options);
     options.struct_size = sizeof options;
     options.flags = TS_CONTEXT_TEST_PROVIDER;
     options.profile = "nepali-default";
     options.locale = "ne-Deva-NP";
     memset(&error, 0, sizeof error);
+    error.struct_size = sizeof error;
     if (ts_context_new(&options, NULL, NULL, &ctx, &error) != TS_STATUS_OK) {
-        printf("FAIL context: %s\n", error.data ? (const char *)error.data : "?");
-        ts_string_free(&error);
+        printf("FAIL context: %s\n", error.message ? error.message : "?");
+        ts_error_free(&error);
         return 1;
     }
+    a_context_that_cannot_be_built_says_why();
     the_versions_agree();
     a_date_converts_into_bikram_sambat();
     a_nepali_birth_time_resolves();

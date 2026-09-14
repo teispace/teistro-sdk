@@ -50,7 +50,7 @@ const PAGE: &str = "docs/03-design/binding-surface-measured.md";
 /// counted rather than quietly absent. The model's own `Role` is not
 /// enumerable, so the list is here and a test holds it to the header's
 /// spelling of each.
-const ROLES: [(Role, &str); 17] = [
+const ROLES: [(Role, &str); 18] = [
     (Role::Value, "value"),
     (Role::Handle, "handle"),
     (Role::HandleOut, "handle_out"),
@@ -64,6 +64,7 @@ const ROLES: [(Role, &str); 17] = [
     (Role::StringOut, "string_out"),
     (Role::StringFree, "string_free"),
     (Role::StrOut, "str_out"),
+    (Role::ErrorFree, "error_free"),
     (Role::BytesIn, "bytes_in"),
     (Role::ArrayIn, "array_in"),
     (Role::Length, "length"),
@@ -71,13 +72,14 @@ const ROLES: [(Role, &str); 17] = [
 ];
 
 /// Every struct role, for the same reason.
-const STRUCT_ROLES: [(StructRole, &str); 6] = [
+const STRUCT_ROLES: [(StructRole, &str); 7] = [
     (StructRole::Object, "object"),
     (StructRole::OwnedString, "owned_string"),
     (StructRole::BorrowedString, "borrowed_string"),
     (StructRole::Blob, "blob"),
     (StructRole::Vtable, "vtable"),
     (StructRole::Columns, "columns"),
+    (StructRole::Error, "error"),
 ];
 
 /// What a scalar is called in `ctypes`, and its `struct` format code —

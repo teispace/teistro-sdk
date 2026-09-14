@@ -204,7 +204,8 @@ export class TeistroError extends Error {
  * threw, kept on this side for the length of one call and put back here.
  * The Dart and Python bindings do exactly this.
  *
- * @param {object|null} context the addon handle, for `lastError`
+ * @param {object|null} context the addon handle, for `lastError`; null
+ *   for a call that makes a handle, whose refusal carries its own record
  * @param {Function} call the call to make
  * @param {{error: unknown}} [thrown] where this context's provider leaves
  *   what it threw
@@ -214,7 +215,10 @@ function guarded(context, call, thrown) {
   try {
     return call();
   } catch (cause) {
-    const record = context?.lastError?.();
+    // A context keeps its last refusal; a call that makes a handle has no
+    // context to keep it on, so the addon throws it with the whole record
+    // attached instead (`ffi-abi-and-api-description.md` §6.1).
+    const record = context?.lastError?.() ?? cause?.lastError;
     const own = thrown?.error;
     if (own !== undefined) {
       thrown.error = undefined;

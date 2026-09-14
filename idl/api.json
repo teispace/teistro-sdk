@@ -45,6 +45,13 @@
       "ty": "u32",
       "value": 1,
       "source": "crates/ffi/src/lib.rs"
+    },
+    {
+      "name": "TS_ERROR_OWNED",
+      "doc": "A `TsError` flag: the record owns its strings, because the call that\nwrote it had no context to lend them from, and `ts_error_free`\nreleases them.",
+      "ty": "u32",
+      "value": 1,
+      "source": "crates/ffi/src/lib.rs"
     }
   ],
   "enums": [
@@ -8454,8 +8461,8 @@
     },
     {
       "name": "TsError",
-      "doc": "The last error of a call on a context: the status, the detail, and the\nmessage, field, hint and message key as strings the context lends\nuntil its next call; an `OK` record has empty strings.",
-      "role": "object",
+      "doc": "A failure as the library describes it: the status, the provider's\ncode, and the detail, message, field, hint and message key.\n\nRead from `ts_context_last_error`, the strings are **lent** by the\ncontext until its next call and `flags` is zero; an `OK` record has\nnull strings. Written by a call that makes a handle and failed, the\nstrings are **owned** by the record, `flags` carries\n`TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`\non a lent record does nothing, so freeing every record is never wrong.",
+      "role": "error",
       "fields": [
         {
           "name": "struct_size",
@@ -8487,12 +8494,12 @@
           "meta": {}
         },
         {
-          "name": "reserved",
+          "name": "flags",
           "ty": {
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Reserved, zero.",
+          "doc": "`TS_ERROR_OWNED` when the record owns its strings, else zero.",
           "meta": {}
         },
         {
@@ -9976,8 +9983,30 @@
       "source": "crates/ffi/src/blob.rs"
     },
     {
+      "name": "ts_error_free",
+      "doc": "Releases the strings of a record a failed constructor wrote, and\nzeroes it but for its size; null, a lent record from\n`ts_context_last_error`, and a record already freed are all ignored.",
+      "safety": "`error` must be null or a `TsError` valid for reads and writes, whose\nstrings, when `flags` carries `TS_ERROR_OWNED`, are the ones this\nlibrary wrote there and are not used again.",
+      "params": [
+        {
+          "name": "error",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsError"
+            },
+            "mutable": true
+          },
+          "role": "error_free",
+          "meta": {}
+        }
+      ],
+      "meta": {},
+      "source": "crates/ffi/src/context.rs"
+    },
+    {
       "name": "ts_context_new",
-      "doc": "Creates a context. `options` may be null for every default; `provider`\nmay be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects\nthe analytic test provider and no flag leaves the context without an\nephemeris (positions are then `CAPABILITY`); `provider_user_data` is\npassed back to the vtable's functions untouched and must stay valid\nuntil `ts_context_free`. On success `*out_context` owns the context;\non failure, when `out_error` is not null, it receives the error's\nmessage as a string to free with `ts_string_free`.",
+      "doc": "Creates a context. `options` may be null for every default; `provider`\nmay be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects\nthe analytic test provider and no flag leaves the context without an\nephemeris (positions are then `CAPABILITY`); `provider_user_data` is\npassed back to the vtable's functions untouched and must stay valid\nuntil `ts_context_free`. On success `*out_context` owns the context;\non failure, when `out_error` is not null, it receives the whole\nrefusal as a record that owns its strings, released by\n`ts_error_free`.",
       "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a vtable's functions must be\ncallable with `provider_user_data` until the context is freed.",
       "params": [
         {
@@ -10041,11 +10070,11 @@
             "kind": "pointer",
             "to": {
               "kind": "struct",
-              "name": "TsString"
+              "name": "TsError"
             },
             "mutable": true
           },
-          "role": "string_out",
+          "role": "struct_out",
           "meta": {}
         }
       ],
@@ -11816,11 +11845,11 @@
             "kind": "pointer",
             "to": {
               "kind": "struct",
-              "name": "TsString"
+              "name": "TsError"
             },
             "mutable": true
           },
-          "role": "string_out",
+          "role": "struct_out",
           "meta": {}
         }
       ],
@@ -11885,11 +11914,11 @@
             "kind": "pointer",
             "to": {
               "kind": "struct",
-              "name": "TsString"
+              "name": "TsError"
             },
             "mutable": true
           },
-          "role": "string_out",
+          "role": "struct_out",
           "meta": {}
         }
       ],

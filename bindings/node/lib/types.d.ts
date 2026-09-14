@@ -451,9 +451,15 @@ export interface ContextOptions {
 }
 
 /**
- * The last error of a call on a context: the status, the detail, and the
- * message, field, hint and message key as strings the context lends
- * until its next call; an `OK` record has empty strings.
+ * A failure as the library describes it: the status, the provider's
+ * code, and the detail, message, field, hint and message key.
+ *
+ * Read from `ts_context_last_error`, the strings are **lent** by the
+ * context until its next call and `flags` is zero; an `OK` record has
+ * null strings. Written by a call that makes a handle and failed, the
+ * strings are **owned** by the record, `flags` carries
+ * `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+ * on a lent record does nothing, so freeing every record is never wrong.
  */
 export interface Error {
   /**

@@ -14,7 +14,7 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 | every area holds an operation that reaches the boundary | **holds** | 0 of 8 disagree |
 | no operation's name repeats its own area's | **holds** | 0 of 32 disagree; which is what the namespace is for |
 | every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 14 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
-| an entry point's name already carries its own module | falsified | 7 of 46 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_context_new_with_provider` |
+| an entry point's name already carries its own module | falsified | 8 of 47 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_context_new_with_provider` |
 | every operation the layer declares is listed by every parity runner | **holds** | 0 of 155 disagree; so an operation added to one binding cannot go unheld in the other three; 1 allowed |
 | every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 8 disagree; site/content/docs/surface.mdx names all 8 and nothing else |
 
@@ -28,7 +28,7 @@ The unreached modules are `blob`, `context`, `lib`, `provider`, `string`. 5 of t
 
 1 is an exception **declared in [`surface-areas.md`](surface-areas.md)** and still counted here for the same reason: `ts_context_new_with_provider`. It belongs to `context`'s family by the name a consumer calls and to `provider`'s by what it depends on, and the name that should read well is the one a consumer calls.
 
-Nothing else. The three that were inconsistencies were all the same one — a function named in the singular in a file named in the plural — and were fixed by renaming the **file**, which is not an ABI symbol, rather than the function, which is.
+The remaining 1 is not accounted for: `ts_error_free`.
 
 ## The areas the layer wires
 
@@ -125,7 +125,7 @@ Nothing else. The three that were inconsistencies were all the same one — a fu
 | `blob` | 1 | — |
 | `calendar` | 8 | `calendar` |
 | `chart` | 1 | `chart` |
-| `context` | 6 | — |
+| `context` | 7 | — |
 | `ephemeris` | 2 | `engine` |
 | `frame` | 3 | `(root)`, `frame` |
 | `intl` | 7 | `intl` |

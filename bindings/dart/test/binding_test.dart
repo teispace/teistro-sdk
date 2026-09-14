@@ -95,24 +95,29 @@ void main() {
             .having((e) => e.toString(), 'toString', contains('unsupported')),
       ),
     );
+    // No context exists to keep these refusals, so the record crosses
+    // whole from the call that failed (ffi-abi-and-api-description.md
+    // §6.1).
     expect(
       () => context(profile: 'vedic-classic'),
       throwsA(
-        isA<TeistroException>().having(
-          (e) => e.message,
-          'message',
-          contains('no shipped profile `vedic-classic`'),
-        ),
+        isA<TeistroException>()
+            .having((e) => e.status, 'status', Status.unsupported)
+            .having(
+              (e) => e.message,
+              'message',
+              contains('no shipped profile `vedic-classic`'),
+            )
+            .having((e) => e.field, 'field', 'profile')
+            .having((e) => e.hint, 'hint', contains('parashari-classical')),
       ),
     );
     expect(
       () => context(locale: 'xx-Latn'),
       throwsA(
-        isA<TeistroException>().having(
-          (e) => e.message,
-          'message',
-          contains('ne-Deva-NP'),
-        ),
+        isA<TeistroException>()
+            .having((e) => e.field, 'field', 'locale')
+            .having((e) => e.hint, 'hint', contains('ne-Deva-NP')),
       ),
     );
     expect(
