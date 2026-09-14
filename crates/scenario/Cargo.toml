@@ -17,6 +17,7 @@ teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
 teistro-geometry = { path = "../geometry" }
+teistro-render-svg = { path = "../render-svg" }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-siddhanta = { path = "../siddhanta" }

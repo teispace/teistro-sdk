@@ -45,6 +45,7 @@ mod area;
 mod context;
 mod ephemeris;
 mod reading;
+mod render;
 mod scale;
 
 pub use area::{
@@ -103,6 +104,11 @@ pub use teistro_vargas::chart::{Axis, VargaChart};
 // chart placed in one (`03-design/chart-geometry.md`).
 pub use teistro_geometry as geometry;
 pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
+// The first-party renderer: a drawing as SVG, themed as data
+// (`03-design/render-svg.md`). Not behind a feature: it is pure Rust with
+// no dependency the façade lacks, and a consumer who never calls it has
+// its code removed by the linker.
+pub use teistro_render_svg as render_svg;
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a
 // namespace is in Rust — where Node writes

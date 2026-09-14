@@ -78,6 +78,8 @@
 //!   designed from.
 //! - `document-schema` and `check-document-schema`: the chart document's
 //!   JSON Schema, generated from the types and embedded by `teistro-serial`.
+//! - `render` and `check-render`: the golden drawings, a real chart drawn in
+//!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
 //!   document's shape, which a JSON Schema for it is designed from —
 //!   which keys are required, what type each value has, which strings
@@ -152,6 +154,7 @@ mod pluto;
 mod points;
 mod python_binding;
 mod release;
+mod render;
 mod rust_binding;
 mod rust_surface;
 mod schema;
@@ -220,6 +223,7 @@ const PASSES: &[Pass] = &[
         rust_surface::generate,
         rust_surface::check_generated,
     ),
+    ("render", render::generate, render::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

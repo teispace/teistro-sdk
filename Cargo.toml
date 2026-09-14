@@ -20,6 +20,7 @@ members = [
     "crates/points",
     "crates/houses",
     "crates/geometry",
+    "crates/render-svg",
     "crates/serial",
     "crates/ephemeris-builtin",
     "crates/ephemeris-kit",

@@ -335,7 +335,8 @@ where that is won or lost.
 5. **The document section and the boundary**: `ChartRequest::with_drawings`,
    the section in all four bindings, and parity (built: §7d, §7e).
 6. **`render-svg`**: the theme record and golden SVGs, gated byte for
-   byte.
+   byte (built in Rust and the façade, [`render-svg.md`](render-svg.md);
+   the boundary follows).
 
 ## 9. What this design does not settle
 

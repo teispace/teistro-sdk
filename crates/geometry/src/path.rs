@@ -203,16 +203,23 @@ impl Path {
     /// answer either way, which is why the checks sample off the grid.
     #[must_use]
     pub fn contains(&self, point: Point) -> bool {
-        let points = self.flatten();
-        let mut inside = false;
-        for (a, b) in points.iter().zip(points.iter().cycle().skip(1)) {
-            let crosses = (a.y > point.y) != (b.y > point.y);
-            if crosses && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x {
-                inside = !inside;
-            }
-        }
-        inside
+        polygon_contains(&self.flatten(), point)
     }
+}
+
+/// Whether a point lies inside a closed polygon, by the even-odd rule: the
+/// test [`Path::contains`] makes on the flattened outline, for a caller that
+/// asks many points of one outline and flattens it once.
+#[must_use]
+pub fn polygon_contains(points: &[Point], point: Point) -> bool {
+    let mut inside = false;
+    for (a, b) in points.iter().zip(points.iter().cycle().skip(1)) {
+        let crosses = (a.y > point.y) != (b.y > point.y);
+        if crosses && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x {
+            inside = !inside;
+        }
+    }
+    inside
 }
 
 #[cfg(test)]

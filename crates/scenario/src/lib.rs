@@ -47,6 +47,7 @@ use teistro_core::time::UtcOffset;
 use teistro_geometry::{Body, Placements, Point, place, rows};
 use teistro_panchanga::Almanac;
 use teistro_port_ephemeris::TestProvider;
+use teistro_render_svg::{Labels, Style, render as render_svg};
 use teistro_siddhanta::SuryaSiddhanta;
 
 /// One section of the scenario: its name and the values it computed. A
@@ -78,13 +79,14 @@ impl Section {
 }
 
 /// The sections in the order every report lists them.
-pub const SECTIONS: [&str; 6] = [
+pub const SECTIONS: [&str; 7] = [
     "calendar",
     "astro",
     "houses",
     "siddhanta",
     "panchanga",
     "geometry",
+    "render",
 ];
 
 /// One section by name, or `None` when nothing is called that.
@@ -97,6 +99,7 @@ pub fn section(name: &str) -> Option<Section> {
         "siddhanta" => Some(siddhanta()),
         "panchanga" => Some(panchanga()),
         "geometry" => Some(geometry()),
+        "render" => Some(render()),
         _ => None,
     }
 }
@@ -235,34 +238,7 @@ fn geometry() -> Section {
         section.push(point.y);
     };
     let (wheel, chakra) = (rows::western_wheel(), rows::sudarshan_chakra());
-    for armc in (0..360).step_by(11) {
-        let input = Input {
-            armc_deg: f64::from(armc),
-            latitude_deg: 27.7,
-            obliquity_deg: 23.439_291_1,
-            sun_declination_deg: None,
-            sidereal_offset_deg: 0.0,
-        };
-        let Ok(built) = houses::houses(
-            HouseSystem::Placidus,
-            &input,
-            PolarPolicy::FallbackWholeSign,
-        ) else {
-            continue;
-        };
-        let ascendant = built.angles.ascendant_deg;
-        let chart = Placements {
-            lagna_deg: Some(ascendant),
-            houses: Some(Bhavas::of(Chalit::of(HouseSystem::Placidus), &built.cusps)),
-            bodies: [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Saturn]
-                .iter()
-                .zip([0.0, 97.0, 211.5, 333.3])
-                .map(|(graha, offset)| {
-                    Body::at(graha.key_id(), (ascendant + offset).rem_euclid(360.0))
-                })
-                .collect(),
-            ..Placements::new(Body::at(Graha::Sun.key_id(), ascendant).sign)
-        };
+    for chart in sweep(&[0.0, 97.0, 211.5, 333.3]) {
         for layout in [&wheel, &chakra] {
             let Ok(placed) = place(layout, &chart) else {
                 continue;
@@ -277,6 +253,96 @@ fn geometry() -> Section {
             }
             for mark in &placed.marks {
                 push(mark.at);
+            }
+        }
+    }
+    section
+}
+
+/// Charts over a sweep of real Placidus ascendants at Kathmandu's latitude,
+/// with the Sun, Moon, Mars and Saturn (and the rest of the grahas, where
+/// more offsets are given) that far past the ascendant.
+fn sweep(offsets: &'static [f64]) -> impl Iterator<Item = Placements> {
+    const GRAHAS: [Graha; 9] = [
+        Graha::Sun,
+        Graha::Moon,
+        Graha::Mars,
+        Graha::Saturn,
+        Graha::Mercury,
+        Graha::Jupiter,
+        Graha::Venus,
+        Graha::Rahu,
+        Graha::Ketu,
+    ];
+    (0..360).step_by(11).filter_map(move |armc| {
+        let input = Input {
+            armc_deg: f64::from(armc),
+            latitude_deg: 27.7,
+            obliquity_deg: 23.439_291_1,
+            sun_declination_deg: None,
+            sidereal_offset_deg: 0.0,
+        };
+        let built = houses::houses(
+            HouseSystem::Placidus,
+            &input,
+            PolarPolicy::FallbackWholeSign,
+        )
+        .ok()?;
+        let ascendant = built.angles.ascendant_deg;
+        Some(Placements {
+            lagna_deg: Some(ascendant),
+            houses: Some(Bhavas::of(Chalit::of(HouseSystem::Placidus), &built.cusps)),
+            bodies: GRAHAS
+                .iter()
+                .zip(offsets)
+                .map(|(graha, offset)| {
+                    Body::at(graha.key_id(), (ascendant + offset).rem_euclid(360.0))
+                })
+                .collect(),
+            ..Placements::new(Body::at(Graha::Sun.key_id(), ascendant).sign)
+        })
+    })
+}
+
+/// The renderer: the wheel and the chakra drawn over the same sweep, with a
+/// conjunction of five so the marks are spread, and every byte of each
+/// drawing pushed eight at a time. The wheel's spreading takes a platform's
+/// `atan2`, `sin` and `cos`, rounded to the geometry's grain, and this is
+/// what shows that rounding holds (`03-design/render-svg.md` §5).
+fn render() -> Section {
+    let mut section = Section::new("render");
+    let (wheel, chakra) = (rows::western_wheel(), rows::sudarshan_chakra());
+    let names = ["Su", "Mo", "Ma", "Sa", "Me", "Ju", "Ve", "Ra", "Ke"];
+    let style = Style::light();
+    for chart in sweep(&[0.0, 2.5, 3.0, 97.0, 4.5, 211.5, 333.3, 180.0, 1.0]) {
+        for layout in [&wheel, &chakra] {
+            let Ok(placed) = place(layout, &chart) else {
+                continue;
+            };
+            let labels = Labels {
+                title: None,
+                cells: placed
+                    .cells
+                    .iter()
+                    .map(|cell| cell.house.to_string())
+                    .collect(),
+                bodies: chart
+                    .bodies
+                    .iter()
+                    .zip(names)
+                    .map(|(body, name)| (body.key, name.to_owned()))
+                    .collect(),
+                lagna: Some(String::from("As")),
+            };
+            let Ok(svg) = render_svg(&placed, &labels, &style) else {
+                continue;
+            };
+            for chunk in svg.as_bytes().chunks(8) {
+                let mut word = [0u8; 8];
+                word.iter_mut()
+                    .zip(chunk)
+                    .for_each(|(to, from)| *to = *from);
+                section.push_int(i64::from_le_bytes(word));
             }
         }
     }
