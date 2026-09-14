@@ -1,6 +1,8 @@
 # Dasha kernels and tables
 
-Status: `draft`, 2026-09-04. The falsification pass for ADR-0017 on the
+Status: `draft`, 2026-09-04; the Vimshottari row measured 2026-09-15
+([`dasha-measured.md`](dasha-measured.md), §"What the measurement
+settled"). The falsification pass for ADR-0017 on the
 dasha family: every catalogued system written as a row over a kernel, the
 schema corrected where a system refused to fit, and the rows marked V, T
 or S (ADR-0018). Implemented in Phase 5; the cursor and the exact period
@@ -22,6 +24,32 @@ start sign is the arudha lagna), Niryana Shoola from Shoola in one
 expression (the start sign is the navamsa lagna), and its proportional
 nakshatra builder is one function parameterised by sequence, total,
 start nakshatra and count direction that already serves six systems.
+
+## What the measurement settled
+
+The corpus records Vimshottari with its inputs and its whole tree under
+both balance methods, so `cargo xtask dashas` decided what this page had
+only designed. Four of its findings change the design:
+
+- **The birth period's sub-periods are compressed**, each its share of the
+  period it is in, the birth period being only as long as its balance. The
+  other reading (sized against the whole period, the elapsed ones dropped)
+  is refused by all 148 recorded answers, but both are taught and neither
+  by a rank-1 text, so K-udu gains `birth_period: Compressed | Elapsed`,
+  the knob `dasha.birth_period`, and crux C48.
+- **The cycle ends.** Past the ninth mahadasha the recording engine answers
+  no period. The cursor answers `None` there by default, and
+  `dasha.after_cycle: End | Repeat` makes the other reading reachable.
+- **Boundaries agree to a quarter of a millisecond and not to the bit**,
+  under any order of float arithmetic. That confirms the `Ratio` shares
+  below: a boundary is its parent's start plus an exact share of its
+  length, compared with the corpus to its tolerance (a thousandth of a
+  day).
+- **The balance is written with its minutes rounded**: whole years of the
+  year length, whole months of a twelfth of it, whole days, and the rest
+  rounded to the minute. Flooring disagrees with half the records.
+
+What it could not settle is crux C6: every record uses 365.25 days.
 
 ## Kernels
 
@@ -45,6 +73,8 @@ pub struct UduDashaDef {
     pub periods: PeriodSource,       // Table(Vec<Ratio>) | FromChart(ChartQuery)   (Ashtakavarga dasha, Tara dasha)
     pub sub_start: SubStartRule,     // FromSelf | FromNext | FromNth(u8)
     pub balance: BalanceMethod,      // Spatial | Temporal; the window is `map.span` seed units wide, never per system
+    pub birth_period: BirthPeriod,   // Compressed (measured default) | Elapsed (crux C48)
+    pub after_cycle: AfterCycle,     // End (measured default) | Repeat
     pub year_length: YearLengthId,   // per system, from the profile's table (see the cruxes page)
     pub scale: Option<CycleScale>,   // Tribhagi, Mudda
     pub applicability: Option<RuleRef>,   // a rules-engine rule (Ashtottari's conditions)

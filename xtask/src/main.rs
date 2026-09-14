@@ -78,6 +78,9 @@
 //!   designed from.
 //! - `document-schema` and `check-document-schema`: the chart document's
 //!   JSON Schema, generated from the types and embedded by `teistro-serial`.
+//! - `dashas` and `check-dashas`: the falsification pass over the
+//!   Vimshottari dasha, which the dasha module is designed from — the
+//!   seed, the balance, the tree and its arithmetic, and the cycle's end.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -132,6 +135,7 @@ mod chebyshev;
 mod classical;
 mod consumer;
 mod dart_binding;
+mod dashas;
 mod document_schema;
 mod engine;
 mod ephemgen;
@@ -224,6 +228,7 @@ const PASSES: &[Pass] = &[
         rust_surface::check_generated,
     ),
     ("render", render::generate, render::check_generated),
+    ("dashas", dashas::generate, dashas::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

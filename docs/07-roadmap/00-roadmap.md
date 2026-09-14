@@ -464,6 +464,16 @@ says (registry entry 14).
 
 ## Phase 5: Strength and dashas
 
+**Started 2026-09-15 with the measurement, as every Phase 4 module was.**
+The Vimshottari row is falsified over the corpus's whole `dashas` section
+(`03-design/dasha-measured.md`, `check-dashas`): the seed, the balance and
+its written form, the tree to five levels and the running chains are
+decided, and three things the design page had not said are settled — the
+birth period's sub-periods are compressed, the cycle ends after nine, and
+boundaries agree to a quarter of a millisecond and not to the bit. Crux C6
+is untouched (every record uses 365.25 days) and C48 is new. Next: the
+K-udu kernel and the cursor, with Vimshottari as the first row.
+
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18
 baseline systems as verified rows, the lazy cursor, the whole-table
