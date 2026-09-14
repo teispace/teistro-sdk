@@ -442,6 +442,18 @@ export interface ContextOptions {
    */
   readonly locale?: string;
   /**
+   * Chart layouts of the consumer's own, to draw in beside the shipped
+   * ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+   * answers, with a key of its own. Every row is checked by the rules a
+   * shipped one passes and refused by its place in the array and its own
+   * field, as `options.layouts_json`, the row's index, then the field's
+   * path; a key the SDK ships is
+   * refused, so a row adds a layout and never replaces one. Null for none
+   * (`03-design/chart-geometry.md` §7f).
+   * @nullable
+   */
+  readonly layoutsJson?: string;
+  /**
    * Which of the SDK's own ephemerides to use when no provider vtable
    * is given; ignored when one is (ADR-0028).
    * @enum Ephemeris

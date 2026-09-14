@@ -212,7 +212,13 @@ placed.grahas.forEach((graha, j) => {
 // ── A chart and an almanac, under a geocentric profile ─────────────────
 // Everything after this runs on the SDK's own default profile, which is
 // geocentric, so that the two centres are both exercised.
-const geo = new Context({ profile: 'parashari-classical', locale: 'ne-Deva-NP', testProvider: true });
+// A layout of the consumer's own, registered on the context the charts are
+// drawn under: the South Indian row renamed, as every runner registers it
+// (`03-design/chart-geometry.md` §7f).
+const shipped = new Context({ testProvider: true });
+const kerala = { ...shipped.chart.layout('SOUTH_INDIAN'), key: 'ACME_KERALA' };
+shipped.dispose();
+const geo = new Context({ profile: 'parashari-classical', locale: 'ne-Deva-NP', testProvider: true, layouts: [kerala] });
 put('geo-profile', geo.profile);
 put('geo-settings-hash', geo.settingsHash);
 
@@ -236,6 +242,7 @@ const charts = geo.chart.foundMany({
     { layout: ChartLayout.NorthIndian, varga: Varga.D1 },
     { layout: ChartLayout.SouthIndian, varga: Varga.D9 },
     { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
+    { layout: 'chart_layout.ACME_KERALA', varga: Varga.D9 },
   ],
   // Every drawing written as SVG too, so the four agree on the bytes.
   theme: 'dark',
@@ -505,6 +512,7 @@ for (const [path, member] of [
   ['frame.canonical', shape.frame.canonical],
   ['frame.pack', shape.frame.pack],
   ['frame.unpack', shape.frame.unpack],
+  ['chart.layout', shape.chart.layout],
   ['chart.found', shape.chart.found],
   ['chart.found_many', shape.chart.foundMany],
   ['almanac.of', shape.almanac.of],

@@ -8,7 +8,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 ## 1. What a binding must marshal
 
 The description carries 2 exported constants, 96 enums of 967 members in
-all, 2 opaque handle types, 10 callback types, 27 structs, 47 entry
+all, 2 opaque handle types, 10 callback types, 27 structs, 48 entry
 points and 4 result-blob schemas, extracted from 19 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
 point, which is why a third binding costs what it costs.
@@ -16,7 +16,7 @@ point, which is why a third binding costs what it costs.
 | parameter role | how often |
 |---|---|
 | `value` | 19 |
-| `handle` | 31 |
+| `handle` | 32 |
 | `handle_out` | 3 |
 | `struct_in` | 12 |
 | `struct_out` | 15 |
@@ -24,8 +24,8 @@ point, which is why a third binding costs what it costs.
 | `user_data` | 1 |
 | `blob_out` | 4 |
 | `blob_free` | 1 |
-| `string_in` | 13 |
-| `string_out` | 3 |
+| `string_in` | 14 |
+| `string_out` | 4 |
 | `string_free` | 1 |
 | `str_out` | 5 |
 | `error_free` | 1 |
@@ -69,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1323 | 1 | 0 | 0 | 0 |
-| TypeScript | 356 | 0 | 0 | 1 | 0 |
-| Python | 1323 | 0 | 1 | 2 | 0 |
+| Dart | 1328 | 1 | 0 | 0 | 0 |
+| TypeScript | 361 | 0 | 0 | 1 | 0 |
+| Python | 1328 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1323 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 356 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1323 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1323 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 356 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1323 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1328 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 361 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1328 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1328 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 361 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1328 disagree |
 
 What Dart renames:
 
@@ -135,7 +135,7 @@ against them on the machine the library was actually built for.
 | `ts_str` | 16 | 8 | 8 | yes |
 | `ts_hash` | 32 | 1 | same | no |
 | `ts_blob` | 24 | 8 | 12 | yes |
-| `ts_context_options` | 40 | 8 | 24 | yes |
+| `ts_context_options` | 48 | 8 | 28 | yes |
 | `ts_error` | 56 | 8 | 36 | yes |
 | `ts_frame` | 16 | 4 | same | no |
 | `ts_calendar_date` | 24 | 4 | same | no |
@@ -196,7 +196,7 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 189 of 189 visible struct fields
+much of that there is to reach for: 190 of 190 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -207,15 +207,15 @@ carry a doc comment.
 | `example` | 89 |
 | `flag` | 15 |
 | `len` | 16 |
-| `nullable` | 12 |
+| `nullable` | 13 |
 | `present_if` | 1 |
 | `range` | 33 |
 | `unit` | 46 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 189 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 189 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 190 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 190 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

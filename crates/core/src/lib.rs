@@ -65,6 +65,7 @@ pub mod quantity;
 pub mod ratio;
 pub mod registry;
 pub mod settings;
+pub mod strict;
 pub mod time;
 
 pub use angle::Nas;

@@ -14,6 +14,9 @@ import type {
   Charts,
   Context,
   EphemerisProvider,
+  LayoutHolds,
+  LayoutKey,
+  LayoutRow,
   PositionsRequest,
   Scale,
 } from '../lib/index.js';
@@ -263,3 +266,26 @@ function almanac(): string {
 }
 
 void almanac;
+
+/** A layout of the consumer's own, typed: copied, renamed, registered and drawn. */
+function ownLayout(): string {
+  const row: LayoutRow = ctx.chart.layout(ChartLayout.SouthIndian);
+  const renamed: LayoutRow = { ...row, key: 'ACME_KERALA' };
+  const own: Context = ctx;
+  const options: ConstructorParameters<typeof Context>[0] = { testProvider: true, layouts: [renamed] };
+  const key: LayoutKey = 'chart_layout.ACME_KERALA';
+  const drawn = own.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    drawings: [{ layout: key, varga: Varga.D1 }],
+  }).drawings[0]!;
+  const rings: number = row.shape.kind === 'radial' ? row.shape.rings.length : row.shape.cells.length;
+  // @ts-expect-error a layout key names its kind
+  own.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: [{ layout: 'ACME_KERALA', varga: Varga.D1 }] });
+  // @ts-expect-error a cell holds a sign by its bare key, not a number
+  const wrong: LayoutHolds = { kind: 'sign', value: 1 };
+  return `${drawn.layout} ${rings} ${wrong.kind} ${options?.layouts?.length}`;
+}
+
+void ownLayout;

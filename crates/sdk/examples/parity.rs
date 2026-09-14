@@ -639,6 +639,7 @@ fn the_surface(report: &mut Report) {
         ("calendar.is_leap", "present"),
         ("calendar.month_length", "present"),
         ("calendar.weekday_of", "present"),
+        ("chart.layout", "present"),
         ("chart.found", "present"),
         ("chart.found_many", "present"),
         ("engine.call", "present"),
@@ -743,10 +744,16 @@ fn a_topocentric_chart(report: &mut Report, sdk: &Context, place: &Place, offset
 /// so the two centres are both exercised -- the same reason the other
 /// three runners build a second context.
 fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
+    // A layout of the consumer's own, registered on the context the charts
+    // are drawn under: the South Indian row renamed, as every runner
+    // registers it (`03-design/chart-geometry.md` §7f).
+    let mut kerala = teistro::geometry::rows::south_indian();
+    kerala.key = String::from("ACME_KERALA");
     let geo = Context::builder()
         .profile("parashari-classical")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Test])
+        .layout(kerala)
         .build()
         .expect("a shipped profile");
     put(report, "geo-profile", geo.profile().to_owned());
@@ -768,7 +775,11 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     // Two divisional charts asked for, and two rather than one because
     // the layout the other three decode is charts outermost then charts
     // asked for: only two of each can catch a transposed stride.
-    let asked = the_chart_request(place, offset);
+    let kerala = geo
+        .keys()
+        .id("chart_layout.ACME_KERALA")
+        .expect("registered");
+    let asked = the_chart_request(place, offset, kerala);
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -868,14 +879,15 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
 /// agree with them and prove less.
 /// The request every runner makes: two divisional charts, three drawings and
 /// every section.
-fn the_chart_request(place: Place, offset: UtcOffset) -> ChartRequest {
+fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) -> ChartRequest {
     ChartRequest::at(place, offset)
         .with_kind(ChartKind::Natal)
         .with_vargas([Varga::D9, Varga::D10])
         .with_drawings([
-            (ChartLayout::NorthIndian, Varga::D1),
-            (ChartLayout::SouthIndian, Varga::D9),
-            (ChartLayout::WesternWheel, Varga::D1),
+            (ChartLayout::NorthIndian.key_id(), Varga::D1),
+            (ChartLayout::SouthIndian.key_id(), Varga::D9),
+            (ChartLayout::WesternWheel.key_id(), Varga::D1),
+            (kerala, Varga::D9),
         ])
         .with_aspects()
         .with_points()

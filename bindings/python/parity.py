@@ -24,6 +24,7 @@ from teistro import (
     Calendar,
     ChartLayout,
     ChartKind,
+    LayoutRow,
     Latitude,
     Longitude,
     Observer,
@@ -239,8 +240,13 @@ def main() -> None:
     # Everything after this runs on the SDK's own default profile, which
     # is geocentric, so that the two centres are both exercised.
 
+    # A layout of the consumer's own, registered on the context the charts
+    # are drawn under: the South Indian row renamed, as every runner
+    # registers it (`03-design/chart-geometry.md` §7f).
+    with teistro.context(test_provider=True) as shipped:
+        kerala: LayoutRow = {**shipped.chart.layout("SOUTH_INDIAN"), "key": "ACME_KERALA"}
     with teistro.context(
-        profile="parashari-classical", locale="ne-Deva-NP", test_provider=True
+        profile="parashari-classical", locale="ne-Deva-NP", test_provider=True, layouts=[kerala]
     ) as geo:
         put("geo-profile", geo.profile)
         put("geo-settings-hash", geo.settings_hash)
@@ -261,6 +267,7 @@ def main() -> None:
                 (ChartLayout.NORTH_INDIAN, Varga.D1),
                 (ChartLayout.SOUTH_INDIAN, Varga.D9),
                 (ChartLayout.WESTERN_WHEEL, Varga.D1),
+                ("chart_layout.ACME_KERALA", Varga.D9),
             ],
             theme="dark",
             aspects=True,
@@ -370,7 +377,7 @@ def main() -> None:
                 put(f"chart-{i}-aspect-{k}-to-sign", one.to_edge.sign_deg)
             for d, drawing in enumerate(chart.drawings):
                 key = f"chart-{i}-drawing-{d}"
-                put(key, drawing.layout.full_key)
+                put(key, drawing.layout_key)
                 put(f"{key}-varga", drawing.varga.full_key)
                 put(f"{key}-cells", len(drawing.cells))
                 put(f"{key}-frames", len(drawing.frame))
@@ -585,6 +592,7 @@ def main() -> None:
         ("frame.canonical", ctx.frame.canonical),
         ("frame.pack", ctx.frame.pack),
         ("frame.unpack", ctx.frame.unpack),
+        ("chart.layout", ctx.chart.layout),
         ("chart.found", ctx.chart.found),
         ("chart.found_many", ctx.chart.found_many),
         ("almanac.of", ctx.almanac.of),

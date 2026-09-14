@@ -1426,6 +1426,15 @@ pub struct ContextOptions {
     /// The locale every render resolves from (`ne-Deva-NP`).
     /// Example: en-Latn. May be null.
     pub locale: Option<String>,
+    /// Chart layouts of the consumer's own, to draw in beside the shipped
+    /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+    /// answers, with a key of its own. Every row is checked by the rules a
+    /// shipped one passes and refused by its place in the array and its own
+    /// field, as `options.layouts_json`, the row's index, then the field's
+    /// path; a key the SDK ships is
+    /// refused, so a row adds a layout and never replaces one. Null for none
+    /// (`03-design/chart-geometry.md` §7f). May be null.
+    pub layouts_json: Option<String>,
     /// Which of the SDK's own ephemerides to use when no provider vtable
     /// is given; ignored when one is (ADR-0028).
     /// Enum: TsEphemeris. Example: 0.
@@ -1439,6 +1448,7 @@ pub struct HeldContextOptions {
     profile: Option<std::ffi::CString>,
     settings_json: Option<std::ffi::CString>,
     locale: Option<std::ffi::CString>,
+    layouts_json: Option<std::ffi::CString>,
     ephemeris: u8,
 }
 
@@ -1454,6 +1464,10 @@ impl HeldContextOptions {
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
             locale: self.locale.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            layouts_json: self
+                .layouts_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
             ephemeris: self.ephemeris,
         }
     }
@@ -1479,6 +1493,11 @@ impl ContextOptions {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            layouts_json: self
+                .layouts_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
             ephemeris: ephemeris_from_str(&self.ephemeris)?,
         })
     }
@@ -1495,6 +1514,7 @@ impl ContextOptions {
             profile: unsafe { lent_text(raw.profile) },
             settings_json: unsafe { lent_text(raw.settings_json) },
             locale: unsafe { lent_text(raw.locale) },
+            layouts_json: unsafe { lent_text(raw.layouts_json) },
             ephemeris: ephemeris_to_str(raw.ephemeris),
         }
     }
@@ -2900,9 +2920,10 @@ impl Context {
         Ok(unsafe { Hash::write(&out_hash) })
     }
 
-    /// Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-    /// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-    /// the hint in the context's last error.
+    /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+    /// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+    /// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+    /// the context's last error.
     #[napi]
     pub fn key_parse(&self, env: Env, key: String) -> Result<u32> {
         let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
@@ -3065,6 +3086,26 @@ impl Context {
         self.leave()?;
         self.check(&env, status)?;
         Ok(out_weekday as _)
+    }
+
+    /// A chart layout this context can draw in, shipped or registered, as its
+    /// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+    /// give it a key of its own, change what differs and register it
+    /// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+    /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+    /// `INVALID_ARG` with the keys the context knows as the hint.
+    #[napi]
+    pub fn chart_layout_row(&self, env: Env, key: String) -> Result<String> {
+        let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::chart::ts_chart_layout_row(self.handle, key.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
     }
 
     /// Founds a chart at an instant and a place and answers with its blob:

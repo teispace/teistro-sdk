@@ -90,6 +90,16 @@ pub struct TsContextOptions {
     /// The locale every render resolves from (`ne-Deva-NP`).
     /// `api: nullable example=en-Latn`
     pub locale: *const c_char,
+    /// Chart layouts of the consumer's own, to draw in beside the shipped
+    /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+    /// answers, with a key of its own. Every row is checked by the rules a
+    /// shipped one passes and refused by its place in the array and its own
+    /// field, as `options.layouts_json`, the row's index, then the field's
+    /// path; a key the SDK ships is
+    /// refused, so a row adds a layout and never replaces one. Null for none
+    /// (`03-design/chart-geometry.md` §7f).
+    /// `api: nullable`
+    pub layouts_json: *const c_char,
     /// Which of the SDK's own ephemerides to use when no provider vtable
     /// is given; ignored when one is (ADR-0028).
     /// `api: enum=TsEphemeris example=0`
@@ -358,10 +368,8 @@ impl TsContext {
     /// An unknown profile, a patch that does not parse or contradicts the
     /// profile, a vtable that does not bind, an unknown locale.
     pub fn build(
-        profile: Option<&str>,
-        settings_json: Option<&str>,
+        texts: &OptionTexts<'_>,
         ephemeris: teistro::Ephemeris,
-        locale: Option<&str>,
     ) -> Result<TsContext, Error> {
         // **The façade composes it.** This function used to resolve the
         // profile, parse the patch, load the embedded bundles, start the
@@ -370,21 +378,40 @@ impl TsContext {
         // Rust consumer needed it too and two compositions kept equal by
         // hand is one composition and a hope.
         let mut building = teistro::Context::builder();
-        if let Some(id) = profile {
+        if let Some(id) = texts.profile {
             building = building.profile(id);
         }
-        if let Some(json) = settings_json {
+        if let Some(json) = texts.settings_json {
             building = building.settings_json(json);
         }
-        if let Some(tag) = locale {
+        if let Some(tag) = texts.locale {
             building = building.locale(tag);
+        }
+        if let Some(json) = texts.layouts_json {
+            for layout in layouts_of(json)? {
+                building = building.layout(layout);
+            }
         }
         // One entry, never a chain: a C caller names one ephemeris and
         // gets it or a refusal, which is what `ts_context_new`'s
         // selector means. A chain is the ergonomic layers' shape,
         // assembled above this boundary.
+        // The builder names a registered layout by its place among the
+        // layouts; here those are the rows of `options.layouts_json`.
+        let inner = building.ephemeris([ephemeris]).build().map_err(|error| {
+            match error
+                .field()
+                .and_then(|field| field.strip_prefix("layouts"))
+            {
+                Some(rest) => {
+                    let field = format!("options.layouts_json{rest}");
+                    error.with_field(field)
+                }
+                None => error,
+            }
+        })?;
         Ok(TsContext {
-            inner: building.ephemeris([ephemeris]).build()?,
+            inner,
             scratch: RefCell::new(Scratch::default()),
             loaded: None,
         })
@@ -567,7 +594,7 @@ unsafe fn build(
     };
     let flags = options.map_or(0, |o| o.flags);
     // SAFETY: the entry point's contract.
-    let (profile, settings_json, locale) = unsafe { texts_of(options) }?;
+    let texts = unsafe { texts_of(options) }?;
     let ephemeris = options.map_or(0, |o| o.ephemeris);
     let chosen: teistro::Ephemeris = if provider.is_null() {
         own_ephemeris(ephemeris, flags)?
@@ -577,7 +604,7 @@ unsafe fn build(
         let bound = unsafe { VtableProvider::bind(ptr::read(provider), provider_user_data) }?;
         teistro::Ephemeris::Provider(Box::new(bound))
     };
-    TsContext::build(profile, settings_json, chosen, locale)
+    TsContext::build(&texts, chosen)
 }
 
 /// The ephemeris a caller asked for by name, or the refusal that says
@@ -620,11 +647,38 @@ fn builtin() -> Result<teistro::Ephemeris, Error> {
     .with_field("options.ephemeris"))
 }
 
-/// The three strings an options record carries: profile, settings and
-/// locale, each optional.
-pub(crate) type OptionTexts<'a> = (Option<&'a str>, Option<&'a str>, Option<&'a str>);
+/// The strings an options record carries, each optional, by name: a tuple
+/// of them let two constructors transpose one without a compiler noticing.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct OptionTexts<'a> {
+    /// The shipped profile's id.
+    pub profile: Option<&'a str>,
+    /// A JSON settings patch over the profile.
+    pub settings_json: Option<&'a str>,
+    /// The locale every render resolves from.
+    pub locale: Option<&'a str>,
+    /// A JSON array of the consumer's own layout rows.
+    pub layouts_json: Option<&'a str>,
+}
 
-/// The three strings an options record carries, checked and borrowed.
+/// A consumer's layout rows, each read strictly and checked by the rules a
+/// shipped row passes, refused by its place in the array
+/// (`03-design/chart-geometry.md` §7f).
+fn layouts_of(json: &str) -> Result<Vec<teistro::Layout>, Error> {
+    const ROOT: &str = "options.layouts_json";
+    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
+    rows.into_iter()
+        .enumerate()
+        .map(|(index, row)| {
+            let at = format!("{ROOT}[{index}]");
+            let layout: teistro::Layout = teistro_core::strict::read_value(&row, &at)?;
+            layout.validate().map_err(|error| error.under(&at))?;
+            Ok(layout)
+        })
+        .collect()
+}
+
+/// The strings an options record carries, checked and borrowed.
 ///
 /// Shared by both ways of making a context, so a field added here reaches
 /// each of them and neither can forget one.
@@ -650,20 +704,17 @@ pub(crate) unsafe fn read_options<'a>(
 ///
 /// The record's strings must stay valid for the returned lifetime.
 unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts<'a>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe {
-        Ok((
-            optional_text(
-                options.map_or(ptr::null(), |o| o.profile),
-                "options.profile",
-            )?,
-            optional_text(
-                options.map_or(ptr::null(), |o| o.settings_json),
-                "options.settings_json",
-            )?,
-            optional_text(options.map_or(ptr::null(), |o| o.locale), "options.locale")?,
-        ))
-    }
+    let field = |pick: fn(&TsContextOptions) -> *const c_char, name: &str| {
+        // SAFETY: the caller's contract: null, or a NUL-terminated string
+        // that stays valid for the returned lifetime.
+        unsafe { optional_text(options.map_or(ptr::null(), pick), name) }
+    };
+    Ok(OptionTexts {
+        profile: field(|o| o.profile, "options.profile")?,
+        settings_json: field(|o| o.settings_json, "options.settings_json")?,
+        locale: field(|o| o.locale, "options.locale")?,
+        layouts_json: field(|o| o.layouts_json, "options.layouts_json")?,
+    })
 }
 
 /// Frees a context; null is ignored.
@@ -776,14 +827,16 @@ mod tests {
         reason = "tests fail by panicking"
     )]
 
-    use super::{TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_ephemeris, resolve};
+    use super::{
+        OptionTexts, TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_ephemeris, resolve,
+    };
     use teistro_core::settings::DEFAULT_CACHE_CELLS;
     use teistro_port_ephemeris::EphemerisProvider;
 
     /// The knob's default is the port's default, in one place.
     #[test]
     fn the_shipped_profile_remembers_what_a_range_needs() {
-        let context = TsContext::build(None, None, teistro::Ephemeris::None, None)
+        let context = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)
             .expect("the default profile");
         assert_eq!(
             context.settings().provider.cache_cells,
@@ -798,8 +851,14 @@ mod tests {
     fn the_knob_is_reachable_from_a_settings_patch() {
         for cells in [0u32, 1, 4096] {
             let patch = format!(r#"{{"provider":{{"cache_cells":{cells}}}}}"#);
-            let context = TsContext::build(None, Some(&patch), teistro::Ephemeris::None, None)
-                .expect("the patch applies");
+            let context = TsContext::build(
+                &OptionTexts {
+                    settings_json: Some(&patch),
+                    ..OptionTexts::default()
+                },
+                teistro::Ephemeris::None,
+            )
+            .expect("the patch applies");
             assert_eq!(context.settings().provider.cache_cells, cells);
         }
     }

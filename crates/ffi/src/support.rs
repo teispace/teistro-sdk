@@ -199,21 +199,39 @@ pub(crate) unsafe fn optional_text<'a>(
         .map_err(|e| Error::invalid_arg(format!("`{name}` is not UTF-8: {e}")).with_field(name))
 }
 
-/// A byte buffer the caller passed in; a null pointer with a zero length
-/// is the empty buffer.
+/// An array the caller passed in with its count; a null pointer with a zero
+/// count is the empty array, and a null pointer with any other count is
+/// refused by name.
+///
+/// **Every array at the boundary is read through here.** `slice::from_raw_parts`
+/// requires a non-null pointer even for a length of zero, so the documented
+/// "null with a count of zero for none" was undefined behaviour at each site
+/// that called it directly; a debug build aborted on it the first time a
+/// test passed exactly what the header promises is allowed.
 ///
 /// # Safety
 ///
-/// `ptr` must be null or valid for `len` reads for the returned lifetime.
-pub(crate) unsafe fn bytes<'a>(ptr: *const u8, len: usize, name: &str) -> Result<&'a [u8], Error> {
+/// `ptr` must be null or valid for `len` reads of `T` for the returned
+/// lifetime.
+pub(crate) unsafe fn slice<'a, T>(ptr: *const T, len: usize, name: &str) -> Result<&'a [T], Error> {
     if len == 0 {
         return Ok(&[]);
     }
     if ptr.is_null() {
         return Err(null(name));
     }
-    // SAFETY: non-null; the caller promises `len` readable bytes.
+    // SAFETY: non-null; the caller promises `len` readable values.
     Ok(unsafe { core::slice::from_raw_parts(ptr, len) })
+}
+
+/// A byte buffer the caller passed in: [`slice`] of bytes.
+///
+/// # Safety
+///
+/// As [`slice`].
+pub(crate) unsafe fn bytes<'a>(ptr: *const u8, len: usize, name: &str) -> Result<&'a [u8], Error> {
+    // SAFETY: the caller's contract.
+    unsafe { slice(ptr, len, name) }
 }
 
 /// The context behind a handle.

@@ -219,6 +219,7 @@ __all__ = [
     # Chart geometry: the layouts a chart is drawn in, and what a drawing is.
     "ChartLayout",
     "Drawing",
+    "LayoutRow",
     "Theme",
     "ThemeContent",
     "ThemeRecord",
@@ -456,8 +457,14 @@ class Teistro:
         provider: Optional[EphemerisProvider] = None,
         ephemeris: Optional[EphemerisChoice | Sequence[EphemerisChoice]] = None,
         test_provider: bool = False,
+        layouts: Sequence[LayoutRow] = (),
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
+
+        `layouts` are chart layouts of your own, to draw in beside the
+        shipped ones: each a row as `sdk.chart.layout(key)` answers it, with
+        a key of its own, checked by the rules a shipped row passes
+        (`03-design/chart-geometry.md` §7f).
 
         `settings` is a patch over the profile, as a mapping — the shape
         the Node and Dart bindings take, so one example reads in all
@@ -502,6 +509,11 @@ class Teistro:
             )
         if settings is not None:
             settings_json = json.dumps(settings, separators=(",", ":"))
+        if isinstance(layouts, (str, bytes)) or not isinstance(layouts, Sequence):
+            raise TeistroError(
+                Status.INVALID_ARG, "layouts is a sequence of layout rows", field="layouts"
+            )
+        layouts_json = json.dumps(list(layouts), separators=(",", ":")) if layouts else None
         host = None if provider is None else HostProvider(self.library, provider)
         # One rule, written once: a named ephemeris wins, and the older
         # flag decides only when none was named (ADR-0028).
@@ -523,7 +535,10 @@ class Teistro:
         # its field and its hint with a bare "nothing could be opened".
         if len(chain) == 1:
             return Context(
-                self, self._open(chain[0], profile, settings_json, locale, host), host
+                self,
+                self._open(chain[0], profile, settings_json, locale, layouts_json, host),
+                host,
+                layouts,
             )
         # With more than one, every refusal is kept and reported
         # together, because a chain that said only why its last entry
@@ -532,7 +547,10 @@ class Teistro:
         for entry in chain:
             try:
                 return Context(
-                    self, self._open(entry, profile, settings_json, locale, host), host
+                    self,
+                    self._open(entry, profile, settings_json, locale, layouts_json, host),
+                    host,
+                    layouts,
                 )
             except TeistroError as refusal:
                 named = entry.plugin if isinstance(entry, Plugin) else entry.key
@@ -546,6 +564,7 @@ class Teistro:
         profile: Optional[str],
         settings_json: Optional[str],
         locale: Optional[str],
+        layouts_json: Optional[str],
         host: Optional[HostProvider],
     ) -> TeistroContext:
         """Opens the context on one entry of the chain."""
@@ -555,6 +574,7 @@ class Teistro:
             profile=profile,
             settings_json=settings_json,
             locale=locale,
+            layouts_json=layouts_json,
             ephemeris=named,
         )
         if not isinstance(entry, Plugin):
@@ -896,6 +916,20 @@ class FrameArea(_Area):
 class ChartArea(_Area):
     """`sdk.chart` — a chart founded at an instant and a place."""
 
+    def layout(self, key: Union[ChartLayout, str]) -> LayoutRow:
+        """A layout this context can draw in, shipped or registered, as its
+        row: a fresh mapping to copy, give a key of its own and register
+        (`03-design/chart-geometry.md` §7f).
+
+        `key` is a `ChartLayout`, or a layout's key, bare (`NORTH_INDIAN`)
+        or full (`chart_layout.ACME_KERALA`).
+        """
+        named = key.full_key if isinstance(key, ChartLayout) else key
+        row: LayoutRow = json.loads(
+            self._context._through_provider(lambda: self._context.inner.chart_layout_row(named))
+        )
+        return row
+
     def found(
         self,
         *,
@@ -904,7 +938,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
-        drawings: Sequence[Tuple[ChartLayout, Varga]] = (),
+        drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         aspects: bool = False,
         points: bool = False,
@@ -946,7 +980,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
-        drawings: Sequence[Tuple[ChartLayout, Varga]] = (),
+        drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         aspects: bool = False,
         points: bool = False,
@@ -984,7 +1018,7 @@ class ChartArea(_Area):
             | (_SECTION_HOUSES if houses else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
-            drawings=_drawing_bits(drawings),
+            drawings=_drawing_bits(drawings, self._context._registered_layouts),
             theme_json=_theme_json(theme),
         )
         return ChartBatch(
@@ -1065,12 +1099,21 @@ class Context:
         teistro: Teistro,
         inner: TeistroContext,
         host: Optional[HostProvider] = None,
+        layouts: Sequence[LayoutRow] = (),
     ) -> None:
         self.teistro = teistro
         """The library this context was built on."""
         self.inner = inner
         """The generated context, for a call this layer does not wrap."""
         self._host = host
+        # The member id of each layout this context registered, by its full
+        # key: asked once, here, so a request resolves a consumer's own
+        # layout without crossing the boundary again
+        # (`03-design/chart-geometry.md` §7f).
+        self._registered_layouts: dict[str, int] = {
+            f"chart_layout.{row['key']}": inner.key_parse(f"chart_layout.{row['key']}") & 0xFFFF
+            for row in layouts
+        }
 
     # ── The areas ─────────────────────────────────────────────────────
     #
@@ -1651,6 +1694,79 @@ class DrawnMark:
     """The longitude that put it there, degrees."""
 
 
+class UnitPointRow(TypedDict):
+    """A point in the unit square, as a row spells it."""
+
+    x: float
+    y: float
+
+
+class SegmentRow(TypedDict, total=False):
+    """One step of an outline: `kind` is `line`, `quad` or `arc`, with
+    `to`, and a `quad`'s `control` or an `arc`'s `centre` and `clockwise`."""
+
+    kind: Literal["line", "quad", "arc"]
+    to: UnitPointRow
+    control: UnitPointRow
+    centre: UnitPointRow
+    clockwise: bool
+
+
+class OutlineRow(TypedDict):
+    """A closed outline: its start and the steps back to it."""
+
+    start: UnitPointRow
+    segments: List[SegmentRow]
+
+
+class HoldsRow(TypedDict):
+    """What a grid cell always carries: `{"kind": "sign", "value": "ARIES"}`
+    or `{"kind": "house", "value": 1}`."""
+
+    kind: Literal["sign", "house"]
+    value: Union[str, int]
+
+
+class LayoutCellRow(TypedDict):
+    """One region of a grid layout."""
+
+    outline: OutlineRow
+    holds: HoldsRow
+    label: UnitPointRow
+    bodies: UnitPointRow
+
+
+class LayoutRingRow(TypedDict):
+    """One ring of a radial layout."""
+
+    inner: float
+    outer: float
+    counts_from: Literal["lagna", "moon", "sun", "cusps", "zodiac"]
+
+
+class LayoutShapeRow(TypedDict, total=False):
+    """Twelve cells fixed in the row (`kind` `grid`: `cells`, `frame`), or
+    rings computed per chart (`kind` `radial`: `rings`, `starts_at`); both
+    carry `direction`."""
+
+    kind: Literal["grid", "radial"]
+    cells: List[LayoutCellRow]
+    frame: List[OutlineRow]
+    rings: List[LayoutRingRow]
+    starts_at: int
+    direction: Literal["clockwise", "anticlockwise"]
+
+
+class LayoutRow(TypedDict):
+    """A chart layout as a row: its key, what cites it, and its shape.
+    Crosses as JSON with the SDK's own field names, as a theme does
+    (`03-design/chart-geometry.md` §7f)."""
+
+    key: str
+    sources: List[str]
+    shape: LayoutShapeRow
+
+
 class ThemeStyle(TypedDict, total=False):
     """How a drawing looks: every field optional, over the theme it extends
     (`03-design/render-svg.md`)."""
@@ -1714,8 +1830,15 @@ def _theme_json(theme: Optional[Theme]) -> Optional[str]:
 class Drawing:
     """A chart drawn in a layout (`03-design/chart-geometry.md`)."""
 
-    layout: ChartLayout
-    """The layout it is drawn in."""
+    layout: Union[ChartLayout, str]
+    """The layout it is drawn in: a `ChartLayout`, or a layout the context
+    registered, by its full key (`chart_layout.ACME_KERALA`)."""
+
+    @property
+    def layout_key(self) -> str:
+        """The layout's full key, shipped or registered
+        (`chart_layout.NORTH_INDIAN`), for a caller that reads either."""
+        return self.layout.full_key if isinstance(self.layout, ChartLayout) else self.layout
 
     varga: Varga
     """Which chart: `Varga.D1` for the founded chart, or a divisional one."""
@@ -1759,11 +1882,17 @@ def _outline(raw: Mapping[str, Any]) -> Outline:
     return Outline(start=_point(raw["start"]), segments=[_segment(step) for step in raw["segments"]])
 
 
+def _layout_of(key: str) -> Union[ChartLayout, str]:
+    """A drawn layout: the shipped member, or a registered one's full key."""
+    shipped = ChartLayout.by_key(key)
+    return shipped if isinstance(shipped, ChartLayout) else f"chart_layout.{key}"
+
+
 def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
     placed = raw["placed"]
     return Drawing(
         svg=svg,
-        layout=_member(ChartLayout, placed["layout"]),
+        layout=_layout_of(placed["layout"]),
         varga=_member(Varga, raw["varga"]),
         cells=[
             DrawnCell(
@@ -1791,20 +1920,33 @@ def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
     )
 
 
-def _drawing_bits(drawings: Sequence[Tuple[ChartLayout, Varga]]) -> list[int]:
+def _drawing_bits(
+    drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]], registered: Mapping[str, int]
+) -> list[int]:
     """The drawings asked for, as the packed ids the boundary takes:
     `layout << 16 | varga` each, so a caller names pairs and nothing else
-    writes bits (`03-design/chart-geometry.md`)."""
+    writes bits (`03-design/chart-geometry.md`).
+
+    A layout is a `ChartLayout`, or a consumer's own by its full key
+    (`chart_layout.ACME_KERALA`), from the ids its context resolved when it
+    was made (§7f)."""
     bits = []
     for at, pair in enumerate(drawings):
         layout, varga = pair if isinstance(pair, tuple) and len(pair) == 2 else (None, None)
-        if not isinstance(layout, ChartLayout) or not isinstance(varga, Varga):
+        if isinstance(layout, str):
+            member = registered.get(layout, -1)
+        elif isinstance(layout, ChartLayout):
+            member = int(layout)
+        else:
+            member = -1
+        if member < 0 or not isinstance(varga, Varga):
             raise TeistroError(
                 Status.INVALID_ARG,
-                f"drawings[{at}] is not a (ChartLayout, Varga) pair",
+                f"drawings[{at}] is not a (ChartLayout, or the chart_layout.* key of a layout this "
+                "context registered, Varga) pair",
                 field=f"drawings[{at}]",
             )
-        bits.append((int(layout) << 16) | int(varga))
+        bits.append((member << 16) | int(varga))
     return bits
 
 

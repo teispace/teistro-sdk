@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `built` — every step built 2026-09-14, the renderer in [`render-svg.md`](render-svg.md). It builds the first two parts of
+Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is §8's later step. The research this page rests on was
@@ -319,6 +319,78 @@ where that is won or lost.
 - **Not yet across the boundary**: a consumer's own layout. The C ABI has
   no registration call, so a binding draws the six shipped layouts. The
   Rust façade registers any layout.
+
+## 7f. A consumer's own layout, from any binding
+
+ADR-0026 promises that a consumer registers a regional layout "without
+forking anything". Rust could since §7c. This section extends that to the
+bindings.
+
+- **Registered when the context is made.** `TsContextOptions.layouts_json`
+  is a nullable JSON array of rows, and the context seals its layouts once
+  built, as `ContextBuilder::layout` does. A row is refused by its place
+  in the array and its own field (`layouts_json[0].shape.cells[3].outline`).
+  A key the SDK ships is refused, so a row adds a layout and never
+  replaces one.
+- **A row is read strictly.** Every key a row names must be one the reader
+  took. A misspelt `start_at` that silently kept the default would draw a
+  different chart from the one written. The geometry types cannot deny
+  unknown fields themselves, because an internally tagged enum hands its
+  tag to the variant. So the reader compares the keys it was given against
+  the keys it read back and refuses the first extra key by its path.
+- **Start from a shipped row.** `ts_chart_layout_row` answers any layout the
+  context knows as its JSON row. The flow a consumer takes is: read the
+  North Indian row, rename it, change what differs, and register it.
+- **Referenced by key.** A drawing still crosses as packed ids. `sdk.keys`
+  now resolves a registered member as well as a catalogued one, and a
+  binding asks it for each registered layout's id **once, when the context
+  is made**. It never recomputes a registry's numbering, a request never
+  crosses the boundary again to look a layout up, and a key the context did
+  not register is refused before anything crosses. `sdk.chart.layout(key)`
+  answers a row in Rust as in the bindings.
+- **Typed in each binding**, with the row's field names as the SDK spells
+  them, as the theme record's are, because both cross as JSON verbatim:
+  - Node: interfaces, and a drawing's `layout` that takes a `ChartLayout`
+    or a `chart_layout.*` key.
+  - Python: `TypedDict`s, and `Union[ChartLayout, str]`.
+  - Dart: classes, and a generated `KeyOf<K>` interface on every catalogue
+    enum with `Registered<K>` beside it. `(ChartLayout.northIndian,
+    Varga.d1)` still compiles, and a registered layout is a
+    `KeyOf<ChartLayout>` that a `Graha` can never be passed as.
+- **Parity** registers the same row in every runner and draws it.
+- **What building found:**
+  - **Undefined behaviour at the boundary, older than this work.**
+    `ts_chart_found` documented "null with a count of zero for none" for its
+    arrays and called `slice::from_raw_parts(null, 0)`, which Rust forbids
+    even for an empty slice. The bindings pass non-null empty pointers, so
+    nothing had tripped it. The first test to pass exactly what the header
+    allows aborted a debug build. Every array at the boundary is now read
+    through one `support::slice`, which answers the empty slice without
+    touching the pointer.
+  - **A registered layout could not be read back.** Python's
+    `Drawing.layout` refused a key it did not catalogue, and Dart's mapped
+    it to `unknown`, losing the key. Python's is now a `ChartLayout` or the
+    full key, with `layout_key` for a caller that wants either as text;
+    Dart's is a `KeyOf<ChartLayout>`, `ChartLayout.registered('ACME_KERALA')`
+    for one of the consumer's own.
+  - **A refusal did not say which row.** The builder registered its layouts
+    without naming their places, so two rows under one key were refused as
+    `key`. The builder now names `layouts[1].key`, and the boundary calls
+    that root `options.layouts_json`.
+  - **The boundary had a second copy of the key lookup.** `ts_key_parse`
+    and `ts_key_name` resolved against the catalogue directly, beside the
+    façade's `sdk.keys`. Both now call the façade, which is what makes a
+    registered member reach every binding from one place.
+  - **The surface-areas page caught a module reached from two areas.** The
+    first binding code resolved a registered key through the key module on
+    every `foundMany`, so `key` was reached from `chart` as well as `keys`,
+    and the page's rule that a module has one area turned `falsified`.
+    Resolving the ids once at context creation keeps the rule and saves a
+    crossing per request. The same page caught `chart.layout` missing from
+    every parity runner's surface list.
+  - **A misspelt required field** is refused as the field that is missing,
+    before the unread-key check runs. The message names it, and the field
+    is the row's root.
 
 ## 8. Order of work
 

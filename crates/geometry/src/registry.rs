@@ -21,6 +21,8 @@
 //! let id = layouts.register(kerala)?;
 //! assert!(id.is_registered());
 //! assert!(layouts.get("ACME_KERALA").is_some());
+//! assert_eq!(layouts.id("ACME_KERALA"), Some(id));
+//! assert_eq!(layouts.id("NORTH_INDIAN"), Some(ChartLayout::NorthIndian.key_id()));
 //!
 //! // A shipped key cannot be taken over.
 //! let mut impostor = rows::east_indian();
@@ -100,6 +102,16 @@ impl Layouts {
             .iter()
             .find(|layout| layout.key == key)
             .or_else(|| self.registered.get(key).map(|(layout, _)| layout))
+    }
+
+    /// The id of the layout with a key: its catalogue id when the SDK ships
+    /// it, or the one this registry gave it.
+    #[must_use]
+    pub fn id(&self, key: &str) -> Option<KeyId> {
+        match ChartLayout::from_key(key) {
+            Some(member) => Some(member.key_id()),
+            None => self.registered.get(key).map(|(_, id)| id),
+        }
     }
 
     /// The layout with an id: a shipped member's, or one this registry gave.

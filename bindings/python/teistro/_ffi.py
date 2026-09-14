@@ -146,7 +146,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_str": 16,
     "ts_hash": 32,
     "ts_blob": 24,
-    "ts_context_options": 40,
+    "ts_context_options": 48,
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
@@ -176,7 +176,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_str": 8,
     "ts_hash": 32,
     "ts_blob": 12,
-    "ts_context_options": 24,
+    "ts_context_options": 28,
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
@@ -465,6 +465,7 @@ class _ContextOptionsStruct(ctypes.Structure):
         ("profile", ctypes.c_char_p),
         ("settings_json", ctypes.c_char_p),
         ("locale", ctypes.c_char_p),
+        ("layouts_json", ctypes.c_char_p),
         ("ephemeris", ctypes.c_uint8),
     ]
 
@@ -1669,6 +1670,17 @@ class ContextOptions:
     Example: en-Latn. May be null.
     """
 
+    layouts_json: Optional[str] = None
+    """Chart layouts of the consumer's own, to draw in beside the shipped
+    ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+    answers, with a key of its own. Every row is checked by the rules a
+    shipped one passes and refused by its place in the array and its own
+    field, as `options.layouts_json`, the row's index, then the field's
+    path; a key the SDK ships is
+    refused, so a row adds a layout and never replaces one. Null for none
+    (`03-design/chart-geometry.md` §7f). May be null.
+    """
+
     def _into(self, raw: _ContextOptionsStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -1687,6 +1699,9 @@ class ContextOptions:
         _locale = None if self.locale is None else self.locale.encode("utf-8")
         owned.append(_locale)
         raw.locale = _locale
+        _layouts_json = None if self.layouts_json is None else self.layouts_json.encode("utf-8")
+        owned.append(_layouts_json)
+        raw.layouts_json = _layouts_json
         raw.ephemeris = _c_value(self.ephemeris)
 
     def _to_c(self, owned: list[Any]) -> _ContextOptionsStruct:
@@ -1708,6 +1723,7 @@ class ContextOptions:
             profile=_text(raw.profile),
             settings_json=_text(raw.settings_json),
             locale=_text(raw.locale),
+            layouts_json=_text(raw.layouts_json),
             ephemeris=Ephemeris(raw.ephemeris),
         )
 
@@ -2982,6 +2998,13 @@ class TeistroLibrary:
             ctypes.POINTER(ctypes.c_double),
         ]
         self.ts_calendar_fixed_of_jd.restype = ctypes.c_int64
+        self.ts_chart_layout_row: Any = library.ts_chart_layout_row
+        self.ts_chart_layout_row.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_chart_layout_row.restype = ctypes.c_int32
         self.ts_chart_found: Any = library.ts_chart_found
         self.ts_chart_found.argtypes = [
             ctypes.POINTER(_Context),
@@ -3294,9 +3317,10 @@ class TeistroContext:
         return hash
 
     def key_parse(self, key: str) -> int:
-        """Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-        packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-        the hint in the context's last error.
+        """Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+        context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+        unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+        the context's last error.
         """
         owned: list[Any] = []
         _key = key.encode("utf-8")
@@ -3423,6 +3447,29 @@ class TeistroContext:
         owned.clear()
         weekday = _out_weekday.value
         return weekday
+
+    def chart_layout_row(self, key: str) -> str:
+        """A chart layout this context can draw in, shipped or registered, as its
+        JSON row: the record `options.layouts_json` takes. Read a shipped row,
+        give it a key of its own, change what differs and register it
+        (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+        (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+        `INVALID_ARG` with the keys the context knows as the hint.
+        """
+        owned: list[Any] = []
+        _key = key.encode("utf-8")
+        owned.append(_key)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_chart_layout_row(
+            self._raw,
+            _key,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
 
     def chart_found(self, request: ChartRequest) -> bytes:
         """Founds a chart at an instant and a place and answers with its blob:

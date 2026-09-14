@@ -5368,6 +5368,17 @@ struct ts_context_options {
      */
     const char * locale;
     /**
+     * Chart layouts of the consumer's own, to draw in beside the shipped
+     * ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+     * answers, with a key of its own. Every row is checked by the rules a
+     * shipped one passes and refused by its place in the array and its own
+     * field, as `options.layouts_json`, the row's index, then the field's
+     * path; a key the SDK ships is
+     * refused, so a row adds a layout and never replaces one. Null for none
+     * (`03-design/chart-geometry.md` §7f). May be null.
+     */
+    const char * layouts_json;
+    /**
      * Which of the SDK's own ephemerides to use when no provider vtable
      * is given; ignored when one is (ADR-0028).
      * Enum: ts_ephemeris. Example: 0.
@@ -6185,9 +6196,10 @@ ts_status ts_context_settings_json(const ts_context * context, ts_string * out_j
 ts_status ts_context_settings_hash(const ts_context * context, ts_hash * out_hash);
 
 /**
- * Resolves a full key (`graha.SUN`, an alias, or a former key) to its
- * packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
- * the hint in the context's last error.
+ * Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+ * context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+ * unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+ * the context's last error.
  * Safety: `context` must be a live handle; `key` a NUL-terminated string; `out_id`
  * valid for a write.
  */
@@ -6275,6 +6287,18 @@ double ts_calendar_jd_of_fixed(int64_t fixed);
  * Safety: `out_fraction` must be null or valid for a write.
  */
 int64_t ts_calendar_fixed_of_jd(double jd, double * out_fraction);
+
+/**
+ * A chart layout this context can draw in, shipped or registered, as its
+ * JSON row: the record `options.layouts_json` takes. Read a shipped row,
+ * give it a key of its own, change what differs and register it
+ * (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+ * (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+ * `INVALID_ARG` with the keys the context knows as the hint.
+ * Safety: `context` must be a live handle; `key` a NUL-terminated string;
+ * `out_json` valid for a write.
+ */
+ts_status ts_chart_layout_row(const ts_context * context, const char * key, ts_string * out_json);
 
 /**
  * Founds a chart at an instant and a place and answers with its blob:
@@ -6532,7 +6556,7 @@ _Static_assert(sizeof(ts_string) == 24, "ts_string is 24 bytes on 64-bit targets
 _Static_assert(sizeof(ts_str) == 16, "ts_str is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_hash) == 32, "ts_hash is 32 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_blob) == 24, "ts_blob is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_context_options) == 40, "ts_context_options is 40 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_context_options) == 48, "ts_context_options is 48 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");

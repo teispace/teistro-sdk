@@ -210,7 +210,13 @@ final class Teistro {
     EphemerisProvider? provider,
     List<EphemerisChoice>? ephemeris,
     bool testProvider = false,
+    List<LayoutRow> layouts = const <LayoutRow>[],
   }) {
+    // Serialised once, however many entries of the chain are tried.
+    final layoutsJson =
+        layouts.isEmpty
+            ? null
+            : jsonEncode([for (final row in layouts) row.toJson()]);
     // Two ways to answer one question, so both together is a refusal
     // rather than one silently winning.
     if (provider != null && ephemeris != null) {
@@ -244,8 +250,9 @@ final class Teistro {
       if (chain.length == 1) {
         return Context._(
           this,
-          _open(chain.first, profile, settings, locale, host),
+          _open(chain.first, profile, settings, locale, layoutsJson, host),
           host,
+          layouts,
         );
       }
       // With more than one, every refusal is kept and reported together,
@@ -256,8 +263,9 @@ final class Teistro {
         try {
           return Context._(
             this,
-            _open(entry, profile, settings, locale, host),
+            _open(entry, profile, settings, locale, layoutsJson, host),
             host,
+            layouts,
           );
         } on Object catch (refusal) {
           refusals.add('${_names(entry)}: $refusal');
@@ -284,6 +292,7 @@ final class Teistro {
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
+    String? layoutsJson,
     HostProvider? host,
   ) {
     ContextOptions options(Ephemeris named) => ContextOptions(
@@ -292,6 +301,7 @@ final class Teistro {
       profile: profile,
       settingsJson: settings == null ? null : jsonEncode(settings),
       locale: locale,
+      layoutsJson: layoutsJson,
     );
     switch (entry) {
       case NamedEphemeris(:final name):
@@ -612,6 +622,19 @@ const int _sectionState = 2;
 final class ChartArea extends _Area {
   const ChartArea._(super.context);
 
+  /// A layout this context can draw in, shipped or registered, as its row:
+  /// copy it with [LayoutRow.copyWith], give it a key of its own, and pass
+  /// it to `Teistro.context(layouts: ...)` (`03-design/chart-geometry.md`
+  /// §7f).
+  LayoutRow layout(KeyOf<ChartLayout> layout) => LayoutRow.fromJson(
+    jsonDecode(
+          _context._guarded(
+            () => _context._inner.chartLayoutRow(layout.fullKey),
+          ),
+        )
+        as Map<String, Object?>,
+  );
+
   /// Founds a chart at an instant and a place.
   ///
   /// Everything but this is the context's settings, so two charts
@@ -629,7 +652,8 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
-    List<(ChartLayout, Varga)> drawings = const <(ChartLayout, Varga)>[],
+    List<(KeyOf<ChartLayout>, Varga)> drawings =
+        const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
     bool aspects = false,
     bool points = false,
@@ -670,7 +694,8 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
-    List<(ChartLayout, Varga)> drawings = const <(ChartLayout, Varga)>[],
+    List<(KeyOf<ChartLayout>, Varga)> drawings =
+        const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
     bool aspects = false,
     bool points = false,
@@ -696,7 +721,7 @@ final class ChartArea extends _Area {
               (houses ? _sectionHouses : 0) |
               (state ? _sectionState : 0),
           vargas: vargas,
-          drawings: _drawingBits(drawings),
+          drawings: _drawingBits(drawings, _context._registeredLayouts),
           themeJson: theme?._json,
         ),
       ),
@@ -766,10 +791,20 @@ final class AlmanacArea extends _Area {
 /// The native context is freed when this object is collected; [dispose]
 /// frees it at once, and every call after that is a [StateError].
 final class Context {
-  Context._(this._teistro, this._inner, this._host) {
+  Context._(this._teistro, this._inner, this._host, List<LayoutRow> layouts)
+    // The member id of each layout this context registered, by its full key:
+    // asked once, here, so a request resolves a consumer's own layout without
+    // crossing the boundary again (`03-design/chart-geometry.md` §7f).
+    : _registeredLayouts = {
+        for (final row in layouts)
+          'chart_layout.${row.key}':
+              _inner.keyParse('chart_layout.${row.key}') & 0xFFFF,
+      } {
     final host = _host;
     if (host != null) _hostFinaliser.attach(this, host, detach: this);
   }
+
+  final Map<String, int> _registeredLayouts;
 
   final Teistro _teistro;
   final TeistroContext _inner;
@@ -1519,6 +1554,8 @@ final class UnitPoint {
 
   factory UnitPoint._of(Map<String, Object?> raw) =>
       UnitPoint((raw['x']! as num).toDouble(), (raw['y']! as num).toDouble());
+
+  Map<String, Object?> _json() => {'x': x, 'y': y};
 }
 
 /// One step of an outline, from wherever the previous step ended.
@@ -1543,6 +1580,21 @@ sealed class Segment {
       _ => LineSegment(to),
     };
   }
+
+  Map<String, Object?> _json() => switch (this) {
+    LineSegment() => {'kind': 'line', 'to': to._json()},
+    QuadSegment(:final control) => {
+      'kind': 'quad',
+      'control': control._json(),
+      'to': to._json(),
+    },
+    ArcSegment(:final centre, :final clockwise) => {
+      'kind': 'arc',
+      'centre': centre._json(),
+      'clockwise': clockwise,
+      'to': to._json(),
+    },
+  };
 }
 
 /// A straight line to a point.
@@ -1586,6 +1638,261 @@ final class Outline {
         Segment._of(step! as Map<String, Object?>),
     ],
   );
+  Map<String, Object?> _json() => {
+    'start': start._json(),
+    'segments': [for (final step in segments) step._json()],
+  };
+}
+
+/// Which way a layout's signs or houses run, as a reader sees it.
+enum LayoutDirection {
+  /// With the hands of a clock.
+  clockwise,
+
+  /// Against them.
+  anticlockwise,
+}
+
+/// What a grid cell always carries: a sign, or a house.
+sealed class CellHolds {
+  const CellHolds();
+
+  factory CellHolds._of(Map<String, Object?> raw) => switch (raw['kind']) {
+    'sign' => HoldsSign(Rashi.byKey(raw['value']! as String) ?? Rashi.unknown),
+    _ => HoldsHouse(raw['value']! as int),
+  };
+
+  Map<String, Object?> _json() => switch (this) {
+    HoldsSign(:final sign) => {'kind': 'sign', 'value': sign.key},
+    HoldsHouse(:final house) => {'kind': 'house', 'value': house},
+  };
+}
+
+/// The cell is always this sign; its house moves with the lagna.
+final class HoldsSign extends CellHolds {
+  const HoldsSign(this.sign);
+
+  /// The sign.
+  final Rashi sign;
+}
+
+/// The cell is always this house, 1 to 12; its sign moves with the lagna.
+final class HoldsHouse extends CellHolds {
+  const HoldsHouse(this.house);
+
+  /// The house.
+  final int house;
+}
+
+/// One region of a grid layout.
+final class LayoutCell {
+  const LayoutCell({
+    required this.outline,
+    required this.holds,
+    required this.label,
+    required this.bodies,
+  });
+
+  /// The region's outline, in the unit square.
+  final Outline outline;
+
+  /// The sign or house the cell always carries.
+  final CellHolds holds;
+
+  /// Where the sign or house number is drawn.
+  final UnitPoint label;
+
+  /// Where the cell's bodies are stacked about.
+  final UnitPoint bodies;
+
+  Map<String, Object?> _json() => {
+    'outline': outline._json(),
+    'holds': holds._json(),
+    'label': label._json(),
+    'bodies': bodies._json(),
+  };
+}
+
+/// What a ring of a radial layout counts its first house from.
+enum RingReference {
+  /// The lagna's sign.
+  lagna,
+
+  /// The Moon's sign.
+  moon,
+
+  /// The Sun's sign.
+  sun,
+
+  /// The chart's cusps, each house as wide as it is.
+  cusps,
+
+  /// Twelve signs of 30°, turned so the lagna's degree sits at the start.
+  zodiac,
+}
+
+/// One ring of a radial layout.
+final class LayoutRing {
+  const LayoutRing({
+    required this.inner,
+    required this.outer,
+    required this.countsFrom,
+  });
+
+  /// The inner radius, a fraction of the square's side; 0 makes wedges.
+  final double inner;
+
+  /// The outer radius, at most a half.
+  final double outer;
+
+  /// What the ring counts its first house from.
+  final RingReference countsFrom;
+
+  Map<String, Object?> _json() => {
+    'inner': inner,
+    'outer': outer,
+    'counts_from': countsFrom.name,
+  };
+}
+
+/// A layout's shape: twelve cells fixed in the row, or rings computed per
+/// chart.
+sealed class LayoutShape {
+  const LayoutShape(this.direction);
+
+  /// Which way the signs or houses run.
+  final LayoutDirection direction;
+
+  factory LayoutShape._of(Map<String, Object?> raw) {
+    final direction = LayoutDirection.values.byName(
+      raw['direction']! as String,
+    );
+    List<Map<String, Object?>> objects(String name) => [
+      for (final item in raw[name]! as List<Object?>)
+        item! as Map<String, Object?>,
+    ];
+    return switch (raw['kind']) {
+      'radial' => RadialShape(
+        rings: [
+          for (final ring in objects('rings'))
+            LayoutRing(
+              inner: (ring['inner']! as num).toDouble(),
+              outer: (ring['outer']! as num).toDouble(),
+              countsFrom: RingReference.values.byName(
+                ring['counts_from']! as String,
+              ),
+            ),
+        ],
+        startsAt: raw['starts_at']! as int,
+        direction: direction,
+      ),
+      _ => GridShape(
+        cells: [
+          for (final cell in objects('cells'))
+            LayoutCell(
+              outline: Outline._of(cell['outline']! as Map<String, Object?>),
+              holds: CellHolds._of(cell['holds']! as Map<String, Object?>),
+              label: UnitPoint._of(cell['label']! as Map<String, Object?>),
+              bodies: UnitPoint._of(cell['bodies']! as Map<String, Object?>),
+            ),
+        ],
+        frame: [for (final path in objects('frame')) Outline._of(path)],
+        direction: direction,
+      ),
+    };
+  }
+
+  Map<String, Object?> _json() => switch (this) {
+    GridShape(:final cells, :final frame) => {
+      'kind': 'grid',
+      'cells': [for (final cell in cells) cell._json()],
+      'frame': [for (final path in frame) path._json()],
+      'direction': direction.name,
+    },
+    RadialShape(:final rings, :final startsAt) => {
+      'kind': 'radial',
+      'rings': [for (final ring in rings) ring._json()],
+      'starts_at': startsAt,
+      'direction': direction.name,
+    },
+  };
+}
+
+/// Twelve cells fixed in the row.
+final class GridShape extends LayoutShape {
+  const GridShape({
+    required this.cells,
+    required this.frame,
+    required LayoutDirection direction,
+  }) : super(direction);
+
+  /// The twelve cells, in the order the row lists them.
+  final List<LayoutCell> cells;
+
+  /// Lines drawn that hold nothing: the border, a divider.
+  final List<Outline> frame;
+}
+
+/// Rings of sectors computed from the chart, innermost first.
+final class RadialShape extends LayoutShape {
+  const RadialShape({
+    required this.rings,
+    required this.startsAt,
+    required LayoutDirection direction,
+  }) : super(direction);
+
+  /// The rings, innermost first.
+  final List<LayoutRing> rings;
+
+  /// The clock hour house 1 starts at, 1 to 12.
+  final int startsAt;
+}
+
+/// A chart layout as a row: its key, what cites it, and its shape
+/// (`03-design/chart-geometry.md` §7f).
+final class LayoutRow {
+  const LayoutRow({
+    required this.key,
+    required this.sources,
+    required this.shape,
+  });
+
+  /// The key, in the key grammar: `[A-Z][A-Z0-9_]`, at most 48 characters.
+  final String key;
+
+  /// The sources the row comes from; at least one.
+  final List<String> sources;
+
+  /// Its cells or its rings.
+  final LayoutShape shape;
+
+  /// A row read from the JSON `ChartArea.layout` answers.
+  factory LayoutRow.fromJson(Map<String, Object?> raw) => LayoutRow(
+    key: raw['key']! as String,
+    sources: [
+      for (final source in raw['sources']! as List<Object?>) source! as String,
+    ],
+    shape: LayoutShape._of(raw['shape']! as Map<String, Object?>),
+  );
+
+  /// This row with what is named changed: a copy of a shipped row under a
+  /// key of its own is a layout of your own.
+  LayoutRow copyWith({
+    String? key,
+    List<String>? sources,
+    LayoutShape? shape,
+  }) => LayoutRow(
+    key: key ?? this.key,
+    sources: sources ?? this.sources,
+    shape: shape ?? this.shape,
+  );
+
+  /// The row as the JSON a context's `layouts` crosses as.
+  Map<String, Object?> toJson() => {
+    'key': key,
+    'sources': sources,
+    'shape': shape._json(),
+  };
 }
 
 /// One region of a drawn chart.
@@ -1847,8 +2154,9 @@ final class Drawing {
   /// null when the request gave no theme.
   final String? svg;
 
-  /// The layout it is drawn in.
-  final ChartLayout layout;
+  /// The layout it is drawn in: a [ChartLayout], or one the context
+  /// registered.
+  final KeyOf<ChartLayout> layout;
 
   /// Which chart: `Varga.d1` for the founded chart, or a divisional one.
   final Varga varga;
@@ -1869,7 +2177,8 @@ final class Drawing {
     return Drawing(
       svg: svg,
       layout:
-          ChartLayout.byKey(placed['layout']! as String) ?? ChartLayout.unknown,
+          ChartLayout.byKey(placed['layout']! as String) ??
+          ChartLayout.registered(placed['layout']! as String),
       varga: Varga.byKey(raw['varga']! as String) ?? Varga.unknown,
       cells: [
         for (final cell in (placed['cells']! as List<Object?>).map(object))
@@ -1936,8 +2245,25 @@ List<List<Drawing>> _parseDrawings(Charts batch) {
 /// The drawings asked for, as the packed ids the boundary takes: `layout << 16
 /// | varga` each, so a caller names pairs and nothing else writes bits
 /// (`03-design/chart-geometry.md`).
-List<int> _drawingBits(List<(ChartLayout, Varga)> drawings) => [
-  for (final (layout, varga) in drawings) (layout.id << 16) | varga.id,
+List<int> _drawingBits(
+  List<(KeyOf<ChartLayout>, Varga)> drawings,
+  Map<String, int> registered,
+) => [
+  for (final (index, (layout, varga)) in drawings.indexed)
+    ((switch (layout) {
+              ChartLayout(:final id) => id,
+              // A consumer's own, from the ids its context resolved when it
+              // was made (§7f).
+              _ =>
+                registered[layout.fullKey] ??
+                    (throw ArgumentError.value(
+                      layout.fullKey,
+                      'drawings[$index].layout',
+                      'not a layout this context registered',
+                    )),
+            }) <<
+            16) |
+        varga.id,
 ];
 
 /// One divisional chart of one founded moment.

@@ -1,5 +1,6 @@
 //! `sdk.keys`: a catalogue key to its packed id and back.
 
+use teistro_core::catalogue::Kind;
 use teistro_core::error::{Detail, Error};
 use teistro_core::key::{KeyId, resolve};
 
@@ -27,31 +28,61 @@ impl<'a> KeysArea<'a> {
         self.context
     }
 
-    /// The packed id of a full key (`graha.SUN`), an alias, or a former
-    /// key.
+    /// The packed id of a full key (`graha.SUN`), an alias, a former key,
+    /// or a member this context registered (`chart_layout.ACME_KERALA`).
     ///
     /// # Errors
     ///
-    /// A key no catalogued member has, with the nearest one as the
-    /// hint.
+    /// A key no catalogued or registered member has, with the nearest
+    /// catalogued one as the hint.
     pub fn id(self, key: &str) -> Result<KeyId, Error> {
-        resolve(key).map_err(Error::from)
+        resolve(key).or_else(|refusal| self.registered_id(key).ok_or_else(|| Error::from(refusal)))
     }
 
-    /// The full key of a packed id (`graha.SUN`).
+    /// The full key of a packed id (`graha.SUN`), catalogued or registered
+    /// with this context.
     ///
     /// # Errors
     ///
-    /// An id no catalogued member has.
+    /// An id no catalogued or registered member has.
     pub fn name(self, id: KeyId) -> Result<String, Error> {
-        let (Some(kind), Some(key)) = (id.kind(), id.key()) else {
-            return Err(Error::unsupported(format!(
-                "no catalogued member has id {:#010x}",
+        if let (Some(kind), Some(key)) = (id.kind(), id.key()) {
+            return Ok(format!("{}.{key}", kind.name()));
+        }
+        self.registered_name(id).ok_or_else(|| {
+            Error::unsupported(format!(
+                "no catalogued or registered member has id {:#010x}",
                 id.bits()
             ))
             .with_detail(Detail::UnknownKey)
-            .with_field("id"));
-        };
-        Ok(format!("{}.{key}", kind.name()))
+            .with_field("id")
+        })
+    }
+
+    /// A registered member's id, from the context's registries. Chart layouts
+    /// are the one kind a context registers today; a kind that gains a
+    /// registry is one more arm here.
+    fn registered_id(self, key: &str) -> Option<KeyId> {
+        let (kind, name) = key.split_once('.')?;
+        match Kind::from_name(kind)? {
+            Kind::ChartLayout => self
+                .context
+                .layouts()
+                .id(name)
+                .filter(|id| id.is_registered()),
+            _ => None,
+        }
+    }
+
+    /// A registered member's full key, from the context's registries.
+    fn registered_name(self, id: KeyId) -> Option<String> {
+        match id.kind()? {
+            Kind::ChartLayout if id.is_registered() => self
+                .context
+                .layouts()
+                .by_id(id)
+                .map(|layout| format!("{}.{}", Kind::ChartLayout.name(), layout.key)),
+            _ => None,
+        }
     }
 }

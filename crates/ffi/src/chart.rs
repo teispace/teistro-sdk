@@ -47,7 +47,8 @@ use teistro_state::burn::Burning;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
-use crate::support::{c_struct, optional_text, read_in, with_context, write_plain};
+use crate::string::TsString;
+use crate::support::{c_struct, optional_text, read_in, slice, with_context, write_plain};
 use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
 use teistro_time::local_day::{DayState, PolarKind};
 
@@ -1360,6 +1361,33 @@ fn svgs_json(
     Ok(teistro_core::envelope::canonical_json(&per_chart))
 }
 
+/// A chart layout this context can draw in, shipped or registered, as its
+/// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+/// give it a key of its own, change what differs and register it
+/// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+/// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+/// `INVALID_ARG` with the keys the context knows as the hint.
+///
+/// # Safety
+///
+/// `context` must be a live handle; `key` a NUL-terminated string;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_chart_layout_row(
+    context: *const TsContext,
+    key: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = unsafe { crate::support::text(key, "key") }?;
+        let row = ctx.sdk().chart().layout(asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&row));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// Founds a chart at an instant and a place and answers with its blob:
 /// where every graha stands, in which bhava under both readings, in
 /// which zodiac, on which day, at what time of that day.
@@ -1405,21 +1433,15 @@ pub unsafe extern "C" fn ts_chart_found(
         })?;
         let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
             .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
-        if asked.instants.is_null() && asked.instant_count != 0 {
-            return Err(crate::support::null("instants"));
-        }
         // SAFETY: the entry point's contract — the caller promises
-        // `instant_count` readable doubles at `instants`.
+        // `instant_count` readable doubles at `instants`, or null and zero.
         let instants: Vec<JulianDay<Utc>> =
-            unsafe { core::slice::from_raw_parts(asked.instants, asked.instant_count) }
+            unsafe { slice(asked.instants, asked.instant_count, "instants") }?
                 .iter()
                 .map(|jd| JulianDay::<Utc>::literal(*jd))
                 .collect();
-        if asked.vargas.is_null() && asked.varga_count != 0 {
-            return Err(crate::support::null("vargas"));
-        }
         // SAFETY: as above, for `varga_count` readable `u16`s.
-        let asked_vargas = unsafe { core::slice::from_raw_parts(asked.vargas, asked.varga_count) };
+        let asked_vargas = unsafe { slice(asked.vargas, asked.varga_count, "vargas") }?;
         let mut vargas = Vec::with_capacity(asked_vargas.len());
         for id in asked_vargas {
             vargas.push(Varga::from_id(*id).ok_or_else(|| {
@@ -1430,12 +1452,8 @@ pub unsafe extern "C" fn ts_chart_found(
                 .with_field("vargas")
             })?);
         }
-        if asked.drawings.is_null() && asked.drawing_count != 0 {
-            return Err(crate::support::null("drawings"));
-        }
         // SAFETY: as above, for `drawing_count` readable `u32`s.
-        let asked_drawings =
-            unsafe { core::slice::from_raw_parts(asked.drawings, asked.drawing_count) };
+        let asked_drawings = unsafe { slice(asked.drawings, asked.drawing_count, "drawings") }?;
         let mut drawings = Vec::with_capacity(asked_drawings.len());
         for (index, packed) in asked_drawings.iter().enumerate() {
             let (layout, varga) = (packed >> 16, packed & 0xFFFF);

@@ -791,3 +791,62 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
   assert.throws(() => ctx.chart.found({ ...request, theme: 7 }), /theme: expected/u);
   ctx.dispose();
 });
+
+/**
+ * A consumer's own layout: a shipped row copied, renamed and registered,
+ * drawn by its key, and a wrong row refused by its place and field
+ * (`03-design/chart-geometry.md` §7f).
+ */
+test('a layout of your own is registered, drawn by its key, and refused by its field', () => {
+  const base = context();
+  const row = base.chart.layout('SOUTH_INDIAN');
+  assert.deepEqual(base.chart.layout(ChartLayout.SouthIndian), row, 'bare or full');
+  assert.equal(row.shape.kind, 'grid');
+  assert.throws(
+    () => base.chart.layout('ACME_KERALA'),
+    (error) => error instanceof TeistroError && error.field === 'key' && /NORTH_INDIAN/u.test(error.hint),
+  );
+  base.dispose();
+
+  const kerala = { ...row, key: 'ACME_KERALA' };
+  const ctx = context({ layouts: [kerala] });
+  assert.deepEqual(ctx.chart.layout('chart_layout.ACME_KERALA'), kerala);
+  assert.equal(ctx.keys.name(ctx.keys.id('chart_layout.ACME_KERALA')), 'chart_layout.ACME_KERALA');
+
+  const [south, own] = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    drawings: [
+      { layout: ChartLayout.SouthIndian, varga: Varga.D1 },
+      { layout: 'chart_layout.ACME_KERALA', varga: Varga.D1 },
+    ],
+    theme: 'light',
+  }).drawings;
+  assert.equal(own.layout, 'chart_layout.ACME_KERALA');
+  assert.deepEqual(own.cells, south.cells, 'the same row draws the same chart');
+  assert.equal(own.svg, south.svg);
+  // A key this context did not register is refused here, before the boundary.
+  assert.throws(
+    () =>
+      ctx.chart.found({
+        instant: 2451545,
+        place: { latitude: 0, longitude: 0 },
+        utcOffsetSeconds: 0,
+        drawings: [{ layout: 'chart_layout.ACME_ODIA', varga: Varga.D1 }],
+      }),
+    /drawings\[0\]\.layout: expected .* registered/u,
+  );
+  ctx.dispose();
+
+  const refused = (layouts) => () => context({ layouts });
+  const field = (name) => (error) => error instanceof TeistroError && error.field === name;
+  assert.throws(refused([kerala, row]), field('options.layouts_json[1].key'), 'a shipped key');
+  assert.throws(refused([kerala, kerala]), field('options.layouts_json[1].key'), 'a key taken twice');
+  assert.throws(
+    refused([{ ...kerala, shape: { ...kerala.shape, heading: 'clockwise' } }]),
+    field('options.layouts_json[0].shape.heading'),
+    'a misspelt field',
+  );
+  assert.throws(() => context({ layouts: kerala }), /layouts: expected an array/u);
+});

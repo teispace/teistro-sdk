@@ -600,6 +600,16 @@ final class ContextOptionsStruct extends ffi.Struct {
   /// Example: en-Latn. May be null.
   external ffi.Pointer<ffi.Char> locale;
 
+  /// Chart layouts of the consumer's own, to draw in beside the shipped
+  /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+  /// answers, with a key of its own. Every row is checked by the rules a
+  /// shipped one passes and refused by its place in the array and its own
+  /// field, as `options.layouts_json`, the row's index, then the field's
+  /// path; a key the SDK ships is
+  /// refused, so a row adds a layout and never replaces one. Null for none
+  /// (`03-design/chart-geometry.md` §7f). May be null.
+  external ffi.Pointer<ffi.Char> layoutsJson;
+
   /// Which of the SDK's own ephemerides to use when no provider vtable
   /// is given; ignored when one is (ADR-0028).
   /// Enum: TsEphemeris. Example: 0.
@@ -1296,6 +1306,8 @@ typedef TsCalendarJdOfFixedNative = ffi.Double Function(ffi.Int64);
 typedef TsCalendarJdOfFixedDart = double Function(int);
 typedef TsCalendarFixedOfJdNative = ffi.Int64 Function(ffi.Double, ffi.Pointer<ffi.Double>);
 typedef TsCalendarFixedOfJdDart = int Function(double, ffi.Pointer<ffi.Double>);
+typedef TsChartLayoutRowNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartLayoutRowDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsChartFoundNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsChartFoundDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsTimeResolveNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneSpecStruct>, ffi.Pointer<ZoneResolutionStruct>);
@@ -1368,6 +1380,7 @@ final class TeistroLibrary {
         ts_calendar_weekday = library.lookupFunction<TsCalendarWeekdayNative, TsCalendarWeekdayDart>('ts_calendar_weekday'),
         ts_calendar_jd_of_fixed = library.lookupFunction<TsCalendarJdOfFixedNative, TsCalendarJdOfFixedDart>('ts_calendar_jd_of_fixed'),
         ts_calendar_fixed_of_jd = library.lookupFunction<TsCalendarFixedOfJdNative, TsCalendarFixedOfJdDart>('ts_calendar_fixed_of_jd'),
+        ts_chart_layout_row = library.lookupFunction<TsChartLayoutRowNative, TsChartLayoutRowDart>('ts_chart_layout_row'),
         ts_chart_found = library.lookupFunction<TsChartFoundNative, TsChartFoundDart>('ts_chart_found'),
         ts_time_resolve = library.lookupFunction<TsTimeResolveNative, TsTimeResolveDart>('ts_time_resolve'),
         ts_time_civil = library.lookupFunction<TsTimeCivilNative, TsTimeCivilDart>('ts_time_civil'),
@@ -1467,9 +1480,10 @@ final class TeistroLibrary {
   /// every result's provenance carries.
   final TsContextSettingsHashDart ts_context_settings_hash;
 
-  /// Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-  /// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-  /// the hint in the context's last error.
+  /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+  /// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+  /// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+  /// the context's last error.
   final TsKeyParseDart ts_key_parse;
 
   /// The full key of a packed id (`graha.SUN`), lent until the next call on
@@ -1514,6 +1528,14 @@ final class TeistroLibrary {
   /// The fixed day a Julian day falls in, and, when `out_fraction` is not
   /// null, the fraction of that day elapsed since its midnight.
   final TsCalendarFixedOfJdDart ts_calendar_fixed_of_jd;
+
+  /// A chart layout this context can draw in, shipped or registered, as its
+  /// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+  /// give it a key of its own, change what differs and register it
+  /// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+  /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+  /// `INVALID_ARG` with the keys the context knows as the hint.
+  final TsChartLayoutRowDart ts_chart_layout_row;
 
   /// Founds a chart at an instant and a place and answers with its blob:
   /// where every graha stands, in which bhava under both readings, in
@@ -2332,7 +2354,7 @@ final class Hash {
 /// passed.
 final class ContextOptions {
   /// A ContextOptions with every field named.
-  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale, required this.ephemeris});
+  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale, this.layoutsJson, required this.ephemeris});
 
   /// `TS_CONTEXT_*` flags, or zero.
   /// Example: 0.
@@ -2351,6 +2373,16 @@ final class ContextOptions {
   /// The locale every render resolves from (`ne-Deva-NP`).
   /// Example: en-Latn. May be null.
   final String? locale;
+
+  /// Chart layouts of the consumer's own, to draw in beside the shipped
+  /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+  /// answers, with a key of its own. Every row is checked by the rules a
+  /// shipped one passes and refused by its place in the array and its own
+  /// field, as `options.layouts_json`, the row's index, then the field's
+  /// path; a key the SDK ships is
+  /// refused, so a row adds a layout and never replaces one. Null for none
+  /// (`03-design/chart-geometry.md` §7f). May be null.
+  final String? layoutsJson;
 
   /// Which of the SDK's own ephemerides to use when no provider vtable
   /// is given; ignored when one is (ADR-0028).
@@ -2376,6 +2408,9 @@ final class ContextOptions {
     raw.locale = locale == null
         ? ffi.nullptr
         : locale!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.layoutsJson = layoutsJson == null
+        ? ffi.nullptr
+        : layoutsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
     raw.ephemeris = ephemeris.id;
   }
 
@@ -2394,6 +2429,9 @@ final class ContextOptions {
         locale: raw.locale == ffi.nullptr
             ? null
             : raw.locale.cast<pkg_ffi.Utf8>().toDartString(),
+        layoutsJson: raw.layoutsJson == ffi.nullptr
+            ? null
+            : raw.layoutsJson.cast<pkg_ffi.Utf8>().toDartString(),
         ephemeris: Ephemeris.byId(raw.ephemeris),
       );
 }
@@ -3450,9 +3488,10 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
-  /// Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-  /// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-  /// the hint in the context's last error.
+  /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+  /// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+  /// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+  /// the context's last error.
   int keyParse(String key) {
     _alive();
     return pkg_ffi.using((arena) {
@@ -3548,6 +3587,23 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_calendar_weekday(_handle, rawdate, outWeekday);
         if (status != 0) _fail(status);
         return outWeekday.value;
+    });
+  }
+
+  /// A chart layout this context can draw in, shipped or registered, as its
+  /// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+  /// give it a key of its own, change what differs and register it
+  /// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+  /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+  /// `INVALID_ARG` with the keys the context knows as the hint.
+  String chartLayoutRow(String key) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawkey = key.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_chart_layout_row(_handle, rawkey, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

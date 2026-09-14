@@ -239,10 +239,19 @@ void main() {
   // Everything after this runs on the SDK's own default profile, which is
   // geocentric, so that the two centres are both exercised.
 
+  // A layout of the consumer's own, registered on the context the charts
+  // are drawn under: the South Indian row renamed, as every runner
+  // registers it (`03-design/chart-geometry.md` §7f).
+  final shipped = teistro.context(testProvider: true);
+  final kerala = shipped.chart
+      .layout(ChartLayout.southIndian)
+      .copyWith(key: 'ACME_KERALA');
+  shipped.dispose();
   final geo = teistro.context(
     profile: 'parashari-classical',
     locale: 'ne-Deva-NP',
     testProvider: true,
+    layouts: [kerala],
   );
   put('geo-profile', geo.profile);
   put('geo-settings-hash', geo.settingsHash);
@@ -259,10 +268,11 @@ void main() {
     place: place,
     utcOffsetSeconds: 20700,
     vargas: <Varga>[Varga.d9, Varga.d10],
-    drawings: const <(ChartLayout, Varga)>[
+    drawings: [
       (ChartLayout.northIndian, Varga.d1),
       (ChartLayout.southIndian, Varga.d9),
       (ChartLayout.westernWheel, Varga.d1),
+      (ChartLayout.registered('ACME_KERALA'), Varga.d9),
     ],
     theme: ChartTheme.dark,
     aspects: true,
@@ -610,6 +620,7 @@ void main() {
     ('frame.canonical', ctx.frame.canonical),
     ('frame.pack', ctx.frame.pack),
     ('frame.unpack', ctx.frame.unpack),
+    ('chart.layout', ctx.chart.layout),
     ('chart.found', ctx.chart.found),
     ('chart.found_many', ctx.chart.foundMany),
     ('almanac.of', ctx.almanac.of),

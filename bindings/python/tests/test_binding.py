@@ -19,6 +19,7 @@ from teistro import (
     Calendar,
     ChartLayout,
     Drawing,
+    LayoutRow,
     Ephemeris,
     EphemerisProvider,
     Latitude,
@@ -599,3 +600,47 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as unknown:
             found("sepia")  # type: ignore[arg-type]
         self.assertEqual(unknown.exception.field, "theme_json.extends")
+
+    def test_a_layout_of_your_own_is_registered_drawn_by_its_key_and_refused_by_its_field(self) -> None:
+        """A shipped row copied, renamed and registered, drawn by its key,
+        and a wrong row refused by its place and field
+        (`03-design/chart-geometry.md` §7f)."""
+        row = self.ctx.chart.layout("SOUTH_INDIAN")
+        self.assertEqual(self.ctx.chart.layout(ChartLayout.SOUTH_INDIAN), row, "bare or full")
+        with self.assertRaises(TeistroError) as unknown:
+            self.ctx.chart.layout("ACME_KERALA")
+        self.assertEqual(unknown.exception.field, "key")
+
+        kerala: LayoutRow = {**row, "key": "ACME_KERALA"}
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(profile=PROFILE, test_provider=True, layouts=[kerala]) as ctx:
+            self.assertEqual(ctx.chart.layout("chart_layout.ACME_KERALA"), kerala)
+            self.assertEqual(ctx.keys.name(ctx.keys.id("chart_layout.ACME_KERALA")), "chart_layout.ACME_KERALA")
+            south, own = ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=20700,
+                drawings=[(ChartLayout.SOUTH_INDIAN, Varga.D1), ("chart_layout.ACME_KERALA", Varga.D1)],
+            ).drawings
+            self.assertEqual(own.layout, "chart_layout.ACME_KERALA")
+            self.assertEqual(south.layout, ChartLayout.SOUTH_INDIAN)
+            self.assertEqual(own.cells, south.cells, "the same row draws the same chart")
+            with self.assertRaises(TeistroError) as unregistered:
+                ctx.chart.found(
+                    instant=2451545.0,
+                    place=observer,
+                    utc_offset_seconds=0,
+                    drawings=[("chart_layout.ACME_ODIA", Varga.D1)],
+                )
+            self.assertEqual(unregistered.exception.field, "drawings[0]")
+
+        def refused(layouts: list[LayoutRow]) -> Optional[str]:
+            with self.assertRaises(TeistroError) as caught:
+                self.teistro.context(test_provider=True, layouts=layouts)
+            return caught.exception.field
+
+        self.assertEqual(refused([kerala, row]), "options.layouts_json[1].key")
+        misspelt = {**kerala, "shape": {**kerala["shape"], "heading": "clockwise"}}
+        self.assertEqual(refused([misspelt]), "options.layouts_json[0].shape.heading")  # type: ignore[list-item]

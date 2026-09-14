@@ -636,4 +636,80 @@ void _engineTests() {
     );
     ctx.dispose();
   });
+
+  test('a layout of your own is registered, drawn by its key, and refused by '
+      'its field', () {
+    final base = context();
+    final row = base.chart.layout(ChartLayout.southIndian);
+    expect(row.key, 'SOUTH_INDIAN');
+    expect(row.shape, isA<GridShape>());
+    expect(
+      row.toJson(),
+      LayoutRow.fromJson(row.toJson()).toJson(),
+      reason: 'a row reads back as it was written',
+    );
+    expect(
+      () => base.chart.layout(ChartLayout.registered('ACME_KERALA')),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'key')),
+    );
+    base.dispose();
+
+    final kerala = row.copyWith(key: 'ACME_KERALA');
+    final own = ChartLayout.registered('ACME_KERALA');
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      testProvider: true,
+      layouts: [kerala],
+    );
+    expect(ctx.chart.layout(own).toJson(), kerala.toJson());
+    expect(ctx.keys.name(ctx.keys.id(own.fullKey)), own.fullKey);
+
+    final [south, drawn] =
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              drawings: [(ChartLayout.southIndian, Varga.d1), (own, Varga.d1)],
+            )
+            .drawings;
+    expect(drawn.layout, own);
+    expect(south.layout, ChartLayout.southIndian);
+    expect(
+      [for (final cell in drawn.cells) cell.sign],
+      [for (final cell in south.cells) cell.sign],
+    );
+    expect(
+      () => ctx.chart.found(
+        instant: 2451545.0,
+        place: Observer(
+          latitudeDeg: Latitude(0),
+          longitudeDeg: Longitude(0),
+          altitudeM: Altitude(0),
+        ),
+        utcOffsetSeconds: 0,
+        drawings: [(ChartLayout.registered('ACME_ODIA'), Varga.d1)],
+      ),
+      throwsArgumentError,
+    );
+    ctx.dispose();
+
+    Matcher field(String name) =>
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', name));
+    expect(
+      () => teistro.context(testProvider: true, layouts: [kerala, row]),
+      field('options.layouts_json[1].key'),
+    );
+    expect(
+      () => teistro.context(
+        testProvider: true,
+        layouts: [kerala.copyWith(sources: const [])],
+      ),
+      field('options.layouts_json[0].sources'),
+    );
+  });
 }

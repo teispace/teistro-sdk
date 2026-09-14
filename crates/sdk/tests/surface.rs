@@ -903,14 +903,25 @@ fn a_consumer_s_own_layout_is_drawn_and_a_shipped_one_is_not_replaced() {
         .layout(odia)
         .build()
         .expect("a valid layout of the consumer's own");
-    let (id, _) = sdk
-        .layouts()
-        .iter()
-        .zip(0u16..)
-        .find(|(layout, _)| layout.key == "ACME_ODIA")
-        .map(|(layout, index)| (layout.key.clone(), index))
-        .expect("registered");
-    assert_eq!(id, "ACME_ODIA");
+    // The key resolves through the context that registered it, to an id
+    // the layouts give back, and the id names the key again.
+    let id = sdk.keys().id("chart_layout.ACME_ODIA").expect("registered");
+    assert!(id.is_registered());
+    assert_eq!(sdk.layouts().id("ACME_ODIA"), Some(id));
+    assert_eq!(
+        sdk.keys().name(id).expect("named"),
+        "chart_layout.ACME_ODIA"
+    );
+    assert!(
+        Context::builder()
+            .ephemeris([Ephemeris::Builtin])
+            .build()
+            .expect("a context")
+            .keys()
+            .id("chart_layout.ACME_ODIA")
+            .is_err(),
+        "another context registered nothing"
+    );
     assert!(sdk.layouts().get("NORTH_INDIAN").is_some());
 
     let mut takeover = teistro::geometry::rows::east_indian();
@@ -920,5 +931,5 @@ fn a_consumer_s_own_layout_is_drawn_and_a_shipped_one_is_not_replaced() {
         .layout(takeover)
         .build()
         .expect_err("a shipped key");
-    assert_eq!(refused.field(), Some("key"));
+    assert_eq!(refused.field(), Some("layouts[0].key"));
 }

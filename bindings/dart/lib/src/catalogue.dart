@@ -25,6 +25,33 @@ const int vtableAbiVersion = 3;
 /// astronomy.
 const int contextTestProvider = 1;
 
+/// A key of one kind: a member this build catalogues, or one a context
+/// registered at run time.
+abstract interface class KeyOf<K> {
+  /// The full key, as every pack and fixture spells it (`graha.SUN`).
+  String get fullKey;
+}
+
+/// A member a context registered at run time, by its full key: made by a
+/// kind's own `registered`, as `ChartLayout.registered('ACME_KERALA')`, so
+/// its kind is always the one its type names.
+final class Registered<K> implements KeyOf<K> {
+  const Registered._(this.fullKey);
+
+  @override
+  final String fullKey;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Registered<K> && other.fullKey == fullKey;
+
+  @override
+  int get hashCode => fullKey.hashCode;
+
+  @override
+  String toString() => fullKey;
+}
+
 /// A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
 enum Kind {
   /// The nine grahas of the Parashari tradition and the three outer planets.
@@ -176,7 +203,7 @@ enum Kind {
 }
 
 /// The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`.
-enum Graha {
+enum Graha implements KeyOf<Graha> {
   /// The Sun
   sun(0, 'SUN'),
   /// The Moon
@@ -215,7 +242,11 @@ enum Graha {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'graha.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Graha> registered(String key) => Registered._('graha.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -233,7 +264,7 @@ enum Graha {
 }
 
 /// The twelve signs. Members are the catalogue's ids; the full key id is `(TS_KIND_RASHI << 16) | member`.
-enum Rashi {
+enum Rashi implements KeyOf<Rashi> {
   /// Aries
   aries(0, 'ARIES'),
   /// Taurus
@@ -272,7 +303,11 @@ enum Rashi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'rashi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Rashi> registered(String key) => Registered._('rashi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -290,7 +325,7 @@ enum Rashi {
 }
 
 /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.
-enum Nakshatra {
+enum Nakshatra implements KeyOf<Nakshatra> {
   /// Ashwini
   ashwini(0, 'ASHWINI'),
   /// Bharani
@@ -359,7 +394,11 @@ enum Nakshatra {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'nakshatra.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Nakshatra> registered(String key) => Registered._('nakshatra.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -377,7 +416,7 @@ enum Nakshatra {
 }
 
 /// The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
-enum Tithi {
+enum Tithi implements KeyOf<Tithi> {
   /// Shukla Pratipada
   shuklaPratipada(0, 'SHUKLA_PRATIPADA'),
   /// Shukla Dvitiya
@@ -452,7 +491,11 @@ enum Tithi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'tithi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Tithi> registered(String key) => Registered._('tithi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -470,7 +513,7 @@ enum Tithi {
 }
 
 /// The eleven karanas: seven movable, four fixed. Members are the catalogue's ids; the full key id is `(TS_KIND_KARANA << 16) | member`.
-enum Karana {
+enum Karana implements KeyOf<Karana> {
   /// Bava
   bava(0, 'BAVA'),
   /// Balava
@@ -507,7 +550,11 @@ enum Karana {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'karana.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Karana> registered(String key) => Registered._('karana.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -525,7 +572,7 @@ enum Karana {
 }
 
 /// The twenty-seven nitya yogas of the Sun and Moon. Members are the catalogue's ids; the full key id is `(TS_KIND_YOGA << 16) | member`.
-enum Yoga {
+enum Yoga implements KeyOf<Yoga> {
   /// Vishkambha
   vishkambha(0, 'VISHKAMBHA'),
   /// Priti
@@ -594,7 +641,11 @@ enum Yoga {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'yoga.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Yoga> registered(String key) => Registered._('yoga.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -612,7 +663,7 @@ enum Yoga {
 }
 
 /// The seven weekdays with their lords. Members are the catalogue's ids; the full key id is `(TS_KIND_VARA << 16) | member`.
-enum Vara {
+enum Vara implements KeyOf<Vara> {
   /// Sunday
   ravivara(0, 'RAVIVARA'),
   /// Monday
@@ -641,7 +692,11 @@ enum Vara {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'vara.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Vara> registered(String key) => Registered._('vara.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -659,7 +714,7 @@ enum Vara {
 }
 
 /// The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name. Members are the catalogue's ids; the full key id is `(TS_KIND_MASA << 16) | member`.
-enum Masa {
+enum Masa implements KeyOf<Masa> {
   /// Chaitra
   chaitra(0, 'CHAITRA'),
   /// Vaishakha
@@ -698,7 +753,11 @@ enum Masa {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'masa.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Masa> registered(String key) => Registered._('masa.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -716,7 +775,7 @@ enum Masa {
 }
 
 /// The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
-enum Ritu {
+enum Ritu implements KeyOf<Ritu> {
   /// Vasanta
   vasanta(0, 'VASANTA'),
   /// Grishma
@@ -743,7 +802,11 @@ enum Ritu {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'ritu.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Ritu> registered(String key) => Registered._('ritu.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -761,7 +824,7 @@ enum Ritu {
 }
 
 /// The two halves of the solar year. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANA << 16) | member`.
-enum Ayana {
+enum Ayana implements KeyOf<Ayana> {
   /// Uttarayana
   uttarayana(0, 'UTTARAYANA'),
   /// Dakshinayana
@@ -780,7 +843,11 @@ enum Ayana {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'ayana.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Ayana> registered(String key) => Registered._('ayana.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -798,7 +865,7 @@ enum Ayana {
 }
 
 /// The two halves of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_PAKSHA << 16) | member`.
-enum Paksha {
+enum Paksha implements KeyOf<Paksha> {
   /// The bright half
   shukla(0, 'SHUKLA'),
   /// The dark half
@@ -817,7 +884,11 @@ enum Paksha {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'paksha.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Paksha> registered(String key) => Registered._('paksha.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -835,7 +906,7 @@ enum Paksha {
 }
 
 /// The sixty years of the Jovian cycle, in order. Members are the catalogue's ids; the full key id is `(TS_KIND_SAMVATSARA << 16) | member`.
-enum Samvatsara {
+enum Samvatsara implements KeyOf<Samvatsara> {
   /// Prabhava
   prabhava(0, 'PRABHAVA'),
   /// Vibhava
@@ -970,7 +1041,11 @@ enum Samvatsara {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'samvatsara.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Samvatsara> registered(String key) => Registered._('samvatsara.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -988,7 +1063,7 @@ enum Samvatsara {
 }
 
 /// The five elements. Members are the catalogue's ids; the full key id is `(TS_KIND_TATWA << 16) | member`.
-enum Tatwa {
+enum Tatwa implements KeyOf<Tatwa> {
   /// Fire
   agni(0, 'AGNI'),
   /// Earth
@@ -1013,7 +1088,11 @@ enum Tatwa {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'tatwa.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Tatwa> registered(String key) => Registered._('tatwa.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1031,7 +1110,7 @@ enum Tatwa {
 }
 
 /// The varna classification of nakshatras and grahas. Members are the catalogue's ids; the full key id is `(TS_KIND_VARNA << 16) | member`.
-enum Varna {
+enum Varna implements KeyOf<Varna> {
   /// Brahmin
   brahmin(0, 'BRAHMIN'),
   /// Kshatriya
@@ -1056,7 +1135,11 @@ enum Varna {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'varna.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Varna> registered(String key) => Registered._('varna.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1074,7 +1157,7 @@ enum Varna {
 }
 
 /// The three ganas of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_GANA << 16) | member`.
-enum Gana {
+enum Gana implements KeyOf<Gana> {
   /// Deva
   deva(0, 'DEVA'),
   /// Manushya
@@ -1095,7 +1178,11 @@ enum Gana {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'gana.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Gana> registered(String key) => Registered._('gana.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1113,7 +1200,7 @@ enum Gana {
 }
 
 /// The three nadis of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_NADI << 16) | member`.
-enum Nadi {
+enum Nadi implements KeyOf<Nadi> {
   /// Aadi
   aadi(0, 'AADI'),
   /// Madhya
@@ -1134,7 +1221,11 @@ enum Nadi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'nadi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Nadi> registered(String key) => Registered._('nadi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1152,7 +1243,7 @@ enum Nadi {
 }
 
 /// The fourteen yoni animals of the nakshatras, each with its hostile pair. Members are the catalogue's ids; the full key id is `(TS_KIND_YONI << 16) | member`.
-enum Yoni {
+enum Yoni implements KeyOf<Yoni> {
   /// Horse
   horse(0, 'HORSE'),
   /// Elephant
@@ -1195,7 +1286,11 @@ enum Yoni {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'yoni.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Yoni> registered(String key) => Registered._('yoni.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1213,7 +1308,7 @@ enum Yoni {
 }
 
 /// The deities the nakshatras, tithis and karanas are assigned to. Members are the catalogue's ids; the full key id is `(TS_KIND_DEITY << 16) | member`.
-enum Deity {
+enum Deity implements KeyOf<Deity> {
   /// The Ashwini Kumaras, the divine physicians
   ashwiniKumara(0, 'ASHWINI_KUMARA'),
   /// Yama
@@ -1302,7 +1397,11 @@ enum Deity {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'deity.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Deity> registered(String key) => Registered._('deity.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1320,7 +1419,7 @@ enum Deity {
 }
 
 /// The eleven levels of dignity. Members are the catalogue's ids; the full key id is `(TS_KIND_DIGNITY << 16) | member`.
-enum Dignity {
+enum Dignity implements KeyOf<Dignity> {
   /// Deep Exalted
   deepExalted(0, 'DEEP_EXALTED'),
   /// Exalted
@@ -1357,7 +1456,11 @@ enum Dignity {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'dignity.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Dignity> registered(String key) => Registered._('dignity.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1375,7 +1478,7 @@ enum Dignity {
 }
 
 /// The five-fold compound relationship. Members are the catalogue's ids; the full key id is `(TS_KIND_RELATIONSHIP << 16) | member`.
-enum Relationship {
+enum Relationship implements KeyOf<Relationship> {
   /// Great Friend
   greatFriend(0, 'GREAT_FRIEND'),
   /// Friend
@@ -1400,7 +1503,11 @@ enum Relationship {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'relationship.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Relationship> registered(String key) => Registered._('relationship.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1418,7 +1525,7 @@ enum Relationship {
 }
 
 /// The five age states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_BALADI << 16) | member`.
-enum AvasthaBaladi {
+enum AvasthaBaladi implements KeyOf<AvasthaBaladi> {
   /// Bala
   bala(0, 'BALA'),
   /// Kumara
@@ -1443,7 +1550,11 @@ enum AvasthaBaladi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'avastha_baladi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AvasthaBaladi> registered(String key) => Registered._('avastha_baladi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1461,7 +1572,7 @@ enum AvasthaBaladi {
 }
 
 /// Conditions a body can be in. Members are the catalogue's ids; the full key id is `(TS_KIND_STATE << 16) | member`.
-enum State {
+enum State implements KeyOf<State> {
   /// Retrograde
   retrograde(0, 'RETROGRADE'),
   /// Stationary
@@ -1500,7 +1611,11 @@ enum State {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'state.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<State> registered(String key) => Registered._('state.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1518,7 +1633,7 @@ enum State {
 }
 
 /// The catalogued ayanamshas; a custom one is a settings value, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
-enum Ayanamsha {
+enum Ayanamsha implements KeyOf<Ayanamsha> {
   /// Fagan and Bradley
   faganBradley(0, 'FAGAN_BRADLEY'),
   /// Lahiri (Chitrapaksha), the Indian government's ayanamsha
@@ -1627,7 +1742,11 @@ enum Ayanamsha {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'ayanamsha.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Ayanamsha> registered(String key) => Registered._('ayanamsha.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1645,7 +1764,7 @@ enum Ayanamsha {
 }
 
 /// The house systems; the cusp arithmetic lives in the astro layer. Members are the catalogue's ids; the full key id is `(TS_KIND_HOUSE_SYSTEM << 16) | member`.
-enum HouseSystem {
+enum HouseSystem implements KeyOf<HouseSystem> {
   /// Whole Sign
   wholeSign(0, 'WHOLE_SIGN'),
   /// Placidus
@@ -1704,7 +1823,11 @@ enum HouseSystem {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'house_system.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<HouseSystem> registered(String key) => Registered._('house_system.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1722,7 +1845,7 @@ enum HouseSystem {
 }
 
 /// The divisional charts the SDK ships; the kernel row of each lives in the vargas crate. Members are the catalogue's ids; the full key id is `(TS_KIND_VARGA << 16) | member`.
-enum Varga {
+enum Varga implements KeyOf<Varga> {
   /// Rashi
   d1(0, 'D1'),
   /// Hora
@@ -1779,7 +1902,11 @@ enum Varga {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'varga.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Varga> registered(String key) => Registered._('varga.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1797,7 +1924,7 @@ enum Varga {
 }
 
 /// The dasha systems the catalogue names; each row of the kernel lives in the dasha crate, and only V rows are implemented. Members are the catalogue's ids; the full key id is `(TS_KIND_DASHA_SYSTEM << 16) | member`.
-enum DashaSystem {
+enum DashaSystem implements KeyOf<DashaSystem> {
   /// Vimshottari
   vimshottari(0, 'VIMSHOTTARI'),
   /// Ashtottari
@@ -1892,7 +2019,11 @@ enum DashaSystem {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'dasha_system.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<DashaSystem> registered(String key) => Registered._('dasha_system.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1910,7 +2041,7 @@ enum DashaSystem {
 }
 
 /// The strength schemes; rows live in the strength kernel. Members are the catalogue's ids; the full key id is `(TS_KIND_BALA_SCHEME << 16) | member`.
-enum BalaScheme {
+enum BalaScheme implements KeyOf<BalaScheme> {
   /// Parashara
   parashara(0, 'PARASHARA'),
   /// Parashara Extended
@@ -1929,7 +2060,11 @@ enum BalaScheme {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'bala_scheme.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<BalaScheme> registered(String key) => Registered._('bala_scheme.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -1947,7 +2082,7 @@ enum BalaScheme {
 }
 
 /// The Ashta Koota and the Dasha Koota extensions. Members are the catalogue's ids; the full key id is `(TS_KIND_KOOTA << 16) | member`.
-enum Koota {
+enum Koota implements KeyOf<Koota> {
   /// Varna
   varna(0, 'VARNA'),
   /// Vashya
@@ -1986,7 +2121,11 @@ enum Koota {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'koota.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Koota> registered(String key) => Registered._('koota.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2004,7 +2143,7 @@ enum Koota {
 }
 
 /// The Jaimini significators, in rank order. Members are the catalogue's ids; the full key id is `(TS_KIND_CHARA_KARAKA << 16) | member`.
-enum CharaKaraka {
+enum CharaKaraka implements KeyOf<CharaKaraka> {
   /// Atmakaraka
   atmakaraka(0, 'ATMAKARAKA'),
   /// Amatyakaraka
@@ -2035,7 +2174,11 @@ enum CharaKaraka {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'chara_karaka.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<CharaKaraka> registered(String key) => Registered._('chara_karaka.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2053,7 +2196,7 @@ enum CharaKaraka {
 }
 
 /// What a chart is a chart of. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_KIND << 16) | member`.
-enum ChartKind {
+enum ChartKind implements KeyOf<ChartKind> {
   /// Natal
   natal(0, 'NATAL'),
   /// Transit
@@ -2082,7 +2225,11 @@ enum ChartKind {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'chart_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<ChartKind> registered(String key) => Registered._('chart_kind.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2100,7 +2247,7 @@ enum ChartKind {
 }
 
 /// Derived points that behave like bodies; each has a formula in the module that owns it. Members are the catalogue's ids; the full key id is `(TS_KIND_POINT << 16) | member`.
-enum Point {
+enum Point implements KeyOf<Point> {
   /// The ascendant
   lagna(0, 'LAGNA'),
   /// The midheaven
@@ -2213,7 +2360,11 @@ enum Point {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'point.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Point> registered(String key) => Registered._('point.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2231,7 +2382,7 @@ enum Point {
 }
 
 /// The seven muhurta natures of the nakshatras. Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_NATURE << 16) | member`.
-enum MuhurtaNature {
+enum MuhurtaNature implements KeyOf<MuhurtaNature> {
   /// Dhruva
   dhruva(0, 'DHRUVA'),
   /// Chara
@@ -2260,7 +2411,11 @@ enum MuhurtaNature {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'muhurta_nature.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<MuhurtaNature> registered(String key) => Registered._('muhurta_nature.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2278,7 +2433,7 @@ enum MuhurtaNature {
 }
 
 /// Movable, fixed and dual signs. Members are the catalogue's ids; the full key id is `(TS_KIND_MODALITY << 16) | member`.
-enum Modality {
+enum Modality implements KeyOf<Modality> {
   /// Movable
   chara(0, 'CHARA'),
   /// Fixed
@@ -2299,7 +2454,11 @@ enum Modality {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'modality.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Modality> registered(String key) => Registered._('modality.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2317,7 +2476,7 @@ enum Modality {
 }
 
 /// The natural benefic or malefic character of a graha. Members are the catalogue's ids; the full key id is `(TS_KIND_NATURE << 16) | member`.
-enum Nature {
+enum Nature implements KeyOf<Nature> {
   /// Benefic
   benefic(0, 'BENEFIC'),
   /// Malefic
@@ -2338,7 +2497,11 @@ enum Nature {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'nature.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Nature> registered(String key) => Registered._('nature.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2356,7 +2519,7 @@ enum Nature {
 }
 
 /// The three gunas. Members are the catalogue's ids; the full key id is `(TS_KIND_GUNA << 16) | member`.
-enum Guna {
+enum Guna implements KeyOf<Guna> {
   /// Sattva
   sattva(0, 'SATTVA'),
   /// Rajas
@@ -2377,7 +2540,11 @@ enum Guna {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'guna.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Guna> registered(String key) => Registered._('guna.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2395,7 +2562,7 @@ enum Guna {
 }
 
 /// The eight directions. Members are the catalogue's ids; the full key id is `(TS_KIND_DIRECTION << 16) | member`.
-enum Direction {
+enum Direction implements KeyOf<Direction> {
   /// East
   east(0, 'EAST'),
   /// West
@@ -2426,7 +2593,11 @@ enum Direction {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'direction.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Direction> registered(String key) => Registered._('direction.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2444,7 +2615,7 @@ enum Direction {
 }
 
 /// Grammatical and classical gender. Members are the catalogue's ids; the full key id is `(TS_KIND_GENDER << 16) | member`.
-enum Gender {
+enum Gender implements KeyOf<Gender> {
   /// Male
   male(0, 'MALE'),
   /// Female
@@ -2465,7 +2636,11 @@ enum Gender {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'gender.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Gender> registered(String key) => Registered._('gender.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2483,7 +2658,7 @@ enum Gender {
 }
 
 /// The calendars the SDK ships. Members are the catalogue's ids; the full key id is `(TS_KIND_CALENDAR << 16) | member`.
-enum Calendar {
+enum Calendar implements KeyOf<Calendar> {
   /// Gregorian
   gregorian(0, 'GREGORIAN'),
   /// Julian
@@ -2510,7 +2685,11 @@ enum Calendar {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'calendar.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Calendar> registered(String key) => Registered._('calendar.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2528,7 +2707,7 @@ enum Calendar {
 }
 
 /// The era numbers a date may carry. Members are the catalogue's ids; the full key id is `(TS_KIND_ERA << 16) | member`.
-enum Era {
+enum Era implements KeyOf<Era> {
   /// Vikrama
   vikrama(0, 'VIKRAMA'),
   /// Shaka
@@ -2561,7 +2740,11 @@ enum Era {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'era.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Era> registered(String key) => Registered._('era.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2579,7 +2762,7 @@ enum Era {
 }
 
 /// What kind of body a graha is. Members are the catalogue's ids; the full key id is `(TS_KIND_BODY_CLASS << 16) | member`.
-enum BodyClass {
+enum BodyClass implements KeyOf<BodyClass> {
   /// Luminary
   luminary(0, 'LUMINARY'),
   /// Planet
@@ -2602,7 +2785,11 @@ enum BodyClass {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'body_class.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<BodyClass> registered(String key) => Registered._('body_class.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2620,7 +2807,7 @@ enum BodyClass {
 }
 
 /// Odd and even signs. Members are the catalogue's ids; the full key id is `(TS_KIND_PARITY << 16) | member`.
-enum Parity {
+enum Parity implements KeyOf<Parity> {
   /// Odd
   odd(0, 'ODD'),
   /// Even
@@ -2639,7 +2826,11 @@ enum Parity {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'parity.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Parity> registered(String key) => Registered._('parity.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2657,7 +2848,7 @@ enum Parity {
 }
 
 /// How a sign rises: head first, back first, or both. Members are the catalogue's ids; the full key id is `(TS_KIND_RISING << 16) | member`.
-enum Rising {
+enum Rising implements KeyOf<Rising> {
   /// Sirshodaya
   sirshodaya(0, 'SIRSHODAYA'),
   /// Prishtodaya
@@ -2678,7 +2869,11 @@ enum Rising {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'rising.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Rising> registered(String key) => Registered._('rising.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2696,7 +2891,7 @@ enum Rising {
 }
 
 /// The sex of a nakshatra's yoni animal. Members are the catalogue's ids; the full key id is `(TS_KIND_SEX << 16) | member`.
-enum Sex {
+enum Sex implements KeyOf<Sex> {
   /// Male
   male(0, 'MALE'),
   /// Female
@@ -2715,7 +2910,11 @@ enum Sex {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'sex.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Sex> registered(String key) => Registered._('sex.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2733,7 +2932,7 @@ enum Sex {
 }
 
 /// The five tithi classes. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI_CLASS << 16) | member`.
-enum TithiClass {
+enum TithiClass implements KeyOf<TithiClass> {
   /// Nanda
   nanda(0, 'NANDA'),
   /// Bhadra
@@ -2758,7 +2957,11 @@ enum TithiClass {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'tithi_class.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<TithiClass> registered(String key) => Registered._('tithi_class.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2776,7 +2979,7 @@ enum TithiClass {
 }
 
 /// The auspiciousness class of a nitya yoga. Members are the catalogue's ids; the full key id is `(TS_KIND_AUSPICIOUSNESS << 16) | member`.
-enum Auspiciousness {
+enum Auspiciousness implements KeyOf<Auspiciousness> {
   /// Auspicious
   auspicious(0, 'AUSPICIOUS'),
   /// Inauspicious
@@ -2799,7 +3002,11 @@ enum Auspiciousness {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'auspiciousness.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Auspiciousness> registered(String key) => Registered._('auspiciousness.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2817,7 +3024,7 @@ enum Auspiciousness {
 }
 
 /// Whether a house system is undefined at some latitudes. Members are the catalogue's ids; the full key id is `(TS_KIND_DEGENERACY << 16) | member`.
-enum Degeneracy {
+enum Degeneracy implements KeyOf<Degeneracy> {
   /// None
   none(0, 'NONE'),
   /// Polar Undefined
@@ -2836,7 +3043,11 @@ enum Degeneracy {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'degeneracy.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Degeneracy> registered(String key) => Registered._('degeneracy.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2854,7 +3065,7 @@ enum Degeneracy {
 }
 
 /// How an ayanamsha is defined or used. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA_CATEGORY << 16) | member`.
-enum AyanamshaCategory {
+enum AyanamshaCategory implements KeyOf<AyanamshaCategory> {
   /// Vedic Standard
   vedicStandard(0, 'VEDIC_STANDARD'),
   /// Vedic Classical
@@ -2883,7 +3094,11 @@ enum AyanamshaCategory {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'ayanamsha_category.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AyanamshaCategory> registered(String key) => Registered._('ayanamsha_category.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2901,7 +3116,7 @@ enum AyanamshaCategory {
 }
 
 /// Which kernel a dasha system runs on. Members are the catalogue's ids; the full key id is `(TS_KIND_DASHA_FAMILY << 16) | member`.
-enum DashaFamily {
+enum DashaFamily implements KeyOf<DashaFamily> {
   /// Udu
   udu(0, 'UDU'),
   /// Rashi
@@ -2928,7 +3143,11 @@ enum DashaFamily {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'dasha_family.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<DashaFamily> registered(String key) => Registered._('dasha_family.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2946,7 +3165,7 @@ enum DashaFamily {
 }
 
 /// The three wakefulness states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_JAGRADADI << 16) | member`.
-enum AvasthaJagradadi {
+enum AvasthaJagradadi implements KeyOf<AvasthaJagradadi> {
   /// Jagrat
   jagrat(0, 'JAGRAT'),
   /// Swapna
@@ -2967,7 +3186,11 @@ enum AvasthaJagradadi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'avastha_jagradadi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AvasthaJagradadi> registered(String key) => Registered._('avastha_jagradadi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -2985,7 +3208,7 @@ enum AvasthaJagradadi {
 }
 
 /// The nine Deeptadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_DEEPTADI << 16) | member`.
-enum AvasthaDeeptadi {
+enum AvasthaDeeptadi implements KeyOf<AvasthaDeeptadi> {
   /// Deepta
   deepta(0, 'DEEPTA'),
   /// Swastha
@@ -3018,7 +3241,11 @@ enum AvasthaDeeptadi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'avastha_deeptadi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AvasthaDeeptadi> registered(String key) => Registered._('avastha_deeptadi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3036,7 +3263,7 @@ enum AvasthaDeeptadi {
 }
 
 /// The six Lajjitadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_LAJJITADI << 16) | member`.
-enum AvasthaLajjitadi {
+enum AvasthaLajjitadi implements KeyOf<AvasthaLajjitadi> {
   /// Lajjita
   lajjita(0, 'LAJJITA'),
   /// Garvita
@@ -3063,7 +3290,11 @@ enum AvasthaLajjitadi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'avastha_lajjitadi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AvasthaLajjitadi> registered(String key) => Registered._('avastha_lajjitadi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3081,7 +3312,7 @@ enum AvasthaLajjitadi {
 }
 
 /// The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
-enum AvasthaSayanadi {
+enum AvasthaSayanadi implements KeyOf<AvasthaSayanadi> {
   /// Shayana
   shayana(0, 'SHAYANA'),
   /// Upaveshana
@@ -3120,7 +3351,11 @@ enum AvasthaSayanadi {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'avastha_sayanadi.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AvasthaSayanadi> registered(String key) => Registered._('avastha_sayanadi.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3138,7 +3373,7 @@ enum AvasthaSayanadi {
 }
 
 /// What kind of derived point. Members are the catalogue's ids; the full key id is `(TS_KIND_POINT_FAMILY << 16) | member`.
-enum PointFamily {
+enum PointFamily implements KeyOf<PointFamily> {
   /// Angle
   angle(0, 'ANGLE'),
   /// Special Lagna
@@ -3169,7 +3404,11 @@ enum PointFamily {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'point_family.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<PointFamily> registered(String key) => Registered._('point_family.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3187,7 +3426,7 @@ enum PointFamily {
 }
 
 /// The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_STAR << 16) | member`.
-enum Star {
+enum Star implements KeyOf<Star> {
   /// Sheratan, beta Arietis: the yogatara of Ashwini
   sheratan(0, 'SHERATAN'),
   /// Bharani, 41 Arietis: the yogatara of Bharani
@@ -3458,7 +3697,11 @@ enum Star {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'star.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Star> registered(String key) => Registered._('star.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3476,7 +3719,7 @@ enum Star {
 }
 
 /// What kind of object a star-table member is. Members are the catalogue's ids; the full key id is `(TS_KIND_STAR_CLASS << 16) | member`.
-enum StarClass {
+enum StarClass implements KeyOf<StarClass> {
   /// A star
   star(0, 'STAR'),
   /// A compact radio source, such as the galactic centre
@@ -3497,7 +3740,11 @@ enum StarClass {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'star_class.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<StarClass> registered(String key) => Registered._('star_class.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3515,7 +3762,7 @@ enum StarClass {
 }
 
 /// The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. Members are the catalogue's ids; the full key id is `(TS_KIND_CHOGHADIYA << 16) | member`.
-enum Choghadiya {
+enum Choghadiya implements KeyOf<Choghadiya> {
   /// Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with
   udveg(0, 'UDVEG'),
   /// Char, Venus's: movable, and so suited to travel
@@ -3544,7 +3791,11 @@ enum Choghadiya {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'choghadiya.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Choghadiya> registered(String key) => Registered._('choghadiya.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3562,7 +3813,7 @@ enum Choghadiya {
 }
 
 /// The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. Members are the catalogue's ids; the full key id is `(TS_KIND_KAALA << 16) | member`.
-enum Kaala {
+enum Kaala implements KeyOf<Kaala> {
   /// Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic.
   rahuKaala(0, 'RAHU_KAALA'),
   /// Yamaghanda. The third eighth counted backwards from the vara, modulo seven.
@@ -3583,7 +3834,11 @@ enum Kaala {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'kaala.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Kaala> registered(String key) => Registered._('kaala.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3601,7 +3856,7 @@ enum Kaala {
 }
 
 /// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
-enum Panchaka {
+enum Panchaka implements KeyOf<Panchaka> {
   /// Mrityu panchaka, the Moon in Dhanishtha
   mrityu(0, 'MRITYU'),
   /// Agni panchaka, the Moon in Shatabhisha
@@ -3626,7 +3881,11 @@ enum Panchaka {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'panchaka.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Panchaka> registered(String key) => Registered._('panchaka.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3644,7 +3903,7 @@ enum Panchaka {
 }
 
 /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
-enum MuhurtaYoga {
+enum MuhurtaYoga implements KeyOf<MuhurtaYoga> {
   /// Amrit Siddhi yoga: one vara and nakshatra pair each
   amritSiddhi(0, 'AMRIT_SIDDHI'),
   /// Sarvartha Siddhi yoga: a set of nakshatras per vara
@@ -3669,7 +3928,11 @@ enum MuhurtaYoga {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'muhurta_yoga.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<MuhurtaYoga> registered(String key) => Registered._('muhurta_yoga.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.
@@ -3687,7 +3950,7 @@ enum MuhurtaYoga {
 }
 
 /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.
-enum ChartLayout {
+enum ChartLayout implements KeyOf<ChartLayout> {
   /// The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise
   northIndian(0, 'NORTH_INDIAN'),
   /// The South Indian chart: signs fixed, Pisces top-left, running clockwise
@@ -3714,7 +3977,11 @@ enum ChartLayout {
   final String key;
 
   /// The full key, as every pack and fixture spells it.
+  @override
   String get fullKey => 'chart_layout.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<ChartLayout> registered(String key) => Registered._('chart_layout.$key');
 
   /// The member with an id; one this build does not know is
   /// [unknown], so a `switch` over the result stays exhaustive.

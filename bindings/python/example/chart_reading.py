@@ -125,7 +125,7 @@ def main() -> None:
         drawn = chart.drawings[0]
         risen = next(cell for cell in drawn.cells if cell.lagna)
         print(
-            f"drawing  {drawn.layout.key.lower()} {drawn.varga.key.lower()}: {len(drawn.cells)} cells, "
+            f"drawing  {drawn.layout_key.rsplit(".", 1)[-1].lower()} {drawn.varga.key.lower()}: {len(drawn.cells)} cells, "
             f"lagna in house {risen.house} ({name(ctx, risen.sign)}), grahas there: {len(risen.bodies)}"
         )
         print(f"settings hash  {ctx.settings_hash[:16]}…")

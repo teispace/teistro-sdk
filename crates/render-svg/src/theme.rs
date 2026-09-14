@@ -303,12 +303,10 @@ impl Theme {
         merge(&mut merged, serde_json::Value::Object(changes));
         let theme: Theme = serde_json::from_value(merged).map_err(|err| not_one(&err))?;
         // Every refusal is named from the theme's root, as the rest are.
-        theme.style.validate().map_err(|error| {
-            let field = error
-                .field()
-                .map_or_else(|| String::from("theme"), |inner| format!("theme.{inner}"));
-            error.with_field(field)
-        })?;
+        theme
+            .style
+            .validate()
+            .map_err(|error| error.under("theme"))?;
         Ok(theme)
     }
 }

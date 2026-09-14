@@ -1584,6 +1584,27 @@ class FrameArea extends Area {
 
 /** `sdk.chart` — a chart founded at an instant and a place. */
 class ChartArea extends Area {
+  /** The member id of each layout the context registered, by its full key. */
+  #registered;
+
+  constructor(reach, registered) {
+    super(reach);
+    this.#registered = registered;
+  }
+
+  /**
+   * A layout this context can draw in, shipped or registered, as its row:
+   * the record a context's `layouts` option takes. Copy a shipped row, give
+   * it a key of its own, change what differs and register it
+   * (`03-design/chart-geometry.md` §7f).
+   *
+   * @param {string} key the layout's key, bare (`NORTH_INDIAN`) or full
+   * @returns {object} the row, a fresh object to change
+   */
+  layout(key) {
+    return JSON.parse(this._run((inner) => inner.chartLayoutRow(key)));
+  }
+
   /**
    * Founds a chart at an instant and a place.
    *
@@ -1665,7 +1686,7 @@ class ChartArea extends Area {
           (request.houses === true ? SECTION_HOUSES : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: vargaKeys(request.vargas),
-        drawings: drawingBits(request.drawings),
+        drawings: drawingBits(request.drawings, this.#registered),
         themeJson: themeJson(request.theme),
       }),
     );
@@ -1742,6 +1763,24 @@ function themeJson(theme) {
   throw new TypeError("theme: expected 'light', 'dark' or a theme record");
 }
 
+/**
+ * The member id of each layout a context registered, by its full key: asked
+ * of the context once, when it is made, so a request resolves a consumer's
+ * own layout without crossing the boundary again (§7f).
+ *
+ * @param {object} inner the addon's context
+ * @param {ReadonlyArray<{key: string}>|undefined} layouts the rows it registered
+ * @returns {Map<string, number>}
+ */
+function registeredLayouts(inner, layouts) {
+  return new Map(
+    (layouts ?? []).map(({ key }) => {
+      const full = `chart_layout.${key}`;
+      return [full, guarded(inner, () => inner.keyParse(full)) & 0xffff];
+    }),
+  );
+}
+
 /** Every catalogue key by its id, turned round, for a request to write ids. */
 const idOf = (byId) => new Map(Array.from(byId, ([id, key]) => [key, id]));
 const LAYOUT_IDS = idOf(ChartLayoutById);
@@ -1753,18 +1792,25 @@ const VARGA_IDS = idOf(VargaById);
  * here writes bits by hand (`03-design/chart-geometry.md`).
  *
  * @param {ReadonlyArray<{layout: string, varga: string}>|undefined} asked
+ * @param {Map<string, number>} registered the context's own layouts' ids
  * @returns {number[]}
  */
-function drawingBits(asked) {
+function drawingBits(asked, registered) {
   if (asked === undefined || asked === null) return [];
   if (!Array.isArray(asked)) {
     throw new TypeError('drawings: expected an array of { layout, varga }');
   }
   return asked.map((drawing, at) => {
-    const layout = LAYOUT_IDS.get(drawing?.layout);
+    const named = drawing?.layout;
+    // A shipped layout is in the catalogue's table; a consumer's own is in
+    // the ids its context resolved once, when it was made
+    // (`03-design/chart-geometry.md` §7f).
+    const layout = LAYOUT_IDS.get(named) ?? registered.get(named);
     const varga = VARGA_IDS.get(drawing?.varga);
     if (layout === undefined) {
-      throw new TypeError(`drawings[${at}].layout: expected a ChartLayout key`);
+      throw new TypeError(
+        `drawings[${at}].layout: expected a ChartLayout, or the chart_layout.* key of a layout this context registered`,
+      );
     }
     if (varga === undefined) {
       throw new TypeError(`drawings[${at}].varga: expected a Varga key`);
@@ -1929,7 +1975,10 @@ export class Context {
    *   answers with the columns; everything else has a default
    */
   constructor(options = {}) {
-    const { profile, settings, locale, ephemeris, testProvider = false, provider } = options;
+    const { profile, settings, locale, layouts, ephemeris, testProvider = false, provider } = options;
+    if (layouts !== undefined && !Array.isArray(layouts)) {
+      throw new TypeError('layouts: expected an array of layout rows');
+    }
     // Two ways to answer one question, so both together is a refusal
     // rather than one silently winning — the rule the settings patch
     // has.
@@ -1946,6 +1995,7 @@ export class Context {
       profile,
       settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
       locale,
+      layoutsJson: layouts === undefined ? undefined : JSON.stringify(layouts),
     });
     this.#inner = guarded(null, () => open(chain, settled, info, positions));
 
@@ -1964,7 +2014,8 @@ export class Context {
     /** The coordinate conventions a request is expressed in. */
     this.frame = new FrameArea(reach);
     /** A chart founded at an instant and a place. */
-    this.chart = new ChartArea(reach);
+    /** Charts, and the layouts they are drawn in. */
+    this.chart = new ChartArea(reach, registeredLayouts(this.#inner, layouts));
     /** A day, or a run of days, with its limbs. */
     this.almanac = new AlmanacArea(reach);
     this.#engine = new Engine(reach);

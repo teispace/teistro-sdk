@@ -244,6 +244,23 @@ impl Error {
         self
     }
 
+    /// Names the field from an outer record: `root.field`, or `root` itself
+    /// when the error named none. What a reader of one element of a list
+    /// calls to say which element it was (`layouts_json[2].shape.rings`).
+    ///
+    /// A field that begins with an index is joined without a dot:
+    /// `drawings` under `request` is `request.drawings`, `[1]` is
+    /// `request[1]`.
+    #[must_use]
+    pub fn under(self, root: &str) -> Error {
+        let field = match self.field() {
+            None | Some("") => root.to_owned(),
+            Some(inner) if inner.starts_with('[') => format!("{root}{inner}"),
+            Some(inner) => format!("{root}.{inner}"),
+        };
+        self.with_field(field)
+    }
+
     /// Adds a hint.
     #[must_use]
     pub fn with_hint(mut self, hint: impl Into<String>) -> Error {
@@ -391,6 +408,21 @@ mod tests {
     )]
 
     use super::*;
+
+    #[test]
+    fn a_field_is_named_from_an_outer_record() {
+        let inner = Error::invalid_arg("x").with_field("shape.rings");
+        assert_eq!(
+            inner.under("layouts_json[2]").field(),
+            Some("layouts_json[2].shape.rings")
+        );
+        assert_eq!(
+            Error::invalid_arg("x").under("theme_json").field(),
+            Some("theme_json")
+        );
+        let indexed = Error::invalid_arg("x").with_field("[1].varga");
+        assert_eq!(indexed.under("drawings").field(), Some("drawings[1].varga"));
+    }
     use crate::catalogue::Graha;
 
     #[test]

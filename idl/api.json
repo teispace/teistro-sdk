@@ -8496,6 +8496,20 @@
           }
         },
         {
+          "name": "layouts_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Chart layouts of the consumer's own, to draw in beside the shipped\nones, as a JSON array of layout rows: each the row `ts_chart_layout_row`\nanswers, with a key of its own. Every row is checked by the rules a\nshipped one passes and refused by its place in the array and its own\nfield, as `options.layouts_json`, the row's index, then the field's\npath; a key the SDK ships is\nrefused, so a row adds a layout and never replaces one. Null for none\n(`03-design/chart-geometry.md` §7f).",
+          "meta": {
+            "nullable": true
+          }
+        },
+        {
           "name": "ephemeris",
           "ty": {
             "kind": "scalar",
@@ -10355,7 +10369,7 @@
     },
     {
       "name": "ts_key_parse",
-      "doc": "Resolves a full key (`graha.SUN`, an alias, or a former key) to its\npacked id. An unknown key is `UNSUPPORTED` with the nearest known key as\nthe hint in the context's last error.",
+      "doc": "Resolves a full key (`graha.SUN`, an alias, a former key, or a member the\ncontext registered, `chart_layout.ACME_KERALA`) to its packed id. An\nunknown key is `UNSUPPORTED` with the nearest known key as the hint in\nthe context's last error.",
       "safety": "`context` must be a live handle; `key` a NUL-terminated string; `out_id`\nvalid for a write.",
       "params": [
         {
@@ -10962,6 +10976,57 @@
       },
       "meta": {},
       "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "ts_chart_layout_row",
+      "doc": "A chart layout this context can draw in, shipped or registered, as its\nJSON row: the record `options.layouts_json` takes. Read a shipped row,\ngive it a key of its own, change what differs and register it\n(`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare\n(`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is\n`INVALID_ARG` with the keys the context knows as the hint.",
+      "safety": "`context` must be a live handle; `key` a NUL-terminated string;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "key",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/chart.rs"
     },
     {
       "name": "ts_chart_found",

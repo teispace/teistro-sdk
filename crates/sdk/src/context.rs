@@ -380,8 +380,11 @@ impl ContextBuilder {
         let opened = ephemeris::open(chain)?;
         let provider = remembering(opened, settings.settings.provider.cache_cells);
         let mut layouts = Layouts::new();
-        for layout in self.layouts {
-            layouts.register(layout)?;
+        for (index, layout) in self.layouts.into_iter().enumerate() {
+            // Named by its place, so a caller who gave several knows which.
+            layouts
+                .register(layout)
+                .map_err(|error| error.under(&format!("layouts[{index}]")))?;
         }
         layouts.seal();
         Ok(Context {

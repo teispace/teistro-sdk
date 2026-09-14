@@ -132,7 +132,7 @@ void main() {
   final drawn = chart.drawings.first;
   final risen = drawn.cells.firstWhere((cell) => cell.lagna);
   print(
-    'drawing  ${drawn.layout.key.toLowerCase()} ${drawn.varga.key.toLowerCase()}: '
+    'drawing  ${drawn.layout.fullKey.split('.').last.toLowerCase()} ${drawn.varga.key.toLowerCase()}: '
     '${drawn.cells.length} cells, lagna in house ${risen.house} '
     '(${name(risen.sign.fullKey)}), grahas there: ${risen.bodies.length}',
   );

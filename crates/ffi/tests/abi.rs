@@ -25,13 +25,14 @@ use core::ptr;
 use std::ffi::CString;
 
 use teistro_core::Status;
-use teistro_core::catalogue::{Calendar, Era, Graha};
+use teistro_core::catalogue::{Calendar, Era, Graha, Varga};
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
 use teistro_ffi::calendar::{
     TsCalendarDate, TsResolution, ts_calendar_convert, ts_calendar_fixed_of_jd,
     ts_calendar_from_fixed, ts_calendar_is_leap, ts_calendar_jd_of_fixed, ts_calendar_month_length,
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
+use teistro_ffi::chart::{TsChartRequest, ts_chart_found, ts_chart_layout_row};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
     ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
@@ -123,6 +124,30 @@ impl Ctx {
         settings_json: Option<&str>,
         locale: Option<&str>,
     ) -> Result<Ctx, Record> {
+        Ctx::open(flags, ephemeris, profile, settings_json, locale, None)
+    }
+
+    /// A context on the test provider with a consumer's own layouts.
+    fn with_layouts(layouts_json: &str) -> Result<Ctx, Record> {
+        Ctx::open(
+            TS_CONTEXT_TEST_PROVIDER,
+            TsEphemeris::None,
+            None,
+            None,
+            None,
+            Some(layouts_json),
+        )
+    }
+
+    fn open(
+        flags: u32,
+        ephemeris: TsEphemeris,
+        profile: Option<&str>,
+        settings_json: Option<&str>,
+        locale: Option<&str>,
+        layouts_json: Option<&str>,
+    ) -> Result<Ctx, Record> {
+        let layouts = layouts_json.map(|p| CString::new(p).unwrap());
         let profile = profile.map(|p| CString::new(p).unwrap());
         let settings = settings_json.map(|p| CString::new(p).unwrap());
         let locale = locale.map(|p| CString::new(p).unwrap());
@@ -132,6 +157,7 @@ impl Ctx {
             profile: profile.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             settings_json: settings.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             locale: locale.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
+            layouts_json: layouts.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             ephemeris: ephemeris as u8,
         };
         let mut handle = ptr::null_mut();
@@ -278,6 +304,7 @@ fn a_refused_construction_owns_its_record_and_frees_it_once() {
         profile: profile.as_ptr(),
         settings_json: ptr::null(),
         locale: ptr::null(),
+        layouts_json: ptr::null(),
         ephemeris: 0,
     };
     let new = |out: *mut *mut TsContext, error: *mut TsError| {
@@ -402,6 +429,7 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
         profile: ptr::null(),
         settings_json: ptr::null(),
         locale: ptr::null(),
+        layouts_json: ptr::null(),
         ephemeris: TsEphemeris::None as u8,
     };
     let mut handle = ptr::null_mut();
@@ -1294,4 +1322,143 @@ fn keys_parse_to_packed_ids_and_back_with_suggestions() {
         unsafe { ts_key_parse(ptr::null(), key.as_ptr(), &raw mut id) },
         Status::InvalidArg
     );
+}
+
+/// A shipped layout's row, as the boundary answers it.
+fn layout_row(ctx: &Ctx, key: &str) -> Result<String, Record> {
+    let key = CString::new(key).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live handle, a NUL-terminated key and a valid slot.
+    match unsafe { ts_chart_layout_row(ctx.handle, key.as_ptr(), &raw mut json) } {
+        Status::Ok => Ok(owned(json)),
+        _ => Err(ctx.last_error()),
+    }
+}
+
+/// A consumer's own layout, registered from a binding: read a shipped row,
+/// rename it, register it, find its key and draw in it
+/// (`03-design/chart-geometry.md` §7f).
+#[test]
+fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
+    let base = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).unwrap();
+    let row = layout_row(&base, "chart_layout.SOUTH_INDIAN").unwrap();
+    assert_eq!(
+        layout_row(&base, "SOUTH_INDIAN").unwrap(),
+        row,
+        "bare or full"
+    );
+    let unknown = layout_row(&base, "ACME_KERALA").unwrap_err();
+    assert_eq!(unknown.2.as_deref(), Some("key"));
+    assert!(
+        unknown
+            .3
+            .as_deref()
+            .unwrap_or_default()
+            .contains("NORTH_INDIAN")
+    );
+
+    let kerala = row.replacen("\"SOUTH_INDIAN\"", "\"ACME_KERALA\"", 1);
+    let ctx = Ctx::with_layouts(&format!("[{kerala}]")).expect("a renamed row registers");
+    assert_eq!(layout_row(&ctx, "ACME_KERALA").unwrap(), kerala);
+
+    // The key resolves to a registered id, and the id back to the key.
+    let full = CString::new("chart_layout.ACME_KERALA").unwrap();
+    let mut id = 0u32;
+    // SAFETY: a live handle and valid slots.
+    assert_eq!(
+        unsafe { ts_key_parse(ctx.handle, full.as_ptr(), &raw mut id) },
+        Status::Ok
+    );
+    assert!(id & 0xFFFF >= 0x8000, "a registered id: {id:#x}");
+    let mut name = TsStr {
+        data: ptr::null(),
+        len: 0,
+    };
+    // SAFETY: a live handle and a valid slot.
+    assert_eq!(
+        unsafe { ts_key_name(ctx.handle, id, &raw mut name) },
+        Status::Ok
+    );
+    assert_eq!(lent(name), "chart_layout.ACME_KERALA");
+
+    // Drawn by that id, the chart comes back placed in the consumer's row.
+    let instants = [2_451_545.0];
+    let drawings = [((id & 0xFFFF) << 16) | u32::from(Varga::D1.id())];
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: drawings.as_ptr(),
+            drawing_count: drawings.len(),
+            theme_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let drawn = reader.text("drawings").unwrap();
+    assert!(drawn.contains("\"layout\":\"ACME_KERALA\""), "{drawn}");
+
+    // A row is refused by its place and field: a shipped key, a misspelt
+    // field, and a row the checks refuse.
+    let refused = |rows: String| match Ctx::with_layouts(&rows) {
+        Ok(_) => panic!("{rows} registered"),
+        Err(record) => record,
+    };
+    let shipped = refused(format!("[{kerala}, {row}]"));
+    assert_eq!(shipped.2.as_deref(), Some("options.layouts_json[1].key"));
+    // A misspelt extra field is named by its path; a misspelt required one
+    // is refused as the field it is missing.
+    let extra = kerala.replacen(
+        "\"direction\"",
+        "\"heading\":\"clockwise\",\"direction\"",
+        1,
+    );
+    let typo = refused(format!("[{extra}]"));
+    assert_eq!(
+        typo.2.as_deref(),
+        Some("options.layouts_json[0].shape.heading"),
+        "{typo:?}"
+    );
+    let missing = refused(format!(
+        "[{}]",
+        kerala.replacen("\"direction\"", "\"heading\"", 1)
+    ));
+    assert!(missing.1.contains("direction"), "{missing:?}");
+    // A row the checks refuse: two cells holding Pisces.
+    let twice = kerala.replacen("\"value\":\"ARIES\"", "\"value\":\"PISCES\"", 1);
+    let invalid = refused(format!("[{twice}]"));
+    assert!(
+        invalid
+            .2
+            .as_deref()
+            .is_some_and(|field| field.starts_with("options.layouts_json[0].shape.cells[")),
+        "{invalid:?}"
+    );
+    let not_rows = refused(String::from("{}"));
+    assert_eq!(not_rows.2.as_deref(), Some("options.layouts_json"));
 }

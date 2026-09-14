@@ -75,3 +75,8 @@ and where its label and its bodies go. The core still never draws.
   JSON section of the charts blob. Node, Python and Dart each give them a
   typed shape, and the four parity runners agree on every coordinate
   ([§7e](../../docs/03-design/chart-geometry.md)).
+- **A consumer's own layout, from any binding.** A context's `layouts` take
+  rows as `sdk.chart.layout(key)` answers them, read strictly (every key must
+  be one the reader took) and checked by the rules a shipped row passes. A
+  registered layout is drawn by its full key, and the four parity runners
+  register and draw the same one ([§7f](../../docs/03-design/chart-geometry.md)).

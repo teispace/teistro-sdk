@@ -267,6 +267,80 @@ export interface DrawnCell {
 }
 
 /** A chart drawn in a layout (`03-design/chart-geometry.md`). */
+/** A registered layout's full key, as the context that registered it resolves it. */
+export type LayoutKey = `chart_layout.${string}`;
+
+/** What a grid cell always carries: a sign, or a house 1 to 12. */
+export type LayoutHolds =
+  | { readonly kind: 'sign'; readonly value: RashiName }
+  | { readonly kind: 'house'; readonly value: number };
+
+/** A sign as a layout row spells it: the bare key, `ARIES`. */
+export type RashiName =
+  | 'ARIES'
+  | 'TAURUS'
+  | 'GEMINI'
+  | 'CANCER'
+  | 'LEO'
+  | 'VIRGO'
+  | 'LIBRA'
+  | 'SCORPIO'
+  | 'SAGITTARIUS'
+  | 'CAPRICORN'
+  | 'AQUARIUS'
+  | 'PISCES';
+
+/** One region of a grid layout. */
+export interface LayoutCell {
+  /** The region's outline, in the unit square. */
+  readonly outline: Outline;
+  /** The sign or house the cell always carries. */
+  readonly holds: LayoutHolds;
+  /** Where the sign or house number is drawn. */
+  readonly label: UnitPoint;
+  /** Where the cell's bodies are stacked about. */
+  readonly bodies: UnitPoint;
+}
+
+/** One ring of a radial layout. */
+export interface LayoutRing {
+  /** The inner radius, a fraction of the square's side; 0 makes wedges. */
+  readonly inner: number;
+  /** The outer radius, at most a half. */
+  readonly outer: number;
+  /** What the ring counts its first house from. */
+  readonly counts_from: 'lagna' | 'moon' | 'sun' | 'cusps' | 'zodiac';
+}
+
+/** Twelve cells fixed in the row, or rings computed per chart. */
+export type LayoutShape =
+  | {
+      readonly kind: 'grid';
+      readonly cells: readonly LayoutCell[];
+      readonly frame: readonly Outline[];
+      readonly direction: 'clockwise' | 'anticlockwise';
+    }
+  | {
+      readonly kind: 'radial';
+      readonly rings: readonly LayoutRing[];
+      /** The clock hour house 1 starts at, 1 to 12. */
+      readonly starts_at: number;
+      readonly direction: 'clockwise' | 'anticlockwise';
+    };
+
+/**
+ * A chart layout as a row: its key, what cites it, and its shape. Crosses
+ * as JSON with the SDK's own field names, as a theme does.
+ */
+export interface LayoutRow {
+  /** The key, in the key grammar: `[A-Z][A-Z0-9_]`, at most 48 characters. */
+  readonly key: string;
+  /** The sources the row comes from; at least one. */
+  readonly sources: readonly string[];
+  /** Its cells or its rings. */
+  readonly shape: LayoutShape;
+}
+
 /** How a drawing looks: every field optional, over the theme it extends. */
 export interface ThemeStyle {
   /** The drawing's width and height, in SVG user units. */
@@ -333,7 +407,7 @@ export interface Drawing {
    */
   readonly svg?: string;
   /** The layout it is drawn in. */
-  readonly layout: ChartLayout;
+  readonly layout: ChartLayout | LayoutKey;
   /** Which chart: `varga.D1` for the founded chart, or a divisional one. */
   readonly varga: Varga;
   /** The cells, in the layout's order. */
@@ -778,7 +852,7 @@ export interface ChartRequest {
    * The charts to draw, each a layout and which chart to place in it
    * (`Varga.D1` for the founded chart), in the order wanted; none by default.
    */
-  readonly drawings?: readonly { readonly layout: ChartLayout; readonly varga: Varga }[];
+  readonly drawings?: readonly { readonly layout: ChartLayout | LayoutKey; readonly varga: Varga }[];
   /**
    * The theme to write every drawing as SVG in, read back as each drawing's
    * `svg`; no SVG by default.
@@ -915,6 +989,13 @@ export interface ContextInit {
   readonly settings?: Record<string, unknown>;
   /** The locale every render resolves from. */
   readonly locale?: string;
+  /**
+   * Chart layouts of your own, to draw in beside the shipped ones: each a
+   * row as `sdk.chart.layout(key)` answers it, with a key of its own. A row
+   * is checked by the rules a shipped one passes, and a key the SDK ships is
+   * refused (`03-design/chart-geometry.md` §7f).
+   */
+  readonly layouts?: readonly LayoutRow[];
   /** Use the SDK's analytic test provider; for examples and tests only. */
   readonly testProvider?: boolean;
   /** An ephemeris of your own, answered in this language. */
@@ -1114,6 +1195,11 @@ export declare class FrameArea {
 
 /** `sdk.chart` — a chart founded at an instant and a place. */
 export declare class ChartArea {
+  /**
+   * A layout this context can draw in, shipped or registered, as its row: a
+   * fresh object to copy, rename and register.
+   */
+  layout(key: ChartLayout | LayoutKey | string): LayoutRow;
   /** Founds a chart at an instant and a place. */
   found(request: ChartRequest): Chart;
   /**

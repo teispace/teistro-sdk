@@ -80,6 +80,14 @@ pub fn catalogue(api: &Api) -> String {
             c.value
         );
     }
+    // One interface every catalogued kind implements, and the registered
+    // member beside it: a registry's key is a value of its kind's type, so a
+    // `List<(KeyOf<ChartLayout>, Varga)>` takes a shipped layout or one a
+    // context registered, and never a `Graha` (`chart-geometry.md` §7f).
+    let _ = writeln!(
+        out,
+        "/// A key of one kind: a member this build catalogues, or one a context\n/// registered at run time.\nabstract interface class KeyOf<K> {{\n  /// The full key, as every pack and fixture spells it (`graha.SUN`).\n  String get fullKey;\n}}\n\n/// A member a context registered at run time, by its full key: made by a\n/// kind's own `registered`, as `ChartLayout.registered('ACME_KERALA')`, so\n/// its kind is always the one its type names.\nfinal class Registered<K> implements KeyOf<K> {{\n  const Registered._(this.fullKey);\n\n  @override\n  final String fullKey;\n\n  @override\n  bool operator ==(Object other) =>\n      other is Registered<K> && other.fullKey == fullKey;\n\n  @override\n  int get hashCode => fullKey.hashCode;\n\n  @override\n  String toString() => fullKey;\n}}\n"
+    );
     for e in &api.enums {
         render_enum(&mut out, e);
     }
@@ -89,7 +97,12 @@ pub fn catalogue(api: &Api) -> String {
 fn render_enum(out: &mut String, e: &EnumDef) {
     let name = binding_type_name(&e.name);
     let catalogued = e.kind.is_some();
-    let _ = writeln!(out, "{}enum {name} {{", doc(&e.doc, ""));
+    let implements = if catalogued {
+        format!(" implements KeyOf<{name}>")
+    } else {
+        String::new()
+    };
+    let _ = writeln!(out, "{}enum {name}{implements} {{", doc(&e.doc, ""));
     let last = e.values.len().saturating_sub(1);
     for (i, v) in e.values.iter().enumerate() {
         // The same string the TypeScript surface uses, so a member is
@@ -119,7 +132,7 @@ fn render_enum(out: &mut String, e: &EnumDef) {
     let kind = e.kind.as_deref().unwrap_or_default();
     let full_key = if catalogued {
         format!(
-            "\n\n  /// The full key, as every pack and fixture spells it.\n  String get fullKey => '{kind}.$key';"
+            "\n\n  /// The full key, as every pack and fixture spells it.\n  @override\n  String get fullKey => '{kind}.$key';\n\n  /// A member a context registered under `key`, bare (`ACME_KERALA`).\n  static Registered<{name}> registered(String key) => Registered._('{kind}.$key');"
         )
     } else {
         String::new()

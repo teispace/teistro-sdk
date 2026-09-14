@@ -13,7 +13,7 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
 use teistro_core::time::UtcOffset;
-use teistro_geometry::draw;
+use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
 use teistro_points::Points;
 use teistro_port_ephemeris::EphemerisProvider;
@@ -44,6 +44,39 @@ pub struct ChartArea<'a> {
 impl<'a> ChartArea<'a> {
     pub(crate) fn of(context: &'a Context) -> ChartArea<'a> {
         ChartArea { context }
+    }
+
+    /// A layout this context can draw in, shipped or registered, as its row:
+    /// the value to copy, give a key of its own, change and register with
+    /// [`ContextBuilder::layout`](crate::ContextBuilder::layout)
+    /// (`03-design/chart-geometry.md` §7f). `key` is bare (`NORTH_INDIAN`) or
+    /// full (`chart_layout.NORTH_INDIAN`).
+    ///
+    /// ```
+    /// use teistro::{Context, Ephemeris};
+    ///
+    /// let base = Context::builder().ephemeris([Ephemeris::Test]).build()?;
+    /// let mut kerala = base.chart().layout("SOUTH_INDIAN")?;
+    /// kerala.key = String::from("ACME_KERALA");
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).layout(kerala).build()?;
+    /// assert_eq!(sdk.chart().layout("chart_layout.ACME_KERALA")?.key, "ACME_KERALA");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A key no layout this context knows has, with the keys it knows as the
+    /// hint.
+    pub fn layout(self, key: &str) -> Result<Layout, Error> {
+        let bare = key.strip_prefix("chart_layout.").unwrap_or(key);
+        let layouts = self.context.layouts();
+        layouts.get(bare).cloned().ok_or_else(|| {
+            let known: Vec<&str> = layouts.iter().map(|layout| layout.key.as_str()).collect();
+            Error::invalid_arg(format!("`{key}` is not a layout this context knows"))
+                .with_field("key")
+                .with_hint(format!("the layouts are {}", known.join(", ")))
+        })
     }
 
     /// The context this area was read off.
@@ -248,12 +281,7 @@ impl<'a> ChartArea<'a> {
                 ))
                 .with_field(at.clone())
             })?;
-            let drawing = draw(row, foundation, *varga).map_err(|error| {
-                let field = error
-                    .field()
-                    .map_or_else(|| at.clone(), |inner| format!("{at}.{inner}"));
-                error.with_field(field)
-            })?;
+            let drawing = draw(row, foundation, *varga).map_err(|error| error.under(&at))?;
             document = document.with_drawing(drawing);
         }
         if request.sections.has(Sections::PANCHANGA) {

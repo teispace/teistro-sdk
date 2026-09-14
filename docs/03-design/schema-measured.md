@@ -163,12 +163,12 @@ chart at all. It can now publish one and read it back.
 
 A schema's `enum` has to spell a member the way the document really
 writes it. Counting `rename_all` over the layer and the crates it holds
-values from, 36 types declare one:
+values from, 37 types declare one:
 
 | convention | types |
 |---|---|
 | `SCREAMING_SNAKE_CASE` | 33 |
-| `lowercase` | 3 |
+| `lowercase` | 4 |
 
 The minority is not unreached: `CalendarResolution` is one of them, and
 it appears in every document there is — a chart's foundation carries
