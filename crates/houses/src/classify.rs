@@ -49,6 +49,7 @@ pub const UPACHAYA: [u8; 4] = [3, 6, 10, 11];
 /// These three **partition** the twelve, which is why they are one enum
 /// and the overlapping classifications are predicates.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Quadrant {
     /// Angular: the 1st, 4th, 7th and 10th.

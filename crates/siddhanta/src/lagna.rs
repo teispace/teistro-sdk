@@ -28,6 +28,7 @@ const WALK_CAP: usize = 26;
 /// respirations: at Lanka (the equator) the right ascensions of the
 /// signs, elsewhere the oblique ascensions.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RisingTimes {
     /// The twelve times, Mesha first.
     pub asu: [f64; 12],
@@ -195,6 +196,7 @@ impl fmt::Display for RisingTimes {
 
 /// The horoscope point at an instant, with the figures behind it.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lagna {
     /// The point on the eastern horizon, sidereal, degrees in `[0, 360)`.
     pub sidereal_deg: f64,

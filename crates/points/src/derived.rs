@@ -16,6 +16,7 @@ use teistro_core::quantity::Degrees;
 
 /// Where a derived point stands.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Derived {
     /// Which point, by the catalogue's own key.
     pub point: Point,

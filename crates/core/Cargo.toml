@@ -15,6 +15,12 @@ categories = ["science", "date-and-time"]
 # (docs/06-cicd/03-release-process.md).
 publish = false
 
+[features]
+# Derives `schemars::JsonSchema` on the types a chart document carries,
+# so `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 # `float_roundtrip` swaps `serde_json`'s fast float parser for a
@@ -38,6 +44,7 @@ serde = { version = "1", features = ["derive"] }
 # the feature is ever off.
 serde_json = { version = "1", features = ["float_roundtrip"] }
 sha2 = "0.11"
+schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", default-features = false }

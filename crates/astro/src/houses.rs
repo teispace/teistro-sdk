@@ -74,6 +74,7 @@ pub struct Input {
 
 /// The auxiliary points every system shares, tropical degrees of date.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Angles {
     /// The ascendant: where the ecliptic rises.
     pub ascendant_deg: f64,
@@ -96,6 +97,7 @@ pub struct Angles {
 
 /// What happened to a system undefined at the place.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Outcome {
     /// The system asked for, at the place asked for.
@@ -115,6 +117,7 @@ pub enum Outcome {
 
 /// The cusps and points of one system at one place and instant.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Houses {
     /// The system the cusps belong to (the substitute, when one stood in).
     pub system: HouseSystem,

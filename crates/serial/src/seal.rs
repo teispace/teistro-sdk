@@ -40,6 +40,7 @@ use crate::canonical;
 
 /// A value with a provenance whose content hash is the value's own.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Sealed<T> {
     value: T,
     provenance: Provenance,

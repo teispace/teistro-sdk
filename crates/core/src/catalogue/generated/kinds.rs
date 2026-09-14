@@ -497,3 +497,18 @@ impl<'de> serde::Deserialize<'de> for Kind {
         Kind::from_name(&name).ok_or_else(|| serde::de::Error::custom(crate::catalogue::UnknownKey::kind_name(&name)))
     }
 }
+
+/// The kind names the reader above accepts, and no others.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Kind {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Kind")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        crate::catalogue::names_schema(
+            "A catalogue kind, by name.",
+            Kind::ALL.iter().map(|kind| kind.name()),
+        )
+    }
+}

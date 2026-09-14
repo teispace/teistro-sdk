@@ -47,6 +47,7 @@ use crate::span::{self, Span};
 /// for field, which is what the determinism contract asks of everything
 /// that crosses a binding.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Panchanga {
     /// The day, with its arc, its vara, its polar state and the sunrise
     /// convention it was reckoned under.
@@ -135,6 +136,7 @@ impl Panchanga {
 
 /// What the almanac hashes as its input.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct Input {
     date: String,
     latitude_deg: f64,
@@ -144,6 +146,7 @@ struct Input {
 
 /// The same, for a range.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct RangeInput {
     from: String,
     to: String,

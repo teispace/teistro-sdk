@@ -793,7 +793,12 @@ fn decides(
          document's hash — so the schema's natural gate, *every sample\n\
          validates and reads back equal*, is written and passing\n\
          (`crates/serial/tests/document.rs`).\n\n\
-         What is left is the emitter.\n\n",
+         The emitter is built, and building it corrected this page's own\n\
+         conclusion: the description it names, `idl/api.json`, does not\n\
+         describe the document at all. The schema comes instead from serde's\n\
+         own reading of the types, with the catalogue's member lists\n\
+         generated from the same keys its readers use\n\
+         ([`document-schema.md`](document-schema.md)).\n\n",
         table(&claims),
         falsified,
         claims.len(),

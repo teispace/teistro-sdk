@@ -36,6 +36,7 @@ const VIPALAS_PER_HALF: i128 = 108_000;
     serde::Serialize,
     serde::Deserialize,
 )]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GhatiPala {
     /// Ghatis, 0 to 59 (60 when the sunrise-to-sunrise day exceeds
     /// twenty-four hours under civil reckoning).
@@ -82,6 +83,7 @@ impl fmt::Display for GhatiPala {
 
 /// How ghatis are counted.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reckoning {
     /// A ghati is twenty-four minutes, counted from sunrise.

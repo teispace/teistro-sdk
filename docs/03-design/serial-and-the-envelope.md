@@ -210,7 +210,13 @@ than the values.
 
 ## 8. Open questions
 
-- **A JSON Schema for the document**, which a consumer would validate
+- **~~A JSON Schema for the document~~ Built**: see
+  [`document-schema.md`](document-schema.md), which corrects the
+  conclusion below. The description it names, `idl/api.json`, does not
+  describe the document; serde's own reading of the types does.
+  `teistro_serial::schema::DOCUMENT` is the schema, and the samples
+  validate against it. What follows is the question as it was left.
+  A JSON Schema is what a consumer would validate
   against. The falsification pass for it is
   [`schema-measured.md`](schema-measured.md), and it settled where the
   schema comes from: **the API description**, beside the C header, the

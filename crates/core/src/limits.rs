@@ -8,6 +8,7 @@ use crate::quantity::Depth;
 
 /// The bounds of one context.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Limits {
     /// The most instants, bodies or charts one call may carry.
     pub max_batch: usize,

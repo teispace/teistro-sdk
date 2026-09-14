@@ -37,6 +37,7 @@ const MOST_HALVINGS: u32 = 64;
 
 /// A body leaving one sign of a divisional chart for another.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Change {
     /// When it happened.
     pub at: JulianDay<Ut1>,

@@ -10,6 +10,7 @@ use crate::frame::Frame;
 /// The status of one cell of a response; a failing cell never aborts the
 /// batch.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CellStatus {
     /// Computed.
@@ -60,6 +61,7 @@ impl CellStatus {
 
 /// Which ephemeris produced a cell.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EphemerisKind {
     /// Compressed ephemeris files.
@@ -90,6 +92,7 @@ impl EphemerisKind {
 
 /// Where a cell came from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Source {
     /// The ephemeris kind.
     pub kind: EphemerisKind,
@@ -163,6 +166,7 @@ pub const fn tier_from_bits(bits: u32) -> Option<Tier> {
 
 /// One cell of a response.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Cell {
     /// Longitude or right ascension, degrees.
     pub lon: f64,
@@ -224,6 +228,7 @@ impl Cell {
 /// assert!(!columns.all_ok());
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PositionColumns {
     /// The number of instants.
     pub jd_count: usize,

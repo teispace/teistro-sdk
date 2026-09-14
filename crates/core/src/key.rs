@@ -130,6 +130,12 @@ impl<'de> serde::Deserialize<'de> for KeyId {
     }
 }
 
+hand_schema!(KeyId, "KeyId", {
+    "type": "string",
+    "description": "A catalogue key, as `kind.KEY` or `kind#id`.",
+    "pattern": "^[a-z][a-z0-9_]*(\\.[A-Z][A-Z0-9_]{0,47}|#[0-9]{1,5})$",
+});
+
 /// Whether `s` is a key name: `[A-Z][A-Z0-9_]{0,47}`.
 #[must_use]
 pub fn is_key_name(s: &str) -> bool {

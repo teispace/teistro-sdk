@@ -76,6 +76,8 @@
 //! - `almanac` and `check-almanac`: the falsification pass over the
 //!   shape of a batch of almanacs, which the panchanga blob's layout is
 //!   designed from.
+//! - `document-schema` and `check-document-schema`: the chart document's
+//!   JSON Schema, generated from the types and embedded by `teistro-serial`.
 //! - `schema` and `check-schema`: the falsification pass over the chart
 //!   document's shape, which a JSON Schema for it is designed from —
 //!   which keys are required, what type each value has, which strings
@@ -128,6 +130,7 @@ mod chebyshev;
 mod classical;
 mod consumer;
 mod dart_binding;
+mod document_schema;
 mod engine;
 mod ephemgen;
 mod facade;
@@ -194,6 +197,11 @@ const PASSES: &[Pass] = &[
     ("absence", absence::generate, absence::check_generated),
     ("serial", serial::generate, serial::check_generated),
     ("schema", schema::generate, schema::check_generated),
+    (
+        "document-schema",
+        document_schema::generate,
+        document_schema::check_generated,
+    ),
     ("almanac", almanac::generate, almanac::check_generated),
     ("lunisolar", lunisolar::generate, lunisolar::check_generated),
     (

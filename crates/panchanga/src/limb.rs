@@ -54,6 +54,7 @@ pub const LONGEST_SPAN_DAYS: f64 = 1.5;
 
 /// The four moving limbs of one day.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Limbs {
     /// The tithis that touch the day.
     pub tithi: Vec<Span<Tithi>>,

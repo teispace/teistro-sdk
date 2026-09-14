@@ -242,5 +242,9 @@ double, and this build's parser reproduces a stored document's hash —
 so the schema's natural gate, *every sample validates and reads back
 equal*, is written and passing (`crates/serial/tests/document.rs`).
 
-What is left is the emitter.
+The emitter is built, and building it corrected this page's own
+conclusion: the description it names, `idl/api.json`, does not describe
+the document at all. The schema comes instead from serde's own reading
+of the types, with the catalogue's member lists generated from the same
+keys its readers use ([`document-schema.md`](document-schema.md)).
 

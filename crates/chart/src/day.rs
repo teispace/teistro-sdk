@@ -33,6 +33,7 @@ use teistro_time::local_day::{LocalDay, local_day};
 /// to that day by the time this is answered. Naming it so stops "does
 /// pre-sunrise count as night?" from being asked once per module.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DayPart {
     /// Between the day's sunrise and its sunset.
@@ -57,6 +58,7 @@ impl DayPart {
 /// the convention the arc was reckoned by; what this adds is the two
 /// things a day cannot know about an instant it does not have.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartDay {
     /// The day, which may be the civil date before the instant's.
     pub day: LocalDay,

@@ -74,6 +74,8 @@ jobs:
         run: cargo xtask check-serial
       - name: Chart document page (the shape, the types and the member lists a schema would claim reproduce)
         run: cargo xtask check-schema
+      - name: Document schema (the JSON Schema of a sealed chart document is what the types generate)
+        run: cargo xtask check-document-schema
       - name: Almanac shape page (which of a day's lists are ragged, and what a rectangular layout would waste)
         run: cargo xtask check-almanac
       - name: Lunisolar month page (the sankranti count that decides adhika and kshaya, over a millennium)

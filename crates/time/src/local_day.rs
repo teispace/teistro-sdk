@@ -18,6 +18,7 @@ const NEAREST_SEARCH_DAYS: i64 = 190;
 
 /// Which polar state a day is in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PolarKind {
     /// The Sun does not set.
@@ -28,6 +29,7 @@ pub enum PolarKind {
 
 /// Whether the day had a sunrise, and what was done when it had not.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "state", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DayState {
     /// Sunrise and sunset occurred.
@@ -43,6 +45,7 @@ pub enum DayState {
 
 /// A local day.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct LocalDay {
     /// The place.
     pub place: Place,

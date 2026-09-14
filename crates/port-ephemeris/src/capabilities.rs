@@ -116,6 +116,24 @@ impl Serialize for Overrides {
     }
 }
 
+/// The names the writer above can produce, each at most once.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Overrides {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Overrides")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let names: Vec<&str> = Overrides::NAMES.iter().map(|(_, name)| *name).collect();
+        schemars::json_schema!({
+            "type": "array",
+            "description": "The capabilities a provider overrides, by name, in bit order.",
+            "items": { "type": "string", "enum": names },
+            "uniqueItems": true,
+        })
+    }
+}
+
 impl fmt::Display for Overrides {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.names().join(", "))
@@ -124,6 +142,7 @@ impl fmt::Display for Overrides {
 
 /// The content hash of a data file, part of the provenance envelope.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DataHash {
     /// The file name.
     pub file: String,
@@ -176,6 +195,7 @@ impl DataHash {
 
 /// Who the provider is.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Identity {
     /// The provider's name.
     pub name: String,
@@ -223,6 +243,7 @@ impl fmt::Display for Identity {
 /// What a cell's distance is measured in.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DistanceUnit {
     /// Astronomical units: an ephemeris.
@@ -263,6 +284,7 @@ impl DistanceUnit {
 /// How a provider's speeds are defined.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SpeedModel {
     /// The rate of the position: a central difference over a short step
@@ -295,6 +317,7 @@ impl SpeedModel {
 /// Which astronomy a provider computes.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Astronomy {
     /// The sky as observed: an ephemeris, whose overrides the kit holds
@@ -341,6 +364,7 @@ impl Astronomy {
 /// doing the work itself rather than by trusting an adapter that never
 /// said it could.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Capabilities {
     /// Who.
     pub identity: Identity,
@@ -460,6 +484,7 @@ impl Capabilities {
 
 /// The obliquity of the ecliptic and the nutation, degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Obliquity {
     /// Mean obliquity.
     pub mean_deg: f64,

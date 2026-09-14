@@ -36,6 +36,7 @@ pub const fn is_shadow(graha: Graha) -> bool {
 
 /// How a body stands to the lord of the sign it is in, three ways.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Friendship {
     /// The table's own reading.
     pub natural: Relationship,

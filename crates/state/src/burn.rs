@@ -43,6 +43,7 @@ pub const SHIPPED: [&str; 2] = [SURYA_SIDDHANTA, BPHS];
 
 /// The orbs one reading was judged against, degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Applied {
     /// Combust inside this.
     pub orb_deg: f64,
@@ -52,6 +53,7 @@ pub struct Applied {
 
 /// One body's orbs, degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Orbs {
     /// Which body burns at these distances.
     pub graha: Graha,
@@ -141,6 +143,7 @@ pub const BPHS_ORBS: [Orbs; 6] = [
 
 /// How badly the Sun burns a body.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Burning {
     /// Far enough from the Sun to be itself.
@@ -171,6 +174,7 @@ impl Burning {
 
 /// What the Sun does to one body.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Combustion {
     /// How badly it burns.
     pub burning: Burning,

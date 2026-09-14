@@ -94,6 +94,9 @@ pub use teistro_houses::Houses;
 pub use teistro_points::Points;
 pub use teistro_port_ephemeris::native::{NativeFunction, NativeManifest};
 pub use teistro_serial::{Document, Sealed};
+// The document's JSON Schema, for a consumer who stores one and wants to
+// check it before reading it back (`03-design/document-schema.md`).
+pub use teistro_serial::schema;
 pub use teistro_state::GrahaState;
 pub use teistro_vargas::chart::{Axis, VargaChart};
 // The typed accessor tree: every message of the SDK's locale as a value

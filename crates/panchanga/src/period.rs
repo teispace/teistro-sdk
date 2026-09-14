@@ -40,6 +40,7 @@ const NIGHT_START: u8 = 4;
 
 /// One inauspicious eighth of the daylight.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Kaalas {
     /// Which one.
     pub kaala: Kaala,
@@ -49,6 +50,7 @@ pub struct Kaalas {
 
 /// One choghadiya, of the daylight or of the night.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Part {
     /// Which choghadiya, which carries its lord and whether it is
     /// auspicious.
@@ -63,6 +65,7 @@ pub struct Part {
 
 /// The thirty muhurtas of a day, with the two that have names.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Muhurtas {
     /// The fifteen of the daylight, in order.
     pub daylight: Vec<Interval>,

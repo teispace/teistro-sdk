@@ -8,6 +8,7 @@ use crate::params::Parameters;
 
 /// The cycle a revolution count is given for.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Cycle {
     /// An age of 4 320 000 years.
@@ -18,6 +19,7 @@ pub enum Cycle {
 
 /// A mean motion: whole revolutions in a cycle, direct or retrograde.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Motion {
     /// Whole revolutions in the cycle.
     pub revolutions: u64,

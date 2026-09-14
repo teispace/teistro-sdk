@@ -23,6 +23,7 @@ use teistro_core::error::Error;
 /// ```
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Body {
@@ -242,6 +243,7 @@ impl FromStr for Body {
 /// ```
 #[repr(u32)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TimeScale {
     /// Universal Time (UT1), the scale of civil time and of rise and set.

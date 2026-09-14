@@ -161,6 +161,7 @@ pub fn radius_km(body: Body) -> f64 {
 /// assert!((sun.parallax_deg * 3600.0 - 8.794).abs() < 0.01);
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Disc {
     /// The semidiameter, degrees.
     pub semidiameter_deg: f64,
@@ -217,6 +218,7 @@ pub fn centre_altitude_deg(horizon: &Horizon, disc: &Disc) -> f64 {
 
 /// Which method answered.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Method {
     /// The hour-angle estimate iterated to convergence.
@@ -227,6 +229,7 @@ pub enum Method {
 
 /// A found horizon event.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HorizonEvent {
     /// The instant, UT1.
     pub instant: JulianDay<Ut1>,
@@ -241,6 +244,7 @@ pub struct HorizonEvent {
 /// middle, which names a day without an arc as a polar day or a polar
 /// night.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DayEvents {
     /// The rise, when there is one.
     pub rise: Option<HorizonEvent>,

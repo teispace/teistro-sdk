@@ -12,6 +12,7 @@ use crate::body::Body;
 
 /// Which event at the horizon.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum HorizonEventKind {
     /// The body reaches the horizon going up.
@@ -69,6 +70,7 @@ impl fmt::Display for HorizonEventKind {
 
 /// Which point of the disc the event is reckoned for.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DiscPoint {
     /// The centre of the disc.
@@ -114,6 +116,7 @@ impl DiscPoint {
 
 /// Whether atmospheric refraction lifts the body at the horizon.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Refraction {
     /// The geometric horizon: what the classical texts and the panchanga
@@ -171,6 +174,7 @@ impl Refraction {
 /// assert_eq!(twilight.key(), "CENTRE/NO_REFRACTION/-6");
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Horizon {
     /// Which point of the disc.
     pub disc: DiscPoint,
@@ -264,6 +268,7 @@ impl fmt::Display for Horizon {
 /// A request for the next horizon event of a body at a place from a
 /// provider's own search.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HorizonRequest {
     /// The body.
     pub body: Body,

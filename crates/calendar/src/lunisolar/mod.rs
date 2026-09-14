@@ -64,6 +64,7 @@ impl<T: LunarModel + ?Sized> LunarModel for &T {
 
 /// What a lunar month is, beyond its name.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MonthKind {
     /// One sankranti: the ordinary month.

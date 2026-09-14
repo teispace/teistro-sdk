@@ -45,6 +45,7 @@ pub const SCHEMA: u16 = 1;
 
 /// Which ayanamsha: a catalogued one, or a custom definition.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AyanamshaChoice {
     /// A catalogued ayanamsha.
@@ -71,6 +72,7 @@ impl From<Ayanamsha> for AyanamshaChoice {
 
 /// The sunrise convention, with a custom altitude when asked.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SunriseConvention {
     /// One of the named conventions.
@@ -93,6 +95,7 @@ impl From<Sunrise> for SunriseConvention {
 
 /// Which Surya Siddhanta model, when the siddhanta knob is classical.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Siddhanta {
     /// Modern astronomy.
@@ -106,6 +109,7 @@ pub enum Siddhanta {
 
 /// The rounding contract of serialised output.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Precision {
     /// Decimals of a degree value beside its exact integer.
@@ -130,6 +134,7 @@ macro_rules! group {
     ($(#[$m:meta])* $name:ident, $patch:ident { $( $(#[$fm:meta])* $field:ident : $ty:ty ),+ $(,)? }) => {
         $(#[$m])*
         #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(deny_unknown_fields)]
         pub struct $name {
             $( $(#[$fm])* pub $field: $ty ),+
@@ -137,6 +142,7 @@ macro_rules! group {
 
         #[doc = concat!("The patch of `", stringify!($name), "`: every knob optional.")]
         #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(default, deny_unknown_fields)]
         pub struct $patch {
             $( $(#[$fm])* pub $field: Option<$ty> ),+
@@ -379,6 +385,7 @@ group!(
 
 /// Every knob, complete; built only by resolving a profile.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Settings {
     /// The document's schema version.
@@ -451,6 +458,7 @@ impl Settings {
 
 /// A patch: every group's knobs optional.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct SettingsPatch {
     /// The frame.
@@ -579,6 +587,7 @@ impl Settings {
 
 /// How bad a finding is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum Severity {
     /// The settings cannot be used.
@@ -589,6 +598,7 @@ pub enum Severity {
 
 /// One coherence finding.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Diagnostic {
     /// Error or warning.
     pub severity: Severity,
@@ -630,6 +640,7 @@ impl Diagnostic {
 
 /// Every finding of a validation.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Diagnostics {
     /// The findings, in rule order.
     pub items: Vec<Diagnostic>,

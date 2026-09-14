@@ -338,3 +338,15 @@ impl<'de> serde::Deserialize<'de> for State {
         Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<State>(&key)))
     }
 }
+
+/// The keys the reader above accepts, and no others.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for State {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("State")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        crate::catalogue::key_schema::<State>(&ALIASES)
+    }
+}

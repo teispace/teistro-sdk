@@ -17,6 +17,7 @@ pub const SINES: [u16; 25] = [
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Trig {
     /// The text's table with linear interpolation: the classical path,

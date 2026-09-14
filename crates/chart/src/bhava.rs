@@ -21,6 +21,7 @@ use teistro_core::catalogue::HouseSystem;
 /// Whether a system's cusps are the boundaries of its houses or their
 /// middles.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reading {
     /// The cusps are the sandhi: a house runs from one cusp to the next,
@@ -39,6 +40,7 @@ pub enum Reading {
 /// *same cusps* and disagree about a graha's house half the time, because
 /// one reads them as middles and the other as boundaries.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Chalit {
     /// The chalit's own name, which is what a result reports.
     pub method: HouseSystem,
@@ -93,6 +95,7 @@ impl Chalit {
 /// derived from the other: under an unequal division the madhya are not
 /// midway between the sandhi.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Bhavas {
     /// The boundaries, in the chart's own zodiac, degrees.
     pub sandhi: [f64; 12],
@@ -186,6 +189,8 @@ impl Bhavas {
 /// between 10% and 51% of the time, so a bhava number without its method
 /// is not a reproducible fact (`03-design/chart-bhava-chalit.md`).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "BhavaPlacement"))]
 pub struct Placement {
     /// The bhava, 1 to 12.
     pub bhava: u8,

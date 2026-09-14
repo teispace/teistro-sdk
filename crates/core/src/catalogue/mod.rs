@@ -199,6 +199,35 @@ impl fmt::Display for UnknownKey {
 
 impl std::error::Error for UnknownKey {}
 
+/// A catalogue kind's JSON Schema: a string drawn from exactly the keys
+/// its reader accepts — every member's key in id order, then every former
+/// key — so a schema and `from_key` are one list
+/// (`docs/03-design/document-schema.md` §3).
+#[cfg(feature = "schema")]
+pub(crate) fn key_schema<T: Catalogued>(aliases: &[(&str, T)]) -> schemars::Schema {
+    names_schema(
+        &format!("A key of the `{}` catalogue.", T::KIND.name()),
+        T::all()
+            .iter()
+            .map(|member| member.key())
+            .chain(aliases.iter().map(|(former, _)| *former)),
+    )
+}
+
+/// A string schema whose values are exactly `names`, in the order given.
+#[cfg(feature = "schema")]
+pub(crate) fn names_schema<'a>(
+    description: &str,
+    names: impl Iterator<Item = &'a str>,
+) -> schemars::Schema {
+    let names: Vec<&str> = names.collect();
+    schemars::json_schema!({
+        "type": "string",
+        "description": description,
+        "enum": names,
+    })
+}
+
 /// Binary search over a table sorted by key.
 pub(crate) fn lookup<T: Copy>(table: &[(&str, T)], key: &str) -> Option<T> {
     table

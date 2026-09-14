@@ -24,6 +24,7 @@ use crate::horizon::HorizonRequest;
 /// assert!(request.speeds);
 /// ```
 #[derive(Clone, Copy, Debug, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PositionRequest<'a> {
     /// The instants.
     pub jds: &'a [f64],

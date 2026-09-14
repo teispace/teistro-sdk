@@ -26,6 +26,7 @@ pub const TT_MINUS_TAI_SECONDS: f64 = 32.184;
 
 /// What a UTC conversion assumed.
 #[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TimeBasis {
     /// The instant precedes 1972, so UTC was read as UT1.
     pub proleptic_utc: bool,
@@ -45,6 +46,7 @@ impl TimeBasis {
 
 /// A conversion to TT with what it applied.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TtConversion {
     /// The instant on TT.
     pub tt: JulianDay<Tt>,

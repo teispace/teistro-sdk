@@ -11,6 +11,7 @@ use crate::vtable::ProviderCode;
 /// Why a provider could not answer. A per-cell failure is a
 /// [`crate::CellStatus`], not an error.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProviderError {
     /// The operation or option is not implemented by this provider.

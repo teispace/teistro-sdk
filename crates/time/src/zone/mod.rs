@@ -23,6 +23,7 @@ use crate::local_day::local_day;
 
 /// How a zone is given.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ZoneSpec {
     /// A zone of the database, by its IANA name.
@@ -73,6 +74,7 @@ impl fmt::Display for ZoneSpec {
 
 /// The policies a resolution applies: the settings' time knobs.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Policy {
     /// A civil time inside a gap.
@@ -109,6 +111,7 @@ impl Default for Policy {
 
 /// Where the offset came from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ZoneSource {
     /// The zone database.
@@ -121,6 +124,7 @@ pub enum ZoneSource {
 
 /// Which rules produced the offset.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ZoneEra {
     /// An offset the zone applies in the database's own year.
@@ -133,6 +137,7 @@ pub enum ZoneEra {
 
 /// Which occurrence an overlap resolved to.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Chosen {
     /// The first occurrence, the earlier instant.
@@ -143,6 +148,7 @@ pub enum Chosen {
 
 /// What the daylight-saving policy did.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DstOutcome {
     /// The civil time was unambiguous.
@@ -161,6 +167,7 @@ pub enum DstOutcome {
 
 /// What a resolution wants the consumer to know.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Warning {
     /// The offset is not one the zone applies today.
@@ -201,6 +208,7 @@ impl fmt::Display for Warning {
 /// What a stored chart keeps beside its instant: enough to replay the
 /// resolution under a newer database and to report the difference.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ZoneResolution {
     /// The offset applied.
     pub offset: UtcOffset,
@@ -245,6 +253,7 @@ impl LocalClock for ZoneResolution {
 
 /// A resolved civil date-time.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Resolved {
     /// The instant.
     pub instant: JulianDay<Utc>,

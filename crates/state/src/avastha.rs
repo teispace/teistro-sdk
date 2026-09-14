@@ -125,6 +125,7 @@ pub struct Placement {
 /// undecided state as absent will be wrong about it; one that shows it
 /// as unknown will not.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Holds {
     /// It holds.
@@ -138,6 +139,7 @@ pub enum Holds {
 /// The lajjitadi a chart decides, the ones it rules out, and the ones it
 /// cannot decide either way.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lajjitadi {
     /// The states that hold.
     pub holding: Vec<AvasthaLajjitadi>,
@@ -267,6 +269,7 @@ pub const fn deeptadi(dignity: Dignity) -> Option<AvasthaDeeptadi> {
 
 /// Two planets at war, from the point of view of one of them.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct War {
     /// The other body.
     pub opponent: Graha,

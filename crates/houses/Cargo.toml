@@ -13,11 +13,18 @@ readme = "README.md"
 # (docs/06-cicd/03-release-process.md).
 publish = false
 
+[features]
+# Derives `schemars::JsonSchema` on the types a chart document carries,
+# so `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-astro/schema", "teistro-chart/schema", "teistro-core/schema"]
+
 [dependencies]
 teistro-astro = { path = "../astro" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
 serde = { version = "1", features = ["derive"] }
+schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 serde_json = "1"

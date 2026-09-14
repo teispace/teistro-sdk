@@ -24,6 +24,7 @@ use crate::ratio::RatioError;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Status {
     /// Success.
@@ -122,6 +123,7 @@ impl fmt::Display for Status {
 /// What, more precisely, went wrong; appended as the modules need.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Detail {
     /// A registered variant with no implementation (ADR-0018).
@@ -147,6 +149,7 @@ pub enum Detail {
 
 /// A reference to a localisable message: a key and its slots.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MessageRef {
     /// The message key (`sdk.error.dstGap`).
     pub key: String,
@@ -169,6 +172,7 @@ pub struct Error {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct Extra {
     field: Option<String>,
     hint: Option<String>,
@@ -176,6 +180,7 @@ struct Extra {
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct ErrorRepr {
     status: Status,
     detail: Option<Detail>,
@@ -302,6 +307,18 @@ impl<'de> serde::Deserialize<'de> for Error {
             }));
         }
         Ok(error)
+    }
+}
+
+/// The shape an error is written in, which is its private representation's.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Error {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Error")
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        ErrorRepr::json_schema(generator)
     }
 }
 

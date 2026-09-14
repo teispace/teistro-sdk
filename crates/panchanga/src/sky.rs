@@ -31,6 +31,7 @@ const LAST_UTTARAYANA_SIGN: u16 = 2;
 
 /// What the Moon did in the day.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MoonDay {
     /// Every moonrise inside the window, in order.
     pub rises: Vec<JulianDay<Utc>>,
@@ -58,6 +59,7 @@ impl MoonDay {
 
 /// What the Sun did in the day.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SunDay {
     /// The signs the Sun stood in; two only on a sankranti day.
     pub signs: Vec<Span<Rashi>>,

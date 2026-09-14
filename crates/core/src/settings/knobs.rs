@@ -7,6 +7,7 @@ macro_rules! knob {
         $(#[$m])*
         #[non_exhaustive]
         #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         pub enum $name {
             $( $(#[$vm])* #[serde(rename = $key)] $variant ),+
         }

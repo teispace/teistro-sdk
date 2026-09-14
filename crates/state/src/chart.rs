@@ -22,6 +22,7 @@ use crate::dignity::{self, Friendship};
 
 /// Which way a body is going, and how fast.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Motion {
     /// Whether it is going backwards through the zodiac.
     pub retrograde: bool,
@@ -31,6 +32,7 @@ pub struct Motion {
 
 /// What one graha is, in one chart.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaState {
     /// Which graha.
     pub graha: Graha,

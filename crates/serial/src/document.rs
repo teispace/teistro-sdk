@@ -24,6 +24,7 @@ use crate::seal::Sealed;
 
 /// One chart, with whichever of the layer's readings were asked for.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Document {
     /// What every other section is computed from.
     pub foundation: ChartFoundation,

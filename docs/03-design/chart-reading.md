@@ -337,8 +337,11 @@ by all four runners.
    eleven members its runtime had, now held by `typecheck/surface.mjs`;
    and three Rust domain enums (`Burning`, `Quadrant`, `Strength`) had
    no `key()` to print what their serde form writes.
-5. **The JSON Schema emitter**, which `serial-and-the-envelope.md` §8
-   says waits for a whole document to describe.
+5. ~~**The JSON Schema emitter**~~ **Done**, and designed in
+   [`document-schema.md`](document-schema.md). The schema is derived from
+   serde's own reading of the types, and each hand-serialised type
+   carries a schema beside its reader. It is gated on the samples, and
+   refuses nothing the reader reads.
 
 Steps 1 and 2 are where the design can be wrong; 3 and 4 are the pattern
 `chart-at-the-boundary.md` proved twice and this repeats five times.

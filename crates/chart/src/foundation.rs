@@ -43,6 +43,7 @@ use teistro_time::hora::{self, Hora};
 /// the corpus settles to within 0.39 minutes over all 55 charts. They
 /// belong to `dasha`, the only module that needs them.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BirthTiming {
     /// The ishtakaal: how far into the day the moment is, in ghati, pala
     /// and vipala, measured from the sunrise that opened **the chart's
@@ -66,6 +67,7 @@ use crate::zodiac::ChartZodiac;
 /// the other one and converted it itself would use a different ayanamsha
 /// than the chart did, the day someone changed the setting.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaPosition {
     /// Which graha.
     pub graha: Graha,
@@ -107,6 +109,7 @@ impl GrahaPosition {
 
 /// One moment at one place, founded.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartFoundation {
     /// The instant.
     pub instant: JulianDay<Utc>,
@@ -161,6 +164,7 @@ impl ChartFoundation {
 /// results of the same question can be told apart from two of different
 /// ones.
 #[derive(serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct Input {
     jd_utc: f64,
     latitude_deg: f64,
@@ -171,6 +175,7 @@ struct Input {
 
 /// The same, for a batch.
 #[derive(serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct BatchInput {
     jds_utc: Vec<f64>,
     latitude_deg: f64,
