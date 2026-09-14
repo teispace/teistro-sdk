@@ -9046,6 +9046,30 @@
           },
           "doc": "How many divisional charts `vargas` points at.",
           "meta": {}
+        },
+        {
+          "name": "drawings",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u32"
+            },
+            "mutable": false
+          },
+          "doc": "Which charts to draw, and in which layouts, in the order they should\nbe answered in: each `layout_id << 16 | varga_id`, a `chart_layout`\ncatalogue id and a `Varga` id, `D1` for the founded chart. Null with a\ncount of zero for none.\n\nPacked, as `sections` is a bit set, so the request carries one array\nand one count rather than two arrays that must agree; every ergonomic\nlayer takes named pairs and writes the bits (`03-design/chart-geometry.md`).",
+          "meta": {
+            "len": "drawing_count"
+          }
+        },
+        {
+          "name": "drawing_count",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "doc": "How many drawings `drawings` points at.",
+          "meta": {}
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -13011,6 +13035,13 @@
           "id": 20,
           "name": "combustion_orbs",
           "doc": "UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 21,
+          "name": "drawings",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.",
           "kind": "bytes",
           "fields": []
         }

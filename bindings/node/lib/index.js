@@ -22,6 +22,7 @@ import {
   CONTEXT_TEST_PROVIDER,
   CalendarById,
   ChartKind,
+  ChartLayoutById,
   DayPartById,
   ChartKindById,
   ChoghadiyaById,
@@ -634,6 +635,21 @@ export class Chart {
         })),
       };
     });
+  }
+
+  /**
+   * The charts drawn in the layouts asked for, in the order asked; empty
+   * unless `drawings` named some (`03-design/chart-geometry.md`).
+   *
+   * Each is `{ layout, varga, cells, frame, marks }`. A cell is
+   * `{ outline, sign, house, lagna, ring, label, anchor, bodies }`: an
+   * outline in the unit square (y downwards), the sign **and** the house it
+   * shows, and the bodies standing in it as catalogue keys. `marks` places
+   * each body at its own degree on a wheel and is empty for a grid. The
+   * shape is the Rust, Dart and Python surfaces' own.
+   */
+  get drawings() {
+    return drawingsOf(this.#batch)[this.#index] ?? [];
   }
 
   /**
@@ -1616,6 +1632,9 @@ class ChartArea extends Area {
    * @param {boolean} [request.houses] whether to compute the houses
    *   service — each bhava's sign, its lord and its quadrant; false by
    *   default
+   * @param {ReadonlyArray<{layout: string, varga: string}>} [request.drawings]
+   *   the charts to draw, each a `ChartLayout` and a `Varga` (`Varga.D1` for
+   *   the founded chart), in the order to answer them; none by default
    * @param {boolean} [request.state] whether to compute what each graha
    *   *is* — its dignity, its friendships, what the Sun does to it, its
    *   avasthas and any war it is in; false by default
@@ -1641,10 +1660,87 @@ class ChartArea extends Area {
           (request.houses === true ? SECTION_HOUSES : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: vargaKeys(request.vargas),
+        drawings: drawingBits(request.drawings),
       }),
     );
     return new Charts(bytes);
   }
+}
+
+/** Each batch's drawings, parsed once however many charts read them. */
+const DRAWINGS = new WeakMap();
+
+/**
+ * Every chart's drawings in a batch, in this layer's shape: catalogue keys in
+ * full (`rashi.LEO`, `varga.D9`) and camel-cased fields, as every other
+ * accessor gives them.
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function drawingsOf(batch) {
+  let parsed = DRAWINGS.get(batch);
+  if (parsed === undefined) {
+    const text = batch.decoded.drawings;
+    parsed = text ? JSON.parse(text).map((drawings) => drawings.map(drawingFrom)) : [];
+    DRAWINGS.set(batch, parsed);
+  }
+  return parsed;
+}
+
+/** A drawing as the boundary's JSON writes it, in this layer's shape. */
+function drawingFrom({ varga, placed }) {
+  return Object.freeze({
+    layout: `chart_layout.${placed.layout}`,
+    varga: `varga.${varga}`,
+    cells: placed.cells.map((cell) =>
+      Object.freeze({
+        outline: cell.outline,
+        sign: `rashi.${cell.sign}`,
+        house: cell.house,
+        lagna: cell.lagna,
+        ring: cell.ring,
+        label: cell.label,
+        anchor: cell.anchor,
+        bodies: cell.bodies,
+      }),
+    ),
+    frame: placed.frame,
+    marks: placed.marks.map((mark) =>
+      Object.freeze({ body: mark.body, ring: mark.ring, at: mark.at, longitudeDeg: mark.longitude_deg }),
+    ),
+  });
+}
+
+/** Every catalogue key by its id, turned round, for a request to write ids. */
+const idOf = (byId) => new Map(Array.from(byId, ([id, key]) => [key, id]));
+const LAYOUT_IDS = idOf(ChartLayoutById);
+const VARGA_IDS = idOf(VargaById);
+
+/**
+ * The drawings a request asked for, as the packed ids the boundary takes:
+ * `layout_id << 16 | varga_id` each, so a caller names pairs and nothing
+ * here writes bits by hand (`03-design/chart-geometry.md`).
+ *
+ * @param {ReadonlyArray<{layout: string, varga: string}>|undefined} asked
+ * @returns {number[]}
+ */
+function drawingBits(asked) {
+  if (asked === undefined || asked === null) return [];
+  if (!Array.isArray(asked)) {
+    throw new TypeError('drawings: expected an array of { layout, varga }');
+  }
+  return asked.map((drawing, at) => {
+    const layout = LAYOUT_IDS.get(drawing?.layout);
+    const varga = VARGA_IDS.get(drawing?.varga);
+    if (layout === undefined) {
+      throw new TypeError(`drawings[${at}].layout: expected a ChartLayout key`);
+    }
+    if (varga === undefined) {
+      throw new TypeError(`drawings[${at}].varga: expected a Varga key`);
+    }
+    return ((layout << 16) | varga) >>> 0;
+  });
 }
 
 /**

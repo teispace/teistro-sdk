@@ -17,7 +17,7 @@ import type {
   PositionsRequest,
   Scale,
 } from '../lib/index.js';
-import { Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
+import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
 import type { Graha } from '../lib/catalogue.js';
 import type { CalendarDate } from '../lib/index.js';
 
@@ -193,11 +193,21 @@ function reading(): string {
     place: { latitude: 27.7172, longitude: 85.324 },
     utcOffsetSeconds: 20700,
     vargas: [Varga.D9, Varga.D10],
+    drawings: [
+      { layout: ChartLayout.NorthIndian, varga: Varga.D9 },
+      { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
+    ],
     aspects: true,
     points: true,
     houses: true,
     state: true,
   });
+  const drawn = read.drawings[0];
+  const firstStep = drawn?.cells[0]?.outline.segments[0];
+  const curved: boolean = firstStep?.kind === 'arc' && firstStep.clockwise;
+  const markLon: number = read.drawings[1]?.marks[0]?.longitudeDeg ?? 0;
+  // @ts-expect-error a drawing names a layout from the catalogue, not a word
+  ctx.chart.found({ instant: 2460482.5, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: [{ layout: 'lotus', varga: Varga.D1 }] });
   const navamsha = read.vargas[0];
   const vargottama: boolean = navamsha !== undefined && navamsha.lagna.sign === navamsha.lagna.rashi;
   const part: number = navamsha?.grahas[0]?.at.part ?? -1;
@@ -219,6 +229,7 @@ function reading(): string {
   return [
     vargottama, part, drishti.length, edge, gulika?.longitudeDeg ?? 'none', lord,
     dispositor, orb, holding.length, war, apart, read.bhavas.length,
+    drawn?.layout ?? 'none', curved, markLon,
   ].join(' ');
 }
 

@@ -926,6 +926,10 @@ export interface Charts {
    * UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.
    */
   readonly combustionOrbs: string;
+  /**
+   * UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.
+   */
+  readonly drawings: string;
 }
 
 /**

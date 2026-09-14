@@ -150,7 +150,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 80,
+    "ts_chart_request": 96,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -180,7 +180,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 64,
+    "ts_chart_request": 72,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -568,6 +568,8 @@ class _ChartRequestStruct(ctypes.Structure):
         ("reserved_sections", ctypes.c_uint32),
         ("vargas", ctypes.POINTER(ctypes.c_uint16)),
         ("varga_count", ctypes.c_size_t),
+        ("drawings", ctypes.POINTER(ctypes.c_uint32)),
+        ("drawing_count", ctypes.c_size_t),
     ]
 
 
@@ -2066,6 +2068,17 @@ class ChartRequest:
     Enum: Varga.
     """
 
+    drawings: Sequence[int]
+    """Which charts to draw, and in which layouts, in the order they should
+    be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+    catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+    count of zero for none.
+
+    Packed, as `sections` is a bit set, so the request carries one array
+    and one count rather than two arrays that must agree; every ergonomic
+    layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2092,6 +2105,12 @@ class ChartRequest:
         owned.append(_vargas)
         raw.vargas = ctypes.cast(_vargas, ctypes.POINTER(ctypes.c_uint16))
         raw.varga_count = len(self.vargas)
+        _drawings = (ctypes.c_uint32 * len(self.drawings))(
+            *(_c_value(_v) for _v in self.drawings)
+        )
+        owned.append(_drawings)
+        raw.drawings = ctypes.cast(_drawings, ctypes.POINTER(ctypes.c_uint32))
+        raw.drawing_count = len(self.drawings)
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2121,6 +2140,9 @@ class ChartRequest:
                 Varga(raw.vargas[_i]) for _i in range(raw.varga_count)
             ]
             if raw.vargas
+            else [],
+            drawings=[raw.drawings[_i] for _i in range(raw.drawing_count)]
+            if raw.drawings
             else [],
         )
 

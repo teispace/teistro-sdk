@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `building` — steps 1 to 4 and the Rust half of step 5 built 2026-09-14; the boundary and the renderer follow. It builds the first two parts of
+Status: `building` — steps 1 to 5 built 2026-09-14; the renderer follows. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is §8's later step. The research this page rests on was
@@ -288,6 +288,38 @@ where that is won or lost.
   - D9 in South Indian matches the navamsha's own lagna and signs;
   - each graha's wheel house equals the foundation's own bhava.
 
+## 7e. The boundary and the four bindings
+
+- **A drawing crosses as one `u32`**: `layout << 16 | varga`, in
+  `TsChartRequest.drawings` with its `drawing_count`. Two parallel arrays
+  could disagree in length and a struct array would be a second record
+  every binding generates; one packed id can do neither, and both halves
+  are catalogue ids that fit 16 bits. No binding writes the bits by hand:
+  each takes pairs (`{ layout, varga }` in Node, a `(ChartLayout, Varga)`
+  tuple in Python and a record in Dart) and packs them in one helper.
+- **The section is canonical JSON, not columns.** A drawing is nested
+  paths of three segment kinds, so the charts blob carries it as bytes
+  section 21, one array per chart, from the same canonical writer the
+  document envelope uses. Each binding parses a batch's section once, on
+  first read, and every chart in the batch reads from that.
+- **Each binding gives the layer's shape**: catalogue keys in full
+  (`rashi.LEO`, `varga.D9`), camel case where the binding uses it, and the
+  segments as a typed union (a TypeScript union, Python dataclasses, a
+  Dart sealed class), so a renderer's `switch` is checked.
+- **A malformed pair is refused before the boundary**, naming its place
+  (`drawings[1].layout`). Python's first version unpacked the pair before
+  checking it, so a one-element tuple raised `ValueError` rather than the
+  SDK's refusal; it now checks the shape first, and a test in Node and in
+  Python holds every refusal to its field. Dart's record type makes the
+  wrong pair a compile error.
+- **Parity**: the four runners request the same three drawings (North
+  Indian D1, South Indian D9, the wheel's D1) over two instants and print
+  every cell's sign, house, lagna flag, ring, bodies, label, anchor and
+  outline, and every mark. The four bindings agree on every value.
+- **Not yet across the boundary**: a consumer's own layout. The C ABI has
+  no registration call, so a binding draws the six shipped layouts. The
+  Rust façade registers any layout.
+
 ## 8. Order of work
 
 1. **This page**, crux C47, and the corrections to ADR-0026 recorded
@@ -300,8 +332,8 @@ where that is won or lost.
    its hash-matrix row.
 4. **The registry and the catalogue kind** `chart_layout`, so a consumer
    registers a regional layout without forking anything.
-5. **The document section and the boundary**: `ChartRequest::with_layouts`,
-   the section in all four bindings, and parity.
+5. **The document section and the boundary**: `ChartRequest::with_drawings`,
+   the section in all four bindings, and parity (built: §7d, §7e).
 6. **`render-svg`**: the theme record and golden SVGs, gated byte for
    byte.
 

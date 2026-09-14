@@ -32,7 +32,7 @@
 
 use std::collections::BTreeMap;
 
-use teistro::catalogue::{Calendar, ChartKind, Graha, Varga};
+use teistro::catalogue::{Calendar, ChartKind, ChartLayout, Graha, Varga};
 use teistro::{
     Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
     TimeScale,
@@ -768,13 +768,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     // Two divisional charts asked for, and two rather than one because
     // the layout the other three decode is charts outermost then charts
     // asked for: only two of each can catch a transposed stride.
-    let asked = ChartRequest::at(place, offset)
-        .with_kind(ChartKind::Natal)
-        .with_vargas([Varga::D9, Varga::D10])
-        .with_aspects()
-        .with_points()
-        .with_houses()
-        .with_state();
+    let asked = the_chart_request(place, offset);
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -796,6 +790,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
             .map_or_else(String::new, |a| a.table().to_owned()),
     );
     for (index, document) in read.value.iter().enumerate() {
+        the_drawings(report, index, document);
         one_varga_chart(report, index, document);
         the_states(report, index, document);
         the_bhavas(report, index, document);
@@ -871,6 +866,97 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
 /// same order and the other three bindings read the name from the
 /// foundation's column: a runner that read it from its own section would
 /// agree with them and prove less.
+/// The request every runner makes: two divisional charts, three drawings and
+/// every section.
+fn the_chart_request(place: Place, offset: UtcOffset) -> ChartRequest {
+    ChartRequest::at(place, offset)
+        .with_kind(ChartKind::Natal)
+        .with_vargas([Varga::D9, Varga::D10])
+        .with_drawings([
+            (ChartLayout::NorthIndian, Varga::D1),
+            (ChartLayout::SouthIndian, Varga::D9),
+            (ChartLayout::WesternWheel, Varga::D1),
+        ])
+        .with_aspects()
+        .with_points()
+        .with_houses()
+        .with_state()
+}
+
+/// Every drawing the request named: its layout and chart, and each cell's
+/// sign, house, anchors, outline start and the kinds of its steps, and each
+/// mark, as the other three print them.
+fn the_drawings(report: &mut Report, index: usize, document: &teistro::Document) {
+    use teistro::geometry::{Point, Segment};
+    let pair = |point: Point| format!("{},{}", number(point.x), number(point.y));
+    for (d, drawing) in document.drawings.iter().enumerate() {
+        let key = format!("chart-{index}-drawing-{d}");
+        let placed = &drawing.placed;
+        put(report, &key, format!("chart_layout.{}", placed.layout));
+        put(
+            report,
+            &format!("{key}-varga"),
+            drawing.varga.full_key().to_owned(),
+        );
+        put(
+            report,
+            &format!("{key}-cells"),
+            placed.cells.len().to_string(),
+        );
+        put(
+            report,
+            &format!("{key}-frames"),
+            placed.frame.len().to_string(),
+        );
+        put(
+            report,
+            &format!("{key}-marks"),
+            placed.marks.len().to_string(),
+        );
+        for (c, cell) in placed.cells.iter().enumerate() {
+            let at = format!("{key}-cell-{c}");
+            put(
+                report,
+                &format!("{at}-sign"),
+                cell.sign.full_key().to_owned(),
+            );
+            put(report, &format!("{at}-house"), cell.house.to_string());
+            put(report, &format!("{at}-lagna"), cell.lagna.to_string());
+            put(report, &format!("{at}-ring"), cell.ring.to_string());
+            let bodies: Vec<String> = cell.bodies.iter().map(ToString::to_string).collect();
+            put(
+                report,
+                &format!("{at}-bodies"),
+                if bodies.is_empty() {
+                    String::from("none")
+                } else {
+                    bodies.join(",")
+                },
+            );
+            put(report, &format!("{at}-label"), pair(cell.label));
+            put(report, &format!("{at}-anchor"), pair(cell.anchor));
+            put(report, &format!("{at}-start"), pair(cell.outline.start));
+            let steps: Vec<&str> = cell
+                .outline
+                .segments
+                .iter()
+                .map(|step| match step {
+                    Segment::Line { .. } => "line",
+                    Segment::Quad { .. } => "quad",
+                    Segment::Arc { .. } => "arc",
+                })
+                .collect();
+            put(report, &format!("{at}-steps"), steps.join(","));
+        }
+        for (m, mark) in placed.marks.iter().enumerate() {
+            let at = format!("{key}-mark-{m}");
+            put(report, &at, mark.body.to_string());
+            put(report, &format!("{at}-at"), pair(mark.at));
+            put(report, &format!("{at}-lon"), number(mark.longitude_deg));
+        }
+    }
+}
+
 fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Document) {
     for (at, varga) in document.vargas.iter().enumerate() {
         let key = |what: &str| format!("chart-{index}-varga-{at}{what}");

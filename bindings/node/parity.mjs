@@ -24,6 +24,7 @@ import {
   packFrame,
   sdkVersion,
   unpackFrame,
+  ChartLayout,
   Varga,
 } from './lib/index.js';
 
@@ -228,6 +229,14 @@ const charts = geo.chart.foundMany({
   place,
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
+  // A grid of the founded chart, a grid of a divisional one, and the wheel:
+  // straight edges, a divisional chart's own lagna, arcs, marks and the
+  // rounded coordinates the wheel's trigonometry leaves.
+  drawings: [
+    { layout: ChartLayout.NorthIndian, varga: Varga.D1 },
+    { layout: ChartLayout.SouthIndian, varga: Varga.D9 },
+    { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
+  ],
   aspects: true,
   points: true,
   houses: true,
@@ -304,6 +313,32 @@ for (const chart of charts) {
     put(`chart-${i}-aspect-${k}-strength`, drishti.strength);
     put(`chart-${i}-aspect-${k}-from-sign`, drishti.fromEdge.signDeg);
     put(`chart-${i}-aspect-${k}-to-sign`, drishti.toEdge.signDeg);
+  });
+  chart.drawings.forEach((drawing, d) => {
+    const key = `chart-${i}-drawing-${d}`;
+    put(key, drawing.layout);
+    put(`${key}-varga`, drawing.varga);
+    put(`${key}-cells`, drawing.cells.length);
+    put(`${key}-frames`, drawing.frame.length);
+    put(`${key}-marks`, drawing.marks.length);
+    drawing.cells.forEach((cell, c) => {
+      const at = `${key}-cell-${c}`;
+      put(`${at}-sign`, cell.sign);
+      put(`${at}-house`, cell.house);
+      put(`${at}-lagna`, cell.lagna);
+      put(`${at}-ring`, cell.ring);
+      put(`${at}-bodies`, cell.bodies.join(',') || 'none');
+      put(`${at}-label`, `${number(cell.label.x)},${number(cell.label.y)}`);
+      put(`${at}-anchor`, `${number(cell.anchor.x)},${number(cell.anchor.y)}`);
+      put(`${at}-start`, `${number(cell.outline.start.x)},${number(cell.outline.start.y)}`);
+      put(`${at}-steps`, cell.outline.segments.map((step) => step.kind).join(','));
+    });
+    drawing.marks.forEach((mark, m) => {
+      const at = `${key}-mark-${m}`;
+      put(at, mark.body);
+      put(`${at}-at`, `${number(mark.at.x)},${number(mark.at.y)}`);
+      put(`${at}-lon`, mark.longitudeDeg);
+    });
   });
   chart.vargas.forEach((varga, v) => {
     put(`chart-${i}-varga-${v}`, varga.varga);

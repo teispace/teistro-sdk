@@ -5649,6 +5649,21 @@ struct ts_chart_request {
      * How many divisional charts `vargas` points at.
      */
     size_t varga_count;
+    /**
+     * Which charts to draw, and in which layouts, in the order they should
+     * be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+     * catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+     * count of zero for none.
+     *
+     * Packed, as `sections` is a bit set, so the request carries one array
+     * and one count rather than two arrays that must agree; every ergonomic
+     * layer takes named pairs and writes the bits (`03-design/chart-geometry.md`). Points at `drawing_count` elements.
+     */
+    const uint32_t * drawings;
+    /**
+     * How many drawings `drawings` points at.
+     */
+    size_t drawing_count;
 };
 
 /**
@@ -6511,7 +6526,7 @@ _Static_assert(sizeof(ts_context_options) == 40, "ts_context_options is 40 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 80, "ts_chart_request is 80 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 96, "ts_chart_request is 96 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

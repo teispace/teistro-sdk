@@ -31,9 +31,10 @@ use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{ChartKind, Varga};
+use teistro_core::catalogue::{ChartKind, Kind, Varga};
 use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
+use teistro_core::key::KeyId;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_houses::classify::Quadrant;
@@ -398,6 +399,18 @@ pub struct TsChartRequest {
     pub vargas: *const u16,
     /// How many divisional charts `vargas` points at.
     pub varga_count: usize,
+    /// Which charts to draw, and in which layouts, in the order they should
+    /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+    /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+    /// count of zero for none.
+    ///
+    /// Packed, as `sections` is a bit set, so the request carries one array
+    /// and one count rather than two arrays that must agree; every ergonomic
+    /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+    /// `api: len=drawing_count`
+    pub drawings: *const u32,
+    /// How many drawings `drawings` points at.
+    pub drawing_count: usize,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -1287,6 +1300,7 @@ pub fn encode(
         points.write(&mut writer)?;
         bhavas.write(&mut writer)?;
         states.write(&mut writer)?;
+        writer.bytes("drawings", drawings_json(documents).as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1295,6 +1309,23 @@ pub fn encode(
             format!("the chart blob could not be written: {error}"),
         )
     })
+}
+
+/// Every chart's drawings as the canonical JSON the `drawings` section
+/// carries: one array per chart, or nothing at all when none were asked for,
+/// so a caller that drew nothing pays for no text.
+fn drawings_json(documents: &[Document]) -> String {
+    if documents
+        .iter()
+        .all(|document| document.drawings.is_empty())
+    {
+        return String::new();
+    }
+    let per_chart: Vec<&Vec<teistro_geometry::Drawing>> = documents
+        .iter()
+        .map(|document| &document.drawings)
+        .collect();
+    teistro_core::envelope::canonical_json(&per_chart)
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:
@@ -1367,11 +1398,33 @@ pub unsafe extern "C" fn ts_chart_found(
                 .with_field("vargas")
             })?);
         }
+        if asked.drawings.is_null() && asked.drawing_count != 0 {
+            return Err(crate::support::null("drawings"));
+        }
+        // SAFETY: as above, for `drawing_count` readable `u32`s.
+        let asked_drawings =
+            unsafe { core::slice::from_raw_parts(asked.drawings, asked.drawing_count) };
+        let mut drawings = Vec::with_capacity(asked_drawings.len());
+        for (index, packed) in asked_drawings.iter().enumerate() {
+            let (layout, varga) = (packed >> 16, packed & 0xFFFF);
+            let varga = u16::try_from(varga)
+                .ok()
+                .and_then(Varga::from_id)
+                .ok_or_else(|| {
+                    Error::invalid_arg(format!(
+                        "drawing {index} names divisional chart id {varga}, which is none"
+                    ))
+                    .with_field(format!("drawings[{index}]"))
+                })?;
+            let layout = KeyId::new(Kind::ChartLayout, u16::try_from(layout).unwrap_or(u16::MAX));
+            drawings.push((layout, varga));
+        }
         let request = sections_of(
             asked.sections,
             ChartRequest::at(place, clock).with_kind(kind),
         )
-        .with_vargas(vargas);
+        .with_vargas(vargas)
+        .with_drawings(drawings);
         // **The façade reads it**, which is what the dependency inversion
         // was for: `rust-consumer-surface.md` moved the SDK's
         // composition into `teistro` and had this crate depend on it, and

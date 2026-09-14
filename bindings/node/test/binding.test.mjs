@@ -10,6 +10,8 @@ import { test } from 'node:test';
 import {
   Body,
   Calendar,
+  ChartLayout,
+  Varga,
   altitude,
   at,
   date,
@@ -703,4 +705,28 @@ test('a provider and a named ephemeris together are refused', () => {
 test('a context without an ephemeris says so', () => {
   const bare = new Context({ profile: 'nepali-default' });
   assert.throws(() => bare.engine);
+});
+
+/**
+ * A drawing is a `{ layout, varga }` pair of catalogue keys; anything else
+ * is refused naming its place in the list, before the boundary is crossed
+ * (`03-design/chart-geometry.md`).
+ */
+test('a drawing names a layout and a varga or is refused', () => {
+  const ctx = context();
+  const asked = (wrong) => () =>
+    ctx.chart.found({
+      instant: 2451545,
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 0 },
+      utcOffsetSeconds: 0,
+      drawings: [{ layout: ChartLayout.SouthIndian, varga: Varga.D9 }, wrong],
+    });
+  assert.throws(asked({ layout: Varga.D1, varga: Varga.D1 }), /drawings\[1\]\.layout/u);
+  assert.throws(asked({ layout: ChartLayout.NorthIndian, varga: 'varga.D99' }), /drawings\[1\]\.varga/u);
+  assert.throws(asked(null), /drawings\[1\]\.layout/u);
+  assert.throws(
+    () => ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: {} }),
+    /expected an array/u,
+  );
+  ctx.dispose();
 });

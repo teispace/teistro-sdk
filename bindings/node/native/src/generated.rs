@@ -1776,6 +1776,15 @@ pub struct ChartRequest {
     /// already does.
     /// Enum: Varga.
     pub vargas: Vec<String>,
+    /// Which charts to draw, and in which layouts, in the order they should
+    /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+    /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+    /// count of zero for none.
+    ///
+    /// Packed, as `sections` is a bit set, so the request carries one array
+    /// and one count rather than two arrays that must agree; every ergonomic
+    /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+    pub drawings: Vec<u32>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1789,6 +1798,7 @@ pub struct HeldChartRequest {
     utc_offset_seconds: i32,
     sections: u32,
     vargas: Vec<u16>,
+    drawings: Vec<u32>,
 }
 
 impl HeldChartRequest {
@@ -1809,6 +1819,8 @@ impl HeldChartRequest {
             reserved_sections: Default::default(),
             vargas: self.vargas.as_ptr(),
             varga_count: self.vargas.len(),
+            drawings: self.drawings.as_ptr(),
+            drawing_count: self.drawings.len(),
         }
     }
 }
@@ -1829,6 +1841,7 @@ impl ChartRequest {
                 .iter()
                 .map(|v| varga_from_str(v))
                 .collect::<Result<Vec<_>>>()?,
+            drawings: self.drawings.iter().map(|v| *v as u32).collect(),
         })
     }
 
@@ -1853,6 +1866,10 @@ impl ChartRequest {
             vargas: unsafe { slice_or_empty(raw.vargas, raw.varga_count) }
                 .iter()
                 .map(|v| varga_to_str(*v))
+                .collect(),
+            drawings: unsafe { slice_or_empty(raw.drawings, raw.drawing_count) }
+                .iter()
+                .map(|v| *v as _)
                 .collect(),
         }
     }

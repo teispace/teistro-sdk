@@ -259,6 +259,11 @@ void main() {
     place: place,
     utcOffsetSeconds: 20700,
     vargas: <Varga>[Varga.d9, Varga.d10],
+    drawings: const <(ChartLayout, Varga)>[
+      (ChartLayout.northIndian, Varga.d1),
+      (ChartLayout.southIndian, Varga.d9),
+      (ChartLayout.westernWheel, Varga.d1),
+    ],
     aspects: true,
     points: true,
     houses: true,
@@ -361,6 +366,50 @@ void main() {
       put('chart-$i-aspect-$k-strength', one.strength.key);
       put('chart-$i-aspect-$k-from-sign', one.fromEdge.signDeg);
       put('chart-$i-aspect-$k-to-sign', one.toEdge.signDeg);
+    }
+    final drawings = chart.drawings;
+    for (var d = 0; d < drawings.length; d += 1) {
+      final drawing = drawings[d];
+      final key = 'chart-$i-drawing-$d';
+      put(key, drawing.layout.fullKey);
+      put('$key-varga', drawing.varga.fullKey);
+      put('$key-cells', drawing.cells.length);
+      put('$key-frames', drawing.frame.length);
+      put('$key-marks', drawing.marks.length);
+      for (var c = 0; c < drawing.cells.length; c += 1) {
+        final cell = drawing.cells[c];
+        final at = '$key-cell-$c';
+        put('$at-sign', cell.sign.fullKey);
+        put('$at-house', cell.house);
+        put('$at-lagna', cell.lagna);
+        put('$at-ring', cell.ring);
+        put('$at-bodies', cell.bodies.isEmpty ? 'none' : cell.bodies.join(','));
+        put('$at-label', '${number(cell.label.x)},${number(cell.label.y)}');
+        put('$at-anchor', '${number(cell.anchor.x)},${number(cell.anchor.y)}');
+        put(
+          '$at-start',
+          '${number(cell.outline.start.x)},${number(cell.outline.start.y)}',
+        );
+        put(
+          '$at-steps',
+          cell.outline.segments
+              .map(
+                (step) => switch (step) {
+                  QuadSegment() => 'quad',
+                  ArcSegment() => 'arc',
+                  LineSegment() => 'line',
+                },
+              )
+              .join(','),
+        );
+      }
+      for (var m = 0; m < drawing.marks.length; m += 1) {
+        final mark = drawing.marks[m];
+        final at = '$key-mark-$m';
+        put(at, mark.body);
+        put('$at-at', '${number(mark.at.x)},${number(mark.at.y)}');
+        put('$at-lon', mark.longitudeDeg);
+      }
     }
     final vargas = chart.vargas;
     for (var v = 0; v < vargas.length; v += 1) {

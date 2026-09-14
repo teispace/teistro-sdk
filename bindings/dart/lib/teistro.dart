@@ -629,6 +629,7 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    List<(ChartLayout, Varga)> drawings = const <(ChartLayout, Varga)>[],
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -639,6 +640,7 @@ final class ChartArea extends _Area {
     utcOffsetSeconds: utcOffsetSeconds,
     kind: kind,
     vargas: vargas,
+    drawings: drawings,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -655,13 +657,16 @@ final class ChartArea extends _Area {
   /// `vargas` names the divisional charts to compute, in the order to
   /// answer them; none by default, because a caller who wants a birth
   /// chart should not pay for twenty-one of them
-  /// (`03-design/chart-reading.md` §4). `aspects` asks for the drishti.
+  /// (`03-design/chart-reading.md` §4). `drawings` names charts to draw, each
+  /// a `(ChartLayout, Varga)` pair with `Varga.d1` the founded chart, in the
+  /// order to answer them. `aspects` asks for the drishti.
   Charts foundMany({
     required List<double> instants,
     required Observer place,
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    List<(ChartLayout, Varga)> drawings = const <(ChartLayout, Varga)>[],
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -686,6 +691,7 @@ final class ChartArea extends _Area {
               (houses ? _sectionHouses : 0) |
               (state ? _sectionState : 0),
           vargas: vargas,
+          drawings: _drawingBits(drawings),
         ),
       ),
     ),
@@ -1495,6 +1501,237 @@ final class PlacedInVarga {
   final VargaPlacement at;
 }
 
+/// A point in a drawing's unit square, y downwards.
+final class UnitPoint {
+  const UnitPoint(this.x, this.y);
+
+  /// From the left edge, 0 to 1.
+  final double x;
+
+  /// From the top edge, 0 to 1.
+  final double y;
+
+  factory UnitPoint._of(Map<String, Object?> raw) =>
+      UnitPoint((raw['x']! as num).toDouble(), (raw['y']! as num).toDouble());
+}
+
+/// One step of an outline, from wherever the previous step ended.
+sealed class Segment {
+  const Segment(this.to);
+
+  /// Where the step ends.
+  final UnitPoint to;
+
+  factory Segment._of(Map<String, Object?> raw) {
+    final to = UnitPoint._of(raw['to']! as Map<String, Object?>);
+    return switch (raw['kind']) {
+      'quad' => QuadSegment(
+        UnitPoint._of(raw['control']! as Map<String, Object?>),
+        to,
+      ),
+      'arc' => ArcSegment(
+        UnitPoint._of(raw['centre']! as Map<String, Object?>),
+        raw['clockwise']! as bool,
+        to,
+      ),
+      _ => LineSegment(to),
+    };
+  }
+}
+
+/// A straight line to a point.
+final class LineSegment extends Segment {
+  const LineSegment(super.to);
+}
+
+/// A quadratic curve to a point, pulled towards its control.
+final class QuadSegment extends Segment {
+  const QuadSegment(this.control, super.to);
+
+  /// The control point.
+  final UnitPoint control;
+}
+
+/// A circular arc about a centre to a point the same distance from it.
+final class ArcSegment extends Segment {
+  const ArcSegment(this.centre, this.clockwise, super.to);
+
+  /// The circle's centre.
+  final UnitPoint centre;
+
+  /// Which way the arc runs, as a reader sees it.
+  final bool clockwise;
+}
+
+/// A closed outline: a start and the steps back to it.
+final class Outline {
+  const Outline({required this.start, required this.segments});
+
+  /// Where the outline starts.
+  final UnitPoint start;
+
+  /// The steps around it.
+  final List<Segment> segments;
+
+  factory Outline._of(Map<String, Object?> raw) => Outline(
+    start: UnitPoint._of(raw['start']! as Map<String, Object?>),
+    segments: [
+      for (final step in raw['segments']! as List<Object?>)
+        Segment._of(step! as Map<String, Object?>),
+    ],
+  );
+}
+
+/// One region of a drawn chart.
+final class DrawnCell {
+  const DrawnCell({
+    required this.outline,
+    required this.sign,
+    required this.house,
+    required this.lagna,
+    required this.ring,
+    required this.label,
+    required this.anchor,
+    required this.bodies,
+  });
+
+  /// The region's outline in the unit square.
+  final Outline outline;
+
+  /// The sign the cell shows; for a house between cusps, its cusp's sign.
+  final Rashi sign;
+
+  /// The house the cell shows, 1 to 12.
+  final int house;
+
+  /// Whether the lagna stands in this cell.
+  final bool lagna;
+
+  /// The ring, innermost 0; a grid's cells are all 0.
+  final int ring;
+
+  /// Where the sign or house number is drawn.
+  final UnitPoint label;
+
+  /// Where the cell's bodies are stacked about.
+  final UnitPoint anchor;
+
+  /// The bodies in the cell, as catalogue keys (`graha.SUN`).
+  final List<String> bodies;
+}
+
+/// A body drawn at its own degree on a wheel.
+final class DrawnMark {
+  const DrawnMark({
+    required this.body,
+    required this.ring,
+    required this.at,
+    required this.longitudeDeg,
+  });
+
+  /// The body, as a catalogue key.
+  final String body;
+
+  /// The ring it is drawn in.
+  final int ring;
+
+  /// Where it is drawn.
+  final UnitPoint at;
+
+  /// The longitude that put it there, degrees.
+  final double longitudeDeg;
+}
+
+/// A chart drawn in a layout (`03-design/chart-geometry.md`).
+final class Drawing {
+  const Drawing({
+    required this.layout,
+    required this.varga,
+    required this.cells,
+    required this.frame,
+    required this.marks,
+  });
+
+  /// The layout it is drawn in.
+  final ChartLayout layout;
+
+  /// Which chart: `Varga.d1` for the founded chart, or a divisional one.
+  final Varga varga;
+
+  /// The cells, in the layout's order.
+  final List<DrawnCell> cells;
+
+  /// The lines drawn that hold nothing.
+  final List<Outline> frame;
+
+  /// Each body at its own degree, on a wheel; empty for a grid.
+  final List<DrawnMark> marks;
+
+  factory Drawing._of(Map<String, Object?> raw) {
+    final placed = raw['placed']! as Map<String, Object?>;
+    Map<String, Object?> object(Object? value) =>
+        value! as Map<String, Object?>;
+    return Drawing(
+      layout:
+          ChartLayout.byKey(placed['layout']! as String) ?? ChartLayout.unknown,
+      varga: Varga.byKey(raw['varga']! as String) ?? Varga.unknown,
+      cells: [
+        for (final cell in (placed['cells']! as List<Object?>).map(object))
+          DrawnCell(
+            outline: Outline._of(object(cell['outline'])),
+            sign: Rashi.byKey(cell['sign']! as String) ?? Rashi.unknown,
+            house: cell['house']! as int,
+            lagna: cell['lagna']! as bool,
+            ring: cell['ring']! as int,
+            label: UnitPoint._of(object(cell['label'])),
+            anchor: UnitPoint._of(object(cell['anchor'])),
+            bodies: [
+              for (final body in cell['bodies']! as List<Object?>)
+                body! as String,
+            ],
+          ),
+      ],
+      frame: [
+        for (final path in (placed['frame']! as List<Object?>).map(object))
+          Outline._of(path),
+      ],
+      marks: [
+        for (final mark in (placed['marks']! as List<Object?>).map(object))
+          DrawnMark(
+            body: mark['body']! as String,
+            ring: mark['ring']! as int,
+            at: UnitPoint._of(object(mark['at'])),
+            longitudeDeg: (mark['longitude_deg']! as num).toDouble(),
+          ),
+      ],
+    );
+  }
+}
+
+/// Each batch's drawings, parsed once however many charts read them.
+final Expando<List<List<Drawing>>> _drawings = Expando<List<List<Drawing>>>(
+  'drawings',
+);
+
+List<List<Drawing>> _drawingsOf(Charts batch) =>
+    _drawings[batch] ??=
+        batch.drawings.isEmpty
+            ? const <List<Drawing>>[]
+            : [
+              for (final chart in jsonDecode(batch.drawings) as List<Object?>)
+                [
+                  for (final raw in chart! as List<Object?>)
+                    Drawing._of(raw! as Map<String, Object?>),
+                ],
+            ];
+
+/// The drawings asked for, as the packed ids the boundary takes: `layout << 16
+/// | varga` each, so a caller names pairs and nothing else writes bits
+/// (`03-design/chart-geometry.md`).
+List<int> _drawingBits(List<(ChartLayout, Varga)> drawings) => [
+  for (final (layout, varga) in drawings) (layout.id << 16) | varga.id,
+];
+
 /// One divisional chart of one founded moment.
 final class VargaChart {
   const VargaChart({
@@ -1762,6 +1999,17 @@ final class Chart {
         ),
       );
     });
+  }
+
+  /// The charts drawn in the layouts asked for, in the order asked; empty
+  /// unless `drawings` named some (`03-design/chart-geometry.md`).
+  ///
+  /// Each cell carries both the sign and the house it shows, and the bodies
+  /// standing in it; `marks` places each body at its own degree on a wheel
+  /// and is empty for a grid.
+  List<Drawing> get drawings {
+    final all = _drawingsOf(batch);
+    return index < all.length ? all[index] : const <Drawing>[];
   }
 
   /// The divisional charts asked for, in the order they were asked.

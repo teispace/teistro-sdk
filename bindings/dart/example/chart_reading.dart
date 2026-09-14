@@ -20,6 +20,9 @@
 //    `bhavas` who rules a house.
 // 4. **The drishti are ragged**: how many there are depends on where the
 //    grahas stand, not on how many grahas there are.
+// 5. **A drawing is geometry, not pixels**: each cell's outline in a unit
+//    square, the sign and house it shows and the grahas in it, so any
+//    renderer draws the same chart.
 //
 // The record is `birth_chart.dart`'s own, so the two can be read side by
 // side.
@@ -55,6 +58,7 @@ void main() {
     points: true,
     houses: true,
     state: true,
+    drawings: const [(ChartLayout.northIndian, Varga.d9)],
   );
   final navamsha = chart.vargas[0];
   final dasamsha = chart.vargas[1];
@@ -121,6 +125,17 @@ void main() {
           ? 'none'
           : '${name(gulika.sign.fullKey)} ${(gulika.longitudeDeg % 30).toStringAsFixed(4)}°';
   print('gulika   $where   ${points.length} points');
+
+  // ── The navamsha, drawn ─────────────────────────────────────────────
+  // A North Indian chart keeps its houses still and moves the signs, so the
+  // lagna is always the top diamond; the cell says which sign landed there.
+  final drawn = chart.drawings.first;
+  final risen = drawn.cells.firstWhere((cell) => cell.lagna);
+  print(
+    'drawing  ${drawn.layout.key.toLowerCase()} ${drawn.varga.key.toLowerCase()}: '
+    '${drawn.cells.length} cells, lagna in house ${risen.house} '
+    '(${name(risen.sign.fullKey)}), grahas there: ${risen.bodies.length}',
+  );
   print('settings hash  ${ctx.settingsHash.substring(0, 16)}…');
   ctx.dispose();
 }

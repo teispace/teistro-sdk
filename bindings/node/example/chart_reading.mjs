@@ -20,11 +20,14 @@
 //    `bhavas` who rules a house.
 // 4. **The drishti are ragged**: how many there are depends on where the
 //    grahas stand, not on how many grahas there are.
+// 5. **A drawing is geometry, not pixels**: each cell's outline in a unit
+//    square, the sign and house it shows and the grahas in it, so any
+//    renderer draws the same chart.
 //
 // The record is `birth_chart.mjs`'s own, so the two can be read side by
 // side.
 
-import { Calendar, Context, Graha, Point, RashiById, Varga, at, date, ianaZone } from '../lib/index.js';
+import { Calendar, ChartLayout, Context, Graha, Point, RashiById, Varga, at, date, ianaZone } from '../lib/index.js';
 
 const ctx = new Context({
   profile: 'nepali-default',
@@ -48,6 +51,7 @@ const chart = ctx.chart.found({
   points: true,
   houses: true,
   state: true,
+  drawings: [{ layout: ChartLayout.NorthIndian, varga: Varga.D9 }],
 });
 const [navamsha, dasamsha] = chart.vargas;
 
@@ -96,6 +100,16 @@ const gulika = chart.points.find((found) => found.point === Point.Gulika);
 console.log(
   `gulika   ${gulika ? `${name(gulika.sign)} ${(gulika.longitudeDeg % 30).toFixed(4)}°` : 'none'}` +
     `   ${chart.points.length} points`,
+);
+
+// ── The navamsha, drawn ────────────────────────────────────────────────
+// A North Indian chart keeps its houses still and moves the signs, so the
+// lagna is always the top diamond; the cell says which sign landed there.
+const [drawn] = chart.drawings;
+const risen = drawn.cells.find((cell) => cell.lagna);
+console.log(
+  `drawing  ${plain(drawn.layout)} ${plain(drawn.varga)}: ${drawn.cells.length} cells, ` +
+    `lagna in house ${risen.house} (${name(risen.sign)}), grahas there: ${risen.bodies.length}`,
 );
 console.log(`settings hash  ${ctx.settingsHash.slice(0, 16)}…`);
 ctx.dispose();

@@ -19,6 +19,9 @@ What it teaches:
     `bhavas` who rules a house.
 4.  **The drishti are ragged**: how many there are depends on where the
     grahas stand, not on how many grahas there are.
+5.  **A drawing is geometry, not pixels**: each cell's outline in a unit
+    square, the sign and house it shows and the grahas in it, so any
+    renderer draws the same chart.
 
 The record is `birth_chart.py`'s own, so the two can be read side by side.
 
@@ -31,7 +34,7 @@ from __future__ import annotations
 
 from teistro import Calendar, Context, Ephemeris, Teistro, at, date, iana_zone
 from teistro._ffi import Altitude, Latitude, Longitude, Observer
-from teistro.catalogue import Catalogued, Graha, Point, Rashi, Varga
+from teistro.catalogue import Catalogued, ChartLayout, Graha, Point, Rashi, Varga
 
 
 def name(ctx: Context, member: Catalogued) -> str:
@@ -63,6 +66,7 @@ def main() -> None:
             points=True,
             houses=True,
             state=True,
+            drawings=[(ChartLayout.NORTH_INDIAN, Varga.D9)],
         )
         navamsha, dasamsha = chart.vargas[0], chart.vargas[1]
 
@@ -113,6 +117,17 @@ def main() -> None:
             f"{name(ctx, gulika.sign)} {gulika.longitude_deg % 30:.4f}°" if gulika else "none"
         )
         print(f"gulika   {where}   {len(chart.points)} points")
+
+        # ── The navamsha, drawn ────────────────────────────────────────
+        # A North Indian chart keeps its houses still and moves the signs,
+        # so the lagna is always the top diamond; the cell says which sign
+        # landed there.
+        drawn = chart.drawings[0]
+        risen = next(cell for cell in drawn.cells if cell.lagna)
+        print(
+            f"drawing  {drawn.layout.key.lower()} {drawn.varga.key.lower()}: {len(drawn.cells)} cells, "
+            f"lagna in house {risen.house} ({name(ctx, risen.sign)}), grahas there: {len(risen.bodies)}"
+        )
         print(f"settings hash  {ctx.settings_hash[:16]}…")
 
 

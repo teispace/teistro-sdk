@@ -22,6 +22,7 @@ from teistro import (
     Altitude,
     Body,
     Calendar,
+    ChartLayout,
     ChartKind,
     Latitude,
     Longitude,
@@ -256,6 +257,11 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
+            drawings=[
+                (ChartLayout.NORTH_INDIAN, Varga.D1),
+                (ChartLayout.SOUTH_INDIAN, Varga.D9),
+                (ChartLayout.WESTERN_WHEEL, Varga.D1),
+            ],
             aspects=True,
             points=True,
             houses=True,
@@ -361,6 +367,32 @@ def main() -> None:
                 put(f"chart-{i}-aspect-{k}-strength", one.strength.key)
                 put(f"chart-{i}-aspect-{k}-from-sign", one.from_edge.sign_deg)
                 put(f"chart-{i}-aspect-{k}-to-sign", one.to_edge.sign_deg)
+            for d, drawing in enumerate(chart.drawings):
+                key = f"chart-{i}-drawing-{d}"
+                put(key, drawing.layout.full_key)
+                put(f"{key}-varga", drawing.varga.full_key)
+                put(f"{key}-cells", len(drawing.cells))
+                put(f"{key}-frames", len(drawing.frame))
+                put(f"{key}-marks", len(drawing.marks))
+                for c, drawn in enumerate(drawing.cells):
+                    where = f"{key}-cell-{c}"
+                    put(f"{where}-sign", drawn.sign.full_key)
+                    put(f"{where}-house", drawn.house)
+                    put(f"{where}-lagna", drawn.lagna)
+                    put(f"{where}-ring", drawn.ring)
+                    put(f"{where}-bodies", ",".join(drawn.bodies) or "none")
+                    put(f"{where}-label", f"{number(drawn.label.x)},{number(drawn.label.y)}")
+                    put(f"{where}-anchor", f"{number(drawn.anchor.x)},{number(drawn.anchor.y)}")
+                    put(f"{where}-start", f"{number(drawn.outline.start.x)},{number(drawn.outline.start.y)}")
+                    put(
+                        f"{where}-steps",
+                        ",".join(type(step).__name__.removesuffix("Segment").lower() for step in drawn.outline.segments),
+                    )
+                for m, mark in enumerate(drawing.marks):
+                    where = f"{key}-mark-{m}"
+                    put(where, mark.body)
+                    put(f"{where}-at", f"{number(mark.at.x)},{number(mark.at.y)}")
+                    put(f"{where}-lon", mark.longitude_deg)
             for v, varga in enumerate(chart.vargas):
                 put(f"chart-{i}-varga-{v}", varga.varga.full_key)
                 put(f"chart-{i}-varga-{v}-lagna-rashi", varga.lagna.rashi.full_key)

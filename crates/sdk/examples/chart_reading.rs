@@ -21,6 +21,9 @@
 //!    `houses` who rules a house.
 //! 4. **The drishti are ragged**: how many there are depends on where the
 //!    grahas stand, not on how many grahas there are.
+//! 5. **A drawing is geometry, not pixels**: each cell's outline in a unit
+//!    square, the sign and house it shows and the grahas in it, so any
+//!    renderer draws the same chart.
 //!
 //! The record is `birth_chart.rs`'s own, and the output is the other three
 //! bindings' `chart_reading` example's, line for line.
@@ -31,7 +34,7 @@
 
 #![expect(clippy::print_stdout, reason = "an example is a program that prints")]
 
-use teistro::catalogue::{Calendar, Graha, Point, Rashi, Varga};
+use teistro::catalogue::{Calendar, ChartLayout, Graha, Point, Rashi, Varga};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
     CalendarDate, ChartRequest, CivilDateTime, CivilTime, Context, Document, Ephemeris, Error,
@@ -83,7 +86,8 @@ fn main() -> Result<(), Error> {
         .with_aspects()
         .with_points()
         .with_houses()
-        .with_state();
+        .with_state()
+        .with_drawings([(ChartLayout::NorthIndian, Varga::D9)]);
     let document = sdk.chart().reading(resolved.instant, &request)?.value;
     let [navamsha, dasamsha] = document.vargas.as_slice() else {
         return Err(Error::internal("two divisional charts were asked for"));
@@ -95,6 +99,7 @@ fn main() -> Result<(), Error> {
     houses(&sdk, &document)?;
     drishti(&sdk, &document)?;
     points(&sdk, &document)?;
+    drawn(&sdk, &document)?;
     println!(
         "settings hash  {}…",
         sdk.settings_hash()
@@ -208,5 +213,24 @@ fn points(sdk: &Context, document: &Document) -> Result<(), Error> {
         None => String::from("none"),
     };
     println!("gulika   {at}   {} points", points.len());
+    Ok(())
+}
+
+/// The navamsha, drawn. A North Indian chart keeps its houses still and
+/// moves the signs, so the lagna is always the top diamond; the cell says
+/// which sign landed there.
+fn drawn(sdk: &Context, document: &Document) -> Result<(), Error> {
+    let drawing = asked(document.drawings.first(), "drawing")?;
+    let placed = &drawing.placed;
+    let risen = asked(placed.cells.iter().find(|cell| cell.lagna), "lagna cell")?;
+    println!(
+        "drawing  {} {}: {} cells, lagna in house {} ({}), grahas there: {}",
+        placed.layout.to_lowercase(),
+        drawing.varga.key().to_lowercase(),
+        placed.cells.len(),
+        risen.house,
+        name(sdk, risen.sign.full_key())?,
+        risen.bodies.len(),
+    );
     Ok(())
 }

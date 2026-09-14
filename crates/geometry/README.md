@@ -70,3 +70,8 @@ and where its label and its bodies go. The core still never draws.
 - **The list.** A test holds `rows::shipped()` and the `chart_layout`
   catalogue kind to the same six keys, both ways. The first run caught the
   chakra and the wheel missing from the shipped list.
+- **Across the boundary.** A request's drawings cross as packed
+  `layout << 16 | varga` ids, and the placed charts come back as a canonical
+  JSON section of the charts blob. Node, Python and Dart each give them a
+  typed shape, and the four parity runners agree on every coordinate
+  ([§7e](../../docs/03-design/chart-geometry.md)).

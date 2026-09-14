@@ -16,6 +16,7 @@ import type {
   Burning,
   Calendar,
   ChartKind,
+  ChartLayout,
   Choghadiya,
   DayPart,
   Dignity,
@@ -220,6 +221,70 @@ export interface DivisionalPlacement {
   readonly sign: Rashi | 'unknown';
 }
 
+/** A point in a drawing's unit square, y downwards. */
+export interface UnitPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+/** One step of an outline, from wherever the previous step ended. */
+export type Segment =
+  | { readonly kind: 'line'; readonly to: UnitPoint }
+  | { readonly kind: 'quad'; readonly control: UnitPoint; readonly to: UnitPoint }
+  | {
+      readonly kind: 'arc';
+      /** The circle's centre. */
+      readonly centre: UnitPoint;
+      /** Which way the arc runs, as a reader sees it. */
+      readonly clockwise: boolean;
+      readonly to: UnitPoint;
+    };
+
+/** A closed outline: a start and the steps back to it. */
+export interface Outline {
+  readonly start: UnitPoint;
+  readonly segments: readonly Segment[];
+}
+
+/** One region of a drawn chart. */
+export interface DrawnCell {
+  /** The region's outline in the unit square. */
+  readonly outline: Outline;
+  /** The sign the cell shows; for a house between cusps, its cusp's sign. */
+  readonly sign: Rashi;
+  /** The house the cell shows, 1 to 12. */
+  readonly house: number;
+  /** Whether the lagna stands in this cell. */
+  readonly lagna: boolean;
+  /** The ring, innermost 0; a grid's cells are all 0. */
+  readonly ring: number;
+  /** Where the sign or house number is drawn. */
+  readonly label: UnitPoint;
+  /** Where the cell's bodies are stacked about. */
+  readonly anchor: UnitPoint;
+  /** The bodies in the cell, as catalogue keys (`graha.SUN`). */
+  readonly bodies: readonly string[];
+}
+
+/** A chart drawn in a layout (`03-design/chart-geometry.md`). */
+export interface Drawing {
+  /** The layout it is drawn in. */
+  readonly layout: ChartLayout;
+  /** Which chart: `varga.D1` for the founded chart, or a divisional one. */
+  readonly varga: Varga;
+  /** The cells, in the layout's order. */
+  readonly cells: readonly DrawnCell[];
+  /** The lines drawn that hold nothing. */
+  readonly frame: readonly Outline[];
+  /** Each body at its own degree, on a wheel; empty for a grid. */
+  readonly marks: readonly {
+    readonly body: string;
+    readonly ring: number;
+    readonly at: UnitPoint;
+    readonly longitudeDeg: number;
+  }[];
+}
+
 /** One divisional chart of a founded chart. */
 export interface DivisionalChart {
   /** Which divisional chart. */
@@ -404,6 +469,8 @@ export declare class Chart {
   readonly grahas: readonly PlacedGraha[];
   /** The divisional charts asked for, in the order asked; empty unless `vargas` named some. */
   readonly vargas: readonly DivisionalChart[];
+  /** The charts drawn in the layouts asked for, in the order asked; empty unless `drawings` named some. */
+  readonly drawings: readonly Drawing[];
   /**
    * The drishti the chart's grahas cast; empty unless `aspects` asked. The
    * count differs from chart to chart, because relations depend on where
@@ -643,6 +710,11 @@ export interface ChartRequest {
    * so a caller who wants a birth chart does not pay for twenty-one.
    */
   readonly vargas?: readonly Varga[];
+  /**
+   * The charts to draw, each a layout and which chart to place in it
+   * (`Varga.D1` for the founded chart), in the order wanted; none by default.
+   */
+  readonly drawings?: readonly { readonly layout: ChartLayout; readonly varga: Varga }[];
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

@@ -880,6 +880,9 @@ class Charts:
     combustion_orbs: str
     """UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for."""
 
+    drawings: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -909,6 +912,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_bhavas = blob.section(18, "bhavas")
     at_states = blob.section(19, "states")
     at_combustion_orbs = blob.section(20, "combustion_orbs")
+    at_drawings = blob.section(21, "drawings")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1166,6 +1170,7 @@ def decode_charts(raw: bytes) -> Charts:
             length=at_states.count,
         ),
         combustion_orbs=blob.text(at_combustion_orbs),
+        drawings=blob.text(at_drawings),
     )
 
 

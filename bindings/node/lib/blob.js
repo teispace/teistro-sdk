@@ -422,6 +422,10 @@ export function decodeCharts(bytes) {
     const at = section(blob, 20, 'combustion_orbs');
     out.combustionOrbs = text(blob, at);
   }
+  {
+    const at = section(blob, 21, 'drawings');
+    out.drawings = text(blob, at);
+  }
   return out;
 }
 

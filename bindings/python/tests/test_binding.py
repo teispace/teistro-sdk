@@ -13,16 +13,21 @@ import os
 import unittest
 
 from teistro import (
+    Altitude,
     Body,
     Calendar,
+    ChartLayout,
     Ephemeris,
     EphemerisProvider,
+    Latitude,
+    Observer,
     Plugin,
     Scale,
     Status,
     Teistro,
     TeistroError,
     TimeScale,
+    Varga,
     at,
     date,
     fixed_zone,
@@ -542,3 +547,19 @@ class AnEngine(WithLibrary):
         self.assertGreater(self.ctx.time.delta_t(2451545.0).seconds, 60)
         self.assertEqual(self.ctx.keys.name(self.ctx.keys.id("graha.SUN")), "graha.SUN")
 
+    def test_a_drawing_names_a_layout_and_a_varga_or_is_refused(self) -> None:
+        """A drawing is a `(ChartLayout, Varga)` pair; anything else is
+        refused naming its place in the list, before the boundary is
+        crossed (`03-design/chart-geometry.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)
+        )
+        for wrong in ((Varga.D1, ChartLayout.NORTH_INDIAN), (ChartLayout.NORTH_INDIAN,), "north_indian"):
+            with self.subTest(wrong=wrong), self.assertRaises(TeistroError) as caught:
+                self.ctx.chart.found(
+                    instant=2451545.0,
+                    place=observer,
+                    utc_offset_seconds=0,
+                    drawings=[(ChartLayout.SOUTH_INDIAN, Varga.D9), wrong],  # type: ignore[list-item]
+                )
+            self.assertEqual(caught.exception.field, "drawings[1]")

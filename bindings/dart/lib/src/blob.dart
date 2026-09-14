@@ -993,6 +993,7 @@ final class Charts {
     required this.bhavas,
     required this.states,
     required this.combustionOrbs,
+    required this.drawings,
   });
 
   /// What kind of chart these are.
@@ -1096,6 +1097,9 @@ final class Charts {
   /// UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.
   final String combustionOrbs;
 
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.
+  final String drawings;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1123,6 +1127,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atBhavas = blob.section(18, 'bhavas');
   final atStates = blob.section(19, 'states');
   final atCombustionOrbs = blob.section(20, 'combustion_orbs');
+  final atDrawings = blob.section(21, 'drawings');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -1726,6 +1731,7 @@ Charts decodeCharts(Uint8List bytes) {
       length: atStates.count,
     ),
     combustionOrbs: blob.text(atCombustionOrbs),
+    drawings: blob.text(atDrawings),
   );
 }
 

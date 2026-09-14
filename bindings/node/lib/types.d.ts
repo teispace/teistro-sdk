@@ -700,6 +700,17 @@ export interface ChartRequest {
    * @enum Varga
    */
   readonly vargas: readonly Varga[];
+  /**
+   * Which charts to draw, and in which layouts, in the order they should
+   * be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+   * catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+   * count of zero for none.
+   *
+   * Packed, as `sections` is a bit set, so the request carries one array
+   * and one count rather than two arrays that must agree; every ergonomic
+   * layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+   */
+  readonly drawings: Uint32Array | readonly number[];
 }
 
 /**

@@ -863,6 +863,20 @@ final class ChartRequestStruct extends ffi.Struct {
   @ffi.Size()
   external int vargaCount;
 
+  /// Which charts to draw, and in which layouts, in the order they should
+  /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+  /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+  /// count of zero for none.
+  ///
+  /// Packed, as `sections` is a bit set, so the request carries one array
+  /// and one count rather than two arrays that must agree; every ergonomic
+  /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+  external ffi.Pointer<ffi.Uint32> drawings;
+
+  /// How many drawings `drawings` points at.
+  @ffi.Size()
+  external int drawingCount;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2632,7 +2646,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2692,6 +2706,16 @@ final class ChartRequest {
   /// Enum: Varga.
   final List<Varga> vargas;
 
+  /// Which charts to draw, and in which layouts, in the order they should
+  /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+  /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+  /// count of zero for none.
+  ///
+  /// Packed, as `sections` is a bit set, so the request carries one array
+  /// and one count rather than two arrays that must agree; every ergonomic
+  /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+  final List<int> drawings;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2719,6 +2743,12 @@ final class ChartRequest {
     }
     raw.vargas = vargasBuffer;
     raw.vargaCount = vargas.length;
+    final drawingsBuffer = arena<ffi.Uint32>(drawings.length);
+    for (var i = 0; i < drawings.length; i++) {
+      drawingsBuffer[i] = drawings[i];
+    }
+    raw.drawings = drawingsBuffer;
+    raw.drawingCount = drawings.length;
   }
 
   /// Reads the value a call filled in.
@@ -2737,6 +2767,9 @@ final class ChartRequest {
         sections: raw.sections,
         vargas: [
           for (var i = 0; i < raw.vargaCount; i++) Varga.byId(raw.vargas[i]),
+        ],
+        drawings: [
+          for (var i = 0; i < raw.drawingCount; i++) raw.drawings[i],
         ],
       );
 }

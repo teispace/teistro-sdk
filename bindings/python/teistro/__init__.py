@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Generic, Iterator, List, Mapping, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Generic, Iterator, List, Mapping, Optional, Sequence, Tuple, TypeVar, Union
 
 from . import messages as intl
 from ._blob import (
@@ -101,6 +101,7 @@ from .catalogue import (
     Calendar,
     Centre,
     ChartKind,
+    ChartLayout,
     Choghadiya,
     DayPart,
     Direction,
@@ -215,6 +216,16 @@ __all__ = [
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
     "Varga",
+    # Chart geometry: the layouts a chart is drawn in, and what a drawing is.
+    "ChartLayout",
+    "Drawing",
+    "DrawnCell",
+    "DrawnMark",
+    "Outline",
+    "UnitPoint",
+    "LineSegment",
+    "QuadSegment",
+    "ArcSegment",
     "DerivedPoint",
     "Drishti",
     "AvasthaBaladi",
@@ -889,6 +900,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        drawings: Sequence[Tuple[ChartLayout, Varga]] = (),
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -913,6 +925,7 @@ class ChartArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             kind=kind,
             vargas=vargas,
+            drawings=drawings,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -927,6 +940,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        drawings: Sequence[Tuple[ChartLayout, Varga]] = (),
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -943,8 +957,9 @@ class ChartArea(_Area):
         `vargas` names the divisional charts to compute, in the order to
         answer them; none by default, because a caller who wants a birth
         chart should not pay for twenty-one of them
-        (`03-design/chart-reading.md` §4). `aspects` asks for the
-        drishti.
+        (`03-design/chart-reading.md` §4). `drawings` names charts to draw,
+        each a `(ChartLayout, Varga)` pair with `Varga.D1` the founded chart,
+        in the order to answer them. `aspects` asks for the drishti.
         """
         request = ChartRequest(
             kind=kind,
@@ -962,6 +977,7 @@ class ChartArea(_Area):
             | (_SECTION_HOUSES if houses else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
+            drawings=_drawing_bits(drawings),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request)))
@@ -1522,6 +1538,204 @@ class Bhava:
     """The bhava's opening cusp, degrees."""
 
 
+@dataclass(frozen=True)
+class UnitPoint:
+    """A point in a drawing's unit square, y downwards."""
+
+    x: float
+    """From the left edge, 0 to 1."""
+
+    y: float
+    """From the top edge, 0 to 1."""
+
+
+@dataclass(frozen=True)
+class LineSegment:
+    """A straight line to a point."""
+
+    to: UnitPoint
+    """Where the line ends."""
+
+
+@dataclass(frozen=True)
+class QuadSegment:
+    """A quadratic curve to a point, pulled towards its control."""
+
+    control: UnitPoint
+    """The control point."""
+
+    to: UnitPoint
+    """Where the curve ends."""
+
+
+@dataclass(frozen=True)
+class ArcSegment:
+    """A circular arc about a centre to a point the same distance from it."""
+
+    centre: UnitPoint
+    """The circle's centre."""
+
+    clockwise: bool
+    """Which way the arc runs, as a reader sees it."""
+
+    to: UnitPoint
+    """Where the arc ends."""
+
+
+Segment = Union[LineSegment, QuadSegment, ArcSegment]
+"""One step of an outline, from wherever the previous step ended."""
+
+
+@dataclass(frozen=True)
+class Outline:
+    """A closed outline: a start and the steps back to it."""
+
+    start: UnitPoint
+    """Where the outline starts."""
+
+    segments: list[Segment]
+    """The steps around it."""
+
+
+@dataclass(frozen=True)
+class DrawnCell:
+    """One region of a drawn chart."""
+
+    outline: Outline
+    """The region's outline in the unit square."""
+
+    sign: Rashi
+    """The sign the cell shows; for a house between cusps, its cusp's sign."""
+
+    house: int
+    """The house the cell shows, 1 to 12."""
+
+    lagna: bool
+    """Whether the lagna stands in this cell."""
+
+    ring: int
+    """The ring, innermost 0; a grid's cells are all 0."""
+
+    label: UnitPoint
+    """Where the sign or house number is drawn."""
+
+    anchor: UnitPoint
+    """Where the cell's bodies are stacked about."""
+
+    bodies: list[str]
+    """The bodies in the cell, as catalogue keys (`graha.SUN`)."""
+
+
+@dataclass(frozen=True)
+class DrawnMark:
+    """A body drawn at its own degree on a wheel."""
+
+    body: str
+    """The body, as a catalogue key."""
+
+    ring: int
+    """The ring it is drawn in."""
+
+    at: UnitPoint
+    """Where it is drawn."""
+
+    longitude_deg: float
+    """The longitude that put it there, degrees."""
+
+
+@dataclass(frozen=True)
+class Drawing:
+    """A chart drawn in a layout (`03-design/chart-geometry.md`)."""
+
+    layout: ChartLayout
+    """The layout it is drawn in."""
+
+    varga: Varga
+    """Which chart: `Varga.D1` for the founded chart, or a divisional one."""
+
+    cells: list[DrawnCell]
+    """The cells, in the layout's order."""
+
+    frame: list[Outline]
+    """The lines drawn that hold nothing."""
+
+    marks: list[DrawnMark]
+    """Each body at its own degree, on a wheel; empty for a grid."""
+
+
+def _member(kind: Any, key: str) -> Any:
+    """A catalogue member by its bare key, or a refusal naming both."""
+    found = kind.by_key(key)
+    if found is None:
+        raise TeistroError(Status.INTERNAL, f"the library drew a {kind.__name__} this build does not know: {key}")
+    return found
+
+
+def _point(raw: Mapping[str, Any]) -> UnitPoint:
+    return UnitPoint(x=float(raw["x"]), y=float(raw["y"]))
+
+
+def _segment(raw: Mapping[str, Any]) -> Segment:
+    kind = raw["kind"]
+    if kind == "line":
+        return LineSegment(to=_point(raw["to"]))
+    if kind == "quad":
+        return QuadSegment(control=_point(raw["control"]), to=_point(raw["to"]))
+    return ArcSegment(centre=_point(raw["centre"]), clockwise=bool(raw["clockwise"]), to=_point(raw["to"]))
+
+
+def _outline(raw: Mapping[str, Any]) -> Outline:
+    return Outline(start=_point(raw["start"]), segments=[_segment(step) for step in raw["segments"]])
+
+
+def _drawing(raw: Mapping[str, Any]) -> Drawing:
+    placed = raw["placed"]
+    return Drawing(
+        layout=_member(ChartLayout, placed["layout"]),
+        varga=_member(Varga, raw["varga"]),
+        cells=[
+            DrawnCell(
+                outline=_outline(cell["outline"]),
+                sign=_member(Rashi, cell["sign"]),
+                house=int(cell["house"]),
+                lagna=bool(cell["lagna"]),
+                ring=int(cell["ring"]),
+                label=_point(cell["label"]),
+                anchor=_point(cell["anchor"]),
+                bodies=list(cell["bodies"]),
+            )
+            for cell in placed["cells"]
+        ],
+        frame=[_outline(path) for path in placed["frame"]],
+        marks=[
+            DrawnMark(
+                body=mark["body"],
+                ring=int(mark["ring"]),
+                at=_point(mark["at"]),
+                longitude_deg=float(mark["longitude_deg"]),
+            )
+            for mark in placed["marks"]
+        ],
+    )
+
+
+def _drawing_bits(drawings: Sequence[Tuple[ChartLayout, Varga]]) -> list[int]:
+    """The drawings asked for, as the packed ids the boundary takes:
+    `layout << 16 | varga` each, so a caller names pairs and nothing else
+    writes bits (`03-design/chart-geometry.md`)."""
+    bits = []
+    for at, pair in enumerate(drawings):
+        layout, varga = pair if isinstance(pair, tuple) and len(pair) == 2 else (None, None)
+        if not isinstance(layout, ChartLayout) or not isinstance(varga, Varga):
+            raise TeistroError(
+                Status.INVALID_ARG,
+                f"drawings[{at}] is not a (ChartLayout, Varga) pair",
+                field=f"drawings[{at}]",
+            )
+        bits.append((int(layout) << 16) | int(varga))
+    return bits
+
+
 class Chart:
     """One founded chart: a view over its batch, not a copy.
 
@@ -1738,6 +1952,18 @@ class Chart:
         ]
 
     @property
+    def drawings(self) -> list[Drawing]:
+        """The charts drawn in the layouts asked for, in the order asked;
+        empty unless `drawings` named some (`03-design/chart-geometry.md`).
+
+        Each cell carries both the sign and the house it shows, and the
+        bodies standing in it; `marks` places each body at its own degree
+        on a wheel and is empty for a grid.
+        """
+        parsed = self.batch._drawings
+        return parsed[self.index] if self.index < len(parsed) else []
+
+    @property
     def vargas(self) -> list[VargaChart]:
         """The divisional charts asked for, in the order they were asked.
 
@@ -1840,6 +2066,14 @@ class ChartBatch:
     def __len__(self) -> int:
         """How many charts the batch holds."""
         return self.decoded.chart_count
+
+    @cached_property
+    def _drawings(self) -> list[list[Drawing]]:
+        """Every chart's drawings, parsed once however many charts read them."""
+        text = self.decoded.drawings
+        if not text:
+            return []
+        return [[_drawing(raw) for raw in chart] for chart in json.loads(text)]
 
     def at(self, index: int) -> Chart:
         """One chart of the batch, by index."""
