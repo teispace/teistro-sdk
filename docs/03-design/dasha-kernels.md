@@ -51,6 +51,32 @@ only designed. Four of its findings change the design:
 
 What it could not settle is crux C6: every record uses 365.25 days.
 
+## What building Vimshottari corrected
+
+`crates/dasha` builds the K-udu kernel with Vimshottari as its one row, and
+reproduces every recorded answer (`crates/dasha/tests/baseline.rs`: 148
+methods, 53 415 tree rows, 14 841 sampled children and 296 chains, worst
+boundary 1.4e-9 days). Building it corrected the schema once more:
+
+- **A fifth correction: whether the lords repeat.** The first seat rule
+  flagged every Vimshottari seed past the ninth nakshatra as overflowing,
+  because nine lords of one nakshatra cover nine. They run round three
+  times. Ashtottari's eight windows of three cover 24 once and leave three
+  outside; Yogini's eight lords do not divide 27 and repeat. No arithmetic
+  on the table tells these apart, so the row states `repeats`.
+- **A temporal balance over a window of nakshatras is refused.** The corpus
+  records the temporal method for Vimshottari only, where the window is
+  one nakshatra, and no source read defines the time-based fraction of a
+  three-nakshatra window, so a row with `span > 1` refuses it by name
+  rather than guessing.
+- **The elapsed reading keeps a period's place.** Under
+  `dasha.birth_period = ELAPSED` the first sub-period running at birth may
+  be the fourth in its sequence, and its path says so. A period carries
+  the whole span its children are shares of beside the span it runs for.
+- **The cursor allocates nothing.** Making a dasha allocates two small
+  tables; reading the chain at an instant, at any depth and in any cycle,
+  allocates nothing (`tests/allocations.rs`).
+
 ## Kernels
 
 | kernel | family | shape |
@@ -87,6 +113,7 @@ pub struct SeedToLord {
     pub direction: CountDir,         // FromReference | ToReference (Dwadashottari counts to Revati)
     pub span: u8,                    // seed units per lord: 1 for most, 3 for Ashtottari
     pub offset: u8,                  // added after the modulo: 3 for Yogini
+    pub repeats: bool,               // the lords run round the nakshatras again (Vimshottari, Yogini) or cover them once (Ashtottari)
     pub overflow: Overflow,          // WrapToStart | Reject, explicit when span × lords < cycle
 }
 // lord_index = ((signed_count(seed, reference, direction) / span) + offset) mod lords.len()

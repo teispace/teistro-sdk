@@ -471,8 +471,10 @@ its written form, the tree to five levels and the running chains are
 decided, and three things the design page had not said are settled — the
 birth period's sub-periods are compressed, the cycle ends after nine, and
 boundaries agree to a quarter of a millisecond and not to the bit. Crux C6
-is untouched (every record uses 365.25 days) and C48 is new. Next: the
-K-udu kernel and the cursor, with Vimshottari as the first row.
+is untouched (every record uses 365.25 days) and C48 is new. **The K-udu
+kernel and the cursor are built** (`crates/dasha`), Vimshottari the first
+row, reproducing every recorded answer and allocation-free to read. Next:
+the dasha section of the chart document, the façade and the boundary.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

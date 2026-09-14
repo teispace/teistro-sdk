@@ -65,6 +65,8 @@ every shipped profile. The v1 inventory:
 | dasha | `year_length` | map system to `YearLengthKey` | `JULIAN_365_25`, `SAVANA_360`, `SIDEREAL`, `TROPICAL`, `LUNAR`, `NAKSHATRA_324` (the defaults per system are crux C6) |
 | dasha | `depth` | map system to `Depth` | 1 to 6 |
 | dasha | `seed_overflow` | enum | `WRAP_TO_START`, `REJECT` |
+| dasha | `birth_period` | enum | `COMPRESSED` (the corpus's, every recorded answer), `ELAPSED` (crux C48) |
+| dasha | `after_cycle` | enum | `END` (the corpus's), `REPEAT` (crux C48) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |

@@ -186,6 +186,43 @@ knob!(
         Lunar = "LUNAR", /// 324 days.
         Nakshatra324 = "NAKSHATRA_324" }
 );
+impl YearLength {
+    /// The days in one dasha year of this length.
+    ///
+    /// The astronomical lengths are the mean values at J2000 the
+    /// *Astronomical Almanac* gives in its glossary: the sidereal year
+    /// 365.256 363 days, the tropical year 365.242 190 days, and the synodic
+    /// month 29.530 589 days, of which the lunar year is twelve. The others
+    /// are the counts their names state: the Julian 365.25, the savana 360,
+    /// and the nakshatra year of twelve 27-day months, 324.
+    #[must_use]
+    pub const fn days(self) -> f64 {
+        match self {
+            YearLength::Julian36525 => 365.25,
+            YearLength::Savana360 => 360.0,
+            YearLength::Sidereal => 365.256_363,
+            YearLength::Tropical => 365.242_190,
+            YearLength::Lunar => 12.0 * 29.530_589,
+            YearLength::Nakshatra324 => 324.0,
+        }
+    }
+}
+
+knob!(
+    /// How a dasha's birth period is divided among its sub-periods.
+    BirthPeriod { /// Each sub-period its share of the balance the birth period runs for,
+        /// which the recording engine does on every recorded answer.
+        Compressed = "COMPRESSED", /// Each sub-period its share of the whole period, which began
+        /// before birth; those already over are dropped and the one running
+        /// is cut at birth.
+        Elapsed = "ELAPSED" }
+);
+knob!(
+    /// What a dasha answers past the end of its cycle.
+    AfterCycle { /// No period: the cycle has ended, as the recording engine answers.
+        End = "END", /// The cycle begins again, from its first lord and in full.
+        Repeat = "REPEAT" }
+);
 knob!(
     /// A seed outside a conditional dasha's cycle.
     SeedOverflow { /// Wrap to the start, flagged.

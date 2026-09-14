@@ -32,10 +32,11 @@ use crate::envelope::Hash;
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents, NakshatraScheme, Node,
-    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    AfterCycle, AyanamshaBasis, Balance, BirthPeriod, Centre, CharaKarakas, DayBoundary, DeltaT,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents,
+    NakshatraScheme, Node, NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy,
+    PolarPolicy, Positions, SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength,
+    Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -275,6 +276,12 @@ group!(
         /// A seed outside a conditional cycle.
         /// lint: knob-has-a-reader — `dasha`, Phase 5 (ADR-0017).
         seed_overflow: SeedOverflow,
+        /// How the birth period is divided among its sub-periods (crux C48).
+        /// lint: knob-has-a-reader — `dasha`, Phase 5.
+        birth_period: BirthPeriod,
+        /// What a dasha answers past the end of its cycle (crux C48).
+        /// lint: knob-has-a-reader — `dasha`, Phase 5.
+        after_cycle: AfterCycle,
     }
 );
 

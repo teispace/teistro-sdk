@@ -9,10 +9,11 @@ use crate::catalogue::{
 };
 
 use super::knobs::{
-    AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents, NakshatraScheme, Node,
-    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    AfterCycle, AyanamshaBasis, Balance, BirthPeriod, Centre, CharaKarakas, DayBoundary, DeltaT,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents,
+    NakshatraScheme, Node, NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy,
+    PolarPolicy, Positions, SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength,
+    Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -150,6 +151,11 @@ pub fn root() -> Settings {
                 .collect(),
             depth: depth_all(3),
             seed_overflow: SeedOverflow::WrapToStart,
+            // The corpus's readings, measured on every recorded answer
+            // (`03-design/dasha-measured.md`); the others are knob values
+            // because neither reading has a rank-1 text (crux C48).
+            birth_period: BirthPeriod::Compressed,
+            after_cycle: AfterCycle::End,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,

@@ -1547,6 +1547,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-dasha"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+ "teistro-test-allocator",
+]
+
+[[package]]
 name = "teistro-ephemeris-builtin"
 version = "0.0.0"
 dependencies = [
