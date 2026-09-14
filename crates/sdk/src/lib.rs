@@ -109,6 +109,10 @@ pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 // no dependency the façade lacks, and a consumer who never calls it has
 // its code removed by the linker.
 pub use teistro_render_svg as render_svg;
+// Dashas: a system as a row, the balance at birth, and the period tree read
+// without building it (`03-design/dasha-kernels.md`).
+pub use teistro_dasha as dasha;
+pub use teistro_dasha::{DashaReading, PeriodRow};
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a
 // namespace is in Rust — where Node writes

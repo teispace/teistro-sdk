@@ -19,7 +19,7 @@
 use core::fmt;
 
 use teistro_core::angle::Nas;
-use teistro_core::catalogue::{DashaSystem, Graha};
+use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
@@ -45,7 +45,8 @@ pub struct Birth {
 
 /// The choices a dasha is computed under, which the settings' `dasha`
 /// group holds.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Rules {
     /// How the balance is measured.
     pub balance: Balance,
@@ -232,6 +233,7 @@ pub struct Dasha {
     row: &'static UduRow,
     rules: Rules,
     birth: JulianDay<Utc>,
+    seed: Nakshatra,
     seat: Seat,
     balance: BalanceAtBirth,
     year_days: f64,
@@ -253,6 +255,7 @@ impl Dasha {
     /// Moon span, or one that does not hold the birth, named `moon_span`.
     pub fn new(row: &'static UduRow, birth: &Birth, rules: Rules) -> Result<Dasha, Error> {
         row.validate()?;
+        let seed = birth.moon.nakshatra();
         let seat = row.seat(birth.moon.nakshatra_index().get());
         if seat.overflow && rules.seed_overflow == SeedOverflow::Reject {
             return Err(Error::invalid_arg(format!(
@@ -293,6 +296,7 @@ impl Dasha {
             row,
             rules,
             birth: birth.instant,
+            seed,
             seat,
             balance: BalanceAtBirth {
                 method: rules.balance,
@@ -316,6 +320,12 @@ impl Dasha {
     #[must_use]
     pub const fn rules(&self) -> Rules {
         self.rules
+    }
+
+    /// The nakshatra the Moon stood in, which seeds it.
+    #[must_use]
+    pub const fn seed(&self) -> Nakshatra {
+        self.seed
     }
 
     /// Where the Moon's nakshatra seats it: the first lord, and whether the

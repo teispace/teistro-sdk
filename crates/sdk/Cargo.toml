@@ -21,6 +21,7 @@ teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
+teistro-dasha = { path = "../dasha" }
 teistro-houses = { path = "../houses" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
@@ -66,6 +67,10 @@ workspace = true
 # `calendar` and `parity` are absent on purpose: the first names
 # `Ephemeris::None` (a calendar needs no ephemeris, which is its lesson)
 # and the second `Ephemeris::Test`. Neither is gated.
+
+[[test]]
+name = "dasha"
+required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "render"

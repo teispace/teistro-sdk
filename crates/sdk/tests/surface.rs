@@ -694,9 +694,10 @@ fn a_reading_carries_the_sections_it_was_asked_for() {
             "state",
             "aspects",
             "points",
-            "houses"
+            "houses",
+            "dashas"
         ],
-        "every section `teistro-serial`'s document declares"
+        "every section `teistro-serial`'s document declares but the drawings, which are named pairs"
     );
 
     // The foundation is the same chart either way: the sections are

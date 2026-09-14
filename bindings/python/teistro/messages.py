@@ -146,6 +146,29 @@ class ChoghadiyaKey(enum.StrEnum):
     ROG = "choghadiya.ROG"
 
 
+class DashaSystemKey(enum.StrEnum):
+    """A `dasha_system` as a message names it: the full catalogue key."""
+
+    VIMSHOTTARI = "dasha_system.VIMSHOTTARI"
+    ASHTOTTARI = "dasha_system.ASHTOTTARI"
+    DWADASHOTTARI = "dasha_system.DWADASHOTTARI"
+    PANCHOTTARI = "dasha_system.PANCHOTTARI"
+    SHATABDIKA = "dasha_system.SHATABDIKA"
+    CHATURASHITI_SAMA = "dasha_system.CHATURASHITI_SAMA"
+    DWISAPTATI_SAMA = "dasha_system.DWISAPTATI_SAMA"
+    YOGINI = "dasha_system.YOGINI"
+    TRIBHAGI = "dasha_system.TRIBHAGI"
+    CHARA = "dasha_system.CHARA"
+    NARAYANA = "dasha_system.NARAYANA"
+    PADANADHAMSA = "dasha_system.PADANADHAMSA"
+    TRIKONA = "dasha_system.TRIKONA"
+    DRIG = "dasha_system.DRIG"
+    SHOOLA = "dasha_system.SHOOLA"
+    NIRYANA_SHOOLA = "dasha_system.NIRYANA_SHOOLA"
+    MANDOOKA = "dasha_system.MANDOOKA"
+    KALACHAKRA = "dasha_system.KALACHAKRA"
+
+
 class DeityKey(enum.StrEnum):
     """A `deity` as a message names it: the full catalogue key."""
 
@@ -873,6 +896,11 @@ class MessagesSdkEntity:
     def choghadiya(self) -> MessagesSdkEntityChoghadiya:
         """The messages under `choghadiya`."""
         return MessagesSdkEntityChoghadiya(self._r)
+
+    @property
+    def dasha_system(self) -> MessagesSdkEntityDashaSystem:
+        """The messages under `dasha_system`."""
+        return MessagesSdkEntityDashaSystem(self._r)
 
     @property
     def deity(self) -> MessagesSdkEntityDeity:
@@ -2848,6 +2876,104 @@ class MessagesSdkEntityDeity:
     def yama(self) -> EntityForms:
         """The forms of `deity.YAMA` in the current locale."""
         return self._r.entity("deity.YAMA")
+
+
+class MessagesSdkEntityDashaSystem:
+    """The messages under `MessagesSdkEntityDashaSystem`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def ashtottari(self) -> EntityForms:
+        """The forms of `dasha_system.ASHTOTTARI` in the current locale."""
+        return self._r.entity("dasha_system.ASHTOTTARI")
+
+    @property
+    def chara(self) -> EntityForms:
+        """The forms of `dasha_system.CHARA` in the current locale."""
+        return self._r.entity("dasha_system.CHARA")
+
+    @property
+    def chaturashiti_sama(self) -> EntityForms:
+        """The forms of `dasha_system.CHATURASHITI_SAMA` in the current locale."""
+        return self._r.entity("dasha_system.CHATURASHITI_SAMA")
+
+    @property
+    def drig(self) -> EntityForms:
+        """The forms of `dasha_system.DRIG` in the current locale."""
+        return self._r.entity("dasha_system.DRIG")
+
+    @property
+    def dwadashottari(self) -> EntityForms:
+        """The forms of `dasha_system.DWADASHOTTARI` in the current locale."""
+        return self._r.entity("dasha_system.DWADASHOTTARI")
+
+    @property
+    def dwisaptati_sama(self) -> EntityForms:
+        """The forms of `dasha_system.DWISAPTATI_SAMA` in the current locale."""
+        return self._r.entity("dasha_system.DWISAPTATI_SAMA")
+
+    @property
+    def kalachakra(self) -> EntityForms:
+        """The forms of `dasha_system.KALACHAKRA` in the current locale."""
+        return self._r.entity("dasha_system.KALACHAKRA")
+
+    @property
+    def mandooka(self) -> EntityForms:
+        """The forms of `dasha_system.MANDOOKA` in the current locale."""
+        return self._r.entity("dasha_system.MANDOOKA")
+
+    @property
+    def narayana(self) -> EntityForms:
+        """The forms of `dasha_system.NARAYANA` in the current locale."""
+        return self._r.entity("dasha_system.NARAYANA")
+
+    @property
+    def niryana_shoola(self) -> EntityForms:
+        """The forms of `dasha_system.NIRYANA_SHOOLA` in the current locale."""
+        return self._r.entity("dasha_system.NIRYANA_SHOOLA")
+
+    @property
+    def padanadhamsa(self) -> EntityForms:
+        """The forms of `dasha_system.PADANADHAMSA` in the current locale."""
+        return self._r.entity("dasha_system.PADANADHAMSA")
+
+    @property
+    def panchottari(self) -> EntityForms:
+        """The forms of `dasha_system.PANCHOTTARI` in the current locale."""
+        return self._r.entity("dasha_system.PANCHOTTARI")
+
+    @property
+    def shatabdika(self) -> EntityForms:
+        """The forms of `dasha_system.SHATABDIKA` in the current locale."""
+        return self._r.entity("dasha_system.SHATABDIKA")
+
+    @property
+    def shoola(self) -> EntityForms:
+        """The forms of `dasha_system.SHOOLA` in the current locale."""
+        return self._r.entity("dasha_system.SHOOLA")
+
+    @property
+    def tribhagi(self) -> EntityForms:
+        """The forms of `dasha_system.TRIBHAGI` in the current locale."""
+        return self._r.entity("dasha_system.TRIBHAGI")
+
+    @property
+    def trikona(self) -> EntityForms:
+        """The forms of `dasha_system.TRIKONA` in the current locale."""
+        return self._r.entity("dasha_system.TRIKONA")
+
+    @property
+    def vimshottari(self) -> EntityForms:
+        """The forms of `dasha_system.VIMSHOTTARI` in the current locale."""
+        return self._r.entity("dasha_system.VIMSHOTTARI")
+
+    @property
+    def yogini(self) -> EntityForms:
+        """The forms of `dasha_system.YOGINI` in the current locale."""
+        return self._r.entity("dasha_system.YOGINI")
 
 
 class MessagesSdkEntityChoghadiya:

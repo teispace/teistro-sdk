@@ -160,6 +160,31 @@ enum ChoghadiyaKey {
   final String key;
 }
 
+enum DashaSystemKey {
+  vimshottari('dasha_system.VIMSHOTTARI'),
+  ashtottari('dasha_system.ASHTOTTARI'),
+  dwadashottari('dasha_system.DWADASHOTTARI'),
+  panchottari('dasha_system.PANCHOTTARI'),
+  shatabdika('dasha_system.SHATABDIKA'),
+  chaturashitiSama('dasha_system.CHATURASHITI_SAMA'),
+  dwisaptatiSama('dasha_system.DWISAPTATI_SAMA'),
+  yogini('dasha_system.YOGINI'),
+  tribhagi('dasha_system.TRIBHAGI'),
+  chara('dasha_system.CHARA'),
+  narayana('dasha_system.NARAYANA'),
+  padanadhamsa('dasha_system.PADANADHAMSA'),
+  trikona('dasha_system.TRIKONA'),
+  drig('dasha_system.DRIG'),
+  shoola('dasha_system.SHOOLA'),
+  niryanaShoola('dasha_system.NIRYANA_SHOOLA'),
+  mandooka('dasha_system.MANDOOKA'),
+  kalachakra('dasha_system.KALACHAKRA');
+
+  const DashaSystemKey(this.key);
+
+  final String key;
+}
+
 enum DeityKey {
   ashwiniKumara('deity.ASHWINI_KUMARA'),
   yama('deity.YAMA'),
@@ -1087,6 +1112,31 @@ final class MessagesSdkEntityChoghadiya {
   EntityForms get udveg => _r.entity('choghadiya.UDVEG');
 }
 
+final class MessagesSdkEntityDashaSystem {
+  const MessagesSdkEntityDashaSystem(this._r);
+
+  final Renderer _r;
+
+  EntityForms get ashtottari => _r.entity('dasha_system.ASHTOTTARI');
+  EntityForms get chara => _r.entity('dasha_system.CHARA');
+  EntityForms get chaturashitiSama => _r.entity('dasha_system.CHATURASHITI_SAMA');
+  EntityForms get drig => _r.entity('dasha_system.DRIG');
+  EntityForms get dwadashottari => _r.entity('dasha_system.DWADASHOTTARI');
+  EntityForms get dwisaptatiSama => _r.entity('dasha_system.DWISAPTATI_SAMA');
+  EntityForms get kalachakra => _r.entity('dasha_system.KALACHAKRA');
+  EntityForms get mandooka => _r.entity('dasha_system.MANDOOKA');
+  EntityForms get narayana => _r.entity('dasha_system.NARAYANA');
+  EntityForms get niryanaShoola => _r.entity('dasha_system.NIRYANA_SHOOLA');
+  EntityForms get padanadhamsa => _r.entity('dasha_system.PADANADHAMSA');
+  EntityForms get panchottari => _r.entity('dasha_system.PANCHOTTARI');
+  EntityForms get shatabdika => _r.entity('dasha_system.SHATABDIKA');
+  EntityForms get shoola => _r.entity('dasha_system.SHOOLA');
+  EntityForms get tribhagi => _r.entity('dasha_system.TRIBHAGI');
+  EntityForms get trikona => _r.entity('dasha_system.TRIKONA');
+  EntityForms get vimshottari => _r.entity('dasha_system.VIMSHOTTARI');
+  EntityForms get yogini => _r.entity('dasha_system.YOGINI');
+}
+
 final class MessagesSdkEntityDeity {
   const MessagesSdkEntityDeity(this._r);
 
@@ -1605,6 +1655,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityAyanamsha get ayanamsha => MessagesSdkEntityAyanamsha(_r);
   MessagesSdkEntityCharaKaraka get charaKaraka => MessagesSdkEntityCharaKaraka(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
+  MessagesSdkEntityDashaSystem get dashaSystem => MessagesSdkEntityDashaSystem(_r);
   MessagesSdkEntityDeity get deity => MessagesSdkEntityDeity(_r);
   MessagesSdkEntityDignity get dignity => MessagesSdkEntityDignity(_r);
   MessagesSdkEntityDirection get direction => MessagesSdkEntityDirection(_r);

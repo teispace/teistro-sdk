@@ -17,7 +17,7 @@
 
 #[cfg(doc)]
 use teistro_core::catalogue::ChartLayout;
-use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
+use teistro_core::catalogue::{Catalogued, ChartKind, DashaSystem, Varga};
 use teistro_core::key::KeyId;
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
@@ -108,6 +108,7 @@ pub struct ChartRequest {
     kind: ChartKind,
     vargas: Vec<Varga>,
     drawings: Vec<(KeyId, Varga)>,
+    dashas: Vec<DashaSystem>,
     pub(crate) sections: Sections,
 }
 
@@ -122,6 +123,7 @@ impl ChartRequest {
             kind: ChartKind::Natal,
             vargas: Vec::new(),
             drawings: Vec::new(),
+            dashas: Vec::new(),
             sections: Sections::default(),
         }
     }
@@ -232,15 +234,42 @@ impl ChartRequest {
         self
     }
 
+    /// The dashas to compute, a system each, in the order given: each one's
+    /// balance at birth and its periods to the depth the settings give it
+    /// (`dasha.depth`, three levels by default).
+    ///
+    /// A system the catalogue names and no row implements yet is refused
+    /// by its place in the request when the reading runs. Replaces rather
+    /// than accumulates, as every setter here does.
+    ///
+    /// ```
+    /// use teistro::catalogue::DashaSystem;
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700)?)
+    ///     .with_dashas([DashaSystem::Vimshottari]);
+    /// assert_eq!(request.dashas(), [DashaSystem::Vimshottari]);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_dashas(mut self, dashas: impl IntoIterator<Item = DashaSystem>) -> ChartRequest {
+        self.dashas = dashas.into_iter().collect();
+        self
+    }
+
     /// Every section, and every divisional chart.
     ///
     /// What a consumer storing a chart for later wants, and what the
     /// parity runner asks for: the widest document the SDK can produce.
-    /// **No drawings**: those are named pairs, and every layout times every
+    /// Every dasha system this build implements rows for. **No drawings**:
+    /// those are named pairs, and every layout times every
     /// chart is a hundred and twenty-six placements nobody asked for.
     #[must_use]
     pub fn with_everything(self) -> ChartRequest {
         self.with_every_varga()
+            .with_dashas(teistro_dasha::ROWS.iter().map(|row| row.system))
             .with_panchanga()
             .with_state()
             .with_aspects()
@@ -270,6 +299,12 @@ impl ChartRequest {
     #[must_use]
     pub fn vargas(&self) -> &[Varga] {
         &self.vargas
+    }
+
+    /// The dashas asked for.
+    #[must_use]
+    pub fn dashas(&self) -> &[DashaSystem] {
+        &self.dashas
     }
 
     /// The charts to draw, as layout ids and the chart drawn in each.

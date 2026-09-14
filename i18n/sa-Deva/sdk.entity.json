@@ -2217,5 +2217,97 @@
       "prose": "फाल्गुन",
       "iast": "Phālguna"
     }
+  },
+  "dasha_system": {
+    "VIMSHOTTARI": {
+      "name": "विंशोत्तरी दशा",
+      "prose": "विंशोत्तरी दशा",
+      "iast": "Viṁśottarī Daśā"
+    },
+    "ASHTOTTARI": {
+      "name": "अष्टोत्तरी दशा",
+      "prose": "अष्टोत्तरी दशा",
+      "iast": "Aṣṭottarī Daśā"
+    },
+    "DWADASHOTTARI": {
+      "name": "द्वादशोत्तरी दशा",
+      "prose": "द्वादशोत्तरी दशा",
+      "iast": "Dvādaśottarī Daśā"
+    },
+    "PANCHOTTARI": {
+      "name": "पंचोत्तरी दशा",
+      "prose": "पंचोत्तरी दशा",
+      "iast": "Pañcottarī Daśā"
+    },
+    "SHATABDIKA": {
+      "name": "शताब्दिक दशा",
+      "prose": "शताब्दिक दशा",
+      "iast": "Śatābdika Daśā"
+    },
+    "CHATURASHITI_SAMA": {
+      "name": "चतुरशीतिसम दशा",
+      "prose": "चतुरशीतिसम दशा",
+      "iast": "Caturaśītisama Daśā"
+    },
+    "DWISAPTATI_SAMA": {
+      "name": "द्विसप्ततिसम दशा",
+      "prose": "द्विसप्ततिसम दशा",
+      "iast": "Dvisaptatisama Daśā"
+    },
+    "YOGINI": {
+      "name": "योगिनी दशा",
+      "prose": "योगिनी दशा",
+      "iast": "Yoginī Daśā"
+    },
+    "TRIBHAGI": {
+      "name": "त्रिभागी दशा",
+      "prose": "त्रिभागी दशा",
+      "iast": "Tribhāgī Daśā"
+    },
+    "CHARA": {
+      "name": "चर दशा",
+      "prose": "चर दशा",
+      "iast": "Cara Daśā"
+    },
+    "NARAYANA": {
+      "name": "नारायण दशा",
+      "prose": "नारायण दशा",
+      "iast": "Nārāyaṇa Daśā"
+    },
+    "PADANADHAMSA": {
+      "name": "पदनाधांश दशा",
+      "prose": "पदनाधांश दशा",
+      "iast": "Padanādhāṃśa Daśā"
+    },
+    "TRIKONA": {
+      "name": "त्रिकोण दशा",
+      "prose": "त्रिकोण दशा",
+      "iast": "Trikoṇa Daśā"
+    },
+    "DRIG": {
+      "name": "दृग् दशा",
+      "prose": "दृग् दशा",
+      "iast": "Dṛg Daśā"
+    },
+    "SHOOLA": {
+      "name": "शूल दशा",
+      "prose": "शूल दशा",
+      "iast": "Śūla Daśā"
+    },
+    "NIRYANA_SHOOLA": {
+      "name": "निर्याण शूल दशा",
+      "prose": "निर्याण शूल दशा",
+      "iast": "Niryāṇa Śūla Daśā"
+    },
+    "MANDOOKA": {
+      "name": "मण्डूक दशा",
+      "prose": "मण्डूक दशा",
+      "iast": "Maṇḍūka Daśā"
+    },
+    "KALACHAKRA": {
+      "name": "कालचक्र दशा",
+      "prose": "कालचक्र दशा",
+      "iast": "Kālacakra Daśā"
+    }
   }
 }

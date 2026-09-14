@@ -10,6 +10,7 @@ export type AyanaKey = 'ayana.UTTARAYANA' | 'ayana.DAKSHINAYANA';
 export type AyanamshaKey = 'ayanamsha.FAGAN_BRADLEY' | 'ayanamsha.LAHIRI' | 'ayanamsha.DELUCE' | 'ayanamsha.RAMAN' | 'ayanamsha.USHASHASHI' | 'ayanamsha.KRISHNAMURTI' | 'ayanamsha.DJWHAL_KHUL' | 'ayanamsha.YUKTESHWAR' | 'ayanamsha.JN_BHASIN' | 'ayanamsha.BABYL_KUGLER1' | 'ayanamsha.BABYL_KUGLER2' | 'ayanamsha.BABYL_KUGLER3' | 'ayanamsha.BABYL_HUBER' | 'ayanamsha.BABYL_ETPSC' | 'ayanamsha.ALDEBARAN_15TAU' | 'ayanamsha.HIPPARCHOS' | 'ayanamsha.SASSANIAN' | 'ayanamsha.GALCENT_0SAG' | 'ayanamsha.J2000' | 'ayanamsha.J1900' | 'ayanamsha.B1950' | 'ayanamsha.SURYASIDDHANTA' | 'ayanamsha.SURYASIDDHANTA_MSUN' | 'ayanamsha.ARYABHATA' | 'ayanamsha.ARYABHATA_MSUN' | 'ayanamsha.SS_REVATI' | 'ayanamsha.SS_CITRA' | 'ayanamsha.TRUE_CHITRA' | 'ayanamsha.TRUE_REVATI' | 'ayanamsha.TRUE_PUSHYA' | 'ayanamsha.GALCENT_RGILBRAND' | 'ayanamsha.GALEQU_IAU1958' | 'ayanamsha.GALEQU_TRUE' | 'ayanamsha.GALEQU_MULA' | 'ayanamsha.GALALIGN_MARDYKS' | 'ayanamsha.TRUE_MULA' | 'ayanamsha.GALCENT_MULA_WILHELM' | 'ayanamsha.ARYABHATA_522' | 'ayanamsha.BABYL_BRITTON' | 'ayanamsha.TRUE_SHEORAN' | 'ayanamsha.GALCENT_COCHRANE' | 'ayanamsha.GALEQU_FIORENZA' | 'ayanamsha.VALENS_MOON' | 'ayanamsha.LAHIRI_1940' | 'ayanamsha.LAHIRI_VP285' | 'ayanamsha.KRISHNAMURTI_VP291' | 'ayanamsha.LAHIRI_ICRC';
 export type CharaKarakaKey = 'chara_karaka.ATMAKARAKA' | 'chara_karaka.AMATYAKARAKA' | 'chara_karaka.BHRATRIKARAKA' | 'chara_karaka.MATRIKARAKA' | 'chara_karaka.PUTRAKARAKA' | 'chara_karaka.GNATIKARAKA' | 'chara_karaka.DARAKARAKA' | 'chara_karaka.PITRIKARAKA';
 export type ChoghadiyaKey = 'choghadiya.UDVEG' | 'choghadiya.CHAR' | 'choghadiya.LAABH' | 'choghadiya.AMRIT' | 'choghadiya.KAAL' | 'choghadiya.SHUBHA' | 'choghadiya.ROG';
+export type DashaSystemKey = 'dasha_system.VIMSHOTTARI' | 'dasha_system.ASHTOTTARI' | 'dasha_system.DWADASHOTTARI' | 'dasha_system.PANCHOTTARI' | 'dasha_system.SHATABDIKA' | 'dasha_system.CHATURASHITI_SAMA' | 'dasha_system.DWISAPTATI_SAMA' | 'dasha_system.YOGINI' | 'dasha_system.TRIBHAGI' | 'dasha_system.CHARA' | 'dasha_system.NARAYANA' | 'dasha_system.PADANADHAMSA' | 'dasha_system.TRIKONA' | 'dasha_system.DRIG' | 'dasha_system.SHOOLA' | 'dasha_system.NIRYANA_SHOOLA' | 'dasha_system.MANDOOKA' | 'dasha_system.KALACHAKRA';
 export type DeityKey = 'deity.ASHWINI_KUMARA' | 'deity.YAMA' | 'deity.AGNI' | 'deity.BRAHMA' | 'deity.SOMA' | 'deity.RUDRA' | 'deity.ADITI' | 'deity.BRIHASPATI' | 'deity.NAGA' | 'deity.PITRU' | 'deity.BHAGA' | 'deity.ARYAMAN' | 'deity.SAVITR' | 'deity.VISHVAKARMA' | 'deity.VAYU' | 'deity.INDRAGNI' | 'deity.MITRA' | 'deity.INDRA' | 'deity.NIRRITI' | 'deity.APAS' | 'deity.VISHVADEVA' | 'deity.VISHNU' | 'deity.VASU' | 'deity.VARUNA' | 'deity.AJA_EKAPADA' | 'deity.AHIRBUDHNYA' | 'deity.PUSHAN';
 export type DignityKey = 'dignity.DEEP_EXALTED' | 'dignity.EXALTED' | 'dignity.MOOLTRIKONA' | 'dignity.OWN_SIGN' | 'dignity.GREAT_FRIEND' | 'dignity.FRIEND' | 'dignity.NEUTRAL' | 'dignity.ENEMY' | 'dignity.GREAT_ENEMY' | 'dignity.DEBILITATED' | 'dignity.DEEP_DEBILITATED';
 export type DirectionKey = 'direction.EAST' | 'direction.WEST' | 'direction.NORTH' | 'direction.SOUTH' | 'direction.NORTHEAST' | 'direction.NORTHWEST' | 'direction.SOUTHEAST' | 'direction.SOUTHWEST';
@@ -35,7 +36,7 @@ export type VaraKey = 'vara.RAVIVARA' | 'vara.SOMAVARA' | 'vara.MANGALAVARA' | '
 export type VarnaKey = 'varna.BRAHMIN' | 'varna.KSHATRIYA' | 'varna.VAISHYA' | 'varna.SHUDRA' | 'varna.MLECCHA';
 export type YogaKey = 'yoga.VISHKAMBHA' | 'yoga.PRITI' | 'yoga.AYUSHMAN' | 'yoga.SAUBHAGYA' | 'yoga.SHOBHANA' | 'yoga.ATIGANDA' | 'yoga.SUKARMA' | 'yoga.DHRITI' | 'yoga.SHOOLA' | 'yoga.GANDA' | 'yoga.VRIDDHI' | 'yoga.DHRUVA' | 'yoga.VYAGHATA' | 'yoga.HARSHANA' | 'yoga.VAJRA' | 'yoga.SIDDHI' | 'yoga.VYATIPATA' | 'yoga.VARIYANA' | 'yoga.PARIGHA' | 'yoga.SHIVA' | 'yoga.SIDDHA' | 'yoga.SADHYA' | 'yoga.SHUBHA' | 'yoga.SHUKLA' | 'yoga.BRAHMA' | 'yoga.INDRA' | 'yoga.VAIDHRITI';
 export type YoniKey = 'yoni.HORSE' | 'yoni.ELEPHANT' | 'yoni.GOAT' | 'yoni.SERPENT' | 'yoni.DOG' | 'yoni.CAT' | 'yoni.RAT' | 'yoni.COW' | 'yoni.BUFFALO' | 'yoni.TIGER' | 'yoni.DEER' | 'yoni.MONKEY' | 'yoni.MONGOOSE' | 'yoni.LION';
-export type EntityKey = AvasthaBaladiKey | AvasthaDeeptadiKey | AvasthaJagradadiKey | AvasthaLajjitadiKey | AyanaKey | AyanamshaKey | CharaKarakaKey | ChoghadiyaKey | DeityKey | DignityKey | DirectionKey | EraKey | GanaKey | GrahaKey | HouseSystemKey | KaalaKey | KaranaKey | MasaKey | MuhurtaYogaKey | NadiKey | NakshatraKey | PakshaKey | PanchakaKey | PointKey | RashiKey | RelationshipKey | SamvatsaraKey | TatwaKey | TithiKey | VaraKey | VarnaKey | YogaKey | YoniKey;
+export type EntityKey = AvasthaBaladiKey | AvasthaDeeptadiKey | AvasthaJagradadiKey | AvasthaLajjitadiKey | AyanaKey | AyanamshaKey | CharaKarakaKey | ChoghadiyaKey | DashaSystemKey | DeityKey | DignityKey | DirectionKey | EraKey | GanaKey | GrahaKey | HouseSystemKey | KaalaKey | KaranaKey | MasaKey | MuhurtaYogaKey | NadiKey | NakshatraKey | PakshaKey | PanchakaKey | PointKey | RashiKey | RelationshipKey | SamvatsaraKey | TatwaKey | TithiKey | VaraKey | VarnaKey | YogaKey | YoniKey;
 export type MessageKey = 'sdk.calendar.weekdayName' | 'sdk.calendar.weekdayShort' | 'sdk.calendar.GREGORIAN.monthName' | 'sdk.calendar.GREGORIAN.monthShort' | 'sdk.calendar.GREGORIAN.date.numeric' | 'sdk.calendar.GREGORIAN.date.long' | 'sdk.calendar.GREGORIAN.date.full' | 'sdk.calendar.JULIAN.monthName' | 'sdk.calendar.JULIAN.monthShort' | 'sdk.calendar.JULIAN.date.numeric' | 'sdk.calendar.JULIAN.date.long' | 'sdk.calendar.JULIAN.date.full' | 'sdk.calendar.MIXED.monthName' | 'sdk.calendar.MIXED.monthShort' | 'sdk.calendar.MIXED.date.numeric' | 'sdk.calendar.MIXED.date.long' | 'sdk.calendar.MIXED.date.full' | 'sdk.calendar.ISO_WEEK.date.numeric' | 'sdk.calendar.ISO_WEEK.date.long' | 'sdk.calendar.ISO_WEEK.date.full' | 'sdk.calendar.BIKRAM_SAMBAT.monthName' | 'sdk.calendar.BIKRAM_SAMBAT.monthShort' | 'sdk.calendar.BIKRAM_SAMBAT.date.numeric' | 'sdk.calendar.BIKRAM_SAMBAT.date.long' | 'sdk.calendar.BIKRAM_SAMBAT.date.full' | 'sdk.calendar.time.numeric' | 'sdk.calendar.time.long' | 'sdk.calendar.time.numeric12' | 'sdk.calendar.time.long12' | 'sdk.calendar.datetime.join' | 'sdk.calendar.ghati.numeric' | 'sdk.calendar.ghati.long' | 'sdk.calendar.duration.day' | 'sdk.calendar.duration.hour' | 'sdk.calendar.duration.minute' | 'sdk.calendar.duration.second' | 'sdk.calendar.dayPeriod.am' | 'sdk.calendar.dayPeriod.pm' | 'sdk.calendar.dayPeriod.morning' | 'sdk.calendar.dayPeriod.afternoon' | 'sdk.calendar.dayPeriod.evening' | 'sdk.calendar.dayPeriod.night' | 'sdk.reason.appName' | 'sdk.reason.welcome' | 'sdk.reason.grahaInBhava' | 'sdk.reason.grahaInRashi' | 'sdk.reason.grahaAt' | 'sdk.reason.exactLongitude' | 'sdk.reason.conjunction' | 'sdk.reason.rashiNature' | 'sdk.reason.greeting' | 'sdk.reason.lordship' | 'sdk.reason.occupants' | 'sdk.reason.strength.score' | 'sdk.reason.strength.rank';
 
 export interface DateValue { readonly calendar: string; readonly year: number; readonly month: number; readonly day: number; }
@@ -236,6 +237,26 @@ export interface Messages {
         readonly rog: () => EntityForms;
         readonly shubha: () => EntityForms;
         readonly udveg: () => EntityForms;
+      };
+      readonly dashaSystem: {
+        readonly ashtottari: () => EntityForms;
+        readonly chara: () => EntityForms;
+        readonly chaturashitiSama: () => EntityForms;
+        readonly drig: () => EntityForms;
+        readonly dwadashottari: () => EntityForms;
+        readonly dwisaptatiSama: () => EntityForms;
+        readonly kalachakra: () => EntityForms;
+        readonly mandooka: () => EntityForms;
+        readonly narayana: () => EntityForms;
+        readonly niryanaShoola: () => EntityForms;
+        readonly padanadhamsa: () => EntityForms;
+        readonly panchottari: () => EntityForms;
+        readonly shatabdika: () => EntityForms;
+        readonly shoola: () => EntityForms;
+        readonly tribhagi: () => EntityForms;
+        readonly trikona: () => EntityForms;
+        readonly vimshottari: () => EntityForms;
+        readonly yogini: () => EntityForms;
       };
       readonly deity: {
         readonly aditi: () => EntityForms;

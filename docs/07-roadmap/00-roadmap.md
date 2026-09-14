@@ -473,8 +473,10 @@ birth period's sub-periods are compressed, the cycle ends after nine, and
 boundaries agree to a quarter of a millisecond and not to the bit. Crux C6
 is untouched (every record uses 365.25 days) and C48 is new. **The K-udu
 kernel and the cursor are built** (`crates/dasha`), Vimshottari the first
-row, reproducing every recorded answer and allocation-free to read. Next:
-the dasha section of the chart document, the façade and the boundary.
+row, reproducing every recorded answer and allocation-free to read, and
+**a chart reading carries its dashas** (`ChartRequest::with_dashas`), the
+temporal balance searched in the chart's own frame. Next: the dasha section
+at the boundary and in the bindings.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

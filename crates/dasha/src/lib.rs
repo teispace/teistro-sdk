@@ -7,7 +7,9 @@
 //! - [`balance`]: what remains of the first period, spatially or temporally,
 //!   and how it is written;
 //! - [`tree`]: the dasha of a birth, its periods by path, and the chain
-//!   running at an instant.
+//!   running at an instant;
+//! - [`reading`]: a dasha as a chart document carries it, its periods as
+//!   rows to the settings' depth.
 //!
 //! Three things the corpus settled that a reading of the texts does not
 //! (`dasha-measured.md`):
@@ -42,9 +44,11 @@
 //! ```
 
 pub mod balance;
+pub mod reading;
 pub mod row;
 pub mod tree;
 
 pub use balance::{BalanceAtBirth, Written};
+pub use reading::{DashaReading, PeriodRow};
 pub use row::{Count, Lord, ROWS, Seat, UduRow, VIMSHOTTARI, row};
 pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules};

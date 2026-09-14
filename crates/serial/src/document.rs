@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use teistro_aspect::Aspects;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::envelope::Provenance;
+use teistro_dasha::DashaReading;
 use teistro_geometry::Drawing;
 use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
@@ -59,6 +60,12 @@ pub struct Document {
     /// were asked for", which a `Vec` has to be told.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub drawings: Vec<Drawing>,
+    /// The dashas asked for: each system's balance and its periods to the
+    /// settings' depth (`03-design/dasha-kernels.md`).
+    ///
+    /// `default` for the reason `vargas` has it.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub dashas: Vec<DashaReading>,
 }
 
 impl Document {
@@ -74,6 +81,7 @@ impl Document {
             points: None,
             houses: None,
             drawings: Vec::new(),
+            dashas: Vec::new(),
         }
     }
 
@@ -119,6 +127,13 @@ impl Document {
         self
     }
 
+    /// With a dasha, which may be asked for more than once, a system each.
+    #[must_use]
+    pub fn with_dasha(mut self, dasha: DashaReading) -> Document {
+        self.dashas.push(dasha);
+        self
+    }
+
     /// With the houses under both readings.
     #[must_use]
     pub fn with_houses(mut self, houses: Houses) -> Document {
@@ -151,6 +166,9 @@ impl Document {
         }
         if !self.drawings.is_empty() {
             found.push("drawings");
+        }
+        if !self.dashas.is_empty() {
+            found.push("dashas");
         }
         found
     }

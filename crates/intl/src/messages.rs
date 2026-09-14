@@ -804,6 +804,10 @@ pub mod sdk {
         pub mod choghadiya {
         }
 
+        /// The `dasha_system` group.
+        pub mod dasha_system {
+        }
+
         /// The `deity` group.
         pub mod deity {
         }

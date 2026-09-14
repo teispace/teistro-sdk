@@ -2282,5 +2282,97 @@
       "prose": "Phalguna",
       "iast": "Phālguna"
     }
+  },
+  "dasha_system": {
+    "VIMSHOTTARI": {
+      "name": "Vimshottari Dasha",
+      "prose": "Vimshottari Dasha",
+      "iast": "Viṁśottarī Daśā"
+    },
+    "ASHTOTTARI": {
+      "name": "Ashtottari Dasha",
+      "prose": "Ashtottari Dasha",
+      "iast": "Aṣṭottarī Daśā"
+    },
+    "DWADASHOTTARI": {
+      "name": "Dwadashottari Dasha",
+      "prose": "Dwadashottari Dasha",
+      "iast": "Dvādaśottarī Daśā"
+    },
+    "PANCHOTTARI": {
+      "name": "Panchottari Dasha",
+      "prose": "Panchottari Dasha",
+      "iast": "Pañcottarī Daśā"
+    },
+    "SHATABDIKA": {
+      "name": "Shatabdika Dasha",
+      "prose": "Shatabdika Dasha",
+      "iast": "Śatābdika Daśā"
+    },
+    "CHATURASHITI_SAMA": {
+      "name": "Chaturashiti Sama Dasha",
+      "prose": "Chaturashiti Sama Dasha",
+      "iast": "Caturaśītisama Daśā"
+    },
+    "DWISAPTATI_SAMA": {
+      "name": "Dwisaptati Sama Dasha",
+      "prose": "Dwisaptati Sama Dasha",
+      "iast": "Dvisaptatisama Daśā"
+    },
+    "YOGINI": {
+      "name": "Yogini Dasha",
+      "prose": "Yogini Dasha",
+      "iast": "Yoginī Daśā"
+    },
+    "TRIBHAGI": {
+      "name": "Tribhagi Dasha",
+      "prose": "Tribhagi Dasha",
+      "iast": "Tribhāgī Daśā"
+    },
+    "CHARA": {
+      "name": "Chara Dasha",
+      "prose": "Chara Dasha",
+      "iast": "Cara Daśā"
+    },
+    "NARAYANA": {
+      "name": "Narayana Dasha",
+      "prose": "Narayana Dasha",
+      "iast": "Nārāyaṇa Daśā"
+    },
+    "PADANADHAMSA": {
+      "name": "Padanadhamsa Dasha",
+      "prose": "Padanadhamsa Dasha",
+      "iast": "Padanādhāṃśa Daśā"
+    },
+    "TRIKONA": {
+      "name": "Trikona Dasha",
+      "prose": "Trikona Dasha",
+      "iast": "Trikoṇa Daśā"
+    },
+    "DRIG": {
+      "name": "Drig Dasha",
+      "prose": "Drig Dasha",
+      "iast": "Dṛg Daśā"
+    },
+    "SHOOLA": {
+      "name": "Shoola Dasha",
+      "prose": "Shoola Dasha",
+      "iast": "Śūla Daśā"
+    },
+    "NIRYANA_SHOOLA": {
+      "name": "Niryana Shoola Dasha",
+      "prose": "Niryana Shoola Dasha",
+      "iast": "Niryāṇa Śūla Daśā"
+    },
+    "MANDOOKA": {
+      "name": "Mandooka Dasha",
+      "prose": "Mandooka Dasha",
+      "iast": "Maṇḍūka Daśā"
+    },
+    "KALACHAKRA": {
+      "name": "Kalachakra Dasha",
+      "prose": "Kalachakra Dasha",
+      "iast": "Kālacakra Daśā"
+    }
   }
 }

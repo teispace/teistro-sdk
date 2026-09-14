@@ -271,7 +271,6 @@ group!(
         /// lint: knob-has-a-reader — `dasha`, Phase 5.
         year_length: BTreeMap<DashaSystem, YearLength>,
         /// The default depth per system.
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         depth: BTreeMap<DashaSystem, Depth>,
         /// A seed outside a conditional cycle.
         /// lint: knob-has-a-reader — `dasha`, Phase 5 (ADR-0017).

@@ -1,5 +1,20 @@
 {
   "$defs": {
+    "AfterCycle": {
+      "description": "What a dasha answers past the end of its cycle.",
+      "oneOf": [
+        {
+          "const": "END",
+          "description": "No period: the cycle has ended, as the recording engine answers.",
+          "type": "string"
+        },
+        {
+          "const": "REPEAT",
+          "description": "The cycle begins again, from its first lord and in full.",
+          "type": "string"
+        }
+      ]
+    },
     "Altitude": {
       "description": "An altitude above sea level in metres.",
       "format": "double",
@@ -262,6 +277,51 @@
         }
       ]
     },
+    "Balance": {
+      "description": "How a dasha's first period is balanced.",
+      "oneOf": [
+        {
+          "const": "SPATIAL",
+          "description": "By the elapsed fraction of the seed span.",
+          "type": "string"
+        },
+        {
+          "const": "TEMPORAL",
+          "description": "By elapsed time.",
+          "type": "string"
+        }
+      ]
+    },
+    "BalanceAtBirth": {
+      "description": "What remains of the first period, and how long it runs.",
+      "properties": {
+        "days": {
+          "description": "That fraction of the first lord's years, in days.",
+          "format": "double",
+          "type": "number"
+        },
+        "method": {
+          "$ref": "#/$defs/Balance",
+          "description": "How it was measured."
+        },
+        "remaining": {
+          "description": "The fraction of the first lord's period still to run, 0 to 1.",
+          "format": "double",
+          "type": "number"
+        },
+        "written": {
+          "$ref": "#/$defs/Written",
+          "description": "The same, written as a reader writes it."
+        }
+      },
+      "required": [
+        "method",
+        "remaining",
+        "days",
+        "written"
+      ],
+      "type": "object"
+    },
     "Bhava": {
       "description": "One bhava of a chart: where it is, whose it is, and what kind it is.",
       "properties": {
@@ -372,6 +432,21 @@
         "chalit"
       ],
       "type": "object"
+    },
+    "BirthPeriod": {
+      "description": "How a dasha's birth period is divided among its sub-periods.",
+      "oneOf": [
+        {
+          "const": "COMPRESSED",
+          "description": "Each sub-period its share of the balance the birth period runs for, which the recording engine does on every recorded answer.",
+          "type": "string"
+        },
+        {
+          "const": "ELAPSED",
+          "description": "Each sub-period its share of the whole period, which began before birth; those already over are dropped and the one running is cut at birth.",
+          "type": "string"
+        }
+      ]
     },
     "BirthTiming": {
       "description": "What the birth timing is, taken from the day's arc and the profile's reckonings.",
@@ -942,6 +1017,115 @@
       ],
       "type": "object"
     },
+    "DashaReading": {
+      "description": "One dasha of a chart.",
+      "properties": {
+        "balance": {
+          "$ref": "#/$defs/BalanceAtBirth",
+          "description": "What remained of the first period at birth."
+        },
+        "depth": {
+          "$ref": "#/$defs/Depth",
+          "description": "How many levels the periods go down."
+        },
+        "first_lord": {
+          "$ref": "#/$defs/Graha",
+          "description": "The lord it starts with."
+        },
+        "moon_span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Interval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Moon's stay in its nakshatra, when the balance was temporal."
+        },
+        "overflow": {
+          "description": "Whether the seed lay outside a conditional system's nakshatras, and started at the first lord because the rules let it.",
+          "type": "boolean"
+        },
+        "periods": {
+          "description": "Every period of the birth cycle to `depth`, depth first in time order: a mahadasha, then its antardashas and theirs, then the next.",
+          "items": {
+            "$ref": "#/$defs/PeriodRow"
+          },
+          "type": "array"
+        },
+        "rules": {
+          "$ref": "#/$defs/Rules",
+          "description": "The choices it was computed under."
+        },
+        "seed": {
+          "$ref": "#/$defs/Nakshatra",
+          "description": "The nakshatra the Moon stood in, which seeds it."
+        },
+        "system": {
+          "$ref": "#/$defs/DashaSystem",
+          "description": "Which system."
+        }
+      },
+      "required": [
+        "system",
+        "rules",
+        "seed",
+        "first_lord",
+        "overflow",
+        "balance",
+        "depth",
+        "periods"
+      ],
+      "type": "object"
+    },
+    "DashaSystem": {
+      "description": "A key of the `dasha_system` catalogue.",
+      "enum": [
+        "VIMSHOTTARI",
+        "ASHTOTTARI",
+        "DWADASHOTTARI",
+        "PANCHOTTARI",
+        "SHATABDIKA",
+        "CHATURASHITI_SAMA",
+        "DWISAPTATI_SAMA",
+        "YOGINI",
+        "TRIBHAGI",
+        "SHODASHOTTARI",
+        "SHATTRIMSHA_SAMA",
+        "SHASHTIHAYANI",
+        "TITHI_ASHTOTTARI",
+        "TITHI_YOGINI",
+        "YOGA_VIMSHOTTARI",
+        "KARANA_CHATURASHITI",
+        "NAISARGIKA",
+        "TARA",
+        "KARAKA",
+        "AAYU",
+        "ASHTAKAVARGA",
+        "PANCHASWARA",
+        "CHARA",
+        "NARAYANA",
+        "PADANADHAMSA",
+        "TRIKONA",
+        "DRIG",
+        "SHOOLA",
+        "NIRYANA_SHOOLA",
+        "MANDOOKA",
+        "STHIRA",
+        "SUDASA",
+        "VARNADA",
+        "YOGARDHA",
+        "KALACHAKRA",
+        "SUDARSHANA_CHAKRA",
+        "PATYAYINI",
+        "MUDDA",
+        "VARSHA_NARAYANA",
+        "VARSHA_YOGINI"
+      ],
+      "type": "string",
+      "x-teistro-kind": "dasha_system"
+    },
     "DayPart": {
       "description": "Which part of a day's arc holds an instant.",
       "oneOf": [
@@ -997,6 +1181,13 @@
           "type": "object"
         }
       ]
+    },
+    "Depth": {
+      "description": "A dasha depth, 1 to 6 levels.",
+      "format": "uint8",
+      "maximum": 255,
+      "minimum": 0,
+      "type": "integer"
     },
     "Derived": {
       "description": "Where a derived point stands.",
@@ -1091,6 +1282,13 @@
             }
           ],
           "description": "Which bodies reach which."
+        },
+        "dashas": {
+          "description": "The dashas asked for: each system's balance and its periods to the settings' depth (`03-design/dasha-kernels.md`).",
+          "items": {
+            "$ref": "#/$defs/DashaReading"
+          },
+          "type": "array"
         },
         "drawings": {
           "description": "The charts drawn in the layouts asked for: which chart, placed in which layout (`03-design/chart-geometry.md`).",
@@ -2650,6 +2848,29 @@
       ],
       "type": "object"
     },
+    "PeriodRow": {
+      "description": "One period, as a row.",
+      "properties": {
+        "interval": {
+          "$ref": "#/$defs/Interval",
+          "description": "When it runs."
+        },
+        "lord": {
+          "$ref": "#/$defs/Graha",
+          "description": "Its lord."
+        },
+        "path": {
+          "description": "Where it sits: the place at each level, from the mahadasha down, joined by `/` (`2/5/3`).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "lord",
+        "interval"
+      ],
+      "type": "object"
+    },
     "Place": {
       "description": "A place on Earth.",
       "properties": {
@@ -3157,6 +3378,39 @@
       "type": "string",
       "x-teistro-kind": "relationship"
     },
+    "Rules": {
+      "description": "The choices a dasha is computed under, which the settings' `dasha` group holds.",
+      "properties": {
+        "after_cycle": {
+          "$ref": "#/$defs/AfterCycle",
+          "description": "What is answered past the end of the cycle."
+        },
+        "balance": {
+          "$ref": "#/$defs/Balance",
+          "description": "How the balance is measured."
+        },
+        "birth_period": {
+          "$ref": "#/$defs/BirthPeriod",
+          "description": "How the birth period is divided among its sub-periods."
+        },
+        "seed_overflow": {
+          "$ref": "#/$defs/SeedOverflow",
+          "description": "What a seed outside a conditional cycle does."
+        },
+        "year_length": {
+          "$ref": "#/$defs/YearLength",
+          "description": "The length of a year."
+        }
+      },
+      "required": [
+        "balance",
+        "year_length",
+        "birth_period",
+        "after_cycle",
+        "seed_overflow"
+      ],
+      "type": "object"
+    },
     "Scheme": {
       "description": "A divisional chart's rule.",
       "properties": {
@@ -3196,6 +3450,21 @@
         "groups"
       ],
       "type": "object"
+    },
+    "SeedOverflow": {
+      "description": "A seed outside a conditional dasha's cycle.",
+      "oneOf": [
+        {
+          "const": "WRAP_TO_START",
+          "description": "Wrap to the start, flagged.",
+          "type": "string"
+        },
+        {
+          "const": "REJECT",
+          "description": "Refuse.",
+          "type": "string"
+        }
+      ]
     },
     "Segment": {
       "description": "One step of an outline, from wherever the previous step ended.",
@@ -3763,6 +4032,88 @@
         "slots"
       ],
       "type": "object"
+    },
+    "Written": {
+      "description": "A balance written as years, months, days, hours and minutes.",
+      "properties": {
+        "days": {
+          "description": "Whole days.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "hours": {
+          "description": "Hours of the rest, rounded to the minute.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "minutes": {
+          "description": "Minutes of the rest, rounded.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "months": {
+          "description": "Whole months of a twelfth of it.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "years": {
+          "description": "Whole years of the year length.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "years",
+        "months",
+        "days",
+        "hours",
+        "minutes"
+      ],
+      "type": "object"
+    },
+    "YearLength": {
+      "description": "The length of a dasha year.",
+      "oneOf": [
+        {
+          "const": "JULIAN_365_25",
+          "description": "365.25 days.",
+          "type": "string"
+        },
+        {
+          "const": "SAVANA_360",
+          "description": "360 days.",
+          "type": "string"
+        },
+        {
+          "const": "SIDEREAL",
+          "description": "The sidereal year.",
+          "type": "string"
+        },
+        {
+          "const": "TROPICAL",
+          "description": "The tropical year.",
+          "type": "string"
+        },
+        {
+          "const": "LUNAR",
+          "description": "Twelve lunar months.",
+          "type": "string"
+        },
+        {
+          "const": "NAKSHATRA_324",
+          "description": "324 days.",
+          "type": "string"
+        }
+      ]
     },
     "Yoga": {
       "description": "A key of the `yoga` catalogue.",

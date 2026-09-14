@@ -146,6 +146,20 @@ charts, the 7 chart kinds, the 6 calendars and the 3 outer planets.
 `era` in the two base-completeness locales (`hi-Deva-IN`, `sa-Deva`) is
 outside the rule, which covers strict locales.
 
+## 4a. The dasha systems, when a document first carried them
+
+The dasha section (2026-09-15) put `dasha_system` into the document schema,
+and the gate refused all 40 members at once. The baseline engine vets a
+four-language name for each of the 18 systems it implements, on each
+engine's own `displayNames`, with the Sanskrit transliteration: English
+`Vimshottari Dasha`, Nepali and Hindi `विंशोत्तरी दशा`, Sanskrit the same
+with `Viṁśottarī Daśā`. They were loaded the way §2's tables were, by
+parsing the modules with the TypeScript compiler and reading the literals,
+so no Devanagari passed through a keyboard, and all 18 keys match the
+catalogue's with no rename. Each record is `name` and `prose` in the
+language, with the IAST in every locale. The other 22 systems, which the
+engine does not implement, are listed, bringing the list to 100.
+
 ## 5. What this does not settle
 
 - **Names for the listed members.** Each needs a rank-1 or rank-2

@@ -2,19 +2,25 @@
 //! founded in one crossing.
 
 use teistro_aspect::Aspects;
+use teistro_astro::completion::Completion;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{ChartFoundation, Founder};
-use teistro_core::catalogue::{Ayanamsha, ChartKind};
+use teistro_core::angle::Nas;
+use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
+use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
+use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
+use teistro_dasha::{Birth, Dasha, DashaReading, Rules as DashaRules};
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
+use teistro_panchanga::limb::{Zodiac as LimbZodiac, nakshatra_at};
 use teistro_points::Points;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_serial::Document;
@@ -284,6 +290,12 @@ impl<'a> ChartArea<'a> {
             let drawing = draw(row, foundation, *varga).map_err(|error| error.under(&at))?;
             document = document.with_drawing(drawing);
         }
+        for (index, system) in request.dashas().iter().enumerate() {
+            let dasha = self
+                .dasha_reading(foundation, *system)
+                .map_err(|error| error.under(&format!("dashas[{index}]")))?;
+            document = document.with_dasha(dasha);
+        }
         if request.sections.has(Sections::PANCHANGA) {
             // The day the **chart** belongs to, which before sunrise is
             // not the day of the instant's civil date -- so it is read
@@ -297,6 +309,112 @@ impl<'a> ChartArea<'a> {
             document = document.with_panchanga(day.value);
         }
         Ok(document)
+    }
+
+    /// One dasha of a chart: its balance under the settings' rules and its
+    /// periods to the settings' depth.
+    fn dasha_reading(
+        self,
+        foundation: &ChartFoundation,
+        system: DashaSystem,
+    ) -> Result<DashaReading, Error> {
+        let settings = self.context.settings();
+        let rules = DashaRules::of(&settings.dasha, system);
+        let depth = settings
+            .dasha
+            .depth
+            .get(&system)
+            .copied()
+            .unwrap_or(Depth::MIN);
+        let moon_span = match rules.balance {
+            Balance::Temporal => Some(self.moon_span(foundation)?),
+            _ => None,
+        };
+        let dasha = Self::dasha_of(foundation, system, rules, moon_span)?;
+        Ok(DashaReading::of(&dasha, depth, moon_span))
+    }
+
+    /// The dasha of a founded chart, from its Moon.
+    fn dasha_of(
+        foundation: &ChartFoundation,
+        system: DashaSystem,
+        rules: DashaRules,
+        moon_span: Option<Interval>,
+    ) -> Result<Dasha, Error> {
+        let row = teistro_dasha::row(system).ok_or_else(|| {
+            let built: Vec<&str> = teistro_dasha::ROWS
+                .iter()
+                .map(|row| row.system.key())
+                .collect();
+            Error::unsupported(format!(
+                "{} is a dasha the catalogue names and this build does not compute yet",
+                system.key()
+            ))
+            .with_hint(format!("the dashas built are {}", built.join(", ")))
+        })?;
+        let moon = foundation
+            .graha(Graha::Moon)
+            .ok_or_else(|| Error::internal("a founded chart places the Moon"))?;
+        let birth = Birth {
+            instant: foundation.instant,
+            moon: Nas::try_from_degrees(moon.longitude_deg)?,
+            moon_span,
+        };
+        Dasha::new(row, &birth, rules)
+    }
+
+    /// The Moon's stay in its nakshatra around the birth, searched in the
+    /// chart's own frame and zodiac: topocentric when the chart is, since a
+    /// topocentric Moon can stand a degree from the geocentric one and move
+    /// the nakshatra's edge by hours.
+    fn moon_span(self, foundation: &ChartFoundation) -> Result<Interval, Error> {
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let settings = self.context.settings();
+        let completion = Completion::new(
+            provider,
+            settings.provider.overrides,
+            self.context.delta_t(),
+        );
+        let frame = foundation.zodiac.request;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(foundation.place);
+        }
+        let zodiac = LimbZodiac::of_chart(
+            &foundation.zodiac,
+            settings.frame.ayanamsha_basis,
+            PrecessionModel::default(),
+            self.context.delta_t(),
+        );
+        Ok(nakshatra_at(&longitudes, foundation.instant, zodiac)?.whole)
+    }
+
+    /// The cursor behind a document's dasha: to read deeper than the
+    /// document's periods, or the chain running at an instant.
+    ///
+    /// Rebuilt from the document alone, the rules and the Moon's span it
+    /// recorded and the foundation's Moon, so a stored document gives the
+    /// same periods back whatever the context's settings are now.
+    ///
+    /// # Errors
+    ///
+    /// A system the document carries no dasha of, named `system`.
+    pub fn dasha(self, document: &Document, system: DashaSystem) -> Result<Dasha, Error> {
+        let reading = document
+            .dashas
+            .iter()
+            .find(|reading| reading.system == system)
+            .ok_or_else(|| {
+                Error::invalid_arg(format!("the document carries no {} dasha", system.key()))
+                    .with_field("system")
+                    .with_hint("ask for it with ChartRequest::with_dashas")
+            })?;
+        Self::dasha_of(
+            &document.foundation,
+            system,
+            reading.rules,
+            reading.moon_span,
+        )
     }
 
     /// The derived points, which are the one section that needs more

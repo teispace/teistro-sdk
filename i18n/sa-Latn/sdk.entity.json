@@ -2217,5 +2217,97 @@
       "prose": "Phālguna",
       "iast": "Phālguna"
     }
+  },
+  "dasha_system": {
+    "VIMSHOTTARI": {
+      "name": "Viṃśottarī Daśā",
+      "prose": "Viṃśottarī Daśā",
+      "iast": "Viṁśottarī Daśā"
+    },
+    "ASHTOTTARI": {
+      "name": "Aṣṭottarī Daśā",
+      "prose": "Aṣṭottarī Daśā",
+      "iast": "Aṣṭottarī Daśā"
+    },
+    "DWADASHOTTARI": {
+      "name": "Dvādaśottarī Daśā",
+      "prose": "Dvādaśottarī Daśā",
+      "iast": "Dvādaśottarī Daśā"
+    },
+    "PANCHOTTARI": {
+      "name": "Pañcottarī Daśā",
+      "prose": "Pañcottarī Daśā",
+      "iast": "Pañcottarī Daśā"
+    },
+    "SHATABDIKA": {
+      "name": "Śatābdika Daśā",
+      "prose": "Śatābdika Daśā",
+      "iast": "Śatābdika Daśā"
+    },
+    "CHATURASHITI_SAMA": {
+      "name": "Caturaśītisama Daśā",
+      "prose": "Caturaśītisama Daśā",
+      "iast": "Caturaśītisama Daśā"
+    },
+    "DWISAPTATI_SAMA": {
+      "name": "Dvisaptatisama Daśā",
+      "prose": "Dvisaptatisama Daśā",
+      "iast": "Dvisaptatisama Daśā"
+    },
+    "YOGINI": {
+      "name": "Yoginī Daśā",
+      "prose": "Yoginī Daśā",
+      "iast": "Yoginī Daśā"
+    },
+    "TRIBHAGI": {
+      "name": "Tribhāgī Daśā",
+      "prose": "Tribhāgī Daśā",
+      "iast": "Tribhāgī Daśā"
+    },
+    "CHARA": {
+      "name": "Cara Daśā",
+      "prose": "Cara Daśā",
+      "iast": "Cara Daśā"
+    },
+    "NARAYANA": {
+      "name": "Nārāyaṇa Daśā",
+      "prose": "Nārāyaṇa Daśā",
+      "iast": "Nārāyaṇa Daśā"
+    },
+    "PADANADHAMSA": {
+      "name": "Padanādhāṃśa Daśā",
+      "prose": "Padanādhāṃśa Daśā",
+      "iast": "Padanādhāṃśa Daśā"
+    },
+    "TRIKONA": {
+      "name": "Trikoṇa Daśā",
+      "prose": "Trikoṇa Daśā",
+      "iast": "Trikoṇa Daśā"
+    },
+    "DRIG": {
+      "name": "Dṛg Daśā",
+      "prose": "Dṛg Daśā",
+      "iast": "Dṛg Daśā"
+    },
+    "SHOOLA": {
+      "name": "Śūla Daśā",
+      "prose": "Śūla Daśā",
+      "iast": "Śūla Daśā"
+    },
+    "NIRYANA_SHOOLA": {
+      "name": "Niryāṇa Śūla Daśā",
+      "prose": "Niryāṇa Śūla Daśā",
+      "iast": "Niryāṇa Śūla Daśā"
+    },
+    "MANDOOKA": {
+      "name": "Maṇḍūka Daśā",
+      "prose": "Maṇḍūka Daśā",
+      "iast": "Maṇḍūka Daśā"
+    },
+    "KALACHAKRA": {
+      "name": "Kālacakra Daśā",
+      "prose": "Kālacakra Daśā",
+      "iast": "Kālacakra Daśā"
+    }
   }
 }

@@ -12,6 +12,7 @@ without building it.
 | [`row`](src/row.rs) | a nakshatra-seeded system as data: its lords and years, and the map from the Moon's nakshatra to its first lord, with the window a lord covers and whether the lords repeat round the nakshatras |
 | [`balance`](src/balance.rs) | what remains of the first period, spatially from the exact nakshatra position or temporally from the Moon's span, and its written form with the minutes rounded |
 | [`tree`](src/tree.rs) | the dasha of a birth: periods by path, children computed when asked for, and the chain running at an instant without allocating |
+| [`reading`](src/reading.rs) | a dasha as a chart document carries it: its rules, seed, balance and Moon span, and its periods as rows to the settings' depth |
 
 ## What the corpus settled
 

@@ -89,6 +89,34 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 /// shrink.
 const UNNAMED: &[(&str, &str, &[&str])] = &[
     (
+        "dasha_system",
+        "the baseline engine vets names for the 18 systems it implements, and none for these",
+        &[
+            "SHODASHOTTARI",
+            "SHATTRIMSHA_SAMA",
+            "SHASHTIHAYANI",
+            "TITHI_ASHTOTTARI",
+            "TITHI_YOGINI",
+            "YOGA_VIMSHOTTARI",
+            "KARANA_CHATURASHITI",
+            "NAISARGIKA",
+            "TARA",
+            "KARAKA",
+            "AAYU",
+            "ASHTAKAVARGA",
+            "PANCHASWARA",
+            "STHIRA",
+            "SUDASA",
+            "VARNADA",
+            "YOGARDHA",
+            "SUDARSHANA_CHAKRA",
+            "PATYAYINI",
+            "MUDDA",
+            "VARSHA_NARAYANA",
+            "VARSHA_YOGINI",
+        ],
+    ),
+    (
         "calendar",
         "no vetted name table for the calendar systems",
         &[
