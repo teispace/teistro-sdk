@@ -16,6 +16,7 @@ from typing import Optional
 from teistro import (
     Altitude,
     AvasthaSayanadi,
+    DashaDefinition,
     DashaPhase,
     Nature,
     Balance,
@@ -751,6 +752,42 @@ class AnEngine(WithLibrary):
         for g in vs.grahas:
             for score in (g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga):
                 self.assertTrue(5.0 <= score <= 20.0, f"{g.graha}: {score}")
+
+    def test_a_consumer_dasha_system_registers_is_asked_for_by_key_and_reads_as_its_twin(self) -> None:
+        """A consumer's own dasha system crosses: registered on the context,
+        asked for by its key, named by it in the answer, and every period its
+        catalogued twin's; a definition the checks refuse is named by its place
+        and field (`03-design/dasha-kernels.md`)."""
+        years = (("KETU", 7), ("VENUS", 20), ("SUN", 6), ("MOON", 10), ("MARS", 7),
+                 ("RAHU", 18), ("JUPITER", 16), ("SATURN", 19), ("MERCURY", 17))
+        twin: DashaDefinition = {
+            "key": "ACME_VIMSHOTTARI",
+            "lords": [{"graha": graha, "years": count} for graha, count in years],
+            "reference": "ASHWINI",
+        }
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(test_provider=True, dasha_systems=[twin]) as ctx:
+            chart = ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=20700,
+                dashas=["dasha_system.ACME_VIMSHOTTARI", DashaSystem.VIMSHOTTARI],
+            )
+            consumer, shipped = chart.dashas
+            self.assertEqual(consumer.system, "dasha_system.ACME_VIMSHOTTARI")
+            self.assertIs(shipped.system, DashaSystem.VIMSHOTTARI)
+            self.assertEqual(consumer.periods, shipped.periods)
+            self.assertEqual(consumer.balance, shipped.balance)
+            with self.assertRaises(TeistroError) as stray:
+                ctx.chart.found(
+                    instant=2451545.0, place=observer, utc_offset_seconds=20700, dashas=["dasha_system.ACME_OTHER"]
+                )
+            self.assertEqual(stray.exception.field, "dashas[0]")
+        with self.assertRaises(TeistroError) as narrow:
+            self.teistro.context(test_provider=True, dasha_systems=[{**twin, "span": 0}])
+        self.assertEqual(narrow.exception.field, "options.dashas_json[0].span")
 
     def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
         """A chart's dashas cross whole: the balance, the periods to the

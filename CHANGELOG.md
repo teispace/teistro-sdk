@@ -861,6 +861,22 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** new. Every settings hash moved: the `dasha` group gained a
   knob.
 
+  A consumer's own nakshatra-seeded dasha system now registers, the Phase 5
+  exit's consumer-row clause. A `UduDefinition` goes on
+  `ContextBuilder::dasha_system` or `TsContextOptions.dashas_json`, and
+  every binding's context option takes one. Each is checked by the rules a
+  shipped row passes and refused by its place and field. A request asks for
+  it by key (`dasha_system.ACME_SAPTAKA`, an id from `0x8000`), and the
+  answer names it so. The reading carries its `definition`, so a stored
+  document rebuilds the cursor in a context that never registered it.
+  `DashaReading.system` is now a `DashaName`, a catalogued member or a
+  registered key, serialised as the bare key as before.
+  `ChartRequest::with_dashas` takes ids, and the boundary request's
+  `dashas` array is plain ids rather than an enum.
+
+  **Numbers:** unchanged for every catalogued system; a registered twin of
+  Vimshottari reproduces it to the bit.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

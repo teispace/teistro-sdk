@@ -16,11 +16,12 @@ without building it.
 
 | module | what it settles |
 |---|---|
-| [`row`](src/row.rs) | a nakshatra-seeded system as data: its lords and years, the map from the Moon's nakshatra to its first lord (reference, direction, window, offset, whether the lords repeat round the nakshatras), and a scale on the mahadashas with the rounds a cycle runs; the nine shipped rows |
+| [`row`](src/row.rs) | a nakshatra-seeded system as data: its lords and years, the map from the Moon's nakshatra to its first lord (reference, direction, window, offset, whether the lords repeat round the nakshatras), and a scale on the mahadashas with the rounds a cycle runs; the nine shipped rows; `DashaName`; and `UduDefinition`, a consumer's own row |
 | [`balance`](src/balance.rs) | what remains of the lord's window, by how far into its own nakshatra the Moon is spatially or temporally, and its written form with the minutes rounded |
 | [`tree`](src/tree.rs) | the dasha of a birth: periods by path, children computed when asked for, and the chain running at an instant without allocating, through the `Timeline` trait every kind shares |
 | [`rashi`](src/rashi.rs) | a sign-based system as a row — its start, order, length and named lord — over the chart it reads, with footedness and parity as distinct types; the eight shipped rows |
 | [`kalachakra`](src/kalachakra.rs) | the Kalachakra: its pada tables and sign years, the balance, three cycles and antardashas, each fork the sources differ on a knob |
+| [`registry`](src/registry.rs) | `DashaSystems`, the consumer's own nakshatra-seeded systems a context registers, checked by the rules a shipped row passes and sealed |
 | [`reading`](src/reading.rs) | a dasha as a chart document carries it: its rules, and for a nakshatra-seeded one its seed, balance and Moon span, its periods as rows (with their signs, for a sign-based one) to the settings' depth; and `DashaCursor`, either kind rebuilt |
 
 ## What the corpus settled

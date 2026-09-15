@@ -8,15 +8,26 @@
 //! is refused by the field it gets wrong. Every row here is reproduced over
 //! the conformance corpus (`03-design/dasha-measured.md`,
 //! `03-design/dasha-systems-measured.md`).
+//!
+//! A consumer's own system is a [`UduDefinition`], checked by the same
+//! rules and run by the same kernel (`03-design/dasha-kernels.md`, "A
+//! consumer's own system").
 
-use teistro_core::catalogue::{DashaSystem, Graha};
+use std::borrow::Cow;
+
+use serde::{Deserialize, Serialize};
+use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra};
 use teistro_core::error::Error;
+use teistro_core::key::is_key_name;
+use teistro_core::quantity::Depth;
+use teistro_core::settings::YearLength;
 
 /// How many nakshatras a seed is counted over.
 pub const NAKSHATRAS: u8 = 27;
 
 /// One lord of a system and its years.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lord {
     /// The graha.
     pub graha: Graha,
@@ -25,8 +36,11 @@ pub struct Lord {
 }
 
 /// Which way a system counts from its reference nakshatra to the seed.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Count {
+    #[default]
     /// Forwards from the reference: Vimshottari from Ashwini.
     FromReference,
     /// Backwards to the reference: Dwadashottari to Revati.
@@ -38,7 +52,8 @@ pub enum Count {
 ///
 /// The sub-periods are still shares of the row's whole years, so a scale
 /// changes how long a mahadasha is and not how it divides.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Scale {
     /// The factor's numerator.
     pub numerator: u8,
@@ -46,6 +61,12 @@ pub struct Scale {
     pub denominator: u8,
     /// How many times the sequence runs before the cycle ends.
     pub rounds: u8,
+}
+
+impl Default for Scale {
+    fn default() -> Scale {
+        Scale::WHOLE
+    }
 }
 
 impl Scale {
@@ -63,13 +84,132 @@ impl Scale {
     }
 }
 
+/// A dasha system's name: a member the catalogue has, or the key a context
+/// registered a consumer's system under.
+///
+/// It serialises as the bare key either way (`VIMSHOTTARI`, `ACME_SAPTA`),
+/// and a registry refuses a key the catalogue has, so the two never meet.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum DashaName {
+    /// A catalogued system.
+    Catalogued(DashaSystem),
+    /// A consumer's system, by the key it was registered under.
+    Registered(String),
+}
+
+impl DashaName {
+    /// The key: the catalogue's, or the registered one.
+    #[must_use]
+    pub fn key(&self) -> &str {
+        match self {
+            DashaName::Catalogued(system) => system.key(),
+            DashaName::Registered(key) => key,
+        }
+    }
+
+    /// The key under its kind, `dasha_system.VIMSHOTTARI`, which is how a
+    /// binding spells either.
+    #[must_use]
+    pub fn full_key(&self) -> String {
+        format!("dasha_system.{}", self.key())
+    }
+
+    /// The catalogued system, when it is one.
+    #[must_use]
+    pub const fn catalogued(&self) -> Option<DashaSystem> {
+        match self {
+            DashaName::Catalogued(system) => Some(*system),
+            DashaName::Registered(_) => None,
+        }
+    }
+}
+
+impl From<DashaSystem> for DashaName {
+    fn from(system: DashaSystem) -> DashaName {
+        DashaName::Catalogued(system)
+    }
+}
+
+impl From<&DashaName> for DashaName {
+    fn from(name: &DashaName) -> DashaName {
+        name.clone()
+    }
+}
+
+impl From<&str> for DashaName {
+    /// A catalogued system when the catalogue has the key, else a registered
+    /// one's name.
+    fn from(key: &str) -> DashaName {
+        DashaSystem::from_key(key).map_or_else(
+            || DashaName::Registered(key.to_owned()),
+            DashaName::Catalogued,
+        )
+    }
+}
+
+impl PartialEq<DashaSystem> for DashaName {
+    fn eq(&self, other: &DashaSystem) -> bool {
+        self.catalogued() == Some(*other)
+    }
+}
+
+impl std::fmt::Display for DashaName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.key())
+    }
+}
+
+impl Serialize for DashaName {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.key())
+    }
+}
+
+impl<'de> Deserialize<'de> for DashaName {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<DashaName, D::Error> {
+        let key = String::deserialize(deserializer)?;
+        if let Some(system) = DashaSystem::from_key(&key) {
+            return Ok(DashaName::Catalogued(system));
+        }
+        if is_key_name(&key) {
+            Ok(DashaName::Registered(key))
+        } else {
+            Err(serde::de::Error::custom(format!(
+                "`{key}` is neither a catalogued dasha system nor a key name"
+            )))
+        }
+    }
+}
+
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for DashaName {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "DashaName".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        // The catalogue's own schema first, so its keys and its kind stay
+        // described (and the gates that read a document's kinds still see
+        // this one), then any key a context could have registered.
+        let catalogued = generator.subschema_for::<DashaSystem>();
+        schemars::json_schema!({
+            "description": "A catalogued dasha system's key, or the key a context registered a consumer's system under.",
+            "anyOf": [
+                catalogued,
+                { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,47}$" }
+            ]
+        })
+    }
+}
+
 /// A nakshatra-seeded system.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UduRow {
     /// Which system the row is.
-    pub system: DashaSystem,
-    /// The lords, in the order they run.
-    pub lords: &'static [Lord],
+    pub system: DashaName,
+    /// The lords, in the order they run: borrowed for a shipped row, owned
+    /// for a registered one.
+    pub lords: Cow<'static, [Lord]>,
     /// The nakshatra, 0 for Ashwini, that maps to the first lord.
     pub reference: u8,
     /// Which way the seed is counted.
@@ -218,8 +358,8 @@ const fn lord(graha: Graha, years: u8) -> Lord {
 /// nakshatra each. Measured over the whole corpus
 /// (`03-design/dasha-measured.md`).
 pub const VIMSHOTTARI: UduRow = UduRow {
-    system: DashaSystem::Vimshottari,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::Vimshottari),
+    lords: Cow::Borrowed(&[
         lord(Graha::Ketu, 7),
         lord(Graha::Venus, 20),
         lord(Graha::Sun, 6),
@@ -229,7 +369,7 @@ pub const VIMSHOTTARI: UduRow = UduRow {
         lord(Graha::Jupiter, 16),
         lord(Graha::Saturn, 19),
         lord(Graha::Mercury, 17),
-    ],
+    ]),
     reference: 0,
     count: Count::FromReference,
     span: 1,
@@ -244,8 +384,8 @@ pub const VIMSHOTTARI: UduRow = UduRow {
 /// (crux C5); whether a chart is one Ashtottari applies to is a rule and not
 /// this row (crux C3).
 pub const ASHTOTTARI: UduRow = UduRow {
-    system: DashaSystem::Ashtottari,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::Ashtottari),
+    lords: Cow::Borrowed(&[
         lord(Graha::Sun, 6),
         lord(Graha::Moon, 15),
         lord(Graha::Mars, 8),
@@ -254,7 +394,7 @@ pub const ASHTOTTARI: UduRow = UduRow {
         lord(Graha::Jupiter, 19),
         lord(Graha::Rahu, 12),
         lord(Graha::Venus, 21),
-    ],
+    ]),
     reference: 5,
     count: Count::FromReference,
     span: 3,
@@ -266,8 +406,8 @@ pub const ASHTOTTARI: UduRow = UduRow {
 /// Dwadashottari: eight lords over 112 years, counted from the seed back to
 /// Revati.
 pub const DWADASHOTTARI: UduRow = UduRow {
-    system: DashaSystem::Dwadashottari,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::Dwadashottari),
+    lords: Cow::Borrowed(&[
         lord(Graha::Sun, 7),
         lord(Graha::Jupiter, 9),
         lord(Graha::Ketu, 11),
@@ -276,7 +416,7 @@ pub const DWADASHOTTARI: UduRow = UduRow {
         lord(Graha::Mars, 17),
         lord(Graha::Saturn, 19),
         lord(Graha::Moon, 21),
-    ],
+    ]),
     reference: 26,
     count: Count::ToReference,
     span: 1,
@@ -287,8 +427,8 @@ pub const DWADASHOTTARI: UduRow = UduRow {
 
 /// Panchottari: seven lords over 105 years, counted from Anuradha.
 pub const PANCHOTTARI: UduRow = UduRow {
-    system: DashaSystem::Panchottari,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::Panchottari),
+    lords: Cow::Borrowed(&[
         lord(Graha::Sun, 12),
         lord(Graha::Mercury, 13),
         lord(Graha::Saturn, 14),
@@ -296,7 +436,7 @@ pub const PANCHOTTARI: UduRow = UduRow {
         lord(Graha::Venus, 16),
         lord(Graha::Moon, 17),
         lord(Graha::Jupiter, 18),
-    ],
+    ]),
     reference: 16,
     count: Count::FromReference,
     span: 1,
@@ -307,8 +447,8 @@ pub const PANCHOTTARI: UduRow = UduRow {
 
 /// Shatabdika: seven lords over 100 years, counted from Revati.
 pub const SHATABDIKA: UduRow = UduRow {
-    system: DashaSystem::Shatabdika,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::Shatabdika),
+    lords: Cow::Borrowed(&[
         lord(Graha::Sun, 5),
         lord(Graha::Moon, 5),
         lord(Graha::Venus, 10),
@@ -316,7 +456,7 @@ pub const SHATABDIKA: UduRow = UduRow {
         lord(Graha::Jupiter, 20),
         lord(Graha::Mars, 20),
         lord(Graha::Saturn, 30),
-    ],
+    ]),
     reference: 26,
     count: Count::FromReference,
     span: 1,
@@ -328,8 +468,8 @@ pub const SHATABDIKA: UduRow = UduRow {
 /// Chaturashiti-sama: seven lords of twelve years each, 84 in all, counted
 /// from Swati.
 pub const CHATURASHITI_SAMA: UduRow = UduRow {
-    system: DashaSystem::ChaturashitiSama,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::ChaturashitiSama),
+    lords: Cow::Borrowed(&[
         lord(Graha::Sun, 12),
         lord(Graha::Moon, 12),
         lord(Graha::Mars, 12),
@@ -337,7 +477,7 @@ pub const CHATURASHITI_SAMA: UduRow = UduRow {
         lord(Graha::Jupiter, 12),
         lord(Graha::Venus, 12),
         lord(Graha::Saturn, 12),
-    ],
+    ]),
     reference: 14,
     count: Count::FromReference,
     span: 1,
@@ -349,8 +489,8 @@ pub const CHATURASHITI_SAMA: UduRow = UduRow {
 /// Dwisaptati-sama: eight lords of nine years each, 72 in all, counted from
 /// Mula.
 pub const DWISAPTATI_SAMA: UduRow = UduRow {
-    system: DashaSystem::DwisaptatiSama,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::DwisaptatiSama),
+    lords: Cow::Borrowed(&[
         lord(Graha::Sun, 9),
         lord(Graha::Moon, 9),
         lord(Graha::Mars, 9),
@@ -359,7 +499,7 @@ pub const DWISAPTATI_SAMA: UduRow = UduRow {
         lord(Graha::Venus, 9),
         lord(Graha::Saturn, 9),
         lord(Graha::Rahu, 9),
-    ],
+    ]),
     reference: 18,
     count: Count::FromReference,
     span: 1,
@@ -371,8 +511,8 @@ pub const DWISAPTATI_SAMA: UduRow = UduRow {
 /// Yogini: the eight yoginis' lords over 36 years, counted from Ashwini
 /// with three added, so Ashwini's is the fourth.
 pub const YOGINI: UduRow = UduRow {
-    system: DashaSystem::Yogini,
-    lords: &[
+    system: DashaName::Catalogued(DashaSystem::Yogini),
+    lords: Cow::Borrowed(&[
         lord(Graha::Moon, 1),
         lord(Graha::Sun, 2),
         lord(Graha::Jupiter, 3),
@@ -381,7 +521,7 @@ pub const YOGINI: UduRow = UduRow {
         lord(Graha::Saturn, 6),
         lord(Graha::Venus, 7),
         lord(Graha::Rahu, 8),
-    ],
+    ]),
     reference: 0,
     count: Count::FromReference,
     span: 1,
@@ -393,13 +533,18 @@ pub const YOGINI: UduRow = UduRow {
 /// Tribhagi: Vimshottari's lords at two thirds of their years, the sequence
 /// twice round, eighty years a round; the sub-periods still shares of 120.
 pub const TRIBHAGI: UduRow = UduRow {
-    system: DashaSystem::Tribhagi,
+    system: DashaName::Catalogued(DashaSystem::Tribhagi),
+    lords: VIMSHOTTARI.lords,
+    reference: VIMSHOTTARI.reference,
+    count: VIMSHOTTARI.count,
+    span: VIMSHOTTARI.span,
+    offset: VIMSHOTTARI.offset,
+    repeats: VIMSHOTTARI.repeats,
     scale: Scale {
         numerator: 2,
         denominator: 3,
         rounds: 2,
     },
-    ..VIMSHOTTARI
 };
 
 /// Every row this build implements, in the catalogue's order. A system
@@ -420,6 +565,134 @@ pub const ROWS: &[UduRow] = &[
 #[must_use]
 pub fn row(system: DashaSystem) -> Option<&'static UduRow> {
     ROWS.iter().find(|row| row.system == system)
+}
+
+/// A consumer's nakshatra-seeded system, as a context registers it and a
+/// document carries it: a K-udu row with a key of its own, its sources, and
+/// the year length and depth the settings' per-system tables would give a
+/// catalogued one.
+///
+/// Every field but `key`, `lords` and `reference` defaults to Vimshottari's
+/// shape, so a definition says only how it differs.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra};
+/// use teistro_dasha::UduDefinition;
+///
+/// let saptaka: UduDefinition = serde_json::from_str(r#"{
+///     "key": "ACME_SAPTAKA",
+///     "sources": ["a consumer's own table"],
+///     "lords": [
+///         {"graha": "SUN", "years": 10}, {"graha": "MOON", "years": 10},
+///         {"graha": "MARS", "years": 10}, {"graha": "MERCURY", "years": 10},
+///         {"graha": "JUPITER", "years": 10}, {"graha": "VENUS", "years": 10},
+///         {"graha": "SATURN", "years": 10}
+///     ],
+///     "reference": "KRITTIKA"
+/// }"#)?;
+/// assert_eq!(saptaka.row().total_years(), 70);
+/// assert_eq!(saptaka.reference, Nakshatra::Krittika);
+/// saptaka.row().validate()?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct UduDefinition {
+    /// The key it is registered under, in the key grammar and not one the
+    /// catalogue has.
+    pub key: String,
+    /// Where the table comes from.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sources: Vec<String>,
+    /// The lords, in the order they run.
+    pub lords: Vec<Lord>,
+    /// The nakshatra that maps to the first lord.
+    pub reference: Nakshatra,
+    /// Which way the seed is counted; forwards from the reference by default.
+    #[serde(default)]
+    pub count: Count,
+    /// How many nakshatras each lord covers; one by default.
+    #[serde(default = "one")]
+    pub span: u8,
+    /// What is added after the division, before the modulo; none by default.
+    #[serde(default)]
+    pub offset: u8,
+    /// Whether the lords run round the nakshatras again; they do by default.
+    #[serde(default = "yes")]
+    pub repeats: bool,
+    /// The factor on the mahadashas' years and the rounds in a cycle; whole
+    /// and once by default.
+    #[serde(default)]
+    pub scale: Scale,
+    /// The length of its year; the Julian year by default, which every
+    /// catalogued system takes unless the settings say otherwise.
+    #[serde(default = "julian")]
+    pub year_length: YearLength,
+    /// How many levels of periods a reading carries; three by default.
+    #[serde(default = "three")]
+    pub depth: Depth,
+}
+
+const fn one() -> u8 {
+    1
+}
+
+const fn yes() -> bool {
+    true
+}
+
+const fn julian() -> YearLength {
+    YearLength::Julian36525
+}
+
+fn three() -> Depth {
+    Depth::try_new(3).unwrap_or(Depth::MIN)
+}
+
+impl UduDefinition {
+    /// A definition with a key and a reference and every other field its
+    /// default: no lords yet, which a caller then gives.
+    #[must_use]
+    pub fn of(key: impl Into<String>, reference: Nakshatra) -> UduDefinition {
+        UduDefinition {
+            key: key.into(),
+            sources: Vec::new(),
+            lords: Vec::new(),
+            reference,
+            count: Count::FromReference,
+            span: one(),
+            offset: 0,
+            repeats: yes(),
+            scale: Scale::WHOLE,
+            year_length: julian(),
+            depth: three(),
+        }
+    }
+
+    /// The row the kernel runs, its lords owned.
+    #[must_use]
+    pub fn row(&self) -> UduRow {
+        UduRow {
+            system: DashaName::Registered(self.key.clone()),
+            lords: Cow::Owned(self.lords.clone()),
+            reference: u8::try_from(self.reference.id()).unwrap_or(NAKSHATRAS),
+            count: self.count,
+            span: self.span,
+            offset: self.offset,
+            repeats: self.repeats,
+            scale: self.scale,
+        }
+    }
+}
+
+impl teistro_core::registry::Definition for UduDefinition {
+    fn key(&self) -> &str {
+        &self.key
+    }
+
+    fn validate(&self) -> Result<(), Error> {
+        self.row().validate()
+    }
 }
 
 #[cfg(test)]
@@ -444,7 +717,11 @@ mod tests {
         assert_eq!(TRIBHAGI.mahadashas(), 18);
         assert!((TRIBHAGI.scaled_years(0) - 7.0 * 2.0 / 3.0).abs() < 1e-12);
         // In the catalogue's order, one row a system.
-        let ids: Vec<u16> = ROWS.iter().map(|row| row.system.id()).collect();
+        let ids: Vec<u16> = ROWS
+            .iter()
+            .filter_map(|row| row.system.catalogued())
+            .map(DashaSystem::id)
+            .collect();
         assert!(ids.windows(2).all(|pair| pair[0] < pair[1]), "{ids:?}");
     }
 
@@ -487,11 +764,10 @@ mod tests {
 
     #[test]
     fn a_wide_window_a_backward_count_and_an_offset_each_move_the_seat() {
-        let lords = VIMSHOTTARI.lords;
         let wide = UduRow {
             reference: 5,
             span: 3,
-            lords: &lords[..8],
+            lords: Cow::Owned(VIMSHOTTARI.lords[..8].to_vec()),
             repeats: false,
             ..VIMSHOTTARI
         };
@@ -534,7 +810,7 @@ mod tests {
     fn a_row_is_refused_by_the_field_it_gets_wrong() {
         const IDLE: &[Lord] = &[lord(Graha::Sun, 0)];
         let empty = UduRow {
-            lords: &[],
+            lords: Cow::Borrowed(&[]),
             ..VIMSHOTTARI
         };
         assert_eq!(empty.validate().unwrap_err().field(), Some("lords"));
@@ -549,7 +825,7 @@ mod tests {
         };
         assert_eq!(wide.validate().unwrap_err().field(), Some("span"));
         let idle = UduRow {
-            lords: IDLE,
+            lords: Cow::Borrowed(IDLE),
             ..VIMSHOTTARI
         };
         assert_eq!(idle.validate().unwrap_err().field(), Some("lords[0].years"));

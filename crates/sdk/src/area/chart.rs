@@ -12,14 +12,15 @@ use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Rashi, V
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
+use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
 use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{
-    Birth, Dasha, DashaCursor, DashaReading, KalachakraDasha, KalachakraRules, RashiChart,
-    RashiDasha, Rules as DashaRules,
+    Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
+    RashiChart, RashiDasha, Rules as DashaRules,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
@@ -353,12 +354,22 @@ impl<'a> ChartArea<'a> {
     /// One dasha of a chart under the settings' rules, its periods to the
     /// settings' depth: a nakshatra-seeded one with its balance, a
     /// sign-based one with its signs.
-    fn dasha_reading(
-        self,
-        foundation: &ChartFoundation,
-        system: DashaSystem,
-    ) -> Result<DashaReading, Error> {
+    fn dasha_reading(self, foundation: &ChartFoundation, id: KeyId) -> Result<DashaReading, Error> {
         let settings = self.context.settings();
+        if let Some(definition) = self.context.dashas().by_id(id) {
+            let rules = DashaRules::of_definition(&settings.dasha, definition);
+            let moon_span = match rules.balance {
+                Balance::Temporal => Some(self.moon_span(foundation)?),
+                _ => None,
+            };
+            let dasha = Dasha::new(
+                &definition.row(),
+                &Self::birth_of(foundation, moon_span)?,
+                rules,
+            )?;
+            return Ok(DashaReading::of_registered(&dasha, definition, moon_span));
+        }
+        let system = DashaSystem::try_from(id).map_err(|_| self.not_registered(id))?;
         let rules = DashaRules::of(&settings.dasha, system);
         let depth = settings
             .dasha
@@ -380,6 +391,34 @@ impl<'a> ChartArea<'a> {
         }
         let dasha = Self::dasha_of(foundation, system, rules, moon_span)?;
         Ok(DashaReading::of(&dasha, depth, moon_span))
+    }
+
+    /// An id that is neither a catalogued dasha system nor one this context
+    /// registered, refused with the systems it can compute.
+    fn not_registered(self, id: KeyId) -> Error {
+        Error::invalid_arg(format!(
+            "id {:#010x} is not a dasha system this context knows",
+            id.bits()
+        ))
+        .with_detail(teistro_core::error::Detail::UnknownKey)
+        .with_hint(format!(
+            "the dashas built are {}",
+            self.computable().join(", ")
+        ))
+    }
+
+    /// Every system this context computes: the catalogued rows, then the
+    /// registered ones.
+    fn computable(self) -> Vec<String> {
+        teistro_dasha::systems()
+            .map(|system| system.key().to_owned())
+            .chain(
+                self.context
+                    .dashas()
+                    .iter()
+                    .map(|(_, definition)| definition.key.clone()),
+            )
+            .collect()
     }
 
     /// The system a catalogue names and no row implements, refused with the
@@ -525,16 +564,37 @@ impl<'a> ChartArea<'a> {
     /// # Errors
     ///
     /// A system the document carries no dasha of, named `system`.
-    pub fn dasha(self, document: &Document, system: DashaSystem) -> Result<DashaCursor, Error> {
+    pub fn dasha(
+        self,
+        document: &Document,
+        system: impl Into<DashaName>,
+    ) -> Result<DashaCursor, Error> {
+        let name = system.into();
         let reading = document
             .dashas
             .iter()
-            .find(|reading| reading.system == system)
+            .find(|reading| reading.system == name)
             .ok_or_else(|| {
-                Error::invalid_arg(format!("the document carries no {} dasha", system.key()))
+                Error::invalid_arg(format!("the document carries no {name} dasha"))
                     .with_field("system")
                     .with_hint("ask for it with ChartRequest::with_dashas")
             })?;
+        if let Some(definition) = &reading.definition {
+            // A consumer's system rebuilds from the definition the document
+            // carries, whatever this context has registered.
+            return Dasha::new(
+                &definition.row(),
+                &Self::birth_of(&document.foundation, reading.moon_span)?,
+                reading.rules,
+            )
+            .map(DashaCursor::Nakshatra);
+        }
+        let Some(system) = name.catalogued() else {
+            return Err(Error::invalid_arg(format!(
+                "the document's {name} dasha carries no definition to rebuild it from"
+            ))
+            .with_field("system"));
+        };
         if teistro_dasha::rashi_row(system).is_some() {
             return self
                 .rashi_dasha_of(&document.foundation, system, reading.rules)

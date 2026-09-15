@@ -460,8 +460,23 @@ function row(columns, index) {
  * charts in it are views over those bytes rather than copies.
  */
 export class Charts extends Decoded {
-  constructor(bytes) {
+  /** The full key of each dasha system a context registered, by its id. */
+  #dashaNames;
+
+  /**
+   * @param {Uint8Array} bytes the blob the library returned
+   * @param {Map<number, string>} [dashaNames] the full key of each dasha
+   *   system the founding context registered, by its id; a system missing
+   *   from it reads as `'unknown'`
+   */
+  constructor(bytes, dashaNames = new Map()) {
     super(bytes, decodeCharts);
+    this.#dashaNames = dashaNames;
+  }
+
+  /** The full key of a registered dasha system's id, when this batch knows it. */
+  dashaName(id) {
+    return this.#dashaNames.get(id);
   }
 
   /** How many charts the batch holds. */
@@ -1669,10 +1684,16 @@ class FrameArea extends Area {
 class ChartArea extends Area {
   /** The member id of each layout the context registered, by its full key. */
   #registered;
+  /** The member id of each dasha system the context registered, by its full key. */
+  #dashas;
+  /** The same turned round, for a batch to name them by. */
+  #dashaNames;
 
-  constructor(reach, registered) {
+  constructor(reach, registered, dashas) {
     super(reach);
     this.#registered = registered;
+    this.#dashas = dashas;
+    this.#dashaNames = new Map(Array.from(dashas, ([key, id]) => [id, key]));
   }
 
   /**
@@ -1775,12 +1796,12 @@ class ChartArea extends Area {
           (request.dashaPhala === true ? SECTION_DASHA_PHALA : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
-        dashas: catalogueKeys(request.dashas, 'dashas', 'DashaSystem'),
+        dashas: dashaIds(request.dashas, this.#dashas),
         drawings: drawingBits(request.drawings, this.#registered),
         themeJson: themeJson(request.theme),
       }),
     );
-    return new Charts(bytes);
+    return new Charts(bytes, this.#dashaNames);
   }
 }
 
@@ -1806,7 +1827,7 @@ function dashasOf(batch) {
       Array.from({ length: per }, (_, j) => {
         const row = chart * per + j;
         const count = d.dashas.periodCount[row];
-        const dasha = dashaFrom(d, row, start, count);
+        const dasha = dashaFrom(batch, row, start, count);
         start += count;
         return dasha;
       }),
@@ -1817,7 +1838,8 @@ function dashasOf(batch) {
 }
 
 /** One dasha row and its periods, in this layer's shape. */
-function dashaFrom(d, row, start, count) {
+function dashaFrom(batch, row, start, count) {
+  const d = batch.decoded;
   const rows = d.dashas;
   const seeded = rows.seeded[row] !== 0;
   const signed = rows.signed[row] !== 0;
@@ -1841,7 +1863,7 @@ function dashaFrom(d, row, start, count) {
   }
   const spanFrom = rows.moonSpanFrom[row];
   return Object.freeze({
-    system: DashaSystemById.get(rows.system[row]) ?? 'unknown',
+    system: DashaSystemById.get(rows.system[row]) ?? batch.dashaName(rows.system[row]) ?? 'unknown',
     seed: seeded ? (NakshatraById.get(rows.seed[row]) ?? 'unknown') : null,
     firstLord: GrahaById.get(rows.firstLord[row]) ?? 'unknown',
     overflow: rows.overflow[row] !== 0,
@@ -2176,13 +2198,14 @@ function themeJson(theme) {
  * own layout without crossing the boundary again (§7f).
  *
  * @param {object} inner the addon's context
- * @param {ReadonlyArray<{key: string}>|undefined} layouts the rows it registered
+ * @param {string} kind the kind the rows are of (`chart_layout`, `dasha_system`)
+ * @param {ReadonlyArray<{key: string}>|undefined} rows the rows it registered
  * @returns {Map<string, number>}
  */
-function registeredLayouts(inner, layouts) {
+function registeredIds(inner, kind, rows) {
   return new Map(
-    (layouts ?? []).map(({ key }) => {
-      const full = `chart_layout.${key}`;
+    (rows ?? []).map(({ key }) => {
+      const full = `${kind}.${key}`;
       return [full, guarded(inner, () => inner.keyParse(full)) & 0xffff];
     }),
   );
@@ -2191,6 +2214,28 @@ function registeredLayouts(inner, layouts) {
 /** Every catalogue key by its id, turned round, for a request to write ids. */
 const idOf = (byId) => new Map(Array.from(byId, ([id, key]) => [key, id]));
 const LAYOUT_IDS = idOf(ChartLayoutById);
+const DASHA_IDS = idOf(DashaSystemById);
+
+/**
+ * The dashas a request asked for, as the ids the boundary takes: a
+ * `DashaSystem`, or the `dasha_system.*` key of a system this context
+ * registered (`03-design/dasha-kernels.md`).
+ *
+ * @param {ReadonlyArray<string>|undefined} asked
+ * @param {Map<string, number>} registered the context's own systems' ids
+ * @returns {number[]}
+ */
+function dashaIds(asked, registered) {
+  return catalogueKeys(asked, 'dashas', 'DashaSystem').map((key, at) => {
+    const id = DASHA_IDS.get(key) ?? registered.get(key);
+    if (id === undefined) {
+      throw new TypeError(
+        `dashas[${at}]: expected a DashaSystem, or the dasha_system.* key of a system this context registered`,
+      );
+    }
+    return id;
+  });
+}
 const VARGA_IDS = idOf(VargaById);
 
 /**
@@ -2399,9 +2444,12 @@ export class Context {
    *   answers with the columns; everything else has a default
    */
   constructor(options = {}) {
-    const { profile, settings, locale, layouts, ephemeris, testProvider = false, provider } = options;
+    const { profile, settings, locale, layouts, dashaSystems, ephemeris, testProvider = false, provider } = options;
     if (layouts !== undefined && !Array.isArray(layouts)) {
       throw new TypeError('layouts: expected an array of layout rows');
+    }
+    if (dashaSystems !== undefined && !Array.isArray(dashaSystems)) {
+      throw new TypeError('dashaSystems: expected an array of dasha system definitions');
     }
     // Two ways to answer one question, so both together is a refusal
     // rather than one silently winning — the rule the settings patch
@@ -2420,6 +2468,7 @@ export class Context {
       settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
       locale,
       layoutsJson: layouts === undefined ? undefined : JSON.stringify(layouts),
+      dashasJson: dashaSystems === undefined ? undefined : JSON.stringify(dashaSystems),
     });
     this.#inner = guarded(null, () => open(chain, settled, info, positions));
 
@@ -2439,7 +2488,11 @@ export class Context {
     this.frame = new FrameArea(reach);
     /** A chart founded at an instant and a place. */
     /** Charts, and the layouts they are drawn in. */
-    this.chart = new ChartArea(reach, registeredLayouts(this.#inner, layouts));
+    this.chart = new ChartArea(
+      reach,
+      registeredIds(this.#inner, 'chart_layout', layouts),
+      registeredIds(this.#inner, 'dasha_system', dashaSystems),
+    );
     /** A day, or a run of days, with its limbs. */
     this.almanac = new AlmanacArea(reach);
     this.#engine = new Engine(reach);

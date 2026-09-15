@@ -1,6 +1,7 @@
 # Dasha kernels and tables
 
-Status: `draft`, 2026-09-04; the Vimshottari row measured 2026-09-15
+Status: `draft`, 2026-09-04; the Vimshottari row measured 2026-09-15, a consumer's
+own system registering the same day
 ([`dasha-measured.md`](dasha-measured.md), §"What the measurement
 settled"). The falsification pass for ADR-0017 on the
 dasha family: every catalogued system written as a row over a kernel, the
@@ -188,6 +189,46 @@ is seeded and scaled and Kalachakra will be seeded and signed. The façade
 reads the chart a sign-based dasha needs from the foundation: the grahas'
 signs and dignities under the settings, the navamsa lagna, and the arudha
 lagna `teistro-points` computes.
+
+## A consumer's own system (2026-09-15)
+
+Phase 5's exit asks for "a consumer-registered dasha system (a row in a
+consumer pack)". A K-udu system is already data, so the SDK takes one the
+way it takes a consumer's chart layout (ADR-0026 §1): a definition checked
+by the rules a shipped row passes, registered on the context before it is
+built, sealed after, and asked for by key.
+
+- **The definition** is `teistro_dasha::UduDefinition`, serde and a JSON
+  Schema: `key`, `sources`, `lords` (`{graha, years}` in order),
+  `reference` (a nakshatra, not an index), and `count`, `span`, `offset`,
+  `repeats` and `scale`, each defaulting to Vimshottari's shape, plus its
+  own `year_length` and `depth`, since the settings' per-system tables are
+  keyed by the catalogue. `UduRow::validate` is its validation, so a
+  registered row is refused by the same field a shipped one would be.
+- **Identity.** A row is named by a `DashaName`: a catalogued
+  `DashaSystem`, or a registered key. It serialises as the bare key either
+  way, so a document spells `VIMSHOTTARI` exactly as before and a
+  consumer's system as `ACME_SAPTA`. The registry refuses a key the
+  catalogue already has, so the two can never be confused. The row keeps
+  its lords as a `Cow<'static, [Lord]>`: borrowed for a shipped row and
+  owned for a registered one, with one kernel for both.
+- **The document stays self-contained.** A registered system's reading
+  carries its `definition` beside its rules, so a stored document rebuilds
+  its cursor with the definition it was computed from, whatever the
+  context has registered since. This follows the Kalachakra, whose reading
+  carries its own choices.
+- **The request.** `ChartRequest::with_dashas` takes anything that is a
+  `KeyId`: a catalogue member as before, or the id a context gave a
+  registered system (`sdk.keys().id("dasha_system.ACME_SAPTA")`). At the
+  boundary a request's `dashas` array already carries ids, and a
+  registered id is `0x8000` or more. `TsContextOptions.dashas_json` is a
+  JSON array of definitions, refused by index and field as
+  `layouts_json` is. The `dashas` section's `system` column carries the
+  registered id, and each binding names it from the definitions it passed.
+- **Scope.** Only nakshatra-seeded (K-udu) systems register. A K-rashi row
+  is code as much as data (its start, order and length rules are enums
+  that read a chart), and the Kalachakra is its own kernel. Registering
+  either waits for a consumer who needs it.
 
 ## Kernels
 

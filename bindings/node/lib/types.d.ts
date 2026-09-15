@@ -2,7 +2,7 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
-import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Varga, DashaSystem, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
+import type { Status, TimeScale, Body, Ayanamsha, Ephemeris, Centre, Equinox, Coordinates, Calendar, Era, Resolution, ChartKind, Varga, ZoneKind, ZoneWarning, ZoneSource, ZoneEra, Dst, Chosen, Scale, DeltaTSource, Longitude, Latitude, Altitude } from './catalogue.js';
 
 /**
  * A C observer: degrees and metres, validated into a `Place` on the
@@ -454,6 +454,20 @@ export interface ContextOptions {
    */
   readonly layoutsJson?: string;
   /**
+   * Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+   * of definitions: each a key the catalogue does not have, its lords and
+   * their years in order, the reference nakshatra, and optionally `count`,
+   * `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+   * `sources` (the document schema's `UduDefinition`). Every one is checked
+   * by the rules a shipped row passes and refused by its place in the array
+   * and its own field, as `options.dashas_json`, the index, then the field.
+   * A request asks for one by the id
+   * `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+   * registration order. Null for none (`03-design/dasha-kernels.md`).
+   * @nullable
+   */
+  readonly dashasJson?: string;
+  /**
    * Which of the SDK's own ephemerides to use when no provider vtable
    * is given; ignored when one is (ADR-0028).
    * @enum Ephemeris
@@ -724,12 +738,15 @@ export interface ChartRequest {
    */
   readonly drawings: Uint32Array | readonly number[];
   /**
-   * Which dashas to compute, as catalogue ids, in the order they should be
-   * answered in: each one's balance and its periods to the settings'
-   * `dasha.depth`. Null with a count of zero for none.
-   * @enum DashaSystem
+   * Which dashas to compute, in the order they should be answered in: each
+   * a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+   * the context registered (`0x8000` and up). Each one's balance and its
+   * periods to its depth. Null with a count of zero for none.
+   *
+   * Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+   * layer takes a catalogue member or a registered key and writes the id.
    */
-  readonly dashas: readonly DashaSystem[];
+  readonly dashas: Uint16Array | readonly number[];
   /**
    * A theme to write every drawing as SVG in, as JSON: an object of
    * `style` and `content` naming only what it changes, over the light

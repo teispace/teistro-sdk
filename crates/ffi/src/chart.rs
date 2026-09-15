@@ -29,12 +29,13 @@
 use core::ffi::c_char;
 
 use teistro::ChartRequest;
+use teistro::dasha::DashaName;
 use teistro::render_svg::Theme;
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{ChartKind, DashaSystem, Kind, Varga};
+use teistro_core::catalogue::{ChartKind, Kind, Varga};
 use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::key::KeyId;
@@ -523,10 +524,14 @@ pub struct TsChartRequest {
     pub drawings: *const u32,
     /// How many drawings `drawings` points at.
     pub drawing_count: usize,
-    /// Which dashas to compute, as catalogue ids, in the order they should be
-    /// answered in: each one's balance and its periods to the settings'
-    /// `dasha.depth`. Null with a count of zero for none.
-    /// `api: len=dasha_count enum=DashaSystem`
+    /// Which dashas to compute, in the order they should be answered in: each
+    /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+    /// the context registered (`0x8000` and up). Each one's balance and its
+    /// periods to its depth. Null with a count of zero for none.
+    ///
+    /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+    /// layer takes a catalogue member or a registered key and writes the id.
+    /// `api: len=dasha_count`
     pub dashas: *const u16,
     /// How many dashas `dashas` points at.
     pub dasha_count: usize,
@@ -1799,7 +1804,10 @@ struct DashaColumns {
 }
 
 impl DashaColumns {
-    fn of(documents: &[Document]) -> Result<DashaColumns, Error> {
+    fn of(
+        documents: &[Document],
+        registered: &teistro::dasha::DashaSystems,
+    ) -> Result<DashaColumns, Error> {
         let count = documents.first().map_or(0, |d| d.dashas.len());
         if documents.iter().any(|d| d.dashas.len() != count) {
             return Err(Error::internal(
@@ -1840,15 +1848,25 @@ impl DashaColumns {
             to: Vec::with_capacity(periods),
         };
         for reading in documents.iter().flat_map(|d| &d.dashas) {
-            columns.push(reading);
+            // A registered system crosses as the id its context gave it,
+            // which is how a binding names it from the definitions it passed.
+            let system = match &reading.system {
+                DashaName::Catalogued(system) => system.id(),
+                DashaName::Registered(key) => {
+                    registered.id(key).map(KeyId::id).ok_or_else(|| {
+                        Error::internal(format!("`{key}` is not registered with the context"))
+                    })?
+                }
+            };
+            columns.push(system, reading);
         }
         Ok(columns)
     }
 
     /// One dasha's row and its periods.
-    fn push(&mut self, reading: &teistro::DashaReading) {
+    fn push(&mut self, system: u16, reading: &teistro::DashaReading) {
         let columns = self;
-        columns.system.push(reading.system.id());
+        columns.system.push(system);
         columns.seeded.push(u8::from(reading.seed.is_some()));
         let signed = reading
             .periods
@@ -2033,6 +2051,7 @@ pub fn encode(
     kind: ChartKind,
     provenance: &Provenance,
     svgs: &str,
+    registered: &teistro::dasha::DashaSystems,
 ) -> Result<Vec<u8>, Error> {
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
     let charts = charts.as_slice();
@@ -2050,7 +2069,7 @@ pub fn encode(
     let points = PointColumns::of(documents);
     let bhavas = BhavaColumns::of(documents);
     let states = StateColumns::of(documents);
-    let dashas = DashaColumns::of(documents)?;
+    let dashas = DashaColumns::of(documents, registered)?;
     let ashtakavarga = AshtakavargaColumns::of(documents);
     let vimshopaka = VimshopakaColumns::of(documents);
     let shadbala = ShadbalaColumns::of(documents);
@@ -2279,11 +2298,10 @@ pub unsafe extern "C" fn ts_chart_found(
         // SAFETY: as above, for `dasha_count` readable `u16`s.
         let asked_dashas = unsafe { slice(asked.dashas, asked.dasha_count, "dashas") }?;
         let mut dashas = Vec::with_capacity(asked_dashas.len());
-        for (index, id) in asked_dashas.iter().enumerate() {
-            dashas.push(DashaSystem::from_id(*id).ok_or_else(|| {
-                Error::invalid_arg(format!("no dasha system with id {id}"))
-                    .with_field(format!("dashas[{index}]"))
-            })?);
+        // A catalogued id or one the context registered; the façade refuses
+        // any other by its place, with the systems it can compute.
+        for id in asked_dashas {
+            dashas.push(KeyId::new(Kind::DashaSystem, *id));
         }
         // SAFETY: as above, for `drawing_count` readable `u32`s.
         let asked_drawings = unsafe { slice(asked.drawings, asked.drawing_count, "drawings") }?;
@@ -2339,7 +2357,14 @@ pub unsafe extern "C" fn ts_chart_found(
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
         };
-        let encoded = encode(&founded.value, &place, kind, &founded.provenance, &svgs)?;
+        let encoded = encode(
+            &founded.value,
+            &place,
+            kind,
+            &founded.provenance,
+            &svgs,
+            ctx.sdk().dashas(),
+        )?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -2375,6 +2400,23 @@ mod tests {
     use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
     use teistro_serial::Document;
     use teistro_time::local_day::{DayState, PolarKind};
+
+    /// A batch encoded as a natal chart with no drawings and no registered
+    /// dasha systems, which is every encoding these tests make.
+    fn encoded(
+        documents: &[Document],
+        place: &Place,
+        provenance: &Provenance,
+    ) -> Result<Vec<u8>, teistro_core::error::Error> {
+        super::encode(
+            documents,
+            place,
+            ChartKind::Natal,
+            provenance,
+            "",
+            &teistro::dasha::DashaSystems::new(),
+        )
+    }
 
     /// Every member of every knob crosses, and crosses to an id of its
     /// own.
@@ -2513,8 +2555,7 @@ mod tests {
                     )
             })
             .collect();
-        let bytes = super::encode(&documents, &place, ChartKind::Natal, &provenance, "")
-            .expect("it encodes");
+        let bytes = encoded(&documents, &place, &provenance).expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
         let graha_count = charts[0].grahas.len();
@@ -2632,8 +2673,7 @@ mod tests {
                 )
             })
             .collect();
-        let bytes = super::encode(&documents, &place, ChartKind::Natal, &provenance, "")
-            .expect("it encodes");
+        let bytes = encoded(&documents, &place, &provenance).expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 
@@ -2683,8 +2723,7 @@ mod tests {
         use teistro_idl::blob::Reader;
 
         let (_, place, provenance) = founded();
-        let bytes =
-            super::encode(&[], &place, ChartKind::Natal, &provenance, "").expect("it encodes");
+        let bytes = encoded(&[], &place, &provenance).expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 

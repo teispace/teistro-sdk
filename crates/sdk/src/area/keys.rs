@@ -59,9 +59,9 @@ impl<'a> KeysArea<'a> {
         })
     }
 
-    /// A registered member's id, from the context's registries. Chart layouts
-    /// are the one kind a context registers today; a kind that gains a
-    /// registry is one more arm here.
+    /// A registered member's id, from the context's registries: chart layouts
+    /// and nakshatra-seeded dasha systems. A kind that gains a registry is one
+    /// more arm here.
     fn registered_id(self, key: &str) -> Option<KeyId> {
         let (kind, name) = key.split_once('.')?;
         match Kind::from_name(kind)? {
@@ -70,6 +70,7 @@ impl<'a> KeysArea<'a> {
                 .layouts()
                 .id(name)
                 .filter(|id| id.is_registered()),
+            Kind::DashaSystem => self.context.dashas().id(name),
             _ => None,
         }
     }
@@ -82,6 +83,11 @@ impl<'a> KeysArea<'a> {
                 .layouts()
                 .by_id(id)
                 .map(|layout| format!("{}.{}", Kind::ChartLayout.name(), layout.key)),
+            Kind::DashaSystem => self
+                .context
+                .dashas()
+                .by_id(id)
+                .map(|definition| format!("{}.{}", Kind::DashaSystem.name(), definition.key)),
             _ => None,
         }
     }

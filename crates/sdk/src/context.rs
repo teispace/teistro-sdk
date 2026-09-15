@@ -10,6 +10,7 @@ use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
 };
+use teistro_dasha::{DashaSystems, UduDefinition};
 use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
@@ -53,6 +54,9 @@ pub struct Context {
     /// builder was given, sealed, so nothing changes under a context that
     /// draws.
     layouts: Layouts,
+    /// The consumer's nakshatra-seeded dasha systems, sealed as the layouts
+    /// are.
+    dashas: DashaSystems,
 }
 
 impl core::fmt::Debug for Context {
@@ -248,6 +252,13 @@ impl Context {
     pub const fn layouts(&self) -> &Layouts {
         &self.layouts
     }
+
+    /// The dasha systems a consumer registered with this context, beside the
+    /// ones the catalogue has.
+    #[must_use]
+    pub const fn dashas(&self) -> &DashaSystems {
+        &self.dashas
+    }
 }
 
 /// A context under construction.
@@ -264,6 +275,7 @@ pub struct ContextBuilder {
     locale: Option<String>,
     chain: Option<Vec<Ephemeris>>,
     layouts: Vec<Layout>,
+    dashas: Vec<UduDefinition>,
 }
 
 impl core::fmt::Debug for ContextBuilder {
@@ -286,6 +298,20 @@ impl ContextBuilder {
     #[must_use]
     pub fn layout(mut self, layout: Layout) -> ContextBuilder {
         self.layouts.push(layout);
+        self
+    }
+
+    /// A nakshatra-seeded dasha system of the consumer's own, asked for by
+    /// the id [`keys`](crate::Context::keys) gives its key
+    /// (`dasha_system.ACME_SAPTAKA`) like any catalogued system.
+    ///
+    /// Checked when the context is built, by the rules a shipped row passes,
+    /// and refused by its place and field (`dashas[0].span`); a key the
+    /// catalogue has is refused, so a system is added and never replaced
+    /// (`03-design/dasha-kernels.md`, "A consumer's own system").
+    #[must_use]
+    pub fn dasha_system(mut self, definition: UduDefinition) -> ContextBuilder {
+        self.dashas.push(definition);
         self
     }
 
@@ -387,12 +413,20 @@ impl ContextBuilder {
                 .map_err(|error| error.under(&format!("layouts[{index}]")))?;
         }
         layouts.seal();
+        let mut dashas = DashaSystems::new();
+        for (index, definition) in self.dashas.into_iter().enumerate() {
+            dashas
+                .register(definition)
+                .map_err(|error| error.under(&format!("dashas[{index}]")))?;
+        }
+        dashas.seal();
         Ok(Context {
             settings,
             provider,
             intl: RefCell::new(intl),
             delta_t,
             layouts,
+            dashas,
         })
     }
 }

@@ -29,7 +29,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Generic, Iterator, List, Literal, Mapping, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
+from typing import Any, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
 
 from . import messages as intl
 from ._blob import (
@@ -290,6 +290,8 @@ __all__ = [
     "Dignity",
     "Friendship",
     "GrahaState",
+    "DashaDefinition",
+    "DashaLord",
     "Sayanadi",
     "Lajjitadi",
     "Quadrant",
@@ -507,6 +509,7 @@ class Teistro:
         ephemeris: Optional[EphemerisChoice | Sequence[EphemerisChoice]] = None,
         test_provider: bool = False,
         layouts: Sequence[LayoutRow] = (),
+        dasha_systems: Sequence[DashaDefinition] = (),
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
 
@@ -514,6 +517,11 @@ class Teistro:
         shipped ones: each a row as `sdk.chart.layout(key)` answers it, with
         a key of its own, checked by the rules a shipped row passes
         (`03-design/chart-geometry.md` §7f).
+
+        `dasha_systems` are nakshatra-seeded dasha systems of your own, each a
+        `DashaDefinition`, asked for in a request's `dashas` by
+        `"dasha_system.<KEY>"` and checked by the rules a shipped row passes
+        (`03-design/dasha-kernels.md`).
 
         `settings` is a patch over the profile, as a mapping — the shape
         the Node and Dart bindings take, so one example reads in all
@@ -563,6 +571,16 @@ class Teistro:
                 Status.INVALID_ARG, "layouts is a sequence of layout rows", field="layouts"
             )
         layouts_json = json.dumps(list(layouts), separators=(",", ":")) if layouts else None
+        if isinstance(dasha_systems, (str, bytes)) or not isinstance(dasha_systems, Sequence):
+            raise TeistroError(
+                Status.INVALID_ARG,
+                "dasha_systems is a sequence of dasha system definitions",
+                field="dasha_systems",
+            )
+        rows_json = _RowsJson(
+            layouts=layouts_json,
+            dashas=json.dumps(list(dasha_systems), separators=(",", ":")) if dasha_systems else None,
+        )
         host = None if provider is None else HostProvider(self.library, provider)
         # One rule, written once: a named ephemeris wins, and the older
         # flag decides only when none was named (ADR-0028).
@@ -585,9 +603,10 @@ class Teistro:
         if len(chain) == 1:
             return Context(
                 self,
-                self._open(chain[0], profile, settings_json, locale, layouts_json, host),
+                self._open(chain[0], profile, settings_json, locale, rows_json, host),
                 host,
                 layouts,
+                dasha_systems,
             )
         # With more than one, every refusal is kept and reported
         # together, because a chain that said only why its last entry
@@ -597,9 +616,10 @@ class Teistro:
             try:
                 return Context(
                     self,
-                    self._open(entry, profile, settings_json, locale, layouts_json, host),
+                    self._open(entry, profile, settings_json, locale, rows_json, host),
                     host,
                     layouts,
+                    dasha_systems,
                 )
             except TeistroError as refusal:
                 named = entry.plugin if isinstance(entry, Plugin) else entry.key
@@ -613,7 +633,7 @@ class Teistro:
         profile: Optional[str],
         settings_json: Optional[str],
         locale: Optional[str],
-        layouts_json: Optional[str],
+        rows_json: _RowsJson,
         host: Optional[HostProvider],
     ) -> TeistroContext:
         """Opens the context on one entry of the chain."""
@@ -623,7 +643,8 @@ class Teistro:
             profile=profile,
             settings_json=settings_json,
             locale=locale,
-            layouts_json=layouts_json,
+            layouts_json=rows_json.layouts,
+            dashas_json=rows_json.dashas,
             ephemeris=named,
         )
         if not isinstance(entry, Plugin):
@@ -987,7 +1008,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
-        dashas: Sequence[DashaSystem] = (),
+        dashas: Sequence[Union[DashaSystem, str]] = (),
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         aspects: bool = False,
@@ -1043,7 +1064,7 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
-        dashas: Sequence[DashaSystem] = (),
+        dashas: Sequence[Union[DashaSystem, str]] = (),
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         aspects: bool = False,
@@ -1096,12 +1117,13 @@ class ChartArea(_Area):
             | (_SECTION_BHAVA_BALA if bhava_bala else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
-            dashas=list(dashas),
+            dashas=_dasha_ids(dashas, self._context._registered_dashas),
             drawings=_drawing_bits(drawings, self._context._registered_layouts),
             theme_json=_theme_json(theme),
         )
         return ChartBatch(
-            decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request)))
+            decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
+            self._context._dasha_names,
         )
 
 
@@ -1179,6 +1201,7 @@ class Context:
         inner: TeistroContext,
         host: Optional[HostProvider] = None,
         layouts: Sequence[LayoutRow] = (),
+        dasha_systems: Sequence[DashaDefinition] = (),
     ) -> None:
         self.teistro = teistro
         """The library this context was built on."""
@@ -1192,6 +1215,15 @@ class Context:
         self._registered_layouts: dict[str, int] = {
             f"chart_layout.{row['key']}": inner.key_parse(f"chart_layout.{row['key']}") & 0xFFFF
             for row in layouts
+        }
+        # The same for the dasha systems it registered, and turned round so a
+        # batch names a registered id by its key.
+        self._registered_dashas: dict[str, int] = {
+            f"dasha_system.{row['key']}": inner.key_parse(f"dasha_system.{row['key']}") & 0xFFFF
+            for row in dasha_systems
+        }
+        self._dasha_names: dict[int, str] = {
+            id: key for key, id in self._registered_dashas.items()
         }
 
     # ── The areas ─────────────────────────────────────────────────────
@@ -2016,8 +2048,9 @@ class Dasha:
     its seed and balance at birth. A sign-based dasha has neither, and its
     periods name their signs."""
 
-    system: DashaSystem
-    """Which system."""
+    system: Union[DashaSystem, str]
+    """Which system: a `DashaSystem`, or a registered one by its full key
+    (`"dasha_system.ACME_SAPTAKA"`)."""
 
     seed: Optional[Nakshatra]
     """The nakshatra the Moon stood in, which seeds it; None for a sign-based
@@ -2318,6 +2351,49 @@ class LayoutShapeRow(TypedDict, total=False):
     direction: Literal["clockwise", "anticlockwise"]
 
 
+class DashaLord(TypedDict):
+    """One lord of a dasha system and its whole years."""
+
+    graha: str
+    years: int
+
+
+class _DashaDefinitionRequired(TypedDict):
+    key: str
+    lords: List[DashaLord]
+    reference: str
+
+
+class DashaDefinition(_DashaDefinitionRequired, total=False):
+    """A nakshatra-seeded dasha system of your own, as `dasha_systems` takes
+    it: its key, its lords in order and the reference nakshatra, bare keys
+    (`"SUN"`, `"KRITTIKA"`) as the document spells them; every other field
+    defaults to Vimshottari's shape (`03-design/dasha-kernels.md`).
+
+    >>> saptaka: DashaDefinition = {
+    ...     "key": "ACME_SAPTAKA",
+    ...     "lords": [{"graha": g, "years": 10} for g in ("SUN", "MOON", "MARS")],
+    ...     "reference": "KRITTIKA",
+    ... }
+    """
+
+    sources: List[str]
+    count: str
+    span: int
+    offset: int
+    repeats: bool
+    scale: Dict[str, int]
+    year_length: str
+    depth: int
+
+
+class _RowsJson(NamedTuple):
+    """The consumer's own rows a context registers, serialised."""
+
+    layouts: Optional[str]
+    dashas: Optional[str]
+
+
 class LayoutRow(TypedDict):
     """A chart layout as a row: its key, what cites it, and its shape.
     Crosses as JSON with the SDK's own field names, as a theme does
@@ -2479,6 +2555,33 @@ def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
             for mark in placed["marks"]
         ],
     )
+
+
+def _dasha_ids(dashas: Sequence[Union[DashaSystem, str]], registered: Mapping[str, int]) -> list[int]:
+    """The dashas asked for, as the ids the boundary takes: a `DashaSystem`,
+    or the `dasha_system.*` key of a system this context registered
+    (`03-design/dasha-kernels.md`)."""
+    ids = []
+    for at, system in enumerate(dashas):
+        if isinstance(system, DashaSystem):
+            ids.append(int(system))
+        elif isinstance(system, str) and system in registered:
+            ids.append(registered[system])
+        else:
+            raise TeistroError(
+                Status.INVALID_ARG,
+                f"dashas[{at}] is not a DashaSystem, or the dasha_system.* key of a system this "
+                "context registered",
+                field=f"dashas[{at}]",
+            )
+    return ids
+
+
+def _dasha_system(id: int, names: Mapping[int, str]) -> Union[DashaSystem, str]:
+    """A dasha row's system: the catalogue's member, or a registered one's key."""
+    if id in names:
+        return names[id]
+    return DashaSystem(id)
 
 
 def _drawing_bits(
@@ -2892,9 +2995,12 @@ class Chart:
 class ChartBatch:
     """A batch of founded charts at one place, read one chart at a time."""
 
-    def __init__(self, decoded: Charts) -> None:
+    def __init__(self, decoded: Charts, dasha_names: Optional[Mapping[int, str]] = None) -> None:
         self.decoded = decoded
         """The blob as its generated decoder read it."""
+        self.dasha_names: Mapping[int, str] = dasha_names or {}
+        """The full key of each dasha system the founding context registered,
+        by its id; a batch read without it names such a system by its id."""
 
     def __len__(self) -> int:
         """How many charts the batch holds."""
@@ -3120,7 +3226,7 @@ class ChartBatch:
             for j in range(per):
                 row = chart * per + j
                 count = decoded.dashas.period_count[row]
-                row_dashas.append(_dasha(decoded, row, start, count))
+                row_dashas.append(_dasha(decoded, row, start, count, self.dasha_names))
                 start += count
             out.append(row_dashas)
         return out
@@ -3168,7 +3274,7 @@ class ChartBatch:
         """The provenance envelope, as the canonical JSON it is stamped as."""
         return self.decoded.provenance
 
-def _dasha(decoded: Charts, row: int, start: int, count: int) -> Dasha:
+def _dasha(decoded: Charts, row: int, start: int, count: int, names: Mapping[int, str]) -> Dasha:
     """One dasha row and its periods, in this layer's shape.
 
     A period's path is its index below the nearest earlier period one level
@@ -3195,7 +3301,7 @@ def _dasha(decoded: Charts, row: int, start: int, count: int) -> Dasha:
         )
     span_from = rows.moon_span_from[row]
     return Dasha(
-        system=DashaSystem(rows.system[row]),
+        system=_dasha_system(rows.system[row], names),
         seed=Nakshatra(rows.seed[row]) if seeded else None,
         first_lord=Graha(rows.first_lord[row]),
         overflow=rows.overflow[row] != 0,

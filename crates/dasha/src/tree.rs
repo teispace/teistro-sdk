@@ -91,6 +91,23 @@ impl Rules {
             seed_overflow: settings.seed_overflow,
         }
     }
+
+    /// The rules a consumer's system runs under: its definition's own year
+    /// length, and the settings group's balance, birth period, cycle end and
+    /// overflow, as a catalogued system takes them.
+    #[must_use]
+    pub fn of_definition(
+        settings: &teistro_core::settings::Dasha,
+        definition: &crate::row::UduDefinition,
+    ) -> Rules {
+        Rules {
+            balance: settings.balance,
+            year_length: definition.year_length,
+            birth_period: settings.birth_period,
+            after_cycle: settings.after_cycle,
+            seed_overflow: settings.seed_overflow,
+        }
+    }
 }
 
 /// Where a period sits: the cycle it runs in, and its place among its
@@ -345,7 +362,7 @@ pub trait Timeline {
 /// A nakshatra-seeded dasha of one birth.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Dasha {
-    row: &'static UduRow,
+    row: UduRow,
     rules: Rules,
     birth: JulianDay<Utc>,
     seed: Nakshatra,
@@ -368,14 +385,14 @@ impl Dasha {
     /// A row its checks refuse; a seed outside a conditional cycle when the
     /// rules refuse one, named `seed_overflow`; a temporal balance with no
     /// Moon span, or one that does not hold the birth, named `moon_span`.
-    pub fn new(row: &'static UduRow, birth: &Birth, rules: Rules) -> Result<Dasha, Error> {
+    pub fn new(row: &UduRow, birth: &Birth, rules: Rules) -> Result<Dasha, Error> {
         row.validate()?;
         let seed = birth.moon.nakshatra();
         let seat = row.seat(birth.moon.nakshatra_index().get());
         if seat.overflow && rules.seed_overflow == SeedOverflow::Reject {
             return Err(Error::invalid_arg(format!(
                 "the Moon's nakshatra is outside the nakshatras {} covers",
-                row.system.key()
+                row.system
             ))
             .with_field("seed_overflow")
             .with_hint("the WRAP_TO_START overflow starts such a seed at the first lord"));
@@ -403,7 +420,7 @@ impl Dasha {
         full.push(offset);
 
         Ok(Dasha {
-            row,
+            row: row.clone(),
             rules,
             birth: birth.instant,
             seed,
@@ -422,8 +439,8 @@ impl Dasha {
 
     /// The row the dasha runs.
     #[must_use]
-    pub const fn row(&self) -> &'static UduRow {
-        self.row
+    pub const fn row(&self) -> &UduRow {
+        &self.row
     }
 
     /// The rules it runs under.

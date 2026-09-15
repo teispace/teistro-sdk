@@ -100,6 +100,18 @@ pub struct TsContextOptions {
     /// (`03-design/chart-geometry.md` §7f).
     /// `api: nullable`
     pub layouts_json: *const c_char,
+    /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+    /// of definitions: each a key the catalogue does not have, its lords and
+    /// their years in order, the reference nakshatra, and optionally `count`,
+    /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+    /// `sources` (the document schema's `UduDefinition`). Every one is checked
+    /// by the rules a shipped row passes and refused by its place in the array
+    /// and its own field, as `options.dashas_json`, the index, then the field.
+    /// A request asks for one by the id
+    /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+    /// registration order. Null for none (`03-design/dasha-kernels.md`).
+    /// `api: nullable`
+    pub dashas_json: *const c_char,
     /// Which of the SDK's own ephemerides to use when no provider vtable
     /// is given; ignored when one is (ADR-0028).
     /// `api: enum=TsEphemeris example=0`
@@ -392,6 +404,11 @@ impl TsContext {
                 building = building.layout(layout);
             }
         }
+        if let Some(json) = texts.dashas_json {
+            for definition in dashas_of(json)? {
+                building = building.dasha_system(definition);
+            }
+        }
         // One entry, never a chain: a C caller names one ephemeris and
         // gets it or a refusal, which is what `ts_context_new`'s
         // selector means. A chain is the ergonomic layers' shape,
@@ -399,14 +416,20 @@ impl TsContext {
         // The builder names a registered layout by its place among the
         // layouts; here those are the rows of `options.layouts_json`.
         let inner = building.ephemeris([ephemeris]).build().map_err(|error| {
-            match error
-                .field()
-                .and_then(|field| field.strip_prefix("layouts"))
-            {
-                Some(rest) => {
-                    let field = format!("options.layouts_json{rest}");
-                    error.with_field(field)
-                }
+            // The builder names a registered row by its place among the
+            // layouts or the dashas; here those are the options' arrays.
+            let renamed = error.field().and_then(|field| {
+                field
+                    .strip_prefix("layouts")
+                    .map(|rest| format!("options.layouts_json{rest}"))
+                    .or_else(|| {
+                        field
+                            .strip_prefix("dashas")
+                            .map(|rest| format!("options.dashas_json{rest}"))
+                    })
+            });
+            match renamed {
+                Some(field) => error.with_field(field),
                 None => error,
             }
         })?;
@@ -659,6 +682,8 @@ pub struct OptionTexts<'a> {
     pub locale: Option<&'a str>,
     /// A JSON array of the consumer's own layout rows.
     pub layouts_json: Option<&'a str>,
+    /// A JSON array of the consumer's own dasha system definitions.
+    pub dashas_json: Option<&'a str>,
 }
 
 /// A consumer's layout rows, each read strictly and checked by the rules a
@@ -675,6 +700,18 @@ fn layouts_of(json: &str) -> Result<Vec<teistro::Layout>, Error> {
             layout.validate().map_err(|error| error.under(&at))?;
             Ok(layout)
         })
+        .collect()
+}
+
+/// A consumer's dasha system definitions, each read strictly; the context's
+/// registry checks each by the rules a shipped row passes and names it by
+/// its place.
+fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::UduDefinition>, Error> {
+    const ROOT: &str = "options.dashas_json";
+    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
+    rows.into_iter()
+        .enumerate()
+        .map(|(index, row)| teistro_core::strict::read_value(&row, &format!("{ROOT}[{index}]")))
         .collect()
 }
 
@@ -714,6 +751,7 @@ unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts
         settings_json: field(|o| o.settings_json, "options.settings_json")?,
         locale: field(|o| o.locale, "options.locale")?,
         layouts_json: field(|o| o.layouts_json, "options.layouts_json")?,
+        dashas_json: field(|o| o.dashas_json, "options.dashas_json")?,
     })
 }
 

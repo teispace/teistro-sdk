@@ -211,12 +211,17 @@ final class Teistro {
     List<EphemerisChoice>? ephemeris,
     bool testProvider = false,
     List<LayoutRow> layouts = const <LayoutRow>[],
+    List<DashaDefinition> dashaSystems = const <DashaDefinition>[],
   }) {
     // Serialised once, however many entries of the chain are tried.
     final layoutsJson =
         layouts.isEmpty
             ? null
             : jsonEncode([for (final row in layouts) row.toJson()]);
+    final dashasJson =
+        dashaSystems.isEmpty
+            ? null
+            : jsonEncode([for (final system in dashaSystems) system.toJson()]);
     // Two ways to answer one question, so both together is a refusal
     // rather than one silently winning.
     if (provider != null && ephemeris != null) {
@@ -250,9 +255,18 @@ final class Teistro {
       if (chain.length == 1) {
         return Context._(
           this,
-          _open(chain.first, profile, settings, locale, layoutsJson, host),
+          _open(
+            chain.first,
+            profile,
+            settings,
+            locale,
+            layoutsJson,
+            dashasJson,
+            host,
+          ),
           host,
           layouts,
+          dashaSystems,
         );
       }
       // With more than one, every refusal is kept and reported together,
@@ -263,9 +277,18 @@ final class Teistro {
         try {
           return Context._(
             this,
-            _open(entry, profile, settings, locale, layoutsJson, host),
+            _open(
+              entry,
+              profile,
+              settings,
+              locale,
+              layoutsJson,
+              dashasJson,
+              host,
+            ),
             host,
             layouts,
+            dashaSystems,
           );
         } on Object catch (refusal) {
           refusals.add('${_names(entry)}: $refusal');
@@ -293,6 +316,7 @@ final class Teistro {
     Map<String, Object?>? settings,
     String? locale,
     String? layoutsJson,
+    String? dashasJson,
     HostProvider? host,
   ) {
     ContextOptions options(Ephemeris named) => ContextOptions(
@@ -302,6 +326,7 @@ final class Teistro {
       settingsJson: settings == null ? null : jsonEncode(settings),
       locale: locale,
       layoutsJson: layoutsJson,
+      dashasJson: dashasJson,
     );
     switch (entry) {
       case NamedEphemeris(:final name):
@@ -670,7 +695,7 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
-    List<DashaSystem> dashas = const <DashaSystem>[],
+    List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
     List<(KeyOf<ChartLayout>, Varga)> drawings =
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
@@ -728,7 +753,7 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
-    List<DashaSystem> dashas = const <DashaSystem>[],
+    List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
     List<(KeyOf<ChartLayout>, Varga)> drawings =
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
@@ -742,38 +767,41 @@ final class ChartArea extends _Area {
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
-  }) => decodeCharts(
-    _context._guarded(
-      () => _context._inner.chartFound(
-        ChartRequest(
-          kind: kind,
-          instants: instants,
-          latitudeDeg: place.latitudeDeg,
-          longitudeDeg: place.longitudeDeg,
-          altitudeM: place.altitudeM,
-          utcOffsetSeconds: utcOffsetSeconds,
-          // The sections beside the foundation, which the SDK takes as
-          // a bit set and nothing here writes as one
-          // (`03-design/chart-reading.md` §5): a named argument each,
-          // and one more as each crosses.
-          sections:
-              (aspects ? _sectionAspects : 0) |
-              (points ? _sectionPoints : 0) |
-              (houses ? _sectionHouses : 0) |
-              (ashtakavarga ? _sectionAshtakavarga : 0) |
-              (vimshopaka ? _sectionVimshopaka : 0) |
-              (vaiseshikamsa ? _sectionVaiseshikamsa : 0) |
-              (dashaPhala ? _sectionDashaPhala : 0) |
-              (shadbala ? _sectionShadbala : 0) |
-              (bhavaBala ? _sectionBhavaBala : 0) |
-              (state ? _sectionState : 0),
-          vargas: vargas,
-          dashas: dashas,
-          drawings: _drawingBits(drawings, _context._registeredLayouts),
-          themeJson: theme?._json,
+  }) => _named(
+    decodeCharts(
+      _context._guarded(
+        () => _context._inner.chartFound(
+          ChartRequest(
+            kind: kind,
+            instants: instants,
+            latitudeDeg: place.latitudeDeg,
+            longitudeDeg: place.longitudeDeg,
+            altitudeM: place.altitudeM,
+            utcOffsetSeconds: utcOffsetSeconds,
+            // The sections beside the foundation, which the SDK takes as
+            // a bit set and nothing here writes as one
+            // (`03-design/chart-reading.md` §5): a named argument each,
+            // and one more as each crosses.
+            sections:
+                (aspects ? _sectionAspects : 0) |
+                (points ? _sectionPoints : 0) |
+                (houses ? _sectionHouses : 0) |
+                (ashtakavarga ? _sectionAshtakavarga : 0) |
+                (vimshopaka ? _sectionVimshopaka : 0) |
+                (vaiseshikamsa ? _sectionVaiseshikamsa : 0) |
+                (dashaPhala ? _sectionDashaPhala : 0) |
+                (shadbala ? _sectionShadbala : 0) |
+                (bhavaBala ? _sectionBhavaBala : 0) |
+                (state ? _sectionState : 0),
+            vargas: vargas,
+            dashas: _dashaIds(dashas, _context._registeredDashas),
+            drawings: _drawingBits(drawings, _context._registeredLayouts),
+            themeJson: theme?._json,
+          ),
         ),
       ),
     ),
+    _context._registeredDashas,
   );
 }
 
@@ -839,20 +867,33 @@ final class AlmanacArea extends _Area {
 /// The native context is freed when this object is collected; [dispose]
 /// frees it at once, and every call after that is a [StateError].
 final class Context {
-  Context._(this._teistro, this._inner, this._host, List<LayoutRow> layouts)
-    // The member id of each layout this context registered, by its full key:
-    // asked once, here, so a request resolves a consumer's own layout without
-    // crossing the boundary again (`03-design/chart-geometry.md` §7f).
+  Context._(
+    this._teistro,
+    this._inner,
+    this._host,
+    List<LayoutRow> layouts,
+    List<DashaDefinition> dashaSystems,
+  )
+    // The member id of each layout and dasha system this context registered,
+    // by its full key: asked once, here, so a request resolves a consumer's
+    // own without crossing the boundary again (`03-design/chart-geometry.md`
+    // §7f).
     : _registeredLayouts = {
         for (final row in layouts)
           'chart_layout.${row.key}':
               _inner.keyParse('chart_layout.${row.key}') & 0xFFFF,
+      },
+      _registeredDashas = {
+        for (final system in dashaSystems)
+          'dasha_system.${system.key}':
+              _inner.keyParse('dasha_system.${system.key}') & 0xFFFF,
       } {
     final host = _host;
     if (host != null) _hostFinaliser.attach(this, host, detach: this);
   }
 
   final Map<String, int> _registeredLayouts;
+  final Map<String, int> _registeredDashas;
 
   final Teistro _teistro;
   final TeistroContext _inner;
@@ -2082,8 +2123,9 @@ final class Dasha {
     required this.periods,
   });
 
-  /// Which system.
-  final DashaSystem system;
+  /// Which system: a [DashaSystem], or one a context registered, as
+  /// `DashaSystem.registered('ACME_SAPTAKA')`.
+  final KeyOf<DashaSystem> system;
 
   /// The nakshatra the Moon stood in, which seeds it; null for a sign-based
   /// dasha.
@@ -2467,6 +2509,94 @@ final class RadialShape extends LayoutShape {
 
   /// The clock hour house 1 starts at, 1 to 12.
   final int startsAt;
+}
+
+/// One lord of a consumer's dasha system and its whole years.
+final class DashaLord {
+  const DashaLord(this.graha, this.years);
+
+  /// The graha.
+  final Graha graha;
+
+  /// Its whole years in the cycle.
+  final int years;
+
+  /// The lord as the JSON a definition crosses as.
+  Map<String, Object?> toJson() => {'graha': graha.key, 'years': years};
+}
+
+/// A nakshatra-seeded dasha system of your own, as `dashaSystems` takes it:
+/// its key, its lords in order and the reference nakshatra, every other
+/// field defaulting to Vimshottari's shape (`03-design/dasha-kernels.md`).
+///
+/// ```dart
+/// final ctx = teistro.context(dashaSystems: [
+///   DashaDefinition(
+///     key: 'ACME_SAPTAKA',
+///     lords: [for (final g in [Graha.sun, Graha.moon, Graha.mars]) DashaLord(g, 10)],
+///     reference: Nakshatra.krittika,
+///   ),
+/// ]);
+/// ctx.chart.found(/* … */ dashas: [DashaSystem.registered('ACME_SAPTAKA')]);
+/// ```
+final class DashaDefinition {
+  const DashaDefinition({
+    required this.key,
+    required this.lords,
+    required this.reference,
+    this.sources = const <String>[],
+    this.count,
+    this.span,
+    this.offset,
+    this.repeats,
+    this.yearLength,
+    this.depth,
+  });
+
+  /// Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the
+  /// catalogue has.
+  final String key;
+
+  /// The lords, in the order they run.
+  final List<DashaLord> lords;
+
+  /// The nakshatra that maps to the first lord.
+  final Nakshatra reference;
+
+  /// Where the table comes from.
+  final List<String> sources;
+
+  /// `FROM_REFERENCE` (the default) or `TO_REFERENCE`.
+  final String? count;
+
+  /// How many nakshatras each lord covers; one by default.
+  final int? span;
+
+  /// What is added after the division, before the modulo; none by default.
+  final int? offset;
+
+  /// Whether the lords run round the nakshatras again; true by default.
+  final bool? repeats;
+
+  /// The length of its year (`JULIAN_365_25` by default, `SAVANA_360`, …).
+  final String? yearLength;
+
+  /// How many levels of periods a reading carries, 1 to 6; three by default.
+  final int? depth;
+
+  /// The definition as the JSON a context's `dashaSystems` crosses as.
+  Map<String, Object?> toJson() => {
+    'key': key,
+    'lords': [for (final lord in lords) lord.toJson()],
+    'reference': reference.key,
+    if (sources.isNotEmpty) 'sources': sources,
+    if (count != null) 'count': count,
+    if (span != null) 'span': span,
+    if (offset != null) 'offset': offset,
+    if (repeats != null) 'repeats': repeats,
+    if (yearLength != null) 'year_length': yearLength,
+    if (depth != null) 'depth': depth,
+  };
 }
 
 /// A chart layout as a row: its key, what cites it, and its shape
@@ -3087,6 +3217,47 @@ List<List<Dasha>> _decodeDashas(Charts batch) {
   );
 }
 
+/// The full key of each dasha system a batch's context registered, by its id.
+final Expando<Map<int, String>> _dashaNames = Expando<Map<int, String>>(
+  'dashaNames',
+);
+
+/// A batch, remembering the names of the dasha systems its context
+/// registered so a registered id reads as its key.
+Charts _named(Charts batch, Map<String, int> registered) {
+  if (registered.isNotEmpty) {
+    _dashaNames[batch] = {for (final e in registered.entries) e.value: e.key};
+  }
+  return batch;
+}
+
+/// A dasha row's system: the catalogue's member, or a registered one.
+KeyOf<DashaSystem> _dashaSystem(Charts batch, int id) {
+  final full = _dashaNames[batch]?[id];
+  return full == null
+      ? DashaSystem.byId(id)
+      : DashaSystem.registered(full.substring('dasha_system.'.length));
+}
+
+/// The dashas asked for, as the ids the boundary takes: a [DashaSystem], or a
+/// system this context registered (`03-design/dasha-kernels.md`).
+List<int> _dashaIds(
+  List<KeyOf<DashaSystem>> dashas,
+  Map<String, int> registered,
+) => [
+  for (final (index, system) in dashas.indexed)
+    switch (system) {
+      DashaSystem(:final id) => id,
+      _ =>
+        registered[system.fullKey] ??
+            (throw ArgumentError.value(
+              system.fullKey,
+              'dashas[$index]',
+              'not a dasha system this context registered',
+            )),
+    },
+];
+
 /// One dasha row and its periods, in this layer's shape. A period's path is
 /// its index below the nearest earlier period one level up.
 Dasha _dashaOf(Charts batch, int row, int start, int count) {
@@ -3112,7 +3283,7 @@ Dasha _dashaOf(Charts batch, int row, int start, int count) {
   }, growable: false);
   final spanFrom = d.moonSpanFrom[row];
   return Dasha(
-    system: DashaSystem.byId(d.system[row]),
+    system: _dashaSystem(batch, d.system[row]),
     seed: seeded ? Nakshatra.byId(d.seed[row]) : null,
     firstLord: Graha.byId(d.firstLord[row]),
     overflow: d.overflow[row] != 0,

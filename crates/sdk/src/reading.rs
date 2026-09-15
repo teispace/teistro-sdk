@@ -17,7 +17,7 @@
 
 #[cfg(doc)]
 use teistro_core::catalogue::ChartLayout;
-use teistro_core::catalogue::{Catalogued, ChartKind, DashaSystem, Varga};
+use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
 use teistro_core::key::KeyId;
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
@@ -120,7 +120,7 @@ pub struct ChartRequest {
     kind: ChartKind,
     vargas: Vec<Varga>,
     drawings: Vec<(KeyId, Varga)>,
-    dashas: Vec<DashaSystem>,
+    dashas: Vec<KeyId>,
     pub(crate) sections: Sections,
 }
 
@@ -364,9 +364,11 @@ impl ChartRequest {
     /// balance at birth and its periods to the depth the settings give it
     /// (`dasha.depth`, three levels by default).
     ///
-    /// A system the catalogue names and no row implements yet is refused
-    /// by its place in the request when the reading runs. Replaces rather
-    /// than accumulates, as every setter here does.
+    /// A system is a catalogued member or the id of one the context was built
+    /// with (`ContextBuilder::dasha_system`). A system the catalogue names and
+    /// no row implements yet, or an id the context never registered, is
+    /// refused by its place in the request when the reading runs. Replaces
+    /// rather than accumulates, as every setter here does.
     ///
     /// ```
     /// use teistro::catalogue::DashaSystem;
@@ -376,12 +378,15 @@ impl ChartRequest {
     /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
     /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700)?)
     ///     .with_dashas([DashaSystem::Vimshottari]);
-    /// assert_eq!(request.dashas(), [DashaSystem::Vimshottari]);
+    /// assert_eq!(request.dashas(), [DashaSystem::Vimshottari.into()]);
     /// # Ok::<(), teistro::Error>(())
     /// ```
     #[must_use]
-    pub fn with_dashas(mut self, dashas: impl IntoIterator<Item = DashaSystem>) -> ChartRequest {
-        self.dashas = dashas.into_iter().collect();
+    pub fn with_dashas<S: Into<KeyId>>(
+        mut self,
+        dashas: impl IntoIterator<Item = S>,
+    ) -> ChartRequest {
+        self.dashas = dashas.into_iter().map(Into::into).collect();
         self
     }
 
@@ -433,9 +438,9 @@ impl ChartRequest {
         &self.vargas
     }
 
-    /// The dashas asked for.
+    /// The dashas asked for, as catalogue or registered ids.
     #[must_use]
-    pub fn dashas(&self) -> &[DashaSystem] {
+    pub fn dashas(&self) -> &[KeyId] {
         &self.dashas
     }
 

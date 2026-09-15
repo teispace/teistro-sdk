@@ -1304,6 +1304,33 @@
       ],
       "type": "object"
     },
+    "Count": {
+      "description": "Which way a system counts from its reference nakshatra to the seed.",
+      "oneOf": [
+        {
+          "const": "FROM_REFERENCE",
+          "description": "Forwards from the reference: Vimshottari from Ashwini.",
+          "type": "string"
+        },
+        {
+          "const": "TO_REFERENCE",
+          "description": "Backwards to the reference: Dwadashottari to Revati.",
+          "type": "string"
+        }
+      ]
+    },
+    "DashaName": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DashaSystem"
+        },
+        {
+          "pattern": "^[A-Z][A-Z0-9_]{0,47}$",
+          "type": "string"
+        }
+      ],
+      "description": "A catalogued dasha system's key, or the key a context registered a consumer's system under."
+    },
     "DashaPhalaReading": {
       "description": "A chart's dasha phala.",
       "properties": {
@@ -1353,6 +1380,17 @@
             }
           ],
           "description": "What remained of the first period at birth; nothing for a sign-based dasha, whose first period runs whole from birth."
+        },
+        "definition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UduDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A consumer's system's definition, carried so a stored document rebuilds its periods whatever its context has registered since; nothing for a catalogued system."
         },
         "depth": {
           "$ref": "#/$defs/Depth",
@@ -1411,8 +1449,8 @@
           "description": "The nakshatra the Moon stood in, which seeds a nakshatra-seeded dasha; nothing for a sign-based one."
         },
         "system": {
-          "$ref": "#/$defs/DashaSystem",
-          "description": "Which system."
+          "$ref": "#/$defs/DashaName",
+          "description": "Which system: a catalogued one, or a consumer's by the key it was registered under."
         }
       },
       "required": [
@@ -3146,6 +3184,27 @@
       "format": "double",
       "type": "number"
     },
+    "Lord": {
+      "description": "One lord of a system and its years.",
+      "properties": {
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "The graha."
+        },
+        "years": {
+          "description": "Its whole years in the cycle.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "graha",
+        "years"
+      ],
+      "type": "object"
+    },
     "LuminaryCheshta": {
       "description": "The Cheshta bala of the Sun and the Moon, which never retrogress (crux C66).",
       "oneOf": [
@@ -4525,6 +4584,38 @@
       ],
       "type": "object"
     },
+    "Scale": {
+      "description": "A factor on every mahadasha's years, and how many times the sequence runs in one cycle: Tribhagi's two thirds, twice round.",
+      "properties": {
+        "denominator": {
+          "description": "The factor's denominator.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "numerator": {
+          "description": "The factor's numerator.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rounds": {
+          "description": "How many times the sequence runs before the cycle ends.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator",
+        "rounds"
+      ],
+      "type": "object"
+    },
     "Scheme": {
       "description": "A divisional chart's rule.",
       "properties": {
@@ -5140,6 +5231,84 @@
         "member",
         "whole",
         "inside"
+      ],
+      "type": "object"
+    },
+    "UduDefinition": {
+      "description": "A consumer's nakshatra-seeded system, as a context registers it and a document carries it: a K-udu row with a key of its own, its sources, and the year length and depth the settings' per-system tables would give a catalogued one.",
+      "properties": {
+        "count": {
+          "$ref": "#/$defs/Count",
+          "default": "FROM_REFERENCE",
+          "description": "Which way the seed is counted; forwards from the reference by default."
+        },
+        "depth": {
+          "$ref": "#/$defs/Depth",
+          "default": 3,
+          "description": "How many levels of periods a reading carries; three by default."
+        },
+        "key": {
+          "description": "The key it is registered under, in the key grammar and not one the catalogue has.",
+          "type": "string"
+        },
+        "lords": {
+          "description": "The lords, in the order they run.",
+          "items": {
+            "$ref": "#/$defs/Lord"
+          },
+          "type": "array"
+        },
+        "offset": {
+          "default": 0,
+          "description": "What is added after the division, before the modulo; none by default.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reference": {
+          "$ref": "#/$defs/Nakshatra",
+          "description": "The nakshatra that maps to the first lord."
+        },
+        "repeats": {
+          "default": true,
+          "description": "Whether the lords run round the nakshatras again; they do by default.",
+          "type": "boolean"
+        },
+        "scale": {
+          "$ref": "#/$defs/Scale",
+          "default": {
+            "denominator": 1,
+            "numerator": 1,
+            "rounds": 1
+          },
+          "description": "The factor on the mahadashas' years and the rounds in a cycle; whole and once by default."
+        },
+        "sources": {
+          "description": "Where the table comes from.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "span": {
+          "default": 1,
+          "description": "How many nakshatras each lord covers; one by default.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "year_length": {
+          "$ref": "#/$defs/YearLength",
+          "default": "JULIAN_365_25",
+          "description": "The length of its year; the Julian year by default, which every catalogued system takes unless the settings say otherwise."
+        }
+      },
+      "required": [
+        "key",
+        "lords",
+        "reference"
       ],
       "type": "object"
     },

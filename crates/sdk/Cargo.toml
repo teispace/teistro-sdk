@@ -102,6 +102,10 @@ name = "dasha_phala"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "consumer_dasha"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "vimshopaka"
 required-features = ["builtin-ephemeris"]
 

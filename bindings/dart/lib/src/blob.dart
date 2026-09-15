@@ -925,7 +925,7 @@ final class ChartsDashas {
     required this.length,
   });
 
-  /// Which system.
+  /// Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names.
   final Uint16List system;
 
   /// 1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero.

@@ -113,7 +113,7 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
         let degrees = dashas["moon_sidereal_longitude_deg"].as_f64().unwrap();
         for (key, stated) in file["systems"].as_object().unwrap() {
             let row = the_row(key, stated);
-            seen.insert(row.system);
+            seen.insert(row.system.clone());
             for (method, recorded) in stated["methods"].as_object().unwrap() {
                 answers += 1;
                 let at = format!("{name} {key} {method}");

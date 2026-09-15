@@ -732,7 +732,7 @@ export interface ChartsStates {
  */
 export interface ChartsDashas {
   /**
-   * Which system.
+   * Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names.
    * The values are `DashaSystem` ids.
    */
   readonly system: Uint16Array;

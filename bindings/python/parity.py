@@ -19,6 +19,7 @@ from typing import Any
 import json
 
 from teistro import (
+    DashaDefinition,
     Altitude,
     Body,
     Calendar,
@@ -246,8 +247,15 @@ def main() -> None:
     # registers it (`03-design/chart-geometry.md` §7f).
     with teistro.context(test_provider=True) as shipped:
         kerala: LayoutRow = {**shipped.chart.layout("SOUTH_INDIAN"), "key": "ACME_KERALA"}
+    # A dasha system of the consumer's own, the same definition every runner
+    # registers (`03-design/dasha-kernels.md`).
+    parity_dasha: DashaDefinition = json.loads('{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}')
     with teistro.context(
-        profile="parashari-classical", locale="ne-Deva-NP", test_provider=True, layouts=[kerala]
+        profile="parashari-classical",
+        locale="ne-Deva-NP",
+        test_provider=True,
+        layouts=[kerala],
+        dasha_systems=[parity_dasha],
     ) as geo:
         put("geo-profile", geo.profile)
         put("geo-settings-hash", geo.settings_hash)
@@ -264,7 +272,7 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
-            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA, DashaSystem.KALACHAKRA],
+            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA, DashaSystem.KALACHAKRA, "dasha_system.ACME_PARITY"],
             drawings=[
                 (ChartLayout.NORTH_INDIAN, Varga.D1),
                 (ChartLayout.SOUTH_INDIAN, Varga.D9),
@@ -490,7 +498,7 @@ def main() -> None:
             for j, dasha in enumerate(chart.dashas):
                 key = f"chart-{i}-dasha-{j}"
                 balance = dasha.balance
-                put(key, dasha.system.full_key)
+                put(key, dasha.system if isinstance(dasha.system, str) else dasha.system.full_key)
                 put(f"{key}-seed", dasha.seed.full_key if dasha.seed else None)
                 put(f"{key}-first-lord", dasha.first_lord.full_key)
                 put(f"{key}-overflow", dasha.overflow)

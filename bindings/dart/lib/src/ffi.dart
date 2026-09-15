@@ -610,6 +610,18 @@ final class ContextOptionsStruct extends ffi.Struct {
   /// (`03-design/chart-geometry.md` §7f). May be null.
   external ffi.Pointer<ffi.Char> layoutsJson;
 
+  /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+  /// of definitions: each a key the catalogue does not have, its lords and
+  /// their years in order, the reference nakshatra, and optionally `count`,
+  /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+  /// `sources` (the document schema's `UduDefinition`). Every one is checked
+  /// by the rules a shipped row passes and refused by its place in the array
+  /// and its own field, as `options.dashas_json`, the index, then the field.
+  /// A request asks for one by the id
+  /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+  /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+  external ffi.Pointer<ffi.Char> dashasJson;
+
   /// Which of the SDK's own ephemerides to use when no provider vtable
   /// is given; ignored when one is (ADR-0028).
   /// Enum: TsEphemeris. Example: 0.
@@ -887,10 +899,13 @@ final class ChartRequestStruct extends ffi.Struct {
   @ffi.Size()
   external int drawingCount;
 
-  /// Which dashas to compute, as catalogue ids, in the order they should be
-  /// answered in: each one's balance and its periods to the settings'
-  /// `dasha.depth`. Null with a count of zero for none.
-  /// Enum: DashaSystem.
+  /// Which dashas to compute, in the order they should be answered in: each
+  /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+  /// the context registered (`0x8000` and up). Each one's balance and its
+  /// periods to its depth. Null with a count of zero for none.
+  ///
+  /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+  /// layer takes a catalogue member or a registered key and writes the id.
   external ffi.Pointer<ffi.Uint16> dashas;
 
   /// How many dashas `dashas` points at.
@@ -2364,7 +2379,7 @@ final class Hash {
 /// passed.
 final class ContextOptions {
   /// A ContextOptions with every field named.
-  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale, this.layoutsJson, required this.ephemeris});
+  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale, this.layoutsJson, this.dashasJson, required this.ephemeris});
 
   /// `TS_CONTEXT_*` flags, or zero.
   /// Example: 0.
@@ -2394,6 +2409,18 @@ final class ContextOptions {
   /// (`03-design/chart-geometry.md` §7f). May be null.
   final String? layoutsJson;
 
+  /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+  /// of definitions: each a key the catalogue does not have, its lords and
+  /// their years in order, the reference nakshatra, and optionally `count`,
+  /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+  /// `sources` (the document schema's `UduDefinition`). Every one is checked
+  /// by the rules a shipped row passes and refused by its place in the array
+  /// and its own field, as `options.dashas_json`, the index, then the field.
+  /// A request asks for one by the id
+  /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+  /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+  final String? dashasJson;
+
   /// Which of the SDK's own ephemerides to use when no provider vtable
   /// is given; ignored when one is (ADR-0028).
   /// Enum: TsEphemeris. Example: 0.
@@ -2421,6 +2448,9 @@ final class ContextOptions {
     raw.layoutsJson = layoutsJson == null
         ? ffi.nullptr
         : layoutsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.dashasJson = dashasJson == null
+        ? ffi.nullptr
+        : dashasJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
     raw.ephemeris = ephemeris.id;
   }
 
@@ -2442,6 +2472,9 @@ final class ContextOptions {
         layoutsJson: raw.layoutsJson == ffi.nullptr
             ? null
             : raw.layoutsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        dashasJson: raw.dashasJson == ffi.nullptr
+            ? null
+            : raw.dashasJson.cast<pkg_ffi.Utf8>().toDartString(),
         ephemeris: Ephemeris.byId(raw.ephemeris),
       );
 }
@@ -2773,11 +2806,14 @@ final class ChartRequest {
   /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
   final List<int> drawings;
 
-  /// Which dashas to compute, as catalogue ids, in the order they should be
-  /// answered in: each one's balance and its periods to the settings'
-  /// `dasha.depth`. Null with a count of zero for none.
-  /// Enum: DashaSystem.
-  final List<DashaSystem> dashas;
+  /// Which dashas to compute, in the order they should be answered in: each
+  /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+  /// the context registered (`0x8000` and up). Each one's balance and its
+  /// periods to its depth. Null with a count of zero for none.
+  ///
+  /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+  /// layer takes a catalogue member or a registered key and writes the id.
+  final List<int> dashas;
 
   /// A theme to write every drawing as SVG in, as JSON: an object of
   /// `style` and `content` naming only what it changes, over the light
@@ -2823,7 +2859,7 @@ final class ChartRequest {
     raw.drawingCount = drawings.length;
     final dashasBuffer = arena<ffi.Uint16>(dashas.length);
     for (var i = 0; i < dashas.length; i++) {
-      dashasBuffer[i] = dashas[i].id;
+      dashasBuffer[i] = dashas[i];
     }
     raw.dashas = dashasBuffer;
     raw.dashaCount = dashas.length;
@@ -2853,7 +2889,7 @@ final class ChartRequest {
           for (var i = 0; i < raw.drawingCount; i++) raw.drawings[i],
         ],
         dashas: [
-          for (var i = 0; i < raw.dashaCount; i++) DashaSystem.byId(raw.dashas[i]),
+          for (var i = 0; i < raw.dashaCount; i++) raw.dashas[i],
         ],
         themeJson: raw.themeJson == ffi.nullptr
             ? null

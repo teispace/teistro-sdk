@@ -124,7 +124,7 @@ impl Ctx {
         settings_json: Option<&str>,
         locale: Option<&str>,
     ) -> Result<Ctx, Record> {
-        Ctx::open(flags, ephemeris, profile, settings_json, locale, None)
+        Ctx::open(flags, ephemeris, profile, settings_json, locale, None, None)
     }
 
     /// A context on the test provider with a consumer's own layouts.
@@ -136,6 +136,20 @@ impl Ctx {
             None,
             None,
             Some(layouts_json),
+            None,
+        )
+    }
+
+    /// A context on the test provider with a consumer's own dasha systems.
+    fn with_dashas(dashas_json: &str) -> Result<Ctx, Record> {
+        Ctx::open(
+            TS_CONTEXT_TEST_PROVIDER,
+            TsEphemeris::None,
+            None,
+            None,
+            None,
+            None,
+            Some(dashas_json),
         )
     }
 
@@ -146,8 +160,10 @@ impl Ctx {
         settings_json: Option<&str>,
         locale: Option<&str>,
         layouts_json: Option<&str>,
+        dashas_json: Option<&str>,
     ) -> Result<Ctx, Record> {
         let layouts = layouts_json.map(|p| CString::new(p).unwrap());
+        let dashas = dashas_json.map(|p| CString::new(p).unwrap());
         let profile = profile.map(|p| CString::new(p).unwrap());
         let settings = settings_json.map(|p| CString::new(p).unwrap());
         let locale = locale.map(|p| CString::new(p).unwrap());
@@ -158,6 +174,7 @@ impl Ctx {
             settings_json: settings.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             locale: locale.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             layouts_json: layouts.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
+            dashas_json: dashas.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             ephemeris: ephemeris as u8,
         };
         let mut handle = ptr::null_mut();
@@ -305,6 +322,7 @@ fn a_refused_construction_owns_its_record_and_frees_it_once() {
         settings_json: ptr::null(),
         locale: ptr::null(),
         layouts_json: ptr::null(),
+        dashas_json: ptr::null(),
         ephemeris: 0,
     };
     let new = |out: *mut *mut TsContext, error: *mut TsError| {
@@ -430,6 +448,7 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
         settings_json: ptr::null(),
         locale: ptr::null(),
         layouts_json: ptr::null(),
+        dashas_json: ptr::null(),
         ephemeris: TsEphemeris::None as u8,
     };
     let mut handle = ptr::null_mut();
@@ -1488,4 +1507,134 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
     );
     let not_rows = refused(String::from("{}"));
     assert_eq!(not_rows.2.as_deref(), Some("options.layouts_json"));
+}
+
+/// A consumer's dasha system crosses whole: registered through
+/// `options.dashas_json`, named by `ts_key_parse`, asked for by that id, and
+/// answered in the `dashas` section under the same id with its own periods; a
+/// definition the row's checks refuse is named by its place and field.
+#[test]
+fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
+    let saptaka = r#"{"key":"ACME_SAPTAKA","lords":[
+        {"graha":"SUN","years":10},{"graha":"MOON","years":10},{"graha":"MARS","years":10},
+        {"graha":"MERCURY","years":10},{"graha":"JUPITER","years":10},{"graha":"VENUS","years":10},
+        {"graha":"SATURN","years":10}],"reference":"KRITTIKA"}"#;
+    let ctx = Ctx::with_dashas(&format!("[{saptaka}]")).expect("a consumer's system registers");
+    let full = CString::new("dasha_system.ACME_SAPTAKA").unwrap();
+    let mut id = 0u32;
+    // SAFETY: a live handle and valid slots.
+    assert_eq!(
+        unsafe { ts_key_parse(ctx.handle, full.as_ptr(), &raw mut id) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    assert_eq!(id & 0xFFFF, 0x8000, "the first registered id");
+
+    let instants = [2_451_545.0];
+    let dashas = [
+        u16::try_from(id & 0xFFFF).unwrap(),
+        DashaSystem::Vimshottari.id(),
+    ];
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: dashas.as_ptr(),
+            dasha_count: dashas.len(),
+            theme_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let systems = reader.column("dashas", "system").unwrap();
+    assert_eq!(
+        (systems[0].as_i64(), systems[1].as_i64()),
+        (0x8000, i64::from(DashaSystem::Vimshottari.id()))
+    );
+    // Seven lords of ten years: seven mahadashas, 49 below them and 343 below
+    // those at the default depth of three.
+    let counts = reader.column("dashas", "period_count").unwrap();
+    assert_eq!(counts[0].as_i64(), 7 + 49 + 343);
+
+    // An id nothing registered is refused by its place in the request.
+    let stray = [0x8001_u16];
+    let asked = TsChartRequest {
+        dashas: stray.as_ptr(),
+        dasha_count: stray.len(),
+        ..request
+    };
+    let mut none = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut none) };
+    assert_eq!(status, Status::InvalidArg);
+    let record = ctx.last_error();
+    assert_eq!(record.2.as_deref(), Some("dashas[0]"), "{record:?}");
+    assert!(
+        record
+            .3
+            .as_deref()
+            .unwrap_or_default()
+            .contains("ACME_SAPTAKA"),
+        "{record:?}"
+    );
+
+    // A definition the row's checks refuse, and one taking a catalogued key.
+    let refused = |rows: String| match Ctx::with_dashas(&rows) {
+        Ok(_) => panic!("{rows} registered"),
+        Err(record) => record,
+    };
+    let narrow = refused(format!(
+        "[{}]",
+        saptaka.replacen("\"KRITTIKA\"", "\"KRITTIKA\",\"span\":0", 1)
+    ));
+    assert_eq!(
+        narrow.2.as_deref(),
+        Some("options.dashas_json[0].span"),
+        "{narrow:?}"
+    );
+    let taken = refused(format!(
+        "[{}]",
+        saptaka.replacen("ACME_SAPTAKA", "VIMSHOTTARI", 1)
+    ));
+    assert_eq!(
+        taken.2.as_deref(),
+        Some("options.dashas_json[0].key"),
+        "{taken:?}"
+    );
+    let typo = refused(format!(
+        "[{}]",
+        saptaka.replacen("\"reference\"", "\"refrence\"", 1)
+    ));
+    assert!(
+        typo.1.contains("reference") || typo.1.contains("refrence"),
+        "{typo:?}"
+    );
 }

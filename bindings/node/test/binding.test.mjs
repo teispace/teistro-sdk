@@ -884,6 +884,44 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
   ctx.dispose();
 });
 
+/** Vimshottari's table, under a consumer's key. */
+const VIMSHOTTARI_TWIN = {
+  key: 'ACME_VIMSHOTTARI',
+  lords: [['KETU', 7], ['VENUS', 20], ['SUN', 6], ['MOON', 10], ['MARS', 7], ['RAHU', 18], ['JUPITER', 16], ['SATURN', 19], ['MERCURY', 17]]
+    .map(([graha, years]) => ({ graha, years })),
+  reference: 'ASHWINI',
+};
+
+/**
+ * A consumer's own dasha system crosses: registered on the context, asked for
+ * by its key, named by it in the answer, and every period its catalogued
+ * twin's; a definition the checks refuse is named by its place and field.
+ */
+test('a consumer dasha system registers, is asked for by its key and reads as its twin', () => {
+  const ctx = context({ dashaSystems: [VIMSHOTTARI_TWIN] });
+  const chart = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    dashas: ['dasha_system.ACME_VIMSHOTTARI', DashaSystem.Vimshottari],
+  });
+  const [consumer, shipped] = chart.dashas;
+  assert.equal(consumer.system, 'dasha_system.ACME_VIMSHOTTARI');
+  assert.equal(shipped.system, DashaSystem.Vimshottari);
+  assert.deepEqual(consumer.periods, shipped.periods);
+  assert.deepEqual(consumer.balance, shipped.balance);
+  assert.equal(ctx.keys.name(ctx.keys.id('dasha_system.ACME_VIMSHOTTARI')), 'dasha_system.ACME_VIMSHOTTARI');
+  assert.throws(
+    () => ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, dashas: ['dasha_system.ACME_OTHER'] }),
+    (error) => error instanceof TypeError && error.message.startsWith('dashas[0]'),
+  );
+  ctx.dispose();
+  assert.throws(
+    () => context({ dashaSystems: [{ ...VIMSHOTTARI_TWIN, span: 0 }] }),
+    (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].span',
+  );
+});
+
 /**
  * A chart's dasha phala crosses whole: the nine grahas' Subhankas within
  * each varga's share and complementary in total, a nature and a phase each;

@@ -243,104 +243,6 @@ pub fn varga_to_str(value: u16) -> String {
     .to_string()
 }
 
-/// A `DashaSystem` from the string `catalogue.js` names it by.
-pub fn dasha_system_from_str(value: &str) -> Result<u16> {
-    match value {
-        "dasha_system.VIMSHOTTARI" => Ok(0),
-        "dasha_system.ASHTOTTARI" => Ok(1),
-        "dasha_system.DWADASHOTTARI" => Ok(2),
-        "dasha_system.PANCHOTTARI" => Ok(3),
-        "dasha_system.SHATABDIKA" => Ok(4),
-        "dasha_system.CHATURASHITI_SAMA" => Ok(5),
-        "dasha_system.DWISAPTATI_SAMA" => Ok(6),
-        "dasha_system.YOGINI" => Ok(7),
-        "dasha_system.TRIBHAGI" => Ok(8),
-        "dasha_system.SHODASHOTTARI" => Ok(9),
-        "dasha_system.SHATTRIMSHA_SAMA" => Ok(10),
-        "dasha_system.SHASHTIHAYANI" => Ok(11),
-        "dasha_system.TITHI_ASHTOTTARI" => Ok(12),
-        "dasha_system.TITHI_YOGINI" => Ok(13),
-        "dasha_system.YOGA_VIMSHOTTARI" => Ok(14),
-        "dasha_system.KARANA_CHATURASHITI" => Ok(15),
-        "dasha_system.NAISARGIKA" => Ok(16),
-        "dasha_system.TARA" => Ok(17),
-        "dasha_system.KARAKA" => Ok(18),
-        "dasha_system.AAYU" => Ok(19),
-        "dasha_system.ASHTAKAVARGA" => Ok(20),
-        "dasha_system.PANCHASWARA" => Ok(21),
-        "dasha_system.CHARA" => Ok(22),
-        "dasha_system.NARAYANA" => Ok(23),
-        "dasha_system.PADANADHAMSA" => Ok(24),
-        "dasha_system.TRIKONA" => Ok(25),
-        "dasha_system.DRIG" => Ok(26),
-        "dasha_system.SHOOLA" => Ok(27),
-        "dasha_system.NIRYANA_SHOOLA" => Ok(28),
-        "dasha_system.MANDOOKA" => Ok(29),
-        "dasha_system.STHIRA" => Ok(30),
-        "dasha_system.SUDASA" => Ok(31),
-        "dasha_system.VARNADA" => Ok(32),
-        "dasha_system.YOGARDHA" => Ok(33),
-        "dasha_system.KALACHAKRA" => Ok(34),
-        "dasha_system.SUDARSHANA_CHAKRA" => Ok(35),
-        "dasha_system.PATYAYINI" => Ok(36),
-        "dasha_system.MUDDA" => Ok(37),
-        "dasha_system.VARSHA_NARAYANA" => Ok(38),
-        "dasha_system.VARSHA_YOGINI" => Ok(39),
-        other => Err(Error::from_reason(format!(
-            "`{other}` is not a DashaSystem"
-        ))),
-    }
-}
-
-/// The string for a `DashaSystem`; a value from a newer library is
-/// `unknown`.
-pub fn dasha_system_to_str(value: u16) -> String {
-    match value {
-        0 => "dasha_system.VIMSHOTTARI",
-        1 => "dasha_system.ASHTOTTARI",
-        2 => "dasha_system.DWADASHOTTARI",
-        3 => "dasha_system.PANCHOTTARI",
-        4 => "dasha_system.SHATABDIKA",
-        5 => "dasha_system.CHATURASHITI_SAMA",
-        6 => "dasha_system.DWISAPTATI_SAMA",
-        7 => "dasha_system.YOGINI",
-        8 => "dasha_system.TRIBHAGI",
-        9 => "dasha_system.SHODASHOTTARI",
-        10 => "dasha_system.SHATTRIMSHA_SAMA",
-        11 => "dasha_system.SHASHTIHAYANI",
-        12 => "dasha_system.TITHI_ASHTOTTARI",
-        13 => "dasha_system.TITHI_YOGINI",
-        14 => "dasha_system.YOGA_VIMSHOTTARI",
-        15 => "dasha_system.KARANA_CHATURASHITI",
-        16 => "dasha_system.NAISARGIKA",
-        17 => "dasha_system.TARA",
-        18 => "dasha_system.KARAKA",
-        19 => "dasha_system.AAYU",
-        20 => "dasha_system.ASHTAKAVARGA",
-        21 => "dasha_system.PANCHASWARA",
-        22 => "dasha_system.CHARA",
-        23 => "dasha_system.NARAYANA",
-        24 => "dasha_system.PADANADHAMSA",
-        25 => "dasha_system.TRIKONA",
-        26 => "dasha_system.DRIG",
-        27 => "dasha_system.SHOOLA",
-        28 => "dasha_system.NIRYANA_SHOOLA",
-        29 => "dasha_system.MANDOOKA",
-        30 => "dasha_system.STHIRA",
-        31 => "dasha_system.SUDASA",
-        32 => "dasha_system.VARNADA",
-        33 => "dasha_system.YOGARDHA",
-        34 => "dasha_system.KALACHAKRA",
-        35 => "dasha_system.SUDARSHANA_CHAKRA",
-        36 => "dasha_system.PATYAYINI",
-        37 => "dasha_system.MUDDA",
-        38 => "dasha_system.VARSHA_NARAYANA",
-        39 => "dasha_system.VARSHA_YOGINI",
-        _ => "unknown",
-    }
-    .to_string()
-}
-
 /// A `ChartKind` from the string `catalogue.js` names it by.
 pub fn chart_kind_from_str(value: &str) -> Result<u16> {
     match value {
@@ -1533,6 +1435,17 @@ pub struct ContextOptions {
     /// refused, so a row adds a layout and never replaces one. Null for none
     /// (`03-design/chart-geometry.md` §7f). May be null.
     pub layouts_json: Option<String>,
+    /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+    /// of definitions: each a key the catalogue does not have, its lords and
+    /// their years in order, the reference nakshatra, and optionally `count`,
+    /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+    /// `sources` (the document schema's `UduDefinition`). Every one is checked
+    /// by the rules a shipped row passes and refused by its place in the array
+    /// and its own field, as `options.dashas_json`, the index, then the field.
+    /// A request asks for one by the id
+    /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+    /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+    pub dashas_json: Option<String>,
     /// Which of the SDK's own ephemerides to use when no provider vtable
     /// is given; ignored when one is (ADR-0028).
     /// Enum: TsEphemeris. Example: 0.
@@ -1547,6 +1460,7 @@ pub struct HeldContextOptions {
     settings_json: Option<std::ffi::CString>,
     locale: Option<std::ffi::CString>,
     layouts_json: Option<std::ffi::CString>,
+    dashas_json: Option<std::ffi::CString>,
     ephemeris: u8,
 }
 
@@ -1564,6 +1478,10 @@ impl HeldContextOptions {
             locale: self.locale.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
             layouts_json: self
                 .layouts_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            dashas_json: self
+                .dashas_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
             ephemeris: self.ephemeris,
@@ -1596,6 +1514,11 @@ impl ContextOptions {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            dashas_json: self
+                .dashas_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
             ephemeris: ephemeris_from_str(&self.ephemeris)?,
         })
     }
@@ -1613,6 +1536,7 @@ impl ContextOptions {
             settings_json: unsafe { lent_text(raw.settings_json) },
             locale: unsafe { lent_text(raw.locale) },
             layouts_json: unsafe { lent_text(raw.layouts_json) },
+            dashas_json: unsafe { lent_text(raw.dashas_json) },
             ephemeris: ephemeris_to_str(raw.ephemeris),
         }
     }
@@ -1903,11 +1827,14 @@ pub struct ChartRequest {
     /// and one count rather than two arrays that must agree; every ergonomic
     /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
     pub drawings: Vec<u32>,
-    /// Which dashas to compute, as catalogue ids, in the order they should be
-    /// answered in: each one's balance and its periods to the settings'
-    /// `dasha.depth`. Null with a count of zero for none.
-    /// Enum: DashaSystem.
-    pub dashas: Vec<String>,
+    /// Which dashas to compute, in the order they should be answered in: each
+    /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+    /// the context registered (`0x8000` and up). Each one's balance and its
+    /// periods to its depth. Null with a count of zero for none.
+    ///
+    /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+    /// layer takes a catalogue member or a registered key and writes the id.
+    pub dashas: Vec<u32>,
     /// A theme to write every drawing as SVG in, as JSON: an object of
     /// `style` and `content` naming only what it changes, over the light
     /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
@@ -1978,11 +1905,7 @@ impl ChartRequest {
                 .map(|v| varga_from_str(v))
                 .collect::<Result<Vec<_>>>()?,
             drawings: self.drawings.iter().map(|v| *v as u32).collect(),
-            dashas: self
-                .dashas
-                .iter()
-                .map(|v| dasha_system_from_str(v))
-                .collect::<Result<Vec<_>>>()?,
+            dashas: self.dashas.iter().map(|v| *v as u16).collect(),
             theme_json: self
                 .theme_json
                 .as_deref()
@@ -2019,7 +1942,7 @@ impl ChartRequest {
                 .collect(),
             dashas: unsafe { slice_or_empty(raw.dashas, raw.dasha_count) }
                 .iter()
-                .map(|v| dasha_system_to_str(*v))
+                .map(|v| *v as _)
                 .collect(),
             theme_json: unsafe { lent_text(raw.theme_json) },
         }

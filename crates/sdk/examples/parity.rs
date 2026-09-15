@@ -744,18 +744,7 @@ fn a_topocentric_chart(report: &mut Report, sdk: &Context, place: &Place, offset
 /// so the two centres are both exercised -- the same reason the other
 /// three runners build a second context.
 fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
-    // A layout of the consumer's own, registered on the context the charts
-    // are drawn under: the South Indian row renamed, as every runner
-    // registers it (`03-design/chart-geometry.md` §7f).
-    let mut kerala = teistro::geometry::rows::south_indian();
-    kerala.key = String::from("ACME_KERALA");
-    let geo = Context::builder()
-        .profile("parashari-classical")
-        .locale("ne-Deva-NP")
-        .ephemeris([Ephemeris::Test])
-        .layout(kerala)
-        .build()
-        .expect("a shipped profile");
+    let geo = the_geo_context();
     put(report, "geo-profile", geo.profile().to_owned());
     put(report, "geo-settings-hash", geo.settings_hash().to_string());
 
@@ -772,14 +761,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         JulianDay::<Utc>::literal(2_460_482.5),
         JulianDay::<Utc>::literal(2_460_600.25),
     ];
-    // Two divisional charts asked for, and two rather than one because
-    // the layout the other three decode is charts outermost then charts
-    // asked for: only two of each can catch a transposed stride.
-    let kerala = geo
-        .keys()
-        .id("chart_layout.ACME_KERALA")
-        .expect("registered");
-    let asked = the_chart_request(place, offset, kerala);
+    let asked = the_chart_request(place, offset, &geo);
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -879,16 +861,54 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
 /// same order and the other three bindings read the name from the
 /// foundation's column: a runner that read it from its own section would
 /// agree with them and prove less.
-/// The request every runner makes: two divisional charts, a dasha, four
-/// drawings and every section.
-fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) -> ChartRequest {
+/// The context the charts are read under, with what the consumer registers
+/// on it: the South Indian layout renamed (`03-design/chart-geometry.md`
+/// §7f) and a dasha system of its own, as every runner registers them.
+fn the_geo_context() -> Context {
+    let mut kerala = teistro::geometry::rows::south_indian();
+    kerala.key = String::from("ACME_KERALA");
+    Context::builder()
+        .profile("parashari-classical")
+        .locale("ne-Deva-NP")
+        .ephemeris([Ephemeris::Test])
+        .layout(kerala)
+        .dasha_system(parity_dasha())
+        .build()
+        .expect("a shipped profile")
+}
+
+/// The dasha system of the consumer's own every runner registers: a
+/// backward count, a two-nakshatra window, an offset, a savana year and a
+/// depth of two, so each field a definition may set crosses
+/// (`03-design/dasha-kernels.md`).
+const PARITY_DASHA: &str = r#"{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}"#;
+
+fn parity_dasha() -> teistro::dasha::UduDefinition {
+    serde_json::from_str(PARITY_DASHA).expect("the parity definition")
+}
+
+/// The request every runner makes: two divisional charts, four dashas (one
+/// the consumer's own), four drawings and every section.
+fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartRequest {
+    let kerala = geo
+        .keys()
+        .id("chart_layout.ACME_KERALA")
+        .expect("registered");
+    let own = geo
+        .keys()
+        .id("dasha_system.ACME_PARITY")
+        .expect("registered");
+    // Two divisional charts asked for, and two rather than one because
+    // the layout the other three decode is charts outermost then charts
+    // asked for: only two of each can catch a transposed stride.
     ChartRequest::at(place, offset)
         .with_kind(ChartKind::Natal)
         .with_vargas([Varga::D9, Varga::D10])
         .with_dashas([
-            DashaSystem::Vimshottari,
-            DashaSystem::Chara,
-            DashaSystem::Kalachakra,
+            DashaSystem::Vimshottari.key_id(),
+            DashaSystem::Chara.key_id(),
+            DashaSystem::Kalachakra.key_id(),
+            own,
         ])
         .with_drawings([
             (ChartLayout::NorthIndian.key_id(), Varga::D1),
@@ -1414,7 +1434,7 @@ fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teist
     );
     for (at, dasha) in document.dashas.iter().enumerate() {
         let key = |what: &str| format!("chart-{index}-dasha-{at}{what}");
-        put(report, &key(""), dasha.system.full_key().to_owned());
+        put(report, &key(""), dasha.system.full_key());
         put(
             report,
             &key("-seed"),
@@ -1491,7 +1511,7 @@ fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teist
                 number(period.interval.to.get()),
             );
         }
-        let chain = sdk.chart().dasha(document, dasha.system).map_or_else(
+        let chain = sdk.chart().dasha(document, &dasha.system).map_or_else(
             |error| format!("refused: {error}"),
             |cursor| {
                 let instant = JulianDay::literal(document.foundation.instant.get() + 5000.0);

@@ -603,7 +603,12 @@ fn chart_dashas_section(id: u32) -> SectionSchema {
         "dashas",
         "Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.",
         vec![
-            ColumnDef::new("system", Scalar::U16, "Which system.").of_enum("DashaSystem"),
+            ColumnDef::new(
+                "system",
+                Scalar::U16,
+                "Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names.",
+            )
+            .of_enum("DashaSystem"),
             ColumnDef::new(
                 "seeded",
                 Scalar::U8,

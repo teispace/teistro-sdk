@@ -44,9 +44,9 @@ fn agrees(sdk: &Context, document: &Document, recorded: &Value, fraction: f64) {
     assert_eq!(document.sections().last(), Some(&"dashas"));
     let dasha = &document.dashas[0];
     assert_eq!(
-        (dasha.system, dasha.first_lord, dasha.seed),
+        (dasha.system.clone(), dasha.first_lord, dasha.seed),
         (
-            DashaSystem::Vimshottari,
+            DashaSystem::Vimshottari.into(),
             Graha::Saturn,
             Some(Nakshatra::Anuradha)
         )
@@ -155,7 +155,10 @@ fn a_temporal_balance_searches_the_moon_s_nakshatra_in_the_chart_s_frame() {
 #[test]
 fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
     let recorded = fixture("dasha-systems/charts/c001-kathmandu-1990-04-14.json");
-    let systems: Vec<DashaSystem> = teistro::dasha::ROWS.iter().map(|row| row.system).collect();
+    let systems: Vec<DashaSystem> = teistro::dasha::ROWS
+        .iter()
+        .filter_map(|row| row.system.catalogued())
+        .collect();
     for (patch, method, fraction) in [
         ("{}", "spatial", SPATIAL_FRACTION),
         (
@@ -167,7 +170,7 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
         let (_, document) = reading(patch, &systems);
         assert_eq!(document.dashas.len(), systems.len());
         for dasha in document.dashas.iter().skip(1) {
-            let key = teistro::catalogue::Catalogued::key(dasha.system).to_ascii_lowercase();
+            let key = dasha.system.key().to_ascii_lowercase();
             let answer = &recorded["systems"][&key]["methods"][method];
             let at = format!("{key} {method}");
             assert_eq!(
@@ -222,7 +225,7 @@ fn a_reading_carries_every_sign_based_system_and_each_agrees_with_the_corpus() {
         .collect();
     let (sdk, document) = reading("{}", &systems);
     for dasha in &document.dashas {
-        let key = teistro::catalogue::Catalogued::key(dasha.system).to_ascii_lowercase();
+        let key = dasha.system.key().to_ascii_lowercase();
         let rows = recorded["systems"][&key]["periods"].as_array().unwrap();
         assert!(dasha.seed.is_none() && dasha.balance.is_none(), "{key}");
         for row in rows {
@@ -249,7 +252,7 @@ fn a_reading_carries_every_sign_based_system_and_each_agrees_with_the_corpus() {
             );
         }
         // The cursor rebuilt from the document gives the document's periods.
-        let cursor = sdk.chart().dasha(&document, dasha.system).unwrap();
+        let cursor = sdk.chart().dasha(&document, &dasha.system).unwrap();
         let first = cursor.mahadashas().next().unwrap();
         assert_eq!(first.sign, dasha.periods[0].sign, "{key}");
         assert!(cursor.rashi().is_some() && cursor.nakshatra().is_none());

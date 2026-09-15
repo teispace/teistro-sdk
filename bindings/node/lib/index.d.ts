@@ -298,8 +298,8 @@ export interface DashaPeriod {
  * name their signs.
  */
 export interface Dasha {
-  /** Which system. */
-  readonly system: DashaSystem;
+  /** Which system: a catalogued one, or a registered one by its full key. */
+  readonly system: DashaSystem | DashaKey;
   /** The nakshatra the Moon stood in, which seeds it; `null` for a sign-based dasha. */
   readonly seed: Nakshatra | null;
   /** The lord it starts with. */
@@ -554,6 +554,51 @@ export interface Vimshopaka {
 
 /** A registered layout's full key, as the context that registered it resolves it. */
 export type LayoutKey = `chart_layout.${string}`;
+
+/** A registered dasha system's full key, as the context that registered it resolves it. */
+export type DashaKey = `dasha_system.${string}`;
+
+/**
+ * A nakshatra-seeded dasha system of your own, as `dashaSystems` takes it
+ * (`03-design/dasha-kernels.md`, "A consumer's own system"). Keys are bare
+ * (`SUN`, `KRITTIKA`), as the document spells them; every optional field
+ * defaults to Vimshottari's shape.
+ *
+ * @example
+ * const ctx = new Context({
+ *   dashaSystems: [{
+ *     key: 'ACME_SAPTAKA',
+ *     lords: ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN']
+ *       .map((graha) => ({ graha, years: 10 })),
+ *     reference: 'KRITTIKA',
+ *   }],
+ * });
+ * ctx.chart.found({ instant, place, utcOffsetSeconds, dashas: ['dasha_system.ACME_SAPTAKA'] });
+ */
+export interface DashaDefinition {
+  /** Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the catalogue has. */
+  readonly key: string;
+  /** Where the table comes from. */
+  readonly sources?: readonly string[];
+  /** The lords, in the order they run, each with its whole years. */
+  readonly lords: readonly { readonly graha: string; readonly years: number }[];
+  /** The nakshatra that maps to the first lord, bare (`ASHWINI`). */
+  readonly reference: string;
+  /** Which way the seed is counted; forwards by default. */
+  readonly count?: 'FROM_REFERENCE' | 'TO_REFERENCE';
+  /** How many nakshatras each lord covers; one by default. */
+  readonly span?: number;
+  /** What is added after the division, before the modulo; none by default. */
+  readonly offset?: number;
+  /** Whether the lords run round the nakshatras again; true by default. */
+  readonly repeats?: boolean;
+  /** The factor on the mahadashas' years and the rounds in a cycle. */
+  readonly scale?: { readonly numerator: number; readonly denominator: number; readonly rounds: number };
+  /** The length of its year; `JULIAN_365_25` by default. */
+  readonly year_length?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
+  /** How many levels of periods a reading carries, 1 to 6; three by default. */
+  readonly depth?: number;
+}
 
 /** What a grid cell always carries: a sign, or a house 1 to 12. */
 export type LayoutHolds =
@@ -844,6 +889,13 @@ export interface ChartPlace {
  * once. The charts in it are views over those bytes rather than copies.
  */
 export declare class Charts extends Decoded<DecodedCharts> {
+  /**
+   * A batch over the bytes the library returned, naming the dasha systems a
+   * context registered by the ids it gave them.
+   */
+  constructor(bytes: Uint8Array, dashaNames?: ReadonlyMap<number, string>);
+  /** The full key of a registered dasha system's id, when this batch knows it. */
+  dashaName(id: number): string | undefined;
   /** How many charts the batch holds. */
   readonly length: number;
   /** What kind of chart these are. */
@@ -1171,7 +1223,7 @@ export interface ChartRequest {
    * default. A system the catalogue names and this build does not compute
    * is refused by its place in the request.
    */
-  readonly dashas?: readonly DashaSystem[];
+  readonly dashas?: readonly (DashaSystem | DashaKey)[];
   /**
    * The charts to draw, each a layout and which chart to place in it
    * (`Varga.D1` for the founded chart), in the order wanted; none by default.
@@ -1332,6 +1384,12 @@ export interface ContextInit {
    * refused (`03-design/chart-geometry.md` §7f).
    */
   readonly layouts?: readonly LayoutRow[];
+  /**
+   * Nakshatra-seeded dasha systems of your own, asked for by
+   * `dasha_system.<KEY>` in a request's `dashas`. Each is checked by the rules
+   * a shipped row passes, and a key the catalogue has is refused.
+   */
+  readonly dashaSystems?: readonly DashaDefinition[];
   /** Use the SDK's analytic test provider; for examples and tests only. */
   readonly testProvider?: boolean;
   /** An ephemeris of your own, answered in this language. */

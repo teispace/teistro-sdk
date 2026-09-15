@@ -247,11 +247,31 @@ void main() {
       .layout(ChartLayout.southIndian)
       .copyWith(key: 'ACME_KERALA');
   shipped.dispose();
+  // A dasha system of the consumer's own, the same definition every runner
+  // registers (`03-design/dasha-kernels.md`).
+  const parityDasha = DashaDefinition(
+    key: 'ACME_PARITY',
+    sources: ['the parity scenario'],
+    lords: [
+      DashaLord(Graha.sun, 5),
+      DashaLord(Graha.moon, 10),
+      DashaLord(Graha.mars, 7),
+      DashaLord(Graha.mercury, 12),
+    ],
+    reference: Nakshatra.mula,
+    count: 'TO_REFERENCE',
+    span: 2,
+    offset: 1,
+    repeats: true,
+    yearLength: 'SAVANA_360',
+    depth: 2,
+  );
   final geo = teistro.context(
     profile: 'parashari-classical',
     locale: 'ne-Deva-NP',
     testProvider: true,
     layouts: [kerala],
+    dashaSystems: [parityDasha],
   );
   put('geo-profile', geo.profile);
   put('geo-settings-hash', geo.settingsHash);
@@ -272,6 +292,7 @@ void main() {
       DashaSystem.vimshottari,
       DashaSystem.chara,
       DashaSystem.kalachakra,
+      DashaSystem.registered('ACME_PARITY'),
     ],
     drawings: [
       (ChartLayout.northIndian, Varga.d1),

@@ -1007,6 +1007,81 @@ void _engineTests() {
   /// A chart's dashas cross whole: the balance, the periods to the
   /// settings' depth with their paths, and the chain at an instant read off
   /// them.
+  /// A consumer's own dasha system crosses: registered on the context, asked
+  /// for by its key, named by it in the answer, and every period its
+  /// catalogued twin's; a definition the checks refuse is named by its place
+  /// and field.
+  test('a consumer dasha system registers and reads as its twin', () {
+    final twin = DashaDefinition(
+      key: 'ACME_VIMSHOTTARI',
+      lords: [
+        const DashaLord(Graha.ketu, 7),
+        const DashaLord(Graha.venus, 20),
+        const DashaLord(Graha.sun, 6),
+        const DashaLord(Graha.moon, 10),
+        const DashaLord(Graha.mars, 7),
+        const DashaLord(Graha.rahu, 18),
+        const DashaLord(Graha.jupiter, 16),
+        const DashaLord(Graha.saturn, 19),
+        const DashaLord(Graha.mercury, 17),
+      ],
+      reference: Nakshatra.ashwini,
+    );
+    final ctx = teistro.context(testProvider: true, dashaSystems: [twin]);
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dashas: [
+        DashaSystem.registered('ACME_VIMSHOTTARI'),
+        DashaSystem.vimshottari,
+      ],
+    );
+    final [consumer, shipped] = chart.dashas;
+    expect(consumer.system, DashaSystem.registered('ACME_VIMSHOTTARI'));
+    expect(shipped.system, DashaSystem.vimshottari);
+    expect(consumer.periods.length, shipped.periods.length);
+    for (var i = 0; i < shipped.periods.length; i++) {
+      final (a, b) = (consumer.periods[i], shipped.periods[i]);
+      expect((a.path, a.lord, a.from, a.to), (b.path, b.lord, b.from, b.to));
+    }
+    expect(
+      () => ctx.chart.found(
+        instant: 2451545.0,
+        place: place,
+        utcOffsetSeconds: 20700,
+        dashas: [DashaSystem.registered('ACME_OTHER')],
+      ),
+      throwsArgumentError,
+    );
+    ctx.dispose();
+    expect(
+      () => teistro.context(
+        testProvider: true,
+        dashaSystems: [
+          DashaDefinition(
+            key: twin.key,
+            lords: twin.lords,
+            reference: twin.reference,
+            span: 0,
+          ),
+        ],
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'options.dashas_json[0].span',
+        ),
+      ),
+    );
+  });
+
   test('a chart carries its dashas, their periods and the chain', () {
     final ctx = context();
     final place = Observer(

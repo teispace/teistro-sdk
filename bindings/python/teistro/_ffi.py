@@ -153,7 +153,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_str": 16,
     "ts_hash": 32,
     "ts_blob": 24,
-    "ts_context_options": 48,
+    "ts_context_options": 56,
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
@@ -183,7 +183,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_str": 8,
     "ts_hash": 32,
     "ts_blob": 12,
-    "ts_context_options": 28,
+    "ts_context_options": 32,
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
@@ -473,6 +473,7 @@ class _ContextOptionsStruct(ctypes.Structure):
         ("settings_json", ctypes.c_char_p),
         ("locale", ctypes.c_char_p),
         ("layouts_json", ctypes.c_char_p),
+        ("dashas_json", ctypes.c_char_p),
         ("ephemeris", ctypes.c_uint8),
     ]
 
@@ -1690,6 +1691,19 @@ class ContextOptions:
     (`03-design/chart-geometry.md` §7f). May be null.
     """
 
+    dashas_json: Optional[str] = None
+    """Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+    of definitions: each a key the catalogue does not have, its lords and
+    their years in order, the reference nakshatra, and optionally `count`,
+    `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+    `sources` (the document schema's `UduDefinition`). Every one is checked
+    by the rules a shipped row passes and refused by its place in the array
+    and its own field, as `options.dashas_json`, the index, then the field.
+    A request asks for one by the id
+    `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+    registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+    """
+
     def _into(self, raw: _ContextOptionsStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -1711,6 +1725,9 @@ class ContextOptions:
         _layouts_json = None if self.layouts_json is None else self.layouts_json.encode("utf-8")
         owned.append(_layouts_json)
         raw.layouts_json = _layouts_json
+        _dashas_json = None if self.dashas_json is None else self.dashas_json.encode("utf-8")
+        owned.append(_dashas_json)
+        raw.dashas_json = _dashas_json
         raw.ephemeris = _c_value(self.ephemeris)
 
     def _to_c(self, owned: list[Any]) -> _ContextOptionsStruct:
@@ -1733,6 +1750,7 @@ class ContextOptions:
             settings_json=_text(raw.settings_json),
             locale=_text(raw.locale),
             layouts_json=_text(raw.layouts_json),
+            dashas_json=_text(raw.dashas_json),
             ephemeris=Ephemeris(raw.ephemeris),
         )
 
@@ -2105,11 +2123,14 @@ class ChartRequest:
     layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
     """
 
-    dashas: Sequence[DashaSystem]
-    """Which dashas to compute, as catalogue ids, in the order they should be
-    answered in: each one's balance and its periods to the settings'
-    `dasha.depth`. Null with a count of zero for none.
-    Enum: DashaSystem.
+    dashas: Sequence[int]
+    """Which dashas to compute, in the order they should be answered in: each
+    a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+    the context registered (`0x8000` and up). Each one's balance and its
+    periods to its depth. Null with a count of zero for none.
+
+    Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+    layer takes a catalogue member or a registered key and writes the id.
     """
 
     theme_json: Optional[str] = None
@@ -2196,9 +2217,7 @@ class ChartRequest:
             drawings=[raw.drawings[_i] for _i in range(raw.drawing_count)]
             if raw.drawings
             else [],
-            dashas=[
-                DashaSystem(raw.dashas[_i]) for _i in range(raw.dasha_count)
-            ]
+            dashas=[raw.dashas[_i] for _i in range(raw.dasha_count)]
             if raw.dashas
             else [],
             theme_json=_text(raw.theme_json),

@@ -506,9 +506,15 @@ built module against every recorded house, three readings at three forks
 (C73–C75), **and the Ishta and Kashta phalas** on the Shadbala reading (C76).
 **The Vaiseshikamsa followed** (C77), **then the Sayanadi avasthas** (C78),
 which the Vaiseshikamsa's impaired flag now reads, **then the dasha phala**
-(C79): the rays, the Subhankas, and ch. 47's timing and placement. Next:
-Rashi bala, still waiting on a source that gives it component by
-component, or the yogas (ch. 34 onward) the interpretation layer reads.
+(C79): the rays, the Subhankas, and ch. 47's timing and placement. **A
+consumer's own dasha system now registers** (`03-design/dasha-kernels.md`,
+"A consumer's own system"), closing the exit's consumer-row clause: a
+`UduDefinition` on the context builder or `TsContextOptions.dashas_json`,
+asked for by its key, carried in the document with its definition so a
+stored document rebuilds it anywhere, and registered by every parity runner.
+Next: the exit's remaining clauses — `dasha_at` at depth five measured
+against its 20-microsecond budget, and PyJHora cross-checks recorded — then
+Rashi bala on a source, or the yogas the interpretation layer reads.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

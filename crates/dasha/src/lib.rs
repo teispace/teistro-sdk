@@ -49,6 +49,7 @@ pub mod balance;
 pub mod kalachakra;
 pub mod rashi;
 pub mod reading;
+pub mod registry;
 pub mod row;
 pub mod tree;
 
@@ -56,7 +57,8 @@ pub use balance::{BalanceAtBirth, Written};
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
 pub use rashi::{Footedness, Parity, RASHI_ROWS, RashiChart, RashiDasha, RashiRow, rashi_row};
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
-pub use row::{Count, Lord, ROWS, Seat, UduRow, VIMSHOTTARI, row};
+pub use registry::DashaSystems;
+pub use row::{Count, DashaName, Lord, ROWS, Scale, Seat, UduDefinition, UduRow, VIMSHOTTARI, row};
 pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};
 
 /// Every dasha system this build computes, in the catalogue's order within
@@ -64,7 +66,7 @@ pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};
 /// Kalachakra.
 pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     ROWS.iter()
-        .map(|row| row.system)
+        .filter_map(|row| row.system.catalogued())
         .chain(RASHI_ROWS.iter().map(|row| row.system))
         .chain(core::iter::once(
             teistro_core::catalogue::DashaSystem::Kalachakra,

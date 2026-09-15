@@ -219,7 +219,17 @@ placed.grahas.forEach((graha, j) => {
 const shipped = new Context({ testProvider: true });
 const kerala = { ...shipped.chart.layout('SOUTH_INDIAN'), key: 'ACME_KERALA' };
 shipped.dispose();
-const geo = new Context({ profile: 'parashari-classical', locale: 'ne-Deva-NP', testProvider: true, layouts: [kerala] });
+// A dasha system of the consumer's own, the same definition every runner
+// registers: a backward count, a two-nakshatra window, an offset, a savana
+// year and a depth of two (`03-design/dasha-kernels.md`).
+const parityDasha = JSON.parse('{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}');
+const geo = new Context({
+  profile: 'parashari-classical',
+  locale: 'ne-Deva-NP',
+  testProvider: true,
+  layouts: [kerala],
+  dashaSystems: [parityDasha],
+});
 put('geo-profile', geo.profile);
 put('geo-settings-hash', geo.settingsHash);
 
@@ -236,7 +246,7 @@ const charts = geo.chart.foundMany({
   place,
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
-  dashas: [DashaSystem.Vimshottari, DashaSystem.Chara, DashaSystem.Kalachakra],
+  dashas: [DashaSystem.Vimshottari, DashaSystem.Chara, DashaSystem.Kalachakra, 'dasha_system.ACME_PARITY'],
   // A grid of the founded chart, a grid of a divisional one, and the wheel:
   // straight edges, a divisional chart's own lagna, arcs, marks and the
   // rounded coordinates the wheel's trigonometry leaves.

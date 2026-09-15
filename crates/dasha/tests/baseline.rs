@@ -202,3 +202,63 @@ fn every_recorded_vimshottari_is_reproduced() {
     assert_eq!(methods, 148);
     assert!(worst < BOUND_DAYS, "worst boundary {worst:e} days");
 }
+
+/// A consumer's system registered with Vimshottari's table runs the same
+/// kernel: every period of every recorded birth is Vimshottari's, to the bit,
+/// under the consumer's own name.
+#[test]
+fn a_registered_row_with_vimshottari_s_table_is_vimshottari() {
+    use teistro_core::catalogue::Nakshatra;
+    use teistro_dasha::{DashaName, DashaSystems, UduDefinition};
+
+    let definition = UduDefinition {
+        lords: VIMSHOTTARI.lords.to_vec(),
+        ..UduDefinition::of("ACME_VIMSHOTTARI", Nakshatra::Ashwini)
+    };
+    let mut systems = DashaSystems::new();
+    let id = systems.register(definition).unwrap();
+    systems.seal();
+    let registered = systems.by_id(id).unwrap().row();
+    assert_eq!(
+        registered.system,
+        DashaName::Registered(String::from("ACME_VIMSHOTTARI"))
+    );
+    for (moon, instant) in [
+        (0.0, 2_451_545.0),
+        (123.456, 2_447_995.6),
+        (359.99, 2_460_000.25),
+    ] {
+        let birth = Birth {
+            instant: JulianDay::literal(instant),
+            moon: teistro_core::angle::Nas::from_degrees(
+                teistro_core::quantity::Degrees::try_new(moon).unwrap(),
+            ),
+            moon_span: None,
+        };
+        let rules = Rules {
+            balance: Balance::Spatial,
+            year_length: YearLength::Julian36525,
+            birth_period: BirthPeriod::Compressed,
+            after_cycle: AfterCycle::End,
+            seed_overflow: SeedOverflow::WrapToStart,
+        };
+        let shipped = Dasha::new(&VIMSHOTTARI, &birth, rules).unwrap();
+        let consumer = Dasha::new(&registered, &birth, rules).unwrap();
+        let walk = |dasha: &Dasha| -> Vec<(String, u64, u64)> {
+            dasha
+                .mahadashas()
+                .flat_map(|maha| {
+                    std::iter::once(maha).chain(dasha.children(&maha).collect::<Vec<_>>())
+                })
+                .map(|p| {
+                    (
+                        format!("{} {:?}", p.path, p.lord),
+                        p.interval.from.get().to_bits(),
+                        p.interval.to.get().to_bits(),
+                    )
+                })
+                .collect()
+        };
+        assert_eq!(walk(&shipped), walk(&consumer), "moon at {moon}");
+    }
+}

@@ -5617,6 +5617,19 @@ struct ts_context_options {
      */
     const char * layouts_json;
     /**
+     * Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+     * of definitions: each a key the catalogue does not have, its lords and
+     * their years in order, the reference nakshatra, and optionally `count`,
+     * `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+     * `sources` (the document schema's `UduDefinition`). Every one is checked
+     * by the rules a shipped row passes and refused by its place in the array
+     * and its own field, as `options.dashas_json`, the index, then the field.
+     * A request asks for one by the id
+     * `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+     * registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+     */
+    const char * dashas_json;
+    /**
      * Which of the SDK's own ephemerides to use when no provider vtable
      * is given; ignored when one is (ADR-0028).
      * Enum: ts_ephemeris. Example: 0.
@@ -5914,10 +5927,13 @@ struct ts_chart_request {
      */
     size_t drawing_count;
     /**
-     * Which dashas to compute, as catalogue ids, in the order they should be
-     * answered in: each one's balance and its periods to the settings'
-     * `dasha.depth`. Null with a count of zero for none.
-     * Enum: ts_dasha_system. Points at `dasha_count` elements.
+     * Which dashas to compute, in the order they should be answered in: each
+     * a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+     * the context registered (`0x8000` and up). Each one's balance and its
+     * periods to its depth. Null with a count of zero for none.
+     *
+     * Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+     * layer takes a catalogue member or a registered key and writes the id. Points at `dasha_count` elements.
      */
     const uint16_t * dashas;
     /**
@@ -6805,7 +6821,7 @@ _Static_assert(sizeof(ts_string) == 24, "ts_string is 24 bytes on 64-bit targets
 _Static_assert(sizeof(ts_str) == 16, "ts_str is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_hash) == 32, "ts_hash is 32 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_blob) == 24, "ts_blob is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_context_options) == 48, "ts_context_options is 48 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
