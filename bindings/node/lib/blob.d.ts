@@ -895,6 +895,43 @@ export interface ChartsSarvashtakavarga {
 }
 
 /**
+ * The `vimshopaka` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+ */
+export interface ChartsVimshopaka {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * How each varga was scored.
+   * The values are `VimshopakaScoring` ids.
+   */
+  readonly scoring: Uint8Array;
+  /**
+   * Over the six vargas.
+   */
+  readonly shadvarga: Float64Array;
+  /**
+   * Over the seven.
+   */
+  readonly saptavarga: Float64Array;
+  /**
+   * Over the ten.
+   */
+  readonly dashavarga: Float64Array;
+  /**
+   * Over the sixteen.
+   */
+  readonly shodashavarga: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -1162,6 +1199,10 @@ export interface Charts {
    * Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
    */
   readonly sarvashtakavarga: ChartsSarvashtakavarga;
+  /**
+   * Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+   */
+  readonly vimshopaka: ChartsVimshopaka;
 }
 
 /**

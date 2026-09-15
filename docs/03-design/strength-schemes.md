@@ -134,13 +134,46 @@ translation, a rank-1 text:
 The document's `ashtakavarga` section, the boundary's three sections and
 every binding carry it, and `check-parity` holds the four surfaces to it.
 
-## Bhava bala, rashi bala, vimshopaka
+## The Vimshopaka, built (2026-09-15)
+
+The second strength measure built, because like the Ashtakavarga it is a
+function of signs alone: the seven grahas' in the sixteen vargas the four
+schemes read. `cargo xtask vimshopaka` (`vimshopaka-measured.md`) measured
+the conformance corpus's engine over 93 charts beside BPHS ch. 7 in
+translation, a rank-1 text:
+
+- **The four schemes' weights are the text's** (vv. 17 to 25), each summing
+  to 20, and the engine's agree. `teistro_strength::vimshopaka::WEIGHTS`
+  holds them in halves of a point, so the table is exact integers.
+- **How one varga is scored is read two ways.** The text gives 20 in
+  exaltation or the own sign and 18, 15, 10, 7 or 5 by the compound
+  relationship with the sign's lord, times the varga's weight over 20. The
+  engine reuses the Saptavargaja virupas (45, 30, 15, 7.5, 3.75, and nothing
+  in debilitation) over 45, by natural friendship alone, so a friend's varga
+  earns 6.67 of 20 where the text gives 15 and no varga is ever a great
+  friend's; it rounds half up to hundredths through its own float
+  arithmetic, which the module mirrors (two of 93 charts differ otherwise).
+- **A rank-1 text corrects a rank-2 value**, so `strength.vimshopaka =
+  BPHS` is the default and the conformance profile (version 5) takes
+  `SAPTAVARGAJA_VIRUPAS`, under which `crates/strength` reproduces all 93
+  recorded answers (crux C63). The text's reading differs from every one of
+  the engine's 2604 scores, by up to 12.88 of 20.
+- **Two things the text does not settle** (C63): which chart the compound
+  relationship's temporary half is taken in (the module takes the rasi
+  chart, where the grahas stand) and whether debilitation takes anything
+  from a varga (the text's ladder has no step for it, so the module's does
+  not either).
+
+The document's `vimshopaka` section, the boundary's `vimshopaka` section
+with `TsVimshopakaScoring` and section bit 64, and every binding's
+`chart.vimshopaka` carry it; `check-parity` holds the four surfaces to it.
+
+## Bhava bala, rashi bala
 
 Bhava bala and rashi bala reuse the scheme kernel with their own
 component sets (a smaller repeat of this page, written when they are
-built). Vimshopaka and vaiseshikamsa are weight tables per varga group
-(the baseline engine's tables, with the invariant that group weights sum
-to 20); they are rows in the same crate.
+built). Vaiseshikamsa is a count over the same vargas the Vimshopaka
+reads and a row in the same crate.
 
 ## Build order
 

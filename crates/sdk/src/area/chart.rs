@@ -29,7 +29,9 @@ use teistro_points::arudha::arudha;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_serial::Document;
 use teistro_state::state;
-use teistro_strength::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+use teistro_strength::{
+    AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, VimshopakaChart, VimshopakaReading,
+};
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
 use crate::area::system_of;
@@ -282,6 +284,9 @@ impl<'a> ChartArea<'a> {
         }
         if request.sections.has(Sections::ASHTAKAVARGA) {
             document = document.with_ashtakavarga(Self::ashtakavarga_of(foundation, settings)?);
+        }
+        if request.sections.has(Sections::VIMSHOPAKA) {
+            document = document.with_vimshopaka(Self::vimshopaka_of(foundation, settings)?);
         }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
@@ -548,6 +553,30 @@ impl<'a> ChartArea<'a> {
                 ekadhipatya: settings.strength.ekadhipatya,
             },
         ))
+    }
+
+    /// The Vimshopaka of a founded chart under the settings' scoring, from
+    /// the seven grahas' signs in the sixteen vargas it reads.
+    fn vimshopaka_of(
+        foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
+    ) -> Result<VimshopakaReading, Error> {
+        let mut chart = VimshopakaChart {
+            signs: [[Rashi::Aries; 7]; 16],
+        };
+        for (row, varga) in chart
+            .signs
+            .iter_mut()
+            .zip(teistro_strength::vimshopaka::VARGAS)
+        {
+            let placed = varga_chart(foundation, Axis::of(varga))?;
+            for (slot, graha) in row.iter_mut().zip(teistro_strength::ashtakavarga::GRAHAS) {
+                *slot = placed.graha(graha).map(|at| at.sign).ok_or_else(|| {
+                    Error::internal(format!("a founded chart places {}", graha.key()))
+                })?;
+            }
+        }
+        Ok(VimshopakaReading::of(&chart, settings.strength.vimshopaka))
     }
 
     /// The derived points, which are the one section that needs more

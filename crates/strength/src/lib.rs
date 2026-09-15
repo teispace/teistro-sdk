@@ -3,9 +3,11 @@
 //! - [`ashtakavarga`]: each graha's bindus by sign, the sarvashtakavarga,
 //!   and their reductions and pindas under BPHS's reading or the conformance
 //!   corpus's engine's (`docs/03-design/ashtakavarga-measured.md`).
+//! - [`vimshopaka`]: each graha's strength out of 20 across the divisional
+//!   charts under the four schemes, by BPHS's points or the corpus's
+//!   engine's virupas (`docs/03-design/vimshopaka-measured.md`).
 //!
-//! The bala schemes (shadbala, vimshopaka, bhava bala) are the next rows of
-//! this crate.
+//! The bala schemes (shadbala, bhava bala) are the next rows of this crate.
 //!
 //! ```
 //! use teistro_core::catalogue::Rashi;
@@ -23,7 +25,9 @@
 //! ```
 
 pub mod ashtakavarga;
+pub mod vimshopaka;
 
 pub use ashtakavarga::{
     AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, GrahaAshtakavarga,
 };
+pub use vimshopaka::{GrahaVimshopaka, VimshopakaChart, VimshopakaReading};

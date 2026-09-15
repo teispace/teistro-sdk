@@ -763,6 +763,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   reshaped `strength.ekadhipatya`, which nothing read before; no number the
   SDK computed before changes.
 
+  The Vimshopaka followed: each graha's strength out of 20 across the
+  sixteen vargas under the shadvarga, saptavarga, dashavarga and
+  shodashavarga, with BPHS ch. 7's weights, scored by the text's points
+  (the default) or the corpus's engine's Saptavargaja virupas
+  (`strength.vimshopaka`, crux C63), through `ChartRequest::with_vimshopaka`,
+  the document's `vimshopaka` section, the boundary's section 28 and
+  `chart.vimshopaka` in every binding.
+
+  **Numbers:** new. Every settings hash moved with `strength.vimshopaka`,
+  and `conformance-baseline` is version 5; no number the SDK computed
+  before changes.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

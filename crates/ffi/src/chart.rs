@@ -214,6 +214,30 @@ impl From<teistro_core::settings::Ekadhipatya> for TsEkadhipatya {
     }
 }
 
+/// How a Vimshopaka scored a graha in a varga: the settings' own
+/// `Vimshopaka`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsVimshopakaScoring {
+    /// BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+    /// relationship with the sign's lord.
+    Bphs = 0,
+    /// The conformance corpus's engine: the Saptavargaja virupas over 45 by
+    /// natural friendship, rounded to hundredths.
+    SaptavargajaVirupas = 1,
+}
+
+impl From<teistro_core::settings::Vimshopaka> for TsVimshopakaScoring {
+    fn from(scoring: teistro_core::settings::Vimshopaka) -> TsVimshopakaScoring {
+        match scoring {
+            teistro_core::settings::Vimshopaka::SaptavargajaVirupas => {
+                TsVimshopakaScoring::SaptavargajaVirupas
+            }
+            _ => TsVimshopakaScoring::Bphs,
+        }
+    }
+}
+
 /// Which arc of its day an instant falls in.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -439,7 +463,7 @@ pub struct TsChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service, 32 the Ashtakavarga. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga, 64 the Vimshopaka. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -535,14 +559,17 @@ pub const TS_CHART_POINTS: u32 = 8;
 pub const TS_CHART_HOUSES: u32 = 16;
 /// The Ashtakavarga.
 pub const TS_CHART_ASHTAKAVARGA: u32 = 32;
+/// The Vimshopaka.
+pub const TS_CHART_VIMSHOPAKA: u32 = 64;
 
-const SECTION_BITS: [SectionBit; 6] = [
+const SECTION_BITS: [SectionBit; 7] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
     (TS_CHART_POINTS, ChartRequest::with_points),
     (TS_CHART_HOUSES, ChartRequest::with_houses),
     (TS_CHART_ASHTAKAVARGA, ChartRequest::with_ashtakavarga),
+    (TS_CHART_VIMSHOPAKA, ChartRequest::with_vimshopaka),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -1064,6 +1091,62 @@ impl AshtakavargaColumns {
                 ColumnData::U16(&self.sarva),
                 ColumnData::U16(&self.trikona),
                 ColumnData::U16(&self.sarva_reduced),
+            ],
+        )
+    }
+}
+
+/// Every chart's Vimshopaka, a row a graha, empty when it was not asked for.
+struct VimshopakaColumns {
+    graha: Vec<u16>,
+    scoring: Vec<u8>,
+    shadvarga: Vec<f64>,
+    saptavarga: Vec<f64>,
+    dashavarga: Vec<f64>,
+    shodashavarga: Vec<f64>,
+}
+
+impl VimshopakaColumns {
+    fn of(documents: &[Document]) -> VimshopakaColumns {
+        let rows = documents
+            .iter()
+            .filter_map(|d| d.vimshopaka.as_ref())
+            .map(|reading| reading.grahas.len())
+            .sum();
+        let mut columns = VimshopakaColumns {
+            graha: Vec::with_capacity(rows),
+            scoring: Vec::with_capacity(rows),
+            shadvarga: Vec::with_capacity(rows),
+            saptavarga: Vec::with_capacity(rows),
+            dashavarga: Vec::with_capacity(rows),
+            shodashavarga: Vec::with_capacity(rows),
+        };
+        for reading in documents.iter().filter_map(|d| d.vimshopaka.as_ref()) {
+            for graha in &reading.grahas {
+                columns.graha.push(graha.graha.id());
+                columns
+                    .scoring
+                    .push(TsVimshopakaScoring::from(reading.scoring) as u8);
+                columns.shadvarga.push(graha.shadvarga);
+                columns.saptavarga.push(graha.saptavarga);
+                columns.dashavarga.push(graha.dashavarga);
+                columns.shodashavarga.push(graha.shodashavarga);
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "vimshopaka",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.scoring),
+                ColumnData::F64(&self.shadvarga),
+                ColumnData::F64(&self.saptavarga),
+                ColumnData::F64(&self.dashavarga),
+                ColumnData::F64(&self.shodashavarga),
             ],
         )
     }
@@ -1595,6 +1678,7 @@ pub fn encode(
     let states = StateColumns::of(documents);
     let dashas = DashaColumns::of(documents)?;
     let ashtakavarga = AshtakavargaColumns::of(documents);
+    let vimshopaka = VimshopakaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1657,6 +1741,7 @@ pub fn encode(
         writer.bytes("svgs", svgs.as_bytes())?;
         dashas.write(&mut writer)?;
         ashtakavarga.write(&mut writer)?;
+        vimshopaka.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

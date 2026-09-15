@@ -38,6 +38,7 @@ import type {
   Rashi,
   Shodhana,
   Ekadhipatya,
+  VimshopakaScoring,
   Relationship,
   Scale,
   Status,
@@ -360,6 +361,28 @@ export interface Ashtakavarga {
   readonly trikona: readonly number[];
   /** The sum after both reductions. */
   readonly reduced: readonly number[];
+}
+
+/** One graha's Vimshopaka, each score out of 20. */
+export interface GrahaVimshopaka {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Over the six vargas. */
+  readonly shadvarga: number;
+  /** Over the seven. */
+  readonly saptavarga: number;
+  /** Over the ten. */
+  readonly dashavarga: number;
+  /** Over the sixteen. */
+  readonly shodashavarga: number;
+}
+
+/** A chart's Vimshopaka: each graha's strength across the divisional charts. */
+export interface Vimshopaka {
+  /** How each varga was scored. */
+  readonly scoring: VimshopakaScoring;
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaVimshopaka[];
 }
 
 /** A registered layout's full key, as the context that registered it resolves it. */
@@ -708,6 +731,8 @@ export declare class Chart {
   readonly dashas: readonly Dasha[];
   /** The Ashtakavarga; `null` unless `ashtakavarga` asked for it. */
   readonly ashtakavarga: Ashtakavarga | null;
+  /** The Vimshopaka; `null` unless `vimshopaka` asked for it. */
+  readonly vimshopaka: Vimshopaka | null;
   /**
    * The drishti the chart's grahas cast; empty unless `aspects` asked. The
    * count differs from chart to chart, because relations depend on where
@@ -971,6 +996,8 @@ export interface ChartRequest {
   readonly houses?: boolean;
   /** Whether to compute the Ashtakavarga; false by default. */
   readonly ashtakavarga?: boolean;
+  /** Whether to compute the Vimshopaka; false by default. */
+  readonly vimshopaka?: boolean;
   /** Whether to compute what each graha is — its dignity, avasthas, combustion and war; false by default. */
   readonly state?: boolean;
 }

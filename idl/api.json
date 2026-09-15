@@ -6209,6 +6209,24 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsVimshopakaScoring",
+      "doc": "How a Vimshopaka scored a graha in a varga: the settings' own\n`Vimshopaka`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Bphs",
+          "value": 0,
+          "doc": "BPHS ch. 7: 20 in exaltation or the own sign, else by the compound\nrelationship with the sign's lord."
+        },
+        {
+          "name": "SaptavargajaVirupas",
+          "value": 1,
+          "doc": "The conformance corpus's engine: the Saptavargaja virupas over 45 by\nnatural friendship, rounded to hundredths."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsDayPart",
       "doc": "Which arc of its day an instant falls in.",
       "repr": "u8",
@@ -9076,7 +9094,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
+          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -13437,6 +13455,46 @@
               "name": "reduced",
               "scalar": "u16",
               "doc": "The sum after both reductions."
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "name": "vimshopaka",
+          "doc": "Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "scoring",
+              "scalar": "u8",
+              "doc": "How each varga was scored.",
+              "enum": "TsVimshopakaScoring"
+            },
+            {
+              "name": "shadvarga",
+              "scalar": "f64",
+              "doc": "Over the six vargas."
+            },
+            {
+              "name": "saptavarga",
+              "scalar": "f64",
+              "doc": "Over the seven."
+            },
+            {
+              "name": "dashavarga",
+              "scalar": "f64",
+              "doc": "Over the ten."
+            },
+            {
+              "name": "shodashavarga",
+              "scalar": "f64",
+              "doc": "Over the sixteen."
             }
           ]
         }

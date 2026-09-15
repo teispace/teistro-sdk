@@ -101,6 +101,7 @@ from .catalogue import (
     Balance,
     Ekadhipatya,
     Shodhana,
+    VimshopakaScoring,
     Body,
     Calendar,
     Centre,
@@ -251,6 +252,10 @@ __all__ = [
     "GrahaAshtakavarga",
     "Ekadhipatya",
     "Shodhana",
+    # The Vimshopaka: what a chart answers with, and the two scorings.
+    "GrahaVimshopaka",
+    "Vimshopaka",
+    "VimshopakaScoring",
     "AvasthaBaladi",
     "AvasthaDeeptadi",
     "AvasthaJagradadi",
@@ -963,6 +968,7 @@ class ChartArea(_Area):
         points: bool = False,
         houses: bool = False,
         ashtakavarga: bool = False,
+        vimshopaka: bool = False,
         state: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
@@ -991,6 +997,7 @@ class ChartArea(_Area):
             points=points,
             houses=houses,
             ashtakavarga=ashtakavarga,
+            vimshopaka=vimshopaka,
             state=state,
         ).at(0)
 
@@ -1009,6 +1016,7 @@ class ChartArea(_Area):
         points: bool = False,
         houses: bool = False,
         ashtakavarga: bool = False,
+        vimshopaka: bool = False,
         state: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
@@ -1043,6 +1051,7 @@ class ChartArea(_Area):
             | (_SECTION_POINTS if points else 0)
             | (_SECTION_HOUSES if houses else 0)
             | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
+            | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
             dashas=list(dashas),
@@ -1337,7 +1346,12 @@ _SECTION_POINTS = 8
 
 #: `TS_CHART_HOUSES`, the houses service.
 _SECTION_HOUSES = 16
+
+#: `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga.
 _SECTION_ASHTAKAVARGA = 32
+
+#: `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
+_SECTION_VIMSHOPAKA = 64
 
 #: `TS_CHART_STATE`, the planetary states.
 _SECTION_STATE = 2
@@ -1547,6 +1561,38 @@ class GrahaAshtakavarga:
 
     yoga_pinda: int
     """Its yoga pinda, the two together."""
+
+
+@dataclass(frozen=True)
+class GrahaVimshopaka:
+    """One graha's Vimshopaka, each score out of 20."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    shadvarga: float
+    """Over the six vargas."""
+
+    saptavarga: float
+    """Over the seven."""
+
+    dashavarga: float
+    """Over the ten."""
+
+    shodashavarga: float
+    """Over the sixteen."""
+
+
+@dataclass(frozen=True)
+class Vimshopaka:
+    """A chart's Vimshopaka: each graha's strength across the divisional
+    charts under the four schemes (`03-design/vimshopaka-measured.md`)."""
+
+    scoring: VimshopakaScoring
+    """How each varga was scored."""
+
+    grahas: Tuple[GrahaVimshopaka, ...]
+    """Each graha's, Sun to Saturn."""
 
 
 @dataclass(frozen=True)
@@ -2354,6 +2400,12 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def vimshopaka(self) -> Optional[Vimshopaka]:
+        """The Vimshopaka, when `vimshopaka=True` asked for it."""
+        parsed = self.batch._vimshopakas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def dashas(self) -> list[Dasha]:
         """The dashas asked for, in the order asked; empty unless `dashas`
         named some (`03-design/dasha-kernels.md`)."""
@@ -2529,6 +2581,27 @@ class ChartBatch:
                 )
             )
         return out
+
+    @cached_property
+    def _vimshopakas(self) -> list[Vimshopaka]:
+        """Every chart's Vimshopaka, decoded once; empty when none was asked for."""
+        rows = self.decoded.vimshopaka
+        return [
+            Vimshopaka(
+                scoring=VimshopakaScoring(rows.scoring[chart * 7]),
+                grahas=tuple(
+                    GrahaVimshopaka(
+                        graha=Graha(rows.graha[row]),
+                        shadvarga=rows.shadvarga[row],
+                        saptavarga=rows.saptavarga[row],
+                        dashavarga=rows.dashavarga[row],
+                        shodashavarga=rows.shodashavarga[row],
+                    )
+                    for row in range(chart * 7, chart * 7 + 7)
+                ),
+            )
+            for chart in range(rows.length // 7)
+        ]
 
     @cached_property
     def _dashas(self) -> list[list[Dasha]]:

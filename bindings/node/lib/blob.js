@@ -496,6 +496,18 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 28, 'vimshopaka');
+    out.vimshopaka = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      scoring: column(blob, at, 1, 'u8', at.count),
+      shadvarga: column(blob, at, 2, 'f64', at.count),
+      saptavarga: column(blob, at, 3, 'f64', at.count),
+      dashavarga: column(blob, at, 4, 'f64', at.count),
+      shodashavarga: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

@@ -2773,6 +2773,21 @@ export const EkadhipatyaById = new Map([
   [1, 'empty-to-zero'],
 ]);
 
+/** Every VimshopakaScoring by name. */
+export const VimshopakaScoring = Object.freeze({
+  Bphs: 'bphs',
+  SaptavargajaVirupas: 'saptavargaja-virupas',
+});
+
+/**
+ * Every VimshopakaScoring by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VimshopakaScoringById = new Map([
+  [0, 'bphs'],
+  [1, 'saptavargaja-virupas'],
+]);
+
 /** Every DayPart by name. */
 export const DayPart = Object.freeze({
   Daylight: 'daylight',

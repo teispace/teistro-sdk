@@ -1462,6 +1462,17 @@
             "$ref": "#/$defs/VargaChart"
           },
           "type": "array"
+        },
+        "vimshopaka": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VimshopakaReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Each graha's Vimshopaka under the four schemes (`03-design/vimshopaka-measured.md`)."
         }
       },
       "required": [
@@ -1962,6 +1973,43 @@
         "wakefulness",
         "lajjitadi",
         "boundaries"
+      ],
+      "type": "object"
+    },
+    "GrahaVimshopaka": {
+      "description": "One graha's Vimshopaka, each out of 20.",
+      "properties": {
+        "dashavarga": {
+          "description": "Over the ten.",
+          "format": "double",
+          "type": "number"
+        },
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which graha."
+        },
+        "saptavarga": {
+          "description": "Over the seven.",
+          "format": "double",
+          "type": "number"
+        },
+        "shadvarga": {
+          "description": "Over the six vargas.",
+          "format": "double",
+          "type": "number"
+        },
+        "shodashavarga": {
+          "description": "Over the sixteen.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "graha",
+        "shadvarga",
+        "saptavarga",
+        "dashavarga",
+        "shodashavarga"
       ],
       "type": "object"
     },
@@ -4266,6 +4314,42 @@
         "major",
         "minor",
         "patch"
+      ],
+      "type": "object"
+    },
+    "Vimshopaka": {
+      "description": "How the Vimshopaka scores a graha in a varga (crux C63).",
+      "oneOf": [
+        {
+          "const": "BPHS",
+          "description": "BPHS ch. 7: 20 in exaltation or the own sign, else 18, 15, 10, 7 or 5 by the compound relationship with the sign's lord in the rasi chart, times the varga's weight over 20.",
+          "type": "string"
+        },
+        {
+          "const": "SAPTAVARGAJA_VIRUPAS",
+          "description": "The conformance corpus's recording engine: the Saptavargaja virupas over 45 by natural friendship, rounded to hundredths.",
+          "type": "string"
+        }
+      ]
+    },
+    "VimshopakaReading": {
+      "description": "A chart's Vimshopaka.",
+      "properties": {
+        "grahas": {
+          "description": "Each graha's, Sun to Saturn.",
+          "items": {
+            "$ref": "#/$defs/GrahaVimshopaka"
+          },
+          "type": "array"
+        },
+        "scoring": {
+          "$ref": "#/$defs/Vimshopaka",
+          "description": "How each varga was scored."
+        }
+      },
+      "required": [
+        "scoring",
+        "grahas"
       ],
       "type": "object"
     },

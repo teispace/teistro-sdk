@@ -1075,6 +1075,43 @@ final class ChartsSarvashtakavarga {
   final int length;
 }
 
+/// The `vimshopaka` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+final class ChartsVimshopaka {
+  const ChartsVimshopaka({
+    required this.graha,
+    required this.scoring,
+    required this.shadvarga,
+    required this.saptavarga,
+    required this.dashavarga,
+    required this.shodashavarga,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// How each varga was scored.
+  final Uint8List scoring;
+
+  /// Over the six vargas.
+  final Float64List shadvarga;
+
+  /// Over the seven.
+  final Float64List saptavarga;
+
+  /// Over the ten.
+  final Float64List dashavarga;
+
+  /// Over the sixteen.
+  final Float64List shodashavarga;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1206,6 +1243,7 @@ final class Charts {
     required this.ashtakavarga,
     required this.ashtakavargaBindus,
     required this.sarvashtakavarga,
+    required this.vimshopaka,
   });
 
   /// What kind of chart these are.
@@ -1333,6 +1371,9 @@ final class Charts {
   /// Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
   final ChartsSarvashtakavarga sarvashtakavarga;
 
+  /// Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+  final ChartsVimshopaka vimshopaka;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1367,6 +1408,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atAshtakavarga = blob.section(25, 'ashtakavarga');
   final atAshtakavargaBindus = blob.section(26, 'ashtakavarga_bindus');
   final atSarvashtakavarga = blob.section(27, 'sarvashtakavarga');
+  final atVimshopaka = blob.section(28, 'vimshopaka');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2162,6 +2204,39 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atSarvashtakavarga, 2) + atSarvashtakavarga.count * 2,
       ),
       length: atSarvashtakavarga.count,
+    ),
+    vimshopaka: ChartsVimshopaka(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 0),
+        blob.columnOffset(atVimshopaka, 0) + atVimshopaka.count * 2,
+      ),
+      scoring: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 1),
+        blob.columnOffset(atVimshopaka, 1) + atVimshopaka.count * 1,
+      ),
+      shadvarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 2),
+        blob.columnOffset(atVimshopaka, 2) + atVimshopaka.count * 8,
+      ),
+      saptavarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 3),
+        blob.columnOffset(atVimshopaka, 3) + atVimshopaka.count * 8,
+      ),
+      dashavarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 4),
+        blob.columnOffset(atVimshopaka, 4) + atVimshopaka.count * 8,
+      ),
+      shodashavarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 5),
+        blob.columnOffset(atVimshopaka, 5) + atVimshopaka.count * 8,
+      ),
+      length: atVimshopaka.count,
     ),
   );
 }

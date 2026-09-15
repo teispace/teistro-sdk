@@ -493,8 +493,11 @@ and built with each fork a knob (C54–C58). **Strength has begun with the
 Ashtakavarga** (`03-design/ashtakavarga-measured.md`, `check-ashtakavarga`):
 BPHS read beside the corpus's engine, the text's reductions and pindas the
 default and the engine's the conformance profile's (C59–C62), in
-`crates/strength`, the document and every binding. Next: vimshopaka and the
-shadbala scheme table.
+`crates/strength`, the document and every binding. **The Vimshopaka
+followed** (`03-design/vimshopaka-measured.md`, `check-vimshopaka`): the
+text's weights, which the engine shares, and the text's points the default
+beside the engine's Saptavargaja virupas (C63). Next: the shadbala scheme
+table.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

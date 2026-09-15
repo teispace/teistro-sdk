@@ -284,6 +284,7 @@ void main() {
     points: true,
     houses: true,
     ashtakavarga: true,
+    vimshopaka: true,
     state: true,
   );
   put('chart-varga-count', charts.vargaCount);
@@ -442,6 +443,19 @@ void main() {
       'chart-$i-sarvashtakavarga',
       [av.sarva, av.trikona, av.reduced].map((row) => row.join(',')).join(';'),
     );
+    final vs = chart.vimshopaka!;
+    put('chart-$i-vimshopaka', vs.scoring.key);
+    for (final g in vs.grahas) {
+      put(
+        'chart-$i-vimshopaka-${g.graha.fullKey}',
+        [
+          g.shadvarga,
+          g.saptavarga,
+          g.dashavarga,
+          g.shodashavarga,
+        ].map(number).join(','),
+      );
+    }
     for (final (j, dasha) in chart.dashas.indexed) {
       final key = 'chart-$i-dasha-$j';
       final balance = dasha.balance;

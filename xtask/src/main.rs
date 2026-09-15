@@ -94,6 +94,8 @@
 //!   beside the readings the sources give at each of its forks.
 //! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
 //!   reductions and pindas measured beside BPHS's.
+//! - `vimshopaka` and `check-vimshopaka`: the Vimshopaka, the engine's scale
+//!   measured beside BPHS's points.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -187,6 +189,7 @@ mod surface;
 mod time;
 mod topocentric;
 mod vargas;
+mod vimshopaka;
 mod vsop;
 
 use std::env;
@@ -267,6 +270,11 @@ const PASSES: &[Pass] = &[
         "ashtakavarga",
         ashtakavarga::generate,
         ashtakavarga::check_generated,
+    ),
+    (
+        "vimshopaka",
+        vimshopaka::generate,
+        vimshopaka::check_generated,
     ),
 ];
 

@@ -4366,6 +4366,23 @@ typedef enum ts_ekadhipatya {
 } ts_ekadhipatya;
 
 /**
+ * How a Vimshopaka scored a graha in a varga: the settings' own
+ * `Vimshopaka`.
+ */
+typedef enum ts_vimshopaka_scoring {
+    /**
+     * BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+     * relationship with the sign's lord.
+     */
+    TS_VIMSHOPAKA_SCORING_BPHS = 0,
+    /**
+     * The conformance corpus's engine: the Saptavargaja virupas over 45 by
+     * natural friendship, rounded to hundredths.
+     */
+    TS_VIMSHOPAKA_SCORING_SAPTAVARGAJA_VIRUPAS = 1,
+} ts_vimshopaka_scoring;
+
+/**
  * Which arc of its day an instant falls in.
  */
 typedef enum ts_day_part {
@@ -5674,7 +5691,7 @@ struct ts_chart_request {
      * Which of the document's sections to compute beside the
      * foundation, as a bit set: 1 the day's almanac, 2 the planetary
      * states, 4 the aspects, 8 the derived points, 16 the houses
-     * service, 32 the Ashtakavarga. Zero for the foundation alone, which is what every
+     * service, 32 the Ashtakavarga, 64 the Vimshopaka. Zero for the foundation alone, which is what every
      * caller compiled against an earlier header passes by not passing
      * it at all.
      *

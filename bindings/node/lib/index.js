@@ -52,6 +52,7 @@ import {
   BalanceById,
   EkadhipatyaById,
   ShodhanaById,
+  VimshopakaScoringById,
   DashaSystemById,
   VargaById,
   SDK_VERSION,
@@ -717,6 +718,15 @@ export class Chart {
    */
   get ashtakavarga() {
     return ashtakavargasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
+   * across the divisional charts under the four schemes, each varga scored
+   * under the settings' reading; `null` unless asked for.
+   */
+  get vimshopaka() {
+    return vimshopakasOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -1707,6 +1717,7 @@ class ChartArea extends Area {
           (request.points === true ? SECTION_POINTS : 0) |
           (request.houses === true ? SECTION_HOUSES : 0) |
           (request.ashtakavarga === true ? SECTION_ASHTAKAVARGA : 0) |
+          (request.vimshopaka === true ? SECTION_VIMSHOPAKA : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: catalogueKeys(request.dashas, 'dashas', 'DashaSystem'),
@@ -1845,6 +1856,36 @@ function ashtakavargasOf(batch) {
       });
     });
     ASHTAKAVARGAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's Vimshopakas, decoded once however many charts read them. */
+const VIMSHOPAKAS = new WeakMap();
+
+/** Every chart's Vimshopaka in a batch; empty when none was asked for. */
+function vimshopakasOf(batch) {
+  let decoded = VIMSHOPAKAS.get(batch);
+  if (decoded === undefined) {
+    const rows = batch.decoded.vimshopaka;
+    decoded = Array.from({ length: rows.length / 7 }, (_, chart) =>
+      Object.freeze({
+        scoring: VimshopakaScoringById.get(rows.scoring[chart * 7]) ?? 'unknown',
+        grahas: Object.freeze(
+          Array.from({ length: 7 }, (_, g) => {
+            const row = chart * 7 + g;
+            return Object.freeze({
+              graha: GrahaById.get(rows.graha[row]) ?? 'unknown',
+              shadvarga: rows.shadvarga[row],
+              saptavarga: rows.saptavarga[row],
+              dashavarga: rows.dashavarga[row],
+              shodashavarga: rows.shodashavarga[row],
+            });
+          }),
+        ),
+      }),
+    );
+    VIMSHOPAKAS.set(batch, decoded);
   }
   return decoded;
 }
@@ -1990,6 +2031,9 @@ const SECTION_HOUSES = 16;
 
 /** `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga. */
 const SECTION_ASHTAKAVARGA = 32;
+
+/** `TS_CHART_VIMSHOPAKA`, the Vimshopaka. */
+const SECTION_VIMSHOPAKA = 64;
 
 /** `TS_CHART_STATE`, the planetary states. */
 const SECTION_STATE = 2;

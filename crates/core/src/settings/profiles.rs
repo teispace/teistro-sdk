@@ -13,7 +13,8 @@ use super::knobs::{
     DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KalachakraAfterNinth,
     KalachakraBalance, KalachakraMembership, LunarMonth, MoonEvents, NakshatraScheme, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Shodhana, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    SeedOverflow, Shodhana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength,
+    Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -180,6 +181,7 @@ pub fn root() -> Settings {
             // corpus's engine reads otherwise (`03-design/ashtakavarga-measured.md`).
             ekadhipatya: Ekadhipatya::Bphs,
             shodhana: Shodhana::EachGraha,
+            vimshopaka: Vimshopaka::Bphs,
         },
         vargas: Vargas {
             unattested_dn: UnattestedDn::Cyclic,
@@ -371,13 +373,15 @@ fn conformance_baseline() -> Profile {
     // The engine's Ashtakavarga reductions and pindas (cruxes C59, C60).
     patch.strength.ekadhipatya = Some(Ekadhipatya::EmptyToZero);
     patch.strength.shodhana = Some(Shodhana::Sarva);
+    patch.strength.vimshopaka = Some(Vimshopaka::SaptavargajaVirupas);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
         // applies (entry 16 of the deliberate-difference registry).
         // 3: the Moon's rise and set became the civil day's (entry 18).
         // 4: the Ashtakavarga became the engine's (cruxes C59, C60).
-        version: 4,
+        // 5: the Vimshopaka became the engine's (crux C63).
+        version: 5,
         base: None,
         patch,
         sources: vec![
@@ -400,6 +404,13 @@ fn conformance_baseline() -> Profile {
                 Source::new(
                     "baseline-engine",
                     "measured: the recorded pindas are the reduced sum's and the raw bindus', 77 of 77",
+                ),
+            ),
+            Citation::new(
+                "strength.vimshopaka",
+                Source::new(
+                    "baseline-engine",
+                    "measured: the recorded scores are the Saptavargaja virupas over 45 by natural friendship, 93 of 93",
                 ),
             ),
             Citation::new(

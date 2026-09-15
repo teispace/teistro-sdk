@@ -37,6 +37,7 @@ from teistro import (
     TimeScale,
     Theme,
     Varga,
+    VimshopakaScoring,
     at,
     date,
     fixed_zone,
@@ -627,6 +628,23 @@ class AnEngine(WithLibrary):
             tuple(sum(r[sign] for r in reduced if r is not None) for sign in range(12)),
         )
         self.assertTrue(all(g.yoga_pinda == g.rashi_pinda + g.graha_pinda for g in av.grahas))
+
+    def test_a_chart_carries_its_vimshopaka_each_graha_s_four_scores(self) -> None:
+        """A chart's Vimshopaka crosses whole: every graha's four scores out of
+        20 under the default reading, the text's, whose least in any varga is
+        5; None unless asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, vimshopaka=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).vimshopaka)
+        vs = chart.vimshopaka
+        assert vs is not None
+        self.assertIs(vs.scoring, VimshopakaScoring.BPHS)
+        self.assertEqual([g.graha.name for g in vs.grahas], ["SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN"])
+        for g in vs.grahas:
+            for score in (g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga):
+                self.assertTrue(5.0 <= score <= 20.0, f"{g.graha}: {score}")
 
     def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
         """A chart's dashas cross whole: the balance, the periods to the

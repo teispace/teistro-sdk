@@ -807,7 +807,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_bhavas(report, index, document);
         the_points(report, index, document);
         the_drishti(report, index, document);
-        the_ashtakavarga(report, index, document);
+        the_strength(report, index, document);
         the_dashas(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
@@ -900,6 +900,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
         .with_points()
         .with_houses()
         .with_ashtakavarga()
+        .with_vimshopaka()
         .with_state()
 }
 
@@ -1175,6 +1176,39 @@ fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
 /// settings' depth and the chain running 5000 days after birth, the chain
 /// asked of the cursor rebuilt from the document where the other three walk
 /// the periods they decoded.
+/// The strength measures as the other three print them.
+fn the_strength(report: &mut Report, index: usize, document: &teistro::Document) {
+    the_ashtakavarga(report, index, document);
+    the_vimshopaka(report, index, document);
+}
+
+/// The Vimshopaka as the other three print it: the scoring, and each
+/// graha's four scores.
+fn the_vimshopaka(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(vs) = document.vimshopaka.as_ref() else {
+        return;
+    };
+    put(
+        report,
+        &format!("chart-{index}-vimshopaka"),
+        kebab(&format!("{:?}", vs.scoring)),
+    );
+    for graha in &vs.grahas {
+        put(
+            report,
+            &format!("chart-{index}-vimshopaka-{}", graha.graha.full_key()),
+            [
+                graha.shadvarga,
+                graha.saptavarga,
+                graha.dashavarga,
+                graha.shodashavarga,
+            ]
+            .map(number)
+            .join(","),
+        );
+    }
+}
+
 /// The Ashtakavarga as the other three print it: the reading, each graha's
 /// bindus, reductions and pindas, and the chart's sums.
 fn the_ashtakavarga(report: &mut Report, index: usize, document: &teistro::Document) {

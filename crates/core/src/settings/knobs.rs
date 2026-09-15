@@ -283,6 +283,15 @@ knob!(
         EmptyToZero = "EMPTY_TO_ZERO" }
 );
 knob!(
+    /// How the Vimshopaka scores a graha in a varga (crux C63).
+    Vimshopaka { /// BPHS ch. 7: 20 in exaltation or the own sign, else 18, 15, 10, 7
+        /// or 5 by the compound relationship with the sign's lord in the rasi
+        /// chart, times the varga's weight over 20.
+        Bphs = "BPHS", /// The conformance corpus's recording engine: the Saptavargaja
+        /// virupas over 45 by natural friendship, rounded to hundredths.
+        SaptavargajaVirupas = "SAPTAVARGAJA_VIRUPAS" }
+);
+knob!(
     /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
     Shodhana { /// In each graha's own Ashtakavarga, its pindas from its own reduced
         /// bindus and the grahas standing in each sign (BPHS chs. 67 to 69).

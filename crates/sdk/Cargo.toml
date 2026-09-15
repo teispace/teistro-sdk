@@ -85,6 +85,10 @@ required-features = ["builtin-ephemeris"]
 name = "surface"
 required-features = ["builtin-ephemeris"]
 
+[[test]]
+name = "vimshopaka"
+required-features = ["builtin-ephemeris"]
+
 [[example]]
 name = "almanac"
 required-features = ["builtin-ephemeris"]

@@ -3519,6 +3519,22 @@ class Ekadhipatya(Member):
     """The empty sign always goes to zero."""
 
 
+class VimshopakaScoring(Member):
+    """How a Vimshopaka scored a graha in a varga: the settings' own
+    `Vimshopaka`.
+    """
+
+    BPHS = 0
+    """BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+    relationship with the sign's lord.
+    """
+
+    SAPTAVARGAJA_VIRUPAS = 1
+    """The conformance corpus's engine: the Saptavargaja virupas over 45 by
+    natural friendship, rounded to hundredths.
+    """
+
+
 class DayPart(Member):
     """Which arc of its day an instant falls in."""
 
@@ -4930,6 +4946,10 @@ _KEYS: dict[str, dict[int, str]] = {
     "Ekadhipatya": {
         0: "bphs",
         1: "empty-to-zero",
+    },
+    "VimshopakaScoring": {
+        0: "bphs",
+        1: "saptavargaja-virupas",
     },
     "DayPart": {
         0: "daylight",

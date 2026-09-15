@@ -871,6 +871,36 @@ class ChartsSarvashtakavarga:
 
 
 @dataclass(frozen=True)
+class ChartsVimshopaka:
+    """The `vimshopaka` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    scoring: memoryview[int]
+    """How each varga was scored."""
+
+    shadvarga: memoryview[float]
+    """Over the six vargas."""
+
+    saptavarga: memoryview[float]
+    """Over the seven."""
+
+    dashavarga: memoryview[float]
+    """Over the ten."""
+
+    shodashavarga: memoryview[float]
+    """Over the sixteen."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -1069,6 +1099,9 @@ class Charts:
     sarvashtakavarga: ChartsSarvashtakavarga
     """Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for."""
 
+    vimshopaka: ChartsVimshopaka
+    """Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1105,6 +1138,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_ashtakavarga = blob.section(25, "ashtakavarga")
     at_ashtakavarga_bindus = blob.section(26, "ashtakavarga_bindus")
     at_sarvashtakavarga = blob.section(27, "sarvashtakavarga")
+    at_vimshopaka = blob.section(28, "vimshopaka")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1466,6 +1500,27 @@ def decode_charts(raw: bytes) -> Charts:
                 at_sarvashtakavarga, 2, 2, at_sarvashtakavarga.count
             ).cast("H"),
             length=at_sarvashtakavarga.count,
+        ),
+        vimshopaka=ChartsVimshopaka(
+            graha=blob.column(
+                at_vimshopaka, 0, 2, at_vimshopaka.count
+            ).cast("H"),
+            scoring=blob.column(
+                at_vimshopaka, 1, 1, at_vimshopaka.count
+            ).cast("B"),
+            shadvarga=blob.column(
+                at_vimshopaka, 2, 8, at_vimshopaka.count
+            ).cast("d"),
+            saptavarga=blob.column(
+                at_vimshopaka, 3, 8, at_vimshopaka.count
+            ).cast("d"),
+            dashavarga=blob.column(
+                at_vimshopaka, 4, 8, at_vimshopaka.count
+            ).cast("d"),
+            shodashavarga=blob.column(
+                at_vimshopaka, 5, 8, at_vimshopaka.count
+            ).cast("d"),
+            length=at_vimshopaka.count,
         ),
     )
 

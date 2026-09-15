@@ -576,6 +576,7 @@ pub fn charts() -> BlobSchema {
             chart_ashtakavarga_section(25),
             chart_ashtakavarga_bindus_section(26),
             chart_sarvashtakavarga_section(27),
+            chart_vimshopaka_section(28),
         ],
     }
 }
@@ -722,6 +723,24 @@ fn chart_sarvashtakavarga_section(id: u32) -> SectionSchema {
             ),
             ColumnDef::new("trikona", Scalar::U16, "The sum after the trine reduction."),
             ColumnDef::new("reduced", Scalar::U16, "The sum after both reductions."),
+        ],
+    )
+}
+
+/// Every chart's Vimshopaka, a row a graha.
+fn chart_vimshopaka_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "vimshopaka",
+        "Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new("scoring", Scalar::U8, "How each varga was scored.")
+                .of_enum("TsVimshopakaScoring"),
+            ColumnDef::new("shadvarga", Scalar::F64, "Over the six vargas."),
+            ColumnDef::new("saptavarga", Scalar::F64, "Over the seven."),
+            ColumnDef::new("dashavarga", Scalar::F64, "Over the ten."),
+            ColumnDef::new("shodashavarga", Scalar::F64, "Over the sixteen."),
         ],
     )
 }

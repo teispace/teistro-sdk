@@ -756,6 +756,55 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  /// A chart's Vimshopaka crosses whole: every graha's four scores out of 20
+  /// under the default reading, the text's, whose least in any varga is 5;
+  /// null unless asked.
+  test('a chart carries its Vimshopaka, each graha\'s four scores', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      vimshopaka: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .vimshopaka,
+      isNull,
+    );
+    final vs = chart.vimshopaka!;
+    expect(vs.scoring, VimshopakaScoring.bphs);
+    expect(
+      [for (final g in vs.grahas) g.graha],
+      [
+        Graha.sun,
+        Graha.moon,
+        Graha.mars,
+        Graha.mercury,
+        Graha.jupiter,
+        Graha.venus,
+        Graha.saturn,
+      ],
+    );
+    for (final g in vs.grahas) {
+      for (final score in [
+        g.shadvarga,
+        g.saptavarga,
+        g.dashavarga,
+        g.shodashavarga,
+      ]) {
+        expect(score, inInclusiveRange(5.0, 20.0), reason: '${g.graha}');
+      }
+    }
+    ctx.dispose();
+  });
+
   /// A chart's dashas cross whole: the balance, the periods to the
   /// settings' depth with their paths, and the chain at an instant read off
   /// them.

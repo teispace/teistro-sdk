@@ -511,8 +511,9 @@ test('every catalogue enum has a complete id table', () => {
   // description's own page reports the same figure.
   // 967 since chart_layout joined the catalogue: six layouts and its UNKNOWN;
   // 969 since the dasha balance crossed as `TsBalance`, spatial and temporal;
-  // 973 since the Ashtakavarga's `TsShodhana` and `TsEkadhipatya`, two each.
-  assert.equal(entries, 973, 'every member of every enum is in a table');
+  // 973 since the Ashtakavarga's `TsShodhana` and `TsEkadhipatya`, two each;
+  // 975 since the Vimshopaka's `TsVimshopakaScoring`, two.
+  assert.equal(entries, 975, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -877,6 +878,30 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
     'the reduced sum is the grahas\' own reductions summed',
   );
   assert.ok(grahas.every((g) => g.yogaPinda === g.rashiPinda + g.grahaPinda));
+  ctx.dispose();
+});
+
+/**
+ * A chart's Vimshopaka crosses whole: every graha's four scores out of 20
+ * under the default reading, the text's, whose least in any varga is 5;
+ * `null` unless asked.
+ */
+test('a chart carries its Vimshopaka, each graha\'s four scores', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vimshopaka: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).vimshopaka, null);
+  const { scoring, grahas } = chart.vimshopaka;
+  assert.equal(scoring, 'bphs');
+  assert.deepEqual(
+    grahas.map((g) => g.graha),
+    ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN'].map((key) => `graha.${key}`),
+  );
+  for (const g of grahas) {
+    for (const score of [g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga]) {
+      assert.ok(score >= 5 && score <= 20, `${g.graha}: ${score}`);
+    }
+  }
   ctx.dispose();
 });
 

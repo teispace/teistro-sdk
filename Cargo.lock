@@ -1870,6 +1870,7 @@ dependencies = [
  "serde",
  "serde_json",
  "teistro-core",
+ "teistro-state",
 ]
 
 [[package]]

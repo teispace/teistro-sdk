@@ -252,6 +252,7 @@ const charts = geo.chart.foundMany({
   points: true,
   houses: true,
   ashtakavarga: true,
+  vimshopaka: true,
   state: true,
 });
 put('chart-varga-count', charts.vargaCount);
@@ -363,6 +364,11 @@ for (const chart of charts) {
     put(`${key}-pindas`, `${g.rashiPinda},${g.grahaPinda},${g.yogaPinda}`);
   });
   put(`chart-${i}-sarvashtakavarga`, `${av.sarva.join(',')};${av.trikona.join(',')};${av.reduced.join(',')}`);
+  const vs = chart.vimshopaka;
+  put(`chart-${i}-vimshopaka`, vs.scoring);
+  vs.grahas.forEach((g) => {
+    put(`chart-${i}-vimshopaka-${g.graha}`, [g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga].map(number).join(','));
+  });
   chart.dashas.forEach((dasha, j) => {
     const key = `chart-${i}-dasha-${j}`;
     const balance = dasha.balance;

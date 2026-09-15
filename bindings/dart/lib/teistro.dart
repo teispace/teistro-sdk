@@ -614,7 +614,12 @@ const int _sectionPoints = 8;
 
 /// `TS_CHART_HOUSES`, the houses service.
 const int _sectionHouses = 16;
+
+/// `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga.
 const int _sectionAshtakavarga = 32;
+
+/// `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
+const int _sectionVimshopaka = 64;
 
 /// `TS_CHART_STATE`, the planetary states.
 const int _sectionState = 2;
@@ -661,6 +666,7 @@ final class ChartArea extends _Area {
     bool points = false,
     bool houses = false,
     bool ashtakavarga = false,
+    bool vimshopaka = false,
     bool state = false,
   }) => foundMany(
     instants: <double>[instant],
@@ -675,6 +681,7 @@ final class ChartArea extends _Area {
     points: points,
     houses: houses,
     ashtakavarga: ashtakavarga,
+    vimshopaka: vimshopaka,
     state: state,
   ).at(0);
 
@@ -709,6 +716,7 @@ final class ChartArea extends _Area {
     bool points = false,
     bool houses = false,
     bool ashtakavarga = false,
+    bool vimshopaka = false,
     bool state = false,
   }) => decodeCharts(
     _context._guarded(
@@ -729,6 +737,7 @@ final class ChartArea extends _Area {
               (points ? _sectionPoints : 0) |
               (houses ? _sectionHouses : 0) |
               (ashtakavarga ? _sectionAshtakavarga : 0) |
+              (vimshopaka ? _sectionVimshopaka : 0) |
               (state ? _sectionState : 0),
           vargas: vargas,
           dashas: dashas,
@@ -1546,6 +1555,44 @@ final class GrahaAshtakavarga {
 
   /// Its yoga pinda, the two together.
   final int yogaPinda;
+}
+
+/// One graha's Vimshopaka, each score out of 20.
+final class GrahaVimshopaka {
+  const GrahaVimshopaka({
+    required this.graha,
+    required this.shadvarga,
+    required this.saptavarga,
+    required this.dashavarga,
+    required this.shodashavarga,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Over the six vargas.
+  final double shadvarga;
+
+  /// Over the seven.
+  final double saptavarga;
+
+  /// Over the ten.
+  final double dashavarga;
+
+  /// Over the sixteen.
+  final double shodashavarga;
+}
+
+/// A chart's Vimshopaka: each graha's strength across the divisional charts
+/// under the four schemes (`03-design/vimshopaka-measured.md`).
+final class Vimshopaka {
+  const Vimshopaka({required this.scoring, required this.grahas});
+
+  /// How each varga was scored.
+  final VimshopakaScoring scoring;
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaVimshopaka> grahas;
 }
 
 /// A chart's Ashtakavarga: each graha's, the sarvashtakavarga, and their
@@ -2463,6 +2510,35 @@ List<Ashtakavarga> _decodeAshtakavargas(Charts batch) {
   }, growable: false);
 }
 
+/// Each batch's Vimshopakas, decoded once however many charts read them.
+final Expando<List<Vimshopaka>> _vimshopakas = Expando<List<Vimshopaka>>(
+  'vimshopakas',
+);
+
+List<Vimshopaka> _vimshopakasOf(Charts batch) =>
+    _vimshopakas[batch] ??= _decodeVimshopakas(batch);
+
+List<Vimshopaka> _decodeVimshopakas(Charts batch) {
+  final rows = batch.vimshopaka;
+  return List<Vimshopaka>.generate(
+    rows.length ~/ 7,
+    (chart) => Vimshopaka(
+      scoring: VimshopakaScoring.byId(rows.scoring[chart * 7]),
+      grahas: List<GrahaVimshopaka>.generate(7, (g) {
+        final row = chart * 7 + g;
+        return GrahaVimshopaka(
+          graha: Graha.byId(rows.graha[row]),
+          shadvarga: rows.shadvarga[row],
+          saptavarga: rows.saptavarga[row],
+          dashavarga: rows.dashavarga[row],
+          shodashavarga: rows.shodashavarga[row],
+        );
+      }, growable: false),
+    ),
+    growable: false,
+  );
+}
+
 /// Each batch's dashas, decoded once however many charts read them.
 final Expando<List<List<Dasha>>> _dashas = Expando<List<List<Dasha>>>('dashas');
 
@@ -2860,13 +2936,19 @@ final class Chart {
     });
   }
 
-  /// The dashas asked for, in the order asked; empty unless `dashas` named
   /// The Ashtakavarga, when `ashtakavarga: true` asked for it.
   Ashtakavarga? get ashtakavarga {
     final all = _ashtakavargasOf(batch);
     return index < all.length ? all[index] : null;
   }
 
+  /// The Vimshopaka, when `vimshopaka: true` asked for it.
+  Vimshopaka? get vimshopaka {
+    final all = _vimshopakasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The dashas asked for, in the order asked; empty unless `dashas` named
   /// some (`03-design/dasha-kernels.md`).
   List<Dasha> get dashas {
     final all = _dashasOf(batch);

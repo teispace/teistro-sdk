@@ -5801,6 +5801,32 @@ export declare const Ekadhipatya: {
 export declare const EkadhipatyaById: ReadonlyMap<number, Ekadhipatya>;
 
 /**
+ * How a Vimshopaka scored a graha in a varga: the settings' own
+ * `Vimshopaka`.
+ */
+export type VimshopakaScoring = 'bphs' | 'saptavargaja-virupas';
+
+/** Every VimshopakaScoring by name; the values are the strings the union accepts. */
+export declare const VimshopakaScoring: {
+  /**
+   * BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+   * relationship with the sign's lord.
+   */
+  readonly Bphs: 'bphs';
+  /**
+   * The conformance corpus's engine: the Saptavargaja virupas over 45 by
+   * natural friendship, rounded to hundredths.
+   */
+  readonly SaptavargajaVirupas: 'saptavargaja-virupas';
+};
+
+/**
+ * Every VimshopakaScoring by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VimshopakaScoringById: ReadonlyMap<number, VimshopakaScoring>;
+
+/**
  * Which arc of its day an instant falls in.
  */
 export type DayPart = 'daylight' | 'night';

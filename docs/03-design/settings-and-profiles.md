@@ -78,6 +78,7 @@ every shipped profile. The v1 inventory:
 | strength | `bala_scheme` | `BalaSchemeKey` | `PARASHARA`, `PARASHARA_EXTENDED` |
 | strength | `ekadhipatya` | enum | `BPHS` (the default, ch. 68), `EMPTY_TO_ZERO` (the corpus's engine; crux C60) |
 | strength | `shodhana` | enum | `EACH_GRAHA` (the default, chs. 67 to 69), `SARVA` (the corpus's engine; crux C59) |
+| strength | `vimshopaka` | enum | `BPHS` (the default, ch. 7's points by compound relationship), `SAPTAVARGAJA_VIRUPAS` (the corpus's engine; crux C63) |
 | varga | `unattested_dn` | enum | `CYCLIC`, or a named scheme |
 | calendar | `civil_calendar` | `CalendarKey` | `GREGORIAN`, `BIKRAM_SAMBAT`, … |
 | calendar | `lunar_month` | enum | `AMANTA`, `PURNIMANTA` |

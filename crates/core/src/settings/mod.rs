@@ -36,7 +36,8 @@ pub use knobs::{
     DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KalachakraAfterNinth,
     KalachakraBalance, KalachakraMembership, LunarMonth, MoonEvents, NakshatraScheme, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Shodhana, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    SeedOverflow, Shodhana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength,
+    Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -329,6 +330,8 @@ group!(
         ekadhipatya: Ekadhipatya,
         /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
         shodhana: Shodhana,
+        /// How the Vimshopaka scores a graha in a varga (crux C63).
+        vimshopaka: Vimshopaka,
     }
 );
 

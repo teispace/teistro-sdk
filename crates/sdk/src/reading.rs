@@ -52,6 +52,8 @@ impl Sections {
     pub(crate) const HOUSES: Sections = Sections(1 << 4);
     /// Each graha's Ashtakavarga, their sum, reductions and pindas.
     pub(crate) const ASHTAKAVARGA: Sections = Sections(1 << 5);
+    /// Each graha's Vimshopaka under the four schemes.
+    pub(crate) const VIMSHOPAKA: Sections = Sections(1 << 6);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -220,6 +222,25 @@ impl ChartRequest {
         self
     }
 
+    /// Each graha's Vimshopaka, its strength out of 20 across the
+    /// divisional charts under the shadvarga, saptavarga, dashavarga and
+    /// shodashavarga, each varga scored under the settings'
+    /// `strength.vimshopaka` (`03-design/vimshopaka-measured.md`).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_vimshopaka();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_vimshopaka(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::VIMSHOPAKA);
+        self
+    }
+
     /// The charts to draw, each a layout and which chart to place in it,
     /// in the order given: `D1` for the founded chart, or a divisional one.
     ///
@@ -296,6 +317,7 @@ impl ChartRequest {
             .with_points()
             .with_houses()
             .with_ashtakavarga()
+            .with_vimshopaka()
     }
 
     /// The place the chart is cast for.

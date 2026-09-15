@@ -4757,6 +4757,43 @@ enum Ekadhipatya {
   }
 }
 
+/// How a Vimshopaka scored a graha in a varga: the settings' own
+/// `Vimshopaka`.
+enum VimshopakaScoring {
+  /// BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+  /// relationship with the sign's lord.
+  bphs(0, 'bphs'),
+  /// The conformance corpus's engine: the Saptavargaja virupas over 45 by
+  /// natural friendship, rounded to hundredths.
+  saptavargajaVirupas(1, 'saptavargaja-virupas');
+
+  const VimshopakaScoring(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static VimshopakaScoring byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a VimshopakaScoring'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static VimshopakaScoring? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which arc of its day an instant falls in.
 enum DayPart {
   /// Between sunrise and sunset.
