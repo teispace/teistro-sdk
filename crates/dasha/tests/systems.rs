@@ -28,7 +28,7 @@ use teistro_core::catalogue::DashaSystem;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Degrees, Depth, JulianDay};
 use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, SeedOverflow, YearLength};
-use teistro_dasha::{Birth, Count, Dasha, ROWS, Rules, UduRow, row};
+use teistro_dasha::{Birth, Count, Dasha, ROWS, Rules, Timeline, UduRow, row};
 
 /// The row the corpus's key names, held to the rule data it states.
 fn the_row(key: &str, stated: &Value) -> &'static UduRow {

@@ -104,6 +104,10 @@ jobs:
         run: cargo xtask check-dashas
       - name: Dasha systems page (the eight other nakshatra-seeded systems decided over the corpus)
         run: cargo xtask check-dasha-systems
+      - name: Rashi dashas page (the sign-based dashas decided over the corpus, beside the other schools' readings)
+        run: cargo xtask check-rashi-dashas
+      - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
+        run: cargo xtask check-arudhas
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

@@ -15,9 +15,12 @@
 )]
 
 use teistro_core::angle::Nas;
+use teistro_core::catalogue::{Dignity, Rashi};
 use teistro_core::quantity::{Degrees, Depth, JulianDay};
 use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, SeedOverflow, YearLength};
-use teistro_dasha::{Birth, Dasha, ROWS, Rules, UduRow, VIMSHOTTARI};
+use teistro_dasha::{
+    Birth, Dasha, RASHI_ROWS, ROWS, RashiChart, RashiDasha, Rules, Timeline, UduRow, VIMSHOTTARI,
+};
 use teistro_test_allocator::{Counting, measure};
 
 #[global_allocator]
@@ -78,5 +81,55 @@ fn making_a_dasha_allocates_its_two_tables_and_reading_one_allocates_nothing() {
         let (chain, counts) = measure(|| made.at(instant, deepest));
         assert!(!chain.is_empty(), "{:?}", row.system);
         assert_eq!(counts.allocations, 0, "{:?}: the chain", row.system);
+    }
+}
+
+#[test]
+fn a_sign_based_dasha_allocates_nothing_to_make_or_to_read() {
+    let chart = RashiChart {
+        lagna: Rashi::Pisces,
+        arudha_lagna: Rashi::Gemini,
+        navamsa_lagna: Rashi::Aquarius,
+        signs: [
+            Rashi::Aries,
+            Rashi::Scorpio,
+            Rashi::Aquarius,
+            Rashi::Aries,
+            Rashi::Gemini,
+            Rashi::Aquarius,
+            Rashi::Capricorn,
+            Rashi::Capricorn,
+            Rashi::Cancer,
+        ],
+        dignities: [Dignity::Neutral; 9],
+    };
+    let birth = JulianDay::literal(2_447_995.489_583_333_5);
+    let deepest = Depth::try_new(6).unwrap();
+    for row in RASHI_ROWS {
+        let (made, counts) = measure(|| {
+            RashiDasha::new(
+                row,
+                &chart,
+                birth,
+                YearLength::Julian36525,
+                AfterCycle::Repeat,
+            )
+            .unwrap()
+        });
+        assert_eq!(
+            counts.allocations, 0,
+            "{:?}: its tables are arrays",
+            row.system
+        );
+        for years in [0.5, 30.0, 250.0] {
+            let instant = JulianDay::literal(birth.get() + years * 365.25);
+            let (chain, counts) = measure(|| made.at(instant, deepest));
+            assert_eq!(chain.len(), 6, "{:?} {years} years on", row.system);
+            assert_eq!(
+                counts.allocations, 0,
+                "{:?}: the chain {years} years on",
+                row.system
+            );
+        }
     }
 }

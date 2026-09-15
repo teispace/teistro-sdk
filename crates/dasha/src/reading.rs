@@ -12,7 +12,7 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::Depth;
 
 use crate::balance::BalanceAtBirth;
-use crate::tree::{Dasha, Period, Rules};
+use crate::tree::{Dasha, Period, Rules, Timeline};
 
 /// One dasha of a chart.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

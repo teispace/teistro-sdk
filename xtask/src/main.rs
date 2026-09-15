@@ -85,6 +85,11 @@
 //!   other nakshatra-seeded systems — each one's seat derived from its
 //!   recorded first lords, a temporal balance over a window, and Tribhagi's
 //!   scale.
+//! - `rashi-dashas` and `check-rashi-dashas`: the sign-based (Jaimini)
+//!   dashas — each system's start, order, years and antardashas, measured
+//!   beside the readings other schools give.
+//! - `arudhas` and `check-arudhas`: the twelve arudha padas, their lords and
+//!   their exception.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -127,6 +132,7 @@ mod accuracy;
 mod agreement;
 mod almanac;
 mod areas;
+mod arudhas;
 mod aspect;
 mod batching;
 mod bench;
@@ -162,6 +168,7 @@ mod platform;
 mod pluto;
 mod points;
 mod python_binding;
+mod rashi_dashas;
 mod release;
 mod render;
 mod rust_binding;
@@ -239,6 +246,12 @@ const PASSES: &[Pass] = &[
         dasha_systems::generate,
         dasha_systems::check_generated,
     ),
+    (
+        "rashi-dashas",
+        rashi_dashas::generate,
+        rashi_dashas::check_generated,
+    ),
+    ("arudhas", arudhas::generate, arudhas::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

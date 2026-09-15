@@ -7,7 +7,9 @@
 //! - [`balance`]: what remains of the first period, spatially or temporally,
 //!   and how it is written;
 //! - [`tree`]: the dasha of a birth, its periods by path, and the chain
-//!   running at an instant;
+//!   running at an instant, through the [`Timeline`] every kind shares;
+//! - [`rashi`]: the sign-based (Jaimini) systems as rows over their own
+//!   kernel, measured in `docs/03-design/rashi-dashas-measured.md`;
 //! - [`reading`]: a dasha as a chart document carries it, its periods as
 //!   rows to the settings' depth.
 //!
@@ -26,7 +28,7 @@
 //! use teistro_core::catalogue::{DashaSystem, Graha};
 //! use teistro_core::quantity::{Degrees, Depth, JulianDay};
 //! use teistro_core::settings::root;
-//! use teistro_dasha::{Birth, Dasha, Rules, VIMSHOTTARI};
+//! use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
 //!
 //! // A Moon a third of the way into Anuradha, Saturn's nakshatra.
 //! let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
@@ -44,11 +46,13 @@
 //! ```
 
 pub mod balance;
+pub mod rashi;
 pub mod reading;
 pub mod row;
 pub mod tree;
 
 pub use balance::{BalanceAtBirth, Written};
+pub use rashi::{Footedness, Parity, RASHI_ROWS, RashiChart, RashiDasha, RashiRow, rashi_row};
 pub use reading::{DashaReading, PeriodRow};
 pub use row::{Count, Lord, ROWS, Seat, UduRow, VIMSHOTTARI, row};
-pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules};
+pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};

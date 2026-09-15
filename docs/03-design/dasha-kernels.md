@@ -103,6 +103,33 @@ as rows reproducing every one (`tests/systems.rs`):
   lord up by its graha is ambiguous for a row that names a graha twice, so a
   period carries its lord's place and its children start from it.
 
+## What building the sign-based rows corrected
+
+`cargo xtask rashi-dashas` (`rashi-dashas-measured.md`) measured the
+recording engine's eight sign-based systems over 616 answers computed from
+the corpus's own charts, and `crates/dasha`'s `rashi` module ships them as
+rows reproducing every one (`tests/rashi.rs`, worst boundary 4.7e-10 days):
+
+- **The schema came out smaller than drafted.** Every system is a start
+  (lagna, arudha lagna, navamsa lagna), an order (consecutive, trine
+  groups, a drishti chain, a leap), a length (the count to the lord, the
+  same by dignity, fixed, by modality) and which lord a mahadasha names. The
+  draft's per-step direction rules and sub-progression tables are not
+  fields yet: every recorded system runs one direction rule and one
+  sub-progression, and each rival a school teaches is a crux (C49–C53, C2)
+  rather than a field nobody can fill.
+- **Footedness and parity are distinct types**, as the direction error
+  above predicted; counting by parity is refused on all 385 counted
+  answers.
+- **Drig's chain does not always reach twelve signs.** For 33 of 77 charts
+  the eleventh house aspects the ninth, and the engine appends the signs
+  left out in the zodiac's order (C52).
+- **A sign-based dasha allocates nothing**, its tables fixed arrays, and it
+  shares `Period`, `Chain` and the chain walk with the nakshatra-seeded
+  kernel through the `Timeline` trait.
+- **The arudha lagna is a point.** Padanadhamsa starts from it, and
+  `teistro-points` computes it (`arudhas-measured.md`).
+
 ## At the boundary and in the bindings
 
 A chart request names its systems (`TsChartRequest.dashas`, catalogue ids,

@@ -11,7 +11,10 @@
 //!   Saturn's eighth of the arc begins and Mandi where it ends;
 //! - the **special lagnas** ([`lagna`]) — the hora, ghati and pranapada
 //!   lagnas that the clock drives, the Sree lagna that the Moon's
-//!   nakshatra drives, and the Yogi and Avayogi points.
+//!   nakshatra drives, and the Yogi and Avayogi points;
+//! - the **arudha padas** ([`arudha`]) — each house's count to its lord and
+//!   as far again, the first of them the arudha lagna
+//!   (`03-design/arudhas-measured.md`).
 //!
 //! The corpus decides all of it: every input is recorded beside every
 //! answer, so a formula reproduces a recorded value or it does not
@@ -48,6 +51,7 @@
 //! assert!((apart - (186.0 + 40.0 / 60.0)).abs() < 1e-9);
 //! ```
 
+pub mod arudha;
 pub mod chart;
 pub mod derived;
 pub mod eighth;

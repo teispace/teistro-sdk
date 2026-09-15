@@ -35,7 +35,7 @@ use std::collections::BTreeMap;
 use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Varga};
 use teistro::{
     Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
-    TimeScale,
+    TimeScale, Timeline,
 };
 use teistro_core::envelope::CalendarResolution;
 use teistro_core::envelope::Envelope;

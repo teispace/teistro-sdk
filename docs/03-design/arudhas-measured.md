@@ -1,0 +1,33 @@
+# The arudha padas, measured
+
+Status: `generated` by `cargo xtask arudhas` over the conformance
+corpus's `houses.arudha_padas`, 2026-09-15. Do not edit: `check-arudhas`
+regenerates this page and fails on any difference.
+
+The corpus records the twelve padas of 71 charts, each with the sign it
+first counts to and whether an exception moved it, beside the lagna and
+every graha's sign they are computed from: 852 padas.
+
+## What the corpus decides
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| a house's pada is the count from its sign to the sign's lord, counted again from the lord, with the catalogue's lords; one that falls in the house or the seventh from it moves to the tenth from itself | **holds** | 0 of 852 disagree; the exception moves 147 in the house and 153 in the seventh |
+| the same with Ketu for Scorpio and Rahu for Aquarius | falsified | 123 of 852 disagree |
+| the same with the exception moving a pada to the tenth from the **house** | falsified | 153 of 852 disagree |
+| the same with no exception | falsified | 300 of 852 disagree |
+| the arudha lagna is the first house's pada | **holds** | 0 of 71 disagree |
+
+## What it means for the module
+
+**The padas are a function of the lagna's sign and the grahas' signs**,
+so they are points and not a school's module: `teistro-points` computes
+them and the sign-based dashas read the first. The lords are the
+catalogue's, which is the reading the recording engine takes for the
+padas even though its Jaimini dashas count Scorpio and Aquarius to Ketu
+and Rahu first; that difference is the engine's, measured here and in
+`rashi-dashas-measured.md`.
+
+**The exception counts from the pada**, so a pada in the seventh lands
+in the fourth house; the tenth from the house is refused wherever the
+exception applies to the seventh.

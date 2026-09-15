@@ -20,7 +20,7 @@
 use serde_json::Value;
 use teistro::catalogue::{DashaSystem, Graha, Nakshatra};
 use teistro::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
+use teistro::{ChartRequest, Context, Document, Ephemeris, Timeline, UtcOffset};
 
 /// `dashas.methods.spatial.remaining_fraction` at `builtin-standard`.
 const SPATIAL_FRACTION: f64 = 1e-4;

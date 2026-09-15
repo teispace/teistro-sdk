@@ -27,7 +27,7 @@ use teistro_core::angle::Nas;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Degrees, Depth, JulianDay};
 use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, SeedOverflow, YearLength};
-use teistro_dasha::{Birth, Dasha, Period, Rules, VIMSHOTTARI};
+use teistro_dasha::{Birth, Dasha, Period, Rules, Timeline, VIMSHOTTARI};
 
 /// A remaining fraction's bound: the recorded longitude is the input, so
 /// only the classification's integer arithmetic stands between them.

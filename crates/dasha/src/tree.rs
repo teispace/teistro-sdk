@@ -19,7 +19,7 @@
 use core::fmt;
 
 use teistro_core::angle::Nas;
-use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra};
+use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
@@ -158,6 +158,9 @@ impl fmt::Debug for Path {
 pub struct Period {
     /// Its lord.
     pub lord: Graha,
+    /// The sign it is the period of, in a sign-based dasha; nothing in a
+    /// nakshatra-seeded one, whose periods are their lords'.
+    pub sign: Option<Rashi>,
     /// Where it sits.
     pub path: Path,
     /// When it runs.
@@ -173,6 +176,23 @@ pub struct Period {
 }
 
 impl Period {
+    /// A period that runs its whole span, as every sign-based one does.
+    pub(crate) const fn of_sign(
+        sign: Rashi,
+        lord: Graha,
+        path: Path,
+        interval: Interval,
+    ) -> Period {
+        Period {
+            lord,
+            sign: Some(sign),
+            path,
+            interval,
+            whole: interval,
+            seat: 0,
+        }
+    }
+
     /// The span its sub-periods are shares of.
     #[must_use]
     pub const fn whole(&self) -> Interval {
@@ -188,12 +208,12 @@ pub struct Chain {
 }
 
 impl Chain {
-    const EMPTY: Chain = Chain {
+    pub(crate) const EMPTY: Chain = Chain {
         periods: [None; MAX_DEPTH],
         len: 0,
     };
 
-    fn push(&mut self, period: Period) {
+    pub(crate) fn push(&mut self, period: Period) {
         if let Some(slot) = self.periods.get_mut(self.len) {
             *slot = Some(period);
             self.len += 1;
@@ -221,6 +241,84 @@ impl Chain {
     #[must_use]
     pub fn deepest(&self) -> Option<&Period> {
         self.iter().last()
+    }
+}
+
+/// A dasha's periods, read without building the tree: the mahadasha running
+/// at an instant and a period's children, from which the chain at an
+/// instant and a window's periods follow the same way for every kind of
+/// dasha.
+pub trait Timeline {
+    /// How many children a period has at most.
+    fn breadth(&self) -> usize;
+
+    /// The mahadashas of the birth cycle, in order.
+    fn mahadashas(&self) -> impl Iterator<Item = Period> + '_;
+
+    /// The mahadasha running at a Julian day (UTC), with its cycle; nothing
+    /// before birth, or past the cycle's end when the rules end it.
+    fn mahadasha_at(&self, instant: f64) -> Option<Period>;
+
+    /// The child of `parent` at `index` in its sequence, or nothing past
+    /// the sequence or the deepest level, or when it is over before birth.
+    fn child(&self, parent: &Period, index: usize) -> Option<Period>;
+
+    /// The children of `parent` that run, in order.
+    fn children<'a>(&'a self, parent: &'a Period) -> impl Iterator<Item = Period> + 'a {
+        (0..self.breadth()).filter_map(move |index| self.child(parent, index))
+    }
+
+    /// The periods running at `instant`, from the mahadasha down to `depth`
+    /// levels; empty before birth, and past the end of the cycle when the
+    /// rules end it. Allocates nothing.
+    fn at(&self, instant: JulianDay<Utc>, depth: Depth) -> Chain {
+        let mut chain = Chain::EMPTY;
+        let jd = instant.get();
+        let Some(mut period) = self.mahadasha_at(jd) else {
+            return chain;
+        };
+        chain.push(period);
+        while chain.len() < usize::from(depth.get()) {
+            let Some(next) = (0..self.breadth())
+                .filter_map(|index| self.child(&period, index))
+                .find(|child| child.interval.from.get() <= jd && jd < child.interval.to.get())
+            else {
+                break;
+            };
+            chain.push(next);
+            period = next;
+        }
+        chain
+    }
+
+    /// Every period of the birth cycle to `depth` levels that overlaps
+    /// `window`, depth first in time order: the tree materialised, pruned to
+    /// the window, which is the cost a caller asks for by asking.
+    fn periods(&self, window: Interval, depth: Depth) -> Vec<Period> {
+        fn collect<T: Timeline + ?Sized>(
+            timeline: &T,
+            period: Period,
+            window: Interval,
+            depth: usize,
+            out: &mut Vec<Period>,
+        ) {
+            if !period.interval.overlaps(window) {
+                return;
+            }
+            out.push(period);
+            if period.path.depth() < depth {
+                for index in 0..timeline.breadth() {
+                    if let Some(child) = timeline.child(&period, index) {
+                        collect(timeline, child, window, depth, out);
+                    }
+                }
+            }
+        }
+        let mut out = Vec::new();
+        for maha in self.mahadashas() {
+            collect(self, maha, window, usize::from(depth.get()), &mut out);
+        }
+        out
     }
 }
 
@@ -383,6 +481,7 @@ impl Dasha {
             };
             return Some(Period {
                 lord,
+                sign: None,
                 path,
                 interval,
                 whole,
@@ -396,24 +495,30 @@ impl Dasha {
         );
         Some(Period {
             lord,
+            sign: None,
             path,
             interval,
             whole: interval,
             seat,
         })
     }
+}
+
+impl Timeline for Dasha {
+    fn breadth(&self) -> usize {
+        self.lords()
+    }
 
     /// The mahadashas of the birth cycle, in order: each round of a scaled
     /// row's sequence in turn.
-    pub fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
+    fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
         (0..self.row.mahadashas()).filter_map(|index| self.mahadasha(0, index))
     }
 
     /// The child of `parent` at `index` in its sequence, or nothing when it
     /// is past the sequence, past the deepest level, or, under the elapsed
     /// reading, over before birth.
-    #[must_use]
-    pub fn child(&self, parent: &Period, index: usize) -> Option<Period> {
+    fn child(&self, parent: &Period, index: usize) -> Option<Period> {
         let lords = self.lords();
         if index >= lords {
             return None;
@@ -450,16 +555,12 @@ impl Dasha {
         let seat = self.seat_of(first + index);
         Some(Period {
             lord: self.lord(seat)?,
+            sign: None,
             path,
             interval,
             whole: child_whole,
             seat,
         })
-    }
-
-    /// The children of `parent` that run, in order.
-    pub fn children<'a>(&'a self, parent: &'a Period) -> impl Iterator<Item = Period> + 'a {
-        (0..self.lords()).filter_map(move |index| self.child(parent, index))
     }
 
     /// The mahadasha running at an instant, with its cycle.
@@ -492,54 +593,6 @@ impl Dasha {
             .zip(offsets.iter().skip(1))
             .position(|(from, to)| base + from <= instant && instant < base + to)?;
         self.mahadasha(cycle, index)
-    }
-
-    /// The periods running at `instant`, from the mahadasha down to `depth`
-    /// levels; empty before birth, and past the end of the cycle when the
-    /// rules end it. Allocates nothing.
-    #[must_use]
-    pub fn at(&self, instant: JulianDay<Utc>, depth: Depth) -> Chain {
-        let mut chain = Chain::EMPTY;
-        let jd = instant.get();
-        let Some(mut period) = self.mahadasha_at(jd) else {
-            return chain;
-        };
-        chain.push(period);
-        while chain.len() < usize::from(depth.get()) {
-            let Some(next) = (0..self.lords())
-                .filter_map(|index| self.child(&period, index))
-                .find(|child| child.interval.from.get() <= jd && jd < child.interval.to.get())
-            else {
-                break;
-            };
-            chain.push(next);
-            period = next;
-        }
-        chain
-    }
-
-    /// Every period of the birth cycle to `depth` levels that overlaps
-    /// `window`, depth first in time order: the tree materialised, pruned to
-    /// the window, which is the cost a caller asks for by asking.
-    #[must_use]
-    pub fn periods(&self, window: Interval, depth: Depth) -> Vec<Period> {
-        let mut out = Vec::new();
-        for maha in self.mahadashas() {
-            self.collect(maha, window, usize::from(depth.get()), &mut out);
-        }
-        out
-    }
-
-    fn collect(&self, period: Period, window: Interval, depth: usize, out: &mut Vec<Period>) {
-        if !period.interval.overlaps(window) {
-            return;
-        }
-        out.push(period);
-        if period.path.depth() < depth {
-            for child in self.children(&period) {
-                self.collect(child, window, depth, out);
-            }
-        }
     }
 }
 

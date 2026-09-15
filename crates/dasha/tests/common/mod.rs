@@ -11,7 +11,7 @@
 use std::path::{Path as FsPath, PathBuf};
 
 use serde_json::Value;
-use teistro_dasha::{Dasha, Period};
+use teistro_dasha::{Period, Timeline};
 
 /// A boundary's bound, in days: a tenth of a millisecond above the worst
 /// the measurements found, and ten thousand times inside the corpus's
@@ -62,8 +62,8 @@ pub(crate) fn jd(value: &Value) -> f64 {
 }
 
 /// Every period of the birth cycle to `depth`, depth first.
-pub(crate) fn tree(dasha: &Dasha, depth: usize) -> Vec<Period> {
-    fn walk(dasha: &Dasha, period: Period, depth: usize, out: &mut Vec<Period>) {
+pub(crate) fn tree(dasha: &impl Timeline, depth: usize) -> Vec<Period> {
+    fn walk(dasha: &impl Timeline, period: Period, depth: usize, out: &mut Vec<Period>) {
         out.push(period);
         if period.path.depth() < depth {
             for child in dasha.children(&period) {
