@@ -168,7 +168,11 @@ fn chart(inputs: &Value) -> Result<RuleChart, String> {
     let placements = placements
         .try_into()
         .map_err(|_| String::from("ten placements"))?;
-    Ok(RuleChart { placements })
+    // The yogas' inputs carry no tithi, and no yoga reads one.
+    Ok(RuleChart {
+        placements,
+        tithi: None,
+    })
 }
 
 fn records(root: &Path) -> Result<Vec<Record>, String> {

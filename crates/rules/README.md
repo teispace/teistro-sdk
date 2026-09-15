@@ -16,6 +16,7 @@ cancellations held.
 | [`language`](src/language.rs) | the condition language, typed: three combinators and 22 predicates in the recording engine's own shape, so its rules read unchanged, and anything else (an unknown field or predicate, a thirteenth house, an outer planet) refused with its path |
 | [`chart`](src/chart.rs) | what a rule reads of a chart (each body's longitude, sign, house, dignity, motion, combustion, chara karakas and navamsha), and every place the language leaves a meaning open, each a `Readings` field with the recording engine's choice the default and the text's where the engine has none |
 | [`eval`](src/eval.rs) | the `Evaluator`: benefics and malefics settled once a chart, then each rule to a `RuleResult` without allocating for its participants, or to an `Explanation` with its trace |
+| [`table`](src/table.rs) | tables a rule looks up, each cited: a degree of each sign for a body, or signs for each tithi; `Tables::check` refuses a rule naming a missing table or the wrong kind; `Tables::classical` ships Jataka Parijata's Mrityu Bhagas and Pushkara bhagas, Brihat Prajapatya's Moon, and the Dagdha rashis ([`tables/classical.json`](tables/classical.json)) |
 | [`trace`](src/trace.rs) | how an answer was reached: each condition checked, whether it held, the bodies it added and each reference resolved, as a tree that serialises and reads as prose; one evaluator generic over a recorder, so the untraced answer costs nothing more and cannot differ |
 
 ## What the corpus settled
@@ -33,6 +34,11 @@ cancellations held.
   upapada and the Karakamsha; the lords and karakas are bodies and the padas
   and navamshas are only signs. The upapada's house is a `Readings` field
   (crux C80) and a co-ruled sign's lord the catalogue's (crux C81).
+- **Tables are data, and the texts disagree in them.** The Moon has two
+  Mrityu Bhaga rows (crux C83), so both ship and a rule names one; how a
+  table's degree counts is `Readings::bhaga`, the texts' ordinal degree by
+  default and the engine's ±1° in its reading (crux C82); the Dagdha rashi
+  table's rank is stated and whom it burns is the rule's to say (crux C84).
 - **Eight rules are outside the language**, the Neecha Bhanga family, which
   the engine computes in code; `Rule::is_evaluable` says so.
 
@@ -56,6 +62,12 @@ cancellations held.
   stops at the first condition that failed, and gathers the participants from
   its steps: 55 521 of 55 521 (`tests/baseline.rs`); a unit test pins what an
   explanation holds, what it leaves out, its JSON and its prose.
+- The shipped tables read, hold the page's values at their corners and both
+  of the Moon's rows, and read a tithi by its number in either paksha; six
+  malformed tables and a set with a key twice are refused; a rule naming a
+  missing table or the wrong kind is refused before evaluating; the Moon's
+  degree held under each of the four stretches at six places, and the burnt
+  signs with and without a tithi, each shown in the trace (unit tests).
 - Each body's navamsha is the corpus's recorded D9 on all 930 bodies
   (`tests/baseline.rs`).
 - Strict refusals, the benefics by company, each reading's flip, the node

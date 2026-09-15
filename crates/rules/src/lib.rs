@@ -34,13 +34,15 @@ pub mod chart;
 pub mod eval;
 pub mod language;
 pub mod reference;
+pub mod table;
 pub mod trace;
 
 pub use chart::{
-    Benefics, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides, Placement,
-    Readings, RuleChart, Upapada,
+    Benefics, Bhaga, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides,
+    Placement, Readings, RuleChart, Upapada,
 };
 pub use eval::{Evaluator, Participants, RuleResult};
 pub use language::{Body, Condition, House, Karaka, KarakaScheme, Rule, Source};
 pub use reference::{BodyRef, SignRef, Subject};
+pub use table::{SignDegree, Table, TableKey, Tables};
 pub use trace::{Explanation, Resolved, Step};

@@ -30,7 +30,7 @@
 //!     karaka8: None,
 //!     navamsha: Rashi::Aries,
 //! };
-//! let chart = RuleChart { placements: [placement; 10] };
+//! let chart = RuleChart { placements: [placement; 10], tithi: None };
 //! let rule: Rule = serde_json::from_str(r#"{
 //!     "key": "LORD_OF_TEN_IN_A_KENDRA",
 //!     "category": "example",
@@ -53,15 +53,20 @@
 use core::fmt;
 
 use serde::{Serialize, Serializer};
-use teistro_core::catalogue::Rashi;
+use teistro_core::catalogue::{Rashi, Tithi};
 
 use crate::eval::RuleResult;
 use crate::language::{Body, Condition, House, Rule};
 use crate::reference::{BodyRef, SignRef};
+use crate::table::{SignDegree, TableKey};
 
 /// A reference resolved while a condition was checked.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(
+    tag = "kind",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
 pub enum Resolved {
     /// A reference to a body, and the body the chart gave it, if any.
     Body {
@@ -77,6 +82,29 @@ pub enum Resolved {
         reference: SignRef,
         /// The sign and its house; none when a body it depends on is none.
         place: Option<(Rashi, House)>,
+    },
+    /// A body's degree looked up in a degrees-by-sign table.
+    Degree {
+        /// The table.
+        table: TableKey,
+        /// The body.
+        body: Body,
+        /// The sign it stands in.
+        sign: Rashi,
+        /// The degree the table gives it there; none when the set has no
+        /// such table or the table no row for the body.
+        degree: Option<SignDegree>,
+        /// How far into its sign it stands, degrees.
+        in_sign: f64,
+    },
+    /// The chart's tithi looked up in a signs-by-tithi table.
+    Burnt {
+        /// The table.
+        table: TableKey,
+        /// The chart's tithi, if it carries one.
+        tithi: Option<Tithi>,
+        /// The signs the table gives it; none without a tithi or the table.
+        signs: Vec<Rashi>,
     },
 }
 
@@ -246,6 +274,47 @@ impl fmt::Display for Resolved {
                 reference,
                 place: None,
             } => write!(f, "{reference} is no sign"),
+            Resolved::Degree {
+                table,
+                body,
+                sign,
+                degree: Some(degree),
+                in_sign,
+            } => write!(
+                f,
+                "{table} gives {} in {} its degree {}, and it stands {in_sign:.2}° in",
+                body.key(),
+                sign.key(),
+                degree.get()
+            ),
+            Resolved::Degree {
+                table, body, sign, ..
+            } => write!(
+                f,
+                "{table} gives {} in {} no degree",
+                body.key(),
+                sign.key()
+            ),
+            Resolved::Burnt {
+                table,
+                tithi: Some(tithi),
+                signs,
+            } => {
+                let signs: Vec<&str> = signs.iter().map(|s| s.key()).collect();
+                write!(
+                    f,
+                    "{table} gives {} {}",
+                    tithi.key(),
+                    if signs.is_empty() {
+                        String::from("no signs")
+                    } else {
+                        signs.join(", ")
+                    }
+                )
+            }
+            Resolved::Burnt { table, .. } => {
+                write!(f, "{table} needs a tithi, and the chart has none")
+            }
         }
     }
 }

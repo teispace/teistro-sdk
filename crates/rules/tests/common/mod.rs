@@ -91,7 +91,11 @@ pub(crate) fn chart(inputs: &Value) -> RuleChart {
             navamsha: navamsha(b["sidereal_longitude_deg"].as_f64().unwrap()),
         }
     });
-    RuleChart { placements }
+    // The yogas' inputs carry no tithi, and no yoga reads one.
+    RuleChart {
+        placements,
+        tithi: None,
+    }
 }
 
 pub(crate) fn strings(value: &Value) -> Vec<String> {

@@ -153,6 +153,39 @@ Tables are rule-pack data with their own citations, so a consumer adds a
 Mrityu Bhaga variant by shipping a table, and the citation rule (P3 in
 the pack schema) holds at the table level.
 
+**Built, the first tables (2026-09-15).** Reading the sources narrowed the
+sketch's general `TableLookup` to closed, typed table kinds, each with the
+predicate that reads it. `Table::DegreesBySign` gives a body a degree of each
+sign, and `planet-at-table-degree` asks whether the body stands in its degree.
+`Table::SignsByTithi` gives each tithi of the fortnight a set of signs, and
+`planet-in-table-sign` asks whether any sign reference stands in one. A table
+is data with a `Source` and a key, and a rule names its table by that key.
+`Tables::check` refuses a rule naming a table the set lacks, or a table of the
+other kind, before evaluation. The evaluator reads the set it is given
+(`with_tables`), and the chart carries the tithi when a rule needs one
+(`Rule::reads_tithi`).
+
+The SDK ships four tables in `crates/rules/tables/classical.json`:
+
+- **`MRITYU_BHAGA`.** The Moon's row is Jataka Parijata ch. 1 v. 57. The other
+  grahas' and the lagna's rows are the translator's statement on the next
+  page, read from the 1932 edition's page image. That statement also has a
+  Mandi row, which rules cannot yet name. Every row equals the recording
+  engine's table.
+- **`MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA`.** The Moon's other row, which the
+  translator quotes (crux C83).
+- **`PUSHKARA_BHAGA_MOON`.** From ch. 1 v. 58.
+- **`DAGDHA_RASHI`.** Its rank is stated: the engine's table and two secondary
+  sources agree, and Muhurta Chintamani is not read (crux C84).
+
+How "the nth degree" counts is a reading, `Bhaga` (crux C82). The texts'
+ordinal degree, n − 1° to n°, is the default of the new `Readings::TEXTS`, and
+the engine's ±1° goes into `Readings::RECORDING_ENGINE`. The degree and tithi
+lookups appear in the trace. A dosha written with these predicates replaces
+the engine's Mrityu Bhaga and Dagdha Rashi detectors, which bypassed its
+evaluator. A tithi × weekday table (Dagdha tithi) and the Pushkara navamshas
+remain, as does the `in_varga` composition the Neecha Bhanga rules need.
+
 ### Rules classify and grade, not only match
 
 ```rust

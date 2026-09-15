@@ -920,6 +920,18 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- `teistro-rules` tables: a rule can look a body's degree up in a
+  degrees-by-sign table (`planet-at-table-degree`) or a sign up in a
+  signs-by-tithi table (`planet-in-table-sign`), each table data with its
+  source. `Tables::classical` ships Jataka Parijata's Mrityu Bhagas (ch. 1
+  v. 57 and its translator's table) and Pushkara bhagas (v. 58), Brihat
+  Prajapatya's Moon row, and the Dagdha rashis. `Tables::check` refuses a rule
+  naming a missing table or the wrong kind. `RuleChart` gains `tithi`,
+  `Readings` gains `bhaga` (cruxes C82 to C84), and `Readings::default()` is
+  now `Readings::TEXTS`, which differs from `RECORDING_ENGINE` only there.
+
+  **Numbers:** none; no shipped rule reads a table yet.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

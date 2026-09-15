@@ -558,7 +558,9 @@ references are built** as two types, `BodyRef` and `SignRef`: lords, karakas,
 arudha padas, the upapada, navamshas and signs counted from them, each
 exercised by a BPHS rule. **The trace is built**: `explain` returns each
 condition checked with what it held and resolved, from the same evaluator as
-`evaluate`, which stays at 11 µs. Next: table lookups and cancellation in the
+`evaluate`, which stays at 11 µs. **Tables are built**: cited degrees-by-sign
+and signs-by-tithi tables with their predicates, Jataka Parijata's Mrityu
+Bhagas and the Dagdha rashis shipped. Next: cancellation and severity in the
 order below, with the references that need points the
 chart does not yet carry added as rules need them.
 

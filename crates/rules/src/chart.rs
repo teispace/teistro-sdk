@@ -1,9 +1,10 @@
 //! What a rule reads of a chart, and the choices the language leaves open.
 
-use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
+use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi, Tithi};
 use teistro_core::settings::NodeAspects;
 
 use crate::language::{Body, House};
+use crate::table::SignDegree;
 
 /// One body as a rule reads it.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -30,11 +31,14 @@ pub struct Placement {
 }
 
 /// A chart as the rules read it: the nine grahas and the lagna, in
-/// [`Body::ALL`]'s order.
+/// [`Body::ALL`]'s order, and the tithi of the birth when it is known.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct RuleChart {
     /// Each body's placement, the Sun to Ketu and then the lagna.
     pub placements: [Placement; 10],
+    /// The tithi, which a rule looking signs up by tithi needs
+    /// ([`Rule::reads_tithi`](crate::Rule::reads_tithi)).
+    pub tithi: Option<Tithi>,
 }
 
 impl RuleChart {
@@ -139,8 +143,41 @@ pub enum Upapada {
     ByLagnaParity,
 }
 
+/// Which stretch of a sign "the nth degree" of a table names.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum Bhaga {
+    /// The degree running to n: from n − 1° to n°. Jataka Parijata's "degrees
+    /// attained" (ch. 1 vv. 57 and 58) read as the ordinal degree: the
+    /// default.
+    #[default]
+    Running,
+    /// From n − ½° to n + ½°.
+    Centred,
+    /// The degree completed at n: from n° to n + 1°.
+    Completed,
+    /// Within a degree either side of n: the recording engine's reading.
+    WithinOne,
+}
+
+impl Bhaga {
+    /// Whether a place `in_sign` degrees into its sign is in the stretch the
+    /// table's `degree` names: each stretch includes its start and excludes
+    /// its end, but for the engine's, which includes both.
+    #[must_use]
+    pub fn contains(self, degree: SignDegree, in_sign: f64) -> bool {
+        let n = f64::from(degree.get());
+        match self {
+            Bhaga::Running => (n - 1.0..n).contains(&in_sign),
+            Bhaga::Centred => (n - 0.5..n + 0.5).contains(&in_sign),
+            Bhaga::Completed => (n..n + 1.0).contains(&in_sign),
+            Bhaga::WithinOne => (in_sign - n).abs() <= 1.0,
+        }
+    }
+}
+
 /// A choice at every place the condition language leaves a meaning open
-/// (`03-design/yogas-measured.md`); the default is the recording engine's.
+/// (`03-design/yogas-measured.md`); the default is the texts' where they
+/// settle one and the recording engine's elsewhere.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Readings {
     /// Who counts as a benefic.
@@ -161,17 +198,19 @@ pub struct Readings {
     pub node_aspects: NodeAspects,
     /// Which house's pada is the upapada.
     pub upapada: Upapada,
+    /// Which stretch of a sign a table's degree names.
+    pub bhaga: Bhaga,
 }
 
 impl Default for Readings {
     fn default() -> Readings {
-        Readings::RECORDING_ENGINE
+        Readings::TEXTS
     }
 }
 
 impl Readings {
     /// The recording engine's reading at every place it has one, and the
-    /// text's where it has none: the default.
+    /// text's where it has none.
     pub const RECORDING_ENGINE: Readings = Readings {
         benefics: Benefics::ByCompany,
         dignity: DignityMatch::DeepMeetsPlain,
@@ -182,6 +221,14 @@ impl Readings {
         conjunction: Conjunction::SameSign,
         node_aspects: NodeAspects::None,
         upapada: Upapada::Twelfth,
+        bhaga: Bhaga::WithinOne,
+    };
+
+    /// The texts' reading wherever a text read settles one, the recording
+    /// engine's elsewhere: the default.
+    pub const TEXTS: Readings = Readings {
+        bhaga: Bhaga::Running,
+        ..Readings::RECORDING_ENGINE
     };
 }
 

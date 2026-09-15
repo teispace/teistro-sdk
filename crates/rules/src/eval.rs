@@ -13,7 +13,11 @@ use crate::chart::{
 };
 use crate::language::{Body, Condition, House, KarakaScheme, Rule};
 use crate::reference::{BodyRef, SignRef, Subject};
+use crate::table::{Table, Tables};
 use crate::trace::{Explanation, NoTrace, Recorder, Resolved, Tracer};
+
+/// The tables an evaluator looks in until it is given some.
+static NO_TABLES: Tables = Tables::EMPTY;
 
 /// The bodies a rule consulted, in the order they were first consulted, each
 /// once. A fixed array: evaluating a rule allocates nothing for it.
@@ -123,6 +127,7 @@ impl RuleResult {
 pub struct Evaluator<'a> {
     chart: &'a RuleChart,
     readings: Readings,
+    tables: &'a Tables,
     /// Each body's benefic nature under the readings, by index.
     benefic: [bool; 10],
     /// Each body's malefic nature.
@@ -173,9 +178,18 @@ impl<'a> Evaluator<'a> {
         Evaluator {
             chart,
             readings,
+            tables: &NO_TABLES,
             benefic,
             malefic,
         }
+    }
+
+    /// The same evaluator, looking tables up in `tables`; without, a table
+    /// predicate never holds. Check rules against the set first with
+    /// [`Tables::check`].
+    #[must_use]
+    pub const fn with_tables(self, tables: &'a Tables) -> Evaluator<'a> {
+        Evaluator { tables, ..self }
     }
 
     fn at(&self, body: Body) -> &Placement {
@@ -658,6 +672,39 @@ impl<'a> Evaluator<'a> {
                 }
                 held
             }
+            Condition::PlanetAtTableDegree { planet, table } => {
+                let Some(body) = self.body(planet, rec) else {
+                    return false;
+                };
+                let placement = self.at(body);
+                let in_sign = placement.longitude.rem_euclid(30.0);
+                let degree = self
+                    .tables
+                    .get(table.as_str())
+                    .and_then(|found| found.degree(body, placement.sign));
+                rec.resolved(|| Resolved::Degree {
+                    table: table.clone(),
+                    body,
+                    sign: placement.sign,
+                    degree,
+                    in_sign,
+                });
+                let held =
+                    degree.is_some_and(|degree| self.readings.bhaga.contains(degree, in_sign));
+                self.single(body, into, held)
+            }
+            Condition::PlanetInTableSign { planet, table } => {
+                let signs = match (self.tables.get(table.as_str()), self.chart.tithi) {
+                    (Some(found @ Table::SignsByTithi { .. }), Some(tithi)) => found.signs(tithi),
+                    _ => &[],
+                };
+                rec.resolved(|| Resolved::Burnt {
+                    table: table.clone(),
+                    tithi: self.chart.tithi,
+                    signs: signs.to_vec(),
+                });
+                self.sign_meets(planet, into, rec, |spot| signs.contains(&spot.sign))
+            }
             Condition::PlanetAspectsHouse { from, house_ruled } => {
                 let target = step(self.chart.lagna(), house_ruled.get() - 1);
                 self.body_meets(from, into, rec, |body| {
@@ -813,6 +860,7 @@ mod tests {
                 karaka8: None,
                 navamsha: Rashi::Aries,
             }; 10],
+            tithi: None,
         }
     }
 
@@ -1255,6 +1303,126 @@ mod tests {
         assert_eq!(
             explanation.to_string(),
             "EXAMPLE: not present\n  fails planet-in-house\n    SUN stands in ARIES, house 1\n"
+        );
+    }
+
+    #[test]
+    fn a_table_degree_is_the_stretch_the_reading_names() {
+        use crate::chart::Bhaga;
+        use crate::table::Tables;
+
+        // The Moon's Mrityu Bhaga in Mesha is her eighth degree (Jataka
+        // Parijata ch. 1 v. 57); in Brihat Prajapatya's row, her 26th.
+        let mut c = chart();
+        let mrityu = written(
+            r#"{"type": "planet-at-table-degree", "planet": "MOON", "table": "MRITYU_BHAGA"}"#,
+        );
+        let at = |c: &RuleChart, bhaga, condition: &Condition| {
+            let readings = Readings { bhaga, ..ENGINE };
+            let mut into = Participants::default();
+            Evaluator::new(c, readings)
+                .with_tables(Tables::classical())
+                .holds(condition, &mut into)
+        };
+        let spans = [
+            Bhaga::Running,
+            Bhaga::Centred,
+            Bhaga::Completed,
+            Bhaga::WithinOne,
+        ];
+        for (degrees, held) in [
+            (7.2, [true, false, false, true]),
+            (7.5, [true, true, false, true]),
+            (8.0, [false, true, true, true]),
+            (8.5, [false, false, true, true]),
+            (9.0, [false, false, false, true]),
+            (6.9, [false, false, false, false]),
+        ] {
+            c.placements[MOON.index()].longitude = degrees;
+            let answers = spans.map(|bhaga| at(&c, bhaga, &mrityu));
+            assert_eq!(answers, held, "the Moon at {degrees}° of Mesha");
+        }
+        assert_eq!(Readings::default().bhaga, Bhaga::Running);
+
+        // Another table, another degree; a table with no row for the body, or
+        // an evaluator given no tables, never holds.
+        c.placements[MOON.index()].longitude = 25.5;
+        let prajapatya = written(
+            r#"{"type": "planet-at-table-degree", "planet": "MOON", "table": "MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA"}"#,
+        );
+        assert!(at(&c, Bhaga::Running, &prajapatya));
+        let sun = written(
+            r#"{"type": "planet-at-table-degree", "planet": "SUN", "table": "MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA"}"#,
+        );
+        c.placements[SUN.index()].longitude = 19.5;
+        assert!(!at(&c, Bhaga::WithinOne, &sun));
+        assert!(!holds(&c, ENGINE, &prajapatya).0);
+
+        let rule = rule(vec![prajapatya], Vec::new());
+        let explanation = Evaluator::new(&c, Readings::TEXTS)
+            .with_tables(Tables::classical())
+            .explain(&rule);
+        assert_eq!(
+            explanation.conditions[0].resolved[0].to_string(),
+            "MRITYU_BHAGA_MOON_BRIHAT_PRAJAPATYA gives MOON in ARIES its degree 26, and it stands 25.50° in"
+        );
+    }
+
+    #[test]
+    fn the_signs_a_tithi_burns_hold_only_with_a_tithi_and_the_table() {
+        use teistro_core::catalogue::Tithi;
+
+        use crate::table::Tables;
+
+        fn evaluator(c: &RuleChart) -> Evaluator<'_> {
+            Evaluator::new(c, Readings::TEXTS).with_tables(Tables::classical())
+        }
+
+        // Shashthi burns Mesha and Simha in either paksha.
+        let mut c = chart();
+        place(&mut c, MARS, Rashi::Leo);
+        let burnt = |planet: &str| {
+            written(&format!(
+                r#"{{"type": "planet-in-table-sign", "planet": {planet}, "table": "DAGDHA_RASHI"}}"#
+            ))
+        };
+        let held = |c: &RuleChart, condition: &Condition| {
+            let mut into = Participants::default();
+            (
+                evaluator(c).holds(condition, &mut into),
+                into.iter().collect::<Vec<_>>(),
+            )
+        };
+        assert!(!held(&c, &burnt(r#""MARS""#)).0, "no tithi, no burnt sign");
+        for tithi in [Tithi::ShuklaShashthi, Tithi::KrishnaShashthi] {
+            c.tithi = Some(tithi);
+            assert_eq!(held(&c, &burnt(r#""MARS""#)), (true, vec![MARS]));
+            // The lagna's lord, Mars, stands in a burnt sign too; the sign of the
+            // twelfth, Pisces, is not burnt.
+            assert!(held(&c, &burnt(r#"{"lordOf": 1}"#)).0);
+            assert!(!held(&c, &burnt("12")).0);
+        }
+        c.tithi = Some(Tithi::Purnima);
+        assert!(!held(&c, &burnt(r#""MARS""#)).0);
+
+        let rule = rule(vec![burnt(r#""MARS""#)], Vec::new());
+        assert!(rule.reads_tithi());
+        c.tithi = None;
+        assert_eq!(
+            evaluator(&c).explain(&rule).conditions[0].resolved[0].to_string(),
+            "DAGDHA_RASHI needs a tithi, and the chart has none"
+        );
+        c.tithi = Some(Tithi::KrishnaShashthi);
+        assert_eq!(
+            evaluator(&c).explain(&rule).conditions[0].resolved[0].to_string(),
+            "DAGDHA_RASHI gives KRISHNA_SHASHTHI ARIES, LEO"
+        );
+        assert!(
+            !self::rule(
+                vec![written(r#"{"type": "planet-in-kendra", "planet": "SUN"}"#)],
+                Vec::new()
+            )
+            .reads_tithi()
         );
     }
 

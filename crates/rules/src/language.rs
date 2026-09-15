@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
 
 use crate::reference::{BodyRef, SignRef, Subject};
+use crate::table::TableKey;
 
 /// What a rule can name: one of the nine grahas, or the lagna.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -427,6 +428,23 @@ pub enum Condition {
         /// Which house.
         house_ruled: House,
     },
+    /// A body stands in the degree of its sign that its row of a
+    /// degrees-by-sign table gives, as [`Bhaga`](crate::Bhaga) counts a degree;
+    /// never, when the table has no row for it.
+    PlanetAtTableDegree {
+        /// Who.
+        planet: BodyRef,
+        /// Which table.
+        table: TableKey,
+    },
+    /// The reference stands in one of the signs a signs-by-tithi table gives
+    /// the chart's tithi; never, when the chart carries no tithi.
+    PlanetInTableSign {
+        /// Who.
+        planet: SignRef,
+        /// Which table.
+        table: TableKey,
+    },
 }
 
 impl Condition {
@@ -459,6 +477,8 @@ impl Condition {
             Condition::PlanetRetrograde { .. } => "planet-retrograde",
             Condition::PlanetAspectsPlanet { .. } => "planet-aspects-planet",
             Condition::PlanetAspectsHouse { .. } => "planet-aspects-house",
+            Condition::PlanetAtTableDegree { .. } => "planet-at-table-degree",
+            Condition::PlanetInTableSign { .. } => "planet-in-table-sign",
         }
     }
 
@@ -522,6 +542,17 @@ pub struct Rule {
 }
 
 impl Rule {
+    /// Whether any of its conditions or cancellations reads the chart's tithi,
+    /// so a caller knows to give the chart one.
+    #[must_use]
+    pub fn reads_tithi(&self) -> bool {
+        self.conditions
+            .iter()
+            .chain(&self.cancellations)
+            .flat_map(Condition::walk)
+            .any(|c| matches!(c, Condition::PlanetInTableSign { .. }))
+    }
+
     /// Whether the language can evaluate it: it has conditions.
     #[must_use]
     pub fn is_evaluable(&self) -> bool {
