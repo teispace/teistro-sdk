@@ -77,14 +77,16 @@ fn the_text_s_reading_counts_the_chapter_s_strengths() {
     assert_eq!(shadbala.rules, ShadbalaRules::BPHS);
     let natural: f64 = shadbala.grahas.iter().map(|g| g.naisargika).sum();
     assert!((natural - 4.0 * VIRUPAS_PER_RUPA).abs() < 1e-9);
-    let [sun, moon, ..] = shadbala.grahas[..] else {
-        panic!("seven grahas");
-    };
+    let (sun, moon) = (shadbala.grahas[0], shadbala.grahas[1]);
     assert!((sun.kaala.ayana - 2.0 * sun.cheshta).abs() < 1e-12);
     assert!((moon.cheshta - moon.kaala.paksha).abs() < 1e-12);
     // One of the lords of the year, the month, the day and the hour each.
     let lords = |f: fn(&teistro::strength::GrahaShadbala) -> f64, value: f64| {
-        shadbala.grahas.iter().filter(|g| f(g) == value).count()
+        shadbala
+            .grahas
+            .iter()
+            .filter(|g| (f(g) - value).abs() < 1e-12)
+            .count()
     };
     assert_eq!(lords(|g| g.kaala.abda, 15.0), 1);
     assert_eq!(lords(|g| g.kaala.masa, 30.0), 1);
