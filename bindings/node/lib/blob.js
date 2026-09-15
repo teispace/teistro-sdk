@@ -416,6 +416,13 @@ export function decodeCharts(bytes) {
       signDeg: column(blob, at, 27, 'f64', at.count),
       nakshatraDeg: column(blob, at, 28, 'f64', at.count),
       padaDeg: column(blob, at, 29, 'f64', at.count),
+      hasSayanadi: column(blob, at, 30, 'u8', at.count),
+      sayanadi: column(blob, at, 31, 'u16', at.count),
+      cheshta1: column(blob, at, 32, 'u16', at.count),
+      cheshta2: column(blob, at, 33, 'u16', at.count),
+      cheshta3: column(blob, at, 34, 'u16', at.count),
+      cheshta4: column(blob, at, 35, 'u16', at.count),
+      cheshta5: column(blob, at, 36, 'u16', at.count),
       length: at.count,
     };
   }

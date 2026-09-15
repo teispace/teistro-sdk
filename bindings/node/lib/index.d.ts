@@ -9,6 +9,8 @@
 import type {
   AvasthaBaladi,
   AvasthaDeeptadi,
+  AvasthaSayanadi,
+  AvasthaCheshta,
   AvasthaJagradadi,
   AvasthaLajjitadi,
   Ayana,
@@ -494,7 +496,7 @@ export interface GrahaVaiseshikamsa {
   readonly dashavarga: VaiseshikamsaStanding;
   /** Over the sixteen. */
   readonly shodashavarga: VaiseshikamsaStanding;
-  /** Whether it is combust or defeated in war, its names then not auspicious. */
+  /** Whether it is combust, defeated in war or in Shayana, its names then not auspicious. */
   readonly impaired: boolean;
 }
 
@@ -766,8 +768,27 @@ export interface GrahaState {
     readonly isWinner: boolean;
     readonly apartDeg: number;
   } | null;
+  /**
+   * The Sayanadi state and its sub-states (BPHS ch. 45 vv. 30 to 37), or
+   * `null` for a body the verses give no number.
+   */
+  readonly sayanadi: Sayanadi | null;
   /** How near it stands to a boundary. */
   readonly boundaries: Boundaries;
+}
+
+/**
+ * A graha's Sayanadi state, with its sub-state under a name of each anka.
+ *
+ * @example
+ * // The sub-state under a name whose first syllable's anka is 3.
+ * const cheshta = state.sayanadi?.cheshtas[3 - 1];
+ */
+export interface Sayanadi {
+  /** The state, Shayana to Nidra. */
+  readonly avastha: AvasthaSayanadi | 'unknown';
+  /** The sub-state under a name whose first syllable's anka is 1 to 5, in that order. */
+  readonly cheshtas: readonly (AvasthaCheshta | 'unknown')[];
 }
 
 /** The place a chart was founded at. */

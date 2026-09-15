@@ -686,6 +686,40 @@ export interface ChartsStates {
    * How near it stands to a pada edge, degrees.
    */
   readonly padaDeg: Float64Array;
+  /**
+   * 1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon.
+   */
+  readonly hasSayanadi: Uint8Array;
+  /**
+   * The Sayanadi state; read only when `has_sayanadi`.
+   * The values are `AvasthaSayanadi` ids.
+   */
+  readonly sayanadi: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta1: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta2: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta3: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta4: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta5: Uint16Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1092,7 +1126,7 @@ export interface ChartsVaiseshikamsa {
    */
   readonly graha: Uint16Array;
   /**
-   * 1 when it is combust or defeated in war, its names then not auspicious, else 0.
+   * 1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0.
    */
   readonly impaired: Uint8Array;
   /**

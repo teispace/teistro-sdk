@@ -347,6 +347,13 @@ def main() -> None:
                 put(f"{key}-wakefulness", state.wakefulness.full_key)
                 put(f"{key}-deeptadi", state.deeptadi.full_key if state.deeptadi else "none")
                 put(
+                    f"{key}-sayanadi",
+                    f"{state.sayanadi.avastha.full_key} "
+                    + ",".join(c.full_key for c in state.sayanadi.cheshtas)
+                    if state.sayanadi
+                    else "none",
+                )
+                put(
                     f"{key}-holding",
                     ",".join(m.full_key for m in state.lajjitadi.holding) or "none",
                 )

@@ -75,6 +75,8 @@ every shipped profile. The v1 inventory:
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |
 | aspect | `drishti_table` | key | the aspect model's tables |
 | state | `combustion_orbs` | key | the cited orb tables (`BPHS`, `SURYA_SIDDHANTA`) |
+| state | `sayanadi_ghatis` | enum | `ELAPSED` (the default), `RUNNING` (crux C78) |
+| state | `sayanadi_nodes` | enum | `NINE_GRAHA_ORDER` (the default, Rahu 8 and Ketu 9), `SHARED_WITH_RAHU` (crux C78) |
 | strength | `bala_scheme` | `BalaSchemeKey` | `PARASHARA`, `PARASHARA_EXTENDED` |
 | strength | `ekadhipatya` | enum | `BPHS` (the default, ch. 68), `EMPTY_TO_ZERO` (the corpus's engine; crux C60) |
 | strength | `shodhana` | enum | `EACH_GRAHA` (the default, chs. 67 to 69), `SARVA` (the corpus's engine; crux C59) |

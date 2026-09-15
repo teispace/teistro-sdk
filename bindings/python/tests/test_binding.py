@@ -15,6 +15,7 @@ from typing import Optional
 
 from teistro import (
     Altitude,
+    AvasthaSayanadi,
     Balance,
     Body,
     Calendar,
@@ -663,6 +664,26 @@ class AnEngine(WithLibrary):
             six = g.sthana.total + g.dig + g.kaala.total + g.cheshta + g.naisargika + g.drik
             self.assertAlmostEqual(six, g.virupas, places=9)
             self.assertEqual(g.strong, g.rupas >= g.required_rupas)
+
+    def test_a_graha_s_state_carries_its_sayanadi_and_a_sub_state_for_every_anka(self) -> None:
+        """Every graha's state carries its Sayanadi: the nine grahas a state and
+        a sub-state under each of the five ankas, the outer planets none."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        states = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, state=True).states
+        nine = {"SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN", "RAHU", "KETU"}
+        for state in states:
+            if state.graha.name not in nine:
+                self.assertIsNone(state.sayanadi)
+                continue
+            sayanadi = state.sayanadi
+            assert sayanadi is not None
+            self.assertIsInstance(sayanadi.avastha, AvasthaSayanadi)
+            self.assertEqual(len(sayanadi.cheshtas), 5)
+            self.assertEqual(sayanadi.cheshta(3), sayanadi.cheshtas[2])
+            with self.assertRaises(ValueError):
+                sayanadi.cheshta(6)
 
     def test_a_chart_carries_its_vaiseshikamsa_each_scheme_s_count_and_name(self) -> None:
         """A chart's Vaiseshikamsa crosses whole: each scheme's count within its

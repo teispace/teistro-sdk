@@ -369,7 +369,7 @@
         {
           "name": "AvasthaSayanadi",
           "value": 54,
-          "doc": "The twelve Sayanadi states.",
+          "doc": "The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.",
           "key": "avastha_sayanadi"
         },
         {
@@ -425,6 +425,12 @@
           "value": 63,
           "doc": "The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.",
           "key": "vaiseshikamsa"
+        },
+        {
+          "name": "AvasthaCheshta",
+          "value": 64,
+          "doc": "The three sub-states of a Sayanadi state, a remainder of three.",
+          "key": "avastha_cheshta"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4556,7 +4562,7 @@
     },
     {
       "name": "AvasthaSayanadi",
-      "doc": "The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.",
+      "doc": "The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.",
       "repr": "u16",
       "kind": "avastha_sayanadi",
       "values": [
@@ -5882,6 +5888,33 @@
           "value": 29,
           "doc": "Shrivallabha",
           "key": "SHRIVALLABHA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "AvasthaCheshta",
+      "doc": "The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.",
+      "repr": "u16",
+      "kind": "avastha_cheshta",
+      "values": [
+        {
+          "name": "Drishti",
+          "value": 0,
+          "doc": "Drishti, a remainder of one: the state's effects middling",
+          "key": "DRISHTI"
+        },
+        {
+          "name": "Cheshta",
+          "value": 1,
+          "doc": "Cheshta, a remainder of two: its effects in full",
+          "key": "CHESHTA"
+        },
+        {
+          "name": "Vicheshta",
+          "value": 2,
+          "doc": "Vicheshta, a remainder of nothing: its effects slight",
+          "key": "VICHESHTA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -13405,6 +13438,47 @@
               "name": "pada_deg",
               "scalar": "f64",
               "doc": "How near it stands to a pada edge, degrees."
+            },
+            {
+              "name": "has_sayanadi",
+              "scalar": "u8",
+              "doc": "1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon."
+            },
+            {
+              "name": "sayanadi",
+              "scalar": "u16",
+              "doc": "The Sayanadi state; read only when `has_sayanadi`.",
+              "enum": "AvasthaSayanadi"
+            },
+            {
+              "name": "cheshta_1",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_2",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_3",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_4",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_5",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
             }
           ]
         },
@@ -13881,7 +13955,7 @@
             {
               "name": "impaired",
               "scalar": "u8",
-              "doc": "1 when it is combust or defeated in war, its names then not auspicious, else 0."
+              "doc": "1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0."
             },
             {
               "name": "shadvarga_good",

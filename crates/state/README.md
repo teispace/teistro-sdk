@@ -14,6 +14,7 @@ friendships, combustion, the ages, the planetary war and the avasthas.
 | [`dignity`](src/dignity.rs) | the ladder, the natural, temporary and compound friendships, the dispositor |
 | [`burn`](src/burn.rs) | combustion: the two shipped orb tables and what they make of a distance from the Sun |
 | [`avastha`](src/avastha.rs) | the five ages, wakefulness, the deeptadi, the lajjitadi, the war and who wins it |
+| [`sayanadi`](src/sayanadi.rs) | the twelve Sayanadi states from BPHS ch. 45 and each state's sub-state under every anka of a name |
 | [`boundary`](src/boundary.rs) | how near a body stands to a sign, nakshatra or pada edge |
 | [`chart`](src/chart.rs) | the assembly: every graha of a founded chart, with what it is |
 

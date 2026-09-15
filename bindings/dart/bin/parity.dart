@@ -342,6 +342,14 @@ void main() {
       put('$key-age', state.age.fullKey);
       put('$key-wakefulness', state.wakefulness.fullKey);
       put('$key-deeptadi', state.deeptadi?.fullKey ?? 'none');
+      final sayanadi = state.sayanadi;
+      put(
+        '$key-sayanadi',
+        sayanadi == null
+            ? 'none'
+            : '${sayanadi.avastha.fullKey} '
+                '${sayanadi.cheshtas.map((c) => c.fullKey).join(',')}',
+      );
       put(
         '$key-holding',
         state.lajjitadi.holding.isEmpty

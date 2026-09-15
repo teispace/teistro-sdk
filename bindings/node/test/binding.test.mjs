@@ -513,8 +513,9 @@ test('every catalogue enum has a complete id table', () => {
   // 969 since the dasha balance crossed as `TsBalance`, spatial and temporal;
   // 973 since the Ashtakavarga's `TsShodhana` and `TsEkadhipatya`, two each;
   // 975 since the Vimshopaka's `TsVimshopakaScoring`, two;
-  // 1006 since the vaiseshikamsa catalogue kind: thirty names and its UNKNOWN.
-  assert.equal(entries, 1006, 'every member of every enum is in a table');
+  // 1006 since the vaiseshikamsa catalogue kind: thirty names and its UNKNOWN;
+  // 1010 since the avastha_cheshta catalogue kind: three and its UNKNOWN.
+  assert.equal(entries, 1010, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -879,6 +880,30 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
     'the reduced sum is the grahas\' own reductions summed',
   );
   assert.ok(grahas.every((g) => g.yogaPinda === g.rashiPinda + g.grahaPinda));
+  ctx.dispose();
+});
+
+/**
+ * Every graha's state carries its Sayanadi: the nine grahas a state and a
+ * sub-state under each of the five ankas, the outer planets none.
+ */
+test('a graha\'s state carries its Sayanadi and a sub-state for every anka', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const { states } = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, state: true });
+  const nine = ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU', 'KETU'].map((g) => `graha.${g}`);
+  for (const state of states) {
+    if (!nine.includes(state.graha)) {
+      assert.equal(state.sayanadi, null, state.graha);
+      continue;
+    }
+    assert.match(state.sayanadi.avastha, /^avastha_sayanadi\./, state.graha);
+    assert.equal(state.sayanadi.cheshtas.length, 5, state.graha);
+    for (const cheshta of state.sayanadi.cheshtas) {
+      assert.match(cheshta, /^avastha_cheshta\./, state.graha);
+    }
+  }
+  assert.ok(states.some((s) => s.sayanadi !== null));
   ctx.dispose();
 });
 

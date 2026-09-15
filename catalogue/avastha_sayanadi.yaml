@@ -1,89 +1,89 @@
 kind: avastha_sayanadi
 number: 54
 version: 1
-doc: "The twelve Sayanadi states."
+doc: "The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna."
 members:
   - key: SHAYANA
     id: 0
     doc: "Shayana"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: UPAVESHANA
     id: 1
     doc: "Upaveshana"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: NETRAPANI
     id: 2
     doc: "Netrapani"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: PRAKASHANA
     id: 3
     doc: "Prakashana"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: GAMANA
     id: 4
     doc: "Gamana"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: AGAMANA
     id: 5
     doc: "Agamana"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: SABHA
     id: 6
     doc: "Sabha"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: AGAMA
     id: 7
     doc: "Agama"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: BHOJANA
     id: 8
     doc: "Bhojana"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: NRITYALIPSA
     id: 9
     doc: "Nrityalipsa"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: KAUTUKA
     id: 10
     doc: "Kautuka"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T
   - key: NIDRA
     id: 11
     doc: "Nidra"
     sources:
       - text: BPHS
-        ref: "45"
+        ref: "45.30-37"
     mark: T

@@ -156,7 +156,7 @@ enum Kind {
   avasthaDeeptadi(52, 'avastha_deeptadi'),
   /// The six Lajjitadi states.
   avasthaLajjitadi(53, 'avastha_lajjitadi'),
-  /// The twelve Sayanadi states.
+  /// The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
   avasthaSayanadi(54, 'avastha_sayanadi'),
   /// What kind of derived point.
   pointFamily(55, 'point_family'),
@@ -175,7 +175,9 @@ enum Kind {
   /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
   chartLayout(62, 'chart_layout'),
   /// The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
-  vaiseshikamsa(63, 'vaiseshikamsa');
+  vaiseshikamsa(63, 'vaiseshikamsa'),
+  /// The three sub-states of a Sayanadi state, a remainder of three.
+  avasthaCheshta(64, 'avastha_cheshta');
 
   const Kind(this.id, this.key);
 
@@ -3313,7 +3315,7 @@ enum AvasthaLajjitadi implements KeyOf<AvasthaLajjitadi> {
   }
 }
 
-/// The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+/// The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
 enum AvasthaSayanadi implements KeyOf<AvasthaSayanadi> {
   /// Shayana
   shayana(0, 'SHAYANA'),
@@ -4089,6 +4091,49 @@ enum Vaiseshikamsa implements KeyOf<Vaiseshikamsa> {
 
   /// The member with a key, or `null` for one this build does not know.
   static Vaiseshikamsa? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.
+enum AvasthaCheshta implements KeyOf<AvasthaCheshta> {
+  /// Drishti, a remainder of one: the state's effects middling
+  drishti(0, 'DRISHTI'),
+  /// Cheshta, a remainder of two: its effects in full
+  cheshta(1, 'CHESHTA'),
+  /// Vicheshta, a remainder of nothing: its effects slight
+  vicheshta(2, 'VICHESHTA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const AvasthaCheshta(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'avastha_cheshta.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AvasthaCheshta> registered(String key) => Registered._('avastha_cheshta.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static AvasthaCheshta byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => AvasthaCheshta.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static AvasthaCheshta? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

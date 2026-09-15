@@ -504,9 +504,9 @@ setting (C64–C71), then Sripati's reading from B.V. Raman's worked example
 bala followed** (`03-design/bhava-bala-measured.md`, `check-bhava-bala`): the
 built module against every recorded house, three readings at three forks
 (C73–C75), **and the Ishta and Kashta phalas** on the Shadbala reading (C76).
-**The Vaiseshikamsa followed** (C77). Next: the dasha-effect readings the
-phalas feed, and the Avasthas the Vaiseshikamsa's impaired flag still lacks
-(the Sayanadi).
+**The Vaiseshikamsa followed** (C77), **then the Sayanadi avasthas** (C78),
+which the Vaiseshikamsa's impaired flag now reads. Next: the dasha-effect
+readings the phalas feed.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

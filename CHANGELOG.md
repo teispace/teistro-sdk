@@ -835,6 +835,18 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** new. No settings hash moved.
 
+  The Sayanadi avasthas followed, from BPHS ch. 45 vv. 30 to 37: every
+  graha's state carries `sayanadi`, one of the twelve states and its
+  sub-state under each of the five ankas a name's first syllable can have
+  (`Sayanadi::cheshta(Anka)`), through the boundary's `states` section and
+  every binding. The sub-states are a new catalogue kind, `avastha_cheshta`.
+  Two knobs, `state.sayanadi_ghatis` and `state.sayanadi_nodes`, carry
+  what the verses leave open (crux C78). A graha in Shayana is now also
+  impaired in the Vaiseshikamsa (crux C77).
+
+  **Numbers:** new, and the Vaiseshikamsa's `impaired` moves for a graha in
+  Shayana. Every settings hash moved: the `state` group gained two knobs.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

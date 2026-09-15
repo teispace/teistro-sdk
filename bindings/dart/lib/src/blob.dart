@@ -773,6 +773,13 @@ final class ChartsStates {
     required this.signDeg,
     required this.nakshatraDeg,
     required this.padaDeg,
+    required this.hasSayanadi,
+    required this.sayanadi,
+    required this.cheshta1,
+    required this.cheshta2,
+    required this.cheshta3,
+    required this.cheshta4,
+    required this.cheshta5,
     required this.length,
   });
 
@@ -865,6 +872,27 @@ final class ChartsStates {
 
   /// How near it stands to a pada edge, degrees.
   final Float64List padaDeg;
+
+  /// 1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon.
+  final Uint8List hasSayanadi;
+
+  /// The Sayanadi state; read only when `has_sayanadi`.
+  final Uint16List sayanadi;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`.
+  final Uint16List cheshta1;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`.
+  final Uint16List cheshta2;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`.
+  final Uint16List cheshta3;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`.
+  final Uint16List cheshta4;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`.
+  final Uint16List cheshta5;
 
   /// The number of rows every column holds.
   final int length;
@@ -1284,7 +1312,7 @@ final class ChartsVaiseshikamsa {
   /// Which graha.
   final Uint16List graha;
 
-  /// 1 when it is combust or defeated in war, its names then not auspicious, else 0.
+  /// 1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0.
   final Uint8List impaired;
 
   /// How many of the shadvarga's vargas are good for it.
@@ -2227,6 +2255,41 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atStates, 29),
         blob.columnOffset(atStates, 29) + atStates.count * 8,
+      ),
+      hasSayanadi: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 30),
+        blob.columnOffset(atStates, 30) + atStates.count * 1,
+      ),
+      sayanadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 31),
+        blob.columnOffset(atStates, 31) + atStates.count * 2,
+      ),
+      cheshta1: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 32),
+        blob.columnOffset(atStates, 32) + atStates.count * 2,
+      ),
+      cheshta2: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 33),
+        blob.columnOffset(atStates, 33) + atStates.count * 2,
+      ),
+      cheshta3: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 34),
+        blob.columnOffset(atStates, 34) + atStates.count * 2,
+      ),
+      cheshta4: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 35),
+        blob.columnOffset(atStates, 35) + atStates.count * 2,
+      ),
+      cheshta5: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 36),
+        blob.columnOffset(atStates, 36) + atStates.count * 2,
       ),
       length: atStates.count,
     ),

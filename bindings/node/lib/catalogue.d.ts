@@ -114,7 +114,8 @@ export type Kind =
   | 'panchaka'
   | 'muhurta_yoga'
   | 'chart_layout'
-  | 'vaiseshikamsa';
+  | 'vaiseshikamsa'
+  | 'avastha_cheshta';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -323,7 +324,7 @@ export declare const Kind: {
    */
   readonly AvasthaLajjitadi: 'avastha_lajjitadi';
   /**
-   * The twelve Sayanadi states.
+   * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
    */
   readonly AvasthaSayanadi: 'avastha_sayanadi';
   /**
@@ -362,6 +363,10 @@ export declare const Kind: {
    * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
    */
   readonly Vaiseshikamsa: 'vaiseshikamsa';
+  /**
+   * The three sub-states of a Sayanadi state, a remainder of three.
+   */
+  readonly AvasthaCheshta: 'avastha_cheshta';
 };
 
 /**
@@ -4152,7 +4157,7 @@ export declare const AvasthaLajjitadi: {
 export declare const AvasthaLajjitadiById: ReadonlyMap<number, AvasthaLajjitadi>;
 
 /**
- * The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+ * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
  */
 export type AvasthaSayanadi =
   | 'avastha_sayanadi.SHAYANA'
@@ -5325,6 +5330,33 @@ export declare const Vaiseshikamsa: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const VaiseshikamsaById: ReadonlyMap<number, Vaiseshikamsa>;
+
+/**
+ * The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.
+ */
+export type AvasthaCheshta = 'avastha_cheshta.DRISHTI' | 'avastha_cheshta.CHESHTA' | 'avastha_cheshta.VICHESHTA' | 'unknown';
+
+/** Every AvasthaCheshta by name; the values are the strings the union accepts. */
+export declare const AvasthaCheshta: {
+  /**
+   * Drishti, a remainder of one: the state's effects middling
+   */
+  readonly Drishti: 'avastha_cheshta.DRISHTI';
+  /**
+   * Cheshta, a remainder of two: its effects in full
+   */
+  readonly Cheshta: 'avastha_cheshta.CHESHTA';
+  /**
+   * Vicheshta, a remainder of nothing: its effects slight
+   */
+  readonly Vicheshta: 'avastha_cheshta.VICHESHTA';
+};
+
+/**
+ * Every AvasthaCheshta by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AvasthaCheshtaById: ReadonlyMap<number, AvasthaCheshta>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

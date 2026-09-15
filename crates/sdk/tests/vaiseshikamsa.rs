@@ -40,9 +40,15 @@ fn a_reading_carries_a_vaiseshikamsa_consistent_with_its_rules() {
         }
         assert!(graha.saptavarga.good_vargas >= graha.shadvarga.good_vargas);
         let state = states.iter().find(|s| s.graha == graha.graha).unwrap();
+        // Combust, defeated, or in Shayana, the bad avastha ch. 6 v. 53 names.
         assert_eq!(
             graha.impaired,
-            state.is_combust() || state.war.is_some_and(|war| !war.is_winner)
+            state.is_combust() || state.lost_its_war() || state.is_shayana()
+        );
+        assert!(
+            state.sayanadi.is_some(),
+            "{:?}: the nine have a Sayanadi",
+            graha.graha
         );
     }
 }

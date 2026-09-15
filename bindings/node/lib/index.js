@@ -42,6 +42,8 @@ import {
   AvasthaDeeptadiById,
   AvasthaJagradadiById,
   AvasthaLajjitadiById,
+  AvasthaSayanadiById,
+  AvasthaCheshtaById,
   BurningById,
   DignityById,
   RelationshipById,
@@ -865,6 +867,14 @@ export class Chart {
               opponent: GrahaById.get(s.warOpponent[i]) ?? 'unknown',
               isWinner: s.warWon[i] !== 0,
               apartDeg: s.warApartDeg[i],
+            }
+          : null,
+        sayanadi: s.hasSayanadi[i]
+          ? {
+              avastha: AvasthaSayanadiById.get(s.sayanadi[i]) ?? 'unknown',
+              cheshtas: [s.cheshta1, s.cheshta2, s.cheshta3, s.cheshta4, s.cheshta5].map(
+                (column) => AvasthaCheshtaById.get(column[i]) ?? 'unknown',
+              ),
             }
           : null,
         boundaries: {

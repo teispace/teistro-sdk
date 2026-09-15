@@ -117,6 +117,29 @@ const UNNAMED: &[(&str, &str, &[&str])] = &[
         ],
     ),
     (
+        "avastha_cheshta",
+        "no vetted name table for the Sayanadi's sub-states",
+        &["DRISHTI", "CHESHTA", "VICHESHTA"],
+    ),
+    (
+        "avastha_sayanadi",
+        "the vetted avastha tables stop at the Baladi, Jagradadi, Deeptadi and Lajjitadi",
+        &[
+            "SHAYANA",
+            "UPAVESHANA",
+            "NETRAPANI",
+            "PRAKASHANA",
+            "GAMANA",
+            "AGAMANA",
+            "SABHA",
+            "AGAMA",
+            "BHOJANA",
+            "NRITYALIPSA",
+            "KAUTUKA",
+            "NIDRA",
+        ],
+    ),
+    (
         "calendar",
         "no vetted name table for the calendar systems",
         &[

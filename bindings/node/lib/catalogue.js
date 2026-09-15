@@ -114,6 +114,7 @@ export const Kind = Object.freeze({
   MuhurtaYoga: 'muhurta_yoga',
   ChartLayout: 'chart_layout',
   Vaiseshikamsa: 'vaiseshikamsa',
+  AvasthaCheshta: 'avastha_cheshta',
 });
 
 /**
@@ -182,6 +183,7 @@ export const KindById = new Map([
   [61, 'muhurta_yoga'],
   [62, 'chart_layout'],
   [63, 'vaiseshikamsa'],
+  [64, 'avastha_cheshta'],
 ]);
 
 /** Every Graha by name. */
@@ -2489,6 +2491,23 @@ export const VaiseshikamsaById = new Map([
   [27, 'vaiseshikamsa.CHAKRASIMHASANA'],
   [28, 'vaiseshikamsa.GOLOKA'],
   [29, 'vaiseshikamsa.SHRIVALLABHA'],
+]);
+
+/** Every AvasthaCheshta by name. */
+export const AvasthaCheshta = Object.freeze({
+  Drishti: 'avastha_cheshta.DRISHTI',
+  Cheshta: 'avastha_cheshta.CHESHTA',
+  Vicheshta: 'avastha_cheshta.VICHESHTA',
+});
+
+/**
+ * Every AvasthaCheshta by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AvasthaCheshtaById = new Map([
+  [0, 'avastha_cheshta.DRISHTI'],
+  [1, 'avastha_cheshta.CHESHTA'],
+  [2, 'avastha_cheshta.VICHESHTA'],
 ]);
 
 /** Every Status by name. */

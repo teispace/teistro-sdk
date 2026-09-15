@@ -959,7 +959,15 @@ fn state_values(state: &teistro_state::GrahaState) -> Vec<FixedValue> {
         state.boundaries.sign_deg.into(),
         state.boundaries.nakshatra_deg.into(),
         state.boundaries.pada_deg.into(),
+        flag(state.sayanadi.is_some()),
+        u64::from(state.sayanadi.map_or(0, |s| s.avastha.id())).into(),
     ]
+    .into_iter()
+    .chain(
+        teistro_state::Anka::ALL
+            .map(|anka| u64::from(state.sayanadi.map_or(0, |s| s.cheshta(anka).id())).into()),
+    )
+    .collect()
 }
 
 /// The twelve bhavas of each chart, as the houses service reads them.

@@ -68,8 +68,9 @@ pub struct VaiseshikamsaChart {
     pub signs: VimshopakaChart,
     /// The arudha lagna's sign, whose kendras' lords make a sign good.
     pub arudha_lagna: Rashi,
-    /// Which grahas, Sun to Saturn, are combust, defeated or otherwise
-    /// impaired, and so earn their names without their auspiciousness.
+    /// Which grahas, Sun to Saturn, are combust, defeated, in Shayana or
+    /// otherwise impaired, and so earn their names without their
+    /// auspiciousness.
     pub impaired: [bool; 7],
 }
 

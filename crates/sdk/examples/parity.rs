@@ -1032,6 +1032,18 @@ fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Docume
     }
 }
 
+/// A graha's Sayanadi as the runners spell it: the state, then its five
+/// sub-states, or `none`.
+fn sayanadi(sayanadi: Option<teistro::Sayanadi>) -> String {
+    sayanadi.map_or_else(
+        || String::from("none"),
+        |s| {
+            let cheshtas: Vec<&str> = s.cheshtas.iter().map(|c| c.full_key()).collect();
+            format!("{} {}", s.avastha.full_key(), cheshtas.join(","))
+        },
+    )
+}
+
 /// One chart's planetary states, as the report prints them.
 fn the_states(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(states) = document.state.as_ref() else {
@@ -1118,6 +1130,7 @@ fn the_states(report: &mut Report, index: usize, document: &teistro::Document) {
                 |w| format!("{}:{}", w.opponent.full_key(), w.is_winner),
             ),
         );
+        put(report, &key("-sayanadi"), sayanadi(state.sayanadi));
         put(
             report,
             &key("-sign-edge"),

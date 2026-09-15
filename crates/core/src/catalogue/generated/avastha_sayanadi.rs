@@ -5,7 +5,7 @@
 use crate::catalogue::{Catalogued, Mark, Source, UnknownKey};
 use crate::key::{Kind, KeyId};
 
-/// The twelve Sayanadi states.
+/// The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
 #[repr(u16)]
@@ -194,18 +194,18 @@ impl AvasthaSayanadi {
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
-            AvasthaSayanadi::Shayana => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Upaveshana => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Netrapani => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Prakashana => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Gamana => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Agamana => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Sabha => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Agama => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Bhojana => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Nrityalipsa => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Kautuka => &[Source { text: "BPHS", reference: "45" }],
-            AvasthaSayanadi::Nidra => &[Source { text: "BPHS", reference: "45" }],
+            AvasthaSayanadi::Shayana => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Upaveshana => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Netrapani => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Prakashana => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Gamana => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Agamana => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Sabha => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Agama => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Bhojana => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Nrityalipsa => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Kautuka => &[Source { text: "BPHS", reference: "45.30-37" }],
+            AvasthaSayanadi::Nidra => &[Source { text: "BPHS", reference: "45.30-37" }],
         }
     }
 

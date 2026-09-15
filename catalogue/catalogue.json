@@ -13961,7 +13961,7 @@
       "kind": "avastha_sayanadi",
       "number": 54,
       "version": 1,
-      "doc": "The twelve Sayanadi states.",
+      "doc": "The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.",
       "types": {},
       "attributes": {},
       "members": [
@@ -13976,7 +13976,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -13993,7 +13993,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14010,7 +14010,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14027,7 +14027,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14044,7 +14044,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14061,7 +14061,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14078,7 +14078,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14095,7 +14095,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14112,7 +14112,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14129,7 +14129,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14146,7 +14146,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -14163,7 +14163,7 @@
           "sources": [
             {
               "text": "BPHS",
-              "ref": "45"
+              "ref": "45.30-37"
             }
           ],
           "mark": "T",
@@ -20143,6 +20143,75 @@
             {
               "text": "BPHS",
               "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "avastha_cheshta",
+      "number": 64,
+      "version": 1,
+      "doc": "The three sub-states of a Sayanadi state, a remainder of three.",
+      "types": {},
+      "attributes": {
+        "remainder": "u8"
+      },
+      "members": [
+        {
+          "key": "DRISHTI",
+          "id": 0,
+          "doc": "Drishti, a remainder of one: the state's effects middling",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "remainder": 1
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "45.30-39"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "CHESHTA",
+          "id": 1,
+          "doc": "Cheshta, a remainder of two: its effects in full",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "remainder": 2
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "45.30-39"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "VICHESHTA",
+          "id": 2,
+          "doc": "Vicheshta, a remainder of nothing: its effects slight",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "remainder": 0
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "45.30-39"
             }
           ],
           "mark": "T",

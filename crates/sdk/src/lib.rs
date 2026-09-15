@@ -98,7 +98,7 @@ pub use teistro_serial::{Document, Sealed};
 // The document's JSON Schema, for a consumer who stores one and wants to
 // check it before reading it back (`03-design/document-schema.md`).
 pub use teistro_serial::schema;
-pub use teistro_state::GrahaState;
+pub use teistro_state::{Anka, GrahaState, Sayanadi};
 pub use teistro_vargas::chart::{Axis, VargaChart};
 // Chart geometry: the layouts a chart is drawn in, a consumer's own, and a
 // chart placed in one (`03-design/chart-geometry.md`).

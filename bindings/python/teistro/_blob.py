@@ -701,6 +701,27 @@ class ChartsStates:
     pada_deg: memoryview[float]
     """How near it stands to a pada edge, degrees."""
 
+    has_sayanadi: memoryview[int]
+    """1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon."""
+
+    sayanadi: memoryview[int]
+    """The Sayanadi state; read only when `has_sayanadi`."""
+
+    cheshta_1: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`."""
+
+    cheshta_2: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`."""
+
+    cheshta_3: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`."""
+
+    cheshta_4: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`."""
+
+    cheshta_5: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1029,7 +1050,7 @@ class ChartsVaiseshikamsa:
     """Which graha."""
 
     impaired: memoryview[int]
-    """1 when it is combust or defeated in war, its names then not auspicious, else 0."""
+    """1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0."""
 
     shadvarga_good: memoryview[int]
     """How many of the shadvarga's vargas are good for it."""
@@ -1565,6 +1586,15 @@ def decode_charts(raw: bytes) -> Charts:
                 at_states, 28, 8, at_states.count
             ).cast("d"),
             pada_deg=blob.column(at_states, 29, 8, at_states.count).cast("d"),
+            has_sayanadi=blob.column(
+                at_states, 30, 1, at_states.count
+            ).cast("B"),
+            sayanadi=blob.column(at_states, 31, 2, at_states.count).cast("H"),
+            cheshta_1=blob.column(at_states, 32, 2, at_states.count).cast("H"),
+            cheshta_2=blob.column(at_states, 33, 2, at_states.count).cast("H"),
+            cheshta_3=blob.column(at_states, 34, 2, at_states.count).cast("H"),
+            cheshta_4=blob.column(at_states, 35, 2, at_states.count).cast("H"),
+            cheshta_5=blob.column(at_states, 36, 2, at_states.count).cast("H"),
             length=at_states.count,
         ),
         combustion_orbs=blob.text(at_combustion_orbs),

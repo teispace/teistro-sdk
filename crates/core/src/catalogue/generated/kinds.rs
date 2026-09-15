@@ -112,7 +112,7 @@ pub enum Kind {
     AvasthaDeeptadi = 52,
     /// The six Lajjitadi states.
     AvasthaLajjitadi = 53,
-    /// The twelve Sayanadi states.
+    /// The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
     AvasthaSayanadi = 54,
     /// What kind of derived point.
     PointFamily = 55,
@@ -132,11 +132,14 @@ pub enum Kind {
     ChartLayout = 62,
     /// The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
     Vaiseshikamsa = 63,
+    /// The three sub-states of a Sayanadi state, a remainder of three.
+    AvasthaCheshta = 64,
 }
 
-const BY_NAME: [(&str, Kind); 62] = [
+const BY_NAME: [(&str, Kind); 63] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
+    ("avastha_cheshta", Kind::AvasthaCheshta),
     ("avastha_deeptadi", Kind::AvasthaDeeptadi),
     ("avastha_jagradadi", Kind::AvasthaJagradadi),
     ("avastha_lajjitadi", Kind::AvasthaLajjitadi),
@@ -201,7 +204,7 @@ const BY_NAME: [(&str, Kind); 62] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 62] = [
+    pub const ALL: [Kind; 63] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -264,6 +267,7 @@ impl Kind {
         Kind::MuhurtaYoga,
         Kind::ChartLayout,
         Kind::Vaiseshikamsa,
+        Kind::AvasthaCheshta,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -332,6 +336,7 @@ impl Kind {
             Kind::MuhurtaYoga => "muhurta_yoga",
             Kind::ChartLayout => "chart_layout",
             Kind::Vaiseshikamsa => "vaiseshikamsa",
+            Kind::AvasthaCheshta => "avastha_cheshta",
         }
     }
 
@@ -407,6 +412,7 @@ impl Kind {
             Kind::MuhurtaYoga => 5,
             Kind::ChartLayout => 6,
             Kind::Vaiseshikamsa => 30,
+            Kind::AvasthaCheshta => 3,
         }
     }
 
@@ -482,6 +488,7 @@ impl Kind {
             61 => Some(Kind::MuhurtaYoga),
             62 => Some(Kind::ChartLayout),
             63 => Some(Kind::Vaiseshikamsa),
+            64 => Some(Kind::AvasthaCheshta),
             _ => None,
         }
     }

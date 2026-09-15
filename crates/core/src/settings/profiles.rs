@@ -15,8 +15,8 @@ use super::knobs::{
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RequiredRupas, Saptavargaja, SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
-    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, Shodhana, SunAyana,
+    Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -176,6 +176,10 @@ pub fn root() -> Settings {
         },
         state: State {
             combustion_orbs: String::from("BPHS"),
+            // BPHS ch. 45 vv. 30 to 37: the ghatis of birth, and ch. 3's order
+            // of the nine grahas for the two v. 30 does not number.
+            sayanadi_ghatis: SayanadiGhatis::Elapsed,
+            sayanadi_nodes: SayanadiNodes::NineGrahaOrder,
         },
         strength: strength(),
         vargas: Vargas {

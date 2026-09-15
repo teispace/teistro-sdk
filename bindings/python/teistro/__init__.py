@@ -96,6 +96,8 @@ from ._install import (
 )
 from ._prebuilt import PREBUILT_VERSION
 from .catalogue import (
+    AvasthaCheshta,
+    AvasthaSayanadi,
     Ayana,
     Ayanamsha,
     Balance,
@@ -271,7 +273,9 @@ __all__ = [
     "Vimshopaka",
     "VimshopakaScoring",
     "AvasthaBaladi",
+    "AvasthaCheshta",
     "AvasthaDeeptadi",
+    "AvasthaSayanadi",
     "AvasthaJagradadi",
     "AvasthaLajjitadi",
     "Burning",
@@ -279,6 +283,7 @@ __all__ = [
     "Dignity",
     "Friendship",
     "GrahaState",
+    "Sayanadi",
     "Lajjitadi",
     "Quadrant",
     "Relationship",
@@ -1475,6 +1480,30 @@ class War:
 
 
 @dataclass(frozen=True)
+class Sayanadi:
+    """A graha's Sayanadi state, with its sub-state under a name of each
+    anka (BPHS ch. 45 vv. 30 to 37)."""
+
+    avastha: AvasthaSayanadi
+    """The state, Shayana to Nidra."""
+
+    cheshtas: tuple[AvasthaCheshta, ...]
+    """The sub-state under a name whose first syllable's anka is 1 to 5, in
+    that order."""
+
+    def cheshta(self, anka: int) -> AvasthaCheshta:
+        """The sub-state under a name of this anka.
+
+        >>> # state.sayanadi.cheshta(3)
+
+        Raises `ValueError` outside 1 to 5.
+        """
+        if not 1 <= anka <= 5:
+            raise ValueError(f"anka: {anka} is not a syllable's anka; it is 1 to 5")
+        return self.cheshtas[anka - 1]
+
+
+@dataclass(frozen=True)
 class GrahaState:
     """What one graha **is**, as opposed to where it is."""
 
@@ -1510,6 +1539,10 @@ class GrahaState:
 
     war: War | None
     """The war it is in, if it is in one."""
+
+    sayanadi: Sayanadi | None
+    """The Sayanadi state and its sub-states, or `None` for a body the
+    verses give no number."""
 
     boundaries: EdgeDistance
     """How near it stands to a classification boundary."""
@@ -1789,7 +1822,7 @@ class GrahaVaiseshikamsa:
     """Over the sixteen."""
 
     impaired: bool
-    """Whether it is combust or defeated in war, its names then not auspicious."""
+    """Whether it is combust, defeated in war or in Shayana, its names then not auspicious."""
 
 
 @dataclass(frozen=True)
@@ -2541,6 +2574,21 @@ class Chart:
                     apart_deg=columns.war_apart_deg[i],
                 )
                 if columns.has_war[i]
+                else None,
+                sayanadi=Sayanadi(
+                    avastha=AvasthaSayanadi(columns.sayanadi[i]),
+                    cheshtas=tuple(
+                        AvasthaCheshta(column[i])
+                        for column in (
+                            columns.cheshta_1,
+                            columns.cheshta_2,
+                            columns.cheshta_3,
+                            columns.cheshta_4,
+                            columns.cheshta_5,
+                        )
+                    ),
+                )
+                if columns.has_sayanadi[i]
                 else None,
                 boundaries=EdgeDistance(
                     sign_deg=columns.sign_deg[i],

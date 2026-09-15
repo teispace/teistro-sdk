@@ -123,6 +123,20 @@ knob!(
         Proportional = "PROPORTIONAL" }
 );
 knob!(
+    /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
+    SayanadiGhatis { /// The whole ghatis elapsed since the chart's sunrise.
+        Elapsed = "ELAPSED", /// The ghati running at birth: one more than those elapsed, unless birth
+        /// falls exactly on a ghati's start.
+        Running = "RUNNING" }
+);
+knob!(
+    /// The numbers Rahu and Ketu multiply by in the Sayanadi avasthas, which
+    /// BPHS ch. 45 v. 30 gives only for the Sun to Saturn (crux C78).
+    SayanadiNodes { /// Rahu 8 and Ketu 9, the nine grahas' order of BPHS ch. 3 carried on.
+        NineGrahaOrder = "NINE_GRAHA_ORDER", /// Both 8, as v. 37 pairs "Rahu (Ketu)" for the sub-state's additive.
+        SharedWithRahu = "SHARED_WITH_RAHU" }
+);
+knob!(
     /// Which window a daily panchanga finds the Moon's rise and set in.
     ///
     /// Every other field of an almanac day is bounded by sunrise; the

@@ -232,7 +232,7 @@ class Kind(Member):
     """The six Lajjitadi states."""
 
     avastha_sayanadi = 54
-    """The twelve Sayanadi states."""
+    """The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna."""
 
     point_family = 55
     """What kind of derived point."""
@@ -260,6 +260,9 @@ class Kind(Member):
 
     vaiseshikamsa = 63
     """The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's."""
+
+    avastha_cheshta = 64
+    """The three sub-states of a Sayanadi state, a remainder of three."""
 
 
 class Graha(Catalogued):
@@ -2555,7 +2558,7 @@ class AvasthaLajjitadi(Catalogued):
 
 
 class AvasthaSayanadi(Catalogued):
-    """The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`."""
+    """The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`."""
 
     SHAYANA = 0
     """Shayana"""
@@ -3258,6 +3261,24 @@ class Vaiseshikamsa(Catalogued):
 
     SHRIVALLABHA = 29
     """Shrivallabha"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class AvasthaCheshta(Catalogued):
+    """The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`."""
+
+    DRISHTI = 0
+    """Drishti, a remainder of one: the state's effects middling"""
+
+    CHESHTA = 1
+    """Cheshta, a remainder of two: its effects in full"""
+
+    VICHESHTA = 2
+    """Vicheshta, a remainder of nothing: its effects slight"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -3970,6 +3991,7 @@ _KEYS: dict[str, dict[int, str]] = {
         61: "muhurta_yoga",
         62: "chart_layout",
         63: "vaiseshikamsa",
+        64: "avastha_cheshta",
     },
     "Graha": {
         0: "SUN",
@@ -4972,6 +4994,12 @@ _KEYS: dict[str, dict[int, str]] = {
         29: "SHRIVALLABHA",
         -1: "UNKNOWN",
     },
+    "AvasthaCheshta": {
+        0: "DRISHTI",
+        1: "CHESHTA",
+        2: "VICHESHTA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "ok",
         -1: "invalid-arg",
@@ -5241,4 +5269,5 @@ _KINDS: dict[str, str] = {
     "MuhurtaYoga": "muhurta_yoga",
     "ChartLayout": "chart_layout",
     "Vaiseshikamsa": "vaiseshikamsa",
+    "AvasthaCheshta": "avastha_cheshta",
 }

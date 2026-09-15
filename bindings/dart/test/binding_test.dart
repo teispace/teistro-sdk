@@ -832,6 +832,52 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  /// Every graha's state carries its Sayanadi: the nine grahas a state and a
+  /// sub-state under each of the five ankas, the outer planets none.
+  test(
+    'a graha\'s state carries its Sayanadi and a sub-state for every anka',
+    () {
+      final ctx = context();
+      final place = Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      );
+      final states =
+          ctx.chart
+              .found(
+                instant: 2451545.0,
+                place: place,
+                utcOffsetSeconds: 20700,
+                state: true,
+              )
+              .states;
+      const nine = {
+        Graha.sun,
+        Graha.moon,
+        Graha.mars,
+        Graha.mercury,
+        Graha.jupiter,
+        Graha.venus,
+        Graha.saturn,
+        Graha.rahu,
+        Graha.ketu,
+      };
+      for (final state in states) {
+        final sayanadi = state.sayanadi;
+        if (!nine.contains(state.graha)) {
+          expect(sayanadi, isNull, reason: state.graha.fullKey);
+          continue;
+        }
+        expect(sayanadi, isNotNull, reason: state.graha.fullKey);
+        expect(sayanadi!.cheshtas, hasLength(5));
+        expect(sayanadi.cheshta(3), sayanadi.cheshtas[2]);
+        expect(() => sayanadi.cheshta(6), throwsRangeError);
+      }
+      ctx.dispose();
+    },
+  );
+
   /// A chart's Vaiseshikamsa crosses whole: each scheme's count within its
   /// vargas, a name for every count from two; null unless asked.
   test('a chart carries its Vaiseshikamsa, each scheme\'s count and name', () {

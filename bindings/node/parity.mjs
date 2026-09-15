@@ -305,6 +305,10 @@ for (const chart of charts) {
     put(`${key}-holding`, state.lajjitadi.holding.join(',') || 'none');
     put(`${key}-undecided`, state.lajjitadi.undecided.join(',') || 'none');
     put(`${key}-war`, state.war ? `${state.war.opponent}:${state.war.isWinner}` : 'none');
+    put(
+      `${key}-sayanadi`,
+      state.sayanadi ? `${state.sayanadi.avastha} ${state.sayanadi.cheshtas.join(',')}` : 'none',
+    );
     put(`${key}-sign-edge`, state.boundaries.signDeg);
   });
   chart.bhavas.forEach((bhava) => {

@@ -181,6 +181,16 @@
       "type": "string",
       "x-teistro-kind": "avastha_baladi"
     },
+    "AvasthaCheshta": {
+      "description": "A key of the `avastha_cheshta` catalogue.",
+      "enum": [
+        "DRISHTI",
+        "CHESHTA",
+        "VICHESHTA"
+      ],
+      "type": "string",
+      "x-teistro-kind": "avastha_cheshta"
+    },
     "AvasthaDeeptadi": {
       "description": "A key of the `avastha_deeptadi` catalogue.",
       "enum": [
@@ -219,6 +229,25 @@
       ],
       "type": "string",
       "x-teistro-kind": "avastha_lajjitadi"
+    },
+    "AvasthaSayanadi": {
+      "description": "A key of the `avastha_sayanadi` catalogue.",
+      "enum": [
+        "SHAYANA",
+        "UPAVESHANA",
+        "NETRAPANI",
+        "PRAKASHANA",
+        "GAMANA",
+        "AGAMANA",
+        "SABHA",
+        "AGAMA",
+        "BHOJANA",
+        "NRITYALIPSA",
+        "KAUTUKA",
+        "NIDRA"
+      ],
+      "type": "string",
+      "x-teistro-kind": "avastha_sayanadi"
     },
     "Axis": {
       "description": "Which chart the grahas are read in, and which the lagna is.",
@@ -2286,6 +2315,17 @@
           "$ref": "#/$defs/Motion",
           "description": "Which way it is going."
         },
+        "sayanadi": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sayanadi"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Sayanadi state and its sub-states, for the nine grahas."
+        },
         "sign": {
           "$ref": "#/$defs/Rashi",
           "description": "The sign it stands in."
@@ -4336,6 +4376,29 @@
           "type": "string"
         }
       ]
+    },
+    "Sayanadi": {
+      "description": "A graha's Sayanadi state, with its sub-state for every anka.",
+      "properties": {
+        "avastha": {
+          "$ref": "#/$defs/AvasthaSayanadi",
+          "description": "The state."
+        },
+        "cheshtas": {
+          "description": "The sub-state under a name whose first syllable's anka is 1 to 5, in that order.",
+          "items": {
+            "$ref": "#/$defs/AvasthaCheshta"
+          },
+          "maxItems": 5,
+          "minItems": 5,
+          "type": "array"
+        }
+      },
+      "required": [
+        "avastha",
+        "cheshtas"
+      ],
+      "type": "object"
     },
     "Scheme": {
       "description": "A divisional chart's rule.",

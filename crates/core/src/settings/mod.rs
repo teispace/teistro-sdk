@@ -38,8 +38,8 @@ pub use knobs::{
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RequiredRupas, Saptavargaja, SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
-    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, Shodhana, SunAyana,
+    Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -318,6 +318,10 @@ group!(
     State, StatePatch {
         /// The combustion orb table's key.
         combustion_orbs: String,
+        /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
+        sayanadi_ghatis: SayanadiGhatis,
+        /// The numbers Rahu and Ketu multiply by in the Sayanadi avasthas (crux C78).
+        sayanadi_nodes: SayanadiNodes,
     }
 );
 

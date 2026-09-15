@@ -629,7 +629,7 @@ impl<'a> ChartArea<'a> {
             *slot = states
                 .iter()
                 .find(|s| s.graha == graha)
-                .is_some_and(|s| s.is_combust() || s.war.is_some_and(|war| !war.is_winner));
+                .is_some_and(|s| s.is_combust() || s.lost_its_war() || s.is_shayana());
         }
         let chart = VaiseshikamsaChart {
             signs: VimshopakaChart {

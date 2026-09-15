@@ -247,7 +247,7 @@ typedef enum ts_kind {
      */
     TS_KIND_AVASTHA_LAJJITADI = 53,
     /**
-     * The twelve Sayanadi states.
+     * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
      */
     TS_KIND_AVASTHA_SAYANADI = 54,
     /**
@@ -286,6 +286,10 @@ typedef enum ts_kind {
      * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
      */
     TS_KIND_VAISESHIKAMSA = 63,
+    /**
+     * The three sub-states of a Sayanadi state, a remainder of three.
+     */
+    TS_KIND_AVASTHA_CHESHTA = 64,
 } ts_kind;
 
 /**
@@ -3141,7 +3145,7 @@ typedef enum ts_avastha_lajjitadi {
 } ts_avastha_lajjitadi;
 
 /**
- * The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+ * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
  */
 typedef enum ts_avastha_sayanadi {
     /**
@@ -4047,6 +4051,26 @@ typedef enum ts_vaiseshikamsa {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_VAISESHIKAMSA_UNKNOWN = -1,
 } ts_vaiseshikamsa;
+
+/**
+ * The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.
+ */
+typedef enum ts_avastha_cheshta {
+    /**
+     * Drishti, a remainder of one: the state's effects middling
+     */
+    TS_AVASTHA_CHESHTA_DRISHTI = 0,
+    /**
+     * Cheshta, a remainder of two: its effects in full
+     */
+    TS_AVASTHA_CHESHTA_CHESHTA = 1,
+    /**
+     * Vicheshta, a remainder of nothing: its effects slight
+     */
+    TS_AVASTHA_CHESHTA_VICHESHTA = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_AVASTHA_CHESHTA_UNKNOWN = -1,
+} ts_avastha_cheshta;
 
 /**
  * The status of a call, with the code it has at the C boundary.

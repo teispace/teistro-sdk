@@ -62,7 +62,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_AVASTHA_JAGRADADI` | 51 | The three wakefulness states. |
 | `TS_KIND_AVASTHA_DEEPTADI` | 52 | The nine Deeptadi states. |
 | `TS_KIND_AVASTHA_LAJJITADI` | 53 | The six Lajjitadi states. |
-| `TS_KIND_AVASTHA_SAYANADI` | 54 | The twelve Sayanadi states. |
+| `TS_KIND_AVASTHA_SAYANADI` | 54 | The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. |
 | `TS_KIND_POINT_FAMILY` | 55 | What kind of derived point. |
 | `TS_KIND_STAR` | 56 | The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`). |
 | `TS_KIND_STAR_CLASS` | 57 | What kind of object a star-table member is. |
@@ -72,6 +72,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_MUHURTA_YOGA` | 61 | The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). |
 | `TS_KIND_CHART_LAYOUT` | 62 | The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. |
 | `TS_KIND_VAISESHIKAMSA` | 63 | The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. |
+| `TS_KIND_AVASTHA_CHESHTA` | 64 | The three sub-states of a Sayanadi state, a remainder of three. |
 
 ## ts_graha
 
@@ -1043,7 +1044,7 @@ The six Lajjitadi states. Members are the catalogue's ids; the full key id is `(
 
 ## ts_avastha_sayanadi
 
-The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
 
 | member | value | what it is |
 |---|---|---|
@@ -1317,6 +1318,16 @@ The names a graha earns by the count of good vargas it holds in a scheme of divi
 | `TS_VAISESHIKAMSA_CHAKRASIMHASANA` | 27 | Chakrasimhasana |
 | `TS_VAISESHIKAMSA_GOLOKA` | 28 | Goloka |
 | `TS_VAISESHIKAMSA_SHRIVALLABHA` | 29 | Shrivallabha |
+
+## ts_avastha_cheshta
+
+The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AVASTHA_CHESHTA_DRISHTI` | 0 | Drishti, a remainder of one: the state's effects middling |
+| `TS_AVASTHA_CHESHTA_CHESHTA` | 1 | Cheshta, a remainder of two: its effects in full |
+| `TS_AVASTHA_CHESHTA_VICHESHTA` | 2 | Vicheshta, a remainder of nothing: its effects slight |
 
 ## ts_status
 

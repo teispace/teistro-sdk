@@ -22,6 +22,7 @@ from .catalogue import (
     Astronomy,
     Auspiciousness,
     AvasthaBaladi,
+    AvasthaCheshta,
     AvasthaDeeptadi,
     AvasthaJagradadi,
     AvasthaLajjitadi,

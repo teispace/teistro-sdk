@@ -1432,6 +1432,7 @@ final class GrahaState {
     required this.deeptadi,
     required this.lajjitadi,
     required this.war,
+    required this.sayanadi,
     required this.boundaries,
   });
 
@@ -1468,8 +1469,37 @@ final class GrahaState {
   /// The war it is in, if it is in one.
   final War? war;
 
+  /// The Sayanadi state and its sub-states, or `null` for a body the verses
+  /// give no number.
+  final Sayanadi? sayanadi;
+
   /// How near it stands to a classification boundary.
   final EdgeDistance boundaries;
+}
+
+/// A graha's Sayanadi state, with its sub-state under a name of each anka
+/// (BPHS ch. 45 vv. 30 to 37).
+final class Sayanadi {
+  const Sayanadi({required this.avastha, required this.cheshtas});
+
+  /// The state, Shayana to Nidra.
+  final AvasthaSayanadi avastha;
+
+  /// The sub-state under a name whose first syllable's anka is 1 to 5, in
+  /// that order.
+  final List<AvasthaCheshta> cheshtas;
+
+  /// The sub-state under a name of this anka.
+  ///
+  /// ```dart
+  /// final cheshta = state.sayanadi?.cheshta(3);
+  /// ```
+  ///
+  /// Throws an [ArgumentError] outside 1 to 5.
+  AvasthaCheshta cheshta(int anka) {
+    RangeError.checkValueInInterval(anka, 1, 5, 'anka');
+    return cheshtas[anka - 1];
+  }
 }
 
 /// One bhava as the houses service reads it.
@@ -1808,7 +1838,7 @@ final class GrahaVaiseshikamsa {
   /// Over the sixteen.
   final VaiseshikamsaStanding shodashavarga;
 
-  /// Whether it is combust or defeated in war, its names then not auspicious.
+  /// Whether it is combust, defeated in war or in Shayana, its names then not auspicious.
   final bool impaired;
 }
 
@@ -3221,6 +3251,22 @@ final class Chart {
                   opponent: Graha.byId(st.warOpponent[i]),
                   isWinner: st.warWon[i] != 0,
                   apartDeg: st.warApartDeg[i],
+                )
+                : null,
+        sayanadi:
+            st.hasSayanadi[i] != 0
+                ? Sayanadi(
+                  avastha: AvasthaSayanadi.byId(st.sayanadi[i]),
+                  cheshtas: List.unmodifiable([
+                    for (final column in [
+                      st.cheshta1,
+                      st.cheshta2,
+                      st.cheshta3,
+                      st.cheshta4,
+                      st.cheshta5,
+                    ])
+                      AvasthaCheshta.byId(column[i]),
+                  ]),
                 )
                 : null,
         boundaries: EdgeDistance(

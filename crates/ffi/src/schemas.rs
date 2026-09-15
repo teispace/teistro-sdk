@@ -811,7 +811,7 @@ fn chart_vaiseshikamsa_section(id: u32) -> SectionSchema {
         ColumnDef::new(
             "impaired",
             Scalar::U8,
-            "1 when it is combust or defeated in war, its names then not auspicious, else 0.",
+            "1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0.",
         ),
     ];
     for (scheme, _) in crate::chart::VAISESHIKAMSA_SCHEMES {
@@ -1233,7 +1233,31 @@ fn chart_states_section(id: u32) -> SectionSchema {
                 Scalar::F64,
                 "How near it stands to a pada edge, degrees.",
             ),
-        ],
+            ColumnDef::new(
+                "has_sayanadi",
+                Scalar::U8,
+                "1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon.",
+            ),
+            ColumnDef::new(
+                "sayanadi",
+                Scalar::U16,
+                "The Sayanadi state; read only when `has_sayanadi`.",
+            )
+            .of_enum("AvasthaSayanadi"),
+        ]
+        .into_iter()
+        .chain(teistro_state::Anka::ALL.map(|anka| {
+            ColumnDef::new(
+                &format!("cheshta_{}", anka.get()),
+                Scalar::U16,
+                &format!(
+                    "The Sayanadi sub-state under a name whose first syllable's anka is {}; read only when `has_sayanadi`.",
+                    anka.get()
+                ),
+            )
+            .of_enum("AvasthaCheshta")
+        }))
+        .collect(),
     )
 }
 
