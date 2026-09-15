@@ -53,7 +53,9 @@ fn every_section_of_the_layer_serialises() {
             "state",
             "aspects",
             "points",
-            "houses"
+            "houses",
+            "drawings",
+            "dashas"
         ]
     );
     let text = to_hash_form(&document);

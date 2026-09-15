@@ -17,6 +17,7 @@ use crate::solar;
 
 /// Every derived point the SDK can compute for one founded chart.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Points {
     found: Vec<Derived>,
 }

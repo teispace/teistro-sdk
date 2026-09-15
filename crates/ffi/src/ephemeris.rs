@@ -117,17 +117,15 @@ mod tests {
     )]
 
     use super::native_of;
-    use crate::context::TsContext;
+    use crate::context::{OptionTexts, TsContext};
     use teistro_core::Status;
     use teistro_port_ephemeris::test_provider::TestProvider;
     use teistro_port_ephemeris::{Capabilities, EphemerisProvider};
 
     fn with_test_provider() -> TsContext {
         TsContext::build(
-            None,
-            None,
+            &OptionTexts::default(),
             teistro::Ephemeris::Provider(Box::new(TestProvider::new())),
-            None,
         )
         .expect("the default profile")
     }
@@ -158,7 +156,7 @@ mod tests {
 
     #[test]
     fn a_context_without_an_ephemeris_says_so_rather_than_failing_the_call() {
-        let context = TsContext::build(None, None, teistro::Ephemeris::None, None)
+        let context = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)
             .expect("the default profile");
         let refused = native_of(&context).expect_err("there is no engine");
         assert_eq!(refused.status, Status::Capability);
@@ -186,10 +184,8 @@ mod tests {
             }
         }
         let context = TsContext::build(
-            None,
-            None,
+            &OptionTexts::default(),
             teistro::Ephemeris::Provider(Box::new(Quiet)),
-            None,
         )
         .unwrap();
         let refused = native_of(&context).expect_err("it describes nothing");

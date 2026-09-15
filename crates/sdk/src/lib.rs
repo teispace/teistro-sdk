@@ -45,6 +45,7 @@ mod area;
 mod context;
 mod ephemeris;
 mod reading;
+mod render;
 mod scale;
 
 pub use area::{
@@ -94,8 +95,27 @@ pub use teistro_houses::Houses;
 pub use teistro_points::Points;
 pub use teistro_port_ephemeris::native::{NativeFunction, NativeManifest};
 pub use teistro_serial::{Document, Sealed};
-pub use teistro_state::GrahaState;
+// The document's JSON Schema, for a consumer who stores one and wants to
+// check it before reading it back (`03-design/document-schema.md`).
+pub use teistro_serial::schema;
+pub use teistro_state::{Anka, GrahaState, Sayanadi};
 pub use teistro_vargas::chart::{Axis, VargaChart};
+// Chart geometry: the layouts a chart is drawn in, a consumer's own, and a
+// chart placed in one (`03-design/chart-geometry.md`).
+pub use teistro_geometry as geometry;
+pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
+// The first-party renderer: a drawing as SVG, themed as data
+// (`03-design/render-svg.md`). Not behind a feature: it is pure Rust with
+// no dependency the façade lacks, and a consumer who never calls it has
+// its code removed by the linker.
+pub use teistro_render_svg as render_svg;
+// Dashas: a system as a row, the balance at birth, and the period tree read
+// without building it (`03-design/dasha-kernels.md`).
+pub use teistro_dasha as dasha;
+pub use teistro_dasha::{DashaCursor, DashaReading, PeriodRow, Timeline};
+// Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
+// with the rules it was read under (`03-design/strength-schemes.md`).
+pub use teistro_strength as strength;
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a
 // namespace is in Rust — where Node writes

@@ -74,6 +74,8 @@ jobs:
         run: cargo xtask check-serial
       - name: Chart document page (the shape, the types and the member lists a schema would claim reproduce)
         run: cargo xtask check-schema
+      - name: Document schema (the JSON Schema of a sealed chart document is what the types generate)
+        run: cargo xtask check-document-schema
       - name: Almanac shape page (which of a day's lists are ragged, and what a rectangular layout would waste)
         run: cargo xtask check-almanac
       - name: Lunisolar month page (the sankranti count that decides adhika and kshaya, over a millennium)
@@ -96,6 +98,28 @@ jobs:
         run: cargo xtask check-areas
       - name: Rust consumer surface page (how many crates each area needs, and what only the C boundary composes)
         run: cargo xtask check-rust-surface
+      - name: Golden drawings (a real chart in every shipped layout, two locales and both themes, byte for byte)
+        run: cargo xtask check-render
+      - name: Dasha page (the Vimshottari seed, balance, tree and cycle end, decided by the corpus)
+        run: cargo xtask check-dashas
+      - name: Dasha systems page (the eight other nakshatra-seeded systems decided over the corpus)
+        run: cargo xtask check-dasha-systems
+      - name: Rashi dashas page (the sign-based dashas decided over the corpus, beside the other schools' readings)
+        run: cargo xtask check-rashi-dashas
+      - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
+        run: cargo xtask check-arudhas
+      - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
+        run: cargo xtask check-kalachakra
+      - name: Ashtakavarga page (the bindus, reductions and pindas decided over the corpus, beside BPHS)
+        run: cargo xtask check-ashtakavarga
+      - name: Vimshopaka page (the schemes' weights and scoring decided over the corpus, beside BPHS)
+        run: cargo xtask check-vimshopaka
+      - name: Shadbala page (every component of the engine's reproduced over the corpus, beside BPHS ch. 27)
+        run: cargo xtask check-shadbala
+      - name: Bhava bala page (the built module against every recorded house, each reading's forks measured)
+        run: cargo xtask check-bhava-bala
+      - name: Yogas page (every rule of the engine's evaluated over every recorded chart, each reading of its condition language measured)
+        run: cargo xtask check-yogas
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

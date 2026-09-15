@@ -80,6 +80,14 @@ pub fn catalogue(api: &Api) -> String {
             c.value
         );
     }
+    // One interface every catalogued kind implements, and the registered
+    // member beside it: a registry's key is a value of its kind's type, so a
+    // `List<(KeyOf<ChartLayout>, Varga)>` takes a shipped layout or one a
+    // context registered, and never a `Graha` (`chart-geometry.md` §7f).
+    let _ = writeln!(
+        out,
+        "/// A key of one kind: a member this build catalogues, or one a context\n/// registered at run time.\nabstract interface class KeyOf<K> {{\n  /// The full key, as every pack and fixture spells it (`graha.SUN`).\n  String get fullKey;\n}}\n\n/// A member a context registered at run time, by its full key: made by a\n/// kind's own `registered`, as `ChartLayout.registered('ACME_KERALA')`, so\n/// its kind is always the one its type names.\nfinal class Registered<K> implements KeyOf<K> {{\n  const Registered._(this.fullKey);\n\n  @override\n  final String fullKey;\n\n  @override\n  bool operator ==(Object other) =>\n      other is Registered<K> && other.fullKey == fullKey;\n\n  @override\n  int get hashCode => fullKey.hashCode;\n\n  @override\n  String toString() => fullKey;\n}}\n"
+    );
     for e in &api.enums {
         render_enum(&mut out, e);
     }
@@ -89,7 +97,12 @@ pub fn catalogue(api: &Api) -> String {
 fn render_enum(out: &mut String, e: &EnumDef) {
     let name = binding_type_name(&e.name);
     let catalogued = e.kind.is_some();
-    let _ = writeln!(out, "{}enum {name} {{", doc(&e.doc, ""));
+    let implements = if catalogued {
+        format!(" implements KeyOf<{name}>")
+    } else {
+        String::new()
+    };
+    let _ = writeln!(out, "{}enum {name}{implements} {{", doc(&e.doc, ""));
     let last = e.values.len().saturating_sub(1);
     for (i, v) in e.values.iter().enumerate() {
         // The same string the TypeScript surface uses, so a member is
@@ -119,7 +132,7 @@ fn render_enum(out: &mut String, e: &EnumDef) {
     let kind = e.kind.as_deref().unwrap_or_default();
     let full_key = if catalogued {
         format!(
-            "\n\n  /// The full key, as every pack and fixture spells it.\n  String get fullKey => '{kind}.$key';"
+            "\n\n  /// The full key, as every pack and fixture spells it.\n  @override\n  String get fullKey => '{kind}.$key';\n\n  /// A member a context registered under `key`, bare (`ACME_KERALA`).\n  static Registered<{name}> registered(String key) => Registered._('{kind}.$key');"
         )
     } else {
         String::new()
@@ -379,10 +392,13 @@ fn render_exception(out: &mut String, api: &Api) {
 /// every element's own buffers would have to outlive the call, which is a
 /// port adapter's business and not a value class's.
 fn shown(api: &Api, s: &StructDef) -> bool {
-    matches!(s.role, StructRole::Object | StructRole::Columns)
-        && s.fields
-            .iter()
-            .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
+    matches!(
+        s.role,
+        StructRole::Object | StructRole::Columns | StructRole::Error
+    ) && s
+        .fields
+        .iter()
+        .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
         && !s.fields.iter().zip(field_roles(api, s)).any(|(f, role)| {
             matches!(role, FieldRole::Array { .. })
                 && matches!(f.ty.pointee(), Some(TypeRef::Struct { .. }))
@@ -783,14 +799,18 @@ fn render_dart_way_in(
                 let _ = writeln!(body, "      final out = arena<ffi.Pointer<{name}>>();");
                 args.push(String::from("out"));
             }
-            Role::StringOut => {
+            // The failure record a way in writes whole when it refuses,
+            // sized as every record the library writes into is.
+            Role::StructOut
+                if crate::rules::refusal_out(api, ctor).is_some_and(|r| r.name == p.name) =>
+            {
                 let Some(s) = pointee_struct(api, p) else {
                     continue;
                 };
+                let raw = struct_name(&s.name);
                 let _ = writeln!(
                     body,
-                    "      final error = arena<{}>();",
-                    struct_name(&s.name)
+                    "      final error = arena<{raw}>();\n      error.ref.structSize = ffi.sizeOf<{raw}>();"
                 );
                 args.push(String::from("error"));
             }
@@ -836,13 +856,13 @@ fn render_dart_way_in(
     }
     let _ = writeln!(
         out,
-        "{doc}  factory Teistro{name}{suffix}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final message = error.ref.data == ffi.nullptr\n            ? 'the context could not be built (code $status)'\n            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();\n        lib.{free}(error);\n        throw TeistroException(Status.byId(status), message);\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
+        "{doc}  factory Teistro{name}{suffix}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final refusal = _refusal(status, error);\n        lib.{free}(error);\n        throw refusal;\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
         doc = doc(&ctor.doc, "  "),
         suffix = named.map_or_else(String::new, |n| format!(".{n}")),
         params = params.join(", "),
         call = ctor.name,
         args = args.join(", "),
-        free = free_name(api, Role::StringFree)
+        free = free_name(api, Role::ErrorFree)
     );
 }
 
@@ -864,7 +884,7 @@ fn render_dart_error_reader(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     };
     let _ = writeln!(
         out,
-        "  /// Turns a failed call into the exception the library described,\n  /// with its detail, its field and its hint.\n  Never _fail(int status) {{\n    return pkg_ffi.using((arena) {{\n      final raw = arena<{}>();\n      raw.ref.structSize = ffi.sizeOf<{}>();\n      _lib.{}(_handle, raw);\n      String? text(ffi.Pointer<ffi.Char> p) =>\n          p == ffi.nullptr ? null : p.cast<pkg_ffi.Utf8>().toDartString();\n      throw TeistroException(\n        Status.byId(status),\n        text(raw.ref.message) ?? 'the call failed',\n        detail: text(raw.ref.detail),\n        field: text(raw.ref.field),\n        hint: text(raw.ref.hint),\n        messageKey: text(raw.ref.key),\n        providerCode: raw.ref.providerCode,\n      );\n    }});\n  }}\n",
+        "  /// Turns a failed call into the exception the library described,\n  /// with its detail, its field and its hint.\n  Never _fail(int status) {{\n    return pkg_ffi.using((arena) {{\n      final raw = arena<{}>();\n      raw.ref.structSize = ffi.sizeOf<{}>();\n      _lib.{}(_handle, raw);\n      throw _refusal(status, raw);\n    }});\n  }}\n",
         struct_name(&s.name),
         struct_name(&s.name),
         reader.name
@@ -1145,6 +1165,11 @@ fn render_free_functions(out: &mut String, api: &Api) {
     let lent = named(StructRole::BorrowedString);
     let free_blob = free_name(api, Role::BlobFree);
     let free_string = free_name(api, Role::StringFree);
+    let error = named(StructRole::Error);
+    let _ = writeln!(
+        out,
+        "/// The exception for a refusal the library described, read from either\n/// kind of record: one a context lent, or one a failed way in wrote.\nTeistroException _refusal(int status, ffi.Pointer<{error}> raw) {{\n  String? text(ffi.Pointer<ffi.Char> p) =>\n      p == ffi.nullptr ? null : p.cast<pkg_ffi.Utf8>().toDartString();\n  return TeistroException(\n    Status.byId(status),\n    text(raw.ref.message) ?? 'the call failed',\n    detail: text(raw.ref.detail),\n    field: text(raw.ref.field),\n    hint: text(raw.ref.hint),\n    messageKey: text(raw.ref.key),\n    providerCode: raw.ref.providerCode,\n  );\n}}\n"
+    );
     let _ = writeln!(
         out,
         "/// The bytes of a blob the library filled, copied out and the blob\n/// freed, so nothing of the library's outlives the call.\nUint8List _takeBlob(TeistroLibrary lib, ffi.Pointer<{blob}> blob) {{\n  final bytes = Uint8List.fromList(blob.ref.data.asTypedList(blob.ref.len));\n  lib.{free_blob}(blob);\n  return bytes;\n}}\n\n/// The text of a string the library allocated, copied and the string freed.\nString _takeString(TeistroLibrary lib, ffi.Pointer<{owned}> string) {{\n  final text = string.ref.data == ffi.nullptr\n      ? ''\n      : string.ref.data.cast<pkg_ffi.Utf8>().toDartString();\n  lib.{free_string}(string);\n  return text;\n}}\n\n/// The text of a string the library lent, copied before the next call\n/// replaces it.\nString _takeStr(ffi.Pointer<{lent}> str) => str.ref.data == ffi.nullptr\n    ? ''\n    : str.ref.data.cast<pkg_ffi.Utf8>().toDartString();\n\n/// The library every context and static call was opened with, so a\n/// finaliser can find the symbol it frees with.\nTeistroLibrary? _library;\n\n/// Remembers the open library.\nvoid rememberLibrary(TeistroLibrary lib) {{\n  _library ??= lib;\n}}\n"
@@ -1153,7 +1178,11 @@ fn render_free_functions(out: &mut String, api: &Api) {
         !f.params.iter().any(|p| {
             matches!(
                 p.role,
-                Role::Handle | Role::HandleOut | Role::BlobFree | Role::StringFree
+                Role::Handle
+                    | Role::HandleOut
+                    | Role::BlobFree
+                    | Role::StringFree
+                    | Role::ErrorFree
             )
         })
     }) {

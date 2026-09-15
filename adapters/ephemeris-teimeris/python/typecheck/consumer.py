@@ -67,3 +67,10 @@ def main() -> None:
             }
         )
         print(f"{len(stars)} stars, the Moon at {moon['lon']}")
+
+        # Cusps are as long as the house system says, asked before the call.
+        houses = typed.tm_houses_calc(
+            req={"jd_ut1": 2451545.0, "geo_lat_deg": 27.7, "geo_lon_deg": 85.3, "system": 0, "flags": 0}
+        )
+        cusps: list[float] = houses["cusps"]
+        print(f"{len(cusps)} cusps, ascendant {houses['out_angles']['ascendant']}")

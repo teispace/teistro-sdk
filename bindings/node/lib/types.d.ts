@@ -442,6 +442,32 @@ export interface ContextOptions {
    */
   readonly locale?: string;
   /**
+   * Chart layouts of the consumer's own, to draw in beside the shipped
+   * ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+   * answers, with a key of its own. Every row is checked by the rules a
+   * shipped one passes and refused by its place in the array and its own
+   * field, as `options.layouts_json`, the row's index, then the field's
+   * path; a key the SDK ships is
+   * refused, so a row adds a layout and never replaces one. Null for none
+   * (`03-design/chart-geometry.md` §7f).
+   * @nullable
+   */
+  readonly layoutsJson?: string;
+  /**
+   * Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+   * of definitions: each a key the catalogue does not have, its lords and
+   * their years in order, the reference nakshatra, and optionally `count`,
+   * `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+   * `sources` (the document schema's `UduDefinition`). Every one is checked
+   * by the rules a shipped row passes and refused by its place in the array
+   * and its own field, as `options.dashas_json`, the index, then the field.
+   * A request asks for one by the id
+   * `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+   * registration order. Null for none (`03-design/dasha-kernels.md`).
+   * @nullable
+   */
+  readonly dashasJson?: string;
+  /**
    * Which of the SDK's own ephemerides to use when no provider vtable
    * is given; ignored when one is (ADR-0028).
    * @enum Ephemeris
@@ -451,9 +477,15 @@ export interface ContextOptions {
 }
 
 /**
- * The last error of a call on a context: the status, the detail, and the
- * message, field, hint and message key as strings the context lends
- * until its next call; an `OK` record has empty strings.
+ * A failure as the library describes it: the status, the provider's
+ * code, and the detail, message, field, hint and message key.
+ *
+ * Read from `ts_context_last_error`, the strings are **lent** by the
+ * context until its next call and `flags` is zero; an `OK` record has
+ * null strings. Written by a call that makes a handle and failed, the
+ * strings are **owned** by the record, `flags` carries
+ * `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+ * on a lent record does nothing, so freeing every record is never wrong.
  */
 export interface Error {
   /**
@@ -669,7 +701,7 @@ export interface ChartRequest {
    * Which of the document's sections to compute beside the
    * foundation, as a bit set: 1 the day's almanac, 2 the planetary
    * states, 4 the aspects, 8 the derived points, 16 the houses
-   * service. Zero for the foundation alone, which is what every
+   * service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
    * caller compiled against an earlier header passes by not passing
    * it at all.
    *
@@ -694,6 +726,38 @@ export interface ChartRequest {
    * @enum Varga
    */
   readonly vargas: readonly Varga[];
+  /**
+   * Which charts to draw, and in which layouts, in the order they should
+   * be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+   * catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+   * count of zero for none.
+   *
+   * Packed, as `sections` is a bit set, so the request carries one array
+   * and one count rather than two arrays that must agree; every ergonomic
+   * layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+   */
+  readonly drawings: Uint32Array | readonly number[];
+  /**
+   * Which dashas to compute, in the order they should be answered in: each
+   * a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+   * the context registered (`0x8000` and up). Each one's balance and its
+   * periods to its depth. Null with a count of zero for none.
+   *
+   * Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+   * layer takes a catalogue member or a registered key and writes the id.
+   */
+  readonly dashas: Uint16Array | readonly number[];
+  /**
+   * A theme to write every drawing as SVG in, as JSON: an object of
+   * `style` and `content` naming only what it changes, over the light
+   * theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+   * The SVGs come back in the blob's `svgs` section, in the context's
+   * locale. Null for none, which costs nothing
+   * (`03-design/render-svg.md`).
+   * @example {"extends":"dark"}
+   * @nullable
+   */
+  readonly themeJson?: string;
 }
 
 /**

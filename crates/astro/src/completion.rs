@@ -35,6 +35,7 @@ use crate::topocentric::Station;
 
 /// Who computed a step.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Implementation {
     /// The provider's declared override.
@@ -47,6 +48,7 @@ pub enum Implementation {
 
 /// One completion step and who did it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Step {
     /// The step's name.
     pub name: &'static str,
@@ -57,6 +59,7 @@ pub struct Step {
 /// A completed response: the columns in the requested frame and the
 /// steps that produced them, in order.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Completed {
     /// The columns, in the requested frame.
     pub columns: PositionColumns,
@@ -77,6 +80,7 @@ impl Completed {
 
 /// Why completion could not be done.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CompletionError {
     /// The provider failed.

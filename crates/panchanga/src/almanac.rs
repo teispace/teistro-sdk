@@ -12,7 +12,6 @@
 //! one crossing search over the month replaces thirty overlapping ones.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::ayanamsha::Basis;
 use teistro_astro::completion::Completion;
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
@@ -27,7 +26,7 @@ use teistro_core::envelope::{
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
-use teistro_core::settings::{AyanamshaBasis, Centre, MoonEvents, Resolved, Settings};
+use teistro_core::settings::{Centre, MoonEvents, Resolved, Settings};
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
 use teistro_time::hora::{self, Hora};
@@ -47,6 +46,7 @@ use crate::span::{self, Span};
 /// for field, which is what the determinism contract asks of everything
 /// that crosses a binding.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Panchanga {
     /// The day, with its arc, its vara, its polar state and the sunrise
     /// convention it was reckoned under.
@@ -135,6 +135,7 @@ impl Panchanga {
 
 /// What the almanac hashes as its input.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct Input {
     date: String,
     latitude_deg: f64,
@@ -144,6 +145,7 @@ struct Input {
 
 /// The same, for a range.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct RangeInput {
     from: String,
     to: String,
@@ -463,16 +465,12 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             },
             ..chart.request
         };
-        let zodiac = Zodiac {
-            ayanamsha: chart.ayanamsha,
-            basis: if self.settings().frame.ayanamsha_basis == AyanamshaBasis::True {
-                Basis::True
-            } else {
-                Basis::Mean
-            },
-            precession: self.precession,
-            delta_t: self.delta_t,
-        };
+        let zodiac = Zodiac::of_chart(
+            &chart,
+            self.settings().frame.ayanamsha_basis,
+            self.precession,
+            self.delta_t,
+        );
         Ok((frame, zodiac))
     }
 

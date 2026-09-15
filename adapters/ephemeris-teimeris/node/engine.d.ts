@@ -56,6 +56,43 @@ export interface TmPositionRequest {
   readonly ayanamshaSet: number;
 }
 
+/** `tm_angles`, as the engine declares it. Every field is required. */
+export interface TmAngles {
+  readonly ascendant: number;
+  readonly midheaven: number;
+  readonly armc: number;
+  readonly vertex: number;
+  readonly equatorialAscendant: number;
+  readonly coAscendantKoch: number;
+  readonly coAscendantMunkasey: number;
+  readonly polarAscendant: number;
+  readonly ascendantSpeed: number;
+  readonly midheavenSpeed: number;
+  readonly armcSpeed: number;
+  readonly vertexSpeed: number;
+  readonly systemUsed: number;
+}
+
+/** `tm_houses_request`, as the engine declares it. Every field is required. */
+export interface TmHousesRequest {
+  readonly jdUt1: number;
+  readonly geoLatDeg: number;
+  readonly geoLonDeg: number;
+  readonly system: number;
+  readonly flags: number;
+}
+
+/** `tm_chart_request`, as the engine declares it. Every field is required. */
+export interface TmChartRequest {
+  readonly jd: number;
+  readonly scale: number;
+  readonly parts: number;
+  readonly place: TmObserver | null;
+  readonly flags: number;
+  readonly system: number;
+  readonly houseFlags: number;
+}
+
 /** `tm_model_details`, as the engine declares it. Every field is required. */
 export interface TmModelDetails {
   readonly value: number;
@@ -524,6 +561,13 @@ export interface TmCalendarRequest {
   readonly horizonHeightDeg: number;
 }
 
+/** `tm_calendar_day`, as the engine declares it. Every field is required. */
+export interface TmCalendarDay {
+  readonly jd: number;
+  readonly found: number;
+  readonly status: number;
+}
+
 /** `tm_scan_request`, as the engine declares it. Every field is required. */
 export interface TmScanRequest {
   readonly jdStart: number;
@@ -690,6 +734,14 @@ export declare class TeimerisEngine {
    */
   tmHouseSystemCount(): number;
   /**
+   * `tm_houses_calc`.
+   */
+  tmHousesCalc(args: { readonly req?: TmHousesRequest | null }): { readonly cusps: readonly number[]; readonly cuspSpeeds: readonly number[]; readonly outAngles: TmAngles };
+  /**
+   * `tm_houses_calc_many`.
+   */
+  tmHousesCalcMany(args: { readonly reqs: readonly TmHousesRequest[] }): { readonly cusps: readonly number[]; readonly outAngles: readonly TmAngles[] };
+  /**
    * `tm_house_position`.
    */
   tmHousePosition(args: { readonly armc: number; readonly geoLatDeg: number; readonly obliquityDeg: number; readonly sys: number; readonly lonDeg: number; readonly latDeg: number }): number;
@@ -697,6 +749,10 @@ export declare class TeimerisEngine {
    * `tm_chart_default_bodies`.
    */
   tmChartDefaultBodies(): readonly number[];
+  /**
+   * `tm_chart_calc`.
+   */
+  tmChartCalc(args: { readonly req?: TmChartRequest | null; readonly bodies: readonly number[] }): { readonly outPositions: readonly TmPosition[]; readonly outCusps: readonly number[]; readonly outCuspSpeeds: readonly number[]; readonly outAngles: TmAngles };
   /**
    * `tm_set_jpl_file`.
    *
@@ -1039,6 +1095,10 @@ export declare class TeimerisEngine {
    * `tm_calendar_request_init_sized`.
    */
   tmCalendarRequestInitSized(): TmCalendarRequest;
+  /**
+   * `tm_calendar_grid`.
+   */
+  tmCalendarGrid(args: { readonly req?: TmCalendarRequest | null; readonly bodies: readonly number[] }): { readonly outDays: readonly TmCalendarDay[]; readonly outPositions: readonly TmPosition[] };
   /**
    * `tm_scan_request_init_sized`.
    */

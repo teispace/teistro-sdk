@@ -29,11 +29,104 @@ enum AvasthaBaladiKey {
   final String key;
 }
 
+enum AvasthaDeeptadiKey {
+  deepta('avastha_deeptadi.DEEPTA'),
+  swastha('avastha_deeptadi.SWASTHA'),
+  mudita('avastha_deeptadi.MUDITA'),
+  shanta('avastha_deeptadi.SHANTA'),
+  dina('avastha_deeptadi.DINA'),
+  dukhi('avastha_deeptadi.DUKHI'),
+  vikala('avastha_deeptadi.VIKALA'),
+  khala('avastha_deeptadi.KHALA'),
+  kopa('avastha_deeptadi.KOPA');
+
+  const AvasthaDeeptadiKey(this.key);
+
+  final String key;
+}
+
+enum AvasthaJagradadiKey {
+  jagrat('avastha_jagradadi.JAGRAT'),
+  swapna('avastha_jagradadi.SWAPNA'),
+  sushupti('avastha_jagradadi.SUSHUPTI');
+
+  const AvasthaJagradadiKey(this.key);
+
+  final String key;
+}
+
+enum AvasthaLajjitadiKey {
+  lajjita('avastha_lajjitadi.LAJJITA'),
+  garvita('avastha_lajjitadi.GARVITA'),
+  kshudha('avastha_lajjitadi.KSHUDHA'),
+  trishita('avastha_lajjitadi.TRISHITA'),
+  mudita('avastha_lajjitadi.MUDITA'),
+  kshobhita('avastha_lajjitadi.KSHOBHITA');
+
+  const AvasthaLajjitadiKey(this.key);
+
+  final String key;
+}
+
 enum AyanaKey {
   uttarayana('ayana.UTTARAYANA'),
   dakshinayana('ayana.DAKSHINAYANA');
 
   const AyanaKey(this.key);
+
+  final String key;
+}
+
+enum AyanamshaKey {
+  faganBradley('ayanamsha.FAGAN_BRADLEY'),
+  lahiri('ayanamsha.LAHIRI'),
+  deluce('ayanamsha.DELUCE'),
+  raman('ayanamsha.RAMAN'),
+  ushashashi('ayanamsha.USHASHASHI'),
+  krishnamurti('ayanamsha.KRISHNAMURTI'),
+  djwhalKhul('ayanamsha.DJWHAL_KHUL'),
+  yukteshwar('ayanamsha.YUKTESHWAR'),
+  jnBhasin('ayanamsha.JN_BHASIN'),
+  babylKugler1('ayanamsha.BABYL_KUGLER1'),
+  babylKugler2('ayanamsha.BABYL_KUGLER2'),
+  babylKugler3('ayanamsha.BABYL_KUGLER3'),
+  babylHuber('ayanamsha.BABYL_HUBER'),
+  babylEtpsc('ayanamsha.BABYL_ETPSC'),
+  aldebaran15tau('ayanamsha.ALDEBARAN_15TAU'),
+  hipparchos('ayanamsha.HIPPARCHOS'),
+  sassanian('ayanamsha.SASSANIAN'),
+  galcent0sag('ayanamsha.GALCENT_0SAG'),
+  j2000('ayanamsha.J2000'),
+  j1900('ayanamsha.J1900'),
+  b1950('ayanamsha.B1950'),
+  suryasiddhanta('ayanamsha.SURYASIDDHANTA'),
+  suryasiddhantaMsun('ayanamsha.SURYASIDDHANTA_MSUN'),
+  aryabhata('ayanamsha.ARYABHATA'),
+  aryabhataMsun('ayanamsha.ARYABHATA_MSUN'),
+  ssRevati('ayanamsha.SS_REVATI'),
+  ssCitra('ayanamsha.SS_CITRA'),
+  trueChitra('ayanamsha.TRUE_CHITRA'),
+  trueRevati('ayanamsha.TRUE_REVATI'),
+  truePushya('ayanamsha.TRUE_PUSHYA'),
+  galcentRgilbrand('ayanamsha.GALCENT_RGILBRAND'),
+  galequIau1958('ayanamsha.GALEQU_IAU1958'),
+  galequTrue('ayanamsha.GALEQU_TRUE'),
+  galequMula('ayanamsha.GALEQU_MULA'),
+  galalignMardyks('ayanamsha.GALALIGN_MARDYKS'),
+  trueMula('ayanamsha.TRUE_MULA'),
+  galcentMulaWilhelm('ayanamsha.GALCENT_MULA_WILHELM'),
+  aryabhata522('ayanamsha.ARYABHATA_522'),
+  babylBritton('ayanamsha.BABYL_BRITTON'),
+  trueSheoran('ayanamsha.TRUE_SHEORAN'),
+  galcentCochrane('ayanamsha.GALCENT_COCHRANE'),
+  galequFiorenza('ayanamsha.GALEQU_FIORENZA'),
+  valensMoon('ayanamsha.VALENS_MOON'),
+  lahiri1940('ayanamsha.LAHIRI_1940'),
+  lahiriVp285('ayanamsha.LAHIRI_VP285'),
+  krishnamurtiVp291('ayanamsha.KRISHNAMURTI_VP291'),
+  lahiriIcrc('ayanamsha.LAHIRI_ICRC');
+
+  const AyanamshaKey(this.key);
 
   final String key;
 }
@@ -63,6 +156,31 @@ enum ChoghadiyaKey {
   rog('choghadiya.ROG');
 
   const ChoghadiyaKey(this.key);
+
+  final String key;
+}
+
+enum DashaSystemKey {
+  vimshottari('dasha_system.VIMSHOTTARI'),
+  ashtottari('dasha_system.ASHTOTTARI'),
+  dwadashottari('dasha_system.DWADASHOTTARI'),
+  panchottari('dasha_system.PANCHOTTARI'),
+  shatabdika('dasha_system.SHATABDIKA'),
+  chaturashitiSama('dasha_system.CHATURASHITI_SAMA'),
+  dwisaptatiSama('dasha_system.DWISAPTATI_SAMA'),
+  yogini('dasha_system.YOGINI'),
+  tribhagi('dasha_system.TRIBHAGI'),
+  chara('dasha_system.CHARA'),
+  narayana('dasha_system.NARAYANA'),
+  padanadhamsa('dasha_system.PADANADHAMSA'),
+  trikona('dasha_system.TRIKONA'),
+  drig('dasha_system.DRIG'),
+  shoola('dasha_system.SHOOLA'),
+  niryanaShoola('dasha_system.NIRYANA_SHOOLA'),
+  mandooka('dasha_system.MANDOOKA'),
+  kalachakra('dasha_system.KALACHAKRA');
+
+  const DashaSystemKey(this.key);
 
   final String key;
 }
@@ -119,6 +237,21 @@ enum DignityKey {
   final String key;
 }
 
+enum DirectionKey {
+  east('direction.EAST'),
+  west('direction.WEST'),
+  north('direction.NORTH'),
+  south('direction.SOUTH'),
+  northeast('direction.NORTHEAST'),
+  northwest('direction.NORTHWEST'),
+  southeast('direction.SOUTHEAST'),
+  southwest('direction.SOUTHWEST');
+
+  const DirectionKey(this.key);
+
+  final String key;
+}
+
 enum EraKey {
   vikrama('era.VIKRAMA'),
   shaka('era.SHAKA'),
@@ -161,6 +294,35 @@ enum GrahaKey {
   final String key;
 }
 
+enum HouseSystemKey {
+  wholeSign('house_system.WHOLE_SIGN'),
+  placidus('house_system.PLACIDUS'),
+  koch('house_system.KOCH'),
+  regiomontanus('house_system.REGIOMONTANUS'),
+  campanus('house_system.CAMPANUS'),
+  equal('house_system.EQUAL'),
+  meridian('house_system.MERIDIAN'),
+  alcabitius('house_system.ALCABITIUS'),
+  porphyry('house_system.PORPHYRY'),
+  topocentric('house_system.TOPOCENTRIC'),
+  morinus('house_system.MORINUS'),
+  sripati('house_system.SRIPATI'),
+  equalMc('house_system.EQUAL_MC'),
+  equalAries('house_system.EQUAL_ARIES'),
+  vehlow('house_system.VEHLOW'),
+  carter('house_system.CARTER'),
+  horizon('house_system.HORIZON'),
+  sunshine('house_system.SUNSHINE'),
+  pullenSd('house_system.PULLEN_SD'),
+  pullenSr('house_system.PULLEN_SR'),
+  krusinski('house_system.KRUSINSKI'),
+  apc('house_system.APC');
+
+  const HouseSystemKey(this.key);
+
+  final String key;
+}
+
 enum KaalaKey {
   rahuKaala('kaala.RAHU_KAALA'),
   yamaghanda('kaala.YAMAGHANDA'),
@@ -185,6 +347,25 @@ enum KaranaKey {
   kimstughna('karana.KIMSTUGHNA');
 
   const KaranaKey(this.key);
+
+  final String key;
+}
+
+enum MasaKey {
+  chaitra('masa.CHAITRA'),
+  vaishakha('masa.VAISHAKHA'),
+  jyeshtha('masa.JYESHTHA'),
+  ashadha('masa.ASHADHA'),
+  shravana('masa.SHRAVANA'),
+  bhadrapada('masa.BHADRAPADA'),
+  ashwina('masa.ASHWINA'),
+  kartika('masa.KARTIKA'),
+  margashirsha('masa.MARGASHIRSHA'),
+  pausha('masa.PAUSHA'),
+  magha('masa.MAGHA'),
+  phalguna('masa.PHALGUNA');
+
+  const MasaKey(this.key);
 
   final String key;
 }
@@ -267,7 +448,14 @@ enum PanchakaKey {
 }
 
 enum PointKey {
-  lagna('point.LAGNA');
+  lagna('point.LAGNA'),
+  dhuma('point.DHUMA'),
+  vyatipata('point.VYATIPATA'),
+  parivesha('point.PARIVESHA'),
+  indrachapa('point.INDRACHAPA'),
+  upaketu('point.UPAKETU'),
+  gulika('point.GULIKA'),
+  mandi('point.MANDI');
 
   const PointKey(this.key);
 
@@ -793,6 +981,45 @@ final class MessagesSdkEntityAvasthaBaladi {
   EntityForms get yuva => _r.entity('avastha_baladi.YUVA');
 }
 
+final class MessagesSdkEntityAvasthaDeeptadi {
+  const MessagesSdkEntityAvasthaDeeptadi(this._r);
+
+  final Renderer _r;
+
+  EntityForms get deepta => _r.entity('avastha_deeptadi.DEEPTA');
+  EntityForms get dina => _r.entity('avastha_deeptadi.DINA');
+  EntityForms get dukhi => _r.entity('avastha_deeptadi.DUKHI');
+  EntityForms get khala => _r.entity('avastha_deeptadi.KHALA');
+  EntityForms get kopa => _r.entity('avastha_deeptadi.KOPA');
+  EntityForms get mudita => _r.entity('avastha_deeptadi.MUDITA');
+  EntityForms get shanta => _r.entity('avastha_deeptadi.SHANTA');
+  EntityForms get swastha => _r.entity('avastha_deeptadi.SWASTHA');
+  EntityForms get vikala => _r.entity('avastha_deeptadi.VIKALA');
+}
+
+final class MessagesSdkEntityAvasthaJagradadi {
+  const MessagesSdkEntityAvasthaJagradadi(this._r);
+
+  final Renderer _r;
+
+  EntityForms get jagrat => _r.entity('avastha_jagradadi.JAGRAT');
+  EntityForms get sushupti => _r.entity('avastha_jagradadi.SUSHUPTI');
+  EntityForms get swapna => _r.entity('avastha_jagradadi.SWAPNA');
+}
+
+final class MessagesSdkEntityAvasthaLajjitadi {
+  const MessagesSdkEntityAvasthaLajjitadi(this._r);
+
+  final Renderer _r;
+
+  EntityForms get garvita => _r.entity('avastha_lajjitadi.GARVITA');
+  EntityForms get kshobhita => _r.entity('avastha_lajjitadi.KSHOBHITA');
+  EntityForms get kshudha => _r.entity('avastha_lajjitadi.KSHUDHA');
+  EntityForms get lajjita => _r.entity('avastha_lajjitadi.LAJJITA');
+  EntityForms get mudita => _r.entity('avastha_lajjitadi.MUDITA');
+  EntityForms get trishita => _r.entity('avastha_lajjitadi.TRISHITA');
+}
+
 final class MessagesSdkEntityAyana {
   const MessagesSdkEntityAyana(this._r);
 
@@ -800,6 +1027,60 @@ final class MessagesSdkEntityAyana {
 
   EntityForms get dakshinayana => _r.entity('ayana.DAKSHINAYANA');
   EntityForms get uttarayana => _r.entity('ayana.UTTARAYANA');
+}
+
+final class MessagesSdkEntityAyanamsha {
+  const MessagesSdkEntityAyanamsha(this._r);
+
+  final Renderer _r;
+
+  EntityForms get aldebaran15tau => _r.entity('ayanamsha.ALDEBARAN_15TAU');
+  EntityForms get aryabhata => _r.entity('ayanamsha.ARYABHATA');
+  EntityForms get aryabhata522 => _r.entity('ayanamsha.ARYABHATA_522');
+  EntityForms get aryabhataMsun => _r.entity('ayanamsha.ARYABHATA_MSUN');
+  EntityForms get b1950 => _r.entity('ayanamsha.B1950');
+  EntityForms get babylBritton => _r.entity('ayanamsha.BABYL_BRITTON');
+  EntityForms get babylEtpsc => _r.entity('ayanamsha.BABYL_ETPSC');
+  EntityForms get babylHuber => _r.entity('ayanamsha.BABYL_HUBER');
+  EntityForms get babylKugler1 => _r.entity('ayanamsha.BABYL_KUGLER1');
+  EntityForms get babylKugler2 => _r.entity('ayanamsha.BABYL_KUGLER2');
+  EntityForms get babylKugler3 => _r.entity('ayanamsha.BABYL_KUGLER3');
+  EntityForms get deluce => _r.entity('ayanamsha.DELUCE');
+  EntityForms get djwhalKhul => _r.entity('ayanamsha.DJWHAL_KHUL');
+  EntityForms get faganBradley => _r.entity('ayanamsha.FAGAN_BRADLEY');
+  EntityForms get galalignMardyks => _r.entity('ayanamsha.GALALIGN_MARDYKS');
+  EntityForms get galcent0sag => _r.entity('ayanamsha.GALCENT_0SAG');
+  EntityForms get galcentCochrane => _r.entity('ayanamsha.GALCENT_COCHRANE');
+  EntityForms get galcentMulaWilhelm => _r.entity('ayanamsha.GALCENT_MULA_WILHELM');
+  EntityForms get galcentRgilbrand => _r.entity('ayanamsha.GALCENT_RGILBRAND');
+  EntityForms get galequFiorenza => _r.entity('ayanamsha.GALEQU_FIORENZA');
+  EntityForms get galequIau1958 => _r.entity('ayanamsha.GALEQU_IAU1958');
+  EntityForms get galequMula => _r.entity('ayanamsha.GALEQU_MULA');
+  EntityForms get galequTrue => _r.entity('ayanamsha.GALEQU_TRUE');
+  EntityForms get hipparchos => _r.entity('ayanamsha.HIPPARCHOS');
+  EntityForms get j1900 => _r.entity('ayanamsha.J1900');
+  EntityForms get j2000 => _r.entity('ayanamsha.J2000');
+  EntityForms get jnBhasin => _r.entity('ayanamsha.JN_BHASIN');
+  EntityForms get krishnamurti => _r.entity('ayanamsha.KRISHNAMURTI');
+  EntityForms get krishnamurtiVp291 => _r.entity('ayanamsha.KRISHNAMURTI_VP291');
+  EntityForms get lahiri => _r.entity('ayanamsha.LAHIRI');
+  EntityForms get lahiri1940 => _r.entity('ayanamsha.LAHIRI_1940');
+  EntityForms get lahiriIcrc => _r.entity('ayanamsha.LAHIRI_ICRC');
+  EntityForms get lahiriVp285 => _r.entity('ayanamsha.LAHIRI_VP285');
+  EntityForms get raman => _r.entity('ayanamsha.RAMAN');
+  EntityForms get sassanian => _r.entity('ayanamsha.SASSANIAN');
+  EntityForms get ssCitra => _r.entity('ayanamsha.SS_CITRA');
+  EntityForms get ssRevati => _r.entity('ayanamsha.SS_REVATI');
+  EntityForms get suryasiddhanta => _r.entity('ayanamsha.SURYASIDDHANTA');
+  EntityForms get suryasiddhantaMsun => _r.entity('ayanamsha.SURYASIDDHANTA_MSUN');
+  EntityForms get trueChitra => _r.entity('ayanamsha.TRUE_CHITRA');
+  EntityForms get trueMula => _r.entity('ayanamsha.TRUE_MULA');
+  EntityForms get truePushya => _r.entity('ayanamsha.TRUE_PUSHYA');
+  EntityForms get trueRevati => _r.entity('ayanamsha.TRUE_REVATI');
+  EntityForms get trueSheoran => _r.entity('ayanamsha.TRUE_SHEORAN');
+  EntityForms get ushashashi => _r.entity('ayanamsha.USHASHASHI');
+  EntityForms get valensMoon => _r.entity('ayanamsha.VALENS_MOON');
+  EntityForms get yukteshwar => _r.entity('ayanamsha.YUKTESHWAR');
 }
 
 final class MessagesSdkEntityCharaKaraka {
@@ -829,6 +1110,31 @@ final class MessagesSdkEntityChoghadiya {
   EntityForms get rog => _r.entity('choghadiya.ROG');
   EntityForms get shubha => _r.entity('choghadiya.SHUBHA');
   EntityForms get udveg => _r.entity('choghadiya.UDVEG');
+}
+
+final class MessagesSdkEntityDashaSystem {
+  const MessagesSdkEntityDashaSystem(this._r);
+
+  final Renderer _r;
+
+  EntityForms get ashtottari => _r.entity('dasha_system.ASHTOTTARI');
+  EntityForms get chara => _r.entity('dasha_system.CHARA');
+  EntityForms get chaturashitiSama => _r.entity('dasha_system.CHATURASHITI_SAMA');
+  EntityForms get drig => _r.entity('dasha_system.DRIG');
+  EntityForms get dwadashottari => _r.entity('dasha_system.DWADASHOTTARI');
+  EntityForms get dwisaptatiSama => _r.entity('dasha_system.DWISAPTATI_SAMA');
+  EntityForms get kalachakra => _r.entity('dasha_system.KALACHAKRA');
+  EntityForms get mandooka => _r.entity('dasha_system.MANDOOKA');
+  EntityForms get narayana => _r.entity('dasha_system.NARAYANA');
+  EntityForms get niryanaShoola => _r.entity('dasha_system.NIRYANA_SHOOLA');
+  EntityForms get padanadhamsa => _r.entity('dasha_system.PADANADHAMSA');
+  EntityForms get panchottari => _r.entity('dasha_system.PANCHOTTARI');
+  EntityForms get shatabdika => _r.entity('dasha_system.SHATABDIKA');
+  EntityForms get shoola => _r.entity('dasha_system.SHOOLA');
+  EntityForms get tribhagi => _r.entity('dasha_system.TRIBHAGI');
+  EntityForms get trikona => _r.entity('dasha_system.TRIKONA');
+  EntityForms get vimshottari => _r.entity('dasha_system.VIMSHOTTARI');
+  EntityForms get yogini => _r.entity('dasha_system.YOGINI');
 }
 
 final class MessagesSdkEntityDeity {
@@ -883,6 +1189,21 @@ final class MessagesSdkEntityDignity {
   EntityForms get ownSign => _r.entity('dignity.OWN_SIGN');
 }
 
+final class MessagesSdkEntityDirection {
+  const MessagesSdkEntityDirection(this._r);
+
+  final Renderer _r;
+
+  EntityForms get east => _r.entity('direction.EAST');
+  EntityForms get north => _r.entity('direction.NORTH');
+  EntityForms get northeast => _r.entity('direction.NORTHEAST');
+  EntityForms get northwest => _r.entity('direction.NORTHWEST');
+  EntityForms get south => _r.entity('direction.SOUTH');
+  EntityForms get southeast => _r.entity('direction.SOUTHEAST');
+  EntityForms get southwest => _r.entity('direction.SOUTHWEST');
+  EntityForms get west => _r.entity('direction.WEST');
+}
+
 final class MessagesSdkEntityEra {
   const MessagesSdkEntityEra(this._r);
 
@@ -925,6 +1246,35 @@ final class MessagesSdkEntityGraha {
   EntityForms get venus => _r.entity('graha.VENUS');
 }
 
+final class MessagesSdkEntityHouseSystem {
+  const MessagesSdkEntityHouseSystem(this._r);
+
+  final Renderer _r;
+
+  EntityForms get alcabitius => _r.entity('house_system.ALCABITIUS');
+  EntityForms get apc => _r.entity('house_system.APC');
+  EntityForms get campanus => _r.entity('house_system.CAMPANUS');
+  EntityForms get carter => _r.entity('house_system.CARTER');
+  EntityForms get equal => _r.entity('house_system.EQUAL');
+  EntityForms get equalAries => _r.entity('house_system.EQUAL_ARIES');
+  EntityForms get equalMc => _r.entity('house_system.EQUAL_MC');
+  EntityForms get horizon => _r.entity('house_system.HORIZON');
+  EntityForms get koch => _r.entity('house_system.KOCH');
+  EntityForms get krusinski => _r.entity('house_system.KRUSINSKI');
+  EntityForms get meridian => _r.entity('house_system.MERIDIAN');
+  EntityForms get morinus => _r.entity('house_system.MORINUS');
+  EntityForms get placidus => _r.entity('house_system.PLACIDUS');
+  EntityForms get porphyry => _r.entity('house_system.PORPHYRY');
+  EntityForms get pullenSd => _r.entity('house_system.PULLEN_SD');
+  EntityForms get pullenSr => _r.entity('house_system.PULLEN_SR');
+  EntityForms get regiomontanus => _r.entity('house_system.REGIOMONTANUS');
+  EntityForms get sripati => _r.entity('house_system.SRIPATI');
+  EntityForms get sunshine => _r.entity('house_system.SUNSHINE');
+  EntityForms get topocentric => _r.entity('house_system.TOPOCENTRIC');
+  EntityForms get vehlow => _r.entity('house_system.VEHLOW');
+  EntityForms get wholeSign => _r.entity('house_system.WHOLE_SIGN');
+}
+
 final class MessagesSdkEntityKaala {
   const MessagesSdkEntityKaala(this._r);
 
@@ -951,6 +1301,25 @@ final class MessagesSdkEntityKarana {
   EntityForms get taitila => _r.entity('karana.TAITILA');
   EntityForms get vanija => _r.entity('karana.VANIJA');
   EntityForms get vishti => _r.entity('karana.VISHTI');
+}
+
+final class MessagesSdkEntityMasa {
+  const MessagesSdkEntityMasa(this._r);
+
+  final Renderer _r;
+
+  EntityForms get ashadha => _r.entity('masa.ASHADHA');
+  EntityForms get ashwina => _r.entity('masa.ASHWINA');
+  EntityForms get bhadrapada => _r.entity('masa.BHADRAPADA');
+  EntityForms get chaitra => _r.entity('masa.CHAITRA');
+  EntityForms get jyeshtha => _r.entity('masa.JYESHTHA');
+  EntityForms get kartika => _r.entity('masa.KARTIKA');
+  EntityForms get magha => _r.entity('masa.MAGHA');
+  EntityForms get margashirsha => _r.entity('masa.MARGASHIRSHA');
+  EntityForms get pausha => _r.entity('masa.PAUSHA');
+  EntityForms get phalguna => _r.entity('masa.PHALGUNA');
+  EntityForms get shravana => _r.entity('masa.SHRAVANA');
+  EntityForms get vaishakha => _r.entity('masa.VAISHAKHA');
 }
 
 final class MessagesSdkEntityMuhurtaYoga {
@@ -1035,7 +1404,14 @@ final class MessagesSdkEntityPoint {
 
   final Renderer _r;
 
+  EntityForms get dhuma => _r.entity('point.DHUMA');
+  EntityForms get gulika => _r.entity('point.GULIKA');
+  EntityForms get indrachapa => _r.entity('point.INDRACHAPA');
   EntityForms get lagna => _r.entity('point.LAGNA');
+  EntityForms get mandi => _r.entity('point.MANDI');
+  EntityForms get parivesha => _r.entity('point.PARIVESHA');
+  EntityForms get upaketu => _r.entity('point.UPAKETU');
+  EntityForms get vyatipata => _r.entity('point.VYATIPATA');
 }
 
 final class MessagesSdkEntityRashi {
@@ -1272,16 +1648,24 @@ final class MessagesSdkEntity {
   final Renderer _r;
 
   MessagesSdkEntityAvasthaBaladi get avasthaBaladi => MessagesSdkEntityAvasthaBaladi(_r);
+  MessagesSdkEntityAvasthaDeeptadi get avasthaDeeptadi => MessagesSdkEntityAvasthaDeeptadi(_r);
+  MessagesSdkEntityAvasthaJagradadi get avasthaJagradadi => MessagesSdkEntityAvasthaJagradadi(_r);
+  MessagesSdkEntityAvasthaLajjitadi get avasthaLajjitadi => MessagesSdkEntityAvasthaLajjitadi(_r);
   MessagesSdkEntityAyana get ayana => MessagesSdkEntityAyana(_r);
+  MessagesSdkEntityAyanamsha get ayanamsha => MessagesSdkEntityAyanamsha(_r);
   MessagesSdkEntityCharaKaraka get charaKaraka => MessagesSdkEntityCharaKaraka(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
+  MessagesSdkEntityDashaSystem get dashaSystem => MessagesSdkEntityDashaSystem(_r);
   MessagesSdkEntityDeity get deity => MessagesSdkEntityDeity(_r);
   MessagesSdkEntityDignity get dignity => MessagesSdkEntityDignity(_r);
+  MessagesSdkEntityDirection get direction => MessagesSdkEntityDirection(_r);
   MessagesSdkEntityEra get era => MessagesSdkEntityEra(_r);
   MessagesSdkEntityGana get gana => MessagesSdkEntityGana(_r);
   MessagesSdkEntityGraha get graha => MessagesSdkEntityGraha(_r);
+  MessagesSdkEntityHouseSystem get houseSystem => MessagesSdkEntityHouseSystem(_r);
   MessagesSdkEntityKaala get kaala => MessagesSdkEntityKaala(_r);
   MessagesSdkEntityKarana get karana => MessagesSdkEntityKarana(_r);
+  MessagesSdkEntityMasa get masa => MessagesSdkEntityMasa(_r);
   MessagesSdkEntityMuhurtaYoga get muhurtaYoga => MessagesSdkEntityMuhurtaYoga(_r);
   MessagesSdkEntityNadi get nadi => MessagesSdkEntityNadi(_r);
   MessagesSdkEntityNakshatra get nakshatra => MessagesSdkEntityNakshatra(_r);

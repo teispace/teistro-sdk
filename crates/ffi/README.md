@@ -11,7 +11,7 @@ generated from this crate's source by `cargo xtask gen ffi`.
 | module | entry points |
 |---|---|
 | `lib` | `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_status_message` |
-| `context` | `ts_context_new`, `ts_context_free`, `ts_context_last_error`, `ts_context_profile`, `ts_context_settings_json`, `ts_context_settings_hash` |
+| `context` | `ts_context_new`, `ts_context_free`, `ts_context_last_error`, `ts_error_free`, `ts_context_profile`, `ts_context_settings_json`, `ts_context_settings_hash` |
 | `strings`, `blob` | `ts_string_free`, `ts_blob_free` |
 | `keys` | `ts_key_parse`, `ts_key_name` |
 | `calendar` | `ts_calendar_from_fixed`, `ts_calendar_to_fixed`, `ts_calendar_convert`, `ts_calendar_month_length`, `ts_calendar_is_leap`, `ts_calendar_weekday`, `ts_calendar_jd_of_fixed`, `ts_calendar_fixed_of_jd` |

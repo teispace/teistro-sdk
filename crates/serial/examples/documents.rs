@@ -36,11 +36,17 @@ use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::Gregorian;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::foundation::{ChartFoundation, Founder};
-use teistro_core::catalogue::{Ayanamsha, ChartKind, Varga};
+use teistro_core::angle::Nas;
+use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Varga};
 use teistro_core::envelope::{Envelope, Provenance};
-use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro_core::settings::{OverridePolicy, Profile, Settings, SettingsPatch, Sunrise};
+use teistro_core::interval::Interval;
+use teistro_core::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro_core::settings::{
+    Balance, OverridePolicy, Profile, Settings, SettingsPatch, Sunrise, root,
+};
 use teistro_core::time::UtcOffset;
+use teistro_dasha::{Birth, Dasha, DashaReading, Rules, VIMSHOTTARI};
+use teistro_geometry::{draw, rows};
 use teistro_houses::Houses;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_points::Points;
@@ -145,8 +151,42 @@ pub fn whole() -> (Document, Provenance) {
         .with_state(state(&foundation, &settings).expect("a state"))
         .with_aspects(Aspects::of(&foundation, &settings).expect("the aspects"))
         .with_points(Points::from_longitudes(&foundation).expect("the points"))
-        .with_houses(Houses::of(&foundation).expect("the houses"));
+        .with_houses(Houses::of(&foundation).expect("the houses"))
+        // A drawing in a grid and one in the wheel, so the schema and the
+        // round trip see straight edges, arcs, marks and rounded coordinates.
+        .with_drawing(
+            draw(&rows::north_indian(), &foundation, Varga::D1).expect("a North Indian D1"),
+        )
+        .with_drawing(
+            draw(&rows::western_wheel(), &foundation, Varga::D1).expect("a Western wheel"),
+        )
+        // A dasha under each balance, so the schema and the round trip see
+        // the Moon's span as present and as left out.
+        .with_dasha(vimshottari(&foundation, Balance::Spatial))
+        .with_dasha(vimshottari(&foundation, Balance::Temporal));
     (document, provenance)
+}
+
+/// A Vimshottari of the sample chart, three levels deep, under a balance.
+/// The temporal one reads a Moon span laid about the birth, since the
+/// sample founds no ephemeris search.
+fn vimshottari(foundation: &ChartFoundation, balance: Balance) -> DashaReading {
+    let moon = foundation.graha(Graha::Moon).expect("the Moon");
+    let span = (balance == Balance::Temporal).then(|| {
+        let at = foundation.instant.get();
+        Interval::literal(at - 0.3, at + 0.7)
+    });
+    let birth = Birth {
+        instant: foundation.instant,
+        moon: Nas::try_from_degrees(moon.longitude_deg).expect("a longitude"),
+        moon_span: span,
+    };
+    let rules = Rules {
+        balance,
+        ..Rules::of(&root().dasha, DashaSystem::Vimshottari)
+    };
+    let dasha = Dasha::new(&VIMSHOTTARI, &birth, rules).expect("a Vimshottari");
+    DashaReading::of(&dasha, Depth::try_new(3).expect("a depth"), span)
 }
 
 /// The samples, by the name each is written under.

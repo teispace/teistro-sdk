@@ -29,6 +29,8 @@ use crate::scheme::{Scheme, part_of, target};
 /// assert!(!placement.keeps_its_sign());
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "VargaPlacement"))]
 pub struct Placement {
     /// The sign the body stands in.
     pub rashi: Rashi,

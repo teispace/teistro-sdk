@@ -11,6 +11,7 @@ use crate::trig::{Bhuja, RADIUS, Trig};
 /// An epicycle: its circumference in minutes of arc at the end of the
 /// even quadrants and at the end of the odd ones (II.34 to 37).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Epicycle {
     /// The circumference at the end of an even quadrant (the anomaly at
     /// 180° or 360°), minutes.

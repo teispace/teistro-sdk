@@ -100,5 +100,18 @@ void main() {
   );
   print('${stars.length} stars, the Moon at ${moon.lon}');
 
+  // Cusps are as long as the house system says, asked before the call.
+  final houses = ctx.engine.tmHousesCalc(
+    req: const TmHousesRequest(
+      jdUt1: 2451545,
+      geoLatDeg: 27.7172,
+      geoLonDeg: 85.324,
+      system: 0,
+      flags: 0,
+    ),
+  );
+  final List<double> cusps = houses.cusps;
+  print('${cusps.length} cusps, ascendant ${houses.outAngles.ascendant}');
+
   ctx.dispose();
 }

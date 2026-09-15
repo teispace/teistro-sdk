@@ -297,6 +297,13 @@ impl<'de> serde::Deserialize<'de> for Nas {
     }
 }
 
+hand_schema!(Nas, "Nas", {
+    "type": "integer",
+    "description": "An angle in nanoarcseconds, 0 up to a whole circle.",
+    "minimum": 0,
+    "maximum": Nas::CIRCLE - 1,
+});
+
 #[cfg(test)]
 mod tests {
     #![allow(

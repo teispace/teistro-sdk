@@ -15,12 +15,19 @@ categories = ["date-and-time"]
 # (docs/06-cicd/03-release-process.md).
 publish = false
 
+[features]
+# Derives `schemars::JsonSchema` on the types a chart document carries,
+# so `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-astro/schema", "teistro-core/schema", "teistro-port-ephemeris/schema", "teistro-siddhanta/schema"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-siddhanta = { path = "../siddhanta" }
+schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 teistro-test-allocator = { path = "../test-allocator" }

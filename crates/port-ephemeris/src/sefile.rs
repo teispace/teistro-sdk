@@ -17,6 +17,7 @@ use crate::capabilities::DataHash;
 
 /// What a data directory offers.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SeFiles {
     /// The files found, sorted by name.
     pub names: Vec<String>,

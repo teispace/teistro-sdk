@@ -33,6 +33,26 @@
 //! assert_eq!(longitude.nakshatra().key(), "ANURADHA");
 //! ```
 
+/// Implements `schemars::JsonSchema` for a type that serialises itself by
+/// hand, with the schema its hand-written reader accepts. The derive covers
+/// every type serde's own attributes describe; these are the few it cannot
+/// see into (`docs/03-design/document-schema.md` §3), and each schema sits
+/// beside the reader it restates.
+macro_rules! hand_schema {
+    ($ty:ty, $name:literal, $schema:tt) => {
+        #[cfg(feature = "schema")]
+        impl schemars::JsonSchema for $ty {
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                std::borrow::Cow::Borrowed($name)
+            }
+
+            fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                schemars::json_schema!($schema)
+            }
+        }
+    };
+}
+
 pub mod angle;
 pub mod boundary;
 pub mod catalogue;
@@ -45,6 +65,7 @@ pub mod quantity;
 pub mod ratio;
 pub mod registry;
 pub mod settings;
+pub mod strict;
 pub mod time;
 
 pub use angle::Nas;

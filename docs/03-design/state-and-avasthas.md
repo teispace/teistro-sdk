@@ -230,6 +230,7 @@ pub struct GrahaState {
     pub deeptadi: Option<AvasthaDeeptadi>,
     pub lajjitadi: Vec<AvasthaLajjitadi>,
     pub war: Option<War>,
+    pub sayanadi: Option<Sayanadi>,    // the state and its sub-state per anka (§9a)
     pub boundaries: Boundaries,        // the distance to each of the three
 }
 
@@ -242,6 +243,49 @@ pub fn state(foundation: &ChartFoundation, settings: &Settings)
 field for field between two runs of the same inputs. The war is
 computed over the whole chart, so the entry point takes the foundation
 rather than a graha: a body cannot know it is at war on its own.
+
+## 9a. The Sayanadi, built from the verses (2026-09-15)
+
+BPHS ch. 45 vv. 30 to 37 give the twelve Sayanadi states as arithmetic
+over numbers every founded chart carries, so unlike the deeptadi and the
+lajjitadi nothing waits on a measurement: the graha's nakshatra number
+(Ashwini 1) times its own number (the Sun 1 to Saturn 7) times the
+navamsha it holds within its sign (1 to 9), plus the Moon's nakshatra
+number, the ghatis of birth and the lagna's sign number (Aries 1), leaves
+a remainder of twelve that names the state, a remainder of nothing being
+the twelfth, Nidra. The translator's note settles the navamsha against a
+reading of degrees by Balabhadra's worked Sun in the seventh navamsha of
+Leo. Neither the corpus nor the recording engine computes any of it, so
+the unit tests work the verses by hand and the façade test holds every
+chart's nine grahas to having one.
+
+The **sub-state** reads the native's name: the state's number squared
+plus the anka of the name's first syllable, a remainder of twelve, the
+graha's additive (v. 37), a remainder of three — Drishti, Cheshta,
+Vicheshta. A chart has no name, and the SDK will not take one to compute
+a sky, so each graha carries its sub-state under all five ankas and
+`Sayanadi::cheshta(Anka)` picks the caller's; `Anka` is a validated 1 to
+5. Mapping a syllable to its anka is not built: the note's table is keyed
+by a transliteration whose spellings collide (`da` and `ḍa`, `ca` and
+`cha`), and a guess there would be silent.
+
+Two numbers the verses leave open are knobs (crux C78):
+`state.sayanadi_ghatis`, the whole ghatis elapsed (the default) or the
+ghati running, both over the ishtakaal the foundation already reckons
+under `day.ghati_reckoning`; and `state.sayanadi_nodes`, since v. 30
+numbers only the Sun to Saturn while vv. 123 to 146 give Rahu's and Ketu's
+states their effects — Rahu 8 and Ketu 9 by ch. 3's order of the nine
+(the default), or both 8 as v. 37 pairs "Rahu (Ketu)". The outer planets
+have no number and no Sayanadi.
+
+BPHS ch. 6 v. 53 names Shayana as a bad avastha that withholds a
+Vaiseshikamsa's auspiciousness, so the Vaiseshikamsa's `impaired` now
+reads it (crux C77).
+
+At the boundary the `states` section gains `has_sayanadi`, `sayanadi`
+and `cheshta_1` to `cheshta_5`, the five declared from `Anka::ALL` by the
+schema and the writer alike; every binding decodes `sayanadi` with its
+`cheshtas`, and Python and Dart add `cheshta(anka)`.
 
 ## 10. Errors
 

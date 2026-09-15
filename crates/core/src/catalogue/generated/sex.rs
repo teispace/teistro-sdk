@@ -208,3 +208,15 @@ impl<'de> serde::Deserialize<'de> for Sex {
         Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Sex>(&key)))
     }
 }
+
+/// The keys the reader above accepts, and no others.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Sex {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Sex")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        crate::catalogue::key_schema::<Sex>(&ALIASES)
+    }
+}

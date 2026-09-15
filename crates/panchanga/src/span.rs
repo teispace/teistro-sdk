@@ -29,6 +29,8 @@ use teistro_core::quantity::{JulianDay, Utc};
 /// assert_eq!(span.inside.to, whole.to, "and ends where the tithi does");
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "{T}Span"))]
 pub struct Span<T> {
     /// Which member ran.
     pub member: T,

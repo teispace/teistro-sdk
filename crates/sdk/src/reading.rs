@@ -15,7 +15,10 @@
 //! it a setter and its getter want the same word, and the codebase ends
 //! up with `kind` beside `chart_kind` for no reason a reader can see.
 
+#[cfg(doc)]
+use teistro_core::catalogue::ChartLayout;
 use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
+use teistro_core::key::KeyId;
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
 
@@ -47,6 +50,18 @@ impl Sections {
     pub(crate) const POINTS: Sections = Sections(1 << 3);
     /// The twelve bhavas under both readings.
     pub(crate) const HOUSES: Sections = Sections(1 << 4);
+    /// Each graha's Ashtakavarga, their sum, reductions and pindas.
+    pub(crate) const ASHTAKAVARGA: Sections = Sections(1 << 5);
+    /// Each graha's Vimshopaka under the four schemes.
+    pub(crate) const VIMSHOPAKA: Sections = Sections(1 << 6);
+    /// Each graha's six strengths.
+    pub(crate) const SHADBALA: Sections = Sections(1 << 7);
+    /// Each house's strength.
+    pub(crate) const BHAVA_BALA: Sections = Sections(1 << 8);
+    /// The names each graha earns by its good vargas.
+    pub(crate) const VAISESHIKAMSA: Sections = Sections(1 << 9);
+    /// What each graha's placement says of its dasha.
+    pub(crate) const DASHA_PHALA: Sections = Sections(1 << 10);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -104,6 +119,8 @@ pub struct ChartRequest {
     offset: UtcOffset,
     kind: ChartKind,
     vargas: Vec<Varga>,
+    drawings: Vec<(KeyId, Varga)>,
+    dashas: Vec<KeyId>,
     pub(crate) sections: Sections,
 }
 
@@ -117,6 +134,8 @@ impl ChartRequest {
             offset,
             kind: ChartKind::Natal,
             vargas: Vec::new(),
+            drawings: Vec::new(),
+            dashas: Vec::new(),
             sections: Sections::default(),
         }
     }
@@ -193,18 +212,206 @@ impl ChartRequest {
         self
     }
 
+    /// Each graha's Ashtakavarga, the sarvashtakavarga, and their
+    /// reductions and pindas under the settings' `strength.shodhana` and
+    /// `strength.ekadhipatya` (`03-design/ashtakavarga-measured.md`).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_ashtakavarga();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_ashtakavarga(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::ASHTAKAVARGA);
+        self
+    }
+
+    /// Each graha's Vimshopaka, its strength out of 20 across the
+    /// divisional charts under the shadvarga, saptavarga, dashavarga and
+    /// shodashavarga, each varga scored under the settings'
+    /// `strength.vimshopaka` (`03-design/vimshopaka-measured.md`).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_vimshopaka();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_vimshopaka(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::VIMSHOPAKA);
+        self
+    }
+
+    /// Each graha's Shadbala: its six strengths in virupas, their sum in
+    /// rupas and whether it reaches what it must, under the settings'
+    /// `strength.*` readings of BPHS ch. 27 (`03-design/shadbala-measured.md`).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_shadbala();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_shadbala(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::SHADBALA);
+        self
+    }
+
+    /// Each bhava's Bhava bala: its lord's Shadbala, its Dig and drishti
+    /// balas and, under BPHS's reading, its special rules, under the settings'
+    /// `strength.bhava_*` readings (`03-design/bhava-bala-measured.md`). The
+    /// Shadbala it reads is computed alongside when the request does not ask
+    /// for it too.
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_bhava_bala();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_bhava_bala(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::BHAVA_BALA);
+        self
+    }
+
+    /// Each graha's Vaiseshikamsa: how many of each scheme's vargas are good
+    /// for it, the name that count earns, and whether it is combust or
+    /// defeated in war and so earns it without its auspiciousness (BPHS ch. 6
+    /// vv. 42 to 53).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_vaiseshikamsa();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_vaiseshikamsa(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::VAISESHIKAMSA);
+        self
+    }
+
+    /// What each graha's placement says of its dasha: its benefic and
+    /// malefic points in the seven vargas and whether its rasi place is
+    /// auspicious (BPHS ch. 28 vv. 7 to 10), where in its dasha its effects
+    /// come, and whether its placement makes the dasha favourable or
+    /// unfavourable (ch. 47 vv. 3 to 6), read under `dasha.shanta_sign`.
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_dasha_phala();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_dasha_phala(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::DASHA_PHALA);
+        self
+    }
+
+    /// The charts to draw, each a layout and which chart to place in it,
+    /// in the order given: `D1` for the founded chart, or a divisional one.
+    ///
+    /// A layout is a shipped [`ChartLayout`] or the id of one the context was
+    /// built with (`ContextBuilder::layout`). Pairs rather than a list of
+    /// layouts, so drawing the D9 in North Indian does not also draw every
+    /// other chart in it, and a pair that cannot be drawn (a Western wheel of
+    /// the D9, which has no degrees) is refused by name when the reading runs.
+    ///
+    /// Replaces rather than accumulates, as every setter here does.
+    ///
+    /// ```
+    /// use teistro::catalogue::{ChartLayout, Varga};
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700)?)
+    ///     .with_drawings([(ChartLayout::NorthIndian, Varga::D1), (ChartLayout::NorthIndian, Varga::D9)]);
+    /// assert_eq!(request.drawings().len(), 2);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_drawings<L: Into<KeyId>>(
+        mut self,
+        drawings: impl IntoIterator<Item = (L, Varga)>,
+    ) -> ChartRequest {
+        self.drawings = drawings
+            .into_iter()
+            .map(|(layout, varga)| (layout.into(), varga))
+            .collect();
+        self
+    }
+
+    /// The dashas to compute, a system each, in the order given: each one's
+    /// balance at birth and its periods to the depth the settings give it
+    /// (`dasha.depth`, three levels by default).
+    ///
+    /// A system is a catalogued member or the id of one the context was built
+    /// with (`ContextBuilder::dasha_system`). A system the catalogue names and
+    /// no row implements yet, or an id the context never registered, is
+    /// refused by its place in the request when the reading runs. Replaces
+    /// rather than accumulates, as every setter here does.
+    ///
+    /// ```
+    /// use teistro::catalogue::DashaSystem;
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700)?)
+    ///     .with_dashas([DashaSystem::Vimshottari]);
+    /// assert_eq!(request.dashas(), [DashaSystem::Vimshottari.into()]);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_dashas<S: Into<KeyId>>(
+        mut self,
+        dashas: impl IntoIterator<Item = S>,
+    ) -> ChartRequest {
+        self.dashas = dashas.into_iter().map(Into::into).collect();
+        self
+    }
+
     /// Every section, and every divisional chart.
     ///
     /// What a consumer storing a chart for later wants, and what the
     /// parity runner asks for: the widest document the SDK can produce.
+    /// Every dasha system this build implements rows for. **No drawings**:
+    /// those are named pairs, and every layout times every
+    /// chart is a hundred and twenty-six placements nobody asked for.
     #[must_use]
     pub fn with_everything(self) -> ChartRequest {
         self.with_every_varga()
+            .with_dashas(teistro_dasha::systems())
             .with_panchanga()
             .with_state()
             .with_aspects()
             .with_points()
             .with_houses()
+            .with_ashtakavarga()
+            .with_vimshopaka()
+            .with_vaiseshikamsa()
+            .with_shadbala()
+            .with_bhava_bala()
+            .with_dasha_phala()
     }
 
     /// The place the chart is cast for.
@@ -229,5 +436,17 @@ impl ChartRequest {
     #[must_use]
     pub fn vargas(&self) -> &[Varga] {
         &self.vargas
+    }
+
+    /// The dashas asked for, as catalogue or registered ids.
+    #[must_use]
+    pub fn dashas(&self) -> &[KeyId] {
+        &self.dashas
+    }
+
+    /// The charts to draw, as layout ids and the chart drawn in each.
+    #[must_use]
+    pub fn drawings(&self) -> &[(KeyId, Varga)] {
+        &self.drawings
     }
 }

@@ -805,40 +805,177 @@ fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
             if !text.contains(GATED.1) {
                 continue;
             }
-            let Some(name) = path
-                .file_stem()
-                .map(|stem| stem.to_string_lossy().to_string())
-            else {
-                continue;
+            // A shared module (`tests/common/mod.rs`) is no target of its
+            // own: every target that declares it (`mod common;`) names what
+            // it names, so each of those must require the feature.
+            let targets: Vec<String> = if path.file_name().is_some_and(|f| f == "mod.rs") {
+                let Some(module) = path
+                    .parent()
+                    .and_then(Path::file_name)
+                    .map(|m| m.to_string_lossy().to_string())
+                else {
+                    continue;
+                };
+                sources(&root.join(directory))
+                    .into_iter()
+                    .filter(|target| target.parent() == Some(&root.join(directory)))
+                    .filter(|target| {
+                        std::fs::read_to_string(target)
+                            .is_ok_and(|body| body.contains(&format!("mod {module};")))
+                    })
+                    .filter_map(|target| {
+                        target
+                            .file_stem()
+                            .map(|stem| stem.to_string_lossy().to_string())
+                    })
+                    .collect()
+            } else {
+                path.file_stem()
+                    .map(|stem| stem.to_string_lossy().to_string())
+                    .into_iter()
+                    .collect()
             };
-            // The manifest section for this target, and whether it
-            // requires the feature. Read as text because the question is
-            // whether two lines sit together, which is what a reader
-            // checking the manifest by eye would look for.
-            let header = format!("[[{kind}]]\nname = \"{name}\"");
-            let requires = manifest_text.split_once(&header).is_some_and(|(_, after)| {
-                after
-                    .split("\n[")
-                    .next()
-                    .is_some_and(|section| section.contains(GATED.0))
-            });
-            if requires {
-                continue;
+            for name in targets {
+                // The manifest section for this target, and whether it
+                // requires the feature. Read as text because the question is
+                // whether two lines sit together, which is what a reader
+                // checking the manifest by eye would look for.
+                let header = format!("[[{kind}]]\nname = \"{name}\"");
+                let requires = manifest_text.split_once(&header).is_some_and(|(_, after)| {
+                    after
+                        .split("\n[")
+                        .next()
+                        .is_some_and(|section| section.contains(GATED.0))
+                });
+                if requires {
+                    continue;
+                }
+                let shown = path
+                    .strip_prefix(root)
+                    .unwrap_or(&path)
+                    .display()
+                    .to_string();
+                outcome.failures.push(Finding {
+                    file: shown,
+                    line: 0,
+                    text: format!(
+                        "names `{}` but no `[[{kind}]] name = \"{name}\"` requires `{}`",
+                        GATED.1, GATED.0
+                    ),
+                    rule: RULE,
+                });
             }
+        }
+    }
+}
+
+/// Every type a document-carrying crate serialises can describe itself.
+///
+/// The document schema is generated from `schemars::JsonSchema`, and a
+/// type that serialises without one either breaks the generator (when the
+/// document reaches it) or waits to (when a field is added that does).
+/// So the rule is not "the types the document reaches" but **every type
+/// that derives `Serialize` in a crate with the `schema` feature**, which
+/// a reader can check without knowing the document
+/// (`docs/03-design/document-schema.md` §7).
+///
+/// Two forms, because a type serialises in two ways: a derive, which must
+/// carry the `cfg_attr` derive beside it, and a hand-written
+/// `impl Serialize for T`, which must have a hand-written schema for the
+/// same `T` in the same crate — `impl schemars::JsonSchema for T` or the
+/// core crate's `hand_schema!(T, …)`.
+fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "serialised-type-describes-itself";
+    const DERIVE: &str = "derive(schemars::JsonSchema)";
+    let Ok(crates) = std::fs::read_dir(root.join("crates")) else {
+        return;
+    };
+    let mut crates: Vec<PathBuf> = crates.flatten().map(|entry| entry.path()).collect();
+    crates.sort();
+    let hand_impl = regex::Regex::new(
+        r"impl(?:<[^>]*>)?\s+(?:serde::)?Serialize\s+for\s+([A-Za-z_][A-Za-z0-9_]*)",
+    )
+    .unwrap_or_else(|error| panic!("the pattern compiles: {error}"));
+    for krate in crates {
+        let has_feature = std::fs::read_to_string(krate.join("Cargo.toml"))
+            .is_ok_and(|manifest| manifest.lines().any(|line| line.starts_with("schema = ")));
+        if !has_feature {
+            continue;
+        }
+        let files: Vec<(PathBuf, String)> = sources(&krate.join("src"))
+            .into_iter()
+            .filter_map(|path| std::fs::read_to_string(&path).ok().map(|text| (path, text)))
+            .collect();
+        let described = |name: &str| {
+            files.iter().any(|(_, text)| {
+                text.contains(&format!("impl schemars::JsonSchema for {name} "))
+                    || text.contains(&format!("hand_schema!({name},"))
+            })
+        };
+        for (path, text) in &files {
             let shown = path
                 .strip_prefix(root)
-                .unwrap_or(&path)
+                .unwrap_or(path)
                 .display()
                 .to_string();
-            outcome.failures.push(Finding {
-                file: shown,
-                line: 0,
-                text: format!(
-                    "names `{}` but no `[[{kind}]] name = \"{name}\"` requires `{}`",
-                    GATED.1, GATED.0
-                ),
-                rule: RULE,
-            });
+            let lines: Vec<&str> = text.lines().collect();
+            let mut index = 0;
+            while index < lines.len() {
+                let line = lines[index].trim_start();
+                if !line.starts_with("#[derive(") {
+                    index += 1;
+                    continue;
+                }
+                // The derive, which may run over several lines.
+                let start = index;
+                let mut derive = String::from(line);
+                while !derive.contains(")]") && index + 1 < lines.len() {
+                    index += 1;
+                    derive.push_str(lines[index].trim());
+                }
+                index += 1;
+                if !derive.contains("Serialize") {
+                    continue;
+                }
+                // The attributes between the derive and the item.
+                let mut carries = false;
+                while index < lines.len() {
+                    let next = lines[index].trim_start();
+                    if !(next.starts_with("#[") || next.starts_with("//")) {
+                        break;
+                    }
+                    carries |= next.contains(DERIVE);
+                    index += 1;
+                }
+                if !carries {
+                    outcome.failures.push(Finding {
+                        file: shown.clone(),
+                        line: start + 1,
+                        text: format!(
+                            "derives `Serialize` without `#[cfg_attr(feature = \"schema\", {DERIVE})]`"
+                        ),
+                        rule: RULE,
+                    });
+                }
+            }
+            for found in hand_impl.captures_iter(text) {
+                let name = &found[1];
+                if described(name) {
+                    continue;
+                }
+                let line = text[..found.get(0).map_or(0, |m| m.start())]
+                    .lines()
+                    .count()
+                    + 1;
+                outcome.failures.push(Finding {
+                    file: shown.clone(),
+                    line,
+                    text: format!(
+                        "serialises `{name}` by hand with no `JsonSchema` for it in this crate"
+                    ),
+                    rule: RULE,
+                });
+            }
         }
     }
 }
@@ -959,6 +1096,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     python_in_utf8(root, &mut outcome);
     platform_runners(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);
+    serialised_types_describe_themselves(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -974,6 +1112,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "python-runs-in-utf8-mode",
         "runner-matches-the-platform-table",
         "target-declares-the-feature-it-needs",
+        "serialised-type-describes-itself",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
@@ -1100,5 +1239,60 @@ mod tests {
             None
         );
         assert_eq!(gate_declared_by("    let name = Some(\"check-x\");"), None);
+    }
+}
+
+#[cfg(test)]
+mod serialised_type_describes_itself {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    /// A crate with the `schema` feature, written under a fresh
+    /// directory, and the rule run over it.
+    fn findings(source: &str) -> Vec<String> {
+        let root = std::env::temp_dir().join(format!(
+            "teistro-lint-{}-{}",
+            std::process::id(),
+            source.len()
+        ));
+        let krate = root.join("crates/sample");
+        std::fs::create_dir_all(krate.join("src")).unwrap();
+        std::fs::write(
+            krate.join("Cargo.toml"),
+            "[features]\nschema = [\"dep:schemars\"]\n",
+        )
+        .unwrap();
+        std::fs::write(krate.join("src/lib.rs"), source).unwrap();
+        let mut outcome = Outcome::default();
+        serialised_types_describe_themselves(&root, &mut outcome);
+        std::fs::remove_dir_all(&root).unwrap();
+        outcome
+            .failures
+            .iter()
+            .map(|f| format!("{}:{}", f.line, f.text))
+            .collect()
+    }
+
+    #[test]
+    fn a_serialised_type_without_a_schema_is_found_in_both_forms() {
+        let found = findings(
+            "#[derive(Debug,\n    serde::Serialize)]\n#[serde(rename_all = \"lowercase\")]\npub enum Bare { One }\n\n\
+             pub struct Hand;\nimpl serde::Serialize for Hand {}\n",
+        );
+        assert_eq!(found.len(), 2, "{found:?}");
+        assert!(found[0].starts_with("1:derives `Serialize`"), "{found:?}");
+        assert!(found[1].contains("serialises `Hand` by hand"), "{found:?}");
+    }
+
+    #[test]
+    fn a_type_that_describes_itself_passes_whatever_sits_between() {
+        let found = findings(
+            "#[derive(serde::Serialize)]\n/// A comment.\n#[serde(tag = \"kind\")]\n\
+             #[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\npub enum Tagged { One }\n\n\
+             pub struct Hand;\nimpl serde::Serialize for Hand {}\nhand_schema!(Hand, \"Hand\", {});\n\
+             #[derive(Debug, Clone)]\npub struct NotSerialised;\n",
+        );
+        assert!(found.is_empty(), "{found:?}");
     }
 }

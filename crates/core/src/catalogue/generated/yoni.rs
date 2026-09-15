@@ -395,3 +395,15 @@ impl<'de> serde::Deserialize<'de> for Yoni {
         Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Yoni>(&key)))
     }
 }
+
+/// The keys the reader above accepts, and no others.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Yoni {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Yoni")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        crate::catalogue::key_schema::<Yoni>(&ALIASES)
+    }
+}

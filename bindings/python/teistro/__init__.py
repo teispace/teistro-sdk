@@ -22,13 +22,14 @@ from __future__ import annotations
 import ctypes
 import ctypes.util
 import json
+import math
 import os
 import sys
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Generic, Iterator, List, Mapping, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
 
 from . import messages as intl
 from ._blob import (
@@ -95,13 +96,24 @@ from ._install import (
 )
 from ._prebuilt import PREBUILT_VERSION
 from .catalogue import (
+    AvasthaCheshta,
+    AvasthaSayanadi,
     Ayana,
     Ayanamsha,
+    Balance,
+    Ekadhipatya,
+    Shodhana,
+    Vaiseshikamsa,
+    DashaPhase,
+    Nature,
+    VimshopakaScoring,
     Body,
     Calendar,
     Centre,
     ChartKind,
+    ChartLayout,
     Choghadiya,
+    DashaSystem,
     DayPart,
     Direction,
     Ephemeris,
@@ -215,10 +227,62 @@ __all__ = [
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
     "Varga",
+    # Chart geometry: the layouts a chart is drawn in, and what a drawing is.
+    "ChartLayout",
+    "Drawing",
+    "LayoutRow",
+    "Theme",
+    "ThemeContent",
+    "ThemeRecord",
+    "ThemeStyle",
+    "DrawnCell",
+    "DrawnMark",
+    "Outline",
+    "UnitPoint",
+    "LineSegment",
+    "QuadSegment",
+    "ArcSegment",
     "DerivedPoint",
     "Drishti",
+    # The dashas: the system a caller names and what a chart answers with.
+    "Balance",
+    "Dasha",
+    "DashaBalance",
+    "DashaPeriod",
+    "DashaSystem",
+    "Rashi",
+    "WrittenBalance",
+    # The Ashtakavarga: what a chart answers with, and the two readings.
+    "Ashtakavarga",
+    "GrahaAshtakavarga",
+    "Ekadhipatya",
+    "Shodhana",
+    # The Bhava bala: what a chart answers with.
+    "BhavaBala",
+    "BhavaStrength",
+    # The Shadbala: what a chart answers with.
+    "GrahaShadbala",
+    "KaalaBala",
+    "Shadbala",
+    "SthanaBala",
+    # The dasha phala: what a chart answers with, and where a dasha's effects come.
+    "DashaPhalaReading",
+    "DashaPhase",
+    "GrahaDashaPhala",
+    "Nature",
+    # The Vaiseshikamsa: what a chart answers with, and its names.
+    "GrahaVaiseshikamsa",
+    "Vaiseshikamsa",
+    "VaiseshikamsaReading",
+    "VaiseshikamsaStanding",
+    # The Vimshopaka: what a chart answers with, and the two scorings.
+    "GrahaVimshopaka",
+    "Vimshopaka",
+    "VimshopakaScoring",
     "AvasthaBaladi",
+    "AvasthaCheshta",
     "AvasthaDeeptadi",
+    "AvasthaSayanadi",
     "AvasthaJagradadi",
     "AvasthaLajjitadi",
     "Burning",
@@ -226,6 +290,9 @@ __all__ = [
     "Dignity",
     "Friendship",
     "GrahaState",
+    "DashaDefinition",
+    "DashaLord",
+    "Sayanadi",
     "Lajjitadi",
     "Quadrant",
     "Relationship",
@@ -441,8 +508,20 @@ class Teistro:
         provider: Optional[EphemerisProvider] = None,
         ephemeris: Optional[EphemerisChoice | Sequence[EphemerisChoice]] = None,
         test_provider: bool = False,
+        layouts: Sequence[LayoutRow] = (),
+        dasha_systems: Sequence[DashaDefinition] = (),
     ) -> Context:
         """A context: settings, a locale and an ephemeris.
+
+        `layouts` are chart layouts of your own, to draw in beside the
+        shipped ones: each a row as `sdk.chart.layout(key)` answers it, with
+        a key of its own, checked by the rules a shipped row passes
+        (`03-design/chart-geometry.md` §7f).
+
+        `dasha_systems` are nakshatra-seeded dasha systems of your own, each a
+        `DashaDefinition`, asked for in a request's `dashas` by
+        `"dasha_system.<KEY>"` and checked by the rules a shipped row passes
+        (`03-design/dasha-kernels.md`).
 
         `settings` is a patch over the profile, as a mapping — the shape
         the Node and Dart bindings take, so one example reads in all
@@ -487,6 +566,21 @@ class Teistro:
             )
         if settings is not None:
             settings_json = json.dumps(settings, separators=(",", ":"))
+        if isinstance(layouts, (str, bytes)) or not isinstance(layouts, Sequence):
+            raise TeistroError(
+                Status.INVALID_ARG, "layouts is a sequence of layout rows", field="layouts"
+            )
+        layouts_json = json.dumps(list(layouts), separators=(",", ":")) if layouts else None
+        if isinstance(dasha_systems, (str, bytes)) or not isinstance(dasha_systems, Sequence):
+            raise TeistroError(
+                Status.INVALID_ARG,
+                "dasha_systems is a sequence of dasha system definitions",
+                field="dasha_systems",
+            )
+        rows_json = _RowsJson(
+            layouts=layouts_json,
+            dashas=json.dumps(list(dasha_systems), separators=(",", ":")) if dasha_systems else None,
+        )
         host = None if provider is None else HostProvider(self.library, provider)
         # One rule, written once: a named ephemeris wins, and the older
         # flag decides only when none was named (ADR-0028).
@@ -508,7 +602,11 @@ class Teistro:
         # its field and its hint with a bare "nothing could be opened".
         if len(chain) == 1:
             return Context(
-                self, self._open(chain[0], profile, settings_json, locale, host), host
+                self,
+                self._open(chain[0], profile, settings_json, locale, rows_json, host),
+                host,
+                layouts,
+                dasha_systems,
             )
         # With more than one, every refusal is kept and reported
         # together, because a chain that said only why its last entry
@@ -517,7 +615,11 @@ class Teistro:
         for entry in chain:
             try:
                 return Context(
-                    self, self._open(entry, profile, settings_json, locale, host), host
+                    self,
+                    self._open(entry, profile, settings_json, locale, rows_json, host),
+                    host,
+                    layouts,
+                    dasha_systems,
                 )
             except TeistroError as refusal:
                 named = entry.plugin if isinstance(entry, Plugin) else entry.key
@@ -531,6 +633,7 @@ class Teistro:
         profile: Optional[str],
         settings_json: Optional[str],
         locale: Optional[str],
+        rows_json: _RowsJson,
         host: Optional[HostProvider],
     ) -> TeistroContext:
         """Opens the context on one entry of the chain."""
@@ -540,6 +643,8 @@ class Teistro:
             profile=profile,
             settings_json=settings_json,
             locale=locale,
+            layouts_json=rows_json.layouts,
+            dashas_json=rows_json.dashas,
             ephemeris=named,
         )
         if not isinstance(entry, Plugin):
@@ -881,6 +986,20 @@ class FrameArea(_Area):
 class ChartArea(_Area):
     """`sdk.chart` — a chart founded at an instant and a place."""
 
+    def layout(self, key: Union[ChartLayout, str]) -> LayoutRow:
+        """A layout this context can draw in, shipped or registered, as its
+        row: a fresh mapping to copy, give a key of its own and register
+        (`03-design/chart-geometry.md` §7f).
+
+        `key` is a `ChartLayout`, or a layout's key, bare (`NORTH_INDIAN`)
+        or full (`chart_layout.ACME_KERALA`).
+        """
+        named = key.full_key if isinstance(key, ChartLayout) else key
+        row: LayoutRow = json.loads(
+            self._context._through_provider(lambda: self._context.inner.chart_layout_row(named))
+        )
+        return row
+
     def found(
         self,
         *,
@@ -889,9 +1008,18 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        dashas: Sequence[Union[DashaSystem, str]] = (),
+        drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
+        theme: Optional[Theme] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
+        ashtakavarga: bool = False,
+        vimshopaka: bool = False,
+        vaiseshikamsa: bool = False,
+        dasha_phala: bool = False,
+        shadbala: bool = False,
+        bhava_bala: bool = False,
         state: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
@@ -913,9 +1041,18 @@ class ChartArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             kind=kind,
             vargas=vargas,
+            dashas=dashas,
+            drawings=drawings,
+            theme=theme,
             aspects=aspects,
             points=points,
             houses=houses,
+            ashtakavarga=ashtakavarga,
+            vimshopaka=vimshopaka,
+            vaiseshikamsa=vaiseshikamsa,
+            dasha_phala=dasha_phala,
+            shadbala=shadbala,
+            bhava_bala=bhava_bala,
             state=state,
         ).at(0)
 
@@ -927,9 +1064,18 @@ class ChartArea(_Area):
         utc_offset_seconds: int,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
+        dashas: Sequence[Union[DashaSystem, str]] = (),
+        drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
+        theme: Optional[Theme] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
+        ashtakavarga: bool = False,
+        vimshopaka: bool = False,
+        vaiseshikamsa: bool = False,
+        dasha_phala: bool = False,
+        shadbala: bool = False,
+        bhava_bala: bool = False,
         state: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
@@ -943,8 +1089,11 @@ class ChartArea(_Area):
         `vargas` names the divisional charts to compute, in the order to
         answer them; none by default, because a caller who wants a birth
         chart should not pay for twenty-one of them
-        (`03-design/chart-reading.md` §4). `aspects` asks for the
-        drishti.
+        (`03-design/chart-reading.md` §4). `drawings` names charts to draw,
+        each a `(ChartLayout, Varga)` pair with `Varga.D1` the founded chart,
+        in the order to answer them. `dashas` names the dasha systems to
+        compute, their periods to the settings' `dasha.depth`
+        (`03-design/dasha-kernels.md`). `aspects` asks for the drishti.
         """
         request = ChartRequest(
             kind=kind,
@@ -960,11 +1109,21 @@ class ChartArea(_Area):
             sections=(_SECTION_ASPECTS if aspects else 0)
             | (_SECTION_POINTS if points else 0)
             | (_SECTION_HOUSES if houses else 0)
+            | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
+            | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
+            | (_SECTION_VAISESHIKAMSA if vaiseshikamsa else 0)
+            | (_SECTION_DASHA_PHALA if dasha_phala else 0)
+            | (_SECTION_SHADBALA if shadbala else 0)
+            | (_SECTION_BHAVA_BALA if bhava_bala else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
+            dashas=_dasha_ids(dashas, self._context._registered_dashas),
+            drawings=_drawing_bits(drawings, self._context._registered_layouts),
+            theme_json=_theme_json(theme),
         )
         return ChartBatch(
-            decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request)))
+            decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
+            self._context._dasha_names,
         )
 
 
@@ -1041,12 +1200,31 @@ class Context:
         teistro: Teistro,
         inner: TeistroContext,
         host: Optional[HostProvider] = None,
+        layouts: Sequence[LayoutRow] = (),
+        dasha_systems: Sequence[DashaDefinition] = (),
     ) -> None:
         self.teistro = teistro
         """The library this context was built on."""
         self.inner = inner
         """The generated context, for a call this layer does not wrap."""
         self._host = host
+        # The member id of each layout this context registered, by its full
+        # key: asked once, here, so a request resolves a consumer's own
+        # layout without crossing the boundary again
+        # (`03-design/chart-geometry.md` §7f).
+        self._registered_layouts: dict[str, int] = {
+            f"chart_layout.{row['key']}": inner.key_parse(f"chart_layout.{row['key']}") & 0xFFFF
+            for row in layouts
+        }
+        # The same for the dasha systems it registered, and turned round so a
+        # batch names a registered id by its key.
+        self._registered_dashas: dict[str, int] = {
+            f"dasha_system.{row['key']}": inner.key_parse(f"dasha_system.{row['key']}") & 0xFFFF
+            for row in dasha_systems
+        }
+        self._dasha_names: dict[int, str] = {
+            id: key for key, id in self._registered_dashas.items()
+        }
 
     # ── The areas ─────────────────────────────────────────────────────
     #
@@ -1243,6 +1421,23 @@ _SECTION_POINTS = 8
 #: `TS_CHART_HOUSES`, the houses service.
 _SECTION_HOUSES = 16
 
+#: `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga.
+_SECTION_ASHTAKAVARGA = 32
+
+#: `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
+_SECTION_VIMSHOPAKA = 64
+
+#: `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
+_SECTION_VAISESHIKAMSA = 512
+#: `TS_CHART_DASHA_PHALA`, the dasha phala.
+_SECTION_DASHA_PHALA = 1024
+
+#: `TS_CHART_SHADBALA`, the Shadbala.
+_SECTION_SHADBALA = 128
+
+#: `TS_CHART_BHAVA_BALA`, the Bhava bala.
+_SECTION_BHAVA_BALA = 256
+
 #: `TS_CHART_STATE`, the planetary states.
 _SECTION_STATE = 2
 
@@ -1330,6 +1525,30 @@ class War:
 
 
 @dataclass(frozen=True)
+class Sayanadi:
+    """A graha's Sayanadi state, with its sub-state under a name of each
+    anka (BPHS ch. 45 vv. 30 to 37)."""
+
+    avastha: AvasthaSayanadi
+    """The state, Shayana to Nidra."""
+
+    cheshtas: tuple[AvasthaCheshta, ...]
+    """The sub-state under a name whose first syllable's anka is 1 to 5, in
+    that order."""
+
+    def cheshta(self, anka: int) -> AvasthaCheshta:
+        """The sub-state under a name of this anka.
+
+        >>> # state.sayanadi.cheshta(3)
+
+        Raises `ValueError` outside 1 to 5.
+        """
+        if not 1 <= anka <= 5:
+            raise ValueError(f"anka: {anka} is not a syllable's anka; it is 1 to 5")
+        return self.cheshtas[anka - 1]
+
+
+@dataclass(frozen=True)
 class GrahaState:
     """What one graha **is**, as opposed to where it is."""
 
@@ -1365,6 +1584,10 @@ class GrahaState:
 
     war: War | None
     """The war it is in, if it is in one."""
+
+    sayanadi: Sayanadi | None
+    """The Sayanadi state and its sub-states, or `None` for a body the
+    verses give no number."""
 
     boundaries: EdgeDistance
     """How near it stands to a classification boundary."""
@@ -1427,6 +1650,444 @@ class Drishti:
 
     to_edge: EdgeDistance
     """How near the body looked at stands to one."""
+
+
+@dataclass(frozen=True)
+class GrahaAshtakavarga:
+    """One graha's Ashtakavarga."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    bindus: Tuple[int, ...]
+    """Its bindus by sign, Aries to Pisces, 0 to 8."""
+
+    reduced: Optional[Tuple[int, ...]]
+    """The same after both reductions, when they were made in each graha's
+    own Ashtakavarga; None otherwise."""
+
+    rashi_pinda: int
+    """Its rashi pinda."""
+
+    graha_pinda: int
+    """Its graha pinda."""
+
+    yoga_pinda: int
+    """Its yoga pinda, the two together."""
+
+
+@dataclass(frozen=True)
+class BhavaStrength:
+    """One bhava's Bhava bala, in virupas."""
+
+    bhava: int
+    """Which bhava, 1 to 12."""
+
+    lord: Graha
+    """The lord of the sign its madhya falls in."""
+
+    adhipati: float
+    """The lord's Shadbala."""
+
+    dig: float
+    """From its direction, 0 to 60."""
+
+    drishti: float
+    """From the drishtis it receives, which may be negative."""
+
+    special: float
+    """From its occupants and its sign's rising, under BPHS's special rules."""
+
+    virupas: float
+    """The four together."""
+
+
+@dataclass(frozen=True)
+class BhavaBala:
+    """A chart's Bhava bala, read under the context's `strength.bhava_*`
+    settings (`03-design/bhava-bala-measured.md`)."""
+
+    bhavas: Tuple[BhavaStrength, ...]
+    """Each bhava's, the first to the twelfth."""
+
+
+@dataclass(frozen=True)
+class SthanaBala:
+    """A graha's Sthana bala by component, virupas."""
+
+    uchcha: float
+    """From its distance to its debilitation point, 0 to 60."""
+
+    saptavargaja: float
+    """From its dignity in the seven vargas."""
+
+    ojayugma: float
+    """From its rasi's and navamsha's parity, 0, 15 or 30."""
+
+    kendradi: float
+    """From its house: 60, 30 or 15."""
+
+    drekkana: float
+    """From its decanate: 0 or 15."""
+
+    @property
+    def total(self) -> float:
+        """The five together."""
+        return self.uchcha + self.saptavargaja + self.ojayugma + self.kendradi + self.drekkana
+
+
+@dataclass(frozen=True)
+class KaalaBala:
+    """A graha's Kaala bala by component, virupas."""
+
+    nathonnatha: float
+    """From the hour, 0 to 60."""
+
+    paksha: float
+    """From the Moon's elongation, the Moon's doubled."""
+
+    tribhaga: float
+    """60 to the lord of the third of the day or night, and to Jupiter."""
+
+    abda: float
+    """15 to the year's lord."""
+
+    masa: float
+    """30 to the month's lord."""
+
+    vara: float
+    """45 to the weekday's lord."""
+
+    hora: float
+    """60 to the hour's lord."""
+
+    ayana: float
+    """From its declination."""
+
+    yuddha: float
+    """Gained by the victor and lost by the vanquished of a planetary war."""
+
+    @property
+    def total(self) -> float:
+        """The nine together."""
+        return (
+            self.nathonnatha
+            + self.paksha
+            + self.tribhaga
+            + self.vara
+            + self.hora
+            + self.ayana
+            + self.abda
+            + self.masa
+            + self.yuddha
+        )
+
+
+@dataclass(frozen=True)
+class GrahaShadbala:
+    """One graha's Shadbala, in virupas."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    sthana: SthanaBala
+    """Positional strength by component."""
+
+    dig: float
+    """Directional strength, 0 to 60."""
+
+    kaala: KaalaBala
+    """Temporal strength by component."""
+
+    cheshta: float
+    """Motional strength."""
+
+    naisargika: float
+    """Natural strength."""
+
+    drik: float
+    """Aspectual strength, which may be negative."""
+
+    virupas: float
+    """The six together."""
+
+    rupas: float
+    """The six together, in rupas."""
+
+    required_rupas: float
+    """The rupas it must reach to be strong."""
+
+    strong: bool
+    """Whether it reaches them."""
+
+    ishta: float
+    """How far it tends to good, 0 to 60 (BPHS ch. 28)."""
+
+    kashta: float
+    """How far it tends to harm, 0 to 60."""
+
+    subha_rashmi: float
+    """Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays
+    (BPHS ch. 28 v. 5)."""
+
+    ashubha_rashmi: float
+    """Its inauspicious rays, 8 less the auspicious."""
+
+
+@dataclass(frozen=True)
+class Shadbala:
+    """A chart's Shadbala, read under the context's `strength.*` settings
+    (`03-design/shadbala-measured.md`)."""
+
+    grahas: Tuple[GrahaShadbala, ...]
+    """Each graha's, Sun to Saturn."""
+
+
+@dataclass(frozen=True)
+class GrahaDashaPhala:
+    """One graha's dasha phala (BPHS ch. 28 vv. 7 to 10, ch. 47 vv. 3 to 6)."""
+
+    graha: Graha
+    """Which graha, Sun to Ketu."""
+
+    subhankas: Tuple[float, ...]
+    """Its Subhanka in the D1, D2, D3, D7, D9, D12 and D30: out of 60 in the
+    first and 30 in the rest."""
+
+    subhanka: float
+    """The seven together, out of 240."""
+
+    asubhanka: float
+    """Their complements together, out of 240."""
+
+    nature: Nature
+    """Whether its rasi place is auspicious (benefic), neutral or
+    inauspicious (malefic)."""
+
+    phase: DashaPhase
+    """Where in its dasha its effects come."""
+
+    favourable: bool
+    """Whether its placement makes its dasha favourable."""
+
+    unfavourable: bool
+    """Whether its placement makes its dasha unfavourable; both can hold."""
+
+
+@dataclass(frozen=True)
+class DashaPhalaReading:
+    """A chart's dasha phala, read under `dasha.shanta_sign`.
+
+    >>> # chart = ctx.chart.found(..., dasha_phala=True)
+    >>> # saturn = next(g for g in chart.dasha_phala.grahas if g.graha is Graha.SATURN)
+    """
+
+    grahas: Tuple[GrahaDashaPhala, ...]
+    """Each graha's, Sun to Ketu."""
+
+
+@dataclass(frozen=True)
+class VaiseshikamsaStanding:
+    """A graha's standing in one scheme of vargas."""
+
+    good_vargas: int
+    """How many of the scheme's vargas are good for it."""
+
+    name: Optional[Vaiseshikamsa]
+    """The name that count earns, from two good vargas; None below."""
+
+
+@dataclass(frozen=True)
+class GrahaVaiseshikamsa:
+    """One graha's Vaiseshikamsa (BPHS ch. 6 vv. 42 to 53)."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    shadvarga: VaiseshikamsaStanding
+    """Over the six vargas."""
+
+    saptavarga: VaiseshikamsaStanding
+    """Over the seven."""
+
+    dashavarga: VaiseshikamsaStanding
+    """Over the ten."""
+
+    shodashavarga: VaiseshikamsaStanding
+    """Over the sixteen."""
+
+    impaired: bool
+    """Whether it is combust, defeated in war or in Shayana, its names then not auspicious."""
+
+
+@dataclass(frozen=True)
+class VaiseshikamsaReading:
+    """A chart's Vaiseshikamsa."""
+
+    grahas: Tuple[GrahaVaiseshikamsa, ...]
+    """Each graha's, Sun to Saturn."""
+
+
+@dataclass(frozen=True)
+class GrahaVimshopaka:
+    """One graha's Vimshopaka, each score out of 20."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    shadvarga: float
+    """Over the six vargas."""
+
+    saptavarga: float
+    """Over the seven."""
+
+    dashavarga: float
+    """Over the ten."""
+
+    shodashavarga: float
+    """Over the sixteen."""
+
+
+@dataclass(frozen=True)
+class Vimshopaka:
+    """A chart's Vimshopaka: each graha's strength across the divisional
+    charts under the four schemes (`03-design/vimshopaka-measured.md`)."""
+
+    scoring: VimshopakaScoring
+    """How each varga was scored."""
+
+    grahas: Tuple[GrahaVimshopaka, ...]
+    """Each graha's, Sun to Saturn."""
+
+
+@dataclass(frozen=True)
+class Ashtakavarga:
+    """A chart's Ashtakavarga: each graha's, the sarvashtakavarga, and their
+    reductions and pindas (`03-design/ashtakavarga-measured.md`)."""
+
+    shodhana: Shodhana
+    """Where the reductions and pindas were made."""
+
+    ekadhipatya: Ekadhipatya
+    """How a co-ruled sign beside an occupied one was reduced."""
+
+    grahas: Tuple[GrahaAshtakavarga, ...]
+    """Each graha's, Sun to Saturn."""
+
+    sarva: Tuple[int, ...]
+    """The seven grahas' bindus by sign, 337 in all."""
+
+    trikona: Tuple[int, ...]
+    """The sum after the trine reduction."""
+
+    reduced: Tuple[int, ...]
+    """The sum after both reductions."""
+
+
+@dataclass(frozen=True)
+class DashaPeriod:
+    """One period of a dasha."""
+
+    path: str
+    """Its place at each level from the mahadasha down, joined by `/`:
+    `2/5/3`."""
+
+    level: int
+    """How deep: 1 for a mahadasha."""
+
+    sign: Optional[Rashi]
+    """The sign it is the period of, in a sign-based dasha; None otherwise."""
+
+    lord: Graha
+    """Its lord."""
+
+    span: Interval
+    """When it runs."""
+
+
+@dataclass(frozen=True)
+class WrittenBalance:
+    """A balance written as a reader writes it."""
+
+    years: int
+    """Whole years of the year length."""
+
+    months: int
+    """Whole months of a twelfth of it."""
+
+    days: int
+    """Whole days."""
+
+    hours: int
+    """Hours."""
+
+    minutes: int
+    """Minutes, rounded."""
+
+
+@dataclass(frozen=True)
+class DashaBalance:
+    """What remained of a dasha's first period at birth."""
+
+    method: Balance
+    """How it was measured."""
+
+    remaining: float
+    """The fraction still to run, 0 to 1."""
+
+    days: float
+    """That fraction of the first lord's years, in days."""
+
+    written: WrittenBalance
+    """The same in years, months, days, hours and minutes."""
+
+
+@dataclass(frozen=True)
+class Dasha:
+    """A dasha of a founded chart: its periods, and for a nakshatra-seeded one
+    its seed and balance at birth. A sign-based dasha has neither, and its
+    periods name their signs."""
+
+    system: Union[DashaSystem, str]
+    """Which system: a `DashaSystem`, or a registered one by its full key
+    (`"dasha_system.ACME_SAPTAKA"`)."""
+
+    seed: Optional[Nakshatra]
+    """The nakshatra the Moon stood in, which seeds it; None for a sign-based
+    dasha."""
+
+    first_lord: Graha
+    """The lord it starts with."""
+
+    overflow: bool
+    """Whether the seed lay outside a conditional system's nakshatras."""
+
+    balance: Optional[DashaBalance]
+    """What remained of the first period at birth; None for a sign-based
+    dasha, whose first period runs whole from birth."""
+
+    moon_span: Optional[Interval]
+    """The Moon's stay in its nakshatra, when the balance read one."""
+
+    depth: int
+    """How many levels the periods go down."""
+
+    periods: Tuple[DashaPeriod, ...]
+    """Every period of the birth cycle to `depth`, depth first in time
+    order: a mahadasha, then its antardashas and theirs, then the next."""
+
+    def at(self, jd: float) -> list[DashaPeriod]:
+        """The periods running at a Julian day (UTC), from the mahadasha
+        down to `depth`; empty before birth and past the end of the cycle.
+
+        Depth first order means a period's children follow it, so one walk
+        that takes the next level's running period finds the chain.
+        """
+        chain: list[DashaPeriod] = []
+        for period in self.periods:
+            if period.level == len(chain) + 1 and period.span.from_jd <= jd < period.span.to_jd:
+                chain.append(period)
+        return chain
 
 
 @dataclass(frozen=True)
@@ -1520,6 +2181,437 @@ class Bhava:
 
     sandhi_deg: float
     """The bhava's opening cusp, degrees."""
+
+
+@dataclass(frozen=True)
+class UnitPoint:
+    """A point in a drawing's unit square, y downwards."""
+
+    x: float
+    """From the left edge, 0 to 1."""
+
+    y: float
+    """From the top edge, 0 to 1."""
+
+
+@dataclass(frozen=True)
+class LineSegment:
+    """A straight line to a point."""
+
+    to: UnitPoint
+    """Where the line ends."""
+
+
+@dataclass(frozen=True)
+class QuadSegment:
+    """A quadratic curve to a point, pulled towards its control."""
+
+    control: UnitPoint
+    """The control point."""
+
+    to: UnitPoint
+    """Where the curve ends."""
+
+
+@dataclass(frozen=True)
+class ArcSegment:
+    """A circular arc about a centre to a point the same distance from it."""
+
+    centre: UnitPoint
+    """The circle's centre."""
+
+    clockwise: bool
+    """Which way the arc runs, as a reader sees it."""
+
+    to: UnitPoint
+    """Where the arc ends."""
+
+
+Segment = Union[LineSegment, QuadSegment, ArcSegment]
+"""One step of an outline, from wherever the previous step ended."""
+
+
+@dataclass(frozen=True)
+class Outline:
+    """A closed outline: a start and the steps back to it."""
+
+    start: UnitPoint
+    """Where the outline starts."""
+
+    segments: list[Segment]
+    """The steps around it."""
+
+
+@dataclass(frozen=True)
+class DrawnCell:
+    """One region of a drawn chart."""
+
+    outline: Outline
+    """The region's outline in the unit square."""
+
+    sign: Rashi
+    """The sign the cell shows; for a house between cusps, its cusp's sign."""
+
+    house: int
+    """The house the cell shows, 1 to 12."""
+
+    lagna: bool
+    """Whether the lagna stands in this cell."""
+
+    ring: int
+    """The ring, innermost 0; a grid's cells are all 0."""
+
+    label: UnitPoint
+    """Where the sign or house number is drawn."""
+
+    anchor: UnitPoint
+    """Where the cell's bodies are stacked about."""
+
+    bodies: list[str]
+    """The bodies in the cell, as catalogue keys (`graha.SUN`)."""
+
+
+@dataclass(frozen=True)
+class DrawnMark:
+    """A body drawn at its own degree on a wheel."""
+
+    body: str
+    """The body, as a catalogue key."""
+
+    ring: int
+    """The ring it is drawn in."""
+
+    at: UnitPoint
+    """Where it is drawn."""
+
+    longitude_deg: float
+    """The longitude that put it there, degrees."""
+
+
+class UnitPointRow(TypedDict):
+    """A point in the unit square, as a row spells it."""
+
+    x: float
+    y: float
+
+
+class SegmentRow(TypedDict, total=False):
+    """One step of an outline: `kind` is `line`, `quad` or `arc`, with
+    `to`, and a `quad`'s `control` or an `arc`'s `centre` and `clockwise`."""
+
+    kind: Literal["line", "quad", "arc"]
+    to: UnitPointRow
+    control: UnitPointRow
+    centre: UnitPointRow
+    clockwise: bool
+
+
+class OutlineRow(TypedDict):
+    """A closed outline: its start and the steps back to it."""
+
+    start: UnitPointRow
+    segments: List[SegmentRow]
+
+
+class HoldsRow(TypedDict):
+    """What a grid cell always carries: `{"kind": "sign", "value": "ARIES"}`
+    or `{"kind": "house", "value": 1}`."""
+
+    kind: Literal["sign", "house"]
+    value: Union[str, int]
+
+
+class LayoutCellRow(TypedDict):
+    """One region of a grid layout."""
+
+    outline: OutlineRow
+    holds: HoldsRow
+    label: UnitPointRow
+    bodies: UnitPointRow
+
+
+class LayoutRingRow(TypedDict):
+    """One ring of a radial layout."""
+
+    inner: float
+    outer: float
+    counts_from: Literal["lagna", "moon", "sun", "cusps", "zodiac"]
+
+
+class LayoutShapeRow(TypedDict, total=False):
+    """Twelve cells fixed in the row (`kind` `grid`: `cells`, `frame`), or
+    rings computed per chart (`kind` `radial`: `rings`, `starts_at`); both
+    carry `direction`."""
+
+    kind: Literal["grid", "radial"]
+    cells: List[LayoutCellRow]
+    frame: List[OutlineRow]
+    rings: List[LayoutRingRow]
+    starts_at: int
+    direction: Literal["clockwise", "anticlockwise"]
+
+
+class DashaLord(TypedDict):
+    """One lord of a dasha system and its whole years."""
+
+    graha: str
+    years: int
+
+
+class _DashaDefinitionRequired(TypedDict):
+    key: str
+    lords: List[DashaLord]
+    reference: str
+
+
+class DashaDefinition(_DashaDefinitionRequired, total=False):
+    """A nakshatra-seeded dasha system of your own, as `dasha_systems` takes
+    it: its key, its lords in order and the reference nakshatra, bare keys
+    (`"SUN"`, `"KRITTIKA"`) as the document spells them; every other field
+    defaults to Vimshottari's shape (`03-design/dasha-kernels.md`).
+
+    >>> saptaka: DashaDefinition = {
+    ...     "key": "ACME_SAPTAKA",
+    ...     "lords": [{"graha": g, "years": 10} for g in ("SUN", "MOON", "MARS")],
+    ...     "reference": "KRITTIKA",
+    ... }
+    """
+
+    sources: List[str]
+    count: str
+    span: int
+    offset: int
+    repeats: bool
+    scale: Dict[str, int]
+    year_length: str
+    depth: int
+
+
+class _RowsJson(NamedTuple):
+    """The consumer's own rows a context registers, serialised."""
+
+    layouts: Optional[str]
+    dashas: Optional[str]
+
+
+class LayoutRow(TypedDict):
+    """A chart layout as a row: its key, what cites it, and its shape.
+    Crosses as JSON with the SDK's own field names, as a theme does
+    (`03-design/chart-geometry.md` §7f)."""
+
+    key: str
+    sources: List[str]
+    shape: LayoutShapeRow
+
+
+class ThemeStyle(TypedDict, total=False):
+    """How a drawing looks: every field optional, over the theme it extends
+    (`03-design/render-svg.md`)."""
+
+    size: float
+    background: str
+    ink: str
+    cell: str
+    lagna_cell: str
+    accent: str
+    stroke: float
+    font_family: str
+    body_size: float
+    label_size: float
+    mark_size: float
+    advance: float
+    line_height: float
+    baseline_shift: float
+
+
+class ThemeContent(TypedDict, total=False):
+    """What a drawing says: every field optional, over the theme it extends."""
+
+    body_form: Literal["short", "glyph"]
+    cell_label: Literal["auto", "sign_number", "sign_short", "sign_glyph", "house", "nothing"]
+    lagna_mark: bool
+    retrograde_mark: Optional[str]
+    degrees: bool
+
+
+class ThemeRecord(TypedDict, total=False):
+    """A theme naming only what it changes, over the light theme or the
+    shipped one `extends` names."""
+
+    extends: Literal["light", "dark"]
+    style: ThemeStyle
+    content: ThemeContent
+
+
+Theme = Union[Literal["light", "dark"], ThemeRecord]
+"""The theme a request writes its drawings as SVG in: a shipped theme's
+name, or a record naming only what it changes."""
+
+
+def _theme_json(theme: Optional[Theme]) -> Optional[str]:
+    """The theme as the JSON the boundary reads, or nothing for no SVG."""
+    if theme is None:
+        return None
+    if isinstance(theme, str):
+        return json.dumps({"extends": theme})
+    if isinstance(theme, Mapping):
+        return json.dumps(theme)
+    raise TeistroError(
+        Status.INVALID_ARG,
+        "a theme is 'light', 'dark' or a theme record",
+        field="theme",
+    )
+
+
+@dataclass(frozen=True)
+class Drawing:
+    """A chart drawn in a layout (`03-design/chart-geometry.md`)."""
+
+    layout: Union[ChartLayout, str]
+    """The layout it is drawn in: a `ChartLayout`, or a layout the context
+    registered, by its full key (`chart_layout.ACME_KERALA`)."""
+
+    @property
+    def layout_key(self) -> str:
+        """The layout's full key, shipped or registered
+        (`chart_layout.NORTH_INDIAN`), for a caller that reads either."""
+        return self.layout.full_key if isinstance(self.layout, ChartLayout) else self.layout
+
+    varga: Varga
+    """Which chart: `Varga.D1` for the founded chart, or a divisional one."""
+
+    cells: list[DrawnCell]
+    """The cells, in the layout's order."""
+
+    frame: list[Outline]
+    """The lines drawn that hold nothing."""
+
+    marks: list[DrawnMark]
+    """Each body at its own degree, on a wheel; empty for a grid."""
+
+    svg: Optional[str] = None
+    """The drawing as SVG, in the request's theme and the context's locale;
+    `None` when the request gave no theme."""
+
+
+def _member(kind: Any, key: str) -> Any:
+    """A catalogue member by its bare key, or a refusal naming both."""
+    found = kind.by_key(key)
+    if found is None:
+        raise TeistroError(Status.INTERNAL, f"the library drew a {kind.__name__} this build does not know: {key}")
+    return found
+
+
+def _point(raw: Mapping[str, Any]) -> UnitPoint:
+    return UnitPoint(x=float(raw["x"]), y=float(raw["y"]))
+
+
+def _segment(raw: Mapping[str, Any]) -> Segment:
+    kind = raw["kind"]
+    if kind == "line":
+        return LineSegment(to=_point(raw["to"]))
+    if kind == "quad":
+        return QuadSegment(control=_point(raw["control"]), to=_point(raw["to"]))
+    return ArcSegment(centre=_point(raw["centre"]), clockwise=bool(raw["clockwise"]), to=_point(raw["to"]))
+
+
+def _outline(raw: Mapping[str, Any]) -> Outline:
+    return Outline(start=_point(raw["start"]), segments=[_segment(step) for step in raw["segments"]])
+
+
+def _layout_of(key: str) -> Union[ChartLayout, str]:
+    """A drawn layout: the shipped member, or a registered one's full key."""
+    shipped = ChartLayout.by_key(key)
+    return shipped if isinstance(shipped, ChartLayout) else f"chart_layout.{key}"
+
+
+def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
+    placed = raw["placed"]
+    return Drawing(
+        svg=svg,
+        layout=_layout_of(placed["layout"]),
+        varga=_member(Varga, raw["varga"]),
+        cells=[
+            DrawnCell(
+                outline=_outline(cell["outline"]),
+                sign=_member(Rashi, cell["sign"]),
+                house=int(cell["house"]),
+                lagna=bool(cell["lagna"]),
+                ring=int(cell["ring"]),
+                label=_point(cell["label"]),
+                anchor=_point(cell["anchor"]),
+                bodies=list(cell["bodies"]),
+            )
+            for cell in placed["cells"]
+        ],
+        frame=[_outline(path) for path in placed["frame"]],
+        marks=[
+            DrawnMark(
+                body=mark["body"],
+                ring=int(mark["ring"]),
+                at=_point(mark["at"]),
+                longitude_deg=float(mark["longitude_deg"]),
+            )
+            for mark in placed["marks"]
+        ],
+    )
+
+
+def _dasha_ids(dashas: Sequence[Union[DashaSystem, str]], registered: Mapping[str, int]) -> list[int]:
+    """The dashas asked for, as the ids the boundary takes: a `DashaSystem`,
+    or the `dasha_system.*` key of a system this context registered
+    (`03-design/dasha-kernels.md`)."""
+    ids = []
+    for at, system in enumerate(dashas):
+        if isinstance(system, DashaSystem):
+            ids.append(int(system))
+        elif isinstance(system, str) and system in registered:
+            ids.append(registered[system])
+        else:
+            raise TeistroError(
+                Status.INVALID_ARG,
+                f"dashas[{at}] is not a DashaSystem, or the dasha_system.* key of a system this "
+                "context registered",
+                field=f"dashas[{at}]",
+            )
+    return ids
+
+
+def _dasha_system(id: int, names: Mapping[int, str]) -> Union[DashaSystem, str]:
+    """A dasha row's system: the catalogue's member, or a registered one's key."""
+    if id in names:
+        return names[id]
+    return DashaSystem(id)
+
+
+def _drawing_bits(
+    drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]], registered: Mapping[str, int]
+) -> list[int]:
+    """The drawings asked for, as the packed ids the boundary takes:
+    `layout << 16 | varga` each, so a caller names pairs and nothing else
+    writes bits (`03-design/chart-geometry.md`).
+
+    A layout is a `ChartLayout`, or a consumer's own by its full key
+    (`chart_layout.ACME_KERALA`), from the ids its context resolved when it
+    was made (§7f)."""
+    bits = []
+    for at, pair in enumerate(drawings):
+        layout, varga = pair if isinstance(pair, tuple) and len(pair) == 2 else (None, None)
+        if isinstance(layout, str):
+            member = registered.get(layout, -1)
+        elif isinstance(layout, ChartLayout):
+            member = int(layout)
+        else:
+            member = -1
+        if member < 0 or not isinstance(varga, Varga):
+            raise TeistroError(
+                Status.INVALID_ARG,
+                f"drawings[{at}] is not a (ChartLayout, or the chart_layout.* key of a layout this "
+                "context registered, Varga) pair",
+                field=f"drawings[{at}]",
+            )
+        bits.append((member << 16) | int(varga))
+    return bits
 
 
 class Chart:
@@ -1649,6 +2741,21 @@ class Chart:
                 )
                 if columns.has_war[i]
                 else None,
+                sayanadi=Sayanadi(
+                    avastha=AvasthaSayanadi(columns.sayanadi[i]),
+                    cheshtas=tuple(
+                        AvasthaCheshta(column[i])
+                        for column in (
+                            columns.cheshta_1,
+                            columns.cheshta_2,
+                            columns.cheshta_3,
+                            columns.cheshta_4,
+                            columns.cheshta_5,
+                        )
+                    ),
+                )
+                if columns.has_sayanadi[i]
+                else None,
                 boundaries=EdgeDistance(
                     sign_deg=columns.sign_deg[i],
                     nakshatra_deg=columns.nakshatra_deg[i],
@@ -1736,6 +2843,61 @@ class Chart:
             )
             for i in range(start, start + counts[self.index])
         ]
+
+    @property
+    def ashtakavarga(self) -> Optional[Ashtakavarga]:
+        """The Ashtakavarga, when `ashtakavarga=True` asked for it."""
+        parsed = self.batch._ashtakavargas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def bhava_bala(self) -> Optional[BhavaBala]:
+        """The Bhava bala, when `bhava_bala=True` asked for it."""
+        parsed = self.batch._bhava_balas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def shadbala(self) -> Optional[Shadbala]:
+        """The Shadbala, when `shadbala=True` asked for it."""
+        parsed = self.batch._shadbalas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def dasha_phala(self) -> Optional[DashaPhalaReading]:
+        """The dasha phala, when `dasha_phala=True` asked for it."""
+        parsed = self.batch._dasha_phalas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def vaiseshikamsa(self) -> Optional[VaiseshikamsaReading]:
+        """The Vaiseshikamsa, when `vaiseshikamsa=True` asked for it."""
+        parsed = self.batch._vaiseshikamsas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def vimshopaka(self) -> Optional[Vimshopaka]:
+        """The Vimshopaka, when `vimshopaka=True` asked for it."""
+        parsed = self.batch._vimshopakas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def dashas(self) -> list[Dasha]:
+        """The dashas asked for, in the order asked; empty unless `dashas`
+        named some (`03-design/dasha-kernels.md`)."""
+        parsed = self.batch._dashas
+        return parsed[self.index] if self.index < len(parsed) else []
+
+    @property
+    def drawings(self) -> list[Drawing]:
+        """The charts drawn in the layouts asked for, in the order asked;
+        empty unless `drawings` named some (`03-design/chart-geometry.md`).
+
+        Each cell carries both the sign and the house it shows, and the
+        bodies standing in it; `marks` places each body at its own degree
+        on a wheel and is empty for a grid.
+        """
+        parsed = self.batch._drawings
+        return parsed[self.index] if self.index < len(parsed) else []
 
     @property
     def vargas(self) -> list[VargaChart]:
@@ -1833,13 +2995,241 @@ class Chart:
 class ChartBatch:
     """A batch of founded charts at one place, read one chart at a time."""
 
-    def __init__(self, decoded: Charts) -> None:
+    def __init__(self, decoded: Charts, dasha_names: Optional[Mapping[int, str]] = None) -> None:
         self.decoded = decoded
         """The blob as its generated decoder read it."""
+        self.dasha_names: Mapping[int, str] = dasha_names or {}
+        """The full key of each dasha system the founding context registered,
+        by its id; a batch read without it names such a system by its id."""
 
     def __len__(self) -> int:
         """How many charts the batch holds."""
         return self.decoded.chart_count
+
+    @cached_property
+    def _drawings(self) -> list[list[Drawing]]:
+        """Every chart's drawings, parsed once however many charts read them."""
+        text = self.decoded.drawings
+        if not text:
+            return []
+        written: list[list[str]] = json.loads(self.decoded.svgs) if self.decoded.svgs else []
+        return [
+            [
+                _drawing(raw, written[chart][index] if chart < len(written) else None)
+                for index, raw in enumerate(drawings)
+            ]
+            for chart, drawings in enumerate(json.loads(text))
+        ]
+
+    @cached_property
+    def _ashtakavargas(self) -> list[Ashtakavarga]:
+        """Every chart's Ashtakavarga, decoded once; empty when none was asked for."""
+        decoded = self.decoded
+        rows = decoded.ashtakavarga
+        bins = decoded.ashtakavarga_bindus
+        sums = decoded.sarvashtakavarga
+
+        def twelve(column: Any, start: int) -> Tuple[int, ...]:
+            return tuple(column[start : start + 12])
+
+        out: list[Ashtakavarga] = []
+        for chart in range(rows.length // 7):
+            grahas = []
+            for g in range(7):
+                row = chart * 7 + g
+                each = Shodhana(rows.shodhana[row]) is Shodhana.EACH_GRAHA
+                grahas.append(
+                    GrahaAshtakavarga(
+                        graha=Graha(rows.graha[row]),
+                        bindus=twelve(bins.bindus, row * 12),
+                        reduced=twelve(bins.reduced, row * 12) if each else None,
+                        rashi_pinda=rows.rashi_pinda[row],
+                        graha_pinda=rows.graha_pinda[row],
+                        yoga_pinda=rows.yoga_pinda[row],
+                    )
+                )
+            out.append(
+                Ashtakavarga(
+                    shodhana=Shodhana(rows.shodhana[chart * 7]),
+                    ekadhipatya=Ekadhipatya(rows.ekadhipatya[chart * 7]),
+                    grahas=tuple(grahas),
+                    sarva=twelve(sums.sarva, chart * 12),
+                    trikona=twelve(sums.trikona, chart * 12),
+                    reduced=twelve(sums.reduced, chart * 12),
+                )
+            )
+        return out
+
+    @cached_property
+    def _bhava_balas(self) -> list[BhavaBala]:
+        """Every chart's Bhava bala, decoded once; empty when none was asked for."""
+        c = self.decoded.bhava_bala
+        return [
+            BhavaBala(
+                bhavas=tuple(
+                    BhavaStrength(
+                        bhava=h + 1,
+                        lord=Graha(c.lord[chart * 12 + h]),
+                        adhipati=c.adhipati[chart * 12 + h],
+                        dig=c.dig[chart * 12 + h],
+                        drishti=c.drishti[chart * 12 + h],
+                        special=c.special[chart * 12 + h],
+                        virupas=c.virupas[chart * 12 + h],
+                    )
+                    for h in range(12)
+                )
+            )
+            for chart in range(c.length // 12)
+        ]
+
+    @cached_property
+    def _shadbalas(self) -> list[Shadbala]:
+        """Every chart's Shadbala, decoded once; empty when none was asked for."""
+        c = self.decoded.shadbala
+
+        def graha(row: int) -> GrahaShadbala:
+            return GrahaShadbala(
+                graha=Graha(c.graha[row]),
+                sthana=SthanaBala(
+                    uchcha=c.uchcha[row],
+                    saptavargaja=c.saptavargaja[row],
+                    ojayugma=c.ojayugma[row],
+                    kendradi=c.kendradi[row],
+                    drekkana=c.drekkana[row],
+                ),
+                dig=c.dig[row],
+                kaala=KaalaBala(
+                    nathonnatha=c.nathonnatha[row],
+                    paksha=c.paksha[row],
+                    tribhaga=c.tribhaga[row],
+                    abda=c.abda[row],
+                    masa=c.masa[row],
+                    vara=c.vara[row],
+                    hora=c.hora[row],
+                    ayana=c.ayana[row],
+                    yuddha=c.yuddha[row],
+                ),
+                cheshta=c.cheshta[row],
+                naisargika=c.naisargika[row],
+                drik=c.drik[row],
+                virupas=c.virupas[row],
+                rupas=c.rupas[row],
+                required_rupas=c.required_rupas[row],
+                strong=c.strong[row] == 1,
+                ishta=c.ishta[row],
+                kashta=c.kashta[row],
+                subha_rashmi=c.subha_rashmi[row],
+                ashubha_rashmi=c.ashubha_rashmi[row],
+            )
+
+        return [
+            Shadbala(grahas=tuple(graha(row) for row in range(chart * 7, chart * 7 + 7)))
+            for chart in range(c.length // 7)
+        ]
+
+    @cached_property
+    def _dasha_phalas(self) -> list[DashaPhalaReading]:
+        """Every chart's dasha phala, decoded once; empty when none was asked for."""
+        c = self.decoded.dasha_phala
+        subhankas = (
+            c.subhanka_d1,
+            c.subhanka_d2,
+            c.subhanka_d3,
+            c.subhanka_d7,
+            c.subhanka_d9,
+            c.subhanka_d12,
+            c.subhanka_d30,
+        )
+        return [
+            DashaPhalaReading(
+                grahas=tuple(
+                    GrahaDashaPhala(
+                        graha=Graha(c.graha[row]),
+                        subhankas=tuple(column[row] for column in subhankas),
+                        subhanka=c.subhanka[row],
+                        asubhanka=c.asubhanka[row],
+                        nature=Nature(c.nature[row]),
+                        phase=DashaPhase(c.phase[row]),
+                        favourable=c.favourable[row] == 1,
+                        unfavourable=c.unfavourable[row] == 1,
+                    )
+                    for row in range(chart * 9, chart * 9 + 9)
+                )
+            )
+            for chart in range(c.length // 9)
+        ]
+
+    @cached_property
+    def _vaiseshikamsas(self) -> list[VaiseshikamsaReading]:
+        """Every chart's Vaiseshikamsa, decoded once; empty when none was asked for."""
+        c = self.decoded.vaiseshikamsa
+
+        def standing(good: memoryview, names: memoryview, row: int) -> VaiseshikamsaStanding:
+            count = good[row]
+            return VaiseshikamsaStanding(
+                good_vargas=count, name=Vaiseshikamsa(names[row]) if count >= 2 else None
+            )
+
+        return [
+            VaiseshikamsaReading(
+                grahas=tuple(
+                    GrahaVaiseshikamsa(
+                        graha=Graha(c.graha[row]),
+                        shadvarga=standing(c.shadvarga_good, c.shadvarga_name, row),
+                        saptavarga=standing(c.saptavarga_good, c.saptavarga_name, row),
+                        dashavarga=standing(c.dashavarga_good, c.dashavarga_name, row),
+                        shodashavarga=standing(c.shodashavarga_good, c.shodashavarga_name, row),
+                        impaired=c.impaired[row] == 1,
+                    )
+                    for row in range(chart * 7, chart * 7 + 7)
+                )
+            )
+            for chart in range(c.length // 7)
+        ]
+
+    @cached_property
+    def _vimshopakas(self) -> list[Vimshopaka]:
+        """Every chart's Vimshopaka, decoded once; empty when none was asked for."""
+        rows = self.decoded.vimshopaka
+        return [
+            Vimshopaka(
+                scoring=VimshopakaScoring(rows.scoring[chart * 7]),
+                grahas=tuple(
+                    GrahaVimshopaka(
+                        graha=Graha(rows.graha[row]),
+                        shadvarga=rows.shadvarga[row],
+                        saptavarga=rows.saptavarga[row],
+                        dashavarga=rows.dashavarga[row],
+                        shodashavarga=rows.shodashavarga[row],
+                    )
+                    for row in range(chart * 7, chart * 7 + 7)
+                ),
+            )
+            for chart in range(rows.length // 7)
+        ]
+
+    @cached_property
+    def _dashas(self) -> list[list[Dasha]]:
+        """Every chart's dashas, decoded once however many charts read them.
+
+        The periods are **ragged** by each dasha's `period_count`, so a
+        chart's begin where the one before it ends.
+        """
+        decoded = self.decoded
+        per = decoded.dasha_count
+        if per == 0:
+            return []
+        out: list[list[Dasha]] = []
+        start = 0
+        for chart in range(decoded.dashas.length // per):
+            row_dashas: list[Dasha] = []
+            for j in range(per):
+                row = chart * per + j
+                count = decoded.dashas.period_count[row]
+                row_dashas.append(_dasha(decoded, row, start, count, self.dasha_names))
+                start += count
+            out.append(row_dashas)
+        return out
 
     def at(self, index: int) -> Chart:
         """One chart of the batch, by index."""
@@ -1883,6 +3273,57 @@ class ChartBatch:
     def provenance(self) -> str:
         """The provenance envelope, as the canonical JSON it is stamped as."""
         return self.decoded.provenance
+
+def _dasha(decoded: Charts, row: int, start: int, count: int, names: Mapping[int, str]) -> Dasha:
+    """One dasha row and its periods, in this layer's shape.
+
+    A period's path is its index below the nearest earlier period one level
+    up, so it is rebuilt by truncating the path to the level before it.
+    """
+    rows = decoded.dashas
+    cells = decoded.dasha_periods
+    seeded = rows.seeded[row] != 0
+    signed = rows.signed[row] != 0
+    periods: list[DashaPeriod] = []
+    path: list[str] = []
+    for i in range(start, start + count):
+        level = cells.level[i]
+        del path[level - 1 :]
+        path.append(str(cells.index[i]))
+        periods.append(
+            DashaPeriod(
+                path="/".join(path),
+                level=level,
+                sign=Rashi(cells.sign[i]) if signed else None,
+                lord=Graha(cells.lord[i]),
+                span=Interval(from_jd=cells.from_jd[i], to_jd=cells.to_jd[i]),
+            )
+        )
+    span_from = rows.moon_span_from[row]
+    return Dasha(
+        system=_dasha_system(rows.system[row], names),
+        seed=Nakshatra(rows.seed[row]) if seeded else None,
+        first_lord=Graha(rows.first_lord[row]),
+        overflow=rows.overflow[row] != 0,
+        balance=DashaBalance(
+            method=Balance(rows.balance[row]),
+            remaining=rows.remaining[row],
+            days=rows.balance_days[row],
+            written=WrittenBalance(
+                years=rows.balance_years[row],
+                months=rows.balance_months[row],
+                days=rows.balance_day_count[row],
+                hours=rows.balance_hours[row],
+                minutes=rows.balance_minutes[row],
+            ),
+        )
+        if seeded
+        else None,
+        moon_span=None if math.isnan(span_from) else Interval(from_jd=span_from, to_jd=rows.moon_span_to[row]),
+        depth=rows.depth[row],
+        periods=tuple(periods),
+    )
+
 
 @dataclass(frozen=True)
 class Interval:

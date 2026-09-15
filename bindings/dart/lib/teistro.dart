@@ -210,7 +210,18 @@ final class Teistro {
     EphemerisProvider? provider,
     List<EphemerisChoice>? ephemeris,
     bool testProvider = false,
+    List<LayoutRow> layouts = const <LayoutRow>[],
+    List<DashaDefinition> dashaSystems = const <DashaDefinition>[],
   }) {
+    // Serialised once, however many entries of the chain are tried.
+    final layoutsJson =
+        layouts.isEmpty
+            ? null
+            : jsonEncode([for (final row in layouts) row.toJson()]);
+    final dashasJson =
+        dashaSystems.isEmpty
+            ? null
+            : jsonEncode([for (final system in dashaSystems) system.toJson()]);
     // Two ways to answer one question, so both together is a refusal
     // rather than one silently winning.
     if (provider != null && ephemeris != null) {
@@ -244,8 +255,18 @@ final class Teistro {
       if (chain.length == 1) {
         return Context._(
           this,
-          _open(chain.first, profile, settings, locale, host),
+          _open(
+            chain.first,
+            profile,
+            settings,
+            locale,
+            layoutsJson,
+            dashasJson,
+            host,
+          ),
           host,
+          layouts,
+          dashaSystems,
         );
       }
       // With more than one, every refusal is kept and reported together,
@@ -256,8 +277,18 @@ final class Teistro {
         try {
           return Context._(
             this,
-            _open(entry, profile, settings, locale, host),
+            _open(
+              entry,
+              profile,
+              settings,
+              locale,
+              layoutsJson,
+              dashasJson,
+              host,
+            ),
             host,
+            layouts,
+            dashaSystems,
           );
         } on Object catch (refusal) {
           refusals.add('${_names(entry)}: $refusal');
@@ -284,6 +315,8 @@ final class Teistro {
     String? profile,
     Map<String, Object?>? settings,
     String? locale,
+    String? layoutsJson,
+    String? dashasJson,
     HostProvider? host,
   ) {
     ContextOptions options(Ephemeris named) => ContextOptions(
@@ -292,6 +325,8 @@ final class Teistro {
       profile: profile,
       settingsJson: settings == null ? null : jsonEncode(settings),
       locale: locale,
+      layoutsJson: layoutsJson,
+      dashasJson: dashasJson,
     );
     switch (entry) {
       case NamedEphemeris(:final name):
@@ -605,12 +640,43 @@ const int _sectionPoints = 8;
 /// `TS_CHART_HOUSES`, the houses service.
 const int _sectionHouses = 16;
 
+/// `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga.
+const int _sectionAshtakavarga = 32;
+
+/// `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
+const int _sectionVimshopaka = 64;
+
+/// `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
+const int _sectionVaiseshikamsa = 512;
+
+/// `TS_CHART_DASHA_PHALA`, the dasha phala.
+const int _sectionDashaPhala = 1024;
+
+/// `TS_CHART_SHADBALA`, the Shadbala.
+const int _sectionShadbala = 128;
+
+/// `TS_CHART_BHAVA_BALA`, the Bhava bala.
+const int _sectionBhavaBala = 256;
+
 /// `TS_CHART_STATE`, the planetary states.
 const int _sectionState = 2;
 
 /// `sdk.chart` — a chart founded at an instant and a place.
 final class ChartArea extends _Area {
   const ChartArea._(super.context);
+
+  /// A layout this context can draw in, shipped or registered, as its row:
+  /// copy it with [LayoutRow.copyWith], give it a key of its own, and pass
+  /// it to `Teistro.context(layouts: ...)` (`03-design/chart-geometry.md`
+  /// §7f).
+  LayoutRow layout(KeyOf<ChartLayout> layout) => LayoutRow.fromJson(
+    jsonDecode(
+          _context._guarded(
+            () => _context._inner.chartLayoutRow(layout.fullKey),
+          ),
+        )
+        as Map<String, Object?>,
+  );
 
   /// Founds a chart at an instant and a place.
   ///
@@ -629,9 +695,19 @@ final class ChartArea extends _Area {
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
+    List<(KeyOf<ChartLayout>, Varga)> drawings =
+        const <(KeyOf<ChartLayout>, Varga)>[],
+    ChartTheme? theme,
     bool aspects = false,
     bool points = false,
     bool houses = false,
+    bool ashtakavarga = false,
+    bool vimshopaka = false,
+    bool vaiseshikamsa = false,
+    bool dashaPhala = false,
+    bool shadbala = false,
+    bool bhavaBala = false,
     bool state = false,
   }) => foundMany(
     instants: <double>[instant],
@@ -639,9 +715,18 @@ final class ChartArea extends _Area {
     utcOffsetSeconds: utcOffsetSeconds,
     kind: kind,
     vargas: vargas,
+    dashas: dashas,
+    drawings: drawings,
+    theme: theme,
     aspects: aspects,
     points: points,
     houses: houses,
+    ashtakavarga: ashtakavarga,
+    vimshopaka: vimshopaka,
+    vaiseshikamsa: vaiseshikamsa,
+    dashaPhala: dashaPhala,
+    shadbala: shadbala,
+    bhavaBala: bhavaBala,
     state: state,
   ).at(0);
 
@@ -655,40 +740,68 @@ final class ChartArea extends _Area {
   /// `vargas` names the divisional charts to compute, in the order to
   /// answer them; none by default, because a caller who wants a birth
   /// chart should not pay for twenty-one of them
-  /// (`03-design/chart-reading.md` §4). `aspects` asks for the drishti.
+  /// (`03-design/chart-reading.md` §4). `drawings` names charts to draw, each
+  /// a `(ChartLayout, Varga)` pair with `Varga.d1` the founded chart, in the
+  /// order to answer them. `theme` writes each drawing as SVG in the
+  /// context's locale, read back as `Drawing.svg`; none by default.
+  /// `dashas` names the dasha systems to compute, their periods to the
+  /// settings' `dasha.depth` (`03-design/dasha-kernels.md`).
+  /// `aspects` asks for the drishti.
   Charts foundMany({
     required List<double> instants,
     required Observer place,
     required int utcOffsetSeconds,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
+    List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
+    List<(KeyOf<ChartLayout>, Varga)> drawings =
+        const <(KeyOf<ChartLayout>, Varga)>[],
+    ChartTheme? theme,
     bool aspects = false,
     bool points = false,
     bool houses = false,
+    bool ashtakavarga = false,
+    bool vimshopaka = false,
+    bool vaiseshikamsa = false,
+    bool dashaPhala = false,
+    bool shadbala = false,
+    bool bhavaBala = false,
     bool state = false,
-  }) => decodeCharts(
-    _context._guarded(
-      () => _context._inner.chartFound(
-        ChartRequest(
-          kind: kind,
-          instants: instants,
-          latitudeDeg: place.latitudeDeg,
-          longitudeDeg: place.longitudeDeg,
-          altitudeM: place.altitudeM,
-          utcOffsetSeconds: utcOffsetSeconds,
-          // The sections beside the foundation, which the SDK takes as
-          // a bit set and nothing here writes as one
-          // (`03-design/chart-reading.md` §5): a named argument each,
-          // and one more as each crosses.
-          sections:
-              (aspects ? _sectionAspects : 0) |
-              (points ? _sectionPoints : 0) |
-              (houses ? _sectionHouses : 0) |
-              (state ? _sectionState : 0),
-          vargas: vargas,
+  }) => _named(
+    decodeCharts(
+      _context._guarded(
+        () => _context._inner.chartFound(
+          ChartRequest(
+            kind: kind,
+            instants: instants,
+            latitudeDeg: place.latitudeDeg,
+            longitudeDeg: place.longitudeDeg,
+            altitudeM: place.altitudeM,
+            utcOffsetSeconds: utcOffsetSeconds,
+            // The sections beside the foundation, which the SDK takes as
+            // a bit set and nothing here writes as one
+            // (`03-design/chart-reading.md` §5): a named argument each,
+            // and one more as each crosses.
+            sections:
+                (aspects ? _sectionAspects : 0) |
+                (points ? _sectionPoints : 0) |
+                (houses ? _sectionHouses : 0) |
+                (ashtakavarga ? _sectionAshtakavarga : 0) |
+                (vimshopaka ? _sectionVimshopaka : 0) |
+                (vaiseshikamsa ? _sectionVaiseshikamsa : 0) |
+                (dashaPhala ? _sectionDashaPhala : 0) |
+                (shadbala ? _sectionShadbala : 0) |
+                (bhavaBala ? _sectionBhavaBala : 0) |
+                (state ? _sectionState : 0),
+            vargas: vargas,
+            dashas: _dashaIds(dashas, _context._registeredDashas),
+            drawings: _drawingBits(drawings, _context._registeredLayouts),
+            themeJson: theme?._json,
+          ),
         ),
       ),
     ),
+    _context._registeredDashas,
   );
 }
 
@@ -754,10 +867,33 @@ final class AlmanacArea extends _Area {
 /// The native context is freed when this object is collected; [dispose]
 /// frees it at once, and every call after that is a [StateError].
 final class Context {
-  Context._(this._teistro, this._inner, this._host) {
+  Context._(
+    this._teistro,
+    this._inner,
+    this._host,
+    List<LayoutRow> layouts,
+    List<DashaDefinition> dashaSystems,
+  )
+    // The member id of each layout and dasha system this context registered,
+    // by its full key: asked once, here, so a request resolves a consumer's
+    // own without crossing the boundary again (`03-design/chart-geometry.md`
+    // §7f).
+    : _registeredLayouts = {
+        for (final row in layouts)
+          'chart_layout.${row.key}':
+              _inner.keyParse('chart_layout.${row.key}') & 0xFFFF,
+      },
+      _registeredDashas = {
+        for (final system in dashaSystems)
+          'dasha_system.${system.key}':
+              _inner.keyParse('dasha_system.${system.key}') & 0xFFFF,
+      } {
     final host = _host;
     if (host != null) _hostFinaliser.attach(this, host, detach: this);
   }
+
+  final Map<String, int> _registeredLayouts;
+  final Map<String, int> _registeredDashas;
 
   final Teistro _teistro;
   final TeistroContext _inner;
@@ -1344,6 +1480,7 @@ final class GrahaState {
     required this.deeptadi,
     required this.lajjitadi,
     required this.war,
+    required this.sayanadi,
     required this.boundaries,
   });
 
@@ -1380,8 +1517,37 @@ final class GrahaState {
   /// The war it is in, if it is in one.
   final War? war;
 
+  /// The Sayanadi state and its sub-states, or `null` for a body the verses
+  /// give no number.
+  final Sayanadi? sayanadi;
+
   /// How near it stands to a classification boundary.
   final EdgeDistance boundaries;
+}
+
+/// A graha's Sayanadi state, with its sub-state under a name of each anka
+/// (BPHS ch. 45 vv. 30 to 37).
+final class Sayanadi {
+  const Sayanadi({required this.avastha, required this.cheshtas});
+
+  /// The state, Shayana to Nidra.
+  final AvasthaSayanadi avastha;
+
+  /// The sub-state under a name whose first syllable's anka is 1 to 5, in
+  /// that order.
+  final List<AvasthaCheshta> cheshtas;
+
+  /// The sub-state under a name of this anka.
+  ///
+  /// ```dart
+  /// final cheshta = state.sayanadi?.cheshta(3);
+  /// ```
+  ///
+  /// Throws an [ArgumentError] outside 1 to 5.
+  AvasthaCheshta cheshta(int anka) {
+    RangeError.checkValueInInterval(anka, 1, 5, 'anka');
+    return cheshtas[anka - 1];
+  }
 }
 
 /// One bhava as the houses service reads it.
@@ -1459,6 +1625,550 @@ final class Drishti {
   final EdgeDistance toEdge;
 }
 
+/// One graha's Ashtakavarga.
+final class GrahaAshtakavarga {
+  const GrahaAshtakavarga({
+    required this.graha,
+    required this.bindus,
+    required this.reduced,
+    required this.rashiPinda,
+    required this.grahaPinda,
+    required this.yogaPinda,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Its bindus by sign, Aries to Pisces, 0 to 8.
+  final List<int> bindus;
+
+  /// The same after both reductions, when they were made in each graha's own
+  /// Ashtakavarga; null otherwise.
+  final List<int>? reduced;
+
+  /// Its rashi pinda.
+  final int rashiPinda;
+
+  /// Its graha pinda.
+  final int grahaPinda;
+
+  /// Its yoga pinda, the two together.
+  final int yogaPinda;
+}
+
+/// One bhava's Bhava bala, in virupas.
+final class BhavaStrength {
+  const BhavaStrength({
+    required this.bhava,
+    required this.lord,
+    required this.adhipati,
+    required this.dig,
+    required this.drishti,
+    required this.special,
+    required this.virupas,
+  });
+
+  /// Which bhava, 1 to 12.
+  final int bhava;
+
+  /// The lord of the sign its madhya falls in.
+  final Graha lord;
+
+  /// The lord's Shadbala.
+  final double adhipati;
+
+  /// From its direction, 0 to 60.
+  final double dig;
+
+  /// From the drishtis it receives, which may be negative.
+  final double drishti;
+
+  /// From its occupants and its sign's rising, under BPHS's special rules.
+  final double special;
+
+  /// The four together.
+  final double virupas;
+}
+
+/// A chart's Bhava bala, read under the context's `strength.bhava_*` settings
+/// (`03-design/bhava-bala-measured.md`).
+final class BhavaBala {
+  const BhavaBala({required this.bhavas});
+
+  /// Each bhava's, the first to the twelfth.
+  final List<BhavaStrength> bhavas;
+}
+
+/// A graha's Sthana bala by component, virupas.
+final class SthanaBala {
+  const SthanaBala({
+    required this.uchcha,
+    required this.saptavargaja,
+    required this.ojayugma,
+    required this.kendradi,
+    required this.drekkana,
+  });
+
+  /// From its distance to its debilitation point, 0 to 60.
+  final double uchcha;
+
+  /// From its dignity in the seven vargas.
+  final double saptavargaja;
+
+  /// From its rasi's and navamsha's parity, 0, 15 or 30.
+  final double ojayugma;
+
+  /// From its house: 60, 30 or 15.
+  final double kendradi;
+
+  /// From its decanate: 0 or 15.
+  final double drekkana;
+
+  /// The five together.
+  double get total => uchcha + saptavargaja + ojayugma + kendradi + drekkana;
+}
+
+/// A graha's Kaala bala by component, virupas.
+final class KaalaBala {
+  const KaalaBala({
+    required this.nathonnatha,
+    required this.paksha,
+    required this.tribhaga,
+    required this.abda,
+    required this.masa,
+    required this.vara,
+    required this.hora,
+    required this.ayana,
+    required this.yuddha,
+  });
+
+  /// From the hour, 0 to 60.
+  final double nathonnatha;
+
+  /// From the Moon's elongation, the Moon's doubled.
+  final double paksha;
+
+  /// 60 to the lord of the third of the day or night, and to Jupiter.
+  final double tribhaga;
+
+  /// 15 to the year's lord.
+  final double abda;
+
+  /// 30 to the month's lord.
+  final double masa;
+
+  /// 45 to the weekday's lord.
+  final double vara;
+
+  /// 60 to the hour's lord.
+  final double hora;
+
+  /// From its declination.
+  final double ayana;
+
+  /// Gained by the victor and lost by the vanquished of a planetary war.
+  final double yuddha;
+
+  /// The nine together.
+  double get total =>
+      nathonnatha +
+      paksha +
+      tribhaga +
+      vara +
+      hora +
+      ayana +
+      abda +
+      masa +
+      yuddha;
+}
+
+/// One graha's Shadbala, in virupas.
+final class GrahaShadbala {
+  const GrahaShadbala({
+    required this.graha,
+    required this.sthana,
+    required this.dig,
+    required this.kaala,
+    required this.cheshta,
+    required this.naisargika,
+    required this.drik,
+    required this.virupas,
+    required this.rupas,
+    required this.requiredRupas,
+    required this.strong,
+    required this.ishta,
+    required this.kashta,
+    required this.subhaRashmi,
+    required this.ashubhaRashmi,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Positional strength by component.
+  final SthanaBala sthana;
+
+  /// Directional strength, 0 to 60.
+  final double dig;
+
+  /// Temporal strength by component.
+  final KaalaBala kaala;
+
+  /// Motional strength.
+  final double cheshta;
+
+  /// Natural strength.
+  final double naisargika;
+
+  /// Aspectual strength, which may be negative.
+  final double drik;
+
+  /// The six together.
+  final double virupas;
+
+  /// The six together, in rupas.
+  final double rupas;
+
+  /// The rupas it must reach to be strong.
+  final double requiredRupas;
+
+  /// Whether it reaches them.
+  final bool strong;
+
+  /// How far it tends to good, 0 to 60 (BPHS ch. 28).
+  final double ishta;
+
+  /// How far it tends to harm, 0 to 60.
+  final double kashta;
+
+  /// Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays
+  /// (BPHS ch. 28 v. 5).
+  final double subhaRashmi;
+
+  /// Its inauspicious rays, 8 less the auspicious.
+  final double ashubhaRashmi;
+}
+
+/// A chart's Shadbala, read under the context's `strength.*` settings
+/// (`03-design/shadbala-measured.md`).
+final class Shadbala {
+  const Shadbala({required this.grahas});
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaShadbala> grahas;
+}
+
+/// One graha's dasha phala (BPHS ch. 28 vv. 7 to 10, ch. 47 vv. 3 to 6).
+final class GrahaDashaPhala {
+  const GrahaDashaPhala({
+    required this.graha,
+    required this.subhankas,
+    required this.subhanka,
+    required this.asubhanka,
+    required this.nature,
+    required this.phase,
+    required this.favourable,
+    required this.unfavourable,
+  });
+
+  /// Which graha, Sun to Ketu.
+  final Graha graha;
+
+  /// Its Subhanka in the D1, D2, D3, D7, D9, D12 and D30: out of 60 in the
+  /// first and 30 in the rest.
+  final List<double> subhankas;
+
+  /// The seven together, out of 240.
+  final double subhanka;
+
+  /// Their complements together, out of 240.
+  final double asubhanka;
+
+  /// Whether its rasi place is auspicious (benefic), neutral or inauspicious
+  /// (malefic).
+  final Nature nature;
+
+  /// Where in its dasha its effects come.
+  final DashaPhase phase;
+
+  /// Whether its placement makes its dasha favourable.
+  final bool favourable;
+
+  /// Whether its placement makes its dasha unfavourable; both can hold.
+  final bool unfavourable;
+}
+
+/// A chart's dasha phala, read under `dasha.shanta_sign`.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */ dashaPhala: true);
+/// final saturn = chart.dashaPhala!.grahas.firstWhere((g) => g.graha == Graha.saturn);
+/// ```
+final class DashaPhalaReading {
+  const DashaPhalaReading({required this.grahas});
+
+  /// Each graha's, Sun to Ketu.
+  final List<GrahaDashaPhala> grahas;
+}
+
+/// A graha's standing in one scheme of vargas.
+final class VaiseshikamsaStanding {
+  const VaiseshikamsaStanding({required this.goodVargas, required this.name});
+
+  /// How many of the scheme's vargas are good for it.
+  final int goodVargas;
+
+  /// The name that count earns, from two good vargas; null below.
+  final Vaiseshikamsa? name;
+}
+
+/// One graha's Vaiseshikamsa (BPHS ch. 6 vv. 42 to 53).
+final class GrahaVaiseshikamsa {
+  const GrahaVaiseshikamsa({
+    required this.graha,
+    required this.shadvarga,
+    required this.saptavarga,
+    required this.dashavarga,
+    required this.shodashavarga,
+    required this.impaired,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Over the six vargas.
+  final VaiseshikamsaStanding shadvarga;
+
+  /// Over the seven.
+  final VaiseshikamsaStanding saptavarga;
+
+  /// Over the ten.
+  final VaiseshikamsaStanding dashavarga;
+
+  /// Over the sixteen.
+  final VaiseshikamsaStanding shodashavarga;
+
+  /// Whether it is combust, defeated in war or in Shayana, its names then not auspicious.
+  final bool impaired;
+}
+
+/// A chart's Vaiseshikamsa.
+final class VaiseshikamsaReading {
+  const VaiseshikamsaReading({required this.grahas});
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaVaiseshikamsa> grahas;
+}
+
+/// One graha's Vimshopaka, each score out of 20.
+final class GrahaVimshopaka {
+  const GrahaVimshopaka({
+    required this.graha,
+    required this.shadvarga,
+    required this.saptavarga,
+    required this.dashavarga,
+    required this.shodashavarga,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Over the six vargas.
+  final double shadvarga;
+
+  /// Over the seven.
+  final double saptavarga;
+
+  /// Over the ten.
+  final double dashavarga;
+
+  /// Over the sixteen.
+  final double shodashavarga;
+}
+
+/// A chart's Vimshopaka: each graha's strength across the divisional charts
+/// under the four schemes (`03-design/vimshopaka-measured.md`).
+final class Vimshopaka {
+  const Vimshopaka({required this.scoring, required this.grahas});
+
+  /// How each varga was scored.
+  final VimshopakaScoring scoring;
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaVimshopaka> grahas;
+}
+
+/// A chart's Ashtakavarga: each graha's, the sarvashtakavarga, and their
+/// reductions and pindas (`03-design/ashtakavarga-measured.md`).
+final class Ashtakavarga {
+  const Ashtakavarga({
+    required this.shodhana,
+    required this.ekadhipatya,
+    required this.grahas,
+    required this.sarva,
+    required this.trikona,
+    required this.reduced,
+  });
+
+  /// Where the reductions and pindas were made.
+  final Shodhana shodhana;
+
+  /// How a co-ruled sign beside an occupied one was reduced.
+  final Ekadhipatya ekadhipatya;
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaAshtakavarga> grahas;
+
+  /// The seven grahas' bindus by sign, 337 in all.
+  final List<int> sarva;
+
+  /// The sum after the trine reduction.
+  final List<int> trikona;
+
+  /// The sum after both reductions.
+  final List<int> reduced;
+}
+
+/// One period of a dasha.
+final class DashaPeriod {
+  const DashaPeriod({
+    required this.path,
+    required this.level,
+    required this.sign,
+    required this.lord,
+    required this.from,
+    required this.to,
+  });
+
+  /// Its place at each level from the mahadasha down, joined by `/`:
+  /// `2/5/3`.
+  final String path;
+
+  /// How deep: 1 for a mahadasha.
+  final int level;
+
+  /// The sign it is the period of, in a sign-based dasha; null otherwise.
+  final Rashi? sign;
+
+  /// Its lord.
+  final Graha lord;
+
+  /// When it begins, a Julian day (UTC).
+  final double from;
+
+  /// When it ends, a Julian day (UTC).
+  final double to;
+}
+
+/// A balance written as a reader writes it.
+final class WrittenBalance {
+  const WrittenBalance({
+    required this.years,
+    required this.months,
+    required this.days,
+    required this.hours,
+    required this.minutes,
+  });
+
+  /// Whole years of the year length.
+  final int years;
+
+  /// Whole months of a twelfth of it.
+  final int months;
+
+  /// Whole days.
+  final int days;
+
+  /// Hours.
+  final int hours;
+
+  /// Minutes, rounded.
+  final int minutes;
+}
+
+/// What remained of a dasha's first period at birth.
+final class DashaBalance {
+  const DashaBalance({
+    required this.method,
+    required this.remaining,
+    required this.days,
+    required this.written,
+  });
+
+  /// How it was measured.
+  final Balance method;
+
+  /// The fraction still to run, 0 to 1.
+  final double remaining;
+
+  /// That fraction of the first lord's years, in days.
+  final double days;
+
+  /// The same in years, months, days, hours and minutes.
+  final WrittenBalance written;
+}
+
+/// A dasha of a founded chart: its periods, and for a nakshatra-seeded one
+/// its seed and balance at birth. A sign-based dasha has neither, and its
+/// periods name their signs.
+final class Dasha {
+  const Dasha({
+    required this.system,
+    required this.seed,
+    required this.firstLord,
+    required this.overflow,
+    required this.balance,
+    required this.moonSpan,
+    required this.depth,
+    required this.periods,
+  });
+
+  /// Which system: a [DashaSystem], or one a context registered, as
+  /// `DashaSystem.registered('ACME_SAPTAKA')`.
+  final KeyOf<DashaSystem> system;
+
+  /// The nakshatra the Moon stood in, which seeds it; null for a sign-based
+  /// dasha.
+  final Nakshatra? seed;
+
+  /// The lord it starts with.
+  final Graha firstLord;
+
+  /// Whether the seed lay outside a conditional system's nakshatras.
+  final bool overflow;
+
+  /// What remained of the first period at birth; null for a sign-based
+  /// dasha, whose first period runs whole from birth.
+  final DashaBalance? balance;
+
+  /// The Moon's stay in its nakshatra, when the balance read one.
+  final Interval? moonSpan;
+
+  /// How many levels the periods go down.
+  final int depth;
+
+  /// Every period of the birth cycle to [depth], depth first in time
+  /// order: a mahadasha, then its antardashas and theirs, then the next.
+  final List<DashaPeriod> periods;
+
+  /// The periods running at a Julian day (UTC), from the mahadasha down to
+  /// [depth]; empty before birth and past the end of the cycle.
+  ///
+  /// Depth first order means a period's children follow it, so one walk
+  /// that takes the next level's running period finds the chain.
+  List<DashaPeriod> at(double jd) {
+    final chain = <DashaPeriod>[];
+    for (final period in periods) {
+      if (period.level == chain.length + 1 &&
+          period.from <= jd &&
+          jd < period.to) {
+        chain.add(period);
+      }
+    }
+    return chain;
+  }
+}
+
 /// Where one body stands in a divisional chart.
 ///
 /// `sign == rashi` is the body keeping the sign it was already in, which
@@ -1494,6 +2204,1163 @@ final class PlacedInVarga {
   /// Where it stands.
   final VargaPlacement at;
 }
+
+/// A point in a drawing's unit square, y downwards.
+final class UnitPoint {
+  const UnitPoint(this.x, this.y);
+
+  /// From the left edge, 0 to 1.
+  final double x;
+
+  /// From the top edge, 0 to 1.
+  final double y;
+
+  factory UnitPoint._of(Map<String, Object?> raw) =>
+      UnitPoint((raw['x']! as num).toDouble(), (raw['y']! as num).toDouble());
+
+  Map<String, Object?> _json() => {'x': x, 'y': y};
+}
+
+/// One step of an outline, from wherever the previous step ended.
+sealed class Segment {
+  const Segment(this.to);
+
+  /// Where the step ends.
+  final UnitPoint to;
+
+  factory Segment._of(Map<String, Object?> raw) {
+    final to = UnitPoint._of(raw['to']! as Map<String, Object?>);
+    return switch (raw['kind']) {
+      'quad' => QuadSegment(
+        UnitPoint._of(raw['control']! as Map<String, Object?>),
+        to,
+      ),
+      'arc' => ArcSegment(
+        UnitPoint._of(raw['centre']! as Map<String, Object?>),
+        raw['clockwise']! as bool,
+        to,
+      ),
+      _ => LineSegment(to),
+    };
+  }
+
+  Map<String, Object?> _json() => switch (this) {
+    LineSegment() => {'kind': 'line', 'to': to._json()},
+    QuadSegment(:final control) => {
+      'kind': 'quad',
+      'control': control._json(),
+      'to': to._json(),
+    },
+    ArcSegment(:final centre, :final clockwise) => {
+      'kind': 'arc',
+      'centre': centre._json(),
+      'clockwise': clockwise,
+      'to': to._json(),
+    },
+  };
+}
+
+/// A straight line to a point.
+final class LineSegment extends Segment {
+  const LineSegment(super.to);
+}
+
+/// A quadratic curve to a point, pulled towards its control.
+final class QuadSegment extends Segment {
+  const QuadSegment(this.control, super.to);
+
+  /// The control point.
+  final UnitPoint control;
+}
+
+/// A circular arc about a centre to a point the same distance from it.
+final class ArcSegment extends Segment {
+  const ArcSegment(this.centre, this.clockwise, super.to);
+
+  /// The circle's centre.
+  final UnitPoint centre;
+
+  /// Which way the arc runs, as a reader sees it.
+  final bool clockwise;
+}
+
+/// A closed outline: a start and the steps back to it.
+final class Outline {
+  const Outline({required this.start, required this.segments});
+
+  /// Where the outline starts.
+  final UnitPoint start;
+
+  /// The steps around it.
+  final List<Segment> segments;
+
+  factory Outline._of(Map<String, Object?> raw) => Outline(
+    start: UnitPoint._of(raw['start']! as Map<String, Object?>),
+    segments: [
+      for (final step in raw['segments']! as List<Object?>)
+        Segment._of(step! as Map<String, Object?>),
+    ],
+  );
+  Map<String, Object?> _json() => {
+    'start': start._json(),
+    'segments': [for (final step in segments) step._json()],
+  };
+}
+
+/// Which way a layout's signs or houses run, as a reader sees it.
+enum LayoutDirection {
+  /// With the hands of a clock.
+  clockwise,
+
+  /// Against them.
+  anticlockwise,
+}
+
+/// What a grid cell always carries: a sign, or a house.
+sealed class CellHolds {
+  const CellHolds();
+
+  factory CellHolds._of(Map<String, Object?> raw) => switch (raw['kind']) {
+    'sign' => HoldsSign(Rashi.byKey(raw['value']! as String) ?? Rashi.unknown),
+    _ => HoldsHouse(raw['value']! as int),
+  };
+
+  Map<String, Object?> _json() => switch (this) {
+    HoldsSign(:final sign) => {'kind': 'sign', 'value': sign.key},
+    HoldsHouse(:final house) => {'kind': 'house', 'value': house},
+  };
+}
+
+/// The cell is always this sign; its house moves with the lagna.
+final class HoldsSign extends CellHolds {
+  const HoldsSign(this.sign);
+
+  /// The sign.
+  final Rashi sign;
+}
+
+/// The cell is always this house, 1 to 12; its sign moves with the lagna.
+final class HoldsHouse extends CellHolds {
+  const HoldsHouse(this.house);
+
+  /// The house.
+  final int house;
+}
+
+/// One region of a grid layout.
+final class LayoutCell {
+  const LayoutCell({
+    required this.outline,
+    required this.holds,
+    required this.label,
+    required this.bodies,
+  });
+
+  /// The region's outline, in the unit square.
+  final Outline outline;
+
+  /// The sign or house the cell always carries.
+  final CellHolds holds;
+
+  /// Where the sign or house number is drawn.
+  final UnitPoint label;
+
+  /// Where the cell's bodies are stacked about.
+  final UnitPoint bodies;
+
+  Map<String, Object?> _json() => {
+    'outline': outline._json(),
+    'holds': holds._json(),
+    'label': label._json(),
+    'bodies': bodies._json(),
+  };
+}
+
+/// What a ring of a radial layout counts its first house from.
+enum RingReference {
+  /// The lagna's sign.
+  lagna,
+
+  /// The Moon's sign.
+  moon,
+
+  /// The Sun's sign.
+  sun,
+
+  /// The chart's cusps, each house as wide as it is.
+  cusps,
+
+  /// Twelve signs of 30°, turned so the lagna's degree sits at the start.
+  zodiac,
+}
+
+/// One ring of a radial layout.
+final class LayoutRing {
+  const LayoutRing({
+    required this.inner,
+    required this.outer,
+    required this.countsFrom,
+  });
+
+  /// The inner radius, a fraction of the square's side; 0 makes wedges.
+  final double inner;
+
+  /// The outer radius, at most a half.
+  final double outer;
+
+  /// What the ring counts its first house from.
+  final RingReference countsFrom;
+
+  Map<String, Object?> _json() => {
+    'inner': inner,
+    'outer': outer,
+    'counts_from': countsFrom.name,
+  };
+}
+
+/// A layout's shape: twelve cells fixed in the row, or rings computed per
+/// chart.
+sealed class LayoutShape {
+  const LayoutShape(this.direction);
+
+  /// Which way the signs or houses run.
+  final LayoutDirection direction;
+
+  factory LayoutShape._of(Map<String, Object?> raw) {
+    final direction = LayoutDirection.values.byName(
+      raw['direction']! as String,
+    );
+    List<Map<String, Object?>> objects(String name) => [
+      for (final item in raw[name]! as List<Object?>)
+        item! as Map<String, Object?>,
+    ];
+    return switch (raw['kind']) {
+      'radial' => RadialShape(
+        rings: [
+          for (final ring in objects('rings'))
+            LayoutRing(
+              inner: (ring['inner']! as num).toDouble(),
+              outer: (ring['outer']! as num).toDouble(),
+              countsFrom: RingReference.values.byName(
+                ring['counts_from']! as String,
+              ),
+            ),
+        ],
+        startsAt: raw['starts_at']! as int,
+        direction: direction,
+      ),
+      _ => GridShape(
+        cells: [
+          for (final cell in objects('cells'))
+            LayoutCell(
+              outline: Outline._of(cell['outline']! as Map<String, Object?>),
+              holds: CellHolds._of(cell['holds']! as Map<String, Object?>),
+              label: UnitPoint._of(cell['label']! as Map<String, Object?>),
+              bodies: UnitPoint._of(cell['bodies']! as Map<String, Object?>),
+            ),
+        ],
+        frame: [for (final path in objects('frame')) Outline._of(path)],
+        direction: direction,
+      ),
+    };
+  }
+
+  Map<String, Object?> _json() => switch (this) {
+    GridShape(:final cells, :final frame) => {
+      'kind': 'grid',
+      'cells': [for (final cell in cells) cell._json()],
+      'frame': [for (final path in frame) path._json()],
+      'direction': direction.name,
+    },
+    RadialShape(:final rings, :final startsAt) => {
+      'kind': 'radial',
+      'rings': [for (final ring in rings) ring._json()],
+      'starts_at': startsAt,
+      'direction': direction.name,
+    },
+  };
+}
+
+/// Twelve cells fixed in the row.
+final class GridShape extends LayoutShape {
+  const GridShape({
+    required this.cells,
+    required this.frame,
+    required LayoutDirection direction,
+  }) : super(direction);
+
+  /// The twelve cells, in the order the row lists them.
+  final List<LayoutCell> cells;
+
+  /// Lines drawn that hold nothing: the border, a divider.
+  final List<Outline> frame;
+}
+
+/// Rings of sectors computed from the chart, innermost first.
+final class RadialShape extends LayoutShape {
+  const RadialShape({
+    required this.rings,
+    required this.startsAt,
+    required LayoutDirection direction,
+  }) : super(direction);
+
+  /// The rings, innermost first.
+  final List<LayoutRing> rings;
+
+  /// The clock hour house 1 starts at, 1 to 12.
+  final int startsAt;
+}
+
+/// One lord of a consumer's dasha system and its whole years.
+final class DashaLord {
+  const DashaLord(this.graha, this.years);
+
+  /// The graha.
+  final Graha graha;
+
+  /// Its whole years in the cycle.
+  final int years;
+
+  /// The lord as the JSON a definition crosses as.
+  Map<String, Object?> toJson() => {'graha': graha.key, 'years': years};
+}
+
+/// A nakshatra-seeded dasha system of your own, as `dashaSystems` takes it:
+/// its key, its lords in order and the reference nakshatra, every other
+/// field defaulting to Vimshottari's shape (`03-design/dasha-kernels.md`).
+///
+/// ```dart
+/// final ctx = teistro.context(dashaSystems: [
+///   DashaDefinition(
+///     key: 'ACME_SAPTAKA',
+///     lords: [for (final g in [Graha.sun, Graha.moon, Graha.mars]) DashaLord(g, 10)],
+///     reference: Nakshatra.krittika,
+///   ),
+/// ]);
+/// ctx.chart.found(/* … */ dashas: [DashaSystem.registered('ACME_SAPTAKA')]);
+/// ```
+final class DashaDefinition {
+  const DashaDefinition({
+    required this.key,
+    required this.lords,
+    required this.reference,
+    this.sources = const <String>[],
+    this.count,
+    this.span,
+    this.offset,
+    this.repeats,
+    this.yearLength,
+    this.depth,
+  });
+
+  /// Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the
+  /// catalogue has.
+  final String key;
+
+  /// The lords, in the order they run.
+  final List<DashaLord> lords;
+
+  /// The nakshatra that maps to the first lord.
+  final Nakshatra reference;
+
+  /// Where the table comes from.
+  final List<String> sources;
+
+  /// `FROM_REFERENCE` (the default) or `TO_REFERENCE`.
+  final String? count;
+
+  /// How many nakshatras each lord covers; one by default.
+  final int? span;
+
+  /// What is added after the division, before the modulo; none by default.
+  final int? offset;
+
+  /// Whether the lords run round the nakshatras again; true by default.
+  final bool? repeats;
+
+  /// The length of its year (`JULIAN_365_25` by default, `SAVANA_360`, …).
+  final String? yearLength;
+
+  /// How many levels of periods a reading carries, 1 to 6; three by default.
+  final int? depth;
+
+  /// The definition as the JSON a context's `dashaSystems` crosses as.
+  Map<String, Object?> toJson() => {
+    'key': key,
+    'lords': [for (final lord in lords) lord.toJson()],
+    'reference': reference.key,
+    if (sources.isNotEmpty) 'sources': sources,
+    if (count != null) 'count': count,
+    if (span != null) 'span': span,
+    if (offset != null) 'offset': offset,
+    if (repeats != null) 'repeats': repeats,
+    if (yearLength != null) 'year_length': yearLength,
+    if (depth != null) 'depth': depth,
+  };
+}
+
+/// A chart layout as a row: its key, what cites it, and its shape
+/// (`03-design/chart-geometry.md` §7f).
+final class LayoutRow {
+  const LayoutRow({
+    required this.key,
+    required this.sources,
+    required this.shape,
+  });
+
+  /// The key, in the key grammar: `[A-Z][A-Z0-9_]`, at most 48 characters.
+  final String key;
+
+  /// The sources the row comes from; at least one.
+  final List<String> sources;
+
+  /// Its cells or its rings.
+  final LayoutShape shape;
+
+  /// A row read from the JSON `ChartArea.layout` answers.
+  factory LayoutRow.fromJson(Map<String, Object?> raw) => LayoutRow(
+    key: raw['key']! as String,
+    sources: [
+      for (final source in raw['sources']! as List<Object?>) source! as String,
+    ],
+    shape: LayoutShape._of(raw['shape']! as Map<String, Object?>),
+  );
+
+  /// This row with what is named changed: a copy of a shipped row under a
+  /// key of its own is a layout of your own.
+  LayoutRow copyWith({
+    String? key,
+    List<String>? sources,
+    LayoutShape? shape,
+  }) => LayoutRow(
+    key: key ?? this.key,
+    sources: sources ?? this.sources,
+    shape: shape ?? this.shape,
+  );
+
+  /// The row as the JSON a context's `layouts` crosses as.
+  Map<String, Object?> toJson() => {
+    'key': key,
+    'sources': sources,
+    'shape': shape._json(),
+  };
+}
+
+/// One region of a drawn chart.
+final class DrawnCell {
+  const DrawnCell({
+    required this.outline,
+    required this.sign,
+    required this.house,
+    required this.lagna,
+    required this.ring,
+    required this.label,
+    required this.anchor,
+    required this.bodies,
+  });
+
+  /// The region's outline in the unit square.
+  final Outline outline;
+
+  /// The sign the cell shows; for a house between cusps, its cusp's sign.
+  final Rashi sign;
+
+  /// The house the cell shows, 1 to 12.
+  final int house;
+
+  /// Whether the lagna stands in this cell.
+  final bool lagna;
+
+  /// The ring, innermost 0; a grid's cells are all 0.
+  final int ring;
+
+  /// Where the sign or house number is drawn.
+  final UnitPoint label;
+
+  /// Where the cell's bodies are stacked about.
+  final UnitPoint anchor;
+
+  /// The bodies in the cell, as catalogue keys (`graha.SUN`).
+  final List<String> bodies;
+}
+
+/// A body drawn at its own degree on a wheel.
+final class DrawnMark {
+  const DrawnMark({
+    required this.body,
+    required this.ring,
+    required this.at,
+    required this.longitudeDeg,
+  });
+
+  /// The body, as a catalogue key.
+  final String body;
+
+  /// The ring it is drawn in.
+  final int ring;
+
+  /// Where it is drawn.
+  final UnitPoint at;
+
+  /// The longitude that put it there, degrees.
+  final double longitudeDeg;
+}
+
+/// A chart drawn in a layout (`03-design/chart-geometry.md`).
+/// How a drawing looks: every field optional, over the theme it extends
+/// (`03-design/render-svg.md`).
+final class ThemeStyle {
+  const ThemeStyle({
+    this.size,
+    this.background,
+    this.ink,
+    this.cell,
+    this.lagnaCell,
+    this.accent,
+    this.stroke,
+    this.fontFamily,
+    this.bodySize,
+    this.labelSize,
+    this.markSize,
+    this.advance,
+    this.lineHeight,
+    this.baselineShift,
+  });
+
+  /// The drawing's width and height, in SVG user units.
+  final double? size;
+
+  /// The page behind the chart, as `#rrggbb`.
+  final String? background;
+
+  /// Lines and text, as `#rrggbb`.
+  final String? ink;
+
+  /// A cell's fill, as `#rrggbb`.
+  final String? cell;
+
+  /// The fill of the cell the lagna stands in, as `#rrggbb`.
+  final String? lagnaCell;
+
+  /// The lagna's own label and mark, as `#rrggbb`.
+  final String? accent;
+
+  /// Line width, as a fraction of the size.
+  final double? stroke;
+
+  /// The font family every text asks for.
+  final String? fontFamily;
+
+  /// The largest a body's label is drawn, as a fraction of the size.
+  final double? bodySize;
+
+  /// A cell's label, as a fraction of the size.
+  final double? labelSize;
+
+  /// A body at its degree on a wheel, as a fraction of the size.
+  final double? markSize;
+
+  /// The width one character is estimated at, in ems.
+  final double? advance;
+
+  /// The distance between two lines of a stack, in ems.
+  final double? lineHeight;
+
+  /// How far below a line's centre its baseline sits, in ems.
+  final double? baselineShift;
+
+  // Only what is named: an absent field is the extended theme's.
+  Map<String, Object?> _json() => <String, Object?>{
+    'size': size,
+    'background': background,
+    'ink': ink,
+    'cell': cell,
+    'lagna_cell': lagnaCell,
+    'accent': accent,
+    'stroke': stroke,
+    'font_family': fontFamily,
+    'body_size': bodySize,
+    'label_size': labelSize,
+    'mark_size': markSize,
+    'advance': advance,
+    'line_height': lineHeight,
+    'baseline_shift': baselineShift,
+  }..removeWhere((_, value) => value == null);
+}
+
+/// The locale form a drawn body is written in.
+enum BodyForm {
+  /// The locale's abbreviation: `Su`, `सू`.
+  short('short'),
+
+  /// The symbol: `☉`.
+  glyph('glyph');
+
+  const BodyForm(this.key);
+
+  /// The key the theme record spells it with.
+  final String key;
+}
+
+/// What a drawn cell's label shows.
+enum CellLabel {
+  /// The sign's number, or on a wheel the house and the sign's glyph.
+  auto('auto'),
+
+  /// The sign's number, 1 for Aries.
+  signNumber('sign_number'),
+
+  /// The sign's abbreviation.
+  signShort('sign_short'),
+
+  /// The sign's symbol.
+  signGlyph('sign_glyph'),
+
+  /// The house's number.
+  house('house'),
+
+  /// Nothing.
+  nothing('nothing');
+
+  const CellLabel(this.key);
+
+  /// The key the theme record spells it with.
+  final String key;
+}
+
+/// What a drawing says: every field optional, over the theme it extends.
+final class ThemeContent {
+  const ThemeContent({
+    this.bodyForm,
+    this.cellLabel,
+    this.lagnaMark,
+    this.retrogradeMark,
+    this.degrees,
+  });
+
+  /// The locale form a body is written in.
+  final BodyForm? bodyForm;
+
+  /// What a cell's label shows.
+  final CellLabel? cellLabel;
+
+  /// Whether the lagna is written first in the cell it stands in.
+  final bool? lagnaMark;
+
+  /// What is written after a retrograde graha's name; `''` for nothing.
+  final String? retrogradeMark;
+
+  /// Whether a graha's degree follows its name, on the founded chart.
+  final bool? degrees;
+
+  // Only what is named: an absent field is the extended theme's.
+  Map<String, Object?> _json() => <String, Object?>{
+    'body_form': bodyForm?.key,
+    'cell_label': cellLabel?.key,
+    'lagna_mark': lagnaMark,
+    'retrograde_mark': retrogradeMark,
+    'degrees': degrees,
+  }..removeWhere((_, value) => value == null);
+}
+
+/// The theme a request writes its drawings as SVG in: a shipped one, or one
+/// naming only what it changes over a shipped one (`03-design/render-svg.md`).
+final class ChartTheme {
+  const ChartTheme._(this._base, this._style, this._content);
+
+  /// Dark ink on white, as a printed patrika.
+  static const light = ChartTheme._('light', ThemeStyle(), ThemeContent());
+
+  /// Light ink on a dark page.
+  static const dark = ChartTheme._('dark', ThemeStyle(), ThemeContent());
+
+  /// This theme with what [style] and [content] name changed.
+  ChartTheme copyWith({
+    ThemeStyle style = const ThemeStyle(),
+    ThemeContent content = const ThemeContent(),
+  }) => ChartTheme._(_base, style, content);
+
+  final String _base;
+  final ThemeStyle _style;
+  final ThemeContent _content;
+
+  String get _json => jsonEncode({
+    'extends': _base,
+    'style': _style._json(),
+    'content': _content._json(),
+  });
+}
+
+final class Drawing {
+  const Drawing({
+    required this.layout,
+    required this.varga,
+    required this.cells,
+    required this.frame,
+    required this.marks,
+    this.svg,
+  });
+
+  /// The drawing as SVG, in the request's theme and the context's locale;
+  /// null when the request gave no theme.
+  final String? svg;
+
+  /// The layout it is drawn in: a [ChartLayout], or one the context
+  /// registered.
+  final KeyOf<ChartLayout> layout;
+
+  /// Which chart: `Varga.d1` for the founded chart, or a divisional one.
+  final Varga varga;
+
+  /// The cells, in the layout's order.
+  final List<DrawnCell> cells;
+
+  /// The lines drawn that hold nothing.
+  final List<Outline> frame;
+
+  /// Each body at its own degree, on a wheel; empty for a grid.
+  final List<DrawnMark> marks;
+
+  factory Drawing._of(Map<String, Object?> raw, String? svg) {
+    final placed = raw['placed']! as Map<String, Object?>;
+    Map<String, Object?> object(Object? value) =>
+        value! as Map<String, Object?>;
+    return Drawing(
+      svg: svg,
+      layout:
+          ChartLayout.byKey(placed['layout']! as String) ??
+          ChartLayout.registered(placed['layout']! as String),
+      varga: Varga.byKey(raw['varga']! as String) ?? Varga.unknown,
+      cells: [
+        for (final cell in (placed['cells']! as List<Object?>).map(object))
+          DrawnCell(
+            outline: Outline._of(object(cell['outline'])),
+            sign: Rashi.byKey(cell['sign']! as String) ?? Rashi.unknown,
+            house: cell['house']! as int,
+            lagna: cell['lagna']! as bool,
+            ring: cell['ring']! as int,
+            label: UnitPoint._of(object(cell['label'])),
+            anchor: UnitPoint._of(object(cell['anchor'])),
+            bodies: [
+              for (final body in cell['bodies']! as List<Object?>)
+                body! as String,
+            ],
+          ),
+      ],
+      frame: [
+        for (final path in (placed['frame']! as List<Object?>).map(object))
+          Outline._of(path),
+      ],
+      marks: [
+        for (final mark in (placed['marks']! as List<Object?>).map(object))
+          DrawnMark(
+            body: mark['body']! as String,
+            ring: mark['ring']! as int,
+            at: UnitPoint._of(object(mark['at'])),
+            longitudeDeg: (mark['longitude_deg']! as num).toDouble(),
+          ),
+      ],
+    );
+  }
+}
+
+/// Each batch's Ashtakavargas, decoded once however many charts read them.
+final Expando<List<Ashtakavarga>> _ashtakavargas = Expando<List<Ashtakavarga>>(
+  'ashtakavargas',
+);
+
+List<Ashtakavarga> _ashtakavargasOf(Charts batch) =>
+    _ashtakavargas[batch] ??= _decodeAshtakavargas(batch);
+
+List<Ashtakavarga> _decodeAshtakavargas(Charts batch) {
+  final rows = batch.ashtakavarga;
+  final bins = batch.ashtakavargaBindus;
+  final sums = batch.sarvashtakavarga;
+  List<int> twelve(List<int> column, int from) =>
+      List<int>.unmodifiable(column.sublist(from, from + 12));
+  return List<Ashtakavarga>.generate(rows.length ~/ 7, (chart) {
+    final grahas = List<GrahaAshtakavarga>.generate(7, (g) {
+      final row = chart * 7 + g;
+      final each = Shodhana.byId(rows.shodhana[row]) == Shodhana.eachGraha;
+      return GrahaAshtakavarga(
+        graha: Graha.byId(rows.graha[row]),
+        bindus: twelve(bins.bindus, row * 12),
+        reduced: each ? twelve(bins.reduced, row * 12) : null,
+        rashiPinda: rows.rashiPinda[row],
+        grahaPinda: rows.grahaPinda[row],
+        yogaPinda: rows.yogaPinda[row],
+      );
+    }, growable: false);
+    return Ashtakavarga(
+      shodhana: Shodhana.byId(rows.shodhana[chart * 7]),
+      ekadhipatya: Ekadhipatya.byId(rows.ekadhipatya[chart * 7]),
+      grahas: grahas,
+      sarva: twelve(sums.sarva, chart * 12),
+      trikona: twelve(sums.trikona, chart * 12),
+      reduced: twelve(sums.reduced, chart * 12),
+    );
+  }, growable: false);
+}
+
+/// Each batch's Bhava balas, decoded once however many charts read them.
+final Expando<List<BhavaBala>> _bhavaBalas = Expando<List<BhavaBala>>(
+  'bhavaBalas',
+);
+
+List<BhavaBala> _bhavaBalasOf(Charts batch) =>
+    _bhavaBalas[batch] ??= _decodeBhavaBalas(batch);
+
+List<BhavaBala> _decodeBhavaBalas(Charts batch) {
+  final c = batch.bhavaBala;
+  return List<BhavaBala>.generate(
+    c.length ~/ 12,
+    (chart) => BhavaBala(
+      bhavas: List<BhavaStrength>.generate(12, (h) {
+        final row = chart * 12 + h;
+        return BhavaStrength(
+          bhava: h + 1,
+          lord: Graha.byId(c.lord[row]),
+          adhipati: c.adhipati[row],
+          dig: c.dig[row],
+          drishti: c.drishti[row],
+          special: c.special[row],
+          virupas: c.virupas[row],
+        );
+      }, growable: false),
+    ),
+    growable: false,
+  );
+}
+
+/// Each batch's Shadbalas, decoded once however many charts read them.
+final Expando<List<Shadbala>> _shadbalas = Expando<List<Shadbala>>('shadbalas');
+
+List<Shadbala> _shadbalasOf(Charts batch) =>
+    _shadbalas[batch] ??= _decodeShadbalas(batch);
+
+List<Shadbala> _decodeShadbalas(Charts batch) {
+  final c = batch.shadbala;
+  GrahaShadbala graha(int row) => GrahaShadbala(
+    graha: Graha.byId(c.graha[row]),
+    sthana: SthanaBala(
+      uchcha: c.uchcha[row],
+      saptavargaja: c.saptavargaja[row],
+      ojayugma: c.ojayugma[row],
+      kendradi: c.kendradi[row],
+      drekkana: c.drekkana[row],
+    ),
+    dig: c.dig[row],
+    kaala: KaalaBala(
+      nathonnatha: c.nathonnatha[row],
+      paksha: c.paksha[row],
+      tribhaga: c.tribhaga[row],
+      abda: c.abda[row],
+      masa: c.masa[row],
+      vara: c.vara[row],
+      hora: c.hora[row],
+      ayana: c.ayana[row],
+      yuddha: c.yuddha[row],
+    ),
+    cheshta: c.cheshta[row],
+    naisargika: c.naisargika[row],
+    drik: c.drik[row],
+    virupas: c.virupas[row],
+    rupas: c.rupas[row],
+    requiredRupas: c.requiredRupas[row],
+    strong: c.strong[row] == 1,
+    ishta: c.ishta[row],
+    kashta: c.kashta[row],
+    subhaRashmi: c.subhaRashmi[row],
+    ashubhaRashmi: c.ashubhaRashmi[row],
+  );
+  return List<Shadbala>.generate(
+    c.length ~/ 7,
+    (chart) => Shadbala(
+      grahas: List<GrahaShadbala>.generate(
+        7,
+        (g) => graha(chart * 7 + g),
+        growable: false,
+      ),
+    ),
+    growable: false,
+  );
+}
+
+/// Each batch's dasha phalas, decoded once however many charts read them.
+final Expando<List<DashaPhalaReading>> _dashaPhalas =
+    Expando<List<DashaPhalaReading>>('dashaPhalas');
+
+List<DashaPhalaReading> _dashaPhalasOf(Charts batch) =>
+    _dashaPhalas[batch] ??= _decodeDashaPhalas(batch);
+
+List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
+  final c = batch.dashaPhala;
+  final subhankas = [
+    c.subhankaD1,
+    c.subhankaD2,
+    c.subhankaD3,
+    c.subhankaD7,
+    c.subhankaD9,
+    c.subhankaD12,
+    c.subhankaD30,
+  ];
+  return List<DashaPhalaReading>.generate(
+    c.length ~/ 9,
+    (chart) => DashaPhalaReading(
+      grahas: List<GrahaDashaPhala>.generate(9, (g) {
+        final row = chart * 9 + g;
+        return GrahaDashaPhala(
+          graha: Graha.byId(c.graha[row]),
+          subhankas: List<double>.unmodifiable([
+            for (final column in subhankas) column[row],
+          ]),
+          subhanka: c.subhanka[row],
+          asubhanka: c.asubhanka[row],
+          nature: Nature.byId(c.nature[row]),
+          phase: DashaPhase.byId(c.phase[row]),
+          favourable: c.favourable[row] == 1,
+          unfavourable: c.unfavourable[row] == 1,
+        );
+      }, growable: false),
+    ),
+    growable: false,
+  );
+}
+
+/// Each batch's Vaiseshikamsas, decoded once however many charts read them.
+final Expando<List<VaiseshikamsaReading>> _vaiseshikamsas =
+    Expando<List<VaiseshikamsaReading>>('vaiseshikamsas');
+
+List<VaiseshikamsaReading> _vaiseshikamsasOf(Charts batch) =>
+    _vaiseshikamsas[batch] ??= _decodeVaiseshikamsas(batch);
+
+List<VaiseshikamsaReading> _decodeVaiseshikamsas(Charts batch) {
+  final c = batch.vaiseshikamsa;
+  VaiseshikamsaStanding standing(List<int> good, List<int> names, int row) =>
+      VaiseshikamsaStanding(
+        goodVargas: good[row],
+        name: good[row] >= 2 ? Vaiseshikamsa.byId(names[row]) : null,
+      );
+  return List<VaiseshikamsaReading>.generate(
+    c.length ~/ 7,
+    (chart) => VaiseshikamsaReading(
+      grahas: List<GrahaVaiseshikamsa>.generate(7, (g) {
+        final row = chart * 7 + g;
+        return GrahaVaiseshikamsa(
+          graha: Graha.byId(c.graha[row]),
+          shadvarga: standing(c.shadvargaGood, c.shadvargaName, row),
+          saptavarga: standing(c.saptavargaGood, c.saptavargaName, row),
+          dashavarga: standing(c.dashavargaGood, c.dashavargaName, row),
+          shodashavarga: standing(
+            c.shodashavargaGood,
+            c.shodashavargaName,
+            row,
+          ),
+          impaired: c.impaired[row] == 1,
+        );
+      }, growable: false),
+    ),
+    growable: false,
+  );
+}
+
+/// Each batch's Vimshopakas, decoded once however many charts read them.
+final Expando<List<Vimshopaka>> _vimshopakas = Expando<List<Vimshopaka>>(
+  'vimshopakas',
+);
+
+List<Vimshopaka> _vimshopakasOf(Charts batch) =>
+    _vimshopakas[batch] ??= _decodeVimshopakas(batch);
+
+List<Vimshopaka> _decodeVimshopakas(Charts batch) {
+  final rows = batch.vimshopaka;
+  return List<Vimshopaka>.generate(
+    rows.length ~/ 7,
+    (chart) => Vimshopaka(
+      scoring: VimshopakaScoring.byId(rows.scoring[chart * 7]),
+      grahas: List<GrahaVimshopaka>.generate(7, (g) {
+        final row = chart * 7 + g;
+        return GrahaVimshopaka(
+          graha: Graha.byId(rows.graha[row]),
+          shadvarga: rows.shadvarga[row],
+          saptavarga: rows.saptavarga[row],
+          dashavarga: rows.dashavarga[row],
+          shodashavarga: rows.shodashavarga[row],
+        );
+      }, growable: false),
+    ),
+    growable: false,
+  );
+}
+
+/// Each batch's dashas, decoded once however many charts read them.
+final Expando<List<List<Dasha>>> _dashas = Expando<List<List<Dasha>>>('dashas');
+
+List<List<Dasha>> _dashasOf(Charts batch) =>
+    _dashas[batch] ??= _decodeDashas(batch);
+
+/// Every chart's dashas: the periods are **ragged** by each dasha's
+/// `periodCount`, so a chart's begin where the one before it ends.
+List<List<Dasha>> _decodeDashas(Charts batch) {
+  final per = batch.dashaCount;
+  if (per == 0) return const <List<Dasha>>[];
+  var start = 0;
+  return List<List<Dasha>>.generate(
+    batch.dashas.length ~/ per,
+    (chart) => List<Dasha>.generate(per, (j) {
+      final row = chart * per + j;
+      final count = batch.dashas.periodCount[row];
+      final dasha = _dashaOf(batch, row, start, count);
+      start += count;
+      return dasha;
+    }),
+  );
+}
+
+/// The full key of each dasha system a batch's context registered, by its id.
+final Expando<Map<int, String>> _dashaNames = Expando<Map<int, String>>(
+  'dashaNames',
+);
+
+/// A batch, remembering the names of the dasha systems its context
+/// registered so a registered id reads as its key.
+Charts _named(Charts batch, Map<String, int> registered) {
+  if (registered.isNotEmpty) {
+    _dashaNames[batch] = {for (final e in registered.entries) e.value: e.key};
+  }
+  return batch;
+}
+
+/// A dasha row's system: the catalogue's member, or a registered one.
+KeyOf<DashaSystem> _dashaSystem(Charts batch, int id) {
+  final full = _dashaNames[batch]?[id];
+  return full == null
+      ? DashaSystem.byId(id)
+      : DashaSystem.registered(full.substring('dasha_system.'.length));
+}
+
+/// The dashas asked for, as the ids the boundary takes: a [DashaSystem], or a
+/// system this context registered (`03-design/dasha-kernels.md`).
+List<int> _dashaIds(
+  List<KeyOf<DashaSystem>> dashas,
+  Map<String, int> registered,
+) => [
+  for (final (index, system) in dashas.indexed)
+    switch (system) {
+      DashaSystem(:final id) => id,
+      _ =>
+        registered[system.fullKey] ??
+            (throw ArgumentError.value(
+              system.fullKey,
+              'dashas[$index]',
+              'not a dasha system this context registered',
+            )),
+    },
+];
+
+/// One dasha row and its periods, in this layer's shape. A period's path is
+/// its index below the nearest earlier period one level up.
+Dasha _dashaOf(Charts batch, int row, int start, int count) {
+  final d = batch.dashas;
+  final p = batch.dashaPeriods;
+  final seeded = d.seeded[row] != 0;
+  final signed = d.signed[row] != 0;
+  final path = <int>[];
+  final periods = List<DashaPeriod>.generate(count, (k) {
+    final i = start + k;
+    final level = p.level[i];
+    path
+      ..length = level - 1
+      ..add(p.index[i]);
+    return DashaPeriod(
+      path: path.join('/'),
+      level: level,
+      sign: signed ? Rashi.byId(p.sign[i]) : null,
+      lord: Graha.byId(p.lord[i]),
+      from: p.fromJd[i],
+      to: p.toJd[i],
+    );
+  }, growable: false);
+  final spanFrom = d.moonSpanFrom[row];
+  return Dasha(
+    system: _dashaSystem(batch, d.system[row]),
+    seed: seeded ? Nakshatra.byId(d.seed[row]) : null,
+    firstLord: Graha.byId(d.firstLord[row]),
+    overflow: d.overflow[row] != 0,
+    balance:
+        seeded
+            ? DashaBalance(
+              method: Balance.byId(d.balance[row]),
+              remaining: d.remaining[row],
+              days: d.balanceDays[row],
+              written: WrittenBalance(
+                years: d.balanceYears[row],
+                months: d.balanceMonths[row],
+                days: d.balanceDayCount[row],
+                hours: d.balanceHours[row],
+                minutes: d.balanceMinutes[row],
+              ),
+            )
+            : null,
+    moonSpan:
+        spanFrom.isNaN ? null : Interval(from: spanFrom, to: d.moonSpanTo[row]),
+    depth: d.depth[row],
+    periods: List<DashaPeriod>.unmodifiable(periods),
+  );
+}
+
+/// Each batch's drawings, parsed once however many charts read them.
+final Expando<List<List<Drawing>>> _drawings = Expando<List<List<Drawing>>>(
+  'drawings',
+);
+
+List<List<Drawing>> _drawingsOf(Charts batch) =>
+    _drawings[batch] ??= _parseDrawings(batch);
+
+List<List<Drawing>> _parseDrawings(Charts batch) {
+  if (batch.drawings.isEmpty) return const <List<Drawing>>[];
+  final written =
+      batch.svgs.isEmpty
+          ? const <Object?>[]
+          : jsonDecode(batch.svgs) as List<Object?>;
+  final charts = jsonDecode(batch.drawings) as List<Object?>;
+  return [
+    for (var chart = 0; chart < charts.length; chart += 1)
+      [
+        for (final (index, raw) in (charts[chart]! as List<Object?>).indexed)
+          Drawing._of(
+            raw! as Map<String, Object?>,
+            chart < written.length
+                ? (written[chart]! as List<Object?>)[index]! as String
+                : null,
+          ),
+      ],
+  ];
+}
+
+/// The drawings asked for, as the packed ids the boundary takes: `layout << 16
+/// | varga` each, so a caller names pairs and nothing else writes bits
+/// (`03-design/chart-geometry.md`).
+List<int> _drawingBits(
+  List<(KeyOf<ChartLayout>, Varga)> drawings,
+  Map<String, int> registered,
+) => [
+  for (final (index, (layout, varga)) in drawings.indexed)
+    ((switch (layout) {
+              ChartLayout(:final id) => id,
+              // A consumer's own, from the ids its context resolved when it
+              // was made (§7f).
+              _ =>
+                registered[layout.fullKey] ??
+                    (throw ArgumentError.value(
+                      layout.fullKey,
+                      'drawings[$index].layout',
+                      'not a layout this context registered',
+                    )),
+            }) <<
+            16) |
+        varga.id,
+];
 
 /// One divisional chart of one founded moment.
 final class VargaChart {
@@ -1669,6 +3536,22 @@ final class Chart {
                   apartDeg: st.warApartDeg[i],
                 )
                 : null,
+        sayanadi:
+            st.hasSayanadi[i] != 0
+                ? Sayanadi(
+                  avastha: AvasthaSayanadi.byId(st.sayanadi[i]),
+                  cheshtas: List.unmodifiable([
+                    for (final column in [
+                      st.cheshta1,
+                      st.cheshta2,
+                      st.cheshta3,
+                      st.cheshta4,
+                      st.cheshta5,
+                    ])
+                      AvasthaCheshta.byId(column[i]),
+                  ]),
+                )
+                : null,
         boundaries: EdgeDistance(
           signDeg: st.signDeg[i],
           nakshatraDeg: st.nakshatraDeg[i],
@@ -1762,6 +3645,60 @@ final class Chart {
         ),
       );
     });
+  }
+
+  /// The Ashtakavarga, when `ashtakavarga: true` asked for it.
+  Ashtakavarga? get ashtakavarga {
+    final all = _ashtakavargasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Bhava bala, when `bhavaBala: true` asked for it.
+  BhavaBala? get bhavaBala {
+    final all = _bhavaBalasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Shadbala, when `shadbala: true` asked for it.
+  Shadbala? get shadbala {
+    final all = _shadbalasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The dasha phala, when `dashaPhala: true` asked for it.
+  DashaPhalaReading? get dashaPhala {
+    final all = _dashaPhalasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Vaiseshikamsa, when `vaiseshikamsa: true` asked for it.
+  VaiseshikamsaReading? get vaiseshikamsa {
+    final all = _vaiseshikamsasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Vimshopaka, when `vimshopaka: true` asked for it.
+  Vimshopaka? get vimshopaka {
+    final all = _vimshopakasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The dashas asked for, in the order asked; empty unless `dashas` named
+  /// some (`03-design/dasha-kernels.md`).
+  List<Dasha> get dashas {
+    final all = _dashasOf(batch);
+    return index < all.length ? all[index] : const <Dasha>[];
+  }
+
+  /// The charts drawn in the layouts asked for, in the order asked; empty
+  /// unless `drawings` named some (`03-design/chart-geometry.md`).
+  ///
+  /// Each cell carries both the sign and the house it shows, and the bodies
+  /// standing in it; `marks` places each body at its own degree on a wheel
+  /// and is empty for a grid.
+  List<Drawing> get drawings {
+    final all = _drawingsOf(batch);
+    return index < all.length ? all[index] : const <Drawing>[];
   }
 
   /// The divisional charts asked for, in the order they were asked.

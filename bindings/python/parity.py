@@ -19,10 +19,14 @@ from typing import Any
 import json
 
 from teistro import (
+    DashaDefinition,
     Altitude,
     Body,
     Calendar,
+    ChartLayout,
     ChartKind,
+    DashaSystem,
+    LayoutRow,
     Latitude,
     Longitude,
     Observer,
@@ -238,8 +242,20 @@ def main() -> None:
     # Everything after this runs on the SDK's own default profile, which
     # is geocentric, so that the two centres are both exercised.
 
+    # A layout of the consumer's own, registered on the context the charts
+    # are drawn under: the South Indian row renamed, as every runner
+    # registers it (`03-design/chart-geometry.md` §7f).
+    with teistro.context(test_provider=True) as shipped:
+        kerala: LayoutRow = {**shipped.chart.layout("SOUTH_INDIAN"), "key": "ACME_KERALA"}
+    # A dasha system of the consumer's own, the same definition every runner
+    # registers (`03-design/dasha-kernels.md`).
+    parity_dasha: DashaDefinition = json.loads('{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}')
     with teistro.context(
-        profile="parashari-classical", locale="ne-Deva-NP", test_provider=True
+        profile="parashari-classical",
+        locale="ne-Deva-NP",
+        test_provider=True,
+        layouts=[kerala],
+        dasha_systems=[parity_dasha],
     ) as geo:
         put("geo-profile", geo.profile)
         put("geo-settings-hash", geo.settings_hash)
@@ -256,9 +272,23 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
+            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA, DashaSystem.KALACHAKRA, "dasha_system.ACME_PARITY"],
+            drawings=[
+                (ChartLayout.NORTH_INDIAN, Varga.D1),
+                (ChartLayout.SOUTH_INDIAN, Varga.D9),
+                (ChartLayout.WESTERN_WHEEL, Varga.D1),
+                ("chart_layout.ACME_KERALA", Varga.D9),
+            ],
+            theme="dark",
             aspects=True,
             points=True,
             houses=True,
+            ashtakavarga=True,
+            vimshopaka=True,
+            vaiseshikamsa=True,
+            dasha_phala=True,
+            shadbala=True,
+            bhava_bala=True,
             state=True,
         )
         put("chart-varga-count", charts.decoded.varga_count)
@@ -326,6 +356,13 @@ def main() -> None:
                 put(f"{key}-wakefulness", state.wakefulness.full_key)
                 put(f"{key}-deeptadi", state.deeptadi.full_key if state.deeptadi else "none")
                 put(
+                    f"{key}-sayanadi",
+                    f"{state.sayanadi.avastha.full_key} "
+                    + ",".join(c.full_key for c in state.sayanadi.cheshtas)
+                    if state.sayanadi
+                    else "none",
+                )
+                put(
                     f"{key}-holding",
                     ",".join(m.full_key for m in state.lajjitadi.holding) or "none",
                 )
@@ -361,6 +398,132 @@ def main() -> None:
                 put(f"chart-{i}-aspect-{k}-strength", one.strength.key)
                 put(f"chart-{i}-aspect-{k}-from-sign", one.from_edge.sign_deg)
                 put(f"chart-{i}-aspect-{k}-to-sign", one.to_edge.sign_deg)
+            for d, drawing in enumerate(chart.drawings):
+                key = f"chart-{i}-drawing-{d}"
+                put(key, drawing.layout_key)
+                put(f"{key}-varga", drawing.varga.full_key)
+                put(f"{key}-cells", len(drawing.cells))
+                put(f"{key}-frames", len(drawing.frame))
+                put(f"{key}-marks", len(drawing.marks))
+                put(f"{key}-svg", drawing.svg)
+                for c, drawn in enumerate(drawing.cells):
+                    where = f"{key}-cell-{c}"
+                    put(f"{where}-sign", drawn.sign.full_key)
+                    put(f"{where}-house", drawn.house)
+                    put(f"{where}-lagna", drawn.lagna)
+                    put(f"{where}-ring", drawn.ring)
+                    put(f"{where}-bodies", ",".join(drawn.bodies) or "none")
+                    put(f"{where}-label", f"{number(drawn.label.x)},{number(drawn.label.y)}")
+                    put(f"{where}-anchor", f"{number(drawn.anchor.x)},{number(drawn.anchor.y)}")
+                    put(f"{where}-start", f"{number(drawn.outline.start.x)},{number(drawn.outline.start.y)}")
+                    put(
+                        f"{where}-steps",
+                        ",".join(type(step).__name__.removesuffix("Segment").lower() for step in drawn.outline.segments),
+                    )
+                for m, mark in enumerate(drawing.marks):
+                    where = f"{key}-mark-{m}"
+                    put(where, mark.body)
+                    put(f"{where}-at", f"{number(mark.at.x)},{number(mark.at.y)}")
+                    put(f"{where}-lon", mark.longitude_deg)
+            put(f"chart-{i}-dasha-count", len(chart.dashas))
+            av = chart.ashtakavarga
+            assert av is not None
+            put(f"chart-{i}-ashtakavarga", f"{av.shodhana.key} {av.ekadhipatya.key}")
+            for g in av.grahas:
+                key = f"chart-{i}-ashtakavarga-{g.graha.full_key}"
+                put(key, ",".join(str(b) for b in g.bindus))
+                put(f"{key}-reduced", ",".join(str(b) for b in g.reduced) if g.reduced else None)
+                put(f"{key}-pindas", f"{g.rashi_pinda},{g.graha_pinda},{g.yoga_pinda}")
+            put(
+                f"chart-{i}-sarvashtakavarga",
+                ";".join(",".join(str(b) for b in row) for row in (av.sarva, av.trikona, av.reduced)),
+            )
+            sb = chart.shadbala
+            assert sb is not None
+            for strength in sb.grahas:
+                key = f"chart-{i}-shadbala-{strength.graha.full_key}"
+                st, ka = strength.sthana, strength.kaala
+                parts: list[float] = [st.uchcha, st.saptavargaja, st.ojayugma, st.kendradi, st.drekkana, strength.dig]
+                parts += [ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana, ka.yuddha]
+                parts += [strength.cheshta, strength.naisargika, strength.drik]
+                put(key, ",".join(number(value) for value in parts))
+                put(
+                    f"{key}-total",
+                    f"{number(strength.virupas)},{number(strength.rupas)},{number(strength.required_rupas)},{str(strength.strong).lower()},{number(strength.ishta)},{number(strength.kashta)},{number(strength.subha_rashmi)},{number(strength.ashubha_rashmi)}",
+                )
+            bb = chart.bhava_bala
+            assert bb is not None
+            for house in bb.bhavas:
+                values = (house.adhipati, house.dig, house.drishti, house.special, house.virupas)
+                put(
+                    f"chart-{i}-bhava-bala-{house.bhava}",
+                    f"{house.lord.full_key} " + ",".join(number(value) for value in values),
+                )
+            vk = chart.vaiseshikamsa
+            assert vk is not None
+            for named_graha in vk.grahas:
+                standings = (
+                    named_graha.shadvarga,
+                    named_graha.saptavarga,
+                    named_graha.dashavarga,
+                    named_graha.shodashavarga,
+                )
+                named = ",".join(
+                    f"{st.good_vargas}:{st.name.full_key if st.name is not None else 'null'}" for st in standings
+                )
+                put(
+                    f"chart-{i}-vaiseshikamsa-{named_graha.graha.full_key}",
+                    f"{named} {str(named_graha.impaired).lower()}",
+                )
+            dp = chart.dasha_phala
+            assert dp is not None
+            for phala in dp.grahas:
+                put(
+                    f"chart-{i}-dasha-phala-{phala.graha.full_key}",
+                    ",".join(number(value) for value in phala.subhankas)
+                    + f" {phala.nature.full_key} {phala.phase.key}"
+                    + f" {str(phala.favourable).lower()} {str(phala.unfavourable).lower()}",
+                )
+            vs = chart.vimshopaka
+            assert vs is not None
+            put(f"chart-{i}-vimshopaka", vs.scoring.key)
+            for scored in vs.grahas:
+                put(
+                    f"chart-{i}-vimshopaka-{scored.graha.full_key}",
+                    ",".join(
+                        number(score)
+                        for score in (scored.shadvarga, scored.saptavarga, scored.dashavarga, scored.shodashavarga)
+                    ),
+                )
+            for j, dasha in enumerate(chart.dashas):
+                key = f"chart-{i}-dasha-{j}"
+                balance = dasha.balance
+                put(key, dasha.system if isinstance(dasha.system, str) else dasha.system.full_key)
+                put(f"{key}-seed", dasha.seed.full_key if dasha.seed else None)
+                put(f"{key}-first-lord", dasha.first_lord.full_key)
+                put(f"{key}-overflow", dasha.overflow)
+                put(f"{key}-balance", balance.method.key if balance else None)
+                put(f"{key}-remaining", balance.remaining if balance else None)
+                put(f"{key}-balance-days", balance.days if balance else None)
+                written = balance.written if balance else None
+                put(
+                    f"{key}-balance-written",
+                    f"{written.years},{written.months},{written.days},{written.hours},{written.minutes}"
+                    if written
+                    else None,
+                )
+                put(f"{key}-moon-span-from", dasha.moon_span.from_jd if dasha.moon_span else None)
+                put(f"{key}-moon-span-to", dasha.moon_span.to_jd if dasha.moon_span else None)
+                put(f"{key}-depth", dasha.depth)
+                put(f"{key}-periods", len(dasha.periods))
+                for k, period in enumerate(dasha.periods):
+                    if period.level > 2:
+                        continue
+                    sign = f" {period.sign.full_key}" if period.sign else ""
+                    put(f"{key}-period-{k}", f"{period.path}{sign} {period.lord.full_key}")
+                    put(f"{key}-period-{k}-from", period.span.from_jd)
+                    put(f"{key}-period-{k}-to", period.span.to_jd)
+                put(f"{key}-at", ",".join(period.path for period in dasha.at(chart.instant + 5000)))
             for v, varga in enumerate(chart.vargas):
                 put(f"chart-{i}-varga-{v}", varga.varga.full_key)
                 put(f"chart-{i}-varga-{v}-lagna-rashi", varga.lagna.rashi.full_key)
@@ -551,6 +714,7 @@ def main() -> None:
         ("frame.canonical", ctx.frame.canonical),
         ("frame.pack", ctx.frame.pack),
         ("frame.unpack", ctx.frame.unpack),
+        ("chart.layout", ctx.chart.layout),
         ("chart.found", ctx.chart.found),
         ("chart.found_many", ctx.chart.found_many),
         ("almanac.of", ctx.almanac.of),

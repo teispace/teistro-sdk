@@ -221,6 +221,7 @@ fn string_form(text: &str) -> String {
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
 )]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Version {
     /// Major.
     pub major: u16,
@@ -318,8 +319,15 @@ impl<'de> serde::Deserialize<'de> for Hash {
     }
 }
 
+hand_schema!(Hash, "Hash", {
+    "type": "string",
+    "description": "A SHA-256, as sixty-four hex digits.",
+    "pattern": "^[0-9a-fA-F]{64}$",
+});
+
 /// What the provider was.
 #[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ProviderStamp {
     /// The provider's name.
     pub name: String,
@@ -339,6 +347,7 @@ pub struct ProviderStamp {
 
 /// A pack that took part.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PackStamp {
     /// The pack id.
     pub id: String,
@@ -350,6 +359,7 @@ pub struct PackStamp {
 
 /// What the time layer applied.
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TimeStamp {
     /// The Delta T model's key.
     pub delta_t_model: String,
@@ -373,6 +383,7 @@ pub struct TimeStamp {
 /// Bikram Sambat table allocates nothing, and the type still carries
 /// whatever another calendar wants to say.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "lowercase")]
 pub enum CalendarResolution {
     /// A mathematical definition; exact by construction.
@@ -402,6 +413,7 @@ pub enum CalendarResolution {
 
 /// A month and a day inside a year, for a divergence report.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MonthDay {
     /// The month, 1-based.
     pub month: u8,
@@ -417,6 +429,7 @@ impl fmt::Display for MonthDay {
 
 /// A classical model answered rather than the modern one.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Deviation {
     /// The model (`SURYA_SIDDHANTA`).
     pub model: String,
@@ -426,6 +439,7 @@ pub struct Deviation {
 
 /// A convention the SDK had to choose to terminate.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Convention {
     /// The knob.
     pub knob: String,
@@ -437,6 +451,7 @@ pub struct Convention {
 
 /// Whether every row that took part is verified (ADR-0018).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum Confidence {
     /// Every table row used is verified.
@@ -448,6 +463,7 @@ pub enum Confidence {
 
 /// A fallback that was used.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Fallback {
     /// What fell back.
     pub what: String,
@@ -457,6 +473,7 @@ pub struct Fallback {
 
 /// A warning: a code, and a message key with slots for localisation.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Warning {
     /// The stable code (`DEPRECATED_KEY`).
     pub code: String,
@@ -468,6 +485,7 @@ pub struct Warning {
 
 /// Everything that reproduces a result.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Provenance {
     /// The SDK's version.
     pub sdk_version: Version,
@@ -568,6 +586,7 @@ impl Provenance {
 
 /// A value with its provenance.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Envelope<T> {
     /// The value.
     pub value: T,
@@ -683,12 +702,14 @@ mod tests {
     #[test]
     fn canonical_json_sorts_every_object_whatever_the_map_order() {
         #[derive(serde::Serialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         struct Unsorted {
             zeta: u8,
             alpha: Inner,
             mid: Vec<Inner>,
         }
         #[derive(serde::Serialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         struct Inner {
             second: u8,
             first: u8,

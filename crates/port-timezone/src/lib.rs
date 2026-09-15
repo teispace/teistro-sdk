@@ -18,6 +18,7 @@ use teistro_core::time::UtcOffset;
 
 /// The offset in force at an instant, with what a replay stamps.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct OffsetInfo {
     /// The offset.
     pub offset: UtcOffset,
@@ -32,6 +33,7 @@ pub struct OffsetInfo {
 
 /// The offsets a civil time could take in a zone.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum LocalCandidates {
     /// One offset applies.

@@ -242,11 +242,13 @@ pub(crate) fn callable_section(rows: Option<&Vec<Row<'_>>>) -> String {
     let inputs = outputs(|sized| matches!(sized, Sizing::Inputs(_)));
     let asked = outputs(|sized| matches!(sized, Sizing::Asked { .. }));
     let totals = outputs(|sized| matches!(sized, Sizing::Total { .. }));
+    let called = outputs(|sized| matches!(sized, Sizing::Called { .. }));
     let _ = writeln!(
         out,
-        "{} carry an array, which crosses as a JSON array of whatever its element crosses as. The engine's description says how long each output is, and the marshaller sizes it from that and nothing else: {} are as long as the inputs they answer, {} are as long as the caller asks — how many eclipses to find, which is an argument — and cut to the count the engine gives, and {} are as long as the engine says there are, which the marshaller learns by asking and asks again when there are more than fitted. No caller passes a capacity for an answer whose length is already decided.\n",
+        "{} carry an array, which crosses as a JSON array of whatever its element crosses as. The engine's description says how long each output is, and the marshaller sizes it from that and nothing else: {} are as long as the inputs they answer or a field of the request says, {} are as long as another function answers — the house cusps, `tm_house_cusp_count()` of the requested system, asked before the call — {} are as long as the caller asks — how many eclipses to find, which is an argument — and cut to the count the engine gives, and {} are as long as the engine says there are, which the marshaller learns by asking and asks again when there are more than fitted. No caller passes a capacity for an answer whose length is already decided.\n",
         spelled(arrays),
         spelled(inputs),
+        spelled(called),
         spelled(asked),
         spelled(totals),
     );
@@ -331,8 +333,9 @@ fn unsized_section(rows: &[Row<'_>]) -> String {
                 .map(|param| {
                     let why = match &param.extent {
                         Some(Extent::Unstated { why }) => why.clone(),
-                        Some(Extent::Length { of }) => format!("as long as `{of}`, a field the marshaller would have to read before it could allocate"),
-                        Some(Extent::Product { of }) => format!("the product of `{}`, one of them a field the marshaller would have to read first", of.join("` × `")),
+                        Some(Extent::Length { of }) => format!("as long as `{of}`, which the marshaller cannot read before the call"),
+                        Some(Extent::Product { of }) => format!("the product of `{}`, which the marshaller cannot all read before the call", of.join("` × `")),
+                        Some(Extent::Call { function, of, .. }) => format!("what `{function}({})` answers, which the marshaller cannot call before the call", of.join(", ")),
                         _ => "no extent the marshaller can read".to_string(),
                     };
                     (row.name(), param.name.as_str(), why)

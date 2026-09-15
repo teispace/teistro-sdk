@@ -9,10 +9,15 @@ use crate::catalogue::{
 };
 
 use super::knobs::{
-    AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents, NakshatraScheme, Node,
+    AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
+    BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
+    DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta,
+    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -25,6 +30,7 @@ use crate::quantity::Depth;
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
 )]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub struct ProfileId(String);
 
@@ -149,6 +155,23 @@ pub fn root() -> Settings {
                 .collect(),
             depth: depth_all(3),
             seed_overflow: SeedOverflow::WrapToStart,
+            // The corpus's readings, measured on every recorded answer
+            // (`03-design/dasha-measured.md`); the others are knob values
+            // because neither reading has a rank-1 text (crux C48).
+            birth_period: BirthPeriod::Compressed,
+            after_cycle: AfterCycle::End,
+            // The recording engine's Kalachakra, measured on every recorded
+            // answer (`03-design/kalachakra-measured.md`); the sources read
+            // give the other values (cruxes C54 to C56).
+            kalachakra_membership: KalachakraMembership::Listed,
+            kalachakra_balance: KalachakraBalance::FirstSign,
+            kalachakra_after_ninth: KalachakraAfterNinth::Reverse,
+            // BPHS ch. 47 vv. 5 and 6, the "Shant" sign set against the
+            // inimical ones (crux C79).
+            shanta_sign: ShantaSign::Friendly,
+            // BPHS ch. 46 vv. 158 to 166 and 179 to 184 (cruxes C51, C53).
+            dual_lord: DualLord::Bphs,
+            rashi_start: RashiStart::Stronger,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,
@@ -160,11 +183,12 @@ pub fn root() -> Settings {
         },
         state: State {
             combustion_orbs: String::from("BPHS"),
+            // BPHS ch. 45 vv. 30 to 37: the ghatis of birth, and ch. 3's order
+            // of the nine grahas for the two v. 30 does not number.
+            sayanadi_ghatis: SayanadiGhatis::Elapsed,
+            sayanadi_nodes: SayanadiNodes::NineGrahaOrder,
         },
-        strength: Strength {
-            bala_scheme: BalaScheme::Parashara,
-            ekadhipatya: Ekadhipatya::Classical,
-        },
+        strength: strength(),
         vargas: Vargas {
             unattested_dn: UnattestedDn::Cyclic,
         },
@@ -185,6 +209,41 @@ pub fn root() -> Settings {
                 score_decimals: 3,
             },
         },
+    }
+}
+
+/// The strength measures' defaults: BPHS wherever a rank-1 text decides.
+fn strength() -> Strength {
+    Strength {
+        bala_scheme: BalaScheme::Parashara,
+        // BPHS chs. 67 to 69, a rank-1 text, which the conformance
+        // corpus's engine reads otherwise (`03-design/ashtakavarga-measured.md`).
+        ekadhipatya: Ekadhipatya::Bphs,
+        shodhana: Shodhana::EachGraha,
+        vimshopaka: Vimshopaka::Bphs,
+        // BPHS ch. 27 wherever it decides (`03-design/shadbala-measured.md`).
+        saptavargaja: Saptavargaja::Compound,
+        nathonnatha: Nathonnatha::Midnight,
+        pre_dawn_night: PreDawnNight::PreviousEvening,
+        sun_ayana: SunAyana::Doubled,
+        luminary_cheshta: LuminaryCheshta::AyanaAndPaksha,
+        kranti: Kranti::True,
+        kaala_lords: KaalaLords::Ahargana,
+        dig: DigKendras::Angles,
+        drik: Drik::QuarterWithJupiterMercury,
+        naisargika: Naisargika::Exact,
+        required_rupas: RequiredRupas::Bphs,
+        drekkana: Drekkana::MaleFemaleNeuter,
+        benefics: Benefics::Conditional,
+        // The only mean elements a source gives (crux C70).
+        cheshta: Cheshta::Sripati,
+        yuddha: Yuddha::Sripati,
+        // BPHS ch. 28 vv. 2 to 6.
+        ishta_kashta: IshtaKashta::Rays,
+        // BPHS ch. 27 vv. 26 to 31 as translated (`03-design/bhava-bala-measured.md`).
+        bhava_dig: BhavaDig::Bphs,
+        bhava_drishti: BhavaDrishti::QuarterOfDig,
+        bhava_special_rules: BhavaSpecialRules::Bphs,
     }
 }
 
@@ -352,12 +411,49 @@ fn conformance_baseline() -> Profile {
     // local civil midnight, inside a section every other field of which
     // is bounded by sunrise (entry 18).
     patch.panchanga.moon_events = Some(MoonEvents::CivilDay);
+    // The engine's Ashtakavarga reductions and pindas (cruxes C59, C60).
+    patch.strength.ekadhipatya = Some(Ekadhipatya::EmptyToZero);
+    patch.strength.shodhana = Some(Shodhana::Sarva);
+    patch.strength.vimshopaka = Some(Vimshopaka::SaptavargajaVirupas);
+    // The engine's Shadbala, component by component (cruxes C64 to C71).
+    patch.strength.saptavargaja = Some(Saptavargaja::Natural);
+    patch.strength.nathonnatha = Some(Nathonnatha::Arc);
+    patch.strength.pre_dawn_night = Some(PreDawnNight::SameEvening);
+    patch.strength.sun_ayana = Some(SunAyana::NotInKaala);
+    patch.strength.luminary_cheshta = Some(LuminaryCheshta::AyanaAndElongation);
+    patch.strength.kranti = Some(Kranti::Ecliptic);
+    patch.strength.kaala_lords = Some(KaalaLords::Sankranti);
+    patch.strength.dig = Some(DigKendras::LagnaProjection);
+    patch.strength.drik = Some(Drik::Full);
+    patch.strength.naisargika = Some(Naisargika::Hundredths);
+    patch.strength.required_rupas = Some(RequiredRupas::Sripati);
+    patch.strength.drekkana = Some(Drekkana::MaleFemaleNeuter);
+    patch.strength.benefics = Some(Benefics::Fixed);
+    patch.strength.cheshta = Some(Cheshta::RecordingEngine);
+    patch.strength.yuddha = Some(Yuddha::None);
+    patch.strength.ishta_kashta = Some(IshtaKashta::ShadbalaCheshta);
+    // The engine's Bhava bala (cruxes C73 to C75).
+    patch.strength.bhava_dig = Some(BhavaDig::WholeSign);
+    patch.strength.bhava_drishti = Some(BhavaDrishti::QuarterOfDig);
+    patch.strength.bhava_special_rules = Some(BhavaSpecialRules::None);
+    // The engine's rashi dashas (cruxes C51, C53).
+    patch.dasha.dual_lord = Some(DualLord::Kendra);
+    patch.dasha.rashi_start = Some(RashiStart::Lagna);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
         // applies (entry 16 of the deliberate-difference registry).
         // 3: the Moon's rise and set became the civil day's (entry 18).
-        version: 3,
+        // 4: the Ashtakavarga became the engine's (cruxes C59, C60).
+        // 5: the Vimshopaka became the engine's (crux C63).
+        // 6: the Shadbala became the engine's (cruxes C64 to C71).
+        // 7: the Shadbala's four further forks became the engine's (C69, C70,
+        // C72).
+        // 8: the Bhava bala became the engine's (cruxes C73 to C75).
+        // 9: the Ishta and Kashta phalas became the engine's (crux C76).
+        // 10: the rashi dashas' dual lord and start became the engine's
+        // (cruxes C51, C53).
+        version: 10,
         base: None,
         patch,
         sources: vec![
@@ -373,6 +469,34 @@ fn conformance_baseline() -> Profile {
                 Source::new(
                     "baseline-engine",
                     "measured: the recorded ayanamsha carries the nutation, 18.46\" against 0.0086\"",
+                ),
+            ),
+            Citation::new(
+                "strength.shodhana",
+                Source::new(
+                    "baseline-engine",
+                    "measured: the recorded pindas are the reduced sum's and the raw bindus', 77 of 77",
+                ),
+            ),
+            Citation::new(
+                "strength.saptavargaja",
+                Source::new(
+                    "baseline-engine",
+                    "measured: every recorded Shadbala component reproduces under the engine's reading, 497 of 497 cells each (docs/03-design/shadbala-measured.md)",
+                ),
+            ),
+            Citation::new(
+                "strength.vimshopaka",
+                Source::new(
+                    "baseline-engine",
+                    "measured: the recorded scores are the Saptavargaja virupas over 45 by natural friendship, 93 of 93",
+                ),
+            ),
+            Citation::new(
+                "strength.ekadhipatya",
+                Source::new(
+                    "baseline-engine",
+                    "measured: the recorded reductions zero an empty co-ruled sign, 77 of 77",
                 ),
             ),
             Citation::new(

@@ -45,6 +45,13 @@
       "ty": "u32",
       "value": 1,
       "source": "crates/ffi/src/lib.rs"
+    },
+    {
+      "name": "TS_ERROR_OWNED",
+      "doc": "A `TsError` flag: the record owns its strings, because the call that\nwrote it had no context to lend them from, and `ts_error_free`\nreleases them.",
+      "ty": "u32",
+      "value": 1,
+      "source": "crates/ffi/src/lib.rs"
     }
   ],
   "enums": [
@@ -362,7 +369,7 @@
         {
           "name": "AvasthaSayanadi",
           "value": 54,
-          "doc": "The twelve Sayanadi states.",
+          "doc": "The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.",
           "key": "avastha_sayanadi"
         },
         {
@@ -406,6 +413,24 @@
           "value": 61,
           "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).",
           "key": "muhurta_yoga"
+        },
+        {
+          "name": "ChartLayout",
+          "value": 62,
+          "doc": "The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.",
+          "key": "chart_layout"
+        },
+        {
+          "name": "Vaiseshikamsa",
+          "value": 63,
+          "doc": "The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.",
+          "key": "vaiseshikamsa"
+        },
+        {
+          "name": "AvasthaCheshta",
+          "value": 64,
+          "doc": "The three sub-states of a Sayanadi state, a remainder of three.",
+          "key": "avastha_cheshta"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4537,7 +4562,7 @@
     },
     {
       "name": "AvasthaSayanadi",
-      "doc": "The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.",
+      "doc": "The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.",
       "repr": "u16",
       "kind": "avastha_sayanadi",
       "values": [
@@ -5634,6 +5659,267 @@
       "source": "catalogue/catalogue.json"
     },
     {
+      "name": "ChartLayout",
+      "doc": "The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.",
+      "repr": "u16",
+      "kind": "chart_layout",
+      "values": [
+        {
+          "name": "NorthIndian",
+          "value": 0,
+          "doc": "The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise",
+          "key": "NORTH_INDIAN"
+        },
+        {
+          "name": "SouthIndian",
+          "value": 1,
+          "doc": "The South Indian chart: signs fixed, Pisces top-left, running clockwise",
+          "key": "SOUTH_INDIAN"
+        },
+        {
+          "name": "EastIndian",
+          "value": 2,
+          "doc": "The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise",
+          "key": "EAST_INDIAN"
+        },
+        {
+          "name": "NepaliLotus",
+          "value": 3,
+          "doc": "The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals",
+          "key": "NEPALI_LOTUS"
+        },
+        {
+          "name": "SudarshanChakra",
+          "value": 4,
+          "doc": "The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun",
+          "key": "SUDARSHAN_CHAKRA"
+        },
+        {
+          "name": "WesternWheel",
+          "value": 5,
+          "doc": "The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock",
+          "key": "WESTERN_WHEEL"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Vaiseshikamsa",
+      "doc": "The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.",
+      "repr": "u16",
+      "kind": "vaiseshikamsa",
+      "values": [
+        {
+          "name": "Kimshuka",
+          "value": 0,
+          "doc": "Kimshuka",
+          "key": "KIMSHUKA"
+        },
+        {
+          "name": "Vyanjana",
+          "value": 1,
+          "doc": "Vyanjana",
+          "key": "VYANJANA"
+        },
+        {
+          "name": "Chamara",
+          "value": 2,
+          "doc": "Chamara",
+          "key": "CHAMARA"
+        },
+        {
+          "name": "Chatra",
+          "value": 3,
+          "doc": "Chatra",
+          "key": "CHATRA"
+        },
+        {
+          "name": "Kundala",
+          "value": 4,
+          "doc": "Kundala",
+          "key": "KUNDALA"
+        },
+        {
+          "name": "Mukuta",
+          "value": 5,
+          "doc": "Mukuta",
+          "key": "MUKUTA"
+        },
+        {
+          "name": "Parijata",
+          "value": 6,
+          "doc": "Parijata",
+          "key": "PARIJATA"
+        },
+        {
+          "name": "Uttama",
+          "value": 7,
+          "doc": "Uttama",
+          "key": "UTTAMA"
+        },
+        {
+          "name": "Gopura",
+          "value": 8,
+          "doc": "Gopura",
+          "key": "GOPURA"
+        },
+        {
+          "name": "Simhasana",
+          "value": 9,
+          "doc": "Simhasana",
+          "key": "SIMHASANA"
+        },
+        {
+          "name": "Paravata",
+          "value": 10,
+          "doc": "Paravata",
+          "key": "PARAVATA"
+        },
+        {
+          "name": "Devaloka",
+          "value": 11,
+          "doc": "Devaloka",
+          "key": "DEVALOKA"
+        },
+        {
+          "name": "Brahmaloka",
+          "value": 12,
+          "doc": "Brahmaloka",
+          "key": "BRAHMALOKA"
+        },
+        {
+          "name": "Shakravahana",
+          "value": 13,
+          "doc": "Shakravahana",
+          "key": "SHAKRAVAHANA"
+        },
+        {
+          "name": "Shridhama",
+          "value": 14,
+          "doc": "Shridhama",
+          "key": "SHRIDHAMA"
+        },
+        {
+          "name": "Bhedaka",
+          "value": 15,
+          "doc": "Bhedaka",
+          "key": "BHEDAKA"
+        },
+        {
+          "name": "Kusuma",
+          "value": 16,
+          "doc": "Kusuma",
+          "key": "KUSUMA"
+        },
+        {
+          "name": "Nagapushpa",
+          "value": 17,
+          "doc": "Nagapushpa",
+          "key": "NAGAPUSHPA"
+        },
+        {
+          "name": "Kanduka",
+          "value": 18,
+          "doc": "Kanduka",
+          "key": "KANDUKA"
+        },
+        {
+          "name": "Kerala",
+          "value": 19,
+          "doc": "Kerala",
+          "key": "KERALA"
+        },
+        {
+          "name": "Kalpavriksha",
+          "value": 20,
+          "doc": "Kalpavriksha",
+          "key": "KALPAVRIKSHA"
+        },
+        {
+          "name": "Chandanavana",
+          "value": 21,
+          "doc": "Chandanavana",
+          "key": "CHANDANAVANA"
+        },
+        {
+          "name": "Purnachandra",
+          "value": 22,
+          "doc": "Purnachandra",
+          "key": "PURNACHANDRA"
+        },
+        {
+          "name": "Uchchaishrava",
+          "value": 23,
+          "doc": "Uchchaishrava",
+          "key": "UCHCHAISHRAVA"
+        },
+        {
+          "name": "Dhanvantari",
+          "value": 24,
+          "doc": "Dhanvantari",
+          "key": "DHANVANTARI"
+        },
+        {
+          "name": "Suryakanta",
+          "value": 25,
+          "doc": "Suryakanta",
+          "key": "SURYAKANTA"
+        },
+        {
+          "name": "Vidruma",
+          "value": 26,
+          "doc": "Vidruma",
+          "key": "VIDRUMA"
+        },
+        {
+          "name": "Chakrasimhasana",
+          "value": 27,
+          "doc": "Chakrasimhasana",
+          "key": "CHAKRASIMHASANA"
+        },
+        {
+          "name": "Goloka",
+          "value": 28,
+          "doc": "Goloka",
+          "key": "GOLOKA"
+        },
+        {
+          "name": "Shrivallabha",
+          "value": 29,
+          "doc": "Shrivallabha",
+          "key": "SHRIVALLABHA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "AvasthaCheshta",
+      "doc": "The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.",
+      "repr": "u16",
+      "kind": "avastha_cheshta",
+      "values": [
+        {
+          "name": "Drishti",
+          "value": 0,
+          "doc": "Drishti, a remainder of one: the state's effects middling",
+          "key": "DRISHTI"
+        },
+        {
+          "name": "Cheshta",
+          "value": 1,
+          "doc": "Cheshta, a remainder of two: its effects in full",
+          "key": "CHESHTA"
+        },
+        {
+          "name": "Vicheshta",
+          "value": 2,
+          "doc": "Vicheshta, a remainder of nothing: its effects slight",
+          "key": "VICHESHTA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
       "name": "Status",
       "doc": "The status of a call, with the code it has at the C boundary.",
       "repr": "i32",
@@ -6092,6 +6378,101 @@
           "name": "Full",
           "value": 4,
           "doc": "A full aspect: the seventh, and a special graha's own two houses."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsBalance",
+      "doc": "How a dasha's balance at birth was measured.\n\nThe settings' own `Balance`, which is a knob and not a catalogue member,\nso it crosses as this boundary's own enum, as `TsStrength` does.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Spatial",
+          "value": 0,
+          "doc": "By the elapsed part of the Moon's window of nakshatras."
+        },
+        {
+          "name": "Temporal",
+          "value": 1,
+          "doc": "By the elapsed part of the Moon's stay in its nakshatra."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsShodhana",
+      "doc": "Where an Ashtakavarga's reductions and pindas were made: the settings'\nown `Shodhana`, which is a knob and not a catalogue member.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "EachGraha",
+          "value": 0,
+          "doc": "In each graha's own Ashtakavarga (BPHS chs. 67 to 69)."
+        },
+        {
+          "name": "Sarva",
+          "value": 1,
+          "doc": "On the sum of the seven, as the conformance corpus's engine makes them."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsEkadhipatya",
+      "doc": "How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside\nan occupied one: the settings' own `Ekadhipatya`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Bphs",
+          "value": 0,
+          "doc": "BPHS ch. 68: an empty sign keeps a difference."
+        },
+        {
+          "name": "EmptyToZero",
+          "value": 1,
+          "doc": "The empty sign always goes to zero."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsVimshopakaScoring",
+      "doc": "How a Vimshopaka scored a graha in a varga: the settings' own\n`Vimshopaka`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Bphs",
+          "value": 0,
+          "doc": "BPHS ch. 7: 20 in exaltation or the own sign, else by the compound\nrelationship with the sign's lord."
+        },
+        {
+          "name": "SaptavargajaVirupas",
+          "value": 1,
+          "doc": "The conformance corpus's engine: the Saptavargaja virupas over 45 by\nnatural friendship, rounded to hundredths."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsDashaPhase",
+      "doc": "Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Commencement",
+          "value": 0,
+          "doc": "At its commencement."
+        },
+        {
+          "name": "Middle",
+          "value": 1,
+          "doc": "In its middle."
+        },
+        {
+          "name": "End",
+          "value": 2,
+          "doc": "At its end."
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -8438,6 +8819,34 @@
           }
         },
         {
+          "name": "layouts_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Chart layouts of the consumer's own, to draw in beside the shipped\nones, as a JSON array of layout rows: each the row `ts_chart_layout_row`\nanswers, with a key of its own. Every row is checked by the rules a\nshipped one passes and refused by its place in the array and its own\nfield, as `options.layouts_json`, the row's index, then the field's\npath; a key the SDK ships is\nrefused, so a row adds a layout and never replaces one. Null for none\n(`03-design/chart-geometry.md` §7f).",
+          "meta": {
+            "nullable": true
+          }
+        },
+        {
+          "name": "dashas_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Nakshatra-seeded dasha systems of the consumer's own, as a JSON array\nof definitions: each a key the catalogue does not have, its lords and\ntheir years in order, the reference nakshatra, and optionally `count`,\n`span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and\n`sources` (the document schema's `UduDefinition`). Every one is checked\nby the rules a shipped row passes and refused by its place in the array\nand its own field, as `options.dashas_json`, the index, then the field.\nA request asks for one by the id\n`ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in\nregistration order. Null for none (`03-design/dasha-kernels.md`).",
+          "meta": {
+            "nullable": true
+          }
+        },
+        {
           "name": "ephemeris",
           "ty": {
             "kind": "scalar",
@@ -8454,8 +8863,8 @@
     },
     {
       "name": "TsError",
-      "doc": "The last error of a call on a context: the status, the detail, and the\nmessage, field, hint and message key as strings the context lends\nuntil its next call; an `OK` record has empty strings.",
-      "role": "object",
+      "doc": "A failure as the library describes it: the status, the provider's\ncode, and the detail, message, field, hint and message key.\n\nRead from `ts_context_last_error`, the strings are **lent** by the\ncontext until its next call and `flags` is zero; an `OK` record has\nnull strings. Written by a call that makes a handle and failed, the\nstrings are **owned** by the record, `flags` carries\n`TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`\non a lent record does nothing, so freeing every record is never wrong.",
+      "role": "error",
       "fields": [
         {
           "name": "struct_size",
@@ -8487,12 +8896,12 @@
           "meta": {}
         },
         {
-          "name": "reserved",
+          "name": "flags",
           "ty": {
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Reserved, zero.",
+          "doc": "`TS_ERROR_OWNED` when the record owns its strings, else zero.",
           "meta": {}
         },
         {
@@ -8950,7 +9359,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
+          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -8988,6 +9397,69 @@
           },
           "doc": "How many divisional charts `vargas` points at.",
           "meta": {}
+        },
+        {
+          "name": "drawings",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u32"
+            },
+            "mutable": false
+          },
+          "doc": "Which charts to draw, and in which layouts, in the order they should\nbe answered in: each `layout_id << 16 | varga_id`, a `chart_layout`\ncatalogue id and a `Varga` id, `D1` for the founded chart. Null with a\ncount of zero for none.\n\nPacked, as `sections` is a bit set, so the request carries one array\nand one count rather than two arrays that must agree; every ergonomic\nlayer takes named pairs and writes the bits (`03-design/chart-geometry.md`).",
+          "meta": {
+            "len": "drawing_count"
+          }
+        },
+        {
+          "name": "drawing_count",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "doc": "How many drawings `drawings` points at.",
+          "meta": {}
+        },
+        {
+          "name": "dashas",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u16"
+            },
+            "mutable": false
+          },
+          "doc": "Which dashas to compute, in the order they should be answered in: each\na `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system\nthe context registered (`0x8000` and up). Each one's balance and its\nperiods to its depth. Null with a count of zero for none.\n\nIds and not an enum, as `drawings` carries layout ids: every ergonomic\nlayer takes a catalogue member or a registered key and writes the id.",
+          "meta": {
+            "len": "dasha_count"
+          }
+        },
+        {
+          "name": "dasha_count",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "doc": "How many dashas `dashas` points at.",
+          "meta": {}
+        },
+        {
+          "name": "theme_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "A theme to write every drawing as SVG in, as JSON: an object of\n`style` and `content` naming only what it changes, over the light\ntheme or the shipped one its `extends` names (`{\"extends\": \"dark\"}`).\nThe SVGs come back in the blob's `svgs` section, in the context's\nlocale. Null for none, which costs nothing\n(`03-design/render-svg.md`).",
+          "meta": {
+            "example": "{\"extends\":\"dark\"}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -9976,8 +10448,30 @@
       "source": "crates/ffi/src/blob.rs"
     },
     {
+      "name": "ts_error_free",
+      "doc": "Releases the strings of a record a failed constructor wrote, and\nzeroes it but for its size; null, a lent record from\n`ts_context_last_error`, and a record already freed are all ignored.",
+      "safety": "`error` must be null or a `TsError` valid for reads and writes, whose\nstrings, when `flags` carries `TS_ERROR_OWNED`, are the ones this\nlibrary wrote there and are not used again.",
+      "params": [
+        {
+          "name": "error",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsError"
+            },
+            "mutable": true
+          },
+          "role": "error_free",
+          "meta": {}
+        }
+      ],
+      "meta": {},
+      "source": "crates/ffi/src/context.rs"
+    },
+    {
       "name": "ts_context_new",
-      "doc": "Creates a context. `options` may be null for every default; `provider`\nmay be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects\nthe analytic test provider and no flag leaves the context without an\nephemeris (positions are then `CAPABILITY`); `provider_user_data` is\npassed back to the vtable's functions untouched and must stay valid\nuntil `ts_context_free`. On success `*out_context` owns the context;\non failure, when `out_error` is not null, it receives the error's\nmessage as a string to free with `ts_string_free`.",
+      "doc": "Creates a context. `options` may be null for every default; `provider`\nmay be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects\nthe analytic test provider and no flag leaves the context without an\nephemeris (positions are then `CAPABILITY`); `provider_user_data` is\npassed back to the vtable's functions untouched and must stay valid\nuntil `ts_context_free`. On success `*out_context` owns the context;\non failure, when `out_error` is not null, it receives the whole\nrefusal as a record that owns its strings, released by\n`ts_error_free`.",
       "safety": "Every pointer must be null or valid for the access its documentation\ndescribes, for the duration of the call; a vtable's functions must be\ncallable with `provider_user_data` until the context is freed.",
       "params": [
         {
@@ -10041,11 +10535,11 @@
             "kind": "pointer",
             "to": {
               "kind": "struct",
-              "name": "TsString"
+              "name": "TsError"
             },
             "mutable": true
           },
-          "role": "string_out",
+          "role": "struct_out",
           "meta": {}
         }
       ],
@@ -10236,7 +10730,7 @@
     },
     {
       "name": "ts_key_parse",
-      "doc": "Resolves a full key (`graha.SUN`, an alias, or a former key) to its\npacked id. An unknown key is `UNSUPPORTED` with the nearest known key as\nthe hint in the context's last error.",
+      "doc": "Resolves a full key (`graha.SUN`, an alias, a former key, or a member the\ncontext registered, `chart_layout.ACME_KERALA`) to its packed id. An\nunknown key is `UNSUPPORTED` with the nearest known key as the hint in\nthe context's last error.",
       "safety": "`context` must be a live handle; `key` a NUL-terminated string; `out_id`\nvalid for a write.",
       "params": [
         {
@@ -10843,6 +11337,57 @@
       },
       "meta": {},
       "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "ts_chart_layout_row",
+      "doc": "A chart layout this context can draw in, shipped or registered, as its\nJSON row: the record `options.layouts_json` takes. Read a shipped row,\ngive it a key of its own, change what differs and register it\n(`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare\n(`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is\n`INVALID_ARG` with the keys the context knows as the hint.",
+      "safety": "`context` must be a live handle; `key` a NUL-terminated string;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "key",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/chart.rs"
     },
     {
       "name": "ts_chart_found",
@@ -11816,11 +12361,11 @@
             "kind": "pointer",
             "to": {
               "kind": "struct",
-              "name": "TsString"
+              "name": "TsError"
             },
             "mutable": true
           },
-          "role": "string_out",
+          "role": "struct_out",
           "meta": {}
         }
       ],
@@ -11885,11 +12430,11 @@
             "kind": "pointer",
             "to": {
               "kind": "struct",
-              "name": "TsString"
+              "name": "TsError"
             },
             "mutable": true
           },
-          "role": "string_out",
+          "role": "struct_out",
           "meta": {}
         }
       ],
@@ -12131,6 +12676,11 @@
               "name": "varga_count",
               "scalar": "u32",
               "doc": "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."
+            },
+            {
+              "name": "dasha_count",
+              "scalar": "u32",
+              "doc": "How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows."
             },
             {
               "name": "latitude_deg",
@@ -12924,6 +13474,47 @@
               "name": "pada_deg",
               "scalar": "f64",
               "doc": "How near it stands to a pada edge, degrees."
+            },
+            {
+              "name": "has_sayanadi",
+              "scalar": "u8",
+              "doc": "1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon."
+            },
+            {
+              "name": "sayanadi",
+              "scalar": "u16",
+              "doc": "The Sayanadi state; read only when `has_sayanadi`.",
+              "enum": "AvasthaSayanadi"
+            },
+            {
+              "name": "cheshta_1",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_2",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_3",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_4",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
+            },
+            {
+              "name": "cheshta_5",
+              "scalar": "u16",
+              "doc": "The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`.",
+              "enum": "AvasthaCheshta"
             }
           ]
         },
@@ -12933,6 +13524,611 @@
           "doc": "UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.",
           "kind": "bytes",
           "fields": []
+        },
+        {
+          "id": 21,
+          "name": "drawings",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 22,
+          "name": "svgs",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 23,
+          "name": "dashas",
+          "doc": "Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "system",
+              "scalar": "u16",
+              "doc": "Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names.",
+              "enum": "DashaSystem"
+            },
+            {
+              "name": "seeded",
+              "scalar": "u8",
+              "doc": "1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero."
+            },
+            {
+              "name": "signed",
+              "scalar": "u8",
+              "doc": "1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero."
+            },
+            {
+              "name": "seed",
+              "scalar": "u16",
+              "doc": "The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.",
+              "enum": "Nakshatra"
+            },
+            {
+              "name": "first_lord",
+              "scalar": "u16",
+              "doc": "The lord it starts with.",
+              "enum": "Graha"
+            },
+            {
+              "name": "overflow",
+              "scalar": "u8",
+              "doc": "1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it."
+            },
+            {
+              "name": "balance",
+              "scalar": "u8",
+              "doc": "How the balance was measured.",
+              "enum": "TsBalance"
+            },
+            {
+              "name": "remaining",
+              "scalar": "f64",
+              "doc": "The fraction of the first lord's period still to run at birth, 0 to 1."
+            },
+            {
+              "name": "balance_days",
+              "scalar": "f64",
+              "doc": "That fraction of the first lord's years, in days."
+            },
+            {
+              "name": "balance_years",
+              "scalar": "u32",
+              "doc": "The balance's whole years of the year length."
+            },
+            {
+              "name": "balance_months",
+              "scalar": "u8",
+              "doc": "Its whole months of a twelfth of the year length."
+            },
+            {
+              "name": "balance_day_count",
+              "scalar": "u8",
+              "doc": "Its whole days."
+            },
+            {
+              "name": "balance_hours",
+              "scalar": "u8",
+              "doc": "Its hours, the rest rounded to the minute."
+            },
+            {
+              "name": "balance_minutes",
+              "scalar": "u8",
+              "doc": "Its minutes, rounded."
+            },
+            {
+              "name": "moon_span_from",
+              "scalar": "f64",
+              "doc": "When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span."
+            },
+            {
+              "name": "moon_span_to",
+              "scalar": "f64",
+              "doc": "When it left, a Julian day (UTC); NaN when no span was read."
+            },
+            {
+              "name": "depth",
+              "scalar": "u8",
+              "doc": "How many levels the periods go down, 1 to 6."
+            },
+            {
+              "name": "period_count",
+              "scalar": "u32",
+              "doc": "How many rows of `dasha_periods` are this dasha's."
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "name": "dasha_periods",
+          "doc": "Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "level",
+              "scalar": "u8",
+              "doc": "How deep: 1 for a mahadasha."
+            },
+            {
+              "name": "index",
+              "scalar": "u8",
+              "doc": "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it is the period of, when its dasha is `signed`; zero otherwise.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "Its lord.",
+              "enum": "Graha"
+            },
+            {
+              "name": "from_jd",
+              "scalar": "f64",
+              "doc": "When it begins, a Julian day (UTC)."
+            },
+            {
+              "name": "to_jd",
+              "scalar": "f64",
+              "doc": "When it ends, a Julian day (UTC)."
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "name": "ashtakavarga",
+          "doc": "Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "shodhana",
+              "scalar": "u8",
+              "doc": "Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.",
+              "enum": "TsShodhana"
+            },
+            {
+              "name": "ekadhipatya",
+              "scalar": "u8",
+              "doc": "How a co-ruled sign beside an occupied one was reduced.",
+              "enum": "TsEkadhipatya"
+            },
+            {
+              "name": "rashi_pinda",
+              "scalar": "u32",
+              "doc": "Its rashi pinda."
+            },
+            {
+              "name": "graha_pinda",
+              "scalar": "u32",
+              "doc": "Its graha pinda."
+            },
+            {
+              "name": "yoga_pinda",
+              "scalar": "u32",
+              "doc": "Its yoga pinda, the two together."
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "name": "ashtakavarga_bindus",
+          "doc": "Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "bindus",
+              "scalar": "u8",
+              "doc": "Its bindus in the sign, 0 to 8."
+            },
+            {
+              "name": "reduced",
+              "scalar": "u8",
+              "doc": "The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise."
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "sarvashtakavarga",
+          "doc": "Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "sarva",
+              "scalar": "u16",
+              "doc": "The seven grahas' bindus in the sign."
+            },
+            {
+              "name": "trikona",
+              "scalar": "u16",
+              "doc": "The sum after the trine reduction."
+            },
+            {
+              "name": "reduced",
+              "scalar": "u16",
+              "doc": "The sum after both reductions."
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "name": "vimshopaka",
+          "doc": "Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "scoring",
+              "scalar": "u8",
+              "doc": "How each varga was scored.",
+              "enum": "TsVimshopakaScoring"
+            },
+            {
+              "name": "shadvarga",
+              "scalar": "f64",
+              "doc": "Over the six vargas."
+            },
+            {
+              "name": "saptavarga",
+              "scalar": "f64",
+              "doc": "Over the seven."
+            },
+            {
+              "name": "dashavarga",
+              "scalar": "f64",
+              "doc": "Over the ten."
+            },
+            {
+              "name": "shodashavarga",
+              "scalar": "f64",
+              "doc": "Over the sixteen."
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "name": "shadbala",
+          "doc": "Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "uchcha",
+              "scalar": "f64",
+              "doc": "Sthana: from the distance to the debilitation point, 0 to 60."
+            },
+            {
+              "name": "saptavargaja",
+              "scalar": "f64",
+              "doc": "Sthana: from the dignity in the seven vargas."
+            },
+            {
+              "name": "ojayugma",
+              "scalar": "f64",
+              "doc": "Sthana: from the rasi's and navamsha's parity, 0, 15 or 30."
+            },
+            {
+              "name": "kendradi",
+              "scalar": "f64",
+              "doc": "Sthana: from the house, 60, 30 or 15."
+            },
+            {
+              "name": "drekkana",
+              "scalar": "f64",
+              "doc": "Sthana: from the decanate, 0 or 15."
+            },
+            {
+              "name": "dig",
+              "scalar": "f64",
+              "doc": "Dig: from the distance to the powerless kendra, 0 to 60."
+            },
+            {
+              "name": "nathonnatha",
+              "scalar": "f64",
+              "doc": "Kaala: from the hour, 0 to 60."
+            },
+            {
+              "name": "paksha",
+              "scalar": "f64",
+              "doc": "Kaala: from the Moon's elongation, the Moon's doubled."
+            },
+            {
+              "name": "tribhaga",
+              "scalar": "f64",
+              "doc": "Kaala: 60 to the lord of the third of the day or night, and to Jupiter."
+            },
+            {
+              "name": "abda",
+              "scalar": "f64",
+              "doc": "Kaala: 15 to the year's lord."
+            },
+            {
+              "name": "masa",
+              "scalar": "f64",
+              "doc": "Kaala: 30 to the month's lord."
+            },
+            {
+              "name": "vara",
+              "scalar": "f64",
+              "doc": "Kaala: 45 to the weekday's lord."
+            },
+            {
+              "name": "hora",
+              "scalar": "f64",
+              "doc": "Kaala: 60 to the hour's lord."
+            },
+            {
+              "name": "ayana",
+              "scalar": "f64",
+              "doc": "Kaala: from the declination."
+            },
+            {
+              "name": "yuddha",
+              "scalar": "f64",
+              "doc": "Kaala: gained by the victor and lost by the vanquished of a planetary war."
+            },
+            {
+              "name": "cheshta",
+              "scalar": "f64",
+              "doc": "Cheshta: motional strength."
+            },
+            {
+              "name": "naisargika",
+              "scalar": "f64",
+              "doc": "Naisargika: natural strength."
+            },
+            {
+              "name": "drik",
+              "scalar": "f64",
+              "doc": "Drik: aspectual strength, which may be negative."
+            },
+            {
+              "name": "virupas",
+              "scalar": "f64",
+              "doc": "The six together, virupas."
+            },
+            {
+              "name": "rupas",
+              "scalar": "f64",
+              "doc": "The six together, rupas."
+            },
+            {
+              "name": "required_rupas",
+              "scalar": "f64",
+              "doc": "The rupas it must reach to be strong."
+            },
+            {
+              "name": "ishta",
+              "scalar": "f64",
+              "doc": "How far it tends to good, 0 to 60 (BPHS ch. 28)."
+            },
+            {
+              "name": "kashta",
+              "scalar": "f64",
+              "doc": "How far it tends to harm, 0 to 60."
+            },
+            {
+              "name": "subha_rashmi",
+              "scalar": "f64",
+              "doc": "Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5)."
+            },
+            {
+              "name": "ashubha_rashmi",
+              "scalar": "f64",
+              "doc": "Its inauspicious rays, 8 less the auspicious."
+            },
+            {
+              "name": "strong",
+              "scalar": "u8",
+              "doc": "1 when the rupas reach the requirement, else 0."
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "name": "bhava_bala",
+          "doc": "Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "The lord of the sign its madhya falls in.",
+              "enum": "Graha"
+            },
+            {
+              "name": "adhipati",
+              "scalar": "f64",
+              "doc": "The lord's Shadbala."
+            },
+            {
+              "name": "dig",
+              "scalar": "f64",
+              "doc": "From its direction, 0 to 60."
+            },
+            {
+              "name": "drishti",
+              "scalar": "f64",
+              "doc": "From the drishtis it receives, which may be negative."
+            },
+            {
+              "name": "special",
+              "scalar": "f64",
+              "doc": "From its occupants and its sign's rising, under BPHS's special rules."
+            },
+            {
+              "name": "virupas",
+              "scalar": "f64",
+              "doc": "The four together."
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "name": "vaiseshikamsa",
+          "doc": "Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "impaired",
+              "scalar": "u8",
+              "doc": "1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0."
+            },
+            {
+              "name": "shadvarga_good",
+              "scalar": "u8",
+              "doc": "How many of the shadvarga's vargas are good for it."
+            },
+            {
+              "name": "shadvarga_name",
+              "scalar": "u16",
+              "doc": "The name the shadvarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
+            },
+            {
+              "name": "saptavarga_good",
+              "scalar": "u8",
+              "doc": "How many of the saptavarga's vargas are good for it."
+            },
+            {
+              "name": "saptavarga_name",
+              "scalar": "u16",
+              "doc": "The name the saptavarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
+            },
+            {
+              "name": "dashavarga_good",
+              "scalar": "u8",
+              "doc": "How many of the dashavarga's vargas are good for it."
+            },
+            {
+              "name": "dashavarga_name",
+              "scalar": "u16",
+              "doc": "The name the dashavarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
+            },
+            {
+              "name": "shodashavarga_good",
+              "scalar": "u8",
+              "doc": "How many of the shodashavarga's vargas are good for it."
+            },
+            {
+              "name": "shodashavarga_name",
+              "scalar": "u16",
+              "doc": "The name the shodashavarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "name": "dasha_phala",
+          "doc": "Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "subhanka_d1",
+              "scalar": "f64",
+              "doc": "Its Subhanka in the D1, out of 60: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."
+            },
+            {
+              "name": "subhanka_d2",
+              "scalar": "f64",
+              "doc": "Its Subhanka in the D2, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."
+            },
+            {
+              "name": "subhanka_d3",
+              "scalar": "f64",
+              "doc": "Its Subhanka in the D3, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."
+            },
+            {
+              "name": "subhanka_d7",
+              "scalar": "f64",
+              "doc": "Its Subhanka in the D7, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."
+            },
+            {
+              "name": "subhanka_d9",
+              "scalar": "f64",
+              "doc": "Its Subhanka in the D9, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."
+            },
+            {
+              "name": "subhanka_d12",
+              "scalar": "f64",
+              "doc": "Its Subhanka in the D12, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."
+            },
+            {
+              "name": "subhanka_d30",
+              "scalar": "f64",
+              "doc": "Its Subhanka in the D30, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."
+            },
+            {
+              "name": "subhanka",
+              "scalar": "f64",
+              "doc": "The seven Subhankas together, out of 240."
+            },
+            {
+              "name": "asubhanka",
+              "scalar": "f64",
+              "doc": "Their complements together, out of 240."
+            },
+            {
+              "name": "nature",
+              "scalar": "u16",
+              "doc": "Whether its rasi place is auspicious, neutral or inauspicious (v. 10).",
+              "enum": "Nature"
+            },
+            {
+              "name": "phase",
+              "scalar": "u8",
+              "doc": "Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4).",
+              "enum": "TsDashaPhase"
+            },
+            {
+              "name": "favourable",
+              "scalar": "u8",
+              "doc": "1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5)."
+            },
+            {
+              "name": "unfavourable",
+              "scalar": "u8",
+              "doc": "1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand."
+            }
+          ]
         }
       ]
     },

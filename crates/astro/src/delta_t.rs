@@ -26,6 +26,7 @@ const SEAM_TAPER_YEARS: f64 = 10.0;
 
 /// Which Delta T.
 #[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DeltaTModel {
     /// The IERS table where measured (1956 to the present), the model
@@ -77,6 +78,7 @@ impl DeltaTModel {
 
 /// Where a value came from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DeltaTSource {
     /// Interpolated in the IERS table.
@@ -92,6 +94,7 @@ pub enum DeltaTSource {
 
 /// Delta T at an instant, with what produced it.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DeltaT {
     /// TT less UT1, seconds.
     pub seconds: f64,

@@ -32,10 +32,10 @@
 
 use std::collections::BTreeMap;
 
-use teistro::catalogue::{Calendar, ChartKind, Graha, Varga};
+use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Varga};
 use teistro::{
     Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
-    TimeScale,
+    TimeScale, Timeline,
 };
 use teistro_core::envelope::CalendarResolution;
 use teistro_core::envelope::Envelope;
@@ -639,6 +639,7 @@ fn the_surface(report: &mut Report) {
         ("calendar.is_leap", "present"),
         ("calendar.month_length", "present"),
         ("calendar.weekday_of", "present"),
+        ("chart.layout", "present"),
         ("chart.found", "present"),
         ("chart.found_many", "present"),
         ("engine.call", "present"),
@@ -743,12 +744,7 @@ fn a_topocentric_chart(report: &mut Report, sdk: &Context, place: &Place, offset
 /// so the two centres are both exercised -- the same reason the other
 /// three runners build a second context.
 fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
-    let geo = Context::builder()
-        .profile("parashari-classical")
-        .locale("ne-Deva-NP")
-        .ephemeris([Ephemeris::Test])
-        .build()
-        .expect("a shipped profile");
+    let geo = the_geo_context();
     put(report, "geo-profile", geo.profile().to_owned());
     put(report, "geo-settings-hash", geo.settings_hash().to_string());
 
@@ -765,16 +761,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         JulianDay::<Utc>::literal(2_460_482.5),
         JulianDay::<Utc>::literal(2_460_600.25),
     ];
-    // Two divisional charts asked for, and two rather than one because
-    // the layout the other three decode is charts outermost then charts
-    // asked for: only two of each can catch a transposed stride.
-    let asked = ChartRequest::at(place, offset)
-        .with_kind(ChartKind::Natal)
-        .with_vargas([Varga::D9, Varga::D10])
-        .with_aspects()
-        .with_points()
-        .with_houses()
-        .with_state();
+    let asked = the_chart_request(place, offset, &geo);
     let read = geo
         .chart()
         .readings(&instants, &asked)
@@ -796,11 +783,14 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
             .map_or_else(String::new, |a| a.table().to_owned()),
     );
     for (index, document) in read.value.iter().enumerate() {
+        the_drawings(report, &geo, index, document);
         one_varga_chart(report, index, document);
         the_states(report, index, document);
         the_bhavas(report, index, document);
         the_points(report, index, document);
         the_drishti(report, index, document);
+        the_strength(report, index, document);
+        the_dashas(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -871,6 +861,153 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
 /// same order and the other three bindings read the name from the
 /// foundation's column: a runner that read it from its own section would
 /// agree with them and prove less.
+/// The context the charts are read under, with what the consumer registers
+/// on it: the South Indian layout renamed (`03-design/chart-geometry.md`
+/// §7f) and a dasha system of its own, as every runner registers them.
+fn the_geo_context() -> Context {
+    let mut kerala = teistro::geometry::rows::south_indian();
+    kerala.key = String::from("ACME_KERALA");
+    Context::builder()
+        .profile("parashari-classical")
+        .locale("ne-Deva-NP")
+        .ephemeris([Ephemeris::Test])
+        .layout(kerala)
+        .dasha_system(parity_dasha())
+        .build()
+        .expect("a shipped profile")
+}
+
+/// The dasha system of the consumer's own every runner registers: a
+/// backward count, a two-nakshatra window, an offset, a savana year and a
+/// depth of two, so each field a definition may set crosses
+/// (`03-design/dasha-kernels.md`).
+const PARITY_DASHA: &str = r#"{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}"#;
+
+fn parity_dasha() -> teistro::dasha::UduDefinition {
+    serde_json::from_str(PARITY_DASHA).expect("the parity definition")
+}
+
+/// The request every runner makes: two divisional charts, four dashas (one
+/// the consumer's own), four drawings and every section.
+fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartRequest {
+    let kerala = geo
+        .keys()
+        .id("chart_layout.ACME_KERALA")
+        .expect("registered");
+    let own = geo
+        .keys()
+        .id("dasha_system.ACME_PARITY")
+        .expect("registered");
+    // Two divisional charts asked for, and two rather than one because
+    // the layout the other three decode is charts outermost then charts
+    // asked for: only two of each can catch a transposed stride.
+    ChartRequest::at(place, offset)
+        .with_kind(ChartKind::Natal)
+        .with_vargas([Varga::D9, Varga::D10])
+        .with_dashas([
+            DashaSystem::Vimshottari.key_id(),
+            DashaSystem::Chara.key_id(),
+            DashaSystem::Kalachakra.key_id(),
+            own,
+        ])
+        .with_drawings([
+            (ChartLayout::NorthIndian.key_id(), Varga::D1),
+            (ChartLayout::SouthIndian.key_id(), Varga::D9),
+            (ChartLayout::WesternWheel.key_id(), Varga::D1),
+            (kerala, Varga::D9),
+        ])
+        .with_aspects()
+        .with_points()
+        .with_houses()
+        .with_ashtakavarga()
+        .with_vimshopaka()
+        .with_vaiseshikamsa()
+        .with_dasha_phala()
+        .with_shadbala()
+        .with_bhava_bala()
+        .with_state()
+}
+
+/// Every drawing the request named: its layout and chart, and each cell's
+/// sign, house, anchors, outline start and the kinds of its steps, and each
+/// mark, as the other three print them.
+fn the_drawings(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    use teistro::geometry::{Point, Segment};
+    let pair = |point: Point| format!("{},{}", number(point.x), number(point.y));
+    for (d, drawing) in document.drawings.iter().enumerate() {
+        let key = format!("chart-{index}-drawing-{d}");
+        let placed = &drawing.placed;
+        put(report, &key, format!("chart_layout.{}", placed.layout));
+        put(
+            report,
+            &format!("{key}-varga"),
+            drawing.varga.full_key().to_owned(),
+        );
+        // Written as SVG in the dark theme, as the other three ask for.
+        let svg = sdk
+            .chart()
+            .svg(document, d, &teistro::render_svg::Theme::dark())
+            .unwrap_or_else(|error| format!("refused: {error}"));
+        put(report, &format!("{key}-svg"), svg);
+        put(
+            report,
+            &format!("{key}-cells"),
+            placed.cells.len().to_string(),
+        );
+        put(
+            report,
+            &format!("{key}-frames"),
+            placed.frame.len().to_string(),
+        );
+        put(
+            report,
+            &format!("{key}-marks"),
+            placed.marks.len().to_string(),
+        );
+        for (c, cell) in placed.cells.iter().enumerate() {
+            let at = format!("{key}-cell-{c}");
+            put(
+                report,
+                &format!("{at}-sign"),
+                cell.sign.full_key().to_owned(),
+            );
+            put(report, &format!("{at}-house"), cell.house.to_string());
+            put(report, &format!("{at}-lagna"), cell.lagna.to_string());
+            put(report, &format!("{at}-ring"), cell.ring.to_string());
+            let bodies: Vec<String> = cell.bodies.iter().map(ToString::to_string).collect();
+            put(
+                report,
+                &format!("{at}-bodies"),
+                if bodies.is_empty() {
+                    String::from("none")
+                } else {
+                    bodies.join(",")
+                },
+            );
+            put(report, &format!("{at}-label"), pair(cell.label));
+            put(report, &format!("{at}-anchor"), pair(cell.anchor));
+            put(report, &format!("{at}-start"), pair(cell.outline.start));
+            let steps: Vec<&str> = cell
+                .outline
+                .segments
+                .iter()
+                .map(|step| match step {
+                    Segment::Line { .. } => "line",
+                    Segment::Quad { .. } => "quad",
+                    Segment::Arc { .. } => "arc",
+                })
+                .collect();
+            put(report, &format!("{at}-steps"), steps.join(","));
+        }
+        for (m, mark) in placed.marks.iter().enumerate() {
+            let at = format!("{key}-mark-{m}");
+            put(report, &at, mark.body.to_string());
+            put(report, &format!("{at}-at"), pair(mark.at));
+            put(report, &format!("{at}-lon"), number(mark.longitude_deg));
+        }
+    }
+}
+
 fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Document) {
     for (at, varga) in document.vargas.iter().enumerate() {
         let key = |what: &str| format!("chart-{index}-varga-{at}{what}");
@@ -914,6 +1051,18 @@ fn one_varga_chart(report: &mut Report, index: usize, document: &teistro::Docume
             put(report, &row("-sign"), placed.at.sign.full_key().to_owned());
         }
     }
+}
+
+/// A graha's Sayanadi as the runners spell it: the state, then its five
+/// sub-states, or `none`.
+fn sayanadi(sayanadi: Option<teistro::Sayanadi>) -> String {
+    sayanadi.map_or_else(
+        || String::from("none"),
+        |s| {
+            let cheshtas: Vec<&str> = s.cheshtas.iter().map(|c| c.full_key()).collect();
+            format!("{} {}", s.avastha.full_key(), cheshtas.join(","))
+        },
+    )
 }
 
 /// One chart's planetary states, as the report prints them.
@@ -1002,6 +1151,7 @@ fn the_states(report: &mut Report, index: usize, document: &teistro::Document) {
                 |w| format!("{}:{}", w.opponent.full_key(), w.is_winner),
             ),
         );
+        put(report, &key("-sayanadi"), sayanadi(state.sayanadi));
         put(
             report,
             &key("-sign-edge"),
@@ -1059,6 +1209,324 @@ fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
 /// charts of the same nine grahas hold 47 relations and 40 -- so a
 /// runner that printed only the count would agree with the others while
 /// the rows disagreed. It is why the boundary's section is ragged.
+/// Every dasha the request named: its seed, its balance, every period to the
+/// settings' depth and the chain running 5000 days after birth, the chain
+/// asked of the cursor rebuilt from the document where the other three walk
+/// the periods they decoded.
+/// The strength measures as the other three print them.
+fn the_strength(report: &mut Report, index: usize, document: &teistro::Document) {
+    the_ashtakavarga(report, index, document);
+    the_vimshopaka(report, index, document);
+    the_vaiseshikamsa(report, index, document);
+    the_dasha_phala(report, index, document);
+    the_shadbala(report, index, document);
+    the_bhava_bala(report, index, document);
+}
+
+/// The Bhava bala as the other three print it: each bhava's lord and its
+/// components.
+fn the_bhava_bala(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(reading) = document.bhava_bala.as_ref() else {
+        return;
+    };
+    for bhava in &reading.bhavas {
+        let values = [
+            bhava.adhipati,
+            bhava.dig,
+            bhava.drishti,
+            bhava.special,
+            bhava.virupas,
+        ];
+        put(
+            report,
+            &format!("chart-{index}-bhava-bala-{}", bhava.bhava),
+            format!("{} {}", bhava.lord.full_key(), values.map(number).join(",")),
+        );
+    }
+}
+
+/// The Shadbala as the other three print it: each graha's seventeen
+/// components, then its totals and whether it is strong.
+fn the_shadbala(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(shadbala) = document.shadbala.as_ref() else {
+        return;
+    };
+    for graha in &shadbala.grahas {
+        let key = format!("chart-{index}-shadbala-{}", graha.graha.full_key());
+        let (st, ka) = (&graha.sthana, &graha.kaala);
+        let parts = [
+            st.uchcha,
+            st.saptavargaja,
+            st.ojayugma,
+            st.kendradi,
+            st.drekkana,
+            graha.dig,
+            ka.nathonnatha,
+            ka.paksha,
+            ka.tribhaga,
+            ka.abda,
+            ka.masa,
+            ka.vara,
+            ka.hora,
+            ka.ayana,
+            ka.yuddha,
+            graha.cheshta,
+            graha.naisargika,
+            graha.drik,
+        ];
+        put(report, &key, parts.map(number).join(","));
+        put(
+            report,
+            &format!("{key}-total"),
+            format!(
+                "{},{},{},{},{},{},{},{}",
+                number(graha.virupas),
+                number(graha.rupas),
+                number(graha.required_rupas),
+                graha.strong,
+                number(graha.ishta),
+                number(graha.kashta),
+                number(graha.subha_rashmi),
+                number(graha.ashubha_rashmi)
+            ),
+        );
+    }
+}
+
+/// The Vaiseshikamsa as the other three print it: each scheme's count and
+/// name, and whether the graha is impaired.
+fn the_vaiseshikamsa(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(reading) = document.vaiseshikamsa.as_ref() else {
+        return;
+    };
+    for graha in &reading.grahas {
+        let standings = [
+            graha.shadvarga,
+            graha.saptavarga,
+            graha.dashavarga,
+            graha.shodashavarga,
+        ];
+        let named = standings
+            .map(|s| {
+                format!(
+                    "{}:{}",
+                    s.good_vargas,
+                    s.name.map_or("null", |n| n.full_key())
+                )
+            })
+            .join(",");
+        put(
+            report,
+            &format!("chart-{index}-vaiseshikamsa-{}", graha.graha.full_key()),
+            format!("{named} {}", graha.impaired),
+        );
+    }
+}
+
+/// The dasha phala as the other three print it: the seven Subhankas, the
+/// nature, the phase and the two flags.
+fn the_dasha_phala(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(reading) = document.dasha_phala.as_ref() else {
+        return;
+    };
+    for graha in &reading.grahas {
+        put(
+            report,
+            &format!("chart-{index}-dasha-phala-{}", graha.graha.full_key()),
+            format!(
+                "{} {} {} {} {}",
+                graha.subhankas.map(number).join(","),
+                graha.nature.full_key(),
+                kebab(&format!("{:?}", graha.phase)),
+                graha.favourable,
+                graha.unfavourable
+            ),
+        );
+    }
+}
+
+/// The Vimshopaka as the other three print it: the scoring, and each
+/// graha's four scores.
+fn the_vimshopaka(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(vs) = document.vimshopaka.as_ref() else {
+        return;
+    };
+    put(
+        report,
+        &format!("chart-{index}-vimshopaka"),
+        kebab(&format!("{:?}", vs.scoring)),
+    );
+    for graha in &vs.grahas {
+        put(
+            report,
+            &format!("chart-{index}-vimshopaka-{}", graha.graha.full_key()),
+            [
+                graha.shadvarga,
+                graha.saptavarga,
+                graha.dashavarga,
+                graha.shodashavarga,
+            ]
+            .map(number)
+            .join(","),
+        );
+    }
+}
+
+/// The Ashtakavarga as the other three print it: the reading, each graha's
+/// bindus, reductions and pindas, and the chart's sums.
+fn the_ashtakavarga(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(av) = document.ashtakavarga.as_ref() else {
+        return;
+    };
+    let join = |values: &[u16]| {
+        values
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    put(
+        report,
+        &format!("chart-{index}-ashtakavarga"),
+        format!(
+            "{} {}",
+            kebab(&format!("{:?}", av.rules.shodhana)),
+            kebab(&format!("{:?}", av.rules.ekadhipatya))
+        ),
+    );
+    for graha in &av.grahas {
+        let key = format!("chart-{index}-ashtakavarga-{}", graha.graha.full_key());
+        put(report, &key, join(&graha.bindus.map(u16::from)));
+        put(
+            report,
+            &format!("{key}-reduced"),
+            graha
+                .reduced
+                .map_or_else(|| String::from("null"), |r| join(&r.map(u16::from))),
+        );
+        put(
+            report,
+            &format!("{key}-pindas"),
+            format!(
+                "{},{},{}",
+                graha.rashi_pinda, graha.graha_pinda, graha.yoga_pinda
+            ),
+        );
+    }
+    put(
+        report,
+        &format!("chart-{index}-sarvashtakavarga"),
+        format!(
+            "{};{};{}",
+            join(&av.sarva),
+            join(&av.trikona),
+            join(&av.reduced)
+        ),
+    );
+}
+
+fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let null = || String::from("null");
+    put(
+        report,
+        &format!("chart-{index}-dasha-count"),
+        document.dashas.len().to_string(),
+    );
+    for (at, dasha) in document.dashas.iter().enumerate() {
+        let key = |what: &str| format!("chart-{index}-dasha-{at}{what}");
+        put(report, &key(""), dasha.system.full_key());
+        put(
+            report,
+            &key("-seed"),
+            dasha
+                .seed
+                .map_or_else(null, |seed| seed.full_key().to_owned()),
+        );
+        put(
+            report,
+            &key("-first-lord"),
+            dasha.first_lord.full_key().to_owned(),
+        );
+        put(report, &key("-overflow"), dasha.overflow.to_string());
+        let balance = dasha.balance;
+        put(
+            report,
+            &key("-balance"),
+            balance.map_or_else(null, |b| kebab(&format!("{:?}", b.method))),
+        );
+        put(
+            report,
+            &key("-remaining"),
+            balance.map_or_else(null, |b| number(b.remaining)),
+        );
+        put(
+            report,
+            &key("-balance-days"),
+            balance.map_or_else(null, |b| number(b.days)),
+        );
+        put(
+            report,
+            &key("-balance-written"),
+            balance.map_or_else(null, |b| {
+                let w = b.written;
+                format!(
+                    "{},{},{},{},{}",
+                    w.years, w.months, w.days, w.hours, w.minutes
+                )
+            }),
+        );
+        let span = |end: fn(&Interval) -> f64| {
+            dasha
+                .moon_span
+                .as_ref()
+                .map_or_else(null, |span| number(end(span)))
+        };
+        put(report, &key("-moon-span-from"), span(|s| s.from.get()));
+        put(report, &key("-moon-span-to"), span(|s| s.to.get()));
+        put(report, &key("-depth"), dasha.depth.get().to_string());
+        put(report, &key("-periods"), dasha.periods.len().to_string());
+        // The first two levels of every period: enough to hold the order,
+        // the signs, the lords and the shares, without printing a tree of
+        // every depth four times.
+        for (k, period) in dasha.periods.iter().enumerate() {
+            if period.path.matches('/').count() > 1 {
+                continue;
+            }
+            let sign = period
+                .sign
+                .map_or_else(String::new, |sign| format!(" {}", sign.full_key()));
+            put(
+                report,
+                &key(&format!("-period-{k}")),
+                format!("{}{sign} {}", period.path, period.lord.full_key()),
+            );
+            put(
+                report,
+                &key(&format!("-period-{k}-from")),
+                number(period.interval.from.get()),
+            );
+            put(
+                report,
+                &key(&format!("-period-{k}-to")),
+                number(period.interval.to.get()),
+            );
+        }
+        let chain = sdk.chart().dasha(document, &dasha.system).map_or_else(
+            |error| format!("refused: {error}"),
+            |cursor| {
+                let instant = JulianDay::literal(document.foundation.instant.get() + 5000.0);
+                cursor
+                    .at(instant, dasha.depth)
+                    .iter()
+                    .map(|period| period.path.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            },
+        );
+        put(report, &key("-at"), chain);
+    }
+}
+
 fn the_drishti(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(aspects) = document.aspects.as_ref() else {
         return;

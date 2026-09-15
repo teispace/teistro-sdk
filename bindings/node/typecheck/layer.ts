@@ -14,10 +14,14 @@ import type {
   Charts,
   Context,
   EphemerisProvider,
+  LayoutHolds,
+  LayoutKey,
+  LayoutRow,
   PositionsRequest,
   Scale,
 } from '../lib/index.js';
-import { altitude, latitude, longitude } from '../lib/catalogue.js';
+import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
+import type { Graha } from '../lib/catalogue.js';
 import type { CalendarDate } from '../lib/index.js';
 
 declare const build: BuildInfo;
@@ -181,6 +185,59 @@ function charts(): string {
 
 void charts;
 
+/**
+ * The chart reading, typed: every section a request can ask for, read the
+ * way an application reads it. `typecheck/surface.mjs` proves each member
+ * exists at run time; this proves a consumer can name and use them.
+ */
+function reading(): string {
+  const read: Chart = ctx.chart.found({
+    instant: 2460482.5,
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+    vargas: [Varga.D9, Varga.D10],
+    drawings: [
+      { layout: ChartLayout.NorthIndian, varga: Varga.D9 },
+      { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
+    ],
+    aspects: true,
+    points: true,
+    houses: true,
+    state: true,
+  });
+  const drawn = read.drawings[0];
+  const firstStep = drawn?.cells[0]?.outline.segments[0];
+  const curved: boolean = firstStep?.kind === 'arc' && firstStep.clockwise;
+  const markLon: number = read.drawings[1]?.marks[0]?.longitudeDeg ?? 0;
+  // @ts-expect-error a drawing names a layout from the catalogue, not a word
+  ctx.chart.found({ instant: 2460482.5, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: [{ layout: 'lotus', varga: Varga.D1 }] });
+  const navamsha = read.vargas[0];
+  const vargottama: boolean = navamsha !== undefined && navamsha.lagna.sign === navamsha.lagna.rashi;
+  const part: number = navamsha?.grahas[0]?.at.part ?? -1;
+  const drishti = read.aspects.map((one) => `${one.from}>${one.to}:${one.houses}:${one.strength}`);
+  const edge: number = read.aspects[0]?.toEdge.nakshatraDeg ?? 0;
+  const gulika = read.points.find((one) => one.point === Point.Gulika);
+  const lord: Graha | 'unknown' = read.bhavas[9]?.lord ?? 'unknown';
+  const sun = read.states[0];
+  const dispositor: string = sun?.friendship.dispositor ?? 'none';
+  const orb: number | null = sun?.combustion.orbDeg ?? null;
+  const holding: readonly string[] = sun?.lajjitadi.holding ?? [];
+  const war: boolean = sun?.war?.isWinner ?? false;
+  // @ts-expect-error a section is read, never replaced
+  read.states = [];
+  // @ts-expect-error a war is a record, not a number
+  const apart: number = sun?.war;
+  // @ts-expect-error the varga list takes members of the catalogue, not their names
+  ctx.chart.found({ instant: 2460482.5, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, vargas: ['navamsha'] });
+  return [
+    vargottama, part, drishti.length, edge, gulika?.longitudeDeg ?? 'none', lord,
+    dispositor, orb, holding.length, war, apart, read.bhavas.length,
+    drawn?.layout ?? 'none', curved, markLon,
+  ].join(' ');
+}
+
+void reading;
+
 /** The almanac layer, typed: a range of days and one of them. */
 function almanac(): string {
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
@@ -209,3 +266,26 @@ function almanac(): string {
 }
 
 void almanac;
+
+/** A layout of the consumer's own, typed: copied, renamed, registered and drawn. */
+function ownLayout(): string {
+  const row: LayoutRow = ctx.chart.layout(ChartLayout.SouthIndian);
+  const renamed: LayoutRow = { ...row, key: 'ACME_KERALA' };
+  const own: Context = ctx;
+  const options: ConstructorParameters<typeof Context>[0] = { testProvider: true, layouts: [renamed] };
+  const key: LayoutKey = 'chart_layout.ACME_KERALA';
+  const drawn = own.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    drawings: [{ layout: key, varga: Varga.D1 }],
+  }).drawings[0]!;
+  const rings: number = row.shape.kind === 'radial' ? row.shape.rings.length : row.shape.cells.length;
+  // @ts-expect-error a layout key names its kind
+  own.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: [{ layout: 'ACME_KERALA', varga: Varga.D1 }] });
+  // @ts-expect-error a cell holds a sign by its bare key, not a number
+  const wrong: LayoutHolds = { kind: 'sign', value: 1 };
+  return `${drawn.layout} ${rings} ${wrong.kind} ${options?.layouts?.length}`;
+}
+
+void ownLayout;

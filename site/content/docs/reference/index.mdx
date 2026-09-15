@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 46 entry points over 27 structs and 95 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 48 entry points over 27 structs and 103 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -36,6 +36,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
 | entry point | what it does |
 |---|---|
+| [`ts_error_free`](context/ts_error_free) | Releases the strings of a record a failed constructor wrote, and zeroes it but for its size; null, a lent record from `ts_context_last_error`, and a record already freed are all ignored. |
 | [`ts_context_new`](context/ts_context_new) | Creates a context. |
 | [`ts_context_free`](context/ts_context_free) | Frees a context; null is ignored. |
 | [`ts_context_last_error`](context/ts_context_last_error) | The outcome of the last call on the context: its status, the provider's code, and the message, field, hint and key as strings lent until the next call other than this one. |
@@ -47,7 +48,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
 | entry point | what it does |
 |---|---|
-| [`ts_key_parse`](key/ts_key_parse) | Resolves a full key (`graha.SUN`, an alias, or a former key) to its packed id. |
+| [`ts_key_parse`](key/ts_key_parse) | Resolves a full key (`graha.SUN`, an alias, a former key, or a member the context registered, `chart_layout.ACME_KERALA`) to its packed id. |
 | [`ts_key_name`](key/ts_key_name) | The full key of a packed id (`graha.SUN`), lent until the next call on the context. |
 
 ### Frame
@@ -75,6 +76,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
 | entry point | what it does |
 |---|---|
+| [`ts_chart_layout_row`](chart/ts_chart_layout_row) | A chart layout this context can draw in, shipped or registered, as its JSON row: the record `options.layouts_json` takes. |
 | [`ts_chart_found`](chart/ts_chart_found) | Founds a chart at an instant and a place and answers with its blob: where every graha stands, in which bhava under both readings, in which zodiac, on which day, at what time of that day. |
 
 ### Time

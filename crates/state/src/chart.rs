@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
-    AvasthaBaladi, AvasthaDeeptadi, AvasthaJagradadi, Dignity, Graha, Rashi,
+    AvasthaBaladi, AvasthaDeeptadi, AvasthaJagradadi, AvasthaSayanadi, Dignity, Graha, Rashi,
 };
 use teistro_core::error::Error;
 use teistro_core::quantity::Degrees;
@@ -19,9 +19,11 @@ use crate::avastha::{self, AtWar, Lajjitadi, Placement, War};
 use crate::boundary::Boundaries;
 use crate::burn::{self, Combustion};
 use crate::dignity::{self, Friendship};
+use crate::sayanadi::{self, Sayanadi, SayanadiChart};
 
 /// Which way a body is going, and how fast.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Motion {
     /// Whether it is going backwards through the zodiac.
     pub retrograde: bool,
@@ -31,6 +33,7 @@ pub struct Motion {
 
 /// What one graha is, in one chart.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaState {
     /// Which graha.
     pub graha: Graha,
@@ -56,6 +59,9 @@ pub struct GrahaState {
     pub lajjitadi: Lajjitadi,
     /// The war it is in, if it is in one.
     pub war: Option<War>,
+    /// The Sayanadi state and its sub-states, for the nine grahas.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub sayanadi: Option<Sayanadi>,
     /// How near it stands to a classification boundary.
     pub boundaries: Boundaries,
 }
@@ -78,6 +84,13 @@ impl GrahaState {
                 | Dignity::OwnSign
                 | Dignity::GreatFriend
         )
+    }
+
+    /// Whether it lies in Shayana, the bad avastha BPHS ch. 6 v. 53 names.
+    #[must_use]
+    pub fn is_shayana(&self) -> bool {
+        self.sayanadi
+            .is_some_and(|s| s.avastha == AvasthaSayanadi::Shayana)
     }
 
     /// Whether it lost a war it is in.
@@ -137,6 +150,19 @@ pub fn state(foundation: &ChartFoundation, settings: &Settings) -> Result<Vec<Gr
         friendships.push(friendship);
     }
 
+    // What every graha's Sayanadi shares: with no Moon there is none.
+    let sayanadi_chart = foundation
+        .grahas
+        .iter()
+        .find(|position| position.graha == Graha::Moon)
+        .map(|moon| canonical(moon.longitude_deg))
+        .transpose()?
+        .map(|moon| SayanadiChart {
+            moon: moon.nakshatra(),
+            ishtakaal: foundation.timing.ishtakaal,
+            lagna: Rashi::from_id(u16::from(foundation.lagna_sign_index())).unwrap_or(Rashi::Aries),
+        });
+
     let mut states = Vec::with_capacity(foundation.grahas.len());
     for ((position, placement), friendship) in
         foundation.grahas.iter().zip(&placements).zip(&friendships)
@@ -163,6 +189,15 @@ pub fn state(foundation: &ChartFoundation, settings: &Settings) -> Result<Vec<Gr
             deeptadi: avastha::deeptadi(placement.dignity),
             lajjitadi: avastha::lajjitadi(*placement, &placements),
             war: avastha::war(position.graha, &fighters),
+            sayanadi: sayanadi_chart.as_ref().and_then(|chart| {
+                sayanadi::sayanadi(
+                    position.graha,
+                    longitude,
+                    chart,
+                    settings.state.sayanadi_ghatis,
+                    settings.state.sayanadi_nodes,
+                )
+            }),
             boundaries: Boundaries::of(longitude),
         });
     }

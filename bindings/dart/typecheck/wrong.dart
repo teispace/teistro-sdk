@@ -21,4 +21,13 @@ void main() {
   );
   // expect: The argument type 'Altitude' can't be assigned to the parameter type 'Longitude'
   localMeanZone(Altitude(1400));
+  // A layout is a key of its own kind: a registered one is made by that
+  // kind, and no other kind's member stands in for it.
+  // expect: The element type '(Graha, Varga)' can't be assigned to the list type '(KeyOf<ChartLayout>, Varga)'
+  final List<(KeyOf<ChartLayout>, Varga)> drawings = [(Graha.sun, Varga.d1)];
+  // expect: The element type '(Registered<Graha>, Varga)' can't be assigned to the list type '(KeyOf<ChartLayout>, Varga)'
+  final List<(KeyOf<ChartLayout>, Varga)> registered = [
+    (Graha.registered('ACME'), Varga.d1),
+  ];
+  print('$drawings $registered');
 }

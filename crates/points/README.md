@@ -13,6 +13,7 @@ Points that are not bodies but behave like them.
 | [`solar`](src/solar.rs) | the five upagrahas the Sun casts, as the chain they are |
 | [`eighth`](src/eighth.rs) | Gulika where Saturn's eighth of the arc begins, Mandi where it ends |
 | [`lagna`](src/lagna.rs) | the hora, ghati and pranapada lagnas, the Sree lagna, the Yogi and Avayogi |
+| [`arudha`](src/arudha.rs) | the twelve arudha padas, the first the arudha lagna, reproduced on all 852 recorded (`docs/03-design/arudhas-measured.md`) |
 | [`derived`](src/derived.rs) | what every point is: a key, a longitude, a sign and its distance to an edge |
 | [`chart`](src/chart.rs) | the assembly over a founded chart |
 

@@ -247,3 +247,15 @@ impl<'de> serde::Deserialize<'de> for TithiClass {
         Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<TithiClass>(&key)))
     }
 }
+
+/// The keys the reader above accepts, and no others.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for TithiClass {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("TithiClass")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        crate::catalogue::key_schema::<TithiClass>(&ALIASES)
+    }
+}

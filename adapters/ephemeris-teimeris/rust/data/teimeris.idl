@@ -6627,8 +6627,11 @@
      "role": "array_out",
      "cap_param": "cusp_capacity",
      "extent": {
-      "kind": "unstated",
-      "why": "tm_house_cusp_count() of the requested system"
+      "kind": "call",
+      "function": "tm_house_cusp_count",
+      "of": [
+       "req.system"
+      ]
      }
     },
     {
@@ -6718,8 +6721,13 @@
      "role": "array_out",
      "cap_param": "cusps_capacity",
      "extent": {
-      "kind": "unstated",
-      "why": "count times the widest requested system's cusp count"
+      "kind": "call",
+      "function": "tm_house_cusp_count",
+      "of": [
+       "reqs[].system"
+      ],
+      "reduce": "max",
+      "times": "count"
      }
     },
     {
@@ -6978,8 +6986,11 @@
      "role": "array_out",
      "cap_param": "cusp_capacity",
      "extent": {
-      "kind": "unstated",
-      "why": "tm_house_cusp_count() of the requested system"
+      "kind": "call",
+      "function": "tm_house_cusp_count",
+      "of": [
+       "req.system"
+      ]
      }
     },
     {

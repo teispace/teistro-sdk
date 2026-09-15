@@ -754,6 +754,225 @@ the astronomical numbers do not move. Nothing else computes yet.
   under an unequal division a house can begin in one sign and be centred
   in another.
 
+- `crates/strength`, the strength measures, beginning with the Ashtakavarga:
+  each graha's bindus, the sarvashtakavarga, and their reductions and pindas
+  under BPHS's reading (the default) or the conformance corpus's engine's
+  (`strength.shodhana`, `strength.ekadhipatya`).
+
+  **Numbers:** new. Every settings hash moved with the new knob and the
+  reshaped `strength.ekadhipatya`, which nothing read before; no number the
+  SDK computed before changes.
+
+  The Vimshopaka followed: each graha's strength out of 20 across the
+  sixteen vargas under the shadvarga, saptavarga, dashavarga and
+  shodashavarga, with BPHS ch. 7's weights, scored by the text's points
+  (the default) or the corpus's engine's Saptavargaja virupas
+  (`strength.vimshopaka`, crux C63), through `ChartRequest::with_vimshopaka`,
+  the document's `vimshopaka` section, the boundary's section 28 and
+  `chart.vimshopaka` in every binding.
+
+  **Numbers:** new. Every settings hash moved with `strength.vimshopaka`,
+  and `conformance-baseline` is version 5; no number the SDK computed
+  before changes.
+
+  The Shadbala followed: each graha's six strengths in virupas, the Sthana
+  and Kaala by component, their sum in rupas and whether it reaches the
+  requirement, under BPHS ch. 27's reading (the default) or the corpus's
+  engine's at eleven forks, each a setting (`strength.saptavargaja`,
+  `nathonnatha`, `pre_dawn_night`, `sun_ayana`, `moon_cheshta`, `kranti`,
+  `kaala_lords`, `dig`, `drik`, `naisargika`, `required_rupas`; cruxes
+  C64–C71), through `ChartRequest::with_shadbala`, the document's `shadbala`
+  section, the boundary's section 29 and `chart.shadbala` in every binding.
+  `strength.bala_scheme` is now read, and `PARASHARA_EXTENDED` is refused as
+  unsupported. `Founder::angles_at` gives a chart's ascendant, midheaven and
+  true obliquity at an instant, and the façade re-exports the strength crate
+  as `teistro::strength`.
+
+  **Numbers:** new. Every settings hash moved with the eleven knobs, and
+  `conformance-baseline` is version 6; no number the SDK computed before
+  changes.
+
+  Then Sripati's reading, from B.V. Raman's worked Standard Horoscope:
+  `teistro_aspect::sphuta`, the sphuta drishti with the special aspects;
+  `ShadbalaRules::SRIPATI`, which reproduces Raman's worked Shadbala; four
+  more settings (`strength.drekkana`, `benefics`, `cheshta`, `yuddha`) and
+  new values for `kranti` (`HINDU_TABLE`), `drik` (`QUARTER`, the old
+  `QUARTER` now `QUARTER_WITH_JUPITER_MERCURY`) and `luminary_cheshta` (which
+  replaces `moon_cheshta`; `sun_ayana`'s `CHESHTA_ONLY` is `NOT_IN_KAALA`,
+  `required_rupas`'s `RECORDING_ENGINE` is `SRIPATI`); a Yuddha component in
+  `KaalaBala` and the boundary's `shadbala` section; and the ahargana's lords
+  divided on the count including the day of birth.
+
+  **Numbers:** the default Shadbala moves: the Drik reads the sphuta
+  drishti, the benefics are conditional, the Cheshta reads Kedarnath Dutt's
+  elements, grahas at war exchange a Yuddha bala, and the Saptavargaja gives
+  the moolatrikona's 45 in the rasi alone. `conformance-baseline` is version 7
+  and reproduces the corpus exactly as before.
+
+  The Bhava bala followed: each bhava's lord's Shadbala, Dig, drishti and
+  special rules under BPHS ch. 27's reading (the default), Sripati's or the
+  corpus's engine's (`strength.bhava_dig`, `bhava_drishti`,
+  `bhava_special_rules`; cruxes C73–C75), through
+  `ChartRequest::with_bhava_bala`, the document's `bhava_bala` section, the
+  boundary's section 30 and `chart.bhavaBala` in every binding.
+
+  **Numbers:** new. Every settings hash moved with the three knobs, and
+  `conformance-baseline` is version 8.
+
+  The Ishta and Kashta phalas followed, on each graha of the Shadbala reading
+  and its boundary section: BPHS ch. 28's rays (the default), Sripati's
+  square roots, or the engine's roots of its own Cheshta
+  (`strength.ishta_kashta`, crux C76).
+
+  **Numbers:** new; `conformance-baseline` is version 9.
+
+  The Vaiseshikamsa followed: each graha's count of good vargas and the name
+  it earns in the shadvarga, saptavarga, dashavarga and shodashavarga, from
+  BPHS ch. 6 vv. 42 to 53 (crux C77), through `ChartRequest::with_vaiseshikamsa`,
+  the document's `vaiseshikamsa` section, the boundary's section 31 and
+  `chart.vaiseshikamsa` in every binding; the thirty names are a new
+  catalogue kind, `vaiseshikamsa`.
+
+  **Numbers:** new. No settings hash moved.
+
+  The Sayanadi avasthas followed, from BPHS ch. 45 vv. 30 to 37: every
+  graha's state carries `sayanadi`, one of the twelve states and its
+  sub-state under each of the five ankas a name's first syllable can have
+  (`Sayanadi::cheshta(Anka)`), through the boundary's `states` section and
+  every binding. The sub-states are a new catalogue kind, `avastha_cheshta`.
+  Two knobs, `state.sayanadi_ghatis` and `state.sayanadi_nodes`, carry
+  what the verses leave open (crux C78). A graha in Shayana is now also
+  impaired in the Vaiseshikamsa (crux C77).
+
+  **Numbers:** new, and the Vaiseshikamsa's `impaired` moves for a graha in
+  Shayana. Every settings hash moved: the `state` group gained two knobs.
+
+  The dasha phala followed, from BPHS ch. 28 vv. 5 and 7 to 10 and ch. 47
+  vv. 3 to 6: the Shadbala carries each graha's Subha and Ashubha rays, and
+  `ChartRequest::with_dasha_phala` reads each of the nine grahas' Subhankas
+  in the seven vargas and their totals, its rasi place's nature, where in
+  its dasha its effects come (`DashaPhase`), and whether its placement makes
+  the dasha favourable or unfavourable, under a new knob,
+  `dasha.shanta_sign` (crux C79). It crosses as the document's
+  `dasha_phala` section, boundary section 32 and `chart.dashaPhala` in
+  every binding. `teistro_state::dignity::varga_dignity` reads a divisional
+  sign's dignity, and the Saptavargaja now shares its temporary friendship.
+
+  **Numbers:** new. Every settings hash moved: the `dasha` group gained a
+  knob.
+
+  A consumer's own nakshatra-seeded dasha system now registers, the Phase 5
+  exit's consumer-row clause. A `UduDefinition` goes on
+  `ContextBuilder::dasha_system` or `TsContextOptions.dashas_json`, and
+  every binding's context option takes one. Each is checked by the rules a
+  shipped row passes and refused by its place and field. A request asks for
+  it by key (`dasha_system.ACME_SAPTAKA`, an id from `0x8000`), and the
+  answer names it so. The reading carries its `definition`, so a stored
+  document rebuilds the cursor in a context that never registered it.
+  `DashaReading.system` is now a `DashaName`, a catalogued member or a
+  registered key, serialised as the bare key as before.
+  `ChartRequest::with_dashas` takes ids, and the boundary request's
+  `dashas` array is plain ids rather than an enum.
+
+  **Numbers:** unchanged for every catalogued system; a registered twin of
+  Vimshottari reproduces it to the bit.
+
+- Phase 6 begins with the measurement: the corpus moves to 0.10.0, which
+  records the recording engine's 605 yoga rules in its condition language
+  and their presences on 93 charts. `cargo xtask yogas` (held by
+  `check-yogas`) evaluates every rule under each reading of that language.
+  The engine's reading reproduces all 55 521 decisions, 5350 presences'
+  planets and every cancellation. The Moon's and Mercury's natures and
+  sign-against-orb conjunction are decided; five forks the corpus cannot
+  see are named; 116 rules with no positive case are listed. The page is
+  what the `rules` kernel will be built from.
+
+- `crates/rules`, the rules kernel's first slice: the recording engine's
+  condition language typed (three combinators and 22 predicates over the
+  grahas and the lagna) and read strictly, so an unknown field, predicate,
+  house or body is refused with its path; a `RuleChart`; the seven places
+  the language leaves open as `Readings`, the engine's choices the default;
+  and an `Evaluator` returning each rule's presence, participants, houses
+  and held cancellations. It reproduces every recorded yoga, and
+  `cargo xtask yogas` now measures the built kernel rather than a private
+  copy of its rules. The engine's 597 written rules over one chart take
+  about 10 microseconds.
+
+  **Numbers:** none; nothing in a chart document or the boundary reads the
+  kernel yet.
+
+- `teistro-rules` references: a condition can be about the lord of a sign,
+  the holder of a chara karaka, an arudha pada, the upapada, a body's
+  navamsha, or a sign counted from any of these, as BPHS chs. 29, 30, 33, 34
+  and 40 write their rules. A `BodyRef` is a body and a `SignRef` a sign, so a
+  rule asking for the dignity of a pada is refused when it is read. The
+  engine's rules read unchanged. `Placement` gains `navamsha` and `Readings`
+  gains `upapada` (crux C80). `teistro_points::arudha::pada` counts the pada
+  of any sign.
+
+  **Numbers:** none; the corpus's yogas reproduce as before.
+
+- `teistro-rules` traces: `Evaluator::explain` returns the rule's answer with
+  each condition checked, whether it held, the bodies it added and each
+  reference resolved, as a tree that serialises to JSON and prints as prose.
+  One evaluator runs both calls, so `evaluate` allocates no trace, costs the
+  same, and cannot disagree with an explanation.
+
+  **Numbers:** none.
+
+- `teistro-rules` tables: a rule can look a body's degree up in a
+  degrees-by-sign table (`planet-at-table-degree`) or a sign up in a
+  signs-by-tithi table (`planet-in-table-sign`), each table data with its
+  source. `Tables::classical` ships Jataka Parijata's Mrityu Bhagas (ch. 1
+  v. 57 and its translator's table) and Pushkara bhagas (v. 58), Brihat
+  Prajapatya's Moon row, and the Dagdha rashis. `Tables::check` refuses a rule
+  naming a missing table or the wrong kind. `RuleChart` gains `tithi`,
+  `Readings` gains `bhaga` (cruxes C82 to C84), and `Readings::default()` is
+  now `Readings::TEXTS`, which differs from `RECORDING_ENGINE` only there.
+
+  **Numbers:** none; no shipped rule reads a table yet.
+
+- The doshas: the corpus moves to 0.11.0, which records the recording engine's
+  natal dosha evaluator: 52 rules and their presences on 93 charts, with
+  severity, cancellations and net status. `teistro-rules` models what a dosha
+  adds once, for yogas too. A `Rule` gains reference groups, labelled
+  cancellations, a `Severity` rule, a cancellation threshold, remedies and
+  scope, and a `RuleResult` gains where it was found from, its severity and its
+  `NetStatus`. The language gains the lord, lagna, gandanta and panchanga
+  predicates, and `RuleChart.tithi` becomes `RuleChart.panchanga`. Under
+  `Readings::RECORDING_ENGINE_DOSHAS` the kernel reproduces every recorded
+  dosha of the 35 rules the language can say (crux C85).
+
+  **Numbers:** none.
+
+- Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
+  compares two signs as vv. 158 to 166 do, and two knobs read it.
+  `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
+  the stronger lord of Scorpio and Aquarius (crux C51). `dasha.rashi_start`
+  (`STRONGER` by default, `LAGNA` the engine's) starts Mandooka, Shoola and
+  Trikona from the stronger of their signs (crux C53). A rashi reading
+  records both in `DashaReading.rashi`. `conformance-baseline` keeps the
+  engine's readings as version 10.
+
+  **Numbers:** under the default settings, the Chara family's lords and
+  years move wherever the two dual lords' rules differ, 360 of the corpus's
+  616 answers, and the three systems' starts 98 of 231. Every settings hash
+  moved. The corpus's own readings are unchanged under
+  `conformance-baseline`.
+
+- PyJHora cross-checks: the corpus moves to 0.9.0, which records PyJHora
+  4.8.7's Vimshottari for 53 charts at evidence rank 3, and
+  `crates/dasha/tests/pyjhora.rs` gives the kernel the tool's Moon and each
+  of its years and holds every antardasha start to the year constant's
+  difference: a tenth of a millisecond where the constants agree. The written
+  balance differs as a convention (75 of 212 agree), counted.
+
+- The dasha cursor's budgets are measured: `crates/dasha/benches/dasha.rs`
+  times `at(t, 5)` for every kernel and a registered row (119 to 354 ns
+  against 20 µs) and a materialised depth-3 tree (15.8 µs against 500 µs).
+  `teistro-scenario` gains a `dashas` section, so the instruction-count gate
+  and the cross-architecture hash matrix now watch the cursor too.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

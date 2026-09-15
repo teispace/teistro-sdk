@@ -13,6 +13,7 @@ use crate::solar::{DayArc, SolarModel};
 
 /// Which civil day a sankranti begins the month on.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MonthStartRule {
     /// The civil day, midnight to midnight, in which the sankranti falls

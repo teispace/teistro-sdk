@@ -26,8 +26,8 @@ it reads a graha. Three families ship:
   the clock drives; the Sree lagna, which the Moon's nakshatra drives;
   and the Yogi and Avayogi points.
 
-It is not: the arudha padas or the chara karakas, which the corpus
-records under `houses` but which belong to `jaimini`; the sphutas, which
+It is not: the chara karakas, which the corpus records under `houses`
+but which belong to `jaimini`; the sphutas, which
 have no citation (crux C24); or the sahamas and Arabic lots, which are a
 later phase.
 
@@ -253,8 +253,21 @@ who knows its provider's accuracy.
   thing that could tell a sunrise convention from an arithmetic one.
 - **The rest of the catalogue's 49 points.** Bhava and Vighati lagna,
   Indu lagna, Kala, Mrityu, Ardhaprahara and Yamaghantaka, Bhrigu bindu,
-  Sahayogi, the eight sphutas and the twelve arudhas all have catalogue
-  rows and no formula here. The corpus records none of them, so each
+  Sahayogi and the eight sphutas all have catalogue rows and no formula
+  here. The corpus records none of them, so each
   waits on a citation — which is exactly the position `aspect` left the
   sphuta drishti in, and the same answer applies: a row without a
   formula is better than a formula without a source.
+
+## The arudha padas (2026-09-15)
+
+A first reading of this page put the padas in `jaimini` and said the
+corpus recorded none. Both were wrong: the corpus records all twelve of 71
+charts under `houses.arudha_padas`, with the sign each first counts to and
+whether an exception moved it, and a pada is a function of the lagna's
+sign and the grahas' signs, which is exactly what a point is. So
+`teistro-points` computes them (`arudha`), measured in
+`arudhas-measured.md`: the count from a house's sign to the catalogue's
+lord and as far again, a pada in the house or the seventh moving to the
+tenth from itself, reproduced on all 852.
+

@@ -27,6 +27,15 @@
 //! which said nothing at all about the layer where they moved. It costs
 //! ten milliseconds and it sees them: moving `SCAN_ANCHOR_JD` by half a
 //! step leaves the `astro` digest unchanged and moves this one.
+//!
+//! The **dashas** section walks every kernel's cursor: the chain at depth
+//! five at instants spread over three centuries, for each nakshatra-seeded
+//! row, each sign-based row and the Kalachakra, from Moons spread round the
+//! zodiac. A boundary is a sum of products of years and days, which is the
+//! arithmetic two machines could round differently, and `at` is the call a
+//! timeline makes per pixel, so the instruction count watches the budget
+//! `09-performance-architecture.md` sets it (`crates/dasha/benches` times
+//! it).
 
 use teistro_astro::ayanamsha::{self, Basis};
 use teistro_astro::delta_t::{DeltaTModel, delta_t};
@@ -37,14 +46,25 @@ use teistro_calendar::fixed::FixedDay;
 use teistro_calendar::shipped;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
-use teistro_core::catalogue::{Ayanamsha, Calendar, Graha, HouseSystem};
+use teistro_chart::bhava::{Bhavas, Chalit};
+use teistro_core::angle::Nas;
+use teistro_core::catalogue::{Ayanamsha, Calendar, Dignity, Graha, HouseSystem, Rashi};
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
-use teistro_core::quantity::{JulianDay, Tt, Ut1};
-use teistro_core::settings::{AyanamshaChoice, PolarPolicy};
+use teistro_core::quantity::{Degrees, Depth, JulianDay, Tt, Ut1, Utc};
+use teistro_core::settings::{
+    AfterCycle, AyanamshaChoice, Balance, BirthPeriod, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, PolarPolicy, SeedOverflow, YearLength,
+};
 use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
+use teistro_dasha::{
+    Birth, Dasha, KalachakraDasha, KalachakraRules, RASHI_ROWS, ROWS, RashiChart, RashiDasha,
+    Rules as DashaRules, Timeline,
+};
+use teistro_geometry::{Body, Placements, Point, place, rows};
 use teistro_panchanga::Almanac;
 use teistro_port_ephemeris::TestProvider;
+use teistro_render_svg::{Labels, Style, render as render_svg};
 use teistro_siddhanta::SuryaSiddhanta;
 
 /// One section of the scenario: its name and the values it computed. A
@@ -76,7 +96,16 @@ impl Section {
 }
 
 /// The sections in the order every report lists them.
-pub const SECTIONS: [&str; 5] = ["calendar", "astro", "houses", "siddhanta", "panchanga"];
+pub const SECTIONS: [&str; 8] = [
+    "calendar",
+    "astro",
+    "houses",
+    "siddhanta",
+    "panchanga",
+    "geometry",
+    "render",
+    "dashas",
+];
 
 /// One section by name, or `None` when nothing is called that.
 #[must_use]
@@ -87,6 +116,9 @@ pub fn section(name: &str) -> Option<Section> {
         "houses" => Some(houses()),
         "siddhanta" => Some(siddhanta()),
         "panchanga" => Some(panchanga()),
+        "geometry" => Some(geometry()),
+        "render" => Some(render()),
+        "dashas" => Some(dashas()),
         _ => None,
     }
 }
@@ -206,6 +238,130 @@ fn houses() -> Section {
                 }
                 section.push(built.angles.ascendant_deg);
                 section.push(built.angles.midheaven_deg);
+            }
+        }
+    }
+    section
+}
+
+/// The chart geometry: the two radial layouts over a sweep of ascendants
+/// with real Placidus cusps. The Western wheel is the one place a drawing
+/// takes a platform's `sin` and `cos`; its coordinates are rounded to a grain
+/// so the last unit two libraries may differ in never reaches the output,
+/// and this section is what checks that the rounding holds on every
+/// architecture (`03-design/chart-geometry.md` §7).
+fn geometry() -> Section {
+    let mut section = Section::new("geometry");
+    let mut push = |point: Point| {
+        section.push(point.x);
+        section.push(point.y);
+    };
+    let (wheel, chakra) = (rows::western_wheel(), rows::sudarshan_chakra());
+    for chart in sweep(&[0.0, 97.0, 211.5, 333.3]) {
+        for layout in [&wheel, &chakra] {
+            let Ok(placed) = place(layout, &chart) else {
+                continue;
+            };
+            for cell in &placed.cells {
+                push(cell.outline.start);
+                for segment in &cell.outline.segments {
+                    push(segment.end());
+                }
+                push(cell.label);
+                push(cell.anchor);
+            }
+            for mark in &placed.marks {
+                push(mark.at);
+            }
+        }
+    }
+    section
+}
+
+/// Charts over a sweep of real Placidus ascendants at Kathmandu's latitude,
+/// with the Sun, Moon, Mars and Saturn (and the rest of the grahas, where
+/// more offsets are given) that far past the ascendant.
+fn sweep(offsets: &'static [f64]) -> impl Iterator<Item = Placements> {
+    const GRAHAS: [Graha; 9] = [
+        Graha::Sun,
+        Graha::Moon,
+        Graha::Mars,
+        Graha::Saturn,
+        Graha::Mercury,
+        Graha::Jupiter,
+        Graha::Venus,
+        Graha::Rahu,
+        Graha::Ketu,
+    ];
+    (0..360).step_by(11).filter_map(move |armc| {
+        let input = Input {
+            armc_deg: f64::from(armc),
+            latitude_deg: 27.7,
+            obliquity_deg: 23.439_291_1,
+            sun_declination_deg: None,
+            sidereal_offset_deg: 0.0,
+        };
+        let built = houses::houses(
+            HouseSystem::Placidus,
+            &input,
+            PolarPolicy::FallbackWholeSign,
+        )
+        .ok()?;
+        let ascendant = built.angles.ascendant_deg;
+        Some(Placements {
+            lagna_deg: Some(ascendant),
+            houses: Some(Bhavas::of(Chalit::of(HouseSystem::Placidus), &built.cusps)),
+            bodies: GRAHAS
+                .iter()
+                .zip(offsets)
+                .map(|(graha, offset)| {
+                    Body::at(graha.key_id(), (ascendant + offset).rem_euclid(360.0))
+                })
+                .collect(),
+            ..Placements::new(Body::at(Graha::Sun.key_id(), ascendant).sign)
+        })
+    })
+}
+
+/// The renderer: the wheel and the chakra drawn over the same sweep, with a
+/// conjunction of five so the marks are spread, and every byte of each
+/// drawing pushed eight at a time. The wheel's spreading takes a platform's
+/// `atan2`, `sin` and `cos`, rounded to the geometry's grain, and this is
+/// what shows that rounding holds (`03-design/render-svg.md` §5).
+fn render() -> Section {
+    let mut section = Section::new("render");
+    let (wheel, chakra) = (rows::western_wheel(), rows::sudarshan_chakra());
+    let names = ["Su", "Mo", "Ma", "Sa", "Me", "Ju", "Ve", "Ra", "Ke"];
+    let style = Style::light();
+    for chart in sweep(&[0.0, 2.5, 3.0, 97.0, 4.5, 211.5, 333.3, 180.0, 1.0]) {
+        for layout in [&wheel, &chakra] {
+            let Ok(placed) = place(layout, &chart) else {
+                continue;
+            };
+            let labels = Labels {
+                title: None,
+                cells: placed
+                    .cells
+                    .iter()
+                    .map(|cell| cell.house.to_string())
+                    .collect(),
+                bodies: chart
+                    .bodies
+                    .iter()
+                    .zip(names)
+                    .map(|(body, name)| (body.key, name.to_owned()))
+                    .collect(),
+                lagna: Some(String::from("As")),
+            };
+            let Ok(svg) = render_svg(&placed, &labels, &style) else {
+                continue;
+            };
+            for chunk in svg.as_bytes().chunks(8) {
+                let mut word = [0u8; 8];
+                word.iter_mut()
+                    .zip(chunk)
+                    .for_each(|(to, from)| *to = *from);
+                section.push_int(i64::from_le_bytes(word));
             }
         }
     }
@@ -336,6 +492,96 @@ fn panchanga() -> Section {
         }
         for set in &day.moon.sets {
             section.push(set.get());
+        }
+    }
+    section
+}
+
+/// The dashas: the chain at depth five, at instants over three centuries,
+/// for every shipped row of every kernel, from Moons spread round the
+/// zodiac; each period's lord and bounds.
+fn dashas() -> Section {
+    let mut section = Section::new("dashas");
+    let Ok(depth) = Depth::try_new(5) else {
+        return section;
+    };
+    let rules = DashaRules {
+        balance: Balance::Spatial,
+        year_length: YearLength::Julian36525,
+        birth_period: BirthPeriod::Compressed,
+        after_cycle: AfterCycle::Repeat,
+        seed_overflow: SeedOverflow::WrapToStart,
+    };
+    let birth_jd = 2_447_995.489_583_333_5;
+    let instants: Vec<JulianDay<Utc>> = (0..300)
+        .map(|i| JulianDay::literal(birth_jd + f64::from(i) * 365.25 + 0.371 * f64::from(i)))
+        .collect();
+    let mut chains = |timeline: &dyn Fn(JulianDay<Utc>) -> teistro_dasha::Chain| {
+        for instant in &instants {
+            for period in timeline(*instant).iter() {
+                section.push_int(i64::from(period.lord as u16));
+                section.push(period.interval.from.get());
+                section.push(period.interval.to.get());
+            }
+        }
+    };
+    for moon in [3.7, 101.25, 221.786_980_828_370_36, 347.9] {
+        let Ok(degrees) = Degrees::try_new(moon) else {
+            continue;
+        };
+        let birth = Birth {
+            instant: JulianDay::literal(birth_jd),
+            moon: Nas::from_degrees(degrees),
+            moon_span: None,
+        };
+        for row in ROWS {
+            if let Ok(dasha) = Dasha::new(row, &birth, rules) {
+                chains(&|at| dasha.at(at, depth));
+            }
+        }
+        let kalachakra = KalachakraDasha::new(
+            &birth,
+            KalachakraRules {
+                balance: Balance::Spatial,
+                year_length: YearLength::Julian36525,
+                after_cycle: AfterCycle::Repeat,
+                membership: KalachakraMembership::Listed,
+                balance_of: KalachakraBalance::WholePada,
+                after_ninth: KalachakraAfterNinth::Reverse,
+            },
+        );
+        if let Ok(dasha) = kalachakra {
+            chains(&|at| dasha.at(at, depth));
+        }
+    }
+    let chart = RashiChart {
+        lagna: Rashi::Pisces,
+        arudha_lagna: Rashi::Gemini,
+        navamsa_lagna: Rashi::Aquarius,
+        signs: [
+            Rashi::Aries,
+            Rashi::Scorpio,
+            Rashi::Aquarius,
+            Rashi::Aries,
+            Rashi::Gemini,
+            Rashi::Aquarius,
+            Rashi::Capricorn,
+            Rashi::Capricorn,
+            Rashi::Cancer,
+        ],
+        dignities: [Dignity::Neutral; 9],
+    };
+    for row in RASHI_ROWS {
+        let made = RashiDasha::new(
+            row,
+            &chart,
+            JulianDay::literal(birth_jd),
+            YearLength::Julian36525,
+            AfterCycle::Repeat,
+            teistro_dasha::RashiRules::RECORDING_ENGINE,
+        );
+        if let Ok(dasha) = made {
+            chains(&|at| dasha.at(at, depth));
         }
     }
     section

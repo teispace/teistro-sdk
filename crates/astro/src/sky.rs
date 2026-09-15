@@ -264,6 +264,7 @@ pub fn equatorial_to_ecliptic(p: Spherical, obliquity_deg: f64) -> Spherical {
 /// The apparent geocentric equatorial position of a body: what an
 /// observer's horizon is reckoned against.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Apparent {
     /// Right ascension, degrees, of date.
     pub ra_deg: f64,

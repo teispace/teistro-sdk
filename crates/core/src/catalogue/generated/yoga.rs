@@ -581,3 +581,15 @@ impl<'de> serde::Deserialize<'de> for Yoga {
         Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Yoga>(&key)))
     }
 }
+
+/// The keys the reader above accepts, and no others.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Yoga {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Yoga")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        crate::catalogue::key_schema::<Yoga>(&ALIASES)
+    }
+}

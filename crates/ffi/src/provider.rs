@@ -44,7 +44,6 @@ use teistro_port_ephemeris::plugin::{
 };
 use teistro_port_ephemeris::vtable::ProviderVtable;
 
-use crate::string::TsString;
 use crate::support::optional_text;
 
 /// How much room an adapter is given for its refusal.
@@ -146,33 +145,13 @@ pub unsafe extern "C" fn ts_provider_load(
     path: *const c_char,
     config_json: *const c_char,
     out_provider: *mut *mut TsProvider,
-    out_error: *mut TsString,
+    out_error: *mut crate::context::TsError,
 ) -> Status {
-    if out_provider.is_null() {
-        return Status::InvalidArg;
-    }
-    let opened = catch_unwind(AssertUnwindSafe(|| {
-        // SAFETY: the entry point's contract.
-        unsafe { load(path, config_json) }
-    }))
-    .unwrap_or_else(|_| {
-        Err(Error::internal(
-            "a panic was caught while loading a provider",
-        ))
-    });
-    match opened {
-        Ok(provider) => {
-            // SAFETY: non-null; the caller promises a writable slot.
-            unsafe { out_provider.write(Box::into_raw(Box::new(provider))) };
-            Status::Ok
-        }
-        Err(error) => {
-            if !out_error.is_null() {
-                // SAFETY: non-null; the caller promises a writable slot.
-                unsafe { out_error.write(TsString::from_string(error.to_string())) };
-            }
-            error.status
-        }
+    // SAFETY: the entry point's contract.
+    unsafe {
+        crate::support::construct(out_provider, "out_provider", out_error, || {
+            load(path, config_json)
+        })
     }
 }
 
@@ -337,33 +316,16 @@ pub unsafe extern "C" fn ts_context_new_with_provider(
     options: *const crate::context::TsContextOptions,
     provider: *const TsProvider,
     out_context: *mut *mut crate::context::TsContext,
-    out_error: *mut TsString,
+    out_error: *mut crate::context::TsError,
 ) -> Status {
-    if out_context.is_null() || provider.is_null() {
-        return Status::InvalidArg;
-    }
-    let built = catch_unwind(AssertUnwindSafe(|| {
-        // SAFETY: the entry point's contract.
-        unsafe { with_provider(options, provider) }
-    }))
-    .unwrap_or_else(|_| {
-        Err(Error::internal(
-            "a panic was caught while building the context",
-        ))
-    });
-    match built {
-        Ok(context) => {
-            // SAFETY: non-null; the caller promises a writable slot.
-            unsafe { out_context.write(Box::into_raw(Box::new(context))) };
-            Status::Ok
-        }
-        Err(error) => {
-            if !out_error.is_null() {
-                // SAFETY: non-null; the caller promises a writable slot.
-                unsafe { out_error.write(TsString::from_string(error.to_string())) };
+    // SAFETY: the entry point's contract.
+    unsafe {
+        crate::support::construct(out_context, "out_context", out_error, || {
+            if provider.is_null() {
+                return Err(crate::support::null("provider"));
             }
-            error.status
-        }
+            with_provider(options, provider)
+        })
     }
 }
 
@@ -381,14 +343,9 @@ unsafe fn with_provider(
     // least as long as the context built below.
     let bound = unsafe { teistro_port_ephemeris::VtableProvider::bind(vtable, user_data) }?;
     // SAFETY: the entry point's contract.
-    let (profile, settings_json, locale) = unsafe { crate::context::read_options(options) }?;
-    crate::context::TsContext::build(
-        profile,
-        settings_json,
-        teistro::Ephemeris::Provider(Box::new(bound)),
-        locale,
-    )
-    .map(|context| context.keeping(keepalive))
+    let texts = unsafe { crate::context::read_options(options) }?;
+    crate::context::TsContext::build(&texts, teistro::Ephemeris::Provider(Box::new(bound)))
+        .map(|context| context.keeping(keepalive))
 }
 
 /// Frees a loaded provider; null is ignored.

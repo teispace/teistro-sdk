@@ -16,6 +16,7 @@ pub const SECONDS_PER_DAY: u32 = 86_400;
 /// may be 60 for a leap second; whether the day had one is checked when
 /// the time is resolved in a zone.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CivilTime {
     hour: u8,
     minute: u8,
@@ -229,6 +230,7 @@ impl<'de> serde::Deserialize<'de> for CivilTime {
 
 /// A civil date in a calendar and, when known, the time of day.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CivilDateTime {
     /// The date, in its calendar.
     pub date: CalendarDate,

@@ -66,6 +66,46 @@ class TmPositionRequest(TypedDict):
     ayanamsha_set: int
 
 
+class TmAngles(TypedDict):
+    """`tm_angles`, as the engine declares it. Every field is required."""
+
+    ascendant: float
+    midheaven: float
+    armc: float
+    vertex: float
+    equatorial_ascendant: float
+    co_ascendant_koch: float
+    co_ascendant_munkasey: float
+    polar_ascendant: float
+    ascendant_speed: float
+    midheaven_speed: float
+    armc_speed: float
+    vertex_speed: float
+    system_used: int
+
+
+class TmHousesRequest(TypedDict):
+    """`tm_houses_request`, as the engine declares it. Every field is required."""
+
+    jd_ut1: float
+    geo_lat_deg: float
+    geo_lon_deg: float
+    system: int
+    flags: int
+
+
+class TmChartRequest(TypedDict):
+    """`tm_chart_request`, as the engine declares it. Every field is required."""
+
+    jd: float
+    scale: int
+    parts: int
+    place: TmObserver | None
+    flags: int
+    system: int
+    house_flags: int
+
+
 class TmModelDetails(TypedDict):
     """`tm_model_details`, as the engine declares it. Every field is required."""
 
@@ -571,6 +611,14 @@ class TmCalendarRequest(TypedDict):
     horizon_height_deg: float
 
 
+class TmCalendarDay(TypedDict):
+    """`tm_calendar_day`, as the engine declares it. Every field is required."""
+
+    jd: float
+    found: int
+    status: int
+
+
 class TmScanRequest(TypedDict):
     """`tm_scan_request`, as the engine declares it. Every field is required."""
 
@@ -635,6 +683,30 @@ class TmUtcToJd(TypedDict):
 
     out_jd_tt: float
     out_jd_ut1: float
+
+
+class TmHousesCalc(TypedDict):
+    """What `tm_houses_calc` answers with."""
+
+    cusps: list[float]
+    cusp_speeds: list[float]
+    out_angles: TmAngles
+
+
+class TmHousesCalcMany(TypedDict):
+    """What `tm_houses_calc_many` answers with."""
+
+    cusps: list[float]
+    out_angles: list[TmAngles]
+
+
+class TmChartCalc(TypedDict):
+    """What `tm_chart_calc` answers with."""
+
+    out_positions: list[TmPosition]
+    out_cusps: list[float]
+    out_cusp_speeds: list[float]
+    out_angles: TmAngles
 
 
 class TmJplInfo(TypedDict):
@@ -716,6 +788,13 @@ class TmVisibilityDefaults(TypedDict):
 
     atmosphere: TmVisibilityAtmosphere
     eye: TmObserverEye
+
+
+class TmCalendarGrid(TypedDict):
+    """What `tm_calendar_grid` answers with."""
+
+    out_days: list[TmCalendarDay]
+    out_positions: list[TmPosition]
 
 
 class TmScanGrid(TypedDict):
@@ -909,6 +988,16 @@ class TeimerisEngine:
         answered = cast(dict[str, object], self._engine.call("tm_house_system_count"))
         return int(cast(int, answered["return"]))
 
+    def tm_houses_calc(self, req: TmHousesRequest | None = None) -> TmHousesCalc:
+        """`tm_houses_calc`.
+        """
+        return cast(TmHousesCalc, self._engine.call("tm_houses_calc", req=req))
+
+    def tm_houses_calc_many(self, reqs: Sequence[TmHousesRequest]) -> TmHousesCalcMany:
+        """`tm_houses_calc_many`.
+        """
+        return cast(TmHousesCalcMany, self._engine.call("tm_houses_calc_many", reqs=reqs))
+
     def tm_house_position(self, armc: float, geo_lat_deg: float, obliquity_deg: float, sys: int, lon_deg: float, lat_deg: float) -> float:
         """`tm_house_position`.
         """
@@ -920,6 +1009,11 @@ class TeimerisEngine:
         """
         answered = cast(dict[str, object], self._engine.call("tm_chart_default_bodies"))
         return [int(one) for one in cast(list[int], answered["out_bodies"])]
+
+    def tm_chart_calc(self, req: TmChartRequest | None, bodies: Sequence[int]) -> TmChartCalc:
+        """`tm_chart_calc`.
+        """
+        return cast(TmChartCalc, self._engine.call("tm_chart_calc", req=req, bodies=bodies))
 
     def tm_set_jpl_file(self, filename: str) -> None:
         """`tm_set_jpl_file`.
@@ -1403,6 +1497,11 @@ class TeimerisEngine:
         """
         answered = cast(dict[str, object], self._engine.call("tm_calendar_request_init_sized"))
         return cast(TmCalendarRequest, answered["req"])
+
+    def tm_calendar_grid(self, req: TmCalendarRequest | None, bodies: Sequence[int]) -> TmCalendarGrid:
+        """`tm_calendar_grid`.
+        """
+        return cast(TmCalendarGrid, self._engine.call("tm_calendar_grid", req=req, bodies=bodies))
 
     def tm_scan_request_init_sized(self) -> TmScanRequest:
         """`tm_scan_request_init_sized`.

@@ -54,6 +54,7 @@
 
 pub mod canonical;
 pub mod document;
+pub mod schema;
 pub mod seal;
 
 pub use canonical::{hash_of, to_hash_form, to_rendered};

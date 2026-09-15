@@ -53,6 +53,19 @@ pub(crate) enum Extent {
     /// `count` receives, or as `return` the function returns, how many
     /// there are, even beyond the capacity.
     Total { count: String },
+    /// As long as another exported function answers, called with `of`:
+    /// values or fields of struct inputs, in its own parameter order.
+    Call {
+        function: String,
+        of: Vec<String>,
+        /// How answers are combined when an argument names a field of
+        /// every element of an input array (`reqs[].system`): `max`.
+        #[serde(default)]
+        reduce: Option<String>,
+        /// The length parameter the combined answer is multiplied by.
+        #[serde(default)]
+        times: Option<String>,
+    },
     /// Decided by something no parameter holds, and `why` says what.
     Unstated { why: String },
 }

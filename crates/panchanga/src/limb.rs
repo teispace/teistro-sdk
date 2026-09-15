@@ -32,12 +32,13 @@ use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::events::{Longitudes, Search};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
+use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Karana, Masa, Nakshatra, Rashi, Tithi, Yoga};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
-use teistro_core::settings::AyanamshaChoice;
+use teistro_core::settings::{AyanamshaBasis, AyanamshaChoice};
 use teistro_port_ephemeris::{Body, Lattice, Quantity};
 
 use crate::span::Span;
@@ -54,6 +55,7 @@ pub const LONGEST_SPAN_DAYS: f64 = 1.5;
 
 /// The four moving limbs of one day.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Limbs {
     /// The tithis that touch the day.
     pub tithi: Vec<Span<Tithi>>,
@@ -264,6 +266,60 @@ pub struct Zodiac {
     pub precession: PrecessionModel,
     /// The Delta T model.
     pub delta_t: DeltaTModel,
+}
+
+impl Zodiac {
+    /// The zodiac a chart's own limbs are measured in: the chart's
+    /// ayanamsha under the profile's basis.
+    #[must_use]
+    pub const fn of_chart(
+        chart: &ChartZodiac,
+        basis: AyanamshaBasis,
+        precession: PrecessionModel,
+        delta_t: DeltaTModel,
+    ) -> Zodiac {
+        Zodiac {
+            ayanamsha: chart.ayanamsha,
+            basis: match basis {
+                AyanamshaBasis::True => Basis::True,
+                _ => Basis::Mean,
+            },
+            precession,
+            delta_t,
+        }
+    }
+}
+
+/// The nakshatra the Moon stands in at an instant, with the whole of its
+/// stay there: what a temporal dasha balance reads.
+///
+/// # Errors
+///
+/// As [`limbs`], and `INTERNAL` should the search find no nakshatra at the
+/// instant, which a Moon that never stops cannot do.
+pub fn nakshatra_at<S: Longitudes + ?Sized>(
+    tropical: &S,
+    at: JulianDay<Utc>,
+    zodiac: Zodiac,
+) -> Result<Span<Nakshatra>, Error> {
+    let source = Sidereal {
+        tropical,
+        ayanamsha: zodiac.ayanamsha,
+        basis: zodiac.basis,
+        precession: zodiac.precession,
+        delta_t: zodiac.delta_t,
+    };
+    let window = Interval::literal(at.get(), at.get());
+    let found = crossings(&source, Limb::Nakshatra, window)?;
+    spans(&source, Limb::Nakshatra, window, &found)?
+        .into_iter()
+        .find(|span| span.whole.contains_inclusive(at))
+        .ok_or_else(|| {
+            Error::new(
+                Status::Internal,
+                format!("no nakshatra holds the Moon at {at}"),
+            )
+        })
 }
 
 /// The four limbs of a window.

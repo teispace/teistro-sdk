@@ -62,7 +62,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_AVASTHA_JAGRADADI` | 51 | The three wakefulness states. |
 | `TS_KIND_AVASTHA_DEEPTADI` | 52 | The nine Deeptadi states. |
 | `TS_KIND_AVASTHA_LAJJITADI` | 53 | The six Lajjitadi states. |
-| `TS_KIND_AVASTHA_SAYANADI` | 54 | The twelve Sayanadi states. |
+| `TS_KIND_AVASTHA_SAYANADI` | 54 | The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. |
 | `TS_KIND_POINT_FAMILY` | 55 | What kind of derived point. |
 | `TS_KIND_STAR` | 56 | The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`). |
 | `TS_KIND_STAR_CLASS` | 57 | What kind of object a star-table member is. |
@@ -70,6 +70,9 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_KAALA` | 59 | The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. |
 | `TS_KIND_PANCHAKA` | 60 | The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. |
 | `TS_KIND_MUHURTA_YOGA` | 61 | The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). |
+| `TS_KIND_CHART_LAYOUT` | 62 | The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. |
+| `TS_KIND_VAISESHIKAMSA` | 63 | The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. |
+| `TS_KIND_AVASTHA_CHESHTA` | 64 | The three sub-states of a Sayanadi state, a remainder of three. |
 
 ## ts_graha
 
@@ -1041,7 +1044,7 @@ The six Lajjitadi states. Members are the catalogue's ids; the full key id is `(
 
 ## ts_avastha_sayanadi
 
-The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
 
 | member | value | what it is |
 |---|---|---|
@@ -1266,6 +1269,66 @@ The muhurta yogas a day may carry. The members are attested; the tables that say
 | `TS_MUHURTA_YOGA_DWIPUSHKAR` | 3 | Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings |
 | `TS_MUHURTA_YOGA_TRIPUSHKAR` | 4 | Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings |
 
+## ts_chart_layout
+
+The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CHART_LAYOUT_NORTH_INDIAN` | 0 | The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise |
+| `TS_CHART_LAYOUT_SOUTH_INDIAN` | 1 | The South Indian chart: signs fixed, Pisces top-left, running clockwise |
+| `TS_CHART_LAYOUT_EAST_INDIAN` | 2 | The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise |
+| `TS_CHART_LAYOUT_NEPALI_LOTUS` | 3 | The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals |
+| `TS_CHART_LAYOUT_SUDARSHAN_CHAKRA` | 4 | The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun |
+| `TS_CHART_LAYOUT_WESTERN_WHEEL` | 5 | The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock |
+
+## ts_vaiseshikamsa
+
+The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VAISESHIKAMSA_KIMSHUKA` | 0 | Kimshuka |
+| `TS_VAISESHIKAMSA_VYANJANA` | 1 | Vyanjana |
+| `TS_VAISESHIKAMSA_CHAMARA` | 2 | Chamara |
+| `TS_VAISESHIKAMSA_CHATRA` | 3 | Chatra |
+| `TS_VAISESHIKAMSA_KUNDALA` | 4 | Kundala |
+| `TS_VAISESHIKAMSA_MUKUTA` | 5 | Mukuta |
+| `TS_VAISESHIKAMSA_PARIJATA` | 6 | Parijata |
+| `TS_VAISESHIKAMSA_UTTAMA` | 7 | Uttama |
+| `TS_VAISESHIKAMSA_GOPURA` | 8 | Gopura |
+| `TS_VAISESHIKAMSA_SIMHASANA` | 9 | Simhasana |
+| `TS_VAISESHIKAMSA_PARAVATA` | 10 | Paravata |
+| `TS_VAISESHIKAMSA_DEVALOKA` | 11 | Devaloka |
+| `TS_VAISESHIKAMSA_BRAHMALOKA` | 12 | Brahmaloka |
+| `TS_VAISESHIKAMSA_SHAKRAVAHANA` | 13 | Shakravahana |
+| `TS_VAISESHIKAMSA_SHRIDHAMA` | 14 | Shridhama |
+| `TS_VAISESHIKAMSA_BHEDAKA` | 15 | Bhedaka |
+| `TS_VAISESHIKAMSA_KUSUMA` | 16 | Kusuma |
+| `TS_VAISESHIKAMSA_NAGAPUSHPA` | 17 | Nagapushpa |
+| `TS_VAISESHIKAMSA_KANDUKA` | 18 | Kanduka |
+| `TS_VAISESHIKAMSA_KERALA` | 19 | Kerala |
+| `TS_VAISESHIKAMSA_KALPAVRIKSHA` | 20 | Kalpavriksha |
+| `TS_VAISESHIKAMSA_CHANDANAVANA` | 21 | Chandanavana |
+| `TS_VAISESHIKAMSA_PURNACHANDRA` | 22 | Purnachandra |
+| `TS_VAISESHIKAMSA_UCHCHAISHRAVA` | 23 | Uchchaishrava |
+| `TS_VAISESHIKAMSA_DHANVANTARI` | 24 | Dhanvantari |
+| `TS_VAISESHIKAMSA_SURYAKANTA` | 25 | Suryakanta |
+| `TS_VAISESHIKAMSA_VIDRUMA` | 26 | Vidruma |
+| `TS_VAISESHIKAMSA_CHAKRASIMHASANA` | 27 | Chakrasimhasana |
+| `TS_VAISESHIKAMSA_GOLOKA` | 28 | Goloka |
+| `TS_VAISESHIKAMSA_SHRIVALLABHA` | 29 | Shrivallabha |
+
+## ts_avastha_cheshta
+
+The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AVASTHA_CHESHTA_DRISHTI` | 0 | Drishti, a remainder of one: the state's effects middling |
+| `TS_AVASTHA_CHESHTA_CHESHTA` | 1 | Cheshta, a remainder of two: its effects in full |
+| `TS_AVASTHA_CHESHTA_VICHESHTA` | 2 | Vicheshta, a remainder of nothing: its effects slight |
+
 ## ts_status
 
 The status of a call, with the code it has at the C boundary.
@@ -1473,6 +1536,54 @@ The aspect crate's own `Strength`, which is not a catalogue member — it is a p
 | `TS_STRENGTH_HALF` | 2 | A half aspect: the fifth and ninth. |
 | `TS_STRENGTH_THREE_QUARTERS` | 3 | A three-quarter aspect: the fourth and eighth. |
 | `TS_STRENGTH_FULL` | 4 | A full aspect: the seventh, and a special graha's own two houses. |
+
+## ts_balance
+
+How a dasha's balance at birth was measured.
+
+The settings' own `Balance`, which is a knob and not a catalogue member, so it crosses as this boundary's own enum, as `TsStrength` does.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BALANCE_SPATIAL` | 0 | By the elapsed part of the Moon's window of nakshatras. |
+| `TS_BALANCE_TEMPORAL` | 1 | By the elapsed part of the Moon's stay in its nakshatra. |
+
+## ts_shodhana
+
+Where an Ashtakavarga's reductions and pindas were made: the settings' own `Shodhana`, which is a knob and not a catalogue member.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SHODHANA_EACH_GRAHA` | 0 | In each graha's own Ashtakavarga (BPHS chs. 67 to 69). |
+| `TS_SHODHANA_SARVA` | 1 | On the sum of the seven, as the conformance corpus's engine makes them. |
+
+## ts_ekadhipatya
+
+How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside an occupied one: the settings' own `Ekadhipatya`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_EKADHIPATYA_BPHS` | 0 | BPHS ch. 68: an empty sign keeps a difference. |
+| `TS_EKADHIPATYA_EMPTY_TO_ZERO` | 1 | The empty sign always goes to zero. |
+
+## ts_vimshopaka_scoring
+
+How a Vimshopaka scored a graha in a varga: the settings' own `Vimshopaka`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VIMSHOPAKA_SCORING_BPHS` | 0 | BPHS ch. 7: 20 in exaltation or the own sign, else by the compound relationship with the sign's lord. |
+| `TS_VIMSHOPAKA_SCORING_SAPTAVARGAJA_VIRUPAS` | 1 | The conformance corpus's engine: the Saptavargaja virupas over 45 by natural friendship, rounded to hundredths. |
+
+## ts_dasha_phase
+
+Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DASHA_PHASE_COMMENCEMENT` | 0 | At its commencement. |
+| `TS_DASHA_PHASE_MIDDLE` | 1 | In its middle. |
+| `TS_DASHA_PHASE_END` | 2 | At its end. |
 
 ## ts_day_part
 

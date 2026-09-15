@@ -1,4 +1,4 @@
 {
   "title": "Chart",
-  "pages": ["ts_chart_found"]
+  "pages": ["ts_chart_layout_row", "ts_chart_found"]
 }

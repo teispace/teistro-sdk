@@ -36,6 +36,7 @@ pub const WIDEST_ORB_DEG: f64 = 90.0;
 
 /// A body as this engine sees it: where it is and how fast it is going.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Moving {
     /// Longitude, degrees.
     pub longitude_deg: f64,
@@ -63,6 +64,7 @@ impl Moving {
 
 /// An angle two bodies may stand at.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Angle {
     /// Its name, which a value carries so a caller need not compare
     /// floating-point degrees to find out which angle it is.
@@ -163,6 +165,7 @@ impl<'de> Deserialize<'de> for Angle {
 
 /// One angle two bodies stand within an orb of.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Hit {
     /// Which angle.
     pub angle: Angle,

@@ -686,6 +686,563 @@ export interface ChartsStates {
    * How near it stands to a pada edge, degrees.
    */
   readonly padaDeg: Float64Array;
+  /**
+   * 1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon.
+   */
+  readonly hasSayanadi: Uint8Array;
+  /**
+   * The Sayanadi state; read only when `has_sayanadi`.
+   * The values are `AvasthaSayanadi` ids.
+   */
+  readonly sayanadi: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta1: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta2: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta3: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta4: Uint16Array;
+  /**
+   * The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`.
+   * The values are `AvasthaCheshta` ids.
+   */
+  readonly cheshta5: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dashas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+ */
+export interface ChartsDashas {
+  /**
+   * Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names.
+   * The values are `DashaSystem` ids.
+   */
+  readonly system: Uint16Array;
+  /**
+   * 1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero.
+   */
+  readonly seeded: Uint8Array;
+  /**
+   * 1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero.
+   */
+  readonly signed: Uint8Array;
+  /**
+   * The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.
+   * The values are `Nakshatra` ids.
+   */
+  readonly seed: Uint16Array;
+  /**
+   * The lord it starts with.
+   * The values are `Graha` ids.
+   */
+  readonly firstLord: Uint16Array;
+  /**
+   * 1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it.
+   */
+  readonly overflow: Uint8Array;
+  /**
+   * How the balance was measured.
+   * The values are `Balance` ids.
+   */
+  readonly balance: Uint8Array;
+  /**
+   * The fraction of the first lord's period still to run at birth, 0 to 1.
+   */
+  readonly remaining: Float64Array;
+  /**
+   * That fraction of the first lord's years, in days.
+   */
+  readonly balanceDays: Float64Array;
+  /**
+   * The balance's whole years of the year length.
+   */
+  readonly balanceYears: Uint32Array;
+  /**
+   * Its whole months of a twelfth of the year length.
+   */
+  readonly balanceMonths: Uint8Array;
+  /**
+   * Its whole days.
+   */
+  readonly balanceDayCount: Uint8Array;
+  /**
+   * Its hours, the rest rounded to the minute.
+   */
+  readonly balanceHours: Uint8Array;
+  /**
+   * Its minutes, rounded.
+   */
+  readonly balanceMinutes: Uint8Array;
+  /**
+   * When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span.
+   */
+  readonly moonSpanFrom: Float64Array;
+  /**
+   * When it left, a Julian day (UTC); NaN when no span was read.
+   */
+  readonly moonSpanTo: Float64Array;
+  /**
+   * How many levels the periods go down, 1 to 6.
+   */
+  readonly depth: Uint8Array;
+  /**
+   * How many rows of `dasha_periods` are this dasha's.
+   */
+  readonly periodCount: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dasha_periods` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+ */
+export interface ChartsDashaPeriods {
+  /**
+   * How deep: 1 for a mahadasha.
+   */
+  readonly level: Uint8Array;
+  /**
+   * Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
+   */
+  readonly index: Uint8Array;
+  /**
+   * The sign it is the period of, when its dasha is `signed`; zero otherwise.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * Its lord.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * When it begins, a Julian day (UTC).
+   */
+  readonly fromJd: Float64Array;
+  /**
+   * When it ends, a Julian day (UTC).
+   */
+  readonly toJd: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `ashtakavarga` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+ */
+export interface ChartsAshtakavarga {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.
+   * The values are `Shodhana` ids.
+   */
+  readonly shodhana: Uint8Array;
+  /**
+   * How a co-ruled sign beside an occupied one was reduced.
+   * The values are `Ekadhipatya` ids.
+   */
+  readonly ekadhipatya: Uint8Array;
+  /**
+   * Its rashi pinda.
+   */
+  readonly rashiPinda: Uint32Array;
+  /**
+   * Its graha pinda.
+   */
+  readonly grahaPinda: Uint32Array;
+  /**
+   * Its yoga pinda, the two together.
+   */
+  readonly yogaPinda: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `ashtakavarga_bindus` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+ */
+export interface ChartsAshtakavargaBindus {
+  /**
+   * Its bindus in the sign, 0 to 8.
+   */
+  readonly bindus: Uint8Array;
+  /**
+   * The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise.
+   */
+  readonly reduced: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `sarvashtakavarga` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+ */
+export interface ChartsSarvashtakavarga {
+  /**
+   * The seven grahas' bindus in the sign.
+   */
+  readonly sarva: Uint16Array;
+  /**
+   * The sum after the trine reduction.
+   */
+  readonly trikona: Uint16Array;
+  /**
+   * The sum after both reductions.
+   */
+  readonly reduced: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `vimshopaka` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+ */
+export interface ChartsVimshopaka {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * How each varga was scored.
+   * The values are `VimshopakaScoring` ids.
+   */
+  readonly scoring: Uint8Array;
+  /**
+   * Over the six vargas.
+   */
+  readonly shadvarga: Float64Array;
+  /**
+   * Over the seven.
+   */
+  readonly saptavarga: Float64Array;
+  /**
+   * Over the ten.
+   */
+  readonly dashavarga: Float64Array;
+  /**
+   * Over the sixteen.
+   */
+  readonly shodashavarga: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `shadbala` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+ */
+export interface ChartsShadbala {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Sthana: from the distance to the debilitation point, 0 to 60.
+   */
+  readonly uchcha: Float64Array;
+  /**
+   * Sthana: from the dignity in the seven vargas.
+   */
+  readonly saptavargaja: Float64Array;
+  /**
+   * Sthana: from the rasi's and navamsha's parity, 0, 15 or 30.
+   */
+  readonly ojayugma: Float64Array;
+  /**
+   * Sthana: from the house, 60, 30 or 15.
+   */
+  readonly kendradi: Float64Array;
+  /**
+   * Sthana: from the decanate, 0 or 15.
+   */
+  readonly drekkana: Float64Array;
+  /**
+   * Dig: from the distance to the powerless kendra, 0 to 60.
+   */
+  readonly dig: Float64Array;
+  /**
+   * Kaala: from the hour, 0 to 60.
+   */
+  readonly nathonnatha: Float64Array;
+  /**
+   * Kaala: from the Moon's elongation, the Moon's doubled.
+   */
+  readonly paksha: Float64Array;
+  /**
+   * Kaala: 60 to the lord of the third of the day or night, and to Jupiter.
+   */
+  readonly tribhaga: Float64Array;
+  /**
+   * Kaala: 15 to the year's lord.
+   */
+  readonly abda: Float64Array;
+  /**
+   * Kaala: 30 to the month's lord.
+   */
+  readonly masa: Float64Array;
+  /**
+   * Kaala: 45 to the weekday's lord.
+   */
+  readonly vara: Float64Array;
+  /**
+   * Kaala: 60 to the hour's lord.
+   */
+  readonly hora: Float64Array;
+  /**
+   * Kaala: from the declination.
+   */
+  readonly ayana: Float64Array;
+  /**
+   * Kaala: gained by the victor and lost by the vanquished of a planetary war.
+   */
+  readonly yuddha: Float64Array;
+  /**
+   * Cheshta: motional strength.
+   */
+  readonly cheshta: Float64Array;
+  /**
+   * Naisargika: natural strength.
+   */
+  readonly naisargika: Float64Array;
+  /**
+   * Drik: aspectual strength, which may be negative.
+   */
+  readonly drik: Float64Array;
+  /**
+   * The six together, virupas.
+   */
+  readonly virupas: Float64Array;
+  /**
+   * The six together, rupas.
+   */
+  readonly rupas: Float64Array;
+  /**
+   * The rupas it must reach to be strong.
+   */
+  readonly requiredRupas: Float64Array;
+  /**
+   * How far it tends to good, 0 to 60 (BPHS ch. 28).
+   */
+  readonly ishta: Float64Array;
+  /**
+   * How far it tends to harm, 0 to 60.
+   */
+  readonly kashta: Float64Array;
+  /**
+   * Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5).
+   */
+  readonly subhaRashmi: Float64Array;
+  /**
+   * Its inauspicious rays, 8 less the auspicious.
+   */
+  readonly ashubhaRashmi: Float64Array;
+  /**
+   * 1 when the rupas reach the requirement, else 0.
+   */
+  readonly strong: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `bhava_bala` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+ */
+export interface ChartsBhavaBala {
+  /**
+   * The lord of the sign its madhya falls in.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * The lord's Shadbala.
+   */
+  readonly adhipati: Float64Array;
+  /**
+   * From its direction, 0 to 60.
+   */
+  readonly dig: Float64Array;
+  /**
+   * From the drishtis it receives, which may be negative.
+   */
+  readonly drishti: Float64Array;
+  /**
+   * From its occupants and its sign's rising, under BPHS's special rules.
+   */
+  readonly special: Float64Array;
+  /**
+   * The four together.
+   */
+  readonly virupas: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `vaiseshikamsa` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+ */
+export interface ChartsVaiseshikamsa {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * 1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0.
+   */
+  readonly impaired: Uint8Array;
+  /**
+   * How many of the shadvarga's vargas are good for it.
+   */
+  readonly shadvargaGood: Uint8Array;
+  /**
+   * The name the shadvarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly shadvargaName: Uint16Array;
+  /**
+   * How many of the saptavarga's vargas are good for it.
+   */
+  readonly saptavargaGood: Uint8Array;
+  /**
+   * The name the saptavarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly saptavargaName: Uint16Array;
+  /**
+   * How many of the dashavarga's vargas are good for it.
+   */
+  readonly dashavargaGood: Uint8Array;
+  /**
+   * The name the dashavarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly dashavargaName: Uint16Array;
+  /**
+   * How many of the shodashavarga's vargas are good for it.
+   */
+  readonly shodashavargaGood: Uint8Array;
+  /**
+   * The name the shodashavarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly shodashavargaName: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dasha_phala` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+ */
+export interface ChartsDashaPhala {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its Subhanka in the D1, out of 60: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD1: Float64Array;
+  /**
+   * Its Subhanka in the D2, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD2: Float64Array;
+  /**
+   * Its Subhanka in the D3, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD3: Float64Array;
+  /**
+   * Its Subhanka in the D7, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD7: Float64Array;
+  /**
+   * Its Subhanka in the D9, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD9: Float64Array;
+  /**
+   * Its Subhanka in the D12, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD12: Float64Array;
+  /**
+   * Its Subhanka in the D30, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD30: Float64Array;
+  /**
+   * The seven Subhankas together, out of 240.
+   */
+  readonly subhanka: Float64Array;
+  /**
+   * Their complements together, out of 240.
+   */
+  readonly asubhanka: Float64Array;
+  /**
+   * Whether its rasi place is auspicious, neutral or inauspicious (v. 10).
+   * The values are `Nature` ids.
+   */
+  readonly nature: Uint16Array;
+  /**
+   * Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4).
+   * The values are `DashaPhase` ids.
+   */
+  readonly phase: Uint8Array;
+  /**
+   * 1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5).
+   */
+  readonly favourable: Uint8Array;
+  /**
+   * 1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand.
+   */
+  readonly unfavourable: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -801,6 +1358,10 @@ export interface Charts {
    * How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`.
    */
   readonly vargaCount: number;
+  /**
+   * How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows.
+   */
+  readonly dashaCount: number;
   /**
    * The place's latitude, degrees north.
    */
@@ -926,6 +1487,54 @@ export interface Charts {
    * UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.
    */
   readonly combustionOrbs: string;
+  /**
+   * UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.
+   */
+  readonly drawings: string;
+  /**
+   * UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.
+   */
+  readonly svgs: string;
+  /**
+   * Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+   */
+  readonly dashas: ChartsDashas;
+  /**
+   * Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+   */
+  readonly dashaPeriods: ChartsDashaPeriods;
+  /**
+   * Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+   */
+  readonly ashtakavarga: ChartsAshtakavarga;
+  /**
+   * Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+   */
+  readonly ashtakavargaBindus: ChartsAshtakavargaBindus;
+  /**
+   * Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+   */
+  readonly sarvashtakavarga: ChartsSarvashtakavarga;
+  /**
+   * Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+   */
+  readonly vimshopaka: ChartsVimshopaka;
+  /**
+   * Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+   */
+  readonly shadbala: ChartsShadbala;
+  /**
+   * Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+   */
+  readonly bhavaBala: ChartsBhavaBala;
+  /**
+   * Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+   */
+  readonly vaiseshikamsa: ChartsVaiseshikamsa;
+  /**
+   * Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+   */
+  readonly dashaPhala: ChartsDashaPhala;
 }
 
 /**

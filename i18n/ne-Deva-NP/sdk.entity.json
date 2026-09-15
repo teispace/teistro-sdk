@@ -343,6 +343,41 @@
       "iast": "Lagna",
       "glyph": "Asc",
       "gender": "n"
+    },
+    "DHUMA": {
+      "name": "धूम",
+      "prose": "धूम",
+      "iast": "Dhūma"
+    },
+    "VYATIPATA": {
+      "name": "व्यतीपात",
+      "prose": "व्यतीपात",
+      "iast": "Vyatīpāta"
+    },
+    "PARIVESHA": {
+      "name": "परिवेश",
+      "prose": "परिवेश",
+      "iast": "Pariveśa"
+    },
+    "INDRACHAPA": {
+      "name": "इन्द्रचाप",
+      "prose": "इन्द्रचाप",
+      "iast": "Indracāpa"
+    },
+    "UPAKETU": {
+      "name": "उपकेतु",
+      "prose": "उपकेतु",
+      "iast": "Upaketu"
+    },
+    "GULIKA": {
+      "name": "गुलिक",
+      "prose": "गुलिक",
+      "iast": "Gulika"
+    },
+    "MANDI": {
+      "name": "मान्दि",
+      "prose": "मान्दि",
+      "iast": "Māndi"
     }
   },
   "era": {
@@ -1752,6 +1787,584 @@
       "name": "त्रिपुष्कर",
       "prose": "त्रिपुष्कर",
       "iast": "Tripuṣkara"
+    }
+  },
+  "avastha_deeptadi": {
+    "DEEPTA": {
+      "name": "दीप्त",
+      "prose": "दीप्त",
+      "iast": "Dīpta"
+    },
+    "SWASTHA": {
+      "name": "स्वस्थ",
+      "prose": "स्वस्थ",
+      "iast": "Svastha"
+    },
+    "MUDITA": {
+      "name": "मुदित",
+      "prose": "मुदित",
+      "iast": "Mudita"
+    },
+    "SHANTA": {
+      "name": "शान्त",
+      "prose": "शान्त",
+      "iast": "Śānta"
+    },
+    "DINA": {
+      "name": "दीन",
+      "prose": "दीन",
+      "iast": "Dīna"
+    },
+    "DUKHI": {
+      "name": "दुःखी",
+      "prose": "दुःखी",
+      "iast": "Duḥkhī"
+    },
+    "VIKALA": {
+      "name": "विकल",
+      "prose": "विकल",
+      "iast": "Vikala"
+    },
+    "KHALA": {
+      "name": "खल",
+      "prose": "खल",
+      "iast": "Khala"
+    },
+    "KOPA": {
+      "name": "कोप",
+      "prose": "कोप",
+      "iast": "Kopa"
+    }
+  },
+  "avastha_jagradadi": {
+    "JAGRAT": {
+      "name": "जाग्रत्",
+      "prose": "जाग्रत्",
+      "iast": "Jāgrat"
+    },
+    "SWAPNA": {
+      "name": "स्वप्न",
+      "prose": "स्वप्न",
+      "iast": "Svapna"
+    },
+    "SUSHUPTI": {
+      "name": "सुषुप्ति",
+      "prose": "सुषुप्ति",
+      "iast": "Suṣupti"
+    }
+  },
+  "avastha_lajjitadi": {
+    "LAJJITA": {
+      "name": "लज्जित",
+      "prose": "लज्जित",
+      "iast": "Lajjita"
+    },
+    "GARVITA": {
+      "name": "गर्वित",
+      "prose": "गर्वित",
+      "iast": "Garvita"
+    },
+    "KSHUDHA": {
+      "name": "क्षुधित",
+      "prose": "क्षुधित",
+      "iast": "Kṣudhita"
+    },
+    "TRISHITA": {
+      "name": "तृषित",
+      "prose": "तृषित",
+      "iast": "Tṛṣita"
+    },
+    "MUDITA": {
+      "name": "मुदित",
+      "prose": "मुदित",
+      "iast": "Mudita"
+    },
+    "KSHOBHITA": {
+      "name": "क्षोभित",
+      "prose": "क्षोभित",
+      "iast": "Kṣobhita"
+    }
+  },
+  "ayanamsha": {
+    "FAGAN_BRADLEY": {
+      "name": "फेगन-ब्रैडली",
+      "prose": "फेगन-ब्रैडली"
+    },
+    "LAHIRI": {
+      "name": "लाहिरी (चित्रपक्ष)",
+      "prose": "लाहिरी (चित्रपक्ष)",
+      "iast": "Lāhirī"
+    },
+    "DELUCE": {
+      "name": "डी लूस",
+      "prose": "डी लूस"
+    },
+    "RAMAN": {
+      "name": "रामन",
+      "prose": "रामन"
+    },
+    "USHASHASHI": {
+      "name": "उषाशशी",
+      "prose": "उषाशशी",
+      "iast": "Uṣāśaśī"
+    },
+    "KRISHNAMURTI": {
+      "name": "कृष्णमूर्ति (KP)",
+      "prose": "कृष्णमूर्ति (KP)",
+      "iast": "Kṛṣṇamūrti"
+    },
+    "DJWHAL_KHUL": {
+      "name": "ज्वाल खूल",
+      "prose": "ज्वाल खूल"
+    },
+    "YUKTESHWAR": {
+      "name": "युक्तेश्वर",
+      "prose": "युक्तेश्वर",
+      "iast": "Yukteśvara"
+    },
+    "JN_BHASIN": {
+      "name": "जे. एन. भसीन",
+      "prose": "जे. एन. भसीन"
+    },
+    "BABYL_KUGLER1": {
+      "name": "बेबिलोनियन (कुगलर १)",
+      "prose": "बेबिलोनियन (कुगलर १)"
+    },
+    "BABYL_KUGLER2": {
+      "name": "बेबिलोनियन (कुगलर २)",
+      "prose": "बेबिलोनियन (कुगलर २)"
+    },
+    "BABYL_KUGLER3": {
+      "name": "बेबिलोनियन (कुगलर ३)",
+      "prose": "बेबिलोनियन (कुगलर ३)"
+    },
+    "BABYL_HUBER": {
+      "name": "बेबिलोनियन (हुबर)",
+      "prose": "बेबिलोनियन (हुबर)"
+    },
+    "BABYL_ETPSC": {
+      "name": "बेबिलोनियन (एटा पिस्कियम)",
+      "prose": "बेबिलोनियन (एटा पिस्कियम)"
+    },
+    "ALDEBARAN_15TAU": {
+      "name": "रोहिणी १५° वृषभ",
+      "prose": "रोहिणी १५° वृषभ"
+    },
+    "HIPPARCHOS": {
+      "name": "हिपार्कस",
+      "prose": "हिपार्कस"
+    },
+    "SASSANIAN": {
+      "name": "सासानी",
+      "prose": "सासानी"
+    },
+    "GALCENT_0SAG": {
+      "name": "आकाशगंगा केन्द्र ०° धनु",
+      "prose": "आकाशगंगा केन्द्र ०° धनु"
+    },
+    "J2000": {
+      "name": "J2000 युगादि",
+      "prose": "J2000 युगादि"
+    },
+    "J1900": {
+      "name": "J1900 युगादि",
+      "prose": "J1900 युगादि"
+    },
+    "B1950": {
+      "name": "B1950 युगादि",
+      "prose": "B1950 युगादि"
+    },
+    "SURYASIDDHANTA": {
+      "name": "सूर्यसिद्धान्त",
+      "prose": "सूर्यसिद्धान्त",
+      "iast": "Sūryasiddhānta"
+    },
+    "SURYASIDDHANTA_MSUN": {
+      "name": "सूर्यसिद्धान्त (मध्यम सूर्य)",
+      "prose": "सूर्यसिद्धान्त (मध्यम सूर्य)"
+    },
+    "ARYABHATA": {
+      "name": "आर्यभट",
+      "prose": "आर्यभट",
+      "iast": "Āryabhaṭa"
+    },
+    "ARYABHATA_MSUN": {
+      "name": "आर्यभट (मध्यम सूर्य)",
+      "prose": "आर्यभट (मध्यम सूर्य)"
+    },
+    "SS_REVATI": {
+      "name": "सूर्यसिद्धान्त (रेवती)",
+      "prose": "सूर्यसिद्धान्त (रेवती)"
+    },
+    "SS_CITRA": {
+      "name": "सूर्यसिद्धान्त (चित्रा)",
+      "prose": "सूर्यसिद्धान्त (चित्रा)"
+    },
+    "TRUE_CHITRA": {
+      "name": "शुद्ध चित्रा (स्पाइका)",
+      "prose": "शुद्ध चित्रा (स्पाइका)"
+    },
+    "TRUE_REVATI": {
+      "name": "शुद्ध रेवती",
+      "prose": "शुद्ध रेवती"
+    },
+    "TRUE_PUSHYA": {
+      "name": "शुद्ध पुष्य",
+      "prose": "शुद्ध पुष्य"
+    },
+    "GALCENT_RGILBRAND": {
+      "name": "आकाशगंगा केन्द्र (गिल ब्रान्ड)",
+      "prose": "आकाशगंगा केन्द्र (गिल ब्रान्ड)"
+    },
+    "GALEQU_IAU1958": {
+      "name": "आकाशगंगा विषुवत् (IAU 1958)",
+      "prose": "आकाशगंगा विषुवत् (IAU 1958)"
+    },
+    "GALEQU_TRUE": {
+      "name": "आकाशगंगा विषुवत् (शुद्ध)",
+      "prose": "आकाशगंगा विषुवत् (शुद्ध)"
+    },
+    "GALEQU_MULA": {
+      "name": "आकाशगंगा विषुवत् ०° मूल",
+      "prose": "आकाशगंगा विषुवत् ०° मूल"
+    },
+    "GALALIGN_MARDYKS": {
+      "name": "आकाशगंगा संरेखण (मार्डिक्स)",
+      "prose": "आकाशगंगा संरेखण (मार्डिक्स)"
+    },
+    "TRUE_MULA": {
+      "name": "शुद्ध मूल",
+      "prose": "शुद्ध मूल"
+    },
+    "GALCENT_MULA_WILHELM": {
+      "name": "आकाशगंगा केन्द्र मूल (विल्हेल्म)",
+      "prose": "आकाशगंगा केन्द्र मूल (विल्हेल्म)"
+    },
+    "ARYABHATA_522": {
+      "name": "आर्यभट (५२२ ई.)",
+      "prose": "आर्यभट (५२२ ई.)"
+    },
+    "BABYL_BRITTON": {
+      "name": "बेबिलोनियन (ब्रिटन)",
+      "prose": "बेबिलोनियन (ब्रिटन)"
+    },
+    "TRUE_SHEORAN": {
+      "name": "शुद्ध शेवरण",
+      "prose": "शुद्ध शेवरण"
+    },
+    "GALCENT_COCHRANE": {
+      "name": "आकाशगंगा केन्द्र (कोक्रेन)",
+      "prose": "आकाशगंगा केन्द्र (कोक्रेन)"
+    },
+    "GALEQU_FIORENZA": {
+      "name": "आकाशगंगा विषुवत् (फियोरेन्ज़ा)",
+      "prose": "आकाशगंगा विषुवत् (फियोरेन्ज़ा)"
+    },
+    "VALENS_MOON": {
+      "name": "वेत्तियस वेलेन्स (चन्द्र)",
+      "prose": "वेत्तियस वेलेन्स (चन्द्र)"
+    },
+    "LAHIRI_1940": {
+      "name": "लाहिरी १९४०",
+      "prose": "लाहिरी १९४०"
+    },
+    "LAHIRI_VP285": {
+      "name": "लाहिरी VP285",
+      "prose": "लाहिरी VP285"
+    },
+    "KRISHNAMURTI_VP291": {
+      "name": "कृष्णमूर्ति VP291",
+      "prose": "कृष्णमूर्ति VP291"
+    },
+    "LAHIRI_ICRC": {
+      "name": "लाहिरी ICRC",
+      "prose": "लाहिरी ICRC"
+    }
+  },
+  "direction": {
+    "EAST": {
+      "name": "पूर्व",
+      "prose": "पूर्व",
+      "iast": "Pūrva"
+    },
+    "WEST": {
+      "name": "पश्चिम",
+      "prose": "पश्चिम",
+      "iast": "Paścima"
+    },
+    "NORTH": {
+      "name": "उत्तर",
+      "prose": "उत्तर",
+      "iast": "Uttara"
+    },
+    "SOUTH": {
+      "name": "दक्षिण",
+      "prose": "दक्षिण",
+      "iast": "Dakṣiṇa"
+    },
+    "NORTHEAST": {
+      "name": "ईशान",
+      "prose": "ईशान",
+      "iast": "Īśāna"
+    },
+    "NORTHWEST": {
+      "name": "वायव्य",
+      "prose": "वायव्य",
+      "iast": "Vāyavya"
+    },
+    "SOUTHEAST": {
+      "name": "आग्नेय",
+      "prose": "आग्नेय",
+      "iast": "Āgneya"
+    },
+    "SOUTHWEST": {
+      "name": "नैऋत्य",
+      "prose": "नैऋत्य",
+      "iast": "Nairṛtya"
+    }
+  },
+  "house_system": {
+    "WHOLE_SIGN": {
+      "name": "सम्पूर्ण राशि (राशि-भाव)",
+      "prose": "सम्पूर्ण राशि (राशि-भाव)"
+    },
+    "PLACIDUS": {
+      "name": "प्लासिडस",
+      "prose": "प्लासिडस"
+    },
+    "KOCH": {
+      "name": "कोख (जन्मस्थान)",
+      "prose": "कोख (जन्मस्थान)"
+    },
+    "REGIOMONTANUS": {
+      "name": "रेजियोमोन्टानस",
+      "prose": "रेजियोमोन्टानस"
+    },
+    "CAMPANUS": {
+      "name": "कम्पानस",
+      "prose": "कम्पानस"
+    },
+    "EQUAL": {
+      "name": "सम भाव (लग्नदेखि)",
+      "prose": "सम भाव (लग्नदेखि)"
+    },
+    "MERIDIAN": {
+      "name": "याम्योत्तर (अक्षीय परिक्रमण)",
+      "prose": "याम्योत्तर (अक्षीय परिक्रमण)"
+    },
+    "ALCABITIUS": {
+      "name": "अल्काबिटियस",
+      "prose": "अल्काबिटियस"
+    },
+    "PORPHYRY": {
+      "name": "पोर्फिरी",
+      "prose": "पोर्फिरी"
+    },
+    "TOPOCENTRIC": {
+      "name": "टोपोसेन्ट्रिक (पोलिच-पेज)",
+      "prose": "टोपोसेन्ट्रिक (पोलिच-पेज)"
+    },
+    "MORINUS": {
+      "name": "मोरिनस",
+      "prose": "मोरिनस"
+    },
+    "SRIPATI": {
+      "name": "श्रीपति",
+      "prose": "श्रीपति"
+    },
+    "EQUAL_MC": {
+      "name": "सम भाव (MC देखि)",
+      "prose": "सम भाव (MC देखि)"
+    },
+    "EQUAL_ARIES": {
+      "name": "सम भाव (१ = मेष)",
+      "prose": "सम भाव (१ = मेष)"
+    },
+    "VEHLOW": {
+      "name": "वेह्लो सम भाव",
+      "prose": "वेह्लो सम भाव"
+    },
+    "CARTER": {
+      "name": "कार्टर ध्रुव-विषुवतीय",
+      "prose": "कार्टर ध्रुव-विषुवतीय"
+    },
+    "HORIZON": {
+      "name": "क्षितिज (दिगंश)",
+      "prose": "क्षितिज (दिगंश)"
+    },
+    "SUNSHINE": {
+      "name": "सनशाइन (मक्रान्स्की)",
+      "prose": "सनशाइन (मक्रान्स्की)"
+    },
+    "PULLEN_SD": {
+      "name": "पुलेन SD (साइनुसोइडल डेल्टा)",
+      "prose": "पुलेन SD (साइनुसोइडल डेल्टा)"
+    },
+    "PULLEN_SR": {
+      "name": "पुलेन SR (साइनुसोइडल अनुपात)",
+      "prose": "पुलेन SR (साइनुसोइडल अनुपात)"
+    },
+    "KRUSINSKI": {
+      "name": "क्रुसिन्स्की-पिसा-गोएल्ज़र",
+      "prose": "क्रुसिन्स्की-पिसा-गोएल्ज़र"
+    },
+    "APC": {
+      "name": "APC (ध्रुवाधीन उदय)",
+      "prose": "APC (ध्रुवाधीन उदय)"
+    }
+  },
+  "masa": {
+    "CHAITRA": {
+      "name": "चैत्र",
+      "prose": "चैत्र",
+      "iast": "Caitra"
+    },
+    "VAISHAKHA": {
+      "name": "वैशाख",
+      "prose": "वैशाख",
+      "iast": "Vaiśākha"
+    },
+    "JYESHTHA": {
+      "name": "ज्येष्ठ",
+      "prose": "ज्येष्ठ",
+      "iast": "Jyeṣṭha"
+    },
+    "ASHADHA": {
+      "name": "आषाढ",
+      "prose": "आषाढ",
+      "iast": "Āṣāḍha"
+    },
+    "SHRAVANA": {
+      "name": "श्रावण",
+      "prose": "श्रावण",
+      "iast": "Śrāvaṇa"
+    },
+    "BHADRAPADA": {
+      "name": "भाद्रपद",
+      "prose": "भाद्रपद",
+      "iast": "Bhādrapada"
+    },
+    "ASHWINA": {
+      "name": "आश्विन",
+      "prose": "आश्विन",
+      "iast": "Āśvina"
+    },
+    "KARTIKA": {
+      "name": "कार्तिक",
+      "prose": "कार्तिक",
+      "iast": "Kārtika"
+    },
+    "MARGASHIRSHA": {
+      "name": "मार्गशीर्ष",
+      "prose": "मार्गशीर्ष",
+      "iast": "Mārgaśīrṣa"
+    },
+    "PAUSHA": {
+      "name": "पौष",
+      "prose": "पौष",
+      "iast": "Pauṣa"
+    },
+    "MAGHA": {
+      "name": "माघ",
+      "prose": "माघ",
+      "iast": "Māgha"
+    },
+    "PHALGUNA": {
+      "name": "फाल्गुन",
+      "prose": "फाल्गुन",
+      "iast": "Phālguna"
+    }
+  },
+  "dasha_system": {
+    "VIMSHOTTARI": {
+      "name": "विंशोत्तरी दशा",
+      "prose": "विंशोत्तरी दशा",
+      "iast": "Viṁśottarī Daśā"
+    },
+    "ASHTOTTARI": {
+      "name": "अष्टोत्तरी दशा",
+      "prose": "अष्टोत्तरी दशा",
+      "iast": "Aṣṭottarī Daśā"
+    },
+    "DWADASHOTTARI": {
+      "name": "द्वादशोत्तरी दशा",
+      "prose": "द्वादशोत्तरी दशा",
+      "iast": "Dvādaśottarī Daśā"
+    },
+    "PANCHOTTARI": {
+      "name": "पंचोत्तरी दशा",
+      "prose": "पंचोत्तरी दशा",
+      "iast": "Pañcottarī Daśā"
+    },
+    "SHATABDIKA": {
+      "name": "शताब्दिक दशा",
+      "prose": "शताब्दिक दशा",
+      "iast": "Śatābdika Daśā"
+    },
+    "CHATURASHITI_SAMA": {
+      "name": "चतुरशीतिसम दशा",
+      "prose": "चतुरशीतिसम दशा",
+      "iast": "Caturaśītisama Daśā"
+    },
+    "DWISAPTATI_SAMA": {
+      "name": "द्विसप्ततिसम दशा",
+      "prose": "द्विसप्ततिसम दशा",
+      "iast": "Dvisaptatisama Daśā"
+    },
+    "YOGINI": {
+      "name": "योगिनी दशा",
+      "prose": "योगिनी दशा",
+      "iast": "Yoginī Daśā"
+    },
+    "TRIBHAGI": {
+      "name": "त्रिभागी दशा",
+      "prose": "त्रिभागी दशा",
+      "iast": "Tribhāgī Daśā"
+    },
+    "CHARA": {
+      "name": "चर दशा",
+      "prose": "चर दशा",
+      "iast": "Cara Daśā"
+    },
+    "NARAYANA": {
+      "name": "नारायण दशा",
+      "prose": "नारायण दशा",
+      "iast": "Nārāyaṇa Daśā"
+    },
+    "PADANADHAMSA": {
+      "name": "पदनाधांश दशा",
+      "prose": "पदनाधांश दशा",
+      "iast": "Padanādhāṃśa Daśā"
+    },
+    "TRIKONA": {
+      "name": "त्रिकोण दशा",
+      "prose": "त्रिकोण दशा",
+      "iast": "Trikoṇa Daśā"
+    },
+    "DRIG": {
+      "name": "दृग् दशा",
+      "prose": "दृग् दशा",
+      "iast": "Dṛg Daśā"
+    },
+    "SHOOLA": {
+      "name": "शूल दशा",
+      "prose": "शूल दशा",
+      "iast": "Śūla Daśā"
+    },
+    "NIRYANA_SHOOLA": {
+      "name": "निर्याण शूल दशा",
+      "prose": "निर्याण शूल दशा",
+      "iast": "Niryāṇa Śūla Daśā"
+    },
+    "MANDOOKA": {
+      "name": "मण्डूक दशा",
+      "prose": "मण्डूक दशा",
+      "iast": "Maṇḍūka Daśā"
+    },
+    "KALACHAKRA": {
+      "name": "कालचक्र दशा",
+      "prose": "कालचक्र दशा",
+      "iast": "Kālacakra Daśā"
     }
   }
 }

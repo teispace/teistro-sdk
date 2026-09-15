@@ -239,10 +239,39 @@ void main() {
   // Everything after this runs on the SDK's own default profile, which is
   // geocentric, so that the two centres are both exercised.
 
+  // A layout of the consumer's own, registered on the context the charts
+  // are drawn under: the South Indian row renamed, as every runner
+  // registers it (`03-design/chart-geometry.md` §7f).
+  final shipped = teistro.context(testProvider: true);
+  final kerala = shipped.chart
+      .layout(ChartLayout.southIndian)
+      .copyWith(key: 'ACME_KERALA');
+  shipped.dispose();
+  // A dasha system of the consumer's own, the same definition every runner
+  // registers (`03-design/dasha-kernels.md`).
+  const parityDasha = DashaDefinition(
+    key: 'ACME_PARITY',
+    sources: ['the parity scenario'],
+    lords: [
+      DashaLord(Graha.sun, 5),
+      DashaLord(Graha.moon, 10),
+      DashaLord(Graha.mars, 7),
+      DashaLord(Graha.mercury, 12),
+    ],
+    reference: Nakshatra.mula,
+    count: 'TO_REFERENCE',
+    span: 2,
+    offset: 1,
+    repeats: true,
+    yearLength: 'SAVANA_360',
+    depth: 2,
+  );
   final geo = teistro.context(
     profile: 'parashari-classical',
     locale: 'ne-Deva-NP',
     testProvider: true,
+    layouts: [kerala],
+    dashaSystems: [parityDasha],
   );
   put('geo-profile', geo.profile);
   put('geo-settings-hash', geo.settingsHash);
@@ -259,9 +288,28 @@ void main() {
     place: place,
     utcOffsetSeconds: 20700,
     vargas: <Varga>[Varga.d9, Varga.d10],
+    dashas: [
+      DashaSystem.vimshottari,
+      DashaSystem.chara,
+      DashaSystem.kalachakra,
+      DashaSystem.registered('ACME_PARITY'),
+    ],
+    drawings: [
+      (ChartLayout.northIndian, Varga.d1),
+      (ChartLayout.southIndian, Varga.d9),
+      (ChartLayout.westernWheel, Varga.d1),
+      (ChartLayout.registered('ACME_KERALA'), Varga.d9),
+    ],
+    theme: ChartTheme.dark,
     aspects: true,
     points: true,
     houses: true,
+    ashtakavarga: true,
+    vimshopaka: true,
+    vaiseshikamsa: true,
+    dashaPhala: true,
+    shadbala: true,
+    bhavaBala: true,
     state: true,
   );
   put('chart-varga-count', charts.vargaCount);
@@ -316,6 +364,14 @@ void main() {
       put('$key-age', state.age.fullKey);
       put('$key-wakefulness', state.wakefulness.fullKey);
       put('$key-deeptadi', state.deeptadi?.fullKey ?? 'none');
+      final sayanadi = state.sayanadi;
+      put(
+        '$key-sayanadi',
+        sayanadi == null
+            ? 'none'
+            : '${sayanadi.avastha.fullKey} '
+                '${sayanadi.cheshtas.map((c) => c.fullKey).join(',')}',
+      );
       put(
         '$key-holding',
         state.lajjitadi.holding.isEmpty
@@ -361,6 +417,167 @@ void main() {
       put('chart-$i-aspect-$k-strength', one.strength.key);
       put('chart-$i-aspect-$k-from-sign', one.fromEdge.signDeg);
       put('chart-$i-aspect-$k-to-sign', one.toEdge.signDeg);
+    }
+    final drawings = chart.drawings;
+    for (var d = 0; d < drawings.length; d += 1) {
+      final drawing = drawings[d];
+      final key = 'chart-$i-drawing-$d';
+      put(key, drawing.layout.fullKey);
+      put('$key-varga', drawing.varga.fullKey);
+      put('$key-cells', drawing.cells.length);
+      put('$key-frames', drawing.frame.length);
+      put('$key-marks', drawing.marks.length);
+      put('$key-svg', drawing.svg);
+      for (var c = 0; c < drawing.cells.length; c += 1) {
+        final cell = drawing.cells[c];
+        final at = '$key-cell-$c';
+        put('$at-sign', cell.sign.fullKey);
+        put('$at-house', cell.house);
+        put('$at-lagna', cell.lagna);
+        put('$at-ring', cell.ring);
+        put('$at-bodies', cell.bodies.isEmpty ? 'none' : cell.bodies.join(','));
+        put('$at-label', '${number(cell.label.x)},${number(cell.label.y)}');
+        put('$at-anchor', '${number(cell.anchor.x)},${number(cell.anchor.y)}');
+        put(
+          '$at-start',
+          '${number(cell.outline.start.x)},${number(cell.outline.start.y)}',
+        );
+        put(
+          '$at-steps',
+          cell.outline.segments
+              .map(
+                (step) => switch (step) {
+                  QuadSegment() => 'quad',
+                  ArcSegment() => 'arc',
+                  LineSegment() => 'line',
+                },
+              )
+              .join(','),
+        );
+      }
+      for (var m = 0; m < drawing.marks.length; m += 1) {
+        final mark = drawing.marks[m];
+        final at = '$key-mark-$m';
+        put(at, mark.body);
+        put('$at-at', '${number(mark.at.x)},${number(mark.at.y)}');
+        put('$at-lon', mark.longitudeDeg);
+      }
+    }
+    put('chart-$i-dasha-count', chart.dashas.length);
+    final av = chart.ashtakavarga!;
+    put('chart-$i-ashtakavarga', '${av.shodhana.key} ${av.ekadhipatya.key}');
+    for (final g in av.grahas) {
+      final key = 'chart-$i-ashtakavarga-${g.graha.fullKey}';
+      put(key, g.bindus.join(','));
+      put('$key-reduced', g.reduced?.join(','));
+      put('$key-pindas', '${g.rashiPinda},${g.grahaPinda},${g.yogaPinda}');
+    }
+    put(
+      'chart-$i-sarvashtakavarga',
+      [av.sarva, av.trikona, av.reduced].map((row) => row.join(',')).join(';'),
+    );
+    for (final g in chart.shadbala!.grahas) {
+      final key = 'chart-$i-shadbala-${g.graha.fullKey}';
+      final (st, ka) = (g.sthana, g.kaala);
+      put(
+        key,
+        [
+          st.uchcha,
+          st.saptavargaja,
+          st.ojayugma,
+          st.kendradi,
+          st.drekkana,
+          g.dig,
+          ka.nathonnatha,
+          ka.paksha,
+          ka.tribhaga,
+          ka.abda,
+          ka.masa,
+          ka.vara,
+          ka.hora,
+          ka.ayana,
+          ka.yuddha,
+          g.cheshta,
+          g.naisargika,
+          g.drik,
+        ].map(number).join(','),
+      );
+      put(
+        '$key-total',
+        '${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong},${number(g.ishta)},${number(g.kashta)},${number(g.subhaRashmi)},${number(g.ashubhaRashmi)}',
+      );
+    }
+    for (final b in chart.bhavaBala!.bhavas) {
+      put(
+        'chart-$i-bhava-bala-${b.bhava}',
+        '${b.lord.fullKey} ${[b.adhipati, b.dig, b.drishti, b.special, b.virupas].map(number).join(',')}',
+      );
+    }
+    for (final g in chart.vaiseshikamsa!.grahas) {
+      final standings = [
+        g.shadvarga,
+        g.saptavarga,
+        g.dashavarga,
+        g.shodashavarga,
+      ];
+      put(
+        'chart-$i-vaiseshikamsa-${g.graha.fullKey}',
+        '${standings.map((s) => '${s.goodVargas}:${s.name?.fullKey}').join(',')} ${g.impaired}',
+      );
+    }
+    for (final g in chart.dashaPhala!.grahas) {
+      put(
+        'chart-$i-dasha-phala-${g.graha.fullKey}',
+        '${g.subhankas.map(number).join(',')} ${g.nature.fullKey} ${g.phase.key} ${g.favourable} ${g.unfavourable}',
+      );
+    }
+    final vs = chart.vimshopaka!;
+    put('chart-$i-vimshopaka', vs.scoring.key);
+    for (final g in vs.grahas) {
+      put(
+        'chart-$i-vimshopaka-${g.graha.fullKey}',
+        [
+          g.shadvarga,
+          g.saptavarga,
+          g.dashavarga,
+          g.shodashavarga,
+        ].map(number).join(','),
+      );
+    }
+    for (final (j, dasha) in chart.dashas.indexed) {
+      final key = 'chart-$i-dasha-$j';
+      final balance = dasha.balance;
+      put(key, dasha.system.fullKey);
+      put('$key-seed', dasha.seed?.fullKey);
+      put('$key-first-lord', dasha.firstLord.fullKey);
+      put('$key-overflow', dasha.overflow);
+      put('$key-balance', balance?.method.key);
+      put('$key-remaining', balance?.remaining);
+      put('$key-balance-days', balance?.days);
+      final w = balance?.written;
+      put(
+        '$key-balance-written',
+        w == null
+            ? null
+            : '${w.years},${w.months},${w.days},${w.hours},${w.minutes}',
+      );
+      put('$key-moon-span-from', dasha.moonSpan?.from);
+      put('$key-moon-span-to', dasha.moonSpan?.to);
+      put('$key-depth', dasha.depth);
+      put('$key-periods', dasha.periods.length);
+      for (final (k, period) in dasha.periods.indexed) {
+        if (period.level > 2) continue;
+        final sign = period.sign == null ? '' : ' ${period.sign!.fullKey}';
+        put('$key-period-$k', '${period.path}$sign ${period.lord.fullKey}');
+        put('$key-period-$k-from', period.from);
+        put('$key-period-$k-to', period.to);
+      }
+      put(
+        '$key-at',
+        [
+          for (final period in dasha.at(chart.instant + 5000)) period.path,
+        ].join(','),
+      );
     }
     final vargas = chart.vargas;
     for (var v = 0; v < vargas.length; v += 1) {
@@ -559,6 +776,7 @@ void main() {
     ('frame.canonical', ctx.frame.canonical),
     ('frame.pack', ctx.frame.pack),
     ('frame.unpack', ctx.frame.unpack),
+    ('chart.layout', ctx.chart.layout),
     ('chart.found', ctx.chart.found),
     ('chart.found_many', ctx.chart.foundMany),
     ('almanac.of', ctx.almanac.of),

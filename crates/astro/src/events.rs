@@ -561,6 +561,7 @@ pub fn longest_dwell_days(quantity: Quantity, lattice: &Lattice) -> Option<f64> 
 
 /// Which way a station turns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StationKind {
     /// Direct motion ends: the speed passes from positive to negative.
@@ -571,6 +572,7 @@ pub enum StationKind {
 
 /// A station: the instant a body's longitude stands still.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Station {
     /// The instant, UT1.
     pub instant: JulianDay<Ut1>,

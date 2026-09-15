@@ -104,3 +104,20 @@ without changing the geometry contract.
 engine's blueprint sections 36.1 to 36.5 (traditional format, chart
 styles, template-driven architecture) and its own render-section
 contract, read 2026-09-10.
+
+## Notes
+
+**2026-09-14, from the research for [`03-design/chart-geometry.md`](../03-design/chart-geometry.md).**
+Two refinements, neither a reversal:
+
+- **Bengali is the East Indian chart**, not a seventh row. Every source
+  names the East Indian chart the Bengali, Odia or Assamese chart, so six
+  layouts ship.
+- **A layout is one of two kinds.**
+  - The square layouts are cells fixed in the row. Their outlines are
+    paths, not polygons, because the lotus's petals are curves.
+  - The Western wheel and the Sudarshan Chakra are rings of sectors
+    computed from the chart, since a wheel's houses are as wide as its
+    cusps.
+
+The decision stands as written.

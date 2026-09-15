@@ -112,6 +112,9 @@ export const Kind = Object.freeze({
   Kaala: 'kaala',
   Panchaka: 'panchaka',
   MuhurtaYoga: 'muhurta_yoga',
+  ChartLayout: 'chart_layout',
+  Vaiseshikamsa: 'vaiseshikamsa',
+  AvasthaCheshta: 'avastha_cheshta',
 });
 
 /**
@@ -178,6 +181,9 @@ export const KindById = new Map([
   [59, 'kaala'],
   [60, 'panchaka'],
   [61, 'muhurta_yoga'],
+  [62, 'chart_layout'],
+  [63, 'vaiseshikamsa'],
+  [64, 'avastha_cheshta'],
 ]);
 
 /** Every Graha by name. */
@@ -2393,6 +2399,117 @@ export const MuhurtaYogaById = new Map([
   [4, 'muhurta_yoga.TRIPUSHKAR'],
 ]);
 
+/** Every ChartLayout by name. */
+export const ChartLayout = Object.freeze({
+  NorthIndian: 'chart_layout.NORTH_INDIAN',
+  SouthIndian: 'chart_layout.SOUTH_INDIAN',
+  EastIndian: 'chart_layout.EAST_INDIAN',
+  NepaliLotus: 'chart_layout.NEPALI_LOTUS',
+  SudarshanChakra: 'chart_layout.SUDARSHAN_CHAKRA',
+  WesternWheel: 'chart_layout.WESTERN_WHEEL',
+});
+
+/**
+ * Every ChartLayout by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChartLayoutById = new Map([
+  [0, 'chart_layout.NORTH_INDIAN'],
+  [1, 'chart_layout.SOUTH_INDIAN'],
+  [2, 'chart_layout.EAST_INDIAN'],
+  [3, 'chart_layout.NEPALI_LOTUS'],
+  [4, 'chart_layout.SUDARSHAN_CHAKRA'],
+  [5, 'chart_layout.WESTERN_WHEEL'],
+]);
+
+/** Every Vaiseshikamsa by name. */
+export const Vaiseshikamsa = Object.freeze({
+  Kimshuka: 'vaiseshikamsa.KIMSHUKA',
+  Vyanjana: 'vaiseshikamsa.VYANJANA',
+  Chamara: 'vaiseshikamsa.CHAMARA',
+  Chatra: 'vaiseshikamsa.CHATRA',
+  Kundala: 'vaiseshikamsa.KUNDALA',
+  Mukuta: 'vaiseshikamsa.MUKUTA',
+  Parijata: 'vaiseshikamsa.PARIJATA',
+  Uttama: 'vaiseshikamsa.UTTAMA',
+  Gopura: 'vaiseshikamsa.GOPURA',
+  Simhasana: 'vaiseshikamsa.SIMHASANA',
+  Paravata: 'vaiseshikamsa.PARAVATA',
+  Devaloka: 'vaiseshikamsa.DEVALOKA',
+  Brahmaloka: 'vaiseshikamsa.BRAHMALOKA',
+  Shakravahana: 'vaiseshikamsa.SHAKRAVAHANA',
+  Shridhama: 'vaiseshikamsa.SHRIDHAMA',
+  Bhedaka: 'vaiseshikamsa.BHEDAKA',
+  Kusuma: 'vaiseshikamsa.KUSUMA',
+  Nagapushpa: 'vaiseshikamsa.NAGAPUSHPA',
+  Kanduka: 'vaiseshikamsa.KANDUKA',
+  Kerala: 'vaiseshikamsa.KERALA',
+  Kalpavriksha: 'vaiseshikamsa.KALPAVRIKSHA',
+  Chandanavana: 'vaiseshikamsa.CHANDANAVANA',
+  Purnachandra: 'vaiseshikamsa.PURNACHANDRA',
+  Uchchaishrava: 'vaiseshikamsa.UCHCHAISHRAVA',
+  Dhanvantari: 'vaiseshikamsa.DHANVANTARI',
+  Suryakanta: 'vaiseshikamsa.SURYAKANTA',
+  Vidruma: 'vaiseshikamsa.VIDRUMA',
+  Chakrasimhasana: 'vaiseshikamsa.CHAKRASIMHASANA',
+  Goloka: 'vaiseshikamsa.GOLOKA',
+  Shrivallabha: 'vaiseshikamsa.SHRIVALLABHA',
+});
+
+/**
+ * Every Vaiseshikamsa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VaiseshikamsaById = new Map([
+  [0, 'vaiseshikamsa.KIMSHUKA'],
+  [1, 'vaiseshikamsa.VYANJANA'],
+  [2, 'vaiseshikamsa.CHAMARA'],
+  [3, 'vaiseshikamsa.CHATRA'],
+  [4, 'vaiseshikamsa.KUNDALA'],
+  [5, 'vaiseshikamsa.MUKUTA'],
+  [6, 'vaiseshikamsa.PARIJATA'],
+  [7, 'vaiseshikamsa.UTTAMA'],
+  [8, 'vaiseshikamsa.GOPURA'],
+  [9, 'vaiseshikamsa.SIMHASANA'],
+  [10, 'vaiseshikamsa.PARAVATA'],
+  [11, 'vaiseshikamsa.DEVALOKA'],
+  [12, 'vaiseshikamsa.BRAHMALOKA'],
+  [13, 'vaiseshikamsa.SHAKRAVAHANA'],
+  [14, 'vaiseshikamsa.SHRIDHAMA'],
+  [15, 'vaiseshikamsa.BHEDAKA'],
+  [16, 'vaiseshikamsa.KUSUMA'],
+  [17, 'vaiseshikamsa.NAGAPUSHPA'],
+  [18, 'vaiseshikamsa.KANDUKA'],
+  [19, 'vaiseshikamsa.KERALA'],
+  [20, 'vaiseshikamsa.KALPAVRIKSHA'],
+  [21, 'vaiseshikamsa.CHANDANAVANA'],
+  [22, 'vaiseshikamsa.PURNACHANDRA'],
+  [23, 'vaiseshikamsa.UCHCHAISHRAVA'],
+  [24, 'vaiseshikamsa.DHANVANTARI'],
+  [25, 'vaiseshikamsa.SURYAKANTA'],
+  [26, 'vaiseshikamsa.VIDRUMA'],
+  [27, 'vaiseshikamsa.CHAKRASIMHASANA'],
+  [28, 'vaiseshikamsa.GOLOKA'],
+  [29, 'vaiseshikamsa.SHRIVALLABHA'],
+]);
+
+/** Every AvasthaCheshta by name. */
+export const AvasthaCheshta = Object.freeze({
+  Drishti: 'avastha_cheshta.DRISHTI',
+  Cheshta: 'avastha_cheshta.CHESHTA',
+  Vicheshta: 'avastha_cheshta.VICHESHTA',
+});
+
+/**
+ * Every AvasthaCheshta by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AvasthaCheshtaById = new Map([
+  [0, 'avastha_cheshta.DRISHTI'],
+  [1, 'avastha_cheshta.CHESHTA'],
+  [2, 'avastha_cheshta.VICHESHTA'],
+]);
+
 /** Every Status by name. */
 export const Status = Object.freeze({
   Ok: 'ok',
@@ -2701,6 +2818,83 @@ export const StrengthById = new Map([
   [2, 'half'],
   [3, 'three-quarters'],
   [4, 'full'],
+]);
+
+/** Every Balance by name. */
+export const Balance = Object.freeze({
+  Spatial: 'spatial',
+  Temporal: 'temporal',
+});
+
+/**
+ * Every Balance by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BalanceById = new Map([
+  [0, 'spatial'],
+  [1, 'temporal'],
+]);
+
+/** Every Shodhana by name. */
+export const Shodhana = Object.freeze({
+  EachGraha: 'each-graha',
+  Sarva: 'sarva',
+});
+
+/**
+ * Every Shodhana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ShodhanaById = new Map([
+  [0, 'each-graha'],
+  [1, 'sarva'],
+]);
+
+/** Every Ekadhipatya by name. */
+export const Ekadhipatya = Object.freeze({
+  Bphs: 'bphs',
+  EmptyToZero: 'empty-to-zero',
+});
+
+/**
+ * Every Ekadhipatya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const EkadhipatyaById = new Map([
+  [0, 'bphs'],
+  [1, 'empty-to-zero'],
+]);
+
+/** Every VimshopakaScoring by name. */
+export const VimshopakaScoring = Object.freeze({
+  Bphs: 'bphs',
+  SaptavargajaVirupas: 'saptavargaja-virupas',
+});
+
+/**
+ * Every VimshopakaScoring by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VimshopakaScoringById = new Map([
+  [0, 'bphs'],
+  [1, 'saptavargaja-virupas'],
+]);
+
+/** Every DashaPhase by name. */
+export const DashaPhase = Object.freeze({
+  Commencement: 'commencement',
+  Middle: 'middle',
+  End: 'end',
+});
+
+/**
+ * Every DashaPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DashaPhaseById = new Map([
+  [0, 'commencement'],
+  [1, 'middle'],
+  [2, 'end'],
 ]);
 
 /** Every DayPart by name. */

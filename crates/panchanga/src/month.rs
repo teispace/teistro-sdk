@@ -23,6 +23,8 @@ use teistro_core::settings::LunarMonth as Convention;
 
 /// The lunar month a day falls in, under both conventions.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PanchangaLunarMonth"))]
 pub struct LunarMonth {
     /// The month under the profile's own convention.
     pub month: Masa,

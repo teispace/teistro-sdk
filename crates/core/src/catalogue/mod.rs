@@ -199,6 +199,45 @@ impl fmt::Display for UnknownKey {
 
 impl std::error::Error for UnknownKey {}
 
+/// A catalogue kind's JSON Schema: a string drawn from exactly the keys
+/// its reader accepts — every member's key in id order, then every former
+/// key — so a schema and `from_key` are one list
+/// (`docs/03-design/document-schema.md` §3).
+#[cfg(feature = "schema")]
+///
+/// The schema also names its kind as `x-teistro-kind`, so a tool reading a
+/// document can map a string back to the catalogue it is drawn from — and
+/// the SDK's own gates read the kinds a document carries from it rather
+/// than keeping a second list.
+pub(crate) fn key_schema<T: Catalogued>(aliases: &[(&str, T)]) -> schemars::Schema {
+    let mut schema = names_schema(
+        &format!("A key of the `{}` catalogue.", T::KIND.name()),
+        T::all()
+            .iter()
+            .map(|member| member.key())
+            .chain(aliases.iter().map(|(former, _)| *former)),
+    );
+    schema.insert(KIND_KEYWORD.to_owned(), T::KIND.name().into());
+    schema
+}
+
+/// The schema keyword that names a catalogue key's kind.
+pub const KIND_KEYWORD: &str = "x-teistro-kind";
+
+/// A string schema whose values are exactly `names`, in the order given.
+#[cfg(feature = "schema")]
+pub(crate) fn names_schema<'a>(
+    description: &str,
+    names: impl Iterator<Item = &'a str>,
+) -> schemars::Schema {
+    let names: Vec<&str> = names.collect();
+    schemars::json_schema!({
+        "type": "string",
+        "description": description,
+        "enum": names,
+    })
+}
+
 /// Binary search over a table sorted by key.
 pub(crate) fn lookup<T: Copy>(table: &[(&str, T)], key: &str) -> Option<T> {
     table

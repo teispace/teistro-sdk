@@ -26,6 +26,7 @@ use crate::quantity::{InvalidValue, JulianDay, Longitude, Utc};
 /// (the bound `java.time` and RFC 3339 implementations share; tzdb's
 /// widest offsets are inside it).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub struct UtcOffset(i32);
 

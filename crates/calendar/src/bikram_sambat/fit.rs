@@ -9,6 +9,7 @@ use crate::bikram_sambat::engine::YearRow;
 
 /// A month whose computed length differs from the table's.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Divergence {
     /// The Bikram Sambat year.
     pub year: i32,
@@ -22,6 +23,7 @@ pub struct Divergence {
 
 /// How a computed span reproduces a table.
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct FitReport {
     /// The label of the frame measured.
     pub frame: String,

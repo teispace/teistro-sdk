@@ -236,7 +236,10 @@ mod tests {
         let derived = derive(&tree(), "sa-Deva", "sa-Latn", &BTreeMap::new())
             .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.files.len(), 2);
-        assert_eq!(derived.entities, 294);
+        assert_eq!(
+            derived.entities, 426,
+            "408 until the 18 dasha systems were named"
+        );
         assert!(derived.stale.is_empty());
 
         let entities = &derived.files[1].1;
@@ -250,10 +253,40 @@ mod tests {
         assert!(meta.contains("\"locale\": \"sa-Latn\""));
         assert!(meta.contains("\"numberingSystem\": \"latn\""));
         assert!(meta.contains("tathā"), "the list pattern is transliterated");
+        // 261 before the vetted name tables' import, and 48 of the 114
+        // it added: every record whose Devanagari is exactly the source's
+        // Sanskrit (the upagrahas, months, directions and states, and
+        // three ayanamshas), so the transliterator matched each vetted
+        // IAST form it was given; 326 with 17 of the 18 dasha systems.
+        // The eighteenth is Vimshottari, whose source writes the anusvara
+        // `ṁ` where IAST writes `ṃ`.
         assert_eq!(
-            derived.agreeing, 261,
+            derived.agreeing, 326,
             "the derived names that are letter for letter the sources' own iast form"
         );
+    }
+
+    #[test]
+    fn the_shipped_overrides_all_apply_and_restore_the_western_names() {
+        // Transliterating a Western name that was itself transliterated
+        // into Devanagari writes nonsense (`Plāsiḍasa`), so the shipped
+        // overrides give those names the source's English
+        // (`docs/03-design/entity-names.md` §3). Every one must still
+        // match an entity, and each replaces a name and its prose.
+        let overrides = overrides_of(&sdk_root(), "sa-Latn").unwrap_or_else(|e| panic!("{e}"));
+        let derived =
+            derive(&tree(), "sa-Deva", "sa-Latn", &overrides).unwrap_or_else(|e| panic!("{e}"));
+        assert!(derived.stale.is_empty(), "{:?}", derived.stale);
+        assert_eq!(derived.overridden, 2 * overrides.len());
+        let entities = &derived.files[1].1;
+        assert!(entities.contains("\"name\": \"Placidus\""));
+        assert!(entities.contains("\"name\": \"Fagan-Bradley\""));
+        assert!(
+            !entities.contains("Plāsiḍasa"),
+            "the mechanical name is gone"
+        );
+        // And a descriptive Sanskrit name keeps its derived form.
+        assert!(entities.contains("\"name\": \"Sampūrṇa Rāśi (rāśi-bhāva)\""));
     }
 
     #[test]

@@ -31,6 +31,7 @@ use crate::iau::{DAS2R, DJ00, DJC, DJY, RAD2DEG, ltp, obl06, obl80, p06};
 
 /// A precession model.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PrecessionModel {
     /// Vondrák, Capitaine and Wallace (2011): the long-term model, the

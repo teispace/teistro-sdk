@@ -42,6 +42,7 @@ const fn centre_of(centre: Centre) -> FrameCentre {
 /// The zodiac of one chart: what to ask the provider for, and how far to
 /// shift what comes back.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartZodiac {
     /// The frame to ask the provider for. Always tropical, so that the
     /// grahas and the cusps are shifted by the same value.

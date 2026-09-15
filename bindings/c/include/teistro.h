@@ -32,6 +32,13 @@ extern "C" {
 #define TS_CONTEXT_TEST_PROVIDER ((uint32_t)1)
 
 /**
+ * A `TsError` flag: the record owns its strings, because the call that
+ * wrote it had no context to lend them from, and `ts_error_free`
+ * releases them.
+ */
+#define TS_ERROR_OWNED ((uint32_t)1)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -240,7 +247,7 @@ typedef enum ts_kind {
      */
     TS_KIND_AVASTHA_LAJJITADI = 53,
     /**
-     * The twelve Sayanadi states.
+     * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
      */
     TS_KIND_AVASTHA_SAYANADI = 54,
     /**
@@ -271,6 +278,18 @@ typedef enum ts_kind {
      * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
      */
     TS_KIND_MUHURTA_YOGA = 61,
+    /**
+     * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
+     */
+    TS_KIND_CHART_LAYOUT = 62,
+    /**
+     * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
+     */
+    TS_KIND_VAISESHIKAMSA = 63,
+    /**
+     * The three sub-states of a Sayanadi state, a remainder of three.
+     */
+    TS_KIND_AVASTHA_CHESHTA = 64,
 } ts_kind;
 
 /**
@@ -3126,7 +3145,7 @@ typedef enum ts_avastha_lajjitadi {
 } ts_avastha_lajjitadi;
 
 /**
- * The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+ * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
  */
 typedef enum ts_avastha_sayanadi {
     /**
@@ -3874,6 +3893,186 @@ typedef enum ts_muhurta_yoga {
 } ts_muhurta_yoga;
 
 /**
+ * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.
+ */
+typedef enum ts_chart_layout {
+    /**
+     * The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise
+     */
+    TS_CHART_LAYOUT_NORTH_INDIAN = 0,
+    /**
+     * The South Indian chart: signs fixed, Pisces top-left, running clockwise
+     */
+    TS_CHART_LAYOUT_SOUTH_INDIAN = 1,
+    /**
+     * The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise
+     */
+    TS_CHART_LAYOUT_EAST_INDIAN = 2,
+    /**
+     * The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+     */
+    TS_CHART_LAYOUT_NEPALI_LOTUS = 3,
+    /**
+     * The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun
+     */
+    TS_CHART_LAYOUT_SUDARSHAN_CHAKRA = 4,
+    /**
+     * The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
+     */
+    TS_CHART_LAYOUT_WESTERN_WHEEL = 5,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_CHART_LAYOUT_UNKNOWN = -1,
+} ts_chart_layout;
+
+/**
+ * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.
+ */
+typedef enum ts_vaiseshikamsa {
+    /**
+     * Kimshuka
+     */
+    TS_VAISESHIKAMSA_KIMSHUKA = 0,
+    /**
+     * Vyanjana
+     */
+    TS_VAISESHIKAMSA_VYANJANA = 1,
+    /**
+     * Chamara
+     */
+    TS_VAISESHIKAMSA_CHAMARA = 2,
+    /**
+     * Chatra
+     */
+    TS_VAISESHIKAMSA_CHATRA = 3,
+    /**
+     * Kundala
+     */
+    TS_VAISESHIKAMSA_KUNDALA = 4,
+    /**
+     * Mukuta
+     */
+    TS_VAISESHIKAMSA_MUKUTA = 5,
+    /**
+     * Parijata
+     */
+    TS_VAISESHIKAMSA_PARIJATA = 6,
+    /**
+     * Uttama
+     */
+    TS_VAISESHIKAMSA_UTTAMA = 7,
+    /**
+     * Gopura
+     */
+    TS_VAISESHIKAMSA_GOPURA = 8,
+    /**
+     * Simhasana
+     */
+    TS_VAISESHIKAMSA_SIMHASANA = 9,
+    /**
+     * Paravata
+     */
+    TS_VAISESHIKAMSA_PARAVATA = 10,
+    /**
+     * Devaloka
+     */
+    TS_VAISESHIKAMSA_DEVALOKA = 11,
+    /**
+     * Brahmaloka
+     */
+    TS_VAISESHIKAMSA_BRAHMALOKA = 12,
+    /**
+     * Shakravahana
+     */
+    TS_VAISESHIKAMSA_SHAKRAVAHANA = 13,
+    /**
+     * Shridhama
+     */
+    TS_VAISESHIKAMSA_SHRIDHAMA = 14,
+    /**
+     * Bhedaka
+     */
+    TS_VAISESHIKAMSA_BHEDAKA = 15,
+    /**
+     * Kusuma
+     */
+    TS_VAISESHIKAMSA_KUSUMA = 16,
+    /**
+     * Nagapushpa
+     */
+    TS_VAISESHIKAMSA_NAGAPUSHPA = 17,
+    /**
+     * Kanduka
+     */
+    TS_VAISESHIKAMSA_KANDUKA = 18,
+    /**
+     * Kerala
+     */
+    TS_VAISESHIKAMSA_KERALA = 19,
+    /**
+     * Kalpavriksha
+     */
+    TS_VAISESHIKAMSA_KALPAVRIKSHA = 20,
+    /**
+     * Chandanavana
+     */
+    TS_VAISESHIKAMSA_CHANDANAVANA = 21,
+    /**
+     * Purnachandra
+     */
+    TS_VAISESHIKAMSA_PURNACHANDRA = 22,
+    /**
+     * Uchchaishrava
+     */
+    TS_VAISESHIKAMSA_UCHCHAISHRAVA = 23,
+    /**
+     * Dhanvantari
+     */
+    TS_VAISESHIKAMSA_DHANVANTARI = 24,
+    /**
+     * Suryakanta
+     */
+    TS_VAISESHIKAMSA_SURYAKANTA = 25,
+    /**
+     * Vidruma
+     */
+    TS_VAISESHIKAMSA_VIDRUMA = 26,
+    /**
+     * Chakrasimhasana
+     */
+    TS_VAISESHIKAMSA_CHAKRASIMHASANA = 27,
+    /**
+     * Goloka
+     */
+    TS_VAISESHIKAMSA_GOLOKA = 28,
+    /**
+     * Shrivallabha
+     */
+    TS_VAISESHIKAMSA_SHRIVALLABHA = 29,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_VAISESHIKAMSA_UNKNOWN = -1,
+} ts_vaiseshikamsa;
+
+/**
+ * The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.
+ */
+typedef enum ts_avastha_cheshta {
+    /**
+     * Drishti, a remainder of one: the state's effects middling
+     */
+    TS_AVASTHA_CHESHTA_DRISHTI = 0,
+    /**
+     * Cheshta, a remainder of two: its effects in full
+     */
+    TS_AVASTHA_CHESHTA_CHESHTA = 1,
+    /**
+     * Vicheshta, a remainder of nothing: its effects slight
+     */
+    TS_AVASTHA_CHESHTA_VICHESHTA = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_AVASTHA_CHESHTA_UNKNOWN = -1,
+} ts_avastha_cheshta;
+
+/**
  * The status of a call, with the code it has at the C boundary.
  */
 typedef enum ts_status {
@@ -4274,6 +4473,88 @@ typedef enum ts_strength {
      */
     TS_STRENGTH_FULL = 4,
 } ts_strength;
+
+/**
+ * How a dasha's balance at birth was measured.
+ *
+ * The settings' own `Balance`, which is a knob and not a catalogue member,
+ * so it crosses as this boundary's own enum, as `TsStrength` does.
+ */
+typedef enum ts_balance {
+    /**
+     * By the elapsed part of the Moon's window of nakshatras.
+     */
+    TS_BALANCE_SPATIAL = 0,
+    /**
+     * By the elapsed part of the Moon's stay in its nakshatra.
+     */
+    TS_BALANCE_TEMPORAL = 1,
+} ts_balance;
+
+/**
+ * Where an Ashtakavarga's reductions and pindas were made: the settings'
+ * own `Shodhana`, which is a knob and not a catalogue member.
+ */
+typedef enum ts_shodhana {
+    /**
+     * In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
+     */
+    TS_SHODHANA_EACH_GRAHA = 0,
+    /**
+     * On the sum of the seven, as the conformance corpus's engine makes them.
+     */
+    TS_SHODHANA_SARVA = 1,
+} ts_shodhana;
+
+/**
+ * How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+ * an occupied one: the settings' own `Ekadhipatya`.
+ */
+typedef enum ts_ekadhipatya {
+    /**
+     * BPHS ch. 68: an empty sign keeps a difference.
+     */
+    TS_EKADHIPATYA_BPHS = 0,
+    /**
+     * The empty sign always goes to zero.
+     */
+    TS_EKADHIPATYA_EMPTY_TO_ZERO = 1,
+} ts_ekadhipatya;
+
+/**
+ * How a Vimshopaka scored a graha in a varga: the settings' own
+ * `Vimshopaka`.
+ */
+typedef enum ts_vimshopaka_scoring {
+    /**
+     * BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+     * relationship with the sign's lord.
+     */
+    TS_VIMSHOPAKA_SCORING_BPHS = 0,
+    /**
+     * The conformance corpus's engine: the Saptavargaja virupas over 45 by
+     * natural friendship, rounded to hundredths.
+     */
+    TS_VIMSHOPAKA_SCORING_SAPTAVARGAJA_VIRUPAS = 1,
+} ts_vimshopaka_scoring;
+
+/**
+ * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+ */
+typedef enum ts_dasha_phase {
+    /**
+     * At its commencement.
+     */
+    TS_DASHA_PHASE_COMMENCEMENT = 0,
+    /**
+     * In its middle.
+     */
+    TS_DASHA_PHASE_MIDDLE = 1,
+    /**
+     * At its end.
+     */
+    TS_DASHA_PHASE_END = 2,
+} ts_dasha_phase;
 
 /**
  * Which arc of its day an instant falls in.
@@ -5325,6 +5606,30 @@ struct ts_context_options {
      */
     const char * locale;
     /**
+     * Chart layouts of the consumer's own, to draw in beside the shipped
+     * ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+     * answers, with a key of its own. Every row is checked by the rules a
+     * shipped one passes and refused by its place in the array and its own
+     * field, as `options.layouts_json`, the row's index, then the field's
+     * path; a key the SDK ships is
+     * refused, so a row adds a layout and never replaces one. Null for none
+     * (`03-design/chart-geometry.md` §7f). May be null.
+     */
+    const char * layouts_json;
+    /**
+     * Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+     * of definitions: each a key the catalogue does not have, its lords and
+     * their years in order, the reference nakshatra, and optionally `count`,
+     * `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+     * `sources` (the document schema's `UduDefinition`). Every one is checked
+     * by the rules a shipped row passes and refused by its place in the array
+     * and its own field, as `options.dashas_json`, the index, then the field.
+     * A request asks for one by the id
+     * `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+     * registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+     */
+    const char * dashas_json;
+    /**
      * Which of the SDK's own ephemerides to use when no provider vtable
      * is given; ignored when one is (ADR-0028).
      * Enum: ts_ephemeris. Example: 0.
@@ -5333,9 +5638,15 @@ struct ts_context_options {
 };
 
 /**
- * The last error of a call on a context: the status, the detail, and the
- * message, field, hint and message key as strings the context lends
- * until its next call; an `OK` record has empty strings.
+ * A failure as the library describes it: the status, the provider's
+ * code, and the detail, message, field, hint and message key.
+ *
+ * Read from `ts_context_last_error`, the strings are **lent** by the
+ * context until its next call and `flags` is zero; an `OK` record has
+ * null strings. Written by a call that makes a handle and failed, the
+ * strings are **owned** by the record, `flags` carries
+ * `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+ * on a lent record does nothing, so freeing every record is never wrong.
  * Set `struct_size` to `sizeof` before passing it; the library refuses a size it does not know.
  */
 struct ts_error {
@@ -5353,9 +5664,9 @@ struct ts_error {
      */
     int32_t provider_code;
     /**
-     * Reserved, zero.
+     * `TS_ERROR_OWNED` when the record owns its strings, else zero.
      */
-    uint32_t reserved;
+    uint32_t flags;
     /**
      * The detail's name (`UNKNOWN_KEY`), or null. May be null.
      */
@@ -5567,7 +5878,7 @@ struct ts_chart_request {
      * Which of the document's sections to compute beside the
      * foundation, as a bit set: 1 the day's almanac, 2 the planetary
      * states, 4 the aspects, 8 the derived points, 16 the houses
-     * service. Zero for the foundation alone, which is what every
+     * service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
      * caller compiled against an earlier header passes by not passing
      * it at all.
      *
@@ -5600,6 +5911,45 @@ struct ts_chart_request {
      * How many divisional charts `vargas` points at.
      */
     size_t varga_count;
+    /**
+     * Which charts to draw, and in which layouts, in the order they should
+     * be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+     * catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+     * count of zero for none.
+     *
+     * Packed, as `sections` is a bit set, so the request carries one array
+     * and one count rather than two arrays that must agree; every ergonomic
+     * layer takes named pairs and writes the bits (`03-design/chart-geometry.md`). Points at `drawing_count` elements.
+     */
+    const uint32_t * drawings;
+    /**
+     * How many drawings `drawings` points at.
+     */
+    size_t drawing_count;
+    /**
+     * Which dashas to compute, in the order they should be answered in: each
+     * a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+     * the context registered (`0x8000` and up). Each one's balance and its
+     * periods to its depth. Null with a count of zero for none.
+     *
+     * Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+     * layer takes a catalogue member or a registered key and writes the id. Points at `dasha_count` elements.
+     */
+    const uint16_t * dashas;
+    /**
+     * How many dashas `dashas` points at.
+     */
+    size_t dasha_count;
+    /**
+     * A theme to write every drawing as SVG in, as JSON: an object of
+     * `style` and `content` naming only what it changes, over the light
+     * theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+     * The SVGs come back in the blob's `svgs` section, in the context's
+     * locale. Null for none, which costs nothing
+     * (`03-design/render-svg.md`).
+     * Example: {"extends":"dark"}. May be null.
+     */
+    const char * theme_json;
 };
 
 /**
@@ -6046,19 +6396,30 @@ void ts_string_free(ts_string * string);
 void ts_blob_free(ts_blob * blob);
 
 /**
+ * Releases the strings of a record a failed constructor wrote, and
+ * zeroes it but for its size; null, a lent record from
+ * `ts_context_last_error`, and a record already freed are all ignored.
+ * Safety: `error` must be null or a `TsError` valid for reads and writes, whose
+ * strings, when `flags` carries `TS_ERROR_OWNED`, are the ones this
+ * library wrote there and are not used again.
+ */
+void ts_error_free(ts_error * error);
+
+/**
  * Creates a context. `options` may be null for every default; `provider`
  * may be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects
  * the analytic test provider and no flag leaves the context without an
  * ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
  * passed back to the vtable's functions untouched and must stay valid
  * until `ts_context_free`. On success `*out_context` owns the context;
- * on failure, when `out_error` is not null, it receives the error's
- * message as a string to free with `ts_string_free`.
+ * on failure, when `out_error` is not null, it receives the whole
+ * refusal as a record that owns its strings, released by
+ * `ts_error_free`.
  * Safety: Every pointer must be null or valid for the access its documentation
  * describes, for the duration of the call; a vtable's functions must be
  * callable with `provider_user_data` until the context is freed.
  */
-ts_status ts_context_new(const ts_context_options * options, /* nullable */ const ts_provider_vtable * provider, /* nullable */ void * provider_user_data, ts_context * * out_context, ts_string * out_error);
+ts_status ts_context_new(const ts_context_options * options, /* nullable */ const ts_provider_vtable * provider, /* nullable */ void * provider_user_data, ts_context * * out_context, ts_error * out_error);
 
 /**
  * Frees a context; null is ignored.
@@ -6100,9 +6461,10 @@ ts_status ts_context_settings_json(const ts_context * context, ts_string * out_j
 ts_status ts_context_settings_hash(const ts_context * context, ts_hash * out_hash);
 
 /**
- * Resolves a full key (`graha.SUN`, an alias, or a former key) to its
- * packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
- * the hint in the context's last error.
+ * Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+ * context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+ * unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+ * the context's last error.
  * Safety: `context` must be a live handle; `key` a NUL-terminated string; `out_id`
  * valid for a write.
  */
@@ -6190,6 +6552,18 @@ double ts_calendar_jd_of_fixed(int64_t fixed);
  * Safety: `out_fraction` must be null or valid for a write.
  */
 int64_t ts_calendar_fixed_of_jd(double jd, double * out_fraction);
+
+/**
+ * A chart layout this context can draw in, shipped or registered, as its
+ * JSON row: the record `options.layouts_json` takes. Read a shipped row,
+ * give it a key of its own, change what differs and register it
+ * (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+ * (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+ * `INVALID_ARG` with the keys the context knows as the hint.
+ * Safety: `context` must be a live handle; `key` a NUL-terminated string;
+ * `out_json` valid for a write.
+ */
+ts_status ts_chart_layout_row(const ts_context * context, const char * key, ts_string * out_json);
 
 /**
  * Founds a chart at an instant and a place and answers with its blob:
@@ -6401,7 +6775,7 @@ ts_status ts_ephemeris_call(const ts_context * context, const char * function, c
  * describes, for the duration of the call. Loading a library runs its
  * initialisers, so `path` must be a file the caller trusts.
  */
-ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_string * out_error);
+ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_error * out_error);
 
 /**
  * Creates a context that computes with a **loaded** provider.
@@ -6417,7 +6791,7 @@ ts_status ts_provider_load(const char * path, const char * config_json, ts_provi
  * other pointer must be null or valid for the access its documentation
  * describes, for the duration of the call.
  */
-ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_string * out_error);
+ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_error * out_error);
 
 /**
  * Frees a loaded provider; null is ignored.
@@ -6447,11 +6821,11 @@ _Static_assert(sizeof(ts_string) == 24, "ts_string is 24 bytes on 64-bit targets
 _Static_assert(sizeof(ts_str) == 16, "ts_str is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_hash) == 32, "ts_hash is 32 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_blob) == 24, "ts_blob is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_context_options) == 40, "ts_context_options is 40 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 80, "ts_chart_request is 80 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 120, "ts_chart_request is 120 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

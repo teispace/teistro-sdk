@@ -67,6 +67,8 @@ fn main() {
         profile: profile.as_ptr(),
         settings_json: ptr::null(),
         locale: locale.as_ptr(),
+        layouts_json: ptr::null(),
+        dashas_json: ptr::null(),
         ephemeris: TsEphemeris::None as u8,
     };
     let mut context: *mut TsContext = ptr::null_mut();

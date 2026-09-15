@@ -15,11 +15,18 @@ categories = ["science"]
 # (docs/06-cicd/03-release-process.md).
 publish = false
 
+[features]
+# Derives `schemars::JsonSchema` on the types a chart document carries,
+# so `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-core/schema"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.11"
 teistro-core = { path = "../core" }
+schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 serde_json = "1"

@@ -600,6 +600,28 @@ final class ContextOptionsStruct extends ffi.Struct {
   /// Example: en-Latn. May be null.
   external ffi.Pointer<ffi.Char> locale;
 
+  /// Chart layouts of the consumer's own, to draw in beside the shipped
+  /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+  /// answers, with a key of its own. Every row is checked by the rules a
+  /// shipped one passes and refused by its place in the array and its own
+  /// field, as `options.layouts_json`, the row's index, then the field's
+  /// path; a key the SDK ships is
+  /// refused, so a row adds a layout and never replaces one. Null for none
+  /// (`03-design/chart-geometry.md` §7f). May be null.
+  external ffi.Pointer<ffi.Char> layoutsJson;
+
+  /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+  /// of definitions: each a key the catalogue does not have, its lords and
+  /// their years in order, the reference nakshatra, and optionally `count`,
+  /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+  /// `sources` (the document schema's `UduDefinition`). Every one is checked
+  /// by the rules a shipped row passes and refused by its place in the array
+  /// and its own field, as `options.dashas_json`, the index, then the field.
+  /// A request asks for one by the id
+  /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+  /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+  external ffi.Pointer<ffi.Char> dashasJson;
+
   /// Which of the SDK's own ephemerides to use when no provider vtable
   /// is given; ignored when one is (ADR-0028).
   /// Enum: TsEphemeris. Example: 0.
@@ -608,9 +630,15 @@ final class ContextOptionsStruct extends ffi.Struct {
 
 }
 
-/// The last error of a call on a context: the status, the detail, and the
-/// message, field, hint and message key as strings the context lends
-/// until its next call; an `OK` record has empty strings.
+/// A failure as the library describes it: the status, the provider's
+/// code, and the detail, message, field, hint and message key.
+///
+/// Read from `ts_context_last_error`, the strings are **lent** by the
+/// context until its next call and `flags` is zero; an `OK` record has
+/// null strings. Written by a call that makes a handle and failed, the
+/// strings are **owned** by the record, `flags` carries
+/// `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+/// on a lent record does nothing, so freeing every record is never wrong.
 final class ErrorStruct extends ffi.Struct {
   /// `sizeof(ts_error)` as the caller compiled it.
   @ffi.Uint32()
@@ -625,9 +653,9 @@ final class ErrorStruct extends ffi.Struct {
   @ffi.Int32()
   external int providerCode;
 
-  /// Reserved, zero.
+  /// `TS_ERROR_OWNED` when the record owns its strings, else zero.
   @ffi.Uint32()
-  external int reserved;
+  external int flags;
 
   /// The detail's name (`UNKNOWN_KEY`), or null. May be null.
   external ffi.Pointer<ffi.Char> detail;
@@ -824,7 +852,7 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Which of the document's sections to compute beside the
   /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
   /// states, 4 the aspects, 8 the derived points, 16 the houses
-  /// service. Zero for the foundation alone, which is what every
+  /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
   /// caller compiled against an earlier header passes by not passing
   /// it at all.
   ///
@@ -856,6 +884,42 @@ final class ChartRequestStruct extends ffi.Struct {
   /// How many divisional charts `vargas` points at.
   @ffi.Size()
   external int vargaCount;
+
+  /// Which charts to draw, and in which layouts, in the order they should
+  /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+  /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+  /// count of zero for none.
+  ///
+  /// Packed, as `sections` is a bit set, so the request carries one array
+  /// and one count rather than two arrays that must agree; every ergonomic
+  /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+  external ffi.Pointer<ffi.Uint32> drawings;
+
+  /// How many drawings `drawings` points at.
+  @ffi.Size()
+  external int drawingCount;
+
+  /// Which dashas to compute, in the order they should be answered in: each
+  /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+  /// the context registered (`0x8000` and up). Each one's balance and its
+  /// periods to its depth. Null with a count of zero for none.
+  ///
+  /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+  /// layer takes a catalogue member or a registered key and writes the id.
+  external ffi.Pointer<ffi.Uint16> dashas;
+
+  /// How many dashas `dashas` points at.
+  @ffi.Size()
+  external int dashaCount;
+
+  /// A theme to write every drawing as SVG in, as JSON: an object of
+  /// `style` and `content` naming only what it changes, over the light
+  /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+  /// The SVGs come back in the blob's `svgs` section, in the context's
+  /// locale. Null for none, which costs nothing
+  /// (`03-design/render-svg.md`).
+  /// Example: {"extends":"dark"}. May be null.
+  external ffi.Pointer<ffi.Char> themeJson;
 
 }
 
@@ -1227,8 +1291,10 @@ typedef TsStringFreeNative = ffi.Void Function(ffi.Pointer<StringStruct>);
 typedef TsStringFreeDart = void Function(ffi.Pointer<StringStruct>);
 typedef TsBlobFreeNative = ffi.Void Function(ffi.Pointer<BlobStruct>);
 typedef TsBlobFreeDart = void Function(ffi.Pointer<BlobStruct>);
-typedef TsContextNewNative = ffi.Int32 Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<ProviderVtableStruct>, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<StringStruct>);
-typedef TsContextNewDart = int Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<ProviderVtableStruct>, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<StringStruct>);
+typedef TsErrorFreeNative = ffi.Void Function(ffi.Pointer<ErrorStruct>);
+typedef TsErrorFreeDart = void Function(ffi.Pointer<ErrorStruct>);
+typedef TsContextNewNative = ffi.Int32 Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<ProviderVtableStruct>, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
+typedef TsContextNewDart = int Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<ProviderVtableStruct>, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
 typedef TsContextFreeNative = ffi.Void Function(ffi.Pointer<Context>);
 typedef TsContextFreeDart = void Function(ffi.Pointer<Context>);
 typedef TsContextLastErrorNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ErrorStruct>);
@@ -1265,6 +1331,8 @@ typedef TsCalendarJdOfFixedNative = ffi.Double Function(ffi.Int64);
 typedef TsCalendarJdOfFixedDart = double Function(int);
 typedef TsCalendarFixedOfJdNative = ffi.Int64 Function(ffi.Double, ffi.Pointer<ffi.Double>);
 typedef TsCalendarFixedOfJdDart = int Function(double, ffi.Pointer<ffi.Double>);
+typedef TsChartLayoutRowNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartLayoutRowDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsChartFoundNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsChartFoundDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsTimeResolveNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneSpecStruct>, ffi.Pointer<ZoneResolutionStruct>);
@@ -1297,10 +1365,10 @@ typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi
 typedef TsEphemerisManifestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
-typedef TsProviderLoadNative = ffi.Int32 Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Provider>>, ffi.Pointer<StringStruct>);
-typedef TsProviderLoadDart = int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Provider>>, ffi.Pointer<StringStruct>);
-typedef TsContextNewWithProviderNative = ffi.Int32 Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<Provider>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<StringStruct>);
-typedef TsContextNewWithProviderDart = int Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<Provider>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<StringStruct>);
+typedef TsProviderLoadNative = ffi.Int32 Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Provider>>, ffi.Pointer<ErrorStruct>);
+typedef TsProviderLoadDart = int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Provider>>, ffi.Pointer<ErrorStruct>);
+typedef TsContextNewWithProviderNative = ffi.Int32 Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<Provider>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
+typedef TsContextNewWithProviderDart = int Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<Provider>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
 typedef TsProviderFreeNative = ffi.Void Function(ffi.Pointer<Provider>);
 typedef TsProviderFreeDart = void Function(ffi.Pointer<Provider>);
 
@@ -1317,6 +1385,7 @@ final class TeistroLibrary {
         ts_status_message = library.lookupFunction<TsStatusMessageNative, TsStatusMessageDart>('ts_status_message'),
         ts_string_free = library.lookupFunction<TsStringFreeNative, TsStringFreeDart>('ts_string_free'),
         ts_blob_free = library.lookupFunction<TsBlobFreeNative, TsBlobFreeDart>('ts_blob_free'),
+        ts_error_free = library.lookupFunction<TsErrorFreeNative, TsErrorFreeDart>('ts_error_free'),
         ts_context_new = library.lookupFunction<TsContextNewNative, TsContextNewDart>('ts_context_new'),
         ts_context_free = library.lookupFunction<TsContextFreeNative, TsContextFreeDart>('ts_context_free'),
         ts_context_last_error = library.lookupFunction<TsContextLastErrorNative, TsContextLastErrorDart>('ts_context_last_error'),
@@ -1336,6 +1405,7 @@ final class TeistroLibrary {
         ts_calendar_weekday = library.lookupFunction<TsCalendarWeekdayNative, TsCalendarWeekdayDart>('ts_calendar_weekday'),
         ts_calendar_jd_of_fixed = library.lookupFunction<TsCalendarJdOfFixedNative, TsCalendarJdOfFixedDart>('ts_calendar_jd_of_fixed'),
         ts_calendar_fixed_of_jd = library.lookupFunction<TsCalendarFixedOfJdNative, TsCalendarFixedOfJdDart>('ts_calendar_fixed_of_jd'),
+        ts_chart_layout_row = library.lookupFunction<TsChartLayoutRowNative, TsChartLayoutRowDart>('ts_chart_layout_row'),
         ts_chart_found = library.lookupFunction<TsChartFoundNative, TsChartFoundDart>('ts_chart_found'),
         ts_time_resolve = library.lookupFunction<TsTimeResolveNative, TsTimeResolveDart>('ts_time_resolve'),
         ts_time_civil = library.lookupFunction<TsTimeCivilNative, TsTimeCivilDart>('ts_time_civil'),
@@ -1397,14 +1467,20 @@ final class TeistroLibrary {
   /// an empty blob is ignored.
   final TsBlobFreeDart ts_blob_free;
 
+  /// Releases the strings of a record a failed constructor wrote, and
+  /// zeroes it but for its size; null, a lent record from
+  /// `ts_context_last_error`, and a record already freed are all ignored.
+  final TsErrorFreeDart ts_error_free;
+
   /// Creates a context. `options` may be null for every default; `provider`
   /// may be null, in which case the `TS_CONTEXT_TEST_PROVIDER` flag selects
   /// the analytic test provider and no flag leaves the context without an
   /// ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
   /// passed back to the vtable's functions untouched and must stay valid
   /// until `ts_context_free`. On success `*out_context` owns the context;
-  /// on failure, when `out_error` is not null, it receives the error's
-  /// message as a string to free with `ts_string_free`.
+  /// on failure, when `out_error` is not null, it receives the whole
+  /// refusal as a record that owns its strings, released by
+  /// `ts_error_free`.
   final TsContextNewDart ts_context_new;
 
   /// Frees a context; null is ignored.
@@ -1429,9 +1505,10 @@ final class TeistroLibrary {
   /// every result's provenance carries.
   final TsContextSettingsHashDart ts_context_settings_hash;
 
-  /// Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-  /// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-  /// the hint in the context's last error.
+  /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+  /// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+  /// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+  /// the context's last error.
   final TsKeyParseDart ts_key_parse;
 
   /// The full key of a packed id (`graha.SUN`), lent until the next call on
@@ -1476,6 +1553,14 @@ final class TeistroLibrary {
   /// The fixed day a Julian day falls in, and, when `out_fraction` is not
   /// null, the fraction of that day elapsed since its midnight.
   final TsCalendarFixedOfJdDart ts_calendar_fixed_of_jd;
+
+  /// A chart layout this context can draw in, shipped or registered, as its
+  /// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+  /// give it a key of its own, change what differs and register it
+  /// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+  /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+  /// `INVALID_ARG` with the keys the context knows as the hint.
+  final TsChartLayoutRowDart ts_chart_layout_row;
 
   /// Founds a chart at an instant and a place and answers with its blob:
   /// where every graha stands, in which bhava under both readings, in
@@ -2294,7 +2379,7 @@ final class Hash {
 /// passed.
 final class ContextOptions {
   /// A ContextOptions with every field named.
-  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale, required this.ephemeris});
+  const ContextOptions({required this.flags, this.profile, this.settingsJson, this.locale, this.layoutsJson, this.dashasJson, required this.ephemeris});
 
   /// `TS_CONTEXT_*` flags, or zero.
   /// Example: 0.
@@ -2313,6 +2398,28 @@ final class ContextOptions {
   /// The locale every render resolves from (`ne-Deva-NP`).
   /// Example: en-Latn. May be null.
   final String? locale;
+
+  /// Chart layouts of the consumer's own, to draw in beside the shipped
+  /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+  /// answers, with a key of its own. Every row is checked by the rules a
+  /// shipped one passes and refused by its place in the array and its own
+  /// field, as `options.layouts_json`, the row's index, then the field's
+  /// path; a key the SDK ships is
+  /// refused, so a row adds a layout and never replaces one. Null for none
+  /// (`03-design/chart-geometry.md` §7f). May be null.
+  final String? layoutsJson;
+
+  /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+  /// of definitions: each a key the catalogue does not have, its lords and
+  /// their years in order, the reference nakshatra, and optionally `count`,
+  /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+  /// `sources` (the document schema's `UduDefinition`). Every one is checked
+  /// by the rules a shipped row passes and refused by its place in the array
+  /// and its own field, as `options.dashas_json`, the index, then the field.
+  /// A request asks for one by the id
+  /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+  /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+  final String? dashasJson;
 
   /// Which of the SDK's own ephemerides to use when no provider vtable
   /// is given; ignored when one is (ADR-0028).
@@ -2338,6 +2445,12 @@ final class ContextOptions {
     raw.locale = locale == null
         ? ffi.nullptr
         : locale!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.layoutsJson = layoutsJson == null
+        ? ffi.nullptr
+        : layoutsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.dashasJson = dashasJson == null
+        ? ffi.nullptr
+        : dashasJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
     raw.ephemeris = ephemeris.id;
   }
 
@@ -2356,13 +2469,25 @@ final class ContextOptions {
         locale: raw.locale == ffi.nullptr
             ? null
             : raw.locale.cast<pkg_ffi.Utf8>().toDartString(),
+        layoutsJson: raw.layoutsJson == ffi.nullptr
+            ? null
+            : raw.layoutsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        dashasJson: raw.dashasJson == ffi.nullptr
+            ? null
+            : raw.dashasJson.cast<pkg_ffi.Utf8>().toDartString(),
         ephemeris: Ephemeris.byId(raw.ephemeris),
       );
 }
 
-/// The last error of a call on a context: the status, the detail, and the
-/// message, field, hint and message key as strings the context lends
-/// until its next call; an `OK` record has empty strings.
+/// A failure as the library describes it: the status, the provider's
+/// code, and the detail, message, field, hint and message key.
+///
+/// Read from `ts_context_last_error`, the strings are **lent** by the
+/// context until its next call and `flags` is zero; an `OK` record has
+/// null strings. Written by a call that makes a handle and failed, the
+/// strings are **owned** by the record, `flags` carries
+/// `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+/// on a lent record does nothing, so freeing every record is never wrong.
 final class Error {
   /// A Error with every field named.
   const Error({required this.status, required this.providerCode, this.detail, required this.message, this.field, this.hint, this.key});
@@ -2611,7 +2736,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2647,7 +2772,7 @@ final class ChartRequest {
   /// Which of the document's sections to compute beside the
   /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
   /// states, 4 the aspects, 8 the derived points, 16 the houses
-  /// service. Zero for the foundation alone, which is what every
+  /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
   /// caller compiled against an earlier header passes by not passing
   /// it at all.
   ///
@@ -2670,6 +2795,34 @@ final class ChartRequest {
   /// already does.
   /// Enum: Varga.
   final List<Varga> vargas;
+
+  /// Which charts to draw, and in which layouts, in the order they should
+  /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+  /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+  /// count of zero for none.
+  ///
+  /// Packed, as `sections` is a bit set, so the request carries one array
+  /// and one count rather than two arrays that must agree; every ergonomic
+  /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+  final List<int> drawings;
+
+  /// Which dashas to compute, in the order they should be answered in: each
+  /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+  /// the context registered (`0x8000` and up). Each one's balance and its
+  /// periods to its depth. Null with a count of zero for none.
+  ///
+  /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+  /// layer takes a catalogue member or a registered key and writes the id.
+  final List<int> dashas;
+
+  /// A theme to write every drawing as SVG in, as JSON: an object of
+  /// `style` and `content` naming only what it changes, over the light
+  /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+  /// The SVGs come back in the blob's `svgs` section, in the context's
+  /// locale. Null for none, which costs nothing
+  /// (`03-design/render-svg.md`).
+  /// Example: {"extends":"dark"}. May be null.
+  final String? themeJson;
 
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
@@ -2698,6 +2851,21 @@ final class ChartRequest {
     }
     raw.vargas = vargasBuffer;
     raw.vargaCount = vargas.length;
+    final drawingsBuffer = arena<ffi.Uint32>(drawings.length);
+    for (var i = 0; i < drawings.length; i++) {
+      drawingsBuffer[i] = drawings[i];
+    }
+    raw.drawings = drawingsBuffer;
+    raw.drawingCount = drawings.length;
+    final dashasBuffer = arena<ffi.Uint16>(dashas.length);
+    for (var i = 0; i < dashas.length; i++) {
+      dashasBuffer[i] = dashas[i];
+    }
+    raw.dashas = dashasBuffer;
+    raw.dashaCount = dashas.length;
+    raw.themeJson = themeJson == null
+        ? ffi.nullptr
+        : themeJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -2717,6 +2885,15 @@ final class ChartRequest {
         vargas: [
           for (var i = 0; i < raw.vargaCount; i++) Varga.byId(raw.vargas[i]),
         ],
+        drawings: [
+          for (var i = 0; i < raw.drawingCount; i++) raw.drawings[i],
+        ],
+        dashas: [
+          for (var i = 0; i < raw.dashaCount; i++) raw.dashas[i],
+        ],
+        themeJson: raw.themeJson == ffi.nullptr
+            ? null
+            : raw.themeJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 
@@ -3276,22 +3453,22 @@ final class TeistroContext implements ffi.Finalizable {
   /// ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
   /// passed back to the vtable's functions untouched and must stay valid
   /// until `ts_context_free`. On success `*out_context` owns the context;
-  /// on failure, when `out_error` is not null, it receives the error's
-  /// message as a string to free with `ts_string_free`.
+  /// on failure, when `out_error` is not null, it receives the whole
+  /// refusal as a record that owns its strings, released by
+  /// `ts_error_free`.
   factory TeistroContext(TeistroLibrary lib, {ContextOptions? options, ffi.Pointer<ProviderVtableStruct>? provider, ffi.Pointer<ffi.Void>? providerUserData}) {
     rememberLibrary(lib);
     return pkg_ffi.using((arena) {
       final rawoptions = options == null ? ffi.nullptr : arena<ContextOptionsStruct>();
       options?.write(rawoptions, arena);
       final out = arena<ffi.Pointer<Context>>();
-      final error = arena<StringStruct>();
+      final error = arena<ErrorStruct>();
+      error.ref.structSize = ffi.sizeOf<ErrorStruct>();
       final status = lib.ts_context_new(rawoptions, provider ?? ffi.nullptr, providerUserData ?? ffi.nullptr, out, error);
       if (status != 0) {
-        final message = error.ref.data == ffi.nullptr
-            ? 'the context could not be built (code $status)'
-            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();
-        lib.ts_string_free(error);
-        throw TeistroException(Status.byId(status), message);
+        final refusal = _refusal(status, error);
+        lib.ts_error_free(error);
+        throw refusal;
       }
       return TeistroContext._(lib, out.value);
     });
@@ -3312,14 +3489,13 @@ final class TeistroContext implements ffi.Finalizable {
       final rawoptions = options == null ? ffi.nullptr : arena<ContextOptionsStruct>();
       options?.write(rawoptions, arena);
       final out = arena<ffi.Pointer<Context>>();
-      final error = arena<StringStruct>();
+      final error = arena<ErrorStruct>();
+      error.ref.structSize = ffi.sizeOf<ErrorStruct>();
       final status = lib.ts_context_new_with_provider(rawoptions, provider._handle, out, error);
       if (status != 0) {
-        final message = error.ref.data == ffi.nullptr
-            ? 'the context could not be built (code $status)'
-            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();
-        lib.ts_string_free(error);
-        throw TeistroException(Status.byId(status), message);
+        final refusal = _refusal(status, error);
+        lib.ts_error_free(error);
+        throw refusal;
       }
       return TeistroContext._(lib, out.value);
     });
@@ -3332,17 +3508,7 @@ final class TeistroContext implements ffi.Finalizable {
       final raw = arena<ErrorStruct>();
       raw.ref.structSize = ffi.sizeOf<ErrorStruct>();
       _lib.ts_context_last_error(_handle, raw);
-      String? text(ffi.Pointer<ffi.Char> p) =>
-          p == ffi.nullptr ? null : p.cast<pkg_ffi.Utf8>().toDartString();
-      throw TeistroException(
-        Status.byId(status),
-        text(raw.ref.message) ?? 'the call failed',
-        detail: text(raw.ref.detail),
-        field: text(raw.ref.field),
-        hint: text(raw.ref.hint),
-        messageKey: text(raw.ref.key),
-        providerCode: raw.ref.providerCode,
-      );
+      throw _refusal(status, raw);
     });
   }
 
@@ -3383,9 +3549,10 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
-  /// Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-  /// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-  /// the hint in the context's last error.
+  /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+  /// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+  /// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+  /// the context's last error.
   int keyParse(String key) {
     _alive();
     return pkg_ffi.using((arena) {
@@ -3481,6 +3648,23 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_calendar_weekday(_handle, rawdate, outWeekday);
         if (status != 0) _fail(status);
         return outWeekday.value;
+    });
+  }
+
+  /// A chart layout this context can draw in, shipped or registered, as its
+  /// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+  /// give it a key of its own, change what differs and register it
+  /// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+  /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+  /// `INVALID_ARG` with the keys the context knows as the hint.
+  String chartLayoutRow(String key) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawkey = key.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_chart_layout_row(_handle, rawkey, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 
@@ -3824,14 +4008,13 @@ final class TeistroProvider implements ffi.Finalizable {
       final rawpath = path.toNativeUtf8(allocator: arena).cast<ffi.Char>();
       final rawconfigJson = configJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
       final out = arena<ffi.Pointer<Provider>>();
-      final error = arena<StringStruct>();
+      final error = arena<ErrorStruct>();
+      error.ref.structSize = ffi.sizeOf<ErrorStruct>();
       final status = lib.ts_provider_load(rawpath, rawconfigJson, out, error);
       if (status != 0) {
-        final message = error.ref.data == ffi.nullptr
-            ? 'the context could not be built (code $status)'
-            : error.ref.data.cast<pkg_ffi.Utf8>().toDartString();
-        lib.ts_string_free(error);
-        throw TeistroException(Status.byId(status), message);
+        final refusal = _refusal(status, error);
+        lib.ts_error_free(error);
+        throw refusal;
       }
       return TeistroProvider._(lib, out.value);
     });
@@ -3847,6 +4030,22 @@ final class TeistroProvider implements ffi.Finalizable {
     _lib.ts_provider_free(_handle);
   }
 
+}
+
+/// The exception for a refusal the library described, read from either
+/// kind of record: one a context lent, or one a failed way in wrote.
+TeistroException _refusal(int status, ffi.Pointer<ErrorStruct> raw) {
+  String? text(ffi.Pointer<ffi.Char> p) =>
+      p == ffi.nullptr ? null : p.cast<pkg_ffi.Utf8>().toDartString();
+  return TeistroException(
+    Status.byId(status),
+    text(raw.ref.message) ?? 'the call failed',
+    detail: text(raw.ref.detail),
+    field: text(raw.ref.field),
+    hint: text(raw.ref.hint),
+    messageKey: text(raw.ref.key),
+    providerCode: raw.ref.providerCode,
+  );
 }
 
 /// The bytes of a blob the library filled, copied out and the blob

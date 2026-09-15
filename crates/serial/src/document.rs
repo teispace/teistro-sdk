@@ -14,16 +14,23 @@ use serde::{Deserialize, Serialize};
 use teistro_aspect::Aspects;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::envelope::Provenance;
+use teistro_dasha::DashaReading;
+use teistro_geometry::Drawing;
 use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
 use teistro_state::GrahaState;
+use teistro_strength::{
+    AshtakavargaReading, BhavaBalaReading, DashaPhalaReading, ShadbalaReading,
+    VaiseshikamsaReading, VimshopakaReading,
+};
 use teistro_vargas::chart::VargaChart;
 
 use crate::seal::Sealed;
 
 /// One chart, with whichever of the layer's readings were asked for.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Document {
     /// What every other section is computed from.
     pub foundation: ChartFoundation,
@@ -50,6 +57,39 @@ pub struct Document {
     /// The twelve bhavas under both readings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub houses: Option<Houses>,
+    /// Each graha's Ashtakavarga, their sum, reductions and pindas
+    /// (`03-design/ashtakavarga-measured.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub ashtakavarga: Option<AshtakavargaReading>,
+    /// Each graha's Vimshopaka under the four schemes
+    /// (`03-design/vimshopaka-measured.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub vimshopaka: Option<VimshopakaReading>,
+    /// The names each graha earns by its good vargas (BPHS ch. 6).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub vaiseshikamsa: Option<VaiseshikamsaReading>,
+    /// Each graha's six strengths (`03-design/shadbala-measured.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub shadbala: Option<ShadbalaReading>,
+    /// Each house's strength (`03-design/bhava-bala-measured.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub bhava_bala: Option<BhavaBalaReading>,
+    /// What each graha's placement says of its dasha (BPHS chs. 28 and 47).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub dasha_phala: Option<DashaPhalaReading>,
+    /// The charts drawn in the layouts asked for: which chart, placed in
+    /// which layout (`03-design/chart-geometry.md`).
+    ///
+    /// `default` for the reason `vargas` has it: an absent key is "none
+    /// were asked for", which a `Vec` has to be told.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub drawings: Vec<Drawing>,
+    /// The dashas asked for: each system's balance and its periods to the
+    /// settings' depth (`03-design/dasha-kernels.md`).
+    ///
+    /// `default` for the reason `vargas` has it.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub dashas: Vec<DashaReading>,
 }
 
 impl Document {
@@ -64,6 +104,14 @@ impl Document {
             aspects: None,
             points: None,
             houses: None,
+            ashtakavarga: None,
+            vimshopaka: None,
+            vaiseshikamsa: None,
+            dasha_phala: None,
+            shadbala: None,
+            bhava_bala: None,
+            drawings: Vec::new(),
+            dashas: Vec::new(),
         }
     }
 
@@ -102,6 +150,62 @@ impl Document {
         self
     }
 
+    /// With a chart drawn in a layout, which may be asked for more than once.
+    #[must_use]
+    pub fn with_drawing(mut self, drawing: Drawing) -> Document {
+        self.drawings.push(drawing);
+        self
+    }
+
+    /// With a dasha, which may be asked for more than once, a system each.
+    #[must_use]
+    pub fn with_dasha(mut self, dasha: DashaReading) -> Document {
+        self.dashas.push(dasha);
+        self
+    }
+
+    /// With the Ashtakavarga.
+    #[must_use]
+    pub fn with_ashtakavarga(mut self, ashtakavarga: AshtakavargaReading) -> Document {
+        self.ashtakavarga = Some(ashtakavarga);
+        self
+    }
+
+    /// With the dasha phala.
+    #[must_use]
+    pub fn with_dasha_phala(mut self, dasha_phala: DashaPhalaReading) -> Document {
+        self.dasha_phala = Some(dasha_phala);
+        self
+    }
+
+    /// With the Vaiseshikamsa.
+    #[must_use]
+    pub fn with_vaiseshikamsa(mut self, vaiseshikamsa: VaiseshikamsaReading) -> Document {
+        self.vaiseshikamsa = Some(vaiseshikamsa);
+        self
+    }
+
+    /// With the Vimshopaka.
+    #[must_use]
+    pub fn with_vimshopaka(mut self, vimshopaka: VimshopakaReading) -> Document {
+        self.vimshopaka = Some(vimshopaka);
+        self
+    }
+
+    /// With the Shadbala.
+    #[must_use]
+    pub fn with_shadbala(mut self, shadbala: ShadbalaReading) -> Document {
+        self.shadbala = Some(shadbala);
+        self
+    }
+
+    /// With the Bhava bala.
+    #[must_use]
+    pub fn with_bhava_bala(mut self, bhava_bala: BhavaBalaReading) -> Document {
+        self.bhava_bala = Some(bhava_bala);
+        self
+    }
+
     /// With the houses under both readings.
     #[must_use]
     pub fn with_houses(mut self, houses: Houses) -> Document {
@@ -131,6 +235,30 @@ impl Document {
         }
         if self.houses.is_some() {
             found.push("houses");
+        }
+        if self.ashtakavarga.is_some() {
+            found.push("ashtakavarga");
+        }
+        if self.vimshopaka.is_some() {
+            found.push("vimshopaka");
+        }
+        if self.vaiseshikamsa.is_some() {
+            found.push("vaiseshikamsa");
+        }
+        if self.shadbala.is_some() {
+            found.push("shadbala");
+        }
+        if self.bhava_bala.is_some() {
+            found.push("bhava_bala");
+        }
+        if self.dasha_phala.is_some() {
+            found.push("dasha_phala");
+        }
+        if !self.drawings.is_empty() {
+            found.push("drawings");
+        }
+        if !self.dashas.is_empty() {
+            found.push("dashas");
         }
         found
     }
