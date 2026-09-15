@@ -765,7 +765,7 @@ void _engineTests() {
         instant: 2451545.0,
         place: place,
         utcOffsetSeconds: 0,
-        dashas: [DashaSystem.vimshottari, DashaSystem.ashtottari],
+        dashas: [DashaSystem.vimshottari, DashaSystem.kalachakra],
       ),
       throwsA(
         isA<TeistroException>().having((e) => e.field, 'field', 'dashas[1]'),

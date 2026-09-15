@@ -64,11 +64,10 @@ boundary 1.4e-9 days). Building it corrected the schema once more:
   times. Ashtottari's eight windows of three cover 24 once and leave three
   outside; Yogini's eight lords do not divide 27 and repeat. No arithmetic
   on the table tells these apart, so the row states `repeats`.
-- **A temporal balance over a window of nakshatras is refused.** The corpus
-  records the temporal method for Vimshottari only, where the window is
-  one nakshatra, and no source read defines the time-based fraction of a
-  three-nakshatra window, so a row with `span > 1` refuses it by name
-  rather than guessing.
+- **A temporal balance over a window of nakshatras was refused**, because the
+  corpus then recorded the temporal method for Vimshottari only and no
+  source read defined it. The corpus's 0.2.0 records the recording engine's
+  reading for Ashtottari, and building the other rows took it (below).
 - **The elapsed reading keeps a period's place.** Under
   `dasha.birth_period = ELAPSED` the first sub-period running at birth may
   be the fourth in its sequence, and its path says so. A period carries
@@ -76,6 +75,33 @@ boundary 1.4e-9 days). Building it corrected the schema once more:
 - **The cursor allocates nothing.** Making a dasha allocates two small
   tables; reading the chain at an instant, at any depth and in any cycle,
   allocates nothing (`tests/allocations.rs`).
+
+## What building the other rows corrected
+
+`cargo xtask dasha-systems` (`dasha-systems-measured.md`) measured the eight
+other nakshatra-seeded systems the recording engine implements, 1184 answers
+computed from the corpus's own recorded Moon, and `crates/dasha` ships them
+as rows reproducing every one (`tests/systems.rs`):
+
+- **Every one is a row.** Ashtottari, Dwadashottari, Panchottari,
+  Shatabdika, Chaturashiti-sama, Dwisaptati-sama, Yogini and Tribhagi take
+  Vimshottari's seat, balance, compressed birth period, children and cycle
+  end; the corpus decides five of the seats outright and cannot choose
+  between the equivalent references of the other three.
+- **A sixth correction: a scale on a row.** Tribhagi is Vimshottari's lords
+  at two thirds of their years, twice round, the sub-periods still shares of
+  120; a third of the years three times round is refused by every answer.
+  The scale decorator the kernel table below names became two fields of the
+  row, `scale` and its `rounds`, rather than a wrapper, because nothing else
+  about the tree changes.
+- **A temporal balance over a window reads the Moon's own nakshatra.** The
+  window's whole nakshatras behind the seed are gone and the Moon's own is
+  gone by the time it has spent in it. Every Ashtottari answer agrees; the
+  window's remainder taken from the time fraction alone is refused; the Moon's
+  time across the whole window is not recorded and is not built.
+- **A child follows its parent's place in the row, not its graha.** Looking a
+  lord up by its graha is ambiguous for a row that names a graha twice, so a
+  period carries its lord's place and its children start from it.
 
 ## At the boundary and in the bindings
 
@@ -99,6 +125,10 @@ Node (`chart.dashas`), Python (`Chart.dashas`) and Dart (`Chart.dashas`)
 decode the sections once per batch, and `check-parity` holds all four
 surfaces, Rust included, to the same seeds, balances, 819 periods per
 chart and chains.
+
+Every row reaches the boundary the same way: a request names any of the nine,
+and a system the catalogue names with no row, Kalachakra for one, is refused
+by its place with the built systems as the hint.
 
 ## Kernels
 

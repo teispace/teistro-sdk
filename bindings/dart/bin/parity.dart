@@ -450,8 +450,9 @@ void main() {
       }
       put(
         '$key-at',
-        [for (final period in dasha.at(chart.instant + 5000)) period.path]
-            .join(','),
+        [
+          for (final period in dasha.at(chart.instant + 5000)) period.path,
+        ].join(','),
       );
     }
     final vargas = chart.vargas;

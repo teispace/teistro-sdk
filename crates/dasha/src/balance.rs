@@ -1,12 +1,14 @@
 //! The balance at birth: how much of the first lord's period is still to
 //! run, and how it is written (`03-design/dasha-measured.md`).
 //!
-//! Two methods, both measured exact over the corpus:
+//! Two methods, both measured exact over the corpus, and both reading the
+//! lord's window of nakshatras the same way: the whole nakshatras of the
+//! window behind the seed are gone, and the Moon's own nakshatra is gone by
+//! how far into it the Moon is (`03-design/dasha-systems-measured.md`).
 //!
-//! - **spatial**: what remains of the Moon's longitude in its window of
-//!   nakshatras;
-//! - **temporal**: what remains of the time the Moon spends in its
-//!   nakshatra, from birth to the Moon leaving it.
+//! - **spatial**: how far by longitude;
+//! - **temporal**: how far by time, from the Moon entering the nakshatra to
+//!   birth over the whole of its stay.
 //!
 //! The balance is that fraction of the first lord's years, and it is
 //! written as whole years of the year length, whole months of a twelfth of
@@ -89,40 +91,49 @@ impl Written {
     }
 }
 
-/// What remains of the Moon's window of nakshatras, spatially.
+/// What remains of a lord's window when the Moon is `elapsed` (0 to 1) of
+/// the way through its own nakshatra.
 ///
 /// The window is the lord's `span` of nakshatras, so for a lord of three
 /// the fraction is of the three and not of the one the Moon is in, which is
 /// the correction `dasha-kernels.md` records for Ashtottari.
+fn window(row: &UduRow, seat: Seat, elapsed: f64) -> f64 {
+    let span = f64::from(row.span.max(1));
+    ((span - f64::from(seat.within) - elapsed) / span).clamp(0.0, 1.0)
+}
+
+/// What remains of the Moon's window of nakshatras, spatially.
 #[must_use]
 #[expect(
     clippy::cast_precision_loss,
     reason = "both are below a nakshatra's nanoarcseconds, 4.8e13, far inside the 2^53 a double holds exactly"
 )]
 pub fn spatial(row: &UduRow, moon: Nas, seat: Seat) -> f64 {
-    let into = moon.in_nakshatra().get() as f64 / Nas::PER_NAKSHATRA as f64;
-    let span = f64::from(row.span.max(1));
-    ((span - f64::from(seat.within) - into) / span).clamp(0.0, 1.0)
+    window(
+        row,
+        seat,
+        moon.in_nakshatra().get() as f64 / Nas::PER_NAKSHATRA as f64,
+    )
 }
 
-/// What remains of the Moon's time in its nakshatra, temporally: from
-/// birth to the Moon leaving the nakshatra over the whole of its stay.
+/// What remains of the Moon's window of nakshatras, temporally: the time
+/// from the Moon entering its nakshatra to birth over the whole of its
+/// stay, taken as that nakshatra's part of the window. For a lord of one
+/// nakshatra that is the time from birth to the Moon leaving it.
+///
+/// The other reading of a window, the Moon's time across all of it, is not
+/// recorded anywhere this crate is measured against, and is not built.
 ///
 /// # Errors
 ///
 /// A span that does not hold the birth, or that is empty, named as
-/// `moon_span`; and a row whose lords cover more than one nakshatra, whose
-/// temporal window no source defines.
-pub fn temporal(row: &UduRow, birth: JulianDay<Utc>, moon_span: Interval) -> Result<f64, Error> {
-    if row.span > 1 {
-        return Err(Error::unsupported(format!(
-            "{} spans {} nakshatras a lord, and no source defines a temporal balance over a window",
-            row.system.key(),
-            row.span
-        ))
-        .with_field("balance")
-        .with_hint("use the spatial balance for this system"));
-    }
+/// `moon_span`.
+pub fn temporal(
+    row: &UduRow,
+    seat: Seat,
+    birth: JulianDay<Utc>,
+    moon_span: Interval,
+) -> Result<f64, Error> {
     if moon_span.is_empty() || !moon_span.contains_inclusive(birth) {
         return Err(Error::invalid_arg(format!(
             "the Moon's nakshatra span {} to {} does not hold the birth at {birth}",
@@ -130,7 +141,11 @@ pub fn temporal(row: &UduRow, birth: JulianDay<Utc>, moon_span: Interval) -> Res
         ))
         .with_field("moon_span"));
     }
-    Ok(((moon_span.to.get() - birth.get()) / moon_span.days()).clamp(0.0, 1.0))
+    Ok(window(
+        row,
+        seat,
+        (birth.get() - moon_span.from.get()) / moon_span.days(),
+    ))
 }
 
 #[cfg(test)]
@@ -192,15 +207,24 @@ mod tests {
     #[test]
     fn temporally_what_remains_is_the_rest_of_the_stay() {
         let span = Interval::literal(100.0, 101.0);
-        let remaining = temporal(&VIMSHOTTARI, JulianDay::literal(100.25), span).unwrap();
+        let seat = VIMSHOTTARI.seat(0);
+        let remaining = temporal(&VIMSHOTTARI, seat, JulianDay::literal(100.25), span).unwrap();
         assert_eq!(remaining, 0.75);
-        let outside = temporal(&VIMSHOTTARI, JulianDay::literal(99.0), span).unwrap_err();
+        let outside = temporal(&VIMSHOTTARI, seat, JulianDay::literal(99.0), span).unwrap_err();
         assert_eq!(outside.field(), Some("moon_span"));
+        // In a window of three, a quarter of the way through its second
+        // nakshatra by time, what remains is the rest of that one and the
+        // third: 1.75 of 3.
         let wide = UduRow {
             span: 3,
             ..VIMSHOTTARI
         };
-        let window = temporal(&wide, JulianDay::literal(100.25), span).unwrap_err();
-        assert_eq!(window.field(), Some("balance"));
+        let second = Seat {
+            lord: 0,
+            within: 1,
+            overflow: false,
+        };
+        let remaining = temporal(&wide, second, JulianDay::literal(100.25), span).unwrap();
+        assert!((remaining - 1.75 / 3.0).abs() < 1e-15);
     }
 }

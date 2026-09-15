@@ -81,6 +81,10 @@
 //! - `dashas` and `check-dashas`: the falsification pass over the
 //!   Vimshottari dasha, which the dasha module is designed from — the
 //!   seed, the balance, the tree and its arithmetic, and the cycle's end.
+//! - `dasha-systems` and `check-dasha-systems`: the same over the eight
+//!   other nakshatra-seeded systems — each one's seat derived from its
+//!   recorded first lords, a temporal balance over a window, and Tribhagi's
+//!   scale.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -135,6 +139,7 @@ mod chebyshev;
 mod classical;
 mod consumer;
 mod dart_binding;
+mod dasha_systems;
 mod dashas;
 mod document_schema;
 mod engine;
@@ -229,6 +234,11 @@ const PASSES: &[Pass] = &[
     ),
     ("render", render::generate, render::check_generated),
     ("dashas", dashas::generate, dashas::check_generated),
+    (
+        "dasha-systems",
+        dasha_systems::generate,
+        dasha_systems::check_generated,
+    ),
 ];
 
 /// Runs a pass, or says it is not one.

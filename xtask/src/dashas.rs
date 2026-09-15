@@ -421,7 +421,7 @@ fn chain(record: &Record, method: &Method, jd: f64, depth: usize) -> Vec<Row> {
 
 /// How a balance's remainder is written.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Parts {
+pub(crate) enum Parts {
     /// Whole years of the year length, whole months of a twelfth of it,
     /// whole days, then hours and minutes rounded to the nearest minute.
     RoundedMinutes,
@@ -436,7 +436,7 @@ enum Parts {
     clippy::cast_sign_loss,
     reason = "a balance is a few thousand days, and each part is floored or rounded first"
 )]
-fn parts(total_days: f64, year_length: f64, rule: Parts) -> [u64; 5] {
+pub(crate) fn parts(total_days: f64, year_length: f64, rule: Parts) -> [u64; 5] {
     let month = match rule {
         Parts::ThirtyDayMonths => 30.0,
         Parts::RoundedMinutes | Parts::FlooredMinutes => year_length / 12.0,

@@ -640,7 +640,7 @@ class AnEngine(WithLibrary):
                 instant=2451545.0,
                 place=observer,
                 utc_offset_seconds=0,
-                dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.ASHTOTTARI],
+                dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.KALACHAKRA],
             )
         self.assertEqual(caught.exception.field, "dashas[1]")
 

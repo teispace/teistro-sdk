@@ -3,8 +3,11 @@
 //! from the Moon's nakshatra to the lord it starts with.
 //!
 //! A system is data. Vimshottari, Ashtottari and Dwadashottari differ in
-//! the table and in four fields of the map, so each is a constant and not
-//! a module; a row the checks refuse is refused by the field it gets wrong.
+//! the table and in four fields of the map, and Tribhagi is Vimshottari
+//! scaled, so each is a constant and not a module; a row the checks refuse
+//! is refused by the field it gets wrong. Every row here is reproduced over
+//! the conformance corpus (`03-design/dasha-measured.md`,
+//! `03-design/dasha-systems-measured.md`).
 
 use teistro_core::catalogue::{DashaSystem, Graha};
 use teistro_core::error::Error;
@@ -30,6 +33,36 @@ pub enum Count {
     ToReference,
 }
 
+/// A factor on every mahadasha's years, and how many times the sequence
+/// runs in one cycle: Tribhagi's two thirds, twice round.
+///
+/// The sub-periods are still shares of the row's whole years, so a scale
+/// changes how long a mahadasha is and not how it divides.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Scale {
+    /// The factor's numerator.
+    pub numerator: u8,
+    /// The factor's denominator.
+    pub denominator: u8,
+    /// How many times the sequence runs before the cycle ends.
+    pub rounds: u8,
+}
+
+impl Scale {
+    /// Every lord's own years, the sequence once.
+    pub const WHOLE: Scale = Scale {
+        numerator: 1,
+        denominator: 1,
+        rounds: 1,
+    };
+
+    /// The factor on a mahadasha's years.
+    #[must_use]
+    pub fn factor(self) -> f64 {
+        f64::from(self.numerator) / f64::from(self.denominator.max(1))
+    }
+}
+
 /// A nakshatra-seeded system.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct UduRow {
@@ -52,6 +85,8 @@ pub struct UduRow {
     /// three leave three. Stated rather than inferred: Yogini's eight lords
     /// do not divide 27 either, and repeat.
     pub repeats: bool,
+    /// The factor on the mahadashas' years and the rounds in a cycle.
+    pub scale: Scale,
 }
 
 /// Where a seed nakshatra falls in a row's cycle.
@@ -69,10 +104,26 @@ pub struct Seat {
 }
 
 impl UduRow {
-    /// The cycle's years, the sum of the lords'.
+    /// The cycle's years, the sum of the lords': what every sub-period is a
+    /// share of, whatever the scale.
     #[must_use]
     pub fn total_years(&self) -> u32 {
         self.lords.iter().map(|lord| u32::from(lord.years)).sum()
+    }
+
+    /// How many mahadashas one cycle runs: the lords, once each round.
+    #[must_use]
+    pub fn mahadashas(&self) -> usize {
+        self.lords.len() * usize::from(self.scale.rounds.max(1))
+    }
+
+    /// The years of the lord at `index` round the sequence, scaled: how long
+    /// its mahadasha runs.
+    #[must_use]
+    pub fn scaled_years(&self, index: usize) -> f64 {
+        self.lords
+            .get(index % self.lords.len().max(1))
+            .map_or(0.0, |lord| f64::from(lord.years) * self.scale.factor())
     }
 
     /// The lord a seed nakshatra starts with, and where it sits in that
@@ -102,8 +153,9 @@ impl UduRow {
     /// # Errors
     ///
     /// No lords, a lord of no years, a reference past the last nakshatra, a
-    /// span of nothing, or windows that cover more nakshatras than there
-    /// are.
+    /// span of nothing, windows that cover more nakshatras than there are, a
+    /// scale of nothing, or more mahadashas in a cycle than a path can
+    /// place.
     pub fn validate(&self) -> Result<(), Error> {
         let refuse = |field: &str, message: String| {
             Err(Error::invalid_arg(message).with_field(field.to_owned()))
@@ -137,6 +189,23 @@ impl UduRow {
                 ),
             );
         }
+        if self.scale.numerator == 0 || self.scale.denominator == 0 {
+            return refuse(
+                "scale",
+                String::from("a scale's numerator and denominator are at least one"),
+            );
+        }
+        if self.scale.rounds == 0 || self.mahadashas() > usize::from(u8::MAX) {
+            return refuse(
+                "scale.rounds",
+                format!(
+                    "{} rounds of {} lords is not 1 to {} mahadashas",
+                    self.scale.rounds,
+                    self.lords.len(),
+                    u8::MAX
+                ),
+            );
+        }
         Ok(())
     }
 }
@@ -166,11 +235,186 @@ pub const VIMSHOTTARI: UduRow = UduRow {
     span: 1,
     offset: 0,
     repeats: true,
+    scale: Scale::WHOLE,
+};
+
+/// Ashtottari: eight lords over 108 years, counted from Ardra, three
+/// nakshatras each. The eight windows cover 24 nakshatras once, so the three
+/// before Ardra lie outside the cycle, which `dasha.seed_overflow` decides
+/// (crux C5); whether a chart is one Ashtottari applies to is a rule and not
+/// this row (crux C3).
+pub const ASHTOTTARI: UduRow = UduRow {
+    system: DashaSystem::Ashtottari,
+    lords: &[
+        lord(Graha::Sun, 6),
+        lord(Graha::Moon, 15),
+        lord(Graha::Mars, 8),
+        lord(Graha::Mercury, 17),
+        lord(Graha::Saturn, 10),
+        lord(Graha::Jupiter, 19),
+        lord(Graha::Rahu, 12),
+        lord(Graha::Venus, 21),
+    ],
+    reference: 5,
+    count: Count::FromReference,
+    span: 3,
+    offset: 0,
+    repeats: false,
+    scale: Scale::WHOLE,
+};
+
+/// Dwadashottari: eight lords over 112 years, counted from the seed back to
+/// Revati.
+pub const DWADASHOTTARI: UduRow = UduRow {
+    system: DashaSystem::Dwadashottari,
+    lords: &[
+        lord(Graha::Sun, 7),
+        lord(Graha::Jupiter, 9),
+        lord(Graha::Ketu, 11),
+        lord(Graha::Mercury, 13),
+        lord(Graha::Rahu, 15),
+        lord(Graha::Mars, 17),
+        lord(Graha::Saturn, 19),
+        lord(Graha::Moon, 21),
+    ],
+    reference: 26,
+    count: Count::ToReference,
+    span: 1,
+    offset: 0,
+    repeats: true,
+    scale: Scale::WHOLE,
+};
+
+/// Panchottari: seven lords over 105 years, counted from Anuradha.
+pub const PANCHOTTARI: UduRow = UduRow {
+    system: DashaSystem::Panchottari,
+    lords: &[
+        lord(Graha::Sun, 12),
+        lord(Graha::Mercury, 13),
+        lord(Graha::Saturn, 14),
+        lord(Graha::Mars, 15),
+        lord(Graha::Venus, 16),
+        lord(Graha::Moon, 17),
+        lord(Graha::Jupiter, 18),
+    ],
+    reference: 16,
+    count: Count::FromReference,
+    span: 1,
+    offset: 0,
+    repeats: true,
+    scale: Scale::WHOLE,
+};
+
+/// Shatabdika: seven lords over 100 years, counted from Revati.
+pub const SHATABDIKA: UduRow = UduRow {
+    system: DashaSystem::Shatabdika,
+    lords: &[
+        lord(Graha::Sun, 5),
+        lord(Graha::Moon, 5),
+        lord(Graha::Venus, 10),
+        lord(Graha::Mercury, 10),
+        lord(Graha::Jupiter, 20),
+        lord(Graha::Mars, 20),
+        lord(Graha::Saturn, 30),
+    ],
+    reference: 26,
+    count: Count::FromReference,
+    span: 1,
+    offset: 0,
+    repeats: true,
+    scale: Scale::WHOLE,
+};
+
+/// Chaturashiti-sama: seven lords of twelve years each, 84 in all, counted
+/// from Swati.
+pub const CHATURASHITI_SAMA: UduRow = UduRow {
+    system: DashaSystem::ChaturashitiSama,
+    lords: &[
+        lord(Graha::Sun, 12),
+        lord(Graha::Moon, 12),
+        lord(Graha::Mars, 12),
+        lord(Graha::Mercury, 12),
+        lord(Graha::Jupiter, 12),
+        lord(Graha::Venus, 12),
+        lord(Graha::Saturn, 12),
+    ],
+    reference: 14,
+    count: Count::FromReference,
+    span: 1,
+    offset: 0,
+    repeats: true,
+    scale: Scale::WHOLE,
+};
+
+/// Dwisaptati-sama: eight lords of nine years each, 72 in all, counted from
+/// Mula.
+pub const DWISAPTATI_SAMA: UduRow = UduRow {
+    system: DashaSystem::DwisaptatiSama,
+    lords: &[
+        lord(Graha::Sun, 9),
+        lord(Graha::Moon, 9),
+        lord(Graha::Mars, 9),
+        lord(Graha::Mercury, 9),
+        lord(Graha::Jupiter, 9),
+        lord(Graha::Venus, 9),
+        lord(Graha::Saturn, 9),
+        lord(Graha::Rahu, 9),
+    ],
+    reference: 18,
+    count: Count::FromReference,
+    span: 1,
+    offset: 0,
+    repeats: true,
+    scale: Scale::WHOLE,
+};
+
+/// Yogini: the eight yoginis' lords over 36 years, counted from Ashwini
+/// with three added, so Ashwini's is the fourth.
+pub const YOGINI: UduRow = UduRow {
+    system: DashaSystem::Yogini,
+    lords: &[
+        lord(Graha::Moon, 1),
+        lord(Graha::Sun, 2),
+        lord(Graha::Jupiter, 3),
+        lord(Graha::Mars, 4),
+        lord(Graha::Mercury, 5),
+        lord(Graha::Saturn, 6),
+        lord(Graha::Venus, 7),
+        lord(Graha::Rahu, 8),
+    ],
+    reference: 0,
+    count: Count::FromReference,
+    span: 1,
+    offset: 3,
+    repeats: true,
+    scale: Scale::WHOLE,
+};
+
+/// Tribhagi: Vimshottari's lords at two thirds of their years, the sequence
+/// twice round, eighty years a round; the sub-periods still shares of 120.
+pub const TRIBHAGI: UduRow = UduRow {
+    system: DashaSystem::Tribhagi,
+    scale: Scale {
+        numerator: 2,
+        denominator: 3,
+        rounds: 2,
+    },
+    ..VIMSHOTTARI
 };
 
 /// Every row this build implements, in the catalogue's order. A system
 /// the catalogue names and no row implements is refused by name.
-pub const ROWS: &[UduRow] = &[VIMSHOTTARI];
+pub const ROWS: &[UduRow] = &[
+    VIMSHOTTARI,
+    ASHTOTTARI,
+    DWADASHOTTARI,
+    PANCHOTTARI,
+    SHATABDIKA,
+    CHATURASHITI_SAMA,
+    DWISAPTATI_SAMA,
+    YOGINI,
+    TRIBHAGI,
+];
 
 /// The row of a system, when this build implements one.
 #[must_use]
@@ -195,7 +439,35 @@ mod tests {
         for row in ROWS {
             row.validate().unwrap();
         }
-        assert_eq!(VIMSHOTTARI.total_years(), 120);
+        let totals: Vec<u32> = ROWS.iter().map(UduRow::total_years).collect();
+        assert_eq!(totals, [120, 108, 112, 105, 100, 84, 72, 36, 120]);
+        assert_eq!(TRIBHAGI.mahadashas(), 18);
+        assert!((TRIBHAGI.scaled_years(0) - 7.0 * 2.0 / 3.0).abs() < 1e-12);
+        // In the catalogue's order, one row a system.
+        let ids: Vec<u16> = ROWS.iter().map(|row| row.system.id()).collect();
+        assert!(ids.windows(2).all(|pair| pair[0] < pair[1]), "{ids:?}");
+    }
+
+    #[test]
+    fn every_row_seats_every_nakshatra_and_only_ashtottari_overflows() {
+        for row in ROWS {
+            for nakshatra in 0..NAKSHATRAS {
+                let seat = row.seat(nakshatra);
+                assert!(seat.lord < row.lords.len());
+                assert!(seat.within < row.span);
+                assert_eq!(
+                    seat.overflow,
+                    row.system == DashaSystem::Ashtottari && (2..5).contains(&nakshatra),
+                    "{:?} at {nakshatra}",
+                    row.system
+                );
+            }
+        }
+        // Ashwini is Yogini's fourth lord, Mars; Revati is Dwadashottari's
+        // first, the Sun.
+        assert_eq!(YOGINI.lords[YOGINI.seat(0).lord].graha, Graha::Mars);
+        assert_eq!(DWADASHOTTARI.seat(26).lord, 0);
+        assert_eq!(DWADASHOTTARI.seat(25).lord, 1);
     }
 
     #[test]
@@ -281,5 +553,24 @@ mod tests {
             ..VIMSHOTTARI
         };
         assert_eq!(idle.validate().unwrap_err().field(), Some("lords[0].years"));
+        let nothing = UduRow {
+            scale: Scale {
+                numerator: 0,
+                ..Scale::WHOLE
+            },
+            ..VIMSHOTTARI
+        };
+        assert_eq!(nothing.validate().unwrap_err().field(), Some("scale"));
+        let endless = UduRow {
+            scale: Scale {
+                rounds: 29,
+                ..Scale::WHOLE
+            },
+            ..VIMSHOTTARI
+        };
+        assert_eq!(
+            endless.validate().unwrap_err().field(),
+            Some("scale.rounds")
+        );
     }
 }

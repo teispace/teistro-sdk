@@ -166,6 +166,65 @@ fn a_temporal_balance_searches_the_moon_s_nakshatra_in_the_chart_s_frame() {
     );
 }
 
+/// Every other built system on the corpus's first chart, founded here with
+/// the built-in ephemeris, against what the corpus recorded from its own
+/// Moon: the first lord, the balance and every period of the recorded tree,
+/// under both balance methods (`docs/03-design/dasha-systems-measured.md`).
+#[test]
+fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
+    let recorded = fixture("dasha-systems/charts/c001-kathmandu-1990-04-14.json");
+    let systems: Vec<DashaSystem> = teistro::dasha::ROWS.iter().map(|row| row.system).collect();
+    for (patch, method, fraction) in [
+        ("{}", "spatial", SPATIAL_FRACTION),
+        (
+            r#"{"dasha": {"balance": "TEMPORAL"}}"#,
+            "temporal",
+            TEMPORAL_FRACTION,
+        ),
+    ] {
+        let (_, document) = reading(patch, &systems);
+        assert_eq!(document.dashas.len(), systems.len());
+        for dasha in document.dashas.iter().skip(1) {
+            let key = teistro::catalogue::Catalogued::key(dasha.system).to_ascii_lowercase();
+            let answer = &recorded["systems"][&key]["methods"][method];
+            let at = format!("{key} {method}");
+            assert_eq!(
+                teistro::catalogue::Catalogued::key(dasha.first_lord),
+                answer["first_lord"].as_str().unwrap(),
+                "{at}"
+            );
+            let years = dasha.balance.days / dasha.balance.remaining;
+            let days = answer["balance"]["total_days"].as_f64().unwrap();
+            assert!(
+                (dasha.balance.days - days).abs() < fraction * years + BOUNDARY_DAYS,
+                "{at}: balance {} against {days}",
+                dasha.balance.days
+            );
+            let rows = answer["periods"].as_array().unwrap();
+            assert!(dasha.periods.len() >= rows.len(), "{at}");
+            for row in rows {
+                let path = row[0].as_str().unwrap();
+                let ours = dasha
+                    .periods
+                    .iter()
+                    .find(|period| period.path == path)
+                    .unwrap_or_else(|| panic!("{at}: no period at {path}"));
+                assert_eq!(
+                    teistro::catalogue::Catalogued::key(ours.lord),
+                    row[1].as_str().unwrap(),
+                    "{at} {path}"
+                );
+                assert!(
+                    (ours.interval.from.get() - row[2].as_f64().unwrap()).abs() < BOUNDARY_DAYS
+                        && (ours.interval.to.get() - row[3].as_f64().unwrap()).abs()
+                            < BOUNDARY_DAYS,
+                    "{at} {path}"
+                );
+            }
+        }
+    }
+}
+
 #[test]
 fn a_dasha_not_built_yet_is_refused_by_its_place_and_a_stored_document_reads_back() {
     let (sdk, document) = reading("{}", &[DashaSystem::Vimshottari]);
@@ -182,11 +241,11 @@ fn a_dasha_not_built_yet_is_refused_by_its_place_and_a_stored_document_reads_bac
 
     let place = document.foundation.place;
     let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap())
-        .with_dashas([DashaSystem::Vimshottari, DashaSystem::Ashtottari]);
+        .with_dashas([DashaSystem::Vimshottari, DashaSystem::Kalachakra]);
     let error = sdk
         .chart()
         .reading(document.foundation.instant, &request)
-        .expect_err("Ashtottari is not built");
+        .expect_err("Kalachakra is not built");
     assert_eq!(error.field(), Some("dashas[1]"));
     assert!(
         error

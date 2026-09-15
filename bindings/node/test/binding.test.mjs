@@ -891,7 +891,7 @@ test('a chart carries its dashas, their periods, and the chain at an instant', (
         instant: 2451545,
         place: { latitude: 0, longitude: 0 },
         utcOffsetSeconds: 0,
-        dashas: [DashaSystem.Vimshottari, DashaSystem.Ashtottari],
+        dashas: [DashaSystem.Vimshottari, DashaSystem.Kalachakra],
       }),
     (error) => error instanceof TeistroError && error.field === 'dashas[1]',
   );

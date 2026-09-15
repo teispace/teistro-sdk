@@ -19,8 +19,9 @@
     reason = "tests fail by panicking, read fixtures, walk one corpus each and print the measurement under --nocapture"
 )]
 
-use std::path::Path as FsPath;
+mod common;
 
+use common::{BOUND_DAYS, jd, tree};
 use serde_json::Value;
 use teistro_core::angle::Nas;
 use teistro_core::interval::Interval;
@@ -28,41 +29,16 @@ use teistro_core::quantity::{Degrees, Depth, JulianDay};
 use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, SeedOverflow, YearLength};
 use teistro_dasha::{Birth, Dasha, Period, Rules, VIMSHOTTARI};
 
-/// A boundary's bound, in days: a tenth of a millisecond above the worst
-/// the measurement found, and ten thousand times inside the corpus's
-/// tolerance.
-const BOUND_DAYS: f64 = 1e-8;
-
 /// A remaining fraction's bound: the recorded longitude is the input, so
 /// only the classification's integer arithmetic stands between them.
 const BOUND_FRACTION: f64 = 1e-12;
 
 fn records() -> Vec<(String, Value)> {
-    let root = FsPath::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/baseline");
-    let mut found = Vec::new();
-    for dir in ["charts", "variants"] {
-        let mut paths: Vec<_> = std::fs::read_dir(root.join(dir))
-            .unwrap_or_else(|err| panic!("{dir}: {err}; is the fixtures submodule checked out?"))
-            .flatten()
-            .map(|entry| entry.path())
-            .collect();
-        paths.sort();
-        for path in paths {
-            let json: Value =
-                serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
-            if !json["dashas"].is_null() {
-                found.push((
-                    path.file_name().unwrap().to_string_lossy().into_owned(),
-                    json,
-                ));
-            }
-        }
-    }
-    found
-}
-
-fn jd(value: &Value) -> f64 {
-    value.as_f64().unwrap()
+    ["charts", "variants"]
+        .into_iter()
+        .flat_map(common::files)
+        .filter(|(_, json)| !json["dashas"].is_null())
+        .collect()
 }
 
 /// The dasha a recorded method describes.
@@ -100,23 +76,6 @@ fn agrees(period: &Period, path: &str, lord: &str, start: f64, end: f64, worst: 
         .max((period.interval.from.get() - start).abs())
         .max((period.interval.to.get() - end).abs());
     period.path.to_string() == path && period.lord.key() == lord
-}
-
-/// Every period of the birth cycle to `depth`, depth first.
-fn tree(dasha: &Dasha, depth: usize) -> Vec<Period> {
-    fn walk(dasha: &Dasha, period: Period, depth: usize, out: &mut Vec<Period>) {
-        out.push(period);
-        if period.path.depth() < depth {
-            for child in dasha.children(&period) {
-                walk(dasha, child, depth, out);
-            }
-        }
-    }
-    let mut out = Vec::new();
-    for maha in dasha.mahadashas() {
-        walk(dasha, maha, depth, &mut out);
-    }
-    out
 }
 
 #[test]

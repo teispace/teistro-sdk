@@ -60,13 +60,6 @@ pub struct Rules {
     pub seed_overflow: SeedOverflow,
 }
 
-/// A lord's years, the index taken round the row.
-fn years_of(row: &UduRow, index: usize) -> f64 {
-    row.lords
-        .get(index % row.lords.len().max(1))
-        .map_or(0.0, |lord| f64::from(lord.years))
-}
-
 impl Rules {
     /// The rules the settings' `dasha` group gives a system: its own year
     /// length, and the group's balance, birth period, cycle end and overflow.
@@ -173,6 +166,10 @@ pub struct Period {
     /// under the elapsed reading, where a period running at birth began
     /// before it.
     whole: Interval,
+    /// Its lord's place in the row, which its children start from. Kept
+    /// rather than looked up by graha, which a row naming one graha twice
+    /// would make ambiguous.
+    seat: usize,
 }
 
 impl Period {
@@ -238,10 +235,10 @@ pub struct Dasha {
     balance: BalanceAtBirth,
     year_days: f64,
     /// Where each mahadasha of the birth cycle begins, and where the last
-    /// ends: `lords + 1` instants.
+    /// ends: `mahadashas + 1` instants.
     first: Vec<f64>,
     /// The offset of each mahadasha into a whole cycle, and the cycle's
-    /// length: `lords + 1` day counts.
+    /// length: `mahadashas + 1` day counts.
     full: Vec<f64>,
 }
 
@@ -271,18 +268,19 @@ impl Dasha {
                     Error::invalid_arg("a temporal balance reads the Moon's nakshatra span")
                         .with_field("moon_span")
                 })?;
-                temporal(row, birth.instant, span)?
+                temporal(row, seat, birth.instant, span)?
             }
             _ => spatial(row, birth.moon, seat),
         };
         let year_days = rules.year_length.days();
-        let years = |at: usize| years_of(row, seat.lord + at);
+        let years = |at: usize| row.scaled_years(seat.lord + at);
         let days = remaining * years(0) * year_days;
 
-        let mut first = Vec::with_capacity(row.lords.len() + 1);
-        let mut full = Vec::with_capacity(row.lords.len() + 1);
+        let mahadashas = row.mahadashas();
+        let mut first = Vec::with_capacity(mahadashas + 1);
+        let mut full = Vec::with_capacity(mahadashas + 1);
         let (mut at, mut offset) = (birth.instant.get(), 0.0);
-        for index in 0..row.lords.len() {
+        for index in 0..mahadashas {
             first.push(at);
             full.push(offset);
             let length = years(index) * year_days;
@@ -351,11 +349,13 @@ impl Dasha {
         self.row.lords.len()
     }
 
-    fn lord(&self, index: usize) -> Option<Graha> {
-        self.row
-            .lords
-            .get(index % self.lords().max(1))
-            .map(|lord| lord.graha)
+    /// The lord's place in the row at `index` round it.
+    fn seat_of(&self, index: usize) -> usize {
+        index % self.lords().max(1)
+    }
+
+    fn lord(&self, seat: usize) -> Option<Graha> {
+        self.row.lords.get(seat).map(|lord| lord.graha)
     }
 
     fn cycle_days(&self) -> f64 {
@@ -366,16 +366,17 @@ impl Dasha {
     /// cycle when the rules end it.
     #[must_use]
     pub fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period> {
-        let lords = self.lords();
-        if index >= lords || (cycle > 0 && self.rules.after_cycle == AfterCycle::End) {
+        let mahadashas = self.row.mahadashas();
+        if index >= mahadashas || (cycle > 0 && self.rules.after_cycle == AfterCycle::End) {
             return None;
         }
-        let lord = self.lord(self.seat.lord + index)?;
+        let seat = self.seat_of(self.seat.lord + index);
+        let lord = self.lord(seat)?;
         let path = Path::root(cycle, u8::try_from(index).ok()?);
         if cycle == 0 {
             let interval = Interval::literal(*self.first.get(index)?, *self.first.get(index + 1)?);
             let whole = if index == 0 && self.rules.birth_period == BirthPeriod::Elapsed {
-                let length = years_of(self.row, self.seat.lord) * self.year_days;
+                let length = self.row.scaled_years(self.seat.lord) * self.year_days;
                 Interval::literal(interval.to.get() - length, interval.to.get())
             } else {
                 interval
@@ -385,9 +386,10 @@ impl Dasha {
                 path,
                 interval,
                 whole,
+                seat,
             });
         }
-        let start = self.first.get(lords)? + f64::from(cycle - 1) * self.cycle_days();
+        let start = self.first.get(mahadashas)? + f64::from(cycle - 1) * self.cycle_days();
         let interval = Interval::literal(
             start + self.full.get(index)?,
             start + self.full.get(index + 1)?,
@@ -397,12 +399,14 @@ impl Dasha {
             path,
             interval,
             whole: interval,
+            seat,
         })
     }
 
-    /// The mahadashas of the birth cycle, in order.
+    /// The mahadashas of the birth cycle, in order: each round of a scaled
+    /// row's sequence in turn.
     pub fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
-        (0..self.lords()).filter_map(|index| self.mahadasha(0, index))
+        (0..self.row.mahadashas()).filter_map(|index| self.mahadasha(0, index))
     }
 
     /// The child of `parent` at `index` in its sequence, or nothing when it
@@ -415,11 +419,7 @@ impl Dasha {
             return None;
         }
         let path = parent.path.child(u8::try_from(index).ok()?)?;
-        let first = self
-            .row
-            .lords
-            .iter()
-            .position(|lord| lord.graha == parent.lord)?;
+        let first = parent.seat;
         let total = self.row.total_years();
         let shares = |count: usize| -> u32 {
             self.row
@@ -447,11 +447,13 @@ impl Dasha {
             child_whole.from.get().max(parent.interval.from.get()),
             child_whole.to.get(),
         );
+        let seat = self.seat_of(first + index);
         Some(Period {
-            lord: self.lord(first + index)?,
+            lord: self.lord(seat)?,
             path,
             interval,
             whole: child_whole,
+            seat,
         })
     }
 
@@ -462,11 +464,10 @@ impl Dasha {
 
     /// The mahadasha running at an instant, with its cycle.
     fn mahadasha_at(&self, instant: f64) -> Option<Period> {
-        let lords = self.lords();
         if instant < self.birth.get() {
             return None;
         }
-        let end = *self.first.get(lords)?;
+        let end = *self.first.get(self.row.mahadashas())?;
         let (cycle, offsets, base): (u32, &[f64], f64) = if instant < end {
             (0, &self.first, 0.0)
         } else {

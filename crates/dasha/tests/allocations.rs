@@ -17,13 +17,17 @@
 use teistro_core::angle::Nas;
 use teistro_core::quantity::{Degrees, Depth, JulianDay};
 use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, SeedOverflow, YearLength};
-use teistro_dasha::{Birth, Dasha, Rules, VIMSHOTTARI};
+use teistro_dasha::{Birth, Dasha, ROWS, Rules, UduRow, VIMSHOTTARI};
 use teistro_test_allocator::{Counting, measure};
 
 #[global_allocator]
 static ALLOCATOR: Counting = Counting::system();
 
 fn dasha(after_cycle: AfterCycle) -> Dasha {
+    dasha_of(&VIMSHOTTARI, after_cycle)
+}
+
+fn dasha_of(row: &'static UduRow, after_cycle: AfterCycle) -> Dasha {
     let birth = Birth {
         instant: JulianDay::literal(2_447_995.489_583_333_5),
         moon: Nas::from_degrees(Degrees::try_new(221.786_980_828_370_36).unwrap()),
@@ -36,7 +40,7 @@ fn dasha(after_cycle: AfterCycle) -> Dasha {
         after_cycle,
         seed_overflow: SeedOverflow::WrapToStart,
     };
-    Dasha::new(&VIMSHOTTARI, &birth, rules).unwrap()
+    Dasha::new(row, &birth, rules).unwrap()
 }
 
 #[test]
@@ -64,4 +68,15 @@ fn making_a_dasha_allocates_its_two_tables_and_reading_one_allocates_nothing() {
     let maha = made.mahadasha(0, 4).unwrap();
     let (count, counts) = measure(|| made.children(&maha).count());
     assert_eq!((count, counts.allocations), (9, 0), "a period's children");
+
+    // Every row reads the same way: a scaled one's second round and a
+    // windowed one's chain allocate nothing either.
+    for row in ROWS {
+        let (made, counts) = measure(|| dasha_of(row, AfterCycle::End));
+        assert_eq!(counts.allocations, 2, "{:?}: its two tables", row.system);
+        let instant = JulianDay::literal(2_447_995.489_583_333_5 + 20.0 * 365.25);
+        let (chain, counts) = measure(|| made.at(instant, deepest));
+        assert!(!chain.is_empty(), "{:?}", row.system);
+        assert_eq!(counts.allocations, 0, "{:?}: the chain", row.system);
+    }
 }
