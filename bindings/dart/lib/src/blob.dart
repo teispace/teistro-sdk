@@ -877,6 +877,8 @@ final class ChartsStates {
 final class ChartsDashas {
   const ChartsDashas({
     required this.system,
+    required this.seeded,
+    required this.signed,
     required this.seed,
     required this.firstLord,
     required this.overflow,
@@ -898,7 +900,13 @@ final class ChartsDashas {
   /// Which system.
   final Uint16List system;
 
-  /// The nakshatra the Moon stood in, which seeds it.
+  /// 1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero.
+  final Uint8List seeded;
+
+  /// 1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero.
+  final Uint8List signed;
+
+  /// The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.
   final Uint16List seed;
 
   /// The lord it starts with.
@@ -955,6 +963,7 @@ final class ChartsDashaPeriods {
   const ChartsDashaPeriods({
     required this.level,
     required this.index,
+    required this.sign,
     required this.lord,
     required this.fromJd,
     required this.toJd,
@@ -966,6 +975,9 @@ final class ChartsDashaPeriods {
 
   /// Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
   final Uint8List index;
+
+  /// The sign it is the period of, when its dasha is `signed`; zero otherwise.
+  final Uint16List sign;
 
   /// Its lord.
   final Uint16List lord;
@@ -1869,80 +1881,90 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atDashas, 0),
         blob.columnOffset(atDashas, 0) + atDashas.count * 2,
       ),
-      seed: Uint16List.sublistView(
+      seeded: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDashas, 1),
-        blob.columnOffset(atDashas, 1) + atDashas.count * 2,
+        blob.columnOffset(atDashas, 1) + atDashas.count * 1,
+      ),
+      signed: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 2),
+        blob.columnOffset(atDashas, 2) + atDashas.count * 1,
+      ),
+      seed: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 3),
+        blob.columnOffset(atDashas, 3) + atDashas.count * 2,
       ),
       firstLord: Uint16List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 2),
-        blob.columnOffset(atDashas, 2) + atDashas.count * 2,
+        blob.columnOffset(atDashas, 4),
+        blob.columnOffset(atDashas, 4) + atDashas.count * 2,
       ),
       overflow: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 3),
-        blob.columnOffset(atDashas, 3) + atDashas.count * 1,
+        blob.columnOffset(atDashas, 5),
+        blob.columnOffset(atDashas, 5) + atDashas.count * 1,
       ),
       balance: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 4),
-        blob.columnOffset(atDashas, 4) + atDashas.count * 1,
+        blob.columnOffset(atDashas, 6),
+        blob.columnOffset(atDashas, 6) + atDashas.count * 1,
       ),
       remaining: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 5),
-        blob.columnOffset(atDashas, 5) + atDashas.count * 8,
+        blob.columnOffset(atDashas, 7),
+        blob.columnOffset(atDashas, 7) + atDashas.count * 8,
       ),
       balanceDays: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 6),
-        blob.columnOffset(atDashas, 6) + atDashas.count * 8,
+        blob.columnOffset(atDashas, 8),
+        blob.columnOffset(atDashas, 8) + atDashas.count * 8,
       ),
       balanceYears: Uint32List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 7),
-        blob.columnOffset(atDashas, 7) + atDashas.count * 4,
+        blob.columnOffset(atDashas, 9),
+        blob.columnOffset(atDashas, 9) + atDashas.count * 4,
       ),
       balanceMonths: Uint8List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDashas, 8),
-        blob.columnOffset(atDashas, 8) + atDashas.count * 1,
-      ),
-      balanceDayCount: Uint8List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDashas, 9),
-        blob.columnOffset(atDashas, 9) + atDashas.count * 1,
-      ),
-      balanceHours: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDashas, 10),
         blob.columnOffset(atDashas, 10) + atDashas.count * 1,
       ),
-      balanceMinutes: Uint8List.sublistView(
+      balanceDayCount: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDashas, 11),
         blob.columnOffset(atDashas, 11) + atDashas.count * 1,
       ),
-      moonSpanFrom: Float64List.sublistView(
+      balanceHours: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDashas, 12),
-        blob.columnOffset(atDashas, 12) + atDashas.count * 8,
+        blob.columnOffset(atDashas, 12) + atDashas.count * 1,
+      ),
+      balanceMinutes: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 13),
+        blob.columnOffset(atDashas, 13) + atDashas.count * 1,
+      ),
+      moonSpanFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 14),
+        blob.columnOffset(atDashas, 14) + atDashas.count * 8,
       ),
       moonSpanTo: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 13),
-        blob.columnOffset(atDashas, 13) + atDashas.count * 8,
+        blob.columnOffset(atDashas, 15),
+        blob.columnOffset(atDashas, 15) + atDashas.count * 8,
       ),
       depth: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 14),
-        blob.columnOffset(atDashas, 14) + atDashas.count * 1,
+        blob.columnOffset(atDashas, 16),
+        blob.columnOffset(atDashas, 16) + atDashas.count * 1,
       ),
       periodCount: Uint32List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDashas, 15),
-        blob.columnOffset(atDashas, 15) + atDashas.count * 4,
+        blob.columnOffset(atDashas, 17),
+        blob.columnOffset(atDashas, 17) + atDashas.count * 4,
       ),
       length: atDashas.count,
     ),
@@ -1957,20 +1979,25 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atDashaPeriods, 1),
         blob.columnOffset(atDashaPeriods, 1) + atDashaPeriods.count * 1,
       ),
-      lord: Uint16List.sublistView(
+      sign: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atDashaPeriods, 2),
         blob.columnOffset(atDashaPeriods, 2) + atDashaPeriods.count * 2,
       ),
-      fromJd: Float64List.sublistView(
+      lord: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atDashaPeriods, 3),
-        blob.columnOffset(atDashaPeriods, 3) + atDashaPeriods.count * 8,
+        blob.columnOffset(atDashaPeriods, 3) + atDashaPeriods.count * 2,
       ),
-      toJd: Float64List.sublistView(
+      fromJd: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDashaPeriods, 4),
         blob.columnOffset(atDashaPeriods, 4) + atDashaPeriods.count * 8,
+      ),
+      toJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 5),
+        blob.columnOffset(atDashaPeriods, 5) + atDashaPeriods.count * 8,
       ),
       length: atDashaPeriods.count,
     ),

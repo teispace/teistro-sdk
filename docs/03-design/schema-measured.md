@@ -136,9 +136,9 @@ later. Counting the derives over the layer's own source:
 | `vargas` | 11 | 8 |
 | `state` | 10 | 10 |
 | `aspect` | 8 | 8 |
-| `points` | 3 | 3 |
+| `points` | 4 | 4 |
 | `houses` | 5 | 5 |
-| **total** | **65** | **60** |
+| **total** | **66** | **61** |
 
 The five that do not derive it are the five that **cannot**, and they
 are all one shape: a value whose identity is a shipped constant, holding
@@ -230,7 +230,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 44 of 162 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 60 types derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 61 types derive `Deserialize` |
 | one casing convention covers every enum in a document | falsified | 2 conventions declared |
 | every number the form writes reads back as the same double | **holds** | 0 of 5470 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5470 |

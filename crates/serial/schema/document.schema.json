@@ -1021,8 +1021,15 @@
       "description": "One dasha of a chart.",
       "properties": {
         "balance": {
-          "$ref": "#/$defs/BalanceAtBirth",
-          "description": "What remained of the first period at birth."
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BalanceAtBirth"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "What remained of the first period at birth; nothing for a sign-based dasha, whose first period runs whole from birth."
         },
         "depth": {
           "$ref": "#/$defs/Depth",
@@ -1056,11 +1063,18 @@
         },
         "rules": {
           "$ref": "#/$defs/Rules",
-          "description": "The choices it was computed under."
+          "description": "The choices it was computed under. A sign-based dasha reads only the year length and what follows the cycle."
         },
         "seed": {
-          "$ref": "#/$defs/Nakshatra",
-          "description": "The nakshatra the Moon stood in, which seeds it."
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Nakshatra"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The nakshatra the Moon stood in, which seeds a nakshatra-seeded dasha; nothing for a sign-based one."
         },
         "system": {
           "$ref": "#/$defs/DashaSystem",
@@ -1070,10 +1084,8 @@
       "required": [
         "system",
         "rules",
-        "seed",
         "first_lord",
         "overflow",
-        "balance",
         "depth",
         "periods"
       ],
@@ -2862,6 +2874,17 @@
         "path": {
           "description": "Where it sits: the place at each level, from the mahadasha down, joined by `/` (`2/5/3`).",
           "type": "string"
+        },
+        "sign": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Rashi"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The sign it is the period of, in a sign-based dasha."
         }
       },
       "required": [

@@ -242,6 +242,7 @@ __all__ = [
     "DashaBalance",
     "DashaPeriod",
     "DashaSystem",
+    "Rashi",
     "WrittenBalance",
     "AvasthaBaladi",
     "AvasthaDeeptadi",
@@ -1523,6 +1524,9 @@ class DashaPeriod:
     level: int
     """How deep: 1 for a mahadasha."""
 
+    sign: Optional[Rashi]
+    """The sign it is the period of, in a sign-based dasha; None otherwise."""
+
     lord: Graha
     """Its lord."""
 
@@ -1569,13 +1573,16 @@ class DashaBalance:
 
 @dataclass(frozen=True)
 class Dasha:
-    """A dasha of a founded chart: its balance at birth and its periods."""
+    """A dasha of a founded chart: its periods, and for a nakshatra-seeded one
+    its seed and balance at birth. A sign-based dasha has neither, and its
+    periods name their signs."""
 
     system: DashaSystem
     """Which system."""
 
-    seed: Nakshatra
-    """The nakshatra the Moon stood in, which seeds it."""
+    seed: Optional[Nakshatra]
+    """The nakshatra the Moon stood in, which seeds it; None for a sign-based
+    dasha."""
 
     first_lord: Graha
     """The lord it starts with."""
@@ -1583,8 +1590,9 @@ class Dasha:
     overflow: bool
     """Whether the seed lay outside a conditional system's nakshatras."""
 
-    balance: DashaBalance
-    """What remained of the first period at birth."""
+    balance: Optional[DashaBalance]
+    """What remained of the first period at birth; None for a sign-based
+    dasha, whose first period runs whole from birth."""
 
     moon_span: Optional[Interval]
     """The Moon's stay in its nakshatra, when the balance read one."""
@@ -2491,6 +2499,8 @@ def _dasha(decoded: Charts, row: int, start: int, count: int) -> Dasha:
     """
     rows = decoded.dashas
     cells = decoded.dasha_periods
+    seeded = rows.seeded[row] != 0
+    signed = rows.signed[row] != 0
     periods: list[DashaPeriod] = []
     path: list[str] = []
     for i in range(start, start + count):
@@ -2501,6 +2511,7 @@ def _dasha(decoded: Charts, row: int, start: int, count: int) -> Dasha:
             DashaPeriod(
                 path="/".join(path),
                 level=level,
+                sign=Rashi(cells.sign[i]) if signed else None,
                 lord=Graha(cells.lord[i]),
                 span=Interval(from_jd=cells.from_jd[i], to_jd=cells.to_jd[i]),
             )
@@ -2508,7 +2519,7 @@ def _dasha(decoded: Charts, row: int, start: int, count: int) -> Dasha:
     span_from = rows.moon_span_from[row]
     return Dasha(
         system=DashaSystem(rows.system[row]),
-        seed=Nakshatra(rows.seed[row]),
+        seed=Nakshatra(rows.seed[row]) if seeded else None,
         first_lord=Graha(rows.first_lord[row]),
         overflow=rows.overflow[row] != 0,
         balance=DashaBalance(
@@ -2522,7 +2533,9 @@ def _dasha(decoded: Charts, row: int, start: int, count: int) -> Dasha:
                 hours=rows.balance_hours[row],
                 minutes=rows.balance_minutes[row],
             ),
-        ),
+        )
+        if seeded
+        else None,
         moon_span=None if math.isnan(span_from) else Interval(from_jd=span_from, to_jd=rows.moon_span_to[row]),
         depth=rows.depth[row],
         periods=tuple(periods),

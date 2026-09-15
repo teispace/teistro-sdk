@@ -1741,6 +1741,8 @@ function dashasOf(batch) {
 /** One dasha row and its periods, in this layer's shape. */
 function dashaFrom(d, row, start, count) {
   const rows = d.dashas;
+  const seeded = rows.seeded[row] !== 0;
+  const signed = rows.signed[row] !== 0;
   const periods = [];
   const path = [];
   for (let k = 0; k < count; k += 1) {
@@ -1752,6 +1754,7 @@ function dashaFrom(d, row, start, count) {
       Object.freeze({
         path: path.join('/'),
         level,
+        sign: signed ? (RashiById.get(d.dashaPeriods.sign[i]) ?? 'unknown') : null,
         lord: GrahaById.get(d.dashaPeriods.lord[i]) ?? 'unknown',
         from: d.dashaPeriods.fromJd[i],
         to: d.dashaPeriods.toJd[i],
@@ -1761,21 +1764,23 @@ function dashaFrom(d, row, start, count) {
   const spanFrom = rows.moonSpanFrom[row];
   return Object.freeze({
     system: DashaSystemById.get(rows.system[row]) ?? 'unknown',
-    seed: NakshatraById.get(rows.seed[row]) ?? 'unknown',
+    seed: seeded ? (NakshatraById.get(rows.seed[row]) ?? 'unknown') : null,
     firstLord: GrahaById.get(rows.firstLord[row]) ?? 'unknown',
     overflow: rows.overflow[row] !== 0,
-    balance: Object.freeze({
-      method: BalanceById.get(rows.balance[row]) ?? 'unknown',
-      remaining: rows.remaining[row],
-      days: rows.balanceDays[row],
-      written: Object.freeze({
-        years: rows.balanceYears[row],
-        months: rows.balanceMonths[row],
-        days: rows.balanceDayCount[row],
-        hours: rows.balanceHours[row],
-        minutes: rows.balanceMinutes[row],
-      }),
-    }),
+    balance: seeded
+      ? Object.freeze({
+          method: BalanceById.get(rows.balance[row]) ?? 'unknown',
+          remaining: rows.remaining[row],
+          days: rows.balanceDays[row],
+          written: Object.freeze({
+            years: rows.balanceYears[row],
+            months: rows.balanceMonths[row],
+            days: rows.balanceDayCount[row],
+            hours: rows.balanceHours[row],
+            minutes: rows.balanceMinutes[row],
+          }),
+        })
+      : null,
     moonSpan: Number.isNaN(spanFrom) ? null : Object.freeze({ from: spanFrom, to: rows.moonSpanTo[row] }),
     depth: rows.depth[row],
     periods: Object.freeze(periods),

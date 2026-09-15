@@ -703,7 +703,15 @@ export interface ChartsDashas {
    */
   readonly system: Uint16Array;
   /**
-   * The nakshatra the Moon stood in, which seeds it.
+   * 1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero.
+   */
+  readonly seeded: Uint8Array;
+  /**
+   * 1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero.
+   */
+  readonly signed: Uint8Array;
+  /**
+   * The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.
    * The values are `Nakshatra` ids.
    */
   readonly seed: Uint16Array;
@@ -784,6 +792,11 @@ export interface ChartsDashaPeriods {
    * Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
    */
   readonly index: Uint8Array;
+  /**
+   * The sign it is the period of, when its dasha is `signed`; zero otherwise.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
   /**
    * Its lord.
    * The values are `Graha` ids.

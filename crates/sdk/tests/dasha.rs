@@ -68,19 +68,24 @@ fn agrees(sdk: &Context, document: &Document, recorded: &Value, fraction: f64) {
     let dasha = &document.dashas[0];
     assert_eq!(
         (dasha.system, dasha.first_lord, dasha.seed),
-        (DashaSystem::Vimshottari, Graha::Saturn, Nakshatra::Anuradha)
+        (
+            DashaSystem::Vimshottari,
+            Graha::Saturn,
+            Some(Nakshatra::Anuradha)
+        )
     );
+    let balance = dasha.balance.expect("a nakshatra-seeded dasha's balance");
     let remaining = recorded["remaining_fraction"].as_f64().unwrap();
     assert!(
-        (dasha.balance.remaining - remaining).abs() < fraction,
+        (balance.remaining - remaining).abs() < fraction,
         "remaining {} against {remaining}",
-        dasha.balance.remaining
+        balance.remaining
     );
     let days = recorded["balance"]["total_days"].as_f64().unwrap();
     assert!(
-        (dasha.balance.days - days).abs() < BOUNDARY_DAYS,
+        (balance.days - days).abs() < BOUNDARY_DAYS,
         "balance {} against {days}",
-        dasha.balance.days
+        balance.days
     );
 
     let rows = recorded["periods"].as_array().unwrap();
@@ -193,12 +198,13 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
                 answer["first_lord"].as_str().unwrap(),
                 "{at}"
             );
-            let years = dasha.balance.days / dasha.balance.remaining;
+            let balance = dasha.balance.expect("a nakshatra-seeded dasha's balance");
+            let years = balance.days / balance.remaining;
             let days = answer["balance"]["total_days"].as_f64().unwrap();
             assert!(
-                (dasha.balance.days - days).abs() < fraction * years + BOUNDARY_DAYS,
+                (balance.days - days).abs() < fraction * years + BOUNDARY_DAYS,
                 "{at}: balance {} against {days}",
-                dasha.balance.days
+                balance.days
             );
             let rows = answer["periods"].as_array().unwrap();
             assert!(dasha.periods.len() >= rows.len(), "{at}");
@@ -222,6 +228,54 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
                 );
             }
         }
+    }
+}
+
+/// Every sign-based system on the corpus's first chart, founded here with the
+/// built-in ephemeris: the arudha and navamsa lagnas and the dignities the
+/// façade computes must be the ones the corpus recorded for the mahadashas'
+/// signs, lords and years to agree, and each antardasha with them
+/// (`docs/03-design/rashi-dashas-measured.md`).
+#[test]
+fn a_reading_carries_every_sign_based_system_and_each_agrees_with_the_corpus() {
+    let recorded = fixture("rashi-dashas/charts/c001-kathmandu-1990-04-14.json");
+    let systems: Vec<DashaSystem> = teistro::dasha::RASHI_ROWS
+        .iter()
+        .map(|row| row.system)
+        .collect();
+    let (sdk, document) = reading("{}", &systems);
+    for dasha in &document.dashas {
+        let key = teistro::catalogue::Catalogued::key(dasha.system).to_ascii_lowercase();
+        let rows = recorded["systems"][&key]["periods"].as_array().unwrap();
+        assert!(dasha.seed.is_none() && dasha.balance.is_none(), "{key}");
+        for row in rows {
+            let path = row[0].as_str().unwrap();
+            let ours = dasha
+                .periods
+                .iter()
+                .find(|period| period.path == path)
+                .unwrap_or_else(|| panic!("{key}: no period at {path}"));
+            assert_eq!(
+                ours.sign.map(|sign| u64::from(sign.id())),
+                row[1].as_u64(),
+                "{key} {path}: sign"
+            );
+            assert_eq!(
+                teistro::catalogue::Catalogued::key(ours.lord),
+                row[2].as_str().unwrap(),
+                "{key} {path}: lord"
+            );
+            assert!(
+                (ours.interval.from.get() - row[3].as_f64().unwrap()).abs() < BOUNDARY_DAYS
+                    && (ours.interval.to.get() - row[4].as_f64().unwrap()).abs() < BOUNDARY_DAYS,
+                "{key} {path}: bounds"
+            );
+        }
+        // The cursor rebuilt from the document gives the document's periods.
+        let cursor = sdk.chart().dasha(&document, dasha.system).unwrap();
+        let first = cursor.mahadashas().next().unwrap();
+        assert_eq!(first.sign, dasha.periods[0].sign, "{key}");
+        assert!(cursor.rashi().is_some() && cursor.nakshatra().is_none());
     }
 }
 

@@ -236,7 +236,7 @@ const charts = geo.chart.foundMany({
   place,
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
-  dashas: [DashaSystem.Vimshottari],
+  dashas: [DashaSystem.Vimshottari, DashaSystem.Chara],
   // A grid of the founded chart, a grid of a divisional one, and the wheel:
   // straight edges, a divisional chart's own lagna, arcs, marks and the
   // rounded coordinates the wheel's trigonometry leaves.
@@ -355,21 +355,23 @@ for (const chart of charts) {
   put(`chart-${i}-dasha-count`, chart.dashas.length);
   chart.dashas.forEach((dasha, j) => {
     const key = `chart-${i}-dasha-${j}`;
+    const balance = dasha.balance;
     put(key, dasha.system);
     put(`${key}-seed`, dasha.seed);
     put(`${key}-first-lord`, dasha.firstLord);
     put(`${key}-overflow`, dasha.overflow);
-    put(`${key}-balance`, dasha.balance.method);
-    put(`${key}-remaining`, dasha.balance.remaining);
-    put(`${key}-balance-days`, dasha.balance.days);
-    const w = dasha.balance.written;
-    put(`${key}-balance-written`, [w.years, w.months, w.days, w.hours, w.minutes].join(','));
+    put(`${key}-balance`, balance?.method ?? null);
+    put(`${key}-remaining`, balance?.remaining ?? null);
+    put(`${key}-balance-days`, balance?.days ?? null);
+    const w = balance?.written;
+    put(`${key}-balance-written`, w ? [w.years, w.months, w.days, w.hours, w.minutes].join(',') : null);
     put(`${key}-moon-span-from`, dasha.moonSpan?.from ?? null);
     put(`${key}-moon-span-to`, dasha.moonSpan?.to ?? null);
     put(`${key}-depth`, dasha.depth);
     put(`${key}-periods`, dasha.periods.length);
     dasha.periods.forEach((period, k) => {
-      put(`${key}-period-${k}`, `${period.path} ${period.lord}`);
+      if (period.level > 2) return;
+      put(`${key}-period-${k}`, `${period.path}${period.sign ? ` ${period.sign}` : ''} ${period.lord}`);
       put(`${key}-period-${k}-from`, period.from);
       put(`${key}-period-${k}-to`, period.to);
     });

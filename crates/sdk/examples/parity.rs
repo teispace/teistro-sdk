@@ -884,7 +884,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
     ChartRequest::at(place, offset)
         .with_kind(ChartKind::Natal)
         .with_vargas([Varga::D9, Varga::D10])
-        .with_dashas([DashaSystem::Vimshottari])
+        .with_dashas([DashaSystem::Vimshottari, DashaSystem::Chara])
         .with_drawings([
             (ChartLayout::NorthIndian.key_id(), Varga::D1),
             (ChartLayout::SouthIndian.key_id(), Varga::D9),
@@ -1170,6 +1170,7 @@ fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
 /// asked of the cursor rebuilt from the document where the other three walk
 /// the periods they decoded.
 fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let null = || String::from("null");
     put(
         report,
         &format!("chart-{index}-dasha-count"),
@@ -1178,45 +1179,70 @@ fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teist
     for (at, dasha) in document.dashas.iter().enumerate() {
         let key = |what: &str| format!("chart-{index}-dasha-{at}{what}");
         put(report, &key(""), dasha.system.full_key().to_owned());
-        put(report, &key("-seed"), dasha.seed.full_key().to_owned());
+        put(
+            report,
+            &key("-seed"),
+            dasha
+                .seed
+                .map_or_else(null, |seed| seed.full_key().to_owned()),
+        );
         put(
             report,
             &key("-first-lord"),
             dasha.first_lord.full_key().to_owned(),
         );
         put(report, &key("-overflow"), dasha.overflow.to_string());
-        let balance = &dasha.balance;
+        let balance = dasha.balance;
         put(
             report,
             &key("-balance"),
-            kebab(&format!("{:?}", balance.method)),
+            balance.map_or_else(null, |b| kebab(&format!("{:?}", b.method))),
         );
-        put(report, &key("-remaining"), number(balance.remaining));
-        put(report, &key("-balance-days"), number(balance.days));
-        let w = balance.written;
+        put(
+            report,
+            &key("-remaining"),
+            balance.map_or_else(null, |b| number(b.remaining)),
+        );
+        put(
+            report,
+            &key("-balance-days"),
+            balance.map_or_else(null, |b| number(b.days)),
+        );
         put(
             report,
             &key("-balance-written"),
-            format!(
-                "{},{},{},{},{}",
-                w.years, w.months, w.days, w.hours, w.minutes
-            ),
+            balance.map_or_else(null, |b| {
+                let w = b.written;
+                format!(
+                    "{},{},{},{},{}",
+                    w.years, w.months, w.days, w.hours, w.minutes
+                )
+            }),
         );
         let span = |end: fn(&Interval) -> f64| {
             dasha
                 .moon_span
                 .as_ref()
-                .map_or_else(|| String::from("null"), |span| number(end(span)))
+                .map_or_else(null, |span| number(end(span)))
         };
         put(report, &key("-moon-span-from"), span(|s| s.from.get()));
         put(report, &key("-moon-span-to"), span(|s| s.to.get()));
         put(report, &key("-depth"), dasha.depth.get().to_string());
         put(report, &key("-periods"), dasha.periods.len().to_string());
+        // The first two levels of every period: enough to hold the order,
+        // the signs, the lords and the shares, without printing a tree of
+        // every depth four times.
         for (k, period) in dasha.periods.iter().enumerate() {
+            if period.path.matches('/').count() > 1 {
+                continue;
+            }
+            let sign = period
+                .sign
+                .map_or_else(String::new, |sign| format!(" {}", sign.full_key()));
             put(
                 report,
                 &key(&format!("-period-{k}")),
-                format!("{} {}", period.path, period.lord.full_key()),
+                format!("{}{sign} {}", period.path, period.lord.full_key()),
             );
             put(
                 report,

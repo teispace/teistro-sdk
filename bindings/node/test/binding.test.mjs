@@ -863,10 +863,10 @@ test('a chart carries its dashas, their periods, and the chain at an instant', (
     instant: 2451545,
     place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
     utcOffsetSeconds: 20700,
-    dashas: [DashaSystem.Vimshottari],
+    dashas: [DashaSystem.Vimshottari, DashaSystem.Chara],
   });
   assert.equal(ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 }).dashas.length, 0);
-  const [dasha] = chart.dashas;
+  const [dasha, chara] = chart.dashas;
   assert.equal(dasha.system, DashaSystem.Vimshottari);
   assert.equal(dasha.balance.method, 'spatial');
   assert.ok(dasha.balance.remaining > 0 && dasha.balance.remaining <= 1);
@@ -878,6 +878,20 @@ test('a chart carries its dashas, their periods, and the chain at an instant', (
   assert.equal(first.lord, dasha.firstLord);
   assert.deepEqual([second.path, second.level, second.lord], ['0/0', 2, dasha.firstLord]);
   assert.equal(dasha.periods.at(-1).path, '8/8/8');
+  assert.equal(first.sign, null, 'a nakshatra-seeded period is its lord\'s');
+
+  // A sign-based dasha: no seed, no balance, twelve signs each divided in
+  // twelve from its own sign.
+  assert.equal(chara.system, DashaSystem.Chara);
+  assert.deepEqual([chara.seed, chara.balance], [null, null]);
+  assert.equal(chara.periods.length, 12 + 144 + 1728);
+  const [maha, own] = chara.periods;
+  assert.deepEqual([maha.path, own.path, own.sign, maha.from], ['0', '0/0', maha.sign, 2451545]);
+  assert.ok(typeof maha.sign === 'string' && maha.sign.startsWith('rashi.'));
+  assert.equal(chara.firstLord, maha.lord);
+  const mahadashas = chara.periods.filter((period) => period.level === 1);
+  assert.equal(new Set(mahadashas.map((period) => period.sign)).size, 12, 'every sign once');
+  assert.equal(chara.at(2451545 + 5000).length, 3);
 
   const chain = dasha.at(2451545 + 5000);
   assert.equal(chain.length, 3);

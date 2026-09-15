@@ -481,8 +481,13 @@ boundary into every binding**, the four surfaces agreeing value for value.
 (`03-design/dasha-systems-measured.md`, `check-dasha-systems`): the
 corpus's 0.2.0 records them from its own recorded Moon, the measurement
 derives each seat and settles a temporal balance over a window and
-Tribhagi's scale, and every one of 1184 answers is reproduced. Next: the
-rashi and Kalachakra kernels and the strength schemes.
+Tribhagi's scale, and every one of 1184 answers is reproduced. **The
+sign-based dashas are rows of the K-rashi kernel** too
+(`03-design/rashi-dashas-measured.md`, `check-rashi-dashas`): the eight the
+recording engine implements, measured beside each school's rival reading
+(cruxes C49–C53) and reproduced on all 616 answers, with the arudha padas
+they start from (`arudhas-measured.md`), in the document and every binding.
+Next: Kalachakra and the strength schemes.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

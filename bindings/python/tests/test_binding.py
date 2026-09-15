@@ -27,6 +27,7 @@ from teistro import (
     Latitude,
     Observer,
     Plugin,
+    Rashi,
     Scale,
     Status,
     Teistro,
@@ -611,13 +612,17 @@ class AnEngine(WithLibrary):
             latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
         )
         chart = self.ctx.chart.found(
-            instant=2451545.0, place=observer, utc_offset_seconds=20700, dashas=[DashaSystem.VIMSHOTTARI]
+            instant=2451545.0,
+            place=observer,
+            utc_offset_seconds=20700,
+            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA],
         )
         self.assertEqual(
             self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).dashas, []
         )
-        (dasha,) = chart.dashas
+        dasha, chara = chart.dashas
         self.assertIs(dasha.system, DashaSystem.VIMSHOTTARI)
+        assert dasha.balance is not None
         self.assertIs(dasha.balance.method, Balance.SPATIAL)
         self.assertTrue(0 < dasha.balance.remaining <= 1)
         self.assertIsNone(dasha.moon_span)
@@ -628,6 +633,19 @@ class AnEngine(WithLibrary):
         self.assertIs(first.lord, dasha.first_lord)
         self.assertEqual((second.path, second.level, second.lord), ("0/0", 2, dasha.first_lord))
         self.assertEqual(dasha.periods[-1].path, "8/8/8")
+        self.assertIsNone(first.sign, "a nakshatra-seeded period is its lord's")
+
+        # A sign-based dasha: no seed, no balance, twelve signs each divided
+        # in twelve from its own sign.
+        self.assertIs(chara.system, DashaSystem.CHARA)
+        self.assertEqual((chara.seed, chara.balance), (None, None))
+        self.assertEqual(len(chara.periods), 12 + 144 + 1728)
+        maha, own = chara.periods[:2]
+        self.assertEqual((maha.path, own.path, own.sign, maha.span.from_jd), ("0", "0/0", maha.sign, 2451545.0))
+        self.assertIsInstance(maha.sign, Rashi)
+        self.assertIs(chara.first_lord, maha.lord)
+        self.assertEqual(len({p.sign for p in chara.periods if p.level == 1}), 12, "every sign once")
+        self.assertEqual(len(chara.at(2451545.0 + 5000)), 3)
 
         instant = 2451545.0 + 5000
         chain = dasha.at(instant)

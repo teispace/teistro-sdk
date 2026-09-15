@@ -1517,6 +1517,7 @@ final class DashaPeriod {
   const DashaPeriod({
     required this.path,
     required this.level,
+    required this.sign,
     required this.lord,
     required this.from,
     required this.to,
@@ -1528,6 +1529,9 @@ final class DashaPeriod {
 
   /// How deep: 1 for a mahadasha.
   final int level;
+
+  /// The sign it is the period of, in a sign-based dasha; null otherwise.
+  final Rashi? sign;
 
   /// Its lord.
   final Graha lord;
@@ -1587,7 +1591,9 @@ final class DashaBalance {
   final WrittenBalance written;
 }
 
-/// A dasha of a founded chart: its balance at birth and its periods.
+/// A dasha of a founded chart: its periods, and for a nakshatra-seeded one
+/// its seed and balance at birth. A sign-based dasha has neither, and its
+/// periods name their signs.
 final class Dasha {
   const Dasha({
     required this.system,
@@ -1603,8 +1609,9 @@ final class Dasha {
   /// Which system.
   final DashaSystem system;
 
-  /// The nakshatra the Moon stood in, which seeds it.
-  final Nakshatra seed;
+  /// The nakshatra the Moon stood in, which seeds it; null for a sign-based
+  /// dasha.
+  final Nakshatra? seed;
 
   /// The lord it starts with.
   final Graha firstLord;
@@ -1612,8 +1619,9 @@ final class Dasha {
   /// Whether the seed lay outside a conditional system's nakshatras.
   final bool overflow;
 
-  /// What remained of the first period at birth.
-  final DashaBalance balance;
+  /// What remained of the first period at birth; null for a sign-based
+  /// dasha, whose first period runs whole from birth.
+  final DashaBalance? balance;
 
   /// The Moon's stay in its nakshatra, when the balance read one.
   final Interval? moonSpan;
@@ -2379,6 +2387,8 @@ List<List<Dasha>> _decodeDashas(Charts batch) {
 Dasha _dashaOf(Charts batch, int row, int start, int count) {
   final d = batch.dashas;
   final p = batch.dashaPeriods;
+  final seeded = d.seeded[row] != 0;
+  final signed = d.signed[row] != 0;
   final path = <int>[];
   final periods = List<DashaPeriod>.generate(count, (k) {
     final i = start + k;
@@ -2389,6 +2399,7 @@ Dasha _dashaOf(Charts batch, int row, int start, int count) {
     return DashaPeriod(
       path: path.join('/'),
       level: level,
+      sign: signed ? Rashi.byId(p.sign[i]) : null,
       lord: Graha.byId(p.lord[i]),
       from: p.fromJd[i],
       to: p.toJd[i],
@@ -2397,21 +2408,24 @@ Dasha _dashaOf(Charts batch, int row, int start, int count) {
   final spanFrom = d.moonSpanFrom[row];
   return Dasha(
     system: DashaSystem.byId(d.system[row]),
-    seed: Nakshatra.byId(d.seed[row]),
+    seed: seeded ? Nakshatra.byId(d.seed[row]) : null,
     firstLord: Graha.byId(d.firstLord[row]),
     overflow: d.overflow[row] != 0,
-    balance: DashaBalance(
-      method: Balance.byId(d.balance[row]),
-      remaining: d.remaining[row],
-      days: d.balanceDays[row],
-      written: WrittenBalance(
-        years: d.balanceYears[row],
-        months: d.balanceMonths[row],
-        days: d.balanceDayCount[row],
-        hours: d.balanceHours[row],
-        minutes: d.balanceMinutes[row],
-      ),
-    ),
+    balance:
+        seeded
+            ? DashaBalance(
+              method: Balance.byId(d.balance[row]),
+              remaining: d.remaining[row],
+              days: d.balanceDays[row],
+              written: WrittenBalance(
+                years: d.balanceYears[row],
+                months: d.balanceMonths[row],
+                days: d.balanceDayCount[row],
+                hours: d.balanceHours[row],
+                minutes: d.balanceMinutes[row],
+              ),
+            )
+            : null,
     moonSpan:
         spanFrom.isNaN ? null : Interval(from: spanFrom, to: d.moonSpanTo[row]),
     depth: d.depth[row],

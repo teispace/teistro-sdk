@@ -727,7 +727,7 @@ void _engineTests() {
       instant: 2451545.0,
       place: place,
       utcOffsetSeconds: 20700,
-      dashas: [DashaSystem.vimshottari],
+      dashas: [DashaSystem.vimshottari, DashaSystem.chara],
     );
     expect(
       ctx.chart
@@ -735,11 +735,11 @@ void _engineTests() {
           .dashas,
       isEmpty,
     );
-    final [dasha] = chart.dashas;
+    final [dasha, chara] = chart.dashas;
     expect(dasha.system, DashaSystem.vimshottari);
-    expect(dasha.balance.method, Balance.spatial);
+    expect(dasha.balance!.method, Balance.spatial);
     expect(
-      dasha.balance.remaining,
+      dasha.balance!.remaining,
       allOf(greaterThan(0), lessThanOrEqualTo(1)),
     );
     expect(dasha.moonSpan, isNull);
@@ -753,6 +753,30 @@ void _engineTests() {
       ('0/0', 2, dasha.firstLord),
     );
     expect(dasha.periods.last.path, '8/8/8');
+    expect(
+      first.sign,
+      isNull,
+      reason: "a nakshatra-seeded period is its lord's",
+    );
+
+    // A sign-based dasha: no seed, no balance, twelve signs each divided in
+    // twelve from its own sign.
+    expect(chara.system, DashaSystem.chara);
+    expect((chara.seed, chara.balance), (null, null));
+    expect(chara.periods, hasLength(12 + 144 + 1728));
+    final [maha, own, ...] = chara.periods;
+    expect(
+      (maha.path, own.path, own.sign, maha.from),
+      ('0', '0/0', maha.sign, 2451545.0),
+    );
+    expect(maha.sign, isNotNull);
+    expect(chara.firstLord, maha.lord);
+    expect(
+      {for (final p in chara.periods.where((p) => p.level == 1)) p.sign},
+      hasLength(12),
+      reason: 'every sign once',
+    );
+    expect(chara.at(2451545.0 + 5000), hasLength(3));
 
     const instant = 2451545.0 + 5000;
     final chain = dasha.at(instant);

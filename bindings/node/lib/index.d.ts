@@ -274,6 +274,8 @@ export interface DashaPeriod {
   readonly path: string;
   /** How deep: 1 for a mahadasha. */
   readonly level: number;
+  /** The sign it is the period of, in a sign-based dasha; `null` otherwise. */
+  readonly sign: Rashi | null;
   /** Its lord. */
   readonly lord: Graha;
   /** When it begins, a Julian day (UTC). */
@@ -282,17 +284,21 @@ export interface DashaPeriod {
   readonly to: number;
 }
 
-/** A dasha of a founded chart: its balance at birth and its periods. */
+/**
+ * A dasha of a founded chart: its periods, and for a nakshatra-seeded one its
+ * seed and balance at birth. A sign-based dasha has neither, and its periods
+ * name their signs.
+ */
 export interface Dasha {
   /** Which system. */
   readonly system: DashaSystem;
-  /** The nakshatra the Moon stood in, which seeds it. */
-  readonly seed: Nakshatra;
+  /** The nakshatra the Moon stood in, which seeds it; `null` for a sign-based dasha. */
+  readonly seed: Nakshatra | null;
   /** The lord it starts with. */
   readonly firstLord: Graha;
   /** Whether the seed lay outside a conditional system's nakshatras. */
   readonly overflow: boolean;
-  /** What remained of the first period at birth. */
+  /** What remained of the first period at birth; `null` for a sign-based dasha, whose first period runs whole from birth. */
   readonly balance: {
     /** How it was measured. */
     readonly method: 'spatial' | 'temporal';
@@ -308,7 +314,7 @@ export interface Dasha {
       readonly hours: number;
       readonly minutes: number;
     };
-  };
+  } | null;
   /** The Moon's stay in its nakshatra, when the balance read one. */
   readonly moonSpan: { readonly from: number; readonly to: number } | null;
   /** How many levels the periods go down. */

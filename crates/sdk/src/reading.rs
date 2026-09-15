@@ -269,7 +269,12 @@ impl ChartRequest {
     #[must_use]
     pub fn with_everything(self) -> ChartRequest {
         self.with_every_varga()
-            .with_dashas(teistro_dasha::ROWS.iter().map(|row| row.system))
+            .with_dashas(
+                teistro_dasha::ROWS
+                    .iter()
+                    .map(|row| row.system)
+                    .chain(teistro_dasha::RASHI_ROWS.iter().map(|row| row.system)),
+            )
             .with_panchanga()
             .with_state()
             .with_aspects()

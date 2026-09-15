@@ -53,6 +53,6 @@ pub mod tree;
 
 pub use balance::{BalanceAtBirth, Written};
 pub use rashi::{Footedness, Parity, RASHI_ROWS, RashiChart, RashiDasha, RashiRow, rashi_row};
-pub use reading::{DashaReading, PeriodRow};
+pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use row::{Count, Lord, ROWS, Seat, UduRow, VIMSHOTTARI, row};
 pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};

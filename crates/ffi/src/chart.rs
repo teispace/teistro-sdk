@@ -1187,6 +1187,8 @@ struct DashaColumns {
     /// chart answers the same request.
     count: u32,
     system: Vec<u16>,
+    seeded: Vec<u8>,
+    signed: Vec<u8>,
     seed: Vec<u16>,
     first_lord: Vec<u16>,
     overflow: Vec<u8>,
@@ -1204,6 +1206,7 @@ struct DashaColumns {
     period_count: Vec<u32>,
     level: Vec<u8>,
     index: Vec<u8>,
+    sign: Vec<u16>,
     lord: Vec<u16>,
     from: Vec<f64>,
     to: Vec<f64>,
@@ -1226,6 +1229,8 @@ impl DashaColumns {
         let mut columns = DashaColumns {
             count: u32::try_from(count).unwrap_or(u32::MAX),
             system: Vec::with_capacity(rows),
+            seeded: Vec::with_capacity(rows),
+            signed: Vec::with_capacity(rows),
             seed: Vec::with_capacity(rows),
             first_lord: Vec::with_capacity(rows),
             overflow: Vec::with_capacity(rows),
@@ -1243,52 +1248,87 @@ impl DashaColumns {
             period_count: Vec::with_capacity(rows),
             level: Vec::with_capacity(periods),
             index: Vec::with_capacity(periods),
+            sign: Vec::with_capacity(periods),
             lord: Vec::with_capacity(periods),
             from: Vec::with_capacity(periods),
             to: Vec::with_capacity(periods),
         };
         for reading in documents.iter().flat_map(|d| &d.dashas) {
-            columns.system.push(reading.system.id());
-            columns.seed.push(reading.seed.id());
-            columns.first_lord.push(reading.first_lord.id());
-            columns.overflow.push(u8::from(reading.overflow));
-            columns
-                .balance
-                .push(TsBalance::from(reading.balance.method) as u8);
-            columns.remaining.push(reading.balance.remaining);
-            columns.days.push(reading.balance.days);
-            let written = reading.balance.written;
-            columns.years.push(written.years);
-            columns.months.push(written.months);
-            columns.whole_days.push(written.days);
-            columns.hours.push(written.hours);
-            columns.minutes.push(written.minutes);
-            columns
-                .span_from
-                .push(reading.moon_span.map_or(f64::NAN, |span| span.from.get()));
-            columns
-                .span_to
-                .push(reading.moon_span.map_or(f64::NAN, |span| span.to.get()));
-            columns.depth.push(reading.depth.get());
-            columns
-                .period_count
-                .push(u32::try_from(reading.periods.len()).unwrap_or(u32::MAX));
-            for period in &reading.periods {
-                let places: Vec<u8> = period
-                    .path
-                    .split('/')
-                    .map(|step| step.parse().unwrap_or(u8::MAX))
-                    .collect();
-                columns
-                    .level
-                    .push(u8::try_from(places.len()).unwrap_or(u8::MAX));
-                columns.index.push(places.last().copied().unwrap_or(0));
-                columns.lord.push(period.lord.id());
-                columns.from.push(period.interval.from.get());
-                columns.to.push(period.interval.to.get());
-            }
+            columns.push(reading);
         }
         Ok(columns)
+    }
+
+    /// One dasha's row and its periods.
+    fn push(&mut self, reading: &teistro::DashaReading) {
+        let columns = self;
+        columns.system.push(reading.system.id());
+        columns.seeded.push(u8::from(reading.seed.is_some()));
+        let signed = reading
+            .periods
+            .first()
+            .is_some_and(|period| period.sign.is_some());
+        columns.signed.push(u8::from(signed));
+        columns.seed.push(
+            reading
+                .seed
+                .map_or(0, teistro_core::catalogue::Nakshatra::id),
+        );
+        columns.first_lord.push(reading.first_lord.id());
+        columns.overflow.push(u8::from(reading.overflow));
+        let balance = reading.balance;
+        columns
+            .balance
+            .push(balance.map_or(0, |balance| TsBalance::from(balance.method) as u8));
+        columns
+            .remaining
+            .push(balance.map_or(0.0, |balance| balance.remaining));
+        columns
+            .days
+            .push(balance.map_or(0.0, |balance| balance.days));
+        let written = balance.map(|balance| balance.written);
+        columns
+            .years
+            .push(written.map_or(0, |written| written.years));
+        columns
+            .months
+            .push(written.map_or(0, |written| written.months));
+        columns
+            .whole_days
+            .push(written.map_or(0, |written| written.days));
+        columns
+            .hours
+            .push(written.map_or(0, |written| written.hours));
+        columns
+            .minutes
+            .push(written.map_or(0, |written| written.minutes));
+        columns
+            .span_from
+            .push(reading.moon_span.map_or(f64::NAN, |span| span.from.get()));
+        columns
+            .span_to
+            .push(reading.moon_span.map_or(f64::NAN, |span| span.to.get()));
+        columns.depth.push(reading.depth.get());
+        columns
+            .period_count
+            .push(u32::try_from(reading.periods.len()).unwrap_or(u32::MAX));
+        for period in &reading.periods {
+            let places: Vec<u8> = period
+                .path
+                .split('/')
+                .map(|step| step.parse().unwrap_or(u8::MAX))
+                .collect();
+            columns
+                .level
+                .push(u8::try_from(places.len()).unwrap_or(u8::MAX));
+            columns.index.push(places.last().copied().unwrap_or(0));
+            columns
+                .sign
+                .push(period.sign.map_or(0, teistro_core::catalogue::Rashi::id));
+            columns.lord.push(period.lord.id());
+            columns.from.push(period.interval.from.get());
+            columns.to.push(period.interval.to.get());
+        }
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -1297,6 +1337,8 @@ impl DashaColumns {
             self.system.len(),
             &[
                 ColumnData::U16(&self.system),
+                ColumnData::U8(&self.seeded),
+                ColumnData::U8(&self.signed),
                 ColumnData::U16(&self.seed),
                 ColumnData::U16(&self.first_lord),
                 ColumnData::U8(&self.overflow),
@@ -1320,6 +1362,7 @@ impl DashaColumns {
             &[
                 ColumnData::U8(&self.level),
                 ColumnData::U8(&self.index),
+                ColumnData::U16(&self.sign),
                 ColumnData::U16(&self.lord),
                 ColumnData::F64(&self.from),
                 ColumnData::F64(&self.to),

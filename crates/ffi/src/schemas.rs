@@ -587,9 +587,19 @@ fn chart_dashas_section(id: u32) -> SectionSchema {
         vec![
             ColumnDef::new("system", Scalar::U16, "Which system.").of_enum("DashaSystem"),
             ColumnDef::new(
+                "seeded",
+                Scalar::U8,
+                "1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero.",
+            ),
+            ColumnDef::new(
+                "signed",
+                Scalar::U8,
+                "1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero.",
+            ),
+            ColumnDef::new(
                 "seed",
                 Scalar::U16,
-                "The nakshatra the Moon stood in, which seeds it.",
+                "The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.",
             )
             .of_enum("Nakshatra"),
             ColumnDef::new("first_lord", Scalar::U16, "The lord it starts with.").of_enum("Graha"),
@@ -664,6 +674,12 @@ fn chart_dasha_periods_section(id: u32) -> SectionSchema {
                 Scalar::U8,
                 "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.",
             ),
+            ColumnDef::new(
+                "sign",
+                Scalar::U16,
+                "The sign it is the period of, when its dasha is `signed`; zero otherwise.",
+            )
+            .of_enum("Rashi"),
             ColumnDef::new("lord", Scalar::U16, "Its lord.").of_enum("Graha"),
             ColumnDef::new(
                 "from_jd",

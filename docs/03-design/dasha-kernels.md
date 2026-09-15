@@ -153,9 +153,16 @@ decode the sections once per batch, and `check-parity` holds all four
 surfaces, Rust included, to the same seeds, balances, 819 periods per
 chart and chains.
 
-Every row reaches the boundary the same way: a request names any of the nine,
-and a system the catalogue names with no row, Kalachakra for one, is refused
-by its place with the built systems as the hint.
+Every row reaches the boundary the same way: a request names any of the
+seventeen, and a system the catalogue names with no row, Kalachakra for one,
+is refused by its place with the built systems as the hint. A sign-based
+dasha has no seed and no balance, so the `dashas` row says which of its
+columns hold: `seeded` for the seed, overflow and balance, and `signed` for
+the periods' `sign` column — two flags and not one family, because Tribhagi
+is seeded and scaled and Kalachakra will be seeded and signed. The façade
+reads the chart a sign-based dasha needs from the foundation: the grahas'
+signs and dignities under the settings, the navamsa lagna, and the arudha
+lagna `teistro-points` computes.
 
 ## Kernels
 

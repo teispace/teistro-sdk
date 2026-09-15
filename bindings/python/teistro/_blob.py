@@ -716,8 +716,14 @@ class ChartsDashas:
     system: memoryview[int]
     """Which system."""
 
+    seeded: memoryview[int]
+    """1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero."""
+
+    signed: memoryview[int]
+    """1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero."""
+
     seed: memoryview[int]
-    """The nakshatra the Moon stood in, which seeds it."""
+    """The nakshatra the Moon stood in, which seeds it; zero unless `seeded`."""
 
     first_lord: memoryview[int]
     """The lord it starts with."""
@@ -778,6 +784,9 @@ class ChartsDashaPeriods:
 
     index: memoryview[int]
     """Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0."""
+
+    sign: memoryview[int]
+    """The sign it is the period of, when its dasha is `signed`; zero otherwise."""
 
     lord: memoryview[int]
     """Its lord."""
@@ -1277,38 +1286,40 @@ def decode_charts(raw: bytes) -> Charts:
         svgs=blob.text(at_svgs),
         dashas=ChartsDashas(
             system=blob.column(at_dashas, 0, 2, at_dashas.count).cast("H"),
-            seed=blob.column(at_dashas, 1, 2, at_dashas.count).cast("H"),
-            first_lord=blob.column(at_dashas, 2, 2, at_dashas.count).cast("H"),
-            overflow=blob.column(at_dashas, 3, 1, at_dashas.count).cast("B"),
-            balance=blob.column(at_dashas, 4, 1, at_dashas.count).cast("B"),
-            remaining=blob.column(at_dashas, 5, 8, at_dashas.count).cast("d"),
+            seeded=blob.column(at_dashas, 1, 1, at_dashas.count).cast("B"),
+            signed=blob.column(at_dashas, 2, 1, at_dashas.count).cast("B"),
+            seed=blob.column(at_dashas, 3, 2, at_dashas.count).cast("H"),
+            first_lord=blob.column(at_dashas, 4, 2, at_dashas.count).cast("H"),
+            overflow=blob.column(at_dashas, 5, 1, at_dashas.count).cast("B"),
+            balance=blob.column(at_dashas, 6, 1, at_dashas.count).cast("B"),
+            remaining=blob.column(at_dashas, 7, 8, at_dashas.count).cast("d"),
             balance_days=blob.column(
-                at_dashas, 6, 8, at_dashas.count
+                at_dashas, 8, 8, at_dashas.count
             ).cast("d"),
             balance_years=blob.column(
-                at_dashas, 7, 4, at_dashas.count
+                at_dashas, 9, 4, at_dashas.count
             ).cast("I"),
             balance_months=blob.column(
-                at_dashas, 8, 1, at_dashas.count
-            ).cast("B"),
-            balance_day_count=blob.column(
-                at_dashas, 9, 1, at_dashas.count
-            ).cast("B"),
-            balance_hours=blob.column(
                 at_dashas, 10, 1, at_dashas.count
             ).cast("B"),
-            balance_minutes=blob.column(
+            balance_day_count=blob.column(
                 at_dashas, 11, 1, at_dashas.count
             ).cast("B"),
+            balance_hours=blob.column(
+                at_dashas, 12, 1, at_dashas.count
+            ).cast("B"),
+            balance_minutes=blob.column(
+                at_dashas, 13, 1, at_dashas.count
+            ).cast("B"),
             moon_span_from=blob.column(
-                at_dashas, 12, 8, at_dashas.count
+                at_dashas, 14, 8, at_dashas.count
             ).cast("d"),
             moon_span_to=blob.column(
-                at_dashas, 13, 8, at_dashas.count
+                at_dashas, 15, 8, at_dashas.count
             ).cast("d"),
-            depth=blob.column(at_dashas, 14, 1, at_dashas.count).cast("B"),
+            depth=blob.column(at_dashas, 16, 1, at_dashas.count).cast("B"),
             period_count=blob.column(
-                at_dashas, 15, 4, at_dashas.count
+                at_dashas, 17, 4, at_dashas.count
             ).cast("I"),
             length=at_dashas.count,
         ),
@@ -1319,14 +1330,17 @@ def decode_charts(raw: bytes) -> Charts:
             index=blob.column(
                 at_dasha_periods, 1, 1, at_dasha_periods.count
             ).cast("B"),
-            lord=blob.column(
+            sign=blob.column(
                 at_dasha_periods, 2, 2, at_dasha_periods.count
             ).cast("H"),
+            lord=blob.column(
+                at_dasha_periods, 3, 2, at_dasha_periods.count
+            ).cast("H"),
             from_jd=blob.column(
-                at_dasha_periods, 3, 8, at_dasha_periods.count
+                at_dasha_periods, 4, 8, at_dasha_periods.count
             ).cast("d"),
             to_jd=blob.column(
-                at_dasha_periods, 4, 8, at_dasha_periods.count
+                at_dasha_periods, 5, 8, at_dasha_periods.count
             ).cast("d"),
             length=at_dasha_periods.count,
         ),

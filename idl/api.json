@@ -13193,9 +13193,19 @@
               "enum": "DashaSystem"
             },
             {
+              "name": "seeded",
+              "scalar": "u8",
+              "doc": "1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero."
+            },
+            {
+              "name": "signed",
+              "scalar": "u8",
+              "doc": "1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero."
+            },
+            {
               "name": "seed",
               "scalar": "u16",
-              "doc": "The nakshatra the Moon stood in, which seeds it.",
+              "doc": "The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.",
               "enum": "Nakshatra"
             },
             {
@@ -13287,6 +13297,12 @@
               "name": "index",
               "scalar": "u8",
               "doc": "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it is the period of, when its dasha is `signed`; zero otherwise.",
+              "enum": "Rashi"
             },
             {
               "name": "lord",

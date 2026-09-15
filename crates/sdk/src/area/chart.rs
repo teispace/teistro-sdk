@@ -8,7 +8,7 @@ use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{ChartFoundation, Founder};
 use teistro_core::angle::Nas;
-use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha};
+use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Rashi, Varga};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -17,11 +17,14 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::AyanamshaChoice;
 use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
-use teistro_dasha::{Birth, Dasha, DashaReading, Rules as DashaRules};
+use teistro_dasha::{
+    Birth, Dasha, DashaCursor, DashaReading, RashiChart, RashiDasha, Rules as DashaRules,
+};
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, nakshatra_at};
 use teistro_points::Points;
+use teistro_points::arudha::arudha;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_serial::Document;
 use teistro_state::state;
@@ -311,8 +314,9 @@ impl<'a> ChartArea<'a> {
         Ok(document)
     }
 
-    /// One dasha of a chart: its balance under the settings' rules and its
-    /// periods to the settings' depth.
+    /// One dasha of a chart under the settings' rules, its periods to the
+    /// settings' depth: a nakshatra-seeded one with its balance, a
+    /// sign-based one with its signs.
     fn dasha_reading(
         self,
         foundation: &ChartFoundation,
@@ -326,6 +330,10 @@ impl<'a> ChartArea<'a> {
             .get(&system)
             .copied()
             .unwrap_or(Depth::MIN);
+        if teistro_dasha::rashi_row(system).is_some() {
+            let dasha = self.rashi_dasha_of(foundation, system, rules)?;
+            return Ok(DashaReading::of_rashi(&dasha, rules, depth));
+        }
         let moon_span = match rules.balance {
             Balance::Temporal => Some(self.moon_span(foundation)?),
             _ => None,
@@ -334,24 +342,30 @@ impl<'a> ChartArea<'a> {
         Ok(DashaReading::of(&dasha, depth, moon_span))
     }
 
-    /// The dasha of a founded chart, from its Moon.
+    /// The system a catalogue names and no row implements, refused with the
+    /// systems this build does implement.
+    fn not_built(system: DashaSystem) -> Error {
+        let built: Vec<&str> = teistro_dasha::ROWS
+            .iter()
+            .map(|row| row.system)
+            .chain(teistro_dasha::RASHI_ROWS.iter().map(|row| row.system))
+            .map(DashaSystem::key)
+            .collect();
+        Error::unsupported(format!(
+            "{} is a dasha the catalogue names and this build does not compute yet",
+            system.key()
+        ))
+        .with_hint(format!("the dashas built are {}", built.join(", ")))
+    }
+
+    /// The nakshatra-seeded dasha of a founded chart, from its Moon.
     fn dasha_of(
         foundation: &ChartFoundation,
         system: DashaSystem,
         rules: DashaRules,
         moon_span: Option<Interval>,
     ) -> Result<Dasha, Error> {
-        let row = teistro_dasha::row(system).ok_or_else(|| {
-            let built: Vec<&str> = teistro_dasha::ROWS
-                .iter()
-                .map(|row| row.system.key())
-                .collect();
-            Error::unsupported(format!(
-                "{} is a dasha the catalogue names and this build does not compute yet",
-                system.key()
-            ))
-            .with_hint(format!("the dashas built are {}", built.join(", ")))
-        })?;
+        let row = teistro_dasha::row(system).ok_or_else(|| Self::not_built(system))?;
         let moon = foundation
             .graha(Graha::Moon)
             .ok_or_else(|| Error::internal("a founded chart places the Moon"))?;
@@ -361,6 +375,67 @@ impl<'a> ChartArea<'a> {
             moon_span,
         };
         Dasha::new(row, &birth, rules)
+    }
+
+    /// The sign-based dasha of a founded chart, from the chart a rashi dasha
+    /// reads: the lagna's sign, the grahas' signs and dignities under the
+    /// settings, the navamsa lagna, and the arudha lagna.
+    fn rashi_dasha_of(
+        self,
+        foundation: &ChartFoundation,
+        system: DashaSystem,
+        rules: DashaRules,
+    ) -> Result<RashiDasha, Error> {
+        let row = teistro_dasha::rashi_row(system).ok_or_else(|| Self::not_built(system))?;
+        let states = state(foundation, self.context.settings())?;
+        let grahas = [
+            Graha::Sun,
+            Graha::Moon,
+            Graha::Mars,
+            Graha::Mercury,
+            Graha::Jupiter,
+            Graha::Venus,
+            Graha::Saturn,
+            Graha::Rahu,
+            Graha::Ketu,
+        ];
+        let placed = |graha: Graha| {
+            states
+                .iter()
+                .find(|state| state.graha == graha)
+                .ok_or_else(|| Error::internal(format!("a founded chart places {}", graha.key())))
+        };
+        let mut signs = [Rashi::Aries; 9];
+        let mut dignities = [teistro_core::catalogue::Dignity::Neutral; 9];
+        for ((sign, dignity), graha) in signs.iter_mut().zip(dignities.iter_mut()).zip(grahas) {
+            let state = placed(graha)?;
+            *sign = state.sign;
+            *dignity = state.dignity;
+        }
+        let lagna = Rashi::from_id(u16::from(foundation.lagna_sign_index()))
+            .ok_or_else(|| Error::internal("a lagna in no sign"))?;
+        let navamsa = varga_chart(foundation, Axis::of(Varga::D9))?;
+        let sign_of = |graha: Graha| {
+            grahas
+                .iter()
+                .position(|each| *each == graha)
+                .and_then(|at| signs.get(at).copied())
+                .unwrap_or(lagna)
+        };
+        let chart = RashiChart {
+            lagna,
+            arudha_lagna: arudha(lagna, 1, sign_of).sign,
+            navamsa_lagna: navamsa.lagna.sign,
+            signs,
+            dignities,
+        };
+        RashiDasha::new(
+            row,
+            &chart,
+            foundation.instant,
+            rules.year_length,
+            rules.after_cycle,
+        )
     }
 
     /// The Moon's stay in its nakshatra around the birth, searched in the
@@ -392,14 +467,16 @@ impl<'a> ChartArea<'a> {
     /// The cursor behind a document's dasha: to read deeper than the
     /// document's periods, or the chain running at an instant.
     ///
-    /// Rebuilt from the document alone, the rules and the Moon's span it
-    /// recorded and the foundation's Moon, so a stored document gives the
-    /// same periods back whatever the context's settings are now.
+    /// Rebuilt from the document alone — the rules and the Moon's span it
+    /// recorded and the foundation — so a stored document gives the same
+    /// periods back whatever the context's settings are now. A sign-based
+    /// dasha reads the grahas' dignities under this context's settings, which
+    /// are the ones that produced the document unless they have changed.
     ///
     /// # Errors
     ///
     /// A system the document carries no dasha of, named `system`.
-    pub fn dasha(self, document: &Document, system: DashaSystem) -> Result<Dasha, Error> {
+    pub fn dasha(self, document: &Document, system: DashaSystem) -> Result<DashaCursor, Error> {
         let reading = document
             .dashas
             .iter()
@@ -409,12 +486,18 @@ impl<'a> ChartArea<'a> {
                     .with_field("system")
                     .with_hint("ask for it with ChartRequest::with_dashas")
             })?;
+        if teistro_dasha::rashi_row(system).is_some() {
+            return self
+                .rashi_dasha_of(&document.foundation, system, reading.rules)
+                .map(DashaCursor::Rashi);
+        }
         Self::dasha_of(
             &document.foundation,
             system,
             reading.rules,
             reading.moon_span,
         )
+        .map(DashaCursor::Nakshatra)
     }
 
     /// The derived points, which are the one section that needs more

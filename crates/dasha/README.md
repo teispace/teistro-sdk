@@ -1,11 +1,14 @@
 # `teistro-dasha`
 
-Status: `building`, 2026-09-15: the nine nakshatra-seeded systems built and
-measured — Vimshottari, Ashtottari, Dwadashottari, Panchottari, Shatabdika,
-Chaturashiti-sama, Dwisaptati-sama, Yogini and Tribhagi. The design is
+Status: `building`, 2026-09-15: seventeen systems built and measured — the
+nine nakshatra-seeded (Vimshottari, Ashtottari, Dwadashottari, Panchottari,
+Shatabdika, Chaturashiti-sama, Dwisaptati-sama, Yogini and Tribhagi) and the
+eight sign-based (Chara, Narayana, Padanadhamsa, Trikona, Drig, Shoola,
+Niryana Shoola and Mandooka). The design is
 [`docs/03-design/dasha-kernels.md`](../../docs/03-design/dasha-kernels.md),
-measured in [`dasha-measured.md`](../../docs/03-design/dasha-measured.md) and
-[`dasha-systems-measured.md`](../../docs/03-design/dasha-systems-measured.md).
+measured in [`dasha-measured.md`](../../docs/03-design/dasha-measured.md),
+[`dasha-systems-measured.md`](../../docs/03-design/dasha-systems-measured.md) and
+[`rashi-dashas-measured.md`](../../docs/03-design/rashi-dashas-measured.md).
 
 Dashas as rows over a kernel, the balance at birth, and the period tree read
 without building it.
@@ -14,8 +17,9 @@ without building it.
 |---|---|
 | [`row`](src/row.rs) | a nakshatra-seeded system as data: its lords and years, the map from the Moon's nakshatra to its first lord (reference, direction, window, offset, whether the lords repeat round the nakshatras), and a scale on the mahadashas with the rounds a cycle runs; the nine shipped rows |
 | [`balance`](src/balance.rs) | what remains of the lord's window, by how far into its own nakshatra the Moon is spatially or temporally, and its written form with the minutes rounded |
-| [`tree`](src/tree.rs) | the dasha of a birth: periods by path, children computed when asked for, and the chain running at an instant without allocating |
-| [`reading`](src/reading.rs) | a dasha as a chart document carries it: its rules, seed, balance and Moon span, and its periods as rows to the settings' depth |
+| [`tree`](src/tree.rs) | the dasha of a birth: periods by path, children computed when asked for, and the chain running at an instant without allocating, through the `Timeline` trait every kind shares |
+| [`rashi`](src/rashi.rs) | a sign-based system as a row — its start, order, length and named lord — over the chart it reads, with footedness and parity as distinct types; the eight shipped rows |
+| [`reading`](src/reading.rs) | a dasha as a chart document carries it: its rules, and for a nakshatra-seeded one its seed, balance and Moon span, its periods as rows (with their signs, for a sign-based one) to the settings' depth; and `DashaCursor`, either kind rebuilt |
 
 ## What the corpus settled
 
@@ -44,8 +48,12 @@ without building it.
 - Every other system is reproduced from the same recorded inputs: 1184
   answers, 94 128 tree rows and 2368 chains, worst boundary 1.4e-9 days, and
   each row's data equal to the data the corpus states (`tests/systems.rs`).
+- Every sign-based system is reproduced from the corpus's recorded charts:
+  616 answers, 96 096 tree rows and 1232 chains, worst boundary 4.7e-10 days
+  (`tests/rashi.rs`).
 - Reading the chain at an instant allocates nothing, at the deepest level,
-  in a later cycle, and for every row (`tests/allocations.rs`).
+  in a later cycle, and for every row; a sign-based dasha allocates nothing to
+  make either (`tests/allocations.rs`).
 - Every row passes its checks; a wrong row is refused by the field; seats,
   balances, partitions, both birth-period readings and both cycle ends are
   unit-tested.
