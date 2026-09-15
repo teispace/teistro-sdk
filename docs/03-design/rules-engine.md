@@ -7,6 +7,40 @@ Phase 6, with the `Ref` and `RuleResult` changes landing before the
 baseline rule corpus is exported, because every addition made afterwards
 means re-authoring rules.
 
+## What the corpus measured (2026-09-15)
+
+The corpus's `baseline/yogas` (0.10.0) records the engine's 605 yoga rules in
+its own condition language and which are present on each of 93 recorded
+charts, with each presence's planets, houses and cancellations.
+`yogas-measured.md` evaluates every rule independently under each reading of
+the language and settles, before any kernel, what the kernel must do:
+
+- **The engine's semantics reproduce everything**: 55 521 decisions, the
+  planets of 5350 presences and every cancellation, with conjunction in one
+  sign unless a rule gives an orb, the Moon malefic when waning and Mercury
+  when only malefics share its sign, a deep dignity meeting its plain form, all
+  seven between the nodes on either side, the nodes never retrograde, houses as
+  recorded, and a rule's planets gathered from every condition that held,
+  failed branches included.
+- **Two of those are decided by the corpus**: natural benefics alone move 382
+  values over 46 rules, and a 10° conjunction orb 276 over 55. The other five
+  forks move nothing here; the kernel still names each, and a fixture that
+  separates them is test debt.
+- **22 condition types are in use**, 19 predicates and `and`, `or` and `not`;
+  the aspect predicates appear only in the dosha rules, not yet recorded.
+- **Eight rules are not in the language at all**: the Neecha Bhanga family,
+  which the engine computes in code and which needs the divisional-chart
+  predicate (`in_varga`) and table lookups below before it can be rules.
+- **116 of the 597 written rules are never present** on a recorded chart, so
+  the corpus holds no positive case for them, and five rule keys (the Jaimini
+  `AmK` rules) contain lowercase letters the SDK's key grammar refuses, which
+  the export into a pack has to rename rather than weaken the grammar.
+
+The kernel's first slice is therefore the 19 predicates and the three
+combinators over `Ref::Planet` and `Ref::Lagna`, with `RuleResult` carrying the
+participants the way the engine gathers them, reproducing this page exactly,
+before `Ref` grows and before cancellation and severity are generalised.
+
 ## What the baseline engine proves
 
 Its condition evaluator implements 25 predicate variants over one

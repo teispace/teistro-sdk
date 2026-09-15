@@ -877,6 +877,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** unchanged for every catalogued system; a registered twin of
   Vimshottari reproduces it to the bit.
 
+- Phase 6 begins with the measurement: the corpus moves to 0.10.0, which
+  records the recording engine's 605 yoga rules in its condition language
+  and their presences on 93 charts. `cargo xtask yogas` (held by
+  `check-yogas`) evaluates every rule under each reading of that language.
+  The engine's reading reproduces all 55 521 decisions, 5350 presences'
+  planets and every cancellation. The Moon's and Mercury's natures and
+  sign-against-orb conjunction are decided; five forks the corpus cannot
+  see are named; 116 rules with no positive case are listed. The page is
+  what the `rules` kernel will be built from.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

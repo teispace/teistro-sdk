@@ -94,6 +94,9 @@
 //!   beside the readings the sources give at each of its forks.
 //! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
 //!   reductions and pindas measured beside BPHS's.
+//! - `yogas` and `check-yogas`: the yogas, every rule of the recording engine
+//!   evaluated over every recorded chart under each reading of its condition
+//!   language, before the rules kernel.
 //! - `vimshopaka` and `check-vimshopaka`: the Vimshopaka, the engine's scale
 //!   measured beside BPHS's points.
 //! - `shadbala` and `check-shadbala`: the Shadbala, every one of the engine's
@@ -197,6 +200,7 @@ mod topocentric;
 mod vargas;
 mod vimshopaka;
 mod vsop;
+mod yogas;
 
 use std::env;
 use std::fs;
@@ -288,6 +292,7 @@ const PASSES: &[Pass] = &[
         bhava_bala::generate,
         bhava_bala::check_generated,
     ),
+    ("yogas", yogas::generate, yogas::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

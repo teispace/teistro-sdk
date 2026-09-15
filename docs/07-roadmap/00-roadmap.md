@@ -543,6 +543,16 @@ in a consumer pack) passes.
 
 ## Phase 6: Rules, interpretation and the text corpus
 
+**Started 2026-09-15 with the measurement**, as every module since Phase 4
+has: the corpus's 0.10.0 records the engine's 605 yoga rules and their
+presences on 93 charts, and `yogas-measured.md` (`check-yogas`) reproduces
+all 55 521 decisions under the engine's reading of its condition language,
+decides two forks, names five the corpus cannot see and counts the 116 rules
+with no positive case. Next: the `rules` crate, the 19 predicates and three
+combinators over planet and lagna references with `RuleResult`, built to
+reproduce that page, then `Ref`, table lookups and cancellation in the
+order below.
+
 `rules` engine with the v2 algebra landed in order (reference subjects,
 `RuleResult` with traces, table lookups, cancellation and severity) before
 the yoga and dosha packs are exported from the baseline engine (Q6
