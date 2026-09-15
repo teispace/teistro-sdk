@@ -236,7 +236,10 @@ mod tests {
         let derived = derive(&tree(), "sa-Deva", "sa-Latn", &BTreeMap::new())
             .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.files.len(), 2);
-        assert_eq!(derived.entities, 408);
+        assert_eq!(
+            derived.entities, 426,
+            "408 until the 18 dasha systems were named"
+        );
         assert!(derived.stale.is_empty());
 
         let entities = &derived.files[1].1;
@@ -254,9 +257,11 @@ mod tests {
         // it added: every record whose Devanagari is exactly the source's
         // Sanskrit (the upagrahas, months, directions and states, and
         // three ayanamshas), so the transliterator matched each vetted
-        // IAST form it was given.
+        // IAST form it was given; 326 with 17 of the 18 dasha systems.
+        // The eighteenth is Vimshottari, whose source writes the anusvara
+        // `ṁ` where IAST writes `ṃ`.
         assert_eq!(
-            derived.agreeing, 309,
+            derived.agreeing, 326,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }
