@@ -1,6 +1,6 @@
 # The rules engine
 
-Status: `building`, 2026-09-15 (drafted 2026-09-04; the first slice built). The design of the rules kernel (ADR-0017)
+Status: `building`, 2026-09-15 (drafted 2026-09-04; the first slice, references, the trace, tables and cancellation built). The design of the rules kernel (ADR-0017)
 before any rule data is authored: the baseline engine's predicate algebra
 plus the four capabilities its own dosha detectors had to bypass it for.
 Phase 6, with the `Ref` and `RuleResult` changes landing before the
@@ -9,7 +9,7 @@ means re-authoring rules.
 
 ## What the corpus measured (2026-09-15)
 
-The corpus's `baseline/yogas` (0.10.0) records the engine's 605 yoga rules in
+The corpus's `baseline/yogas` (since 0.10.0) records the engine's 605 yoga rules in
 its own condition language and which are present on each of 93 recorded
 charts, with each presence's planets, houses and cancellations.
 `yogas-measured.md` evaluates every rule independently under each reading of
@@ -242,6 +242,61 @@ pub enum NetStatus { Absent, Present, PartiallyCancelled { fraction: Ratio }, Fu
 The evaluator reports the net status and the cancellations that fired.
 Bhanga applies to raja yogas as much as to doshas; the baseline engine
 modelled it only on the dosha side; the SDK models it once over both.
+
+**Built, cancellation, severity and the doshas (2026-09-15).** The corpus's
+0.11.0 records the engine's natal dosha evaluator: 52 rules and 1024
+presences over 93 recorded charts, 77 of them with their panchanga, each
+presence with where it was found from, its planets, houses, severity,
+cancellations and net status.
+
+Reading the engine's dosha service corrected the sketch above. There is no
+separate `AfflictionRule`: one `Rule` carries all of it, so a raja yoga's bhanga
+and a dosha's cancellations are the same thing. A rule has:
+- conditions, all of which must hold;
+- `groups`, each a label, a reference body and conditions, at least one of which
+  must hold, every group that holds being a place the rule was `found_from`;
+- `cancellations`, each a condition with an optional label;
+- a `Severity` (fixed, house-weighted over the references it was found from,
+  count-based, planet-strength-inverse, or koota-shortfall);
+- a full-cancellation threshold that, unset, is the number of places found from.
+
+`NetStatus` is active, partly cancelled or fully cancelled. It has no `Absent`,
+because a `RuleResult` that is not present carries no status. The engine's two
+custom severity formulas are severity rules the language already has, and read
+as those. The rule format is the engine's own, so its yoga and dosha rules both
+read unchanged and round-trip.
+
+The language gains the predicates the dosha rules use:
+- **Lords:** a house lord debilitated, combust (never the Sun), strong, being
+  one of a set of bodies, or conjunct a body.
+- **Placement:** the lagna in a sign, a body in a house and a sign together,
+  and gandanta with its 3°20′ orb.
+- **Panchanga:** tithi, paksha, vara, nakshatra with padas, yoga, karana, eclipse
+  and sankranti, read from the chart's `Panchanga`.
+- **Aliases:** the engine's `dosha-and`, `dosha-or` and `dosha-not`.
+
+Evaluating the corpus's 35 dosha rules the language can say, under
+`Readings::RECORDING_ENGINE_DOSHAS`, reproduces all 3255 decisions. For all 885
+presences it also reproduces where each was found from, its planets and houses,
+its severity, its cancellations and its net status
+(`crates/rules/tests/doshas.rs`). The other 17 the engine computes in code:
+Kalsarpa and its twelve forms, Kala Amrita, Mrityu Bhaga, Dagdha Rashi and
+Badhaka. The kernel reads them and reports them as not evaluable.
+
+Reproducing the engine meant naming two ways its evaluators part, recorded as
+crux C85:
+- **Aspect participants.** Its dosha evaluator reads aspects itself and adds no
+  participant, while its yoga evaluator adds both bodies. This is
+  `Readings::aspect_gathering`.
+- **Conditions and groups together.** Its code keeps a rule present when every
+  condition holds and no group does, though its own doc comment says at least
+  one group must hold. No recorded rule has both, so the kernel follows the
+  documented meaning.
+
+Next, the engine's 17 computed rules become rules:
+- Mrityu Bhaga and Dagdha Rashi over the shipped tables;
+- Badhaka over a reference;
+- Kalsarpa's forms, which need a classifying outcome.
 
 ## Composition and context
 

@@ -14,30 +14,50 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize as _;
 use serde_json::Value;
 use teistro_core::angle::Nas;
-use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi, Varga};
+use teistro_core::catalogue::{
+    CharaKaraka, Dignity, Karana, Nakshatra, Rashi, Tithi, Vara, Varga, Yoga,
+};
 use teistro_core::quantity::Degrees;
-use teistro_rules::{Body, House, Karaka, Placement, Rule, RuleChart};
+use teistro_rules::{Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart};
 use teistro_vargas::{Scheme, sign};
 
 pub(crate) fn corpus() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/baseline/yogas")
+    baseline("yogas")
+}
+
+/// A directory of the conformance corpus's `baseline`.
+pub(crate) fn baseline(directory: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures/baseline")
+        .join(directory)
 }
 
 pub(crate) fn read(path: &Path) -> Value {
     serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
 }
 
-/// Every rule the engine ships, read strictly.
+/// Every yoga rule the engine ships, read strictly.
 pub(crate) fn rules() -> Vec<Rule> {
-    serde_json::from_value(read(&corpus().join("rules.json"))["rules"].clone())
+    rules_in("yogas")
+}
+
+/// Every rule a rule corpus holds, read strictly.
+pub(crate) fn rules_in(directory: &str) -> Vec<Rule> {
+    serde_json::from_value(read(&baseline(directory).join("rules.json"))["rules"].clone())
         .expect("every rule reads strictly")
 }
 
-/// Every recorded file, charts then variants, each in name order.
+/// Every recorded yoga file, charts then variants, each in name order.
 pub(crate) fn files() -> Vec<(PathBuf, Value)> {
+    files_in("yogas")
+}
+
+/// Every recorded file of a rule corpus, charts then variants, each in name
+/// order.
+pub(crate) fn files_in(directory: &str) -> Vec<(PathBuf, Value)> {
     let mut out = Vec::new();
     for dir in ["charts", "variants"] {
-        let mut paths: Vec<_> = std::fs::read_dir(corpus().join(dir))
+        let mut paths: Vec<_> = std::fs::read_dir(baseline(directory).join(dir))
             .unwrap()
             .flatten()
             .map(|e| e.path())
@@ -91,11 +111,28 @@ pub(crate) fn chart(inputs: &Value) -> RuleChart {
             navamsha: navamsha(b["sidereal_longitude_deg"].as_f64().unwrap()),
         }
     });
-    // The yogas' inputs carry no tithi, and no yoga reads one.
     RuleChart {
         placements,
-        tithi: None,
+        panchanga: panchanga(&inputs["panchanga"]),
     }
+}
+
+/// The panchanga a file repeats, if it records one: the engine's karana and
+/// yoga indices are the catalogue's ids, and it passes no sankranti or
+/// eclipse.
+fn panchanga(recorded: &Value) -> Option<Panchanga> {
+    let id = |field: &str| u16::try_from(recorded[field].as_u64()?).ok();
+    recorded.as_object()?;
+    Some(Panchanga {
+        tithi: Tithi::from_id(id("tithi_number")? - 1)?,
+        vara: Vara::from_key(recorded["vara"].as_str()?)?,
+        nakshatra: Nakshatra::from_id(id("nakshatra_index")?)?,
+        pada: Pada::try_new(u8::try_from(id("moon_pada")?).ok()?).ok()?,
+        yoga: Yoga::from_id(id("yoga_index")?)?,
+        karana: Karana::from_id(id("karana_index")?)?,
+        on_sankranti: false,
+        eclipse: None,
+    })
 }
 
 pub(crate) fn strings(value: &Value) -> Vec<String> {

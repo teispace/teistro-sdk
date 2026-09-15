@@ -2,7 +2,8 @@
 
 Status: `building`, 2026-09-15: the kernel's first slice, the condition
 language over grahas and the lagna, built and held to every recorded yoga;
-then references to lords, karakas, padas, the upapada and navamshas. The
+then references, the trace, cited tables, and the doshas' groups, severities
+and cancellations. The
 design is [`docs/03-design/rules-engine.md`](../../docs/03-design/rules-engine.md),
 measured in [`docs/03-design/yogas-measured.md`](../../docs/03-design/yogas-measured.md).
 
@@ -13,6 +14,7 @@ cancellations held.
 | module | what it settles |
 |---|---|
 | [`reference`](src/reference.rs) | what a condition is about, as two types: a `BodyRef` (a graha or the lagna, the lord of a sign, the holder of a karaka) and a `SignRef` (any body's sign, a house, an arudha pada, the upapada, a navamsha, a sign counted from another), so a rule asking for the dignity of a pada is refused when read |
+| [`rule`](src/rule.rs) | a rule: its conditions, the reference groups at least one of which must hold, its cancellations with their labels, its severity and its cancellation threshold, one shape for yogas and doshas, in the engine's own format |
 | [`language`](src/language.rs) | the condition language, typed: three combinators and 22 predicates in the recording engine's own shape, so its rules read unchanged, and anything else (an unknown field or predicate, a thirteenth house, an outer planet) refused with its path |
 | [`chart`](src/chart.rs) | what a rule reads of a chart (each body's longitude, sign, house, dignity, motion, combustion, chara karakas and navamsha), and every place the language leaves a meaning open, each a `Readings` field with the recording engine's choice the default and the text's where the engine has none |
 | [`eval`](src/eval.rs) | the `Evaluator`: benefics and malefics settled once a chart, then each rule to a `RuleResult` without allocating for its participants, or to an `Explanation` with its trace |
@@ -39,6 +41,10 @@ cancellations held.
   table's degree counts is `Readings::bhaga`, the texts' ordinal degree by
   default and the engine's ±1° in its reading (crux C82); the Dagdha rashi
   table's rank is stated and whom it burns is the rule's to say (crux C84).
+- **A dosha is a rule with groups, a severity and a threshold.** The engine's
+  natal doshas read unchanged; 35 of its 52 are in the language, and its
+  dosha evaluator adds no participant for an aspect where its yoga evaluator
+  adds both (`Readings::aspect_gathering`, crux C85).
 - **Eight rules are outside the language**, the Neecha Bhanga family, which
   the engine computes in code; `Rule::is_evaluable` says so.
 
@@ -58,6 +64,11 @@ cancellations held.
   Karakamsha (ch. 40 v. 14), and the upapada under both readings; every
   reference form read and written back, and each wrong kind or shape refused
   with its reason (unit tests).
+- Under the engine's dosha reading the kernel reproduces all 3255 recorded
+  decisions of the 35 dosha rules it can evaluate over 93 charts and 77
+  panchangas, and for each of 885 presences where it was found from, its
+  participants, houses, severity, cancellations and net status
+  (`tests/doshas.rs`); all 52 dosha rules read strictly and round-trip.
 - Every explanation over the corpus answers what its evaluation answers,
   stops at the first condition that failed, and gathers the participants from
   its steps: 55 521 of 55 521 (`tests/baseline.rs`); a unit test pins what an

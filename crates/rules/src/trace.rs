@@ -30,7 +30,7 @@
 //!     karaka8: None,
 //!     navamsha: Rashi::Aries,
 //! };
-//! let chart = RuleChart { placements: [placement; 10], tithi: None };
+//! let chart = RuleChart { placements: [placement; 10], panchanga: None };
 //! let rule: Rule = serde_json::from_str(r#"{
 //!     "key": "LORD_OF_TEN_IN_A_KENDRA",
 //!     "category": "example",
@@ -56,8 +56,9 @@ use serde::{Serialize, Serializer};
 use teistro_core::catalogue::{Rashi, Tithi};
 
 use crate::eval::RuleResult;
-use crate::language::{Body, Condition, House, Rule};
+use crate::language::{Body, Condition, House};
 use crate::reference::{BodyRef, SignRef};
+use crate::rule::{NetStatus, Rule};
 use crate::table::{SignDegree, TableKey};
 
 /// A reference resolved while a condition was checked.
@@ -138,6 +139,8 @@ pub struct Explanation<'c> {
     /// The rule's conditions as they were checked, stopping at the first that
     /// did not hold.
     pub conditions: Vec<Step<'c>>,
+    /// Each group's conditions as they were checked, when the conditions held.
+    pub groups: Vec<Vec<Step<'c>>>,
     /// The cancellations as they were checked, when the rule was present.
     pub cancellations: Vec<Step<'c>>,
 }
@@ -366,8 +369,13 @@ impl fmt::Display for Explanation<'_> {
                     houses.join(", ")
                 )?;
             }
-            if result.is_cancelled() {
-                write!(f, ", cancelled")?;
+            if let Some(severity) = result.severity {
+                write!(f, ", severity {severity}")?;
+            }
+            match result.status {
+                Some(NetStatus::PartiallyCancelled) => write!(f, ", partly cancelled")?,
+                Some(NetStatus::FullyCancelled) => write!(f, ", cancelled")?,
+                Some(NetStatus::Active) | None => {}
             }
             writeln!(f)?;
         } else {
@@ -376,6 +384,10 @@ impl fmt::Display for Explanation<'_> {
         self.conditions
             .iter()
             .try_for_each(|step| step.write(f, 0))?;
+        for (group, steps) in self.rule.groups.iter().zip(&self.groups) {
+            writeln!(f, "  from {} ({}):", group.label, group.reference.key())?;
+            steps.iter().try_for_each(|step| step.write(f, 1))?;
+        }
         if !self.cancellations.is_empty() {
             writeln!(f, "  cancellations:")?;
             self.cancellations

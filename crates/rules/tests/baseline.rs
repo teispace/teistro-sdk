@@ -79,7 +79,7 @@ fn the_kernel_reproduces_every_recorded_yoga() {
             let fired: Vec<String> = result
                 .cancellations
                 .iter()
-                .map(|i| rule.cancellations[*i].kind().to_owned())
+                .map(|i| rule.cancellations[*i].condition.kind().to_owned())
                 .collect();
             assert_eq!(
                 fired,

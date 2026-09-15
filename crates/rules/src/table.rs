@@ -40,7 +40,8 @@ use std::sync::LazyLock;
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Rashi, Tithi};
 
-use crate::language::{Body, Condition, Rule, Source};
+use crate::language::{Body, Condition, Source};
+use crate::rule::Rule;
 
 /// A degree of a sign, 1 to 30: the first degree runs from 0° to 1°.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -303,12 +304,7 @@ impl Tables {
     /// The first table missing or of the other kind, naming the rule, the
     /// table, and what the set holds.
     pub fn check(&self, rule: &Rule) -> Result<(), String> {
-        for condition in rule
-            .conditions
-            .iter()
-            .chain(&rule.cancellations)
-            .flat_map(Condition::walk)
-        {
+        for condition in rule.every_condition() {
             let (table, wanted) = match condition {
                 Condition::PlanetAtTableDegree { table, .. } => (table, DEGREES_BY_SIGN),
                 Condition::PlanetInTableSign { table, .. } => (table, SIGNS_BY_TITHI),

@@ -27,8 +27,8 @@ use teistro_core::angle::Nas;
 use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi, Varga};
 use teistro_core::quantity::Degrees;
 use teistro_rules::{
-    Benefics, Body, Condition, Conjunction, DignityMatch, Evaluator, Gathering, House, Houses,
-    Karaka, NodeMotion, NodeSides, Placement, Readings, Rule, RuleChart,
+    Benefics, Body, Conjunction, DignityMatch, Evaluator, Gathering, House, Houses, Karaka,
+    NodeMotion, NodeSides, Placement, Readings, Rule, RuleChart,
 };
 
 use crate::generated::{Output, check, write};
@@ -171,7 +171,7 @@ fn chart(inputs: &Value) -> Result<RuleChart, String> {
     // The yogas' inputs carry no tithi, and no yoga reads one.
     Ok(RuleChart {
         placements,
-        tithi: None,
+        panchanga: None,
     })
 }
 
@@ -247,7 +247,7 @@ fn tally(rules: &[Rule], records: &[Record], readings: Readings) -> Tally {
                 .cancellations
                 .iter()
                 .filter_map(|i| rule.cancellations.get(*i))
-                .map(|c| c.kind().to_owned())
+                .map(|c| c.condition.kind().to_owned())
                 .collect();
             if &fired != cancellations {
                 t.cancellations_wrong += 1;
@@ -346,12 +346,7 @@ impl Coverage {
 fn predicate_uses(rules: &[Rule]) -> BTreeMap<&'static str, usize> {
     let mut uses = BTreeMap::new();
     for rule in rules {
-        for condition in rule
-            .conditions
-            .iter()
-            .chain(&rule.cancellations)
-            .flat_map(Condition::walk)
-        {
+        for condition in rule.every_condition() {
             *uses.entry(condition.kind()).or_default() += 1;
         }
     }

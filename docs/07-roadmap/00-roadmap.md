@@ -560,8 +560,10 @@ exercised by a BPHS rule. **The trace is built**: `explain` returns each
 condition checked with what it held and resolved, from the same evaluator as
 `evaluate`, which stays at 11 µs. **Tables are built**: cited degrees-by-sign
 and signs-by-tithi tables with their predicates, Jataka Parijata's Mrityu
-Bhagas and the Dagdha rashis shipped. Next: cancellation and severity in the
-order below, with the references that need points the
+Bhagas and the Dagdha rashis shipped. **Cancellation and severity are built**
+with the doshas (corpus 0.11.0): reference groups, severities and net status
+on one `Rule`, the engine's 35 language-expressible doshas reproduced. Next:
+its 17 computed doshas as rules (tables, references, a classifying outcome), with the references that need points the
 chart does not yet carry added as rules need them.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,

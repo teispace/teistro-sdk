@@ -8,11 +8,13 @@ use teistro_core::settings::NodeAspects;
 use teistro_points::arudha;
 
 use crate::chart::{
-    Benefics, Conjunction, DignityMatch, Gathering, Houses, NATURAL_BENEFICS, NATURAL_MALEFICS,
-    NodeMotion, NodeSides, Placement, Readings, RuleChart, Upapada,
+    AspectGathering, Benefics, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
+    NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, Readings,
+    RuleChart, Upapada,
 };
-use crate::language::{Body, Condition, House, KarakaScheme, Rule};
+use crate::language::{Body, Condition, EclipseKind, House, KarakaScheme};
 use crate::reference::{BodyRef, SignRef, Subject};
+use crate::rule::{NetStatus, Rule, Severity};
 use crate::table::{Table, Tables};
 use crate::trace::{Explanation, NoTrace, Recorder, Resolved, Tracer};
 
@@ -109,9 +111,26 @@ pub struct RuleResult {
     pub participants: Participants,
     /// The houses its participant grahas stand in, distinct and ascending.
     pub houses: Vec<House>,
+    /// Where it was found from, in order: its conditions, then each group that
+    /// held.
+    pub found_from: Vec<Found>,
     /// Which of its cancellations held, by their place in the rule, when
     /// present.
     pub cancellations: Vec<usize>,
+    /// How grave it is, when present and the rule says.
+    pub severity: Option<u16>,
+    /// Whether it stands after its cancellations, when present.
+    pub status: Option<NetStatus>,
+}
+
+/// A place a rule was found from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[serde(tag = "kind", content = "group", rename_all = "kebab-case")]
+pub enum Found {
+    /// Its conditions all held.
+    Conditions,
+    /// The group at this place in the rule held.
+    Group(usize),
 }
 
 impl RuleResult {
@@ -666,7 +685,7 @@ impl<'a> Evaluator<'a> {
                     target.sign,
                     self.readings.node_aspects,
                 );
-                if held {
+                if held && self.readings.aspect_gathering == AspectGathering::Both {
                     into.push(body);
                     into.push_through(target);
                 }
@@ -694,24 +713,112 @@ impl<'a> Evaluator<'a> {
                 self.single(body, into, held)
             }
             Condition::PlanetInTableSign { planet, table } => {
-                let signs = match (self.tables.get(table.as_str()), self.chart.tithi) {
+                let tithi = self.panchanga().map(|p| p.tithi);
+                let signs = match (self.tables.get(table.as_str()), tithi) {
                     (Some(found @ Table::SignsByTithi { .. }), Some(tithi)) => found.signs(tithi),
                     _ => &[],
                 };
                 rec.resolved(|| Resolved::Burnt {
                     table: table.clone(),
-                    tithi: self.chart.tithi,
+                    tithi,
                     signs: signs.to_vec(),
                 });
                 self.sign_meets(planet, into, rec, |spot| signs.contains(&spot.sign))
             }
             Condition::PlanetAspectsHouse { from, house_ruled } => {
                 let target = step(self.chart.lagna(), house_ruled.get() - 1);
-                self.body_meets(from, into, rec, |body| {
-                    aspects(body, self.at(body).sign, target, self.readings.node_aspects)
+                let Some(body) = self.body(from, rec) else {
+                    return false;
+                };
+                let held = aspects(body, self.at(body).sign, target, self.readings.node_aspects);
+                if self.readings.aspect_gathering == AspectGathering::Both {
+                    self.single(body, into, held)
+                } else {
+                    held
+                }
+            }
+            Condition::LordOfHouseDebilitated { house_ruled } => {
+                let lord = self.lord_of(*house_ruled, rec);
+                self.dignity_meets(self.at(lord).dignity, &[Dignity::Debilitated])
+            }
+            Condition::LordOfHouseCombust { house_ruled } => {
+                let lord = self.lord_of(*house_ruled, rec);
+                lord != graha_body(Graha::Sun) && self.at(lord).combust
+            }
+            Condition::LordOfHouseStrong { house_ruled } => {
+                let lord = self.lord_of(*house_ruled, rec);
+                self.dignity_meets(
+                    self.at(lord).dignity,
+                    &[Dignity::OwnSign, Dignity::Exalted, Dignity::Mooltrikona],
+                )
+            }
+            Condition::LordOfHouseIs {
+                house_ruled,
+                planets,
+            } => planets.contains(&self.lord_of(*house_ruled, rec)),
+            Condition::LordOfHouseConjunctPlanet {
+                house_ruled,
+                with_planet,
+            } => {
+                let lord = self.lord_of(*house_ruled, rec);
+                self.at(lord).sign == self.at(*with_planet).sign
+            }
+            Condition::LagnaInSign { signs } => signs.contains(&self.chart.lagna()),
+            Condition::PlanetInHouseAndSign {
+                planet,
+                houses,
+                signs,
+            } => houses.contains(&self.house_of(*planet)) && signs.contains(&self.at(*planet).sign),
+            Condition::PlanetAtGandanta {
+                planet,
+                orb_degrees,
+            } => {
+                let placement = self.at(*planet);
+                let orb = orb_degrees.unwrap_or(GANDANTA_ORB);
+                let in_sign = placement.longitude.rem_euclid(30.0);
+                match placement.sign {
+                    Rashi::Cancer | Rashi::Scorpio | Rashi::Pisces => 30.0 - in_sign <= orb,
+                    Rashi::Leo | Rashi::Sagittarius | Rashi::Aries => in_sign <= orb,
+                    _ => false,
+                }
+            }
+            Condition::PanchangaTithi { tithis } => {
+                self.panchanga().is_some_and(|p| tithis.contains(&p.tithi))
+            }
+            Condition::PanchangaPaksha { paksha } => self
+                .panchanga()
+                .is_some_and(|p| p.tithi.attributes().paksha == *paksha),
+            Condition::PanchangaVara { varas } => {
+                self.panchanga().is_some_and(|p| varas.contains(&p.vara))
+            }
+            Condition::PanchangaNakshatra { nakshatras, padas } => {
+                self.panchanga().is_some_and(|p| {
+                    nakshatras.contains(&p.nakshatra)
+                        && (padas.is_empty() || padas.contains(&p.pada))
                 })
             }
+            Condition::PanchangaYoga { yogas } => {
+                self.panchanga().is_some_and(|p| yogas.contains(&p.yoga))
+            }
+            Condition::PanchangaKarana { karanas } => self
+                .panchanga()
+                .is_some_and(|p| karanas.contains(&p.karana)),
+            Condition::BirthDuringEclipse { kind } => self
+                .panchanga()
+                .and_then(|p| p.eclipse)
+                .is_some_and(|eclipse| match (kind, eclipse) {
+                    (None | Some(EclipseKind::Any), _)
+                    | (Some(EclipseKind::Solar), Eclipse::Solar)
+                    | (Some(EclipseKind::Lunar), Eclipse::Lunar) => true,
+                    (Some(EclipseKind::Solar), Eclipse::Lunar)
+                    | (Some(EclipseKind::Lunar), Eclipse::Solar) => false,
+                }),
+            Condition::BirthOnSankranti { .. } => self.panchanga().is_some_and(|p| p.on_sankranti),
         }
+    }
+
+    fn panchanga(&self) -> Option<&Panchanga> {
+        self.chart.panchanga.as_ref()
     }
 
     /// A predicate about one body: adds it when the predicate held.
@@ -725,50 +832,81 @@ impl<'a> Evaluator<'a> {
 
     /// A rule's answer for the chart.
     ///
-    /// A rule the language cannot evaluate, with no conditions, answers not
-    /// present; ask [`Rule::is_evaluable`] to tell the two apart.
+    /// A rule the language cannot evaluate answers not present; ask
+    /// [`Rule::is_evaluable`] to tell the two apart.
     #[must_use]
     pub fn evaluate(&self, rule: &Rule) -> RuleResult {
-        self.run(rule, &mut NoTrace, &mut NoTrace)
+        self.run(rule, &mut NoTrace, &mut Vec::new(), &mut NoTrace)
     }
 
     /// A rule's answer with how it was reached: each condition checked, in
     /// order, whether it held, the bodies it added and every reference it
-    /// resolved on the way, then each cancellation the same way.
+    /// resolved on the way; then each group's and each cancellation's the same
+    /// way.
     ///
     /// It allocates the trace; [`Evaluator::evaluate`] answers the same without
     /// one.
     #[must_use]
     pub fn explain<'c>(&self, rule: &'c Rule) -> Explanation<'c> {
-        let (mut conditions, mut cancellations) = (Tracer::default(), Tracer::default());
-        let result = self.run(rule, &mut conditions, &mut cancellations);
+        let (mut conditions, mut groups, mut cancellations) =
+            (Tracer::default(), Vec::new(), Tracer::default());
+        let result = self.run(rule, &mut conditions, &mut groups, &mut cancellations);
         Explanation {
             rule,
             result,
             conditions: conditions.finish(),
+            groups: groups.into_iter().map(Tracer::finish).collect(),
             cancellations: cancellations.finish(),
         }
     }
 
-    fn run<'c>(
+    fn run<'c, R: Recorder<'c> + Default>(
         &self,
         rule: &'c Rule,
-        conditions: &mut impl Recorder<'c>,
-        cancelling: &mut impl Recorder<'c>,
+        conditions: &mut R,
+        groups: &mut Vec<R>,
+        cancelling: &mut R,
     ) -> RuleResult {
+        let absent = RuleResult {
+            present: false,
+            participants: Participants::default(),
+            houses: Vec::new(),
+            found_from: Vec::new(),
+            cancellations: Vec::new(),
+            severity: None,
+            status: None,
+        };
+        if !rule.is_evaluable() {
+            return absent;
+        }
         let mut participants = Participants::default();
-        let present = rule.is_evaluable()
-            && rule
+        let mut found_from = Vec::new();
+        if !rule.conditions.is_empty() {
+            if !rule
                 .conditions
                 .iter()
-                .all(|c| self.check(c, &mut participants, conditions));
-        if !present {
-            return RuleResult {
-                present: false,
-                participants: Participants::default(),
-                houses: Vec::new(),
-                cancellations: Vec::new(),
-            };
+                .all(|c| self.check(c, &mut participants, conditions))
+            {
+                return absent;
+            }
+            found_from.push(Found::Conditions);
+        }
+        // Every group is tried, and each that holds adds its bodies.
+        for (at, group) in rule.groups.iter().enumerate() {
+            let mut recorder = R::default();
+            let mut own = Participants::default();
+            if group
+                .conditions
+                .iter()
+                .all(|c| self.check(c, &mut own, &mut recorder))
+            {
+                participants.extend(own);
+                found_from.push(Found::Group(at));
+            }
+            groups.push(recorder);
+        }
+        if !rule.groups.is_empty() && !found_from.iter().any(|f| matches!(f, Found::Group(_))) {
+            return absent;
         }
         let mut houses: Vec<House> = participants
             .iter()
@@ -777,21 +915,80 @@ impl<'a> Evaluator<'a> {
             .collect();
         houses.sort_unstable();
         houses.dedup();
-        let cancellations = rule
+        let cancellations: Vec<usize> = rule
             .cancellations
             .iter()
             .enumerate()
-            .filter(|(_, c)| self.check(c, &mut Participants::default(), cancelling))
+            .filter(|(_, c)| self.check(&c.condition, &mut Participants::default(), cancelling))
             .map(|(i, _)| i)
             .collect();
+        let severity = rule
+            .severity
+            .as_ref()
+            .map(|severity| self.severity(severity, rule, &found_from));
         RuleResult {
-            present,
+            present: true,
             participants,
             houses,
+            status: Some(rule.net_status(cancellations.len(), found_from.len())),
+            found_from,
             cancellations,
+            severity,
+        }
+    }
+
+    /// A present rule's severity, from where it was found.
+    fn severity(&self, severity: &Severity, rule: &Rule, found_from: &[Found]) -> u16 {
+        match severity {
+            Severity::Fixed { value } => *value,
+            Severity::CountBased {
+                per_occurrence,
+                cap,
+            } => u16::try_from(found_from.len())
+                .unwrap_or(u16::MAX)
+                .saturating_mul(*per_occurrence)
+                .min(*cap),
+            Severity::HouseWeighted {
+                planet,
+                weights,
+                default,
+            } => {
+                let sign = self.at(*planet).sign;
+                found_from
+                    .iter()
+                    .map(|found| match found {
+                        Found::Conditions => self.chart.lagna(),
+                        Found::Group(at) => rule
+                            .groups
+                            .get(*at)
+                            .map_or(self.chart.lagna(), |g| self.at(g.reference).sign),
+                    })
+                    .filter_map(|from| weights.get(&House::between(from, sign)).copied())
+                    .max()
+                    .unwrap_or(*default)
+            }
+            Severity::PlanetStrengthInverse {
+                base_planet,
+                max,
+                min,
+            } => {
+                let dignity = self.at(*base_planet).dignity;
+                if self.dignity_meets(dignity, &[Dignity::Exalted, Dignity::OwnSign]) {
+                    *min
+                } else if self.dignity_meets(dignity, &[Dignity::Debilitated]) {
+                    *max
+                } else {
+                    // Half way, a half rounded up.
+                    u16::try_from((u32::from(*min) + u32::from(*max)).div_ceil(2)).unwrap_or(*max)
+                }
+            }
+            Severity::KootShortfall { full, .. } => *full,
         }
     }
 }
+
+/// The 3°20′ either side of a gandanta junction, a navamsha.
+const GANDANTA_ORB: f64 = 10.0 / 3.0;
 
 fn set(nature: &mut [bool; 10], index: usize, value: bool) {
     if let Some(slot) = nature.get_mut(index) {
@@ -860,7 +1057,7 @@ mod tests {
                 karaka8: None,
                 navamsha: Rashi::Aries,
             }; 10],
-            tithi: None,
+            panchanga: None,
         }
     }
 
@@ -1200,16 +1397,28 @@ mod tests {
 
     fn rule(conditions: Vec<Condition>, cancellations: Vec<Condition>) -> Rule {
         Rule {
-            key: String::from("EXAMPLE"),
-            category: String::from("example"),
-            source: crate::language::Source {
-                text: String::from("an example"),
-                chapter: None,
-                verse: None,
-                note: None,
-            },
             conditions,
-            cancellations,
+            cancellations: cancellations.into_iter().map(Into::into).collect(),
+            ..Rule::new(
+                "EXAMPLE",
+                "example",
+                crate::language::Source::text("an example"),
+            )
+        }
+    }
+
+    /// A panchanga on a tithi, every other limb the first.
+    fn panchanga(tithi: teistro_core::catalogue::Tithi) -> crate::chart::Panchanga {
+        use teistro_core::catalogue::{Karana, Nakshatra, Vara, Yoga};
+        crate::chart::Panchanga {
+            tithi,
+            vara: Vara::Ravivara,
+            nakshatra: Nakshatra::Ashwini,
+            pada: crate::language::Pada::try_new(1).unwrap(),
+            yoga: Yoga::Vishkambha,
+            karana: Karana::Bava,
+            on_sankranti: false,
+            eclipse: None,
         }
     }
 
@@ -1296,7 +1505,11 @@ mod tests {
             vec![written(
                 r#"{"type": "planet-in-house", "planet": "SUN", "houses": [7]}"#,
             )],
-            example.cancellations.clone(),
+            example
+                .cancellations
+                .iter()
+                .map(|c| c.condition.clone())
+                .collect(),
         );
         let explanation = evaluator.explain(&absent);
         assert!(!explanation.result.present && explanation.cancellations.is_empty());
@@ -1395,24 +1608,24 @@ mod tests {
         };
         assert!(!held(&c, &burnt(r#""MARS""#)).0, "no tithi, no burnt sign");
         for tithi in [Tithi::ShuklaShashthi, Tithi::KrishnaShashthi] {
-            c.tithi = Some(tithi);
+            c.panchanga = Some(panchanga(tithi));
             assert_eq!(held(&c, &burnt(r#""MARS""#)), (true, vec![MARS]));
             // The lagna's lord, Mars, stands in a burnt sign too; the sign of the
             // twelfth, Pisces, is not burnt.
             assert!(held(&c, &burnt(r#"{"lordOf": 1}"#)).0);
             assert!(!held(&c, &burnt("12")).0);
         }
-        c.tithi = Some(Tithi::Purnima);
+        c.panchanga = Some(panchanga(Tithi::Purnima));
         assert!(!held(&c, &burnt(r#""MARS""#)).0);
 
         let rule = rule(vec![burnt(r#""MARS""#)], Vec::new());
-        assert!(rule.reads_tithi());
-        c.tithi = None;
+        assert!(rule.reads_panchanga());
+        c.panchanga = None;
         assert_eq!(
             evaluator(&c).explain(&rule).conditions[0].resolved[0].to_string(),
             "DAGDHA_RASHI needs a tithi, and the chart has none"
         );
-        c.tithi = Some(Tithi::KrishnaShashthi);
+        c.panchanga = Some(panchanga(Tithi::KrishnaShashthi));
         assert_eq!(
             evaluator(&c).explain(&rule).conditions[0].resolved[0].to_string(),
             "DAGDHA_RASHI gives KRISHNA_SHASHTHI ARIES, LEO"
@@ -1422,24 +1635,335 @@ mod tests {
                 vec![written(r#"{"type": "planet-in-kendra", "planet": "SUN"}"#)],
                 Vec::new()
             )
-            .reads_tithi()
+            .reads_panchanga()
+        );
+    }
+
+    #[test]
+    fn the_dosha_predicates_read_lords_the_lagna_and_gandanta_and_add_no_participant() {
+        let mut c = chart();
+        // Aries lagna: the fourth's lord is the Moon; the seventh's Venus.
+        c.placements[MOON.index()].dignity = Dignity::DeepDebilitated;
+        c.placements[Body::Graha(Graha::Venus).index()].combust = true;
+        let checks = [
+            (
+                r#"{"type": "lord-of-house-debilitated", "houseRuled": 4}"#,
+                true,
+            ),
+            (
+                r#"{"type": "lord-of-house-strong", "houseRuled": 4}"#,
+                false,
+            ),
+            (
+                r#"{"type": "lord-of-house-combust", "houseRuled": 7}"#,
+                true,
+            ),
+            (
+                r#"{"type": "lord-of-house-is", "houseRuled": 4, "planets": ["MOON", "MARS"]}"#,
+                true,
+            ),
+            (
+                r#"{"type": "lord-of-house-conjunct-planet", "houseRuled": 7, "withPlanet": "SATURN"}"#,
+                true,
+            ),
+            (
+                r#"{"type": "lagna-in-sign", "signs": ["ARIES", "SCORPIO"]}"#,
+                true,
+            ),
+            (
+                r#"{"type": "planet-in-house-and-sign", "planet": "SUN", "houses": [1], "signs": ["TAURUS"]}"#,
+                false,
+            ),
+        ];
+        for (json, expected) in checks {
+            // None of them adds a participant.
+            assert_eq!(
+                holds(&c, ENGINE, &written(json)),
+                (expected, vec![]),
+                "{json}"
+            );
+        }
+        // The Sun is never combust by himself: Leo lagna, the first's lord.
+        place(&mut c, Body::Lagna, Rashi::Leo);
+        c.placements[SUN.index()].combust = true;
+        assert!(
+            !holds(
+                &c,
+                ENGINE,
+                &written(r#"{"type": "lord-of-house-combust", "houseRuled": 1}"#)
+            )
+            .0
+        );
+
+        // Gandanta: 3°20′ into Aries or before the end of Pisces, and not Taurus.
+        let gandanta = written(r#"{"type": "planet-at-gandanta", "planet": "MARS"}"#);
+        for (sign, degrees, held) in [
+            (Rashi::Aries, 3.3, true),
+            (Rashi::Aries, 3.4, false),
+            (Rashi::Pisces, 26.7, true),
+            (Rashi::Pisces, 26.6, false),
+            (Rashi::Taurus, 1.0, false),
+            (Rashi::Scorpio, 29.9, true),
+        ] {
+            place(&mut c, MARS, sign);
+            c.placements[MARS.index()].longitude = f64::from(sign as u8) * 30.0 + degrees;
+            assert_eq!(
+                holds(&c, ENGINE, &gandanta).0,
+                held,
+                "Mars {degrees}° into {sign:?}"
+            );
+        }
+        let wide = written(r#"{"type": "planet-at-gandanta", "planet": "MARS", "orbDegrees": 1}"#);
+        assert!(holds(&c, ENGINE, &wide).0);
+    }
+
+    #[test]
+    fn the_panchanga_predicates_read_the_birth_s_limbs_and_refuse_a_wrong_one() {
+        use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+
+        let mut c = chart();
+        // No panchanga, no panchanga predicate holds.
+        let tithi = written(r#"{"type": "panchanga-tithi", "tithis": ["AMAVASYA"]}"#);
+        assert!(!holds(&c, ENGINE, &tithi).0);
+        c.panchanga = Some(panchanga(Tithi::Amavasya));
+        let p = c.panchanga.as_mut().unwrap();
+        p.vara = Vara::Shanivara;
+        p.nakshatra = Nakshatra::Mula;
+        p.pada = crate::language::Pada::try_new(4).unwrap();
+        p.eclipse = Some(crate::chart::Eclipse::Lunar);
+        for (json, expected) in [
+            (
+                r#"{"type": "panchanga-tithi", "tithis": ["AMAVASYA"]}"#,
+                true,
+            ),
+            (r#"{"type": "panchanga-paksha", "paksha": "krishna"}"#, true),
+            (r#"{"type": "panchanga-paksha", "paksha": "shukla"}"#, false),
+            (
+                r#"{"type": "panchanga-vara", "varas": ["SHANIVARA"]}"#,
+                true,
+            ),
+            (
+                r#"{"type": "panchanga-nakshatra", "nakshatras": ["MULA"]}"#,
+                true,
+            ),
+            (
+                r#"{"type": "panchanga-nakshatra", "nakshatras": ["MULA"], "padas": [1]}"#,
+                false,
+            ),
+            (
+                r#"{"type": "panchanga-nakshatra", "nakshatras": ["MULA"], "padas": [1, 4]}"#,
+                true,
+            ),
+            (
+                r#"{"type": "panchanga-yoga", "yogas": ["VAIDHRITI"]}"#,
+                false,
+            ),
+            (r#"{"type": "panchanga-karana", "karanas": ["BAVA"]}"#, true),
+            (r#"{"type": "birth-during-eclipse"}"#, true),
+            (
+                r#"{"type": "birth-during-eclipse", "kind": "solar"}"#,
+                false,
+            ),
+            (r#"{"type": "birth-during-eclipse", "kind": "lunar"}"#, true),
+            (r#"{"type": "birth-on-sankranti", "windowHours": 6}"#, false),
+        ] {
+            assert_eq!(holds(&c, ENGINE, &written(json)).0, expected, "{json}");
+        }
+        for (json, reason) in [
+            (
+                r#"{"type": "panchanga-paksha", "paksha": "waxing"}"#,
+                "`waxing` is not a paksha",
+            ),
+            (
+                r#"{"type": "panchanga-nakshatra", "nakshatras": ["MULA"], "padas": [5]}"#,
+                "pada 5",
+            ),
+            (
+                r#"{"type": "birth-during-eclipse", "kind": "partial"}"#,
+                "partial",
+            ),
+        ] {
+            let error = serde_json::from_str::<Condition>(json)
+                .unwrap_err()
+                .to_string();
+            assert!(error.contains(reason), "{json}: {error}");
+        }
+    }
+
+    /// Mars in the lagna's seventh, the Moon's fourth, and with Venus; a\n    /// Mangal-like rule found from all three references.
+    fn mangal() -> (RuleChart, Rule) {
+        use crate::rule::{Group, Severity};
+
+        let mut c = chart();
+        place(&mut c, MARS, Rashi::Libra); // The seventh from the Aries lagna.
+        place(&mut c, MOON, Rashi::Cancer); // Mars the fourth from the Moon.
+        place(&mut c, Body::Graha(Graha::Venus), Rashi::Libra); // With Venus.
+        place(&mut c, JUPITER, Rashi::Taurus); // Aspecting neither.
+        let group = |reference: Body, label: &str, house: u8| Group {
+            reference,
+            label: String::from(label),
+            conditions: vec![written(&format!(
+                r#"{{"type": "planet-in-house-from", "planet": "MARS", "reference": "{}", "houses": [{house}]}}"#,
+                reference.key()
+            ))],
+        };
+        let mangal = Rule {
+            groups: vec![
+                group(Body::Lagna, "Lagna", 7),
+                group(MOON, "Moon", 4),
+                group(Body::Graha(Graha::Venus), "Venus", 8),
+            ],
+            cancellations: vec![
+                written(r#"{"type": "planet-conjunct", "planets": ["VENUS", "MARS"]}"#).into(),
+                written(
+                    r#"{"type": "planet-aspects-planet", "from": "JUPITER", "target": "MARS"}"#,
+                )
+                .into(),
+            ],
+            severity: Some(Severity::HouseWeighted {
+                planet: MARS,
+                weights: [(house(7), 100), (house(4), 50)].into_iter().collect(),
+                default: 40,
+            }),
+            ..rule(Vec::new(), Vec::new())
+        };
+        (c, mangal)
+    }
+
+    #[test]
+    fn a_rule_is_found_from_its_conditions_and_every_group_that_holds() {
+        use crate::rule::{Group, NetStatus};
+
+        let (c, mangal) = mangal();
+        let evaluator = Evaluator::new(&c, Readings::RECORDING_ENGINE_DOSHAS);
+        let result = evaluator.evaluate(&mangal);
+        assert!(result.present);
+        assert_eq!(result.found_from, [Found::Group(0), Found::Group(1)]);
+        assert_eq!(result.participants.iter().collect::<Vec<_>>(), [MARS]);
+        assert_eq!(
+            result.severity,
+            Some(100),
+            "the gravest house of those found from"
+        );
+        // Venus with Mars cancels once; the threshold, unset, is the two places
+        // found from.
+        assert_eq!(result.cancellations, [0]);
+        assert_eq!(result.status, Some(NetStatus::PartiallyCancelled));
+        let explanation = evaluator.explain(&mangal);
+        assert_eq!(explanation.result, result);
+        assert_eq!(
+            explanation.to_string(),
+            "EXAMPLE: present, MARS in house 7, severity 100, partly cancelled\n\
+             \u{20} from Lagna (LAGNA):\n\
+             \u{20}   holds planet-in-house-from, adding MARS\n\
+             \u{20}     LAGNA stands in ARIES, house 1\n\
+             \u{20}     MARS stands in LIBRA, house 7\n\
+             \u{20} from Moon (MOON):\n\
+             \u{20}   holds planet-in-house-from, adding MARS\n\
+             \u{20}     MOON stands in CANCER, house 4\n\
+             \u{20}     MARS stands in LIBRA, house 7\n\
+             \u{20} from Venus (VENUS):\n\
+             \u{20}   fails planet-in-house-from\n\
+             \u{20}     VENUS stands in LIBRA, house 7\n\
+             \u{20}     MARS stands in LIBRA, house 7\n\
+             \u{20} cancellations:\n\
+             \u{20}   holds planet-conjunct, adding VENUS, MARS\n\
+             \u{20}   fails planet-aspects-planet\n\
+             \u{20}     MARS stands in LIBRA, house 7\n"
+        );
+        assert_eq!(
+            explanation
+                .groups
+                .iter()
+                .map(|g| g[0].held)
+                .collect::<Vec<_>>(),
+            [true, true, false]
+        );
+
+        // With conditions too, both must hold: the conditions, and a group.
+        let both = Rule {
+            conditions: vec![written(r#"{"type": "planet-in-kendra", "planet": "MARS"}"#)],
+            groups: vec![Group {
+                label: String::from("Venus"),
+                ..mangal.groups[2].clone()
+            }],
+            ..rule(Vec::new(), Vec::new())
+        };
+        assert!(!evaluator.evaluate(&both).present);
+    }
+
+    #[test]
+    fn each_severity_rule_and_the_dosha_evaluator_s_aspects() {
+        use crate::rule::Severity;
+
+        let (mut c, mangal) = mangal();
+        let evaluator = Evaluator::new(&c, Readings::RECORDING_ENGINE_DOSHAS);
+        let severity = |severity: Severity| {
+            evaluator
+                .evaluate(&Rule {
+                    severity: Some(severity),
+                    ..mangal.clone()
+                })
+                .severity
+        };
+        assert_eq!(
+            severity(Severity::CountBased {
+                per_occurrence: 30,
+                cap: 50
+            }),
+            Some(50)
+        );
+        assert_eq!(
+            severity(Severity::CountBased {
+                per_occurrence: 20,
+                cap: 50
+            }),
+            Some(40)
+        );
+        assert_eq!(
+            severity(Severity::KootShortfall {
+                full: 80,
+                per_point_missing: 5
+            }),
+            Some(80)
+        );
+        let inverse = |c: &RuleChart| {
+            Evaluator::new(c, Readings::RECORDING_ENGINE_DOSHAS)
+                .evaluate(&Rule {
+                    severity: Some(Severity::PlanetStrengthInverse {
+                        base_planet: MOON,
+                        max: 90,
+                        min: 21,
+                    }),
+                    ..mangal.clone()
+                })
+                .severity
+        };
+        assert_eq!(inverse(&c), Some(56), "half way, a half rounded up");
+        c.placements[MOON.index()].dignity = Dignity::OwnSign;
+        assert_eq!(inverse(&c), Some(21));
+        c.placements[MOON.index()].dignity = Dignity::DeepDebilitated;
+        assert_eq!(inverse(&c), Some(90));
+
+        // The dosha evaluator's aspects add no participant; the yoga evaluator's
+        // add both.
+        place(&mut c, JUPITER, Rashi::Aries); // Aspects Libra, its seventh.
+        let aspect =
+            written(r#"{"type": "planet-aspects-planet", "from": "JUPITER", "target": "MARS"}"#);
+        assert_eq!(holds(&c, ENGINE, &aspect), (true, vec![JUPITER, MARS]));
+        assert_eq!(
+            holds(&c, Readings::RECORDING_ENGINE_DOSHAS, &aspect),
+            (true, vec![])
         );
     }
 
     #[test]
     fn a_rule_without_conditions_is_not_evaluable_and_not_present() {
-        let rule = Rule {
-            key: String::from("OUTSIDE"),
-            category: String::from("example"),
-            source: crate::language::Source {
-                text: String::from("an example"),
-                chapter: None,
-                verse: None,
-                note: None,
-            },
-            conditions: Vec::new(),
-            cancellations: Vec::new(),
-        };
+        let rule = Rule::new(
+            "OUTSIDE",
+            "example",
+            crate::language::Source::text("an example"),
+        );
         assert!(!rule.is_evaluable());
         assert!(!Evaluator::new(&chart(), ENGINE).evaluate(&rule).present);
     }

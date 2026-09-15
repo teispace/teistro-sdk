@@ -932,6 +932,19 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; no shipped rule reads a table yet.
 
+- The doshas: the corpus moves to 0.11.0, which records the recording engine's
+  natal dosha evaluator: 52 rules and their presences on 93 charts, with
+  severity, cancellations and net status. `teistro-rules` models what a dosha
+  adds once, for yogas too. A `Rule` gains reference groups, labelled
+  cancellations, a `Severity` rule, a cancellation threshold, remedies and
+  scope, and a `RuleResult` gains where it was found from, its severity and its
+  `NetStatus`. The language gains the lord, lagna, gandanta and panchanga
+  predicates, and `RuleChart.tithi` becomes `RuleChart.panchanga`. Under
+  `Readings::RECORDING_ENGINE_DOSHAS` the kernel reproduces every recorded
+  dosha of the 35 rules the language can say (crux C85).
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

@@ -1,9 +1,11 @@
 //! What a rule reads of a chart, and the choices the language leaves open.
 
-use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi, Tithi};
+use teistro_core::catalogue::{
+    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Rashi, Tithi, Vara, Yoga,
+};
 use teistro_core::settings::NodeAspects;
 
-use crate::language::{Body, House};
+use crate::language::{Body, House, Pada};
 use crate::table::SignDegree;
 
 /// One body as a rule reads it.
@@ -36,9 +38,40 @@ pub struct Placement {
 pub struct RuleChart {
     /// Each body's placement, the Sun to Ketu and then the lagna.
     pub placements: [Placement; 10],
-    /// The tithi, which a rule looking signs up by tithi needs
-    /// ([`Rule::reads_tithi`](crate::Rule::reads_tithi)).
-    pub tithi: Option<Tithi>,
+    /// The panchanga at birth, which a rule reading one needs
+    /// ([`Rule::reads_panchanga`](crate::Rule::reads_panchanga)).
+    pub panchanga: Option<Panchanga>,
+}
+
+/// The panchanga at birth, as the rules read it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Panchanga {
+    /// The tithi, whose paksha it carries.
+    pub tithi: Tithi,
+    /// The weekday.
+    pub vara: Vara,
+    /// The Moon's nakshatra.
+    pub nakshatra: Nakshatra,
+    /// The Moon's pada in it.
+    pub pada: Pada,
+    /// The panchanga yoga.
+    pub yoga: Yoga,
+    /// The karana.
+    pub karana: Karana,
+    /// Whether the birth falls on a sankranti, under whatever window the
+    /// chart's maker reads.
+    pub on_sankranti: bool,
+    /// The eclipse the birth falls in, if any.
+    pub eclipse: Option<Eclipse>,
+}
+
+/// An eclipse a birth falls in.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Eclipse {
+    /// Of the Sun.
+    Solar,
+    /// Of the Moon.
+    Lunar,
 }
 
 impl RuleChart {
@@ -175,6 +208,17 @@ impl Bhaga {
     }
 }
 
+/// Which bodies an aspect condition adds to a rule's participants.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum AspectGathering {
+    /// The body aspecting and the one aspected: the recording engine's yoga
+    /// evaluator.
+    #[default]
+    Both,
+    /// Neither: its dosha evaluator, which reads aspects itself.
+    Neither,
+}
+
 /// A choice at every place the condition language leaves a meaning open
 /// (`03-design/yogas-measured.md`); the default is the texts' where they
 /// settle one and the recording engine's elsewhere.
@@ -200,6 +244,8 @@ pub struct Readings {
     pub upapada: Upapada,
     /// Which stretch of a sign a table's degree names.
     pub bhaga: Bhaga,
+    /// Which bodies an aspect condition adds.
+    pub aspect_gathering: AspectGathering,
 }
 
 impl Default for Readings {
@@ -222,6 +268,14 @@ impl Readings {
         node_aspects: NodeAspects::None,
         upapada: Upapada::Twelfth,
         bhaga: Bhaga::WithinOne,
+        aspect_gathering: AspectGathering::Both,
+    };
+
+    /// The recording engine's dosha evaluator: its yoga evaluator's reading
+    /// but for aspects, which add no participant.
+    pub const RECORDING_ENGINE_DOSHAS: Readings = Readings {
+        aspect_gathering: AspectGathering::Neither,
+        ..Readings::RECORDING_ENGINE
     };
 
     /// The texts' reading wherever a text read settles one, the recording

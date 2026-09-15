@@ -8,7 +8,9 @@
 //! quietly reads as something else is a yoga reported wrongly.
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
+use teistro_core::catalogue::{
+    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Paksha, Rashi, Tithi, Vara, Yoga,
+};
 
 use crate::reference::{BodyRef, SignRef, Subject};
 use crate::table::TableKey;
@@ -262,16 +264,19 @@ const fn yes() -> bool {
 )]
 pub enum Condition {
     /// Every condition holds, tried in order until one does not.
+    #[serde(alias = "dosha-and")]
     And {
         /// The conditions.
         conditions: Vec<Condition>,
     },
     /// Some condition holds, tried in order until one does.
+    #[serde(alias = "dosha-or")]
     Or {
         /// The conditions.
         conditions: Vec<Condition>,
     },
     /// The condition does not hold.
+    #[serde(alias = "dosha-not")]
     Not {
         /// The condition.
         condition: Box<Condition>,
@@ -438,13 +443,194 @@ pub enum Condition {
         table: TableKey,
     },
     /// The reference stands in one of the signs a signs-by-tithi table gives
-    /// the chart's tithi; never, when the chart carries no tithi.
+    /// the chart's tithi; never, when the chart carries no panchanga.
     PlanetInTableSign {
         /// Who.
         planet: SignRef,
         /// Which table.
         table: TableKey,
     },
+    /// The lord of a house is debilitated. Like every predicate below that the
+    /// recording engine's dosha evaluator reads itself, it adds no participant.
+    LordOfHouseDebilitated {
+        /// Whose lord.
+        house_ruled: House,
+    },
+    /// The lord of a house is combust; the Sun, who cannot burn himself, never.
+    LordOfHouseCombust {
+        /// Whose lord.
+        house_ruled: House,
+    },
+    /// The lord of a house is in its own sign, exalted or in its
+    /// moolatrikona.
+    LordOfHouseStrong {
+        /// Whose lord.
+        house_ruled: House,
+    },
+    /// The lord of a house is one of the bodies: who rules it, not where it
+    /// stands.
+    LordOfHouseIs {
+        /// Whose lord.
+        house_ruled: House,
+        /// Which.
+        planets: Vec<Body>,
+    },
+    /// The lord of a house shares a sign with a body.
+    LordOfHouseConjunctPlanet {
+        /// Whose lord.
+        house_ruled: House,
+        /// With whom.
+        with_planet: Body,
+    },
+    /// The lagna rises in one of the signs.
+    LagnaInSign {
+        /// Which.
+        signs: Vec<Rashi>,
+    },
+    /// A body stands in one of the houses and in one of the signs at once.
+    PlanetInHouseAndSign {
+        /// Who.
+        planet: Body,
+        /// Which houses.
+        houses: Vec<House>,
+        /// Which signs.
+        signs: Vec<Rashi>,
+    },
+    /// A body stands within an orb of a gandanta junction: the end of Cancer,
+    /// Scorpio or Pisces, or the start of Leo, Sagittarius or Aries.
+    PlanetAtGandanta {
+        /// Who.
+        planet: Body,
+        /// The orb, degrees; 3°20′ unless the rule gives one.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        orb_degrees: Option<f64>,
+    },
+    /// The birth tithi is one of these.
+    PanchangaTithi {
+        /// Which.
+        tithis: Vec<Tithi>,
+    },
+    /// The birth tithi is in this paksha.
+    PanchangaPaksha {
+        /// Which, `shukla` or `krishna`.
+        #[serde(with = "paksha")]
+        paksha: Paksha,
+    },
+    /// The birth weekday is one of these.
+    PanchangaVara {
+        /// Which.
+        varas: Vec<Vara>,
+    },
+    /// The Moon's nakshatra at birth is one of these, in one of the padas when
+    /// the rule names any.
+    PanchangaNakshatra {
+        /// Which.
+        nakshatras: Vec<Nakshatra>,
+        /// Which padas, 1 to 4; any when none.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        padas: Vec<Pada>,
+    },
+    /// The panchanga yoga at birth is one of these.
+    PanchangaYoga {
+        /// Which.
+        yogas: Vec<Yoga>,
+    },
+    /// The karana at birth is one of these.
+    PanchangaKarana {
+        /// Which.
+        karanas: Vec<Karana>,
+    },
+    /// The birth falls in an eclipse, of this kind or of any.
+    BirthDuringEclipse {
+        /// Which kind; any when unset.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        kind: Option<EclipseKind>,
+    },
+    /// The birth falls on a sankranti, as the chart's panchanga says.
+    BirthOnSankranti {
+        /// The window, hours either side, that the chart's flag was computed
+        /// under; kept with the rule, read by whoever builds the chart.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        window_hours: Option<f64>,
+    },
+}
+
+/// A nakshatra's pada, 1 to 4.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(try_from = "u8", into = "u8")]
+pub struct Pada(u8);
+
+impl Pada {
+    /// A pada.
+    ///
+    /// # Errors
+    ///
+    /// A number outside 1 to 4, named.
+    pub fn try_new(pada: u8) -> Result<Pada, String> {
+        if (1..=4).contains(&pada) {
+            Ok(Pada(pada))
+        } else {
+            Err(format!("pada {pada} is not 1 to 4"))
+        }
+    }
+
+    /// Its number, 1 to 4.
+    #[must_use]
+    pub const fn get(self) -> u8 {
+        self.0
+    }
+}
+
+impl TryFrom<u8> for Pada {
+    type Error = String;
+
+    fn try_from(pada: u8) -> Result<Pada, String> {
+        Pada::try_new(pada)
+    }
+}
+
+impl From<Pada> for u8 {
+    fn from(pada: Pada) -> u8 {
+        pada.0
+    }
+}
+
+/// Which eclipse.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum EclipseKind {
+    /// Of the Sun.
+    Solar,
+    /// Of the Moon.
+    Lunar,
+    /// Either.
+    Any,
+}
+
+/// A paksha as the engine writes it, in lower case.
+mod paksha {
+    use serde::{Deserialize, Deserializer, Serializer};
+    use teistro_core::catalogue::Paksha;
+
+    #[allow(
+        clippy::trivially_copy_pass_by_ref,
+        reason = "serde passes a field by reference"
+    )]
+    pub(super) fn serialize<S: Serializer>(
+        paksha: &Paksha,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&paksha.key().to_ascii_lowercase())
+    }
+
+    pub(super) fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Paksha, D::Error> {
+        let key = String::deserialize(deserializer)?;
+        Paksha::from_key(&key.to_ascii_uppercase()).ok_or_else(|| {
+            serde::de::Error::custom(format!("`{key}` is not a paksha: shukla or krishna"))
+        })
+    }
 }
 
 impl Condition {
@@ -479,6 +665,22 @@ impl Condition {
             Condition::PlanetAspectsHouse { .. } => "planet-aspects-house",
             Condition::PlanetAtTableDegree { .. } => "planet-at-table-degree",
             Condition::PlanetInTableSign { .. } => "planet-in-table-sign",
+            Condition::LordOfHouseDebilitated { .. } => "lord-of-house-debilitated",
+            Condition::LordOfHouseCombust { .. } => "lord-of-house-combust",
+            Condition::LordOfHouseStrong { .. } => "lord-of-house-strong",
+            Condition::LordOfHouseIs { .. } => "lord-of-house-is",
+            Condition::LordOfHouseConjunctPlanet { .. } => "lord-of-house-conjunct-planet",
+            Condition::LagnaInSign { .. } => "lagna-in-sign",
+            Condition::PlanetInHouseAndSign { .. } => "planet-in-house-and-sign",
+            Condition::PlanetAtGandanta { .. } => "planet-at-gandanta",
+            Condition::PanchangaTithi { .. } => "panchanga-tithi",
+            Condition::PanchangaPaksha { .. } => "panchanga-paksha",
+            Condition::PanchangaVara { .. } => "panchanga-vara",
+            Condition::PanchangaNakshatra { .. } => "panchanga-nakshatra",
+            Condition::PanchangaYoga { .. } => "panchanga-yoga",
+            Condition::PanchangaKarana { .. } => "panchanga-karana",
+            Condition::BirthDuringEclipse { .. } => "birth-during-eclipse",
+            Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
         }
     }
 
@@ -492,6 +694,23 @@ impl Condition {
         }
     }
 
+    /// Whether this condition itself reads the chart's panchanga.
+    #[must_use]
+    pub const fn reads_panchanga(&self) -> bool {
+        matches!(
+            self,
+            Condition::PlanetInTableSign { .. }
+                | Condition::PanchangaTithi { .. }
+                | Condition::PanchangaPaksha { .. }
+                | Condition::PanchangaVara { .. }
+                | Condition::PanchangaNakshatra { .. }
+                | Condition::PanchangaYoga { .. }
+                | Condition::PanchangaKarana { .. }
+                | Condition::BirthDuringEclipse { .. }
+                | Condition::BirthOnSankranti { .. }
+        )
+    }
+
     /// This condition and every one inside it, depth first.
     pub fn walk(&self) -> impl Iterator<Item = &Condition> {
         let mut stack = vec![self];
@@ -503,7 +722,7 @@ impl Condition {
     }
 }
 
-/// Where a rule comes from.
+/// Where a rule or a table comes from.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Source {
@@ -520,43 +739,16 @@ pub struct Source {
     pub note: Option<String>,
 }
 
-/// A rule: what must hold for it to be present, and what cancels it.
-///
-/// A rule with no conditions is one its author computes outside the language
-/// (the recording engine's Neecha Bhanga family); the kernel reports it as not
-/// evaluable rather than as present.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Rule {
-    /// Its key.
-    pub key: String,
-    /// Its category.
-    pub category: String,
-    /// Its citation.
-    pub source: Source,
-    /// What must all hold.
-    pub conditions: Vec<Condition>,
-    /// What cancels it when it is present.
-    #[serde(default)]
-    pub cancellations: Vec<Condition>,
-}
-
-impl Rule {
-    /// Whether any of its conditions or cancellations reads the chart's tithi,
-    /// so a caller knows to give the chart one.
+impl Source {
+    /// A text, with no chapter, verse or note.
     #[must_use]
-    pub fn reads_tithi(&self) -> bool {
-        self.conditions
-            .iter()
-            .chain(&self.cancellations)
-            .flat_map(Condition::walk)
-            .any(|c| matches!(c, Condition::PlanetInTableSign { .. }))
-    }
-
-    /// Whether the language can evaluate it: it has conditions.
-    #[must_use]
-    pub fn is_evaluable(&self) -> bool {
-        !self.conditions.is_empty()
+    pub fn text(text: impl Into<String>) -> Source {
+        Source {
+            text: text.into(),
+            chapter: None,
+            verse: None,
+            note: None,
+        }
     }
 }
 

@@ -34,15 +34,17 @@ pub mod chart;
 pub mod eval;
 pub mod language;
 pub mod reference;
+pub mod rule;
 pub mod table;
 pub mod trace;
 
 pub use chart::{
-    Benefics, Bhaga, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides,
-    Placement, Readings, RuleChart, Upapada,
+    AspectGathering, Benefics, Bhaga, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
+    NodeMotion, NodeSides, Panchanga, Placement, Readings, RuleChart, Upapada,
 };
-pub use eval::{Evaluator, Participants, RuleResult};
-pub use language::{Body, Condition, House, Karaka, KarakaScheme, Rule, Source};
+pub use eval::{Evaluator, Found, Participants, RuleResult};
+pub use language::{Body, Condition, EclipseKind, House, Karaka, KarakaScheme, Pada, Source};
 pub use reference::{BodyRef, SignRef, Subject};
+pub use rule::{Cancellation, Group, NetStatus, Rule, Scope, Severity};
 pub use table::{SignDegree, Table, TableKey, Tables};
 pub use trace::{Explanation, Resolved, Step};
