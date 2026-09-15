@@ -1860,6 +1860,7 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-port-ephemeris",
+ "teistro-time",
 ]
 
 [[package]]
