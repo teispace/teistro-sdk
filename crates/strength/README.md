@@ -11,6 +11,7 @@ Strength measures over a chart.
 | module | what it settles |
 |---|---|
 | [`ashtakavarga`](src/ashtakavarga.rs) | each graha's bindus by sign from BPHS ch. 66's tables, the sarvashtakavarga, the trine and Ekadhipatya reductions and the pindas, under BPHS chs. 67 to 69 or the conformance corpus's engine's reading |
+| [`bhava_bala`](src/bhava_bala.rs) | each bhava's strength from its lord's Shadbala, its direction and the drishtis it receives, under BPHS ch. 27's reading, Sripati's or the conformance corpus's engine's |
 | [`shadbala`](src/shadbala/mod.rs) | each graha's six strengths in virupas, the Sthana and Kaala by component, under BPHS ch. 27's reading or the conformance corpus's engine's at eleven forks, each a setting |
 | [`vimshopaka`](src/vimshopaka.rs) | each graha's strength out of 20 across the sixteen vargas under the shadvarga, saptavarga, dashavarga and shodashavarga, with BPHS ch. 7's weights, by the text's points or the conformance corpus's engine's virupas |
 
@@ -35,6 +36,9 @@ Strength measures over a chart.
   as B.V. Raman works it, and the engine's, parting at fifteen forks, each a
   `strength.*` setting (cruxes C64–C72).
 
+- **The Bhava bala has the same three readings**, parting at the Dig's sign
+  classes, the drishti and the special rules (cruxes C73–C75).
+
 ## What proves it
 
 - The engine's reading reproduces every recorded Ashtakavarga of the corpus,
@@ -53,6 +57,9 @@ Strength measures over a chart.
 - Sripati's reading reproduces B.V. Raman's worked Standard Horoscope, every
   component within his rounding and every total within half a virupa
   (`tests/sripati.rs`).
+- The engine's reading reproduces every recorded Bhava bala, all twelve houses
+  of 71 charts within the engine's hundredths (`tests/baseline.rs`), and
+  Sripati's reproduces Raman's Example 59 (`tests/sripati.rs`).
 - The ahargana's weekday and the chapter's worked month, midnight's and
   noon's Nathonnatha, the engine's lost pre-dawn night, the luminaries'
   Ayana and Cheshta, the true declination, Dig at the angles, Drik's

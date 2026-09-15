@@ -427,6 +427,38 @@ knob!(
         None = "NONE" }
 );
 knob!(
+    /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
+    BhavaDig { /// BPHS ch. 27 vv. 26 to 28 as translated: the arc, over 3, from the
+        /// bhava madhya to the madhya of the house its class makes weakest,
+        /// Cancer and Scorpio insects, Sagittarius and Capricorn split at their
+        /// halves.
+        Bphs = "BPHS", /// Sripati, as B.V. Raman works it: ten virupas a house from that
+        /// house, Scorpio the only insect and Cancer watery, the halves split.
+        Sripati = "SRIPATI", /// The recording engine: ten virupas a house by the whole sign,
+        /// Sagittarius human and Capricorn quadruped throughout, Cancer an insect.
+        WholeSign = "WHOLE_SIGN" }
+);
+knob!(
+    /// How the Bhava bala weighs the drishtis a bhava receives (crux C74).
+    BhavaDrishti { /// BPHS ch. 27 v. 29 as translated, and the recording engine: a quarter
+        /// of the Dig bala added for a benefic's full drishti and taken away for
+        /// a malefic's, with Jupiter's and Mercury's Drik bala added when they
+        /// aspect it.
+        QuarterOfDig = "QUARTER_OF_DIG", /// Sripati, as B.V. Raman works it: the sphuta drishti on the bhava
+        /// madhya, Jupiter's and Mercury's in full and a quarter of each other
+        /// graha's, Mercury always a benefic.
+        Sphuta = "SPHUTA" }
+);
+knob!(
+    /// Whether the Bhava bala adds BPHS ch. 27 vv. 30 and 31's special rules
+    /// (crux C75).
+    BhavaSpecialRules { /// A rupa for each Jupiter and Mercury in the bhava and less one for
+        /// each Sun, Mars and Saturn, and 15 virupas for a sirshodaya sign by
+        /// day, a prishtodaya sign by night and an ubhayodaya sign in twilight.
+        Bphs = "BPHS", /// Sripati, as B.V. Raman works it, and the recording engine: none.
+        None = "NONE" }
+);
+knob!(
     /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
     Shodhana { /// In each graha's own Ashtakavarga, its pindas from its own reduced
         /// bindus and the grahas standing in each sign (BPHS chs. 67 to 69).

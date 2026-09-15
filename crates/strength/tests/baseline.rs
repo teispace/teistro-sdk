@@ -2,7 +2,8 @@
 //! bindus, sums and, under the engine's classical Ekadhipatya, the reduced
 //! sum and every pinda (`docs/03-design/ashtakavarga-measured.md`); and the
 //! Vimshopaka's four scores (`docs/03-design/vimshopaka-measured.md`); and
-//! the Shadbala's every component (`docs/03-design/shadbala-measured.md`).
+//! the Shadbala's every component (`docs/03-design/shadbala-measured.md`); and
+//! the Bhava bala's every house (`docs/03-design/bhava-bala-measured.md`).
 
 #![allow(
     clippy::panic,
@@ -17,6 +18,9 @@ use serde_json::Value;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::settings::{Ekadhipatya, Shodhana, Vimshopaka};
 use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+use teistro_strength::bhava_bala::{
+    BhavaBalaChart, BhavaBalaReading, BhavaBalaRules, BhavaGraha, NINE,
+};
 use teistro_strength::shadbala::{
     SAPTAVARGAJA_VARGAS, ShadbalaChart, ShadbalaGraha, ShadbalaReading, ShadbalaRules,
 };
@@ -266,6 +270,55 @@ fn every_recorded_shadbala_is_reproduced_under_the_engine_s_reading() {
                 "{name:?} {:?}",
                 graha.graha
             );
+        }
+    }
+    assert_eq!(files.len(), 71);
+}
+
+#[test]
+fn every_recorded_bhava_bala_is_reproduced_under_the_engine_s_reading() {
+    let files = files("bhava-bala");
+    for (name, file) in &files {
+        let inputs = &file["inputs"];
+        let lagna = f64::from(u8::try_from(inputs["lagna_sign_index"].as_u64().unwrap()).unwrap());
+        let chart = BhavaBalaChart {
+            madhya: std::array::from_fn(|i| {
+                (lagna + f64::from(u8::try_from(i).unwrap())) * 30.0 + 15.0
+            }),
+            grahas: NINE.map(|g| BhavaGraha {
+                longitude: 0.0,
+                house: u8::try_from(inputs["graha_house"][g.key()].as_u64().unwrap()).unwrap(),
+            }),
+            shadbala: GRAHAS.map(|g| {
+                let at = &inputs["shadbala"][g];
+                (
+                    at["total_shashtiamshas"].as_f64().unwrap(),
+                    at["drik"].as_f64().unwrap(),
+                )
+            }),
+            instant: 0.0,
+            day: (0.0, 0.0, 0.0),
+        };
+        let reading = BhavaBalaReading::of(&chart, BhavaBalaRules::RECORDING_ENGINE);
+        for (ours, recorded) in reading
+            .bhavas
+            .iter()
+            .zip(file["bhavas"].as_array().unwrap())
+        {
+            // The engine rounds each answer to hundredths.
+            for (key, value) in [
+                ("bhavadhipati", ours.adhipati),
+                ("dig", ours.dig),
+                ("drishti", ours.drishti),
+                ("total", ours.virupas),
+            ] {
+                let expected = recorded[key].as_f64().unwrap();
+                assert!(
+                    (value - expected).abs() <= 0.005 + 1e-9,
+                    "{name:?} bhava {} {key}: {value} against {expected}",
+                    ours.bhava
+                );
+            }
         }
     }
     assert_eq!(files.len(), 71);

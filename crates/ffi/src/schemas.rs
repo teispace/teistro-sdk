@@ -578,6 +578,7 @@ pub fn charts() -> BlobSchema {
             chart_sarvashtakavarga_section(27),
             chart_vimshopaka_section(28),
             chart_shadbala_section(29),
+            chart_bhava_bala_section(30),
         ],
     }
 }
@@ -764,6 +765,30 @@ fn chart_shadbala_section(id: u32) -> SectionSchema {
         id,
         "shadbala",
         "Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).",
+        columns,
+    )
+}
+
+/// Every chart's Bhava bala, a row a bhava, its value columns from the table
+/// the writer reads.
+fn chart_bhava_bala_section(id: u32) -> SectionSchema {
+    let mut columns = vec![
+        ColumnDef::new(
+            "lord",
+            Scalar::U16,
+            "The lord of the sign its madhya falls in.",
+        )
+        .of_enum("Graha"),
+    ];
+    columns.extend(
+        crate::chart::BHAVA_BALA_COLUMNS
+            .iter()
+            .map(|(name, doc, _)| ColumnDef::new(name, Scalar::F64, doc)),
+    );
+    SectionSchema::columns(
+        id,
+        "bhava_bala",
+        "Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).",
         columns,
     )
 }

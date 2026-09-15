@@ -982,6 +982,36 @@ class ChartsShadbala:
 
 
 @dataclass(frozen=True)
+class ChartsBhavaBala:
+    """The `bhava_bala` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+    """
+
+    lord: memoryview[int]
+    """The lord of the sign its madhya falls in."""
+
+    adhipati: memoryview[float]
+    """The lord's Shadbala."""
+
+    dig: memoryview[float]
+    """From its direction, 0 to 60."""
+
+    drishti: memoryview[float]
+    """From the drishtis it receives, which may be negative."""
+
+    special: memoryview[float]
+    """From its occupants and its sign's rising, under BPHS's special rules."""
+
+    virupas: memoryview[float]
+    """The four together."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -1186,6 +1216,9 @@ class Charts:
     shadbala: ChartsShadbala
     """Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`)."""
 
+    bhava_bala: ChartsBhavaBala
+    """Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1224,6 +1257,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_sarvashtakavarga = blob.section(27, "sarvashtakavarga")
     at_vimshopaka = blob.section(28, "vimshopaka")
     at_shadbala = blob.section(29, "shadbala")
+    at_bhava_bala = blob.section(30, "bhava_bala")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1656,6 +1690,27 @@ def decode_charts(raw: bytes) -> Charts:
                 at_shadbala, 22, 1, at_shadbala.count
             ).cast("B"),
             length=at_shadbala.count,
+        ),
+        bhava_bala=ChartsBhavaBala(
+            lord=blob.column(
+                at_bhava_bala, 0, 2, at_bhava_bala.count
+            ).cast("H"),
+            adhipati=blob.column(
+                at_bhava_bala, 1, 8, at_bhava_bala.count
+            ).cast("d"),
+            dig=blob.column(
+                at_bhava_bala, 2, 8, at_bhava_bala.count
+            ).cast("d"),
+            drishti=blob.column(
+                at_bhava_bala, 3, 8, at_bhava_bala.count
+            ).cast("d"),
+            special=blob.column(
+                at_bhava_bala, 4, 8, at_bhava_bala.count
+            ).cast("d"),
+            virupas=blob.column(
+                at_bhava_bala, 5, 8, at_bhava_bala.count
+            ).cast("d"),
+            length=at_bhava_bala.count,
         ),
     )
 

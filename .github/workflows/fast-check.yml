@@ -116,6 +116,8 @@ jobs:
         run: cargo xtask check-vimshopaka
       - name: Shadbala page (every component of the engine's reproduced over the corpus, beside BPHS ch. 27)
         run: cargo xtask check-shadbala
+      - name: Bhava bala page (the built module against every recorded house, each reading's forks measured)
+        run: cargo xtask check-bhava-bala
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

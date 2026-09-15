@@ -809,6 +809,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   the moolatrikona's 45 in the rasi alone. `conformance-baseline` is version 7
   and reproduces the corpus exactly as before.
 
+  The Bhava bala followed: each bhava's lord's Shadbala, Dig, drishti and
+  special rules under BPHS ch. 27's reading (the default), Sripati's or the
+  corpus's engine's (`strength.bhava_dig`, `bhava_drishti`,
+  `bhava_special_rules`; cruxes C73–C75), through
+  `ChartRequest::with_bhava_bala`, the document's `bhava_bala` section, the
+  boundary's section 30 and `chart.bhavaBala` in every binding.
+
+  **Numbers:** new. Every settings hash moved with the three knobs, and
+  `conformance-baseline` is version 8.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

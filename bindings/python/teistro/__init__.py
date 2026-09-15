@@ -252,6 +252,9 @@ __all__ = [
     "GrahaAshtakavarga",
     "Ekadhipatya",
     "Shodhana",
+    # The Bhava bala: what a chart answers with.
+    "BhavaBala",
+    "BhavaStrength",
     # The Shadbala: what a chart answers with.
     "GrahaShadbala",
     "KaalaBala",
@@ -975,6 +978,7 @@ class ChartArea(_Area):
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
         shadbala: bool = False,
+        bhava_bala: bool = False,
         state: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
@@ -1005,6 +1009,7 @@ class ChartArea(_Area):
             ashtakavarga=ashtakavarga,
             vimshopaka=vimshopaka,
             shadbala=shadbala,
+            bhava_bala=bhava_bala,
             state=state,
         ).at(0)
 
@@ -1025,6 +1030,7 @@ class ChartArea(_Area):
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
         shadbala: bool = False,
+        bhava_bala: bool = False,
         state: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
@@ -1061,6 +1067,7 @@ class ChartArea(_Area):
             | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
             | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
             | (_SECTION_SHADBALA if shadbala else 0)
+            | (_SECTION_BHAVA_BALA if bhava_bala else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
             dashas=list(dashas),
@@ -1365,6 +1372,9 @@ _SECTION_VIMSHOPAKA = 64
 #: `TS_CHART_SHADBALA`, the Shadbala.
 _SECTION_SHADBALA = 128
 
+#: `TS_CHART_BHAVA_BALA`, the Bhava bala.
+_SECTION_BHAVA_BALA = 256
+
 #: `TS_CHART_STATE`, the planetary states.
 _SECTION_STATE = 2
 
@@ -1573,6 +1583,41 @@ class GrahaAshtakavarga:
 
     yoga_pinda: int
     """Its yoga pinda, the two together."""
+
+
+@dataclass(frozen=True)
+class BhavaStrength:
+    """One bhava's Bhava bala, in virupas."""
+
+    bhava: int
+    """Which bhava, 1 to 12."""
+
+    lord: Graha
+    """The lord of the sign its madhya falls in."""
+
+    adhipati: float
+    """The lord's Shadbala."""
+
+    dig: float
+    """From its direction, 0 to 60."""
+
+    drishti: float
+    """From the drishtis it receives, which may be negative."""
+
+    special: float
+    """From its occupants and its sign's rising, under BPHS's special rules."""
+
+    virupas: float
+    """The four together."""
+
+
+@dataclass(frozen=True)
+class BhavaBala:
+    """A chart's Bhava bala, read under the context's `strength.bhava_*`
+    settings (`03-design/bhava-bala-measured.md`)."""
+
+    bhavas: Tuple[BhavaStrength, ...]
+    """Each bhava's, the first to the twelfth."""
 
 
 @dataclass(frozen=True)
@@ -2531,6 +2576,12 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def bhava_bala(self) -> Optional[BhavaBala]:
+        """The Bhava bala, when `bhava_bala=True` asked for it."""
+        parsed = self.batch._bhava_balas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def shadbala(self) -> Optional[Shadbala]:
         """The Shadbala, when `shadbala=True` asked for it."""
         parsed = self.batch._shadbalas
@@ -2718,6 +2769,28 @@ class ChartBatch:
                 )
             )
         return out
+
+    @cached_property
+    def _bhava_balas(self) -> list[BhavaBala]:
+        """Every chart's Bhava bala, decoded once; empty when none was asked for."""
+        c = self.decoded.bhava_bala
+        return [
+            BhavaBala(
+                bhavas=tuple(
+                    BhavaStrength(
+                        bhava=h + 1,
+                        lord=Graha(c.lord[chart * 12 + h]),
+                        adhipati=c.adhipati[chart * 12 + h],
+                        dig=c.dig[chart * 12 + h],
+                        drishti=c.drishti[chart * 12 + h],
+                        special=c.special[chart * 12 + h],
+                        virupas=c.virupas[chart * 12 + h],
+                    )
+                    for h in range(12)
+                )
+            )
+            for chart in range(c.length // 12)
+        ]
 
     @cached_property
     def _shadbalas(self) -> list[Shadbala]:

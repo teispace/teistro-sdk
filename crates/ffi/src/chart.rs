@@ -463,7 +463,7 @@ pub struct TsChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -563,8 +563,10 @@ pub const TS_CHART_ASHTAKAVARGA: u32 = 32;
 pub const TS_CHART_VIMSHOPAKA: u32 = 64;
 /// The Shadbala.
 pub const TS_CHART_SHADBALA: u32 = 128;
+/// The Bhava bala.
+pub const TS_CHART_BHAVA_BALA: u32 = 256;
 
-const SECTION_BITS: [SectionBit; 8] = [
+const SECTION_BITS: [SectionBit; 9] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -573,6 +575,7 @@ const SECTION_BITS: [SectionBit; 8] = [
     (TS_CHART_ASHTAKAVARGA, ChartRequest::with_ashtakavarga),
     (TS_CHART_VIMSHOPAKA, ChartRequest::with_vimshopaka),
     (TS_CHART_SHADBALA, ChartRequest::with_shadbala),
+    (TS_CHART_BHAVA_BALA, ChartRequest::with_bhava_bala),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -1218,6 +1221,69 @@ impl ShadbalaColumns {
     }
 }
 
+/// A Bhava bala value column: its name, what it holds, and where a bhava's
+/// reading keeps it.
+pub(crate) type BhavaBalaColumn = (
+    &'static str,
+    &'static str,
+    fn(&teistro::strength::BhavaStrength) -> f64,
+);
+
+/// The `bhava_bala` section's value columns in order, which the section's
+/// schema and its writer both read.
+pub(crate) const BHAVA_BALA_COLUMNS: [BhavaBalaColumn; 5] = [
+    ("adhipati", "The lord's Shadbala.", |b| b.adhipati),
+    ("dig", "From its direction, 0 to 60.", |b| b.dig),
+    (
+        "drishti",
+        "From the drishtis it receives, which may be negative.",
+        |b| b.drishti,
+    ),
+    (
+        "special",
+        "From its occupants and its sign's rising, under BPHS's special rules.",
+        |b| b.special,
+    ),
+    ("virupas", "The four together.", |b| b.virupas),
+];
+
+/// Every chart's Bhava bala, a row a bhava, empty when it was not asked for.
+struct BhavaBalaColumns {
+    lord: Vec<u16>,
+    values: Vec<Vec<f64>>,
+}
+
+impl BhavaBalaColumns {
+    fn of(documents: &[Document]) -> BhavaBalaColumns {
+        let bhavas: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.bhava_bala.as_ref())
+            .flat_map(|reading| &reading.bhavas)
+            .collect();
+        let mut columns = BhavaBalaColumns {
+            lord: Vec::with_capacity(bhavas.len()),
+            values: BHAVA_BALA_COLUMNS
+                .iter()
+                .map(|_| Vec::with_capacity(bhavas.len()))
+                .collect(),
+        };
+        for bhava in bhavas {
+            columns.lord.push(bhava.lord.id());
+            for (column, (_, _, read)) in columns.values.iter_mut().zip(BHAVA_BALA_COLUMNS) {
+                column.push(read(bhava));
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = Vec::with_capacity(self.values.len() + 1);
+        data.push(ColumnData::U16(&self.lord));
+        data.extend(self.values.iter().map(|column| ColumnData::F64(column)));
+        writer.columns("bhava_bala", self.lord.len(), &data)
+    }
+}
+
 /// Every chart's Vimshopaka, a row a graha, empty when it was not asked for.
 struct VimshopakaColumns {
     graha: Vec<u16>,
@@ -1802,6 +1868,7 @@ pub fn encode(
     let ashtakavarga = AshtakavargaColumns::of(documents);
     let vimshopaka = VimshopakaColumns::of(documents);
     let shadbala = ShadbalaColumns::of(documents);
+    let bhava_bala = BhavaBalaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1866,6 +1933,7 @@ pub fn encode(
         ashtakavarga.write(&mut writer)?;
         vimshopaka.write(&mut writer)?;
         shadbala.write(&mut writer)?;
+        bhava_bala.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

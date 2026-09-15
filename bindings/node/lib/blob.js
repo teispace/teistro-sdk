@@ -537,6 +537,18 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 30, 'bhava_bala');
+    out.bhavaBala = {
+      lord: column(blob, at, 0, 'u16', at.count),
+      adhipati: column(blob, at, 1, 'f64', at.count),
+      dig: column(blob, at, 2, 'f64', at.count),
+      drishti: column(blob, at, 3, 'f64', at.count),
+      special: column(blob, at, 4, 'f64', at.count),
+      virupas: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

@@ -458,6 +458,90 @@
       ],
       "type": "object"
     },
+    "BhavaBalaReading": {
+      "description": "A chart's Bhava bala.",
+      "properties": {
+        "bhavas": {
+          "description": "Each bhava's, the first to the twelfth.",
+          "items": {
+            "$ref": "#/$defs/BhavaStrength"
+          },
+          "type": "array"
+        },
+        "rules": {
+          "$ref": "#/$defs/BhavaBalaRules",
+          "description": "The choices it was computed under."
+        }
+      },
+      "required": [
+        "rules",
+        "bhavas"
+      ],
+      "type": "object"
+    },
+    "BhavaBalaRules": {
+      "description": "The choices a Bhava bala is computed under (cruxes C73 to C75).",
+      "properties": {
+        "benefics": {
+          "$ref": "#/$defs/Benefics",
+          "description": "Which grahas are benefics, for the Moon's drishti."
+        },
+        "dig": {
+          "$ref": "#/$defs/BhavaDig",
+          "description": "How the Dig bala reads a bhava's sign class."
+        },
+        "drishti": {
+          "$ref": "#/$defs/BhavaDrishti",
+          "description": "How the drishtis a bhava receives are weighed."
+        },
+        "special_rules": {
+          "$ref": "#/$defs/BhavaSpecialRules",
+          "description": "Whether the special rules of occupants and rising signs are added."
+        }
+      },
+      "required": [
+        "dig",
+        "drishti",
+        "special_rules",
+        "benefics"
+      ],
+      "type": "object"
+    },
+    "BhavaDig": {
+      "description": "How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).",
+      "oneOf": [
+        {
+          "const": "BPHS",
+          "description": "BPHS ch. 27 vv. 26 to 28 as translated: the arc, over 3, from the bhava madhya to the madhya of the house its class makes weakest, Cancer and Scorpio insects, Sagittarius and Capricorn split at their halves.",
+          "type": "string"
+        },
+        {
+          "const": "SRIPATI",
+          "description": "Sripati, as B.V. Raman works it: ten virupas a house from that house, Scorpio the only insect and Cancer watery, the halves split.",
+          "type": "string"
+        },
+        {
+          "const": "WHOLE_SIGN",
+          "description": "The recording engine: ten virupas a house by the whole sign, Sagittarius human and Capricorn quadruped throughout, Cancer an insect.",
+          "type": "string"
+        }
+      ]
+    },
+    "BhavaDrishti": {
+      "description": "How the Bhava bala weighs the drishtis a bhava receives (crux C74).",
+      "oneOf": [
+        {
+          "const": "QUARTER_OF_DIG",
+          "description": "BPHS ch. 27 v. 29 as translated, and the recording engine: a quarter of the Dig bala added for a benefic's full drishti and taken away for a malefic's, with Jupiter's and Mercury's Drik bala added when they aspect it.",
+          "type": "string"
+        },
+        {
+          "const": "SPHUTA",
+          "description": "Sripati, as B.V. Raman works it: the sphuta drishti on the bhava madhya, Jupiter's and Mercury's in full and a quarter of each other graha's, Mercury always a benefic.",
+          "type": "string"
+        }
+      ]
+    },
     "BhavaPlacement": {
       "description": "Where one graha sits in the bhavas.",
       "properties": {
@@ -488,6 +572,72 @@
         "method",
         "through",
         "from_madhya_deg"
+      ],
+      "type": "object"
+    },
+    "BhavaSpecialRules": {
+      "description": "Whether the Bhava bala adds BPHS ch. 27 vv. 30 and 31's special rules (crux C75).",
+      "oneOf": [
+        {
+          "const": "BPHS",
+          "description": "A rupa for each Jupiter and Mercury in the bhava and less one for each Sun, Mars and Saturn, and 15 virupas for a sirshodaya sign by day, a prishtodaya sign by night and an ubhayodaya sign in twilight.",
+          "type": "string"
+        },
+        {
+          "const": "NONE",
+          "description": "Sripati, as B.V. Raman works it, and the recording engine: none.",
+          "type": "string"
+        }
+      ]
+    },
+    "BhavaStrength": {
+      "description": "One bhava's strength, in virupas.",
+      "properties": {
+        "adhipati": {
+          "description": "The lord's Shadbala.",
+          "format": "double",
+          "type": "number"
+        },
+        "bhava": {
+          "description": "Which bhava, 1 to 12.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "dig": {
+          "description": "From its direction, 0 to 60.",
+          "format": "double",
+          "type": "number"
+        },
+        "drishti": {
+          "description": "From the drishtis it receives, which may be negative.",
+          "format": "double",
+          "type": "number"
+        },
+        "lord": {
+          "$ref": "#/$defs/Graha",
+          "description": "The lord of the sign its madhya falls in."
+        },
+        "special": {
+          "description": "From its occupants and its sign's rising, under the special rules.",
+          "format": "double",
+          "type": "number"
+        },
+        "virupas": {
+          "description": "The four together.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "bhava",
+        "lord",
+        "adhipati",
+        "dig",
+        "drishti",
+        "special",
+        "virupas"
       ],
       "type": "object"
     },
@@ -1439,6 +1589,17 @@
             }
           ],
           "description": "Which bodies reach which."
+        },
+        "bhava_bala": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BhavaBalaReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Each house's strength (`03-design/bhava-bala-measured.md`)."
         },
         "dashas": {
           "description": "The dashas asked for: each system's balance and its periods to the settings' depth (`03-design/dasha-kernels.md`).",

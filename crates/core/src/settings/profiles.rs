@@ -9,14 +9,14 @@ use crate::catalogue::{
 };
 
 use super::knobs::{
-    AfterCycle, AyanamshaBasis, Balance, Benefics, BirthPeriod, Centre, CharaKarakas, Cheshta,
-    DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, Ekadhipatya,
-    GhatiReckoning, HoraReckoning, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
-    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
-    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RequiredRupas, Saptavargaja,
-    SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka,
-    YearLength, Yuddha, Zodiac,
+    AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
+    BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KaalaLords,
+    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
+    LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RequiredRupas, Saptavargaja, SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
+    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -227,6 +227,10 @@ fn strength() -> Strength {
         // The only mean elements a source gives (crux C70).
         cheshta: Cheshta::Sripati,
         yuddha: Yuddha::Sripati,
+        // BPHS ch. 27 vv. 26 to 31 as translated (`03-design/bhava-bala-measured.md`).
+        bhava_dig: BhavaDig::Bphs,
+        bhava_drishti: BhavaDrishti::QuarterOfDig,
+        bhava_special_rules: BhavaSpecialRules::Bphs,
     }
 }
 
@@ -414,6 +418,10 @@ fn conformance_baseline() -> Profile {
     patch.strength.benefics = Some(Benefics::Fixed);
     patch.strength.cheshta = Some(Cheshta::RecordingEngine);
     patch.strength.yuddha = Some(Yuddha::None);
+    // The engine's Bhava bala (cruxes C73 to C75).
+    patch.strength.bhava_dig = Some(BhavaDig::WholeSign);
+    patch.strength.bhava_drishti = Some(BhavaDrishti::QuarterOfDig);
+    patch.strength.bhava_special_rules = Some(BhavaSpecialRules::None);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
@@ -424,7 +432,8 @@ fn conformance_baseline() -> Profile {
         // 6: the Shadbala became the engine's (cruxes C64 to C71).
         // 7: the Shadbala's four further forks became the engine's (C69, C70,
         // C72).
-        version: 7,
+        // 8: the Bhava bala became the engine's (cruxes C73 to C75).
+        version: 8,
         base: None,
         patch,
         sources: vec![

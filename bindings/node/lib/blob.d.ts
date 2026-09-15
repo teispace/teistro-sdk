@@ -1036,6 +1036,42 @@ export interface ChartsShadbala {
 }
 
 /**
+ * The `bhava_bala` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+ */
+export interface ChartsBhavaBala {
+  /**
+   * The lord of the sign its madhya falls in.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * The lord's Shadbala.
+   */
+  readonly adhipati: Float64Array;
+  /**
+   * From its direction, 0 to 60.
+   */
+  readonly dig: Float64Array;
+  /**
+   * From the drishtis it receives, which may be negative.
+   */
+  readonly drishti: Float64Array;
+  /**
+   * From its occupants and its sign's rising, under BPHS's special rules.
+   */
+  readonly special: Float64Array;
+  /**
+   * The four together.
+   */
+  readonly virupas: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -1311,6 +1347,10 @@ export interface Charts {
    * Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
    */
   readonly shadbala: ChartsShadbala;
+  /**
+   * Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+   */
+  readonly bhavaBala: ChartsBhavaBala;
 }
 
 /**

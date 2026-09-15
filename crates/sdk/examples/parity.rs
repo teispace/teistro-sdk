@@ -902,6 +902,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
         .with_ashtakavarga()
         .with_vimshopaka()
         .with_shadbala()
+        .with_bhava_bala()
         .with_state()
 }
 
@@ -1182,6 +1183,29 @@ fn the_strength(report: &mut Report, index: usize, document: &teistro::Document)
     the_ashtakavarga(report, index, document);
     the_vimshopaka(report, index, document);
     the_shadbala(report, index, document);
+    the_bhava_bala(report, index, document);
+}
+
+/// The Bhava bala as the other three print it: each bhava's lord and its
+/// components.
+fn the_bhava_bala(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(reading) = document.bhava_bala.as_ref() else {
+        return;
+    };
+    for bhava in &reading.bhavas {
+        let values = [
+            bhava.adhipati,
+            bhava.dig,
+            bhava.drishti,
+            bhava.special,
+            bhava.virupas,
+        ];
+        put(
+            report,
+            &format!("chart-{index}-bhava-bala-{}", bhava.bhava),
+            format!("{} {}", bhava.lord.full_key(), values.map(number).join(",")),
+        );
+    }
 }
 
 /// The Shadbala as the other three print it: each graha's seventeen

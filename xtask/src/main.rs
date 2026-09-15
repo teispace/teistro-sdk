@@ -98,6 +98,8 @@
 //!   measured beside BPHS's points.
 //! - `shadbala` and `check-shadbala`: the Shadbala, every one of the engine's
 //!   components reproduced and measured beside BPHS ch. 27's readings.
+//! - `bhava-bala` and `check-bhava-bala`: the built Bhava bala against the
+//!   engine's recorded houses, and each other reading one fork at a time.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -145,6 +147,7 @@ mod ashtakavarga;
 mod aspect;
 mod batching;
 mod bench;
+mod bhava_bala;
 mod binding;
 mod c_binding;
 mod calendars;
@@ -280,6 +283,11 @@ const PASSES: &[Pass] = &[
         vimshopaka::check_generated,
     ),
     ("shadbala", shadbala::generate, shadbala::check_generated),
+    (
+        "bhava-bala",
+        bhava_bala::generate,
+        bhava_bala::check_generated,
+    ),
 ];
 
 /// Runs a pass, or says it is not one.

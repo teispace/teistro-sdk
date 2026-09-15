@@ -286,6 +286,7 @@ void main() {
     ashtakavarga: true,
     vimshopaka: true,
     shadbala: true,
+    bhavaBala: true,
     state: true,
   );
   put('chart-varga-count', charts.vargaCount);
@@ -473,6 +474,12 @@ void main() {
       put(
         '$key-total',
         '${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong}',
+      );
+    }
+    for (final b in chart.bhavaBala!.bhavas) {
+      put(
+        'chart-$i-bhava-bala-${b.bhava}',
+        '${b.lord.fullKey} ${[b.adhipati, b.dig, b.drishti, b.special, b.virupas].map(number).join(',')}',
       );
     }
     final vs = chart.vimshopaka!;

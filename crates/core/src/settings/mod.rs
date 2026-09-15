@@ -32,14 +32,14 @@ use crate::envelope::Hash;
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AfterCycle, AyanamshaBasis, Balance, Benefics, BirthPeriod, Centre, CharaKarakas, Cheshta,
-    DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, Ekadhipatya,
-    GhatiReckoning, HoraReckoning, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
-    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
-    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RequiredRupas, Saptavargaja,
-    SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka,
-    YearLength, Yuddha, Zodiac,
+    AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
+    BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KaalaLords,
+    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
+    LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RequiredRupas, Saptavargaja, SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
+    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -363,6 +363,12 @@ group!(
         cheshta: Cheshta,
         /// Whether grahas at war gain and lose the Yuddha bala (crux C70).
         yuddha: Yuddha,
+        /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
+        bhava_dig: BhavaDig,
+        /// How the Bhava bala weighs the drishtis a bhava receives (crux C74).
+        bhava_drishti: BhavaDrishti,
+        /// Whether the Bhava bala adds the special rules (crux C75).
+        bhava_special_rules: BhavaSpecialRules,
     }
 );
 

@@ -11,7 +11,9 @@
 //!   reading, Sripati's as B.V. Raman works it, or the corpus's engine's
 //!   (`docs/03-design/shadbala-measured.md`).
 //!
-//! Bhava bala is the next row of this crate.
+//! - [`bhava_bala`]: each house's strength from its lord, its direction and
+//!   the drishtis it receives, under BPHS's, Sripati's or the engine's reading
+//!   (`docs/03-design/bhava-bala-measured.md`).
 //!
 //! ```
 //! use teistro_core::catalogue::Rashi;
@@ -29,12 +31,14 @@
 //! ```
 
 pub mod ashtakavarga;
+pub mod bhava_bala;
 pub mod shadbala;
 pub mod vimshopaka;
 
 pub use ashtakavarga::{
     AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, GrahaAshtakavarga,
 };
+pub use bhava_bala::{BhavaBalaChart, BhavaBalaReading, BhavaBalaRules, BhavaGraha, BhavaStrength};
 pub use shadbala::{
     GrahaShadbala, KaalaBala, ShadbalaChart, ShadbalaGraha, ShadbalaReading, ShadbalaRules,
     SthanaBala,

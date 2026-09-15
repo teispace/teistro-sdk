@@ -9094,7 +9094,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
+          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -13619,6 +13619,45 @@
               "name": "strong",
               "scalar": "u8",
               "doc": "1 when the rupas reach the requirement, else 0."
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "name": "bhava_bala",
+          "doc": "Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "The lord of the sign its madhya falls in.",
+              "enum": "Graha"
+            },
+            {
+              "name": "adhipati",
+              "scalar": "f64",
+              "doc": "The lord's Shadbala."
+            },
+            {
+              "name": "dig",
+              "scalar": "f64",
+              "doc": "From its direction, 0 to 60."
+            },
+            {
+              "name": "drishti",
+              "scalar": "f64",
+              "doc": "From the drishtis it receives, which may be negative."
+            },
+            {
+              "name": "special",
+              "scalar": "f64",
+              "doc": "From its occupants and its sign's rising, under BPHS's special rules."
+            },
+            {
+              "name": "virupas",
+              "scalar": "f64",
+              "doc": "The four together."
             }
           ]
         }

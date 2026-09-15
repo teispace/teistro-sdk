@@ -629,6 +629,22 @@ class AnEngine(WithLibrary):
         )
         self.assertTrue(all(g.yoga_pinda == g.rashi_pinda + g.graha_pinda for g in av.grahas))
 
+    def test_a_chart_carries_its_bhava_bala_each_bhava_s_strength(self) -> None:
+        """A chart's Bhava bala crosses whole: every bhava's components under the
+        default reading, the verses', whose totals are their parts'; None unless
+        asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, bhava_bala=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).bhava_bala)
+        bb = chart.bhava_bala
+        assert bb is not None
+        self.assertEqual([b.bhava for b in bb.bhavas], list(range(1, 13)))
+        for b in bb.bhavas:
+            self.assertAlmostEqual(b.adhipati + b.dig + b.drishti + b.special, b.virupas, places=9)
+            self.assertTrue(0.0 <= b.dig <= 60.0)
+
     def test_a_chart_carries_its_shadbala_each_graha_s_six_strengths(self) -> None:
         """A chart's Shadbala crosses whole: every graha's six strengths under
         the default reading, the chapter's, whose natural strengths are 28

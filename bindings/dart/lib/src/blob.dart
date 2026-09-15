@@ -1217,6 +1217,43 @@ final class ChartsShadbala {
   final int length;
 }
 
+/// The `bhava_bala` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+final class ChartsBhavaBala {
+  const ChartsBhavaBala({
+    required this.lord,
+    required this.adhipati,
+    required this.dig,
+    required this.drishti,
+    required this.special,
+    required this.virupas,
+    required this.length,
+  });
+
+  /// The lord of the sign its madhya falls in.
+  final Uint16List lord;
+
+  /// The lord's Shadbala.
+  final Float64List adhipati;
+
+  /// From its direction, 0 to 60.
+  final Float64List dig;
+
+  /// From the drishtis it receives, which may be negative.
+  final Float64List drishti;
+
+  /// From its occupants and its sign's rising, under BPHS's special rules.
+  final Float64List special;
+
+  /// The four together.
+  final Float64List virupas;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1350,6 +1387,7 @@ final class Charts {
     required this.sarvashtakavarga,
     required this.vimshopaka,
     required this.shadbala,
+    required this.bhavaBala,
   });
 
   /// What kind of chart these are.
@@ -1483,6 +1521,9 @@ final class Charts {
   /// Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
   final ChartsShadbala shadbala;
 
+  /// Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+  final ChartsBhavaBala bhavaBala;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1519,6 +1560,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atSarvashtakavarga = blob.section(27, 'sarvashtakavarga');
   final atVimshopaka = blob.section(28, 'vimshopaka');
   final atShadbala = blob.section(29, 'shadbala');
+  final atBhavaBala = blob.section(30, 'bhava_bala');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2465,6 +2507,39 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atShadbala, 22) + atShadbala.count * 1,
       ),
       length: atShadbala.count,
+    ),
+    bhavaBala: ChartsBhavaBala(
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 0),
+        blob.columnOffset(atBhavaBala, 0) + atBhavaBala.count * 2,
+      ),
+      adhipati: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 1),
+        blob.columnOffset(atBhavaBala, 1) + atBhavaBala.count * 8,
+      ),
+      dig: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 2),
+        blob.columnOffset(atBhavaBala, 2) + atBhavaBala.count * 8,
+      ),
+      drishti: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 3),
+        blob.columnOffset(atBhavaBala, 3) + atBhavaBala.count * 8,
+      ),
+      special: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 4),
+        blob.columnOffset(atBhavaBala, 4) + atBhavaBala.count * 8,
+      ),
+      virupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 5),
+        blob.columnOffset(atBhavaBala, 5) + atBhavaBala.count * 8,
+      ),
+      length: atBhavaBala.count,
     ),
   );
 }

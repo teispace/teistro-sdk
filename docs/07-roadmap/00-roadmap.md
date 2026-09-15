@@ -500,9 +500,10 @@ beside the engine's Saptavargaja virupas (C63). **The Shadbala followed**
 (`03-design/shadbala-measured.md`, `check-shadbala`): every component of the
 engine's reproduced, BPHS ch. 27's reading the default at eleven forks, each a
 setting (C64–C71), then Sripati's reading from B.V. Raman's worked example
-(`ShadbalaRules::SRIPATI`, the sphuta drishti, C45 closed, C72). Next: bhava
-bala (corpus 0.8.0 recorded; Raman's worked Bhava balas the text's check),
-then the Ishta and Kashta phala that read the Shadbala's rays.
+(`ShadbalaRules::SRIPATI`, the sphuta drishti, C45 closed, C72). **The Bhava
+bala followed** (`03-design/bhava-bala-measured.md`, `check-bhava-bala`): the
+built module against every recorded house, three readings at three forks
+(C73–C75). Next: the Ishta and Kashta phala, which read the Shadbala's rays.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

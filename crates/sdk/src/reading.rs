@@ -56,6 +56,8 @@ impl Sections {
     pub(crate) const VIMSHOPAKA: Sections = Sections(1 << 6);
     /// Each graha's six strengths.
     pub(crate) const SHADBALA: Sections = Sections(1 << 7);
+    /// Each house's strength.
+    pub(crate) const BHAVA_BALA: Sections = Sections(1 << 8);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -261,6 +263,26 @@ impl ChartRequest {
         self
     }
 
+    /// Each bhava's Bhava bala: its lord's Shadbala, its Dig and drishti
+    /// balas and, under BPHS's reading, its special rules, under the settings'
+    /// `strength.bhava_*` readings (`03-design/bhava-bala-measured.md`). The
+    /// Shadbala it reads is computed alongside when the request does not ask
+    /// for it too.
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_bhava_bala();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_bhava_bala(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::BHAVA_BALA);
+        self
+    }
+
     /// The charts to draw, each a layout and which chart to place in it,
     /// in the order given: `D1` for the founded chart, or a divisional one.
     ///
@@ -339,6 +361,7 @@ impl ChartRequest {
             .with_ashtakavarga()
             .with_vimshopaka()
             .with_shadbala()
+            .with_bhava_bala()
     }
 
     /// The place the chart is cast for.

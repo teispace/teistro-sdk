@@ -624,6 +624,9 @@ const int _sectionVimshopaka = 64;
 /// `TS_CHART_SHADBALA`, the Shadbala.
 const int _sectionShadbala = 128;
 
+/// `TS_CHART_BHAVA_BALA`, the Bhava bala.
+const int _sectionBhavaBala = 256;
+
 /// `TS_CHART_STATE`, the planetary states.
 const int _sectionState = 2;
 
@@ -671,6 +674,7 @@ final class ChartArea extends _Area {
     bool ashtakavarga = false,
     bool vimshopaka = false,
     bool shadbala = false,
+    bool bhavaBala = false,
     bool state = false,
   }) => foundMany(
     instants: <double>[instant],
@@ -687,6 +691,7 @@ final class ChartArea extends _Area {
     ashtakavarga: ashtakavarga,
     vimshopaka: vimshopaka,
     shadbala: shadbala,
+    bhavaBala: bhavaBala,
     state: state,
   ).at(0);
 
@@ -723,6 +728,7 @@ final class ChartArea extends _Area {
     bool ashtakavarga = false,
     bool vimshopaka = false,
     bool shadbala = false,
+    bool bhavaBala = false,
     bool state = false,
   }) => decodeCharts(
     _context._guarded(
@@ -745,6 +751,7 @@ final class ChartArea extends _Area {
               (ashtakavarga ? _sectionAshtakavarga : 0) |
               (vimshopaka ? _sectionVimshopaka : 0) |
               (shadbala ? _sectionShadbala : 0) |
+              (bhavaBala ? _sectionBhavaBala : 0) |
               (state ? _sectionState : 0),
           vargas: vargas,
           dashas: dashas,
@@ -1562,6 +1569,49 @@ final class GrahaAshtakavarga {
 
   /// Its yoga pinda, the two together.
   final int yogaPinda;
+}
+
+/// One bhava's Bhava bala, in virupas.
+final class BhavaStrength {
+  const BhavaStrength({
+    required this.bhava,
+    required this.lord,
+    required this.adhipati,
+    required this.dig,
+    required this.drishti,
+    required this.special,
+    required this.virupas,
+  });
+
+  /// Which bhava, 1 to 12.
+  final int bhava;
+
+  /// The lord of the sign its madhya falls in.
+  final Graha lord;
+
+  /// The lord's Shadbala.
+  final double adhipati;
+
+  /// From its direction, 0 to 60.
+  final double dig;
+
+  /// From the drishtis it receives, which may be negative.
+  final double drishti;
+
+  /// From its occupants and its sign's rising, under BPHS's special rules.
+  final double special;
+
+  /// The four together.
+  final double virupas;
+}
+
+/// A chart's Bhava bala, read under the context's `strength.bhava_*` settings
+/// (`03-design/bhava-bala-measured.md`).
+final class BhavaBala {
+  const BhavaBala({required this.bhavas});
+
+  /// Each bhava's, the first to the twelfth.
+  final List<BhavaStrength> bhavas;
 }
 
 /// A graha's Sthana bala by component, virupas.
@@ -2659,6 +2709,36 @@ List<Ashtakavarga> _decodeAshtakavargas(Charts batch) {
   }, growable: false);
 }
 
+/// Each batch's Bhava balas, decoded once however many charts read them.
+final Expando<List<BhavaBala>> _bhavaBalas = Expando<List<BhavaBala>>(
+  'bhavaBalas',
+);
+
+List<BhavaBala> _bhavaBalasOf(Charts batch) =>
+    _bhavaBalas[batch] ??= _decodeBhavaBalas(batch);
+
+List<BhavaBala> _decodeBhavaBalas(Charts batch) {
+  final c = batch.bhavaBala;
+  return List<BhavaBala>.generate(
+    c.length ~/ 12,
+    (chart) => BhavaBala(
+      bhavas: List<BhavaStrength>.generate(12, (h) {
+        final row = chart * 12 + h;
+        return BhavaStrength(
+          bhava: h + 1,
+          lord: Graha.byId(c.lord[row]),
+          adhipati: c.adhipati[row],
+          dig: c.dig[row],
+          drishti: c.drishti[row],
+          special: c.special[row],
+          virupas: c.virupas[row],
+        );
+      }, growable: false),
+    ),
+    growable: false,
+  );
+}
+
 /// Each batch's Shadbalas, decoded once however many charts read them.
 final Expando<List<Shadbala>> _shadbalas = Expando<List<Shadbala>>('shadbalas');
 
@@ -3138,6 +3218,12 @@ final class Chart {
   /// The Ashtakavarga, when `ashtakavarga: true` asked for it.
   Ashtakavarga? get ashtakavarga {
     final all = _ashtakavargasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Bhava bala, when `bhavaBala: true` asked for it.
+  BhavaBala? get bhavaBala {
+    final all = _bhavaBalasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

@@ -278,6 +278,7 @@ def main() -> None:
             ashtakavarga=True,
             vimshopaka=True,
             shadbala=True,
+            bhava_bala=True,
             state=True,
         )
         put("chart-varga-count", charts.decoded.varga_count)
@@ -432,6 +433,14 @@ def main() -> None:
                 put(
                     f"{key}-total",
                     f"{number(strength.virupas)},{number(strength.rupas)},{number(strength.required_rupas)},{str(strength.strong).lower()}",
+                )
+            bb = chart.bhava_bala
+            assert bb is not None
+            for house in bb.bhavas:
+                values = (house.adhipati, house.dig, house.drishti, house.special, house.virupas)
+                put(
+                    f"chart-{i}-bhava-bala-{house.bhava}",
+                    f"{house.lord.full_key} " + ",".join(number(value) for value in values),
                 )
             vs = chart.vimshopaka
             assert vs is not None

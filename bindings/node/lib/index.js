@@ -740,6 +740,15 @@ export class Chart {
   }
 
   /**
+   * The Bhava bala (`bhavaBala: true`): each bhava's lord's Shadbala, its Dig
+   * and drishti balas, its special rules and their sum in virupas, under the
+   * context's `strength.bhava_*` settings; `null` unless asked for.
+   */
+  get bhavaBala() {
+    return bhavaBalasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The derived points — the upagrahas and the special lagnas — or an
    * empty list unless `points: true` asked for them.
    *
@@ -1729,6 +1738,7 @@ class ChartArea extends Area {
           (request.ashtakavarga === true ? SECTION_ASHTAKAVARGA : 0) |
           (request.vimshopaka === true ? SECTION_VIMSHOPAKA : 0) |
           (request.shadbala === true ? SECTION_SHADBALA : 0) |
+          (request.bhavaBala === true ? SECTION_BHAVA_BALA : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: catalogueKeys(request.dashas, 'dashas', 'DashaSystem'),
@@ -1897,6 +1907,37 @@ function vimshopakasOf(batch) {
       }),
     );
     VIMSHOPAKAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's Bhava balas, decoded once however many charts read them. */
+const BHAVA_BALAS = new WeakMap();
+
+/** Every chart's Bhava bala in a batch; empty when none was asked for. */
+function bhavaBalasOf(batch) {
+  let decoded = BHAVA_BALAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.bhavaBala;
+    decoded = Array.from({ length: c.length / 12 }, (_, chart) =>
+      Object.freeze({
+        bhavas: Object.freeze(
+          Array.from({ length: 12 }, (_, h) => {
+            const row = chart * 12 + h;
+            return Object.freeze({
+              bhava: h + 1,
+              lord: GrahaById.get(c.lord[row]) ?? 'unknown',
+              adhipati: c.adhipati[row],
+              dig: c.dig[row],
+              drishti: c.drishti[row],
+              special: c.special[row],
+              virupas: c.virupas[row],
+            });
+          }),
+        ),
+      }),
+    );
+    BHAVA_BALAS.set(batch, decoded);
   }
   return decoded;
 }
@@ -2097,6 +2138,9 @@ const SECTION_VIMSHOPAKA = 64;
 
 /** `TS_CHART_SHADBALA`, the Shadbala. */
 const SECTION_SHADBALA = 128;
+
+/** `TS_CHART_BHAVA_BALA`, the Bhava bala. */
+const SECTION_BHAVA_BALA = 256;
 
 /** `TS_CHART_STATE`, the planetary states. */
 const SECTION_STATE = 2;

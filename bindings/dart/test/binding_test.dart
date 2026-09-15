@@ -756,6 +756,40 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  /// A chart's Bhava bala crosses whole: every bhava's components under the
+  /// default reading, the verses', whose totals are their parts'; null unless
+  /// asked.
+  test('a chart carries its Bhava bala, each bhava\'s strength', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      bhavaBala: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .bhavaBala,
+      isNull,
+    );
+    final bhavas = chart.bhavaBala!.bhavas;
+    expect([for (final b in bhavas) b.bhava], List.generate(12, (i) => i + 1));
+    for (final b in bhavas) {
+      expect(
+        b.adhipati + b.dig + b.drishti + b.special,
+        closeTo(b.virupas, 1e-9),
+      );
+      expect(b.dig, inInclusiveRange(0.0, 60.0));
+    }
+    ctx.dispose();
+  });
+
   /// A chart's Shadbala crosses whole: every graha's six strengths under the
   /// default reading, the chapter's, whose natural strengths are 28 sevenths
   /// of a rupa and whose totals are their components'; null unless asked.

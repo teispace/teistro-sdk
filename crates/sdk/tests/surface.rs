@@ -698,6 +698,7 @@ fn a_reading_carries_the_sections_it_was_asked_for() {
             "ashtakavarga",
             "vimshopaka",
             "shadbala",
+            "bhava_bala",
             "dashas"
         ],
         "every section `teistro-serial`'s document declares but the drawings, which are named pairs"

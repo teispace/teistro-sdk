@@ -31,8 +31,9 @@ use teistro_serial::Document;
 use teistro_state::state;
 use teistro_strength::shadbala::{SAPTAVARGAJA_VARGAS, ShadbalaGraha};
 use teistro_strength::{
-    AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, ShadbalaChart, ShadbalaReading,
-    ShadbalaRules, VimshopakaChart, VimshopakaReading,
+    AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, BhavaBalaChart, BhavaBalaReading,
+    BhavaBalaRules, BhavaGraha, ShadbalaChart, ShadbalaReading, ShadbalaRules, VimshopakaChart,
+    VimshopakaReading,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -297,6 +298,14 @@ impl<'a> ChartArea<'a> {
                 settings,
                 request.offset(),
             )?);
+        }
+        if request.sections.has(Sections::BHAVA_BALA) {
+            let shadbala = match document.shadbala.clone() {
+                Some(reading) => reading,
+                None => Self::shadbala_of(founder, foundation, settings, request.offset())?,
+            };
+            document =
+                document.with_bhava_bala(Self::bhava_bala_of(foundation, settings, &shadbala)?);
         }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
@@ -664,6 +673,37 @@ impl<'a> ChartArea<'a> {
             obliquity: angles.obliquity_deg,
         };
         Ok(ShadbalaReading::of(&chart, rules))
+    }
+
+    /// The Bhava bala of a founded chart under the settings' readings, from its
+    /// own bhavas and the Shadbala already read.
+    fn bhava_bala_of(
+        foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
+        shadbala: &ShadbalaReading,
+    ) -> Result<BhavaBalaReading, Error> {
+        let mut grahas = [BhavaGraha {
+            longitude: 0.0,
+            house: 1,
+        }; 9];
+        for (slot, graha) in grahas.iter_mut().zip(teistro_strength::bhava_bala::NINE) {
+            let at = foundation.graha(graha).ok_or_else(|| {
+                Error::internal(format!("a founded chart places {}", graha.key()))
+            })?;
+            *slot = BhavaGraha {
+                longitude: at.longitude_deg,
+                house: at.house.bhava,
+            };
+        }
+        let day = &foundation.day.day;
+        let chart = BhavaBalaChart {
+            madhya: foundation.houses.madhya,
+            grahas,
+            shadbala: BhavaBalaChart::strengths(shadbala),
+            instant: foundation.instant.get(),
+            day: (day.sunrise.get(), day.sunset.get(), day.next_sunrise.get()),
+        };
+        Ok(BhavaBalaReading::of(&chart, BhavaBalaRules::of(settings)))
     }
 
     /// The weekday lord of the last Mesha sankranti at or before an

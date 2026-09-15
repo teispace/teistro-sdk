@@ -1,7 +1,8 @@
 //! Sripati's Shadbala against B.V. Raman's worked Standard Horoscope
 //! (*Graha and Bhava Balas*, thirteenth edition, Examples 3 to 56): every
 //! component of every graha, from the inputs his Chapter I gives, under
-//! [`ShadbalaRules::SRIPATI`].
+//! [`ShadbalaRules::SRIPATI`]; and its Bhava balas (Example 59) under
+//! [`BhavaBalaRules::SRIPATI`].
 //!
 //! Raman works in degrees and minutes and rounds to one or two decimals, so
 //! a component matches within [`ROUNDING`]; the few cells where his own
@@ -18,6 +19,7 @@ use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Graha, Rashi, Varga};
 use teistro_core::quantity::Degrees;
 use teistro_strength::ashtakavarga::GRAHAS;
+use teistro_strength::bhava_bala::{BhavaBalaChart, BhavaBalaReading, BhavaBalaRules, BhavaGraha};
 use teistro_strength::shadbala::{
     SAPTAVARGAJA_VARGAS, ShadbalaChart, ShadbalaGraha, ShadbalaReading, ShadbalaRules,
 };
@@ -207,4 +209,97 @@ fn raman_s_totals_and_requirements_reproduce() {
             strength.graha
         );
     }
+}
+
+#[test]
+fn raman_s_bhava_balas_reproduce() {
+    let horoscope = standard_horoscope();
+    // Art. 29: the twelve bhava madhyas.
+    let madhya = [
+        (298.0, 27.0),
+        (331.0, 10.0),
+        (3.0, 53.0),
+        (36.0, 36.0),
+        (63.0, 53.0),
+        (91.0, 10.0),
+        (118.0, 27.0),
+        (151.0, 10.0),
+        (183.0, 53.0),
+        (216.0, 36.0),
+        (243.0, 53.0),
+        (271.0, 10.0),
+    ]
+    .map(|(d, m)| dms(d, m, 0.0));
+    let mut grahas = [BhavaGraha {
+        longitude: 0.0,
+        house: 1,
+    }; 9];
+    for (slot, at) in grahas.iter_mut().zip(horoscope.grahas) {
+        slot.longitude = at.longitude;
+    }
+    // Example 58: the lords' Shadbalas as Example 59 takes them (the Sun's,
+    // lord of no madhya, never read).
+    let chart = BhavaBalaChart {
+        madhya,
+        grahas,
+        shadbala: [
+            (424.94, 15.86),
+            (389.80, -21.73),
+            (298.14, 0.95),
+            (537.02, 15.64),
+            (433.77, -16.04),
+            (376.15, 18.47),
+            (389.21, 7.21),
+        ],
+        instant: horoscope.instant,
+        day: (horoscope.sunrise, horoscope.sunset, horoscope.next_sunrise),
+    };
+    let reading = BhavaBalaReading::of(&chart, BhavaBalaRules::SRIPATI);
+    // Example 59: Digbala, the net drishti, and the total of each bhava. Its
+    // Saturn on the first is printed 13.00 and summed as 12.00, and its Mars
+    // and Venus stand at 298.24 and 376.25 against Example 56's 298.14 and
+    // 376.15 in two bhavas, so the totals are matched within half a virupa;
+    // the twelfth's printed 426.76 is 526.76 by its own three components.
+    let dig = [
+        30.0, 40.0, 10.0, 0.0, 20.0, 40.0, 30.0, 10.0, 20.0, 30.0, 40.0, 40.0,
+    ];
+    let drishti = [
+        54.18, 36.44, 58.99, 28.10, 11.57, 2.92, 5.70, 32.51, 44.80, 44.51, 33.12, 97.55,
+    ];
+    let total = [
+        473.39, 510.21, 367.13, 404.15, 568.59, 432.72, 425.50, 579.53, 440.95, 372.65, 506.89,
+        526.76,
+    ];
+    let mut far = Vec::new();
+    for (i, bhava) in reading.bhavas.iter().enumerate() {
+        if (bhava.dig - dig[i]).abs() > 1e-9 {
+            far.push(format!(
+                "bhava {}: dig {} against {}",
+                i + 1,
+                bhava.dig,
+                dig[i]
+            ));
+        }
+        if (bhava.drishti - drishti[i]).abs() > 0.3 {
+            far.push(format!(
+                "bhava {}: drishti {:.2} against {}",
+                i + 1,
+                bhava.drishti,
+                drishti[i]
+            ));
+        }
+        if (bhava.virupas - total[i]).abs() > 0.5 {
+            far.push(format!(
+                "bhava {}: total {:.2} against {}",
+                i + 1,
+                bhava.virupas,
+                total[i]
+            ));
+        }
+    }
+    assert!(
+        far.is_empty(),
+        "outside Raman's rounding:\n{}",
+        far.join("\n")
+    );
 }

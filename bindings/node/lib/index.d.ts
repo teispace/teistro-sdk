@@ -445,6 +445,30 @@ export interface Shadbala {
   readonly grahas: readonly GrahaShadbala[];
 }
 
+/** One bhava's Bhava bala, in virupas. */
+export interface BhavaStrength {
+  /** Which bhava, 1 to 12. */
+  readonly bhava: number;
+  /** The lord of the sign its madhya falls in. */
+  readonly lord: Graha;
+  /** The lord's Shadbala. */
+  readonly adhipati: number;
+  /** From its direction, 0 to 60. */
+  readonly dig: number;
+  /** From the drishtis it receives, which may be negative. */
+  readonly drishti: number;
+  /** From its occupants and its sign's rising, under BPHS's special rules. */
+  readonly special: number;
+  /** The four together. */
+  readonly virupas: number;
+}
+
+/** A chart's Bhava bala, read under the context's `strength.bhava_*` settings. */
+export interface BhavaBala {
+  /** Each bhava's, the first to the twelfth. */
+  readonly bhavas: readonly BhavaStrength[];
+}
+
 /** A chart's Vimshopaka: each graha's strength across the divisional charts. */
 export interface Vimshopaka {
   /** How each varga was scored. */
@@ -803,6 +827,8 @@ export declare class Chart {
   readonly vimshopaka: Vimshopaka | null;
   /** The Shadbala; `null` unless `shadbala` asked for it. */
   readonly shadbala: Shadbala | null;
+  /** The Bhava bala; `null` unless `bhavaBala` asked for it. */
+  readonly bhavaBala: BhavaBala | null;
   /**
    * The drishti the chart's grahas cast; empty unless `aspects` asked. The
    * count differs from chart to chart, because relations depend on where
@@ -1070,6 +1096,8 @@ export interface ChartRequest {
   readonly vimshopaka?: boolean;
   /** Whether to compute the Shadbala; false by default. */
   readonly shadbala?: boolean;
+  /** Whether to compute the Bhava bala; false by default. */
+  readonly bhavaBala?: boolean;
   /** Whether to compute what each graha is — its dignity, avasthas, combustion and war; false by default. */
   readonly state?: boolean;
 }

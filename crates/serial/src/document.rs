@@ -20,7 +20,7 @@ use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
 use teistro_state::GrahaState;
-use teistro_strength::{AshtakavargaReading, ShadbalaReading, VimshopakaReading};
+use teistro_strength::{AshtakavargaReading, BhavaBalaReading, ShadbalaReading, VimshopakaReading};
 use teistro_vargas::chart::VargaChart;
 
 use crate::seal::Sealed;
@@ -65,6 +65,9 @@ pub struct Document {
     /// Each graha's six strengths (`03-design/shadbala-measured.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub shadbala: Option<ShadbalaReading>,
+    /// Each house's strength (`03-design/bhava-bala-measured.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub bhava_bala: Option<BhavaBalaReading>,
     /// The charts drawn in the layouts asked for: which chart, placed in
     /// which layout (`03-design/chart-geometry.md`).
     ///
@@ -95,6 +98,7 @@ impl Document {
             ashtakavarga: None,
             vimshopaka: None,
             shadbala: None,
+            bhava_bala: None,
             drawings: Vec::new(),
             dashas: Vec::new(),
         }
@@ -170,6 +174,13 @@ impl Document {
         self
     }
 
+    /// With the Bhava bala.
+    #[must_use]
+    pub fn with_bhava_bala(mut self, bhava_bala: BhavaBalaReading) -> Document {
+        self.bhava_bala = Some(bhava_bala);
+        self
+    }
+
     /// With the houses under both readings.
     #[must_use]
     pub fn with_houses(mut self, houses: Houses) -> Document {
@@ -208,6 +219,9 @@ impl Document {
         }
         if self.shadbala.is_some() {
             found.push("shadbala");
+        }
+        if self.bhava_bala.is_some() {
+            found.push("bhava_bala");
         }
         if !self.drawings.is_empty() {
             found.push("drawings");

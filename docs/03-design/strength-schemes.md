@@ -226,12 +226,29 @@ schema and the writer) and every binding's `chart.shadbala` carry it, and
 `SthanaBala` and `KaalaBala` in every binding, because the catalogue already
 has a `Kaala`.
 
-## Bhava bala, rashi bala
+## The Bhava bala, built (2026-09-15)
 
-Bhava bala and rashi bala reuse the scheme kernel with their own
-component sets (a smaller repeat of this page, written when they are
-built). Vaiseshikamsa is a count over the same vargas the Vimshopaka
-reads and a row in the same crate.
+Each bhava's strength from its lord's Shadbala, its direction and the drishtis
+it receives, measured the other way round from the Shadbala: `cargo xtask
+bhava-bala` (`bhava-bala-measured.md`) runs the **built** module over the
+corpus's 0.8.0 `baseline/bhava-bala` (852 houses), and it reproduces every
+recorded aspect and component within the engine's hundredths under the
+engine's reading. The three readings part at three forks, each a setting:
+the Dig's sign classes and whether it counts house steps or an arc (C73), the
+drishti as a quarter of the Dig or as the sphuta drishti on the madhya (C74),
+and vv. 30 and 31's special rules, whose twilight no source defines (C75).
+The verses as translated are the default; `BhavaBalaRules::SRIPATI`
+reproduces B.V. Raman's Example 59 house by house, once his twelfth total's
+slip of a hundred is corrected. The façade computes the Shadbala it reads when
+the request does not ask for it too; the document's `bhava_bala` section, the
+boundary's section 30 (bit 256) and `chart.bhavaBala` in every binding carry
+it.
+
+## Rashi bala
+
+Rashi bala is unbuilt: no source read gives it component by component, and
+the corpus records none, so it waits for one. Vaiseshikamsa is a count over
+the same vargas the Vimshopaka reads and a row in the same crate.
 
 ## Build order
 

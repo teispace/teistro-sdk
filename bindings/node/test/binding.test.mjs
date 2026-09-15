@@ -928,6 +928,25 @@ test('a chart carries its Shadbala, each graha\'s six strengths', () => {
 });
 
 /**
+ * A chart's Bhava bala crosses whole: every bhava's components under the
+ * default reading, the verses', whose totals are their parts'; `null` unless
+ * asked.
+ */
+test('a chart carries its Bhava bala, each bhava\'s strength', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, bhavaBala: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).bhavaBala, null);
+  const { bhavas } = chart.bhavaBala;
+  assert.deepEqual(bhavas.map((b) => b.bhava), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  for (const b of bhavas) {
+    assert.ok(Math.abs(b.adhipati + b.dig + b.drishti + b.special - b.virupas) < 1e-9, `${b.bhava}`);
+    assert.ok(b.dig >= 0 && b.dig <= 60);
+  }
+  ctx.dispose();
+});
+
+/**
  * A chart's dashas cross whole: the balance, the periods to the settings'
  * depth with their paths, and the chain at an instant read off them.
  */

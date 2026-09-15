@@ -74,6 +74,10 @@ name = "ashtakavarga"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "bhava_bala"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "dasha"
 required-features = ["builtin-ephemeris"]
 
