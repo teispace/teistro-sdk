@@ -252,6 +252,11 @@ __all__ = [
     "GrahaAshtakavarga",
     "Ekadhipatya",
     "Shodhana",
+    # The Shadbala: what a chart answers with.
+    "GrahaShadbala",
+    "KaalaBala",
+    "Shadbala",
+    "SthanaBala",
     # The Vimshopaka: what a chart answers with, and the two scorings.
     "GrahaVimshopaka",
     "Vimshopaka",
@@ -969,6 +974,7 @@ class ChartArea(_Area):
         houses: bool = False,
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
+        shadbala: bool = False,
         state: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
@@ -998,6 +1004,7 @@ class ChartArea(_Area):
             houses=houses,
             ashtakavarga=ashtakavarga,
             vimshopaka=vimshopaka,
+            shadbala=shadbala,
             state=state,
         ).at(0)
 
@@ -1017,6 +1024,7 @@ class ChartArea(_Area):
         houses: bool = False,
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
+        shadbala: bool = False,
         state: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
@@ -1052,6 +1060,7 @@ class ChartArea(_Area):
             | (_SECTION_HOUSES if houses else 0)
             | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
             | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
+            | (_SECTION_SHADBALA if shadbala else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
             dashas=list(dashas),
@@ -1353,6 +1362,9 @@ _SECTION_ASHTAKAVARGA = 32
 #: `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
 _SECTION_VIMSHOPAKA = 64
 
+#: `TS_CHART_SHADBALA`, the Shadbala.
+_SECTION_SHADBALA = 128
+
 #: `TS_CHART_STATE`, the planetary states.
 _SECTION_STATE = 2
 
@@ -1561,6 +1573,112 @@ class GrahaAshtakavarga:
 
     yoga_pinda: int
     """Its yoga pinda, the two together."""
+
+
+@dataclass(frozen=True)
+class SthanaBala:
+    """A graha's Sthana bala by component, virupas."""
+
+    uchcha: float
+    """From its distance to its debilitation point, 0 to 60."""
+
+    saptavargaja: float
+    """From its dignity in the seven vargas."""
+
+    ojayugma: float
+    """From its rasi's and navamsha's parity, 0, 15 or 30."""
+
+    kendradi: float
+    """From its house: 60, 30 or 15."""
+
+    drekkana: float
+    """From its decanate: 0 or 15."""
+
+    @property
+    def total(self) -> float:
+        """The five together."""
+        return self.uchcha + self.saptavargaja + self.ojayugma + self.kendradi + self.drekkana
+
+
+@dataclass(frozen=True)
+class KaalaBala:
+    """A graha's Kaala bala by component, virupas."""
+
+    nathonnatha: float
+    """From the hour, 0 to 60."""
+
+    paksha: float
+    """From the Moon's elongation, the Moon's doubled."""
+
+    tribhaga: float
+    """60 to the lord of the third of the day or night, and to Jupiter."""
+
+    abda: float
+    """15 to the year's lord."""
+
+    masa: float
+    """30 to the month's lord."""
+
+    vara: float
+    """45 to the weekday's lord."""
+
+    hora: float
+    """60 to the hour's lord."""
+
+    ayana: float
+    """From its declination."""
+
+    @property
+    def total(self) -> float:
+        """The eight together."""
+        return self.nathonnatha + self.paksha + self.tribhaga + self.vara + self.hora + self.ayana + self.abda + self.masa
+
+
+@dataclass(frozen=True)
+class GrahaShadbala:
+    """One graha's Shadbala, in virupas."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    sthana: SthanaBala
+    """Positional strength by component."""
+
+    dig: float
+    """Directional strength, 0 to 60."""
+
+    kaala: KaalaBala
+    """Temporal strength by component."""
+
+    cheshta: float
+    """Motional strength."""
+
+    naisargika: float
+    """Natural strength."""
+
+    drik: float
+    """Aspectual strength, which may be negative."""
+
+    virupas: float
+    """The six together."""
+
+    rupas: float
+    """The six together, in rupas."""
+
+    required_rupas: float
+    """The rupas it must reach to be strong."""
+
+    strong: bool
+    """Whether it reaches them."""
+
+
+@dataclass(frozen=True)
+class Shadbala:
+    """A chart's Shadbala, read under the context's `strength.*` settings
+    (`03-design/shadbala-measured.md`)."""
+
+    grahas: Tuple[GrahaShadbala, ...]
+    """Each graha's, Sun to Saturn."""
 
 
 @dataclass(frozen=True)
@@ -2400,6 +2518,12 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def shadbala(self) -> Optional[Shadbala]:
+        """The Shadbala, when `shadbala=True` asked for it."""
+        parsed = self.batch._shadbalas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def vimshopaka(self) -> Optional[Vimshopaka]:
         """The Vimshopaka, when `vimshopaka=True` asked for it."""
         parsed = self.batch._vimshopakas
@@ -2581,6 +2705,46 @@ class ChartBatch:
                 )
             )
         return out
+
+    @cached_property
+    def _shadbalas(self) -> list[Shadbala]:
+        """Every chart's Shadbala, decoded once; empty when none was asked for."""
+        c = self.decoded.shadbala
+
+        def graha(row: int) -> GrahaShadbala:
+            return GrahaShadbala(
+                graha=Graha(c.graha[row]),
+                sthana=SthanaBala(
+                    uchcha=c.uchcha[row],
+                    saptavargaja=c.saptavargaja[row],
+                    ojayugma=c.ojayugma[row],
+                    kendradi=c.kendradi[row],
+                    drekkana=c.drekkana[row],
+                ),
+                dig=c.dig[row],
+                kaala=KaalaBala(
+                    nathonnatha=c.nathonnatha[row],
+                    paksha=c.paksha[row],
+                    tribhaga=c.tribhaga[row],
+                    abda=c.abda[row],
+                    masa=c.masa[row],
+                    vara=c.vara[row],
+                    hora=c.hora[row],
+                    ayana=c.ayana[row],
+                ),
+                cheshta=c.cheshta[row],
+                naisargika=c.naisargika[row],
+                drik=c.drik[row],
+                virupas=c.virupas[row],
+                rupas=c.rupas[row],
+                required_rupas=c.required_rupas[row],
+                strong=c.strong[row] == 1,
+            )
+
+        return [
+            Shadbala(grahas=tuple(graha(row) for row in range(chart * 7, chart * 7 + 7)))
+            for chart in range(c.length // 7)
+        ]
 
     @cached_property
     def _vimshopakas(self) -> list[Vimshopaka]:

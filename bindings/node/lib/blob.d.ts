@@ -932,6 +932,106 @@ export interface ChartsVimshopaka {
 }
 
 /**
+ * The `shadbala` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+ */
+export interface ChartsShadbala {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Sthana: from the distance to the debilitation point, 0 to 60.
+   */
+  readonly uchcha: Float64Array;
+  /**
+   * Sthana: from the dignity in the seven vargas.
+   */
+  readonly saptavargaja: Float64Array;
+  /**
+   * Sthana: from the rasi's and navamsha's parity, 0, 15 or 30.
+   */
+  readonly ojayugma: Float64Array;
+  /**
+   * Sthana: from the house, 60, 30 or 15.
+   */
+  readonly kendradi: Float64Array;
+  /**
+   * Sthana: from the decanate, 0 or 15.
+   */
+  readonly drekkana: Float64Array;
+  /**
+   * Dig: from the distance to the powerless kendra, 0 to 60.
+   */
+  readonly dig: Float64Array;
+  /**
+   * Kaala: from the hour, 0 to 60.
+   */
+  readonly nathonnatha: Float64Array;
+  /**
+   * Kaala: from the Moon's elongation, the Moon's doubled.
+   */
+  readonly paksha: Float64Array;
+  /**
+   * Kaala: 60 to the lord of the third of the day or night, and to Jupiter.
+   */
+  readonly tribhaga: Float64Array;
+  /**
+   * Kaala: 15 to the year's lord.
+   */
+  readonly abda: Float64Array;
+  /**
+   * Kaala: 30 to the month's lord.
+   */
+  readonly masa: Float64Array;
+  /**
+   * Kaala: 45 to the weekday's lord.
+   */
+  readonly vara: Float64Array;
+  /**
+   * Kaala: 60 to the hour's lord.
+   */
+  readonly hora: Float64Array;
+  /**
+   * Kaala: from the declination.
+   */
+  readonly ayana: Float64Array;
+  /**
+   * Cheshta: motional strength.
+   */
+  readonly cheshta: Float64Array;
+  /**
+   * Naisargika: natural strength.
+   */
+  readonly naisargika: Float64Array;
+  /**
+   * Drik: aspectual strength, which may be negative.
+   */
+  readonly drik: Float64Array;
+  /**
+   * The six together, virupas.
+   */
+  readonly virupas: Float64Array;
+  /**
+   * The six together, rupas.
+   */
+  readonly rupas: Float64Array;
+  /**
+   * The rupas it must reach to be strong.
+   */
+  readonly requiredRupas: Float64Array;
+  /**
+   * 1 when the rupas reach the requirement, else 0.
+   */
+  readonly strong: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -1203,6 +1303,10 @@ export interface Charts {
    * Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
    */
   readonly vimshopaka: ChartsVimshopaka;
+  /**
+   * Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+   */
+  readonly shadbala: ChartsShadbala;
 }
 
 /**

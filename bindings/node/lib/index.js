@@ -730,6 +730,16 @@ export class Chart {
   }
 
   /**
+   * The Shadbala (`shadbala: true`): each graha's six strengths in virupas,
+   * the Sthana and Kaala by component, their sum in rupas and whether it
+   * reaches the requirement, under the context's `strength.*` settings;
+   * `null` unless asked for.
+   */
+  get shadbala() {
+    return shadbalasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The derived points — the upagrahas and the special lagnas — or an
    * empty list unless `points: true` asked for them.
    *
@@ -1718,6 +1728,7 @@ class ChartArea extends Area {
           (request.houses === true ? SECTION_HOUSES : 0) |
           (request.ashtakavarga === true ? SECTION_ASHTAKAVARGA : 0) |
           (request.vimshopaka === true ? SECTION_VIMSHOPAKA : 0) |
+          (request.shadbala === true ? SECTION_SHADBALA : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: catalogueKeys(request.dashas, 'dashas', 'DashaSystem'),
@@ -1890,6 +1901,54 @@ function vimshopakasOf(batch) {
   return decoded;
 }
 
+/** Each batch's Shadbalas, decoded once however many charts read them. */
+const SHADBALAS = new WeakMap();
+
+/** Every chart's Shadbala in a batch; empty when none was asked for. */
+function shadbalasOf(batch) {
+  let decoded = SHADBALAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.shadbala;
+    const graha = (row) => {
+      const sthana = {
+        uchcha: c.uchcha[row],
+        saptavargaja: c.saptavargaja[row],
+        ojayugma: c.ojayugma[row],
+        kendradi: c.kendradi[row],
+        drekkana: c.drekkana[row],
+      };
+      const kaala = {
+        nathonnatha: c.nathonnatha[row],
+        paksha: c.paksha[row],
+        tribhaga: c.tribhaga[row],
+        abda: c.abda[row],
+        masa: c.masa[row],
+        vara: c.vara[row],
+        hora: c.hora[row],
+        ayana: c.ayana[row],
+      };
+      return Object.freeze({
+        graha: GrahaById.get(c.graha[row]) ?? 'unknown',
+        sthana: Object.freeze(sthana),
+        dig: c.dig[row],
+        kaala: Object.freeze(kaala),
+        cheshta: c.cheshta[row],
+        naisargika: c.naisargika[row],
+        drik: c.drik[row],
+        virupas: c.virupas[row],
+        rupas: c.rupas[row],
+        requiredRupas: c.requiredRupas[row],
+        strong: c.strong[row] === 1,
+      });
+    };
+    decoded = Array.from({ length: c.length / 7 }, (_, chart) =>
+      Object.freeze({ grahas: Object.freeze(Array.from({ length: 7 }, (_, g) => graha(chart * 7 + g))) }),
+    );
+    SHADBALAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
 /** Each batch's drawings, parsed once however many charts read them. */
 const DRAWINGS = new WeakMap();
 
@@ -2034,6 +2093,9 @@ const SECTION_ASHTAKAVARGA = 32;
 
 /** `TS_CHART_VIMSHOPAKA`, the Vimshopaka. */
 const SECTION_VIMSHOPAKA = 64;
+
+/** `TS_CHART_SHADBALA`, the Shadbala. */
+const SECTION_SHADBALA = 128;
 
 /** `TS_CHART_STATE`, the planetary states. */
 const SECTION_STATE = 2;

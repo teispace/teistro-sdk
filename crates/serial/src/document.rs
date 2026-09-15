@@ -20,7 +20,7 @@ use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
 use teistro_state::GrahaState;
-use teistro_strength::{AshtakavargaReading, VimshopakaReading};
+use teistro_strength::{AshtakavargaReading, ShadbalaReading, VimshopakaReading};
 use teistro_vargas::chart::VargaChart;
 
 use crate::seal::Sealed;
@@ -62,6 +62,9 @@ pub struct Document {
     /// (`03-design/vimshopaka-measured.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub vimshopaka: Option<VimshopakaReading>,
+    /// Each graha's six strengths (`03-design/shadbala-measured.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub shadbala: Option<ShadbalaReading>,
     /// The charts drawn in the layouts asked for: which chart, placed in
     /// which layout (`03-design/chart-geometry.md`).
     ///
@@ -91,6 +94,7 @@ impl Document {
             houses: None,
             ashtakavarga: None,
             vimshopaka: None,
+            shadbala: None,
             drawings: Vec::new(),
             dashas: Vec::new(),
         }
@@ -159,6 +163,13 @@ impl Document {
         self
     }
 
+    /// With the Shadbala.
+    #[must_use]
+    pub fn with_shadbala(mut self, shadbala: ShadbalaReading) -> Document {
+        self.shadbala = Some(shadbala);
+        self
+    }
+
     /// With the houses under both readings.
     #[must_use]
     pub fn with_houses(mut self, houses: Houses) -> Document {
@@ -194,6 +205,9 @@ impl Document {
         }
         if self.vimshopaka.is_some() {
             found.push("vimshopaka");
+        }
+        if self.shadbala.is_some() {
+            found.push("shadbala");
         }
         if !self.drawings.is_empty() {
             found.push("drawings");

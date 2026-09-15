@@ -775,6 +775,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   and `conformance-baseline` is version 5; no number the SDK computed
   before changes.
 
+  The Shadbala followed: each graha's six strengths in virupas, the Sthana
+  and Kaala by component, their sum in rupas and whether it reaches the
+  requirement, under BPHS ch. 27's reading (the default) or the corpus's
+  engine's at eleven forks, each a setting (`strength.saptavargaja`,
+  `nathonnatha`, `pre_dawn_night`, `sun_ayana`, `moon_cheshta`, `kranti`,
+  `kaala_lords`, `dig`, `drik`, `naisargika`, `required_rupas`; cruxes
+  C64–C71), through `ChartRequest::with_shadbala`, the document's `shadbala`
+  section, the boundary's section 29 and `chart.shadbala` in every binding.
+  `strength.bala_scheme` is now read, and `PARASHARA_EXTENDED` is refused as
+  unsupported. `Founder::angles_at` gives a chart's ascendant, midheaven and
+  true obliquity at an instant, and the façade re-exports the strength crate
+  as `teistro::strength`.
+
+  **Numbers:** new. Every settings hash moved with the eleven knobs, and
+  `conformance-baseline` is version 6; no number the SDK computed before
+  changes.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

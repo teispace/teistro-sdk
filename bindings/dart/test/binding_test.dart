@@ -756,6 +756,48 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  /// A chart's Shadbala crosses whole: every graha's six strengths under the
+  /// default reading, the chapter's, whose natural strengths are 28 sevenths
+  /// of a rupa and whose totals are their components'; null unless asked.
+  test('a chart carries its Shadbala, each graha\'s six strengths', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      shadbala: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .shadbala,
+      isNull,
+    );
+    final grahas = chart.shadbala!.grahas;
+    expect(grahas, hasLength(7));
+    expect(
+      grahas.fold<double>(0, (sum, g) => sum + g.naisargika),
+      closeTo(240, 1e-9),
+    );
+    for (final g in grahas) {
+      final six =
+          g.sthana.total +
+          g.dig +
+          g.kaala.total +
+          g.cheshta +
+          g.naisargika +
+          g.drik;
+      expect(six, closeTo(g.virupas, 1e-9), reason: '${g.graha}');
+      expect(g.strong, g.rupas >= g.requiredRupas);
+    }
+    ctx.dispose();
+  });
+
   /// A chart's Vimshopaka crosses whole: every graha's four scores out of 20
   /// under the default reading, the text's, whose least in any varga is 5;
   /// null unless asked.

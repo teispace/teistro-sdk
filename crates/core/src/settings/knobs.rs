@@ -292,6 +292,94 @@ knob!(
         SaptavargajaVirupas = "SAPTAVARGAJA_VIRUPAS" }
 );
 knob!(
+    /// How the Shadbala's Saptavargaja scores a graha in each of its seven
+    /// vargas (crux C64).
+    Saptavargaja { /// B.V. Raman's reading of BPHS ch. 27: moolatrikona 45 (in the rasi
+        /// chart by its degrees), the own sign 30, then 22.5, 15, 7.5, 3.75 or
+        /// 1.875 by the compound relationship, its temporary half from the rasi
+        /// chart; exaltation is Uchcha's.
+        Compound = "COMPOUND", /// The conformance corpus's recording engine: exaltation 45,
+        /// moolatrikona or the own sign 30, then 15, 7.5 or 3.75 by natural
+        /// friendship alone, debilitation nothing.
+        Natural = "NATURAL" }
+);
+knob!(
+    /// How the Shadbala's Nathonnatha measures the hour (crux C65).
+    Nathonnatha { /// BPHS ch. 27 vv. 8 and 9: from midnight at any hour, the Moon, Mars
+        /// and Saturn twice the nata in ghatis, the Sun, Jupiter and Venus 60
+        /// less that.
+        Midnight = "MIDNIGHT", /// The recording engine: the day grahas rise to 60 at the middle of
+        /// the daylight and the night grahas at the middle of the night, each
+        /// with nothing outside its own arc.
+        Arc = "ARC" }
+);
+knob!(
+    /// Which night a birth before sunrise is measured in, for the Shadbala's
+    /// Nathonnatha and Tribhaga (crux C65).
+    PreDawnNight { /// The night it falls in, from the previous evening's sunset.
+        PreviousEvening = "PREVIOUS_EVENING", /// The recording engine's: from the civil date's own sunset, which
+        /// comes after the birth, so no night graha gains.
+        SameEvening = "SAME_EVENING" }
+);
+knob!(
+    /// Where the Sun's Ayana bala is counted in the Shadbala (crux C66).
+    SunAyana { /// BPHS ch. 27 v. 17: doubled in Kaala, and again as its Cheshta.
+        Doubled = "DOUBLED", /// The recording engine: only as its Cheshta.
+        CheshtaOnly = "CHESHTA_ONLY" }
+);
+knob!(
+    /// The Moon's Cheshta bala in the Shadbala (crux C66).
+    MoonCheshta { /// BPHS ch. 27 v. 18: her Paksha bala.
+        Paksha = "PAKSHA", /// The recording engine: a third of her elongation, undoubled.
+        Elongation = "ELONGATION" }
+);
+knob!(
+    /// The declination the Shadbala's Ayana bala reads (crux C66).
+    Kranti { /// The graha's true declination: its ecliptic latitude and the date's
+        /// obliquity, as BPHS's notes take it from an ephemeris.
+        True = "TRUE", /// The recording engine: its tropical longitude at zero latitude, on
+        /// an obliquity of 23.4393°.
+        Ecliptic = "ECLIPTIC" }
+);
+knob!(
+    /// Whose weekdays the Shadbala's Abda and Masa lords are (crux C67).
+    KaalaLords { /// BPHS ch. 27 v. 13: the ahargana's 360-day year and 30-day month.
+        Ahargana = "AHARGANA", /// The recording engine: the UT weekday of the last Mesha sankranti
+        /// for the year, and the lord of the Sun's sign for the month.
+        Sankranti = "SANKRANTI" }
+);
+knob!(
+    /// The kendras the Shadbala's Dig bala measures from (crux C68).
+    DigKendras { /// BPHS ch. 27 v. 7: the ascendant, the nadir, the descendant and
+        /// the midheaven.
+        Angles = "ANGLES", /// The recording engine: all four projected from the lagna's degree,
+        /// 30° a house.
+        LagnaProjection = "LAGNA_PROJECTION" }
+);
+knob!(
+    /// How the Shadbala's Drik bala weighs the drishtis a graha receives
+    /// (crux C69).
+    Drik { /// BPHS ch. 27 v. 19: a quarter of each benefic's drishti added and of
+        /// each malefic's taken away, and Mercury's and Jupiter's added again in
+        /// full.
+        Quarter = "QUARTER", /// The recording engine: each drishti in full, Mercury's taken away,
+        /// the sum bounded at ±60.
+        Full = "FULL" }
+);
+knob!(
+    /// The Shadbala's natural strengths (crux C71).
+    Naisargika { /// BPHS ch. 27 v. 14: exact sevenths of a rupa.
+        Exact = "EXACT", /// The recording engine's, rounded to hundredths.
+        Hundredths = "HUNDREDTHS" }
+);
+knob!(
+    /// The rupas a graha's Shadbala must reach to be strong (crux C71).
+    RequiredRupas { /// BPHS ch. 27 vv. 32 and 33: 6.5, 6, 5, 7, 6.5, 5.5 and 5, Sun to
+        /// Saturn.
+        Bphs = "BPHS", /// The recording engine's, the Sun's 5.
+        RecordingEngine = "RECORDING_ENGINE" }
+);
+knob!(
     /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
     Shodhana { /// In each graha's own Ashtakavarga, its pindas from its own reduced
         /// bindus and the grahas standing in each sign (BPHS chs. 67 to 69).

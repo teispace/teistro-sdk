@@ -96,6 +96,8 @@
 //!   reductions and pindas measured beside BPHS's.
 //! - `vimshopaka` and `check-vimshopaka`: the Vimshopaka, the engine's scale
 //!   measured beside BPHS's points.
+//! - `shadbala` and `check-shadbala`: the Shadbala, every one of the engine's
+//!   components reproduced and measured beside BPHS ch. 27's readings.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -183,6 +185,7 @@ mod rust_binding;
 mod rust_surface;
 mod schema;
 mod serial;
+mod shadbala;
 mod site;
 mod state;
 mod surface;
@@ -276,6 +279,7 @@ const PASSES: &[Pass] = &[
         vimshopaka::generate,
         vimshopaka::check_generated,
     ),
+    ("shadbala", shadbala::generate, shadbala::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

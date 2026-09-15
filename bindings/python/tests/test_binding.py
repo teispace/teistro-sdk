@@ -629,6 +629,25 @@ class AnEngine(WithLibrary):
         )
         self.assertTrue(all(g.yoga_pinda == g.rashi_pinda + g.graha_pinda for g in av.grahas))
 
+    def test_a_chart_carries_its_shadbala_each_graha_s_six_strengths(self) -> None:
+        """A chart's Shadbala crosses whole: every graha's six strengths under
+        the default reading, the chapter's, whose natural strengths are 28
+        sevenths of a rupa and whose totals are their components'; None unless
+        asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, shadbala=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).shadbala)
+        sb = chart.shadbala
+        assert sb is not None
+        self.assertEqual(len(sb.grahas), 7)
+        self.assertAlmostEqual(sum(g.naisargika for g in sb.grahas), 240.0, places=9)
+        for g in sb.grahas:
+            six = g.sthana.total + g.dig + g.kaala.total + g.cheshta + g.naisargika + g.drik
+            self.assertAlmostEqual(six, g.virupas, places=9)
+            self.assertEqual(g.strong, g.rupas >= g.required_rupas)
+
     def test_a_chart_carries_its_vimshopaka_each_graha_s_four_scores(self) -> None:
         """A chart's Vimshopaka crosses whole: every graha's four scores out of
         20 under the default reading, the text's, whose least in any varga is

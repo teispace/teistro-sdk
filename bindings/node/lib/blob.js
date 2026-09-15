@@ -508,6 +508,34 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 29, 'shadbala');
+    out.shadbala = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      uchcha: column(blob, at, 1, 'f64', at.count),
+      saptavargaja: column(blob, at, 2, 'f64', at.count),
+      ojayugma: column(blob, at, 3, 'f64', at.count),
+      kendradi: column(blob, at, 4, 'f64', at.count),
+      drekkana: column(blob, at, 5, 'f64', at.count),
+      dig: column(blob, at, 6, 'f64', at.count),
+      nathonnatha: column(blob, at, 7, 'f64', at.count),
+      paksha: column(blob, at, 8, 'f64', at.count),
+      tribhaga: column(blob, at, 9, 'f64', at.count),
+      abda: column(blob, at, 10, 'f64', at.count),
+      masa: column(blob, at, 11, 'f64', at.count),
+      vara: column(blob, at, 12, 'f64', at.count),
+      hora: column(blob, at, 13, 'f64', at.count),
+      ayana: column(blob, at, 14, 'f64', at.count),
+      cheshta: column(blob, at, 15, 'f64', at.count),
+      naisargika: column(blob, at, 16, 'f64', at.count),
+      drik: column(blob, at, 17, 'f64', at.count),
+      virupas: column(blob, at, 18, 'f64', at.count),
+      rupas: column(blob, at, 19, 'f64', at.count),
+      requiredRupas: column(blob, at, 20, 'f64', at.count),
+      strong: column(blob, at, 21, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

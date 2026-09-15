@@ -33,11 +33,12 @@ use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
     AfterCycle, AyanamshaBasis, Balance, BirthPeriod, Centre, CharaKarakas, DayBoundary, DeltaT,
-    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KalachakraAfterNinth,
-    KalachakraBalance, KalachakraMembership, LunarMonth, MoonEvents, NakshatraScheme, Node,
-    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Shodhana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength,
-    Zodiac,
+    DigKendras, Drik, DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KaalaLords,
+    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LunarMonth, MoonCheshta,
+    MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship,
+    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RequiredRupas,
+    Saptavargaja, SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -322,8 +323,7 @@ group!(
 group!(
     /// Strength.
     Strength, StrengthPatch {
-        /// The bala scheme.
-        /// lint: knob-has-a-reader — `strength`, Phase 5 (`03-design/strength-schemes.md`).
+        /// Which components the Shadbala counts: the six of BPHS ch. 27.
         bala_scheme: BalaScheme,
         /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
         /// beside an occupied one (crux C60).
@@ -332,6 +332,28 @@ group!(
         shodhana: Shodhana,
         /// How the Vimshopaka scores a graha in a varga (crux C63).
         vimshopaka: Vimshopaka,
+        /// How the Shadbala's Saptavargaja scores a varga (crux C64).
+        saptavargaja: Saptavargaja,
+        /// How the Shadbala's Nathonnatha measures the hour (crux C65).
+        nathonnatha: Nathonnatha,
+        /// Which night a birth before sunrise is measured in (crux C65).
+        pre_dawn_night: PreDawnNight,
+        /// Where the Sun's Ayana bala is counted (crux C66).
+        sun_ayana: SunAyana,
+        /// The Moon's Cheshta bala (crux C66).
+        moon_cheshta: MoonCheshta,
+        /// The declination the Ayana bala reads (crux C66).
+        kranti: Kranti,
+        /// Whose weekdays the Abda and Masa lords are (crux C67).
+        kaala_lords: KaalaLords,
+        /// The kendras the Dig bala measures from (crux C68).
+        dig: DigKendras,
+        /// How the Drik bala weighs the drishtis received (crux C69).
+        drik: Drik,
+        /// The natural strengths (crux C71).
+        naisargika: Naisargika,
+        /// The rupas a graha's Shadbala must reach (crux C71).
+        required_rupas: RequiredRupas,
     }
 );
 

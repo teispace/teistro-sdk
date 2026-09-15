@@ -901,6 +901,84 @@ class ChartsVimshopaka:
 
 
 @dataclass(frozen=True)
+class ChartsShadbala:
+    """The `shadbala` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    uchcha: memoryview[float]
+    """Sthana: from the distance to the debilitation point, 0 to 60."""
+
+    saptavargaja: memoryview[float]
+    """Sthana: from the dignity in the seven vargas."""
+
+    ojayugma: memoryview[float]
+    """Sthana: from the rasi's and navamsha's parity, 0, 15 or 30."""
+
+    kendradi: memoryview[float]
+    """Sthana: from the house, 60, 30 or 15."""
+
+    drekkana: memoryview[float]
+    """Sthana: from the decanate, 0 or 15."""
+
+    dig: memoryview[float]
+    """Dig: from the distance to the powerless kendra, 0 to 60."""
+
+    nathonnatha: memoryview[float]
+    """Kaala: from the hour, 0 to 60."""
+
+    paksha: memoryview[float]
+    """Kaala: from the Moon's elongation, the Moon's doubled."""
+
+    tribhaga: memoryview[float]
+    """Kaala: 60 to the lord of the third of the day or night, and to Jupiter."""
+
+    abda: memoryview[float]
+    """Kaala: 15 to the year's lord."""
+
+    masa: memoryview[float]
+    """Kaala: 30 to the month's lord."""
+
+    vara: memoryview[float]
+    """Kaala: 45 to the weekday's lord."""
+
+    hora: memoryview[float]
+    """Kaala: 60 to the hour's lord."""
+
+    ayana: memoryview[float]
+    """Kaala: from the declination."""
+
+    cheshta: memoryview[float]
+    """Cheshta: motional strength."""
+
+    naisargika: memoryview[float]
+    """Naisargika: natural strength."""
+
+    drik: memoryview[float]
+    """Drik: aspectual strength, which may be negative."""
+
+    virupas: memoryview[float]
+    """The six together, virupas."""
+
+    rupas: memoryview[float]
+    """The six together, rupas."""
+
+    required_rupas: memoryview[float]
+    """The rupas it must reach to be strong."""
+
+    strong: memoryview[int]
+    """1 when the rupas reach the requirement, else 0."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -1102,6 +1180,9 @@ class Charts:
     vimshopaka: ChartsVimshopaka
     """Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`)."""
 
+    shadbala: ChartsShadbala
+    """Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1139,6 +1220,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_ashtakavarga_bindus = blob.section(26, "ashtakavarga_bindus")
     at_sarvashtakavarga = blob.section(27, "sarvashtakavarga")
     at_vimshopaka = blob.section(28, "vimshopaka")
+    at_shadbala = blob.section(29, "shadbala")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1521,6 +1603,53 @@ def decode_charts(raw: bytes) -> Charts:
                 at_vimshopaka, 5, 8, at_vimshopaka.count
             ).cast("d"),
             length=at_vimshopaka.count,
+        ),
+        shadbala=ChartsShadbala(
+            graha=blob.column(at_shadbala, 0, 2, at_shadbala.count).cast("H"),
+            uchcha=blob.column(at_shadbala, 1, 8, at_shadbala.count).cast("d"),
+            saptavargaja=blob.column(
+                at_shadbala, 2, 8, at_shadbala.count
+            ).cast("d"),
+            ojayugma=blob.column(
+                at_shadbala, 3, 8, at_shadbala.count
+            ).cast("d"),
+            kendradi=blob.column(
+                at_shadbala, 4, 8, at_shadbala.count
+            ).cast("d"),
+            drekkana=blob.column(
+                at_shadbala, 5, 8, at_shadbala.count
+            ).cast("d"),
+            dig=blob.column(at_shadbala, 6, 8, at_shadbala.count).cast("d"),
+            nathonnatha=blob.column(
+                at_shadbala, 7, 8, at_shadbala.count
+            ).cast("d"),
+            paksha=blob.column(at_shadbala, 8, 8, at_shadbala.count).cast("d"),
+            tribhaga=blob.column(
+                at_shadbala, 9, 8, at_shadbala.count
+            ).cast("d"),
+            abda=blob.column(at_shadbala, 10, 8, at_shadbala.count).cast("d"),
+            masa=blob.column(at_shadbala, 11, 8, at_shadbala.count).cast("d"),
+            vara=blob.column(at_shadbala, 12, 8, at_shadbala.count).cast("d"),
+            hora=blob.column(at_shadbala, 13, 8, at_shadbala.count).cast("d"),
+            ayana=blob.column(at_shadbala, 14, 8, at_shadbala.count).cast("d"),
+            cheshta=blob.column(
+                at_shadbala, 15, 8, at_shadbala.count
+            ).cast("d"),
+            naisargika=blob.column(
+                at_shadbala, 16, 8, at_shadbala.count
+            ).cast("d"),
+            drik=blob.column(at_shadbala, 17, 8, at_shadbala.count).cast("d"),
+            virupas=blob.column(
+                at_shadbala, 18, 8, at_shadbala.count
+            ).cast("d"),
+            rupas=blob.column(at_shadbala, 19, 8, at_shadbala.count).cast("d"),
+            required_rupas=blob.column(
+                at_shadbala, 20, 8, at_shadbala.count
+            ).cast("d"),
+            strong=blob.column(
+                at_shadbala, 21, 1, at_shadbala.count
+            ).cast("B"),
+            length=at_shadbala.count,
         ),
     )
 

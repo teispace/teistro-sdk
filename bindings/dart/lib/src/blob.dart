@@ -1112,6 +1112,107 @@ final class ChartsVimshopaka {
   final int length;
 }
 
+/// The `shadbala` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+final class ChartsShadbala {
+  const ChartsShadbala({
+    required this.graha,
+    required this.uchcha,
+    required this.saptavargaja,
+    required this.ojayugma,
+    required this.kendradi,
+    required this.drekkana,
+    required this.dig,
+    required this.nathonnatha,
+    required this.paksha,
+    required this.tribhaga,
+    required this.abda,
+    required this.masa,
+    required this.vara,
+    required this.hora,
+    required this.ayana,
+    required this.cheshta,
+    required this.naisargika,
+    required this.drik,
+    required this.virupas,
+    required this.rupas,
+    required this.requiredRupas,
+    required this.strong,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Sthana: from the distance to the debilitation point, 0 to 60.
+  final Float64List uchcha;
+
+  /// Sthana: from the dignity in the seven vargas.
+  final Float64List saptavargaja;
+
+  /// Sthana: from the rasi's and navamsha's parity, 0, 15 or 30.
+  final Float64List ojayugma;
+
+  /// Sthana: from the house, 60, 30 or 15.
+  final Float64List kendradi;
+
+  /// Sthana: from the decanate, 0 or 15.
+  final Float64List drekkana;
+
+  /// Dig: from the distance to the powerless kendra, 0 to 60.
+  final Float64List dig;
+
+  /// Kaala: from the hour, 0 to 60.
+  final Float64List nathonnatha;
+
+  /// Kaala: from the Moon's elongation, the Moon's doubled.
+  final Float64List paksha;
+
+  /// Kaala: 60 to the lord of the third of the day or night, and to Jupiter.
+  final Float64List tribhaga;
+
+  /// Kaala: 15 to the year's lord.
+  final Float64List abda;
+
+  /// Kaala: 30 to the month's lord.
+  final Float64List masa;
+
+  /// Kaala: 45 to the weekday's lord.
+  final Float64List vara;
+
+  /// Kaala: 60 to the hour's lord.
+  final Float64List hora;
+
+  /// Kaala: from the declination.
+  final Float64List ayana;
+
+  /// Cheshta: motional strength.
+  final Float64List cheshta;
+
+  /// Naisargika: natural strength.
+  final Float64List naisargika;
+
+  /// Drik: aspectual strength, which may be negative.
+  final Float64List drik;
+
+  /// The six together, virupas.
+  final Float64List virupas;
+
+  /// The six together, rupas.
+  final Float64List rupas;
+
+  /// The rupas it must reach to be strong.
+  final Float64List requiredRupas;
+
+  /// 1 when the rupas reach the requirement, else 0.
+  final Uint8List strong;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1244,6 +1345,7 @@ final class Charts {
     required this.ashtakavargaBindus,
     required this.sarvashtakavarga,
     required this.vimshopaka,
+    required this.shadbala,
   });
 
   /// What kind of chart these are.
@@ -1374,6 +1476,9 @@ final class Charts {
   /// Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
   final ChartsVimshopaka vimshopaka;
 
+  /// Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+  final ChartsShadbala shadbala;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1409,6 +1514,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atAshtakavargaBindus = blob.section(26, 'ashtakavarga_bindus');
   final atSarvashtakavarga = blob.section(27, 'sarvashtakavarga');
   final atVimshopaka = blob.section(28, 'vimshopaka');
+  final atShadbala = blob.section(29, 'shadbala');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2237,6 +2343,119 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atVimshopaka, 5) + atVimshopaka.count * 8,
       ),
       length: atVimshopaka.count,
+    ),
+    shadbala: ChartsShadbala(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 0),
+        blob.columnOffset(atShadbala, 0) + atShadbala.count * 2,
+      ),
+      uchcha: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 1),
+        blob.columnOffset(atShadbala, 1) + atShadbala.count * 8,
+      ),
+      saptavargaja: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 2),
+        blob.columnOffset(atShadbala, 2) + atShadbala.count * 8,
+      ),
+      ojayugma: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 3),
+        blob.columnOffset(atShadbala, 3) + atShadbala.count * 8,
+      ),
+      kendradi: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 4),
+        blob.columnOffset(atShadbala, 4) + atShadbala.count * 8,
+      ),
+      drekkana: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 5),
+        blob.columnOffset(atShadbala, 5) + atShadbala.count * 8,
+      ),
+      dig: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 6),
+        blob.columnOffset(atShadbala, 6) + atShadbala.count * 8,
+      ),
+      nathonnatha: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 7),
+        blob.columnOffset(atShadbala, 7) + atShadbala.count * 8,
+      ),
+      paksha: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 8),
+        blob.columnOffset(atShadbala, 8) + atShadbala.count * 8,
+      ),
+      tribhaga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 9),
+        blob.columnOffset(atShadbala, 9) + atShadbala.count * 8,
+      ),
+      abda: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 10),
+        blob.columnOffset(atShadbala, 10) + atShadbala.count * 8,
+      ),
+      masa: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 11),
+        blob.columnOffset(atShadbala, 11) + atShadbala.count * 8,
+      ),
+      vara: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 12),
+        blob.columnOffset(atShadbala, 12) + atShadbala.count * 8,
+      ),
+      hora: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 13),
+        blob.columnOffset(atShadbala, 13) + atShadbala.count * 8,
+      ),
+      ayana: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 14),
+        blob.columnOffset(atShadbala, 14) + atShadbala.count * 8,
+      ),
+      cheshta: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 15),
+        blob.columnOffset(atShadbala, 15) + atShadbala.count * 8,
+      ),
+      naisargika: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 16),
+        blob.columnOffset(atShadbala, 16) + atShadbala.count * 8,
+      ),
+      drik: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 17),
+        blob.columnOffset(atShadbala, 17) + atShadbala.count * 8,
+      ),
+      virupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 18),
+        blob.columnOffset(atShadbala, 18) + atShadbala.count * 8,
+      ),
+      rupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 19),
+        blob.columnOffset(atShadbala, 19) + atShadbala.count * 8,
+      ),
+      requiredRupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 20),
+        blob.columnOffset(atShadbala, 20) + atShadbala.count * 8,
+      ),
+      strong: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 21),
+        blob.columnOffset(atShadbala, 21) + atShadbala.count * 1,
+      ),
+      length: atShadbala.count,
     ),
   );
 }

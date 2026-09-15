@@ -577,6 +577,7 @@ pub fn charts() -> BlobSchema {
             chart_ashtakavarga_bindus_section(26),
             chart_sarvashtakavarga_section(27),
             chart_vimshopaka_section(28),
+            chart_shadbala_section(29),
         ],
     }
 }
@@ -742,6 +743,28 @@ fn chart_vimshopaka_section(id: u32) -> SectionSchema {
             ColumnDef::new("dashavarga", Scalar::F64, "Over the ten."),
             ColumnDef::new("shodashavarga", Scalar::F64, "Over the sixteen."),
         ],
+    )
+}
+
+/// Every chart's Shadbala, a row a graha, its value columns from the table
+/// the writer reads.
+fn chart_shadbala_section(id: u32) -> SectionSchema {
+    let mut columns = vec![ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha")];
+    columns.extend(
+        crate::chart::SHADBALA_COLUMNS
+            .iter()
+            .map(|(name, doc, _)| ColumnDef::new(name, Scalar::F64, doc)),
+    );
+    columns.push(ColumnDef::new(
+        "strong",
+        Scalar::U8,
+        "1 when the rupas reach the requirement, else 0.",
+    ));
+    SectionSchema::columns(
+        id,
+        "shadbala",
+        "Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).",
+        columns,
     )
 }
 

@@ -79,6 +79,17 @@ every shipped profile. The v1 inventory:
 | strength | `ekadhipatya` | enum | `BPHS` (the default, ch. 68), `EMPTY_TO_ZERO` (the corpus's engine; crux C60) |
 | strength | `shodhana` | enum | `EACH_GRAHA` (the default, chs. 67 to 69), `SARVA` (the corpus's engine; crux C59) |
 | strength | `vimshopaka` | enum | `BPHS` (the default, ch. 7's points by compound relationship), `SAPTAVARGAJA_VIRUPAS` (the corpus's engine; crux C63) |
+| strength | `saptavargaja` | enum | `COMPOUND` (the default, Raman's figures by the compound relationship), `NATURAL` (the corpus's engine; crux C64) |
+| strength | `nathonnatha` | enum | `MIDNIGHT` (the default, ch. 27 vv. 8 and 9), `ARC` (the corpus's engine; crux C65) |
+| strength | `pre_dawn_night` | enum | `PREVIOUS_EVENING` (the default), `SAME_EVENING` (the corpus's engine, which loses the night; crux C65) |
+| strength | `sun_ayana` | enum | `DOUBLED` (the default, v. 17), `CHESHTA_ONLY` (the corpus's engine; crux C66) |
+| strength | `moon_cheshta` | enum | `PAKSHA` (the default, v. 18), `ELONGATION` (the corpus's engine; crux C66) |
+| strength | `kranti` | enum | `TRUE` (the default, the ephemeris latitude and the date's obliquity), `ECLIPTIC` (the corpus's engine; crux C66) |
+| strength | `kaala_lords` | enum | `AHARGANA` (the default, v. 13), `SANKRANTI` (the corpus's engine; crux C67) |
+| strength | `dig` | enum | `ANGLES` (the default, v. 7), `LAGNA_PROJECTION` (the corpus's engine; crux C68) |
+| strength | `drik` | enum | `QUARTER` (the default, v. 19 on the graded drishti), `FULL` (the corpus's engine; crux C69) |
+| strength | `naisargika` | enum | `EXACT` (the default, v. 14), `HUNDREDTHS` (the corpus's engine; crux C71) |
+| strength | `required_rupas` | enum | `BPHS` (the default, vv. 32 and 33), `RECORDING_ENGINE` (the Sun's 5; crux C71) |
 | varga | `unattested_dn` | enum | `CYCLIC`, or a named scheme |
 | calendar | `civil_calendar` | `CalendarKey` | `GREGORIAN`, `BIKRAM_SAMBAT`, … |
 | calendar | `lunar_month` | enum | `AMANTA`, `PURNIMANTA` |

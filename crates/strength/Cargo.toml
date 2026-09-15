@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "The Teistro SDK's strength measures: the Ashtakavarga, the Vimshopaka, and the bala schemes to come"
+description = "The Teistro SDK's strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala"
 readme = "README.md"
 # Claimed on crates.io at the release, as every module is
 # (docs/06-cicd/03-release-process.md).
@@ -14,9 +14,10 @@ publish = false
 [features]
 # Derives `schemars::JsonSchema` on the types a chart document carries
 # (`docs/03-design/document-schema.md`).
-schema = ["dep:schemars", "teistro-core/schema", "teistro-state/schema"]
+schema = ["dep:schemars", "teistro-core/schema", "teistro-state/schema", "teistro-aspect/schema"]
 
 [dependencies]
+teistro-aspect = { path = "../aspect" }
 teistro-core = { path = "../core" }
 teistro-state = { path = "../state" }
 serde = { version = "1", features = ["derive"] }

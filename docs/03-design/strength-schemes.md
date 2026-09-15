@@ -168,6 +168,48 @@ The document's `vimshopaka` section, the boundary's `vimshopaka` section
 with `TsVimshopakaScoring` and section bit 64, and every binding's
 `chart.vimshopaka` carry it; `check-parity` holds the four surfaces to it.
 
+## The Shadbala, built (2026-09-15)
+
+The six strengths of BPHS ch. 27, built as arithmetic on a chart and not as
+the scheme table this page first proposed. `cargo xtask shadbala`
+(`shadbala-measured.md`) measured the conformance corpus's engine over 71
+charts and 497 graha cells beside the chapter in translation, and the
+measurement changed the design:
+
+- **Every one of the engine's seventeen components reproduces exactly**
+  from the recorded inputs, so its reading is fully described.
+- **It departs from the chapter at eleven forks**, each measured: the
+  Saptavargaja's figures and relationship, Nathonnatha's shape and the night
+  before dawn, the Sun's Ayana, the Moon's Cheshta, the kranti, the Abda and
+  Masa lords, Dig's kendras, Drik's weighing, the natural strengths' rounding
+  and the requirements (C64–C71). The schools' disagreement is **per fork and
+  not per scheme**, so each fork is a `strength.*` setting, BPHS's reading the
+  default and the engine's the other value, and `conformance-baseline`
+  (version 6) takes the engine's at all eleven. `ShadbalaRules::BPHS` and
+  `ShadbalaRules::RECORDING_ENGINE` name the two readings whole.
+- **The ahargana settles the Abda and Masa lords.** The chapter counts them
+  from Burgess's day count to 1 January 1860, whose weekday arithmetic the
+  corpus confirms on 67 of 71 recorded weekdays — the other four are charts
+  the engine put in the wrong Hindu day — and the chapter's own worked month
+  comes out a Friday as the text says.
+- **What neither settles ships the same under both and says so**: Drik reads
+  the graded whole-sign drishti, because ch. 26's sphuta drishti is garbled
+  in the translation read (C45, C69), and the Cheshta of Mars to Saturn reads
+  the engine's J2000 mean elements, which the chapter does not give (C70).
+- **`strength.bala_scheme` now has a reader**: `PARASHARA` is the six, and
+  `PARASHARA_EXTENDED`, which would count the Yuddha bala, is refused as
+  unsupported rather than approximated.
+
+`crates/strength`'s `shadbala` reproduces all 71 recorded Shadbalas under the
+engine's reading; the façade reads the angles and the true obliquity from the
+founder (`Founder::angles_at`) and searches the Mesha sankranti only when
+the engine's year lord is asked for. The document's `shadbala` section, the
+boundary's section 29 (bit 128, its value columns one table shared by the
+schema and the writer) and every binding's `chart.shadbala` carry it, and
+`check-parity` holds the four surfaces to it. The components are
+`SthanaBala` and `KaalaBala` in every binding, because the catalogue already
+has a `Kaala`.
+
 ## Bhava bala, rashi bala
 
 Bhava bala and rashi bala reuse the scheme kernel with their own

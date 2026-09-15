@@ -7,7 +7,11 @@
 //!   charts under the four schemes, by BPHS's points or the corpus's
 //!   engine's virupas (`docs/03-design/vimshopaka-measured.md`).
 //!
-//! The bala schemes (shadbala, bhava bala) are the next rows of this crate.
+//! - [`shadbala`]: each graha's six strengths in virupas, under BPHS ch. 27's
+//!   reading or the corpus's engine's at each of eleven forks
+//!   (`docs/03-design/shadbala-measured.md`).
+//!
+//! Bhava bala is the next row of this crate.
 //!
 //! ```
 //! use teistro_core::catalogue::Rashi;
@@ -25,9 +29,14 @@
 //! ```
 
 pub mod ashtakavarga;
+pub mod shadbala;
 pub mod vimshopaka;
 
 pub use ashtakavarga::{
     AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, GrahaAshtakavarga,
+};
+pub use shadbala::{
+    GrahaShadbala, KaalaBala, ShadbalaChart, ShadbalaGraha, ShadbalaReading, ShadbalaRules,
+    SthanaBala,
 };
 pub use vimshopaka::{GrahaVimshopaka, VimshopakaChart, VimshopakaReading};

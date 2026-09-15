@@ -9094,7 +9094,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
+          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -13495,6 +13495,125 @@
               "name": "shodashavarga",
               "scalar": "f64",
               "doc": "Over the sixteen."
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "name": "shadbala",
+          "doc": "Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "uchcha",
+              "scalar": "f64",
+              "doc": "Sthana: from the distance to the debilitation point, 0 to 60."
+            },
+            {
+              "name": "saptavargaja",
+              "scalar": "f64",
+              "doc": "Sthana: from the dignity in the seven vargas."
+            },
+            {
+              "name": "ojayugma",
+              "scalar": "f64",
+              "doc": "Sthana: from the rasi's and navamsha's parity, 0, 15 or 30."
+            },
+            {
+              "name": "kendradi",
+              "scalar": "f64",
+              "doc": "Sthana: from the house, 60, 30 or 15."
+            },
+            {
+              "name": "drekkana",
+              "scalar": "f64",
+              "doc": "Sthana: from the decanate, 0 or 15."
+            },
+            {
+              "name": "dig",
+              "scalar": "f64",
+              "doc": "Dig: from the distance to the powerless kendra, 0 to 60."
+            },
+            {
+              "name": "nathonnatha",
+              "scalar": "f64",
+              "doc": "Kaala: from the hour, 0 to 60."
+            },
+            {
+              "name": "paksha",
+              "scalar": "f64",
+              "doc": "Kaala: from the Moon's elongation, the Moon's doubled."
+            },
+            {
+              "name": "tribhaga",
+              "scalar": "f64",
+              "doc": "Kaala: 60 to the lord of the third of the day or night, and to Jupiter."
+            },
+            {
+              "name": "abda",
+              "scalar": "f64",
+              "doc": "Kaala: 15 to the year's lord."
+            },
+            {
+              "name": "masa",
+              "scalar": "f64",
+              "doc": "Kaala: 30 to the month's lord."
+            },
+            {
+              "name": "vara",
+              "scalar": "f64",
+              "doc": "Kaala: 45 to the weekday's lord."
+            },
+            {
+              "name": "hora",
+              "scalar": "f64",
+              "doc": "Kaala: 60 to the hour's lord."
+            },
+            {
+              "name": "ayana",
+              "scalar": "f64",
+              "doc": "Kaala: from the declination."
+            },
+            {
+              "name": "cheshta",
+              "scalar": "f64",
+              "doc": "Cheshta: motional strength."
+            },
+            {
+              "name": "naisargika",
+              "scalar": "f64",
+              "doc": "Naisargika: natural strength."
+            },
+            {
+              "name": "drik",
+              "scalar": "f64",
+              "doc": "Drik: aspectual strength, which may be negative."
+            },
+            {
+              "name": "virupas",
+              "scalar": "f64",
+              "doc": "The six together, virupas."
+            },
+            {
+              "name": "rupas",
+              "scalar": "f64",
+              "doc": "The six together, rupas."
+            },
+            {
+              "name": "required_rupas",
+              "scalar": "f64",
+              "doc": "The rupas it must reach to be strong."
+            },
+            {
+              "name": "strong",
+              "scalar": "u8",
+              "doc": "1 when the rupas reach the requirement, else 0."
             }
           ]
         }

@@ -901,6 +901,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
         .with_houses()
         .with_ashtakavarga()
         .with_vimshopaka()
+        .with_shadbala()
         .with_state()
 }
 
@@ -1180,6 +1181,50 @@ fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
 fn the_strength(report: &mut Report, index: usize, document: &teistro::Document) {
     the_ashtakavarga(report, index, document);
     the_vimshopaka(report, index, document);
+    the_shadbala(report, index, document);
+}
+
+/// The Shadbala as the other three print it: each graha's seventeen
+/// components, then its totals and whether it is strong.
+fn the_shadbala(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(shadbala) = document.shadbala.as_ref() else {
+        return;
+    };
+    for graha in &shadbala.grahas {
+        let key = format!("chart-{index}-shadbala-{}", graha.graha.full_key());
+        let (st, ka) = (&graha.sthana, &graha.kaala);
+        let parts = [
+            st.uchcha,
+            st.saptavargaja,
+            st.ojayugma,
+            st.kendradi,
+            st.drekkana,
+            graha.dig,
+            ka.nathonnatha,
+            ka.paksha,
+            ka.tribhaga,
+            ka.abda,
+            ka.masa,
+            ka.vara,
+            ka.hora,
+            ka.ayana,
+            graha.cheshta,
+            graha.naisargika,
+            graha.drik,
+        ];
+        put(report, &key, parts.map(number).join(","));
+        put(
+            report,
+            &format!("{key}-total"),
+            format!(
+                "{},{},{},{}",
+                number(graha.virupas),
+                number(graha.rupas),
+                number(graha.required_rupas),
+                graha.strong
+            ),
+        );
+    }
 }
 
 /// The Vimshopaka as the other three print it: the scoring, and each

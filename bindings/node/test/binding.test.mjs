@@ -906,6 +906,28 @@ test('a chart carries its Vimshopaka, each graha\'s four scores', () => {
 });
 
 /**
+ * A chart's Shadbala crosses whole: every graha's six strengths under the
+ * default reading, the chapter's, whose natural strengths are 28 sevenths of
+ * a rupa and whose totals are their components'; `null` unless asked.
+ */
+test('a chart carries its Shadbala, each graha\'s six strengths', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, shadbala: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).shadbala, null);
+  const { grahas } = chart.shadbala;
+  assert.equal(grahas.length, 7);
+  const sum = (values) => values.reduce((a, b) => a + b, 0);
+  assert.ok(Math.abs(sum(grahas.map((g) => g.naisargika)) - 240) < 1e-9);
+  for (const g of grahas) {
+    const six = sum(Object.values(g.sthana)) + g.dig + sum(Object.values(g.kaala)) + g.cheshta + g.naisargika + g.drik;
+    assert.ok(Math.abs(six - g.virupas) < 1e-9, g.graha);
+    assert.equal(g.strong, g.rupas >= g.requiredRupas);
+  }
+  ctx.dispose();
+});
+
+/**
  * A chart's dashas cross whole: the balance, the periods to the settings'
  * depth with their paths, and the chain at an instant read off them.
  */

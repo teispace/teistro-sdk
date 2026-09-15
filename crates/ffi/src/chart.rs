@@ -463,7 +463,7 @@ pub struct TsChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service, 32 the Ashtakavarga, 64 the Vimshopaka. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -561,8 +561,10 @@ pub const TS_CHART_HOUSES: u32 = 16;
 pub const TS_CHART_ASHTAKAVARGA: u32 = 32;
 /// The Vimshopaka.
 pub const TS_CHART_VIMSHOPAKA: u32 = 64;
+/// The Shadbala.
+pub const TS_CHART_SHADBALA: u32 = 128;
 
-const SECTION_BITS: [SectionBit; 7] = [
+const SECTION_BITS: [SectionBit; 8] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -570,6 +572,7 @@ const SECTION_BITS: [SectionBit; 7] = [
     (TS_CHART_HOUSES, ChartRequest::with_houses),
     (TS_CHART_ASHTAKAVARGA, ChartRequest::with_ashtakavarga),
     (TS_CHART_VIMSHOPAKA, ChartRequest::with_vimshopaka),
+    (TS_CHART_SHADBALA, ChartRequest::with_shadbala),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -1093,6 +1096,120 @@ impl AshtakavargaColumns {
                 ColumnData::U16(&self.sarva_reduced),
             ],
         )
+    }
+}
+
+/// A Shadbala value column: its name in the `shadbala` section, what it
+/// holds, and where a graha's reading keeps it.
+pub(crate) type ShadbalaColumn = (
+    &'static str,
+    &'static str,
+    fn(&teistro::strength::GrahaShadbala) -> f64,
+);
+
+/// The `shadbala` section's value columns in order, which the section's
+/// schema and its writer both read.
+pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 20] = [
+    (
+        "uchcha",
+        "Sthana: from the distance to the debilitation point, 0 to 60.",
+        |g| g.sthana.uchcha,
+    ),
+    (
+        "saptavargaja",
+        "Sthana: from the dignity in the seven vargas.",
+        |g| g.sthana.saptavargaja,
+    ),
+    (
+        "ojayugma",
+        "Sthana: from the rasi's and navamsha's parity, 0, 15 or 30.",
+        |g| g.sthana.ojayugma,
+    ),
+    ("kendradi", "Sthana: from the house, 60, 30 or 15.", |g| {
+        g.sthana.kendradi
+    }),
+    ("drekkana", "Sthana: from the decanate, 0 or 15.", |g| {
+        g.sthana.drekkana
+    }),
+    (
+        "dig",
+        "Dig: from the distance to the powerless kendra, 0 to 60.",
+        |g| g.dig,
+    ),
+    ("nathonnatha", "Kaala: from the hour, 0 to 60.", |g| {
+        g.kaala.nathonnatha
+    }),
+    (
+        "paksha",
+        "Kaala: from the Moon's elongation, the Moon's doubled.",
+        |g| g.kaala.paksha,
+    ),
+    (
+        "tribhaga",
+        "Kaala: 60 to the lord of the third of the day or night, and to Jupiter.",
+        |g| g.kaala.tribhaga,
+    ),
+    ("abda", "Kaala: 15 to the year's lord.", |g| g.kaala.abda),
+    ("masa", "Kaala: 30 to the month's lord.", |g| g.kaala.masa),
+    ("vara", "Kaala: 45 to the weekday's lord.", |g| g.kaala.vara),
+    ("hora", "Kaala: 60 to the hour's lord.", |g| g.kaala.hora),
+    ("ayana", "Kaala: from the declination.", |g| g.kaala.ayana),
+    ("cheshta", "Cheshta: motional strength.", |g| g.cheshta),
+    ("naisargika", "Naisargika: natural strength.", |g| {
+        g.naisargika
+    }),
+    (
+        "drik",
+        "Drik: aspectual strength, which may be negative.",
+        |g| g.drik,
+    ),
+    ("virupas", "The six together, virupas.", |g| g.virupas),
+    ("rupas", "The six together, rupas.", |g| g.rupas),
+    (
+        "required_rupas",
+        "The rupas it must reach to be strong.",
+        |g| g.required_rupas,
+    ),
+];
+
+/// Every chart's Shadbala, a row a graha, empty when it was not asked for.
+struct ShadbalaColumns {
+    graha: Vec<u16>,
+    values: Vec<Vec<f64>>,
+    strong: Vec<u8>,
+}
+
+impl ShadbalaColumns {
+    fn of(documents: &[Document]) -> ShadbalaColumns {
+        let readings: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.shadbala.as_ref())
+            .collect();
+        let rows = readings.iter().map(|r| r.grahas.len()).sum();
+        let mut columns = ShadbalaColumns {
+            graha: Vec::with_capacity(rows),
+            values: SHADBALA_COLUMNS
+                .iter()
+                .map(|_| Vec::with_capacity(rows))
+                .collect(),
+            strong: Vec::with_capacity(rows),
+        };
+        for graha in readings.iter().flat_map(|r| &r.grahas) {
+            columns.graha.push(graha.graha.id());
+            for (column, (_, _, read)) in columns.values.iter_mut().zip(SHADBALA_COLUMNS) {
+                column.push(read(graha));
+            }
+            columns.strong.push(u8::from(graha.strong));
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = Vec::with_capacity(self.values.len() + 2);
+        data.push(ColumnData::U16(&self.graha));
+        data.extend(self.values.iter().map(|column| ColumnData::F64(column)));
+        data.push(ColumnData::U8(&self.strong));
+        writer.columns("shadbala", self.graha.len(), &data)
     }
 }
 
@@ -1679,6 +1796,7 @@ pub fn encode(
     let dashas = DashaColumns::of(documents)?;
     let ashtakavarga = AshtakavargaColumns::of(documents);
     let vimshopaka = VimshopakaColumns::of(documents);
+    let shadbala = ShadbalaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1742,6 +1860,7 @@ pub fn encode(
         dashas.write(&mut writer)?;
         ashtakavarga.write(&mut writer)?;
         vimshopaka.write(&mut writer)?;
+        shadbala.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

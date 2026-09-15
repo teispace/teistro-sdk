@@ -61,6 +61,18 @@ use crate::bhava::{Bhavas, Chalit, Placement};
 use crate::day::{ChartDay, chart_day};
 use crate::zodiac::ChartZodiac;
 
+/// A chart's angles at an instant, in its own zodiac, with the obliquity of
+/// the date they were built on.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ChartAngles {
+    /// The ascendant, degrees.
+    pub ascendant_deg: f64,
+    /// The midheaven, degrees.
+    pub midheaven_deg: f64,
+    /// The true obliquity of the ecliptic, degrees.
+    pub obliquity_deg: f64,
+}
+
 /// Where one graha is, in the chart's own zodiac.
 ///
 /// Both readings are kept and neither is recomputed: a module that wanted
@@ -512,6 +524,37 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         self.lagna(ut1, tt, place, zodiac)
     }
 
+    /// The ascendant, the midheaven and the true obliquity at an instant,
+    /// the angles in the zodiac of a chart founded here.
+    ///
+    /// For a caller that measures from the angles themselves rather than
+    /// from the bhavas — the Shadbala's Dig bala, which BPHS ch. 27 v. 7
+    /// takes from the ascendant, the nadir, the descendant and the midheaven
+    /// whatever the house system — and wants the obliquity they were built
+    /// on. The zodiac is taken rather than recomputed, as for
+    /// [`Founder::ascendant_at`].
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::ascendant_at`].
+    pub fn angles_at(
+        &self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+    ) -> Result<ChartAngles, Error> {
+        let ut1 = JulianDay::<Ut1>::literal(at.get());
+        let (tt, _) = tt_of(ut1, self.delta_t)?;
+        self.angles(ut1, tt, place, zodiac)
+    }
+
+    /// The solar model the day's arcs were found with, for a caller that
+    /// needs the Sun's own events — a sankranti — on the same reckoning.
+    #[must_use]
+    pub fn solar_model(&self) -> &'a dyn SolarModel {
+        self.model
+    }
+
     /// The ascendant at an instant, in the chart's zodiac.
     fn lagna(
         &self,
@@ -520,6 +563,17 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         zodiac: &ChartZodiac,
     ) -> Result<f64, Error> {
+        Ok(self.angles(ut1, tt, place, zodiac)?.ascendant_deg)
+    }
+
+    /// The angles and the obliquity at an instant, in the chart's zodiac.
+    fn angles(
+        &self,
+        ut1: JulianDay<Ut1>,
+        tt: JulianDay<Tt>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+    ) -> Result<ChartAngles, Error> {
         let frame = ChartFrame {
             sidereal_offset_deg: zodiac.offset_deg,
             sun_declination_deg: None,
@@ -532,7 +586,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             &frame,
             self.settings().houses.polar_policy,
         )?;
-        Ok(zodiac.of_tropical(built.angles.ascendant_deg))
+        Ok(ChartAngles {
+            ascendant_deg: zodiac.of_tropical(built.angles.ascendant_deg),
+            midheaven_deg: zodiac.of_tropical(built.angles.midheaven_deg),
+            obliquity_deg: teistro_astro::sky::obliquity(tt).true_deg,
+        })
     }
 
     /// The grahas, placed.

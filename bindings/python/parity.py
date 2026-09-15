@@ -277,6 +277,7 @@ def main() -> None:
             houses=True,
             ashtakavarga=True,
             vimshopaka=True,
+            shadbala=True,
             state=True,
         )
         put("chart-varga-count", charts.decoded.varga_count)
@@ -419,6 +420,19 @@ def main() -> None:
                 f"chart-{i}-sarvashtakavarga",
                 ";".join(",".join(str(b) for b in row) for row in (av.sarva, av.trikona, av.reduced)),
             )
+            sb = chart.shadbala
+            assert sb is not None
+            for strength in sb.grahas:
+                key = f"chart-{i}-shadbala-{strength.graha.full_key}"
+                st, ka = strength.sthana, strength.kaala
+                parts: list[float] = [st.uchcha, st.saptavargaja, st.ojayugma, st.kendradi, st.drekkana, strength.dig]
+                parts += [ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana]
+                parts += [strength.cheshta, strength.naisargika, strength.drik]
+                put(key, ",".join(number(value) for value in parts))
+                put(
+                    f"{key}-total",
+                    f"{number(strength.virupas)},{number(strength.rupas)},{number(strength.required_rupas)},{str(strength.strong).lower()}",
+                )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

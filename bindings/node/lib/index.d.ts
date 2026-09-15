@@ -377,6 +377,72 @@ export interface GrahaVimshopaka {
   readonly shodashavarga: number;
 }
 
+/** A graha's Sthana bala by component, virupas. */
+export interface SthanaBala {
+  /** From its distance to its debilitation point, 0 to 60. */
+  readonly uchcha: number;
+  /** From its dignity in the seven vargas. */
+  readonly saptavargaja: number;
+  /** From its rasi's and navamsha's parity, 0, 15 or 30. */
+  readonly ojayugma: number;
+  /** From its house: 60, 30 or 15. */
+  readonly kendradi: number;
+  /** From its decanate: 0 or 15. */
+  readonly drekkana: number;
+}
+
+/** A graha's Kaala bala by component, virupas. */
+export interface KaalaBala {
+  /** From the hour, 0 to 60. */
+  readonly nathonnatha: number;
+  /** From the Moon's elongation, the Moon's doubled. */
+  readonly paksha: number;
+  /** 60 to the lord of the third of the day or night, and to Jupiter. */
+  readonly tribhaga: number;
+  /** 15 to the year's lord. */
+  readonly abda: number;
+  /** 30 to the month's lord. */
+  readonly masa: number;
+  /** 45 to the weekday's lord. */
+  readonly vara: number;
+  /** 60 to the hour's lord. */
+  readonly hora: number;
+  /** From its declination. */
+  readonly ayana: number;
+}
+
+/** One graha's Shadbala, in virupas. */
+export interface GrahaShadbala {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Positional strength by component. */
+  readonly sthana: SthanaBala;
+  /** Directional strength, 0 to 60. */
+  readonly dig: number;
+  /** Temporal strength by component. */
+  readonly kaala: KaalaBala;
+  /** Motional strength. */
+  readonly cheshta: number;
+  /** Natural strength. */
+  readonly naisargika: number;
+  /** Aspectual strength, which may be negative. */
+  readonly drik: number;
+  /** The six together. */
+  readonly virupas: number;
+  /** The six together, in rupas. */
+  readonly rupas: number;
+  /** The rupas it must reach to be strong. */
+  readonly requiredRupas: number;
+  /** Whether it reaches them. */
+  readonly strong: boolean;
+}
+
+/** A chart's Shadbala, read under the context's `strength.*` settings. */
+export interface Shadbala {
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaShadbala[];
+}
+
 /** A chart's Vimshopaka: each graha's strength across the divisional charts. */
 export interface Vimshopaka {
   /** How each varga was scored. */
@@ -733,6 +799,8 @@ export declare class Chart {
   readonly ashtakavarga: Ashtakavarga | null;
   /** The Vimshopaka; `null` unless `vimshopaka` asked for it. */
   readonly vimshopaka: Vimshopaka | null;
+  /** The Shadbala; `null` unless `shadbala` asked for it. */
+  readonly shadbala: Shadbala | null;
   /**
    * The drishti the chart's grahas cast; empty unless `aspects` asked. The
    * count differs from chart to chart, because relations depend on where
@@ -998,6 +1066,8 @@ export interface ChartRequest {
   readonly ashtakavarga?: boolean;
   /** Whether to compute the Vimshopaka; false by default. */
   readonly vimshopaka?: boolean;
+  /** Whether to compute the Shadbala; false by default. */
+  readonly shadbala?: boolean;
   /** Whether to compute what each graha is — its dignity, avasthas, combustion and war; false by default. */
   readonly state?: boolean;
 }

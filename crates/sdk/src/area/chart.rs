@@ -8,7 +8,7 @@ use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{ChartFoundation, Founder};
 use teistro_core::angle::Nas;
-use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Rashi, Varga};
+use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Rashi, Vara, Varga};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -29,8 +29,10 @@ use teistro_points::arudha::arudha;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_serial::Document;
 use teistro_state::state;
+use teistro_strength::shadbala::{SAPTAVARGAJA_VARGAS, ShadbalaGraha};
 use teistro_strength::{
-    AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, VimshopakaChart, VimshopakaReading,
+    AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, ShadbalaChart, ShadbalaReading,
+    ShadbalaRules, VimshopakaChart, VimshopakaReading,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -287,6 +289,14 @@ impl<'a> ChartArea<'a> {
         }
         if request.sections.has(Sections::VIMSHOPAKA) {
             document = document.with_vimshopaka(Self::vimshopaka_of(foundation, settings)?);
+        }
+        if request.sections.has(Sections::SHADBALA) {
+            document = document.with_shadbala(Self::shadbala_of(
+                founder,
+                foundation,
+                settings,
+                request.offset(),
+            )?);
         }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
@@ -555,20 +565,13 @@ impl<'a> ChartArea<'a> {
         ))
     }
 
-    /// The Vimshopaka of a founded chart under the settings' scoring, from
-    /// the seven grahas' signs in the sixteen vargas it reads.
-    fn vimshopaka_of(
+    /// The seven strength grahas' signs in each of `vargas`, Sun to Saturn.
+    fn varga_signs<const N: usize>(
         foundation: &ChartFoundation,
-        settings: &teistro_core::settings::Settings,
-    ) -> Result<VimshopakaReading, Error> {
-        let mut chart = VimshopakaChart {
-            signs: [[Rashi::Aries; 7]; 16],
-        };
-        for (row, varga) in chart
-            .signs
-            .iter_mut()
-            .zip(teistro_strength::vimshopaka::VARGAS)
-        {
+        vargas: [Varga; N],
+    ) -> Result<[[Rashi; 7]; N], Error> {
+        let mut signs = [[Rashi::Aries; 7]; N];
+        for (row, varga) in signs.iter_mut().zip(vargas) {
             let placed = varga_chart(foundation, Axis::of(varga))?;
             for (slot, graha) in row.iter_mut().zip(teistro_strength::ashtakavarga::GRAHAS) {
                 *slot = placed.graha(graha).map(|at| at.sign).ok_or_else(|| {
@@ -576,7 +579,125 @@ impl<'a> ChartArea<'a> {
                 })?;
             }
         }
+        Ok(signs)
+    }
+
+    /// The Vimshopaka of a founded chart under the settings' scoring, from
+    /// the seven grahas' signs in the sixteen vargas it reads.
+    fn vimshopaka_of(
+        foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
+    ) -> Result<VimshopakaReading, Error> {
+        let chart = VimshopakaChart {
+            signs: Self::varga_signs(foundation, teistro_strength::vimshopaka::VARGAS)?,
+        };
         Ok(VimshopakaReading::of(&chart, settings.strength.vimshopaka))
+    }
+
+    /// The Shadbala of a founded chart under the settings' readings.
+    ///
+    /// Everything but the angles, the obliquity and a sankranti is on the
+    /// foundation already: the grahas, the Hindu day and its vara, and the
+    /// hora. The angles come from the founder, so the Dig bala measures this
+    /// chart's own midheaven; the Mesha sankranti is searched only when the
+    /// settings ask for the engine's year lord.
+    fn shadbala_of(
+        founder: &Founder<'_, dyn EphemerisProvider + '_>,
+        foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
+        offset: UtcOffset,
+    ) -> Result<ShadbalaReading, Error> {
+        let rules = ShadbalaRules::of(settings)?;
+        let mut grahas = [ShadbalaGraha {
+            longitude: 0.0,
+            tropical: 0.0,
+            latitude: 0.0,
+            house: 1,
+        }; 7];
+        for (slot, graha) in grahas
+            .iter_mut()
+            .zip(teistro_strength::ashtakavarga::GRAHAS)
+        {
+            let at = foundation.graha(graha).ok_or_else(|| {
+                Error::internal(format!("a founded chart places {}", graha.key()))
+            })?;
+            *slot = ShadbalaGraha {
+                longitude: at.longitude_deg,
+                tropical: at.tropical_deg,
+                latitude: at.latitude_deg,
+                house: at.house.bhava,
+            };
+        }
+        let angles =
+            founder.angles_at(foundation.instant, &foundation.place, &foundation.zodiac)?;
+        let day = &foundation.day.day;
+        // A civil date by the request's clock: the day's sunrise always falls
+        // on its own.
+        let days = offset.days();
+        #[allow(
+            clippy::cast_possible_truncation,
+            reason = "a Julian day number fits an i64 many times over"
+        )]
+        let civil = |jd: f64| (jd + days + 0.5).floor() as i64;
+        let civil_day = civil(day.sunrise.get());
+        let sankranti_lord = if rules.kaala_lords == teistro_core::settings::KaalaLords::Sankranti {
+            Some(Self::sankranti_lord(founder, foundation.instant)?)
+        } else {
+            None
+        };
+        let chart = ShadbalaChart {
+            grahas,
+            vargas: Self::varga_signs(foundation, SAPTAVARGAJA_VARGAS)?,
+            instant: foundation.instant.get(),
+            sunrise: day.sunrise.get(),
+            sunset: day.sunset.get(),
+            next_sunrise: day.next_sunrise.get(),
+            after_midnight: civil(foundation.instant.get()) > civil_day,
+            civil_day,
+            weekday_lord: day.vara.attributes().lord,
+            hora_lord: foundation.timing.hora.lord,
+            sankranti_lord,
+            ascendant: angles.ascendant_deg,
+            midheaven: angles.midheaven_deg,
+            ayanamsha: foundation.zodiac.offset_deg,
+            obliquity: angles.obliquity_deg,
+        };
+        Ok(ShadbalaReading::of(&chart, rules))
+    }
+
+    /// The weekday lord of the last Mesha sankranti at or before an
+    /// instant, the weekday taken in UT as the recording engine takes it.
+    fn sankranti_lord(
+        founder: &Founder<'_, dyn EphemerisProvider + '_>,
+        at: JulianDay<Utc>,
+    ) -> Result<Graha, Error> {
+        use teistro_calendar::solar::sankranti::find_sankranti;
+        // A sankranti recurs every sidereal year, so the first one after a
+        // year back is at or before the instant, and at most one more is.
+        const YEAR: f64 = 366.0;
+        const MOST_OF_A_YEAR: f64 = 300.0;
+        let model = founder.solar_model();
+        let mut found = find_sankranti(model, 0, JulianDay::try_new(at.get() - YEAR)?)?;
+        let next = find_sankranti(
+            model,
+            0,
+            JulianDay::try_new(found.instant.get() + MOST_OF_A_YEAR)?,
+        )?;
+        if next.instant.get() <= at.get() {
+            found = next;
+        }
+        // Julian day 0.5 began a Monday; counted from Sunday it is day 1.
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "rem_euclid of 7 is 0 to 6"
+        )]
+        let weekday = ((found.instant.get() + 1.5).floor().rem_euclid(7.0)) as u8;
+        Vara::ALL
+            .into_iter()
+            .find(|vara| vara.attributes().weekday == weekday)
+            .map(|vara| vara.attributes().lord)
+            .ok_or_else(|| Error::internal("a weekday past Saturday"))
     }
 
     /// The derived points, which are the one section that needs more

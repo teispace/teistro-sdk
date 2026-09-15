@@ -496,8 +496,11 @@ default and the engine's the conformance profile's (C59–C62), in
 `crates/strength`, the document and every binding. **The Vimshopaka
 followed** (`03-design/vimshopaka-measured.md`, `check-vimshopaka`): the
 text's weights, which the engine shares, and the text's points the default
-beside the engine's Saptavargaja virupas (C63). Next: the shadbala scheme
-table.
+beside the engine's Saptavargaja virupas (C63). **The Shadbala followed**
+(`03-design/shadbala-measured.md`, `check-shadbala`): every component of the
+engine's reproduced, BPHS ch. 27's reading the default at eleven forks, each a
+setting (C64–C71). Next: bhava bala, then the Ishta and Kashta phala that read
+the Shadbala's rays.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

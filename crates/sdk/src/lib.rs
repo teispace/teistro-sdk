@@ -113,6 +113,9 @@ pub use teistro_render_svg as render_svg;
 // without building it (`03-design/dasha-kernels.md`).
 pub use teistro_dasha as dasha;
 pub use teistro_dasha::{DashaCursor, DashaReading, PeriodRow, Timeline};
+// Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
+// with the rules it was read under (`03-design/strength-schemes.md`).
+pub use teistro_strength as strength;
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a
 // namespace is in Rust — where Node writes

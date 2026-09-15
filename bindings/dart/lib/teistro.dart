@@ -621,6 +621,9 @@ const int _sectionAshtakavarga = 32;
 /// `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
 const int _sectionVimshopaka = 64;
 
+/// `TS_CHART_SHADBALA`, the Shadbala.
+const int _sectionShadbala = 128;
+
 /// `TS_CHART_STATE`, the planetary states.
 const int _sectionState = 2;
 
@@ -667,6 +670,7 @@ final class ChartArea extends _Area {
     bool houses = false,
     bool ashtakavarga = false,
     bool vimshopaka = false,
+    bool shadbala = false,
     bool state = false,
   }) => foundMany(
     instants: <double>[instant],
@@ -682,6 +686,7 @@ final class ChartArea extends _Area {
     houses: houses,
     ashtakavarga: ashtakavarga,
     vimshopaka: vimshopaka,
+    shadbala: shadbala,
     state: state,
   ).at(0);
 
@@ -717,6 +722,7 @@ final class ChartArea extends _Area {
     bool houses = false,
     bool ashtakavarga = false,
     bool vimshopaka = false,
+    bool shadbala = false,
     bool state = false,
   }) => decodeCharts(
     _context._guarded(
@@ -738,6 +744,7 @@ final class ChartArea extends _Area {
               (houses ? _sectionHouses : 0) |
               (ashtakavarga ? _sectionAshtakavarga : 0) |
               (vimshopaka ? _sectionVimshopaka : 0) |
+              (shadbala ? _sectionShadbala : 0) |
               (state ? _sectionState : 0),
           vargas: vargas,
           dashas: dashas,
@@ -1555,6 +1562,136 @@ final class GrahaAshtakavarga {
 
   /// Its yoga pinda, the two together.
   final int yogaPinda;
+}
+
+/// A graha's Sthana bala by component, virupas.
+final class SthanaBala {
+  const SthanaBala({
+    required this.uchcha,
+    required this.saptavargaja,
+    required this.ojayugma,
+    required this.kendradi,
+    required this.drekkana,
+  });
+
+  /// From its distance to its debilitation point, 0 to 60.
+  final double uchcha;
+
+  /// From its dignity in the seven vargas.
+  final double saptavargaja;
+
+  /// From its rasi's and navamsha's parity, 0, 15 or 30.
+  final double ojayugma;
+
+  /// From its house: 60, 30 or 15.
+  final double kendradi;
+
+  /// From its decanate: 0 or 15.
+  final double drekkana;
+
+  /// The five together.
+  double get total => uchcha + saptavargaja + ojayugma + kendradi + drekkana;
+}
+
+/// A graha's Kaala bala by component, virupas.
+final class KaalaBala {
+  const KaalaBala({
+    required this.nathonnatha,
+    required this.paksha,
+    required this.tribhaga,
+    required this.abda,
+    required this.masa,
+    required this.vara,
+    required this.hora,
+    required this.ayana,
+  });
+
+  /// From the hour, 0 to 60.
+  final double nathonnatha;
+
+  /// From the Moon's elongation, the Moon's doubled.
+  final double paksha;
+
+  /// 60 to the lord of the third of the day or night, and to Jupiter.
+  final double tribhaga;
+
+  /// 15 to the year's lord.
+  final double abda;
+
+  /// 30 to the month's lord.
+  final double masa;
+
+  /// 45 to the weekday's lord.
+  final double vara;
+
+  /// 60 to the hour's lord.
+  final double hora;
+
+  /// From its declination.
+  final double ayana;
+
+  /// The eight together.
+  double get total =>
+      nathonnatha + paksha + tribhaga + vara + hora + ayana + abda + masa;
+}
+
+/// One graha's Shadbala, in virupas.
+final class GrahaShadbala {
+  const GrahaShadbala({
+    required this.graha,
+    required this.sthana,
+    required this.dig,
+    required this.kaala,
+    required this.cheshta,
+    required this.naisargika,
+    required this.drik,
+    required this.virupas,
+    required this.rupas,
+    required this.requiredRupas,
+    required this.strong,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Positional strength by component.
+  final SthanaBala sthana;
+
+  /// Directional strength, 0 to 60.
+  final double dig;
+
+  /// Temporal strength by component.
+  final KaalaBala kaala;
+
+  /// Motional strength.
+  final double cheshta;
+
+  /// Natural strength.
+  final double naisargika;
+
+  /// Aspectual strength, which may be negative.
+  final double drik;
+
+  /// The six together.
+  final double virupas;
+
+  /// The six together, in rupas.
+  final double rupas;
+
+  /// The rupas it must reach to be strong.
+  final double requiredRupas;
+
+  /// Whether it reaches them.
+  final bool strong;
+}
+
+/// A chart's Shadbala, read under the context's `strength.*` settings
+/// (`03-design/shadbala-measured.md`).
+final class Shadbala {
+  const Shadbala({required this.grahas});
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaShadbala> grahas;
 }
 
 /// One graha's Vimshopaka, each score out of 20.
@@ -2510,6 +2647,55 @@ List<Ashtakavarga> _decodeAshtakavargas(Charts batch) {
   }, growable: false);
 }
 
+/// Each batch's Shadbalas, decoded once however many charts read them.
+final Expando<List<Shadbala>> _shadbalas = Expando<List<Shadbala>>('shadbalas');
+
+List<Shadbala> _shadbalasOf(Charts batch) =>
+    _shadbalas[batch] ??= _decodeShadbalas(batch);
+
+List<Shadbala> _decodeShadbalas(Charts batch) {
+  final c = batch.shadbala;
+  GrahaShadbala graha(int row) => GrahaShadbala(
+    graha: Graha.byId(c.graha[row]),
+    sthana: SthanaBala(
+      uchcha: c.uchcha[row],
+      saptavargaja: c.saptavargaja[row],
+      ojayugma: c.ojayugma[row],
+      kendradi: c.kendradi[row],
+      drekkana: c.drekkana[row],
+    ),
+    dig: c.dig[row],
+    kaala: KaalaBala(
+      nathonnatha: c.nathonnatha[row],
+      paksha: c.paksha[row],
+      tribhaga: c.tribhaga[row],
+      abda: c.abda[row],
+      masa: c.masa[row],
+      vara: c.vara[row],
+      hora: c.hora[row],
+      ayana: c.ayana[row],
+    ),
+    cheshta: c.cheshta[row],
+    naisargika: c.naisargika[row],
+    drik: c.drik[row],
+    virupas: c.virupas[row],
+    rupas: c.rupas[row],
+    requiredRupas: c.requiredRupas[row],
+    strong: c.strong[row] == 1,
+  );
+  return List<Shadbala>.generate(
+    c.length ~/ 7,
+    (chart) => Shadbala(
+      grahas: List<GrahaShadbala>.generate(
+        7,
+        (g) => graha(chart * 7 + g),
+        growable: false,
+      ),
+    ),
+    growable: false,
+  );
+}
+
 /// Each batch's Vimshopakas, decoded once however many charts read them.
 final Expando<List<Vimshopaka>> _vimshopakas = Expando<List<Vimshopaka>>(
   'vimshopakas',
@@ -2939,6 +3125,12 @@ final class Chart {
   /// The Ashtakavarga, when `ashtakavarga: true` asked for it.
   Ashtakavarga? get ashtakavarga {
     final all = _ashtakavargasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Shadbala, when `shadbala: true` asked for it.
+  Shadbala? get shadbala {
+    final all = _shadbalasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

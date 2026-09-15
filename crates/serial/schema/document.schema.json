@@ -1337,6 +1337,21 @@
       ],
       "type": "object"
     },
+    "DigKendras": {
+      "description": "The kendras the Shadbala's Dig bala measures from (crux C68).",
+      "oneOf": [
+        {
+          "const": "ANGLES",
+          "description": "BPHS ch. 27 v. 7: the ascendant, the nadir, the descendant and the midheaven.",
+          "type": "string"
+        },
+        {
+          "const": "LAGNA_PROJECTION",
+          "description": "The recording engine: all four projected from the lagna's degree, 30° a house.",
+          "type": "string"
+        }
+      ]
+    },
     "Dignity": {
       "description": "A key of the `dignity` catalogue.",
       "enum": [
@@ -1446,6 +1461,17 @@
           ],
           "description": "The upagrahas and the special lagnas."
         },
+        "shadbala": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShadbalaReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Each graha's six strengths (`03-design/shadbala-measured.md`)."
+        },
         "state": {
           "description": "What each graha is, as opposed to where it is.",
           "items": {
@@ -1497,6 +1523,21 @@
         "placed"
       ],
       "type": "object"
+    },
+    "Drik": {
+      "description": "How the Shadbala's Drik bala weighs the drishtis a graha receives (crux C69).",
+      "oneOf": [
+        {
+          "const": "QUARTER",
+          "description": "BPHS ch. 27 v. 19: a quarter of each benefic's drishti added and of each malefic's taken away, and Mercury's and Jupiter's added again in full.",
+          "type": "string"
+        },
+        {
+          "const": "FULL",
+          "description": "The recording engine: each drishti in full, Mercury's taken away, the sum bounded at ±60.",
+          "type": "string"
+        }
+      ]
     },
     "Drishti": {
       "description": "One body's gaze at another.",
@@ -1888,6 +1929,76 @@
       ],
       "type": "object"
     },
+    "GrahaShadbala": {
+      "description": "One graha's Shadbala.",
+      "properties": {
+        "cheshta": {
+          "description": "Motional strength.",
+          "format": "double",
+          "type": "number"
+        },
+        "dig": {
+          "description": "Directional strength, 0 to 60.",
+          "format": "double",
+          "type": "number"
+        },
+        "drik": {
+          "description": "Aspectual strength, which may be negative.",
+          "format": "double",
+          "type": "number"
+        },
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which graha."
+        },
+        "kaala": {
+          "$ref": "#/$defs/KaalaBala",
+          "description": "Temporal strength."
+        },
+        "naisargika": {
+          "description": "Natural strength.",
+          "format": "double",
+          "type": "number"
+        },
+        "required_rupas": {
+          "description": "The rupas it must reach to be strong.",
+          "format": "double",
+          "type": "number"
+        },
+        "rupas": {
+          "description": "The same in rupas.",
+          "format": "double",
+          "type": "number"
+        },
+        "sthana": {
+          "$ref": "#/$defs/SthanaBala",
+          "description": "Positional strength."
+        },
+        "strong": {
+          "description": "Whether it reaches them.",
+          "type": "boolean"
+        },
+        "virupas": {
+          "description": "The six together, virupas.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "graha",
+        "sthana",
+        "dig",
+        "kaala",
+        "cheshta",
+        "naisargika",
+        "drik",
+        "virupas",
+        "rupas",
+        "required_rupas",
+        "strong"
+      ],
+      "type": "object"
+    },
     "GrahaState": {
       "description": "What one graha is, in one chart.",
       "properties": {
@@ -2209,6 +2320,77 @@
       "type": "string",
       "x-teistro-kind": "kaala"
     },
+    "KaalaBala": {
+      "description": "A graha's Kaala bala by component, virupas.",
+      "properties": {
+        "abda": {
+          "description": "15 to the year's lord.",
+          "format": "double",
+          "type": "number"
+        },
+        "ayana": {
+          "description": "From its declination.",
+          "format": "double",
+          "type": "number"
+        },
+        "hora": {
+          "description": "60 to the hour's lord.",
+          "format": "double",
+          "type": "number"
+        },
+        "masa": {
+          "description": "30 to the month's lord.",
+          "format": "double",
+          "type": "number"
+        },
+        "nathonnatha": {
+          "description": "From the hour's distance to midnight or noon, 0 to 60.",
+          "format": "double",
+          "type": "number"
+        },
+        "paksha": {
+          "description": "From the Moon's elongation, the Moon's doubled.",
+          "format": "double",
+          "type": "number"
+        },
+        "tribhaga": {
+          "description": "60 to the lord of the third of the day or night, and to Jupiter.",
+          "format": "double",
+          "type": "number"
+        },
+        "vara": {
+          "description": "45 to the weekday's lord.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "nathonnatha",
+        "paksha",
+        "tribhaga",
+        "abda",
+        "masa",
+        "vara",
+        "hora",
+        "ayana"
+      ],
+      "type": "object"
+    },
+    "KaalaLords": {
+      "description": "Whose weekdays the Shadbala's Abda and Masa lords are (crux C67).",
+      "oneOf": [
+        {
+          "const": "AHARGANA",
+          "description": "BPHS ch. 27 v. 13: the ahargana's 360-day year and 30-day month.",
+          "type": "string"
+        },
+        {
+          "const": "SANKRANTI",
+          "description": "The recording engine: the UT weekday of the last Mesha sankranti for the year, and the lord of the Sun's sign for the month.",
+          "type": "string"
+        }
+      ]
+    },
     "Kaalas": {
       "description": "One inauspicious eighth of the daylight.",
       "properties": {
@@ -2355,6 +2537,21 @@
       "description": "A catalogue key, as `kind.KEY` or `kind#id`.",
       "pattern": "^[a-z][a-z0-9_]*(\\.[A-Z][A-Z0-9_]{0,47}|#[0-9]{1,5})$",
       "type": "string"
+    },
+    "Kranti": {
+      "description": "The declination the Shadbala's Ayana bala reads (crux C66).",
+      "oneOf": [
+        {
+          "const": "TRUE",
+          "description": "The graha's true declination: its ecliptic latitude and the date's obliquity, as BPHS's notes take it from an ephemeris.",
+          "type": "string"
+        },
+        {
+          "const": "ECLIPTIC",
+          "description": "The recording engine: its tropical longitude at zero latitude, on an obliquity of 23.4393°.",
+          "type": "string"
+        }
+      ]
     },
     "Lajjitadi": {
       "description": "The lajjitadi a chart decides, the ones it rules out, and the ones it cannot decide either way.",
@@ -2659,6 +2856,21 @@
         }
       ]
     },
+    "MoonCheshta": {
+      "description": "The Moon's Cheshta bala in the Shadbala (crux C66).",
+      "oneOf": [
+        {
+          "const": "PAKSHA",
+          "description": "BPHS ch. 27 v. 18: her Paksha bala.",
+          "type": "string"
+        },
+        {
+          "const": "ELONGATION",
+          "description": "The recording engine: a third of her elongation, undoubled.",
+          "type": "string"
+        }
+      ]
+    },
     "MoonDay": {
       "description": "What the Moon did in the day.",
       "properties": {
@@ -2778,6 +2990,21 @@
       ],
       "type": "object"
     },
+    "Naisargika": {
+      "description": "The Shadbala's natural strengths (crux C71).",
+      "oneOf": [
+        {
+          "const": "EXACT",
+          "description": "BPHS ch. 27 v. 14: exact sevenths of a rupa.",
+          "type": "string"
+        },
+        {
+          "const": "HUNDREDTHS",
+          "description": "The recording engine's, rounded to hundredths.",
+          "type": "string"
+        }
+      ]
+    },
     "Nakshatra": {
       "description": "A key of the `nakshatra` catalogue.",
       "enum": [
@@ -2834,6 +3061,21 @@
         "inside"
       ],
       "type": "object"
+    },
+    "Nathonnatha": {
+      "description": "How the Shadbala's Nathonnatha measures the hour (crux C65).",
+      "oneOf": [
+        {
+          "const": "MIDNIGHT",
+          "description": "BPHS ch. 27 vv. 8 and 9: from midnight at any hour, the Moon, Mars and Saturn twice the nata in ghatis, the Sun, Jupiter and Venus 60 less that.",
+          "type": "string"
+        },
+        {
+          "const": "ARC",
+          "description": "The recording engine: the day grahas rise to 60 at the middle of the daylight and the night grahas at the middle of the night, each with nothing outside its own arc.",
+          "type": "string"
+        }
+      ]
     },
     "Omens": {
       "description": "What a day is said to be.",
@@ -3425,6 +3667,21 @@
         }
       ]
     },
+    "PreDawnNight": {
+      "description": "Which night a birth before sunrise is measured in, for the Shadbala's Nathonnatha and Tribhaga (crux C65).",
+      "oneOf": [
+        {
+          "const": "PREVIOUS_EVENING",
+          "description": "The night it falls in, from the previous evening's sunset.",
+          "type": "string"
+        },
+        {
+          "const": "SAME_EVENING",
+          "description": "The recording engine's: from the civil date's own sunset, which comes after the birth, so no night graha gains.",
+          "type": "string"
+        }
+      ]
+    },
     "Provenance": {
       "description": "Everything that reproduces a result.",
       "properties": {
@@ -3709,6 +3966,21 @@
       "type": "string",
       "x-teistro-kind": "relationship"
     },
+    "RequiredRupas": {
+      "description": "The rupas a graha's Shadbala must reach to be strong (crux C71).",
+      "oneOf": [
+        {
+          "const": "BPHS",
+          "description": "BPHS ch. 27 vv. 32 and 33: 6.5, 6, 5, 7, 6.5, 5.5 and 5, Sun to Saturn.",
+          "type": "string"
+        },
+        {
+          "const": "RECORDING_ENGINE",
+          "description": "The recording engine's, the Sun's 5.",
+          "type": "string"
+        }
+      ]
+    },
     "Rules": {
       "description": "The choices a dasha is computed under, which the settings' `dasha` group holds.",
       "properties": {
@@ -3741,6 +4013,21 @@
         "seed_overflow"
       ],
       "type": "object"
+    },
+    "Saptavargaja": {
+      "description": "How the Shadbala's Saptavargaja scores a graha in each of its seven vargas (crux C64).",
+      "oneOf": [
+        {
+          "const": "COMPOUND",
+          "description": "B.V. Raman's reading of BPHS ch. 27: moolatrikona 45 (in the rasi chart by its degrees), the own sign 30, then 22.5, 15, 7.5, 3.75 or 1.875 by the compound relationship, its temporary half from the rasi chart; exaltation is Uchcha's.",
+          "type": "string"
+        },
+        {
+          "const": "NATURAL",
+          "description": "The conformance corpus's recording engine: exaltation 45, moolatrikona or the own sign 30, then 15, 7.5 or 3.75 by natural friendship alone, debilitation nothing.",
+          "type": "string"
+        }
+      ]
     },
     "Scheme": {
       "description": "A divisional chart's rule.",
@@ -3871,6 +4158,90 @@
         }
       ]
     },
+    "ShadbalaReading": {
+      "description": "A chart's Shadbala.",
+      "properties": {
+        "grahas": {
+          "description": "Each graha's, Sun to Saturn.",
+          "items": {
+            "$ref": "#/$defs/GrahaShadbala"
+          },
+          "type": "array"
+        },
+        "rules": {
+          "$ref": "#/$defs/ShadbalaRules",
+          "description": "The choices it was computed under."
+        }
+      },
+      "required": [
+        "rules",
+        "grahas"
+      ],
+      "type": "object"
+    },
+    "ShadbalaRules": {
+      "description": "The choices a Shadbala is computed under, one a fork of BPHS ch. 27 and the recording engine (cruxes C64 to C71).",
+      "properties": {
+        "dig": {
+          "$ref": "#/$defs/DigKendras",
+          "description": "The kendras the Dig measures from."
+        },
+        "drik": {
+          "$ref": "#/$defs/Drik",
+          "description": "How the Drik weighs the drishtis received."
+        },
+        "kaala_lords": {
+          "$ref": "#/$defs/KaalaLords",
+          "description": "Whose weekdays the Abda and Masa lords are."
+        },
+        "kranti": {
+          "$ref": "#/$defs/Kranti",
+          "description": "The declination the Ayana reads."
+        },
+        "moon_cheshta": {
+          "$ref": "#/$defs/MoonCheshta",
+          "description": "The Moon's Cheshta."
+        },
+        "naisargika": {
+          "$ref": "#/$defs/Naisargika",
+          "description": "The natural strengths."
+        },
+        "nathonnatha": {
+          "$ref": "#/$defs/Nathonnatha",
+          "description": "How the Nathonnatha measures the hour."
+        },
+        "pre_dawn_night": {
+          "$ref": "#/$defs/PreDawnNight",
+          "description": "Which night a birth before dawn is measured in."
+        },
+        "required_rupas": {
+          "$ref": "#/$defs/RequiredRupas",
+          "description": "The rupas a graha must reach."
+        },
+        "saptavargaja": {
+          "$ref": "#/$defs/Saptavargaja",
+          "description": "How the Saptavargaja scores a varga."
+        },
+        "sun_ayana": {
+          "$ref": "#/$defs/SunAyana",
+          "description": "Where the Sun's Ayana is counted."
+        }
+      },
+      "required": [
+        "saptavargaja",
+        "nathonnatha",
+        "pre_dawn_night",
+        "sun_ayana",
+        "moon_cheshta",
+        "kranti",
+        "kaala_lords",
+        "dig",
+        "drik",
+        "naisargika",
+        "required_rupas"
+      ],
+      "type": "object"
+    },
     "Shodhana": {
       "description": "Where the Ashtakavarga's reductions and pindas are made (crux C59).",
       "oneOf": [
@@ -3943,6 +4314,44 @@
         }
       ]
     },
+    "SthanaBala": {
+      "description": "A graha's Sthana bala by component, virupas.",
+      "properties": {
+        "drekkana": {
+          "description": "From its decanate: 0 or 15.",
+          "format": "double",
+          "type": "number"
+        },
+        "kendradi": {
+          "description": "From its house: 60, 30 or 15.",
+          "format": "double",
+          "type": "number"
+        },
+        "ojayugma": {
+          "description": "From its rasi's and navamsha's parity, 0, 15 or 30.",
+          "format": "double",
+          "type": "number"
+        },
+        "saptavargaja": {
+          "description": "From its dignity in the seven vargas.",
+          "format": "double",
+          "type": "number"
+        },
+        "uchcha": {
+          "description": "From its distance to its debilitation point, 0 to 60.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "uchcha",
+        "saptavargaja",
+        "ojayugma",
+        "kendradi",
+        "drekkana"
+      ],
+      "type": "object"
+    },
     "Strength": {
       "description": "How strongly a graha looks at a sign, in the quarters the tradition counts a drishti in.",
       "oneOf": [
@@ -3969,6 +4378,21 @@
         {
           "const": "FULL",
           "description": "A full aspect: the seventh, and a special graha's own two houses.",
+          "type": "string"
+        }
+      ]
+    },
+    "SunAyana": {
+      "description": "Where the Sun's Ayana bala is counted in the Shadbala (crux C66).",
+      "oneOf": [
+        {
+          "const": "DOUBLED",
+          "description": "BPHS ch. 27 v. 17: doubled in Kaala, and again as its Cheshta.",
+          "type": "string"
+        },
+        {
+          "const": "CHESHTA_ONLY",
+          "description": "The recording engine: only as its Cheshta.",
           "type": "string"
         }
       ]
