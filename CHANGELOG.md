@@ -877,6 +877,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** unchanged for every catalogued system; a registered twin of
   Vimshottari reproduces it to the bit.
 
+- The dasha cursor's budgets are measured: `crates/dasha/benches/dasha.rs`
+  times `at(t, 5)` for every kernel and a registered row (119 to 354 ns
+  against 20 µs) and a materialised depth-3 tree (15.8 µs against 500 µs).
+  `teistro-scenario` gains a `dashas` section, so the instruction-count gate
+  and the cross-architecture hash matrix now watch the cursor too.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

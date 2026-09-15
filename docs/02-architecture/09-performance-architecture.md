@@ -44,7 +44,7 @@ instruction-count gating).
 | operation | budget (native provider, laptop core) |
 |---|---|
 | foundation | 1 ms |
-| `dasha_at(instant, depth 5)` | 20 µs, zero allocations |
+| `dasha_at(instant, depth 5)` | 20 µs, zero allocations (measured 119 to 354 ns across the kernels, `03-design/dasha-kernels.md`) |
 | one varga chart; all standard vargas | 5 µs; 100 µs |
 | 900 rules | 2 ms |
 | rectification step (Δt = 1 s) | 1 ms |

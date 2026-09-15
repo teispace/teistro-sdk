@@ -27,6 +27,15 @@
 //! which said nothing at all about the layer where they moved. It costs
 //! ten milliseconds and it sees them: moving `SCAN_ANCHOR_JD` by half a
 //! step leaves the `astro` digest unchanged and moves this one.
+//!
+//! The **dashas** section walks every kernel's cursor: the chain at depth
+//! five at instants spread over three centuries, for each nakshatra-seeded
+//! row, each sign-based row and the Kalachakra, from Moons spread round the
+//! zodiac. A boundary is a sum of products of years and days, which is the
+//! arithmetic two machines could round differently, and `at` is the call a
+//! timeline makes per pixel, so the instruction count watches the budget
+//! `09-performance-architecture.md` sets it (`crates/dasha/benches` times
+//! it).
 
 use teistro_astro::ayanamsha::{self, Basis};
 use teistro_astro::delta_t::{DeltaTModel, delta_t};
@@ -38,12 +47,20 @@ use teistro_calendar::shipped;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
 use teistro_chart::bhava::{Bhavas, Chalit};
-use teistro_core::catalogue::{Ayanamsha, Calendar, Graha, HouseSystem};
+use teistro_core::angle::Nas;
+use teistro_core::catalogue::{Ayanamsha, Calendar, Dignity, Graha, HouseSystem, Rashi};
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
-use teistro_core::quantity::{JulianDay, Tt, Ut1};
-use teistro_core::settings::{AyanamshaChoice, PolarPolicy};
+use teistro_core::quantity::{Degrees, Depth, JulianDay, Tt, Ut1, Utc};
+use teistro_core::settings::{
+    AfterCycle, AyanamshaChoice, Balance, BirthPeriod, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, PolarPolicy, SeedOverflow, YearLength,
+};
 use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
+use teistro_dasha::{
+    Birth, Dasha, KalachakraDasha, KalachakraRules, RASHI_ROWS, ROWS, RashiChart, RashiDasha,
+    Rules as DashaRules, Timeline,
+};
 use teistro_geometry::{Body, Placements, Point, place, rows};
 use teistro_panchanga::Almanac;
 use teistro_port_ephemeris::TestProvider;
@@ -79,7 +96,7 @@ impl Section {
 }
 
 /// The sections in the order every report lists them.
-pub const SECTIONS: [&str; 7] = [
+pub const SECTIONS: [&str; 8] = [
     "calendar",
     "astro",
     "houses",
@@ -87,6 +104,7 @@ pub const SECTIONS: [&str; 7] = [
     "panchanga",
     "geometry",
     "render",
+    "dashas",
 ];
 
 /// One section by name, or `None` when nothing is called that.
@@ -100,6 +118,7 @@ pub fn section(name: &str) -> Option<Section> {
         "panchanga" => Some(panchanga()),
         "geometry" => Some(geometry()),
         "render" => Some(render()),
+        "dashas" => Some(dashas()),
         _ => None,
     }
 }
@@ -473,6 +492,95 @@ fn panchanga() -> Section {
         }
         for set in &day.moon.sets {
             section.push(set.get());
+        }
+    }
+    section
+}
+
+/// The dashas: the chain at depth five, at instants over three centuries,
+/// for every shipped row of every kernel, from Moons spread round the
+/// zodiac; each period's lord and bounds.
+fn dashas() -> Section {
+    let mut section = Section::new("dashas");
+    let Ok(depth) = Depth::try_new(5) else {
+        return section;
+    };
+    let rules = DashaRules {
+        balance: Balance::Spatial,
+        year_length: YearLength::Julian36525,
+        birth_period: BirthPeriod::Compressed,
+        after_cycle: AfterCycle::Repeat,
+        seed_overflow: SeedOverflow::WrapToStart,
+    };
+    let birth_jd = 2_447_995.489_583_333_5;
+    let instants: Vec<JulianDay<Utc>> = (0..300)
+        .map(|i| JulianDay::literal(birth_jd + f64::from(i) * 365.25 + 0.371 * f64::from(i)))
+        .collect();
+    let mut chains = |timeline: &dyn Fn(JulianDay<Utc>) -> teistro_dasha::Chain| {
+        for instant in &instants {
+            for period in timeline(*instant).iter() {
+                section.push_int(i64::from(period.lord as u16));
+                section.push(period.interval.from.get());
+                section.push(period.interval.to.get());
+            }
+        }
+    };
+    for moon in [3.7, 101.25, 221.786_980_828_370_36, 347.9] {
+        let Ok(degrees) = Degrees::try_new(moon) else {
+            continue;
+        };
+        let birth = Birth {
+            instant: JulianDay::literal(birth_jd),
+            moon: Nas::from_degrees(degrees),
+            moon_span: None,
+        };
+        for row in ROWS {
+            if let Ok(dasha) = Dasha::new(row, &birth, rules) {
+                chains(&|at| dasha.at(at, depth));
+            }
+        }
+        let kalachakra = KalachakraDasha::new(
+            &birth,
+            KalachakraRules {
+                balance: Balance::Spatial,
+                year_length: YearLength::Julian36525,
+                after_cycle: AfterCycle::Repeat,
+                membership: KalachakraMembership::Listed,
+                balance_of: KalachakraBalance::WholePada,
+                after_ninth: KalachakraAfterNinth::Reverse,
+            },
+        );
+        if let Ok(dasha) = kalachakra {
+            chains(&|at| dasha.at(at, depth));
+        }
+    }
+    let chart = RashiChart {
+        lagna: Rashi::Pisces,
+        arudha_lagna: Rashi::Gemini,
+        navamsa_lagna: Rashi::Aquarius,
+        signs: [
+            Rashi::Aries,
+            Rashi::Scorpio,
+            Rashi::Aquarius,
+            Rashi::Aries,
+            Rashi::Gemini,
+            Rashi::Aquarius,
+            Rashi::Capricorn,
+            Rashi::Capricorn,
+            Rashi::Cancer,
+        ],
+        dignities: [Dignity::Neutral; 9],
+    };
+    for row in RASHI_ROWS {
+        let made = RashiDasha::new(
+            row,
+            &chart,
+            JulianDay::literal(birth_jd),
+            YearLength::Julian36525,
+            AfterCycle::Repeat,
+        );
+        if let Ok(dasha) = made {
+            chains(&|at| dasha.at(at, depth));
         }
     }
     section

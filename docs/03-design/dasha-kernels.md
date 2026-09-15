@@ -443,6 +443,27 @@ allocations; a materialised depth-3 tree under 500 microseconds; the
 per-request position cache keeps the ephemeris call count at one per
 foundation regardless of depth.
 
+**Measured 2026-09-15** (`cargo bench -p teistro-dasha --bench dasha`, an
+Apple M2 Pro, release; the medians of criterion's intervals):
+
+| operation | measured | budget |
+|---|---|---|
+| Vimshottari `at(t, 5)` | 354 ns | 20 µs |
+| Ashtottari `at(t, 5)` | 330 ns | 20 µs |
+| a registered row's `at(t, 5)` | 350 ns | 20 µs |
+| Chara `at(t, 5)` | 229 ns | 20 µs |
+| Kalachakra `at(t, 5)` (to its antardashas) | 119 ns | 20 µs |
+| Vimshottari `periods(120 years, 3)`, 819 periods materialised | 15.8 µs | 500 µs |
+| making a Vimshottari dasha | 75 ns | none set |
+
+Every read is some sixty times inside its budget and allocates nothing
+(`tests/allocations.rs`, at depth six for every row of every kernel). A
+wall-clock number on a shared runner is noise, so what CI gates is the
+instruction count: the scenario's `dashas` section walks the chain at depth
+five at 300 instants for every shipped row of every kernel, which the
+benchmarks workflow counts under callgrind against the pull request's base
+and the hash matrix digests across architectures.
+
 ## Tests and golden vectors
 
 Unit tests per kernel over its parameter space; the whole-table

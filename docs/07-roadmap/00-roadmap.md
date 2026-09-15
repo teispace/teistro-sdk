@@ -512,9 +512,13 @@ consumer's own dasha system now registers** (`03-design/dasha-kernels.md`,
 `UduDefinition` on the context builder or `TsContextOptions.dashas_json`,
 asked for by its key, carried in the document with its definition so a
 stored document rebuilds it anywhere, and registered by every parity runner.
-Next: the exit's remaining clauses — `dasha_at` at depth five measured
-against its 20-microsecond budget, and PyJHora cross-checks recorded — then
-Rashi bala on a source, or the yogas the interpretation layer reads.
+**`dasha_at` at depth five is measured** at 119 to 354 nanoseconds across
+the kernels against its 20-microsecond budget, allocation-free, and a
+materialised 120-year depth-3 tree at 15.8 microseconds against 500
+(`crates/dasha/benches`), with the scenario's `dashas` section putting the
+cursor under the instruction-count gate and the hash matrix. Next: the
+exit's last clause, PyJHora cross-checks recorded, then Rashi bala on a
+source, or the yogas the interpretation layer reads.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18
