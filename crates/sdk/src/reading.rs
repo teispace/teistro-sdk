@@ -60,6 +60,8 @@ impl Sections {
     pub(crate) const BHAVA_BALA: Sections = Sections(1 << 8);
     /// The names each graha earns by its good vargas.
     pub(crate) const VAISESHIKAMSA: Sections = Sections(1 << 9);
+    /// What each graha's placement says of its dasha.
+    pub(crate) const DASHA_PHALA: Sections = Sections(1 << 10);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -304,6 +306,26 @@ impl ChartRequest {
         self
     }
 
+    /// What each graha's placement says of its dasha: its benefic and
+    /// malefic points in the seven vargas and whether its rasi place is
+    /// auspicious (BPHS ch. 28 vv. 7 to 10), where in its dasha its effects
+    /// come, and whether its placement makes the dasha favourable or
+    /// unfavourable (ch. 47 vv. 3 to 6), read under `dasha.shanta_sign`.
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_dasha_phala();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_dasha_phala(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::DASHA_PHALA);
+        self
+    }
+
     /// The charts to draw, each a layout and which chart to place in it,
     /// in the order given: `D1` for the founded chart, or a divisional one.
     ///
@@ -384,6 +406,7 @@ impl ChartRequest {
             .with_vaiseshikamsa()
             .with_shadbala()
             .with_bhava_bala()
+            .with_dasha_phala()
     }
 
     /// The place the chart is cast for.

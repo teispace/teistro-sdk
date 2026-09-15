@@ -89,12 +89,27 @@ pub fn temporary(
     sign: Rashi,
     sign_of: impl Fn(Graha) -> Option<Rashi>,
 ) -> Option<Relationship> {
-    let lord = sign.attributes().lord;
+    temporary_from(graha, sign.attributes().lord, sign, sign_of)
+}
+
+/// The temporary friendship of a graha seated in `seat` with `lord`, wherever
+/// `sign_of` places it: a friend from the second, third, fourth, tenth,
+/// eleventh or twelfth sign, else an enemy, and its own friend.
+///
+/// [`temporary`] measures from the sign the graha stands in; a divisional
+/// chart's dignity measures from its rasi seat instead.
+#[must_use]
+pub fn temporary_from(
+    graha: Graha,
+    lord: Graha,
+    seat: Rashi,
+    sign_of: impl Fn(Graha) -> Option<Rashi>,
+) -> Option<Relationship> {
     if lord == graha {
         return Some(Relationship::Friend);
     }
     let at = sign_of(lord)?;
-    let distance = (at as u8 + 12 - sign as u8) % 12 + 1;
+    let distance = (at as u8 + 12 - seat as u8) % 12 + 1;
     Some(if FRIENDLY_HOUSES.contains(&distance) {
         Relationship::Friend
     } else {
@@ -115,6 +130,51 @@ pub const fn compound(natural: Relationship, temporary: Relationship) -> Relatio
         (Relationship::Neutral, Relationship::Enemy) => Relationship::Enemy,
         (Relationship::Enemy, Relationship::Enemy) => Relationship::GreatEnemy,
         _ => Relationship::Neutral,
+    }
+}
+
+/// The dignity of a graha in a divisional chart's sign, which carries no
+/// degrees.
+///
+/// By the sign alone, in the order BPHS ch. 28 vv. 7 to 9 rank them:
+/// exaltation, debilitation, moolatrikona, the own sign; then the compound
+/// friendship with the sign's lord, its temporary half read between the
+/// graha's and the lord's rasi seats as `rasi_sign_of` gives them (B.V.
+/// Raman, Art. 30). The shadow grahas stop at neutral, as in [`dignity`].
+#[must_use]
+pub fn varga_dignity(
+    graha: Graha,
+    sign: Rashi,
+    rasi_sign_of: impl Fn(Graha) -> Option<Rashi>,
+) -> Dignity {
+    let attributes = graha.attributes();
+    if attributes.exaltation.is_some_and(|at| at.sign == sign) {
+        return Dignity::Exalted;
+    }
+    if attributes.debilitation.is_some_and(|at| at.sign == sign) {
+        return Dignity::Debilitated;
+    }
+    if attributes
+        .moolatrikona
+        .is_some_and(|span| span.sign == sign)
+    {
+        return Dignity::Mooltrikona;
+    }
+    if in_own_sign(graha, sign) {
+        return Dignity::OwnSign;
+    }
+    if is_shadow(graha) {
+        return Dignity::Neutral;
+    }
+    let temporary = rasi_sign_of(graha)
+        .and_then(|seat| temporary_from(graha, sign.attributes().lord, seat, &rasi_sign_of))
+        .unwrap_or(Relationship::Neutral);
+    match compound(natural(graha, sign), temporary) {
+        Relationship::GreatFriend => Dignity::GreatFriend,
+        Relationship::Friend => Dignity::Friend,
+        Relationship::Enemy => Dignity::Enemy,
+        Relationship::GreatEnemy => Dignity::GreatEnemy,
+        _ => Dignity::Neutral,
     }
 }
 

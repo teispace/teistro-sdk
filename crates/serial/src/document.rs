@@ -21,7 +21,8 @@ use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
 use teistro_state::GrahaState;
 use teistro_strength::{
-    AshtakavargaReading, BhavaBalaReading, ShadbalaReading, VaiseshikamsaReading, VimshopakaReading,
+    AshtakavargaReading, BhavaBalaReading, DashaPhalaReading, ShadbalaReading,
+    VaiseshikamsaReading, VimshopakaReading,
 };
 use teistro_vargas::chart::VargaChart;
 
@@ -73,6 +74,9 @@ pub struct Document {
     /// Each house's strength (`03-design/bhava-bala-measured.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub bhava_bala: Option<BhavaBalaReading>,
+    /// What each graha's placement says of its dasha (BPHS chs. 28 and 47).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub dasha_phala: Option<DashaPhalaReading>,
     /// The charts drawn in the layouts asked for: which chart, placed in
     /// which layout (`03-design/chart-geometry.md`).
     ///
@@ -103,6 +107,7 @@ impl Document {
             ashtakavarga: None,
             vimshopaka: None,
             vaiseshikamsa: None,
+            dasha_phala: None,
             shadbala: None,
             bhava_bala: None,
             drawings: Vec::new(),
@@ -163,6 +168,13 @@ impl Document {
     #[must_use]
     pub fn with_ashtakavarga(mut self, ashtakavarga: AshtakavargaReading) -> Document {
         self.ashtakavarga = Some(ashtakavarga);
+        self
+    }
+
+    /// With the dasha phala.
+    #[must_use]
+    pub fn with_dasha_phala(mut self, dasha_phala: DashaPhalaReading) -> Document {
+        self.dasha_phala = Some(dasha_phala);
         self
     }
 
@@ -238,6 +250,9 @@ impl Document {
         }
         if self.bhava_bala.is_some() {
             found.push("bhava_bala");
+        }
+        if self.dasha_phala.is_some() {
+            found.push("dasha_phala");
         }
         if !self.drawings.is_empty() {
             found.push("drawings");

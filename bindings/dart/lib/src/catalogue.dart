@@ -4938,6 +4938,42 @@ enum VimshopakaScoring {
   }
 }
 
+/// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+enum DashaPhase {
+  /// At its commencement.
+  commencement(0, 'commencement'),
+  /// In its middle.
+  middle(1, 'middle'),
+  /// At its end.
+  end(2, 'end');
+
+  const DashaPhase(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DashaPhase byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DashaPhase'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DashaPhase? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which arc of its day an instant falls in.
 enum DayPart {
   /// Between sunrise and sunset.

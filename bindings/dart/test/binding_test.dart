@@ -832,6 +832,46 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  /// A chart's dasha phala crosses whole: the nine grahas' Subhankas within
+  /// each varga's share and complementary in total; null unless asked, and
+  /// the Shadbala's rays beside the phalas.
+  test('a chart carries its dasha phala, and the Shadbala its rays', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dashaPhala: true,
+      shadbala: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .dashaPhala,
+      isNull,
+    );
+    final grahas = chart.dashaPhala!.grahas;
+    expect(grahas, hasLength(9));
+    expect(grahas.last.graha, Graha.ketu);
+    for (final g in grahas) {
+      expect(g.subhankas, hasLength(7));
+      for (var k = 0; k < 7; k++) {
+        expect(g.subhankas[k], inInclusiveRange(0, k == 0 ? 60 : 30));
+      }
+      expect(g.subhanka + g.asubhanka, closeTo(240, 1e-9));
+    }
+    for (final s in chart.shadbala!.grahas) {
+      expect(s.subhaRashmi, inInclusiveRange(1, 7));
+      expect(s.subhaRashmi + s.ashubhaRashmi, closeTo(8, 1e-9));
+    }
+    ctx.dispose();
+  });
+
   /// Every graha's state carries its Sayanadi: the nine grahas a state and a
   /// sub-state under each of the five ankas, the outer planets none.
   test(

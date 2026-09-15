@@ -38,8 +38,8 @@ pub use knobs::{
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, Shodhana, SunAyana,
-    Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
+    SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -287,6 +287,8 @@ group!(
         kalachakra_balance: KalachakraBalance,
         /// What follows the ninth Kalachakra mahadasha (crux C56).
         kalachakra_after_ninth: KalachakraAfterNinth,
+        /// Which friendly signs make a dasha favourable (crux C79).
+        shanta_sign: ShantaSign,
     }
 );
 

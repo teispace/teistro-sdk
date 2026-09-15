@@ -4539,6 +4539,24 @@ typedef enum ts_vimshopaka_scoring {
 } ts_vimshopaka_scoring;
 
 /**
+ * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+ */
+typedef enum ts_dasha_phase {
+    /**
+     * At its commencement.
+     */
+    TS_DASHA_PHASE_COMMENCEMENT = 0,
+    /**
+     * In its middle.
+     */
+    TS_DASHA_PHASE_MIDDLE = 1,
+    /**
+     * At its end.
+     */
+    TS_DASHA_PHASE_END = 2,
+} ts_dasha_phase;
+
+/**
  * Which arc of its day an instant falls in.
  */
 typedef enum ts_day_part {
@@ -5847,7 +5865,7 @@ struct ts_chart_request {
      * Which of the document's sections to compute beside the
      * foundation, as a bit set: 1 the day's almanac, 2 the planetary
      * states, 4 the aspects, 8 the derived points, 16 the houses
-     * service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa. Zero for the foundation alone, which is what every
+     * service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
      * caller compiled against an earlier header passes by not passing
      * it at all.
      *

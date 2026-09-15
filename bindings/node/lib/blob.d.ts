@@ -1070,6 +1070,14 @@ export interface ChartsShadbala {
    */
   readonly kashta: Float64Array;
   /**
+   * Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5).
+   */
+  readonly subhaRashmi: Float64Array;
+  /**
+   * Its inauspicious rays, 8 less the auspicious.
+   */
+  readonly ashubhaRashmi: Float64Array;
+  /**
    * 1 when the rupas reach the requirement, else 0.
    */
   readonly strong: Uint8Array;
@@ -1165,6 +1173,76 @@ export interface ChartsVaiseshikamsa {
    * The values are `Vaiseshikamsa` ids.
    */
   readonly shodashavargaName: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dasha_phala` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+ */
+export interface ChartsDashaPhala {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its Subhanka in the D1, out of 60: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD1: Float64Array;
+  /**
+   * Its Subhanka in the D2, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD2: Float64Array;
+  /**
+   * Its Subhanka in the D3, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD3: Float64Array;
+  /**
+   * Its Subhanka in the D7, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD7: Float64Array;
+  /**
+   * Its Subhanka in the D9, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD9: Float64Array;
+  /**
+   * Its Subhanka in the D12, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD12: Float64Array;
+  /**
+   * Its Subhanka in the D30, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+   */
+  readonly subhankaD30: Float64Array;
+  /**
+   * The seven Subhankas together, out of 240.
+   */
+  readonly subhanka: Float64Array;
+  /**
+   * Their complements together, out of 240.
+   */
+  readonly asubhanka: Float64Array;
+  /**
+   * Whether its rasi place is auspicious, neutral or inauspicious (v. 10).
+   * The values are `Nature` ids.
+   */
+  readonly nature: Uint16Array;
+  /**
+   * Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4).
+   * The values are `DashaPhase` ids.
+   */
+  readonly phase: Uint8Array;
+  /**
+   * 1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5).
+   */
+  readonly favourable: Uint8Array;
+  /**
+   * 1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand.
+   */
+  readonly unfavourable: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1453,6 +1531,10 @@ export interface Charts {
    * Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
    */
   readonly vaiseshikamsa: ChartsVaiseshikamsa;
+  /**
+   * Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+   */
+  readonly dashaPhala: ChartsDashaPhala;
 }
 
 /**

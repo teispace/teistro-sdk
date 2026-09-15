@@ -254,6 +254,7 @@ const charts = geo.chart.foundMany({
   ashtakavarga: true,
   vimshopaka: true,
   vaiseshikamsa: true,
+  dashaPhala: true,
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -378,7 +379,7 @@ for (const chart of charts) {
     parts.push(ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana, ka.yuddha);
     parts.push(g.cheshta, g.naisargika, g.drik);
     put(key, parts.map(number).join(','));
-    put(`${key}-total`, `${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong},${number(g.ishta)},${number(g.kashta)}`);
+    put(`${key}-total`, `${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong},${number(g.ishta)},${number(g.kashta)},${number(g.subhaRashmi)},${number(g.ashubhaRashmi)}`);
   });
   chart.bhavaBala.bhavas.forEach((b) => {
     put(`chart-${i}-bhava-bala-${b.bhava}`, `${b.lord} ${[b.adhipati, b.dig, b.drishti, b.special, b.virupas].map(number).join(',')}`);
@@ -386,6 +387,12 @@ for (const chart of charts) {
   chart.vaiseshikamsa.grahas.forEach((g) => {
     const standings = [g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga];
     put(`chart-${i}-vaiseshikamsa-${g.graha}`, `${standings.map((s) => `${s.goodVargas}:${s.name}`).join(',')} ${g.impaired}`);
+  });
+  chart.dashaPhala.grahas.forEach((g) => {
+    put(
+      `chart-${i}-dasha-phala-${g.graha}`,
+      `${g.subhankas.map(number).join(',')} ${g.nature} ${g.phase} ${g.favourable} ${g.unfavourable}`,
+    );
   });
   const vs = chart.vimshopaka;
   put(`chart-${i}-vimshopaka`, vs.scoring);

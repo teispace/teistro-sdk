@@ -278,6 +278,7 @@ def main() -> None:
             ashtakavarga=True,
             vimshopaka=True,
             vaiseshikamsa=True,
+            dasha_phala=True,
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -440,7 +441,7 @@ def main() -> None:
                 put(key, ",".join(number(value) for value in parts))
                 put(
                     f"{key}-total",
-                    f"{number(strength.virupas)},{number(strength.rupas)},{number(strength.required_rupas)},{str(strength.strong).lower()},{number(strength.ishta)},{number(strength.kashta)}",
+                    f"{number(strength.virupas)},{number(strength.rupas)},{number(strength.required_rupas)},{str(strength.strong).lower()},{number(strength.ishta)},{number(strength.kashta)},{number(strength.subha_rashmi)},{number(strength.ashubha_rashmi)}",
                 )
             bb = chart.bhava_bala
             assert bb is not None
@@ -465,6 +466,15 @@ def main() -> None:
                 put(
                     f"chart-{i}-vaiseshikamsa-{named_graha.graha.full_key}",
                     f"{named} {str(named_graha.impaired).lower()}",
+                )
+            dp = chart.dasha_phala
+            assert dp is not None
+            for phala in dp.grahas:
+                put(
+                    f"chart-{i}-dasha-phala-{phala.graha.full_key}",
+                    ",".join(number(value) for value in phala.subhankas)
+                    + f" {phala.nature.full_key} {phala.phase.key}"
+                    + f" {str(phala.favourable).lower()} {str(phala.unfavourable).lower()}",
                 )
             vs = chart.vimshopaka
             assert vs is not None

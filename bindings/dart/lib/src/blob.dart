@@ -1170,6 +1170,8 @@ final class ChartsShadbala {
     required this.requiredRupas,
     required this.ishta,
     required this.kashta,
+    required this.subhaRashmi,
+    required this.ashubhaRashmi,
     required this.strong,
     required this.length,
   });
@@ -1245,6 +1247,12 @@ final class ChartsShadbala {
 
   /// How far it tends to harm, 0 to 60.
   final Float64List kashta;
+
+  /// Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5).
+  final Float64List subhaRashmi;
+
+  /// Its inauspicious rays, 8 less the auspicious.
+  final Float64List ashubhaRashmi;
 
   /// 1 when the rupas reach the requirement, else 0.
   final Uint8List strong;
@@ -1338,6 +1346,75 @@ final class ChartsVaiseshikamsa {
 
   /// The name the shodashavarga count earns; read only when that count is 2 or more.
   final Uint16List shodashavargaName;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dasha_phala` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+final class ChartsDashaPhala {
+  const ChartsDashaPhala({
+    required this.graha,
+    required this.subhankaD1,
+    required this.subhankaD2,
+    required this.subhankaD3,
+    required this.subhankaD7,
+    required this.subhankaD9,
+    required this.subhankaD12,
+    required this.subhankaD30,
+    required this.subhanka,
+    required this.asubhanka,
+    required this.nature,
+    required this.phase,
+    required this.favourable,
+    required this.unfavourable,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Its Subhanka in the D1, out of 60: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD1;
+
+  /// Its Subhanka in the D2, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD2;
+
+  /// Its Subhanka in the D3, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD3;
+
+  /// Its Subhanka in the D7, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD7;
+
+  /// Its Subhanka in the D9, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD9;
+
+  /// Its Subhanka in the D12, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD12;
+
+  /// Its Subhanka in the D30, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD30;
+
+  /// The seven Subhankas together, out of 240.
+  final Float64List subhanka;
+
+  /// Their complements together, out of 240.
+  final Float64List asubhanka;
+
+  /// Whether its rasi place is auspicious, neutral or inauspicious (v. 10).
+  final Uint16List nature;
+
+  /// Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4).
+  final Uint8List phase;
+
+  /// 1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5).
+  final Uint8List favourable;
+
+  /// 1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand.
+  final Uint8List unfavourable;
 
   /// The number of rows every column holds.
   final int length;
@@ -1478,6 +1555,7 @@ final class Charts {
     required this.shadbala,
     required this.bhavaBala,
     required this.vaiseshikamsa,
+    required this.dashaPhala,
   });
 
   /// What kind of chart these are.
@@ -1617,6 +1695,9 @@ final class Charts {
   /// Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
   final ChartsVaiseshikamsa vaiseshikamsa;
 
+  /// Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+  final ChartsDashaPhala dashaPhala;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1655,6 +1736,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atShadbala = blob.section(29, 'shadbala');
   final atBhavaBala = blob.section(30, 'bhava_bala');
   final atVaiseshikamsa = blob.section(31, 'vaiseshikamsa');
+  final atDashaPhala = blob.section(32, 'dasha_phala');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2640,10 +2722,20 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atShadbala, 23),
         blob.columnOffset(atShadbala, 23) + atShadbala.count * 8,
       ),
-      strong: Uint8List.sublistView(
+      subhaRashmi: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 24),
-        blob.columnOffset(atShadbala, 24) + atShadbala.count * 1,
+        blob.columnOffset(atShadbala, 24) + atShadbala.count * 8,
+      ),
+      ashubhaRashmi: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 25),
+        blob.columnOffset(atShadbala, 25) + atShadbala.count * 8,
+      ),
+      strong: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 26),
+        blob.columnOffset(atShadbala, 26) + atShadbala.count * 1,
       ),
       length: atShadbala.count,
     ),
@@ -2732,6 +2824,79 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atVaiseshikamsa, 9) + atVaiseshikamsa.count * 2,
       ),
       length: atVaiseshikamsa.count,
+    ),
+    dashaPhala: ChartsDashaPhala(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 0),
+        blob.columnOffset(atDashaPhala, 0) + atDashaPhala.count * 2,
+      ),
+      subhankaD1: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 1),
+        blob.columnOffset(atDashaPhala, 1) + atDashaPhala.count * 8,
+      ),
+      subhankaD2: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 2),
+        blob.columnOffset(atDashaPhala, 2) + atDashaPhala.count * 8,
+      ),
+      subhankaD3: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 3),
+        blob.columnOffset(atDashaPhala, 3) + atDashaPhala.count * 8,
+      ),
+      subhankaD7: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 4),
+        blob.columnOffset(atDashaPhala, 4) + atDashaPhala.count * 8,
+      ),
+      subhankaD9: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 5),
+        blob.columnOffset(atDashaPhala, 5) + atDashaPhala.count * 8,
+      ),
+      subhankaD12: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 6),
+        blob.columnOffset(atDashaPhala, 6) + atDashaPhala.count * 8,
+      ),
+      subhankaD30: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 7),
+        blob.columnOffset(atDashaPhala, 7) + atDashaPhala.count * 8,
+      ),
+      subhanka: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 8),
+        blob.columnOffset(atDashaPhala, 8) + atDashaPhala.count * 8,
+      ),
+      asubhanka: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 9),
+        blob.columnOffset(atDashaPhala, 9) + atDashaPhala.count * 8,
+      ),
+      nature: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 10),
+        blob.columnOffset(atDashaPhala, 10) + atDashaPhala.count * 2,
+      ),
+      phase: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 11),
+        blob.columnOffset(atDashaPhala, 11) + atDashaPhala.count * 1,
+      ),
+      favourable: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 12),
+        blob.columnOffset(atDashaPhala, 12) + atDashaPhala.count * 1,
+      ),
+      unfavourable: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 13),
+        blob.columnOffset(atDashaPhala, 13) + atDashaPhala.count * 1,
+      ),
+      length: atDashaPhala.count,
     ),
   );
 }

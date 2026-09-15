@@ -288,3 +288,39 @@ Whether the four Saptavargaja variants are one function with parameters
 same tension as the chart-query field in the dasha kernel); answerable in
 an hour once the code is being written. Tracked on the cruxes page with
 the required-rupas discrepancy.
+
+## The dasha phala, built (2026-09-15)
+
+BPHS ch. 28 opens by saying its tendencies are what "the Dasha effects can
+be decided" by, and ch. 47 says how a dasha lord's placement shapes them.
+What the verses compute is built; what they only gesture at is not.
+
+- **The rays** (ch. 28 v. 5). The Subha rashmi is the Uchcha and Cheshta
+  rays' mean, 1 to 7, and the Ashubha rashmi 8 less it. They ride on the
+  Shadbala beside the Ishta and Kashta, from the same balas whichever
+  `strength.ishta_kashta` reading takes the phalas: `GrahaShadbala`'s
+  `subha_rashmi` and `ashubha_rashmi`, two boundary columns.
+- **The Subhankas** (vv. 7 to 10). A dignity's points in the rasi chart,
+  halved in the saptavarga's other six, summed out of 240 with the
+  Asubhanka the complement, and the rasi place's nature — benefic for the
+  first five, neutral, malefic for the last three. The rasi chart's dignity
+  is the state's, degrees and all; a varga sign's is `teistro_state::
+  dignity::varga_dignity`, by the sign alone with the temporary friendship
+  read between the rasi seats, the rule the Saptavargaja's compound virupas
+  already used and now share rather than copy.
+- **The timing** (ch. 47 vv. 3 and 4): the decanate, reversed when
+  retrograde and always for the nodes.
+- **The placement** (vv. 5 and 6): favourable and unfavourable as two flags,
+  since an exalted graha in the eighth is both, with `dasha.shanta_sign`
+  choosing whether a great friend's sign is Shant (crux C79).
+
+The nine grahas each have a row: the nodes' dignities are the state's, which
+stops them at neutral outside their exaltation, debilitation and own signs.
+vv. 11 to 14's products, and a reading of "at the commencement of the
+Dasha" as the lord's transit, are recorded in C79 and not built. The corpus
+records none of it, so unit tests work the verses and the façade test holds
+the reading to the state computed beside it. It reaches
+`ChartRequest::with_dasha_phala`, the document's `dasha_phala` section,
+boundary section 32 (bit 1024) with `TsDashaPhase`, and `chart.dashaPhala`
+in every binding.
+

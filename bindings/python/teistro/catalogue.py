@@ -3658,6 +3658,19 @@ class VimshopakaScoring(Member):
     """
 
 
+class DashaPhase(Member):
+    """Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4)."""
+
+    COMMENCEMENT = 0
+    """At its commencement."""
+
+    MIDDLE = 1
+    """In its middle."""
+
+    END = 2
+    """At its end."""
+
+
 class DayPart(Member):
     """Which arc of its day an instant falls in."""
 
@@ -5114,6 +5127,11 @@ _KEYS: dict[str, dict[int, str]] = {
     "VimshopakaScoring": {
         0: "bphs",
         1: "saptavargaja-virupas",
+    },
+    "DashaPhase": {
+        0: "commencement",
+        1: "middle",
+        2: "end",
     },
     "DayPart": {
         0: "daylight",

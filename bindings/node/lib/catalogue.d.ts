@@ -6030,6 +6030,33 @@ export declare const VimshopakaScoring: {
 export declare const VimshopakaScoringById: ReadonlyMap<number, VimshopakaScoring>;
 
 /**
+ * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+ */
+export type DashaPhase = 'commencement' | 'middle' | 'end';
+
+/** Every DashaPhase by name; the values are the strings the union accepts. */
+export declare const DashaPhase: {
+  /**
+   * At its commencement.
+   */
+  readonly Commencement: 'commencement';
+  /**
+   * In its middle.
+   */
+  readonly Middle: 'middle';
+  /**
+   * At its end.
+   */
+  readonly End: 'end';
+};
+
+/**
+ * Every DashaPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DashaPhaseById: ReadonlyMap<number, DashaPhase>;
+
+/**
  * Which arc of its day an instant falls in.
  */
 export type DayPart = 'daylight' | 'night';

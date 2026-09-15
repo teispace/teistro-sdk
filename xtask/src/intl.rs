@@ -170,6 +170,11 @@ const UNNAMED: &[(&str, &str, &[&str])] = &[
         &["URANUS", "NEPTUNE", "PLUTO"],
     ),
     (
+        "nature",
+        "no vetted name table for a graha's benefic, malefic or neutral nature",
+        &["BENEFIC", "MALEFIC", "NEUTRAL"],
+    ),
+    (
         "point",
         "the vetted table names the upagrahas only; the angles, special lagnas, sphutas, yogi points and arudhas have none",
         &[

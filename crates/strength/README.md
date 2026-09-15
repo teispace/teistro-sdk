@@ -13,6 +13,7 @@ Strength measures over a chart.
 | [`ashtakavarga`](src/ashtakavarga.rs) | each graha's bindus by sign from BPHS ch. 66's tables, the sarvashtakavarga, the trine and Ekadhipatya reductions and the pindas, under BPHS chs. 67 to 69 or the conformance corpus's engine's reading |
 | [`bhava_bala`](src/bhava_bala.rs) | each bhava's strength from its lord's Shadbala, its direction and the drishtis it receives, under BPHS ch. 27's reading, Sripati's or the conformance corpus's engine's |
 | [`shadbala`](src/shadbala/mod.rs) | each graha's six strengths in virupas, the Sthana and Kaala by component, under BPHS ch. 27's reading or the conformance corpus's engine's at eleven forks, each a setting |
+| [`dasha_phala`](src/dasha_phala.rs) | each graha's Subhankas in the seven vargas, where in its dasha its effects come, and whether its placement makes the dasha favourable, from BPHS chs. 28 and 47 |
 | [`vaiseshikamsa`](src/vaiseshikamsa.rs) | the names each graha earns by its good vargas in the four schemes, with the impaired flag, from BPHS ch. 6 |
 | [`vimshopaka`](src/vimshopaka.rs) | each graha's strength out of 20 across the sixteen vargas under the shadvarga, saptavarga, dashavarga and shodashavarga, with BPHS ch. 7's weights, by the text's points or the conformance corpus's engine's virupas |
 

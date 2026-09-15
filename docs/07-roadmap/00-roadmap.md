@@ -505,8 +505,10 @@ bala followed** (`03-design/bhava-bala-measured.md`, `check-bhava-bala`): the
 built module against every recorded house, three readings at three forks
 (C73–C75), **and the Ishta and Kashta phalas** on the Shadbala reading (C76).
 **The Vaiseshikamsa followed** (C77), **then the Sayanadi avasthas** (C78),
-which the Vaiseshikamsa's impaired flag now reads. Next: the dasha-effect
-readings the phalas feed.
+which the Vaiseshikamsa's impaired flag now reads, **then the dasha phala**
+(C79): the rays, the Subhankas, and ch. 47's timing and placement. Next:
+Rashi bala, still waiting on a source that gives it component by
+component, or the yogas (ch. 34 onward) the interpretation layer reads.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

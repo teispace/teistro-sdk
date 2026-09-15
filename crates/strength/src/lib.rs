@@ -34,6 +34,7 @@
 
 pub mod ashtakavarga;
 pub mod bhava_bala;
+pub mod dasha_phala;
 pub mod shadbala;
 pub mod vaiseshikamsa;
 pub mod vimshopaka;
@@ -42,6 +43,9 @@ pub use ashtakavarga::{
     AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, GrahaAshtakavarga,
 };
 pub use bhava_bala::{BhavaBalaChart, BhavaBalaReading, BhavaBalaRules, BhavaGraha, BhavaStrength};
+pub use dasha_phala::{
+    DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading, DashaPhase, GrahaDashaPhala,
+};
 pub use shadbala::{
     GrahaShadbala, KaalaBala, ShadbalaChart, ShadbalaGraha, ShadbalaReading, ShadbalaRules,
     SthanaBala,

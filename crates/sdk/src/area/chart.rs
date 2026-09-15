@@ -32,8 +32,9 @@ use teistro_state::state;
 use teistro_strength::shadbala::{SAPTAVARGAJA_VARGAS, ShadbalaGraha};
 use teistro_strength::{
     AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, BhavaBalaChart, BhavaBalaReading,
-    BhavaBalaRules, BhavaGraha, ShadbalaChart, ShadbalaReading, ShadbalaRules, VaiseshikamsaChart,
-    VaiseshikamsaReading, VimshopakaChart, VimshopakaReading,
+    BhavaBalaRules, BhavaGraha, DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading, ShadbalaChart,
+    ShadbalaReading, ShadbalaRules, VaiseshikamsaChart, VaiseshikamsaReading, VimshopakaChart,
+    VimshopakaReading,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -310,6 +311,9 @@ impl<'a> ChartArea<'a> {
             document =
                 document.with_bhava_bala(Self::bhava_bala_of(foundation, settings, &shadbala)?);
         }
+        if request.sections.has(Sections::DASHA_PHALA) {
+            document = document.with_dasha_phala(Self::dasha_phala_of(foundation, settings)?);
+        }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
         }
@@ -578,14 +582,15 @@ impl<'a> ChartArea<'a> {
     }
 
     /// The seven strength grahas' signs in each of `vargas`, Sun to Saturn.
-    fn varga_signs<const N: usize>(
+    fn varga_signs<const N: usize, const M: usize>(
         foundation: &ChartFoundation,
         vargas: [Varga; N],
-    ) -> Result<[[Rashi; 7]; N], Error> {
-        let mut signs = [[Rashi::Aries; 7]; N];
+        grahas: [Graha; M],
+    ) -> Result<[[Rashi; M]; N], Error> {
+        let mut signs = [[Rashi::Aries; M]; N];
         for (row, varga) in signs.iter_mut().zip(vargas) {
             let placed = varga_chart(foundation, Axis::of(varga))?;
-            for (slot, graha) in row.iter_mut().zip(teistro_strength::ashtakavarga::GRAHAS) {
+            for (slot, graha) in row.iter_mut().zip(grahas) {
                 *slot = placed.graha(graha).map(|at| at.sign).ok_or_else(|| {
                     Error::internal(format!("a founded chart places {}", graha.key()))
                 })?;
@@ -601,9 +606,57 @@ impl<'a> ChartArea<'a> {
         settings: &teistro_core::settings::Settings,
     ) -> Result<VimshopakaReading, Error> {
         let chart = VimshopakaChart {
-            signs: Self::varga_signs(foundation, teistro_strength::vimshopaka::VARGAS)?,
+            signs: Self::varga_signs(
+                foundation,
+                teistro_strength::vimshopaka::VARGAS,
+                teistro_strength::ashtakavarga::GRAHAS,
+            )?,
         };
         Ok(VimshopakaReading::of(&chart, settings.strength.vimshopaka))
+    }
+
+    /// The dasha phala of a founded chart: the nine grahas' places, dignities
+    /// and motions from the state, and their signs in the seven vargas.
+    fn dasha_phala_of(
+        foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
+    ) -> Result<DashaPhalaReading, Error> {
+        let states = state(foundation, settings)?;
+        let nine = teistro_strength::bhava_bala::NINE;
+        let mut grahas = [DashaPhalaGraha {
+            longitude: 0.0,
+            house: 1,
+            dignity: teistro_core::catalogue::Dignity::Neutral,
+            retrograde: false,
+        }; 9];
+        for (slot, graha) in grahas.iter_mut().zip(nine) {
+            let position = foundation
+                .grahas
+                .iter()
+                .find(|p| p.graha == graha)
+                .ok_or_else(|| {
+                    Error::internal(format!("a founded chart places {}", graha.key()))
+                })?;
+            let at = states
+                .iter()
+                .find(|s| s.graha == graha)
+                .ok_or_else(|| Error::internal(format!("a state for {}", graha.key())))?;
+            *slot = DashaPhalaGraha {
+                longitude: position.longitude_deg,
+                house: at.house,
+                dignity: at.dignity,
+                retrograde: at.motion.retrograde,
+            };
+        }
+        let chart = DashaPhalaChart {
+            grahas,
+            vargas: Self::varga_signs(
+                foundation,
+                teistro_strength::shadbala::SAPTAVARGAJA_VARGAS,
+                nine,
+            )?,
+        };
+        Ok(DashaPhalaReading::of(&chart, settings.dasha.shanta_sign))
     }
 
     /// The Vaiseshikamsa of a founded chart: its grahas' signs in the sixteen
@@ -633,7 +686,11 @@ impl<'a> ChartArea<'a> {
         }
         let chart = VaiseshikamsaChart {
             signs: VimshopakaChart {
-                signs: Self::varga_signs(foundation, teistro_strength::vimshopaka::VARGAS)?,
+                signs: Self::varga_signs(
+                    foundation,
+                    teistro_strength::vimshopaka::VARGAS,
+                    teistro_strength::ashtakavarga::GRAHAS,
+                )?,
             },
             arudha_lagna: arudha(lagna, 1, sign_of).sign,
             impaired,
@@ -695,7 +752,11 @@ impl<'a> ChartArea<'a> {
         let chart = ShadbalaChart {
             grahas,
             rahu: foundation.graha(Graha::Rahu).map(|at| at.longitude_deg),
-            vargas: Self::varga_signs(foundation, SAPTAVARGAJA_VARGAS)?,
+            vargas: Self::varga_signs(
+                foundation,
+                SAPTAVARGAJA_VARGAS,
+                teistro_strength::ashtakavarga::GRAHAS,
+            )?,
             instant: foundation.instant.get(),
             sunrise: day.sunrise.get(),
             sunset: day.sunset.get(),

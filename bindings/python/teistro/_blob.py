@@ -1001,6 +1001,12 @@ class ChartsShadbala:
     kashta: memoryview[float]
     """How far it tends to harm, 0 to 60."""
 
+    subha_rashmi: memoryview[float]
+    """Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5)."""
+
+    ashubha_rashmi: memoryview[float]
+    """Its inauspicious rays, 8 less the auspicious."""
+
     strong: memoryview[int]
     """1 when the rupas reach the requirement, else 0."""
 
@@ -1075,6 +1081,60 @@ class ChartsVaiseshikamsa:
 
     shodashavarga_name: memoryview[int]
     """The name the shodashavarga count earns; read only when that count is 2 or more."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDashaPhala:
+    """The `dasha_phala` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    subhanka_d1: memoryview[float]
+    """Its Subhanka in the D1, out of 60: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d2: memoryview[float]
+    """Its Subhanka in the D2, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d3: memoryview[float]
+    """Its Subhanka in the D3, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d7: memoryview[float]
+    """Its Subhanka in the D7, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d9: memoryview[float]
+    """Its Subhanka in the D9, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d12: memoryview[float]
+    """Its Subhanka in the D12, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d30: memoryview[float]
+    """Its Subhanka in the D30, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka: memoryview[float]
+    """The seven Subhankas together, out of 240."""
+
+    asubhanka: memoryview[float]
+    """Their complements together, out of 240."""
+
+    nature: memoryview[int]
+    """Whether its rasi place is auspicious, neutral or inauspicious (v. 10)."""
+
+    phase: memoryview[int]
+    """Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4)."""
+
+    favourable: memoryview[int]
+    """1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5)."""
+
+    unfavourable: memoryview[int]
+    """1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand."""
 
     length: int
     """The number of rows every column holds."""
@@ -1291,6 +1351,9 @@ class Charts:
     vaiseshikamsa: ChartsVaiseshikamsa
     """Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for."""
 
+    dasha_phala: ChartsDashaPhala
+    """Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1331,6 +1394,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_shadbala = blob.section(29, "shadbala")
     at_bhava_bala = blob.section(30, "bhava_bala")
     at_vaiseshikamsa = blob.section(31, "vaiseshikamsa")
+    at_dasha_phala = blob.section(32, "dasha_phala")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1772,8 +1836,14 @@ def decode_charts(raw: bytes) -> Charts:
             kashta=blob.column(
                 at_shadbala, 23, 8, at_shadbala.count
             ).cast("d"),
+            subha_rashmi=blob.column(
+                at_shadbala, 24, 8, at_shadbala.count
+            ).cast("d"),
+            ashubha_rashmi=blob.column(
+                at_shadbala, 25, 8, at_shadbala.count
+            ).cast("d"),
             strong=blob.column(
-                at_shadbala, 24, 1, at_shadbala.count
+                at_shadbala, 26, 1, at_shadbala.count
             ).cast("B"),
             length=at_shadbala.count,
         ),
@@ -1830,6 +1900,51 @@ def decode_charts(raw: bytes) -> Charts:
                 at_vaiseshikamsa, 9, 2, at_vaiseshikamsa.count
             ).cast("H"),
             length=at_vaiseshikamsa.count,
+        ),
+        dasha_phala=ChartsDashaPhala(
+            graha=blob.column(
+                at_dasha_phala, 0, 2, at_dasha_phala.count
+            ).cast("H"),
+            subhanka_d1=blob.column(
+                at_dasha_phala, 1, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d2=blob.column(
+                at_dasha_phala, 2, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d3=blob.column(
+                at_dasha_phala, 3, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d7=blob.column(
+                at_dasha_phala, 4, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d9=blob.column(
+                at_dasha_phala, 5, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d12=blob.column(
+                at_dasha_phala, 6, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d30=blob.column(
+                at_dasha_phala, 7, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka=blob.column(
+                at_dasha_phala, 8, 8, at_dasha_phala.count
+            ).cast("d"),
+            asubhanka=blob.column(
+                at_dasha_phala, 9, 8, at_dasha_phala.count
+            ).cast("d"),
+            nature=blob.column(
+                at_dasha_phala, 10, 2, at_dasha_phala.count
+            ).cast("H"),
+            phase=blob.column(
+                at_dasha_phala, 11, 1, at_dasha_phala.count
+            ).cast("B"),
+            favourable=blob.column(
+                at_dasha_phala, 12, 1, at_dasha_phala.count
+            ).cast("B"),
+            unfavourable=blob.column(
+                at_dasha_phala, 13, 1, at_dasha_phala.count
+            ).cast("B"),
+            length=at_dasha_phala.count,
         ),
     )
 

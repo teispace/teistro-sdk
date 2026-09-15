@@ -15,8 +15,8 @@ use super::knobs::{
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, Shodhana, SunAyana,
-    Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
+    SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -165,6 +165,9 @@ pub fn root() -> Settings {
             kalachakra_membership: KalachakraMembership::Listed,
             kalachakra_balance: KalachakraBalance::FirstSign,
             kalachakra_after_ninth: KalachakraAfterNinth::Reverse,
+            // BPHS ch. 47 vv. 5 and 6, the "Shant" sign set against the
+            // inimical ones (crux C79).
+            shanta_sign: ShantaSign::Friendly,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,

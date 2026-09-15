@@ -349,6 +349,10 @@ fn the_phalas_are_each_reading_s_means() {
     let rays = mars(teistro_core::settings::IshtaKashta::Rays);
     assert!((rays.ishta - f64::midpoint(rays.sthana.uchcha, rays.cheshta)).abs() < 1e-12);
     assert!((rays.ishta + rays.kashta - 60.0).abs() < 1e-12);
+    // V. 5: the rays' mean, 1 + 3 x 30 / 30 = 4 for the Uchcha, and 8 less.
+    let cheshta_rays = 1.0 + rays.cheshta / 10.0;
+    assert!((rays.subha_rashmi - f64::midpoint(4.0, cheshta_rays)).abs() < 1e-12);
+    assert!((rays.subha_rashmi + rays.ashubha_rashmi - 8.0).abs() < 1e-12);
     let roots = mars(teistro_core::settings::IshtaKashta::SquareRoots);
     assert!((roots.ishta - (roots.sthana.uchcha * roots.cheshta).sqrt()).abs() < 1e-12);
     assert!(

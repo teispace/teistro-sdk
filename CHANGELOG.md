@@ -847,6 +847,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** new, and the Vaiseshikamsa's `impaired` moves for a graha in
   Shayana. Every settings hash moved: the `state` group gained two knobs.
 
+  The dasha phala followed, from BPHS ch. 28 vv. 5 and 7 to 10 and ch. 47
+  vv. 3 to 6: the Shadbala carries each graha's Subha and Ashubha rays, and
+  `ChartRequest::with_dasha_phala` reads each of the nine grahas' Subhankas
+  in the seven vargas and their totals, its rasi place's nature, where in
+  its dasha its effects come (`DashaPhase`), and whether its placement makes
+  the dasha favourable or unfavourable, under a new knob,
+  `dasha.shanta_sign` (crux C79). It crosses as the document's
+  `dasha_phala` section, boundary section 32 and `chart.dashaPhala` in
+  every binding. `teistro_state::dignity::varga_dignity` reads a divisional
+  sign's dignity, and the Saptavargaja now shares its temporary friendship.
+
+  **Numbers:** new. Every settings hash moved: the `dasha` group gained a
+  knob.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

@@ -16,6 +16,8 @@ from typing import Optional
 from teistro import (
     Altitude,
     AvasthaSayanadi,
+    DashaPhase,
+    Nature,
     Balance,
     Body,
     Calendar,
@@ -664,6 +666,33 @@ class AnEngine(WithLibrary):
             six = g.sthana.total + g.dig + g.kaala.total + g.cheshta + g.naisargika + g.drik
             self.assertAlmostEqual(six, g.virupas, places=9)
             self.assertEqual(g.strong, g.rupas >= g.required_rupas)
+
+    def test_a_chart_carries_its_dasha_phala_and_the_shadbala_its_rays(self) -> None:
+        """A chart's dasha phala crosses whole: the nine grahas' Subhankas within
+        each varga's share and complementary in total, a nature and a phase
+        each; None unless asked, and the Shadbala's rays beside the phalas."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(
+            instant=2451545.0, place=observer, utc_offset_seconds=20700, dasha_phala=True, shadbala=True
+        )
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).dasha_phala)
+        reading = chart.dasha_phala
+        assert reading is not None
+        self.assertEqual([g.graha.name for g in reading.grahas][-2:], ["RAHU", "KETU"])
+        for g in reading.grahas:
+            self.assertEqual(len(g.subhankas), 7)
+            for k, points in enumerate(g.subhankas):
+                self.assertTrue(0 <= points <= (60 if k == 0 else 30))
+            self.assertAlmostEqual(g.subhanka + g.asubhanka, 240.0, places=9)
+            self.assertIsInstance(g.nature, Nature)
+            self.assertIsInstance(g.phase, DashaPhase)
+        shadbala = chart.shadbala
+        assert shadbala is not None
+        for s in shadbala.grahas:
+            self.assertTrue(1 <= s.subha_rashmi <= 7)
+            self.assertAlmostEqual(s.subha_rashmi + s.ashubha_rashmi, 8.0, places=9)
 
     def test_a_graha_s_state_carries_its_sayanadi_and_a_sub_state_for_every_anka(self) -> None:
         """Every graha's state carries its Sayanadi: the nine grahas a state and

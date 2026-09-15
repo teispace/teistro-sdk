@@ -542,7 +542,9 @@ export function decodeCharts(bytes) {
       requiredRupas: column(blob, at, 21, 'f64', at.count),
       ishta: column(blob, at, 22, 'f64', at.count),
       kashta: column(blob, at, 23, 'f64', at.count),
-      strong: column(blob, at, 24, 'u8', at.count),
+      subhaRashmi: column(blob, at, 24, 'f64', at.count),
+      ashubhaRashmi: column(blob, at, 25, 'f64', at.count),
+      strong: column(blob, at, 26, 'u8', at.count),
       length: at.count,
     };
   }
@@ -571,6 +573,26 @@ export function decodeCharts(bytes) {
       dashavargaName: column(blob, at, 7, 'u16', at.count),
       shodashavargaGood: column(blob, at, 8, 'u8', at.count),
       shodashavargaName: column(blob, at, 9, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 32, 'dasha_phala');
+    out.dashaPhala = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      subhankaD1: column(blob, at, 1, 'f64', at.count),
+      subhankaD2: column(blob, at, 2, 'f64', at.count),
+      subhankaD3: column(blob, at, 3, 'f64', at.count),
+      subhankaD7: column(blob, at, 4, 'f64', at.count),
+      subhankaD9: column(blob, at, 5, 'f64', at.count),
+      subhankaD12: column(blob, at, 6, 'f64', at.count),
+      subhankaD30: column(blob, at, 7, 'f64', at.count),
+      subhanka: column(blob, at, 8, 'f64', at.count),
+      asubhanka: column(blob, at, 9, 'f64', at.count),
+      nature: column(blob, at, 10, 'u16', at.count),
+      phase: column(blob, at, 11, 'u8', at.count),
+      favourable: column(blob, at, 12, 'u8', at.count),
+      unfavourable: column(blob, at, 13, 'u8', at.count),
       length: at.count,
     };
   }

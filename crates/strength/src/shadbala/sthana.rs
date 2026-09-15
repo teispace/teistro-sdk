@@ -4,7 +4,7 @@
 
 use teistro_core::catalogue::{Gender, Graha, Rashi, Relationship};
 use teistro_core::settings::{Drekkana, Saptavargaja};
-use teistro_state::dignity::{FRIENDLY_HOUSES, compound, natural};
+use teistro_state::dignity::{compound, natural, temporary_from};
 
 use super::{ShadbalaChart, ShadbalaGraha, ShadbalaRules, SthanaBala, apart, seat, sign_of};
 
@@ -79,15 +79,10 @@ pub(crate) fn compound_virupas(graha: Graha, sign: Rashi, in_rasi: bool, rasi: &
     if attributes.own.contains(&sign) {
         return 30.0;
     }
-    let lord = sign.attributes().lord;
-    let from = seat(rasi, graha) as u8;
-    let to = seat(rasi, lord) as u8;
-    let distance = (to + 12 - from) % 12 + 1;
-    let temporary = if FRIENDLY_HOUSES.contains(&distance) {
-        Relationship::Friend
-    } else {
-        Relationship::Enemy
-    };
+    let temporary = temporary_from(graha, sign.attributes().lord, seat(rasi, graha), |g| {
+        Some(seat(rasi, g))
+    })
+    .unwrap_or(Relationship::Neutral);
     match compound(natural(graha, sign), temporary) {
         Relationship::GreatFriend => 22.5,
         Relationship::Friend => 15.0,

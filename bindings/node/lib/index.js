@@ -55,6 +55,8 @@ import {
   EkadhipatyaById,
   ShodhanaById,
   VaiseshikamsaById,
+  DashaPhaseById,
+  NatureById,
   VimshopakaScoringById,
   DashaSystemById,
   VargaById,
@@ -724,11 +726,6 @@ export class Chart {
   }
 
   /**
-   * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
-   * across the divisional charts under the four schemes, each varga scored
-   * under the settings' reading; `null` unless asked for.
-   */
-  /**
    * The Vaiseshikamsa (`vaiseshikamsa: true`): each graha's count of good
    * vargas and the name it earns in each scheme, and whether it is impaired;
    * `null` unless asked for.
@@ -737,6 +734,21 @@ export class Chart {
     return vaiseshikamsasOf(this.#batch)[this.#index] ?? null;
   }
 
+  /**
+   * The dasha phala (`dashaPhala: true`): each graha's Subhanka in the seven
+   * vargas, whether its rasi place is auspicious, where in its dasha its
+   * effects come and whether its placement makes the dasha favourable or
+   * unfavourable; `null` unless asked for.
+   */
+  get dashaPhala() {
+    return dashaPhalasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
+   * across the divisional charts under the four schemes, each varga scored
+   * under the settings' reading; `null` unless asked for.
+   */
   get vimshopaka() {
     return vimshopakasOf(this.#batch)[this.#index] ?? null;
   }
@@ -1760,6 +1772,7 @@ class ChartArea extends Area {
           (request.vaiseshikamsa === true ? SECTION_VAISESHIKAMSA : 0) |
           (request.shadbala === true ? SECTION_SHADBALA : 0) |
           (request.bhavaBala === true ? SECTION_BHAVA_BALA : 0) |
+          (request.dashaPhala === true ? SECTION_DASHA_PHALA : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: catalogueKeys(request.dashas, 'dashas', 'DashaSystem'),
@@ -1939,6 +1952,41 @@ function vaiseshikamsasOf(batch) {
   return decoded;
 }
 
+/** The seven vargas whose Subhanka columns the dasha phala carries, in order. */
+const SUBHANKA_VARGAS = ['D1', 'D2', 'D3', 'D7', 'D9', 'D12', 'D30'];
+
+/** Each batch's dasha phalas, decoded once however many charts read them. */
+const DASHA_PHALAS = new WeakMap();
+
+/** Every chart's dasha phala in a batch; empty when none was asked for. */
+function dashaPhalasOf(batch) {
+  let decoded = DASHA_PHALAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.dashaPhala;
+    decoded = Array.from({ length: c.graha.length / 9 }, (_, chart) =>
+      Object.freeze({
+        grahas: Object.freeze(
+          Array.from({ length: 9 }, (_, g) => {
+            const row = chart * 9 + g;
+            return Object.freeze({
+              graha: GrahaById.get(c.graha[row]) ?? 'unknown',
+              subhankas: Object.freeze(SUBHANKA_VARGAS.map((varga) => c[`subhanka${varga}`][row])),
+              subhanka: c.subhanka[row],
+              asubhanka: c.asubhanka[row],
+              nature: NatureById.get(c.nature[row]) ?? 'unknown',
+              phase: DashaPhaseById.get(c.phase[row]) ?? 'unknown',
+              favourable: c.favourable[row] !== 0,
+              unfavourable: c.unfavourable[row] !== 0,
+            });
+          }),
+        ),
+      }),
+    );
+    DASHA_PHALAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
 /** Each batch's Vimshopakas, decoded once however many charts read them. */
 const VIMSHOPAKAS = new WeakMap();
 
@@ -2040,6 +2088,8 @@ function shadbalasOf(batch) {
         requiredRupas: c.requiredRupas[row],
         ishta: c.ishta[row],
         kashta: c.kashta[row],
+        subhaRashmi: c.subhaRashmi[row],
+        ashubhaRashmi: c.ashubhaRashmi[row],
         strong: c.strong[row] === 1,
       });
     };
@@ -2198,6 +2248,8 @@ const SECTION_VIMSHOPAKA = 64;
 
 /** `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa. */
 const SECTION_VAISESHIKAMSA = 512;
+/** `TS_CHART_DASHA_PHALA`, the dasha phala. */
+const SECTION_DASHA_PHALA = 1024;
 
 /** `TS_CHART_SHADBALA`, the Shadbala. */
 const SECTION_SHADBALA = 128;

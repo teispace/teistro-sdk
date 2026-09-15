@@ -514,8 +514,9 @@ test('every catalogue enum has a complete id table', () => {
   // 973 since the Ashtakavarga's `TsShodhana` and `TsEkadhipatya`, two each;
   // 975 since the Vimshopaka's `TsVimshopakaScoring`, two;
   // 1006 since the vaiseshikamsa catalogue kind: thirty names and its UNKNOWN;
-  // 1010 since the avastha_cheshta catalogue kind: three and its UNKNOWN.
-  assert.equal(entries, 1010, 'every member of every enum is in a table');
+  // 1010 since the avastha_cheshta catalogue kind: three and its UNKNOWN;
+  // 1013 since the dasha phala's `TsDashaPhase`, three.
+  assert.equal(entries, 1013, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -880,6 +881,34 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
     'the reduced sum is the grahas\' own reductions summed',
   );
   assert.ok(grahas.every((g) => g.yogaPinda === g.rashiPinda + g.grahaPinda));
+  ctx.dispose();
+});
+
+/**
+ * A chart's dasha phala crosses whole: the nine grahas' Subhankas within
+ * each varga's share and complementary in total, a nature and a phase each;
+ * `null` unless asked, and the Shadbala's rays beside the phalas.
+ */
+test('a chart carries its dasha phala, and the Shadbala its rays', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, dashaPhala: true, shadbala: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).dashaPhala, null);
+  const { grahas } = chart.dashaPhala;
+  assert.equal(grahas.length, 9);
+  assert.equal(grahas[8].graha, 'graha.KETU');
+  for (const g of grahas) {
+    assert.equal(g.subhankas.length, 7);
+    g.subhankas.forEach((points, k) => assert.ok(points >= 0 && points <= (k === 0 ? 60 : 30), `${g.graha} ${k}`));
+    assert.ok(Math.abs(g.subhanka + g.asubhanka - 240) < 1e-9, g.graha);
+    assert.match(g.nature, /^nature\./);
+    assert.ok(['commencement', 'middle', 'end'].includes(g.phase), g.graha);
+    assert.equal(typeof g.favourable, 'boolean');
+  }
+  for (const g of chart.shadbala.grahas) {
+    assert.ok(g.subhaRashmi >= 1 && g.subhaRashmi <= 7, g.graha);
+    assert.ok(Math.abs(g.subhaRashmi + g.ashubhaRashmi - 8) < 1e-9, g.graha);
+  }
   ctx.dispose();
 });
 

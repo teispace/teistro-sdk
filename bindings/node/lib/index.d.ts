@@ -42,6 +42,8 @@ import type {
   Ekadhipatya,
   Vaiseshikamsa,
   VimshopakaScoring,
+  DashaPhase,
+  Nature,
   Relationship,
   Scale,
   Status,
@@ -444,6 +446,10 @@ export interface GrahaShadbala {
   readonly ishta: number;
   /** How far it tends to harm, 0 to 60. */
   readonly kashta: number;
+  /** Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5). */
+  readonly subhaRashmi: number;
+  /** Its inauspicious rays, 8 less the auspicious. */
+  readonly ashubhaRashmi: number;
 }
 
 /** A chart's Shadbala, read under the context's `strength.*` settings. */
@@ -498,6 +504,38 @@ export interface GrahaVaiseshikamsa {
   readonly shodashavarga: VaiseshikamsaStanding;
   /** Whether it is combust, defeated in war or in Shayana, its names then not auspicious. */
   readonly impaired: boolean;
+}
+
+/** One graha's dasha phala (BPHS ch. 28 vv. 7 to 10, ch. 47 vv. 3 to 6). */
+export interface GrahaDashaPhala {
+  /** Which graha, Sun to Ketu. */
+  readonly graha: Graha | 'unknown';
+  /** Its Subhanka in the D1, D2, D3, D7, D9, D12 and D30: out of 60 in the first and 30 in the rest. */
+  readonly subhankas: readonly number[];
+  /** The seven together, out of 240. */
+  readonly subhanka: number;
+  /** Their complements together, out of 240. */
+  readonly asubhanka: number;
+  /** Whether its rasi place is auspicious (benefic), neutral or inauspicious (malefic). */
+  readonly nature: Nature;
+  /** Where in its dasha its effects come. */
+  readonly phase: DashaPhase | 'unknown';
+  /** Whether its placement makes its dasha favourable. */
+  readonly favourable: boolean;
+  /** Whether its placement makes its dasha unfavourable; both can hold. */
+  readonly unfavourable: boolean;
+}
+
+/**
+ * A chart's dasha phala, read under `dasha.shanta_sign`.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, dashaPhala: true });
+ * const saturn = chart.dashaPhala?.grahas.find((g) => g.graha === 'graha.SATURN');
+ */
+export interface DashaPhalaReading {
+  /** Each graha's, Sun to Ketu. */
+  readonly grahas: readonly GrahaDashaPhala[];
 }
 
 /** A chart's Vaiseshikamsa. */
@@ -883,6 +921,8 @@ export declare class Chart {
   readonly vimshopaka: Vimshopaka | null;
   /** The Vaiseshikamsa; `null` unless `vaiseshikamsa` asked for it. */
   readonly vaiseshikamsa: VaiseshikamsaReading | null;
+  /** The dasha phala; `null` unless `dashaPhala` asked for it. */
+  readonly dashaPhala: DashaPhalaReading | null;
   /** The Shadbala; `null` unless `shadbala` asked for it. */
   readonly shadbala: Shadbala | null;
   /** The Bhava bala; `null` unless `bhavaBala` asked for it. */
@@ -1154,6 +1194,8 @@ export interface ChartRequest {
   readonly vimshopaka?: boolean;
   /** Whether to compute the Vaiseshikamsa; false by default. */
   readonly vaiseshikamsa?: boolean;
+  /** Whether to compute the dasha phala; false by default. */
+  readonly dashaPhala?: boolean;
   /** Whether to compute the Shadbala; false by default. */
   readonly shadbala?: boolean;
   /** Whether to compute the Bhava bala; false by default. */

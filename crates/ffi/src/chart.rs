@@ -238,6 +238,28 @@ impl From<teistro_core::settings::Vimshopaka> for TsVimshopakaScoring {
     }
 }
 
+/// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsDashaPhase {
+    /// At its commencement.
+    Commencement = 0,
+    /// In its middle.
+    Middle = 1,
+    /// At its end.
+    End = 2,
+}
+
+impl From<teistro::strength::DashaPhase> for TsDashaPhase {
+    fn from(phase: teistro::strength::DashaPhase) -> TsDashaPhase {
+        match phase {
+            teistro::strength::DashaPhase::Commencement => TsDashaPhase::Commencement,
+            teistro::strength::DashaPhase::Middle => TsDashaPhase::Middle,
+            teistro::strength::DashaPhase::End => TsDashaPhase::End,
+        }
+    }
+}
+
 /// Which arc of its day an instant falls in.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -463,7 +485,7 @@ pub struct TsChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -567,8 +589,10 @@ pub const TS_CHART_SHADBALA: u32 = 128;
 pub const TS_CHART_BHAVA_BALA: u32 = 256;
 /// The Vaiseshikamsa.
 pub const TS_CHART_VAISESHIKAMSA: u32 = 512;
+/// The dasha phala.
+pub const TS_CHART_DASHA_PHALA: u32 = 1024;
 
-const SECTION_BITS: [SectionBit; 10] = [
+const SECTION_BITS: [SectionBit; 11] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -579,6 +603,7 @@ const SECTION_BITS: [SectionBit; 10] = [
     (TS_CHART_SHADBALA, ChartRequest::with_shadbala),
     (TS_CHART_BHAVA_BALA, ChartRequest::with_bhava_bala),
     (TS_CHART_VAISESHIKAMSA, ChartRequest::with_vaiseshikamsa),
+    (TS_CHART_DASHA_PHALA, ChartRequest::with_dasha_phala),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -1123,7 +1148,7 @@ pub(crate) type ShadbalaColumn = (
 
 /// The `shadbala` section's value columns in order, which the section's
 /// schema and its writer both read.
-pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 23] = [
+pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 25] = [
     (
         "uchcha",
         "Sthana: from the distance to the debilitation point, 0 to 60.",
@@ -1195,6 +1220,16 @@ pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 23] = [
         |g| g.ishta,
     ),
     ("kashta", "How far it tends to harm, 0 to 60.", |g| g.kashta),
+    (
+        "subha_rashmi",
+        "Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5).",
+        |g| g.subha_rashmi,
+    ),
+    (
+        "ashubha_rashmi",
+        "Its inauspicious rays, 8 less the auspicious.",
+        |g| g.ashubha_rashmi,
+    ),
 ];
 
 /// Every chart's Shadbala, a row a graha, empty when it was not asked for.
@@ -1250,6 +1285,67 @@ pub(crate) const VAISESHIKAMSA_SCHEMES: [(&str, SchemeStanding); 4] = [
     ("dashavarga", |g| g.dashavarga),
     ("shodashavarga", |g| g.shodashavarga),
 ];
+
+/// Every chart's dasha phala, a row a graha, Sun to Ketu, empty when it was
+/// not asked for.
+struct DashaPhalaColumns {
+    graha: Vec<u16>,
+    subhankas: [Vec<f64>; 7],
+    subhanka: Vec<f64>,
+    asubhanka: Vec<f64>,
+    nature: Vec<u16>,
+    phase: Vec<u8>,
+    favourable: Vec<u8>,
+    unfavourable: Vec<u8>,
+}
+
+impl DashaPhalaColumns {
+    fn of(documents: &[Document]) -> DashaPhalaColumns {
+        let grahas: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.dasha_phala.as_ref())
+            .flat_map(|reading| &reading.grahas)
+            .collect();
+        let rows = grahas.len();
+        let mut columns = DashaPhalaColumns {
+            graha: Vec::with_capacity(rows),
+            subhankas: std::array::from_fn(|_| Vec::with_capacity(rows)),
+            subhanka: Vec::with_capacity(rows),
+            asubhanka: Vec::with_capacity(rows),
+            nature: Vec::with_capacity(rows),
+            phase: Vec::with_capacity(rows),
+            favourable: Vec::with_capacity(rows),
+            unfavourable: Vec::with_capacity(rows),
+        };
+        for graha in grahas {
+            columns.graha.push(graha.graha.id());
+            for (column, value) in columns.subhankas.iter_mut().zip(graha.subhankas) {
+                column.push(value);
+            }
+            columns.subhanka.push(graha.subhanka);
+            columns.asubhanka.push(graha.asubhanka);
+            columns.nature.push(graha.nature.id());
+            columns.phase.push(TsDashaPhase::from(graha.phase) as u8);
+            columns.favourable.push(u8::from(graha.favourable));
+            columns.unfavourable.push(u8::from(graha.unfavourable));
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = vec![ColumnData::U16(&self.graha)];
+        data.extend(self.subhankas.iter().map(|column| ColumnData::F64(column)));
+        data.extend([
+            ColumnData::F64(&self.subhanka),
+            ColumnData::F64(&self.asubhanka),
+            ColumnData::U16(&self.nature),
+            ColumnData::U8(&self.phase),
+            ColumnData::U8(&self.favourable),
+            ColumnData::U8(&self.unfavourable),
+        ]);
+        writer.columns("dasha_phala", self.graha.len(), &data)
+    }
+}
 
 /// Every chart's Vaiseshikamsa, a row a graha, empty when it was not asked
 /// for.
@@ -1960,6 +2056,7 @@ pub fn encode(
     let shadbala = ShadbalaColumns::of(documents);
     let bhava_bala = BhavaBalaColumns::of(documents);
     let vaiseshikamsa = VaiseshikamsaColumns::of(documents);
+    let dasha_phala = DashaPhalaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -2026,6 +2123,7 @@ pub fn encode(
         shadbala.write(&mut writer)?;
         bhava_bala.write(&mut writer)?;
         vaiseshikamsa.write(&mut writer)?;
+        dasha_phala.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

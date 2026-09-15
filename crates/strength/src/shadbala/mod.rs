@@ -368,6 +368,13 @@ pub struct GrahaShadbala {
     /// How far it tends to harm, 0 to 60.
     #[serde(default)]
     pub kashta: f64,
+    /// Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays
+    /// (BPHS ch. 28 v. 5).
+    #[serde(default)]
+    pub subha_rashmi: f64,
+    /// Its inauspicious rays, 8 less the auspicious.
+    #[serde(default)]
+    pub ashubha_rashmi: f64,
 }
 
 /// A chart's Shadbala.
@@ -488,6 +495,8 @@ impl ShadbalaReading {
                     strong: false,
                     ishta: 0.0,
                     kashta: 0.0,
+                    subha_rashmi: 0.0,
+                    ashubha_rashmi: 0.0,
                 }
             })
             .collect();
@@ -503,7 +512,11 @@ impl ShadbalaReading {
                 + graha.drik;
             graha.rupas = graha.virupas / VIRUPAS_PER_RUPA;
             graha.strong = graha.rupas >= graha.required_rupas;
-            (graha.ishta, graha.kashta) = ishta::of(graha, chart, rules.ishta_kashta);
+            let phalas = ishta::of(graha, chart, rules.ishta_kashta);
+            graha.ishta = phalas.ishta;
+            graha.kashta = phalas.kashta;
+            graha.subha_rashmi = phalas.subha_rashmi;
+            graha.ashubha_rashmi = phalas.ashubha_rashmi;
         }
         ShadbalaReading { rules, grahas }
     }

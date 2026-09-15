@@ -1304,6 +1304,42 @@
       ],
       "type": "object"
     },
+    "DashaPhalaReading": {
+      "description": "A chart's dasha phala.",
+      "properties": {
+        "grahas": {
+          "description": "Each graha's, Sun to Ketu.",
+          "items": {
+            "$ref": "#/$defs/GrahaDashaPhala"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "grahas"
+      ],
+      "type": "object"
+    },
+    "DashaPhase": {
+      "description": "Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).",
+      "oneOf": [
+        {
+          "const": "COMMENCEMENT",
+          "description": "At its commencement.",
+          "type": "string"
+        },
+        {
+          "const": "MIDDLE",
+          "description": "In its middle.",
+          "type": "string"
+        },
+        {
+          "const": "END",
+          "description": "At its end.",
+          "type": "string"
+        }
+      ]
+    },
     "DashaReading": {
       "description": "One dasha of a chart.",
       "properties": {
@@ -1629,6 +1665,17 @@
             }
           ],
           "description": "Each house's strength (`03-design/bhava-bala-measured.md`)."
+        },
+        "dasha_phala": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DashaPhalaReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "What each graha's placement says of its dasha (BPHS chs. 28 and 47)."
         },
         "dashas": {
           "description": "The dashas asked for: each system's balance and its periods to the settings' depth (`03-design/dasha-kernels.md`).",
@@ -2109,6 +2156,62 @@
       ],
       "type": "object"
     },
+    "GrahaDashaPhala": {
+      "description": "One graha's dasha phala.",
+      "properties": {
+        "asubhanka": {
+          "description": "Their complements together, out of 240.",
+          "format": "double",
+          "type": "number"
+        },
+        "favourable": {
+          "description": "Whether its placement makes its dasha favourable.",
+          "type": "boolean"
+        },
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which graha."
+        },
+        "nature": {
+          "$ref": "#/$defs/Nature",
+          "description": "Whether its rasi placement is auspicious, neutral or inauspicious (v. 10)."
+        },
+        "phase": {
+          "$ref": "#/$defs/DashaPhase",
+          "description": "Where in its dasha its effects are felt."
+        },
+        "subhanka": {
+          "description": "The seven together, out of 240.",
+          "format": "double",
+          "type": "number"
+        },
+        "subhankas": {
+          "description": "Its Subhanka in each of the seven vargas, the rasi chart first: out of 60 there and 30 in the others.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 7,
+          "minItems": 7,
+          "type": "array"
+        },
+        "unfavourable": {
+          "description": "Whether its placement makes its dasha unfavourable.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "graha",
+        "subhankas",
+        "subhanka",
+        "asubhanka",
+        "nature",
+        "phase",
+        "favourable",
+        "unfavourable"
+      ],
+      "type": "object"
+    },
     "GrahaPlacement": {
       "description": "Where one graha stands in a divisional chart.",
       "properties": {
@@ -2183,6 +2286,12 @@
     "GrahaShadbala": {
       "description": "One graha's Shadbala.",
       "properties": {
+        "ashubha_rashmi": {
+          "default": 0.0,
+          "description": "Its inauspicious rays, 8 less the auspicious.",
+          "format": "double",
+          "type": "number"
+        },
         "cheshta": {
           "description": "Motional strength.",
           "format": "double",
@@ -2240,6 +2349,12 @@
         "strong": {
           "description": "Whether it reaches them.",
           "type": "boolean"
+        },
+        "subha_rashmi": {
+          "default": 0.0,
+          "description": "Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5).",
+          "format": "double",
+          "type": "number"
         },
         "virupas": {
           "description": "The six together, virupas.",
@@ -3424,6 +3539,16 @@
           "type": "string"
         }
       ]
+    },
+    "Nature": {
+      "description": "A key of the `nature` catalogue.",
+      "enum": [
+        "BENEFIC",
+        "MALEFIC",
+        "NEUTRAL"
+      ],
+      "type": "string",
+      "x-teistro-kind": "nature"
     },
     "Omens": {
       "description": "What a day is said to be.",

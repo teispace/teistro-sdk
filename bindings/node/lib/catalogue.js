@@ -2880,6 +2880,23 @@ export const VimshopakaScoringById = new Map([
   [1, 'saptavargaja-virupas'],
 ]);
 
+/** Every DashaPhase by name. */
+export const DashaPhase = Object.freeze({
+  Commencement: 'commencement',
+  Middle: 'middle',
+  End: 'end',
+});
+
+/**
+ * Every DashaPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DashaPhaseById = new Map([
+  [0, 'commencement'],
+  [1, 'middle'],
+  [2, 'end'],
+]);
+
 /** Every DayPart by name. */
 export const DayPart = Object.freeze({
   Daylight: 'daylight',

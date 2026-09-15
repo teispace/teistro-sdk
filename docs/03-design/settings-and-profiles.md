@@ -70,6 +70,7 @@ every shipped profile. The v1 inventory:
 | dasha | `kalachakra_membership` | enum | `LISTED` (the corpus's), `TRIAD` (crux C54) |
 | dasha | `kalachakra_balance` | enum | `FIRST_SIGN` (the corpus's), `WHOLE_PADA` (crux C55) |
 | dasha | `kalachakra_after_ninth` | enum | `REVERSE` (the corpus's), `REPEAT` (crux C56) |
+| dasha | `shanta_sign` | enum | `FRIENDLY` (the default, a friend's or great friend's sign), `FRIEND` (crux C79) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |

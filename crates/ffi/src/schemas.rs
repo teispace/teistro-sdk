@@ -572,6 +572,7 @@ pub fn charts() -> BlobSchema {
             chart_shadbala_section(29),
             chart_bhava_bala_section(30),
             chart_vaiseshikamsa_section(31),
+            chart_dasha_phala_section(32),
         ],
     }
 }
@@ -800,6 +801,60 @@ fn chart_bhava_bala_section(id: u32) -> SectionSchema {
         id,
         "bhava_bala",
         "Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).",
+        columns,
+    )
+}
+
+/// Every chart's dasha phala, a row a graha: the Subhanka in each of the
+/// seven vargas, their totals, and what ch. 47 reads of the placement.
+fn chart_dasha_phala_section(id: u32) -> SectionSchema {
+    let mut columns = vec![ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha")];
+    columns.extend(
+        teistro::strength::shadbala::SAPTAVARGAJA_VARGAS
+            .iter()
+            .enumerate()
+            .map(|(k, varga)| {
+                let out_of = if k == 0 { 60 } else { 30 };
+                ColumnDef::new(
+                    &format!("subhanka_{}", varga.key().to_lowercase()),
+                    Scalar::F64,
+                    &format!(
+                        "Its Subhanka in the {}, out of {out_of}: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).",
+                        varga.key()
+                    ),
+                )
+            }),
+    );
+    columns.extend([
+        ColumnDef::new("subhanka", Scalar::F64, "The seven Subhankas together, out of 240."),
+        ColumnDef::new("asubhanka", Scalar::F64, "Their complements together, out of 240."),
+        ColumnDef::new(
+            "nature",
+            Scalar::U16,
+            "Whether its rasi place is auspicious, neutral or inauspicious (v. 10).",
+        )
+        .of_enum("Nature"),
+        ColumnDef::new(
+            "phase",
+            Scalar::U8,
+            "Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4).",
+        )
+        .of_enum("TsDashaPhase"),
+        ColumnDef::new(
+            "favourable",
+            Scalar::U8,
+            "1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5).",
+        ),
+        ColumnDef::new(
+            "unfavourable",
+            Scalar::U8,
+            "1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand.",
+        ),
+    ]);
+    SectionSchema::columns(
+        id,
+        "dasha_phala",
+        "Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.",
         columns,
     )
 }

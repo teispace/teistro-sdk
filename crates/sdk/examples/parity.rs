@@ -902,6 +902,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
         .with_ashtakavarga()
         .with_vimshopaka()
         .with_vaiseshikamsa()
+        .with_dasha_phala()
         .with_shadbala()
         .with_bhava_bala()
         .with_state()
@@ -1197,6 +1198,7 @@ fn the_strength(report: &mut Report, index: usize, document: &teistro::Document)
     the_ashtakavarga(report, index, document);
     the_vimshopaka(report, index, document);
     the_vaiseshikamsa(report, index, document);
+    the_dasha_phala(report, index, document);
     the_shadbala(report, index, document);
     the_bhava_bala(report, index, document);
 }
@@ -1257,13 +1259,15 @@ fn the_shadbala(report: &mut Report, index: usize, document: &teistro::Document)
             report,
             &format!("{key}-total"),
             format!(
-                "{},{},{},{},{},{}",
+                "{},{},{},{},{},{},{},{}",
                 number(graha.virupas),
                 number(graha.rupas),
                 number(graha.required_rupas),
                 graha.strong,
                 number(graha.ishta),
-                number(graha.kashta)
+                number(graha.kashta),
+                number(graha.subha_rashmi),
+                number(graha.ashubha_rashmi)
             ),
         );
     }
@@ -1295,6 +1299,28 @@ fn the_vaiseshikamsa(report: &mut Report, index: usize, document: &teistro::Docu
             report,
             &format!("chart-{index}-vaiseshikamsa-{}", graha.graha.full_key()),
             format!("{named} {}", graha.impaired),
+        );
+    }
+}
+
+/// The dasha phala as the other three print it: the seven Subhankas, the
+/// nature, the phase and the two flags.
+fn the_dasha_phala(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(reading) = document.dasha_phala.as_ref() else {
+        return;
+    };
+    for graha in &reading.grahas {
+        put(
+            report,
+            &format!("chart-{index}-dasha-phala-{}", graha.graha.full_key()),
+            format!(
+                "{} {} {} {} {}",
+                graha.subhankas.map(number).join(","),
+                graha.nature.full_key(),
+                kebab(&format!("{:?}", graha.phase)),
+                graha.favourable,
+                graha.unfavourable
+            ),
         );
     }
 }

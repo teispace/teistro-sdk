@@ -123,6 +123,15 @@ knob!(
         Proportional = "PROPORTIONAL" }
 );
 knob!(
+    /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
+    /// naming a "Shant" sign against an "inimical" one (crux C79).
+    ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against
+        /// the inimical ones, which are an enemy's and a great enemy's.
+        Friendly = "FRIENDLY", /// A friend's sign alone, as ch. 45 v. 9 names Shanta (a great friend's
+        /// is Pramudita).
+        Friend = "FRIEND" }
+);
+knob!(
     /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
     SayanadiGhatis { /// The whole ghatis elapsed since the chart's sunrise.
         Elapsed = "ELAPSED", /// The ghati running at birth: one more than those elapsed, unless birth

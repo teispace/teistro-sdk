@@ -624,6 +624,9 @@ const int _sectionVimshopaka = 64;
 /// `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
 const int _sectionVaiseshikamsa = 512;
 
+/// `TS_CHART_DASHA_PHALA`, the dasha phala.
+const int _sectionDashaPhala = 1024;
+
 /// `TS_CHART_SHADBALA`, the Shadbala.
 const int _sectionShadbala = 128;
 
@@ -677,6 +680,7 @@ final class ChartArea extends _Area {
     bool ashtakavarga = false,
     bool vimshopaka = false,
     bool vaiseshikamsa = false,
+    bool dashaPhala = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -695,6 +699,7 @@ final class ChartArea extends _Area {
     ashtakavarga: ashtakavarga,
     vimshopaka: vimshopaka,
     vaiseshikamsa: vaiseshikamsa,
+    dashaPhala: dashaPhala,
     shadbala: shadbala,
     bhavaBala: bhavaBala,
     state: state,
@@ -733,6 +738,7 @@ final class ChartArea extends _Area {
     bool ashtakavarga = false,
     bool vimshopaka = false,
     bool vaiseshikamsa = false,
+    bool dashaPhala = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -757,6 +763,7 @@ final class ChartArea extends _Area {
               (ashtakavarga ? _sectionAshtakavarga : 0) |
               (vimshopaka ? _sectionVimshopaka : 0) |
               (vaiseshikamsa ? _sectionVaiseshikamsa : 0) |
+              (dashaPhala ? _sectionDashaPhala : 0) |
               (shadbala ? _sectionShadbala : 0) |
               (bhavaBala ? _sectionBhavaBala : 0) |
               (state ? _sectionState : 0),
@@ -1750,6 +1757,8 @@ final class GrahaShadbala {
     required this.strong,
     required this.ishta,
     required this.kashta,
+    required this.subhaRashmi,
+    required this.ashubhaRashmi,
   });
 
   /// Which graha, Sun to Saturn.
@@ -1790,6 +1799,13 @@ final class GrahaShadbala {
 
   /// How far it tends to harm, 0 to 60.
   final double kashta;
+
+  /// Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays
+  /// (BPHS ch. 28 v. 5).
+  final double subhaRashmi;
+
+  /// Its inauspicious rays, 8 less the auspicious.
+  final double ashubhaRashmi;
 }
 
 /// A chart's Shadbala, read under the context's `strength.*` settings
@@ -1799,6 +1815,59 @@ final class Shadbala {
 
   /// Each graha's, Sun to Saturn.
   final List<GrahaShadbala> grahas;
+}
+
+/// One graha's dasha phala (BPHS ch. 28 vv. 7 to 10, ch. 47 vv. 3 to 6).
+final class GrahaDashaPhala {
+  const GrahaDashaPhala({
+    required this.graha,
+    required this.subhankas,
+    required this.subhanka,
+    required this.asubhanka,
+    required this.nature,
+    required this.phase,
+    required this.favourable,
+    required this.unfavourable,
+  });
+
+  /// Which graha, Sun to Ketu.
+  final Graha graha;
+
+  /// Its Subhanka in the D1, D2, D3, D7, D9, D12 and D30: out of 60 in the
+  /// first and 30 in the rest.
+  final List<double> subhankas;
+
+  /// The seven together, out of 240.
+  final double subhanka;
+
+  /// Their complements together, out of 240.
+  final double asubhanka;
+
+  /// Whether its rasi place is auspicious (benefic), neutral or inauspicious
+  /// (malefic).
+  final Nature nature;
+
+  /// Where in its dasha its effects come.
+  final DashaPhase phase;
+
+  /// Whether its placement makes its dasha favourable.
+  final bool favourable;
+
+  /// Whether its placement makes its dasha unfavourable; both can hold.
+  final bool unfavourable;
+}
+
+/// A chart's dasha phala, read under `dasha.shanta_sign`.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */ dashaPhala: true);
+/// final saturn = chart.dashaPhala!.grahas.firstWhere((g) => g.graha == Graha.saturn);
+/// ```
+final class DashaPhalaReading {
+  const DashaPhalaReading({required this.grahas});
+
+  /// Each graha's, Sun to Ketu.
+  final List<GrahaDashaPhala> grahas;
 }
 
 /// A graha's standing in one scheme of vargas.
@@ -2871,6 +2940,8 @@ List<Shadbala> _decodeShadbalas(Charts batch) {
     strong: c.strong[row] == 1,
     ishta: c.ishta[row],
     kashta: c.kashta[row],
+    subhaRashmi: c.subhaRashmi[row],
+    ashubhaRashmi: c.ashubhaRashmi[row],
   );
   return List<Shadbala>.generate(
     c.length ~/ 7,
@@ -2880,6 +2951,47 @@ List<Shadbala> _decodeShadbalas(Charts batch) {
         (g) => graha(chart * 7 + g),
         growable: false,
       ),
+    ),
+    growable: false,
+  );
+}
+
+/// Each batch's dasha phalas, decoded once however many charts read them.
+final Expando<List<DashaPhalaReading>> _dashaPhalas =
+    Expando<List<DashaPhalaReading>>('dashaPhalas');
+
+List<DashaPhalaReading> _dashaPhalasOf(Charts batch) =>
+    _dashaPhalas[batch] ??= _decodeDashaPhalas(batch);
+
+List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
+  final c = batch.dashaPhala;
+  final subhankas = [
+    c.subhankaD1,
+    c.subhankaD2,
+    c.subhankaD3,
+    c.subhankaD7,
+    c.subhankaD9,
+    c.subhankaD12,
+    c.subhankaD30,
+  ];
+  return List<DashaPhalaReading>.generate(
+    c.length ~/ 9,
+    (chart) => DashaPhalaReading(
+      grahas: List<GrahaDashaPhala>.generate(9, (g) {
+        final row = chart * 9 + g;
+        return GrahaDashaPhala(
+          graha: Graha.byId(c.graha[row]),
+          subhankas: List<double>.unmodifiable([
+            for (final column in subhankas) column[row],
+          ]),
+          subhanka: c.subhanka[row],
+          asubhanka: c.asubhanka[row],
+          nature: Nature.byId(c.nature[row]),
+          phase: DashaPhase.byId(c.phase[row]),
+          favourable: c.favourable[row] == 1,
+          unfavourable: c.unfavourable[row] == 1,
+        );
+      }, growable: false),
     ),
     growable: false,
   );
@@ -3379,6 +3491,12 @@ final class Chart {
   /// The Shadbala, when `shadbala: true` asked for it.
   Shadbala? get shadbala {
     final all = _shadbalasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The dasha phala, when `dashaPhala: true` asked for it.
+  DashaPhalaReading? get dashaPhala {
+    final all = _dashaPhalasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

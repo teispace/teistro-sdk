@@ -286,6 +286,7 @@ void main() {
     ashtakavarga: true,
     vimshopaka: true,
     vaiseshikamsa: true,
+    dashaPhala: true,
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -482,7 +483,7 @@ void main() {
       );
       put(
         '$key-total',
-        '${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong},${number(g.ishta)},${number(g.kashta)}',
+        '${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong},${number(g.ishta)},${number(g.kashta)},${number(g.subhaRashmi)},${number(g.ashubhaRashmi)}',
       );
     }
     for (final b in chart.bhavaBala!.bhavas) {
@@ -501,6 +502,12 @@ void main() {
       put(
         'chart-$i-vaiseshikamsa-${g.graha.fullKey}',
         '${standings.map((s) => '${s.goodVargas}:${s.name?.fullKey}').join(',')} ${g.impaired}',
+      );
+    }
+    for (final g in chart.dashaPhala!.grahas) {
+      put(
+        'chart-$i-dasha-phala-${g.graha.fullKey}',
+        '${g.subhankas.map(number).join(',')} ${g.nature.fullKey} ${g.phase.key} ${g.favourable} ${g.unfavourable}',
       );
     }
     final vs = chart.vimshopaka!;

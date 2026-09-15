@@ -104,6 +104,8 @@ from .catalogue import (
     Ekadhipatya,
     Shodhana,
     Vaiseshikamsa,
+    DashaPhase,
+    Nature,
     VimshopakaScoring,
     Body,
     Calendar,
@@ -263,6 +265,11 @@ __all__ = [
     "KaalaBala",
     "Shadbala",
     "SthanaBala",
+    # The dasha phala: what a chart answers with, and where a dasha's effects come.
+    "DashaPhalaReading",
+    "DashaPhase",
+    "GrahaDashaPhala",
+    "Nature",
     # The Vaiseshikamsa: what a chart answers with, and its names.
     "GrahaVaiseshikamsa",
     "Vaiseshikamsa",
@@ -989,6 +996,7 @@ class ChartArea(_Area):
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
         vaiseshikamsa: bool = False,
+        dasha_phala: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1021,6 +1029,7 @@ class ChartArea(_Area):
             ashtakavarga=ashtakavarga,
             vimshopaka=vimshopaka,
             vaiseshikamsa=vaiseshikamsa,
+            dasha_phala=dasha_phala,
             shadbala=shadbala,
             bhava_bala=bhava_bala,
             state=state,
@@ -1043,6 +1052,7 @@ class ChartArea(_Area):
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
         vaiseshikamsa: bool = False,
+        dasha_phala: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1081,6 +1091,7 @@ class ChartArea(_Area):
             | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
             | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
             | (_SECTION_VAISESHIKAMSA if vaiseshikamsa else 0)
+            | (_SECTION_DASHA_PHALA if dasha_phala else 0)
             | (_SECTION_SHADBALA if shadbala else 0)
             | (_SECTION_BHAVA_BALA if bhava_bala else 0)
             | (_SECTION_STATE if state else 0),
@@ -1386,6 +1397,8 @@ _SECTION_VIMSHOPAKA = 64
 
 #: `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
 _SECTION_VAISESHIKAMSA = 512
+#: `TS_CHART_DASHA_PHALA`, the dasha phala.
+_SECTION_DASHA_PHALA = 1024
 
 #: `TS_CHART_SHADBALA`, the Shadbala.
 _SECTION_SHADBALA = 128
@@ -1781,6 +1794,13 @@ class GrahaShadbala:
     kashta: float
     """How far it tends to harm, 0 to 60."""
 
+    subha_rashmi: float
+    """Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays
+    (BPHS ch. 28 v. 5)."""
+
+    ashubha_rashmi: float
+    """Its inauspicious rays, 8 less the auspicious."""
+
 
 @dataclass(frozen=True)
 class Shadbala:
@@ -1789,6 +1809,49 @@ class Shadbala:
 
     grahas: Tuple[GrahaShadbala, ...]
     """Each graha's, Sun to Saturn."""
+
+
+@dataclass(frozen=True)
+class GrahaDashaPhala:
+    """One graha's dasha phala (BPHS ch. 28 vv. 7 to 10, ch. 47 vv. 3 to 6)."""
+
+    graha: Graha
+    """Which graha, Sun to Ketu."""
+
+    subhankas: Tuple[float, ...]
+    """Its Subhanka in the D1, D2, D3, D7, D9, D12 and D30: out of 60 in the
+    first and 30 in the rest."""
+
+    subhanka: float
+    """The seven together, out of 240."""
+
+    asubhanka: float
+    """Their complements together, out of 240."""
+
+    nature: Nature
+    """Whether its rasi place is auspicious (benefic), neutral or
+    inauspicious (malefic)."""
+
+    phase: DashaPhase
+    """Where in its dasha its effects come."""
+
+    favourable: bool
+    """Whether its placement makes its dasha favourable."""
+
+    unfavourable: bool
+    """Whether its placement makes its dasha unfavourable; both can hold."""
+
+
+@dataclass(frozen=True)
+class DashaPhalaReading:
+    """A chart's dasha phala, read under `dasha.shanta_sign`.
+
+    >>> # chart = ctx.chart.found(..., dasha_phala=True)
+    >>> # saturn = next(g for g in chart.dasha_phala.grahas if g.graha is Graha.SATURN)
+    """
+
+    grahas: Tuple[GrahaDashaPhala, ...]
+    """Each graha's, Sun to Ketu."""
 
 
 @dataclass(frozen=True)
@@ -2697,6 +2760,12 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def dasha_phala(self) -> Optional[DashaPhalaReading]:
+        """The dasha phala, when `dasha_phala=True` asked for it."""
+        parsed = self.batch._dasha_phalas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def vaiseshikamsa(self) -> Optional[VaiseshikamsaReading]:
         """The Vaiseshikamsa, when `vaiseshikamsa=True` asked for it."""
         parsed = self.batch._vaiseshikamsas
@@ -2943,11 +3012,45 @@ class ChartBatch:
                 strong=c.strong[row] == 1,
                 ishta=c.ishta[row],
                 kashta=c.kashta[row],
+                subha_rashmi=c.subha_rashmi[row],
+                ashubha_rashmi=c.ashubha_rashmi[row],
             )
 
         return [
             Shadbala(grahas=tuple(graha(row) for row in range(chart * 7, chart * 7 + 7)))
             for chart in range(c.length // 7)
+        ]
+
+    @cached_property
+    def _dasha_phalas(self) -> list[DashaPhalaReading]:
+        """Every chart's dasha phala, decoded once; empty when none was asked for."""
+        c = self.decoded.dasha_phala
+        subhankas = (
+            c.subhanka_d1,
+            c.subhanka_d2,
+            c.subhanka_d3,
+            c.subhanka_d7,
+            c.subhanka_d9,
+            c.subhanka_d12,
+            c.subhanka_d30,
+        )
+        return [
+            DashaPhalaReading(
+                grahas=tuple(
+                    GrahaDashaPhala(
+                        graha=Graha(c.graha[row]),
+                        subhankas=tuple(column[row] for column in subhankas),
+                        subhanka=c.subhanka[row],
+                        asubhanka=c.asubhanka[row],
+                        nature=Nature(c.nature[row]),
+                        phase=DashaPhase(c.phase[row]),
+                        favourable=c.favourable[row] == 1,
+                        unfavourable=c.unfavourable[row] == 1,
+                    )
+                    for row in range(chart * 9, chart * 9 + 9)
+                )
+            )
+            for chart in range(c.length // 9)
         ]
 
     @cached_property
