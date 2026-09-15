@@ -180,7 +180,7 @@ the class of mistake a generated binding exists to make impossible.
 | `i32` | `c_int32` | `i` | 17 | 5 |
 | `i64` | `c_int64` | `q` | 4 | 0 |
 | `f32` | `c_float` | `f` | 0 | 0 |
-| `f64` | `c_double` | `d` | 49 | 136 |
+| `f64` | `c_double` | `d` | 49 | 137 |
 | `usize` | `c_size_t` | `n` | 16 | 0 |
 | `isize` | `c_ssize_t` | `N` | 0 | 0 |
 | `bool` | `c_bool` | `?` | 0 | 0 |
@@ -189,7 +189,7 @@ the class of mistake a generated binding exists to make impossible.
 |---|---|---|
 | every scalar has a fixed-width `ctypes` type and a format code | **holds** | 0 of 13 disagree |
 | every scalar the boundary uses is one of the thirteen | **holds** | 8 of 13 appear |
-| every blob column's scalar has a format code | **holds** | 0 of 322 disagree |
+| every blob column's scalar has a format code | **holds** | 0 of 323 disagree |
 
 ## 5. What a binding can say about a value
 

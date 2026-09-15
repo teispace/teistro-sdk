@@ -122,12 +122,9 @@ impl Strength {
     /// This aspect's value in virupas, **as the whole-sign table gives
     /// it**: a quarter is fifteen.
     ///
-    /// This is not the sphuta drishti, which interpolates between the
-    /// houses and which the SDK does not ship because no source in the
-    /// project gives its construction (crux C45,
-    /// `03-design/aspect-and-drishti.md` §8). It is the same unit and
-    /// the same value at each house, which is the specification any
-    /// future construction has to meet.
+    /// This is not the sphuta drishti ([`crate::sphuta`]), which measures
+    /// by degree and gives the special aspects their own additions
+    /// (crux C45).
     #[must_use]
     pub const fn virupas(self) -> u16 {
         self.quarters() as u16 * (FULL_VIRUPAS / 4)

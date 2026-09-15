@@ -400,6 +400,21 @@
       ],
       "type": "object"
     },
+    "Benefics": {
+      "description": "Which grahas count as benefics for the Shadbala's Paksha and Drik balas (crux C69).",
+      "oneOf": [
+        {
+          "const": "CONDITIONAL",
+          "description": "Jupiter and Venus; the Moon from the eighth day of the bright half to the eighth of the dark; Mercury unless it shares its sign with the Sun, Mars, Saturn, a node or a malefic Moon (B.V. Raman after Sripati).",
+          "type": "string"
+        },
+        {
+          "const": "FIXED",
+          "description": "The recording engine: the Moon, Mercury, Jupiter and Venus, always.",
+          "type": "string"
+        }
+      ]
+    },
     "Bhava": {
       "description": "One bhava of a chart: where it is, whose it is, and what kind it is.",
       "properties": {
@@ -942,6 +957,21 @@
         "offset_deg"
       ],
       "type": "object"
+    },
+    "Cheshta": {
+      "description": "The mean elements the Shadbala's Cheshta bala reads for Mars to Saturn (crux C70).",
+      "oneOf": [
+        {
+          "const": "SRIPATI",
+          "description": "Kedarnath Dutt's tables as B.V. Raman gives them, the inferior planets' mean the mean Sun's.",
+          "type": "string"
+        },
+        {
+          "const": "RECORDING_ENGINE",
+          "description": "The recording engine's J2000 elements, each inferior planet's own seeghrochcha taken as its mean too.",
+          "type": "string"
+        }
+      ]
     },
     "Choghadiya": {
       "description": "A key of the `choghadiya` catalogue.",
@@ -1524,17 +1554,37 @@
       ],
       "type": "object"
     },
+    "Drekkana": {
+      "description": "Which decanate gives each gender of graha the Shadbala's Drekkana bala (crux C72).",
+      "oneOf": [
+        {
+          "const": "MALE_FEMALE_NEUTER",
+          "description": "BPHS ch. 27 v. 6 as translated, and the recording engine: male grahas the first, female the second, neuter the third.",
+          "type": "string"
+        },
+        {
+          "const": "MALE_NEUTER_FEMALE",
+          "description": "Sripati, as B.V. Raman works it: male the first, neuter the second, female the third.",
+          "type": "string"
+        }
+      ]
+    },
     "Drik": {
       "description": "How the Shadbala's Drik bala weighs the drishtis a graha receives (crux C69).",
       "oneOf": [
         {
+          "const": "QUARTER_WITH_JUPITER_MERCURY",
+          "description": "BPHS ch. 27 v. 19: a quarter of each benefic's sphuta drishti added and each malefic's taken away, and Jupiter's and Mercury's added again in full.",
+          "type": "string"
+        },
+        {
           "const": "QUARTER",
-          "description": "BPHS ch. 27 v. 19: a quarter of each benefic's drishti added and of each malefic's taken away, and Mercury's and Jupiter's added again in full.",
+          "description": "Sripati, as B.V. Raman works it: a quarter of the net sphuta drishti pinda.",
           "type": "string"
         },
         {
           "const": "FULL",
-          "description": "The recording engine: each drishti in full, Mercury's taken away, the sum bounded at ±60.",
+          "description": "The recording engine: each whole-sign graded drishti in full, Mercury's taken away, the sum bounded at ±60.",
           "type": "string"
         }
       ]
@@ -2362,6 +2412,12 @@
           "description": "45 to the weekday's lord.",
           "format": "double",
           "type": "number"
+        },
+        "yuddha": {
+          "default": 0.0,
+          "description": "Gained by the victor and lost by the vanquished of a planetary war.",
+          "format": "double",
+          "type": "number"
         }
       },
       "required": [
@@ -2539,16 +2595,21 @@
       "type": "string"
     },
     "Kranti": {
-      "description": "The declination the Shadbala's Ayana bala reads (crux C66).",
+      "description": "The declination the Shadbala's Ayana bala reads, and the obliquity its formula scales by (crux C66).",
       "oneOf": [
         {
           "const": "TRUE",
-          "description": "The graha's true declination: its ecliptic latitude and the date's obliquity, as BPHS's notes take it from an ephemeris.",
+          "description": "The graha's true declination, from its ecliptic latitude and the date's obliquity, as BPHS's notes take it from an ephemeris.",
           "type": "string"
         },
         {
           "const": "ECLIPTIC",
           "description": "The recording engine: its tropical longitude at zero latitude, on an obliquity of 23.4393°.",
+          "type": "string"
+        },
+        {
+          "const": "HINDU_TABLE",
+          "description": "Sripati, as B.V. Raman works it: the Hindu table of 362′, 341′, 299′, 236′, 150′ and 52′ a 15° step of the sayana bhuja, on 24°.",
           "type": "string"
         }
       ]
@@ -2687,6 +2748,26 @@
       "description": "A geographic longitude in degrees, east positive.",
       "format": "double",
       "type": "number"
+    },
+    "LuminaryCheshta": {
+      "description": "The Cheshta bala of the Sun and the Moon, which never retrogress (crux C66).",
+      "oneOf": [
+        {
+          "const": "AYANA_AND_PAKSHA",
+          "description": "BPHS ch. 27 v. 18: the Sun's is its Ayana bala and the Moon's her Paksha bala.",
+          "type": "string"
+        },
+        {
+          "const": "AYANA_AND_ELONGATION",
+          "description": "The recording engine: the Sun's Ayana, and a third of the Moon's elongation.",
+          "type": "string"
+        },
+        {
+          "const": "NONE",
+          "description": "Sripati, as B.V. Raman works it: neither has any.",
+          "type": "string"
+        }
+      ]
     },
     "LunarMonth": {
       "description": "The lunar month system.",
@@ -2852,21 +2933,6 @@
         {
           "const": "KSHAYA",
           "description": "Two: the second name is skipped this year.",
-          "type": "string"
-        }
-      ]
-    },
-    "MoonCheshta": {
-      "description": "The Moon's Cheshta bala in the Shadbala (crux C66).",
-      "oneOf": [
-        {
-          "const": "PAKSHA",
-          "description": "BPHS ch. 27 v. 18: her Paksha bala.",
-          "type": "string"
-        },
-        {
-          "const": "ELONGATION",
-          "description": "The recording engine: a third of her elongation, undoubled.",
           "type": "string"
         }
       ]
@@ -3975,8 +4041,8 @@
           "type": "string"
         },
         {
-          "const": "RECORDING_ENGINE",
-          "description": "The recording engine's, the Sun's 5.",
+          "const": "SRIPATI",
+          "description": "Sripati, as B.V. Raman gives it and the recording engine takes it: the Sun's 5.",
           "type": "string"
         }
       ]
@@ -4180,11 +4246,23 @@
       "type": "object"
     },
     "ShadbalaRules": {
-      "description": "The choices a Shadbala is computed under, one a fork of BPHS ch. 27 and the recording engine (cruxes C64 to C71).",
+      "description": "The choices a Shadbala is computed under, each a fork between BPHS ch. 27, Sripati and the recording engine (cruxes C64 to C72).",
       "properties": {
+        "benefics": {
+          "$ref": "#/$defs/Benefics",
+          "description": "Which grahas are benefics for Paksha and Drik."
+        },
+        "cheshta": {
+          "$ref": "#/$defs/Cheshta",
+          "description": "The mean elements the Cheshta of Mars to Saturn reads."
+        },
         "dig": {
           "$ref": "#/$defs/DigKendras",
           "description": "The kendras the Dig measures from."
+        },
+        "drekkana": {
+          "$ref": "#/$defs/Drekkana",
+          "description": "Which decanate gives each gender its Drekkana bala."
         },
         "drik": {
           "$ref": "#/$defs/Drik",
@@ -4198,9 +4276,9 @@
           "$ref": "#/$defs/Kranti",
           "description": "The declination the Ayana reads."
         },
-        "moon_cheshta": {
-          "$ref": "#/$defs/MoonCheshta",
-          "description": "The Moon's Cheshta."
+        "luminary_cheshta": {
+          "$ref": "#/$defs/LuminaryCheshta",
+          "description": "The Sun's and the Moon's Cheshta."
         },
         "naisargika": {
           "$ref": "#/$defs/Naisargika",
@@ -4224,20 +4302,28 @@
         },
         "sun_ayana": {
           "$ref": "#/$defs/SunAyana",
-          "description": "Where the Sun's Ayana is counted."
+          "description": "Whether the Sun's Ayana is doubled in Kaala."
+        },
+        "yuddha": {
+          "$ref": "#/$defs/Yuddha",
+          "description": "Whether grahas at war gain and lose the Yuddha bala."
         }
       },
       "required": [
         "saptavargaja",
+        "drekkana",
+        "dig",
         "nathonnatha",
         "pre_dawn_night",
-        "sun_ayana",
-        "moon_cheshta",
-        "kranti",
+        "benefics",
         "kaala_lords",
-        "dig",
-        "drik",
+        "kranti",
+        "sun_ayana",
+        "yuddha",
+        "luminary_cheshta",
+        "cheshta",
         "naisargika",
+        "drik",
         "required_rupas"
       ],
       "type": "object"
@@ -4383,16 +4469,16 @@
       ]
     },
     "SunAyana": {
-      "description": "Where the Sun's Ayana bala is counted in the Shadbala (crux C66).",
+      "description": "Whether the Sun's Ayana bala is counted, doubled, in the Shadbala's Kaala (crux C66).",
       "oneOf": [
         {
           "const": "DOUBLED",
-          "description": "BPHS ch. 27 v. 17: doubled in Kaala, and again as its Cheshta.",
+          "description": "BPHS ch. 27 v. 17 and Sripati: doubled in Kaala.",
           "type": "string"
         },
         {
-          "const": "CHESHTA_ONLY",
-          "description": "The recording engine: only as its Cheshta.",
+          "const": "NOT_IN_KAALA",
+          "description": "The recording engine: not in Kaala at all.",
           "type": "string"
         }
       ]
@@ -5034,6 +5120,21 @@
         "inside"
       ],
       "type": "object"
+    },
+    "Yuddha": {
+      "description": "Whether the Shadbala counts the Yuddha bala of grahas at war (crux C70).",
+      "oneOf": [
+        {
+          "const": "SRIPATI",
+          "description": "Sripati, as B.V. Raman works it: two of Mars to Saturn within a degree, the one of lesser longitude the victor, the difference of their Sthana, Dig and Kaala over the difference of their discs.",
+          "type": "string"
+        },
+        {
+          "const": "NONE",
+          "description": "The recording engine: never.",
+          "type": "string"
+        }
+      ]
     },
     "Zodiac": {
       "description": "Which zodiac longitudes are measured in.",

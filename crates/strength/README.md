@@ -11,7 +11,7 @@ Strength measures over a chart.
 | module | what it settles |
 |---|---|
 | [`ashtakavarga`](src/ashtakavarga.rs) | each graha's bindus by sign from BPHS ch. 66's tables, the sarvashtakavarga, the trine and Ekadhipatya reductions and the pindas, under BPHS chs. 67 to 69 or the conformance corpus's engine's reading |
-| [`shadbala`](src/shadbala.rs) | each graha's six strengths in virupas, the Sthana and Kaala by component, under BPHS ch. 27's reading or the conformance corpus's engine's at eleven forks, each a setting |
+| [`shadbala`](src/shadbala/mod.rs) | each graha's six strengths in virupas, the Sthana and Kaala by component, under BPHS ch. 27's reading or the conformance corpus's engine's at eleven forks, each a setting |
 | [`vimshopaka`](src/vimshopaka.rs) | each graha's strength out of 20 across the sixteen vargas under the shadvarga, saptavarga, dashavarga and shodashavarga, with BPHS ch. 7's weights, by the text's points or the conformance corpus's engine's virupas |
 
 ## What the corpus and the text settled
@@ -31,10 +31,9 @@ Strength measures over a chart.
   `strength.vimshopaka` chooses (`BPHS`, the default, or
   `SAPTAVARGAJA_VIRUPAS`), crux C63.
 
-- **The Shadbala's engine departs from BPHS ch. 27 at eleven forks**, each a
-  `strength.*` setting with the chapter's reading the default (cruxes
-  C64–C71); the engine's Drik and Cheshta elements ship for both, and the
-  Yuddha bala is not built.
+- **The Shadbala has three readings**: BPHS ch. 27's (the default), Sripati's
+  as B.V. Raman works it, and the engine's, parting at fifteen forks, each a
+  `strength.*` setting (cruxes C64–C72).
 
 ## What proves it
 
@@ -51,6 +50,9 @@ Strength measures over a chart.
   the rasi chart decides the text's temporary half (unit tests).
 - The engine's reading reproduces every recorded Shadbala component, all
   seventeen of each of seven grahas on all 71 charts (`tests/baseline.rs`).
+- Sripati's reading reproduces B.V. Raman's worked Standard Horoscope, every
+  component within his rounding and every total within half a virupa
+  (`tests/sripati.rs`).
 - The ahargana's weekday and the chapter's worked month, midnight's and
   noon's Nathonnatha, the engine's lost pre-dawn night, the luminaries'
   Ayana and Cheshta, the true declination, Dig at the angles, Drik's

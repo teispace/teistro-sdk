@@ -697,18 +697,16 @@ fn rival(
     (differ, far)
 }
 
-/// The compound relationship's Saptavargaja virupas (B.V. Raman's reading of
-/// the chapter): moolatrikona 45 (in the rasi by its degrees), own 30, then
-/// 22.5, 15, 7.5, 3.75 or 1.875 by the compound relationship, the temporary
-/// half from the rasi chart; exaltation and debilitation are Uchcha's.
+/// The compound relationship's Saptavargaja virupas (B.V. Raman's working of
+/// Sripati, Art. 30): 45 for the moolatrikona rasi in the rasi chart alone, 30
+/// for the own sign, then 22.5, 15, 7.5, 3.75 or 1.875 by the compound
+/// relationship, the temporary half from the rasi chart; exaltation and
+/// debilitation are Uchcha's.
 fn compound_virupas(graha: Graha, sign: Rashi, rasi: bool, r: &Record) -> f64 {
     let i = index(graha);
     let attributes = graha.attributes();
-    if let Some(m) = attributes.moolatrikona.filter(|m| m.sign == sign) {
-        let degrees = r.grahas[i].degrees;
-        if !rasi || (f64::from(m.from)..=f64::from(m.to)).contains(&degrees) {
-            return 45.0;
-        }
+    if rasi && attributes.moolatrikona.is_some_and(|m| m.sign == sign) {
+        return 45.0;
     }
     if attributes.own.contains(&sign) {
         return 30.0;
@@ -807,11 +805,11 @@ fn text_lord_claims(records: &[Record]) -> Vec<Claim> {
         .collect();
     let year = records
         .iter()
-        .filter(|r| r.abda_lord != Some(lord_of_count(ahargana(r) / 360 * 3)))
+        .filter(|r| r.abda_lord != Some(lord_of_count((ahargana(r) + 1) / 360 * 3)))
         .count();
     let month = records
         .iter()
-        .filter(|r| r.grahas[0].sign.attributes().lord != lord_of_count(ahargana(r) / 30 * 2))
+        .filter(|r| r.grahas[0].sign.attributes().lord != lord_of_count((ahargana(r) + 1) / 30 * 2))
         .count();
     vec![
         Claim::counted(
@@ -824,12 +822,12 @@ fn text_lord_claims(records: &[Record]) -> Vec<Claim> {
             off.iter().map(|n| format!("`{n}`")).collect::<Vec<_>>().join(", ")
         )),
         Claim::counted(
-            "the Abda lord is the weekday lord of the ahargana's 360-day year: its completed years times 3, from Sunday (v. 13)",
+            "the Abda lord is the weekday lord of the ahargana's 360-day year: its completed years to and including the day, times 3, from Sunday (v. 13)",
             year,
             charts,
         ),
         Claim::counted(
-            "the Masa lord is the weekday lord of the ahargana's 30-day month: its completed months times 2, from Sunday (v. 13)",
+            "the Masa lord is the weekday lord of the ahargana's 30-day month: its completed months to and including the day, times 2, from Sunday (v. 13)",
             month,
             charts,
         ),
@@ -919,7 +917,7 @@ fn text_claims(records: &[Record]) -> Vec<Claim> {
     });
     claims.push(
         Claim::counted(
-            "Saptavargaja by the compound relationship (moolatrikona 45, own 30, 22.5, 15, 7.5, 3.75, 1.875), exaltation not counted",
+            "Saptavargaja by the compound relationship (the moolatrikona rasi 45, own 30, 22.5, 15, 7.5, 3.75, 1.875), exaltation not counted (B.V. Raman, after Sripati)",
             differ,
             cells,
         )
@@ -1023,9 +1021,13 @@ fn page(root: &Path) -> Result<String, String> {
          doubled, the Moon's Cheshta her Paksha and the kranti from the ephemeris (C66), the Abda and \
          Masa lords from the ahargana (C67), Dig from the true angles (C68), Drik by the chapter's \
          quarters (C69), and the chapter's requirements and exact natural strengths (C71).\n\n\
-         **What neither settles**: ch. 26's sphuta drishti, which the translation read garbles, so \
-         Drik reads the graded whole-sign drishti under both; the seeghra kendra's mean elements, \
-         which only the engine gives; and the Yuddha bala, which is not built (C69, C70).\n",
+         **A third reading settles what the chapter leaves open.** B.V. Raman's *Graha and Bhava \
+         Balas* works Sripati's method on one horoscope number by number: the sphuta drishti Drik \
+         reads (C45), the benefics by the Moon's phase and Mercury's company (C69), Kedarnath Dutt's \
+         mean elements for the Cheshta and the Yuddha bala (C70), and a male, neuter, female order \
+         for the Drekkana (C72). The module ships it as the `SRIPATI` reading, reproduces his \
+         worked Shadbala within his rounding (`crates/strength/tests/sripati.rs`), and takes its \
+         Cheshta elements and Yuddha rule for the chapter's reading too, which gives neither.\n",
     );
     Ok(fill(&out))
 }

@@ -1109,7 +1109,7 @@ pub(crate) type ShadbalaColumn = (
 
 /// The `shadbala` section's value columns in order, which the section's
 /// schema and its writer both read.
-pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 20] = [
+pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 21] = [
     (
         "uchcha",
         "Sthana: from the distance to the debilitation point, 0 to 60.",
@@ -1154,6 +1154,11 @@ pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 20] = [
     ("vara", "Kaala: 45 to the weekday's lord.", |g| g.kaala.vara),
     ("hora", "Kaala: 60 to the hour's lord.", |g| g.kaala.hora),
     ("ayana", "Kaala: from the declination.", |g| g.kaala.ayana),
+    (
+        "yuddha",
+        "Kaala: gained by the victor and lost by the vanquished of a planetary war.",
+        |g| g.kaala.yuddha,
+    ),
     ("cheshta", "Cheshta: motional strength.", |g| g.cheshta),
     ("naisargika", "Naisargika: natural strength.", |g| {
         g.naisargika

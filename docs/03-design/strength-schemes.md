@@ -197,8 +197,24 @@ measurement changed the design:
   in the translation read (C45, C69), and the Cheshta of Mars to Saturn reads
   the engine's J2000 mean elements, which the chapter does not give (C70).
 - **`strength.bala_scheme` now has a reader**: `PARASHARA` is the six, and
-  `PARASHARA_EXTENDED`, which would count the Yuddha bala, is refused as
-  unsupported rather than approximated.
+  `PARASHARA_EXTENDED`, which the catalogue names without defining, is
+  refused as unsupported rather than guessed at.
+- **Sripati's reading, from B.V. Raman's worked example, came next.** *Graha
+  and Bhava Balas* works every component on one Standard Horoscope, so it is
+  the one reading checkable number by number. It gave the sphuta drishti
+  (closing C45, now `teistro_aspect::sphuta`), a Drik of a quarter of the
+  pinda, benefics by the Moon's phase and Mercury's company, the moolatrikona's
+  45 in the rasi alone, a male, neuter, female Drekkana, the Hindu kranti
+  table, Kedarnath Dutt's mean elements for the Cheshta (the recording
+  engine's inferior planets turn out to take their own seeghrochcha as their
+  mean too) and a Yuddha bala. Four more forks became settings
+  (`strength.drekkana`, `benefics`, `cheshta`, `yuddha`), three gained a value
+  (`kranti = HINDU_TABLE`, `drik = QUARTER`, `luminary_cheshta = NONE`), and
+  `ShadbalaRules::SRIPATI` reproduces Raman's worked Shadbala within his
+  rounding, every total within half a virupa once his three arithmetic slips
+  are corrected (`crates/strength/tests/sripati.rs`). The chapter's reading
+  takes Sripati's Cheshta elements and Yuddha, which it lacks, and its sphuta
+  drishti. The module is now a directory, a file a strength.
 
 `crates/strength`'s `shadbala` reproduces all 71 recorded Shadbalas under the
 engine's reading; the façade reads the angles and the true obliquity from the

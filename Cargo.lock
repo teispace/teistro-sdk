@@ -1872,6 +1872,7 @@ dependencies = [
  "teistro-aspect",
  "teistro-core",
  "teistro-state",
+ "teistro-vargas",
 ]
 
 [[package]]

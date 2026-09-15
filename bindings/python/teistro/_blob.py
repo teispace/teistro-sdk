@@ -953,6 +953,9 @@ class ChartsShadbala:
     ayana: memoryview[float]
     """Kaala: from the declination."""
 
+    yuddha: memoryview[float]
+    """Kaala: gained by the victor and lost by the vanquished of a planetary war."""
+
     cheshta: memoryview[float]
     """Cheshta: motional strength."""
 
@@ -1632,22 +1635,25 @@ def decode_charts(raw: bytes) -> Charts:
             vara=blob.column(at_shadbala, 12, 8, at_shadbala.count).cast("d"),
             hora=blob.column(at_shadbala, 13, 8, at_shadbala.count).cast("d"),
             ayana=blob.column(at_shadbala, 14, 8, at_shadbala.count).cast("d"),
-            cheshta=blob.column(
+            yuddha=blob.column(
                 at_shadbala, 15, 8, at_shadbala.count
             ).cast("d"),
-            naisargika=blob.column(
+            cheshta=blob.column(
                 at_shadbala, 16, 8, at_shadbala.count
             ).cast("d"),
-            drik=blob.column(at_shadbala, 17, 8, at_shadbala.count).cast("d"),
-            virupas=blob.column(
-                at_shadbala, 18, 8, at_shadbala.count
+            naisargika=blob.column(
+                at_shadbala, 17, 8, at_shadbala.count
             ).cast("d"),
-            rupas=blob.column(at_shadbala, 19, 8, at_shadbala.count).cast("d"),
+            drik=blob.column(at_shadbala, 18, 8, at_shadbala.count).cast("d"),
+            virupas=blob.column(
+                at_shadbala, 19, 8, at_shadbala.count
+            ).cast("d"),
+            rupas=blob.column(at_shadbala, 20, 8, at_shadbala.count).cast("d"),
             required_rupas=blob.column(
-                at_shadbala, 20, 8, at_shadbala.count
+                at_shadbala, 21, 8, at_shadbala.count
             ).cast("d"),
             strong=blob.column(
-                at_shadbala, 21, 1, at_shadbala.count
+                at_shadbala, 22, 1, at_shadbala.count
             ).cast("B"),
             length=at_shadbala.count,
         ),

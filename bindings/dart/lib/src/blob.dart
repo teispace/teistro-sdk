@@ -1133,6 +1133,7 @@ final class ChartsShadbala {
     required this.vara,
     required this.hora,
     required this.ayana,
+    required this.yuddha,
     required this.cheshta,
     required this.naisargika,
     required this.drik,
@@ -1187,6 +1188,9 @@ final class ChartsShadbala {
 
   /// Kaala: from the declination.
   final Float64List ayana;
+
+  /// Kaala: gained by the victor and lost by the vanquished of a planetary war.
+  final Float64List yuddha;
 
   /// Cheshta: motional strength.
   final Float64List cheshta;
@@ -2420,40 +2424,45 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atShadbala, 14),
         blob.columnOffset(atShadbala, 14) + atShadbala.count * 8,
       ),
-      cheshta: Float64List.sublistView(
+      yuddha: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 15),
         blob.columnOffset(atShadbala, 15) + atShadbala.count * 8,
       ),
-      naisargika: Float64List.sublistView(
+      cheshta: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 16),
         blob.columnOffset(atShadbala, 16) + atShadbala.count * 8,
       ),
-      drik: Float64List.sublistView(
+      naisargika: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 17),
         blob.columnOffset(atShadbala, 17) + atShadbala.count * 8,
       ),
-      virupas: Float64List.sublistView(
+      drik: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 18),
         blob.columnOffset(atShadbala, 18) + atShadbala.count * 8,
       ),
-      rupas: Float64List.sublistView(
+      virupas: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 19),
         blob.columnOffset(atShadbala, 19) + atShadbala.count * 8,
       ),
-      requiredRupas: Float64List.sublistView(
+      rupas: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 20),
         blob.columnOffset(atShadbala, 20) + atShadbala.count * 8,
       ),
-      strong: Uint8List.sublistView(
+      requiredRupas: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 21),
-        blob.columnOffset(atShadbala, 21) + atShadbala.count * 1,
+        blob.columnOffset(atShadbala, 21) + atShadbala.count * 8,
+      ),
+      strong: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 22),
+        blob.columnOffset(atShadbala, 22) + atShadbala.count * 1,
       ),
       length: atShadbala.count,
     ),

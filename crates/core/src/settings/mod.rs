@@ -32,13 +32,14 @@ use crate::envelope::Hash;
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AfterCycle, AyanamshaBasis, Balance, BirthPeriod, Centre, CharaKarakas, DayBoundary, DeltaT,
-    DigKendras, Drik, DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LunarMonth, MoonCheshta,
-    MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship,
-    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RequiredRupas,
-    Saptavargaja, SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Zodiac,
+    AfterCycle, AyanamshaBasis, Balance, Benefics, BirthPeriod, Centre, CharaKarakas, Cheshta,
+    DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, Ekadhipatya,
+    GhatiReckoning, HoraReckoning, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
+    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RequiredRupas, Saptavargaja,
+    SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka,
+    YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -340,8 +341,8 @@ group!(
         pre_dawn_night: PreDawnNight,
         /// Where the Sun's Ayana bala is counted (crux C66).
         sun_ayana: SunAyana,
-        /// The Moon's Cheshta bala (crux C66).
-        moon_cheshta: MoonCheshta,
+        /// The Sun's and the Moon's Cheshta balas (crux C66).
+        luminary_cheshta: LuminaryCheshta,
         /// The declination the Ayana bala reads (crux C66).
         kranti: Kranti,
         /// Whose weekdays the Abda and Masa lords are (crux C67).
@@ -354,6 +355,14 @@ group!(
         naisargika: Naisargika,
         /// The rupas a graha's Shadbala must reach (crux C71).
         required_rupas: RequiredRupas,
+        /// Which decanate gives each gender its Drekkana bala (crux C72).
+        drekkana: Drekkana,
+        /// Which grahas are benefics for Paksha and Drik (crux C69).
+        benefics: Benefics,
+        /// The mean elements the Cheshta bala reads (crux C70).
+        cheshta: Cheshta,
+        /// Whether grahas at war gain and lose the Yuddha bala (crux C70).
+        yuddha: Yuddha,
     }
 );
 

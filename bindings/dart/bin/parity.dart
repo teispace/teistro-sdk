@@ -464,6 +464,7 @@ void main() {
           ka.vara,
           ka.hora,
           ka.ayana,
+          ka.yuddha,
           g.cheshta,
           g.naisargika,
           g.drik,

@@ -647,6 +647,7 @@ impl<'a> ChartArea<'a> {
         };
         let chart = ShadbalaChart {
             grahas,
+            rahu: foundation.graha(Graha::Rahu).map(|at| at.longitude_deg),
             vargas: Self::varga_signs(foundation, SAPTAVARGAJA_VARGAS)?,
             instant: foundation.instant.get(),
             sunrise: day.sunrise.get(),

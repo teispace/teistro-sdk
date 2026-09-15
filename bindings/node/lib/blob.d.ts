@@ -1000,6 +1000,10 @@ export interface ChartsShadbala {
    */
   readonly ayana: Float64Array;
   /**
+   * Kaala: gained by the victor and lost by the vanquished of a planetary war.
+   */
+  readonly yuddha: Float64Array;
+  /**
    * Cheshta: motional strength.
    */
   readonly cheshta: Float64Array;

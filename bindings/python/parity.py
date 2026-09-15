@@ -426,7 +426,7 @@ def main() -> None:
                 key = f"chart-{i}-shadbala-{strength.graha.full_key}"
                 st, ka = strength.sthana, strength.kaala
                 parts: list[float] = [st.uchcha, st.saptavargaja, st.ojayugma, st.kendradi, st.drekkana, strength.dig]
-                parts += [ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana]
+                parts += [ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana, ka.yuddha]
                 parts += [strength.cheshta, strength.naisargika, strength.drik]
                 put(key, ",".join(number(value) for value in parts))
                 put(

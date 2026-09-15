@@ -1604,6 +1604,7 @@ final class KaalaBala {
     required this.vara,
     required this.hora,
     required this.ayana,
+    required this.yuddha,
   });
 
   /// From the hour, 0 to 60.
@@ -1630,9 +1631,20 @@ final class KaalaBala {
   /// From its declination.
   final double ayana;
 
-  /// The eight together.
+  /// Gained by the victor and lost by the vanquished of a planetary war.
+  final double yuddha;
+
+  /// The nine together.
   double get total =>
-      nathonnatha + paksha + tribhaga + vara + hora + ayana + abda + masa;
+      nathonnatha +
+      paksha +
+      tribhaga +
+      vara +
+      hora +
+      ayana +
+      abda +
+      masa +
+      yuddha;
 }
 
 /// One graha's Shadbala, in virupas.
@@ -2674,6 +2686,7 @@ List<Shadbala> _decodeShadbalas(Charts batch) {
       vara: c.vara[row],
       hora: c.hora[row],
       ayana: c.ayana[row],
+      yuddha: c.yuddha[row],
     ),
     cheshta: c.cheshta[row],
     naisargika: c.naisargika[row],

@@ -8,7 +8,7 @@
 //!   engine's virupas (`docs/03-design/vimshopaka-measured.md`).
 //!
 //! - [`shadbala`]: each graha's six strengths in virupas, under BPHS ch. 27's
-//!   reading or the corpus's engine's at each of eleven forks
+//!   reading, Sripati's as B.V. Raman works it, or the corpus's engine's
 //!   (`docs/03-design/shadbala-measured.md`).
 //!
 //! Bhava bala is the next row of this crate.

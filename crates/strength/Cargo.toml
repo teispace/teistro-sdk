@@ -25,6 +25,7 @@ schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 serde_json = "1"
+teistro-vargas = { path = "../vargas" }
 
 [lints]
 workspace = true

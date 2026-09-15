@@ -196,6 +196,7 @@ fn shadbala_chart(file: &Value) -> ShadbalaChart {
                 house: u8::try_from(at["house"].as_u64().unwrap()).unwrap(),
             }
         }),
+        rahu: None,
         vargas: SAPTAVARGAJA_VARGAS
             .map(|v| GRAHAS.map(|g| sign(&inputs["varga_sign_index"][v.key()][g]))),
         instant,

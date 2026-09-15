@@ -1628,10 +1628,23 @@ class KaalaBala:
     ayana: float
     """From its declination."""
 
+    yuddha: float
+    """Gained by the victor and lost by the vanquished of a planetary war."""
+
     @property
     def total(self) -> float:
-        """The eight together."""
-        return self.nathonnatha + self.paksha + self.tribhaga + self.vara + self.hora + self.ayana + self.abda + self.masa
+        """The nine together."""
+        return (
+            self.nathonnatha
+            + self.paksha
+            + self.tribhaga
+            + self.vara
+            + self.hora
+            + self.ayana
+            + self.abda
+            + self.masa
+            + self.yuddha
+        )
 
 
 @dataclass(frozen=True)
@@ -2731,6 +2744,7 @@ class ChartBatch:
                     vara=c.vara[row],
                     hora=c.hora[row],
                     ayana=c.ayana[row],
+                    yuddha=c.yuddha[row],
                 ),
                 cheshta=c.cheshta[row],
                 naisargika=c.naisargika[row],

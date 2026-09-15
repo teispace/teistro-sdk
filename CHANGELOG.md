@@ -792,6 +792,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   `conformance-baseline` is version 6; no number the SDK computed before
   changes.
 
+  Then Sripati's reading, from B.V. Raman's worked Standard Horoscope:
+  `teistro_aspect::sphuta`, the sphuta drishti with the special aspects;
+  `ShadbalaRules::SRIPATI`, which reproduces Raman's worked Shadbala; four
+  more settings (`strength.drekkana`, `benefics`, `cheshta`, `yuddha`) and
+  new values for `kranti` (`HINDU_TABLE`), `drik` (`QUARTER`, the old
+  `QUARTER` now `QUARTER_WITH_JUPITER_MERCURY`) and `luminary_cheshta` (which
+  replaces `moon_cheshta`; `sun_ayana`'s `CHESHTA_ONLY` is `NOT_IN_KAALA`,
+  `required_rupas`'s `RECORDING_ENGINE` is `SRIPATI`); a Yuddha component in
+  `KaalaBala` and the boundary's `shadbala` section; and the ahargana's lords
+  divided on the count including the day of birth.
+
+  **Numbers:** the default Shadbala moves: the Drik reads the sphuta
+  drishti, the benefics are conditional, the Cheshta reads Kedarnath Dutt's
+  elements, grahas at war exchange a Yuddha bala, and the Saptavargaja gives
+  the moolatrikona's 45 in the rasi alone. `conformance-baseline` is version 7
+  and reproduces the corpus exactly as before.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

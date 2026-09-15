@@ -369,7 +369,7 @@ for (const chart of charts) {
     const key = `chart-${i}-shadbala-${g.graha}`;
     const { sthana: st, kaala: ka } = g;
     const parts = [st.uchcha, st.saptavargaja, st.ojayugma, st.kendradi, st.drekkana, g.dig];
-    parts.push(ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana);
+    parts.push(ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana, ka.yuddha);
     parts.push(g.cheshta, g.naisargika, g.drik);
     put(key, parts.map(number).join(','));
     put(`${key}-total`, `${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong}`);

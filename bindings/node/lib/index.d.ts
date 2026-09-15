@@ -409,6 +409,8 @@ export interface KaalaBala {
   readonly hora: number;
   /** From its declination. */
   readonly ayana: number;
+  /** Gained by the victor and lost by the vanquished of a planetary war. */
+  readonly yuddha: number;
 }
 
 /** One graha's Shadbala, in virupas. */

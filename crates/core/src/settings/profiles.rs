@@ -9,13 +9,14 @@ use crate::catalogue::{
 };
 
 use super::knobs::{
-    AfterCycle, AyanamshaBasis, Balance, BirthPeriod, Centre, CharaKarakas, DayBoundary, DeltaT,
-    DigKendras, Drik, DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LunarMonth, MoonCheshta,
-    MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship,
-    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RequiredRupas,
-    Saptavargaja, SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Zodiac,
+    AfterCycle, AyanamshaBasis, Balance, Benefics, BirthPeriod, Centre, CharaKarakas, Cheshta,
+    DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, Ekadhipatya,
+    GhatiReckoning, HoraReckoning, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
+    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RequiredRupas, Saptavargaja,
+    SeedOverflow, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka,
+    YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -214,13 +215,18 @@ fn strength() -> Strength {
         nathonnatha: Nathonnatha::Midnight,
         pre_dawn_night: PreDawnNight::PreviousEvening,
         sun_ayana: SunAyana::Doubled,
-        moon_cheshta: MoonCheshta::Paksha,
+        luminary_cheshta: LuminaryCheshta::AyanaAndPaksha,
         kranti: Kranti::True,
         kaala_lords: KaalaLords::Ahargana,
         dig: DigKendras::Angles,
-        drik: Drik::Quarter,
+        drik: Drik::QuarterWithJupiterMercury,
         naisargika: Naisargika::Exact,
         required_rupas: RequiredRupas::Bphs,
+        drekkana: Drekkana::MaleFemaleNeuter,
+        benefics: Benefics::Conditional,
+        // The only mean elements a source gives (crux C70).
+        cheshta: Cheshta::Sripati,
+        yuddha: Yuddha::Sripati,
     }
 }
 
@@ -396,14 +402,18 @@ fn conformance_baseline() -> Profile {
     patch.strength.saptavargaja = Some(Saptavargaja::Natural);
     patch.strength.nathonnatha = Some(Nathonnatha::Arc);
     patch.strength.pre_dawn_night = Some(PreDawnNight::SameEvening);
-    patch.strength.sun_ayana = Some(SunAyana::CheshtaOnly);
-    patch.strength.moon_cheshta = Some(MoonCheshta::Elongation);
+    patch.strength.sun_ayana = Some(SunAyana::NotInKaala);
+    patch.strength.luminary_cheshta = Some(LuminaryCheshta::AyanaAndElongation);
     patch.strength.kranti = Some(Kranti::Ecliptic);
     patch.strength.kaala_lords = Some(KaalaLords::Sankranti);
     patch.strength.dig = Some(DigKendras::LagnaProjection);
     patch.strength.drik = Some(Drik::Full);
     patch.strength.naisargika = Some(Naisargika::Hundredths);
-    patch.strength.required_rupas = Some(RequiredRupas::RecordingEngine);
+    patch.strength.required_rupas = Some(RequiredRupas::Sripati);
+    patch.strength.drekkana = Some(Drekkana::MaleFemaleNeuter);
+    patch.strength.benefics = Some(Benefics::Fixed);
+    patch.strength.cheshta = Some(Cheshta::RecordingEngine);
+    patch.strength.yuddha = Some(Yuddha::None);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
@@ -412,7 +422,9 @@ fn conformance_baseline() -> Profile {
         // 4: the Ashtakavarga became the engine's (cruxes C59, C60).
         // 5: the Vimshopaka became the engine's (crux C63).
         // 6: the Shadbala became the engine's (cruxes C64 to C71).
-        version: 6,
+        // 7: the Shadbala's four further forks became the engine's (C69, C70,
+        // C72).
+        version: 7,
         base: None,
         patch,
         sources: vec![

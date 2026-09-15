@@ -322,24 +322,32 @@ knob!(
         SameEvening = "SAME_EVENING" }
 );
 knob!(
-    /// Where the Sun's Ayana bala is counted in the Shadbala (crux C66).
-    SunAyana { /// BPHS ch. 27 v. 17: doubled in Kaala, and again as its Cheshta.
-        Doubled = "DOUBLED", /// The recording engine: only as its Cheshta.
-        CheshtaOnly = "CHESHTA_ONLY" }
+    /// Whether the Sun's Ayana bala is counted, doubled, in the Shadbala's
+    /// Kaala (crux C66).
+    SunAyana { /// BPHS ch. 27 v. 17 and Sripati: doubled in Kaala.
+        Doubled = "DOUBLED", /// The recording engine: not in Kaala at all.
+        NotInKaala = "NOT_IN_KAALA" }
 );
 knob!(
-    /// The Moon's Cheshta bala in the Shadbala (crux C66).
-    MoonCheshta { /// BPHS ch. 27 v. 18: her Paksha bala.
-        Paksha = "PAKSHA", /// The recording engine: a third of her elongation, undoubled.
-        Elongation = "ELONGATION" }
+    /// The Cheshta bala of the Sun and the Moon, which never retrogress
+    /// (crux C66).
+    LuminaryCheshta { /// BPHS ch. 27 v. 18: the Sun's is its Ayana bala and the Moon's her
+        /// Paksha bala.
+        AyanaAndPaksha = "AYANA_AND_PAKSHA", /// The recording engine: the Sun's Ayana, and a third of the Moon's
+        /// elongation.
+        AyanaAndElongation = "AYANA_AND_ELONGATION", /// Sripati, as B.V. Raman works it: neither has any.
+        None = "NONE" }
 );
 knob!(
-    /// The declination the Shadbala's Ayana bala reads (crux C66).
-    Kranti { /// The graha's true declination: its ecliptic latitude and the date's
-        /// obliquity, as BPHS's notes take it from an ephemeris.
+    /// The declination the Shadbala's Ayana bala reads, and the obliquity
+    /// its formula scales by (crux C66).
+    Kranti { /// The graha's true declination, from its ecliptic latitude and the
+        /// date's obliquity, as BPHS's notes take it from an ephemeris.
         True = "TRUE", /// The recording engine: its tropical longitude at zero latitude, on
         /// an obliquity of 23.4393°.
-        Ecliptic = "ECLIPTIC" }
+        Ecliptic = "ECLIPTIC", /// Sripati, as B.V. Raman works it: the Hindu table of 362′, 341′,
+        /// 299′, 236′, 150′ and 52′ a 15° step of the sayana bhuja, on 24°.
+        HinduTable = "HINDU_TABLE" }
 );
 knob!(
     /// Whose weekdays the Shadbala's Abda and Masa lords are (crux C67).
@@ -359,11 +367,13 @@ knob!(
 knob!(
     /// How the Shadbala's Drik bala weighs the drishtis a graha receives
     /// (crux C69).
-    Drik { /// BPHS ch. 27 v. 19: a quarter of each benefic's drishti added and of
-        /// each malefic's taken away, and Mercury's and Jupiter's added again in
-        /// full.
-        Quarter = "QUARTER", /// The recording engine: each drishti in full, Mercury's taken away,
-        /// the sum bounded at ±60.
+    Drik { /// BPHS ch. 27 v. 19: a quarter of each benefic's sphuta drishti added
+        /// and each malefic's taken away, and Jupiter's and Mercury's added
+        /// again in full.
+        QuarterWithJupiterMercury = "QUARTER_WITH_JUPITER_MERCURY", /// Sripati, as B.V. Raman works it: a quarter of the net sphuta
+        /// drishti pinda.
+        Quarter = "QUARTER", /// The recording engine: each whole-sign graded drishti in full,
+        /// Mercury's taken away, the sum bounded at ±60.
         Full = "FULL" }
 );
 knob!(
@@ -376,8 +386,45 @@ knob!(
     /// The rupas a graha's Shadbala must reach to be strong (crux C71).
     RequiredRupas { /// BPHS ch. 27 vv. 32 and 33: 6.5, 6, 5, 7, 6.5, 5.5 and 5, Sun to
         /// Saturn.
-        Bphs = "BPHS", /// The recording engine's, the Sun's 5.
+        Bphs = "BPHS", /// Sripati, as B.V. Raman gives it and the recording engine takes it:
+        /// the Sun's 5.
+        Sripati = "SRIPATI" }
+);
+knob!(
+    /// Which decanate gives each gender of graha the Shadbala's Drekkana bala
+    /// (crux C72).
+    Drekkana { /// BPHS ch. 27 v. 6 as translated, and the recording engine: male
+        /// grahas the first, female the second, neuter the third.
+        MaleFemaleNeuter = "MALE_FEMALE_NEUTER", /// Sripati, as B.V. Raman works it: male the first, neuter the
+        /// second, female the third.
+        MaleNeuterFemale = "MALE_NEUTER_FEMALE" }
+);
+knob!(
+    /// Which grahas count as benefics for the Shadbala's Paksha and Drik
+    /// balas (crux C69).
+    Benefics { /// Jupiter and Venus; the Moon from the eighth day of the bright half
+        /// to the eighth of the dark; Mercury unless it shares its sign with
+        /// the Sun, Mars, Saturn, a node or a malefic Moon (B.V. Raman after
+        /// Sripati).
+        Conditional = "CONDITIONAL", /// The recording engine: the Moon, Mercury, Jupiter and Venus, always.
+        Fixed = "FIXED" }
+);
+knob!(
+    /// The mean elements the Shadbala's Cheshta bala reads for Mars to Saturn
+    /// (crux C70).
+    Cheshta { /// Kedarnath Dutt's tables as B.V. Raman gives them, the inferior
+        /// planets' mean the mean Sun's.
+        Sripati = "SRIPATI", /// The recording engine's J2000 elements, each inferior planet's own
+        /// seeghrochcha taken as its mean too.
         RecordingEngine = "RECORDING_ENGINE" }
+);
+knob!(
+    /// Whether the Shadbala counts the Yuddha bala of grahas at war (crux C70).
+    Yuddha { /// Sripati, as B.V. Raman works it: two of Mars to Saturn within a
+        /// degree, the one of lesser longitude the victor, the difference of
+        /// their Sthana, Dig and Kaala over the difference of their discs.
+        Sripati = "SRIPATI", /// The recording engine: never.
+        None = "NONE" }
 );
 knob!(
     /// Where the Ashtakavarga's reductions and pindas are made (crux C59).

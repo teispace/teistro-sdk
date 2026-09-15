@@ -33,10 +33,10 @@
 //! - **A mutual full aspect is the seventh, or Mars and Saturn three
 //!   signs apart.** The pass proposed the first alone and the
 //!   measurement refused it.
-//! - **The sphuta drishti does not ship.** No source in this project
-//!   gives its construction, so [`drishti::Strength::virupas`] is the
-//!   whole-sign value and nothing interpolates between the houses (crux
-//!   C45).
+//! - **The sphuta drishti is Sripati's** ([`sphuta`]), by degree, as
+//!   B.V. Raman works it; the whole-sign table stays beside it
+//!   ([`drishti::Strength::virupas`]) because the two part at the special
+//!   aspects (crux C45).
 //!
 //! ```
 //! use teistro_aspect::drishti::{Strength, between};
@@ -57,6 +57,7 @@ pub mod conjunction;
 pub mod drishti;
 pub mod orb;
 pub mod rashi;
+pub mod sphuta;
 
 pub use chart::{Aspects, Drishti, Mutual};
 pub use drishti::Strength;

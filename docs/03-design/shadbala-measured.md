@@ -43,7 +43,7 @@ differ at all.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| Saptavargaja by the compound relationship (moolatrikona 45, own 30, 22.5, 15, 7.5, 3.75, 1.875), exaltation not counted | falsified | 484 of 497 disagree; worst gap 120.00 |
+| Saptavargaja by the compound relationship (the moolatrikona rasi 45, own 30, 22.5, 15, 7.5, 3.75, 1.875), exaltation not counted (B.V. Raman, after Sripati) | falsified | 477 of 497 disagree; worst gap 135.00 |
 | Nathonnatha from midnight at any hour: the night grahas twice the nata in ghatis, the day grahas 60 less that (vv. 8 and 9) | falsified | 402 of 497 disagree; worst gap 58.90 |
 | a birth before sunrise is measured in the night it falls in | falsified | the engine measures 24 of 71 charts' nights from the day's own sunset, after the birth: every night graha's Nathonnatha and the Tribhaga lord are lost |
 | the Sun's Ayana counted in Kaala, doubled (v. 17) | falsified | 68 of 497 disagree; worst gap 120.00 |
@@ -52,8 +52,8 @@ differ at all.
 | Dig from the true kendras — the ascendant, the nadir, the descendant and the midheaven (v. 7) | falsified | 230 of 497 disagree; worst gap 22.17 |
 | Mercury's glance added rather than taken away (v. 19 adds Mercury's and Jupiter's in full) | falsified | 147 of 497 disagree; worst gap 105.00 |
 | the ahargana from Burgess's figure for 1 January 1860, taken for the Hindu day, falls on the recorded weekday (v. 13) | falsified | 4 of 71 disagree; each of `c022-honolulu-1941-12-07`, `c027-reykjavik-1975-06-21`, `c039-mexico-city-1985-09-19`, `c043-fairbanks-2015-06-21` is a birth the engine placed in the wrong Hindu day, its recorded sunrise a day early or its pre-sunrise night given the next day's weekday |
-| the Abda lord is the weekday lord of the ahargana's 360-day year: its completed years times 3, from Sunday (v. 13) | falsified | 62 of 71 disagree |
-| the Masa lord is the weekday lord of the ahargana's 30-day month: its completed months times 2, from Sunday (v. 13) | falsified | 66 of 71 disagree |
+| the Abda lord is the weekday lord of the ahargana's 360-day year: its completed years to and including the day, times 3, from Sunday (v. 13) | falsified | 62 of 71 disagree |
+| the Masa lord is the weekday lord of the ahargana's 30-day month: its completed months to and including the day, times 2, from Sunday (v. 13) | falsified | 67 of 71 disagree |
 | BPHS vv. 32 and 33's requirements, 390, 360, 300, 420, 390, 330 and 300 virupas, the Sun's 6.5 rupas where the engine asks 5 | falsified | 22 of 497 disagree |
 
 ## What it means for the module
@@ -72,7 +72,12 @@ ahargana (C67), Dig from the true angles (C68), Drik by the chapter's
 quarters (C69), and the chapter's requirements and exact natural
 strengths (C71).
 
-**What neither settles**: ch. 26's sphuta drishti, which the translation
-read garbles, so Drik reads the graded whole-sign drishti under both;
-the seeghra kendra's mean elements, which only the engine gives; and the
-Yuddha bala, which is not built (C69, C70).
+**A third reading settles what the chapter leaves open.** B.V. Raman's
+*Graha and Bhava Balas* works Sripati's method on one horoscope number
+by number: the sphuta drishti Drik reads (C45), the benefics by the
+Moon's phase and Mercury's company (C69), Kedarnath Dutt's mean elements
+for the Cheshta and the Yuddha bala (C70), and a male, neuter, female
+order for the Drekkana (C72). The module ships it as the `SRIPATI`
+reading, reproduces his worked Shadbala within his rounding
+(`crates/strength/tests/sripati.rs`), and takes its Cheshta elements and
+Yuddha rule for the chapter's reading too, which gives neither.

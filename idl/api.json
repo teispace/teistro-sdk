@@ -13581,6 +13581,11 @@
               "doc": "Kaala: from the declination."
             },
             {
+              "name": "yuddha",
+              "scalar": "f64",
+              "doc": "Kaala: gained by the victor and lost by the vanquished of a planetary war."
+            },
+            {
               "name": "cheshta",
               "scalar": "f64",
               "doc": "Cheshta: motional strength."

@@ -1208,6 +1208,7 @@ fn the_shadbala(report: &mut Report, index: usize, document: &teistro::Document)
             ka.vara,
             ka.hora,
             ka.ayana,
+            ka.yuddha,
             graha.cheshta,
             graha.naisargika,
             graha.drik,

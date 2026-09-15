@@ -1926,6 +1926,7 @@ function shadbalasOf(batch) {
         vara: c.vara[row],
         hora: c.hora[row],
         ayana: c.ayana[row],
+        yuddha: c.yuddha[row],
       };
       return Object.freeze({
         graha: GrahaById.get(c.graha[row]) ?? 'unknown',
