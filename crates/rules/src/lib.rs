@@ -1,0 +1,40 @@
+//! The Teistro SDK's rules kernel (`docs/03-design/rules-engine.md`).
+//!
+//! A rule is data: conditions in a small language over a chart — where a body
+//! stands, its dignity, its company, the lords of houses, the chara karakas —
+//! and cancellations. The kernel reads a rule strictly ([`language`]),
+//! evaluates it over a [`RuleChart`] under [`Readings`], one choice at each
+//! place the language leaves a meaning open, and answers a [`RuleResult`]:
+//! whether it is present, the bodies it consulted, their houses and the
+//! cancellations that held.
+//!
+//! The language is the recording engine's, and its reading is the default:
+//! over the conformance corpus's 93 charts the kernel reproduces all 605 of
+//! its yoga rules' 55 521 decisions, their participants and their
+//! cancellations (`tests/baseline.rs`, `03-design/yogas-measured.md`).
+//!
+//! ```
+//! use teistro_rules::{Condition, Evaluator, Readings, Rule};
+//!
+//! let rule: Rule = serde_json::from_str(r#"{
+//!     "key": "GURU_IN_KENDRA",
+//!     "category": "example",
+//!     "source": { "text": "an example" },
+//!     "conditions": [{ "type": "planet-in-kendra", "planet": "JUPITER" }]
+//! }"#)?;
+//! assert!(matches!(rule.conditions[0], Condition::PlanetInKendra { .. }));
+//! # let _ = Evaluator::new;
+//! # let _ = Readings::RECORDING_ENGINE;
+//! # Ok::<(), serde_json::Error>(())
+//! ```
+
+pub mod chart;
+pub mod eval;
+pub mod language;
+
+pub use chart::{
+    Benefics, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides, Placement,
+    Readings, RuleChart,
+};
+pub use eval::{Evaluator, Participants, RuleResult};
+pub use language::{Body, Condition, House, Karaka, KarakaScheme, Rule, Source, Subject};

@@ -887,6 +887,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   see are named; 116 rules with no positive case are listed. The page is
   what the `rules` kernel will be built from.
 
+- `crates/rules`, the rules kernel's first slice: the recording engine's
+  condition language typed (three combinators and 22 predicates over the
+  grahas and the lagna) and read strictly, so an unknown field, predicate,
+  house or body is refused with its path; a `RuleChart`; the seven places
+  the language leaves open as `Readings`, the engine's choices the default;
+  and an `Evaluator` returning each rule's presence, participants, houses
+  and held cancellations. It reproduces every recorded yoga, and
+  `cargo xtask yogas` now measures the built kernel rather than a private
+  copy of its rules. The engine's 597 written rules over one chart take
+  about 10 microseconds.
+
+  **Numbers:** none; nothing in a chart document or the boundary reads the
+  kernel yet.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

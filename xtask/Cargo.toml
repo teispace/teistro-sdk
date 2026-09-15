@@ -25,6 +25,7 @@ teistro-ffi = { path = "../crates/ffi" }
 teistro-idl = { path = "../crates/idl" }
 teistro-intl = { path = "../crates/intl", default-features = false }
 teistro-port-ephemeris = { path = "../crates/port-ephemeris" }
+teistro-rules = { path = "../crates/rules" }
 teistro-scenario = { path = "../crates/scenario" }
 teistro-serial = { path = "../crates/serial", features = ["schema"] }
 teistro-siddhanta = { path = "../crates/siddhanta" }

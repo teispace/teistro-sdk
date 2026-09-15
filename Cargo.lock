@@ -1740,6 +1740,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-rules"
+version = "0.0.0"
+dependencies = [
+ "criterion",
+ "serde",
+ "serde_json",
+ "teistro-aspect",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-scenario"
 version = "0.0.0"
 dependencies = [
@@ -2193,6 +2204,7 @@ dependencies = [
  "teistro-idl",
  "teistro-intl",
  "teistro-port-ephemeris",
+ "teistro-rules",
  "teistro-scenario",
  "teistro-serial",
  "teistro-siddhanta",

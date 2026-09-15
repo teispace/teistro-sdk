@@ -22,6 +22,7 @@ members = [
     "crates/houses",
     "crates/geometry",
     "crates/dasha",
+    "crates/rules",
     "crates/render-svg",
     "crates/serial",
     "crates/ephemeris-builtin",

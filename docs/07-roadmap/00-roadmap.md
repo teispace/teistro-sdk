@@ -548,10 +548,13 @@ has: the corpus's 0.10.0 records the engine's 605 yoga rules and their
 presences on 93 charts, and `yogas-measured.md` (`check-yogas`) reproduces
 all 55 521 decisions under the engine's reading of its condition language,
 decides two forks, names five the corpus cannot see and counts the 116 rules
-with no positive case. Next: the `rules` crate, the 19 predicates and three
-combinators over planet and lagna references with `RuleResult`, built to
-reproduce that page, then `Ref`, table lookups and cancellation in the
-order below.
+with no positive case. **The kernel's first slice is built**: `crates/rules`
+types the language (19 predicates of the corpus's and the three unrecorded
+aspect and combustion ones, three combinators, over planet and lagna
+bodies), evaluates to a `RuleResult` with participants, houses and held
+cancellations, reproduces every recorded yoga, and the pass now measures it;
+597 rules over a chart take about 10 µs against the 2 ms budget. Next: `Ref`,
+the trace, table lookups and cancellation in the order below.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,
 `RuleResult` with traces, table lookups, cancellation and severity) before
